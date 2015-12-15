@@ -26,6 +26,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGParserUtilities.h"
+#include "platform/text/ParserUtilities.h"
 
 namespace blink {
 

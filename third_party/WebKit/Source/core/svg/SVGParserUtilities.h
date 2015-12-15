@@ -23,16 +23,8 @@
 #define SVGParserUtilities_h
 
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/svg/SVGTransform.h"
-#include "platform/text/ParserUtilities.h"
-#include "wtf/HashSet.h"
-
-typedef std::pair<unsigned, unsigned> UnicodeRange;
-typedef Vector<UnicodeRange> UnicodeRanges;
 
 namespace blink {
-
-class FloatPoint;
 
 enum WhitespaceMode {
     DisallowWhitespace = 0,
@@ -69,10 +61,6 @@ inline bool skipOptionalSVGSpacesOrDelimiter(const CharType*& ptr, const CharTyp
     }
     return ptr < end;
 }
-
-template<typename CharType>
-bool parseAndSkipTransformType(const CharType*& ptr, const CharType* end, SVGTransformType&);
-SVGTransformType parseTransformType(const String&);
 
 } // namespace blink
 

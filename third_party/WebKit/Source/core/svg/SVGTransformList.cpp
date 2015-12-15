@@ -22,14 +22,12 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGTransformList.h"
 
 #include "core/SVGNames.h"
-#include "core/svg/SVGAnimateTransformElement.h"
-#include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGTransformDistance.h"
+#include "platform/text/ParserUtilities.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -69,6 +67,40 @@ bool SVGTransformList::concatenate(AffineTransform& result) const
 
 namespace {
 
+const LChar skewXDesc[] =  {'s', 'k', 'e', 'w', 'X'};
+const LChar skewYDesc[] =  {'s', 'k', 'e', 'w', 'Y'};
+const LChar scaleDesc[] =  {'s', 'c', 'a', 'l', 'e'};
+const LChar translateDesc[] =  {'t', 'r', 'a', 'n', 's', 'l', 'a', 't', 'e'};
+const LChar rotateDesc[] =  {'r', 'o', 't', 'a', 't', 'e'};
+const LChar matrixDesc[] =  {'m', 'a', 't', 'r', 'i', 'x'};
+
+template<typename CharType>
+bool parseAndSkipTransformType(const CharType*& ptr, const CharType* end, SVGTransformType& type)
+{
+    if (ptr >= end)
+        return false;
+
+    if (*ptr == 's') {
+        if (skipString(ptr, end, skewXDesc, WTF_ARRAY_LENGTH(skewXDesc)))
+            type = SVG_TRANSFORM_SKEWX;
+        else if (skipString(ptr, end, skewYDesc, WTF_ARRAY_LENGTH(skewYDesc)))
+            type = SVG_TRANSFORM_SKEWY;
+        else if (skipString(ptr, end, scaleDesc, WTF_ARRAY_LENGTH(scaleDesc)))
+            type = SVG_TRANSFORM_SCALE;
+        else
+            return false;
+    } else if (skipString(ptr, end, translateDesc, WTF_ARRAY_LENGTH(translateDesc))) {
+        type = SVG_TRANSFORM_TRANSLATE;
+    } else if (skipString(ptr, end, rotateDesc, WTF_ARRAY_LENGTH(rotateDesc))) {
+        type = SVG_TRANSFORM_ROTATE;
+    } else if (skipString(ptr, end, matrixDesc, WTF_ARRAY_LENGTH(matrixDesc))) {
+        type = SVG_TRANSFORM_MATRIX;
+    } else {
+        return false;
+    }
+    return true;
+}
+
 template<typename CharType>
 int parseTransformParamList(const CharType*& ptr, const CharType* end, float* values, int required, int optional)
 {
@@ -101,8 +133,8 @@ int parseTransformParamList(const CharType*& ptr, const CharType* end, float* va
 }
 
 // These should be kept in sync with enum SVGTransformType
-static const int requiredValuesForType[] =  {0, 6, 1, 1, 1, 1, 1};
-static const int optionalValuesForType[] =  {0, 0, 1, 1, 2, 0, 0};
+const int requiredValuesForType[] =  {0, 6, 1, 1, 1, 1, 1};
+const int optionalValuesForType[] =  {0, 0, 1, 1, 2, 0, 0};
 
 template<typename CharType>
 PassRefPtrWillBeRawPtr<SVGTransform> parseTransformOfType(unsigned type, const CharType*& ptr, const CharType* end)
@@ -200,6 +232,23 @@ bool SVGTransformList::parse(const UChar*& ptr, const UChar* end)
 bool SVGTransformList::parse(const LChar*& ptr, const LChar* end)
 {
     return parseInternal(ptr, end);
+}
+
+SVGTransformType parseTransformType(const String& string)
+{
+    if (string.isEmpty())
+        return SVG_TRANSFORM_UNKNOWN;
+    SVGTransformType type = SVG_TRANSFORM_UNKNOWN;
+    if (string.is8Bit()) {
+        const LChar* ptr = string.characters8();
+        const LChar* end = ptr + string.length();
+        parseAndSkipTransformType(ptr, end, type);
+    } else {
+        const UChar* ptr = string.characters16();
+        const UChar* end = ptr + string.length();
+        parseAndSkipTransformType(ptr, end, type);
+    }
+    return type;
 }
 
 String SVGTransformList::valueAsString() const

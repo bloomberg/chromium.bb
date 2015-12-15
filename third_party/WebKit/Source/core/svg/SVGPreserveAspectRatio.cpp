@@ -28,6 +28,7 @@
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/text/ParserUtilities.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/text/WTFString.h"
 

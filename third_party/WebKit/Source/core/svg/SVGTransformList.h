@@ -78,6 +78,8 @@ private:
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGTransformList);
 
+SVGTransformType parseTransformType(const String&);
+
 } // namespace blink
 
 #endif // SVGTransformList_h

@@ -21,11 +21,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGAnimateTransformElement.h"
 
 #include "core/SVGNames.h"
-#include "core/svg/SVGParserUtilities.h"
+#include "core/svg/SVGTransformList.h"
 
 namespace blink {
 

@@ -23,11 +23,7 @@
 #include "config.h"
 #include "core/svg/SVGParserUtilities.h"
 
-#include "core/svg/SVGPointList.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/transforms/AffineTransform.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/text/StringHash.h"
+#include "wtf/MathExtras.h"
 #include <limits>
 
 namespace blink {
@@ -249,60 +245,6 @@ bool parseNumberOrPercentage(const String& string, float& number)
     const UChar* ptr = string.characters16();
     const UChar* end = ptr + string.length();
     return genericParseNumberOrPercentage(ptr, end, number);
-}
-
-static const LChar skewXDesc[] =  {'s', 'k', 'e', 'w', 'X'};
-static const LChar skewYDesc[] =  {'s', 'k', 'e', 'w', 'Y'};
-static const LChar scaleDesc[] =  {'s', 'c', 'a', 'l', 'e'};
-static const LChar translateDesc[] =  {'t', 'r', 'a', 'n', 's', 'l', 'a', 't', 'e'};
-static const LChar rotateDesc[] =  {'r', 'o', 't', 'a', 't', 'e'};
-static const LChar matrixDesc[] =  {'m', 'a', 't', 'r', 'i', 'x'};
-
-template<typename CharType>
-bool parseAndSkipTransformType(const CharType*& ptr, const CharType* end, SVGTransformType& type)
-{
-    if (ptr >= end)
-        return false;
-
-    if (*ptr == 's') {
-        if (skipString(ptr, end, skewXDesc, WTF_ARRAY_LENGTH(skewXDesc)))
-            type = SVG_TRANSFORM_SKEWX;
-        else if (skipString(ptr, end, skewYDesc, WTF_ARRAY_LENGTH(skewYDesc)))
-            type = SVG_TRANSFORM_SKEWY;
-        else if (skipString(ptr, end, scaleDesc, WTF_ARRAY_LENGTH(scaleDesc)))
-            type = SVG_TRANSFORM_SCALE;
-        else
-            return false;
-    } else if (skipString(ptr, end, translateDesc, WTF_ARRAY_LENGTH(translateDesc)))
-        type = SVG_TRANSFORM_TRANSLATE;
-    else if (skipString(ptr, end, rotateDesc, WTF_ARRAY_LENGTH(rotateDesc)))
-        type = SVG_TRANSFORM_ROTATE;
-    else if (skipString(ptr, end, matrixDesc, WTF_ARRAY_LENGTH(matrixDesc)))
-        type = SVG_TRANSFORM_MATRIX;
-    else
-        return false;
-
-    return true;
-}
-
-template bool parseAndSkipTransformType(const UChar*& current, const UChar* end, SVGTransformType&);
-template bool parseAndSkipTransformType(const LChar*& current, const LChar* end, SVGTransformType&);
-
-SVGTransformType parseTransformType(const String& string)
-{
-    if (string.isEmpty())
-        return SVG_TRANSFORM_UNKNOWN;
-    SVGTransformType type = SVG_TRANSFORM_UNKNOWN;
-    if (string.is8Bit()) {
-        const LChar* ptr = string.characters8();
-        const LChar* end = ptr + string.length();
-        parseAndSkipTransformType(ptr, end, type);
-    } else {
-        const UChar* ptr = string.characters16();
-        const UChar* end = ptr + string.length();
-        parseAndSkipTransformType(ptr, end, type);
-    }
-    return type;
 }
 
 }
