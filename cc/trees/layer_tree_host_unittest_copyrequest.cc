@@ -704,12 +704,12 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
     : public LayerTreeHostCopyRequestTest {
  protected:
   scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
-    if (!first_context_provider_.get()) {
+    if (!first_context_provider_) {
       first_context_provider_ = TestContextProvider::Create();
       return FakeOutputSurface::Create3d(first_context_provider_);
     }
 
-    EXPECT_FALSE(second_context_provider_.get());
+    EXPECT_FALSE(second_context_provider_);
     second_context_provider_ = TestContextProvider::Create();
     return FakeOutputSurface::Create3d(second_context_provider_);
   }
@@ -729,7 +729,7 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+  void ReceiveCopyRequestOutputAndCommit(scoped_ptr<CopyOutputResult> result) {
     EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     EXPECT_EQ(gfx::Size(10, 10).ToString(), result->size().ToString());
     EXPECT_TRUE(result->HasTexture());
@@ -742,36 +742,30 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
     layer_tree_host()->SetNeedsCommit();
   }
 
-  void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
-      case 1:
-        // The layers have been pushed to the impl side. The layer textures have
-        // been allocated.
+  void InsertCopyRequest() {
+    copy_layer_->RequestCopyOfOutput(CopyOutputRequest::CreateRequest(
+        base::Bind(&LayerTreeHostCopyRequestTestLostOutputSurface::
+                       ReceiveCopyRequestOutputAndCommit,
+                   base::Unretained(this))));
+  }
 
-        // Request a copy of the layer. This will use another texture.
-        copy_layer_->RequestCopyOfOutput(CopyOutputRequest::CreateRequest(
-            base::Bind(&LayerTreeHostCopyRequestTestLostOutputSurface::
-                            CopyOutputCallback,
-                       base::Unretained(this))));
-        break;
-      case 4:
-      // With SingleThreadProxy it takes two commits to finally swap after a
-      // context loss.
-      case 5:
-        // Now destroy the CopyOutputResult, releasing the texture inside back
-        // to the compositor.
-        EXPECT_TRUE(result_);
-        result_ = nullptr;
+  void DestroyCopyResultAndCheckNumTextures() {
+    EXPECT_TRUE(result_);
+    result_ = nullptr;
 
-        // Check that it is released.
-        ImplThreadTaskRunner()->PostTask(
-            FROM_HERE,
-            base::Bind(&LayerTreeHostCopyRequestTestLostOutputSurface::
-                            CheckNumTextures,
-                       base::Unretained(this),
-                       num_textures_after_loss_ - 1));
-        break;
-    }
+    ImplThreadTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&LayerTreeHostCopyRequestTestLostOutputSurface::
+                                  CheckNumTexturesAfterReadbackDestroyed,
+                              base::Unretained(this)));
+  }
+
+  void CheckNumTexturesAfterReadbackDestroyed() {
+    // After the loss we had |num_textures_after_loss_| many textures, but
+    // releasing the copy output request will cause the texture in the request
+    // to be released, so we should have 1 less by now.
+    EXPECT_EQ(num_textures_after_loss_ - 1,
+              first_context_provider_->TestContext3d()->NumTextures());
+    EndTest();
   }
 
   void SwapBuffersOnThread(LayerTreeHostImpl* impl, bool result) override {
@@ -781,11 +775,22 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
         EXPECT_FALSE(result_);
         num_textures_without_readback_ =
             first_context_provider_->TestContext3d()->NumTextures();
+
+        // Request a copy of the layer. This will use another texture.
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::Bind(&LayerTreeHostCopyRequestTestLostOutputSurface::
+                           InsertCopyRequest,
+                       base::Unretained(this)));
         break;
       case 1:
         // We did a readback, so there will be a readback texture around now.
         EXPECT_LT(num_textures_without_readback_,
                   first_context_provider_->TestContext3d()->NumTextures());
+
+        // The copy request will be serviced and the result sent to
+        // ReceiveCopyRequestOutputAndCommit, which posts a new commit causing
+        // the test to advance to the next case.
         break;
       case 2:
         // The readback texture is collected.
@@ -796,22 +801,22 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
             GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
         break;
       case 3:
-      // With SingleThreadProxy it takes two commits to finally swap after a
-      // context loss.
-      case 4:
         // The output surface has been recreated.
-        EXPECT_TRUE(second_context_provider_.get());
+        EXPECT_TRUE(second_context_provider_);
 
         num_textures_after_loss_ =
             first_context_provider_->TestContext3d()->NumTextures();
+
+        // Now destroy the CopyOutputResult, releasing the texture inside back
+        // to the compositor. Then check the resulting number of allocated
+        // textures.
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::Bind(&LayerTreeHostCopyRequestTestLostOutputSurface::
+                           DestroyCopyResultAndCheckNumTextures,
+                       base::Unretained(this)));
         break;
     }
-  }
-
-  void CheckNumTextures(size_t expected_num_textures) {
-    EXPECT_EQ(expected_num_textures,
-              first_context_provider_->TestContext3d()->NumTextures());
-    EndTest();
   }
 
   void AfterTest() override {}
