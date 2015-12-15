@@ -37,6 +37,10 @@ bool UseWKWebView() {
 }
 }
 
+NSString* const kWebShellBackButtonAccessibilityLabel = @"Back";
+NSString* const kWebShellForwardButtonAccessibilityLabel = @"Forward";
+NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
+
 @interface ViewController () {
   web::BrowserState* _browserState;
   base::scoped_nsobject<CRWWebController> _webController;
@@ -82,6 +86,7 @@ bool UseWKWebView() {
   [back addTarget:self
                 action:@selector(back)
       forControlEvents:UIControlEventTouchUpInside];
+  [back setAccessibilityLabel:kWebShellBackButtonAccessibilityLabel];
 
   UIButton* forward = [UIButton buttonWithType:UIButtonTypeCustom];
   [forward setImage:[UIImage imageNamed:@"toolbar_forward"]
@@ -92,6 +97,7 @@ bool UseWKWebView() {
   [forward addTarget:self
                 action:@selector(forward)
       forControlEvents:UIControlEventTouchUpInside];
+  [forward setAccessibilityLabel:kWebShellForwardButtonAccessibilityLabel];
 
   base::scoped_nsobject<UITextField> field([[UITextField alloc]
       initWithFrame:CGRectMake(88, 6, CGRectGetWidth([_toolbarView frame]) - 98,
@@ -103,6 +109,7 @@ bool UseWKWebView() {
   [field setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
   [field setKeyboardType:UIKeyboardTypeWebSearch];
   [field setAutocorrectionType:UITextAutocorrectionTypeNo];
+  [field setAccessibilityLabel:kWebShellAddressFieldAccessibilityLabel];
   [field setClearButtonMode:UITextFieldViewModeWhileEditing];
   self.field = field;
 
