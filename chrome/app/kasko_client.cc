@@ -11,13 +11,13 @@
 #include <string>
 #include <vector>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/process/process_handle.h"
-#include "breakpad/src/client/windows/common/ipc_protocol.h"
 #include "chrome/app/chrome_watcher_client_win.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/chrome_constants.h"
-#include "components/crash/content/app/crash_keys_win.h"
+#include "components/crash/content/app/crashpad.h"
 #include "syzygy/kasko/api/client.h"
 
 namespace {
@@ -25,30 +25,14 @@ namespace {
 ChromeWatcherClient* g_chrome_watcher_client = nullptr;
 kasko::api::MinidumpType g_minidump_type = kasko::api::SMALL_DUMP_TYPE;
 
+base::LazyInstance<std::vector<kasko::api::CrashKey>>::Leaky
+    g_kasko_crash_keys = LAZY_INSTANCE_INITIALIZER;
+
 void GetKaskoCrashKeys(const kasko::api::CrashKey** crash_keys,
                        size_t* crash_key_count) {
-  static_assert(
-      sizeof(kasko::api::CrashKey) == sizeof(google_breakpad::CustomInfoEntry),
-      "CrashKey and CustomInfoEntry structs are not compatible.");
-  static_assert(offsetof(kasko::api::CrashKey, name) ==
-                    offsetof(google_breakpad::CustomInfoEntry, name),
-                "CrashKey and CustomInfoEntry structs are not compatible.");
-  static_assert(offsetof(kasko::api::CrashKey, value) ==
-                    offsetof(google_breakpad::CustomInfoEntry, value),
-                "CrashKey and CustomInfoEntry structs are not compatible.");
-  static_assert(
-      sizeof(reinterpret_cast<kasko::api::CrashKey*>(0)->name) ==
-          sizeof(reinterpret_cast<google_breakpad::CustomInfoEntry*>(0)->name),
-      "CrashKey and CustomInfoEntry structs are not compatible.");
-  static_assert(
-      sizeof(reinterpret_cast<kasko::api::CrashKey*>(0)->value) ==
-          sizeof(reinterpret_cast<google_breakpad::CustomInfoEntry*>(0)->value),
-      "CrashKey and CustomInfoEntry structs are not compatible.");
-
-  *crash_key_count =
-      breakpad::CrashKeysWin::keeper()->custom_info_entries().size();
-  *crash_keys = reinterpret_cast<const kasko::api::CrashKey*>(
-      breakpad::CrashKeysWin::keeper()->custom_info_entries().data());
+  crash_reporter::GetCrashKeysForKasko(g_kasko_crash_keys.Pointer());
+  *crash_key_count = g_kasko_crash_keys.Pointer()->size();
+  *crash_keys = g_kasko_crash_keys.Pointer()->data();
 }
 
 }  // namespace

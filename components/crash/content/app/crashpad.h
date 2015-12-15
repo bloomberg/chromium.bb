@@ -12,6 +12,10 @@
 
 #include "base/files/file_path.h"
 
+#if defined(KASKO)
+#include "syzygy/kasko/api/crash_key.h"
+#endif  // KASKO
+
 namespace crash_reporter {
 
 // Initializes Crashpad in a way that is appropriate for initial_client and
@@ -69,6 +73,11 @@ struct UploadedReport {
 // experienced upload failure, or may have been collected while uploads were
 // disabled.
 void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports);
+
+#if defined(KASKO)
+// Returns a copy of the current crash keys for Kasko.
+void GetCrashKeysForKasko(std::vector<kasko::api::CrashKey>* crash_keys);
+#endif  // KASKO
 
 namespace internal {
 

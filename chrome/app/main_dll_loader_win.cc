@@ -44,7 +44,6 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/module_util_win.h"
 #include "chrome/installer/util/util_constants.h"
-#include "components/crash/content/app/crash_keys_win.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/startup_metric_utils/browser/pre_read_field_trial_utils_win.h"
@@ -351,15 +350,6 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
                     is_per_user_install)) {
               minidump_type = kasko::api::LARGER_DUMP_TYPE;
             }
-
-            // TODO(scottmg): http://crbug.com/564329 Breakpad is no longer
-            // initialized. For now, initialize the CustomInfoEntries here so
-            // Kasko can pull them out.
-            static breakpad::CrashKeysWin crash_keys_win;
-            crash_keys_win.GetCustomInfo(
-                exe_path.value(), base::UTF8ToUTF16(process_type),
-                GetProfileType(), base::CommandLine::ForCurrentProcess(),
-                &chrome_crash_client);
           }
 
           kasko_client_.reset(

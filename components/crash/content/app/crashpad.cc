@@ -241,6 +241,25 @@ void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports) {
             });
 }
 
+#if defined(KASKO)
+
+void GetCrashKeysForKasko(std::vector<kasko::api::CrashKey>* crash_keys) {
+  crash_keys->clear();
+  crash_keys->reserve(g_simple_string_dictionary->GetCount());
+  crashpad::SimpleStringDictionary::Iterator iter(*g_simple_string_dictionary);
+  for (;;) {
+    const auto* entry = iter.Next();
+    if (!entry)
+      break;
+    kasko::api::CrashKey kv;
+    wcsncpy_s(kv.name, base::UTF8ToWide(entry->key).c_str(), _TRUNCATE);
+    wcsncpy_s(kv.value, base::UTF8ToWide(entry->value).c_str(), _TRUNCATE);
+    crash_keys->push_back(kv);
+  }
+}
+
+#endif  // KASKO
+
 }  // namespace crash_reporter
 
 #if defined(OS_WIN)
