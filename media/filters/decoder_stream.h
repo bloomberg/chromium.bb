@@ -18,6 +18,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
+#include "media/base/moving_average.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/decoder_selector.h"
@@ -95,6 +96,8 @@ class MEDIA_EXPORT DecoderStream {
 
   // Returns true if one more decode request can be submitted to the decoder.
   bool CanDecodeMore() const;
+
+  base::TimeDelta AverageDuration() const;
 
   // Allows callers to register for notification of splice buffers from the
   // demuxer.  I.e., DecoderBuffer::splice_timestamp() is not kNoTimestamp().
@@ -218,6 +221,9 @@ class MEDIA_EXPORT DecoderStream {
 
   // Number of outstanding decode requests sent to the |decoder_|.
   int pending_decode_requests_;
+
+  // Tracks the duration of incoming packets over time.
+  MovingAverage duration_tracker_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderStream<StreamType> > weak_factory_;

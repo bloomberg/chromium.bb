@@ -55,6 +55,7 @@ DecoderStream<StreamType>::DecoderStream(
       active_splice_(false),
       decoding_eos_(false),
       pending_decode_requests_(0),
+      duration_tracker_(8),
       weak_factory_(this) {}
 
 template <DemuxerStream::Type StreamType>
@@ -214,6 +215,13 @@ bool DecoderStream<StreamType>::CanDecodeMore() const {
 }
 
 template <DemuxerStream::Type StreamType>
+base::TimeDelta DecoderStream<StreamType>::AverageDuration() const {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return duration_tracker_.count() ? duration_tracker_.Average()
+                                   : base::TimeDelta();
+}
+
+template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::SelectDecoder(
     const SetCdmReadyCB& set_cdm_ready_cb) {
   decoder_selector_->SelectDecoder(
@@ -306,6 +314,8 @@ void DecoderStream<StreamType>::Decode(
 
   if (buffer->end_of_stream())
     decoding_eos_ = true;
+  else if (buffer->duration() != kNoTimestamp())
+    duration_tracker_.AddSample(buffer->duration());
 
   ++pending_decode_requests_;
   decoder_->Decode(buffer,

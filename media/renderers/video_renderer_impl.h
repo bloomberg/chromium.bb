@@ -148,6 +148,10 @@ class MEDIA_EXPORT VideoRendererImpl
   // Helper method for converting a single media timestamp to wall clock time.
   base::TimeTicks ConvertMediaTimestamp(base::TimeDelta media_timestamp);
 
+  // Helper method for checking if a frame timestamp plus the frame's expected
+  // duration is before |start_timestamp_|.
+  bool IsBeforeStartTime(base::TimeDelta timestamp);
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Sink which calls into VideoRendererImpl via Render() for video frames.  Do

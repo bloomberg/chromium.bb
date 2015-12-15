@@ -306,7 +306,7 @@ void VideoRendererImpl::OnTimeStateChanged(bool time_progressing) {
 void VideoRendererImpl::FrameReadyForCopyingToGpuMemoryBuffers(
     VideoFrameStream::Status status,
     const scoped_refptr<VideoFrame>& frame) {
-  if (status != VideoFrameStream::OK || start_timestamp_ > frame->timestamp()) {
+  if (status != VideoFrameStream::OK || IsBeforeStartTime(frame->timestamp())) {
     VideoRendererImpl::FrameReady(sequence_token_, status, frame);
     return;
   }
@@ -356,28 +356,26 @@ void VideoRendererImpl::FrameReady(uint32_t sequence_token,
       return;
     }
 
-    // In low delay mode, don't accumulate frames that's earlier than the start
-    // time. Otherwise we could declare HAVE_ENOUGH_DATA and start playback
-    // prematurely.
-    if (low_delay_ &&
-        !frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM) &&
-        frame->timestamp() < start_timestamp_) {
-      AttemptRead_Locked();
-      return;
-    }
-
     if (frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM)) {
       DCHECK(!received_end_of_stream_);
       received_end_of_stream_ = true;
 
       // See if we can fire EOS immediately instead of waiting for Render().
       MaybeFireEndedCallback_Locked(time_progressing_);
+    } else if ((low_delay_ || !video_frame_stream_->CanReadWithoutStalling()) &&
+               IsBeforeStartTime(frame->timestamp())) {
+      // Don't accumulate frames that are earlier than the start time if we
+      // won't have a chance for a better frame, otherwise we could declare
+      // HAVE_ENOUGH_DATA and start playback prematurely.
+      AttemptRead_Locked();
+      return;
     } else {
-      // Maintain the latest frame decoded so the correct frame is displayed
-      // after prerolling has completed.
-      if (frame->timestamp() <= start_timestamp_) {
+      // If the sink hasn't been started, we still have time to release less
+      // than ideal frames prior to startup.  We don't use IsBeforeStartTime()
+      // here since it's based on a duration estimate and we can be exact here.
+      if (!sink_started_ && frame->timestamp() <= start_timestamp_)
         algorithm_->Reset();
-      }
+
       AddReadyFrame_Locked(frame);
     }
 
@@ -634,6 +632,10 @@ base::TimeTicks VideoRendererImpl::ConvertMediaTimestamp(
   if (!wall_clock_time_cb_.Run(media_times, &wall_clock_times))
     return base::TimeTicks();
   return wall_clock_times[0];
+}
+
+bool VideoRendererImpl::IsBeforeStartTime(base::TimeDelta timestamp) {
+  return timestamp + video_frame_stream_->AverageDuration() < start_timestamp_;
 }
 
 }  // namespace media
