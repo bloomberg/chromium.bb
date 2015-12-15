@@ -184,6 +184,17 @@ using content::Referrer;
 using content::RenderWidgetHostView;
 using content::WebContents;
 
+namespace {
+
+void SetUpBrowserWindowCommandHandler(NSWindow* window) {
+  // Make the window handle browser window commands.
+  [base::mac::ObjCCastStrict<ChromeEventProcessingWindow>(window)
+      setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
+                            autorelease]];
+}
+
+}  // namespace
+
 @interface NSWindow (NSPrivateApis)
 // Note: These functions are private, use -[NSObject respondsToSelector:]
 // before calling them.
@@ -227,10 +238,7 @@ using content::WebContents;
     browser_.reset(browser);
     ownsBrowser_ = ownIt;
     NSWindow* window = [self window];
-    // Make the window handle browser window commands.
-    [base::mac::ObjCCastStrict<ChromeEventProcessingWindow>(window)
-        setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
-                              autorelease]];
+    SetUpBrowserWindowCommandHandler(window);
 
     // Make the content view for the window have a layer. This will make all
     // sub-views have layers. This is necessary to ensure correct layer
@@ -1448,8 +1456,10 @@ using content::WebContents;
 }
 
 - (NSWindow*)createFullscreenWindow {
-  return [[[FullscreenWindow alloc] initForScreen:[[self window] screen]]
-           autorelease];
+  NSWindow* window = [[[FullscreenWindow alloc]
+      initForScreen:[[self window] screen]] autorelease];
+  SetUpBrowserWindowCommandHandler(window);
+  return window;
 }
 
 - (NSInteger)numberOfTabs {
