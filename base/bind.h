@@ -51,15 +51,13 @@ template <typename Functor>
 base::Callback<
     typename internal::BindState<
         typename internal::FunctorTraits<Functor>::RunnableType,
-        typename internal::FunctorTraits<Functor>::RunType,
-        internal::TypeList<>>::UnboundRunType>
+        typename internal::FunctorTraits<Functor>::RunType>::UnboundRunType>
 Bind(Functor functor) {
   // Typedefs for how to store and run the functor.
   typedef typename internal::FunctorTraits<Functor>::RunnableType RunnableType;
   typedef typename internal::FunctorTraits<Functor>::RunType RunType;
 
-  typedef internal::BindState<RunnableType, RunType,
-                              internal::TypeList<>> BindState;
+  typedef internal::BindState<RunnableType, RunType> BindState;
 
   return Callback<typename BindState::UnboundRunType>(
       new BindState(internal::MakeRunnable(functor)));
@@ -70,8 +68,7 @@ base::Callback<
     typename internal::BindState<
         typename internal::FunctorTraits<Functor>::RunnableType,
         typename internal::FunctorTraits<Functor>::RunType,
-        internal::TypeList<
-            typename internal::CallbackParamTraits<Args>::StorageType...>>
+        typename internal::CallbackParamTraits<Args>::StorageType...>
             ::UnboundRunType>
 Bind(Functor functor, const Args&... args) {
   // Typedefs for how to store and run the functor.
@@ -105,8 +102,7 @@ Bind(Functor functor, const Args&... args) {
 
   typedef internal::BindState<
       RunnableType, RunType,
-      internal::TypeList<
-          typename internal::CallbackParamTraits<Args>::StorageType...>>
+      typename internal::CallbackParamTraits<Args>::StorageType...>
       BindState;
 
   return Callback<typename BindState::UnboundRunType>(

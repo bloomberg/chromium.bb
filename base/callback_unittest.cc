@@ -23,8 +23,6 @@ struct FakeInvoker {
 }  // namespace
 
 namespace internal {
-template <typename Runnable, typename RunType, typename BoundArgsType>
-struct BindState;
 
 // White-box testpoints to inject into a Callback<> object for checking
 // comparators and emptiness APIs.  Use a BindState that is specialized
@@ -32,7 +30,7 @@ struct BindState;
 // chance of colliding with another instantiation and breaking the
 // one-definition-rule.
 template <>
-struct BindState<void(void), void(void), void(FakeInvoker)>
+struct BindState<void(void), void(void), FakeInvoker>
     : public BindStateBase {
  public:
   BindState() : BindStateBase(&Destroy) {}
@@ -45,8 +43,7 @@ struct BindState<void(void), void(void), void(FakeInvoker)>
 };
 
 template <>
-struct BindState<void(void), void(void),
-                           void(FakeInvoker, FakeInvoker)>
+struct BindState<void(void), void(void), FakeInvoker, FakeInvoker>
     : public BindStateBase {
  public:
   BindState() : BindStateBase(&Destroy) {}
@@ -61,11 +58,10 @@ struct BindState<void(void), void(void),
 
 namespace {
 
-typedef internal::BindState<void(void), void(void), void(FakeInvoker)>
+typedef internal::BindState<void(void), void(void), FakeInvoker>
     FakeBindState1;
-typedef internal::BindState<void(void), void(void),
-                            void(FakeInvoker, FakeInvoker)>
-   FakeBindState2;
+typedef internal::BindState<void(void), void(void), FakeInvoker, FakeInvoker>
+    FakeBindState2;
 
 class CallbackTest : public ::testing::Test {
  public:
