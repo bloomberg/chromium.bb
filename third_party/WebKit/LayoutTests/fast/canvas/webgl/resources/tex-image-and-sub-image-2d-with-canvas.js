@@ -3,6 +3,7 @@ function generateTest(pixelFormat, pixelType, prologue) {
     var gl = null;
     var textureLoc = null;
     var successfullyParsed = false;
+    var imageDataBefore = null;
 
     var init = function()
     {
@@ -32,6 +33,7 @@ function generateTest(pixelFormat, pixelType, prologue) {
         ctx.fillRect(0,0,1,1);
         ctx.fillStyle = "#00ff00";
         ctx.fillRect(0,1,1,1);
+        imageDataBefore = ctx.getImageData(0, 0, testCanvas.width, testCanvas.height);
         runTest(testCanvas);
     }
 
@@ -74,6 +76,27 @@ function generateTest(pixelFormat, pixelType, prologue) {
         debug("Checking upper left corner");
         wtu.checkCanvasRect(gl, 4, gl.canvas.height - 8, 2, 2, topColor,
                             "shouldBe " + topColor);
+
+        debug("Checking if pixel values in source canvas change after canvas used as webgl texture");
+        checkSourceCanvasImageData(image.getContext("2d").getImageData(0, 0, image.width, image.height));
+    }
+
+    function checkSourceCanvasImageData(imageDataAfter)
+    {
+        if (imageDataBefore.length != imageDataAfter.length)
+        {
+            testFailed("The size of image data in source canvas become different after it is used in webgl texture.");
+            return;
+        }
+        for (var i = 0; i < imageDataAfter.length; i++)
+        {
+            if (imageDataBefore[i] != imageDataAfter[i])
+            {
+                testFailed("Pixel values in source canvas have changed after canvas used in webgl texture.");
+                return;
+            }
+        }
+        testPassed("Pixel values in source canvas remain unchanged after canvas used in webgl texture.");
     }
 
     function runTest(image)

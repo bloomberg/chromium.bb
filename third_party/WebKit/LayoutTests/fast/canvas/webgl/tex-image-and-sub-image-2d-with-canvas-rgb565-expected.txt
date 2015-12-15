@@ -10,21 +10,29 @@ Checking lower left corner
 PASS shouldBe 0,255,0
 Checking upper left corner
 PASS shouldBe 255,0,0
+Checking if pixel values in source canvas change after canvas used as webgl texture
+PASS Pixel values in source canvas remain unchanged after canvas used in webgl texture.
 Testing texImage2D with flipY=false
 Checking lower left corner
 PASS shouldBe 255,0,0
 Checking upper left corner
 PASS shouldBe 0,255,0
+Checking if pixel values in source canvas change after canvas used as webgl texture
+PASS Pixel values in source canvas remain unchanged after canvas used in webgl texture.
 Testing texSubImage2D with flipY=true
 Checking lower left corner
 PASS shouldBe 0,255,0
 Checking upper left corner
 PASS shouldBe 255,0,0
+Checking if pixel values in source canvas change after canvas used as webgl texture
+PASS Pixel values in source canvas remain unchanged after canvas used in webgl texture.
 Testing texSubImage2D with flipY=false
 Checking lower left corner
 PASS shouldBe 255,0,0
 Checking upper left corner
 PASS shouldBe 0,255,0
+Checking if pixel values in source canvas change after canvas used as webgl texture
+PASS Pixel values in source canvas remain unchanged after canvas used in webgl texture.
 PASS getError was expected value: NO_ERROR : should be no errors
 PASS successfullyParsed is true
 
