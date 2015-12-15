@@ -1139,7 +1139,8 @@ TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFramesCadence) {
   EXPECT_EQ(0u, algorithm_.EffectiveFramesQueued());
 }
 
-TEST_F(VideoRendererAlgorithmTest, CadenceBasedTest) {
+// TODO(crbug.com/570032): Test disabled for being flaky.
+TEST_F(VideoRendererAlgorithmTest, DISABLED_CadenceBasedTest) {
   // Common display rates.
   const double kDisplayRates[] = {
       NTSC(24),
