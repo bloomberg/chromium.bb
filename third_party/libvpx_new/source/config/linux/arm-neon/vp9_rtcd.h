@@ -30,7 +30,8 @@ extern "C" {
 #endif
 
 unsigned int vp9_avg_4x4_c(const uint8_t *, int p);
-#define vp9_avg_4x4 vp9_avg_4x4_c
+unsigned int vp9_avg_4x4_neon(const uint8_t *, int p);
+#define vp9_avg_4x4 vp9_avg_4x4_neon
 
 unsigned int vp9_avg_8x8_c(const uint8_t *, int p);
 unsigned int vp9_avg_8x8_neon(const uint8_t *, int p);

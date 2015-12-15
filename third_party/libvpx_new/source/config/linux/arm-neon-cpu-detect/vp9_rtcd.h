@@ -30,7 +30,8 @@ extern "C" {
 #endif
 
 unsigned int vp9_avg_4x4_c(const uint8_t *, int p);
-#define vp9_avg_4x4 vp9_avg_4x4_c
+unsigned int vp9_avg_4x4_neon(const uint8_t *, int p);
+RTCD_EXTERN unsigned int (*vp9_avg_4x4)(const uint8_t *, int p);
 
 unsigned int vp9_avg_8x8_c(const uint8_t *, int p);
 unsigned int vp9_avg_8x8_neon(const uint8_t *, int p);
@@ -144,6 +145,8 @@ static void setup_rtcd_internal(void)
 
     (void)flags;
 
+    vp9_avg_4x4 = vp9_avg_4x4_c;
+    if (flags & HAS_NEON) vp9_avg_4x4 = vp9_avg_4x4_neon;
     vp9_avg_8x8 = vp9_avg_8x8_c;
     if (flags & HAS_NEON) vp9_avg_8x8 = vp9_avg_8x8_neon;
     vp9_block_error_fp = vp9_block_error_fp_c;
