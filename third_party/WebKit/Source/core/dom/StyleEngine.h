@@ -218,6 +218,8 @@ private:
 
     void updateActiveStyleSheetsInShadow(StyleResolverUpdateMode, TreeScope*, UnorderedTreeScopeSet& treeScopesRemoved);
 
+    bool shouldSkipInvalidationFor(const Element&) const;
+
     RawPtrWillBeMember<Document> m_document;
     bool m_isMaster;
 

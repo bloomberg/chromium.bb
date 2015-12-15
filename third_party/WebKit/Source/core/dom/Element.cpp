@@ -1201,15 +1201,12 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ol
 
     document().incDOMTreeVersion();
 
-    StyleResolver* styleResolver = document().styleResolver();
-
     if (name == HTMLNames::idAttr) {
         AtomicString oldId = elementData()->idForStyleResolution();
         AtomicString newId = makeIdForStyleResolution(newValue, document().inQuirksMode());
         if (newId != oldId) {
             elementData()->setIdForStyleResolution(newId);
-            if (inActiveDocument() && styleResolver)
-                document().styleEngine().idChangedForElement(oldId, newId, *this);
+            document().styleEngine().idChangedForElement(oldId, newId, *this);
         }
     } else if (name == classAttr) {
         classAttributeChanged(newValue);
@@ -1225,10 +1222,6 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ol
     }
 
     invalidateNodeListCachesInAncestors(&name, this);
-
-    // If there is currently no StyleResolver, we can't be sure that this attribute change won't affect style.
-    if (!styleResolver)
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
 
     if (inDocument()) {
         if (AXObjectCache* cache = document().existingAXObjectCache())
@@ -1287,9 +1280,6 @@ static inline ClassStringContent classStringHasClassName(const AtomicString& new
 
 void Element::classAttributeChanged(const AtomicString& newClassString)
 {
-    StyleResolver* styleResolver = document().styleResolver();
-    bool testShouldInvalidateStyle = inActiveDocument() && styleResolver;
-
     ASSERT(elementData());
     ClassStringContent classStringContentType = classStringHasClassName(newClassString);
     const bool shouldFoldCase = document().inQuirksMode();
@@ -1297,12 +1287,10 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
         const SpaceSplitString oldClasses = elementData()->classNames();
         elementData()->setClass(newClassString, shouldFoldCase);
         const SpaceSplitString& newClasses = elementData()->classNames();
-        if (testShouldInvalidateStyle)
-            document().styleEngine().classChangedForElement(oldClasses, newClasses, *this);
+        document().styleEngine().classChangedForElement(oldClasses, newClasses, *this);
     } else {
         const SpaceSplitString& oldClasses = elementData()->classNames();
-        if (testShouldInvalidateStyle)
-            document().styleEngine().classChangedForElement(oldClasses, *this);
+        document().styleEngine().classChangedForElement(oldClasses, *this);
         if (classStringContentType == ClassStringContent::WhiteSpaceOnly)
             elementData()->setClass(newClassString, shouldFoldCase);
         else
@@ -1876,9 +1864,7 @@ void Element::pseudoStateChanged(CSSSelector::PseudoType pseudo)
     // like HTMLSelectElement.
     if (document().inStyleRecalc())
         return;
-    StyleResolver* styleResolver = document().styleResolver();
-    if (inActiveDocument() && styleResolver)
-        document().styleEngine().pseudoStateChangedForElement(pseudo, *this);
+    document().styleEngine().pseudoStateChangedForElement(pseudo, *this);
 }
 
 void Element::setAnimationStyleChange(bool animationStyleChange)
@@ -3126,9 +3112,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     }
 
     if (oldValue != newValue) {
-        if (inActiveDocument() && document().styleResolver())
-            document().styleEngine().attributeChangedForElement(name, *this);
-
+        document().styleEngine().attributeChangedForElement(name, *this);
         if (isUpgradedCustomElement())
             CustomElement::attributeDidChange(this, name.localName(), oldValue, newValue);
     }

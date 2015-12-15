@@ -627,9 +627,21 @@ void StyleEngine::platformColorsChanged()
     document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PlatformColorChange));
 }
 
+bool StyleEngine::shouldSkipInvalidationFor(const Element& element) const
+{
+    if (!resolver())
+        return true;
+    if (!element.inActiveDocument())
+        return true;
+    if (!element.parentNode())
+        return true;
+    return element.parentNode()->styleChangeType() >= SubtreeStyleChange;
+}
+
 void StyleEngine::classChangedForElement(const SpaceSplitString& changedClasses, Element& element)
 {
-    ASSERT(isMaster());
+    if (shouldSkipInvalidationFor(element))
+        return;
     InvalidationLists invalidationLists;
     unsigned changedSize = changedClasses.size();
     RuleFeatureSet& ruleFeatureSet = ensureResolver().ensureUpdatedRuleFeatureSet();
@@ -640,7 +652,9 @@ void StyleEngine::classChangedForElement(const SpaceSplitString& changedClasses,
 
 void StyleEngine::classChangedForElement(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element& element)
 {
-    ASSERT(isMaster());
+    if (shouldSkipInvalidationFor(element))
+        return;
+
     if (!oldClasses.size()) {
         classChangedForElement(newClasses, element);
         return;
@@ -681,7 +695,9 @@ void StyleEngine::classChangedForElement(const SpaceSplitString& oldClasses, con
 
 void StyleEngine::attributeChangedForElement(const QualifiedName& attributeName, Element& element)
 {
-    ASSERT(isMaster());
+    if (shouldSkipInvalidationFor(element))
+        return;
+
     InvalidationLists invalidationLists;
     ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForAttribute(invalidationLists, element, attributeName);
     m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
@@ -689,7 +705,9 @@ void StyleEngine::attributeChangedForElement(const QualifiedName& attributeName,
 
 void StyleEngine::idChangedForElement(const AtomicString& oldId, const AtomicString& newId, Element& element)
 {
-    ASSERT(isMaster());
+    if (shouldSkipInvalidationFor(element))
+        return;
+
     InvalidationLists invalidationLists;
     RuleFeatureSet& ruleFeatureSet = ensureResolver().ensureUpdatedRuleFeatureSet();
     if (!oldId.isEmpty())
@@ -701,7 +719,9 @@ void StyleEngine::idChangedForElement(const AtomicString& oldId, const AtomicStr
 
 void StyleEngine::pseudoStateChangedForElement(CSSSelector::PseudoType pseudoType, Element& element)
 {
-    ASSERT(isMaster());
+    if (shouldSkipInvalidationFor(element))
+        return;
+
     InvalidationLists invalidationLists;
     ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForPseudoClass(invalidationLists, element, pseudoType);
     m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);

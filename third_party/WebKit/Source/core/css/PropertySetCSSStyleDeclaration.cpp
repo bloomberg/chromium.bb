@@ -292,7 +292,7 @@ void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID u
         return;
 
     Element* parent = parentElement();
-    if (parent && parent->inActiveDocument() && parent->document().styleResolver())
+    if (parent)
         parent->document().styleEngine().attributeChangedForElement(HTMLNames::styleAttr, *parent);
     mutationScope.enqueueMutationRecord();
 }
