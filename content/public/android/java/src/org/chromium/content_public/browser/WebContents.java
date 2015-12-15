@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Parcelable;
 
-import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 
 /**
@@ -322,12 +321,6 @@ public interface WebContents extends Parcelable {
      * @param observer The observer to remove.
      */
     void removeObserver(WebContentsObserver observer);
-
-    /**
-     * @return The list of observers.
-     */
-    @VisibleForTesting
-    ObserverList.RewindableIterator<WebContentsObserver> getObserversForTesting();
 
     /**
      * Called when context menu gets opened.
