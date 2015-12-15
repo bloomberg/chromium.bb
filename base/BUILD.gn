@@ -1694,10 +1694,7 @@ if (is_android) {
       ":base_java",
       "//testing/android/reporter:reporter_java",
     ]
-    srcjar_deps = [ ":base_native_test_libraries_gen" ]
     DEPRECATED_java_in_dir = "test/android/javatests/src"
-
-    jar_excluded_patterns = [ "*/NativeTestLibraries.class" ]
   }
 
   # TODO(jbudorick): Remove this once we roll to robolectric 3.0 and pull
@@ -1756,14 +1753,6 @@ if (is_android) {
       "android/java/templates/NativeLibraries.template",
     ]
     package_name = "org/chromium/base/library_loader"
-  }
-
-  # GYP: //base/base.gyp:base_native_test_libraries_gen
-  java_cpp_template("base_native_test_libraries_gen") {
-    sources = [
-      "test/android/java/templates/NativeTestLibraries.template",
-    ]
-    package_name = "org/chromium/base/test/library_loader"
   }
 
   # GYP: //base.gyp:base_java_unittest_support

@@ -638,6 +638,8 @@
             'net_test_jni_headers',
           ],
           'sources': [
+            'test/android/net_test_jni_onload.cc',
+            'test/android/net_test_jni_onload.h',
             'test/embedded_test_server/android/embedded_test_server_android.cc',
             'test/embedded_test_server/android/embedded_test_server_android.h',
             'test/spawned_test_server/remote_test_server.cc',
@@ -1383,7 +1385,7 @@
           'type': 'none',
           'sources': [
             'android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java',
-            'test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerImpl.java',
+            'test/android/javatests/src/org/chromium/net/test/EmbeddedTestServer.java',
             'test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java',
           ],
           'variables': {
@@ -1410,17 +1412,6 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          'target_name': 'embedded_test_server_aidl',
-          'type': 'none',
-          'variables': {
-            'aidl_interface_file': '../net/test/android/javatests/src/org/chromium/net/test/IEmbeddedTestServerInterface.aidl',
-          },
-          'sources': [
-            '../net/test/android/javatests/src/org/chromium/net/test/IEmbeddedTestServerImpl.aidl',
-          ],
-          'includes': [ '../build/java_aidl.gypi' ],
-        },
-        {
           'target_name': 'net_java_test_support',
           'type': 'none',
           'variables': {
@@ -1429,69 +1420,13 @@
             'chromium_code': 0,
           },
           'dependencies': [
-            'embedded_test_server_aidl',
             'net_java',
+            'net_test_support',
             'url_request_failed_job_java',
             '../base/base.gyp:base_java',
-            '../base/base.gyp:base_java_test_support',
             '../third_party/android_tools/android_tools.gyp:legacy_http_javalib',
           ],
           'includes': [ '../build/java.gypi' ],
-        },
-        {
-          'target_name': 'libnet_java_test_support',
-          'type': 'shared_library',
-          'dependencies': [
-            'net_test_support',
-            '../base/base.gyp:base',
-          ],
-          'sources': [
-            'test/android/net_test_entry_point.cc',
-            'test/android/net_test_jni_onload.cc',
-            'test/android/net_test_jni_onload.h',
-          ],
-        },
-        {
-          'target_name': 'net_test_support_apk',
-          'type': 'none',
-          'dependencies': [
-            'net_java_test_support',
-          ],
-          'variables': {
-            'android_manifest_path': 'test/android/javatests/AndroidManifest.xml',
-            'apk_name': 'ChromiumNetTestSupport',
-            'is_test_apk': 1,
-            'java_in_dir': 'test/android/javatests',
-            'java_in_dir_suffix': '/src_dummy',
-            'native_lib_target': 'libnet_java_test_support',
-          },
-          'includes': [
-            '../build/java_apk.gypi',
-          ],
-        },
-        {
-          # Targets that need the net test support APK should depend on this
-          # target. It ensures that the APK is built without passing the
-          # classpath on to dependent targets.
-          'target_name': 'require_net_test_support_apk',
-          'type': 'none',
-          'actions': [
-            {
-              'action_name': 'require_ChromiumNetTestSupport',
-              'variables': {
-                'required_file': '<(PRODUCT_DIR)/net_test_support_apk/ChromiumNetTestSupport.apk.required',
-              },
-              'inputs': [
-                '<(PRODUCT_DIR)/apks/ChromiumNetTestSupport.apk',
-              ],
-              'outputs': [
-                '<(required_file)',
-              ],
-              'action': [
-                'python', '../build/android/gyp/touch.py', '<(required_file)',
-              ],
-            },
-          ],
         },
         {
           'target_name': 'url_request_failed_job_java',

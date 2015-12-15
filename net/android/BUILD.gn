@@ -16,67 +16,14 @@ android_library("net_java") {
   ]
 }
 
-android_aidl("embedded_test_server_aidl") {
-  interface_file = "../test/android/javatests/src/org/chromium/net/test/IEmbeddedTestServerInterface.aidl"
-  sources = [
-    "../test/android/javatests/src/org/chromium/net/test/IEmbeddedTestServerImpl.aidl",
-  ]
-}
-
 android_library("net_java_test_support") {
-  testonly = true
   DEPRECATED_java_in_dir = "../test/android/javatests/src"
   deps = [
     ":net_java",
     "//base:base_java",
-    "//base:base_java_test_support",
     "//third_party/android_tools:legacy_http_javalib",
   ]
-  srcjar_deps = [
-    ":embedded_test_server_aidl",
-    ":net_java_test_support_enums_srcjar",
-  ]
-}
-
-source_set("java_test_native_support") {
-  testonly = true
-  sources = [
-    "../test/android/net_test_entry_point.cc",
-    "../test/android/net_test_jni_onload.cc",
-    "../test/android/net_test_jni_onload.h",
-    "../test/embedded_test_server/android/embedded_test_server_android.cc",
-    "../test/embedded_test_server/android/embedded_test_server_android.h",
-  ]
-
-  deps = [
-    "//net:test_support",
-  ]
-  public_deps = [
-    "//net:net_test_jni_headers",
-  ]
-}
-
-shared_library("net_java_test_native_support") {
-  testonly = true
-  deps = [
-    ":java_test_native_support",
-    "//net:test_support",
-  ]
-}
-
-android_apk("net_test_support_apk") {
-  testonly = true
-  deps = [
-    ":net_java_test_native_support",
-    ":net_java_test_support",
-    "//base:base_java",
-  ]
-  android_manifest = "../test/android/javatests/AndroidManifest.xml"
-  apk_name = "ChromiumNetTestSupport"
-  native_libs = [ "libnet_java_test_native_support.so" ]
-  native_libraries_package_name = "org.chromium.base.test.library_loader"
-  native_libraries_template =
-      "//base/test/android/java/templates/NativeTestLibraries.template"
+  srcjar_deps = [ ":net_java_test_support_enums_srcjar" ]
 }
 
 android_resources("net_unittests_apk_resources") {
@@ -85,7 +32,6 @@ android_resources("net_unittests_apk_resources") {
 }
 
 android_library("net_javatests") {
-  testonly = true
   DEPRECATED_java_in_dir = "javatests/src"
   deps = [
     ":net_java",

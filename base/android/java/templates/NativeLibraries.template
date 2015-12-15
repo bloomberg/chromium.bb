@@ -2,20 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NATIVE_LIBRARIES_PACKAGE
-#define NATIVE_LIBRARIES_PACKAGE org.chromium.base.library_loader
-#endif
-
-package NATIVE_LIBRARIES_PACKAGE;
+package org.chromium.base.library_loader;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 
-#ifndef NATIVE_LIBRARIES_CLASS_NAME
-#define NATIVE_LIBRARIES_CLASS_NAME NativeLibraries
-#endif
-
 @SuppressFBWarnings
-public class NATIVE_LIBRARIES_CLASS_NAME {
+public class NativeLibraries {
     /**
      * IMPORTANT NOTE: The variables defined here must _not_ be 'final'.
      *

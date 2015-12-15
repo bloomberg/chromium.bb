@@ -137,7 +137,7 @@ class LocalDeviceInstrumentationTestRun(
 
   #override
   def _RunTest(self, device, test):
-    extras = {}
+    extras = self._test_instance.GetHttpServerEnvironmentVars()
 
     flags = None
     test_timeout_scale = None

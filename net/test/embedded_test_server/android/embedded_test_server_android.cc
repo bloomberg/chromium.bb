@@ -9,21 +9,20 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/trace_event/trace_event.h"
-#include "net/test/jni/EmbeddedTestServerImpl_jni.h"
+#include "net/test/jni/EmbeddedTestServer_jni.h"
 
 namespace net {
 namespace test_server {
 
 EmbeddedTestServerAndroid::EmbeddedTestServerAndroid(JNIEnv* env, jobject jobj)
     : weak_java_server_(env, jobj), test_server_() {
-  Java_EmbeddedTestServerImpl_setNativePtr(env, jobj,
-                                           reinterpret_cast<intptr_t>(this));
+  Java_EmbeddedTestServer_setNativePtr(env, jobj,
+                                       reinterpret_cast<intptr_t>(this));
 }
 
 EmbeddedTestServerAndroid::~EmbeddedTestServerAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_EmbeddedTestServerImpl_clearNativePtr(env,
-                                             weak_java_server_.get(env).obj());
+  Java_EmbeddedTestServer_clearNativePtr(env, weak_java_server_.get(env).obj());
 }
 
 jboolean EmbeddedTestServerAndroid::Start(JNIEnv* env,

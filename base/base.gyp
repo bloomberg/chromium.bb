@@ -1496,19 +1496,6 @@
           'includes': ['../build/android/java_cpp_template.gypi'],
         },
         {
-          # GN: //base:base_native_test_libraries_gen
-          'target_name': 'base_native_test_libraries_gen',
-          'type': 'none',
-          'sources': [
-            'test/android/java/templates/NativeTestLibraries.template',
-          ],
-          'variables': {
-            'package_name': 'org/chromium/base/test/library_loader',
-            'template_deps': [],
-          },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
-        },
-        {
           # GN: //base:base_android_java_enums_srcjar
           'target_name': 'base_java_library_process_type',
           'type': 'none',
@@ -1582,11 +1569,9 @@
           'type': 'none',
           'dependencies': [
             'base_java',
-            'base_native_test_libraries_gen',
             '../testing/android/on_device_instrumentation.gyp:reporter_java',
           ],
           'variables': {
-            'jar_excluded_classes': [ '*/NativeTestLibraries.class' ],
             'java_in_dir': '../base/test/android/javatests',
           },
           'includes': [ '../build/java.gypi' ],
