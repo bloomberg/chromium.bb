@@ -102,9 +102,11 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
         DCHECK_EQ(0ul, element.offset());
         scoped_ptr<storage::BlobDataHandle> handle =
             blob_context->GetBlobDataFromUUID(element.blob_uuid());
+        storage::BlobDataHandle* handle_ptr = handle.get();
         element_readers.push_back(
             make_scoped_ptr(new storage::UploadBlobElementReader(
-                std::move(handle), file_system_context, file_task_runner)));
+                handle_ptr->CreateReader(file_system_context, file_task_runner),
+                std::move(handle))));
         break;
       }
       case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
