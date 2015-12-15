@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_SSL_SECURITY_STATE_MODEL_H_
 
 #include "base/macros.h"
-#include "content/public/common/security_style.h"
-#include "content/public/common/ssl_status.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/sct_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -44,8 +42,7 @@ class SecurityStateModel {
     // HTTPS (non-EV) with valid cert
     SECURE,
 
-    // HTTPS, but unable to check certificate revocation status or with
-    // errors
+    // HTTPS, but with an outdated protocol version
     SECURITY_WARNING,
 
     // HTTPS, but the certificate verification chain is anchored on a
@@ -118,12 +115,11 @@ class SecurityStateModel {
     VisibleSecurityState();
     ~VisibleSecurityState();
     bool operator==(const VisibleSecurityState& other) const;
+    bool initialized;
     GURL url;
-    // The baseline SecurityStyle describing the page or request
-    // before any SecurityStateModel policies have been applied.
-    // TODO(estark): Change this to a SecurityLevel to remove the
-    // dependency on content. https://crbug.com/515071
-    content::SecurityStyle initial_security_style;
+    // The baseline SecurityLevel describing the page or request before
+    // any SecurityStateModel policies have been applied.
+    SecurityLevel initial_security_level;
     // The following fields contain information about the connection
     // used to load the page or request.
     int cert_id;
@@ -139,11 +135,11 @@ class SecurityStateModel {
     bool ran_mixed_content;
   };
 
-  // These security styles describe the treatment given to pages that
+  // These security levels describe the treatment given to pages that
   // display and run mixed content. They are used to coordinate the
   // treatment of mixed content with other security UI elements.
-  static const content::SecurityStyle kDisplayedInsecureContentStyle;
-  static const content::SecurityStyle kRanInsecureContentStyle;
+  static const SecurityLevel kDisplayedInsecureContentLevel;
+  static const SecurityLevel kRanInsecureContentLevel;
 
   SecurityStateModel();
   virtual ~SecurityStateModel();

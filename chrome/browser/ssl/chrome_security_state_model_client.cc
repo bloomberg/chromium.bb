@@ -19,6 +19,35 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSecurityStateModelClient);
 
+namespace {
+
+// Converts a content::SecurityStyle (an indicator of a request's
+// overall security level computed by //content) into a
+// SecurityStateModel::SecurityLevel (a finer-grained SecurityStateModel
+// concept that can express all of SecurityStateModel's policies that
+// //content doesn't necessarily know about).
+SecurityStateModel::SecurityLevel GetSecurityLevelForSecurityStyle(
+    content::SecurityStyle style) {
+  switch (style) {
+    case content::SECURITY_STYLE_UNKNOWN:
+      NOTREACHED();
+      return SecurityStateModel::NONE;
+    case content::SECURITY_STYLE_UNAUTHENTICATED:
+      return SecurityStateModel::NONE;
+    case content::SECURITY_STYLE_AUTHENTICATION_BROKEN:
+      return SecurityStateModel::SECURITY_ERROR;
+    case content::SECURITY_STYLE_WARNING:
+      // content currently doesn't use this style.
+      NOTREACHED();
+      return SecurityStateModel::SECURITY_WARNING;
+    case content::SECURITY_STYLE_AUTHENTICATED:
+      return SecurityStateModel::SECURE;
+  }
+  return SecurityStateModel::NONE;
+}
+
+}  // namespace
+
 ChromeSecurityStateModelClient::ChromeSecurityStateModelClient(
     content::WebContents* web_contents)
     : web_contents_(web_contents),
@@ -62,14 +91,17 @@ void ChromeSecurityStateModelClient::GetVisibleSecurityState(
     SecurityStateModel::VisibleSecurityState* state) {
   content::NavigationEntry* entry =
       web_contents_->GetController().GetVisibleEntry();
-  if (!entry) {
+  if (!entry ||
+      entry->GetSSL().security_style == content::SECURITY_STYLE_UNKNOWN) {
     *state = SecurityStateModel::VisibleSecurityState();
     return;
   }
 
+  state->initialized = true;
   state->url = entry->GetURL();
   const content::SSLStatus& ssl = entry->GetSSL();
-  state->initial_security_style = ssl.security_style;
+  state->initial_security_level =
+      GetSecurityLevelForSecurityStyle(ssl.security_style);
   state->cert_id = ssl.cert_id;
   state->cert_status = ssl.cert_status;
   state->connection_status = ssl.connection_status;

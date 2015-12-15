@@ -1325,9 +1325,11 @@ content::SecurityStyle Browser::GetSecurityStyle(
       SecurityLevelToSecurityStyle(security_info.security_level);
 
   security_style_explanations->ran_insecure_content_style =
-      SecurityStateModel::kRanInsecureContentStyle;
+      SecurityLevelToSecurityStyle(
+          SecurityStateModel::kRanInsecureContentLevel);
   security_style_explanations->displayed_insecure_content_style =
-      SecurityStateModel::kDisplayedInsecureContentStyle;
+      SecurityLevelToSecurityStyle(
+          SecurityStateModel::kDisplayedInsecureContentLevel);
 
   // Check if the page is HTTP; if so, no explanations are needed. Note
   // that SECURITY_STYLE_UNAUTHENTICATED does not necessarily mean that

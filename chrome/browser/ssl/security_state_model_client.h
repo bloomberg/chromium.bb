@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ssl/security_state_model.h"
-#include "content/public/common/security_style.h"
 #include "net/cert/cert_status_flags.h"
 
 namespace net {

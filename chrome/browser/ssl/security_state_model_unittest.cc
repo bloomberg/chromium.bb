@@ -25,7 +25,7 @@ const char kUrl[] = "https://foo.test";
 class TestSecurityStateModelClient : public SecurityStateModelClient {
  public:
   TestSecurityStateModelClient()
-      : initial_security_style_(content::SECURITY_STYLE_AUTHENTICATED),
+      : initial_security_level_(SecurityStateModel::SECURE),
         connection_status_(net::SSL_CONNECTION_VERSION_TLS1_2
                            << net::SSL_CONNECTION_VERSION_SHIFT),
         cert_status_(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT),
@@ -51,15 +51,17 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
   void SetRanMixedContent(bool ran_mixed_content) {
     ran_mixed_content_ = ran_mixed_content;
   }
-  void set_initial_security_style(content::SecurityStyle security_style) {
-    initial_security_style_ = security_style;
+  void set_initial_security_level(
+      SecurityStateModel::SecurityLevel security_level) {
+    initial_security_level_ = security_level;
   }
 
   // SecurityStateModelClient:
   void GetVisibleSecurityState(
       SecurityStateModel::VisibleSecurityState* state) override {
+    state->initialized = true;
     state->url = GURL(kUrl);
-    state->initial_security_style = initial_security_style_;
+    state->initial_security_level = initial_security_level_;
     state->cert_id = 1;
     state->cert_status = cert_status_;
     state->connection_status = connection_status_;
@@ -80,7 +82,7 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
   }
 
  private:
-  content::SecurityStyle initial_security_style_;
+  SecurityStateModel::SecurityLevel initial_security_level_;
   scoped_refptr<net::X509Certificate> cert_;
   int connection_status_;
   net::CertStatus cert_status_;
@@ -128,8 +130,7 @@ TEST_F(SecurityStateModelTest, SHA1WarningMixedContent) {
             security_info.mixed_content_status);
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
 
-  client.set_initial_security_style(
-      content::SECURITY_STYLE_AUTHENTICATION_BROKEN);
+  client.set_initial_security_level(SecurityStateModel::SECURITY_ERROR);
   client.SetDisplayedMixedContent(false);
   client.SetRanMixedContent(true);
   client.GetVisibleSecurityState(&visible_security_state);
@@ -151,8 +152,7 @@ TEST_F(SecurityStateModelTest, SHA1WarningBrokenHTTPS) {
   scoped_refptr<net::X509Certificate> cert;
   ASSERT_TRUE(client.RetrieveCert(&cert));
   SecurityStateModel::SecurityInfo security_info;
-  client.set_initial_security_style(
-      content::SECURITY_STYLE_AUTHENTICATION_BROKEN);
+  client.set_initial_security_level(SecurityStateModel::SECURITY_ERROR);
   client.AddCertStatus(net::CERT_STATUS_DATE_INVALID);
   SecurityStateModel::VisibleSecurityState visible_security_state;
   client.GetVisibleSecurityState(&visible_security_state);
