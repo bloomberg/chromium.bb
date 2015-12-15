@@ -186,6 +186,7 @@ TEST(TCMallocFreeTest, BadPointerInFirstPageOfTheLargeObject) {
     ASSERT_DEATH(TCMallocDoFreeForTest(p + offset),
                  "Pointer is not pointing to the start of a span");
   }
+  TCMallocDoFreeForTest(p);
 }
 
 TEST(TCMallocFreeTest, BadPageAlignedPointerInsideLargeObject) {
@@ -200,6 +201,7 @@ TEST(TCMallocFreeTest, BadPageAlignedPointerInsideLargeObject) {
   }
   ASSERT_DEATH(TCMallocDoFreeForTest(p + kMaxSize),
                "Pointer is not pointing to the start of a span");
+  TCMallocDoFreeForTest(p);
 }
 
 TEST(TCMallocFreeTest, DoubleFreeLargeObject) {
