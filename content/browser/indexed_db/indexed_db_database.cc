@@ -1677,7 +1677,7 @@ void IndexedDBDatabase::CreateTransaction(
   // Throttle transaction creation so that a renderer in a tight loop can't
   // cause browser memory to grow unbounded by creating transactions faster
   // than they can be processed.
-  const size_t kMaxTransactionCount = 128;
+  const size_t kMaxTransactionCount = 256;
   if (transactions_.size() >= kMaxTransactionCount) {
     connection->callbacks()->OnAbort(
         transaction_id, IndexedDBDatabaseError(
