@@ -475,12 +475,13 @@ _drmModeGetConnector(int fd, uint32_t connector_id, int probe)
 {
 	struct drm_mode_get_connector conn, counts;
 	drmModeConnectorPtr r = NULL;
+	struct drm_mode_modeinfo stack_mode;
 
 	memclear(conn);
 	conn.connector_id = connector_id;
 	if (!probe) {
 		conn.count_modes = 1;
-		conn.modes_ptr = VOID2U64(drmMalloc(sizeof(struct drm_mode_modeinfo)));
+		conn.modes_ptr = VOID2U64(&stack_mode);
 	}
 
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETCONNECTOR, &conn))
@@ -504,7 +505,7 @@ retry:
 			goto err_allocs;
 	} else {
 		conn.count_modes = 1;
-		conn.modes_ptr = VOID2U64(drmMalloc(sizeof(struct drm_mode_modeinfo)));
+		conn.modes_ptr = VOID2U64(&stack_mode);
 	}
 
 	if (conn.count_encoders) {
@@ -525,7 +526,8 @@ retry:
 	    counts.count_encoders < conn.count_encoders) {
 		drmFree(U642VOID(conn.props_ptr));
 		drmFree(U642VOID(conn.prop_values_ptr));
-		drmFree(U642VOID(conn.modes_ptr));
+		if (U642VOID(conn.modes_ptr) != &stack_mode)
+			drmFree(U642VOID(conn.modes_ptr));
 		drmFree(U642VOID(conn.encoders_ptr));
 
 		goto retry;
@@ -567,7 +569,8 @@ retry:
 err_allocs:
 	drmFree(U642VOID(conn.prop_values_ptr));
 	drmFree(U642VOID(conn.props_ptr));
-	drmFree(U642VOID(conn.modes_ptr));
+	if (U642VOID(conn.modes_ptr) != &stack_mode)
+		drmFree(U642VOID(conn.modes_ptr));
 	drmFree(U642VOID(conn.encoders_ptr));
 
 	return r;
