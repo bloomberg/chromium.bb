@@ -844,7 +844,8 @@ void TransformTree::UndoSnapping(TransformNode* node) {
 
 void TransformTree::UpdateSnapping(TransformNode* node) {
   if (!node->data.scrolls || node->data.to_screen_is_animated ||
-      !node->data.to_target.IsScaleOrTranslation()) {
+      !node->data.to_target.IsScaleOrTranslation() ||
+      !node->data.ancestors_are_invertible) {
     return;
   }
 

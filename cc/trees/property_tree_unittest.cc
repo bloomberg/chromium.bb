@@ -972,6 +972,47 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
 DIRECT_AND_SERIALIZED_PROPERTY_TREE_TEST_F(
     PropertyTreeTestNonIntegerTranslationTest);
 
+class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
+ protected:
+  void StartTest() override {
+    // This tests that to_target transform is not snapped when it has a singular
+    // transform.
+    TransformTree tree;
+
+    int parent = tree.Insert(TransformNode(), 0);
+    tree.Node(parent)->data.target_id = parent;
+    tree.Node(parent)->data.scrolls = true;
+
+    int child = tree.Insert(TransformNode(), parent);
+    TransformNode* child_node = tree.Node(child);
+    child_node->data.target_id = parent;
+    child_node->data.scrolls = true;
+    child_node->data.local.Scale3d(6.0f, 6.0f, 0.0f);
+    child_node->data.local.Translate(1.3f, 1.3f);
+    tree.set_needs_update(true);
+
+    tree = TransformTreeForTest(tree);
+    ComputeTransforms(&tree);
+
+    gfx::Transform from_target;
+    EXPECT_FALSE(child_node->data.to_target.GetInverse(&from_target));
+    // The following checks are to ensure that snapping is skipped because of
+    // singular transform (and not because of other reasons which also cause
+    // snapping to be skipped).
+    EXPECT_TRUE(child_node->data.scrolls);
+    EXPECT_TRUE(child_node->data.to_target.IsScaleOrTranslation());
+    EXPECT_FALSE(child_node->data.to_screen_is_animated);
+    EXPECT_FALSE(child_node->data.ancestors_are_invertible);
+
+    gfx::Transform rounded = child_node->data.to_target;
+    rounded.RoundTranslationComponents();
+    EXPECT_NE(child_node->data.to_target, rounded);
+  }
+};
+
+DIRECT_AND_SERIALIZED_PROPERTY_TREE_TEST_F(
+    PropertyTreeTestSingularTransformSnapTest);
+
 #undef DIRECT_AND_SERIALIZED_PROPERTY_TREE_TEST_F
 #undef SERIALIZED_PROPERTY_TREE_TEST_F
 #undef DIRECT_PROPERTY_TREE_TEST_F
