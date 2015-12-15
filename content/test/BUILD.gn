@@ -658,7 +658,7 @@ test("content_unittests") {
           [ "../browser/media/capture/desktop_capture_device_aura_unittest.cc" ]
     }
 
-    if (is_android) {
+    if (is_android || is_chromecast) {
       sources -= [
         "../renderer/media/audio_track_recorder_unittest.cc",
         "../renderer/media/media_recorder_handler_unittest.cc",
