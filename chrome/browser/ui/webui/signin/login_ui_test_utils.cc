@@ -206,15 +206,14 @@ bool SignInWithUI(Browser* browser,
                   const std::string& username,
                   const std::string& password,
                   bool wait_for_account_cookies,
-                  signin_metrics::AccessPoint access_point) {
+                  signin_metrics::AccessPoint access_point,
+                  signin_metrics::Reason signin_reason) {
   SignInObserver signin_observer(wait_for_account_cookies);
   scoped_ptr<SigninTracker> tracker =
       SigninTrackerFactory::CreateForProfile(browser->profile(),
                                              &signin_observer);
 
-  GURL signin_url = signin::GetPromoURL(
-      access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-      false);
+  GURL signin_url = signin::GetPromoURL(access_point, signin_reason, false);
   DVLOG(1) << "Navigating to " << signin_url;
   // For some tests, the window is not shown yet and this might be the first tab
   // navigation, so GetActiveWebContents() for CURRENT_TAB is NULL. That's why
@@ -239,7 +238,8 @@ bool SignInWithUI(Browser* browser,
                   const std::string& password) {
   return SignInWithUI(browser, username, password,
                       false /* wait_for_account_cookies */,
-                      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE);
+                      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
+                      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
 }
 
 }  // namespace login_ui_test_utils

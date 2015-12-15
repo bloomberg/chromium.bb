@@ -50,7 +50,8 @@ bool SignInWithUI(Browser* browser,
                   const std::string& email,
                   const std::string& password,
                   bool wait_for_account_cookies,
-                  signin_metrics::AccessPoint access_point);
+                  signin_metrics::AccessPoint access_point,
+                  signin_metrics::Reason signin_reason);
 
 // Most common way to sign in a user, it does not wait for cookies to be set
 // and uses the SOURCE_START_PAGE as signin source.
