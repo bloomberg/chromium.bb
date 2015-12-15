@@ -1306,3 +1306,5 @@ crbug.com/569514 inspector/sources/debugger-step/debugger-step-into-inlined-scri
 crbug.com/569514 inspector/sources/debugger-step/debugger-step-over-document-write.html [ NeedsManualRebaseline ]
 crbug.com/569514 inspector/sources/debugger-step/debugger-step-over-inlined-scripts.html [ NeedsManualRebaseline ]
 crbug.com/569514 inspector/sources/debugger/debugger-scripts.html [ NeedsManualRebaseline ]
+
+crbug.com/569811 inspector-protocol/debugger/updateCallFrameScopes.html [ Pass Failure ]
