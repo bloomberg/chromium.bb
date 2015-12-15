@@ -850,8 +850,6 @@ crbug.com/524596 paint/invalidation/fixed-position-descendant-paint-offset-indir
 crbug.com/524596 virtual/spv2/paint/invalidation/composited-non-stacking-context-descendant-move.html [ Skip ]
 crbug.com/524596 virtual/spv2/paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Skip ]
 
-crbug.com/519124 fast/text/zero-font-size.html [ NeedsRebaseline ]
-
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
 
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Slow Failure ]
