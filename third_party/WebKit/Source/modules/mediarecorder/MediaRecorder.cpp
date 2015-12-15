@@ -8,8 +8,6 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "core/dom/DOMError.h"
 #include "core/fileapi/Blob.h"
-#include "core/frame/ConsoleTypes.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediarecorder/BlobEvent.h"
@@ -66,11 +64,6 @@ MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, con
     , m_dispatchScheduledEventRunner(this, &MediaRecorder::dispatchScheduledEvent)
 {
     ASSERT(m_stream->getTracks().size());
-
-    // Recording remote Audio streams is not supported: http://crbug.com/121673.
-    if (!stream->getAudioTracks().isEmpty() && stream->getAudioTracks()[0]->remote()) {
-        context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Recording remote audio tracks is not supported, ignoring them."));
-    }
 
     m_recorderHandler = adoptPtr(Platform::current()->createMediaRecorderHandler());
     ASSERT(m_recorderHandler);

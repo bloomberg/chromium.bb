@@ -10,6 +10,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "content/renderer/media/audio_track_recorder.h"
+#include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/video_track_recorder.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
@@ -103,17 +104,14 @@ bool MediaRecorderHandler::start(int timeslice) {
   media_stream_.videoTracks(video_tracks);
   media_stream_.audioTracks(audio_tracks);
 
-
   if (video_tracks.isEmpty() && audio_tracks.isEmpty()) {
     LOG(WARNING) << __FUNCTION__ << ": no media tracks.";
     return false;
   }
 
-  // We cannot add ourselves as sink to a remote audio track, see
-  // http://crbug.com/121673 and MediaStreamAudioSink::AddToAudioTrack();
-  const bool use_audio_tracks = !audio_tracks.isEmpty() &&
-      MediaStreamTrack::GetTrack(audio_tracks[0]) &&
-      MediaStreamTrack::GetTrack(audio_tracks[0])->is_local_track();
+  const bool use_audio_tracks =
+      !audio_tracks.isEmpty() &&
+      MediaStreamAudioTrack::GetTrack(audio_tracks[0]);
 
   webm_muxer_.reset(new media::WebmMuxer(
       use_vp9_ ? media::kCodecVP9 : media::kCodecVP8,
