@@ -21,7 +21,8 @@ function test()
         }
         var parentPath = path.substring(0, path.lastIndexOf("/"));
         var name = path.substring(path.lastIndexOf("/") + 1);
-        project.addUISourceCode(parentPath, name, path, WebInspector.resourceTypes.Script);
+        var uiSourceCode = project.createUISourceCode(parentPath, name, path, WebInspector.resourceTypes.Script);
+        project.addUISourceCode(uiSourceCode);
     }
 
     var fileSystemMapping = new WebInspector.FileSystemMapping();

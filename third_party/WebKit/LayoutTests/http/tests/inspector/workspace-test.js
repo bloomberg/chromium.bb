@@ -119,7 +119,7 @@ InspectorTest.addMockUISourceCodeToWorkspace = function(url, type, content)
 InspectorTest.addMockUISourceCodeViaNetwork = function(url, type, content)
 {
     var mockContentProvider = new WebInspector.StaticContentProvider(type, content);
-    InspectorTest.testNetworkProject._addFile(url, mockContentProvider);
+    InspectorTest.testNetworkProject._createFile(url, mockContentProvider, false, true);
 }
 
 InspectorTest._defaultWorkspaceEventHandler = function(event)
@@ -147,7 +147,7 @@ InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
 
     function didRequestContent(content, contentEncoded)
     {
-        InspectorTest.addResult("Highlighter type: " + WebInspector.SourcesView.uiSourceCodeHighlighterType(uiSourceCode));
+        InspectorTest.addResult("Highlighter type: " + WebInspector.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
         InspectorTest.addResult("UISourceCode content: " + content);
         callback();
     }
