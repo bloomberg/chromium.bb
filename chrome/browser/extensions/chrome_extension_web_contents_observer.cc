@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/window_controller.h"
@@ -12,6 +13,7 @@
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
+#include "components/rappor/rappor_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
@@ -205,6 +207,13 @@ void ChromeExtensionWebContentsObserver::SetExtensionIsolationTrial(
     } else {
       ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
           "SiteIsolationExtensionsActive", "Default");
+    }
+
+    if (rappor::RapporService* rappor = g_browser_process->rappor_service()) {
+      const std::string& extension_id =
+          parent_is_extension ? parent_url.host() : frame_url.host();
+      rappor->RecordSample("Extensions.AffectedByIsolateExtensions",
+                           rappor::UMA_RAPPOR_TYPE, extension_id);
     }
   }
 }

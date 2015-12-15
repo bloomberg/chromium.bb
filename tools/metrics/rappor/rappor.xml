@@ -327,6 +327,18 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Extensions.AffectedByIsolateExtensions"
+    type="UMA_RAPPOR_TYPE">
+  <owner>nick@chromium.org</owner>
+  <summary>
+    The ID of an extension which will trigger out-of-process iframes under
+    --isolate-extensions. This metric is logged even if --isolate-extensions is
+    disabled. Includes framing in both directions: non-extension documents that
+    contain chrome-extension:// iframes, or vice versa. Hosted apps are not
+    considered extensions for the purposes of this metric.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Extensions.PossibleAdInjection2" type="ETLD_PLUS_ONE">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
