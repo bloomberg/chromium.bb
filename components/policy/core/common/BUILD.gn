@@ -5,7 +5,10 @@
 import("//build/config/features.gni")
 
 source_set("common") {
-  visibility = [ "//components/policy/*" ]
+  visibility = [
+    "//components/policy/*",
+    "//components/syncable_prefs/*",
+  ]
 
   defines = [ "POLICY_COMPONENT_IMPLEMENTATION" ]
 

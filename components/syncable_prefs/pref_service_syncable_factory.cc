@@ -14,8 +14,8 @@
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
-#include "components/policy/core/common/policy_service.h"
-#include "components/policy/core/common/policy_types.h"
+#include "components/policy/core/common/policy_service.h"  // nogncheck
+#include "components/policy/core/common/policy_types.h"  // nogncheck
 #endif
 
 namespace syncable_prefs {

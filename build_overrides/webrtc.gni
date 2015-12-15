@@ -10,3 +10,11 @@ rtc_include_pulse_audio = false
 
 # Exclude internal ADM since Chromium uses its own IO handling.
 rtc_include_internal_audio_device = false
+
+declare_args() {
+  # TODO(dpranke): This is a hack needed to get iOS to build w/ a
+  # patched version of WebRTC so that we can access the xmllite
+  # library. Remove this once we've figured out how to get WebRTC building
+  # properly.
+  ios_use_webrtc = false
+}

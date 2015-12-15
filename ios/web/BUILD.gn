@@ -221,7 +221,7 @@ source_set("web") {
     "web_state/js/crw_js_plugin_placeholder_manager.h",
     "web_state/js/crw_js_plugin_placeholder_manager.mm",
     "web_state/js/crw_js_post_request_loader.h",
-    "web_state/js/crw_js_post_request_loader.h",
+    "web_state/js/crw_js_post_request_loader.mm",
     "web_state/js/crw_js_window_id_manager.h",
     "web_state/js/crw_js_window_id_manager.mm",
     "web_state/js/page_script_util.h",

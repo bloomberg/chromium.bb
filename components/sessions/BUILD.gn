@@ -180,10 +180,13 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//base/test:test_support",
-    "//content/public/common",
     "//sync",
     "//testing/gtest",
     "//ui/base",  # For page transition types.
     "//url",
   ]
+
+  if (!is_ios) {
+    deps += [ "//content/public/common" ]
+  }
 }

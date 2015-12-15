@@ -107,5 +107,6 @@ source_set("unit_tests") {
     "//components/bookmarks/test",
     "//components/enhanced_bookmarks/proto",
     "//sql",
+    "//ui/gfx",
   ]
 }

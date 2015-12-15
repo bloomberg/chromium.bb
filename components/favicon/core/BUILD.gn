@@ -62,6 +62,7 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//ui/base",
     "//ui/gfx",
+    "//ui/gfx:test_support",
     "//url",
   ]
 }

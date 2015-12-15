@@ -17,8 +17,17 @@ source_set("browser") {
   ]
 
   deps = [
+    "//base",
+    "//base:prefs",
+    "//components/content_settings/core/browser",
+    "//components/google/core/browser",
+    "//components/keyed_service/core",
+    "//components/pref_registry",
     "//components/signin/core/browser",
+    "//components/signin/core/common",
+    "//google_apis",
     "//ios/web",
+    "//net",
   ]
 }
 
@@ -47,7 +56,14 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
+    "//base:prefs",
+    "//base:prefs_test_support",
+    "//components/pref_registry:test_support",
+    "//components/signin/core/browser",
+    "//components/signin/core/browser:test_support",
+    "//components/signin/core/common",
     "//ios/web",
+    "//ios/web:test_support",
     "//third_party/ocmock",
   ]
 }
