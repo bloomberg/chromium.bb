@@ -227,7 +227,8 @@ void BackgroundSyncManager::GetRegistrations(
         base::Bind(
             callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
             base::Passed(
-                scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>>()
+                scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>>(
+                    new ScopedVector<BackgroundSyncRegistrationHandle>())
                     .Pass())));
     return;
   }

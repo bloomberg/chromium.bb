@@ -79,14 +79,20 @@ class CONTENT_EXPORT BackgroundSyncManager
                 const StatusAndRegistrationCallback& callback);
 
   // Finds the background sync registration associated with
-  // |sw_registration_id| with periodicity |periodicity|. Calls
-  // |callback| with BACKGROUND_SYNC_STATUS_NOT_FOUND if it doesn't exist. Calls
-  // |callback| with BACKGROUND_SYNC_STATUS_OK on success.
+  // |sw_registration_id|, periodicity |periodicity|, and tag
+  // |sync_registration_tag|. Calls |callback| with
+  // BACKGROUND_SYNC_STATUS_NOT_FOUND if it doesn't exist. Calls |callback| with
+  // BACKGROUND_SYNC_STATUS_OK on success. If the callback's status
+  // is not BACKGROUND_SYNC_STATUS_OK then the callback's RegistrationHandle
+  // will be nullptr.
   void GetRegistration(int64 sw_registration_id,
                        const std::string& sync_registration_tag,
                        SyncPeriodicity periodicity,
                        const StatusAndRegistrationCallback& callback);
 
+  // Finds the background sync registrations associated with
+  // |sw_registration_id| and periodicity |periodicity|. Calls
+  // |callback| with BACKGROUND_SYNC_STATUS_OK on success.
   void GetRegistrations(int64 sw_registration_id,
                         SyncPeriodicity periodicity,
                         const StatusAndRegistrationsCallback& callback);

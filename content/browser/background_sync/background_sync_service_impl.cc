@@ -256,6 +256,7 @@ void BackgroundSyncServiceImpl::OnRegisterResult(
     return;
   }
 
+  DCHECK(result);
   active_handles_.AddWithID(result.release(), result_ptr->handle_id());
   SyncRegistrationPtr mojoResult = ToMojoRegistration(*result_ptr);
   callback.Run(static_cast<content::BackgroundSyncError>(status),
@@ -275,6 +276,8 @@ void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
     scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>>
         result_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(result_registrations);
+
   mojo::Array<content::SyncRegistrationPtr> mojo_registrations(0);
   for (BackgroundSyncRegistrationHandle* registration : *result_registrations) {
     active_handles_.AddWithID(registration, registration->handle_id());
