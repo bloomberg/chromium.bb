@@ -55,7 +55,7 @@ def _GetDefaultConcurrentLinks(is_lto):
           if is_lto:
             mem_total_gb -= 20 # Reserve
             # For LTO builds the RAM requirements are even higher
-            mem_per_link_gb = 20
+            mem_per_link_gb = 32
           return int(max(1, mem_total_gb / mem_per_link_gb))
     return 1
   elif sys.platform == 'darwin':
