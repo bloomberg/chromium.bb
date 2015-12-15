@@ -331,12 +331,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'android-webview-shell'], bug=352645)
     self.Skip('conformance/textures/misc/texture-npot-video.html',
         ['android', 'android-webview-shell'], bug=352645)
-    # Recent regressions have caused these to fail on multiple devices
-    self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgb-rgb-unsigned_byte.html',
-        ['android', 'android-content-shell'], bug=499555)
-    self.Fail('conformance/textures/misc/texture-npot-video.html',
-        ['android', 'android-content-shell'], bug=520638)
     # These are failing on the Nexus 5 and 6
     self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
               ['android', 'qualcomm'], bug=499555)
@@ -359,6 +353,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/extensions/oes-texture-float-with-image.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
+        'video-rgb-rgb-unsigned_byte.html',
+        ['android', 'android-content-shell',
+         ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
         'video-rgba-rgba-unsigned_byte.html',
         ['android', 'android-content-shell',
