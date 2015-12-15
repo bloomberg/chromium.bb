@@ -193,7 +193,6 @@ if (is_nacl) {
     ]
     deps = [
       ":liblouis_nacl",
-      "//native_client/src/untrusted/nacl",
       "//native_client_sdk/src/libraries/nacl_io",
       "//ppapi:ppapi_cpp_lib",
       "//ppapi/native_client:ppapi_lib",

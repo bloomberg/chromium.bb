@@ -10,10 +10,6 @@ if (is_nacl) {
     deps = [
       "//ppapi/native_client/src/untrusted/irt_stub:ppapi_stub_lib",
     ]
-    if (!is_nacl_glibc) {
-      # Glibc has its version of pthread library.
-      deps += [ "//native_client/src/untrusted/pthread" ]
-    }
   }
 
   executable("nacl_irt") {

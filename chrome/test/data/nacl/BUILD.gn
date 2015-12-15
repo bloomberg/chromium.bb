@@ -150,19 +150,13 @@ if (is_nacl) {
                                [
                                  "cflags",
                                  "ldflags",
+                                 "libs",
                                ])
         deps = [
           "//ppapi:ppapi_cpp_lib",
           "//ppapi/native_client:ppapi_lib",
         ]
-        if (is_nacl_glibc) {
-          ldflags = [ "-pthread" ]
-        } else {
-          deps += [
-            "//native_client/src/untrusted/nacl",
-            "//native_client/src/untrusted/pthread",
-          ]
-        }
+        ldflags = [ "-pthread" ]
         if (defined(invoker.deps)) {
           deps += invoker.deps
         }
@@ -386,8 +380,8 @@ if (is_nacl) {
     ]
     deps = [
       ":ppapi_test_lib",
-      "//native_client/src/untrusted/nacl:nacl_exception",
     ]
+    libs = [ "nacl_exception" ]
     test_files = [ "irt_exception/irt_exception_test.html" ]
   }
 }

@@ -279,6 +279,12 @@ if (enable_nacl) {
         "//ipc",
         "//native_client/src/nonsfi/irt:nacl_sys_private",
         "//native_client/src/nonsfi/loader:elf_loader",
+
+        # Normally libnacl is included implicitly by libc and is part of
+        # the toolchain.  But //build/config/nacl:compiler uses
+        # -nodefaultlibs and so omits the default libnacl.
+        # When the nonsfi toolchain is more complete and that kludge
+        # is no longer required, this dependency should be removed.
         "//native_client/src/untrusted/nacl:nacl",
         "//ppapi/proxy",
         "//sandbox/linux:sandbox",
