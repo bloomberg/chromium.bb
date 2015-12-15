@@ -380,6 +380,17 @@ def run_tha_test(
   Returns:
     Process exit code that should be used.
   """
+  if result_json:
+    # Write a json output file right away in case we get killed.
+    result = {
+      'exit_code': None,
+      'had_hard_timeout': False,
+      'internal_failure': 'Was terminated before completion',
+      'outputs_ref': None,
+      'version': 2,
+    }
+    tools.write_json(result_json, result, dense=True)
+
   # run_isolated exit code. Depends on if result_json is used or not.
   result = map_and_run(
       isolated_hash, storage, cache, leak_temp_dir, root_dir, hard_timeout,
