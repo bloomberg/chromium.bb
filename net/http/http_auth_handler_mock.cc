@@ -161,7 +161,7 @@ HttpAuthHandlerMock::Factory::~Factory() {
 
 void HttpAuthHandlerMock::Factory::AddMockHandler(
     HttpAuthHandler* handler, HttpAuth::Target target) {
-  handlers_[target].push_back(handler);
+  handlers_[target].push_back(make_scoped_ptr(handler));
 }
 
 int HttpAuthHandlerMock::Factory::CreateAuthHandler(
@@ -174,8 +174,8 @@ int HttpAuthHandlerMock::Factory::CreateAuthHandler(
     scoped_ptr<HttpAuthHandler>* handler) {
   if (handlers_[target].empty())
     return ERR_UNEXPECTED;
-  scoped_ptr<HttpAuthHandler> tmp_handler(handlers_[target][0]);
-  std::vector<HttpAuthHandler*>& handlers = handlers_[target].get();
+  scoped_ptr<HttpAuthHandler> tmp_handler = std::move(handlers_[target][0]);
+  std::vector<scoped_ptr<HttpAuthHandler>>& handlers = handlers_[target];
   handlers.erase(handlers.begin());
   if (do_init_from_challenge_ &&
       !tmp_handler->InitFromChallenge(challenge, target, origin, net_log))

@@ -6,8 +6,9 @@
 #define NET_HTTP_HTTP_AUTH_HANDLER_MOCK_H_
 
 #include <string>
+#include <vector>
 
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -51,7 +52,8 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
                           scoped_ptr<HttpAuthHandler>* handler) override;
 
    private:
-    ScopedVector<HttpAuthHandler> handlers_[HttpAuth::AUTH_NUM_TARGETS];
+    std::vector<scoped_ptr<HttpAuthHandler>>
+        handlers_[HttpAuth::AUTH_NUM_TARGETS];
     bool do_init_from_challenge_;
   };
 
