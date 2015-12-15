@@ -31,8 +31,6 @@ public:
     SubsequenceRecorder(GraphicsContext&, const DisplayItemClient&);
     ~SubsequenceRecorder();
 
-    void setUncacheable();
-
 private:
     PaintController& m_paintController;
     const DisplayItemClient& m_client;

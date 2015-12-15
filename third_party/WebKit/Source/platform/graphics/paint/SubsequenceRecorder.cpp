@@ -72,16 +72,4 @@ SubsequenceRecorder::~SubsequenceRecorder()
     m_paintController.createAndAppend<EndSubsequenceDisplayItem>(m_client);
 }
 
-void SubsequenceRecorder::setUncacheable()
-{
-    if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        return;
-
-    if (m_paintController.displayItemConstructionIsDisabled())
-        return;
-
-    ASSERT(m_paintController.newDisplayItemList()[m_beginSubsequenceIndex].type() == DisplayItem::Subsequence);
-    m_paintController.newDisplayItemList()[m_beginSubsequenceIndex].setSkippedCache();
-}
-
 } // namespace blink

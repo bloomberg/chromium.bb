@@ -140,17 +140,7 @@ emit display items to a `PaintController` (using `GraphicsContext`).
 
 #### [CachedDisplayItem](CachedDisplayItem.h)
 
-The type `DisplayItem::CachedSubsequence` indicates that the previous frame's
-display item list contains a contiguous sequence of display items which should
-be reused in place of this `CachedDisplayItem`.
-
-*** note
-Support for cached subsequences for SPv2 is planned, but not yet fully
-implemented.
-***
-
-Other cached display items refer to a single `DrawingDisplayItem` with a
-corresponding type which should be reused in place of this `CachedDisplayItem`.
+See [Display item caching](../../../core/paint/README.md#paint-result-caching).
 
 #### [DrawingDisplayItem](DrawingDisplayItem.h)
 

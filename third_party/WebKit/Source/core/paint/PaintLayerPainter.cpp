@@ -113,13 +113,13 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContentsAndReflectio
     // Paint the reflection first if we have one.
     if (m_paintLayer.reflectionInfo()) {
         ScopeRecorder scopeRecorder(context);
-        m_paintLayer.reflectionInfo()->paint(context, paintingInfo, localPaintFlags);
-        result = MaybeNotFullyPainted;
+        if (m_paintLayer.reflectionInfo()->paint(context, paintingInfo, localPaintFlags) == MayBeClippedByPaintDirtyRect)
+            result = MayBeClippedByPaintDirtyRect;
     }
 
     localPaintFlags |= PaintLayerPaintingCompositingAllPhases;
-    if (paintLayerContents(context, paintingInfo, localPaintFlags, fragmentPolicy) == MaybeNotFullyPainted)
-        result = MaybeNotFullyPainted;
+    if (paintLayerContents(context, paintingInfo, localPaintFlags, fragmentPolicy) == MayBeClippedByPaintDirtyRect)
+        result = MayBeClippedByPaintDirtyRect;
 
     return result;
 }
@@ -186,6 +186,64 @@ private:
     GraphicsContext& m_context;
 };
 
+static bool shouldCreateSubsequence(const PaintLayer& paintLayer, GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
+{
+    // Caching is not needed during printing.
+    if (context.printing())
+        return false;
+
+    // Don't create subsequence for a composited layer because if it can be cached,
+    // we can skip the whole painting in GraphicsLayer::paint() with CachedDisplayItemList.
+    // This also avoids conflict of PaintLayer::previousXXX() when paintLayer is composited
+    // scrolling and is painted twice for GraphicsLayers of container and scrolling contents.
+    if (paintLayer.compositingState() == PaintsIntoOwnBacking)
+        return false;
+
+    // Don't create subsequence during special painting to avoid cache conflict with normal painting.
+    if (paintingInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers)
+        return false;
+    if (paintFlags & (PaintLayerPaintingReflection | PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingOverlayScrollbars | PaintLayerUncachedClipRects))
+        return false;
+
+    // Create subsequence for only stacking contexts whose painting are atomic.
+    if (!paintLayer.stackingNode()->isStackingContext())
+        return false;
+
+    // The layer doesn't have children. Subsequence caching is not worth because normally the actual painting will be cheap.
+    if (!PaintLayerStackingNodeIterator(*paintLayer.stackingNode(), AllChildren).next())
+        return false;
+
+    return true;
+}
+
+static bool shouldRepaintSubsequence(PaintLayer& paintLayer, const PaintLayerPaintingInfo& paintingInfo, ShouldRespectOverflowClip respectOverflowClip, const LayoutSize& subpixelAccumulation)
+{
+    bool needsRepaint = false;
+
+    // Repaint subsequence if the layer is marked for needing repaint.
+    if (paintLayer.needsRepaint())
+        needsRepaint = true;
+
+    // Repaint if layer's clip changes.
+    ClipRects* clipRects = paintLayer.clipper().paintingClipRects(paintingInfo.rootLayer, respectOverflowClip, subpixelAccumulation);
+    ClipRects* previousClipRects = paintLayer.previousPaintingClipRects();
+    if (!needsRepaint && clipRects != previousClipRects && (!clipRects || !previousClipRects || *clipRects != *previousClipRects))
+        needsRepaint = true;
+    paintLayer.setPreviousPaintingClipRects(clipRects);
+
+    // Repaint if previously the layer might be clipped by paintDirtyRect and paintDirtyRect changes.
+    if (!needsRepaint && paintLayer.previousPaintResult() == PaintLayerPainter::MayBeClippedByPaintDirtyRect && paintLayer.previousPaintDirtyRect() != paintingInfo.paintDirtyRect)
+        needsRepaint = true;
+    paintLayer.setPreviousPaintDirtyRect(paintingInfo.paintDirtyRect);
+
+    // Repaint if scroll offset accumulation changes.
+    if (!needsRepaint && paintingInfo.scrollOffsetAccumulation != paintLayer.previousScrollOffsetAccumulationForPainting())
+        needsRepaint = true;
+    paintLayer.setPreviousScrollOffsetAccumulationForPainting(paintingInfo.scrollOffsetAccumulation);
+
+    return needsRepaint;
+}
+
 PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfoArg, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
 {
     ASSERT(m_paintLayer.isSelfPaintingLayer() || m_paintLayer.hasSelfPaintingLayerDescendant());
@@ -220,30 +278,12 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     // Ensure our lists are up-to-date.
     m_paintLayer.stackingNode()->updateLayerListsIfNeeded();
 
-    bool clipRectsChanged = false;
     LayoutSize subpixelAccumulation = m_paintLayer.compositingState() == PaintsIntoOwnBacking ? m_paintLayer.subpixelAccumulation() : paintingInfoArg.subPixelAccumulation;
     ShouldRespectOverflowClip respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject());
-    if (paintFlags & PaintLayerUncachedClipRects) {
-        m_paintLayer.setPreviousPaintingClipRects(nullptr);
-    } else {
-        ClipRects* clipRects = m_paintLayer.clipper().paintingClipRects(paintingInfoArg.rootLayer, respectOverflowClip, subpixelAccumulation);
-        if (!m_paintLayer.needsRepaint()) {
-            ClipRects* previousClipRects = m_paintLayer.previousPaintingClipRects();
-            if (clipRects != previousClipRects && (!clipRects || !previousClipRects || *clipRects != *previousClipRects))
-                clipRectsChanged = true;
-        }
-        m_paintLayer.setPreviousPaintingClipRects(clipRects);
-    }
 
     Optional<SubsequenceRecorder> subsequenceRecorder;
-    if (!context.printing()
-        && !(paintingInfoArg.globalPaintFlags() & GlobalPaintFlattenCompositingLayers)
-        && !(paintFlags & (PaintLayerPaintingReflection | PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingOverlayScrollbars | PaintLayerUncachedClipRects))
-        && m_paintLayer.stackingNode()->isStackingContext()
-        && PaintLayerStackingNodeIterator(*m_paintLayer.stackingNode(), AllChildren).next()) {
-        if (!m_paintLayer.needsRepaint()
-            && !clipRectsChanged
-            && paintingInfoArg.scrollOffsetAccumulation == m_paintLayer.previousScrollOffsetAccumulationForPainting()
+    if (shouldCreateSubsequence(m_paintLayer, context, paintingInfoArg, paintFlags)) {
+        if (!shouldRepaintSubsequence(m_paintLayer, paintingInfoArg, respectOverflowClip, subpixelAccumulation)
             && SubsequenceRecorder::useCachedSubsequenceIfPossible(context, m_paintLayer))
             return result;
         subsequenceRecorder.emplace(context, m_paintLayer);
@@ -257,7 +297,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
 
     LayoutRect bounds = m_paintLayer.physicalBoundingBox(offsetFromRoot);
     if (!paintingInfo.paintDirtyRect.contains(bounds))
-        result = MaybeNotFullyPainted;
+        result = MayBeClippedByPaintDirtyRect;
 
     LayoutRect rootRelativeBounds;
     bool rootRelativeBoundsComputed = false;
@@ -296,7 +336,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
             // TODO(wangxianzhu): This is for old slow scrolling. Implement similar optimization for slimming paint v2.
             shouldPaintContent = atLeastOneFragmentIntersectsDamageRect(layerFragments, localPaintingInfo, paintFlags, offsetFromRoot);
             if (!shouldPaintContent)
-                result = MaybeNotFullyPainted;
+                result = MayBeClippedByPaintDirtyRect;
         }
     }
 
@@ -337,8 +377,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
         }
 
         if (shouldPaintNegZOrderList) {
-            if (paintChildren(NegativeZOrderChildren, context, paintingInfo, paintFlags) == MaybeNotFullyPainted)
-                result = MaybeNotFullyPainted;
+            if (paintChildren(NegativeZOrderChildren, context, paintingInfo, paintFlags) == MayBeClippedByPaintDirtyRect)
+                result = MayBeClippedByPaintDirtyRect;
         }
 
         if (shouldPaintOwnContents) {
@@ -350,8 +390,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
             paintOutlineForFragments(layerFragments, context, localPaintingInfo, paintingRootForLayoutObject, paintFlags);
 
         if (shouldPaintNormalFlowAndPosZOrderLists) {
-            if (paintChildren(NormalFlowChildren | PositiveZOrderChildren, context, paintingInfo, paintFlags) == MaybeNotFullyPainted)
-                result = MaybeNotFullyPainted;
+            if (paintChildren(NormalFlowChildren | PositiveZOrderChildren, context, paintingInfo, paintFlags) == MayBeClippedByPaintDirtyRect)
+                result = MayBeClippedByPaintDirtyRect;
         }
 
         if (shouldPaintOverlayScrollbars)
@@ -368,13 +408,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
         paintChildClippingMaskForFragments(layerFragments, context, localPaintingInfo, paintingRootForLayoutObject, paintFlags);
     }
 
-    m_paintLayer.setPreviousScrollOffsetAccumulationForPainting(paintingInfoArg.scrollOffsetAccumulation);
-
-    // Set subsequence not cacheable if the bounding box of this layer and descendants is not fully contained
-    // by paintRect, because later paintRect changes may expose new contents which will need repainting.
-    if (result == MaybeNotFullyPainted && subsequenceRecorder)
-        subsequenceRecorder->setUncacheable();
-
+    if (subsequenceRecorder)
+        m_paintLayer.setPreviousPaintResult(result);
     return result;
 }
 
@@ -466,8 +501,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(Graphi
                 clipRecorder.emplace(context, *parentLayer->layoutObject(), DisplayItem::ClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags);
             }
         }
-        if (paintFragmentByApplyingTransform(context, paintingInfo, paintFlags, fragment.paginationOffset) == MaybeNotFullyPainted)
-            result = MaybeNotFullyPainted;
+        if (paintFragmentByApplyingTransform(context, paintingInfo, paintFlags, fragment.paginationOffset) == MayBeClippedByPaintDirtyRect)
+            result = MayBeClippedByPaintDirtyRect;
     }
     return result;
 }
@@ -530,8 +565,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintChildren(unsigned childre
                 childPaintingInfo.scrollOffsetAccumulation += parentLayer->layoutBox()->scrolledContentOffset();
         }
 
-        if (childPainter.paintLayer(context, childPaintingInfo, paintFlags) == MaybeNotFullyPainted)
-            result = MaybeNotFullyPainted;
+        if (childPainter.paintLayer(context, childPaintingInfo, paintFlags) == MayBeClippedByPaintDirtyRect)
+            result = MayBeClippedByPaintDirtyRect;
     }
 
     return result;

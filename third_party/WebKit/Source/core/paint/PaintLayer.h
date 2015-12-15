@@ -50,6 +50,7 @@
 #include "core/paint/PaintLayerClipper.h"
 #include "core/paint/PaintLayerFilterInfo.h"
 #include "core/paint/PaintLayerFragment.h"
+#include "core/paint/PaintLayerPainter.h"
 #include "core/paint/PaintLayerReflectionInfo.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/PaintLayerStackingNode.h"
@@ -604,11 +605,21 @@ public:
     void setNeedsRepaint();
     void clearNeedsRepaintRecursively();
 
+    // These previousXXX() functions are for subsequence caching. They save the painting status of the layer
+    // during the previous painting with subsequence. A painting without subsequence [1] doesn't change this status.
+    // [1] See shouldCreateSubsequence() in PaintLayerPainter.cpp for the cases we use subsequence when painting a PaintLayer.
+
     IntSize previousScrollOffsetAccumulationForPainting() const { return m_previousScrollOffsetAccumulationForPainting; }
     void setPreviousScrollOffsetAccumulationForPainting(const IntSize& s) { m_previousScrollOffsetAccumulationForPainting = s; }
 
     ClipRects* previousPaintingClipRects() const { return m_previousPaintingClipRects.get(); }
     void setPreviousPaintingClipRects(ClipRects* clipRects) { m_previousPaintingClipRects = clipRects; }
+
+    LayoutRect previousPaintDirtyRect() const { return m_previousPaintDirtyRect; }
+    void setPreviousPaintDirtyRect(const LayoutRect& rect) { m_previousPaintDirtyRect = rect; }
+
+    PaintLayerPainter::PaintResult previousPaintResult() const { return static_cast<PaintLayerPainter::PaintResult>(m_previousPaintResult); }
+    void setPreviousPaintResult(PaintLayerPainter::PaintResult result) { m_previousPaintResult = static_cast<unsigned>(result); ASSERT(m_previousPaintResult == static_cast<unsigned>(result)); }
 
     PaintTiming* paintTiming();
 
@@ -739,6 +750,7 @@ private:
     unsigned m_lostGroupedMapping : 1;
 
     unsigned m_needsRepaint : 1;
+    unsigned m_previousPaintResult : 1; // PaintLayerPainter::PaintResult
 
     LayoutBoxModelObject* m_layoutObject;
 
@@ -801,6 +813,7 @@ private:
 
     IntSize m_previousScrollOffsetAccumulationForPainting;
     RefPtr<ClipRects> m_previousPaintingClipRects;
+    LayoutRect m_previousPaintDirtyRect;
 };
 
 } // namespace blink
