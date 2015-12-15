@@ -80,7 +80,6 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
   std::vector<LiveTab*> RestoreMostRecentEntry(LiveTabContext* context,
                                                int host_desktop_type);
   Tab* RemoveTabEntryById(SessionID::id_type id);
-  bool RemoveTabByLastVisit(const GURL& url, const base::Time& time);
   std::vector<LiveTab*> RestoreEntryById(LiveTabContext* context,
                                          SessionID::id_type id,
                                          int host_desktop_type,

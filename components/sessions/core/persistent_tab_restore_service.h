@@ -39,7 +39,6 @@ class SESSIONS_EXPORT PersistentTabRestoreService : public TabRestoreService {
   std::vector<LiveTab*> RestoreMostRecentEntry(LiveTabContext* context,
                                                int host_desktop_type) override;
   Tab* RemoveTabEntryById(SessionID::id_type id) override;
-  bool RemoveTabByLastVisit(const GURL& url, const base::Time& time) override;
   std::vector<LiveTab*> RestoreEntryById(
       LiveTabContext* context,
       SessionID::id_type id,

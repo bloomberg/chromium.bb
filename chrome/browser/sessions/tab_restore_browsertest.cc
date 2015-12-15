@@ -24,7 +24,6 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -85,9 +84,6 @@ class TabRestoreTest : public InProcessBrowserTest {
     url2_ = ui_test_utils::GetTestUrl(
         base::FilePath().AppendASCII("session_history"),
         base::FilePath().AppendASCII("bot2.html"));
-    url3_ = ui_test_utils::GetTestUrl(
-        base::FilePath().AppendASCII("session_history"),
-        base::FilePath().AppendASCII("bot3.html"));
   }
 
  protected:
@@ -196,15 +192,8 @@ class TabRestoreTest : public InProcessBrowserTest {
     observer.Wait();
   }
 
-  bool RemoveTabByLastVisit(
-      Browser* browser, const GURL& url, const base::Time& time) {
-    return TabRestoreServiceFactory::GetForProfile(
-        browser->profile())->RemoveTabByLastVisit(url, time);
-  }
-
   GURL url1_;
   GURL url2_;
-  GURL url3_;
 
   const BrowserList* active_browser_list_;
 
@@ -644,83 +633,4 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreOnStartup) {
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 1));
   EXPECT_EQ(url1_,
             browser()->tab_strip_model()->GetWebContentsAt(1)->GetURL());
-}
-
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, DontRestoreRemovedVisit) {
-  // Navigate to |url1_| and close the tab.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url1_, NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  CloseTab(1);
-
-  // Navigate to |url2_|, then |url3_|, then go back to |url2_|
-  // and close the tab. Remove the entry corresponding to the visit of |url2_|.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url2_, NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url3_, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  GoBack(browser());
-  base::Time visit_time(browser()->tab_strip_model()->GetWebContentsAt(1)->
-                            GetController().GetVisibleEntry()->GetTimestamp());
-  CloseTab(1);
-  ASSERT_TRUE(RemoveTabByLastVisit(browser(), url2_, visit_time));
-
-  // Restore the most recent tab. Although the tab visiting |url2_| and |url3_|
-  // was closed more recently, it was deleted, so we expect the restored tab
-  // to be the one navigating to |url1_|.
-  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 1));
-  ASSERT_EQ(url1_, browser()->tab_strip_model()->GetWebContentsAt(1)->
-                GetController().GetVisibleEntry()->GetURL());
-}
-
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, DontRestoreRemovedVisitInWindow) {
-  // Open a window with 3 new tabs.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUINewTabURL), NEW_WINDOW,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url1_, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url2_, NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url3_, NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-  // Remember the last navigation time of the second tab.
-  base::Time visit_time(browser()->tab_strip_model()->GetWebContentsAt(1)->
-                            GetController().GetVisibleEntry()->GetTimestamp());
-
-  // Close the window.
-  content::WindowedNotificationObserver close_window_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
-  chrome::CloseWindow(browser());
-  close_window_observer.Wait();
-
-  // Remove the tab corresponding to the last navigation of the second tab;
-  // which is, of course, the second tab.
-  RemoveTabByLastVisit(GetBrowser(0), url2_, visit_time);
-
-  // Restore the closed window.
-  content::WindowedNotificationObserver open_window_observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
-  content::WindowedNotificationObserver load_stop_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
-  chrome::RestoreTab(GetBrowser(0));
-  open_window_observer.Wait();
-  load_stop_observer.Wait();
-  TabStripModel* tabs = GetBrowser(1)->tab_strip_model();
-
-  // It should have two tabs navigated to |url1_| and |url3_|. The latter
-  // should still be active.
-  ASSERT_EQ(2, tabs->count());
-  ASSERT_EQ(url1_, tabs->GetWebContentsAt(0)->GetVisibleURL());
-  ASSERT_EQ(url3_, tabs->GetWebContentsAt(1)->GetVisibleURL());
-  ASSERT_EQ(1, tabs->active_index());
 }

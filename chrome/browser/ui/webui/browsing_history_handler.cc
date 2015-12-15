@@ -24,7 +24,6 @@
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -40,7 +39,6 @@
 #include "components/history/core/browser/web_history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/query_parser/snippet.h"
-#include "components/sessions/core/tab_restore_service.h"
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/device_info_tracker.h"
 #include "components/url_formatter/url_formatter.h"
@@ -448,8 +446,6 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
                                            ServiceAccessType::EXPLICIT_ACCESS);
   history::WebHistoryService* web_history =
       WebHistoryServiceFactory::GetForProfile(profile);
-  sessions::TabRestoreService* tab_service =
-      TabRestoreServiceFactory::GetForProfile(profile);
 
   base::Time now = base::Time::Now();
   std::vector<history::ExpireHistoryArgs> expire_list;
@@ -487,8 +483,8 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
         continue;
       }
       base::Time visit_time = base::Time::FromJsTime(timestamp);
-      GURL gurl(url);
       if (!expire_args) {
+        GURL gurl(url);
         expire_list.resize(expire_list.size() + 1);
         expire_args = &expire_list.back();
         expire_args->SetTimeRangeForOneDay(visit_time);
@@ -497,9 +493,6 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
       }
       // The local visit time is treated as a global ID for the visit.
       global_id_directive->add_global_id(visit_time.ToInternalValue());
-
-      // Remove this entry from the recent tabs menu.
-      tab_service->RemoveTabByLastVisit(gurl, visit_time);
     }
 
     // Set the start and end time in microseconds since the Unix epoch.

@@ -157,58 +157,6 @@ TabRestoreService::Tab* TabRestoreServiceHelper::RemoveTabEntryById(
   return tab;
 }
 
-bool TabRestoreServiceHelper::RemoveTabByLastVisit(
-    const GURL& url, const base::Time& time) {
-  for (Entries::iterator entries_iterator = entries_.begin();
-       entries_iterator != entries_.end(); ++entries_iterator) {
-    Entry* entry = *entries_iterator;
-
-    if (entry->type == TabRestoreService::TAB) {
-      Tab* tab = static_cast<Tab*>(entry);
-      const sessions::SerializedNavigationEntry& last_navigation =
-          tab->navigations[tab->current_navigation_index];
-      if (last_navigation.virtual_url() == url &&
-          last_navigation.timestamp() == time) {
-        scoped_ptr<Entry> deleter(*entries_iterator);
-        entries_.erase(entries_iterator);
-        NotifyTabsChanged();
-        return true;
-      }
-    } else if (entry->type == TabRestoreService::WINDOW) {
-      TabRestoreService::Window* window =
-          static_cast<TabRestoreService::Window*>(entry);
-
-      for (std::vector<Tab>::iterator tabs_iterator = window->tabs.begin();
-           tabs_iterator != window->tabs.end(); ++tabs_iterator) {
-        const sessions::SerializedNavigationEntry& last_navigation =
-            tabs_iterator->navigations[tabs_iterator->current_navigation_index];
-        if (last_navigation.virtual_url() == url &&
-            last_navigation.timestamp() == time) {
-          int index = tabs_iterator - window->tabs.begin();
-          window->tabs.erase(tabs_iterator);
-
-          if (window->selected_tab_index > index)
-            --window->selected_tab_index;
-          else if (window->selected_tab_index == index)
-            window->selected_tab_index = 0;
-
-          if (window->tabs.size() == 1 && window->app_name.empty()) {
-            scoped_ptr<Entry> deleter(*entries_iterator);
-            *entries_iterator = new Tab(window->tabs[0]);
-          }
-
-          NotifyTabsChanged();
-          return true;
-        }
-      }
-    } else {
-      NOTREACHED();
-    }
-  }
-
-  return false;
-}
-
 std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
     LiveTabContext* context,
     SessionID::id_type id,
