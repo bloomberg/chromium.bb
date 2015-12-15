@@ -365,6 +365,8 @@ struct PreloadResult {
   bool pkp_include_subdomains;
   bool force_https;
   bool has_pins;
+  bool expect_ct;
+  uint32 expect_ct_report_uri_id;
 };
 
 // DecodeHSTSPreloadRaw resolves |hostname| in the preloaded data. It returns
@@ -492,6 +494,14 @@ bool DecodeHSTSPreloadRaw(const std::string& search_hostname,
           }
         }
 
+        if (!reader.Next(&tmp.expect_ct))
+          return false;
+
+        if (tmp.expect_ct) {
+          if (!reader.Read(4, &tmp.expect_ct_report_uri_id))
+            return false;
+        }
+
         tmp.hostname_offset = hostname_offset;
 
         if (hostname_offset == 0 || hostname[hostname_offset - 1] == '.') {
@@ -583,11 +593,13 @@ TransportSecurityState::TransportSecurityState()
     : delegate_(nullptr),
       report_sender_(nullptr),
       enable_static_pins_(true),
+      enable_static_expect_ct_(true),
       sent_reports_cache_(kMaxHPKPReportCacheEntries) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
 #if !defined(OFFICIAL_BUILD) || defined(OS_ANDROID) || defined(OS_IOS)
   enable_static_pins_ = false;
+  enable_static_expect_ct_ = false;
 #endif
   DCHECK(CalledOnValidThread());
 }
@@ -1086,6 +1098,27 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
   return true;
 }
 
+bool TransportSecurityState::GetStaticExpectCTState(
+    const std::string& host,
+    ExpectCTState* expect_ct_state) const {
+  DCHECK(CalledOnValidThread());
+
+  if (!IsBuildTimely())
+    return false;
+
+  PreloadResult result;
+  if (!DecodeHSTSPreload(host, &result))
+    return false;
+
+  if (!enable_static_expect_ct_ || !result.expect_ct)
+    return false;
+
+  expect_ct_state->domain = host.substr(result.hostname_offset);
+  expect_ct_state->report_uri =
+      GURL(kExpectCTReportURIs[result.expect_ct_report_uri_id]);
+  return true;
+}
+
 bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
                                                 STSState* result) {
   DCHECK(CalledOnValidThread());
@@ -1213,6 +1246,10 @@ TransportSecurityState::PKPState::PKPState() : include_subdomains(false) {
 
 TransportSecurityState::PKPState::~PKPState() {
 }
+
+TransportSecurityState::ExpectCTState::ExpectCTState() {}
+
+TransportSecurityState::ExpectCTState::~ExpectCTState() {}
 
 bool TransportSecurityState::PKPState::CheckPublicKeyPins(
     const HashValueVector& hashes,

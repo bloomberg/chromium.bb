@@ -31,6 +31,11 @@
 //   mode: (optional string) "force-https" iff covered names should require
 //       HTTPS
 //   pins: (optional string) the |name| member of an object in |pinsets|
+//   expect_ct: (optional boolean) true if the site expects Certificate
+//       Transparency information to be present on requests to |name|
+//   expect_ct_report_uri: (optional string) if expect_ct is true, the
+//       URI to which reports should be sent when valid Certificate
+//       Transparency information is not present
 
 {
   "pinsets": [
@@ -200,9 +205,10 @@
   ],
 
   "entries": [
-    // Dummy entries to test certificate pinning.
+    // Dummy entries to test certificate pinning and expect-CT.
     { "name": "pinningtest.appspot.com", "include_subdomains": true, "pins": "test" },
     { "name": "pinning-test.badssl.com", "include_subdomains": true, "pins": "test" },
+    { "name": "expect-ct-test.badssl.com", "expect_ct": true, "expect_ct_report_uri": "https://expect-ct-test.badssl.com/report" },
 
     // (*.)google.com, iff using SSL, must use an acceptable certificate.
     { "name": "google.com", "include_subdomains": true, "pins": "google" },
