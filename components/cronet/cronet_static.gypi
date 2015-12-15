@@ -18,8 +18,6 @@
     'android/chromium_url_request.h',
     'android/chromium_url_request_context.cc',
     'android/chromium_url_request_context.h',
-    'android/chromium_url_request_error_list.h',
-    'android/chromium_url_request_priority_list.h',
     'android/cronet_in_memory_pref_store.cc',
     'android/cronet_in_memory_pref_store.h',
     'android/cronet_library_loader.cc',
@@ -42,7 +40,6 @@
     'histogram_manager.h',
     'url_request_context_config.cc',
     'url_request_context_config.h',
-    'url_request_context_config_list.h',
   ],
   'cflags': [
     '-DLOGGING=1',
