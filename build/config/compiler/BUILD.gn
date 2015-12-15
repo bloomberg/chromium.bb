@@ -1074,11 +1074,11 @@ if (is_win) {
       "/Gw",
     ]
   }
-  common_optimize_on_ldflags = [ "/OPT:ICF" ]
+  common_optimize_on_ldflags = [ "/OPT:ICF" ]  # Redundant COMDAT folding.
   if (is_official_build) {
     common_optimize_on_ldflags += [
-      # Link-time code generation.
-      "/LTCG",
+      "/OPT:REF",  # Remove unreferenced data.
+      "/LTCG",  # Link-time code generation.
 
       # Set the number of LTCG code-gen threads to eight. The default is four.
       # This gives a 5-10% link speedup.
