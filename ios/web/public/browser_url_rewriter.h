@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_BROWSER_URL_REWRITER_H_
 #define IOS_WEB_PUBLIC_BROWSER_URL_REWRITER_H_
 
+#include <vector>
+
 class GURL;
 
 namespace web {

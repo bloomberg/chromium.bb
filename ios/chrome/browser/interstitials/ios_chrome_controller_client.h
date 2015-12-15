@@ -1,0 +1,47 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef IOS_CHROME_BROWSER_INTERSTITIALS_IOS_CHROME_CONTROLLER_CLIENT_H_
+#define IOS_CHROME_BROWSER_INTERSTITIALS_IOS_CHROME_CONTROLLER_CLIENT_H_
+
+#include <string>
+
+#include "base/macros.h"
+#include "components/security_interstitials/core/controller_client.h"
+
+class GURL;
+
+namespace web {
+class WebInterstitial;
+class WebState;
+}
+
+// Provides embedder-specific logic for the security error page controller.
+class IOSChromeControllerClient
+    : public security_interstitials::ControllerClient {
+ public:
+  explicit IOSChromeControllerClient(web::WebState* web_state);
+  ~IOSChromeControllerClient() override;
+
+  void SetWebInterstitial(web::WebInterstitial* web_interstitial);
+
+ private:
+  // security_interstitials::ControllerClient implementation.
+  bool CanLaunchDateAndTimeSettings() override;
+  void LaunchDateAndTimeSettings() override;
+  void GoBack() override;
+  void Proceed() override;
+  void Reload() override;
+  void OpenUrlInCurrentTab(const GURL& url) override;
+  const std::string& GetApplicationLocale() override;
+  PrefService* GetPrefService() override;
+  const std::string GetExtendedReportingPrefName() override;
+
+  web::WebState* web_state_;
+  web::WebInterstitial* web_interstitial_;
+
+  DISALLOW_COPY_AND_ASSIGN(IOSChromeControllerClient);
+};
+
+#endif  // IOS_CHROME_BROWSER_INTERSTITIALS_IOS_CHROME_CONTROLLER_CLIENT_H_

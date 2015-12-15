@@ -270,6 +270,13 @@ void NavigationManagerImpl::GoForward() {
   }
 }
 
+void NavigationManagerImpl::Reload(bool check_for_reposts) {
+  NavigationItem* item = GetVisibleItem();
+  WebState::OpenURLParams params(item->GetURL(), item->GetReferrer(),
+                                 CURRENT_TAB, ui::PAGE_TRANSITION_RELOAD, NO);
+  delegate_->GetWebState()->OpenURL(params);
+}
+
 scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
 NavigationManagerImpl::GetTransientURLRewriters() {
   return transient_url_rewriters_.Pass();

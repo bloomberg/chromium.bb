@@ -93,6 +93,12 @@ class NavigationManager {
   virtual void GoBack() = 0;
   virtual void GoForward() = 0;
 
+  // Reloads the current entry. If |check_for_repost| is true and the current
+  // entry has POST data the user is prompted to see if they really want to
+  // reload the page. In nearly all cases pass in true.  If a transient entry
+  // is showing, initiates a new navigation to its URL.
+  virtual void Reload(bool check_for_repost) = 0;
+
   // Returns the number of items in the NavigationManager, excluding
   // pending and transient entries.
   // Obsolete, use GetItemCount() instead.
