@@ -145,20 +145,14 @@ FloatQuad LayoutGeometryMap::mapToContainer(const FloatRect& rect, const LayoutB
 #if ENABLE(ASSERT)
     if (m_mapping.size() > 0) {
         const LayoutObject* lastLayoutObject = m_mapping.last().m_layoutObject;
-        const PaintLayer* layer = lastLayoutObject->enclosingLayer();
 
-        // Bounds for invisible layers are intentionally not calculated, and are
-        // therefore not necessarily expected to be correct here. This is ok,
-        // because they will be recomputed if the layer becomes visible.
-        if (!layer->subtreeIsInvisible() && lastLayoutObject->style()->visibility() == VISIBLE) {
-            FloatRect layoutObjectMappedResult = lastLayoutObject->localToContainerQuad(rect, container, m_mapCoordinatesFlags).boundingBox();
+        FloatRect layoutObjectMappedResult = lastLayoutObject->localToContainerQuad(rect, container, m_mapCoordinatesFlags).boundingBox();
 
-            // Inspector creates layoutObjects with negative width <https://bugs.webkit.org/show_bug.cgi?id=87194>.
-            // Taking FloatQuad bounds avoids spurious assertions because of that.
-            ASSERT(enclosingIntRect(layoutObjectMappedResult) == enclosingIntRect(result.boundingBox())
-                || layoutObjectMappedResult.mayNotHaveExactIntRectRepresentation()
-                || result.boundingBox().mayNotHaveExactIntRectRepresentation());
-        }
+        // Inspector creates layoutObjects with negative width <https://bugs.webkit.org/show_bug.cgi?id=87194>.
+        // Taking FloatQuad bounds avoids spurious assertions because of that.
+        ASSERT(enclosingIntRect(layoutObjectMappedResult) == enclosingIntRect(result.boundingBox())
+            || layoutObjectMappedResult.mayNotHaveExactIntRectRepresentation()
+            || result.boundingBox().mayNotHaveExactIntRectRepresentation());
     }
 #endif
 
