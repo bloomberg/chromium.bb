@@ -151,77 +151,89 @@ void SVGTransform::setSkewY(float angle)
 
 namespace {
 
-const String& transformTypePrefixForParsing(SVGTransformType type)
+const char* transformTypePrefixForParsing(SVGTransformType type)
 {
     switch (type) {
     case SVG_TRANSFORM_UNKNOWN:
-        return emptyString();
-    case SVG_TRANSFORM_MATRIX: {
-        DEFINE_STATIC_LOCAL(String, matrixString, ("matrix("));
-        return matrixString;
+        return "";
+    case SVG_TRANSFORM_MATRIX:
+        return "matrix(";
+    case SVG_TRANSFORM_TRANSLATE:
+        return "translate(";
+    case SVG_TRANSFORM_SCALE:
+        return "scale(";
+    case SVG_TRANSFORM_ROTATE:
+        return "rotate(";
+    case SVG_TRANSFORM_SKEWX:
+        return "skewX(";
+    case SVG_TRANSFORM_SKEWY:
+        return "skewY(";
     }
-    case SVG_TRANSFORM_TRANSLATE: {
-        DEFINE_STATIC_LOCAL(String, translateString, ("translate("));
-        return translateString;
-    }
-    case SVG_TRANSFORM_SCALE: {
-        DEFINE_STATIC_LOCAL(String, scaleString, ("scale("));
-        return scaleString;
-    }
-    case SVG_TRANSFORM_ROTATE: {
-        DEFINE_STATIC_LOCAL(String, rotateString, ("rotate("));
-        return rotateString;
-    }
-    case SVG_TRANSFORM_SKEWX: {
-        DEFINE_STATIC_LOCAL(String, skewXString, ("skewX("));
-        return skewXString;
-    }
-    case SVG_TRANSFORM_SKEWY: {
-        DEFINE_STATIC_LOCAL(String, skewYString, ("skewY("));
-        return skewYString;
-    }
-    }
-
     ASSERT_NOT_REACHED();
-    return emptyString();
+    return "";
 }
 
 }
 
 String SVGTransform::valueAsString() const
 {
-    const String& prefix = transformTypePrefixForParsing(m_transformType);
+    double arguments[6];
+    size_t argumentCount = 0;
     switch (m_transformType) {
     case SVG_TRANSFORM_UNKNOWN:
-        return prefix;
+        return emptyString();
     case SVG_TRANSFORM_MATRIX: {
-        StringBuilder builder;
-        builder.append(prefix + String::number(m_matrix.a()) + ' ' + String::number(m_matrix.b()) + ' ' + String::number(m_matrix.c()) + ' ' +
-                       String::number(m_matrix.d()) + ' ' + String::number(m_matrix.e()) + ' ' + String::number(m_matrix.f()) + ')');
-        return builder.toString();
+        arguments[argumentCount++] = m_matrix.a();
+        arguments[argumentCount++] = m_matrix.b();
+        arguments[argumentCount++] = m_matrix.c();
+        arguments[argumentCount++] = m_matrix.d();
+        arguments[argumentCount++] = m_matrix.e();
+        arguments[argumentCount++] = m_matrix.f();
+        break;
     }
-    case SVG_TRANSFORM_TRANSLATE:
-        return prefix + String::number(m_matrix.e()) + ' ' + String::number(m_matrix.f()) + ')';
-    case SVG_TRANSFORM_SCALE:
-        return prefix + String::number(m_matrix.a()) + ' ' + String::number(m_matrix.d()) + ')';
+    case SVG_TRANSFORM_TRANSLATE: {
+        arguments[argumentCount++] = m_matrix.e();
+        arguments[argumentCount++] = m_matrix.f();
+        break;
+    }
+    case SVG_TRANSFORM_SCALE: {
+        arguments[argumentCount++] = m_matrix.a();
+        arguments[argumentCount++] = m_matrix.d();
+        break;
+    }
     case SVG_TRANSFORM_ROTATE: {
+        arguments[argumentCount++] = m_angle;
+
         double angleInRad = deg2rad(m_angle);
         double cosAngle = cos(angleInRad);
         double sinAngle = sin(angleInRad);
         float cx = narrowPrecisionToFloat(cosAngle != 1 ? (m_matrix.e() * (1 - cosAngle) - m_matrix.f() * sinAngle) / (1 - cosAngle) / 2 : 0);
         float cy = narrowPrecisionToFloat(cosAngle != 1 ? (m_matrix.e() * sinAngle / (1 - cosAngle) + m_matrix.f()) / 2 : 0);
-        if (cx || cy)
-            return prefix + String::number(m_angle) + ' ' + String::number(cx) + ' ' + String::number(cy) + ')';
-        return prefix + String::number(m_angle) + ')';
+        if (cx || cy) {
+            arguments[argumentCount++] = cx;
+            arguments[argumentCount++] = cy;
+        }
+        break;
     }
     case SVG_TRANSFORM_SKEWX:
-        return prefix + String::number(m_angle) + ')';
+        arguments[argumentCount++] = m_angle;
+        break;
     case SVG_TRANSFORM_SKEWY:
-        return prefix + String::number(m_angle) + ')';
+        arguments[argumentCount++] = m_angle;
+        break;
     }
+    ASSERT(argumentCount <= WTF_ARRAY_LENGTH(arguments));
 
-    ASSERT_NOT_REACHED();
-    return emptyString();
+    StringBuilder builder;
+    builder.append(transformTypePrefixForParsing(m_transformType));
+
+    for (size_t i = 0; i < argumentCount; ++i) {
+        if (i)
+            builder.append(' ');
+        builder.appendNumber(arguments[i]);
+    }
+    builder.append(')');
+    return builder.toString();
 }
 
 void SVGTransform::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
