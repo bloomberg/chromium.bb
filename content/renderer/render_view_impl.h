@@ -326,6 +326,15 @@ class CONTENT_EXPORT RenderViewImpl
                                   const gfx::Size& max_size);
   void DisableAutoResizeForTesting(const gfx::Size& new_size);
 
+  // RenderWidgetInputHandlerDelegate implementation ---------------------------
+
+  // Most methods are handled by RenderWidget
+  void FocusChangeComplete() override;
+  bool HasTouchEventHandlersAt(const gfx::Point& point) const override;
+  void OnDidHandleKeyEvent() override;
+  bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
+  bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
+
   // IPC::Listener implementation ----------------------------------------------
 
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -466,10 +475,6 @@ class CONTENT_EXPORT RenderViewImpl
   void DidInitiatePaint() override;
   void DidFlushPaint() override;
   gfx::Vector2d GetScrollOffset() override;
-  void DidHandleKeyEvent() override;
-  bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
-  bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
-  bool HasTouchEventHandlersAt(const gfx::Point& point) const override;
   void OnSetFocus(bool enable) override;
   void OnWasHidden() override;
   void OnWasShown(bool needs_repainting,
@@ -488,7 +493,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnOrientationChange() override;
   ui::TextInputType GetTextInputType() override;
   void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) override;
-  void FocusChangeComplete() override;
   void GetCompositionCharacterBounds(
       std::vector<gfx::Rect>* character_bounds_in_window) override;
   void GetCompositionRange(gfx::Range* range) override;

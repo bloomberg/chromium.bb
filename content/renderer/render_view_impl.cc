@@ -1184,7 +1184,7 @@ void RenderViewImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
   else if (focused_pepper_plugin_ == instance)
     focused_pepper_plugin_ = NULL;
 
-  UpdateTextInputState(NO_SHOW_IME, FROM_NON_IME);
+  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
   UpdateSelectionBounds();
 }
 
@@ -1253,6 +1253,56 @@ void RenderViewImpl::TransferActiveWheelFlingAnimation(
   if (webview())
     webview()->transferActiveWheelFlingAnimation(params);
 }
+
+// RenderWidgetInputHandlerDelegate -----------------------------------------
+
+void RenderViewImpl::FocusChangeComplete() {
+  RenderWidget::FocusChangeComplete();
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusChangeComplete());
+}
+
+bool RenderViewImpl::HasTouchEventHandlersAt(const gfx::Point& point) const {
+  if (!webview())
+    return false;
+  return webview()->hasTouchEventHandlersAt(point);
+}
+
+void RenderViewImpl::OnDidHandleKeyEvent() {
+  ClearEditCommands();
+}
+
+bool RenderViewImpl::WillHandleGestureEvent(
+    const blink::WebGestureEvent& event) {
+  possible_drag_event_info_.event_source =
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
+  possible_drag_event_info_.event_location =
+      gfx::Point(event.globalX, event.globalY);
+  return false;
+}
+
+bool RenderViewImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
+  possible_drag_event_info_.event_source =
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
+  possible_drag_event_info_.event_location =
+      gfx::Point(event.globalX, event.globalY);
+
+#if defined(ENABLE_PLUGINS)
+  // This method is called for every mouse event that the render view receives.
+  // And then the mouse event is forwarded to WebKit, which dispatches it to the
+  // event target. Potentially a Pepper plugin will receive the event.
+  // In order to tell whether a plugin gets the last mouse event and which it
+  // is, we set |pepper_last_mouse_event_target_| to NULL here. If a plugin gets
+  // the event, it will notify us via DidReceiveMouseEvent() and set itself as
+  // |pepper_last_mouse_event_target_|.
+  pepper_last_mouse_event_target_ = NULL;
+#endif
+
+  // If the mouse is locked, only the current owner of the mouse lock can
+  // process mouse events.
+  return mouse_lock_dispatcher_->WillHandleMouseEvent(event);
+}
+
+// IPC::Listener implementation ----------------------------------------------
 
 bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
@@ -1362,9 +1412,9 @@ void RenderViewImpl::OnSelectWordAroundCaret() {
   if (!webview())
     return;
 
-  handling_input_event_ = true;
+  input_handler_.set_handling_input_event(true);
   webview()->focusedFrame()->selectWordAroundCaret();
-  handling_input_event_ = false;
+  input_handler_.set_handling_input_event(false);
 }
 
 void RenderViewImpl::OnCopyImageAt(int x, int y) {
@@ -1651,7 +1701,7 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace() {
 
 void RenderViewImpl::printPage(WebLocalFrame* frame) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    PrintPage(frame, handling_input_event_));
+                    PrintPage(frame, input_handler().handling_input_event()));
 }
 
 void RenderViewImpl::saveImageFromDataURL(const blink::WebString& data_url) {
@@ -2982,47 +3032,6 @@ void RenderViewImpl::Close() {
   RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(routing_id_));
 }
 
-void RenderViewImpl::DidHandleKeyEvent() {
-  ClearEditCommands();
-}
-
-bool RenderViewImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
-  possible_drag_event_info_.event_source =
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
-  possible_drag_event_info_.event_location =
-      gfx::Point(event.globalX, event.globalY);
-
-#if defined(ENABLE_PLUGINS)
-  // This method is called for every mouse event that the render view receives.
-  // And then the mouse event is forwarded to WebKit, which dispatches it to the
-  // event target. Potentially a Pepper plugin will receive the event.
-  // In order to tell whether a plugin gets the last mouse event and which it
-  // is, we set |pepper_last_mouse_event_target_| to NULL here. If a plugin gets
-  // the event, it will notify us via DidReceiveMouseEvent() and set itself as
-  // |pepper_last_mouse_event_target_|.
-  pepper_last_mouse_event_target_ = NULL;
-#endif
-
-  // If the mouse is locked, only the current owner of the mouse lock can
-  // process mouse events.
-  return mouse_lock_dispatcher_->WillHandleMouseEvent(event);
-}
-
-bool RenderViewImpl::WillHandleGestureEvent(
-    const blink::WebGestureEvent& event) {
-  possible_drag_event_info_.event_source =
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
-  possible_drag_event_info_.event_location =
-      gfx::Point(event.globalX, event.globalY);
-  return false;
-}
-
-bool RenderViewImpl::HasTouchEventHandlersAt(const gfx::Point& point) const {
-  if (!webview())
-    return false;
-  return webview()->hasTouchEventHandlersAt(point);
-}
-
 void RenderViewImpl::OnWasHidden() {
   RenderWidget::OnWasHidden();
 
@@ -3258,11 +3267,6 @@ void RenderViewImpl::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
   }
 #endif
   RenderWidget::GetSelectionBounds(start, end);
-}
-
-void RenderViewImpl::FocusChangeComplete() {
-  RenderWidget::FocusChangeComplete();
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusChangeComplete());
 }
 
 void RenderViewImpl::GetCompositionCharacterBounds(
@@ -3507,7 +3511,7 @@ void RenderViewImpl::DismissDateTimeDialog() {
 
 void RenderViewImpl::OnShowContextMenu(
     ui::MenuSourceType source_type, const gfx::Point& location) {
-  context_menu_source_type_ = source_type;
+  input_handler_.set_context_menu_source_type(source_type);
   has_host_context_menu_location_ = true;
   host_context_menu_location_ = location;
   if (webview())

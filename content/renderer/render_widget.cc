@@ -166,128 +166,12 @@ ui::TextInputMode ConvertInputMode(const blink::WebString& input_mode) {
   return it->second;
 }
 
-// TODO(brianderson): Replace the hard-coded threshold with a fraction of
-// the BeginMainFrame interval.
-// 4166us will allow 1/4 of a 60Hz interval or 1/2 of a 120Hz interval to
-// be spent in input hanlders before input starts getting throttled.
-const int kInputHandlingTimeThrottlingThresholdMicroseconds = 4166;
-
-int64 GetEventLatencyMicros(double event_timestamp, base::TimeTicks now) {
-  return (now - base::TimeDelta::FromSecondsD(event_timestamp))
-      .ToInternalValue();
-}
-
-void LogInputEventLatencyUmaImpl(WebInputEvent::Type event_type,
-                                 double event_timestamp,
-                                 base::TimeTicks now) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.AggregatedLatency.Renderer2",
-                              GetEventLatencyMicros(event_timestamp, now), 1,
-                              10000000, 100);
-
-#define CASE_TYPE(t)                                                         \
-  case WebInputEvent::t:                                                     \
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Renderer2." #t,               \
-                                GetEventLatencyMicros(event_timestamp, now), \
-                                1, 10000000, 100);                           \
-    break;
-
-  switch (event_type) {
-    CASE_TYPE(Undefined);
-    CASE_TYPE(MouseDown);
-    CASE_TYPE(MouseUp);
-    CASE_TYPE(MouseMove);
-    CASE_TYPE(MouseEnter);
-    CASE_TYPE(MouseLeave);
-    CASE_TYPE(ContextMenu);
-    CASE_TYPE(MouseWheel);
-    CASE_TYPE(RawKeyDown);
-    CASE_TYPE(KeyDown);
-    CASE_TYPE(KeyUp);
-    CASE_TYPE(Char);
-    CASE_TYPE(GestureScrollBegin);
-    CASE_TYPE(GestureScrollEnd);
-    CASE_TYPE(GestureScrollUpdate);
-    CASE_TYPE(GestureFlingStart);
-    CASE_TYPE(GestureFlingCancel);
-    CASE_TYPE(GestureShowPress);
-    CASE_TYPE(GestureTap);
-    CASE_TYPE(GestureTapUnconfirmed);
-    CASE_TYPE(GestureTapDown);
-    CASE_TYPE(GestureTapCancel);
-    CASE_TYPE(GestureDoubleTap);
-    CASE_TYPE(GestureTwoFingerTap);
-    CASE_TYPE(GestureLongPress);
-    CASE_TYPE(GestureLongTap);
-    CASE_TYPE(GesturePinchBegin);
-    CASE_TYPE(GesturePinchEnd);
-    CASE_TYPE(GesturePinchUpdate);
-    CASE_TYPE(TouchStart);
-    CASE_TYPE(TouchMove);
-    CASE_TYPE(TouchEnd);
-    CASE_TYPE(TouchCancel);
-    default:
-      // Must include default to let blink::WebInputEvent add new event types
-      // before they're added here.
-      DLOG(WARNING) << "Unhandled WebInputEvent type: " << event_type;
-      break;
-  }
-
-#undef CASE_TYPE
-}
-
-void LogInputEventLatencyUma(const WebInputEvent& event, base::TimeTicks now,
-                             const ui::LatencyInfo& latency_info) {
-  LogInputEventLatencyUmaImpl(event.type, event.timeStampSeconds, now);
-  for (size_t i = 0; i < latency_info.coalesced_events_size(); i++) {
-    LogInputEventLatencyUmaImpl(
-        event.type,
-        latency_info.timestamps_of_coalesced_events()[i],
-        now);
-  }
-}
-
-void LogPassiveLatency(int64 latency) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.PassiveListeners.Latency", latency, 1,
-                              10000000, 100);
-}
-
-void LogPassiveEventListenersUma(WebInputEventResult result,
-                                 bool passive,
-                                 bool cancelable,
-                                 double event_timestamp,
-                                 const ui::LatencyInfo& latency_info) {
-  enum {
-    PASSIVE_LISTENER_UMA_ENUM_PASSIVE,
-    PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE,
-    PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED,
-    PASSIVE_LISTENER_UMA_ENUM_CANCELABLE,
-    PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED,
-    PASSIVE_LISTENER_UMA_ENUM_COUNT
-  };
-
-  int enum_value;
-  if (passive)
-    enum_value = PASSIVE_LISTENER_UMA_ENUM_PASSIVE;
-  else if (!cancelable)
-    enum_value = PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE;
-  else if (result == WebInputEventResult::HandledApplication)
-    enum_value = PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED;
-  else if (result == WebInputEventResult::HandledSuppressed)
-    enum_value = PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED;
-  else
-    enum_value = PASSIVE_LISTENER_UMA_ENUM_CANCELABLE;
-
-  UMA_HISTOGRAM_ENUMERATION("Event.PassiveListeners", enum_value,
-                            PASSIVE_LISTENER_UMA_ENUM_COUNT);
-
-  if (enum_value == PASSIVE_LISTENER_UMA_ENUM_CANCELABLE &&
-      base::TimeTicks::IsHighResolution()) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    LogPassiveLatency(GetEventLatencyMicros(event_timestamp, now));
-    for (size_t i = 0; i < latency_info.coalesced_events_size(); i++)
-      LogPassiveLatency(GetEventLatencyMicros(
-          latency_info.timestamps_of_coalesced_events()[i], now));
-  }
+bool IsDateTimeInput(ui::TextInputType type) {
+  return type == ui::TEXT_INPUT_TYPE_DATE ||
+         type == ui::TEXT_INPUT_TYPE_DATE_TIME ||
+         type == ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL ||
+         type == ui::TEXT_INPUT_TYPE_MONTH ||
+         type == ui::TEXT_INPUT_TYPE_TIME || type == ui::TEXT_INPUT_TYPE_WEEK;
 }
 
 }  // namespace
@@ -550,11 +434,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       compositor_never_visible_(never_visible),
       is_fullscreen_granted_(false),
       display_mode_(blink::WebDisplayModeUndefined),
-      handling_input_event_(false),
-      handling_event_overscroll_(nullptr),
       ime_event_guard_(nullptr),
-      handling_event_type_(WebInputEvent::Undefined),
-      ignore_ack_for_mouse_move_from_debugger_(false),
       closing_(false),
       host_closing_(false),
       is_swapped_out_(swapped_out),
@@ -565,7 +445,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       can_compose_inline_(true),
       popup_type_(popup_type),
       pending_window_rect_count_(0),
-      suppress_next_char_events_(false),
+      input_handler_(this, this),
       screen_info_(screen_info),
       device_scale_factor_(screen_info_.deviceScaleFactor),
       next_output_surface_id_(0),
@@ -575,7 +455,6 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       popup_origin_scale_for_emulation_(0.f),
       frame_swap_message_queue_(new FrameSwapMessageQueue()),
       resizing_mode_selector_(new ResizingModeSelector()),
-      context_menu_source_type_(ui::MENU_SOURCE_MOUSE),
       has_host_context_menu_location_(false) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
@@ -1150,251 +1029,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
                                       const ui::LatencyInfo& latency_info) {
   if (!input_event)
     return;
-
-  // TODO(dtapuska): Passive support not implemented yet crbug.com/489802
-  bool passive = false;
-  base::AutoReset<bool> handling_input_event_resetter(&handling_input_event_,
-                                                      true);
-  base::AutoReset<WebInputEvent::Type> handling_event_type_resetter(
-      &handling_event_type_, input_event->type);
-
-  // Calls into |didOverscroll()| while handling this event will populate
-  // |event_overscroll|, which in turn will be bundled with the event ack.
-  scoped_ptr<DidOverscrollParams> event_overscroll;
-  base::AutoReset<scoped_ptr<DidOverscrollParams>*>
-      handling_event_overscroll_resetter(&handling_event_overscroll_,
-                                         &event_overscroll);
-
-#if defined(OS_ANDROID)
-  const bool is_keyboard_event =
-      WebInputEvent::isKeyboardEventType(input_event->type);
-
-  // For non-keyboard events, we want the change source to be FROM_NON_IME.
-  ImeEventGuard guard(this, false, is_keyboard_event);
-#endif
-
-  base::TimeTicks start_time;
-  if (base::TimeTicks::IsHighResolution())
-    start_time = base::TimeTicks::Now();
-
-  TRACE_EVENT1("renderer,benchmark", "RenderWidget::OnHandleInputEvent",
-               "event", WebInputEventTraits::GetName(input_event->type));
-  TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");
-  TRACE_EVENT_WITH_FLOW1("input,benchmark",
-                         "LatencyInfo.Flow",
-                         TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                         "step", "HandleInputEventMain");
-
-  // If we don't have a high res timer, these metrics won't be accurate enough
-  // to be worth collecting. Note that this does introduce some sampling bias.
-  if (!start_time.is_null())
-    LogInputEventLatencyUma(*input_event, start_time, latency_info);
-
-  scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
-  ui::LatencyInfo swap_latency_info(latency_info);
-  if (compositor_) {
-    latency_info_swap_promise_monitor =
-        compositor_->CreateLatencyInfoSwapPromiseMonitor(&swap_latency_info)
-            .Pass();
-  }
-
-  bool prevent_default = false;
-  if (WebInputEvent::isMouseEventType(input_event->type)) {
-    const WebMouseEvent& mouse_event =
-        *static_cast<const WebMouseEvent*>(input_event);
-    TRACE_EVENT2("renderer", "HandleMouseMove",
-                 "x", mouse_event.x, "y", mouse_event.y);
-    context_menu_source_type_ = ui::MENU_SOURCE_MOUSE;
-    prevent_default = WillHandleMouseEvent(mouse_event);
-  }
-
-  if (WebInputEvent::isKeyboardEventType(input_event->type)) {
-    context_menu_source_type_ = ui::MENU_SOURCE_KEYBOARD;
-#if defined(OS_ANDROID)
-    // The DPAD_CENTER key on Android has a dual semantic: (1) in the general
-    // case it should behave like a select key (i.e. causing a click if a button
-    // is focused). However, if a text field is focused (2), its intended
-    // behavior is to just show the IME and don't propagate the key.
-    // A typical use case is a web form: the DPAD_CENTER should bring up the IME
-    // when clicked on an input text field and cause the form submit if clicked
-    // when the submit button is focused, but not vice-versa.
-    // The UI layer takes care of translating DPAD_CENTER into a RETURN key,
-    // but at this point we have to swallow the event for the scenario (2).
-    const WebKeyboardEvent& key_event =
-        *static_cast<const WebKeyboardEvent*>(input_event);
-    if (key_event.nativeKeyCode == AKEYCODE_DPAD_CENTER &&
-        GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
-      OnShowImeIfNeeded();
-      prevent_default = true;
-    }
-#endif
-  }
-
-  if (WebInputEvent::isGestureEventType(input_event->type)) {
-    const WebGestureEvent& gesture_event =
-        *static_cast<const WebGestureEvent*>(input_event);
-    context_menu_source_type_ = ui::MENU_SOURCE_TOUCH;
-    prevent_default = prevent_default || WillHandleGestureEvent(gesture_event);
-  }
-
-  WebInputEventResult processed =
-      prevent_default ? WebInputEventResult::HandledSuppressed
-                      : WebInputEventResult::NotHandled;
-  if (input_event->type != WebInputEvent::Char || !suppress_next_char_events_) {
-    suppress_next_char_events_ = false;
-    if (processed == WebInputEventResult::NotHandled && webwidget_)
-      processed = webwidget_->handleInputEvent(*input_event);
-  }
-
-  // TODO(dtapuska): Use the input_event->timeStampSeconds as the start
-  // ideally this should be when the event was sent by the compositor to the
-  // renderer. crbug.com/565348
-  if (input_event->type == WebInputEvent::TouchStart ||
-      input_event->type == WebInputEvent::TouchMove ||
-      input_event->type == WebInputEvent::TouchEnd) {
-    LogPassiveEventListenersUma(
-        processed, passive,
-        static_cast<const WebTouchEvent*>(input_event)->cancelable,
-        input_event->timeStampSeconds, latency_info);
-  } else if (input_event->type == WebInputEvent::MouseWheel) {
-    LogPassiveEventListenersUma(processed, passive, !passive,
-                                input_event->timeStampSeconds, latency_info);
-  }
-
-  // If this RawKeyDown event corresponds to a browser keyboard shortcut and
-  // it's not processed by webkit, then we need to suppress the upcoming Char
-  // events.
-  bool is_keyboard_shortcut =
-      input_event->type == WebInputEvent::RawKeyDown &&
-      static_cast<const WebKeyboardEvent*>(input_event)->isBrowserShortcut;
-  if (processed == WebInputEventResult::NotHandled && is_keyboard_shortcut)
-    suppress_next_char_events_ = true;
-
-  InputEventAckState ack_result = processed == WebInputEventResult::NotHandled
-                                      ? INPUT_EVENT_ACK_STATE_NOT_CONSUMED
-                                      : INPUT_EVENT_ACK_STATE_CONSUMED;
-  if (processed == WebInputEventResult::NotHandled &&
-      input_event->type == WebInputEvent::TouchStart) {
-    const WebTouchEvent& touch_event =
-        *static_cast<const WebTouchEvent*>(input_event);
-    // Hit-test for all the pressed touch points. If there is a touch-handler
-    // for any of the touch points, then the renderer should continue to receive
-    // touch events.
-    ack_result = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
-    for (size_t i = 0; i < touch_event.touchesLength; ++i) {
-      if (touch_event.touches[i].state == WebTouchPoint::StatePressed &&
-          HasTouchEventHandlersAt(
-              gfx::ToFlooredPoint(touch_event.touches[i].position))) {
-        ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-        break;
-      }
-    }
-  }
-
-  // Send mouse wheel events and their disposition to the compositor thread, so
-  // that they can be used to produce the elastic overscroll effect on Mac.
-  if (input_event->type == WebInputEvent::MouseWheel) {
-    ObserveWheelEventAndResult(
-        static_cast<const WebMouseWheelEvent&>(*input_event),
-        event_overscroll ? event_overscroll->latest_overscroll_delta
-                         : gfx::Vector2dF(),
-        processed != WebInputEventResult::NotHandled);
-  }
-
-  bool frame_pending = compositor_ && compositor_->BeginMainFrameRequested();
-
-  // If we don't have a fast and accurate Now(), we assume the input handlers
-  // are heavy and rate limit them.
-  bool rate_limiting_wanted =
-      input_event->type == WebInputEvent::MouseMove ||
-      input_event->type == WebInputEvent::MouseWheel;
-  if (rate_limiting_wanted && !start_time.is_null()) {
-      base::TimeTicks end_time = base::TimeTicks::Now();
-      total_input_handling_time_this_frame_ += (end_time - start_time);
-      rate_limiting_wanted =
-          total_input_handling_time_this_frame_.InMicroseconds() >
-          kInputHandlingTimeThrottlingThresholdMicroseconds;
-  }
-
-  TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
-
-  // Note that we can't use handling_event_type_ here since it will be overriden
-  // by reentrant calls for events after the paused one.
-  bool no_ack = ignore_ack_for_mouse_move_from_debugger_ &&
-      input_event->type == WebInputEvent::MouseMove;
-  if (WebInputEventTraits::WillReceiveAckFromRenderer(*input_event) &&
-      !no_ack) {
-    InputEventAck ack(input_event->type, ack_result, swap_latency_info,
-                      event_overscroll.Pass(),
-                      WebInputEventTraits::GetUniqueTouchEventId(*input_event));
-    scoped_ptr<IPC::Message> response(
-        new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
-    if (rate_limiting_wanted && frame_pending && !is_hidden_) {
-      // We want to rate limit the input events in this case, so we'll wait for
-      // painting to finish before ACKing this message.
-      TRACE_EVENT_INSTANT0("renderer",
-        "RenderWidget::OnHandleInputEvent ack throttled",
-        TRACE_EVENT_SCOPE_THREAD);
-      if (pending_input_event_ack_) {
-        TRACE_EVENT_ASYNC_END0("input", "RenderWidget::ThrottledInputEventAck",
-                               pending_input_event_ack_.get());
-        // As two different kinds of events could cause us to postpone an ack
-        // we send it now, if we have one pending. The Browser should never
-        // send us the same kind of event we are delaying the ack for.
-        Send(pending_input_event_ack_.release());
-      }
-      pending_input_event_ack_ = response.Pass();
-      TRACE_EVENT_ASYNC_BEGIN0("input", "RenderWidget::ThrottledInputEventAck",
-                               pending_input_event_ack_.get());
-      if (compositor_)
-        compositor_->NotifyInputThrottledUntilCommit();
-    } else {
-      Send(response.release());
-    }
-  } else {
-    DCHECK(!event_overscroll) << "Unexpected overscroll for un-acked event";
-  }
-  if (!no_ack && RenderThreadImpl::current()) {
-    RenderThreadImpl::current()
-        ->GetRendererScheduler()
-        ->DidHandleInputEventOnMainThread(*input_event);
-  }
-  if (input_event->type == WebInputEvent::MouseMove)
-    ignore_ack_for_mouse_move_from_debugger_ = false;
-
-#if defined(OS_ANDROID)
-  // Allow the IME to be shown when the focus changes as a consequence
-  // of a processed touch end event.
-  if (input_event->type == WebInputEvent::TouchEnd &&
-      processed != WebInputEventResult::NotHandled) {
-    UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
-  }
-#elif defined(USE_AURA)
-  // Show the virtual keyboard if enabled and a user gesture triggers a focus
-  // change.
-  if (processed != WebInputEventResult::NotHandled &&
-      (input_event->type == WebInputEvent::TouchEnd ||
-       input_event->type == WebInputEvent::MouseUp)) {
-    UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_IME);
-  }
-#endif
-
-  if (!prevent_default) {
-    if (WebInputEvent::isKeyboardEventType(input_event->type))
-      DidHandleKeyEvent();
-  }
-
-// TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
-// virtual keyboard.
-#if !defined(OS_ANDROID)
-  // Virtual keyboard is not supported, so react to focus change immediately.
-  if (processed != WebInputEventResult::NotHandled &&
-      (input_event->type == WebInputEvent::TouchEnd ||
-       input_event->type == WebInputEvent::MouseUp)) {
-    FocusChangeComplete();
-  }
-#endif
+  input_handler_.HandleInputEvent(*input_event, latency_info);
 }
 
 void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
@@ -1412,13 +1047,116 @@ void RenderWidget::OnSetFocus(bool enable) {
     webwidget_->setFocus(enable);
 }
 
-void RenderWidget::FlushPendingInputEventAck() {
-  if (pending_input_event_ack_) {
-    TRACE_EVENT_ASYNC_END0("input", "RenderWidget::ThrottledInputEventAck",
-                           pending_input_event_ack_.get());
-    Send(pending_input_event_ack_.release());
+///////////////////////////////////////////////////////////////////////////////
+// RenderWidgetInputHandlerDelegate
+
+void RenderWidget::FocusChangeComplete() {}
+
+bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
+  return true;
+}
+
+void RenderWidget::ObserveWheelEventAndResult(
+    const blink::WebMouseWheelEvent& wheel_event,
+    const gfx::Vector2dF& wheel_unused_delta,
+    bool event_processed) {
+  if (!compositor_deps_->IsElasticOverscrollEnabled())
+    return;
+
+  cc::InputHandlerScrollResult scroll_result;
+  scroll_result.did_scroll = event_processed;
+  scroll_result.did_overscroll_root = !wheel_unused_delta.IsZero();
+  scroll_result.unused_scroll_delta = wheel_unused_delta;
+
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  InputHandlerManager* input_handler_manager =
+      render_thread ? render_thread->input_handler_manager() : NULL;
+  if (input_handler_manager) {
+    input_handler_manager->ObserveWheelEventAndResultOnMainThread(
+        routing_id_, wheel_event, scroll_result);
   }
-  total_input_handling_time_this_frame_ = base::TimeDelta();
+}
+
+void RenderWidget::OnDidHandleKeyEvent() {}
+
+void RenderWidget::OnDidOverscroll(const DidOverscrollParams& params) {
+  Send(new InputHostMsg_DidOverscroll(routing_id_, params));
+}
+
+void RenderWidget::OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) {
+  Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, *input_event_ack));
+}
+
+void RenderWidget::UpdateTextInputState(ShowIme show_ime,
+                                        ChangeSource change_source) {
+  TRACE_EVENT0("renderer", "RenderWidget::UpdateTextInputState");
+  if (ime_event_guard_) {
+    // show_ime should still be effective even if it was set inside the IME
+    // event guard.
+    if (show_ime == ShowIme::IF_NEEDED) {
+      ime_event_guard_->set_show_ime(true);
+    }
+    return;
+  }
+
+  ui::TextInputType new_type = GetTextInputType();
+  if (IsDateTimeInput(new_type))
+    return;  // Not considered as a text input field in WebKit/Chromium.
+
+  blink::WebTextInputInfo new_info;
+  if (webwidget_)
+    new_info = webwidget_->textInputInfo();
+  const ui::TextInputMode new_mode = ConvertInputMode(new_info.inputMode);
+
+  bool new_can_compose_inline = CanComposeInline();
+
+  // Only sends text input params if they are changed or if the ime should be
+  // shown.
+  if (show_ime == ShowIme::IF_NEEDED ||
+      (text_input_type_ != new_type || text_input_mode_ != new_mode ||
+       text_input_info_ != new_info ||
+       can_compose_inline_ != new_can_compose_inline)
+#if defined(OS_ANDROID)
+      || text_field_is_dirty_
+#endif
+      ) {
+    ViewHostMsg_TextInputState_Params params;
+    params.type = new_type;
+    params.mode = new_mode;
+    params.flags = new_info.flags;
+    params.value = new_info.value.utf8();
+    params.selection_start = new_info.selectionStart;
+    params.selection_end = new_info.selectionEnd;
+    params.composition_start = new_info.compositionStart;
+    params.composition_end = new_info.compositionEnd;
+    params.can_compose_inline = new_can_compose_inline;
+    params.show_ime_if_needed = (show_ime == ShowIme::IF_NEEDED);
+#if defined(USE_AURA)
+    params.is_non_ime_change = true;
+#endif
+#if defined(OS_ANDROID)
+    params.is_non_ime_change =
+        (change_source == ChangeSource::FROM_NON_IME) || text_field_is_dirty_;
+    if (params.is_non_ime_change)
+      OnImeEventSentForAck(new_info);
+    text_field_is_dirty_ = false;
+#endif
+    Send(new ViewHostMsg_TextInputStateChanged(routing_id(), params));
+
+    text_input_info_ = new_info;
+    text_input_type_ = new_type;
+    text_input_mode_ = new_mode;
+    can_compose_inline_ = new_can_compose_inline;
+    text_input_flags_ = new_info.flags;
+  }
+}
+
+bool RenderWidget::WillHandleGestureEvent(const blink::WebGestureEvent& event) {
+  return false;
+}
+
+bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1500,7 +1238,7 @@ void RenderWidget::WillBeginCompositorFrame() {
   // The UpdateTextInputState can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
   // is done.
-  UpdateTextInputState(NO_SHOW_IME, FROM_NON_IME);
+  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
   UpdateSelectionBounds();
 }
 
@@ -1513,7 +1251,7 @@ void RenderWidget::DidCommitCompositorFrame() {
   FOR_EACH_OBSERVER(RenderFrameImpl, video_hole_frames_,
                     DidCommitCompositorFrame());
 #endif  // defined(VIDEO_HOLE)
-  FlushPendingInputEventAck();
+  input_handler_.FlushPendingInputEventAck();
 }
 
 void RenderWidget::DidCommitAndDrawCompositorFrame() {
@@ -1782,14 +1520,14 @@ void RenderWidget::OnImeConfirmComposition(const base::string16& text,
   if (!ShouldHandleImeEvent())
     return;
   ImeEventGuard guard(this);
-  handling_input_event_ = true;
+  input_handler_.set_handling_input_event(true);
   if (text.length())
     webwidget_->confirmComposition(text);
   else if (keep_selection)
     webwidget_->confirmComposition(WebWidget::KeepSelection);
   else
     webwidget_->confirmComposition(WebWidget::DoNotKeepSelection);
-  handling_input_event_ = false;
+  input_handler_.set_handling_input_event(false);
   UpdateCompositionInfo(true);
 }
 
@@ -1848,6 +1586,36 @@ void RenderWidget::showImeIfNeeded() {
   OnShowImeIfNeeded();
 }
 
+ui::TextInputType RenderWidget::GetTextInputType() {
+  if (webwidget_)
+    return WebKitToUiTextInputType(webwidget_->textInputType());
+  return ui::TEXT_INPUT_TYPE_NONE;
+}
+
+void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
+#if defined(OS_ANDROID)
+// TODO(yukawa): Start sending character bounds when the browser side
+// implementation becomes ready (crbug.com/424866).
+#else
+  TRACE_EVENT0("renderer", "RenderWidget::UpdateCompositionInfo");
+  gfx::Range range = gfx::Range();
+  if (should_update_range) {
+    GetCompositionRange(&range);
+  } else {
+    range = composition_range_;
+  }
+  std::vector<gfx::Rect> character_bounds;
+  GetCompositionCharacterBounds(&character_bounds);
+
+  if (!ShouldUpdateCompositionInfo(range, character_bounds))
+    return;
+  composition_character_bounds_ = character_bounds;
+  composition_range_ = range;
+  Send(new InputHostMsg_ImeCompositionRangeChanged(
+      routing_id(), composition_range_, composition_character_bounds_));
+#endif
+}
+
 void RenderWidget::convertViewportToWindow(blink::WebRect* rect) {
   if (IsUseZoomForDSFEnabled()) {
     float reverse = 1 / device_scale_factor_;
@@ -1864,7 +1632,7 @@ void RenderWidget::convertViewportToWindow(blink::WebRect* rect) {
 
 void RenderWidget::OnShowImeIfNeeded() {
 #if defined(OS_ANDROID) || defined(USE_AURA)
-  UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
+  UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
 #endif
 
 // TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
@@ -1906,23 +1674,6 @@ bool RenderWidget::ShouldHandleImeEvent() {
 #endif
 }
 
-bool RenderWidget::SendAckForMouseMoveFromDebugger() {
-  if (handling_event_type_ == WebInputEvent::MouseMove) {
-    // If we pause multiple times during a single mouse move event, we should
-    // only send ACK once.
-    if (!ignore_ack_for_mouse_move_from_debugger_) {
-      InputEventAck ack(handling_event_type_, INPUT_EVENT_ACK_STATE_CONSUMED);
-      Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
-      return true;
-    }
-  }
-  return false;
-}
-
-void RenderWidget::IgnoreAckForMouseMoveFromDebugger() {
-  ignore_ack_for_mouse_move_from_debugger_ = true;
-}
-
 void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
   if (device_scale_factor_ == device_scale_factor)
     return;
@@ -1961,7 +1712,7 @@ void RenderWidget::SetHidden(bool hidden) {
   // The status has changed.  Tell the RenderThread about it and ensure
   // throttled acks are released in case frame production ceases.
   is_hidden_ = hidden;
-  FlushPendingInputEventAck();
+  input_handler_.FlushPendingInputEventAck();
 
   if (is_hidden_)
     RenderThreadImpl::current()->WidgetHidden();
@@ -1995,15 +1746,6 @@ void RenderWidget::set_next_paint_is_repaint_ack() {
   next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK;
 }
 
-static bool IsDateTimeInput(ui::TextInputType type) {
-  return type == ui::TEXT_INPUT_TYPE_DATE ||
-      type == ui::TEXT_INPUT_TYPE_DATE_TIME ||
-      type == ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL ||
-      type == ui::TEXT_INPUT_TYPE_MONTH ||
-      type == ui::TEXT_INPUT_TYPE_TIME ||
-      type == ui::TEXT_INPUT_TYPE_WEEK;
-}
-
 void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
   if (!ime_event_guard_)
     ime_event_guard_ = guard;
@@ -2030,74 +1772,9 @@ void RenderWidget::OnImeEventGuardFinish(ImeEventGuard* guard) {
   UpdateSelectionBounds();
 #if defined(OS_ANDROID)
   UpdateTextInputState(
-      guard->show_ime() ? SHOW_IME_IF_NEEDED : NO_SHOW_IME,
-      guard->from_ime() ? FROM_IME : FROM_NON_IME);
+      guard->show_ime() ? ShowIme::IF_NEEDED : ShowIme::HIDE_IME,
+      guard->from_ime() ? ChangeSource::FROM_IME : ChangeSource::FROM_NON_IME);
 #endif
-}
-
-void RenderWidget::UpdateTextInputState(ShowIme show_ime,
-                                        ChangeSource change_source) {
-  TRACE_EVENT0("renderer", "RenderWidget::UpdateTextInputState");
-  if (ime_event_guard_) {
-    // show_ime should still be effective even if it was set inside the IME
-    // event guard.
-    if (show_ime == SHOW_IME_IF_NEEDED) {
-      ime_event_guard_->set_show_ime(true);
-    }
-    return;
-  }
-
-  ui::TextInputType new_type = GetTextInputType();
-  if (IsDateTimeInput(new_type))
-    return;  // Not considered as a text input field in WebKit/Chromium.
-
-  blink::WebTextInputInfo new_info;
-  if (webwidget_)
-    new_info = webwidget_->textInputInfo();
-  const ui::TextInputMode new_mode = ConvertInputMode(new_info.inputMode);
-
-  bool new_can_compose_inline = CanComposeInline();
-
-  // Only sends text input params if they are changed or if the ime should be
-  // shown.
-  if (show_ime == SHOW_IME_IF_NEEDED ||
-      (text_input_type_ != new_type ||
-       text_input_mode_ != new_mode ||
-       text_input_info_ != new_info ||
-       can_compose_inline_ != new_can_compose_inline)
-#if defined(OS_ANDROID)
-      || text_field_is_dirty_
-#endif
-      ) {
-    ViewHostMsg_TextInputState_Params params;
-    params.type = new_type;
-    params.mode = new_mode;
-    params.flags = new_info.flags;
-    params.value = new_info.value.utf8();
-    params.selection_start = new_info.selectionStart;
-    params.selection_end = new_info.selectionEnd;
-    params.composition_start = new_info.compositionStart;
-    params.composition_end = new_info.compositionEnd;
-    params.can_compose_inline = new_can_compose_inline;
-    params.show_ime_if_needed = (show_ime == SHOW_IME_IF_NEEDED);
-#if defined(USE_AURA)
-    params.is_non_ime_change = true;
-#endif
-#if defined(OS_ANDROID)
-    params.is_non_ime_change = (change_source == FROM_NON_IME) ||
-                         text_field_is_dirty_;
-    if (params.is_non_ime_change)
-      OnImeEventSentForAck(new_info);
-    text_field_is_dirty_ = false;
-#endif
-    Send(new ViewHostMsg_TextInputStateChanged(routing_id(), params));
-
-    text_input_info_ = new_info;
-    text_input_type_ = new_type;
-    text_input_mode_ = new_mode;
-    can_compose_inline_ = new_can_compose_inline;
-    text_input_flags_ = new_info.flags;
-  }
 }
 
 void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
@@ -2182,36 +1859,6 @@ ui::TextInputType RenderWidget::WebKitToUiTextInputType(
   return static_cast<ui::TextInputType>(type);
 }
 
-ui::TextInputType RenderWidget::GetTextInputType() {
-  if (webwidget_)
-    return WebKitToUiTextInputType(webwidget_->textInputType());
-  return ui::TEXT_INPUT_TYPE_NONE;
-}
-
-void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
-#if defined(OS_ANDROID)
-  // TODO(yukawa): Start sending character bounds when the browser side
-  // implementation becomes ready (crbug.com/424866).
-#else
-  TRACE_EVENT0("renderer", "RenderWidget::UpdateCompositionInfo");
-  gfx::Range range = gfx::Range();
-  if (should_update_range) {
-    GetCompositionRange(&range);
-  } else {
-    range = composition_range_;
-  }
-  std::vector<gfx::Rect> character_bounds;
-  GetCompositionCharacterBounds(&character_bounds);
-
-  if (!ShouldUpdateCompositionInfo(range, character_bounds))
-    return;
-  composition_character_bounds_ = character_bounds;
-  composition_range_ = range;
-  Send(new InputHostMsg_ImeCompositionRangeChanged(
-      routing_id(), composition_range_, composition_character_bounds_));
-#endif
-}
-
 void RenderWidget::GetCompositionCharacterBounds(
     std::vector<gfx::Rect>* bounds) {
   DCHECK(bounds);
@@ -2272,7 +1919,7 @@ void RenderWidget::showUnhandledTapUIIfNeeded(
     const WebPoint& tapped_position,
     const WebNode& tapped_node,
     bool page_changed) {
-  DCHECK(handling_input_event_);
+  DCHECK(input_handler_.handling_input_event());
   bool should_trigger = !page_changed && tapped_node.isTextNode() &&
                         !tapped_node.isContentEditable() &&
                         !tapped_node.isInsideFocusableElementOrARIAWidget();
@@ -2290,13 +1937,13 @@ void RenderWidget::didHandleGestureEvent(
   if (event_cancelled)
     return;
   if (event.type == WebInputEvent::GestureTap) {
-    UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
+    UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
   } else if (event.type == WebInputEvent::GestureLongPress) {
     DCHECK(webwidget_);
     if (webwidget_->textInputInfo().value.isEmpty())
-      UpdateTextInputState(NO_SHOW_IME, FROM_NON_IME);
+      UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
     else
-      UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
+      UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
   }
 #endif
 }
@@ -2306,25 +1953,8 @@ void RenderWidget::didOverscroll(
     const blink::WebFloatSize& accumulatedRootOverScroll,
     const blink::WebFloatPoint& position,
     const blink::WebFloatSize& velocity) {
-  DidOverscrollParams params;
-  params.accumulated_overscroll = gfx::Vector2dF(
-      accumulatedRootOverScroll.width, accumulatedRootOverScroll.height);
-  params.latest_overscroll_delta =
-      gfx::Vector2dF(unusedDelta.width, unusedDelta.height);
-  // TODO(sataya.m): don't negate velocity once http://crbug.com/499743 is
-  // fixed.
-  params.current_fling_velocity =
-      gfx::Vector2dF(-velocity.width, -velocity.height);
-  params.causal_event_viewport_point = gfx::PointF(position.x, position.y);
-
-  // If we're currently handling an event, stash the overscroll data such that
-  // it can be bundled in the event ack.
-  if (handling_event_overscroll_) {
-    handling_event_overscroll_->reset(new DidOverscrollParams(params));
-    return;
-  }
-
-  Send(new InputHostMsg_DidOverscroll(routing_id_, params));
+  input_handler_.DidOverscrollFromBlink(unusedDelta, accumulatedRootOverScroll,
+                                        position, velocity);
 }
 
 void RenderWidget::StartCompositor() {
@@ -2364,34 +1994,16 @@ RenderWidgetCompositor* RenderWidget::compositor() const {
   return compositor_.get();
 }
 
-bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
-  return false;
+void RenderWidget::SetHandlingInputEventForTesting(bool handling_input_event) {
+  input_handler_.set_handling_input_event(handling_input_event);
 }
 
-bool RenderWidget::WillHandleGestureEvent(
-    const blink::WebGestureEvent& event) {
-  return false;
+bool RenderWidget::SendAckForMouseMoveFromDebugger() {
+  return input_handler_.SendAckForMouseMoveFromDebugger();
 }
 
-void RenderWidget::ObserveWheelEventAndResult(
-    const blink::WebMouseWheelEvent& wheel_event,
-    const gfx::Vector2dF& wheel_unused_delta,
-    bool event_processed) {
-  if (!compositor_deps_->IsElasticOverscrollEnabled())
-    return;
-
-  cc::InputHandlerScrollResult scroll_result;
-  scroll_result.did_scroll = event_processed;
-  scroll_result.did_overscroll_root = !wheel_unused_delta.IsZero();
-  scroll_result.unused_scroll_delta = wheel_unused_delta;
-
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  InputHandlerManager* input_handler_manager =
-      render_thread ? render_thread->input_handler_manager() : NULL;
-  if (input_handler_manager) {
-    input_handler_manager->ObserveWheelEventAndResultOnMainThread(
-        routing_id_, wheel_event, scroll_result);
-  }
+void RenderWidget::IgnoreAckForMouseMoveFromDebugger() {
+  input_handler_.IgnoreAckForMouseMoveFromDebugger();
 }
 
 void RenderWidget::hasTouchEventHandlers(bool has_handlers) {
@@ -2410,7 +2022,7 @@ void RenderWidget::setTouchAction(
 
   // Ignore setTouchAction calls that result from synthetic touch events (eg.
   // when blink is emulating touch with mouse).
-  if (handling_event_type_ != WebInputEvent::TouchStart)
+  if (input_handler_.handling_event_type() != WebInputEvent::TouchStart)
     return;
 
   // Verify the same values are used by the types so we can cast between them.
@@ -2436,10 +2048,6 @@ void RenderWidget::didUpdateTextOfFocusedElementByNonUserInput() {
 #if defined(OS_ANDROID)
   text_field_is_dirty_ = true;
 #endif
-}
-
-bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
-  return true;
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>

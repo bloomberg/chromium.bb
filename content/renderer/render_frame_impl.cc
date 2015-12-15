@@ -1010,8 +1010,8 @@ void RenderFrameImpl::PepperTextInputTypeChanged(
   if (instance != render_view_->focused_pepper_plugin())
     return;
 
-  GetRenderWidget()->UpdateTextInputState(
-      RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
+  GetRenderWidget()->UpdateTextInputState(ShowIme::HIDE_IME,
+                                          ChangeSource::FROM_NON_IME);
 
   FocusedNodeChangedForAccessibility(WebNode());
 }
@@ -3366,7 +3366,8 @@ void RenderFrameImpl::requestNotificationPermission(
 }
 
 void RenderFrameImpl::didChangeSelection(bool is_empty_selection) {
-  if (!GetRenderWidget()->handling_input_event() && !handling_select_range_)
+  if (!GetRenderWidget()->input_handler().handling_input_event() &&
+      !handling_select_range_)
     return;
 
   if (is_empty_selection)
@@ -3377,8 +3378,8 @@ void RenderFrameImpl::didChangeSelection(bool is_empty_selection) {
   // was changed, and SyncSelectionIfRequired may send SelectionChanged
   // to notify the selection was changed.  Focus change should be notified
   // before selection change.
-  GetRenderWidget()->UpdateTextInputState(
-      RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
+  GetRenderWidget()->UpdateTextInputState(ShowIme::HIDE_IME,
+                                          ChangeSource::FROM_NON_IME);
   SyncSelectionIfRequired();
 }
 
@@ -3458,7 +3459,8 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   GetRenderWidget()->convertViewportToWindow(&position_in_window);
   params.x = position_in_window.x;
   params.y = position_in_window.y;
-  params.source_type = GetRenderWidget()->context_menu_source_type();
+  params.source_type =
+      GetRenderWidget()->input_handler().context_menu_source_type();
   GetRenderWidget()->OnShowHostContextMenu(&params);
   if (GetRenderWidget()->has_host_context_menu_location()) {
     params.x = GetRenderWidget()->host_context_menu_location().x();
