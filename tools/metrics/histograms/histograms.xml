@@ -31622,6 +31622,55 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.AbortTiming.Close" units="milliseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation start to the time the page load was
+    aborted by the user closing the tab or browser.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.AbortTiming.ForwardBackNavigation"
+    units="milliseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation start to the time the page load was
+    aborted by a forward or back navigation.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.AbortTiming.NewNavigation" units="milliseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation start to the time the page load was
+    aborted by a new navigation.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.AbortTiming.Other" units="milliseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation start to the time the page load was
+    aborted. The abort cause is unknown.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.AbortTiming.Reload" units="milliseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation start to the time the page load was
+    aborted by a reload.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.AbortTiming.Stop" units="milliseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation start to the time the page load was
+    aborted by the user pressing stop.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Clients.GoogleCaptcha.Events"
     enum="GoogleCaptchaEvent">
   <owner>mdw@chromium.org</owner>
@@ -83150,6 +83199,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstPaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstTextPaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToLoadEventFired"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadEventConditions">
+  <suffix name="BeforeCommit"/>
+  <suffix name="AfterCommit.BeforePaint"/>
+  <affected-histogram name="PageLoad.AbortTiming.Close"/>
+  <affected-histogram name="PageLoad.AbortTiming.ForwardBackNavigation"/>
+  <affected-histogram name="PageLoad.AbortTiming.NewNavigation"/>
+  <affected-histogram name="PageLoad.AbortTiming.Other"/>
+  <affected-histogram name="PageLoad.AbortTiming.Reload"/>
+  <affected-histogram name="PageLoad.AbortTiming.Stop"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstBackground"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClients" separator="."

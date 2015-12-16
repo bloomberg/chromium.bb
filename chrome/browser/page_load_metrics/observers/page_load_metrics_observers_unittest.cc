@@ -4,6 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/google_captcha_observer.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -49,6 +50,7 @@ class TestPageLoadMetricsEmbedderInterface
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
         make_scoped_ptr(new TestFromGWSPageLoadMetricsObserver(referrer_)));
+    tracker->AddObserver(make_scoped_ptr(new AbortsPageLoadMetricsObserver()));
   }
   void set_referrer(const content::Referrer& referrer) { referrer_ = referrer; }
 
@@ -235,6 +237,68 @@ TEST_F(PageLoadMetricsObserverTest, ReferralNotFromGWS) {
   // Navigate again to force logging.
   NavigateAndCommit(GURL("https://www.google.com"));
   histogram_tester_.ExpectTotalCount(kHistogramNameFromGWSFirstTextPaint, 0);
+}
+
+TEST_F(PageLoadMetricsObserverTest, AbortStopClose) {
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  NavigateAndCommit(GURL("https://www.google.com"));
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      web_contents()->GetMainFrame());
+  // Simulate the user pressing the stop button.
+  observer_->NavigationStopped();
+  web_contents_tester->NavigateAndCommit(GURL("https://www.example.com"));
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      web_contents()->GetMainFrame());
+  // Kill the MetricsWebContentsObserver to simulate closing the tab.
+  observer_.reset();
+  histogram_tester_.ExpectTotalCount(internal::kHistogramAbortStopBeforePaint,
+                                     1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramAbortCloseBeforePaint,
+                                     1);
+}
+
+TEST_F(PageLoadMetricsObserverTest, AbortNewNavigation) {
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL("https://www.google.com"));
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      web_contents()->GetMainFrame());
+  // Simulate the user performaning another navigation before first paint.
+  web_contents_tester->NavigateAndCommit(GURL("https://www.example.com"));
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramAbortNewNavigationBeforePaint, 1);
+}
+
+TEST_F(PageLoadMetricsObserverTest, NoAbortNewNavigationFromAboutURL) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL("about:blank"));
+  web_contents_tester->NavigateAndCommit(GURL("https://www.example.com"));
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramAbortNewNavigationBeforePaint, 0);
+}
+
+TEST_F(PageLoadMetricsObserverTest, NoAbortNewNavigationAfterPaint) {
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_paint = base::TimeDelta::FromMicroseconds(1);
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL("https://www.google.com"));
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      web_contents()->GetMainFrame());
+  web_contents_tester->NavigateAndCommit(GURL("https://www.example.com"));
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramAbortNewNavigationBeforePaint, 0);
 }
 
 TEST_F(PageLoadMetricsObserverTest, IsGoogleCaptcha) {

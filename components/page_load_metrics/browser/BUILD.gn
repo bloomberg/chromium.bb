@@ -21,6 +21,7 @@ static_library("browser") {
     "//components/rappor",
     "//ipc",
     "//net",
+    "//ui/base",
   ]
 }
 

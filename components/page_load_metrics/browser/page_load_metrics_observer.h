@@ -11,11 +11,47 @@
 
 namespace page_load_metrics {
 
+class PageLoadMetricsObservable;
+
+// This enum represents how a page load ends. If the action occurs before the
+// page load finishes (or reaches some point like first paint), then we consider
+// the load to be aborted.
+enum UserAbortType {
+  // Represents no abort.
+  ABORT_NONE,
+
+  // If the user presses reload or shift-reload.
+  ABORT_RELOAD,
+
+  // The user presses the back/forward button.
+  ABORT_FORWARD_BACK,
+
+  // If the navigation is replaced by a new navigation. This includes link
+  // clicks, typing in the omnibox (not a reload), and form submissions.
+  ABORT_NEW_NAVIGATION,
+
+  // If the user presses the stop X button.
+  ABORT_STOP,
+
+  // If the navigation is aborted by closing the tab or browser.
+  ABORT_CLOSE,
+
+  // We don't know why the navigation aborted. This is the value we assign to an
+  // aborted load if the only signal we get is a provisional load finishing
+  // without committing, either without error or with net::ERR_ABORTED.
+  ABORT_OTHER,
+
+  // Add values before this final count.
+  ABORT_LAST_ENTRY
+};
+
 struct PageLoadExtraInfo {
   PageLoadExtraInfo(const base::TimeDelta& first_background_time,
                     const base::TimeDelta& first_foreground_time,
                     bool started_in_foreground,
-                    bool has_commit);
+                    bool has_commit,
+                    UserAbortType abort_type,
+                    const base::TimeDelta& time_to_abort);
 
   // Returns the time to first background if the page load started in the
   // foreground. If the page has not been backgrounded, or the page started in
@@ -32,6 +68,12 @@ struct PageLoadExtraInfo {
 
   // True if the page load committed and received its first bytes of data.
   const bool has_commit;
+
+  // The abort time and time to abort for this page load. If the page was not
+  // aborted, |abort_type| will be |ABORT_NONE| and |time_to_abort| will be
+  // |base::TimeDelta()|.
+  const UserAbortType abort_type;
+  const base::TimeDelta time_to_abort;
 };
 
 // Interface for PageLoadMetrics observers. All instances of this class are

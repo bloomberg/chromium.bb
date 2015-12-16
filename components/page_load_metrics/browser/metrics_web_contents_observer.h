@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
@@ -72,6 +71,11 @@ const char kHistogramFirstBackground[] =
     "PageLoad.Timing2.NavigationToFirstBackground";
 const char kHistogramFirstForeground[] =
     "PageLoad.Timing2.NavigationToFirstForeground";
+
+const char kHistogramBackgroundBeforePaint[] =
+    "PageLoad.Timing2.NavigationToFirstBackground.AfterCommit.BeforePaint";
+const char kHistogramBackgroundBeforeCommit[] =
+    "PageLoad.Timing2.NavigationToFirstBackground.BeforeCommit";
 
 const char kProvisionalEvents[] = "PageLoad.Events.Provisional";
 const char kCommittedEvents[] = "PageLoad.Events.Committed";
@@ -222,16 +226,24 @@ class PageLoadTracker {
   void set_renderer_tracked(bool renderer_tracked);
   bool renderer_tracked() { return renderer_tracked_; }
 
+  UserAbortType abort_type() const { return abort_type_; }
+  base::TimeTicks abort_time() const { return abort_time_; }
+
   void AddObserver(scoped_ptr<PageLoadMetricsObserver> observer);
+
+  // If the user performs some abort-like action while we are tracking this page
+  // load, notify the tracker. Note that we may not classify this as an abort if
+  // we've already performed a first paint.
+  void NotifyAbort(UserAbortType abort_type, base::TimeTicks timestamp);
+  void UpdateAbort(UserAbortType abort_type, base::TimeTicks timestamp);
 
  private:
   PageLoadExtraInfo GetPageLoadMetricsInfo();
   // Only valid to call post-commit.
   const GURL& committed_url();
 
-  base::TimeDelta GetBackgroundDelta();
-  void RecordTimingHistograms();
-  void RecordRappor();
+  void RecordTimingHistograms(const PageLoadExtraInfo& info);
+  void RecordRappor(const PageLoadExtraInfo& info);
 
   // Whether the renderer should be sending timing IPCs to this page load.
   bool renderer_tracked_;
@@ -240,6 +252,11 @@ class PageLoadTracker {
 
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
+
+  // Will be ABORT_NONE if we have not aborted this load yet. Otherwise will
+  // be the first abort action the user performed.
+  UserAbortType abort_type_;
+  base::TimeTicks abort_time_;
 
   // We record separate metrics for events that occur after a background,
   // because metrics like layout/paint are delayed artificially
@@ -285,14 +302,19 @@ class MetricsWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
       content::NavigationHandle* navigation_handle) override;
-
+  void NavigationStopped() override;
   void WasShown() override;
   void WasHidden() override;
-
   void RenderProcessGone(base::TerminationStatus status) override;
 
  private:
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
+
+  // Notify all loads, provisional and committed, that we performed an action
+  // that might abort them.
+  void NotifyAbortAllLoads(UserAbortType abort_type);
+  void NotifyAbortAllLoadsWithTimestamp(UserAbortType abort_type,
+                                        base::TimeTicks timestamp);
 
   void OnTimingUpdated(content::RenderFrameHost*, const PageLoadTiming& timing);
 
@@ -309,6 +331,14 @@ class MetricsWebContentsObserver
   // valid until commit time, when we remove it from the map.
   std::map<content::NavigationHandle*, scoped_ptr<PageLoadTracker>>
       provisional_loads_;
+
+  // Tracks aborted provisional loads for a little bit longer than usual (one
+  // more navigation commit at the max), in order to better understand how the
+  // navigation failed. This is because most provisional loads are destroyed and
+  // vanish before we get signal about what caused the abort (new navigation,
+  // stop button, etc.).
+  std::vector<scoped_ptr<PageLoadTracker>> aborted_provisional_loads_;
+
   scoped_ptr<PageLoadTracker> committed_load_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserver);

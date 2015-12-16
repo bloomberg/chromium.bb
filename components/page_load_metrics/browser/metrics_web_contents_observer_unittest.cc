@@ -474,6 +474,25 @@ TEST_F(MetricsWebContentsObserverTest, AbortProvisionalLoad) {
   CheckTotalEvents();
 }
 
+TEST_F(MetricsWebContentsObserverTest, BackgroundBeforePaint) {
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_paint = base::TimeDelta::FromSeconds(10);
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL("https://www.google.com"));
+  // Background the tab and go for a coffee or something.
+  observer_->WasHidden();
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      main_rfh());
+  // Come back and start browsing again.
+  observer_->WasShown();
+  // Simulate the user performaning another navigation.
+  web_contents_tester->NavigateAndCommit(GURL("https://www.example.com"));
+  histogram_tester_.ExpectTotalCount(kHistogramBackgroundBeforePaint, 1);
+}
+
 TEST_F(MetricsWebContentsObserverTest, AbortProvisionalLoadInBackground) {
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());

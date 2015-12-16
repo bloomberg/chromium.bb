@@ -3,4 +3,5 @@ include_rules = [
   "+components/page_load_metrics/browser",
   "+components/rappor",
   "+net/base",
+  "+ui/base/page_transition_types.h",
 ]
