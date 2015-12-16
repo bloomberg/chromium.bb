@@ -540,6 +540,9 @@ void CheckNavigationEntryMatchLoadParams(
   if (!load_params.virtual_url_for_data_url.is_empty()) {
     EXPECT_EQ(load_params.virtual_url_for_data_url, entry->GetVirtualURL());
   }
+#if defined(OS_ANDROID)
+  EXPECT_EQ(load_params.data_url_as_string, entry->GetDataURLAsString());
+#endif
   if (NavigationController::UA_OVERRIDE_INHERIT !=
       load_params.override_user_agent) {
     bool should_override = (NavigationController::UA_OVERRIDE_TRUE ==
@@ -594,6 +597,25 @@ TEST_F(NavigationControllerTest, LoadURLWithExtraParams_Data) {
 
   CheckNavigationEntryMatchLoadParams(load_params, entry);
 }
+
+#if defined(OS_ANDROID)
+TEST_F(NavigationControllerTest, LoadURLWithExtraParams_Data_Android) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  NavigationController::LoadURLParams load_params(GURL("data:,"));
+  load_params.load_type = NavigationController::LOAD_TYPE_DATA;
+  load_params.base_url_for_data_url = GURL("http://foo");
+  load_params.virtual_url_for_data_url = GURL(url::kAboutBlankURL);
+  std::string s("data:,data");
+  load_params.data_url_as_string = base::RefCountedString::TakeString(&s);
+  load_params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
+
+  controller.LoadURLWithParams(load_params);
+  NavigationEntryImpl* entry = controller.GetPendingEntry();
+
+  CheckNavigationEntryMatchLoadParams(load_params, entry);
+}
+#endif
 
 TEST_F(NavigationControllerTest, LoadURLWithExtraParams_HttpPost) {
   NavigationControllerImpl& controller = controller_impl();

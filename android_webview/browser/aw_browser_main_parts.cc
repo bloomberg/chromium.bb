@@ -24,7 +24,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/url_utils.h"
 #include "media/base/android/media_client_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
@@ -89,14 +88,6 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
       new AwMediaClientAndroid(AwResource::GetConfigKeySystemUuidMapping()));
 
   content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
-
-  // This is needed for WebView Classic backwards compatibility
-  // See crbug.com/298495. Also see crbug.com/525697 on why it is currently
-  // for single process mode only.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess)) {
-    content::SetMaxURLChars(20 * 1024 * 1024);
-  }
 }
 
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {

@@ -64,7 +64,6 @@
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
@@ -1881,9 +1880,9 @@ void RenderViewImpl::UpdateTargetURL(const GURL& url,
     pending_target_url_ = latest_url;
     target_url_status_ = TARGET_PENDING;
   } else {
-    // URLs larger than |MaxURLChars()| cannot be sent through IPC -
+    // URLs larger than |kMaxURLChars| cannot be sent through IPC -
     // see |ParamTraits<GURL>|.
-    if (latest_url.possibly_invalid_spec().size() > GetMaxURLChars())
+    if (latest_url.possibly_invalid_spec().size() > kMaxURLChars)
       latest_url = GURL();
     Send(new ViewHostMsg_UpdateTargetURL(routing_id_, latest_url));
     target_url_ = latest_url;

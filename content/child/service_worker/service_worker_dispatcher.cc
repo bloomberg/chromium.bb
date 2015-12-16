@@ -19,7 +19,7 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/url_utils.h"
+#include "content/public/common/content_constants.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 
@@ -111,8 +111,8 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
     WebServiceWorkerRegistrationCallbacks* callbacks) {
   DCHECK(callbacks);
 
-  if (pattern.possibly_invalid_spec().size() > GetMaxURLChars() ||
-      script_url.possibly_invalid_spec().size() > GetMaxURLChars()) {
+  if (pattern.possibly_invalid_spec().size() > kMaxURLChars ||
+      script_url.possibly_invalid_spec().size() > kMaxURLChars) {
     scoped_ptr<WebServiceWorkerRegistrationCallbacks>
         owned_callbacks(callbacks);
     std::string error_message(kServiceWorkerRegisterErrorPrefix);
@@ -162,7 +162,7 @@ void ServiceWorkerDispatcher::GetRegistration(
     WebServiceWorkerGetRegistrationCallbacks* callbacks) {
   DCHECK(callbacks);
 
-  if (document_url.possibly_invalid_spec().size() > GetMaxURLChars()) {
+  if (document_url.possibly_invalid_spec().size() > kMaxURLChars) {
     scoped_ptr<WebServiceWorkerGetRegistrationCallbacks> owned_callbacks(
         callbacks);
     std::string error_message(kServiceWorkerGetRegistrationErrorPrefix);

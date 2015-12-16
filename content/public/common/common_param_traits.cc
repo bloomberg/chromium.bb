@@ -9,14 +9,13 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/url_utils.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 
 namespace IPC {
 
 void ParamTraits<GURL>::Write(Message* m, const GURL& p) {
-  if (p.possibly_invalid_spec().length() > content::GetMaxURLChars()) {
+  if (p.possibly_invalid_spec().length() > content::kMaxURLChars) {
     m->WriteString(std::string());
     return;
   }
@@ -40,7 +39,7 @@ bool ParamTraits<GURL>::Read(const Message* m,
                              base::PickleIterator* iter,
                              GURL* p) {
   std::string s;
-  if (!iter->ReadString(&s) || s.length() > content::GetMaxURLChars()) {
+  if (!iter->ReadString(&s) || s.length() > content::kMaxURLChars) {
     *p = GURL();
     return false;
   }

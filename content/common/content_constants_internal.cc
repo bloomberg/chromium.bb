@@ -20,8 +20,8 @@ const uint16 kMaxPluginSideLength = 1 << 15;
 // 8m pixels.
 const uint32 kMaxPluginSize = 8 << 20;
 
-// 10MiB
-const size_t kMaxLengthOfDataURLString = 1024 * 1024 * 10;
+// 20MiB
+const size_t kMaxLengthOfDataURLString = 1024 * 1024 * 20;
 
 const int kTraceEventBrowserProcessSortIndex = -6;
 const int kTraceEventRendererProcessSortIndex = -5;

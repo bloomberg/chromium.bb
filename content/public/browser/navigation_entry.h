@@ -55,6 +55,16 @@ class NavigationEntry {
   virtual void SetBaseURLForDataURL(const GURL& url) = 0;
   virtual const GURL& GetBaseURLForDataURL() const = 0;
 
+#if defined(OS_ANDROID)
+  // The real data: URL when it is received via WebView.loadDataWithBaseUrl
+  // method. Represented as a string to circumvent the size restriction
+  // of GURLs for compatibility with legacy Android WebView apps.
+  virtual void SetDataURLAsString(
+      scoped_refptr<base::RefCountedString> data_url) = 0;
+  virtual const scoped_refptr<const base::RefCountedString> GetDataURLAsString()
+      const = 0;
+#endif
+
   // The referring URL. Can be empty.
   virtual void SetReferrer(const content::Referrer& referrer) = 0;
   virtual const content::Referrer& GetReferrer() const = 0;

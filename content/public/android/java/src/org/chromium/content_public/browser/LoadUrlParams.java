@@ -36,6 +36,7 @@ public class LoadUrlParams {
     byte[] mPostData;
     String mBaseUrlForDataUrl;
     String mVirtualUrlForDataUrl;
+    String mDataUrlAsString;
     boolean mCanLoadLocalResources;
     boolean mIsRendererInitiated;
     boolean mShouldReplaceCurrentEntry;
@@ -66,6 +67,7 @@ public class LoadUrlParams {
         mPostData = null;
         mBaseUrlForDataUrl = null;
         mVirtualUrlForDataUrl = null;
+        mDataUrlAsString = null;
     }
 
     /**
@@ -89,6 +91,15 @@ public class LoadUrlParams {
      */
     public static LoadUrlParams createLoadDataParams(
             String data, String mimeType, boolean isBase64Encoded, String charset) {
+        LoadUrlParams params = new LoadUrlParams(
+                buildDataUri(data, mimeType, isBase64Encoded, charset));
+        params.setLoadType(LoadURLType.DATA);
+        params.setTransitionType(PageTransition.TYPED);
+        return params;
+    }
+
+    private static String buildDataUri(
+            String data, String mimeType, boolean isBase64Encoded, String charset) {
         StringBuilder dataUrl = new StringBuilder("data:");
         dataUrl.append(mimeType);
         if (charset != null && !charset.isEmpty()) {
@@ -99,11 +110,7 @@ public class LoadUrlParams {
         }
         dataUrl.append(",");
         dataUrl.append(data);
-
-        LoadUrlParams params = new LoadUrlParams(dataUrl.toString());
-        params.setLoadType(LoadURLType.DATA);
-        params.setTransitionType(PageTransition.TYPED);
-        return params;
+        return dataUrl.toString();
     }
 
     /**
@@ -144,15 +151,19 @@ public class LoadUrlParams {
     public static LoadUrlParams createLoadDataParamsWithBaseUrl(
             String data, String mimeType, boolean isBase64Encoded,
             String baseUrl, String historyUrl, String charset) {
-        LoadUrlParams params = createLoadDataParams(data, mimeType, isBase64Encoded, charset);
+        LoadUrlParams params;
         // For WebView compatibility, when the base URL has the 'data:'
         // scheme, we treat it as a regular data URL load and skip setting
         // baseUrl and historyUrl.
         // TODO(joth): we should just append baseURL and historyURL here, and move the
         // WebView specific transform up to a wrapper factory function in android_webview/.
         if (baseUrl == null || !baseUrl.toLowerCase(Locale.US).startsWith("data:")) {
+            params = createLoadDataParams("", mimeType, isBase64Encoded, charset);
             params.setBaseUrlForDataUrl(baseUrl != null ? baseUrl : "about:blank");
             params.setVirtualUrlForDataUrl(historyUrl != null ? historyUrl : "about:blank");
+            params.setDataUrlAsString(buildDataUri(data, mimeType, isBase64Encoded, charset));
+        } else {
+            params = createLoadDataParams(data, mimeType, isBase64Encoded, charset);
         }
         return params;
     }
@@ -358,6 +369,24 @@ public class LoadUrlParams {
      */
     public void setVirtualUrlForDataUrl(String virtualUrl) {
         mVirtualUrlForDataUrl = virtualUrl;
+    }
+
+    /**
+     * Get the data for data load. This is then passed to the renderer as
+     * a string, not as a GURL object to circumvent GURL size restriction.
+     * @return The data url.
+     */
+    public String getDataUrlAsString() {
+        return mDataUrlAsString;
+    }
+
+    /**
+     * Set the data for data load. This is then passed to the renderer as
+     * a string, not as a GURL object to circumvent GURL size restriction.
+     * @param url The data url.
+     */
+    public void setDataUrlAsString(String url) {
+        mDataUrlAsString = url;
     }
 
     /**

@@ -83,6 +83,7 @@ class CONTENT_EXPORT NavigationControllerAndroid {
       const base::android::JavaParamRef<jbyteArray>& post_data,
       const base::android::JavaParamRef<jstring>& base_url_for_data_url,
       const base::android::JavaParamRef<jstring>& virtual_url_for_data_url,
+      const base::android::JavaParamRef<jstring>& data_url_as_string,
       jboolean can_load_local_resources,
       jboolean is_renderer_initiated,
       jboolean should_replace_current_entry);

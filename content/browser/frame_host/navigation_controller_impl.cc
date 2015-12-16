@@ -805,6 +805,9 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
     case LOAD_TYPE_DATA:
       entry->SetBaseURLForDataURL(params.base_url_for_data_url);
       entry->SetVirtualURL(params.virtual_url_for_data_url);
+#if defined(OS_ANDROID)
+      entry->SetDataURLAsString(params.data_url_as_string);
+#endif
       entry->SetCanLoadLocalResources(params.can_load_local_resources);
       break;
     default:

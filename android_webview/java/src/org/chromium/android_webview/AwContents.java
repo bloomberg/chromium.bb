@@ -1471,9 +1471,6 @@ public class AwContents implements SmartClipProvider,
                 Log.wtf(TAG, "Unable to load data string " + data, e);
                 return;
             }
-            // When loading data with a non-data: base URL, WebView must allow renderers
-            // to access file: URLs.
-            nativeGrantFileSchemeAccesstoChildProcess(mNativeAwContents);
         }
         loadUrl(loadUrlParams);
     }
@@ -1492,6 +1489,7 @@ public class AwContents implements SmartClipProvider,
             // file:///android_res/ URLs. If AwSettings.getAllowFileAccess permits, it will also
             // allow access to file:// URLs (subject to OS level permission checks).
             params.setCanLoadLocalResources(true);
+            nativeGrantFileSchemeAccesstoChildProcess(mNativeAwContents);
         }
 
         // If we are reloading the same url, then set transition type as reload.

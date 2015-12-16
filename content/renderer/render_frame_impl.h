@@ -874,6 +874,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Loads a data url.
   void LoadDataURL(const CommonNavigationParams& params,
+                   const RequestNavigationParams& request_params,
                    blink::WebFrame* frame,
                    blink::WebFrameLoadType load_type);
 

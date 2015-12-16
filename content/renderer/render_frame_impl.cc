@@ -16,6 +16,7 @@
 #include "base/files/file.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
@@ -3472,7 +3473,7 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   // in the context menu.
   // TODO(jcivelli): http://crbug.com/45160 This prevents us from saving large
   //                 data encoded images.  We should have a way to save them.
-  if (params.src_url.spec().size() > GetMaxURLChars())
+  if (params.src_url.spec().size() > kMaxURLChars)
     params.src_url = GURL();
   context_menu_node_ = data.node;
 
@@ -5072,7 +5073,7 @@ void RenderFrameImpl::NavigateInternal(
     if (!common_params.base_url_for_data_url.is_empty() ||
         (browser_side_navigation &&
          common_params.url.SchemeIs(url::kDataScheme))) {
-      LoadDataURL(common_params, frame_, load_type);
+      LoadDataURL(common_params, request_params, frame_, load_type);
     } else {
       // Load the request.
       frame_->toWebLocalFrame()->load(request, load_type,
@@ -5312,11 +5313,28 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request) {
 }
 
 void RenderFrameImpl::LoadDataURL(const CommonNavigationParams& params,
+                                  const RequestNavigationParams& request_params,
                                   WebFrame* frame,
                                   blink::WebFrameLoadType load_type) {
   // A loadData request with a specified base URL.
+  GURL data_url = params.url;
+#if defined(OS_ANDROID)
+  if (!request_params.data_url_as_string.empty()) {
+#if DCHECK_IS_ON()
+    {
+      std::string mime_type, charset, data;
+      DCHECK(net::DataURL::Parse(data_url, &mime_type, &charset, &data));
+      DCHECK(data.empty());
+    }
+#endif
+    data_url = GURL(request_params.data_url_as_string);
+    if (!data_url.is_valid() || !data_url.SchemeIs(url::kDataScheme)) {
+      data_url = params.url;
+    }
+  }
+#endif
   std::string mime_type, charset, data;
-  if (net::DataURL::Parse(params.url, &mime_type, &charset, &data)) {
+  if (net::DataURL::Parse(data_url, &mime_type, &charset, &data)) {
     const GURL base_url = params.base_url_for_data_url.is_empty() ?
         params.url : params.base_url_for_data_url;
     bool replace = load_type == blink::WebFrameLoadType::ReloadFromOrigin ||

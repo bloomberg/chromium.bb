@@ -52,6 +52,7 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   const bool has_post_data = true;
   const GURL original_request_url("http://original_request_url");
   const GURL base_url_for_data_url("http://base_url");
+  const string data_url_as_string("data:text/html;charset=utf-8;base64,");
   const bool is_overriding_user_agent = true;
   const base::Time timestamp = base::Time::FromInternalValue(12345);
   const int http_status_code = 404;
@@ -64,6 +65,11 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   entry->SetHasPostData(has_post_data);
   entry->SetOriginalRequestURL(original_request_url);
   entry->SetBaseURLForDataURL(base_url_for_data_url);
+  {
+    scoped_refptr<base::RefCountedString> s = new base::RefCountedString();
+    s->data().assign(data_url_as_string);
+    entry->SetDataURLAsString(s);
+  }
   entry->SetIsOverridingUserAgent(is_overriding_user_agent);
   entry->SetTimestamp(timestamp);
   entry->SetHttpStatusCode(http_status_code);
@@ -86,9 +92,60 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   EXPECT_EQ(has_post_data, copy->GetHasPostData());
   EXPECT_EQ(original_request_url, copy->GetOriginalRequestURL());
   EXPECT_EQ(base_url_for_data_url, copy->GetBaseURLForDataURL());
+  EXPECT_EQ(data_url_as_string, copy->GetDataURLAsString()->data());
   EXPECT_EQ(is_overriding_user_agent, copy->GetIsOverridingUserAgent());
   EXPECT_EQ(timestamp, copy->GetTimestamp());
   EXPECT_EQ(http_status_code, copy->GetHttpStatusCode());
+}
+
+TEST(AndroidWebViewStateSerializerTest, TestEmptyDataURLSerialization) {
+  // This is required for NavigationEntry::Create.
+  content::ContentClient content_client;
+  content::SetContentClient(&content_client);
+  content::ContentBrowserClient browser_client;
+  content::SetBrowserClientForTesting(&browser_client);
+
+  scoped_ptr<content::NavigationEntry> entry(
+      content::NavigationEntry::Create());
+  EXPECT_FALSE(entry->GetDataURLAsString());
+
+  base::Pickle pickle;
+  bool result = internal::WriteNavigationEntryToPickle(*entry, &pickle);
+  EXPECT_TRUE(result);
+
+  scoped_ptr<content::NavigationEntry> copy(content::NavigationEntry::Create());
+  base::PickleIterator iterator(pickle);
+  result = internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
+  EXPECT_TRUE(result);
+  EXPECT_FALSE(entry->GetDataURLAsString());
+}
+
+TEST(AndroidWebViewStateSerializerTest, TestHugeDataURLSerialization) {
+  // This is required for NavigationEntry::Create.
+  content::ContentClient content_client;
+  content::SetContentClient(&content_client);
+  content::ContentBrowserClient browser_client;
+  content::SetBrowserClientForTesting(&browser_client);
+
+  scoped_ptr<content::NavigationEntry> entry(
+      content::NavigationEntry::Create());
+  string huge_data_url(1024 * 1024 * 20 - 1, 'd');
+  huge_data_url.replace(0, strlen(url::kDataScheme), url::kDataScheme);
+  {
+    scoped_refptr<base::RefCountedString> s = new base::RefCountedString();
+    s->data().assign(huge_data_url);
+    entry->SetDataURLAsString(s);
+  }
+
+  base::Pickle pickle;
+  bool result = internal::WriteNavigationEntryToPickle(*entry, &pickle);
+  EXPECT_TRUE(result);
+
+  scoped_ptr<content::NavigationEntry> copy(content::NavigationEntry::Create());
+  base::PickleIterator iterator(pickle);
+  result = internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
+  EXPECT_TRUE(result);
+  EXPECT_EQ(huge_data_url, copy->GetDataURLAsString()->data());
 }
 
 }  // namespace android_webview

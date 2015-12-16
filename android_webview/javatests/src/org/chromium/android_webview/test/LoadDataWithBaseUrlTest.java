@@ -349,4 +349,24 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
             if (!tempImage.delete()) throw new AssertionError();
         }
     }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testLoadLargeData() throws Throwable {
+        // Chrome only allows URLs up to 2MB in IPC. Test something larger than this.
+        // Note that the real URI may be significantly large if it gets encoded into
+        // base64.
+        final int kDataLength = 5 * 1024 * 1024;
+        StringBuilder doc = new StringBuilder();
+        doc.append("<html><head></head><body><!-- ");
+        int i = doc.length();
+        doc.setLength(i + kDataLength);
+        while (i < doc.length()) doc.setCharAt(i++, 'A');
+        doc.append("--><script>window.gotToEndOfBody=true;</script></body></html>");
+
+        enableJavaScriptOnUiThread(mAwContents);
+        loadDataWithBaseUrlSync(doc.toString(), "text/html", false, null, null);
+        assertEquals("true", executeJavaScriptAndWaitForResult(mAwContents, mContentsClient,
+                        "window.gotToEndOfBody"));
+    }
 }

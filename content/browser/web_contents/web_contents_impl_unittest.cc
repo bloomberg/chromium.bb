@@ -33,7 +33,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/url_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
@@ -482,7 +481,7 @@ TEST_F(WebContentsImplTest, SimpleNavigation) {
 TEST_F(WebContentsImplTest, NavigateToExcessivelyLongURL) {
   // Construct a URL that's kMaxURLChars + 1 long of all 'a's.
   const GURL url(std::string("http://example.org/").append(
-      GetMaxURLChars() + 1, 'a'));
+      kMaxURLChars + 1, 'a'));
 
   controller().LoadURL(
       url, Referrer(), ui::PAGE_TRANSITION_GENERATED, std::string());

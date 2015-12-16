@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/url_utils.h"
+#include "content/public/common/content_constants.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/host_port_pair.h"
@@ -53,7 +53,7 @@ TEST(IPCMessageTest, Serialize) {
   // Test an excessively long GURL.
   {
     const std::string url = std::string("http://example.org/").append(
-        content::GetMaxURLChars() + 1, 'a');
+        content::kMaxURLChars + 1, 'a');
     GURL input(url.c_str());
     IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
     IPC::ParamTraits<GURL>::Write(&msg, input);

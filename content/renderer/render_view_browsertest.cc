@@ -442,7 +442,7 @@ TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
 
-  const std::string large_data_url(1024 * 1024 * 10 - 1, 'd');
+  const std::string large_data_url(1024 * 1024 * 20 - 1, 'd');
 
   view()->saveImageFromDataURL(WebString::fromUTF8(large_data_url));
   ProcessPendingMessages();
@@ -458,7 +458,7 @@ TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
 
-  const std::string exceeded_data_url(1024 * 1024 * 10 + 1, 'd');
+  const std::string exceeded_data_url(1024 * 1024 * 20 + 1, 'd');
 
   view()->saveImageFromDataURL(WebString::fromUTF8(exceeded_data_url));
   ProcessPendingMessages();
@@ -541,6 +541,34 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   EXPECT_EQ(length, element.data.size());
   EXPECT_EQ(0, memcmp(raw_data, element.data.data(), length));
 }
+
+#if defined(OS_ANDROID)
+TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
+  CommonNavigationParams common_params;
+  common_params.url = GURL("data:text/html,");
+  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.transition = ui::PAGE_TRANSITION_TYPED;
+  common_params.base_url_for_data_url = GURL("about:blank");
+  common_params.history_url_for_data_url = GURL("about:blank");
+  RequestNavigationParams request_params;
+  request_params.data_url_as_string =
+      "data:text/html,<html><head><title>Data page</title></head></html>";
+
+  frame()->Navigate(common_params, StartNavigationParams(),
+                    request_params);
+  const IPC::Message* frame_title_msg = nullptr;
+  do {
+    ProcessPendingMessages();
+    frame_title_msg = render_thread_->sink().GetUniqueMessageMatching(
+        FrameHostMsg_UpdateTitle::ID);
+  } while (!frame_title_msg);
+
+  // Check post data sent to browser matches.
+  FrameHostMsg_UpdateTitle::Param title_params;
+  EXPECT_TRUE(FrameHostMsg_UpdateTitle::Read(frame_title_msg, &title_params));
+  EXPECT_EQ(base::ASCIIToUTF16("Data page"), base::get<0>(title_params));
+}
+#endif
 
 TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   WebUITestWebUIControllerFactory factory;

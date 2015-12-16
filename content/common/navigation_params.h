@@ -17,10 +17,6 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-namespace base {
-class RefCountedMemory;
-}
-
 namespace content {
 
 // The LoFi state which determines whether to add the Lo-Fi header.
@@ -305,6 +301,14 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // This parameter is not used in the current navigation architecture, where
   // it will always be equal to kInvalidServiceWorkerProviderId.
   int service_worker_provider_id;
+
+#if defined(OS_ANDROID)
+  // The real content of the data: URL. Only used in Android WebView for
+  // implementing LoadDataWithBaseUrl API method to circumvent the restriction
+  // on the GURL max length in the IPC layer. Short data: URLs can still be
+  // passed in the |CommonNavigationParams::url| field.
+  std::string data_url_as_string;
+#endif
 };
 
 // Helper struct keeping track in one place of all the parameters the browser

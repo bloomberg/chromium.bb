@@ -36,10 +36,10 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
 
 namespace content {
@@ -281,8 +281,8 @@ bool NavigatorImpl::NavigateToEntry(
 
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
-  if (dest_url.spec().size() > GetMaxURLChars()) {
-    LOG(WARNING) << "Refusing to load URL as it exceeds " << GetMaxURLChars()
+  if (dest_url.spec().size() > kMaxURLChars) {
+    LOG(WARNING) << "Refusing to load URL as it exceeds " << kMaxURLChars
                  << " characters.";
     return false;
   }
