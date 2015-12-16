@@ -34,6 +34,72 @@ static const int kMaximumInputOutputBufferSize = 4096;
 // Default sample-rate on most Apple hardware.
 static const int kFallbackSampleRate = 44100;
 
+// Helper method to construct AudioObjectPropertyAddress structure given
+// property selector and scope. The property element is always set to
+// kAudioObjectPropertyElementMaster.
+static AudioObjectPropertyAddress GetAudioObjectPropertyAddress(
+    AudioObjectPropertySelector selector,
+    bool is_input) {
+  AudioObjectPropertyScope scope = is_input ? kAudioObjectPropertyScopeInput
+                                            : kAudioObjectPropertyScopeOutput;
+  AudioObjectPropertyAddress property_address = {
+      selector, scope, kAudioObjectPropertyElementMaster};
+  return property_address;
+}
+
+// Get IO buffer size range from HAL given device id and scope.
+static OSStatus GetIOBufferFrameSizeRange(AudioDeviceID deviceID,
+                                          bool is_input,
+                                          UInt32* minimum,
+                                          UInt32* maximum) {
+  AudioObjectPropertyAddress address = GetAudioObjectPropertyAddress(
+      kAudioDevicePropertyBufferFrameSizeRange, is_input);
+  AudioValueRange range = {0, 0};
+  UInt32 data_size = sizeof(AudioValueRange);
+  OSStatus error = AudioObjectGetPropertyData(deviceID, &address, 0, NULL,
+                                              &data_size, &range);
+  if (error != noErr) {
+    OSSTATUS_DLOG(WARNING, error)
+        << "Failed to query IO buffer size range for device: " << std::hex
+        << deviceID;
+  } else {
+    *minimum = range.mMinimum;
+    *maximum = range.mMaximum;
+  }
+  return error;
+}
+
+// Get IO buffer size from HAL given device id and scope.
+static OSStatus GetIOBufferFrameSize(AudioDeviceID deviceID,
+                                     bool is_input,
+                                     UInt32* buffer_frame_size) {
+  AudioObjectPropertyAddress address = GetAudioObjectPropertyAddress(
+      kAudioDevicePropertyBufferFrameSize, is_input);
+  UInt32 data_size = sizeof(UInt32);
+  OSStatus error = AudioObjectGetPropertyData(deviceID, &address, 0, NULL,
+                                              &data_size, buffer_frame_size);
+  if (error != noErr) {
+    OSSTATUS_LOG(ERROR, error)
+        << "Failed to get IO buffer size for device: " << std::hex << deviceID;
+  }
+  return error;
+}
+
+// Set IO buffer size from HAL given device id and scope.
+static OSStatus SetIOBufferFrameSize(AudioDeviceID deviceID,
+                                     bool is_input,
+                                     UInt32 buffer_frame_size) {
+  AudioObjectPropertyAddress address = GetAudioObjectPropertyAddress(
+      kAudioDevicePropertyBufferFrameSize, is_input);
+  OSStatus error = AudioObjectSetPropertyData(
+      deviceID, &address, 0, NULL, sizeof(UInt32), &buffer_frame_size);
+  if (error != noErr) {
+    OSSTATUS_LOG(ERROR, error)
+        << "Failed to set IO buffer size for device: " << std::hex << deviceID;
+  }
+  return error;
+}
+
 static bool HasAudioHardware(AudioObjectPropertySelector selector) {
   AudioDeviceID output_device_id = kAudioObjectUnknown;
   const AudioObjectPropertyAddress property_address = {
@@ -749,24 +815,31 @@ bool AudioManagerMac::ShouldDeferStreamStart() {
 }
 
 bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
-                                            AudioUnit audio_unit,
-                                            AudioUnitElement element,
+                                            bool is_input,
                                             size_t desired_buffer_size,
                                             bool* size_was_changed) {
+  DVLOG(1) << "MaybeChangeBufferSize(id=0x" << std::hex << device_id
+           << ", is_input=" << is_input << ", buffer_size=" << std::dec
+           << desired_buffer_size << ")";
+
   *size_was_changed = false;
-  UInt32 buffer_size = 0;
-  UInt32 property_size = sizeof(buffer_size);
-  OSStatus result = AudioUnitGetProperty(audio_unit,
-                                         kAudioDevicePropertyBufferFrameSize,
-                                         kAudioUnitScope_Output,
-                                         element,
-                                         &buffer_size,
-                                         &property_size);
-  if (result != noErr) {
-    OSSTATUS_DLOG(ERROR, result)
-        << "AudioUnitGetProperty(kAudioDevicePropertyBufferFrameSize) failed.";
+
+  // Verify that the desired buffer size is within a valid range.
+  UInt32 minimum, maximum;
+  GetIOBufferFrameSizeRange(device_id, is_input, &minimum, &maximum);
+  if (desired_buffer_size < minimum || desired_buffer_size > maximum) {
+    DLOG(ERROR) << "The provided IO buffer size is invalid";
     return false;
   }
+
+  // Get the current size of the I/O buffer for the specified device and scope.
+  UInt32 buffer_size = 0;
+  OSStatus error = GetIOBufferFrameSize(device_id, is_input, &buffer_size);
+  if (error != noErr) {
+    OSSTATUS_DLOG(ERROR, error) << "Failed to get IO buffer size";
+    return false;
+  }
+  DVLOG(1) << "Current IO buffer size: " << buffer_size;
 
   // The lowest buffer size always wins.  For larger buffer sizes, we have
   // to perform some checks to see if the size can actually be changed.
@@ -802,18 +875,15 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
   if (buffer_size == desired_buffer_size)
     return true;
 
+  // Set new I/O buffer size for the specified device and scope.
   buffer_size = desired_buffer_size;
-  result = AudioUnitSetProperty(audio_unit,
-                                kAudioDevicePropertyBufferFrameSize,
-                                kAudioUnitScope_Output,
-                                element,
-                                &buffer_size,
-                                sizeof(buffer_size));
-  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
-      << "AudioUnitSetProperty(kAudioDevicePropertyBufferFrameSize) failed.  "
-      << "Size:: " << buffer_size;
-  *size_was_changed = (result == noErr);
-  return (result == noErr);
+  error = SetIOBufferFrameSize(device_id, is_input, buffer_size);
+  OSSTATUS_DLOG_IF(ERROR, error != noErr, error)
+      << "Failed to set new IO buffer size";
+
+  *size_was_changed = (error == noErr);
+  DVLOG_IF(1, error == noErr) << "IO buffer size changed to: " << buffer_size;
+  return (error == noErr);
 }
 
 void AudioManagerMac::ReleaseOutputStream(AudioOutputStream* stream) {

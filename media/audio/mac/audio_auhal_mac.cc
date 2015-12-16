@@ -110,6 +110,18 @@ bool AUHALStream::Open() {
   DCHECK_GT(output_channels_, 0);
   output_bus_ = AudioBus::CreateWrapper(output_channels_);
 
+  // Try to set the I/O buffer size for the HAL to |number_of_frames_| and set
+  // |size_was_changed| to true if the size was changed. The status of other
+  // active audio input and output streams are involved in the final setting.
+  // NOTE: always do this setting before configuring the audio unit since there
+  // is a risk of deadlocking in Core Audio otherwise.
+  bool size_was_changed = false;
+  const bool is_input = false;
+  if (!manager_->MaybeChangeBufferSize(device_, is_input, number_of_frames_,
+                                       &size_was_changed)) {
+    return false;
+  }
+
   bool configured = ConfigureAUHAL();
   if (configured)
     hardware_latency_frames_ = GetHardwareLatency();
@@ -495,13 +507,6 @@ bool AUHALStream::ConfigureAUHAL() {
                        output_channels_,
                        kAudioUnitScope_Input,
                        0)) {
-    CloseAudioUnit();
-    return false;
-  }
-
-  bool size_was_changed = false;
-  if (!manager_->MaybeChangeBufferSize(device_, audio_unit_, 0,
-                                       number_of_frames_, &size_was_changed)) {
     CloseAudioUnit();
     return false;
   }

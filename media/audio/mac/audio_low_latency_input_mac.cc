@@ -113,7 +113,26 @@ bool AUAudioInputStream::Open() {
     return false;
   }
 
-  // Start by obtaining an AudioOuputUnit using an AUHAL component description.
+  OSStatus result = noErr;
+
+  // Try to set the I/O buffer size for the HAL to |number_of_frames_| and set
+  // |buffer_size_was_changed_| to true if the size was changed. The status of
+  // other active audio input and output streams are involved in the final
+  // setting.
+  // NOTE: always do this setting before configuring the audio unit since there
+  // is a risk of deadlocking in Core Audio otherwise.
+  const bool is_input = true;
+  if (!manager_->MaybeChangeBufferSize(input_device_id_, is_input,
+                                       number_of_frames_,
+                                       &buffer_size_was_changed_)) {
+    result = kAudioUnitErr_FormatNotSupported;
+    HandleError(result);
+    return false;
+  }
+  DLOG_IF(WARNING, buffer_size_was_changed_) << "IO buffer size was changed to "
+                                             << number_of_frames_;
+
+  // Obtain an AudioOuputUnit using an AUHAL component description.
 
   // Description for the Audio Unit we want to use (AUHAL in this case).
   AudioComponentDescription desc = {
@@ -128,7 +147,7 @@ bool AUAudioInputStream::Open() {
   DCHECK(comp);
 
   // Get access to the service provided by the specified Audio Unit.
-  OSStatus result = AudioComponentInstanceNew(comp, &audio_unit_);
+  result = AudioComponentInstanceNew(comp, &audio_unit_);
   if (result) {
     HandleError(result);
     return false;
@@ -195,16 +214,6 @@ bool AUAudioInputStream::Open() {
     HandleError(result);
     return false;
   }
-
-  if (!manager_->MaybeChangeBufferSize(input_device_id_, audio_unit_, 1,
-                                       number_of_frames_,
-                                       &buffer_size_was_changed_)) {
-    result = kAudioUnitErr_FormatNotSupported;
-    HandleError(result);
-    return false;
-  }
-  DLOG_IF(WARNING, buffer_size_was_changed_) << "IO buffer size was changed to "
-                                             << number_of_frames_;
 
   // Register the input procedure for the AUHAL.
   // This procedure will be called when the AUHAL has received new data
