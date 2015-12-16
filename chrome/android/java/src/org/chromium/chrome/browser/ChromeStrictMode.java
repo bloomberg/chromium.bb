@@ -44,6 +44,9 @@ public class ChromeStrictMode {
             if ("death".equals(commandLine.getSwitchValue(ChromeSwitches.STRICT_MODE))) {
                 threadPolicy = threadPolicy.penaltyDeath();
                 vmPolicy = vmPolicy.penaltyDeath();
+            } else if ("testing".equals(commandLine.getSwitchValue(ChromeSwitches.STRICT_MODE))) {
+                threadPolicy = threadPolicy.penaltyDeath();
+                // Currently VmDeathPolicy kills the process, and is not visible on bot test output.
             }
             StrictMode.setThreadPolicy(threadPolicy.build());
             StrictMode.setVmPolicy(vmPolicy.build());

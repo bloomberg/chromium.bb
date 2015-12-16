@@ -104,6 +104,25 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
     self.assertEqual(1, len(results))
     self.assertEqual(base_test_result.ResultType.FAIL, results[0].GetType())
 
+  def testGenerateTestResults_testUnknownException(self):
+    stacktrace = 'long\nstacktrace'
+    statuses = [
+      (1, {
+        'class': 'test.package.TestClass',
+        'test': 'testMethod',
+      }),
+      (-1, {
+        'class': 'test.package.TestClass',
+        'test': 'testMethod',
+        'stack': stacktrace,
+      }),
+    ]
+    results = instrumentation_test_instance.GenerateTestResults(
+        None, None, statuses, 0, 1000)
+    self.assertEqual(1, len(results))
+    self.assertEqual(base_test_result.ResultType.FAIL, results[0].GetType())
+    self.assertEqual(stacktrace, results[0].GetLog())
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)
