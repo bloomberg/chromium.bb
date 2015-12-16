@@ -101,6 +101,7 @@ public:
     void handleEmptyInline();
     void handleReplaced();
     bool handleText(WordMeasurements&, bool& hyphenated);
+    void prepareForNextCharacter(const LineLayoutText&, bool& prohibitBreakInside, bool previousCharacterIsSpace, bool previousCharacterShouldCollapseIfPreWap);
     void commitAndUpdateLineBreakIfNeeded();
     InlineIterator handleEndOfLine();
 
@@ -545,8 +546,6 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
     LineLayoutText layoutText(m_current.object());
 
-    bool isSVGText = layoutText.isSVGInlineText();
-
     // If we have left a no-wrap inline and entered an autowrap inline while ignoring spaces
     // then we need to mark the start of the autowrap inline as a potential linebreak now.
     if (m_autoWrap && !ComputedStyle::autoWrap(m_lastWS) && m_ignoringSpaces) {
@@ -580,7 +579,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
     float hyphenWidth = 0;
 
-    if (isSVGText) {
+    if (layoutText.isSVGInlineText()) {
         breakWords = false;
         breakAll = false;
         keepAll = false;
@@ -635,187 +634,172 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         bool betweenWords = c == newlineCharacter || (m_currWS != PRE && !m_atStart && m_layoutTextInfo.m_lineBreakIterator.isBreakable(m_current.offset(), nextBreakablePosition, breakAll ? LineBreakType::BreakAll : keepAll ? LineBreakType::KeepAll : LineBreakType::Normal));
         m_current.setNextBreakablePosition(nextBreakablePosition);
 
-        if (betweenWords || midWordBreak) {
-            bool stoppedIgnoringSpaces = false;
+        // If we're in the middle of a word or at the start of a new one and can't break there, then continue to the next character.
+        if (!betweenWords && !midWordBreak) {
             if (m_ignoringSpaces) {
-                lastSpaceWordSpacing = 0;
-                if (!m_currentCharacterIsSpace) {
-                    // Stop ignoring spaces and begin at this
-                    // new point.
-                    m_ignoringSpaces = false;
-                    wordSpacingForWordMeasurement = 0;
-                    lastSpace = m_current.offset(); // e.g., "Foo    goo", don't add in any of the ignored spaces.
-                    m_lineMidpointState.stopIgnoringSpaces(InlineIterator(0, m_current.object(), m_current.offset()));
-                    stoppedIgnoringSpaces = true;
-                } else {
-                    // Just keep ignoring these spaces.
-                    nextCharacter(c, lastCharacter, secondToLastCharacter);
-                    continue;
-                }
-            }
-
-            wordMeasurements.grow(wordMeasurements.size() + 1);
-            WordMeasurement& wordMeasurement = wordMeasurements.last();
-
-            wordMeasurement.layoutText = layoutText;
-            wordMeasurement.endOffset = m_current.offset();
-            wordMeasurement.startOffset = lastSpace;
-
-            float lastWidthMeasurement;
-            if (wordTrailingSpaceWidth && c == spaceCharacter)
-                lastWidthMeasurement = textWidth(layoutText, lastSpace, m_current.offset() + 1 - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, &wordMeasurement.glyphBounds) - wordTrailingSpaceWidth;
-            else
-                lastWidthMeasurement = textWidth(layoutText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, &wordMeasurement.glyphBounds);
-
-            wordMeasurement.width = lastWidthMeasurement + wordSpacingForWordMeasurement;
-            wordMeasurement.glyphBounds.move(wordSpacingForWordMeasurement, 0);
-            lastWidthMeasurement += lastSpaceWordSpacing;
-            m_width.addUncommittedWidth(lastWidthMeasurement);
-
-            if (m_collapseWhiteSpace && previousCharacterIsSpace && m_currentCharacterIsSpace && lastWidthMeasurement)
-                m_width.setTrailingWhitespaceWidth(lastWidthMeasurement);
-
-            if (!m_appliedStartWidth) {
-                m_width.addUncommittedWidth(inlineLogicalWidthFromAncestorsIfNeeded(m_current.object(), true, false).toFloat());
-                m_appliedStartWidth = true;
-            }
-
-            applyWordSpacing = wordSpacing && m_currentCharacterIsSpace;
-
-            if (!m_width.committedWidth() && m_autoWrap && !m_width.fitsOnLine() && !widthMeasurementAtLastBreakOpportunity)
-                m_width.fitBelowFloats(m_lineInfo.isFirstLine());
-
-            if (m_autoWrap || breakWords) {
-                // If we break only after white-space, consider the current character
-                // as candidate width for this line.
-                bool lineWasTooWide = false;
-                if (m_width.fitsOnLine() && m_currentCharacterIsSpace && m_currentStyle->breakOnlyAfterWhiteSpace() && !midWordBreak) {
-                    float charWidth = textWidth(layoutText, m_current.offset(), 1, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, &wordMeasurement.glyphBounds) + (applyWordSpacing ? wordSpacing : 0);
-                    // Check if line is too big even without the extra space
-                    // at the end of the line. If it is not, do nothing.
-                    // If the line needs the extra whitespace to be too long,
-                    // then move the line break to the space and skip all
-                    // additional whitespace.
-                    if (!m_width.fitsOnLine(charWidth)) {
-                        lineWasTooWide = true;
-                        m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
-                        skipTrailingWhitespace(m_lineBreak, m_lineInfo);
-                    }
-                }
-                if (lineWasTooWide || !m_width.fitsOnLine()) {
-                    if (m_lineBreak.atTextParagraphSeparator()) {
-                        if (!stoppedIgnoringSpaces && m_current.offset() > 0)
-                            m_lineMidpointState.ensureCharacterGetsLineBox(m_current);
-                        m_lineBreak.increment();
-                        m_lineInfo.setPreviousLineBrokeCleanly(true);
-                        wordMeasurement.endOffset = m_lineBreak.offset();
-                    }
-                    if (m_lineBreak.object() && m_lineBreak.offset() && m_lineBreak.object().isText() && LineLayoutText(m_lineBreak.object()).textLength() && LineLayoutText(m_lineBreak.object()).characterAt(m_lineBreak.offset() - 1) == softHyphenCharacter)
-                        hyphenated = true;
-                    if (m_lineBreak.offset() && m_lineBreak.offset() != (unsigned)wordMeasurement.endOffset && !wordMeasurement.width) {
-                        if (charWidth) {
-                            wordMeasurement.endOffset = m_lineBreak.offset();
-                            wordMeasurement.width = charWidth;
-                        }
-                    }
-                    // Didn't fit. Jump to the end unless there's still an opportunity to collapse whitespace.
-                    if (m_ignoringSpaces || !m_collapseWhiteSpace || !m_currentCharacterIsSpace || !previousCharacterIsSpace) {
-                        m_atEnd = true;
-                        return false;
-                    }
-                } else {
-                    if (!betweenWords || (midWordBreak && !m_autoWrap) || (breakAll && !m_currentCharacterIsSpace))
-                        m_width.addUncommittedWidth(-lastWidthMeasurement);
-                    if (hyphenWidth) {
-                        // Subtract the width of the soft hyphen out since we fit on a line.
-                        m_width.addUncommittedWidth(-hyphenWidth);
-                        hyphenWidth = 0;
-                    }
-                }
-            }
-
-            if (c == newlineCharacter && m_preservesNewline) {
-                if (!stoppedIgnoringSpaces && m_current.offset())
-                    m_lineMidpointState.ensureCharacterGetsLineBox(m_current);
-                m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
-                m_lineBreak.increment();
-                m_lineInfo.setPreviousLineBrokeCleanly(true);
-                return true;
-            }
-
-            if (m_autoWrap && betweenWords) {
-                m_width.commit();
-                widthFromLastBreakingOpportunity = 0;
-                m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
-                // Auto-wrapping text should not wrap in the middle of a word once it has had an
-                // opportunity to break after a word.
-                breakWords = false;
-                widthMeasurementAtLastBreakOpportunity = lastWidthMeasurement;
-            }
-
-            if (midWordBreak && !U16_IS_TRAIL(c) && !(WTF::Unicode::category(c) & (WTF::Unicode::Mark_NonSpacing | WTF::Unicode::Mark_Enclosing | WTF::Unicode::Mark_SpacingCombining))) {
-                // Remember this as a breakable position in case
-                // adding the end width forces a break.
-                m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
-                midWordBreak &= (breakWords || breakAll);
-            }
-
-            if (betweenWords) {
+                // Stop ignoring spaces and begin at this
+                // new point.
+                m_ignoringSpaces = false;
                 lastSpaceWordSpacing = applyWordSpacing ? wordSpacing : 0;
-                wordSpacingForWordMeasurement = (applyWordSpacing && wordMeasurement.width) ? wordSpacing : 0;
-                lastSpace = !breakAll || m_currentCharacterIsSpace ? m_current.offset() : lastSpace;
+                wordSpacingForWordMeasurement = (applyWordSpacing && wordMeasurements.last().width) ? wordSpacing : 0;
+                lastSpace = m_current.offset(); // e.g., "Foo    goo", don't add in any of the ignored spaces.
+                m_lineMidpointState.stopIgnoringSpaces(InlineIterator(0, m_current.object(), m_current.offset()));
             }
 
-            if (!m_ignoringSpaces && m_currentStyle->collapseWhiteSpace()) {
-                // If we encounter a newline, or if we encounter a
-                // second space, we need to go ahead and break up this
-                // run and enter a mode where we start collapsing spaces.
-                if (m_currentCharacterIsSpace && previousCharacterIsSpace) {
-                    m_ignoringSpaces = true;
+            prepareForNextCharacter(layoutText, prohibitBreakInside, previousCharacterIsSpace, previousCharacterShouldCollapseIfPreWap);
+            m_atStart = false;
+            nextCharacter(c, lastCharacter, secondToLastCharacter);
+            continue;
+        }
 
-                    // We just entered a mode where we are ignoring
-                    // spaces. Create a midpoint to terminate the run
-                    // before the second space.
-                    m_lineMidpointState.startIgnoringSpaces(m_startOfIgnoredSpaces);
-                    m_trailingObjects.updateMidpointsForTrailingObjects(m_lineMidpointState, InlineIterator(), TrailingObjects::DoNotCollapseFirstSpace);
+        // If we're ignoring space and we're at a collapsible space such as a space or tab, continue to the next character.
+        bool stoppedIgnoringSpaces = false;
+        if (m_ignoringSpaces) {
+            lastSpaceWordSpacing = 0;
+            if (!m_currentCharacterIsSpace) {
+                // Stop ignoring spaces and begin at this
+                // new point.
+                m_ignoringSpaces = false;
+                wordSpacingForWordMeasurement = 0;
+                lastSpace = m_current.offset(); // e.g., "Foo    goo", don't add in any of the ignored spaces.
+                m_lineMidpointState.stopIgnoringSpaces(InlineIterator(0, m_current.object(), m_current.offset()));
+                stoppedIgnoringSpaces = true;
+            } else {
+                // Just keep ignoring these spaces.
+                nextCharacter(c, lastCharacter, secondToLastCharacter);
+                continue;
+            }
+        }
+
+        // We're in the first whitespace after a word or in whitespace that we don't collapse, which means we may have a breaking opportunity here.
+        wordMeasurements.grow(wordMeasurements.size() + 1);
+        WordMeasurement& wordMeasurement = wordMeasurements.last();
+
+        wordMeasurement.layoutText = layoutText;
+        wordMeasurement.endOffset = m_current.offset();
+        wordMeasurement.startOffset = lastSpace;
+
+        float lastWidthMeasurement;
+        if (wordTrailingSpaceWidth && c == spaceCharacter)
+            lastWidthMeasurement = textWidth(layoutText, lastSpace, m_current.offset() + 1 - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, &wordMeasurement.glyphBounds) - wordTrailingSpaceWidth;
+        else
+            lastWidthMeasurement = textWidth(layoutText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, &wordMeasurement.glyphBounds);
+
+        wordMeasurement.width = lastWidthMeasurement + wordSpacingForWordMeasurement;
+        wordMeasurement.glyphBounds.move(wordSpacingForWordMeasurement, 0);
+        lastWidthMeasurement += lastSpaceWordSpacing;
+        m_width.addUncommittedWidth(lastWidthMeasurement);
+
+        if (m_collapseWhiteSpace && previousCharacterIsSpace && m_currentCharacterIsSpace && lastWidthMeasurement)
+            m_width.setTrailingWhitespaceWidth(lastWidthMeasurement);
+
+        if (!m_appliedStartWidth) {
+            m_width.addUncommittedWidth(inlineLogicalWidthFromAncestorsIfNeeded(m_current.object(), true, false).toFloat());
+            m_appliedStartWidth = true;
+        }
+
+        applyWordSpacing = wordSpacing && m_currentCharacterIsSpace;
+
+        if (!m_width.committedWidth() && m_autoWrap && !m_width.fitsOnLine() && !widthMeasurementAtLastBreakOpportunity)
+            m_width.fitBelowFloats(m_lineInfo.isFirstLine());
+
+        if (m_autoWrap || breakWords) {
+            // If we break only after white-space, consider the current character
+            // as candidate width for this line.
+            bool lineWasTooWide = false;
+            if (m_width.fitsOnLine() && m_currentCharacterIsSpace && m_currentStyle->breakOnlyAfterWhiteSpace() && !midWordBreak) {
+                float charWidth = textWidth(layoutText, m_current.offset(), 1, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, &wordMeasurement.glyphBounds) + (applyWordSpacing ? wordSpacing : 0);
+                // Check if line is too big even without the extra space
+                // at the end of the line. If it is not, do nothing.
+                // If the line needs the extra whitespace to be too long,
+                // then move the line break to the space and skip all
+                // additional whitespace.
+                if (!m_width.fitsOnLine(charWidth)) {
+                    lineWasTooWide = true;
+                    m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
+                    skipTrailingWhitespace(m_lineBreak, m_lineInfo);
                 }
             }
-        } else if (m_ignoringSpaces) {
-            // Stop ignoring spaces and begin at this
-            // new point.
-            m_ignoringSpaces = false;
-            lastSpaceWordSpacing = applyWordSpacing ? wordSpacing : 0;
-            wordSpacingForWordMeasurement = (applyWordSpacing && wordMeasurements.last().width) ? wordSpacing : 0;
-            lastSpace = m_current.offset(); // e.g., "Foo    goo", don't add in any of the ignored spaces.
-            m_lineMidpointState.stopIgnoringSpaces(InlineIterator(0, m_current.object(), m_current.offset()));
+            if (lineWasTooWide || !m_width.fitsOnLine()) {
+                if (m_lineBreak.atTextParagraphSeparator()) {
+                    if (!stoppedIgnoringSpaces && m_current.offset() > 0)
+                        m_lineMidpointState.ensureCharacterGetsLineBox(m_current);
+                    m_lineBreak.increment();
+                    m_lineInfo.setPreviousLineBrokeCleanly(true);
+                    wordMeasurement.endOffset = m_lineBreak.offset();
+                }
+                if (m_lineBreak.object() && m_lineBreak.offset() && m_lineBreak.object().isText() && LineLayoutText(m_lineBreak.object()).textLength() && LineLayoutText(m_lineBreak.object()).characterAt(m_lineBreak.offset() - 1) == softHyphenCharacter)
+                    hyphenated = true;
+                if (m_lineBreak.offset() && m_lineBreak.offset() != (unsigned)wordMeasurement.endOffset && !wordMeasurement.width) {
+                    if (charWidth) {
+                        wordMeasurement.endOffset = m_lineBreak.offset();
+                        wordMeasurement.width = charWidth;
+                    }
+                }
+                // Didn't fit. Jump to the end unless there's still an opportunity to collapse whitespace.
+                if (m_ignoringSpaces || !m_collapseWhiteSpace || !m_currentCharacterIsSpace || !previousCharacterIsSpace) {
+                    m_atEnd = true;
+                    return false;
+                }
+            } else {
+                if (!betweenWords || (midWordBreak && !m_autoWrap) || (breakAll && !m_currentCharacterIsSpace))
+                    m_width.addUncommittedWidth(-lastWidthMeasurement);
+                if (hyphenWidth) {
+                    // Subtract the width of the soft hyphen out since we fit on a line.
+                    m_width.addUncommittedWidth(-hyphenWidth);
+                    hyphenWidth = 0;
+                }
+            }
         }
 
-        if (isSVGText && m_current.offset()) {
-            // Force creation of new InlineBoxes for each absolute positioned character (those that start new text chunks).
-            if (LineLayoutSVGInlineText(layoutText).characterStartsNewTextChunk(m_current.offset()))
+        if (c == newlineCharacter && m_preservesNewline) {
+            if (!stoppedIgnoringSpaces && m_current.offset())
                 m_lineMidpointState.ensureCharacterGetsLineBox(m_current);
+            m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
+            m_lineBreak.increment();
+            m_lineInfo.setPreviousLineBrokeCleanly(true);
+            return true;
         }
 
-        if (prohibitBreakInside) {
-            m_current.setNextBreakablePosition(layoutText.textLength());
-            prohibitBreakInside = false;
+        if (m_autoWrap && betweenWords) {
+            m_width.commit();
+            widthFromLastBreakingOpportunity = 0;
+            m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
+            // Auto-wrapping text should not wrap in the middle of a word once it has had an
+            // opportunity to break after a word.
+            breakWords = false;
+            widthMeasurementAtLastBreakOpportunity = lastWidthMeasurement;
         }
 
-        if (m_currentCharacterIsSpace && !previousCharacterIsSpace) {
-            m_startOfIgnoredSpaces.setObject(m_current.object());
-            m_startOfIgnoredSpaces.setOffset(m_current.offset());
+        if (midWordBreak && !U16_IS_TRAIL(c) && !(WTF::Unicode::category(c) & (WTF::Unicode::Mark_NonSpacing | WTF::Unicode::Mark_Enclosing | WTF::Unicode::Mark_SpacingCombining))) {
+            // Remember this as a breakable position in case
+            // adding the end width forces a break.
+            m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
+            midWordBreak &= (breakWords || breakAll);
         }
 
-        if (!m_currentCharacterIsSpace && previousCharacterShouldCollapseIfPreWap) {
-            if (m_autoWrap && m_currentStyle->breakOnlyAfterWhiteSpace())
-                m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
+        if (betweenWords) {
+            lastSpaceWordSpacing = applyWordSpacing ? wordSpacing : 0;
+            wordSpacingForWordMeasurement = (applyWordSpacing && wordMeasurement.width) ? wordSpacing : 0;
+            lastSpace = !breakAll || m_currentCharacterIsSpace ? m_current.offset() : lastSpace;
         }
 
-        if (m_collapseWhiteSpace && m_currentCharacterIsSpace && !m_ignoringSpaces)
-            m_trailingObjects.setTrailingWhitespace(LineLayoutText(m_current.object()));
-        else if (!m_currentStyle->collapseWhiteSpace() || !m_currentCharacterIsSpace)
-            m_trailingObjects.clear();
+        if (!m_ignoringSpaces && m_currentStyle->collapseWhiteSpace()) {
+            // If we encounter a newline, or if we encounter a
+            // second space, we need to go ahead and break up this
+            // run and enter a mode where we start collapsing spaces.
+            if (m_currentCharacterIsSpace && previousCharacterIsSpace) {
+                m_ignoringSpaces = true;
 
+                // We just entered a mode where we are ignoring
+                // spaces. Create a midpoint to terminate the run
+                // before the second space.
+                m_lineMidpointState.startIgnoringSpaces(m_startOfIgnoredSpaces);
+                m_trailingObjects.updateMidpointsForTrailingObjects(m_lineMidpointState, InlineIterator(), TrailingObjects::DoNotCollapseFirstSpace);
+            }
+        }
+
+        prepareForNextCharacter(layoutText, prohibitBreakInside, previousCharacterIsSpace, previousCharacterShouldCollapseIfPreWap);
         m_atStart = false;
         nextCharacter(c, lastCharacter, secondToLastCharacter);
     }
@@ -858,6 +842,32 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     }
     return false;
 }
+
+inline void BreakingContext::prepareForNextCharacter(const LineLayoutText& layoutText, bool& prohibitBreakInside, bool previousCharacterIsSpace, bool previousCharacterShouldCollapseIfPreWap)
+{
+    if (layoutText.isSVGInlineText() && m_current.offset()) {
+        // Force creation of new InlineBoxes for each absolute positioned character (those that start new text chunks).
+        if (LineLayoutSVGInlineText(layoutText).characterStartsNewTextChunk(m_current.offset()))
+            m_lineMidpointState.ensureCharacterGetsLineBox(m_current);
+    }
+    if (prohibitBreakInside) {
+        m_current.setNextBreakablePosition(layoutText.textLength());
+        prohibitBreakInside = false;
+    }
+    if (m_currentCharacterIsSpace && !previousCharacterIsSpace) {
+        m_startOfIgnoredSpaces.setObject(m_current.object());
+        m_startOfIgnoredSpaces.setOffset(m_current.offset());
+    }
+    if (!m_currentCharacterIsSpace && previousCharacterShouldCollapseIfPreWap) {
+        if (m_autoWrap && m_currentStyle->breakOnlyAfterWhiteSpace())
+            m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
+    }
+    if (m_collapseWhiteSpace && m_currentCharacterIsSpace && !m_ignoringSpaces)
+        m_trailingObjects.setTrailingWhitespace(LineLayoutText(m_current.object()));
+    else if (!m_currentStyle->collapseWhiteSpace() || !m_currentCharacterIsSpace)
+        m_trailingObjects.clear();
+}
+
 
 inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
 {
