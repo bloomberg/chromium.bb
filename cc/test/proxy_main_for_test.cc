@@ -11,11 +11,9 @@ namespace cc {
 scoped_ptr<ProxyMain> ProxyMainForTest::CreateThreaded(
     TestHooks* test_hooks,
     LayerTreeHost* host,
-    TaskRunnerProvider* task_runner_provider,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    TaskRunnerProvider* task_runner_provider) {
   scoped_ptr<ProxyMain> proxy_main(
-      new ProxyMainForTest(test_hooks, host, task_runner_provider,
-                           std::move(external_begin_frame_source)));
+      new ProxyMainForTest(test_hooks, host, task_runner_provider));
   proxy_main->SetChannel(ThreadedChannelForTest::Create(
       test_hooks, proxy_main.get(), task_runner_provider));
   return proxy_main;
@@ -23,15 +21,10 @@ scoped_ptr<ProxyMain> ProxyMainForTest::CreateThreaded(
 
 ProxyMainForTest::~ProxyMainForTest() {}
 
-ProxyMainForTest::ProxyMainForTest(
-    TestHooks* test_hooks,
-    LayerTreeHost* host,
-    TaskRunnerProvider* task_runner_provider,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source)
-    : ProxyMain(host,
-                task_runner_provider,
-                std::move(external_begin_frame_source)),
-      test_hooks_(test_hooks) {}
+ProxyMainForTest::ProxyMainForTest(TestHooks* test_hooks,
+                                   LayerTreeHost* host,
+                                   TaskRunnerProvider* task_runner_provider)
+    : ProxyMain(host, task_runner_provider), test_hooks_(test_hooks) {}
 
 void ProxyMainForTest::SetNeedsUpdateLayers() {
   ProxyMain::SetNeedsUpdateLayers();

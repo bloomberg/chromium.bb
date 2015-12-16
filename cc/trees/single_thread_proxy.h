@@ -28,11 +28,9 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
                                     NON_EXPORTED_BASE(LayerTreeHostImplClient),
                                     SchedulerClient {
  public:
-  static scoped_ptr<Proxy> Create(
-      LayerTreeHost* layer_tree_host,
-      LayerTreeHostSingleThreadClient* client,
-      TaskRunnerProvider* task_runner_provider_,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source);
+  static scoped_ptr<Proxy> Create(LayerTreeHost* layer_tree_host,
+                                  LayerTreeHostSingleThreadClient* client,
+                                  TaskRunnerProvider* task_runner_provider_);
   ~SingleThreadProxy() override;
 
   // Proxy implementation
@@ -54,7 +52,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool CommitRequested() const override;
   bool BeginMainFrameRequested() const override;
   void MainThreadHasStoppedFlinging() override {}
-  void Start() override;
+  void Start(scoped_ptr<BeginFrameSource> external_begin_frame_source) override;
   void Stop() override;
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
@@ -120,8 +118,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
  protected:
   SingleThreadProxy(LayerTreeHost* layer_tree_host,
                     LayerTreeHostSingleThreadClient* client,
-                    TaskRunnerProvider* task_runner_provider,
-                    scoped_ptr<BeginFrameSource> external_begin_frame_source);
+                    TaskRunnerProvider* task_runner_provider);
 
  private:
   void BeginMainFrame(const BeginFrameArgs& begin_frame_args);

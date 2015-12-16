@@ -35,7 +35,8 @@ class FakeProxy : public Proxy {
   void MainThreadHasStoppedFlinging() override {}
   bool BeginMainFrameRequested() const override;
   bool CommitRequested() const override;
-  void Start() override {}
+  void Start(
+      scoped_ptr<BeginFrameSource> external_begin_frame_source) override {}
   void Stop() override {}
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;

@@ -18,15 +18,13 @@ class ProxyMainForTest : public ProxyMain {
   static scoped_ptr<ProxyMain> CreateThreaded(
       TestHooks* test_hooks,
       LayerTreeHost* host,
-      TaskRunnerProvider* task_runner_provider,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source);
+      TaskRunnerProvider* task_runner_provider);
 
   ~ProxyMainForTest() override;
 
   ProxyMainForTest(TestHooks* test_hooks,
                    LayerTreeHost* host,
-                   TaskRunnerProvider* task_runner_provider,
-                   scoped_ptr<BeginFrameSource> external_begin_frame_source);
+                   TaskRunnerProvider* task_runner_provider);
 
   void SetNeedsUpdateLayers() override;
   void DidCompleteSwapBuffers() override;

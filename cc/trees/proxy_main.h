@@ -28,8 +28,7 @@ class CC_EXPORT ProxyMain : public Proxy {
  public:
   static scoped_ptr<ProxyMain> CreateThreaded(
       LayerTreeHost* layer_tree_host,
-      TaskRunnerProvider* task_runner_provider,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source);
+      TaskRunnerProvider* task_runner_provider);
 
   ~ProxyMain() override;
 
@@ -75,8 +74,7 @@ class CC_EXPORT ProxyMain : public Proxy {
 
  protected:
   ProxyMain(LayerTreeHost* layer_tree_host,
-            TaskRunnerProvider* task_runner_provider,
-            scoped_ptr<BeginFrameSource> external_begin_frame_source);
+            TaskRunnerProvider* task_runner_provider);
 
  private:
   friend class ProxyMainForTest;
@@ -99,7 +97,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   bool CommitRequested() const override;
   bool BeginMainFrameRequested() const override;
   void MainThreadHasStoppedFlinging() override;
-  void Start() override;
+  void Start(scoped_ptr<BeginFrameSource> external_begin_frame_source) override;
   void Stop() override;
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
@@ -144,12 +142,6 @@ class CC_EXPORT ProxyMain : public Proxy {
   bool defer_commits_;
 
   RendererCapabilities renderer_capabilities_;
-
-  // This holds a valid value only until ProxyImpl is created on the impl thread
-  // with InitializeImplOnImpl().
-  // TODO(khushalsagar): Remove the use of this temporary variable.
-  // See crbug/567930.
-  scoped_ptr<BeginFrameSource> external_begin_frame_source_;
 
   scoped_ptr<ChannelMain> channel_main_;
 

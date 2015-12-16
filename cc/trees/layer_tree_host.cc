@@ -144,9 +144,9 @@ void LayerTreeHost::InitializeThreaded(
   task_runner_provider_ =
       TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
   scoped_ptr<ProxyMain> proxy_main =
-      ProxyMain::CreateThreaded(this, task_runner_provider_.get(),
-                                std::move(external_begin_frame_source));
-  InitializeProxy(std::move(proxy_main));
+      ProxyMain::CreateThreaded(this, task_runner_provider_.get());
+  InitializeProxy(std::move(proxy_main),
+                  std::move(external_begin_frame_source));
 }
 
 void LayerTreeHost::InitializeSingleThreaded(
@@ -154,16 +154,18 @@ void LayerTreeHost::InitializeSingleThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_ptr<BeginFrameSource> external_begin_frame_source) {
   task_runner_provider_ = TaskRunnerProvider::Create(main_task_runner, nullptr);
-  InitializeProxy(SingleThreadProxy::Create(
-      this, single_thread_client, task_runner_provider_.get(),
-      std::move(external_begin_frame_source)));
+  InitializeProxy(SingleThreadProxy::Create(this, single_thread_client,
+                                            task_runner_provider_.get()),
+                  std::move(external_begin_frame_source));
 }
 
 void LayerTreeHost::InitializeForTesting(
     scoped_ptr<TaskRunnerProvider> task_runner_provider,
-    scoped_ptr<Proxy> proxy_for_testing) {
+    scoped_ptr<Proxy> proxy_for_testing,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
   task_runner_provider_ = std::move(task_runner_provider);
-  InitializeProxy(std::move(proxy_for_testing));
+  InitializeProxy(std::move(proxy_for_testing),
+                  std::move(external_begin_frame_source));
 }
 
 void LayerTreeHost::SetTaskRunnerProviderForTesting(
@@ -172,11 +174,13 @@ void LayerTreeHost::SetTaskRunnerProviderForTesting(
   task_runner_provider_ = std::move(task_runner_provider);
 }
 
-void LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
+void LayerTreeHost::InitializeProxy(
+    scoped_ptr<Proxy> proxy,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
   TRACE_EVENT0("cc", "LayerTreeHost::InitializeForReal");
 
   proxy_ = std::move(proxy);
-  proxy_->Start();
+  proxy_->Start(std::move(external_begin_frame_source));
   if (settings_.accelerated_animation_enabled) {
     if (animation_host_)
       animation_host_->SetSupportsScrollAnimations(

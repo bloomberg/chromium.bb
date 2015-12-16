@@ -99,30 +99,22 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 // various actions.
 class SingleThreadProxyForTest : public SingleThreadProxy {
  public:
-  static scoped_ptr<Proxy> Create(
-      TestHooks* test_hooks,
-      LayerTreeHost* host,
-      LayerTreeHostSingleThreadClient* client,
-      TaskRunnerProvider* task_runner_provider,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+  static scoped_ptr<Proxy> Create(TestHooks* test_hooks,
+                                  LayerTreeHost* host,
+                                  LayerTreeHostSingleThreadClient* client,
+                                  TaskRunnerProvider* task_runner_provider) {
     return make_scoped_ptr(new SingleThreadProxyForTest(
-        test_hooks, host, client, task_runner_provider,
-        std::move(external_begin_frame_source)));
+        test_hooks, host, client, task_runner_provider));
   }
 
   ~SingleThreadProxyForTest() override {}
 
  private:
-  SingleThreadProxyForTest(
-      TestHooks* test_hooks,
-      LayerTreeHost* host,
-      LayerTreeHostSingleThreadClient* client,
-      TaskRunnerProvider* task_runner_provider,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source)
-      : SingleThreadProxy(host,
-                          client,
-                          task_runner_provider,
-                          std::move(external_begin_frame_source)),
+  SingleThreadProxyForTest(TestHooks* test_hooks,
+                           LayerTreeHost* host,
+                           LayerTreeHostSingleThreadClient* client,
+                           TaskRunnerProvider* task_runner_provider)
+      : SingleThreadProxy(host, client, task_runner_provider),
         test_hooks_(test_hooks) {}
 
   void ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) override {
@@ -457,16 +449,16 @@ class LayerTreeHostForTesting : public LayerTreeHost {
     if (mode == CompositorMode::Threaded) {
       DCHECK(impl_task_runner.get());
       scoped_ptr<ProxyMain> proxy_main = ProxyMainForTest::CreateThreaded(
-          test_hooks, layer_tree_host.get(), task_runner_provider.get(),
-          std::move(external_begin_frame_source));
+          test_hooks, layer_tree_host.get(), task_runner_provider.get());
       proxy = std::move(proxy_main);
     } else {
-      proxy = SingleThreadProxyForTest::Create(
-          test_hooks, layer_tree_host.get(), client, task_runner_provider.get(),
-          std::move(external_begin_frame_source));
+      proxy =
+          SingleThreadProxyForTest::Create(test_hooks, layer_tree_host.get(),
+                                           client, task_runner_provider.get());
     }
-    layer_tree_host->InitializeForTesting(std::move(task_runner_provider),
-                                          std::move(proxy));
+    layer_tree_host->InitializeForTesting(
+        std::move(task_runner_provider), std::move(proxy),
+        std::move(external_begin_frame_source));
     return layer_tree_host;
   }
 

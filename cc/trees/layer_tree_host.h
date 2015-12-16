@@ -373,8 +373,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       LayerTreeHostSingleThreadClient* single_thread_client,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_ptr<BeginFrameSource> external_begin_frame_source);
-  void InitializeForTesting(scoped_ptr<TaskRunnerProvider> task_runner_provider,
-                            scoped_ptr<Proxy> proxy_for_testing);
+  void InitializeForTesting(
+      scoped_ptr<TaskRunnerProvider> task_runner_provider,
+      scoped_ptr<Proxy> proxy_for_testing,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source);
   void SetOutputSurfaceLostForTesting(bool is_lost) {
     output_surface_lost_ = is_lost;
   }
@@ -399,7 +401,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void RecordGpuRasterizationHistogram();
 
  private:
-  void InitializeProxy(scoped_ptr<Proxy> proxy);
+  void InitializeProxy(
+      scoped_ptr<Proxy> proxy,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
   bool DoUpdateLayers(Layer* root_layer);
   void UpdateHudLayer();

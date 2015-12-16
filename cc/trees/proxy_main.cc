@@ -23,19 +23,16 @@ namespace cc {
 
 scoped_ptr<ProxyMain> ProxyMain::CreateThreaded(
     LayerTreeHost* layer_tree_host,
-    TaskRunnerProvider* task_runner_provider,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    TaskRunnerProvider* task_runner_provider) {
   scoped_ptr<ProxyMain> proxy_main(
-      new ProxyMain(layer_tree_host, task_runner_provider,
-                    std::move(external_begin_frame_source)));
+      new ProxyMain(layer_tree_host, task_runner_provider));
   proxy_main->SetChannel(
       ThreadedChannel::Create(proxy_main.get(), task_runner_provider));
   return proxy_main;
 }
 
 ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
-                     TaskRunnerProvider* task_runner_provider,
-                     scoped_ptr<BeginFrameSource> external_begin_frame_source)
+                     TaskRunnerProvider* task_runner_provider)
     : layer_tree_host_(layer_tree_host),
       task_runner_provider_(task_runner_provider),
       layer_tree_host_id_(layer_tree_host->id()),
@@ -44,13 +41,10 @@ ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
       final_pipeline_stage_(NO_PIPELINE_STAGE),
       commit_waits_for_activation_(false),
       started_(false),
-      defer_commits_(false),
-      external_begin_frame_source_(std::move(external_begin_frame_source)) {
+      defer_commits_(false) {
   TRACE_EVENT0("cc", "ProxyMain::ProxyMain");
   DCHECK(task_runner_provider_);
   DCHECK(IsMainThread());
-  DCHECK(!layer_tree_host_->settings().use_external_begin_frame_source ||
-         external_begin_frame_source_);
 }
 
 ProxyMain::~ProxyMain() {
@@ -380,14 +374,17 @@ void ProxyMain::MainThreadHasStoppedFlinging() {
   channel_main_->MainThreadHasStoppedFlingingOnImpl();
 }
 
-void ProxyMain::Start() {
+void ProxyMain::Start(
+    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(IsMainThread());
   DCHECK(task_runner_provider_->HasImplThread());
   DCHECK(channel_main_);
+  DCHECK(!layer_tree_host_->settings().use_external_begin_frame_source ||
+         external_begin_frame_source);
 
   // Create LayerTreeHostImpl.
   channel_main_->SynchronouslyInitializeImpl(
-      layer_tree_host_, std::move(external_begin_frame_source_));
+      layer_tree_host_, std::move(external_begin_frame_source));
 
   started_ = true;
 }
