@@ -365,8 +365,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, CookieSourceHistogram);
 
   // For kSafeFromGlobalPurgeDays in CookieStore
-  FRIEND_TEST_ALL_PREFIXES(CookieMonsterSecureCookiesRequireSecureSchemeTest,
-                           EvictSecureCookies);
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterStrictSecureTest, EvictSecureCookies);
 
   // Internal reasons for deletion, used to populate informative histograms
   // and to provide a public cause for onCookieChange notifications.

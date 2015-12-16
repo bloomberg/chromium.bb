@@ -126,7 +126,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
                               MultiThreadedCookieStoreTest,
                               CookieMonsterTestTraits);
 
-INSTANTIATE_TYPED_TEST_CASE_P(CookieMonsterSecureCookiesRequireSecureScheme,
+INSTANTIATE_TYPED_TEST_CASE_P(CookieMonsterStrictSecure,
                               CookieStoreTest,
                               CookieMonsterEnforcingStrictSecure);
 
@@ -667,7 +667,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
 };
 
 using CookieMonsterTest = CookieMonsterTestBase<CookieMonsterTestTraits>;
-using CookieMonsterSecureCookiesRequireSecureSchemeTest =
+using CookieMonsterStrictSecureTest =
     CookieMonsterTestBase<CookieMonsterEnforcingStrictSecure>;
 
 // TODO(erikwright): Replace the other callbacks and synchronous helper methods
@@ -3063,7 +3063,7 @@ TEST_F(CookieMonsterTest, CookieSourceHistogram) {
       CookieMonster::COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME, 1);
 }
 
-TEST_F(CookieMonsterSecureCookiesRequireSecureSchemeTest, SetSecureCookies) {
+TEST_F(CookieMonsterStrictSecureTest, SetSecureCookies) {
   scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
   GURL http_url("http://www.google.com");
   GURL http_superdomain_url("http://google.com");
@@ -3129,7 +3129,7 @@ TEST_F(CookieMonsterSecureCookiesRequireSecureSchemeTest, SetSecureCookies) {
 }
 
 // Tests for behavior if strict secure cookies is enabled.
-TEST_F(CookieMonsterSecureCookiesRequireSecureSchemeTest, EvictSecureCookies) {
+TEST_F(CookieMonsterStrictSecureTest, EvictSecureCookies) {
   // Hard-coding limits in the test, but use DCHECK_EQ to enforce constraint.
   DCHECK_EQ(180U, CookieMonster::kDomainMaxCookies);
   DCHECK_EQ(150U, CookieMonster::kDomainMaxCookies -
@@ -3252,6 +3252,27 @@ TEST_F(CookieMonsterSecureCookiesRequireSecureSchemeTest, EvictSecureCookies) {
   const AltHosts test14_alt_hosts(1500, 1800);
   TestSecureCookieEviction(test14, arraysize(test14), 1501U, 1499,
                            &test14_alt_hosts);
+}
+
+// Tests that strict secure cookies doesn't trip equivalent cookie checks
+// accidentally. Regression test for https://crbug.com/569943.
+TEST_F(CookieMonsterStrictSecureTest, EquivalentCookies) {
+  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
+  GURL http_url("http://www.google.com");
+  GURL http_superdomain_url("http://google.com");
+  GURL https_url("https://www.google.com");
+
+  // Tests that non-equivalent cookies because of the path attribute can be set
+  // successfully.
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=C; path=/some/other/path"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=D; path=/some/other/path"));
+
+  // Tests that non-equivalent cookies because of the domain attribute can be
+  // set successfully.
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=C; domain=google.com"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=D; domain=google.com"));
 }
 
 class CookieMonsterNotificationTest : public CookieMonsterTest {

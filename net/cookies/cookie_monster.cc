@@ -1830,7 +1830,8 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
       // TODO(jww): We need to add metrics here before we add this as a Finch
       // experiment, as our current Cookie.CookieSourceScheme and related
       // metrics make very different assumptions from what this now means.
-      found_equivalent_cookie = true;
+      if (ecc.IsEquivalent(*cc))
+        found_equivalent_cookie = true;
     } else if (ecc.IsEquivalent(*cc)) {
       // We should never have more than one equivalent cookie, since they should
       // overwrite each other, unless secure cookies require secure scheme is
