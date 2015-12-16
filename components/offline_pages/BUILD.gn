@@ -66,6 +66,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/browser",
+    "//components/bookmarks/test",
     "//components/leveldb_proto",
     "//components/offline_pages/proto:offline_pages_proto",
     "//testing/gtest",
