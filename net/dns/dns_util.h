@@ -25,6 +25,11 @@ NET_EXPORT_PRIVATE bool DNSDomainFromDot(const base::StringPiece& dotted,
 NET_EXPORT_PRIVATE std::string DNSDomainToString(
     const base::StringPiece& domain);
 
+// Returns true if it can determine that only loopback addresses are configured.
+// i.e. if only 127.0.0.1 and ::1 are routable.
+// Also returns false if it cannot determine this.
+NET_EXPORT_PRIVATE bool HaveOnlyLoopbackAddresses();
+
 }  // namespace net
 
 #endif  // NET_DNS_DNS_UTIL_H_

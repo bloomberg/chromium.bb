@@ -166,11 +166,6 @@ NET_EXPORT std::string GetDirectoryListingEntry(const base::string16& name,
 //   - reference section
 NET_EXPORT_PRIVATE GURL SimplifyUrlForRequest(const GURL& url);
 
-// Returns true if it can determine that only loopback addresses are configured.
-// i.e. if only 127.0.0.1 and ::1 are routable.
-// Also returns false if it cannot determine this.
-bool HaveOnlyLoopbackAddresses();
-
 // Retuns the port field of the |sockaddr|.
 const uint16_t* GetPortFieldFromSockaddr(const struct sockaddr* address,
                                          socklen_t address_len);
