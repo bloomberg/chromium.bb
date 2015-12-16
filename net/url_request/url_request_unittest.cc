@@ -5496,7 +5496,7 @@ TEST_F(URLRequestTestHTTP, CancelTest4) {
   }
   // expect things to just cleanup properly.
 
-  // we won't actually get a received reponse here because we've never run the
+  // we won't actually get a received response here because we've never run the
   // message loop
   EXPECT_FALSE(d.received_data_before_response());
   EXPECT_EQ(0, d.bytes_received());

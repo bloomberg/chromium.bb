@@ -133,7 +133,7 @@ bool URLRequestFileJob::IsRedirectResponse(GURL* location,
   bool resolved;
   resolved = base::win::ResolveShortcut(new_path, &new_path, NULL);
 
-  // If shortcut is not resolved succesfully, do not redirect.
+  // If shortcut is not resolved successfully, do not redirect.
   if (!resolved)
     return false;
 

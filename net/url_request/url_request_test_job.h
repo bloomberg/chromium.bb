@@ -22,7 +22,7 @@ namespace net {
 // It will respond to several URLs, which you can retrieve using the test_url*
 // getters, which will in turn respond with the corresponding responses returned
 // by test_data*. Any other URLs that begin with "test:" will return an error,
-// which might also be useful, you can use test_url_error() to retreive a
+// which might also be useful, you can use test_url_error() to retrieve a
 // standard one.
 //
 // You can override the known URLs or the response data by overriding Start().
