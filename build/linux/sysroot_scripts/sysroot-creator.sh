@@ -262,9 +262,8 @@ HacksAndPatchesAmd64() {
 
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_PATH internally
-  SubBanner "Package Configs Symlink"
-  mkdir -p ${INSTALL_ROOT}/usr/share
-  ln -s ../lib/x86_64-linux-gnu/pkgconfig ${INSTALL_ROOT}/usr/share/pkgconfig
+  SubBanner "Move pkgconfig scripts"
+  mv ${INSTALL_ROOT}/usr/lib/x86_64-linux-gnu/pkgconfig ${INSTALL_ROOT}/usr/lib/
 
   SubBanner "Adding an additional ld.conf include"
   LD_SO_HACK_CONF="${INSTALL_ROOT}/etc/ld.so.conf.d/zz_hack.conf"
@@ -286,9 +285,8 @@ HacksAndPatchesI386() {
 
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_PATH internally
-  SubBanner "Package Configs Symlink"
-  mkdir -p ${INSTALL_ROOT}/usr/share
-  ln -s ../lib/i386-linux-gnu/pkgconfig ${INSTALL_ROOT}/usr/share/pkgconfig
+  SubBanner "Move pkgconfig scripts"
+  mv ${INSTALL_ROOT}/usr/lib/i386-linux-gnu/pkgconfig ${INSTALL_ROOT}/usr/lib/
 
   SubBanner "Adding an additional ld.conf include"
   LD_SO_HACK_CONF="${INSTALL_ROOT}/etc/ld.so.conf.d/zz_hack.conf"
@@ -310,9 +308,9 @@ HacksAndPatchesARM() {
 
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_PATH internally
-  SubBanner "Package Configs Symlink"
-  mkdir -p ${INSTALL_ROOT}/usr/share
-  ln -s ../lib/arm-linux-gnueabihf/pkgconfig ${INSTALL_ROOT}/usr/share/pkgconfig
+  SubBanner "Move pkgconfig files"
+  mv ${INSTALL_ROOT}/usr/lib/arm-linux-gnueabihf/pkgconfig \
+      ${INSTALL_ROOT}/usr/lib/
 }
 
 
@@ -329,9 +327,9 @@ HacksAndPatchesMips() {
 
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_PATH internally
-  SubBanner "Package Configs Symlink"
-  mkdir -p ${INSTALL_ROOT}/usr/share
-  ln -s ../lib/mipsel-linux-gnu/pkgconfig ${INSTALL_ROOT}/usr/share/pkgconfig
+  SubBanner "Move pkgconfig files"
+  mv ${INSTALL_ROOT}/usr/lib/mipsel-linux-gnu/pkgconfig \
+      ${INSTALL_ROOT}/usr/lib/
 }
 
 
@@ -362,7 +360,15 @@ InstallIntoSysroot() {
 
     SubBanner "Extracting to ${INSTALL_ROOT}"
     dpkg --fsys-tarfile ${package}\
-      | tar -xf - --exclude=./usr/share -C ${INSTALL_ROOT}
+      | tar -xf - -C ${INSTALL_ROOT}
+
+  done
+
+  # Prune /usr/share, leaving only pkg-config
+  for name in ${INSTALL_ROOT}/usr/share/*; do
+    if [ "${name}" != "${INSTALL_ROOT}/usr/share/pkgconfig" ]; then
+      rm -r ${name}
+    fi
   done
 }
 
