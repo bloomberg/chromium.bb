@@ -430,11 +430,14 @@ void BackgroundTracingManagerImpl::OnFinalizeComplete() {
   if (!idle_callback_.is_null())
     idle_callback_.Run();
 
+  bool is_allowed_begin =
+      !delegate_ || (config_ &&
+                     delegate_->IsAllowedToBeginBackgroundScenario(
+                         *config_.get(), requires_anonymized_data_));
+
   // Now that a trace has completed, we may need to enable recording again.
   // TODO(oysteine): Retry later if IsAllowedToBeginBackgroundScenario fails.
-  if (!delegate_ ||
-      delegate_->IsAllowedToBeginBackgroundScenario(
-          *config_.get(), requires_anonymized_data_)) {
+  if (is_allowed_begin) {
     StartTracingIfConfigNeedsIt();
   } else {
     AbortScenario();
