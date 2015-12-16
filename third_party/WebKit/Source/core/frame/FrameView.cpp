@@ -2457,10 +2457,9 @@ void FrameView::synchronizedPaint()
 void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
 {
     if (graphicsLayer->drawsContent()) {
-        ASSERT(graphicsLayer->paintController());
-        GraphicsContext context(*graphicsLayer->paintController());
+        GraphicsContext context(graphicsLayer->paintController());
         graphicsLayer->paint(context, nullptr);
-        graphicsLayer->paintController()->commitNewDisplayItems();
+        graphicsLayer->paintController().commitNewDisplayItems();
     }
 
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
@@ -2489,7 +2488,9 @@ void FrameView::pushPaintArtifactToCompositor()
     if (!layer->hasCompositedLayerMapping())
         return;
     GraphicsLayer* rootGraphicsLayer = layer->compositedLayerMapping()->mainGraphicsLayer();
-    const PaintArtifact& paintArtifact = rootGraphicsLayer->paintController()->paintArtifact();
+    if (!rootGraphicsLayer->drawsContent())
+        return;
+    const PaintArtifact& paintArtifact = rootGraphicsLayer->paintController().paintArtifact();
 
     Page* page = frame().page();
     if (!page)

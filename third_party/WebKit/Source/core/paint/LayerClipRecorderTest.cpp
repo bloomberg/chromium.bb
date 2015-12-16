@@ -25,7 +25,7 @@ public:
 
 protected:
     LayoutView& layoutView() { return *m_layoutView; }
-    PaintController& rootPaintController() { return *layoutView().layer()->graphicsLayerBacking()->paintController(); }
+    PaintController& rootPaintController() { return layoutView().layer()->graphicsLayerBacking()->paintController(); }
 
 private:
     void SetUp() override

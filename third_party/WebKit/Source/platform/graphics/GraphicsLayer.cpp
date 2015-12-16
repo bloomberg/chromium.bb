@@ -326,8 +326,8 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-        if (!m_client->needsRepaint() && !paintController()->cacheIsEmpty() && m_previousInterestRect == *interestRect) {
-            paintController()->createAndAppend<CachedDisplayItem>(*this, DisplayItem::CachedDisplayItemList);
+        if (!m_client->needsRepaint() && !paintController().cacheIsEmpty() && m_previousInterestRect == *interestRect) {
+            paintController().createAndAppend<CachedDisplayItem>(*this, DisplayItem::CachedDisplayItemList);
             return;
         }
     }
@@ -1031,7 +1031,7 @@ void GraphicsLayer::setNeedsDisplay()
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->invalidate();
 
-    paintController()->invalidateAll();
+    paintController().invalidateAll();
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationObject("##ALL##");
 }
@@ -1052,7 +1052,10 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
 
 void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClient& displayItemClient, PaintInvalidationReason paintInvalidationReason, const IntRect* visualRect)
 {
-    paintController()->invalidate(displayItemClient, paintInvalidationReason, visualRect);
+    if (!drawsContent())
+        return;
+
+    paintController().invalidate(displayItemClient, paintInvalidationReason, visualRect);
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationObject(displayItemClient.debugName());
 }
@@ -1214,11 +1217,12 @@ scoped_refptr<base::trace_event::ConvertableToTraceFormat> GraphicsLayer::TakeDe
     return tracedValue;
 }
 
-PaintController* GraphicsLayer::paintController()
+PaintController& GraphicsLayer::paintController()
 {
+    RELEASE_ASSERT(drawsContent());
     if (!m_paintController)
         m_paintController = PaintController::create();
-    return m_paintController.get();
+    return *m_paintController;
 }
 
 void GraphicsLayer::setElementId(uint64_t id)

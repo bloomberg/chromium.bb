@@ -8,10 +8,7 @@
       "children": [
         {
           "position": [8, 8],
-          "bounds": [320, 240],
-          "paintInvalidationClients": [
-            "LayoutVideo VIDEO id='video'"
-          ]
+          "bounds": [320, 240]
         },
         {
           "shouldFlattenTransform": false,

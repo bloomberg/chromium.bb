@@ -256,7 +256,7 @@ public:
     // cc::LayerClient implementation.
     scoped_refptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(cc::Layer*) override;
 
-    PaintController* paintController() override;
+    PaintController& paintController() override;
 
     // Exposed for tests.
     WebLayer* contentsLayer() const { return m_contentsLayer; }

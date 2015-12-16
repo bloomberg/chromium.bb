@@ -76,32 +76,31 @@ void ContentLayerDelegate::paintContents(
 {
     TRACE_EVENT0("blink,benchmark", "ContentLayerDelegate::paintContents");
 
-    PaintController* paintController = m_painter->paintController();
-    ASSERT(paintController);
-    paintController->setDisplayItemConstructionIsDisabled(
+    PaintController& paintController = m_painter->paintController();
+    paintController.setDisplayItemConstructionIsDisabled(
         paintingControl == WebContentLayerClient::DisplayListConstructionDisabled);
 
     // We also disable caching when Painting or Construction are disabled. In both cases we would like
     // to compare assuming the full cost of recording, not the cost of re-using cached content.
     if (paintingControl != WebContentLayerClient::PaintDefaultBehavior)
-        paintController->invalidateAll();
+        paintController.invalidateAll();
 
     GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
     if (paintingControl == WebContentLayerClient::DisplayListPaintingDisabled
         || paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
         disabledMode = GraphicsContext::FullyDisabled;
-    GraphicsContext context(*paintController, disabledMode);
+    GraphicsContext context(paintController, disabledMode);
 
     m_painter->paint(context, nullptr);
 
-    paintController->commitNewDisplayItems();
-    paintArtifactToWebDisplayItemList(webDisplayItemList, paintController->paintArtifact(), paintableRegion());
-    paintController->setDisplayItemConstructionIsDisabled(false);
+    paintController.commitNewDisplayItems();
+    paintArtifactToWebDisplayItemList(webDisplayItemList, paintController.paintArtifact(), paintableRegion());
+    paintController.setDisplayItemConstructionIsDisabled(false);
 }
 
 size_t ContentLayerDelegate::approximateUnsharedMemoryUsage() const
 {
-    return m_painter->paintController()->approximateUnsharedMemoryUsage();
+    return m_painter->paintController().approximateUnsharedMemoryUsage();
 }
 
 } // namespace blink

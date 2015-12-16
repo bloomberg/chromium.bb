@@ -8,9 +8,6 @@
       "children": [
         {
           "bounds": [300, 300],
-          "paintInvalidationClients": [
-            "LayoutHTMLCanvas (positioned) CANVAS"
-          ],
           "children": [
             {
               "bounds": [200, 200],

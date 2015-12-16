@@ -125,15 +125,14 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing)
 
     // Paint the layer with a null canvas to get a display list, and then
     // replay that onto the mock canvas for examination.
-    PaintController* paintController = graphicsLayer->paintController();
-    ASSERT(paintController);
-    GraphicsContext graphicsContext(*paintController);
+    PaintController& paintController = graphicsLayer->paintController();
+    GraphicsContext graphicsContext(paintController);
     IntRect intRect = rect;
     graphicsLayer->paint(graphicsContext, &intRect);
 
     graphicsContext.beginRecording(intRect);
-    paintController->commitNewDisplayItems();
-    paintController->paintArtifact().replay(graphicsContext);
+    paintController.commitNewDisplayItems();
+    paintController.paintArtifact().replay(graphicsContext);
     graphicsContext.endRecording()->playback(&canvas);
 }
 

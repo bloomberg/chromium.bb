@@ -48,7 +48,7 @@ class PLATFORM_EXPORT GraphicsContextPainter {
 public:
     virtual IntRect interestRect() = 0;
     virtual void paint(GraphicsContext&, const IntRect* interestRect) = 0;
-    virtual PaintController* paintController() = 0;
+    virtual PaintController& paintController() = 0;
 
 protected:
     virtual ~GraphicsContextPainter() { }
