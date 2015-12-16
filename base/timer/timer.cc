@@ -8,15 +8,13 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
-#include "base/threading/platform_thread.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace base {
 
 // BaseTimerTaskInternal is a simple delegate for scheduling a callback to
-// Timer in the thread's default task runner. It also handles the following
-// edge cases:
+// Timer in the task runner. It also handles the following edge cases:
 // - deleted by the task runner.
 // - abandoned (orphaned) by Timer.
 class BaseTimerTaskInternal {
@@ -61,10 +59,15 @@ class BaseTimerTaskInternal {
 
 Timer::Timer(bool retain_user_task, bool is_repeating)
     : scheduled_task_(NULL),
-      thread_id_(0),
+      was_scheduled_(false),
       is_repeating_(is_repeating),
       retain_user_task_(retain_user_task),
       is_running_(false) {
+  // It is safe for the timer to be created on a different thread/sequence
+  // than the one from which the timer APIs are called. The first call to the
+  // checker's CalledOnValidSequencedThread() method will re-bind the checker,
+  // and later calls will verify that the same task runner is used.
+  origin_sequence_checker_.DetachFromSequence();
 }
 
 Timer::Timer(const tracked_objects::Location& posted_from,
@@ -75,13 +78,16 @@ Timer::Timer(const tracked_objects::Location& posted_from,
       posted_from_(posted_from),
       delay_(delay),
       user_task_(user_task),
-      thread_id_(0),
+      was_scheduled_(false),
       is_repeating_(is_repeating),
       retain_user_task_(true),
       is_running_(false) {
+  // See comment in other constructor.
+  origin_sequence_checker_.DetachFromSequence();
 }
 
 Timer::~Timer() {
+  DCHECK(origin_sequence_checker_.CalledOnValidSequencedThread());
   StopAndAbandon();
 }
 
@@ -93,10 +99,10 @@ TimeDelta Timer::GetCurrentDelay() const {
   return delay_;
 }
 
-void Timer::SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner) {
+void Timer::SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) {
   // Do not allow changing the task runner once something has been scheduled.
-  DCHECK_EQ(thread_id_, 0);
-  task_runner_.swap(task_runner);
+  DCHECK(!was_scheduled_);
+  destination_task_runner_ = std::move(task_runner);
 }
 
 void Timer::Start(const tracked_objects::Location& posted_from,
@@ -149,6 +155,8 @@ void Timer::SetTaskInfo(const tracked_objects::Location& posted_from,
 
 void Timer::PostNewScheduledTask(TimeDelta delay) {
   DCHECK(scheduled_task_ == NULL);
+  DCHECK(origin_sequence_checker_.CalledOnValidSequencedThread());
+  was_scheduled_ = true;
   is_running_ = true;
   scheduled_task_ = new BaseTimerTaskInternal(this);
   if (delay > TimeDelta::FromMicroseconds(0)) {
@@ -161,21 +169,15 @@ void Timer::PostNewScheduledTask(TimeDelta delay) {
         base::Bind(&BaseTimerTaskInternal::Run, base::Owned(scheduled_task_)));
     scheduled_run_time_ = desired_run_time_ = TimeTicks();
   }
-  // Remember the thread ID that posts the first task -- this will be verified
-  // later when the task is abandoned to detect misuse from multiple threads.
-  if (!thread_id_) {
-    DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-    thread_id_ = static_cast<int>(PlatformThread::CurrentId());
-  }
 }
 
-scoped_refptr<SingleThreadTaskRunner> Timer::GetTaskRunner() {
-  return task_runner_.get() ? task_runner_ : ThreadTaskRunnerHandle::Get();
+scoped_refptr<SequencedTaskRunner> Timer::GetTaskRunner() {
+  return destination_task_runner_.get() ? destination_task_runner_
+                                        : SequencedTaskRunnerHandle::Get();
 }
 
 void Timer::AbandonScheduledTask() {
-  DCHECK(thread_id_ == 0 ||
-         thread_id_ == static_cast<int>(PlatformThread::CurrentId()));
+  DCHECK(origin_sequence_checker_.CalledOnValidSequencedThread());
   if (scheduled_task_) {
     scheduled_task_->Abandon();
     scheduled_task_ = NULL;
