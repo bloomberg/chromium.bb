@@ -115,6 +115,10 @@ Polymer((function() {
       this.commitContextChanges();
     },
 
+    i18n: function(args) {
+      return loadTimeData.getStringF.apply(loadTimeData, args);
+    },
+
     deviceListChanged_: function() {
       this.selectedDevice = this.context.get(CONTEXT_KEY_SELECTED_DEVICE, null);
     },
@@ -130,11 +134,13 @@ Polymer((function() {
     },
 
     getHostEnrollmentStepTitle_: function(domain) {
-      return this.i18n(['enrollmentInProgress', domain]);
+      return this.i18n(['loginControllerPairingScreenEnrollmentInProgress',
+                       domain]);
     },
 
     getSuccessMessage_: function(selectedDevice) {
-      return this.i18n(['successText', selectedDevice]);
+      return this.i18n(['loginControllerPairingScreenSuccessText',
+                       selectedDevice]);
     }
   };
 })());

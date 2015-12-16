@@ -60,6 +60,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -150,6 +151,17 @@ bool IsBootstrappingSlave() {
 bool IsBootstrappingMaster() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kOobeBootstrappingMaster);
+}
+
+bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
+  if (!network || !network->IsConnectedState())
+    return false;
+  if (network->type() == shill::kTypeBluetooth ||
+      (network->type() == shill::kTypeCellular &&
+       !help_utils_chromeos::IsUpdateOverCellularAllowed())) {
+    return false;
+  }
+  return true;
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -1104,8 +1116,22 @@ void WizardController::ConfigureHostRequested(
 
 void WizardController::AddNetworkRequested(const std::string& onc_spec) {
   NetworkScreen* network_screen = NetworkScreen::Get(this);
-  network_screen->CreateAndConnectNetworkFromOnc(onc_spec);
-  InitiateOOBEUpdate();
+  const chromeos::NetworkState* network_state = chromeos::NetworkHandler::Get()
+                                                    ->network_state_handler()
+                                                    ->DefaultNetwork();
+
+  if (NetworkAllowUpdate(network_state)) {
+    // Don't block the OOBE update and the following enrollment process.
+    InitiateOOBEUpdate();
+    network_screen->CreateAndConnectNetworkFromOnc(
+        onc_spec, base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
+  } else {
+    network_screen->CreateAndConnectNetworkFromOnc(
+        onc_spec, base::Bind(&WizardController::InitiateOOBEUpdate,
+                             weak_factory_.GetWeakPtr()),
+        base::Bind(&WizardController::OnSetHostNetworkFailed,
+                   weak_factory_.GetWeakPtr()));
+  }
 }
 
 void WizardController::OnEnableDebuggingScreenRequested() {
@@ -1337,6 +1363,11 @@ void WizardController::OnSharkConnected(
   }
 
   ShowHostPairingScreen();
+}
+
+void WizardController::OnSetHostNetworkFailed() {
+  remora_controller_->OnNetworkConnectivityChanged(
+      pairing_chromeos::HostPairingController::CONNECTIVITY_NONE);
 }
 
 void WizardController::StartEnrollmentScreen() {

@@ -61,45 +61,44 @@ void ControllerPairingScreenHandler::DeclareLocalizedValues(
   // TODO(dzhioev): Move the prefix logic to the base screen handler after
   // migration.
   std::string prefix;
-  base::ReplaceChars(kJsScreenPath, ".", "_", &prefix);
-  prefix += "_";
+  base::RemoveChars(kJsScreenPath, ".", &prefix);
 
-  builder->Add(prefix + "welcomeTitle", IDS_PAIRING_CONTROLLER_WELCOME);
-  builder->Add(prefix + "searching", IDS_PAIRING_CONTROLLER_SEARCHING);
-  builder->Add(prefix + "helpBtn", IDS_PAIRING_NEED_HELP);
-  builder->Add(prefix + "troubleConnectingTitle",
+  builder->Add(prefix + "WelcomeTitle", IDS_PAIRING_CONTROLLER_WELCOME);
+  builder->Add(prefix + "Searching", IDS_PAIRING_CONTROLLER_SEARCHING);
+  builder->Add(prefix + "HelpBtn", IDS_PAIRING_NEED_HELP);
+  builder->Add(prefix + "TroubleConnectingTitle",
                IDS_PAIRING_CONTROLLER_TROUBLE_CONNECTING);
-  builder->Add(prefix + "connectingAdvice",
+  builder->Add(prefix + "ConnectingAdvice",
                IDS_PAIRING_CONTROLLER_CONNECTING_ADVICE);
-  builder->Add(prefix + "adviceGotItBtn", IDS_PAIRING_CONTROLLER_ADVICE_GOT_IT);
-  builder->Add(prefix + "selectTitle", IDS_PAIRING_CONTROLLER_SELECT_TITLE);
-  builder->Add(prefix + "connectBtn", IDS_PAIRING_CONTROLLER_CONNECT);
-  builder->Add(prefix + "connecting", IDS_PAIRING_CONTROLLER_CONNECTING);
-  builder->Add(prefix + "confirmationTitle",
+  builder->Add(prefix + "AdviceGotItBtn", IDS_PAIRING_CONTROLLER_ADVICE_GOT_IT);
+  builder->Add(prefix + "SelectTitle", IDS_PAIRING_CONTROLLER_SELECT_TITLE);
+  builder->Add(prefix + "ConnectBtn", IDS_PAIRING_CONTROLLER_CONNECT);
+  builder->Add(prefix + "Connecting", IDS_PAIRING_CONTROLLER_CONNECTING);
+  builder->Add(prefix + "ConfirmationTitle",
                IDS_PAIRING_CONTROLLER_CONFIRMATION_TITLE);
-  builder->Add(prefix + "confirmationQuestion",
+  builder->Add(prefix + "ConfirmationQuestion",
                IDS_PAIRING_CONTROLLER_CONFIRMATION_QUESTION);
-  builder->Add(prefix + "rejectCodeBtn", IDS_PAIRING_CONTROLLER_REJECT_CODE);
-  builder->Add(prefix + "acceptCodeBtn", IDS_PAIRING_CONTROLLER_ACCEPT_CODE);
-  builder->Add(prefix + "updateTitle", IDS_PAIRING_CONTROLLER_UPDATE_TITLE);
-  builder->Add(prefix + "updateText", IDS_PAIRING_CONTROLLER_UPDATE_TEXT);
-  builder->Add(prefix + "connectionLostTitle",
+  builder->Add(prefix + "RejectCodeBtn", IDS_PAIRING_CONTROLLER_REJECT_CODE);
+  builder->Add(prefix + "AcceptCodeBtn", IDS_PAIRING_CONTROLLER_ACCEPT_CODE);
+  builder->Add(prefix + "UpdateTitle", IDS_PAIRING_CONTROLLER_UPDATE_TITLE);
+  builder->Add(prefix + "UpdateText", IDS_PAIRING_CONTROLLER_UPDATE_TEXT);
+  builder->Add(prefix + "ConnectionLostTitle",
                IDS_PAIRING_CONTROLLER_CONNECTION_LOST_TITLE);
-  builder->Add(prefix + "connectionLostText",
+  builder->Add(prefix + "ConnectionLostText",
                IDS_PAIRING_CONTROLLER_CONNECTION_LOST_TEXT);
-  builder->Add(prefix + "enrollTitle", IDS_PAIRING_ENROLL_TITLE);
-  builder->Add(prefix + "enrollText1", IDS_PAIRING_CONTROLLER_ENROLL_TEXT_1);
-  builder->Add(prefix + "enrollText2", IDS_PAIRING_CONTROLLER_ENROLL_TEXT_2);
-  builder->Add(prefix + "continueBtn", IDS_PAIRING_CONTROLLER_CONTINUE);
-  builder->Add(prefix + "enrollmentInProgress",
+  builder->Add(prefix + "EnrollTitle", IDS_PAIRING_ENROLL_TITLE);
+  builder->Add(prefix + "EnrollText1", IDS_PAIRING_CONTROLLER_ENROLL_TEXT_1);
+  builder->Add(prefix + "EnrollText2", IDS_PAIRING_CONTROLLER_ENROLL_TEXT_2);
+  builder->Add(prefix + "ContinueBtn", IDS_PAIRING_CONTROLLER_CONTINUE);
+  builder->Add(prefix + "EnrollmentInProgress",
                IDS_PAIRING_ENROLLMENT_IN_PROGRESS);
-  builder->Add(prefix + "enrollmentErrorTitle",
+  builder->Add(prefix + "EnrollmentErrorTitle",
                IDS_PAIRING_ENROLLMENT_ERROR_TITLE);
-  builder->Add(prefix + "enrollmentErrorHostRestarts",
+  builder->Add(prefix + "EnrollmentErrorHostRestarts",
                IDS_PAIRING_CONTROLLER_ENROLLMENT_ERROR_HOST_RESTARTS);
-  builder->Add(prefix + "successTitle", IDS_PAIRING_CONTROLLER_SUCCESS_TITLE);
-  builder->Add(prefix + "successText", IDS_PAIRING_CONTROLLER_SUCCESS_TEXT);
-  builder->Add(prefix + "continueToHangoutsBtn",
+  builder->Add(prefix + "SuccessTitle", IDS_PAIRING_CONTROLLER_SUCCESS_TITLE);
+  builder->Add(prefix + "SuccessText", IDS_PAIRING_CONTROLLER_SUCCESS_TEXT);
+  builder->Add(prefix + "ContinueToHangoutsBtn",
                IDS_PAIRING_CONTROLLER_CONTINUE_TO_HANGOUTS);
 }
 

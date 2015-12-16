@@ -122,6 +122,10 @@ std::string FakeHostPairingController::GetEnrollmentDomain() {
   return enrollment_domain_;
 }
 
+void FakeHostPairingController::OnNetworkConnectivityChanged(
+    Connectivity connectivity_status) {
+}
+
 void FakeHostPairingController::OnUpdateStatusChanged(
     UpdateStatus update_status) {
 }

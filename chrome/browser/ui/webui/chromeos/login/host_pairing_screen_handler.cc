@@ -56,24 +56,27 @@ void HostPairingScreenHandler::DeclareLocalizedValues(
   // TODO(dzhioev): Move the prefix logic to the base screen handler after
   // migration.
   std::string prefix;
-  base::ReplaceChars(kJsScreenPath, ".", "_", &prefix);
-  prefix += "_";
+  base::RemoveChars(kJsScreenPath, ".", &prefix);
 
-  builder->Add(prefix + "welcomeTitle", IDS_PAIRING_HOST_WELCOME_TITLE);
-  builder->Add(prefix + "welcomeText", IDS_PAIRING_HOST_WELCOME_TEXT);
-  builder->Add(prefix + "confirmationTitle",
+  builder->Add(prefix + "WelcomeTitle", IDS_PAIRING_HOST_WELCOME_TITLE);
+  builder->Add(prefix + "WelcomeText", IDS_PAIRING_HOST_WELCOME_TEXT);
+  builder->Add(prefix + "ConfirmationTitle",
                IDS_PAIRING_HOST_CONFIRMATION_TITLE);
-  builder->Add(prefix + "updatingTitle", IDS_PAIRING_HOST_UPDATING_TITLE);
-  builder->Add(prefix + "updatingText", IDS_PAIRING_HOST_UPDATING_TEXT);
-  builder->Add(prefix + "enrollTitle", IDS_PAIRING_ENROLL_TITLE);
-  builder->Add(prefix + "enrollingTitle",
+  builder->Add(prefix + "UpdatingTitle", IDS_PAIRING_HOST_UPDATING_TITLE);
+  builder->Add(prefix + "UpdatingText", IDS_PAIRING_HOST_UPDATING_TEXT);
+  builder->Add(prefix + "EnrollTitle", IDS_PAIRING_ENROLL_TITLE);
+  builder->Add(prefix + "EnrollingTitle",
                IDS_PAIRING_ENROLLMENT_IN_PROGRESS);
-  builder->Add(prefix + "doneTitle", IDS_PAIRING_HOST_DONE_TITLE);
-  builder->Add(prefix + "doneText", IDS_PAIRING_HOST_DONE_TEXT);
-  builder->Add(prefix + "enrollmentErrorTitle",
+  builder->Add(prefix + "DoneTitle", IDS_PAIRING_HOST_DONE_TITLE);
+  builder->Add(prefix + "DoneText", IDS_PAIRING_HOST_DONE_TEXT);
+  builder->Add(prefix + "EnrollmentErrorTitle",
                IDS_PAIRING_ENROLLMENT_ERROR_TITLE);
-  builder->Add(prefix + "errorNeedsRestart",
+  builder->Add(prefix + "ErrorNeedsRestart",
                IDS_PAIRING_HOST_EROLLMENT_ERROR_NEEDS_RESTART);
+  builder->Add(prefix + "SetupBasicConfigTitle",
+               IDS_HOST_SETUP_BASIC_CONFIGURATION_TITLE);
+  builder->Add(prefix + "SetupNetworkErrorTitle",
+               IDS_HOST_SETUP_NETWORK_ERROR_TITLE);
 }
 
 void HostPairingScreenHandler::RegisterMessages() {

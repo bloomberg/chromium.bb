@@ -170,6 +170,7 @@ void NetworkStateHelper::CreateAndConnectNetworkFromOnc(
   base::DictionaryValue* toplevel_onc = nullptr;
   if (!root || !root->GetAsDictionary(&toplevel_onc)) {
     LOG(ERROR) << "Invalid JSON Dictionary: " << error;
+    error_callback.Run();
     return;
   }
 

@@ -27,6 +27,8 @@ extern const char kContextKeyUpdateProgress[];
 // Pages names.
 extern const char kPageWelcome[];
 extern const char kPageCodeConfirmation[];
+extern const char kPageSetupBasicConfiguration[];
+extern const char kPageSetupNetworkError[];
 extern const char kPageUpdate[];
 extern const char kPageEnrollmentIntroduction[];
 extern const char kPageEnrollment[];

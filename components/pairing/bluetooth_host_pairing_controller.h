@@ -69,6 +69,7 @@ class BluetoothHostPairingController
   std::string GetDeviceName() override;
   std::string GetConfirmationCode() override;
   std::string GetEnrollmentDomain() override;
+  void OnNetworkConnectivityChanged(Connectivity connectivity_status) override;
   void OnUpdateStatusChanged(UpdateStatus update_status) override;
   void OnEnrollmentStatusChanged(EnrollmentStatus enrollment_status) override;
   void SetPermanentId(const std::string& permanent_id) override;
@@ -101,6 +102,7 @@ class BluetoothHostPairingController
   std::string device_name_;
   std::string confirmation_code_;
   std::string enrollment_domain_;
+  Connectivity connectivity_status_;
   UpdateStatus update_status_;
   EnrollmentStatus enrollment_status_;
   std::string permanent_id_;

@@ -79,6 +79,14 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
                          remora_controller_->GetConfirmationCode());
       break;
     }
+    case HostPairingController::STAGE_SETUP_BASIC_CONFIGURATION: {
+      desired_page = kPageSetupBasicConfiguration;
+      break;
+    }
+    case HostPairingController::STAGE_SETUP_NETWORK_ERROR: {
+      desired_page = kPageSetupNetworkError;
+      break;
+    }
     case HostPairingController::STAGE_WAITING_FOR_CREDENTIALS: {
       desired_page = kPageEnrollmentIntroduction;
       break;

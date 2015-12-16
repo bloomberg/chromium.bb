@@ -19,6 +19,25 @@ namespace pairing_chromeos {
 namespace {
 const int kReceiveSize = 16384;
 
+pairing_api::HostStatusParameters::Connectivity PairingApiConnectivityStatus(
+    HostPairingController::Connectivity connectivity_status) {
+  switch (connectivity_status) {
+    case HostPairingController::CONNECTIVITY_UNTESTED:
+      return pairing_api::HostStatusParameters::CONNECTIVITY_UNTESTED;
+    case HostPairingController::CONNECTIVITY_NONE:
+      return pairing_api::HostStatusParameters::CONNECTIVITY_NONE;
+    case HostPairingController::CONNECTIVITY_LIMITED:
+      return pairing_api::HostStatusParameters::CONNECTIVITY_LIMITED;
+    case HostPairingController::CONNECTIVITY_CONNECTING:
+      return pairing_api::HostStatusParameters::CONNECTIVITY_CONNECTING;
+    case HostPairingController::CONNECTIVITY_CONNECTED:
+      return pairing_api::HostStatusParameters::CONNECTIVITY_CONNECTED;
+    default:
+      NOTREACHED();
+      return pairing_api::HostStatusParameters::CONNECTIVITY_UNTESTED;
+  }
+}
+
 pairing_api::HostStatusParameters::UpdateStatus PairingApiUpdateStatus(
     HostPairingController::UpdateStatus update_status) {
   switch(update_status) {
@@ -57,11 +76,11 @@ pairing_api::HostStatusParameters::EnrollmentStatus PairingApiEnrollmentStatus(
 
 BluetoothHostPairingController::BluetoothHostPairingController()
     : current_stage_(STAGE_NONE),
+      connectivity_status_(CONNECTIVITY_UNTESTED),
       update_status_(UPDATE_STATUS_UNKNOWN),
       enrollment_status_(ENROLLMENT_STATUS_UNKNOWN),
       proto_decoder_(new ProtoDecoder(this)),
-      ptr_factory_(this) {
-}
+      ptr_factory_(this) {}
 
 BluetoothHostPairingController::~BluetoothHostPairingController() {
   Reset();
@@ -93,7 +112,7 @@ void BluetoothHostPairingController::SendHostStatus() {
 
   // TODO(zork): Get these values from the UI. (http://crbug.com/405744)
   host_status.mutable_parameters()->set_connectivity(
-      pairing_api::HostStatusParameters::CONNECTIVITY_CONNECTED);
+      PairingApiConnectivityStatus(connectivity_status_));
   host_status.mutable_parameters()->set_update_status(
       PairingApiUpdateStatus(update_status_));
   host_status.mutable_parameters()->set_enrollment_status(
@@ -309,6 +328,7 @@ void BluetoothHostPairingController::OnHostStatusMessage(
 
 void BluetoothHostPairingController::OnConfigureHostMessage(
     const pairing_api::ConfigureHost& message) {
+  ChangeStage(STAGE_SETUP_BASIC_CONFIGURATION);
   FOR_EACH_OBSERVER(Observer, observers_,
                     ConfigureHostRequested(
                         message.parameters().accepted_eula(),
@@ -399,6 +419,14 @@ std::string BluetoothHostPairingController::GetConfirmationCode() {
 
 std::string BluetoothHostPairingController::GetEnrollmentDomain() {
   return enrollment_domain_;
+}
+
+void BluetoothHostPairingController::OnNetworkConnectivityChanged(
+    Connectivity connectivity_status) {
+  connectivity_status_ = connectivity_status;
+  if (connectivity_status == CONNECTIVITY_NONE)
+    ChangeStage(STAGE_SETUP_NETWORK_ERROR);
+  SendHostStatus();
 }
 
 void BluetoothHostPairingController::OnUpdateStatusChanged(

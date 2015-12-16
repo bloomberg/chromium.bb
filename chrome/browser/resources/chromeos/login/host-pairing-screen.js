@@ -31,8 +31,13 @@ Polymer((function() {
       this.send(CALLBACK_CONTEXT_READY);
     },
 
+    i18n: function(args) {
+      return loadTimeData.getStringF.apply(loadTimeData, args);
+    },
+
     getEnrollmentStepTitle_: function(enrollmentDomain) {
-      return this.i18n(['enrollingTitle', enrollmentDomain]);
+      return this.i18n(['loginHostPairingScreenEnrollingTitle',
+                       enrollmentDomain]);
     }
   };
 })());

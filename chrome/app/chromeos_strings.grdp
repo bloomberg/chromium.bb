@@ -5966,6 +5966,14 @@ All users must sign out to continue.
     Chromebox needs to restart...
   </message>
 
+  <!-- Strings for the bootstrapping OOBE process -->
+  <message name="IDS_HOST_SETUP_BASIC_CONFIGURATION_TITLE" desc="Title of the host's basic configuration setup page during the bootstrapping process.">
+    Setup network connection, language, keyboard layout...
+  </message>
+  <message name="IDS_HOST_SETUP_NETWORK_ERROR_TITLE" desc="Title of the host's network error page during the bootstrapping process.">
+    Could not set up network
+  </message>
+
   <!-- Strings for the le OAuth-based enterprise enrollment page -->
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">
     Error when registering the device with the server: <ph name="CLIENT_ERROR">$1<ex>Failed to connect to the server</ex></ph>.
