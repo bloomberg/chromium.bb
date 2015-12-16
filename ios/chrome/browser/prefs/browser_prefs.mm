@@ -71,10 +71,6 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 
   data_reduction_proxy::RegisterPrefs(registry);
 
-  // TODO(shreyasv): Remove this in M49 as almost all users would have the
-  // "do not backup" bit set by then. crbug.com/489865.
-  registry->RegisterBooleanPref(prefs::kOTRStashStatePathSystemBackupExcluded,
-                                false);
   registry->RegisterBooleanPref(prefs::kBrowsingDataMigrationHasBeenPossible,
                                 false);
 

@@ -10,9 +10,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 
-namespace file_metadata_util {
-
-void AddSkipSystemBackupAttributeToItem(const base::FilePath& path) {
+void SetSkipSystemBackupAttributeToItem(const base::FilePath& path,
+                                        bool skip_system_backup) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   NSURL* file_url =
@@ -20,7 +19,7 @@ void AddSkipSystemBackupAttributeToItem(const base::FilePath& path) {
   DCHECK([[NSFileManager defaultManager] fileExistsAtPath:file_url.path]);
 
   NSError* error = nil;
-  BOOL success = [file_url setResourceValue:@YES
+  BOOL success = [file_url setResourceValue:(skip_system_backup ? @YES : @NO)
                                      forKey:NSURLIsExcludedFromBackupKey
                                       error:&error];
   if (!success) {
@@ -28,4 +27,3 @@ void AddSkipSystemBackupAttributeToItem(const base::FilePath& path) {
   }
 }
 
-}  // namespace file_metadata_util

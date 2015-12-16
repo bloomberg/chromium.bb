@@ -89,12 +89,6 @@ const char kMetricsReportingWifiOnly[] =
 // Which page should be visible on the new tab page v4
 const char kNtpShownPage[] = "ntp.shown_page";
 
-// Boolean which indicates if the user has already set a "do not backup" bit to
-// the OTR Profiles's state stash path to ensure that the folder is not
-// automatically synced to iCloud/iTunes.
-const char kOTRStashStatePathSystemBackupExcluded[] =
-    "ios.otr_stash_state_path_system_backup_excluded";
-
 // Boolean controlling whether history saving is disabled.
 const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 

@@ -27,7 +27,6 @@ extern const char kLastSessionExitedCleanly[];
 extern const char kLastSessionUsedWKWebViewControlGroup[];
 extern const char kMetricsReportingWifiOnly[];
 extern const char kNtpShownPage[];
-extern const char kOTRStashStatePathSystemBackupExcluded[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kSearchSuggestEnabled[];
 
