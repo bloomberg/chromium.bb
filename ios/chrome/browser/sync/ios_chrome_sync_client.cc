@@ -166,9 +166,7 @@ void IOSChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
 }
 
 sync_driver::SyncService* IOSChromeSyncClient::GetSyncService() {
-  // TODO(crbug.com/558298): bring back this DCHECK after Typed URLs are
-  // converted to SyncableService.
-  // DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
   return sync_service_;
 }
 
@@ -290,6 +288,13 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return history ? history->AsWeakPtr()
                      : base::WeakPtr<history::HistoryService>();
     }
+    case syncer::TYPED_URLS: {
+      history::HistoryService* history =
+          ios::HistoryServiceFactory::GetForBrowserState(
+              browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
+      return history ? history->GetTypedUrlSyncableService()->AsWeakPtr()
+                     : base::WeakPtr<syncer::SyncableService>();
+    }
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
       browser_sync::FaviconCache* favicons =
@@ -320,7 +325,6 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       // TODO(crbug.com/562170) The following datatypes still need to be
       // transitioned to the syncer::SyncableService API:
       // Bookmarks
-      // Typed URLs
       NOTREACHED();
       return base::WeakPtr<syncer::SyncableService>();
   }
