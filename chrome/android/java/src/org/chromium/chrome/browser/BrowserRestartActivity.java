@@ -19,7 +19,8 @@ import org.chromium.chrome.browser.util.IntentUtils;
 /**
  * Kills and (optionally) restarts the main Chrome process, then immediately kills itself.
  *
- * Starting this Activity should only be done by the {@link ChromeLifetimeController}.
+ * Starting this Activity should only be done by the {@link ChromeLifetimeController}, and requires
+ * passing in the process ID (the Intent should have the value of Process#myPid() as an extra).
  *
  * This Activity runs on a separate process from the main Chrome browser and cannot see the main
  * process' Activities.  It works around an Android framework issue for alarms set via the
@@ -55,7 +56,7 @@ public class BrowserRestartActivity extends Activity {
 
     private void handleIntent(final Intent intent) {
         if (TextUtils.equals(ACTION_START_WATCHDOG, intent.getAction())) {
-            // Kill the main process if Android fails to finish our Activities in a timely manner.
+            // Kick off a timer to kill the process after a delay.
             Handler handler = new Handler(Looper.getMainLooper());
             handler.postDelayed(new Runnable() {
                 @Override

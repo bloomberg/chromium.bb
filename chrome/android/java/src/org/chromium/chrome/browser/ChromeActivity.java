@@ -24,7 +24,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.MessageQueue;
-import android.os.Process;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
@@ -49,7 +48,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
-import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -222,8 +220,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     // Time in ms that it took took us to inflate the initial layout
     private long mInflateInitialLayoutDurationMs;
-
-    private final Locale mCurrentLocale = Locale.getDefault();
 
     private AssistStatusHandler mAssistStatusHandler;
 
@@ -824,16 +820,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
 
         super.onDestroy();
-
-        if (!Locale.getDefault().equals(mCurrentLocale)) {
-            // This is a hack to relaunch renderer processes. Killing the main process also kills
-            // its dependent (renderer) processes, and Android's activity manager service seems to
-            // still relaunch the activity even when process dies in onDestroy().
-            // TODO(changwan): Implement a more generic and safe relaunch mechanism, like killing
-            //                 dependent processes in onDestroy() and launching them at onCreate().
-            Log.w(TAG, "Forcefully killing process...");
-            Process.killProcess(Process.myPid());
-        }
     }
 
     /**

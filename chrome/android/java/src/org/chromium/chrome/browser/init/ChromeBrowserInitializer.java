@@ -4,15 +4,20 @@
 
 package org.chromium.chrome.browser.init;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -34,6 +39,7 @@ import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.policy.CombinedPolicyProvider;
 
 import java.util.LinkedList;
+import java.util.Locale;
 
 /**
  * Application level delegate that handles start up tasks.
@@ -41,11 +47,13 @@ import java.util.LinkedList;
  * interface for any additional initialization tasks for the initialization to work as intended.
  */
 public class ChromeBrowserInitializer {
-    private static final String TAG = "ChromeBrowserInitializer";
+    private static final String TAG = "BrowserInitializer";
     private static ChromeBrowserInitializer sChromeBrowserInitiliazer;
 
     private final Handler mHandler;
     private final ChromeApplication mApplication;
+    private final Locale mInitialLocale = Locale.getDefault();
+
     private boolean mPreInflationStartupComplete;
     private boolean mPostInflationStartupComplete;
     private boolean mNativeInitializationComplete;
@@ -145,6 +153,8 @@ public class ChromeBrowserInitializer {
         warmUpSharedPrefs();
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(mApplication);
+        ApplicationStatus.registerStateListenerForAllActivities(
+                createLocaleActivityStateListener());
 
         mPreInflationStartupComplete = true;
     }
@@ -337,5 +347,22 @@ public class ChromeBrowserInitializer {
             android.os.Debug.waitForDebugger();
             Log.e(TAG, "Java debugger connected. Resuming execution.");
         }
+    }
+
+    private ActivityStateListener createLocaleActivityStateListener() {
+        return new ActivityStateListener() {
+            @Override
+            public void onActivityStateChange(Activity activity, int newState) {
+                if (newState == ActivityState.CREATED || newState == ActivityState.DESTROYED) {
+                    // Android destroys Activities at some point after a locale change, but doesn't
+                    // kill the process.  This can lead to a bug where Chrome is halfway RTL, where
+                    // stale natively-loaded resources are not reloaded (http://crbug.com/552618).
+                    if (!mInitialLocale.equals(Locale.getDefault())) {
+                        Log.e(TAG, "Killing process because of locale change.");
+                        Process.killProcess(Process.myPid());
+                    }
+                }
+            }
+        };
     }
 }
