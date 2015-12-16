@@ -7,6 +7,8 @@
       'target_name': 'bluetooth_page',
       'variables': {
         'depends': [
+          '../../../../../third_party/closure_compiler/externs/bluetooth_interface.js',
+          '../../../../../third_party/closure_compiler/externs/bluetooth_private_interface.js',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../../../../../ui/webui/resources/js/i18n_behavior.js',

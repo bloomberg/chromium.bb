@@ -107,7 +107,7 @@ namespace bluetooth {
   interface Functions {
     // Get information about the Bluetooth adapter.
     // |callback| : Called with an AdapterState object describing the adapter
-    //              state.
+    // state.
     static void getAdapterState(AdapterStateCallback callback);
 
     // Get information about a Bluetooth device known to the system.

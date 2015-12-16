@@ -41,7 +41,25 @@ Polymer({
     deviceList: {type: Array, value: function() { return []; }},
 
     /** The index of the selected device or -1 if none. */
-    selectedDevice: {type: Number, value: -1}
+    selectedDevice: {type: Number, value: -1},
+
+    /**
+     * Interface for bluetooth calls. May be overriden by tests.
+     * @type {Bluetooth}
+     */
+    bluetooth: {
+      type: Object,
+      value: chrome.bluetooth,
+    },
+
+    /**
+     * Interface for bluetoothPrivate calls. May be overriden by tests.
+     * @type {BluetoothPrivate}
+     */
+    bluetoothPrivate: {
+      type: Object,
+      value: chrome.bluetoothPrivate,
+    },
   },
 
   /**
@@ -70,40 +88,40 @@ Polymer({
   attached: function() {
     this.bluetoothAdapterStateChangedListener_ =
         this.onBluetoothAdapterStateChanged_.bind(this);
-    chrome.bluetooth.onAdapterStateChanged.addListener(
+    this.bluetooth.onAdapterStateChanged.addListener(
         this.bluetoothAdapterStateChangedListener_);
 
     this.bluetoothDeviceUpdatedListener_ =
         this.onBluetoothDeviceUpdated_.bind(this);
-    chrome.bluetooth.onDeviceAdded.addListener(
+    this.bluetooth.onDeviceAdded.addListener(
         this.bluetoothDeviceUpdatedListener_);
-    chrome.bluetooth.onDeviceChanged.addListener(
+    this.bluetooth.onDeviceChanged.addListener(
         this.bluetoothDeviceUpdatedListener_);
 
     this.bluetoothDeviceRemovedListener_ =
         this.onBluetoothDeviceRemoved_.bind(this);
-    chrome.bluetooth.onDeviceRemoved.addListener(
+    this.bluetooth.onDeviceRemoved.addListener(
         this.bluetoothDeviceRemovedListener_);
 
     // Request the inital adapter state.
-    chrome.bluetooth.getAdapterState(
+    this.bluetooth.getAdapterState(
         this.bluetoothAdapterStateChangedListener_);
   },
 
   /** @override */
   detached: function() {
     if (this.bluetoothAdapterStateChangedListener_) {
-      chrome.bluetooth.onAdapterStateChanged.removeListener(
+      this.bluetooth.onAdapterStateChanged.removeListener(
           this.bluetoothAdapterStateChangedListener_);
     }
     if (this.bluetoothDeviceUpdatedListener_) {
-      chrome.bluetooth.onDeviceAdded.removeListener(
+      this.bluetooth.onDeviceAdded.removeListener(
           this.bluetoothDeviceUpdatedListener_);
-      chrome.bluetooth.onDeviceChanged.removeListener(
+      this.bluetooth.onDeviceChanged.removeListener(
           this.bluetoothDeviceUpdatedListener_);
     }
     if (this.bluetoothDeviceRemovedListener_) {
-      chrome.bluetooth.onDeviceRemoved.removeListener(
+      this.bluetooth.onDeviceRemoved.removeListener(
           this.bluetoothDeviceRemovedListener_);
     }
   },
@@ -118,7 +136,7 @@ Polymer({
       this.deviceList = [];
       return;
     }
-    chrome.bluetooth.getDevices(function(devices) {
+    this.bluetooth.getDevices(function(devices) {
       this.deviceList = devices;
     }.bind(this));
   },
@@ -128,7 +146,7 @@ Polymer({
    * @private
    */
   onBluetoothEnabledChange_: function() {
-    chrome.bluetoothPrivate.setAdapterState(
+    this.bluetoothPrivate.setAdapterState(
         {powered: this.bluetoothEnabled}, function() {
           if (chrome.runtime.lastError) {
             console.error(
@@ -233,7 +251,7 @@ Polymer({
     var device = this.deviceList[this.selectedDevice];
     if (!device)
       return;
-    chrome.bluetoothPrivate.connect(device.address, function(result) {
+    this.bluetoothPrivate.connect(device.address, function(result) {
       if (chrome.runtime.lastError) {
         console.error(
             'Error connecting to: ' + device.address +
@@ -253,7 +271,7 @@ Polymer({
       return;
     var device = this.deviceList[index];
     if (device.connected) {
-      chrome.bluetoothPrivate.disconnectAll(address, function() {
+      this.bluetoothPrivate.disconnectAll(address, function() {
         if (chrome.runtime.lastError) {
           console.error(
               'Error disconnecting devce: ' + device.name + ': ' +
@@ -261,7 +279,7 @@ Polymer({
         }
       });
     } else {
-      chrome.bluetoothPrivate.forgetDevice(address, function() {
+      this.bluetoothPrivate.forgetDevice(address, function() {
         if (chrome.runtime.lastError) {
           console.error(
               'Error forgetting devce: ' + device.name + ': ' +
