@@ -5135,27 +5135,35 @@ void WebGLRenderingContextBase::vertexAttrib4fv(GLuint index, const Vector<GLflo
     vertexAttribfvImpl("vertexAttrib4fv", index, v.data(), v.size(), 4);
 }
 
-void WebGLRenderingContextBase::vertexAttribPointer(ScriptState* scriptState, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, long long offset)
+bool WebGLRenderingContextBase::validateVertexAttribPointerTypeAndSize(GLenum type, GLint size)
 {
-    if (isContextLost())
-        return;
     switch (type) {
     case GL_BYTE:
     case GL_UNSIGNED_BYTE:
     case GL_SHORT:
     case GL_UNSIGNED_SHORT:
     case GL_FLOAT:
-        break;
+        if (size < 1 || size > 4) {
+            synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "bad size");
+            return false;
+        }
+        return true;
     default:
         synthesizeGLError(GL_INVALID_ENUM, "vertexAttribPointer", "invalid type");
-        return;
+        return false;
     }
+}
+
+void WebGLRenderingContextBase::vertexAttribPointer(ScriptState* scriptState, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, long long offset)
+{
+    if (isContextLost() || !validateVertexAttribPointerTypeAndSize(type, size))
+        return;
     if (index >= m_maxVertexAttribs) {
         synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "index out of range");
         return;
     }
-    if (size < 1 || size > 4 || stride < 0 || stride > 255) {
-        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "bad size or stride");
+    if (stride < 0 || stride > 255) {
+        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "bad stride");
         return;
     }
     if (!validateValueFitNonNegInt32("vertexAttribPointer", "offset", offset))

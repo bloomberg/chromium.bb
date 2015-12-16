@@ -8938,6 +8938,12 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
         GL_INVALID_VALUE, "glVertexAttribPointer", "size GL_INVALID_VALUE");
     return error::kNoError;
   }
+  if ((type == GL_INT_2_10_10_10_REV || type == GL_UNSIGNED_INT_2_10_10_10_REV)
+      && size != 4) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, "glVertexAttribPointer", "size != 4");
+    return error::kNoError;
+  }
   if (indx >= group_->max_vertex_attribs()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glVertexAttribPointer", "index out of range");

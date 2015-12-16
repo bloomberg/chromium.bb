@@ -907,6 +907,9 @@ protected:
     // are valid. Otherwise, generates appropriate error and returns false.
     bool validateReadPixelsFuncParameters(GLsizei width, GLsizei height, GLenum format, GLenum type, long long bufferSize);
 
+    // Helper function to check type and size of vertexAttribPointer. Return true if type and size are valid. Otherwise, generates appropriates error and return false.
+    virtual bool validateVertexAttribPointerTypeAndSize(GLenum type, GLint size);
+
     virtual GLint getMaxTextureLevelForTarget(GLenum target);
 
     // Helper function to check input level for functions {copy}Tex{Sub}Image.

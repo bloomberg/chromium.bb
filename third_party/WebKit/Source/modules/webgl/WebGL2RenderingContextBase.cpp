@@ -1442,6 +1442,39 @@ void WebGL2RenderingContextBase::vertexAttribIuivImpl(const char* functionName, 
     attribValue.value.uintValue[3] = value[3];
 }
 
+bool WebGL2RenderingContextBase::validateVertexAttribPointerTypeAndSize(GLenum type, GLint size)
+{
+    switch (type) {
+    case GL_BYTE:
+    case GL_UNSIGNED_BYTE:
+    case GL_SHORT:
+    case GL_UNSIGNED_SHORT:
+    case GL_INT:
+    case GL_UNSIGNED_INT:
+    case GL_FLOAT:
+    case GL_HALF_FLOAT:
+        if (size < 1 || size > 4) {
+            synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "invalid size");
+            return false;
+        }
+        return true;
+    case GL_INT_2_10_10_10_REV:
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+        if (size < 1 || size > 4) {
+            synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "invalid size");
+            return false;
+        }
+        if (size != 4) {
+            synthesizeGLError(GL_INVALID_OPERATION, "vertexAttribPointer", "size != 4");
+            return false;
+        }
+        return true;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "vertexAttribPointer", "invalid type");
+        return false;
+    }
+}
+
 void WebGL2RenderingContextBase::vertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, long long offset)
 {
     if (isContextLost())
