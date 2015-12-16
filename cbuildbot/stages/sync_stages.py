@@ -511,12 +511,14 @@ class ManifestVersionedSyncStage(SyncStage):
     # repository. Otherwise, the push will be rejected by the server.
     self.manifest_repo = self._GetManifestVersionsRepoUrl()
 
-    # 1. If we're uprevving Chrome, Chrome might have changed even if the
-    #    manifest has not, so we should force a build to double check. This
-    #    means that we'll create a new manifest, even if there are no changes.
+    # 1. Our current logic for calculating whether to re-run a build assumes
+    #    that if the build is green, then it doesn't need to be re-run. This
+    #    isn't true for canary masters, because the canary master ignores the
+    #    status of its slaves and is green even if they fail. So set
+    #    force=True in this case.
     # 2. If we're running with --debug, we should always run through to
     #    completion, so as to ensure a complete test.
-    self._force = self._chrome_rev or self._run.options.debug
+    self._force = self._run.config.master or self._run.options.debug
 
   def HandleSkip(self):
     """Initializes a manifest manager to the specified version if skipped."""
