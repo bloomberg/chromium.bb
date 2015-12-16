@@ -218,13 +218,8 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
 
 void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue* issue) {
   DVLOG(2) << "UpdateIssue";
-  if (issue) {
-    scoped_ptr<base::DictionaryValue> issue_val(IssueToValue(*issue));
-    web_ui()->CallJavascriptFunction(kSetIssue, *issue_val);
-  } else {
-    // Clears the issue in the WebUI.
-    web_ui()->CallJavascriptFunction(kSetIssue);
-  }
+  web_ui()->CallJavascriptFunction(kSetIssue,
+      issue ? *IssueToValue(*issue) : *base::Value::CreateNullValue());
 }
 
 void MediaRouterWebUIMessageHandler::NotifyRouteCreationTimeout() {
