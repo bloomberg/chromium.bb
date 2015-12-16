@@ -93,16 +93,17 @@ FontPlatformData* FontCache::getFontPlatformData(const FontDescription& fontDesc
     }
 
     FontCacheKey key = fontDescription.cacheKey(creationParams);
-    FontPlatformData* result = 0;
+    FontPlatformData* result;
     bool foundResult;
-    FontPlatformDataCache::iterator it = gFontPlatformDataCache->find(key);
-    if (it == gFontPlatformDataCache->end()) {
-        result = createFontPlatformData(fontDescription, creationParams, fontDescription.effectiveFontSize());
-        gFontPlatformDataCache->set(key, adoptPtr(result));
-        foundResult = result;
-    } else {
-        result = it->value.get();
-        foundResult = true;
+    {
+        // addResult's scope must end before we recurse for alternate family names below,
+        // to avoid trigering its dtor hash-changed asserts.
+        auto addResult = gFontPlatformDataCache->add(key, nullptr);
+        if (addResult.isNewEntry)
+            addResult.storedValue->value = createFontPlatformData(fontDescription, creationParams, fontDescription.effectiveFontSize());
+
+        result = addResult.storedValue->value.get();
+        foundResult = result || !addResult.isNewEntry;
     }
 
     if (!foundResult && !checkingAlternateName && creationParams.creationType() == CreateFontByFamily) {

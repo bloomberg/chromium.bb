@@ -231,21 +231,21 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
 }
 
 #if !OS(WIN)
-FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, float fontSize)
+PassOwnPtr<FontPlatformData> FontCache::createFontPlatformData(const FontDescription& fontDescription,
+    const FontFaceCreationParams& creationParams, float fontSize)
 {
     CString name;
     RefPtr<SkTypeface> tf(createTypeface(fontDescription, creationParams, name));
     if (!tf)
-        return 0;
+        return nullptr;
 
-    FontPlatformData* result = new FontPlatformData(tf,
+    return adoptPtr(new FontPlatformData(tf,
         name.data(),
         fontSize,
         (fontDescription.weight() >= FontWeight600 && !tf->isBold()) || fontDescription.isSyntheticBold(),
         ((fontDescription.style() == FontStyleItalic || fontDescription.style() == FontStyleOblique) && !tf->isItalic()) || fontDescription.isSyntheticItalic(),
         fontDescription.orientation(),
-        fontDescription.useSubpixelPositioning());
-    return result;
+        fontDescription.useSubpixelPositioning()));
 }
 #endif // !OS(WIN)
 

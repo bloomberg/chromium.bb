@@ -148,7 +148,7 @@ private:
     void querySystemForRenderStyle(bool useSkiaSubpixelPositioning);
 #endif
 
-    mutable RefPtr<SkTypeface> m_typeface;
+    RefPtr<SkTypeface> m_typeface;
 #if !OS(WIN)
     CString m_family;
 #endif
