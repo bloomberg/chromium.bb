@@ -94,14 +94,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
   ~SyncErrorNotifierTest() override {}
 
   void SetUp() override {
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-    ASSERT_TRUE(profile_manager_->SetUp());
-
-    profile_ = profile_manager_->CreateTestingProfile(kTestAccountId);
-
-    TestingBrowserProcess::GetGlobal();
-    AshTestBase::SetUp();
+    DCHECK(TestingBrowserProcess::GetGlobal());
 
     // Set up a desktop screen for Windows to hold native widgets, used when
     // adding desktop widgets (i.e., message center notifications).
@@ -110,6 +103,14 @@ class SyncErrorNotifierTest : public AshTestBase  {
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
     gfx::Screen::SetScreenTypeDelegate(&screen_type_delegate_);
 #endif
+
+    AshTestBase::SetUp();
+
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(profile_manager_->SetUp());
+
+    profile_ = profile_manager_->CreateTestingProfile(kTestAccountId);
 
     service_.reset(new ProfileSyncServiceMock(
         CreateProfileSyncServiceParamsForTest(profile_)));
@@ -129,14 +130,16 @@ class SyncErrorNotifierTest : public AshTestBase  {
   void TearDown() override {
     error_notifier_->Shutdown();
     service_.reset();
+    profile_manager_.reset();
+
+    AshTestBase::TearDown();
+
 #if defined(OS_WIN)
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, nullptr);
     gfx::Screen::SetScreenTypeDelegate(nullptr);
     test_screen_.reset();
 #endif
-    profile_manager_.reset();
 
-    AshTestBase::TearDown();
   }
 
  protected:
