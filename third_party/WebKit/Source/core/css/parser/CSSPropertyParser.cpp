@@ -3120,6 +3120,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeTransformOrigin(m_range, m_context.mode(), UnitlessQuirk::Forbid);
     case CSSPropertyContent:
         return consumeContent(m_range, m_context);
+    case CSSPropertyListStyleImage:
+        return consumeImage(m_range, m_context);
     default:
         return nullptr;
     }
@@ -3710,6 +3712,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeShorthandGreedily(flexFlowShorthand(), important);
     case CSSPropertyWebkitColumnRule:
         return consumeShorthandGreedily(webkitColumnRuleShorthand(), important);
+    case CSSPropertyListStyle:
+        return consumeShorthandGreedily(listStyleShorthand(), important);
     default:
         m_currentShorthand = oldShorthand;
         return false;

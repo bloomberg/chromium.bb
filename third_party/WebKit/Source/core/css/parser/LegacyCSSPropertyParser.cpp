@@ -393,8 +393,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         m_implicitShorthand = false;
         return result;
     }
-    case CSSPropertyListStyleImage:     // <uri> | none | inherit
-    case CSSPropertyBorderImageSource:
+    case CSSPropertyBorderImageSource: // <uri> | none | inherit
     case CSSPropertyWebkitMaskBoxImageSource:
         if (parseFillImage(m_valueList, parsedValue))
             m_valueList->next();
@@ -663,8 +662,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorderStyle:
         // <border-style>{1,4} | inherit
         return parse4Values(propId, borderStyleShorthand().properties(), important);
-    case CSSPropertyListStyle:
-        return parseShorthand(propId, listStyleShorthand(), important);
     case CSSPropertyInvalid:
         return false;
     case CSSPropertyWebkitClipPath:
@@ -887,6 +884,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyCursor:
     case CSSPropertyTransformOrigin:
     case CSSPropertyContent:
+    case CSSPropertyListStyleImage:
+    case CSSPropertyListStyle:
         validPrimitive = false;
         break;
 
