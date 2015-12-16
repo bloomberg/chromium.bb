@@ -19,10 +19,6 @@ PluginTest.SelfDelete*
 # crbug.com/419396
 WebRtcBrowserTest.CallWithDataAndMedia
 
-# crbug.com/420827
-ServiceWorkerVersionBrowserTest.Activate_NoEventListener
-ServiceWorkerBrowserTest.ImportsBustMemcache
-
 # crbug.com/461489
 ServiceWorkerVersionBrowserTest.TimeoutStartingWorker
 
