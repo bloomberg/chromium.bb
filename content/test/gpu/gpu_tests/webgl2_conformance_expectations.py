@@ -77,34 +77,20 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/uniformbuffers.html', bug=483282)
     self.Skip('deqp/functional/gles3/vertexarrays.html', bug=483282)
 
-    self.Fail('conformance2/buffers/uniform-buffers.html', bug=483282)
     self.Fail('conformance2/glsl3/array-complex-indexing.html', bug=483282)
-    self.Fail('conformance2/glsl3/const-array-init.html',
-        bug=1198) # angle bug ID
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
-    self.Fail('conformance2/glsl3/invalid-default-precision.html', bug=483282)
-    self.Fail('conformance2/glsl3/sequence-operator-returns-non-constant.html',
-        bug=483282)
     self.Fail('conformance2/extensions/promoted-extensions-in-shaders.html',
         bug=295792)
     self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         bug=483282)
-    self.Fail('conformance2/renderbuffers/framebuffer-test.html', bug=483282)
-    self.Fail('conformance2/renderbuffers/invalidate-framebuffer.html',
-        bug=483282)
     self.Fail('conformance2/samplers/sampler-drawing-test.html', bug=483282)
     self.Skip('conformance2/textures/webgl_canvas/*', bug=483282)
-    self.Fail('conformance2/textures/misc/tex-storage-2d.html', bug=483282)
 
     # Windows only.
     self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
     self.Skip('deqp/functional/gles3/texturestatequery.html',
         ['win'], bug=483282)
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/glsl3/frag-depth.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/glsl3/short-circuiting-in-loop-condition.html',
         ['win'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['win'], bug=483282)
@@ -123,6 +109,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Skip('conformance2/transform_feedback/transform_feedback.html',
         ['win'], bug=483282)
+    self.Fail('conformance2/glsl3/const-array-init.html',
+        ['win'], bug=1198) # angle bug ID
+
     # Windows 8 only.
     self.Fail('conformance2/textures/image_data/tex-image-and-sub-image-2d' +
         '-with-image-data-rgb565-rgb-unsigned_byte.html',
@@ -180,6 +169,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         '-with-canvas-rgba8-rgba-unsigned_byte.html',
         ['win', 'debug'], bug=542901)
 
+    # Windows Intel only.
+    self.Fail('conformance2/buffers/uniform-buffers.html',
+        ['win', 'intel'], bug=483282)
+
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['mac'], bug=483282)
@@ -197,18 +190,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mavericks'], bug=483282)
     self.Fail('deqp/functional/gles3/rbostatequery.html',
         ['mac'], bug=569808)
-    self.Fail('conformance2/attribs/gl-vertex-attrib-i-render.html',
-        ['mac'], bug=483282)
     self.Fail('conformance2/buffers/buffer-overflow-test.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/buffers/buffer-type-restrictions.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-renderbuffer-initialization.html',
-        ['mac'], bug=483282)
-    self.Fail('conformance2/rendering/instanced-arrays.html',
-        ['mac'], bug=483282)
-    self.Fail('conformance2/samplers/samplers.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['mac'], bug=483282)
@@ -220,8 +207,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
         ['mac'], bug=295792)
+    self.Fail('conformance2/renderbuffers/invalidate-framebuffer.html',
+        ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
         ['mac'], bug=564020)
+    self.Fail('conformance2/renderbuffers/framebuffer-test.html',
+        ['mac'], bug=483282)
 
     self.Fail('conformance2/textures/misc/compressed-tex-image.html',
         ['mac'], bug=565438)
@@ -237,10 +228,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
-    self.Fail('conformance2/samplers/samplers.html',
-        ['linux'], bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
         ['linux'], bug=564020)
+
+    # Linux NVIDIA only.
+    self.Fail('conformance2/renderbuffers/invalidate-framebuffer.html',
+        ['linux', 'nvidia'], bug=483282)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
@@ -249,10 +242,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd'], bug=483282)
     self.Skip('deqp/functional/gles3/texturestatequery.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('conformance2/attribs/gl-vertex-attrib-i-render.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('conformance2/attribs/gl-vertexattribipointer-offsets.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/buffers/buffer-type-restrictions.html',
         ['linux', 'amd'], bug=483282)
