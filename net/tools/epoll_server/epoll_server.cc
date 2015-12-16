@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 
@@ -334,20 +335,6 @@ void EpollServer::HandleEvent(int fd, int event_mask) {
   AddToReadyList(cb_and_mask);
 }
 
-class TrueFalseGuard {
- public:
-  explicit TrueFalseGuard(bool* guarded_bool) : guarded_bool_(guarded_bool) {
-    DCHECK(guarded_bool_ != NULL);
-    DCHECK(*guarded_bool_ == false);
-    *guarded_bool_ = true;
-  }
-  ~TrueFalseGuard() {
-    *guarded_bool_ = false;
-  }
- private:
-  bool* guarded_bool_;
-};
-
 void EpollServer::WaitForEventsAndExecuteCallbacks() {
   if (in_wait_for_events_and_execute_callbacks_) {
     LOG(DFATAL) <<
@@ -358,7 +345,8 @@ void EpollServer::WaitForEventsAndExecuteCallbacks() {
     // we never see it.
     return;  // COV_NF_LINE
   }
-  TrueFalseGuard recursion_guard(&in_wait_for_events_and_execute_callbacks_);
+  base::AutoReset<bool> recursion_guard(
+      &in_wait_for_events_and_execute_callbacks_, true);
   if (alarm_map_.empty()) {
     // no alarms, this is business as usual.
     WaitForEventsAndCallHandleEvents(timeout_in_us_,
@@ -709,7 +697,7 @@ void EpollServer::CallReadyListCallbacks() {
         // UnRegister call will now simply set the cb to NULL instead of
         // invalidating the cb_and_mask object (by deleting the object in the
         // map to which cb_and_mask refers)
-        TrueFalseGuard in_use_guard(&(cb_and_mask->in_use));
+        base::AutoReset<bool> in_use_guard(&(cb_and_mask->in_use), true);
         cb_and_mask->cb->OnEvent(cb_and_mask->fd, &event);
       }
 
