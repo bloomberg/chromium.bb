@@ -11,7 +11,6 @@
 
 #if defined(OS_ANDROID)
 // TODO(cpaulin): when crbug.com/561068 is fixed, enable this test
-// on android platform.
 #define MAYBE_WebRtcMediaRecorderTest DISABLED_WebRtcMediaRecorderTest
 #else
 #define MAYBE_WebRtcMediaRecorderTest WebRtcMediaRecorderTest
@@ -98,6 +97,32 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                        MediaRecorderResumeAndDataAvailable) {
   MakeTypicalCall("testResumeAndDataAvailable();", kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderPause) {
+  MakeTypicalCall("testPauseAndRecorderState();", kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderPauseStop) {
+  MakeTypicalCall("testPauseStopAndRecorderState();", kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderPauseEvent) {
+  MakeTypicalCall("testPauseAndPauseEventTriggered();", kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderPauseAndNoDataAvailable) {
+  MakeTypicalCall("testPauseAndNoDataAvailable();", kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderNoPauseWhenRecorderInactive) {
+  MakeTypicalCall("testNoPauseWhileRecorderInactive();",
+      kMediaRecorderHtmlFile);
 }
 
 }  // namespace content
