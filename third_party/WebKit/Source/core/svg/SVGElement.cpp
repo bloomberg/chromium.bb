@@ -248,7 +248,7 @@ void SVGElement::setWebAnimationsPending()
 {
     document().accessSVGExtensions().addWebAnimationsPendingSVGElement(*this);
     ensureSVGRareData()->setWebAnimatedAttributesDirty(true);
-    elementData()->m_animatedSVGAttributesAreDirty = true;
+    ensureUniqueElementData().m_animatedSVGAttributesAreDirty = true;
 }
 
 static bool isSVGAttributeHandle(const PropertyHandle& propertyHandle)
