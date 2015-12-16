@@ -2270,6 +2270,27 @@ def GetConfig():
       _base_configs['panther_moblab'],
   )
 
+  cheets_release = site_config.AddTemplate(
+      'cheets-release',
+      _release,
+      description='Cheets release builders',
+      hw_tests=[
+          config_lib.HWTestConfig(constants.HWTEST_ARC_SUITE,
+                                  blocking=True, num=1, timeout=120*60),
+          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
+                                  warn_only=True, num=1)],
+  )
+
+  site_config.Add(
+      'cyan-cheets-release', cheets_release,
+      _base_configs['cyan-cheets'],
+  )
+
+  site_config.Add(
+      'veyron_minnie-cheets-release', cheets_release,
+      _base_configs['veyron_minnie-cheets'],
+  )
+
   site_config.Add(
       'rush_ryu-release', _release,
       _base_configs['rush_ryu'],
