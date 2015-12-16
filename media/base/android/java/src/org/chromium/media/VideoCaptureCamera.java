@@ -60,7 +60,7 @@ public abstract class VideoCaptureCamera extends VideoCapture
             parameters = camera.getParameters();
         } catch (RuntimeException ex) {
             Log.e(TAG, "getCameraParameters: android.hardware.Camera.getParameters: " + ex);
-            camera.release();
+            if (camera != null) camera.release();
             return null;
         }
         return parameters;
