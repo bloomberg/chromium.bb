@@ -84,13 +84,6 @@ void CSSPropertyParser::addProperty(CSSPropertyID propId, PassRefPtrWillBeRawPtr
     m_parsedProperties.append(CSSProperty(propId, value, important, setFromShorthand, shorthandIndex, m_implicitShorthand || implicit));
 }
 
-void CSSPropertyParser::rollbackLastProperties(int num)
-{
-    ASSERT(num >= 0);
-    ASSERT(m_parsedProperties.size() >= static_cast<unsigned>(num));
-    m_parsedProperties.shrink(m_parsedProperties.size() - num);
-}
-
 bool CSSPropertyParser::validCalculationUnit(CSSParserValue* value, Units unitflags, ReleaseParsedCalcValueCondition releaseCalc)
 {
     bool mustBeNonNegative = unitflags & (FNonNeg | FPositiveInteger);

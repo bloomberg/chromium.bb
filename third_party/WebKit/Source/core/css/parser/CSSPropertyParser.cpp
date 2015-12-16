@@ -88,7 +88,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         context.useCounter()->count(context.mode(), unresolvedProperty);
 
     if (!parseSuccess)
-        parser.rollbackLastProperties(parsedProperties.size() - parsedPropertiesSize);
+        parsedProperties.shrink(parsedPropertiesSize);
 
     return parseSuccess;
 }
