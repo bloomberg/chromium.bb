@@ -19,37 +19,26 @@
       href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="site_settings_category.css">
   <template>
-    <settings-animated-pages id="pages" current-route="{{currentRoute}}"
-        section="privacy">
-      <neon-animatable id="main">
-        <paper-icon-item>
-          <iron-icon icon="[[computeIconForContentCategory(category)]]"
-              item-icon></iron-icon>
-          <paper-item-body two-line class="flex">
-            <div>[[computeTitleForContentCategory(category)]]</div>
-            <div secondary
-                >[[computeCategoryDesc(category, categoryEnabled)]]</div>
-          </paper-item-body>
-          <paper-toggle-button id="toggle" checked="{{categoryEnabled}}"
-              on-change="onToggleChange_"></paper-toggle-button>
-        </paper-icon-item>
-        <settings-site-list id="blockList"
-            prefs="{{prefs}}" category="[[category]]"
-            category-enabled="[[categoryEnabled]]"
-            selected-origin="{{selectedOrigin}}"></settings-site-list>
-        <settings-site-list id="allowList"
-            prefs="{{prefs}}" category="[[category]]"
-            category-enabled="[[categoryEnabled]]"
-            selected-origin="{{selectedOrigin}}"></settings-site-list>
-      </neon-animatable>
-      <neon-animatable id="site-details">
-        <settings-subheader
-            page-title="[[computeTitleForContentCategory(category)]]">
-        </settings-subheader>
-        <site-details prefs="{{prefs}}"
-            origin="{{selectedOrigin}}"></site-details>
-      </neon-animatable>
-    </settings-animated-pages>
+    <paper-icon-item>
+      <iron-icon icon="[[computeIconForContentCategory(category)]]"
+          item-icon></iron-icon>
+      <paper-item-body two-line class="flex">
+        <div>[[computeTitleForContentCategory(category)]]</div>
+        <div secondary>
+          [[computeCategoryDesc(category, categoryEnabled, showRecommendation)]]
+        </div>
+      </paper-item-body>
+      <paper-toggle-button id="toggle" checked="{{categoryEnabled}}"
+          on-change="onToggleChange_"></paper-toggle-button>
+    </paper-icon-item>
+    <settings-site-list id="blockList"
+        prefs="{{prefs}}" category="[[category]]"
+        category-enabled="[[categoryEnabled]]"
+        selected-origin="{{selectedOrigin}}"></settings-site-list>
+    <settings-site-list id="allowList"
+        prefs="{{prefs}}" category="[[category]]"
+        category-enabled="[[categoryEnabled]]"
+        selected-origin="{{selectedOrigin}}"></settings-site-list>
   </template>
   <script src="site_settings_category.js"></script>
 </dom-module>

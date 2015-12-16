@@ -64,6 +64,14 @@ Polymer({
     },
 
     /**
+     * Whether this class has initialized or not.
+     */
+    initialized_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether to show the Allow action in the action menu.
      */
     showAllowAction_: Boolean,
@@ -100,39 +108,40 @@ Polymer({
   },
 
   observers: [
-    'onPrefChanged_(prefs.profile.content_settings.exceptions.*)',
+    'onCategoryChanged_(prefs.profile.content_settings.exceptions.*, category)',
   ],
-
-  ready: function() {
-    CrSettingsPrefs.initialized.then(function() {
-      this.initialize_();
-    }.bind(this));
-  },
 
   /**
    * One-time initialization routines for this class.
+   * @return {boolean} True if fully initialized, false otherwise.
    * @private
    */
   initialize_: function() {
-    this.setUpActionMenu_();
-    this.populateList_();
+    if (this.initialized_)
+      return true;
 
-    if (this.categoryEnabled)
+    if (this.categoryEnabled === undefined)
+      return false;
+    if (this.categorySubtype === undefined)
+      return false;
+
+    this.setUpActionMenu_();
+
+    if (this.categorySubtype == settings.PermissionValues.ALLOW)
       this.$.category.opened = true;
+
+    this.initialized_ = true;
+    return true;
   },
 
   /**
-   * Handles changes to the underlying exceptions pref.
+   * Handles changes to the category, either via the underlying exceptions pref
+   * changing or direct manipulation of the |category| variable.
    * @private
    */
-  onPrefChanged_: function() {
-    // An observer that observes one deep path (like this class does) is called
-    // when the root property becomes defined (which some of the other tests,
-    // like site_settings_category_tests.js, do).
-    if (this.get('prefs.profile.content_settings') === undefined)
-      return;
-
-    this.populateList_();
+  onCategoryChanged_: function() {
+    if (this.initialize_())
+      this.populateList_();
   },
 
   /**
@@ -141,6 +150,9 @@ Polymer({
    * @private
    */
   onDataChanged_: function(newValue, oldValue) {
+    if (!this.initialize_())
+      return;
+
     this.$.category.hidden =
         !this.showSiteList_(this.sites_, this.categoryEnabled);
   },

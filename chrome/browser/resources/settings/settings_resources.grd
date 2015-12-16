@@ -235,6 +235,9 @@
       <structure name="IDR_SETTINGS_I18n_SETUP_HTML"
                  file="i18n_setup.html"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_ICONS"
+                 file="icons.html"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_POWERWASH_DIALOG_HTML"
                  file="reset_page/powerwash_dialog.html"
                  type="chrome_html" />

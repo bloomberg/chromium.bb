@@ -98,7 +98,21 @@
       <neon-animatable id="site-settings">
         <settings-subheader i18n-values="page-title:siteSettings">
         </settings-subheader>
-        <settings-site-settings-page></settings-site-settings-page>
+        <settings-site-settings-page current-route="{{currentRoute}}"
+            prefs="{{prefs}}" category-selected="{{categorySelected}}">
+        </settings-site-settings-page>
+      </neon-animatable>
+      <neon-animatable id="site-settings-category">
+        <settings-subheader i18n-values="page-title:siteSettings">
+        </settings-subheader>
+        <site-settings-category
+            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            current-route="{{currentRoute}}" category="{{categorySelected}}">
+        </site-settings-category>
+      </neon-animatable>
+      <neon-animatable id="site-details">
+        <site-details prefs="{{prefs}}" origin="{{originSelected}}">
+        </site-details>
       </neon-animatable>
       <neon-animatable id="clear-browsing-data">
         <settings-subheader i18n-values="page-title:clearBrowsingData">

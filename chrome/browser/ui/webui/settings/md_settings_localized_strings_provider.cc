@@ -606,6 +606,12 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("siteSettingsPageTitle",
                                   IDS_SETTINGS_SITE_SETTINGS);
+  // TODO(finnur): Would be nice to show 'Location'/'Camera' instead of hard-
+  // coding this.
+  html_source->AddLocalizedString("siteSettingsCategoryPageTitle",
+                                  IDS_SETTINGS_SITE_SETTINGS_CATEGORY);
+  html_source->AddLocalizedString("siteSettingsSiteDetailsPageTitle",
+                                  IDS_SETTINGS_SITE_SETTINGS_SITE_DETAILS);
   html_source->AddLocalizedString("siteSettingsAllSites",
                                   IDS_SETTINGS_SITE_SETTINGS_ALL_SITES);
   html_source->AddLocalizedString("siteSettingsCamera",
@@ -630,6 +636,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SITE_SETTINGS_MAY_SAVE_COOKIES);
   html_source->AddLocalizedString("siteSettingsAskFirst",
                                   IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST);
+  html_source->AddLocalizedString("siteSettingsAskFirst",
+                                  IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST);
   html_source->AddLocalizedString(
       "siteSettingsAskFirstRecommended",
       IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_RECOMMENDED);
@@ -637,11 +645,29 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       "siteSettingsAskBeforeAccessing",
       IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_ACCESSING);
   html_source->AddLocalizedString(
+      "siteSettingsAskBeforeAccessingRecommended",
+      IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_ACCESSING_RECOMMENDED);
+  html_source->AddLocalizedString(
       "siteSettingsAskBeforeSending",
       IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_SENDING);
   html_source->AddLocalizedString(
+      "siteSettingsAskBeforeSendingRecommended",
+      IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_SENDING_RECOMMENDED);
+  html_source->AddLocalizedString(
+      "siteSettingsDontShowImages",
+      IDS_SETTINGS_SITE_SETTINGS_DONT_SHOW_IMAGES);
+  html_source->AddLocalizedString(
+      "siteSettingsShowAll",
+      IDS_SETTINGS_SITE_SETTINGS_SHOW_ALL);
+  html_source->AddLocalizedString(
+      "siteSettingsShowAllRecommended",
+      IDS_SETTINGS_SITE_SETTINGS_SHOW_ALL_RECOMMENDED);
+  html_source->AddLocalizedString(
       "siteSettingsCookiesAllowed",
       IDS_SETTINGS_SITE_SETTINGS_COOKIES_ALLOW_SITES);
+  html_source->AddLocalizedString(
+      "siteSettingsCookiesAllowedRecommended",
+      IDS_SETTINGS_SITE_SETTINGS_COOKIES_ALLOW_SITES_RECOMMENDED);
   html_source->AddLocalizedString("siteSettingsAllow",
                                   IDS_SETTINGS_SITE_SETTINGS_ALLOW);
   html_source->AddLocalizedString("siteSettingsBlock",
@@ -649,10 +675,16 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("siteSettingsAllowed",
                                   IDS_SETTINGS_SITE_SETTINGS_ALLOWED);
   html_source->AddLocalizedString(
+      "siteSettingsAllowed",
+      IDS_SETTINGS_SITE_SETTINGS_ALLOWED);
+  html_source->AddLocalizedString(
       "siteSettingsAllowedRecommended",
       IDS_SETTINGS_SITE_SETTINGS_ALLOWED_RECOMMENDED);
   html_source->AddLocalizedString("siteSettingsBlocked",
                                   IDS_SETTINGS_SITE_SETTINGS_BLOCKED);
+  html_source->AddLocalizedString(
+      "siteSettingsBlocked",
+      IDS_SETTINGS_SITE_SETTINGS_BLOCKED);
   html_source->AddLocalizedString(
       "siteSettingsBlockedRecommended",
       IDS_SETTINGS_SITE_SETTINGS_BLOCKED_RECOMMENDED);

@@ -27,15 +27,6 @@
       </settings-section>
     </template>
 </if>
-    <template is="dom-if" if="[[showPage(pageVisibility.location)]]" restamp>
-      <settings-section i18n-values="page-title:siteSettingsLocation"
-          current-route="[[currentRoute]]" section="location">
-        <site-settings-category prefs="{{prefs}}"
-          current-route="{{currentRoute}}"
-          category="[[locationCategory]]">
-        </site-settings-category>
-      </settings-section>
-    </template>
     <template is="dom-if" if="[[showPage(pageVisibility.privacy)]]" restamp>
       <settings-section i18n-values="page-title:privacyPageTitle"
           current-route="[[currentRoute]]" section="privacy">

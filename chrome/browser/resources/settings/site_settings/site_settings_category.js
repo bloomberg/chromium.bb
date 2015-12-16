@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview
- * 'site-settings-category' is the settings page for showing a certain
+ * 'site-settings-category' is the polymer element for showing a certain
  * category under Site Settings.
  *
  * Example:
@@ -44,21 +44,29 @@ Polymer({
      */
     selectedOrigin: {
       type: String,
-      observer: 'onSelectedOriginChanged_',
+      notify: true,
+    },
+
+    /**
+     * Whether to show the '(recommended)' label prefix for permissions.
+     */
+    showRecommendation: {
+      type: Boolean,
+      value: true,
     },
   },
 
   observers: [
-    'categoryPrefChanged_(prefs.profile.default_content_setting_values.*)',
+    'onCategoryChanged_(prefs.profile.default_content_setting_values.*, ' +
+        'category)',
   ],
 
   ready: function() {
+    // TODO(finnur): Handle dynamic routes, so that we can link directly into
+    // individual categories without having to first stop by the site settings
+    // page to select a category.
     this.$.blockList.categorySubtype = settings.PermissionValues.BLOCK;
     this.$.allowList.categorySubtype = settings.PermissionValues.ALLOW;
-
-    CrSettingsPrefs.initialized.then(function() {
-      this.categoryEnabled = this.isCategoryAllowed(this.category);
-    }.bind(this));
   },
 
   /**
@@ -98,15 +106,11 @@ Polymer({
     }
   },
 
-  onSelectedOriginChanged_: function() {
-    this.$.pages.setSubpageChain(['site-details']);
-  },
-
   /**
-   * Handles when the global toggle changes.
+   * Handles changes to the category pref and the |category| member variable.
    * @private
    */
-  categoryPrefChanged_: function() {
+  onCategoryChanged_: function() {
     this.categoryEnabled = this.isCategoryAllowed(this.category);
   },
 });

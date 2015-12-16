@@ -37,14 +37,6 @@ Polymer({
       type: Object,
       notify: true,
     },
-
-    /**
-     * The site-settings-category type for the location page.
-     */
-    locationCategory: {
-      type: Number,
-      value: settings.ContentSettingsTypes.GEOLOCATION,
-    },
   },
 
   behaviors: [SettingsPageVisibility],

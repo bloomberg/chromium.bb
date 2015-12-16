@@ -135,11 +135,26 @@ Polymer({
       subpageTitles: ['manageCertificates'],
     },
     {
-      url: '/content',
+      url: '/siteSettings',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings'],
       subpageTitles: ['siteSettings'],
+    },
+    {
+      url: '/siteSettings/category',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category'],
+      subpageTitles: ['siteSettings', 'siteSettingsCategoryPageTitle'],
+    },
+    {
+      url: '/siteSettings/category/details',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category', 'site-details'],
+      subpageTitles: ['siteSettings', 'siteSettingsCategoryPageTitle',
+          'siteSettingsSiteDetailsPageTitle'],
     },
     {
       url: '/clearBrowserData',

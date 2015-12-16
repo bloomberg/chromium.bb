@@ -41,7 +41,6 @@ TEST_F('SettingsAdvancedPageBrowserTest', 'MAYBE_Load', function() {
 
     test('advanced pages', function() {
       var page = self.getPage('advanced');
-      expectTrue(!!self.getSection(page, 'location'));
       expectTrue(!!self.getSection(page, 'privacy'));
       expectTrue(!!self.getSection(page, 'passwordsAndForms'));
       expectTrue(!!self.getSection(page, 'languages'));

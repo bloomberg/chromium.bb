@@ -130,7 +130,6 @@ TEST_F('SettingsBasicSubPageBrowserTest', 'SubPages', function() {
 function SettingsAdvancedSubPageBrowserTest() {
   var subPages = [
     'dateTime',
-    'location',
     'privacy',
     'bluetooth',
     'passwordsAndForms',

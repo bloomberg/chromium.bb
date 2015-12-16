@@ -21,6 +21,8 @@
 Polymer({
   is: 'settings-site-settings-page',
 
+  behaviors: [SiteSettingsBehavior],
+
   properties: {
     /**
      * Preferences state.
@@ -29,5 +31,81 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /**
+     * The current active route.
+     */
+    currentRoute: {
+      type: Object,
+      notify: true,
+    },
+
+    /**
+     * The category selected by the user.
+     */
+    categorySelected: {
+      type: Number,
+      notify: true,
+    },
+  },
+
+  ready: function() {
+    CrSettingsPrefs.initialized.then(function() {
+      // TODO(finnur): Implement 'All Sites' list.
+      this.addCategory(settings.ContentSettingsTypes.COOKIES);
+      this.addCategory(settings.ContentSettingsTypes.GEOLOCATION);
+      this.addCategory(settings.ContentSettingsTypes.CAMERA);
+      this.addCategory(settings.ContentSettingsTypes.MIC);
+      this.addCategory(settings.ContentSettingsTypes.JAVASCRIPT);
+      this.addCategory(settings.ContentSettingsTypes.POPUPS);
+      this.addCategory(settings.ContentSettingsTypes.FULLSCREEN);
+      this.addCategory(settings.ContentSettingsTypes.NOTIFICATION);
+      this.addCategory(settings.ContentSettingsTypes.IMAGES);
+    }.bind(this));
+  },
+
+  /**
+   * Adds a single category to the page.
+   * @param {number} category The category to add.
+   */
+  addCategory: function(category) {
+    var root = this.$.list;
+    var paperIcon = document.createElement('paper-icon-item');
+    paperIcon.addEventListener('tap', this.onTapCategory.bind(this));
+
+    var ironIcon = document.createElement('iron-icon');
+    ironIcon.setAttribute('icon', this.computeIconForContentCategory(category));
+    ironIcon.setAttribute('item-icon', '');
+
+    var description = document.createElement('div');
+    description.setAttribute('class', 'flex');
+    description.appendChild(
+        document.createTextNode(this.computeTitleForContentCategory(category)));
+    var setting = document.createElement('div');
+    setting.setAttribute('class', 'option-value');
+
+    setting.appendChild(document.createTextNode(
+        this.computeCategoryDesc(
+            category, this.isCategoryAllowed(category), false)));
+
+    paperIcon.appendChild(ironIcon);
+    paperIcon.appendChild(description);
+    paperIcon.appendChild(setting);
+    root.appendChild(paperIcon);
+  },
+
+  /**
+   * Handles selection of a single category and navigates to the details for
+   * that category.
+   */
+  onTapCategory: function(event) {
+    var description = event.currentTarget.querySelector('.flex').innerText;
+    this.categorySelected = this.computeCategoryFromDesc(description);
+
+    this.currentRoute = {
+      page: this.currentRoute.page,
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category'],
+    };
   },
 });

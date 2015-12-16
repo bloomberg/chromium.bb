@@ -126,6 +126,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)["profile.default_content_setting_values.geolocation"] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["profile.default_content_setting_values.images"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)["profile.default_content_setting_values.javascript"] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)["profile.default_content_setting_values.media_stream_camera"] =
@@ -141,6 +143,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)["profile.content_settings.exceptions.fullscreen"] =
       settings_private::PrefType::PREF_TYPE_DICTIONARY;
   (*s_whitelist)["profile.content_settings.exceptions.geolocation"] =
+      settings_private::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)["profile.content_settings.exceptions.images"] =
       settings_private::PrefType::PREF_TYPE_DICTIONARY;
   (*s_whitelist)["profile.content_settings.exceptions.javascript"] =
       settings_private::PrefType::PREF_TYPE_DICTIONARY;

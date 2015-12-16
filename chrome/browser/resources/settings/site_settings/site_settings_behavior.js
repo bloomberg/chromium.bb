@@ -11,6 +11,7 @@ var SiteSettingsBehaviorImpl = {
   properties: {
     /**
      * The ID of the category this element is displaying data for.
+     * See site_settings/constants.js for possible values.
      */
     category: {
       type: Number,
@@ -76,22 +77,24 @@ var SiteSettingsBehaviorImpl = {
    */
   computeIconForContentCategory: function(category) {
     switch (category) {
-      case settings.ContentSettingsTypes.COOKIES:
-        return '';  // Haven't found a good cookies icon under iron-icons.
-      case settings.ContentSettingsTypes.JAVASCRIPT:
-        return 'icons:input';
-      case settings.ContentSettingsTypes.FULLSCREEN:
-        return 'icons:fullscreen';
-      case settings.ContentSettingsTypes.POPUPS:
-        return 'icons:open-in-new';
-      case settings.ContentSettingsTypes.GEOLOCATION:
-        return 'communication:location-on';
-      case settings.ContentSettingsTypes.NOTIFICATION:
-        return 'social:notifications';
       case settings.ContentSettingsTypes.CAMERA:
         return 'av:videocam';
+      case settings.ContentSettingsTypes.COOKIES:
+        return 'md-settings-icons:cookie';
+      case settings.ContentSettingsTypes.FULLSCREEN:
+        return 'icons:fullscreen';
+      case settings.ContentSettingsTypes.GEOLOCATION:
+        return 'communication:location-on';
+      case settings.ContentSettingsTypes.IMAGES:
+        return 'image:photo';
+      case settings.ContentSettingsTypes.JAVASCRIPT:
+        return 'icons:input';
       case settings.ContentSettingsTypes.MIC:
         return 'av:mic';
+      case settings.ContentSettingsTypes.NOTIFICATION:
+        return 'social:notifications';
+      case settings.ContentSettingsTypes.POPUPS:
+        return 'icons:open-in-new';
       default:
         assertNotReached();
         return '';
@@ -106,22 +109,24 @@ var SiteSettingsBehaviorImpl = {
    */
   computeTitleForContentCategory: function(category) {
     switch (category) {
-      case settings.ContentSettingsTypes.COOKIES:
-        return loadTimeData.getString('siteSettingsCookies');
-      case settings.ContentSettingsTypes.JAVASCRIPT:
-        return loadTimeData.getString('siteSettingsJavascript');
-      case settings.ContentSettingsTypes.FULLSCREEN:
-        return loadTimeData.getString('siteSettingsFullscreen');
-      case settings.ContentSettingsTypes.POPUPS:
-        return loadTimeData.getString('siteSettingsPopups');
-      case settings.ContentSettingsTypes.GEOLOCATION:
-        return loadTimeData.getString('siteSettingsLocation');
-      case settings.ContentSettingsTypes.NOTIFICATION:
-        return loadTimeData.getString('siteSettingsNotifications');
       case settings.ContentSettingsTypes.CAMERA:
         return loadTimeData.getString('siteSettingsCamera');
+      case settings.ContentSettingsTypes.COOKIES:
+        return loadTimeData.getString('siteSettingsCookies');
+      case settings.ContentSettingsTypes.FULLSCREEN:
+        return loadTimeData.getString('siteSettingsFullscreen');
+      case settings.ContentSettingsTypes.GEOLOCATION:
+        return loadTimeData.getString('siteSettingsLocation');
+      case settings.ContentSettingsTypes.IMAGES:
+        return loadTimeData.getString('siteSettingsImages');
+      case settings.ContentSettingsTypes.JAVASCRIPT:
+        return loadTimeData.getString('siteSettingsJavascript');
       case settings.ContentSettingsTypes.MIC:
         return loadTimeData.getString('siteSettingsMic');
+      case settings.ContentSettingsTypes.NOTIFICATION:
+        return loadTimeData.getString('siteSettingsNotifications');
+      case settings.ContentSettingsTypes.POPUPS:
+        return loadTimeData.getString('siteSettingsPopups');
       default:
         assertNotReached();
         return '';
@@ -160,22 +165,24 @@ var SiteSettingsBehaviorImpl = {
    */
   computeCategorySuffix: function(category) {
     switch (category) {
-      case settings.ContentSettingsTypes.COOKIES:
-        return 'cookies';
-      case settings.ContentSettingsTypes.JAVASCRIPT:
-        return 'javascript';
-      case settings.ContentSettingsTypes.FULLSCREEN:
-        return 'fullscreen';
-      case settings.ContentSettingsTypes.POPUPS:
-        return 'popups';
-      case settings.ContentSettingsTypes.GEOLOCATION:
-        return 'geolocation';
-      case settings.ContentSettingsTypes.NOTIFICATION:
-        return 'notifications';
       case settings.ContentSettingsTypes.CAMERA:
         return 'media_stream_camera';
+      case settings.ContentSettingsTypes.COOKIES:
+        return 'cookies';
+      case settings.ContentSettingsTypes.FULLSCREEN:
+        return 'fullscreen';
+      case settings.ContentSettingsTypes.GEOLOCATION:
+        return 'geolocation';
+      case settings.ContentSettingsTypes.IMAGES:
+        return 'images';
+      case settings.ContentSettingsTypes.JAVASCRIPT:
+        return 'javascript';
       case settings.ContentSettingsTypes.MIC:
         return 'media_stream_mic';
+      case settings.ContentSettingsTypes.NOTIFICATION:
+        return 'notifications';
+      case settings.ContentSettingsTypes.POPUPS:
+        return 'popups';
       default:
         assertNotReached();
         return '';
@@ -186,47 +193,92 @@ var SiteSettingsBehaviorImpl = {
    * A utility function to compute the description for the category.
    * @param {number} category The category to show the description for.
    * @param {boolean} categoryEnabled The state of the global toggle.
+   * @param {boolean} showRecommendation Whether to show the '(recommended)'
+   *     label prefix.
    * @return {string} The category description.
    * @protected
    */
-  computeCategoryDesc: function(category, categoryEnabled) {
+  computeCategoryDesc: function(category, categoryEnabled, showRecommendation) {
     switch (category) {
       case settings.ContentSettingsTypes.JAVASCRIPT:
         // "Allowed (recommended)" vs "Blocked".
-        return categoryEnabled ?
+        if (!categoryEnabled) {
+          return loadTimeData.getString('siteSettingsBlocked');
+        }
+        return showRecommendation ?
             loadTimeData.getString('siteSettingsAllowedRecommended') :
-            loadTimeData.getString('siteSettingsBlocked');
+            loadTimeData.getString('siteSettingsAllowed');
       case settings.ContentSettingsTypes.POPUPS:
         // "Allowed" vs "Blocked (recommended)".
-        return categoryEnabled ?
-            loadTimeData.getString('siteSettingsAllowed') :
-            loadTimeData.getString('siteSettingsBlockedRecommended');
+        if (categoryEnabled) {
+          return loadTimeData.getString('siteSettingsAllowed');
+        }
+        return showRecommendation ?
+            loadTimeData.getString('siteSettingsBlockedRecommended') :
+            loadTimeData.getString('siteSettingsBlocked');
       case settings.ContentSettingsTypes.NOTIFICATION:
         // "Ask before sending (recommended)" vs "Blocked".
-        return categoryEnabled ?
-            loadTimeData.getString('siteSettingsAskBeforeSending') :
-            loadTimeData.getString('siteSettingsBlocked');
+        if (!categoryEnabled) {
+          return loadTimeData.getString('siteSettingsBlocked');
+        }
+        return showRecommendation ?
+            loadTimeData.getString('siteSettingsAskBeforeSendingRecommended') :
+            loadTimeData.getString('siteSettingsAskBeforeSending');
       case settings.ContentSettingsTypes.GEOLOCATION:
       case settings.ContentSettingsTypes.CAMERA:
       case settings.ContentSettingsTypes.MIC:
         // "Ask before accessing (recommended)" vs "Blocked".
-        return categoryEnabled ?
-            loadTimeData.getString('siteSettingsAskBeforeAccessing') :
-            loadTimeData.getString('siteSettingsBlocked');
+        if (!categoryEnabled) {
+          return loadTimeData.getString('siteSettingsBlocked');
+        }
+        return showRecommendation ?
+            loadTimeData.getString(
+                'siteSettingsAskBeforeAccessingRecommended') :
+            loadTimeData.getString('siteSettingsAskBeforeAccessing');
       case settings.ContentSettingsTypes.FULLSCREEN:
         // "Allowed" vs. "Ask first (recommended)".
-        return categoryEnabled ?
-            loadTimeData.getString('siteSettingsAllowed') :
-            loadTimeData.getString('siteSettingsAskFirstRecommended');
+        if (categoryEnabled) {
+          return loadTimeData.getString('siteSettingsAllowed');
+        }
+        return showRecommendation ?
+            loadTimeData.getString('siteSettingsAskFirstRecommended') :
+            loadTimeData.getString('siteSettingsAskFirst');
       case settings.ContentSettingsTypes.COOKIES:
         // "Allow sites to save and read cookie data" vs "Blocked".
-        return categoryEnabled ?
-            loadTimeData.getString('siteSettingsCookiesAllowed') :
-            loadTimeData.getString('siteSettingsBlocked');
+        if (!categoryEnabled) {
+          return loadTimeData.getString('siteSettingsBlocked');
+        }
+        return showRecommendation ?
+            loadTimeData.getString('siteSettingsCookiesAllowedRecommended') :
+            loadTimeData.getString('siteSettingsCookiesAllowed');
+      case settings.ContentSettingsTypes.IMAGES:
+        if (!categoryEnabled) {
+          return loadTimeData.getString('siteSettingsDontShowImages');
+        }
+        return showRecommendation ?
+            loadTimeData.getString('siteSettingsShowAllRecommended') :
+            loadTimeData.getString('siteSettingsShowAll');
       default:
         assertNotReached();
         return '';
     }
+  },
+
+  /**
+   * A utility function to compute the category given the description.
+   * @param {string} description The category description to look up.
+   * @return {number} category The category id to return.
+   * @protected
+   */
+  computeCategoryFromDesc: function(description) {
+    for (var type in settings.ContentSettingsTypes) {
+      if (description == this.computeTitleForContentCategory(
+          settings.ContentSettingsTypes[type])) {
+        return settings.ContentSettingsTypes[type];
+      }
+    }
+    assertNotReached();
+    return 0;
   },
 };
 
