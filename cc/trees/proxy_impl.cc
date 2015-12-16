@@ -57,7 +57,7 @@ ProxyImpl::ProxyImpl(ChannelImpl* channel_impl,
       smoothness_priority_expiration_notifier_(
           task_runner_provider->ImplThreadTaskRunner(),
           base::Bind(&ProxyImpl::RenewTreePriority, base::Unretained(this)),
-          base::TimeDelta::FromSeconds(
+          base::TimeDelta::FromSecondsD(
               kSmoothnessTakesPriorityExpirationDelay)),
       external_begin_frame_source_(std::move(external_begin_frame_source)),
       rendering_stats_instrumentation_(

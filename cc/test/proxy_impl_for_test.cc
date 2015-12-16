@@ -5,7 +5,7 @@
 #include "cc/test/proxy_impl_for_test.h"
 
 namespace cc {
-scoped_ptr<ProxyImpl> ProxyImplForTest::Create(
+scoped_ptr<ProxyImplForTest> ProxyImplForTest::Create(
     TestHooks* test_hooks,
     ChannelImpl* channel_impl,
     LayerTreeHost* layer_tree_host,

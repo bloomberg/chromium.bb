@@ -14,7 +14,7 @@ namespace cc {
 // actions.
 class ProxyImplForTest : public ProxyImpl {
  public:
-  static scoped_ptr<ProxyImpl> Create(
+  static scoped_ptr<ProxyImplForTest> Create(
       TestHooks* test_hooks,
       ChannelImpl* channel_impl,
       LayerTreeHost* layer_tree_host,
@@ -28,6 +28,9 @@ class ProxyImplForTest : public ProxyImpl {
 
   bool HasCommitCompletionEvent() const;
   bool GetNextCommitWaitsForActivation() const;
+  const DelayedUniqueNotifier& smoothness_priority_expiration_notifier() const {
+    return smoothness_priority_expiration_notifier_;
+  }
 
   ProxyImplForTest(TestHooks* test_hooks,
                    ChannelImpl* channel_impl,

@@ -45,6 +45,8 @@ class CC_EXPORT DelayedUniqueNotifier {
   // Returns true if a notification is currently scheduled to run.
   bool HasPendingNotification() const;
 
+  base::TimeDelta delay() const { return delay_; }
+
  protected:
   // Virtual for testing.
   virtual base::TimeTicks Now() const;
