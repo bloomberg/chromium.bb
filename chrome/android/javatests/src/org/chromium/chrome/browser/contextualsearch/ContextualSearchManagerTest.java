@@ -1029,36 +1029,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Tests tap to expand, after an initial tap to activate the peeking card.
-     *
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
-     */
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @FlakyTest
-    public void testTapExpand() throws InterruptedException, TimeoutException {
-        assertNoSearchesLoaded();
-        clickWordNode("states");
-        assertNoContentViewCore();
-        assertNoSearchesLoaded();
-
-        // Fake a search term resolution response.
-        fakeResponse(false, 200, "states", "United States Intelligence", "alternate-term", false);
-        assertContainsParameters("states", "alternate-term");
-        assertEquals(1, mFakeServer.getLoadedUrlCount());
-        assertLoadedLowPriorityUrl();
-        assertContentViewCoreCreated();
-        tapPeekingBarToExpandAndAssert();
-        assertLoadedLowPriorityUrl();
-        assertEquals(1, mFakeServer.getLoadedUrlCount());
-
-        // tap the base page to close.
-        tapBasePageToClosePanel();
-        assertEquals(1, mFakeServer.getLoadedUrlCount());
-        assertNoContentViewCore();
-    }
-
-    /**
      * Tests that only a single low-priority request is issued for a Tap/Open sequence.
      */
     @SmallTest
