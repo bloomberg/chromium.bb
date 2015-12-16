@@ -300,11 +300,13 @@ android_apk("cronet_sample_apk") {
   ]
 
   run_findbugs = true
-  proguard_enabled = !is_debug
-  proguard_configs = [
-    "proguard.cfg",
-    "sample/javatests/proguard.cfg",
-  ]
+  if (!is_debug) {
+    proguard_enabled = true
+    proguard_configs = [
+      "proguard.cfg",
+      "sample/javatests/proguard.cfg",
+    ]
+  }
 }
 
 # cronet_sample_test_apk_resources is identical to
