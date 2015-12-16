@@ -88,11 +88,6 @@ public:
     virtual float elasticOverscroll() const = 0;
     virtual void setElasticOverscroll(float) = 0;
 
-    virtual bool trackNeedsRepaint() const = 0;
-    virtual void setTrackNeedsRepaint(bool) = 0;
-    virtual bool thumbNeedsRepaint() const = 0;
-    virtual void setThumbNeedsRepaint(bool) = 0;
-
 protected:
     virtual ~ScrollbarThemeClient() { }
 };

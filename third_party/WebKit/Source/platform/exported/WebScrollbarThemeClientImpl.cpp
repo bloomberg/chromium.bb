@@ -224,26 +224,6 @@ void WebScrollbarThemeClientImpl::setElasticOverscroll(float elasticOverscroll)
     return m_scrollbar.setElasticOverscroll(elasticOverscroll);
 }
 
-bool WebScrollbarThemeClientImpl::trackNeedsRepaint() const
-{
-    return true;
-}
-
-void WebScrollbarThemeClientImpl::setTrackNeedsRepaint(bool)
-{
-    ASSERT_NOT_REACHED();
-}
-
-bool WebScrollbarThemeClientImpl::thumbNeedsRepaint() const
-{
-    return true;
-}
-
-void WebScrollbarThemeClientImpl::setThumbNeedsRepaint(bool)
-{
-    ASSERT_NOT_REACHED();
-}
-
 String WebScrollbarThemeClientImpl::debugName() const
 {
     return "WebScrollbarThemeClientImpl";

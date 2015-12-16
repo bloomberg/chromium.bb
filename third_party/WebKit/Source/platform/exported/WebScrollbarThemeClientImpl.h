@@ -77,10 +77,6 @@ public:
     bool isOverlayScrollbar() const override;
     float elasticOverscroll() const override;
     void setElasticOverscroll(float) override;
-    bool trackNeedsRepaint() const override;
-    void setTrackNeedsRepaint(bool) override;
-    bool thumbNeedsRepaint() const override;
-    void setThumbNeedsRepaint(bool) override;
 
     // DisplayItemClient methods.
     String debugName() const final;

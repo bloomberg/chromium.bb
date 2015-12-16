@@ -138,10 +138,10 @@ public:
     float elasticOverscroll() const override { return m_elasticOverscroll; }
     void setElasticOverscroll(float elasticOverscroll) override { m_elasticOverscroll = elasticOverscroll; }
 
-    bool trackNeedsRepaint() const override { return m_trackNeedsRepaint; }
-    void setTrackNeedsRepaint(bool trackNeedsRepaint) override { m_trackNeedsRepaint = trackNeedsRepaint; }
-    bool thumbNeedsRepaint() const override { return m_thumbNeedsRepaint; }
-    void setThumbNeedsRepaint(bool thumbNeedsRepaint) override { m_thumbNeedsRepaint = thumbNeedsRepaint; }
+    bool trackNeedsRepaint() const { return m_trackNeedsRepaint; }
+    void setTrackNeedsRepaint(bool trackNeedsRepaint) { m_trackNeedsRepaint = trackNeedsRepaint; }
+    bool thumbNeedsRepaint() const { return m_thumbNeedsRepaint; }
+    void setThumbNeedsRepaint(bool thumbNeedsRepaint) { m_thumbNeedsRepaint = thumbNeedsRepaint; }
 
     bool overlapsResizer() const { return m_overlapsResizer; }
     void setOverlapsResizer(bool overlapsResizer) { m_overlapsResizer = overlapsResizer; }
