@@ -37,6 +37,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/parser/TextResourceDecoder.h"
@@ -48,6 +49,7 @@
 #include "core/page/Page.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
+#include "platform/HostWindow.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
@@ -161,6 +163,15 @@ void DevToolsHost::disconnectClient()
 float DevToolsHost::zoomFactor()
 {
     return m_frontendFrame ? m_frontendFrame->pageZoomFactor() : 1;
+}
+
+float DevToolsHost::convertLengthForEmbedder(float length)
+{
+    if (!m_frontendFrame)
+        return length;
+    const HostWindow* hostWindow = m_frontendFrame->view()->hostWindow();
+    IntRect screen = hostWindow->viewportToScreen(IntRect(0, 0, length, 0));
+    return screen.width();
 }
 
 void DevToolsHost::setInjectedScriptForOrigin(const String& origin, const String& script)

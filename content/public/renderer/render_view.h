@@ -125,11 +125,8 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
                                       bool animate) = 0;
 #endif
 
-  // Converts the |rect| from Blink's Viewport coordinates to the
-  // coordinates in the native window used to display the content, in
-  // DIP.  They're identical in tradional world, but will differ when
-  // use-zoom-for-dsf feature is eanbled, and Viewport coordinates
-  // becomes DSF times larger than window coordinates.
+  // Converts the |rect| from Viewport coordinates to Window coordinates.
+  // See blink::WebWidgetClient::convertViewportToWindow for more details.
   virtual void convertViewportToWindow(blink::WebRect* rect) = 0;
 
   // Returns the bounds of |element| in Window coordinates. The bounds have been

@@ -516,13 +516,14 @@ void ChromeClientImpl::scheduleAnimation(Widget* widget)
 
 IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport) const
 {
-    IntRect screenRect(rectInViewport);
+    WebRect screenRect(rectInViewport);
 
     if (m_webView->client()) {
+        m_webView->client()->convertViewportToWindow(&screenRect);
         WebRect windowRect = m_webView->client()->windowRect();
-        screenRect.move(windowRect.x, windowRect.y);
+        screenRect.x += windowRect.x;
+        screenRect.y += windowRect.y;
     }
-
     return screenRect;
 }
 

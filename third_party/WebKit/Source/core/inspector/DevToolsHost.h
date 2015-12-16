@@ -57,6 +57,8 @@ public:
 
     float zoomFactor();
 
+    float convertLengthForEmbedder(float length);
+
     void setInjectedScriptForOrigin(const String& origin, const String& script);
 
     void copyText(const String& text);

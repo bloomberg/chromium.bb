@@ -209,16 +209,13 @@ class CONTENT_EXPORT RenderWidget
                      const blink::WebFloatPoint& position,
                      const blink::WebFloatSize& velocity) override;
   void showImeIfNeeded() override;
+  void convertViewportToWindow(blink::WebRect* rect) override;
 
   // Override point to obtain that the current input method state and caret
   // position.
   virtual ui::TextInputType GetTextInputType();
   virtual ui::TextInputType WebKitToUiTextInputType(
       blink::WebTextInputType type);
-
-  // Converts the |rect| from Viewport coordinates to Window coordinates.
-  // See RenderView::convertViewportToWindow for more details.
-  void convertViewportToWindow(blink::WebRect* rect);
 
 #if defined(OS_ANDROID)
   // Notifies that a tap was not consumed, so showing a UI for the unhandled

@@ -36,6 +36,8 @@
 ] interface DevToolsHost {
     float zoomFactor();
 
+    float convertLengthForEmbedder(float length);
+
     void setInjectedScriptForOrigin(DOMString origin, DOMString script);
 
     void copyText(DOMString text);
