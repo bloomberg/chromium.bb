@@ -36,6 +36,9 @@ CreateLogVerifiersForKnownLogs() {
     base::StringPiece key(log.log_key, log.log_key_length);
 
     verifiers.push_back(CTLogVerifier::Create(key, log.log_name, log.log_url));
+    // Make sure no null logs enter verifiers. Parsing of all known logs should
+    // succeed.
+    CHECK(verifiers.back().get());
   }
 
   return verifiers;
