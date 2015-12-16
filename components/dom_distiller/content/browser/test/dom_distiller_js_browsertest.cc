@@ -48,9 +48,7 @@ namespace dom_distiller {
 
 const char* kExternalTestResourcesPath =
     "third_party/dom_distiller_js/dist/test/data";
-// TODO(wychen) Remove filter when crbug.com/471854 is fixed.
-const char* kTestFilePath =
-    "/war/test.html?console_log=0&filter=-*.SchemaOrgParserAccessorTest.*";
+const char* kTestFilePath = "/war/test.html?console_log=0";
 const char* kRunJsTestsJs =
     "(function() {return org.chromium.distiller.JsTestEntry.run();})();";
 
