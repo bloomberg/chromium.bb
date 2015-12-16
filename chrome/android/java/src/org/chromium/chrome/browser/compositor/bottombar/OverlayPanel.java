@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.app.Activity;
 import android.content.Context;
+import android.view.View.MeasureSpec;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -17,6 +18,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.common.TopControlsState;
 import org.chromium.ui.base.LocalizationUtils;
@@ -308,12 +310,36 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
     }
 
     /**
+     * Add any other objects that depend on the OverlayPanelContent having already been created.
+     */
+    private OverlayPanelContent createNewOverlayPanelContentInternal() {
+        OverlayPanelContent content = mContentFactory.createNewOverlayPanelContent();
+        // Adds a ContentViewClient to override the default fullscreen size.
+        content.setContentViewClient(new ContentViewClient() {
+            @Override
+            public int getDesiredWidthMeasureSpec() {
+                return MeasureSpec.makeMeasureSpec(
+                        getSearchContentViewWidthPx(),
+                        MeasureSpec.EXACTLY);
+            }
+
+            @Override
+            public int getDesiredHeightMeasureSpec() {
+                return MeasureSpec.makeMeasureSpec(
+                        getSearchContentViewHeightPx(),
+                        MeasureSpec.EXACTLY);
+            }
+        });
+        return content;
+    }
+
+    /**
      * @return A new OverlayPanelContent if the instance was null or the existing one.
      */
     protected OverlayPanelContent getOverlayPanelContent() {
         // Only create the content when necessary
         if (mContent == null) {
-            mContent = mContentFactory.createNewOverlayPanelContent();
+            mContent = createNewOverlayPanelContentInternal();
         }
         return mContent;
     }

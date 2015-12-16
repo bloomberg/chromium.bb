@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
-import android.view.View.MeasureSpec;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.VisibleForTesting;
@@ -21,7 +20,6 @@ import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneL
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.content.browser.ContentViewClient;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -77,31 +75,8 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
-        OverlayPanelContent overlayPanelContent = new OverlayPanelContent(
-                mManagementDelegate.getOverlayContentDelegate(),
-                new PanelProgressObserver(),
-                mActivity);
-
-        // Adds a ContentViewClient to override the default fullscreen size.
-        if (!isFullscreenSizePanel()) {
-            overlayPanelContent.setContentViewClient(new ContentViewClient() {
-                @Override
-                public int getDesiredWidthMeasureSpec() {
-                    return MeasureSpec.makeMeasureSpec(
-                            getSearchContentViewWidthPx(),
-                            MeasureSpec.EXACTLY);
-                }
-
-                @Override
-                public int getDesiredHeightMeasureSpec() {
-                    return MeasureSpec.makeMeasureSpec(
-                            getSearchContentViewHeightPx(),
-                            MeasureSpec.EXACTLY);
-                }
-            });
-        }
-
-        return overlayPanelContent;
+        return new OverlayPanelContent(mManagementDelegate.getOverlayContentDelegate(),
+                new PanelProgressObserver(), mActivity);
     }
 
     /**
