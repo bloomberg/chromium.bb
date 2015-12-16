@@ -54,6 +54,7 @@
         '../../components/components.gyp:bookmarks_managed',
         '../../components/components.gyp:browser_sync_browser',
         '../../components/components.gyp:browser_sync_common',
+        '../../components/components.gyp:certificate_reporting',
         '../../components/components.gyp:component_updater',
         '../../components/components.gyp:content_settings_core_browser',
         '../../components/components.gyp:cookie_config',
@@ -87,6 +88,7 @@
         '../../components/components.gyp:pref_registry',
         '../../components/components.gyp:proxy_config',
         '../../components/components.gyp:rappor',
+        '../../components/components.gyp:safe_browsing_db',
         '../../components/components.gyp:search',
         '../../components/components.gyp:search_engines',
         '../../components/components.gyp:security_interstitials_core',
@@ -619,6 +621,25 @@
             'ios_chrome_browser_rlz',
           ],
         }],
+        ['safe_browsing!=0', {
+          'sources': [
+            'browser/safe_browsing/hit_report.cc',
+            'browser/safe_browsing/hit_report.h',
+            'browser/safe_browsing/ping_manager.cc',
+            'browser/safe_browsing/ping_manager.h',
+            'browser/safe_browsing/protocol_manager_helper.cc',
+            'browser/safe_browsing/protocol_manager_helper.h',
+            'browser/safe_browsing/safe_browsing_blocking_page.cc',
+            'browser/safe_browsing/safe_browsing_blocking_page.h',
+            'browser/safe_browsing/safe_browsing_service.cc',
+            'browser/safe_browsing/safe_browsing_service.h',
+            'browser/safe_browsing/ui_manager.cc',
+            'browser/safe_browsing/ui_manager.h',
+          ],
+          'dependencies': [
+            'ios_chrome_safe_browsing_proto',
+          ],
+        }]
       ],
     },
     {
@@ -782,6 +803,21 @@
             '../../components/components.gyp:search_engines',
             '../../rlz/rlz.gyp:rlz_lib',
           ],
+        },
+      ],
+    }],
+    ['safe_browsing!=0', {
+      'targets': [
+        {
+          # GN version: //ios/chrome/browser/safe_browsing:proto
+          'target_name': 'ios_chrome_safe_browsing_proto',
+          'type': 'static_library',
+          'sources': [ 'browser/safe_browsing/metadata.proto' ],
+          'variables': {
+            'proto_in_dir': 'browser/safe_browsing',
+            'proto_out_dir': 'ios/chrome/browser/safe_browsing',
+          },
+          'includes': [ '../../build/protoc.gypi' ],
         },
       ],
     }],
