@@ -5,22 +5,8 @@
 #include "media/mojo/services/mojo_renderer_service.h"
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
-#include "media/base/audio_decoder.h"
-#include "media/base/audio_renderer.h"
-#include "media/base/audio_renderer_sink.h"
-#include "media/base/cdm_context.h"
-#include "media/base/decryptor.h"
-#include "media/base/media_log.h"
-#include "media/base/renderer_factory.h"
-#include "media/base/video_renderer.h"
-#include "media/base/video_renderer_sink.h"
+#include "media/base/renderer.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
-#include "media/mojo/services/mojo_media_client.h"
-#include "media/renderers/audio_renderer_impl.h"
-#include "media/renderers/renderer_impl.h"
-#include "media/renderers/video_renderer_impl.h"
 
 namespace media {
 
@@ -29,42 +15,16 @@ const int kTimeUpdateIntervalMs = 50;
 
 MojoRendererService::MojoRendererService(
     base::WeakPtr<CdmContextProvider> cdm_context_provider,
-    RendererFactory* renderer_factory,
-    const scoped_refptr<MediaLog>& media_log,
+    scoped_ptr<media::Renderer> renderer,
     mojo::InterfaceRequest<interfaces::Renderer> request)
     : binding_(this, request.Pass()),
       cdm_context_provider_(cdm_context_provider),
+      renderer_(renderer.Pass()),
       state_(STATE_UNINITIALIZED),
       last_media_time_usec_(0),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
   DVLOG(1) << __FUNCTION__;
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner(
-      base::MessageLoop::current()->task_runner());
-  MojoMediaClient* mojo_media_client = MojoMediaClient::Get();
-  audio_renderer_sink_ = mojo_media_client->CreateAudioRendererSink();
-  video_renderer_sink_ =
-      mojo_media_client->CreateVideoRendererSink(task_runner);
-
-  // Create renderer.
-  if (renderer_factory) {
-    renderer_ = renderer_factory->CreateRenderer(task_runner, task_runner,
-                                                 audio_renderer_sink_.get(),
-                                                 video_renderer_sink_.get());
-  } else {
-    DCHECK(mojo_media_client->GetAudioHardwareConfig());
-    scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
-        task_runner, audio_renderer_sink_.get(),
-        mojo_media_client->CreateAudioDecoders(task_runner, media_log).Pass(),
-        *mojo_media_client->GetAudioHardwareConfig(), media_log));
-    scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-        task_runner, task_runner, video_renderer_sink_.get(),
-        mojo_media_client->CreateVideoDecoders(task_runner, media_log).Pass(),
-        true, nullptr, media_log));
-    renderer_.reset(new RendererImpl(task_runner, audio_renderer.Pass(),
-                                     video_renderer.Pass()));
-  }
 }
 
 MojoRendererService::~MojoRendererService() {

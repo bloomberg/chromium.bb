@@ -8,6 +8,7 @@
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_stream_sink.h"
 #include "media/audio/fake_audio_log_factory.h"
+#include "media/base/audio_hardware_config.h"
 #include "media/base/media.h"
 #include "media/base/null_video_sink.h"
 #include "media/cdm/default_cdm_factory.h"
@@ -53,10 +54,6 @@ class DefaultMojoMediaClient : public PlatformMojoMediaClient {
     return make_scoped_ptr(
         new NullVideoSink(false, base::TimeDelta::FromSecondsD(1.0 / 60),
                           NullVideoSink::NewFrameCB(), task_runner));
-  }
-
-  const AudioHardwareConfig* GetAudioHardwareConfig() override {
-    return audio_hardware_config_.get();
   }
 
   scoped_ptr<CdmFactory> CreateCdmFactory(

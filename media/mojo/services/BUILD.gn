@@ -103,7 +103,6 @@ source_set("media_client") {
 source_set("cdm_service") {
   deps = [
     ":converters",
-    ":media_client",
     "//base",
     "//media",
     "//media/mojo/interfaces",
@@ -141,15 +140,12 @@ source_set("renderer_service") {
     "demuxer_stream_provider_shim.h",
     "mojo_demuxer_stream_adapter.cc",
     "mojo_demuxer_stream_adapter.h",
-    "mojo_media_client.cc",
-    "mojo_media_client.h",
     "mojo_renderer_service.cc",
     "mojo_renderer_service.h",
   ]
 
   deps = [
     ":converters",
-    ":media_client",
     "//base",
     "//media",
     "//media:shared_memory_support",
@@ -162,6 +158,8 @@ source_set("application") {
   sources = [
     "mojo_media_application.cc",
     "mojo_media_application.h",
+    "mojo_media_client.cc",
+    "mojo_media_client.h",
     "service_factory_impl.cc",
     "service_factory_impl.h",
   ]
@@ -170,6 +168,7 @@ source_set("application") {
 
   deps = [
     ":cdm_service",
+    ":media_client",
     ":renderer_service",
     "//base",
     "//mojo/application/public/cpp",
