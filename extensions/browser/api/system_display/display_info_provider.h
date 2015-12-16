@@ -54,10 +54,17 @@ class DisplayInfoProvider {
   // Enable the unified desktop feature.
   virtual void EnableUnifiedDesktop(bool enable);
 
-  DisplayInfo GetAllDisplaysInfo();
+  // Get display information.
+  virtual DisplayInfo GetAllDisplaysInfo();
 
  protected:
   DisplayInfoProvider();
+
+  // Create a DisplayUnitInfo from a gfx::Display for implementations of
+  // GetAllDisplaysInfo()
+  static api::system_display::DisplayUnitInfo* CreateDisplayUnitInfo(
+      const gfx::Display& display,
+      int64 primary_display_id);
 
  private:
   static DisplayInfoProvider* Create();

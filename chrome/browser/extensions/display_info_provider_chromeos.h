@@ -23,6 +23,7 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider {
       api::system_display::DisplayUnitInfo* unit) override;
   gfx::Screen* GetActiveScreen() override;
   void EnableUnifiedDesktop(bool enable) override;
+  DisplayInfo GetAllDisplaysInfo() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderChromeOS);

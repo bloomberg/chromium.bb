@@ -391,6 +391,28 @@ void DisplayInfoProviderChromeOS::EnableUnifiedDesktop(bool enable) {
       enable);
 }
 
+DisplayInfo DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
+  ash::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
+  if (!display_manager->IsInUnifiedMode())
+    return DisplayInfoProvider::GetAllDisplaysInfo();
+
+  std::vector<gfx::Display> displays =
+      display_manager->software_mirroring_display_list();
+  CHECK_GT(displays.size(), 0u);
+
+  // Use first display as primary.
+  int64 primary_id = displays[0].id();
+  DisplayInfo all_displays;
+  for (const gfx::Display& display : displays) {
+    linked_ptr<api::system_display::DisplayUnitInfo> unit(
+        CreateDisplayUnitInfo(display, primary_id));
+    UpdateDisplayUnitInfoForPlatform(display, unit.get());
+    all_displays.push_back(unit);
+  }
+  return all_displays;
+}
+
 // static
 DisplayInfoProvider* DisplayInfoProvider::Create() {
   return new DisplayInfoProviderChromeOS();

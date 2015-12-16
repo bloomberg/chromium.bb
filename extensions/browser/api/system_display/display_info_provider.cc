@@ -31,10 +31,29 @@ int RotationToDegrees(gfx::Display::Rotation rotation) {
   return 0;
 }
 
+}  // namespace
+
+DisplayInfoProvider::~DisplayInfoProvider() {}
+
+// static
+DisplayInfoProvider* DisplayInfoProvider::Get() {
+  if (g_display_info_provider == NULL)
+    g_display_info_provider = DisplayInfoProvider::Create();
+  return g_display_info_provider;
+}
+
+// static
+void DisplayInfoProvider::InitializeForTesting(
+    DisplayInfoProvider* display_info_provider) {
+  DCHECK(display_info_provider);
+  g_display_info_provider = display_info_provider;
+}
+
+// static
 // Creates new DisplayUnitInfo struct for |display|.
-api::system_display::DisplayUnitInfo* CreateDisplayUnitInfo(
-    const gfx::Display& display,
-    int64 primary_display_id) {
+api::system_display::DisplayUnitInfo*
+DisplayInfoProvider::CreateDisplayUnitInfo(const gfx::Display& display,
+                                           int64 primary_display_id) {
   api::system_display::DisplayUnitInfo* unit =
       new api::system_display::DisplayUnitInfo();
   const gfx::Rect& bounds = display.bounds();
@@ -53,25 +72,6 @@ api::system_display::DisplayUnitInfo* CreateDisplayUnitInfo(
   unit->work_area.width = work_area.width();
   unit->work_area.height = work_area.height();
   return unit;
-}
-
-}  // namespace
-
-DisplayInfoProvider::~DisplayInfoProvider() {
-}
-
-// static
-DisplayInfoProvider* DisplayInfoProvider::Get() {
-  if (g_display_info_provider == NULL)
-    g_display_info_provider = DisplayInfoProvider::Create();
-  return g_display_info_provider;
-}
-
-// static
-void DisplayInfoProvider::InitializeForTesting(
-    DisplayInfoProvider* display_info_provider) {
-  DCHECK(display_info_provider);
-  g_display_info_provider = display_info_provider;
 }
 
 void DisplayInfoProvider::EnableUnifiedDesktop(bool enable) {}
