@@ -411,7 +411,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, WaitUntil) {
   EXPECT_FALSE(GetRegistrationOneShot("delay"));
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, WaitUntilReject) {
+// DISABLED due to race between the rejection reaching the BackgroundSyncManager
+// via the normal IPC mechanism and the GetRegistration happening over the mojo
+// IPC. See https://crbug.com/570333.
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, DISABLED_WaitUntilReject) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
 
