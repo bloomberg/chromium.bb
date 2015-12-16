@@ -1435,11 +1435,14 @@ You are signing in with a managed account and giving its administrator control o
       </message>
 
       <!-- Download UI -->
+      <message name="IDS_DOWNLOAD_NOTIFICATION_COMPLETED" desc="Download notification to be displayed when a download completes.">
+        Download complete.
+      </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_FAILED" desc="Download notification to be displayed when a download fails.">
         Download failed.
       </message>
-      <message name="IDS_DOWNLOAD_NOTIFICATION_COMPLETED" desc="Download notification to be displayed when a download completes.">
-        Download complete.
+      <message name="IDS_DOWNLOAD_NOTIFICATION_PAUSED" desc="Download notification to be displayed when a download pauses.">
+        Download paused.
       </message>
       <message name="IDS_DOWNLOAD_FAILED_REASON_FILE_ALREADY_EXISTS" desc="Message to explain that the download failed because file already exists.">
         <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> download prevented because file already exists.

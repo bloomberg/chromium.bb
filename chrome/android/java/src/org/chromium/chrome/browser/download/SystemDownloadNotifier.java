@@ -4,31 +4,58 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 
-import org.chromium.chrome.R;
-
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.DownloadInfo;
-import org.chromium.ui.base.LocalizationUtils;
 
-import java.text.NumberFormat;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 /**
- * DownloadNotifier implementation that uses Android Notification service and DownloadManager
- * service to create download notifications.
+ * DownloadNotifier implementation that creates and updates download notifications.
+ * This class creates the {@link DownloadNotificationService} when needed, and binds
+ * to the latter to issue calls to show and update notifications.
  */
 public class SystemDownloadNotifier implements DownloadNotifier {
-    private static final String NOTIFICATION_NAMESPACE = "SystemDownloadNotifier";
-
-    private final NotificationManager mNotificationManager;
-
+    private static final int DOWNLOAD_NOTIFICATION_TYPE_PROGRESS = 0;
+    private static final int DOWNLOAD_NOTIFICATION_TYPE_SUCCESS = 1;
+    private static final int DOWNLOAD_NOTIFICATION_TYPE_FAILURE = 2;
+    private static final int DOWNLOAD_NOTIFICATION_TYPE_CANCEL = 3;
     private final Context mApplicationContext;
+    private final Object mLock = new Object();
+    @Nullable private DownloadNotificationService mBoundService;
+    private boolean mServiceStarted;
+    private Set<Integer> mActiveDownloadIds = new HashSet<Integer>();
+    private List<PendingNotificationInfo> mPendingNotifications =
+            new ArrayList<PendingNotificationInfo>();
+
+    /**
+     * Pending download notifications to be posted.
+     */
+    private static class PendingNotificationInfo {
+        // Pending download notifications to be posted.
+        public final int type;
+        public final DownloadInfo downloadInfo;
+        public final Intent intent;
+        public final long startTime;
+
+        public PendingNotificationInfo(
+                int type, DownloadInfo downloadInfo, Intent intent, long startTime) {
+            this.type = type;
+            this.downloadInfo = downloadInfo;
+            this.intent = intent;
+            this.startTime = startTime;
+        }
+    }
 
     /**
      * Constructor.
@@ -36,73 +63,185 @@ public class SystemDownloadNotifier implements DownloadNotifier {
      */
     public SystemDownloadNotifier(Context context) {
         mApplicationContext = context.getApplicationContext();
-        mNotificationManager = (NotificationManager) mApplicationContext
-                .getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     /**
-     * Update the notification with id.
-     * @param id Id of the notification that has to be updated.
-     * @param notification the notification object that needs to be updated.
+     * Object to receive information as the service is started and stopped.
      */
-    private void updateNotification(int id, Notification notification) {
-        mNotificationManager.notify(NOTIFICATION_NAMESPACE, id, notification);
+    private final ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            synchronized (mLock) {
+                mBoundService = ((DownloadNotificationService.LocalBinder) service).getService();
+                // updateDownloadNotification() may leave some outstanding notifications
+                // before the service is connected, handle them now.
+                handlePendingNotifications();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            synchronized (mLock) {
+                mBoundService = null;
+                mServiceStarted = false;
+            }
+        }
+    };
+
+    /**
+     * For tests only: sets the DownloadNotificationService.
+     * @param service An instance of DownloadNotificationService.
+     */
+    @VisibleForTesting
+    void setDownloadNotificationService(DownloadNotificationService service) {
+        synchronized (mLock) {
+            mBoundService = service;
+        }
+    }
+
+    /**
+     * Handles all the pending notifications that hasn't been processed.
+     */
+    @VisibleForTesting
+    void handlePendingNotifications() {
+        synchronized (mLock) {
+            if (mPendingNotifications.isEmpty()) return;
+            for (PendingNotificationInfo info : mPendingNotifications) {
+                switch (info.type) {
+                    case DOWNLOAD_NOTIFICATION_TYPE_PROGRESS:
+                        notifyDownloadProgress(info.downloadInfo, info.startTime);
+                        break;
+                    case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
+                        notifyDownloadSuccessful(info.downloadInfo, info.intent);
+                        break;
+                    case DOWNLOAD_NOTIFICATION_TYPE_FAILURE:
+                        notifyDownloadFailed(info.downloadInfo);
+                        break;
+                    case DOWNLOAD_NOTIFICATION_TYPE_CANCEL:
+                        cancelNotification(info.downloadInfo.getDownloadId());
+                        break;
+                    default:
+                        assert false;
+                }
+            }
+            mPendingNotifications.clear();
+        }
+    }
+
+    /**
+     * Starts and binds to the download notification service if needed.
+     */
+    private void startAndBindToServiceIfNeeded() {
+        assert Thread.holdsLock(mLock);
+        if (mServiceStarted) return;
+        startService();
+        mServiceStarted = true;
+    }
+
+    /**
+     * Stops the download notification service if there are no download in progress.
+     */
+    private void stopServiceIfNeeded() {
+        assert Thread.holdsLock(mLock);
+        if (mActiveDownloadIds.isEmpty() && mServiceStarted) {
+            stopService();
+            mServiceStarted = false;
+        }
+    }
+
+    /**
+     * Starts and binds to the download notification service.
+     */
+    @VisibleForTesting
+    void startService() {
+        assert Thread.holdsLock(mLock);
+        mApplicationContext.startService(
+                new Intent(mApplicationContext, DownloadNotificationService.class));
+        mApplicationContext.bindService(new Intent(mApplicationContext,
+                DownloadNotificationService.class), mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    /**
+     * Stops the download notification service.
+     */
+    @VisibleForTesting
+    void stopService() {
+        assert Thread.holdsLock(mLock);
+        mApplicationContext.stopService(
+                new Intent(mApplicationContext, DownloadNotificationService.class));
     }
 
     @Override
     public void cancelNotification(int downloadId) {
-        mNotificationManager.cancel(NOTIFICATION_NAMESPACE, downloadId);
+        DownloadInfo info = new DownloadInfo.Builder().setDownloadId(downloadId).build();
+        updateDownloadNotification(DOWNLOAD_NOTIFICATION_TYPE_CANCEL, info, null, -1);
     }
 
     @Override
     public void notifyDownloadSuccessful(DownloadInfo downloadInfo, Intent intent) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mApplicationContext)
-                .setContentTitle(downloadInfo.getFileName())
-                .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                .setOngoing(false)
-                .setLocalOnly(true)
-                .setAutoCancel(true)
-                .setContentText(mApplicationContext.getResources().getString(
-                        R.string.download_notification_completed))
-                .setContentIntent(PendingIntent.getActivity(
-                        mApplicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
-        updateNotification(downloadInfo.getDownloadId(), builder.build());
+        updateDownloadNotification(DOWNLOAD_NOTIFICATION_TYPE_SUCCESS, downloadInfo, intent, -1);
     }
 
     @Override
     public void notifyDownloadFailed(DownloadInfo downloadInfo) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mApplicationContext)
-                .setContentTitle(downloadInfo.getFileName())
-                .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                .setOngoing(false)
-                .setLocalOnly(true)
-                .setAutoCancel(true)
-                .setContentText(mApplicationContext.getResources().getString(
-                        R.string.download_notification_failed));
-        updateNotification(downloadInfo.getDownloadId(), builder.build());
+        updateDownloadNotification(DOWNLOAD_NOTIFICATION_TYPE_FAILURE, downloadInfo, null, -1);
     }
 
     @Override
     public void notifyDownloadProgress(DownloadInfo downloadInfo, long startTime) {
-        // getPercentCompleted returns -1 if download time is indeterminate.
-        boolean indeterminate = downloadInfo.getPercentCompleted() == -1;
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mApplicationContext)
-                .setContentTitle(downloadInfo.getFileName())
-                .setSmallIcon(android.R.drawable.stat_sys_download)
-                .setOngoing(true)
-                .setLocalOnly(true)
-                .setAutoCancel(true)
-                .setProgress(100, downloadInfo.getPercentCompleted(), indeterminate);
+        updateDownloadNotification(
+                DOWNLOAD_NOTIFICATION_TYPE_PROGRESS, downloadInfo, null, startTime);
+    }
 
-        if (!indeterminate) {
-            NumberFormat formatter = NumberFormat.getPercentInstance(Locale.getDefault());
-            String percentText = formatter.format(downloadInfo.getPercentCompleted() / 100.0);
-            String duration = LocalizationUtils.getDurationString(
-                    downloadInfo.getTimeRemainingInMillis());
-            builder.setContentText(duration).setContentInfo(percentText);
+    /**
+     * Updates the download notification if the notification service is started. Otherwise,
+     * wait for the notification service to become ready.
+     * @param type Type of the notification.
+     * @param info Download information.
+     * @param intent Action to perform when clicking on the notification.
+     * @param startTime Download start time.
+     */
+    private void updateDownloadNotification(
+            int type, DownloadInfo info, Intent intent, long startTime) {
+        synchronized (mLock) {
+            startAndBindToServiceIfNeeded();
+            if (type == DOWNLOAD_NOTIFICATION_TYPE_PROGRESS) {
+                mActiveDownloadIds.add(info.getDownloadId());
+            } else {
+                mActiveDownloadIds.remove(info.getDownloadId());
+            }
+            if (mBoundService == null) {
+                // We need to wait for the service to connect before we can handle
+                // the notification. Put the notification in the pending notifications
+                // list.
+                mPendingNotifications.add(new PendingNotificationInfo(
+                        type, info, intent, startTime));
+            } else {
+                switch (type) {
+                    case DOWNLOAD_NOTIFICATION_TYPE_PROGRESS:
+                        mBoundService.notifyDownloadProgress(
+                                info.getDownloadId(), info.getFileName(),
+                                info.getPercentCompleted(), info.getTimeRemainingInMillis(),
+                                startTime);
+                        break;
+                    case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
+                        mBoundService.notifyDownloadSuccessful(
+                                info.getDownloadId(), info.getFileName(), intent);
+                        stopServiceIfNeeded();
+                        break;
+                    case DOWNLOAD_NOTIFICATION_TYPE_FAILURE:
+                        mBoundService.notifyDownloadFailed(
+                                info.getDownloadId(), info.getFileName());
+                        stopServiceIfNeeded();
+                        break;
+                    case DOWNLOAD_NOTIFICATION_TYPE_CANCEL:
+                        mBoundService.cancelNotification(info.getDownloadId());
+                        stopServiceIfNeeded();
+                        break;
+                    default:
+                        assert false;
+                }
+            }
         }
-        if (startTime > 0) builder.setWhen(startTime);
-
-        updateNotification(downloadInfo.getDownloadId(), builder.build());
     }
 }

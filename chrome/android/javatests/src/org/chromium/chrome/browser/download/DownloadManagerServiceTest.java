@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.preference.PreferenceManager;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -474,9 +475,10 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
                 .setUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/test.gzip"))
                 .build();
         MockDownloadNotifier notifier = new MockDownloadNotifier();
+        Context context = getTestContext();
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
-                getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
-        final MockOMADownloadHandler handler = new MockOMADownloadHandler(getTestContext());
+                context, notifier, UPDATE_DELAY_FOR_TEST);
+        final MockOMADownloadHandler handler = new MockOMADownloadHandler(context);
         dService.setOMADownloadHandler(handler);
         handler.setDownloadId(0);
         dService.enqueueDownloadManagerRequest(info, true);
@@ -488,6 +490,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         });
         handler.mDownloadId = handler.mDownloadInfo.getDownloadId();
         Set<String> downloads = dService.getStoredDownloadInfo(
+                PreferenceManager.getDefaultSharedPreferences(context),
                 DownloadManagerService.PENDING_OMA_DOWNLOADS);
         assertEquals(1, downloads.size());
         DownloadManagerService.OMAEntry entry = DownloadManagerService.OMAEntry.parseOMAEntry(

@@ -439,6 +439,11 @@ by a child template that "extends" this file.
             </intent-filter>
         </receiver>
 
+        <!-- Download service -->
+        <service android:name="org.chromium.chrome.browser.download.DownloadNotificationService"
+            android:exported="false">
+        </service>
+
         <!-- Precache service.
         Not enabled on Stable or Work channels. This is currently an experiment
         on beta channel (crbug/309216) but the mere existence of these can lead

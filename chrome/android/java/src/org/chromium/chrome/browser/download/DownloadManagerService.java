@@ -44,14 +44,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Chrome implementation of the DownloadNotificationService interface. This class is responsible for
- * keeping track of which downloads are in progress. It generates updates for progress of downloads
- * and handles cleaning up of interrupted progress notifications.
+ * Chrome implementation of the {@link DownloadController.DownloadNotificationService} interface.
+ * This class is responsible for keeping track of which downloads are in progress. It generates
+ * updates for progress of downloads and handles cleaning up of interrupted progress notifications.
  */
 public class DownloadManagerService extends BroadcastReceiver implements
         DownloadController.DownloadNotificationService {
     private static final String TAG = "DownloadService";
     private static final String DOWNLOAD_NOTIFICATION_IDS = "DownloadNotificationIds";
+    @VisibleForTesting static final String PENDING_DOWNLOAD_NOTIFICATIONS =
+            "PendingDownloadNotifications";
     private static final String DOWNLOAD_DIRECTORY = "Download";
     protected static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
     private static final String UNKNOWN_MIME_TYPE = "application/unknown";
@@ -167,6 +169,11 @@ public class DownloadManagerService extends BroadcastReceiver implements
         return sDownloadManagerService;
     }
 
+    public static boolean hasDownloadManagerService() {
+        ThreadUtils.assertOnUiThread();
+        return sDownloadManagerService != null;
+    }
+
     /**
      * For tests only: sets the DownloadManagerService.
      * @param service An instance of DownloadManagerService.
@@ -217,24 +224,45 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * When Clank is restarted it clears any old notifications for incomplete downloads.
      */
     public void clearPendingDownloadNotifications() {
+        // Remove old DOWNLOAD_NOTIFICATION_IDS SharedPrefs.
+        // TODO(qinmin): remove this in later Chrome versions.
         if (mSharedPrefs.contains(DOWNLOAD_NOTIFICATION_IDS)) {
-            Set<String> downloadIds = getStoredDownloadInfo(DOWNLOAD_NOTIFICATION_IDS);
-            for (String id : downloadIds) {
-                int notificationId = parseNotificationId(id);
-                if (notificationId > 0) {
-                    mDownloadNotifier.cancelNotification(notificationId);
-                    Log.w(TAG, "Download failed: Cleared download id:" + id);
-                }
-            }
             mSharedPrefs.edit().remove(DOWNLOAD_NOTIFICATION_IDS).apply();
         }
+        List<Pair<Integer, String>> notifications =
+                parseDownloadNotificationsFromSharedPrefs(mSharedPrefs);
+        for (Pair<Integer, String> notification : notifications) {
+            if (notification.first > 0) {
+                mDownloadNotifier.cancelNotification(notification.first);
+                Log.w(TAG, "Download failed: Cleared download id:" + notification.first);
+            }
+        }
+        mSharedPrefs.edit().remove(PENDING_DOWNLOAD_NOTIFICATIONS).apply();
         if (mSharedPrefs.contains(PENDING_OMA_DOWNLOADS)) {
-            Set<String> omaDownloads = getStoredDownloadInfo(PENDING_OMA_DOWNLOADS);
+            Set<String> omaDownloads = getStoredDownloadInfo(mSharedPrefs, PENDING_OMA_DOWNLOADS);
             for (String omaDownload : omaDownloads) {
                 OMAEntry entry = OMAEntry.parseOMAEntry(omaDownload);
                 clearPendingOMADownload(entry.mDownloadId, entry.mInstallNotifyURI);
             }
         }
+    }
+
+    /**
+     * Parse the download notifications from the shared preference and return a list of them.
+     * @param sharedPrefs SharedPreferences that contains the download notifications.
+     * @return a list of parsed notifications.
+     */
+    static List<Pair<Integer, String>> parseDownloadNotificationsFromSharedPrefs(
+            SharedPreferences sharedPrefs) {
+        List<Pair<Integer, String>> result = new ArrayList<Pair<Integer, String>>();
+        if (sharedPrefs.contains(DownloadManagerService.PENDING_DOWNLOAD_NOTIFICATIONS)) {
+            Set<String> pendingDownloads = DownloadManagerService.getStoredDownloadInfo(
+                    sharedPrefs, DownloadManagerService.PENDING_DOWNLOAD_NOTIFICATIONS);
+            for (String download : pendingDownloads) {
+                result.add(DownloadManagerService.parseNotificationString(download));
+            }
+        }
+        return result;
     }
 
     /**
@@ -326,18 +354,33 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     /**
-     * Parse the notification ID from a String object.
+     * Parse the notification ID from a String object in SharedPrefs.
      *
-     * @param id String containing the notification ID.
-     * @return notification ID.
+     * @param notification String containing the notification ID and file name.
+     * @return a pair of notification ID and file name.
      */
-    private static int parseNotificationId(String id) {
+    static Pair<Integer, String> parseNotificationString(String notification) {
+        int index = notification.indexOf(",");
+        if (index <= 0) return Pair.create(-1, "");
         try {
-            return Integer.parseInt(id);
+            int id = Integer.parseInt(notification.substring(0, index));
+            return Pair.create(id, notification.substring(index + 1));
         } catch (NumberFormatException nfe) {
-            Log.w(TAG, "Exception while parsing download id:" + id);
-            return -1;
+            Log.w(TAG, "Exception while parsing pending download:" + notification);
+            return Pair.create(-1, "");
         }
+    }
+
+    /**
+     * Generate a string for the download Id and file name pair to be
+     * inserted into SharedPrefs.
+     *
+     * @param downloadId ID of the download.
+     * @param fileName Name of the file to be downloaded.
+     * @return notification string containing the notification ID and file name.
+     */
+    static String getNotificationString(int downloadId, String fileName) {
+        return downloadId + "," + fileName;
     }
 
     /**
@@ -347,37 +390,44 @@ public class DownloadManagerService extends BroadcastReceiver implements
     protected void broadcastDownloadSuccessful(DownloadInfo downloadInfo) {}
 
     /**
-     * Gets download information from SharedPrefs.
+     * Gets download information from SharedPreferences.
+     * @param sharedPrefs The SharedPreferences object to parse.
      * @param type Type of the information to retrieve.
      * @return download information saved to the SharedPrefs for the given type.
      */
     @VisibleForTesting
-    protected Set<String> getStoredDownloadInfo(String type) {
-        return new HashSet<String>(mSharedPrefs.getStringSet(
-                type, new HashSet<String>()));
+    protected static Set<String> getStoredDownloadInfo(SharedPreferences sharedPrefs, String type) {
+        return new HashSet<String>(sharedPrefs.getStringSet(type, new HashSet<String>()));
     }
 
     /**
-     * Removes a donwload Id from SharedPrefs.
+     * Removes a pending donwload from SharedPrefs.
      * @param downloadId ID to be removed.
      */
-    private void removeDownloadIdFromSharedPrefs(int downloadId) {
-        Set<String> downloadIds = getStoredDownloadInfo(DOWNLOAD_NOTIFICATION_IDS);
-        String id = Integer.toString(downloadId);
-        if (downloadIds.contains(id)) {
-            downloadIds.remove(id);
-            storeDownloadInfo(DOWNLOAD_NOTIFICATION_IDS, downloadIds);
+    private void removePendingDownloadFromSharedPrefs(int downloadId) {
+        Set<String> pendingDownloads =
+                getStoredDownloadInfo(mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS);
+        for (String download : pendingDownloads) {
+            Pair<Integer, String> notification = parseNotificationString(download);
+            if (notification.first == downloadId) {
+                pendingDownloads.remove(download);
+                storeDownloadInfo(PENDING_DOWNLOAD_NOTIFICATIONS, pendingDownloads);
+                break;
+            }
         }
     }
 
     /**
-     * Add download ID to SharedPrefs.
+     * Add a pending download to SharedPrefs, the string consists of both the download ID
+     * and file name.
      * @param downloadId ID to be stored.
+     * @param fileName Name of the file, used for notifications.
      */
-    private void addDownloadIdToSharedPrefs(int downloadId) {
-        Set<String> downloadIds = getStoredDownloadInfo(DOWNLOAD_NOTIFICATION_IDS);
-        downloadIds.add(Integer.toString(downloadId));
-        storeDownloadInfo(DOWNLOAD_NOTIFICATION_IDS, downloadIds);
+    private void addPendingDownloadToSharedPrefs(int downloadId, String fileName) {
+        Set<String> pendingDownloads =
+                getStoredDownloadInfo(mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS);
+        pendingDownloads.add(getNotificationString(downloadId, fileName));
+        storeDownloadInfo(PENDING_DOWNLOAD_NOTIFICATIONS, pendingDownloads);
     }
 
     /**
@@ -386,7 +436,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      */
     @VisibleForTesting
     protected void addOMADownloadToSharedPrefs(String omaInfo) {
-        Set<String> omaDownloads = getStoredDownloadInfo(PENDING_OMA_DOWNLOADS);
+        Set<String> omaDownloads = getStoredDownloadInfo(mSharedPrefs, PENDING_OMA_DOWNLOADS);
         omaDownloads.add(omaInfo);
         storeDownloadInfo(PENDING_OMA_DOWNLOADS, omaDownloads);
     }
@@ -396,7 +446,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param downloadId ID to be removed.
      */
     private void removeOMADownloadFromSharedPrefs(long downloadId) {
-        Set<String> omaDownloads = getStoredDownloadInfo(PENDING_OMA_DOWNLOADS);
+        Set<String> omaDownloads = getStoredDownloadInfo(mSharedPrefs, PENDING_OMA_DOWNLOADS);
         for (String omaDownload : omaDownloads) {
             OMAEntry entry = OMAEntry.parseOMAEntry(omaDownload);
             if (entry.mDownloadId == downloadId) {
@@ -413,7 +463,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param true if it is in the SharedPrefs, or false otherwise.
      */
     private boolean isDownloadIdInOMASharedPrefs(long downloadId) {
-        Set<String> omaDownloads = getStoredDownloadInfo(PENDING_OMA_DOWNLOADS);
+        Set<String> omaDownloads = getStoredDownloadInfo(mSharedPrefs, PENDING_OMA_DOWNLOADS);
         for (String omaDownload : omaDownloads) {
             OMAEntry entry = OMAEntry.parseOMAEntry(omaDownload);
             if (entry.mDownloadId == downloadId) {
@@ -590,7 +640,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     void removeProgressNotificationForDownload(int downloadId) {
         mDownloadProgressMap.remove(downloadId);
         mDownloadNotifier.cancelNotification(downloadId);
-        removeDownloadIdFromSharedPrefs(downloadId);
+        removePendingDownloadFromSharedPrefs(downloadId);
     }
 
     /**
@@ -609,7 +659,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             if (status == DownloadStatus.IN_PROGRESS) {
                 // A new in-progress download, add an entry to shared prefs to make sure
                 // to clear the notification.
-                addDownloadIdToSharedPrefs(downloadId);
+                addPendingDownloadToSharedPrefs(downloadId, downloadInfo.getFileName());
             }
             mDownloadProgressMap.putIfAbsent(downloadId, progress);
         } else {
