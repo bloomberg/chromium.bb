@@ -40,6 +40,8 @@ config("dl_config") {
 # GYP: third_party/openmax_dl/dl/dl.gyp:openmax_dl
 source_set("dl") {
   public_configs = [ ":dl_config" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
   sources = [
     "api/omxtypes.h",
     "sp/api/omxSP.h",
