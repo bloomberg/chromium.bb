@@ -1418,3 +1418,6 @@ crbug.com/569514 inspector/sources/debugger-step/debugger-step-over-inlined-scri
 crbug.com/569514 inspector/sources/debugger/debugger-scripts.html [ NeedsManualRebaseline ]
 
 crbug.com/569811 inspector-protocol/debugger/updateCallFrameScopes.html [ Pass Failure ]
+
+crbug.com/570221 virtual/threaded/animations/svg-attribute-composition/svg-markerWidth-composition.html [ Pass Failure ]
+crbug.com/570221 virtual/threaded/animations/svg-attribute-composition/svg-markerHeight-composition.html [ Pass Failure ]
