@@ -716,6 +716,11 @@ def _RunInstrumentationTests(args, devices):
   repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
                  else itertools.count())
 
+  code_counts = {constants.INFRA_EXIT_CODE: 0,
+                 constants.ERROR_EXIT_CODE: 0,
+                 constants.WARNING_EXIT_CODE: 0,
+                 0: 0}
+
   def _escalate_code(old, new):
     for x in (constants.INFRA_EXIT_CODE,
               constants.ERROR_EXIT_CODE,
@@ -732,6 +737,7 @@ def _RunInstrumentationTests(args, devices):
           test_timeout=None, num_retries=args.num_retries)
       iteration_results.AddTestRunResults(test_results)
 
+      code_counts[test_exit_code] += 1
       exit_code = _escalate_code(exit_code, test_exit_code)
 
     if py_tests:
@@ -740,6 +746,7 @@ def _RunInstrumentationTests(args, devices):
           num_retries=args.num_retries)
       iteration_results.AddTestRunResults(test_results)
 
+      code_counts[test_exit_code] += 1
       exit_code = _escalate_code(exit_code, test_exit_code)
 
     results.append(iteration_results)
@@ -750,9 +757,16 @@ def _RunInstrumentationTests(args, devices):
         annotation=args.annotations,
         flakiness_server=args.flakiness_dashboard_server)
 
+
     if args.break_on_failure and exit_code in (constants.ERROR_EXIT_CODE,
                                                constants.INFRA_EXIT_CODE):
       break
+
+  logging.critical('Instr tests: %s success, %s infra, %s errors, %s warnings',
+                   str(code_counts[0]),
+                   str(code_counts[constants.INFRA_EXIT_CODE]),
+                   str(code_counts[constants.ERROR_EXIT_CODE]),
+                   str(code_counts[constants.WARNING_EXIT_CODE]))
 
   if args.json_results_file:
     json_results.GenerateJsonResultsFile(results, args.json_results_file)
@@ -959,11 +973,16 @@ def RunTestsInPlatformMode(args, parser):
         results = []
         repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
                        else itertools.count())
+        result_counts = collections.defaultdict(
+            lambda: collections.defaultdict(int))
+        iteration_count = 0
         for _ in repetitions:
           iteration_results = test_run.RunTests()
-
           if iteration_results is not None:
+            iteration_count += 1
             results.append(iteration_results)
+            for r in iteration_results.GetAll():
+              result_counts[r.GetName()][r.GetType()] += 1
             report_results.LogFull(
                 results=iteration_results,
                 test_type=test.TestType(),
@@ -973,6 +992,31 @@ def RunTestsInPlatformMode(args, parser):
                                          None))
             if args.break_on_failure and not iteration_results.DidRunPass():
               break
+
+        if iteration_count > 1:
+          # display summary results
+          # only display results for a test if at least one test did not pass
+          all_pass = 0
+          tot_tests = 0
+          for test_name in result_counts:
+            tot_tests += 1
+            if any(result_counts[test_name][x] for x in (
+                base_test_result.ResultType.FAIL,
+                base_test_result.ResultType.CRASH,
+                base_test_result.ResultType.TIMEOUT,
+                base_test_result.ResultType.UNKNOWN)):
+              logging.critical(
+                  '%s: %s',
+                  test_name,
+                  ', '.join('%s %s' % (str(result_counts[test_name][i]), i)
+                            for i in base_test_result.ResultType.GetTypes()))
+            else:
+              all_pass += 1
+
+          logging.critical('%s of %s tests passed in all %s runs',
+                           str(all_pass),
+                           str(tot_tests),
+                           str(iteration_count))
 
         if args.json_results_file:
           json_results.GenerateJsonResultsFile(
