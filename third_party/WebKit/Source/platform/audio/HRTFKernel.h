@@ -62,7 +62,7 @@ public:
 
     static PassOwnPtr<HRTFKernel> create(PassOwnPtr<FFTFrame> fftFrame, float frameDelay, float sampleRate)
     {
-        return adoptPtr(new HRTFKernel(fftFrame, frameDelay, sampleRate));
+        return adoptPtr(new HRTFKernel(std::move(fftFrame), frameDelay, sampleRate));
     }
 
     // Given two HRTFKernels, and an interpolation factor x: 0 -> 1, returns an interpolated HRTFKernel.
@@ -84,7 +84,7 @@ private:
     HRTFKernel(AudioChannel*, size_t fftSize, float sampleRate);
 
     HRTFKernel(PassOwnPtr<FFTFrame> fftFrame, float frameDelay, float sampleRate)
-        : m_fftFrame(fftFrame)
+        : m_fftFrame(std::move(fftFrame))
         , m_frameDelay(frameDelay)
         , m_sampleRate(sampleRate)
     {

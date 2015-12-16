@@ -31,7 +31,7 @@ namespace blink {
 
 WebTransformKeyframe::WebTransformKeyframe(double time, PassOwnPtr<WebTransformOperations> value)
     : m_time(time)
-    , m_value(value)
+    , m_value(std::move(value))
 {
 }
 

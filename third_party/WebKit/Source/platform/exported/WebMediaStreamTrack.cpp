@@ -39,7 +39,7 @@ namespace {
 
 class ExtraDataContainer : public MediaStreamComponent::ExtraData {
 public:
-    explicit ExtraDataContainer(PassOwnPtr<WebMediaStreamTrack::ExtraData> extraData) : m_extraData(extraData) { }
+    explicit ExtraDataContainer(PassOwnPtr<WebMediaStreamTrack::ExtraData> extraData) : m_extraData(std::move(extraData)) { }
 
     WebMediaStreamTrack::ExtraData* extraData() { return m_extraData.get(); }
 

@@ -210,7 +210,7 @@ public:
     // For initial creation.
     static PassRefPtr<BlobDataHandle> create(PassOwnPtr<BlobData> data, long long size)
     {
-        return adoptRef(new BlobDataHandle(data, size));
+        return adoptRef(new BlobDataHandle(std::move(data), size));
     }
 
     // For deserialization of script values and ipc messages.

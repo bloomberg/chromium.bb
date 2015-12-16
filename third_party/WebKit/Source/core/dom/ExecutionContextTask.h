@@ -54,7 +54,7 @@ template<typename T>
 class CallClosureTaskBase : public ExecutionContextTask {
 protected:
     CallClosureTaskBase(PassOwnPtr<Function<T>> closure, bool isSameThread)
-        : m_closure(closure)
+        : m_closure(std::move(closure))
 #if ENABLE(ASSERT)
         , m_isSameThread(isSameThread)
         , m_createdThread(currentThread())
@@ -87,7 +87,7 @@ public:
     // See http://crbug.com/390851
     static PassOwnPtr<CallClosureTask> create(PassOwnPtr<Closure> closure, bool isSameThread = false)
     {
-        return adoptPtr(new CallClosureTask(closure, isSameThread));
+        return adoptPtr(new CallClosureTask(std::move(closure), isSameThread));
     }
 
     void performTask(ExecutionContext*) override
@@ -98,7 +98,7 @@ public:
 
 private:
     CallClosureTask(PassOwnPtr<Closure> closure, bool isSameThread)
-        : CallClosureTaskBase<void()>(closure, isSameThread)
+        : CallClosureTaskBase<void()>(std::move(closure), isSameThread)
     {
     }
 };

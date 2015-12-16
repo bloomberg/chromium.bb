@@ -92,7 +92,7 @@ static void removeFromOriginMap(const KURL& url)
 
 void BlobRegistry::registerBlobData(const String& uuid, PassOwnPtr<BlobData> data)
 {
-    blobRegistry()->registerBlobData(uuid, WebBlobData(data));
+    blobRegistry()->registerBlobData(uuid, WebBlobData(std::move(data)));
 }
 
 void BlobRegistry::addBlobDataRef(const String& uuid)

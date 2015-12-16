@@ -45,7 +45,7 @@ class Task : public WebTaskRunner::Task {
     WTF_MAKE_NONCOPYABLE(Task);
 public:
     explicit Task(PassOwnPtr<Closure> closure)
-        : m_closure(closure)
+        : m_closure(std::move(closure))
     {
     }
 
