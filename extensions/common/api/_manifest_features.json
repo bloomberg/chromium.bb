@@ -101,6 +101,22 @@
       "C8B53B3C2CC39CB504B19D990165684FF0CE880C"   // http://crbug.com/521615
     ]
   }, {
+    "channel": "beta",
+    "extension_types": ["extension"],
+    "whitelist": [
+      "4895B1DBB92D52488F8D9FFDF9CC7B95C7258C9A",  // https://crbug.com/570337
+      "A3880AA78DB0004DE841CC980959D8443F3A8E40",  // https://crbug.com/570337
+      "C8B53B3C2CC39CB504B19D990165684FF0CE880C"   // https://crbug.com/570337
+    ]
+  }, {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "whitelist": [
+      "4895B1DBB92D52488F8D9FFDF9CC7B95C7258C9A",  // https://crbug.com/570337
+      "A3880AA78DB0004DE841CC980959D8443F3A8E40",  // https://crbug.com/570337
+      "C8B53B3C2CC39CB504B19D990165684FF0CE880C"   // https://crbug.com/570337
+    ]
+  }, {
     "channel": "canary",
     "extension_types": ["extension"]
   }],
