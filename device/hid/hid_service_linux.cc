@@ -23,7 +23,6 @@
 #include "device/hid/hid_connection_linux.h"
 #include "device/hid/hid_device_info_linux.h"
 #include "device/udev_linux/scoped_udev.h"
-#include "net/base/net_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
@@ -318,8 +317,7 @@ void HidServiceLinux::FinishOpen(scoped_ptr<ConnectParams> params) {
   base::ThreadRestrictions::AssertIOAllowed();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner = params->task_runner;
 
-  int result = net::SetNonBlocking(params->device_file.GetPlatformFile());
-  if (result == -1) {
+  if (!base::SetNonBlocking(params->device_file.GetPlatformFile())) {
     HID_PLOG(ERROR) << "Failed to set the non-blocking flag on the device fd";
     task_runner->PostTask(FROM_HERE, base::Bind(params->callback, nullptr));
     return;

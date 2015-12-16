@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <errno.h>
-#include <fcntl.h>
 #include <linux/input.h>
 #include <unistd.h>
 
@@ -11,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
@@ -30,13 +30,6 @@
 namespace ui {
 
 namespace {
-
-static int SetNonBlocking(int fd) {
-  int flags = fcntl(fd, F_GETFL, 0);
-  if (flags == -1)
-    flags = 0;
-  return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-}
 
 const char kTestDevicePath[] = "/dev/input/test-device";
 
@@ -135,7 +128,7 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(
   if (pipe(fds))
     PLOG(FATAL) << "failed pipe";
 
-  EXPECT_FALSE(SetNonBlocking(fds[0]) || SetNonBlocking(fds[1]))
+  EXPECT_TRUE(base::SetNonBlocking(fds[0]) || base::SetNonBlocking(fds[1]))
     << "failed to set non-blocking: " << strerror(errno);
 
   read_pipe_ = fds[0];

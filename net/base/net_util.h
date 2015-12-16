@@ -161,9 +161,6 @@ NET_EXPORT std::string GetDirectoryListingEntry(const base::string16& name,
                                                 int64_t size,
                                                 base::Time modified);
 
-// Set socket to non-blocking mode
-NET_EXPORT int SetNonBlocking(int fd);
-
 // Strip the portions of |url| that aren't core to the network request.
 //   - user name / password
 //   - reference section

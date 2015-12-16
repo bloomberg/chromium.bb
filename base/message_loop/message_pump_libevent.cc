@@ -5,11 +5,11 @@
 #include "base/message_loop/message_pump_libevent.h"
 
 #include <errno.h>
-#include <fcntl.h>
 #include <unistd.h>
 
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -41,15 +41,6 @@
 // but if it does, we need to fix it.
 
 namespace base {
-
-// Return 0 on success
-// Too small a function to bother putting in a library?
-static int SetNonBlocking(int fd) {
-  int flags = fcntl(fd, F_GETFL, 0);
-  if (flags == -1)
-    flags = 0;
-  return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-}
 
 MessagePumpLibevent::FileDescriptorWatcher::FileDescriptorWatcher()
     : event_(NULL),
@@ -322,11 +313,11 @@ bool MessagePumpLibevent::Init() {
     DLOG(ERROR) << "pipe() failed, errno: " << errno;
     return false;
   }
-  if (SetNonBlocking(fds[0])) {
+  if (!SetNonBlocking(fds[0])) {
     DLOG(ERROR) << "SetNonBlocking for pipe fd[0] failed, errno: " << errno;
     return false;
   }
-  if (SetNonBlocking(fds[1])) {
+  if (!SetNonBlocking(fds[1])) {
     DLOG(ERROR) << "SetNonBlocking for pipe fd[1] failed, errno: " << errno;
     return false;
   }

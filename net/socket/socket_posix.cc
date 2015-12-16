@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 
 #include "base/callback_helpers.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "net/base/io_buffer.h"
@@ -79,7 +80,7 @@ int SocketPosix::Open(int address_family) {
     return MapSystemError(errno);
   }
 
-  if (SetNonBlocking(socket_fd_)) {
+  if (!base::SetNonBlocking(socket_fd_)) {
     int rv = MapSystemError(errno);
     Close();
     return rv;
@@ -95,7 +96,7 @@ int SocketPosix::AdoptConnectedSocket(SocketDescriptor socket,
 
   socket_fd_ = socket;
 
-  if (SetNonBlocking(socket_fd_)) {
+  if (!base::SetNonBlocking(socket_fd_)) {
     int rv = MapSystemError(errno);
     Close();
     return rv;

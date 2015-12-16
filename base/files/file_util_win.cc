@@ -11,6 +11,7 @@
 #include <shlobj.h>
 #include <stdint.h>
 #include <time.h>
+#include <winsock2.h>
 
 #include <algorithm>
 #include <limits>
@@ -763,6 +764,13 @@ bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
     SetFileAttributes(dest, attrs & ~FILE_ATTRIBUTE_READONLY);
   }
   return true;
+}
+
+bool SetNonBlocking(int fd) {
+  unsigned long nonblocking = 1;
+  if (ioctlsocket(fd, FIONBIO, &nonblocking) == 0)
+    return true;
+  return false;
 }
 
 // -----------------------------------------------------------------------------

@@ -160,18 +160,6 @@ bool IsCanonicalizedHostCompliant(const std::string& host) {
   return most_recent_component_started_alphanumeric;
 }
 
-int SetNonBlocking(int fd) {
-#if defined(OS_WIN)
-  unsigned long no_block = 1;
-  return ioctlsocket(fd, FIONBIO, &no_block);
-#elif defined(OS_POSIX)
-  int flags = fcntl(fd, F_GETFL, 0);
-  if (-1 == flags)
-    return flags;
-  return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-#endif
-}
-
 bool ParseHostAndPort(std::string::const_iterator host_and_port_begin,
                       std::string::const_iterator host_and_port_end,
                       std::string* host,

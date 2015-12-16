@@ -9,6 +9,7 @@
 #include <mstcpip.h>
 
 #include "base/callback_helpers.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/win/windows_version.h"
@@ -302,7 +303,7 @@ int TCPSocketWin::Open(AddressFamily family) {
     return MapSystemError(WSAGetLastError());
   }
 
-  if (SetNonBlocking(socket_)) {
+  if (!base::SetNonBlocking(socket_)) {
     int result = MapSystemError(WSAGetLastError());
     Close();
     return result;
@@ -319,7 +320,7 @@ int TCPSocketWin::AdoptConnectedSocket(SOCKET socket,
 
   socket_ = socket;
 
-  if (SetNonBlocking(socket_)) {
+  if (!base::SetNonBlocking(socket_)) {
     int result = MapSystemError(WSAGetLastError());
     Close();
     return result;
@@ -337,7 +338,7 @@ int TCPSocketWin::AdoptListenSocket(SOCKET socket) {
 
   socket_ = socket;
 
-  if (SetNonBlocking(socket_)) {
+  if (!base::SetNonBlocking(socket_)) {
     int result = MapSystemError(WSAGetLastError());
     Close();
     return result;

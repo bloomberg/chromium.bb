@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/debug/alias.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/sparse_histogram.h"
@@ -102,7 +103,7 @@ int UDPSocketPosix::Open(AddressFamily address_family) {
   socket_ = CreatePlatformSocket(addr_family_, SOCK_DGRAM, 0);
   if (socket_ == kInvalidSocket)
     return MapSystemError(errno);
-  if (SetNonBlocking(socket_)) {
+  if (!base::SetNonBlocking(socket_)) {
     const int err = MapSystemError(errno);
     Close();
     return err;

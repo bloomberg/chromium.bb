@@ -221,9 +221,8 @@ int SetupSocketOnly() {
   int sock = socket(PF_UNIX, SOCK_STREAM, 0);
   PCHECK(sock >= 0) << "socket() failed";
 
-  int rv = net::SetNonBlocking(sock);
-  DCHECK_EQ(0, rv) << "Failed to make non-blocking socket.";
-  rv = SetCloseOnExec(sock);
+  DCHECK(base::SetNonBlocking(sock)) << "Failed to make non-blocking socket.";
+  int rv = SetCloseOnExec(sock);
   DCHECK_EQ(0, rv) << "Failed to set CLOEXEC on socket.";
 
   return sock;
@@ -590,8 +589,8 @@ void ProcessSingleton::LinuxWatcher::OnFileCanReadWithoutBlocking(int fd) {
     PLOG(ERROR) << "accept() failed";
     return;
   }
-  int rv = net::SetNonBlocking(connection_socket);
-  DCHECK_EQ(0, rv) << "Failed to make non-blocking socket.";
+  DCHECK(base::SetNonBlocking(connection_socket))
+      << "Failed to make non-blocking socket.";
   SocketReader* reader = new SocketReader(this,
                                           ui_message_loop_,
                                           connection_socket);
