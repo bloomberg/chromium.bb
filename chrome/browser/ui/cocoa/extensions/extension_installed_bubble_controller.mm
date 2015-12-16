@@ -52,6 +52,25 @@ using content::BrowserThread;
 using extensions::BundleInstaller;
 using extensions::Extension;
 
+@interface ExtensionInstalledBubbleController ()
+
+- (const Extension*)extension;
+- (void)windowWillClose:(NSNotification*)notification;
+- (void)windowDidResignKey:(NSNotification*)notification;
+- (void)removePageActionPreviewIfNecessary;
+- (NSPoint)calculateArrowPoint;
+- (NSWindow*)initializeWindow;
+- (int)calculateWindowHeight;
+- (NSInteger)addExtensionList:(NSTextField*)headingMsg
+                    itemsView:(NSView*)itemsView
+                        state:(BundleInstaller::Item::State)state;
+- (void)setMessageFrames:(int)newWindowHeight;
+- (void)updateAnchorPosition;
+
+@end  // ExtensionInstalledBubbleController ()
+
+namespace {
+
 class ExtensionInstalledBubbleBridge : public BubbleUi {
  public:
   explicit ExtensionInstalledBubbleBridge(
@@ -78,6 +97,21 @@ ExtensionInstalledBubbleBridge::ExtensionInstalledBubbleBridge(
 ExtensionInstalledBubbleBridge::~ExtensionInstalledBubbleBridge() {
 }
 
+void ExtensionInstalledBubbleBridge::Show(BubbleReference bubble_reference) {
+  [controller_ setBubbleReference:bubble_reference];
+  [controller_ showWindow:controller_];
+}
+
+void ExtensionInstalledBubbleBridge::Close() {
+  [controller_ doClose];
+}
+
+void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
+  [controller_ updateAnchorPosition];
+}
+
+}  // namespace
+
 // Cocoa specific implementation.
 bool ExtensionInstalledBubble::ShouldShow() {
   return true;
@@ -94,19 +128,6 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
   // The bridge to the C++ object that performs shared logic across platforms.
   // This tells the controller when to show the bubble.
   return make_scoped_ptr(new ExtensionInstalledBubbleBridge(controller));
-}
-
-void ExtensionInstalledBubbleBridge::Show(BubbleReference bubble_reference) {
-  [controller_ setBubbleReference:bubble_reference];
-  [controller_ showWindow:controller_];
-}
-
-void ExtensionInstalledBubbleBridge::Close() {
-  [controller_ doClose];
-}
-
-void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
-  [controller_ updateAnchorPosition];
 }
 
 @implementation ExtensionInstalledBubbleController

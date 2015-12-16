@@ -126,15 +126,4 @@ enum ExtensionType {
 
 @end
 
-@interface ExtensionInstalledBubbleController (ExposedForTesting)
-
-- (void)removePageActionPreviewIfNecessary;
-- (NSWindow*)initializeWindow;
-- (int)calculateWindowHeight;
-- (void)setMessageFrames:(int)newWindowHeight;
-- (NSButton*)appInstalledShortcutLink;
-- (void)updateAnchorPosition;
-
-@end  // ExtensionInstalledBubbleController(ExposedForTesting)
-
 #endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_CONTROLLER_H_

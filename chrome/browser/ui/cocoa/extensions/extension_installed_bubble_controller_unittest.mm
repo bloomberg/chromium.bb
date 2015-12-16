@@ -333,7 +333,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest, AppTest) {
   ExtensionInstalledBubbleController* controller = CreateController();
   EXPECT_TRUE(controller);
 
-  int height = [controller calculateWindowHeight];
+  int height = NSHeight([[controller window] frame]);
 
   // Make sure there is always enough room for the icon and margin.
   int minHeight = extension_installed_bubble::kIconSize +
