@@ -5,11 +5,16 @@
 #ifndef TOOLS_BATTOR_AGENT_BATTOR_AGENT_H_
 #define TOOLS_BATTOR_AGENT_BATTOR_AGENT_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "tools/battor_agent/battor_connection.h"
 #include "tools/battor_agent/battor_error.h"
+
+namespace device {
+class SerialIoHandler;
+}
 
 namespace battor {
 
@@ -27,7 +32,7 @@ namespace battor {
 //
 // This class is NOT thread safe, and must be interacted with only from the IO
 // thread. The IO thread must also have a running MessageLoop.
-class BattOrAgent : public BattOrConnection::Listener {
+class BattOrAgent : public base::SupportsWeakPtr<BattOrAgent> {
  public:
   // The listener interface that must be implemented in order to interact with
   // the BattOrAgent.
@@ -38,7 +43,7 @@ class BattOrAgent : public BattOrConnection::Listener {
 
   BattOrAgent(
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_rnuner,
       const std::string& path,
       Listener* listener);
   virtual ~BattOrAgent();
@@ -50,26 +55,34 @@ class BattOrAgent : public BattOrConnection::Listener {
   // trace log.
   static bool SupportsExplicitClockSync() { return true; }
 
-  // BattOrConnection::Listener implementation.
-  void OnConnectionOpened(bool success) override;
-  void OnBytesSent(bool success) override;
-  void OnBytesRead(bool success,
-                   BattOrMessageType type,
-                   scoped_ptr<std::vector<char>> bytes) override;
-
  private:
-  // Initializes the serial connection (if not done already).
-  // OnConnectionOpened() will be called once the connection is made.
-  void ConnectIfNeeded();
+  // Initializes the serial connection (if not done already) and calls one of
+  // the two callbacks depending its success. The callback will be invoked on
+  // the same thread that this method is called on.
+  void ConnectIfNeeded(const base::Closure& success_callback,
+                       const base::Closure& failure_callback);
+  void OnConnectComplete(const base::Closure& success_callback,
+                         const base::Closure& failure_callback,
+                         bool success);
 
   // StartTracing continuation called once the connection is initialized.
   void DoStartTracing();
 
+  // Resets the connection to its unopened state.
+  void ResetConnection();
+
+  // Threads needed for serial communication.
+  scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
+
+  // The path of the BattOr (e.g. "/dev/tty.battor_serial").
+  std::string path_;
+
   // The listener that handles the commands' results. It must outlive the agent.
   Listener* listener_;
 
-  // The serial connection to the BattOr.
-  scoped_ptr<BattOrConnection> connection_;
+  // IO handler capable of reading and writing from the serial connection.
+  scoped_refptr<device::SerialIoHandler> io_handler_;
 
   // Checker to make sure that this is only ever called on the IO thread.
   base::ThreadChecker thread_checker_;
