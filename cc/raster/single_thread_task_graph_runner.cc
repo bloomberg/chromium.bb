@@ -112,7 +112,7 @@ void SingleThreadTaskGraphRunner::Run() {
   base::AutoLock lock(lock_);
 
   while (true) {
-    if (!work_queue_.HasReadyToRunTasks()) {
+    if (!RunTaskWithLockAcquired()) {
       // Exit when shutdown is set and no more tasks are pending.
       if (shutdown_)
         break;
@@ -121,18 +121,29 @@ void SingleThreadTaskGraphRunner::Run() {
       has_ready_to_run_tasks_cv_.Wait();
       continue;
     }
-
-    RunTaskWithLockAcquired();
   }
 }
 
-void SingleThreadTaskGraphRunner::RunTaskWithLockAcquired() {
+bool SingleThreadTaskGraphRunner::RunTaskWithLockAcquired() {
   TRACE_EVENT0("toplevel",
                "SingleThreadTaskGraphRunner::RunTaskWithLockAcquired");
 
   lock_.AssertAcquired();
 
-  auto prioritized_task = work_queue_.GetNextTaskToRun();
+  // Find the first category with any tasks to run. This task graph runner
+  // treats categories as an additional priority.
+  const auto& ready_to_run_namespaces = work_queue_.ready_to_run_namespaces();
+  auto found = std::find_if(
+      ready_to_run_namespaces.cbegin(), ready_to_run_namespaces.cend(),
+      [](const std::pair<uint16_t, TaskGraphWorkQueue::TaskNamespace::Vector>&
+             pair) { return !pair.second.empty(); });
+
+  if (found == ready_to_run_namespaces.cend()) {
+    return false;
+  }
+
+  const uint16_t category = found->first;
+  auto prioritized_task = work_queue_.GetNextTaskToRun(category);
   Task* task = prioritized_task.task;
 
   // Call WillRun() before releasing |lock_| and running task.
@@ -152,6 +163,8 @@ void SingleThreadTaskGraphRunner::RunTaskWithLockAcquired() {
   if (work_queue_.HasFinishedRunningTasksInNamespace(
           prioritized_task.task_namespace))
     has_namespaces_with_finished_running_tasks_cv_.Signal();
+
+  return true;
 }
 
 }  // namespace cc

@@ -28,7 +28,8 @@ class CC_EXPORT SynchronousTaskGraphRunner : public TaskGraphRunner {
   void RunUntilIdle();
 
  private:
-  void RunTask();
+  // Returns true if there was a task to run.
+  bool RunTask();
 
   // Stores the actual tasks to be run, sorted by priority.
   TaskGraphWorkQueue work_queue_;

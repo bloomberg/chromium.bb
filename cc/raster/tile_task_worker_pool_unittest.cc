@@ -195,7 +195,8 @@ class TileTaskWorkerPoolTest
 
     for (RasterTaskVector::const_iterator it = tasks_.begin();
          it != tasks_.end(); ++it) {
-      graph_.nodes.emplace_back(it->get(), priority++, 0 /* dependencies */);
+      graph_.nodes.emplace_back(it->get(), 0 /* group */, priority++,
+                                0 /* dependencies */);
     }
 
     tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&graph_);
