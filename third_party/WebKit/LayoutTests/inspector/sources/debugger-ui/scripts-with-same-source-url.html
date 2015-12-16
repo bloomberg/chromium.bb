@@ -20,9 +20,9 @@ function test()
 
     function reportAdded(event)
     {
-        if (event.data.originURL() !== "MyScript.js")
+        if (event.data.originURL().indexOf("MyScript.js") === -1)
             return;
-        InspectorTest.addResult("Added: " + event.data.originURL() + " to " + event.data.project().type());
+        InspectorTest.addResult("Added: " + event.data.originURL().replace(/VM[\d]+/, "VMXX") + " to " + event.data.project().type());
         if (event.data.project().type() !== "network")
             return;
         event.data.requestContent(function(it, content) {

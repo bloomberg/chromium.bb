@@ -15,13 +15,11 @@ function test()
         if (!projects[projectId]) {
             if (projectId.startsWith("1:"))
                 projectId = projectId.substring(2);
-            project = new WebInspector.ProjectStore(workspace, projectId, WebInspector.projectTypes.Network, projectId, "");
+            project = new WebInspector.ProjectStore(workspace, projectId, WebInspector.projectTypes.Network, "");
             workspace.addProject(project);
             projects[projectId] = project;
         }
-        var parentPath = path.substring(0, path.lastIndexOf("/"));
-        var name = path.substring(path.lastIndexOf("/") + 1);
-        var uiSourceCode = project.createUISourceCode(parentPath, name, path, WebInspector.resourceTypes.Script);
+        var uiSourceCode = project.createUISourceCode(path, WebInspector.resourceTypes.Script);
         project.addUISourceCode(uiSourceCode);
     }
 
@@ -50,11 +48,11 @@ function test()
 
     function dumpURLForPath(fileSystemPath, filePath)
     {
-        var url = networkMapping.urlForPath(fileSystemPath, filePath)
+        var url = networkMapping._urlForPath(fileSystemPath, "file://" + fileSystemPath + "/" + filePath)
         InspectorTest.addResult("    path " + fileSystemPath + " / " + filePath + " is mapped to " + (url ? url : null));
     }
     
-    createUISourceCode(projectId, "localhost/index.html");
+    createUISourceCode(projectId, "file:///var/www/localhost/index.html");
 
     createUISourceCode("1:http://www.example.com", "index.html");
     createUISourceCode("1:http://localhost", "index.html");

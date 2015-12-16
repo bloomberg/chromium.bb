@@ -61,28 +61,28 @@ Testing file system mapping.
 
 Testing mappings for url:
     Has mapping for 'http://www.bar.com/foo/folder/42.js': true
-    File for 'http://www.bar.com/foo/folder/42.js': /home/username/projects/foo / baz/folder/42.js
+    File for 'http://www.bar.com/foo/folder/42.js': file:///home/username/projects/foo/baz/folder/42.js
     Has mapping for 'http://www.foo.com/bar/folder/42.js': true
-    File for 'http://www.foo.com/bar/folder/42.js': /www/site1 / foo/bar/folder/42.js
+    File for 'http://www.foo.com/bar/folder/42.js': file:///www/site1/foo/bar/folder/42.js
     Has mapping for 'http://localhost/index.html': true
-    File for 'http://localhost/index.html': /www/site1 / index.html
+    File for 'http://localhost/index.html': file:///www/site1/index.html
     Has mapping for 'https://localhost/index.html': false
     File for 'https://localhost/index.html': null
     Has mapping for 'http://localhost:8080/index.html': false
     File for 'http://localhost:8080/index.html': null
     Has mapping for 'http://localhost/': true
-    File for 'http://localhost/': /www/site1 / 
+    File for 'http://localhost/': file:///www/site1/
 
 Testing mappings for path:
-    URL for path '/home/username/projects/foo / baz/folder/42.js': http://www.bar.com/foo/folder/42.js
-    URL for path '/home/username/projects/foo / baz/folder/43.js': http://www.bar.com/foo/folder/43.js
-    URL for path '/home/username/projects/foo / bar/folder/42.js': 
-    URL for path '/home/username/projects/foo / foo/folder/42.js': http://www.example.com/bar/folder/42.js
-    URL for path '/home/username/projects/foo / foo2/folder/42.js': 
-    URL for path '/www/site1 / foo/index.html': http://www.foo.com/index.html
-    URL for path '/www/site1 / index.html': http://localhost/index.html
-    URL for path '/www/site1 / foo': http://localhost/foo
-    URL for path '/www/site1 / foo/': http://www.foo.com/
+    URL for path 'file:///home/username/projects/foo/baz/folder/42.js': http://www.bar.com/foo/folder/42.js
+    URL for path 'file:///home/username/projects/foo/baz/folder/43.js': http://www.bar.com/foo/folder/43.js
+    URL for path 'file:///home/username/projects/foo/bar/folder/42.js': 
+    URL for path 'file:///home/username/projects/foo/foo/folder/42.js': http://www.example.com/bar/folder/42.js
+    URL for path 'file:///home/username/projects/foo/foo2/folder/42.js': 
+    URL for path 'file:///www/site1/foo/index.html': http://www.foo.com/index.html
+    URL for path 'file:///www/site1/index.html': http://localhost/index.html
+    URL for path 'file:///www/site1/foo': http://localhost/foo
+    URL for path 'file:///www/site1/foo/': http://www.foo.com/
 
 Creating another file system mapping.
 Testing file system mapping.

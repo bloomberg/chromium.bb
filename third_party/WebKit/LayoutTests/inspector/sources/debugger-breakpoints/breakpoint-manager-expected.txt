@@ -309,11 +309,11 @@ Running: testNavigation
     Location disposed: b.js:3
   Resolving provisional breakpoint.
   Adding script: a.js
-    breakpointAdded(a.js, 10, 0, foo == bar, true)
+    breakpointAdded(debugger:///VMa.js a.js, 10, 0, foo == bar, true)
     Location created: a.js:10
   Adding UISourceCode: a.js
     breakpointAdded(a.js, 20, 0, , false)
-    breakpointRemoved(a.js, 10, 0)
+    breakpointRemoved(debugger:///VMa.js a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, foo == bar, true)
   Dumping Breakpoint Locations
     UISourceCode (url='a.js', uri='a.js')
@@ -404,15 +404,15 @@ Running: testProvisionalBreakpointsResolve
     Location disposed: a.js:10
   Resolving provisional breakpoint.
   Adding script: a.js
-    breakpointAdded(a.js, 11, 0, foo == bar, true)
+    breakpointAdded(debugger:///VMa.js a.js, 11, 0, foo == bar, true)
     Location created: a.js:11
   Dumping Breakpoint Locations
-    UISourceCode (url='a.js', uri='debugger:/VMa.js a.js')
+    UISourceCode (url='debugger:///VMa.js a.js', uri='debugger:///VMa.js a.js')
       Location: (11, 0)
   Dumping Storage
     a.js:10 enabled:true condition:foo == bar
   Resetting breakpoint manager
-    breakpointRemoved(a.js, 11, 0)
+    breakpointRemoved(debugger:///VMa.js a.js, 11, 0)
     Location disposed: a.js:11
     debuggerModel.removeBreakpoint(a.js:10)
   Dumping Breakpoint Locations
@@ -447,10 +447,10 @@ Running: testSourceMappingReload
 
   Adding files:
   Adding script: a.js
-    breakpointAdded(a.js, 10, 0, foo == bar, true)
+    breakpointAdded(debugger:///VMa.js a.js, 10, 0, foo == bar, true)
     Location created: a.js:10
   Adding UISourceCode: a.js
-    breakpointRemoved(a.js, 10, 0)
+    breakpointRemoved(debugger:///VMa.js a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, foo == bar, true)
   Adding UISourceCode: b.js
 

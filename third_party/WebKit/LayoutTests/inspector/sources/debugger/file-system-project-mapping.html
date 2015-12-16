@@ -56,8 +56,8 @@ function test()
                 InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>");
                 dumpFileSystemUISourceCodesMappings();
 
-                var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
-                networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode(WebInspector.NetworkProject.projectId(target, "http://localhost"), "html/foo.js");
+                var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
+                networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode(WebInspector.NetworkProject.projectId(target, false), "http://localhost/html/foo.js");
                 InspectorTest.addResult("Adding mapping between network and file system resources.");
                 InspectorTest.testNetworkMapping.addMapping(networkUISourceCode, uiSourceCode);
                 var setting = JSON.stringify(WebInspector.fileSystemMapping._fileSystemMappingSetting.get());
@@ -77,7 +77,7 @@ function test()
                 dumpFileSystemUISourceCodesMappings();
 
                 InspectorTest.addResult("Removing mapping between network and file system resources.");
-                var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
+                var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
                 InspectorTest.testNetworkMapping.removeMapping(uiSourceCode);
 
                 InspectorTest.addResult("Emulate reloading inspector.");
@@ -139,7 +139,7 @@ function test()
             {
                 loadScript();
 
-                uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
+                uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
                 InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
             }
 

@@ -112,7 +112,7 @@ g#s/../x resolves to http://a/b/c/g#s/../x===http://a/b/c/g#s/../x passes: true
 cat.jpeg resolves to http://a/b/c/cat.jpeg===http://a/b/c/cat.jpeg passes: true
 
 Running: testCompilerScriptMapping
-UISourceCodeAdded: [debugger] compiled.js
+UISourceCodeAdded: [debugger] debugger:///VM1 compiled.js
 UISourceCodeAdded: [network] compiled.js
 UISourceCodeAdded: [service] compiled.js
 UISourceCodeRemoved: [service] compiled.js
@@ -121,7 +121,7 @@ UISourceCodeAdded: [contentscripts] http://localhost:8000/inspector/resources/so
 afterScriptAdded
 
 Running: testCompilerScriptMappingWhenResourceWasLoadedAfterSource
-UISourceCodeAdded: [debugger] compiled.js
+UISourceCodeAdded: [debugger] debugger:///VM2 compiled.js
 UISourceCodeAdded: [service] compiled.js
 UISourceCodeAdded: [network] compiled.js
 UISourceCodeRemoved: [service] compiled.js
@@ -129,14 +129,14 @@ UISourceCodeAdded: [contentscripts] http://localhost:8000/inspector/resources/so
 UISourceCodeAdded: [contentscripts] http://localhost:8000/inspector/resources/source2.js
 
 Running: testInlinedSourceMap
-UISourceCodeAdded: [debugger] http://example.com/compiled.js
+UISourceCodeAdded: [debugger] debugger:///VM3 compiled.js
 UISourceCodeAdded: [service] http://example.com/compiled.js
 UISourceCodeRemoved: [service] http://example.com/compiled.js
 UISourceCodeAdded: [contentscripts] http://example.com/source.js
 <source content> === <source content>
 
 Running: testSourceMapCouldNotBeLoaded
-UISourceCodeAdded: [debugger] compiled.js
+UISourceCodeAdded: [debugger] debugger:///VM4 compiled.js
 UISourceCodeAdded: [service] compiled.js
 compiled.js
 

@@ -47,7 +47,7 @@ function test()
         var outputs = [];
         for (var i = 0; i < delegate.itemCount(); ++i) {
             delegate.renderItem(i, query, titleElement, subtitleElement);
-            if (!subtitleElement.textContent.startsWith("test/"))
+            if (!subtitleElement.textContent.startsWith("test"))
                 continue;
             var text = elementHighlightedText(titleElement);
             text += "\n" + elementHighlightedText(subtitleElement);

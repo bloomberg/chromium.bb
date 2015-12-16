@@ -27,11 +27,11 @@ Dumping uiSourceCode location link texts:
  - bar.js:6
  - baz.js:6
 UISourceCode uri to url mappings:
-    filesystem:/var/www/localhost/foo.js -> http://localhost/foo.js
-    filesystem:/foo/bar/baz.js -> http://www.example.com/baz.js
+    file:///var/www/localhost/foo.js -> http://localhost/foo.js
+    file:///foo/bar/baz.js -> http://www.example.com/baz.js
 UISourceCode url to uri mappings:
-    http://localhost/foo.js -> filesystem:/var/www/localhost/foo.js
-    http://www.example.com/baz.js -> filesystem:/foo/bar/baz.js
+    http://localhost/foo.js -> file:///var/www/localhost/foo.js
+    http://www.example.com/baz.js -> file:///foo/bar/baz.js
 After revision added:
 UISourceCode: file:///var/www/localhost/foo.js
 UISourceCode is content script: false

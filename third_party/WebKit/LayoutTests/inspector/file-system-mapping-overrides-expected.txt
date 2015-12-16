@@ -8,8 +8,8 @@ Running: testFileSystemClashReversedOrder
 http://localhost:1234/right_url/file.txt
 
 Running: testNetworkClashDirectOrder
-right/file.txt
+file:///Source/devtools/right/file.txt
 
 Running: testNetworkClashReversedOrder
-right/file.txt
+file:///Source/devtools/right/file.txt
 

@@ -42,7 +42,7 @@ function test()
             function fileSystemCreated()
             {
                 var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-                uiSourceCode = WebInspector.workspace.uiSourceCode(fileSystemProjectId, "foo.css");
+                uiSourceCode = WebInspector.workspace.uiSourceCode(fileSystemProjectId, "file:///var/www/foo.css");
                 InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
             }
 

@@ -3,7 +3,7 @@ Tests ResourceScriptMapping class.
 
 Running: testScriptWithPendingResource
 Adding script for pending request.
-UISourceCode: foo.js
+UISourceCode: debugger:///VM1 foo.js
 UISourceCode is content script: false
 Highlighter type: text/javascript
 UISourceCode content: <content script source>
@@ -27,12 +27,12 @@ UISourceCode content: <script resource content>
 
 Running: testHTMLWithPendingResource
 Adding first script for pending request.
-UISourceCode: index.html
+UISourceCode: debugger:///VM3 index.html
 UISourceCode is content script: false
 Highlighter type: text/html
 UISourceCode content: <script source 1>
 Adding second script for pending request.
-UISourceCode: index.html
+UISourceCode: debugger:///VM4 index.html
 UISourceCode is content script: false
 Highlighter type: text/html
 UISourceCode content: <script source 2>

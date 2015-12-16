@@ -3,37 +3,37 @@ Tests file system project mappings.
 
 Running: testAutomaticMapping
 Adding file system.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/html/foo.js.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/bar.js.
+Workspace event: UISourceCodeAdded: file:///var/www/html/foo.js.
+Workspace event: UISourceCodeAdded: file:///var/www/bar.js.
 Adding network resource.
 Workspace event: UISourceCodeAdded: http://localhost/html/foo.js.
 Workspace event: UISourceCodeAdded: http://localhost/bar.js.
 UISourceCode uri to url mappings:
-    filesystem:/var/www/html/foo.js -> 
-    filesystem:/var/www/bar.js -> 
+    file:///var/www/html/foo.js -> 
+    file:///var/www/bar.js -> 
 Adding mapping between network and file system resources.
 Emulate reloading inspector.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/html/foo.js.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/bar.js.
+Workspace event: UISourceCodeAdded: file:///var/www/html/foo.js.
+Workspace event: UISourceCodeAdded: file:///var/www/bar.js.
 UISourceCode uri to url mappings:
-    filesystem:/var/www/html/foo.js -> http://localhost/html/foo.js
-    filesystem:/var/www/bar.js -> http://localhost/bar.js
+    file:///var/www/html/foo.js -> 
+    file:///var/www/bar.js -> 
 Removing mapping between network and file system resources.
 Emulate reloading inspector.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/html/foo.js.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/bar.js.
+Workspace event: UISourceCodeAdded: file:///var/www/html/foo.js.
+Workspace event: UISourceCodeAdded: file:///var/www/bar.js.
 Workspace event: UISourceCodeAdded: http://localhost/html/foo.js.
 Workspace event: UISourceCodeAdded: http://localhost/bar.js.
 UISourceCode uri to url mappings:
-    filesystem:/var/www/html/foo.js -> 
-    filesystem:/var/www/bar.js -> 
+    file:///var/www/html/foo.js -> 
+    file:///var/www/bar.js -> 
 
 Running: testScriptFileOnReloadWithDirtyFile
 Adding file system.
 Adding file system mapping.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/html/foo.js.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/bar.js.
-Workspace event: UISourceCodeAdded: debugger:/VM1 foo.js.
+Workspace event: UISourceCodeAdded: file:///var/www/html/foo.js.
+Workspace event: UISourceCodeAdded: file:///var/www/bar.js.
+Workspace event: UISourceCodeAdded: debugger:///VM1 foo.js.
 Dumping uiSourceCode and script content:
     uiSourceCode: <foo content>
     script: <foo content>
@@ -56,7 +56,7 @@ Reloading with saved but diverged uiSourceCode:
 UISourceCode should not have script file after unloading scripts: true
 Saved but diverged source frame should not be muted: true
 Loading script.
-Workspace event: UISourceCodeAdded: debugger:/VM2 foo.js.
+Workspace event: UISourceCodeAdded: debugger:///VM2 foo.js.
 Dumping uiSourceCode and script content:
     uiSourceCode: <foo content edited>
     script: <foo content>
@@ -77,20 +77,20 @@ Reloading page:
 UISourceCode should not have script file after unloading scripts: true
 Saved and merged source frame should not be muted: true
 Loading script.
-Workspace event: UISourceCodeAdded: debugger:/VM3 foo.js.
+Workspace event: UISourceCodeAdded: debugger:///VM3 foo.js.
  - hasDivergedFromVM: false
  - sourceFrame._muted: false
 Editing uiSourceCode again and reloading while it is dirty:
 UISourceCode should not have script file after unloading scripts: true
 Dirty source frame should be muted: true
 Loading script.
-Workspace event: UISourceCodeAdded: debugger:/VM4 foo.js.
+Workspace event: UISourceCodeAdded: debugger:///VM4 foo.js.
  - hasDivergedFromVM: true
  - sourceFrame._muted: true
 
 Running: testRemoveProject
 Adding file system.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/foo.js.
+Workspace event: UISourceCodeAdded: file:///var/www/foo.js.
 Dumping uiSourceCodes origin URLs:
   - file:///var/www/foo.js
 Removing project:
@@ -99,9 +99,9 @@ Received project removed event.
 Running: testURLAfterRenaming
 Adding file system.
 Adding file system mapping.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/html/foo.js.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/bar.js.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/foo/bar/baz.js.
+Workspace event: UISourceCodeAdded: file:///var/www/html/foo.js.
+Workspace event: UISourceCodeAdded: file:///var/www/bar.js.
+Workspace event: UISourceCodeAdded: file:///var/www/foo/bar/baz.js.
 Renaming files:
     uiSourceCode URL change after renaming: http://localhost/html/foo.js -> http://localhost/html/newName.js
     uiSourceCode URL change after renaming: http://localhost/bar.js -> http://localhost/newName.js
@@ -109,13 +109,13 @@ Renaming files:
 
 Running: testProjectBasedMapping
 Adding file system.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/html/foo.js.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/html2/bar.js.
+Workspace event: UISourceCodeAdded: file:///var/www/html/foo.js.
+Workspace event: UISourceCodeAdded: file:///var/www/html2/bar.js.
 (suspend state changed: true)
 (suspend state changed: false)
 UISourceCode uri to url mappings:
-    filesystem:/var/www/html/foo.js -> http://localhost/h1/foo.js
-    filesystem:/var/www/html2/bar.js -> http://localhost/h2/bar.js
+    file:///var/www/html/foo.js -> http://localhost/h1/foo.js
+    file:///var/www/html2/bar.js -> http://localhost/h2/bar.js
 (suspend state changed: true)
 (suspend state changed: false)
 

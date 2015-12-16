@@ -157,7 +157,7 @@ function test()
 
             function dumpExcludes(fs)
             {
-                InspectorTest.fileSystemUISourceCodes()[0].project().excludeFolder("/html2/");
+                InspectorTest.fileSystemUISourceCodes()[0].project().excludeFolder("file:///var/www3/html2/");
                 InspectorTest.addResult("");
                 InspectorTest.addResult("-- Excluded /html2/ --");
                 dumpWorkspaceUISourceCodes();
