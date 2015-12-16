@@ -19,58 +19,114 @@ static const GLenum valid_attachment_table_es3[] = {
     GL_DEPTH_STENCIL_ATTACHMENT, GL_COLOR_EXT, GL_DEPTH_EXT, GL_STENCIL_EXT,
 };
 
-static const GLenum valid_backbuffer_attachment_table[] = {
-    GL_COLOR_EXT, GL_DEPTH_EXT, GL_STENCIL_EXT,
+bool Validators::BackbufferAttachmentValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_COLOR_EXT:
+    case GL_DEPTH_EXT:
+    case GL_STENCIL_EXT:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_blit_filter_table[] = {
-    GL_NEAREST, GL_LINEAR,
+bool Validators::BlitFilterValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_NEAREST:
+    case GL_LINEAR:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_buffer_mode_table[] = {
-    GL_INTERLEAVED_ATTRIBS, GL_SEPARATE_ATTRIBS,
+bool Validators::BufferModeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_INTERLEAVED_ATTRIBS:
+    case GL_SEPARATE_ATTRIBS:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_buffer_parameter_table[] = {
-    GL_BUFFER_SIZE, GL_BUFFER_USAGE,
+Validators::BufferParameterValidator::BufferParameterValidator()
+    : is_es3_(false) {}
+bool Validators::BufferParameterValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_BUFFER_SIZE:
+    case GL_BUFFER_USAGE:
+      return true;
+    case GL_BUFFER_ACCESS_FLAGS:
+    case GL_BUFFER_MAPPED:
+      return is_es3_;
+  }
+  return false;
 };
 
-static const GLenum valid_buffer_parameter_table_es3[] = {
-    GL_BUFFER_ACCESS_FLAGS, GL_BUFFER_MAPPED,
+bool Validators::BufferParameter64Validator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_BUFFER_SIZE:
+    case GL_BUFFER_MAP_LENGTH:
+    case GL_BUFFER_MAP_OFFSET:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_buffer_parameter_64_table[] = {
-    GL_BUFFER_SIZE, GL_BUFFER_MAP_LENGTH, GL_BUFFER_MAP_OFFSET,
+Validators::BufferTargetValidator::BufferTargetValidator() : is_es3_(false) {}
+bool Validators::BufferTargetValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_ARRAY_BUFFER:
+    case GL_ELEMENT_ARRAY_BUFFER:
+      return true;
+    case GL_COPY_READ_BUFFER:
+    case GL_COPY_WRITE_BUFFER:
+    case GL_PIXEL_PACK_BUFFER:
+    case GL_PIXEL_UNPACK_BUFFER:
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+    case GL_UNIFORM_BUFFER:
+      return is_es3_;
+  }
+  return false;
 };
 
-static const GLenum valid_buffer_target_table[] = {
-    GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER,
-};
-
-static const GLenum valid_buffer_target_table_es3[] = {
-    GL_COPY_READ_BUFFER,    GL_COPY_WRITE_BUFFER,         GL_PIXEL_PACK_BUFFER,
-    GL_PIXEL_UNPACK_BUFFER, GL_TRANSFORM_FEEDBACK_BUFFER, GL_UNIFORM_BUFFER,
-};
-
-static const GLenum valid_buffer_usage_table[] = {
-    GL_STREAM_DRAW, GL_STATIC_DRAW, GL_DYNAMIC_DRAW,
-};
-
-static const GLenum valid_buffer_usage_table_es3[] = {
-    GL_STREAM_READ, GL_STREAM_COPY,  GL_STATIC_READ,
-    GL_STATIC_COPY, GL_DYNAMIC_READ, GL_DYNAMIC_COPY,
+Validators::BufferUsageValidator::BufferUsageValidator() : is_es3_(false) {}
+bool Validators::BufferUsageValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_STREAM_DRAW:
+    case GL_STATIC_DRAW:
+    case GL_DYNAMIC_DRAW:
+      return true;
+    case GL_STREAM_READ:
+    case GL_STREAM_COPY:
+    case GL_STATIC_READ:
+    case GL_STATIC_COPY:
+    case GL_DYNAMIC_READ:
+    case GL_DYNAMIC_COPY:
+      return is_es3_;
+  }
+  return false;
 };
 
 static const GLenum valid_bufferfi_table[] = {
     GL_DEPTH_STENCIL,
 };
 
-static const GLenum valid_bufferfv_table[] = {
-    GL_COLOR, GL_DEPTH,
+bool Validators::BufferfvValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_COLOR:
+    case GL_DEPTH:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_bufferiv_table[] = {
-    GL_COLOR, GL_STENCIL,
+bool Validators::BufferivValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_COLOR:
+    case GL_STENCIL:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_bufferuiv_table[] = {
@@ -87,9 +143,19 @@ static const GLenum valid_capability_table_es3[] = {
     GL_RASTERIZER_DISCARD, GL_PRIMITIVE_RESTART_FIXED_INDEX,
 };
 
-static const GLenum valid_cmp_function_table[] = {
-    GL_NEVER,   GL_LESS,     GL_EQUAL,  GL_LEQUAL,
-    GL_GREATER, GL_NOTEQUAL, GL_GEQUAL, GL_ALWAYS,
+bool Validators::CmpFunctionValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_NEVER:
+    case GL_LESS:
+    case GL_EQUAL:
+    case GL_LEQUAL:
+    case GL_GREATER:
+    case GL_NOTEQUAL:
+    case GL_GEQUAL:
+    case GL_ALWAYS:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_compressed_texture_format_table_es3[] = {
@@ -105,9 +171,18 @@ static const GLenum valid_compressed_texture_format_table_es3[] = {
     GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,
 };
 
-static const GLenum valid_draw_mode_table[] = {
-    GL_POINTS,         GL_LINE_STRIP,   GL_LINE_LOOP, GL_LINES,
-    GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_TRIANGLES,
+bool Validators::DrawModeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_POINTS:
+    case GL_LINE_STRIP:
+    case GL_LINE_LOOP:
+    case GL_LINES:
+    case GL_TRIANGLE_STRIP:
+    case GL_TRIANGLE_FAN:
+    case GL_TRIANGLES:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_dst_blend_factor_table[] = {
@@ -128,12 +203,23 @@ static const GLenum valid_equation_table_es3[] = {
     GL_MIN, GL_MAX,
 };
 
-static const GLenum valid_face_mode_table[] = {
-    GL_CW, GL_CCW,
+bool Validators::FaceModeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_CW:
+    case GL_CCW:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_face_type_table[] = {
-    GL_FRONT, GL_BACK, GL_FRONT_AND_BACK,
+bool Validators::FaceTypeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_FRONT:
+    case GL_BACK:
+    case GL_FRONT_AND_BACK:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_frame_buffer_parameter_table[] = {
@@ -338,8 +424,14 @@ static const GLenum valid_g_l_state_table_es3[] = {
     GL_UNPACK_SKIP_ROWS,
 };
 
-static const GLenum valid_get_max_index_type_table[] = {
-    GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT, GL_UNSIGNED_INT,
+bool Validators::GetMaxIndexTypeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_UNSIGNED_BYTE:
+    case GL_UNSIGNED_SHORT:
+    case GL_UNSIGNED_INT:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_get_tex_param_target_table[] = {
@@ -350,8 +442,14 @@ static const GLenum valid_get_tex_param_target_table_es3[] = {
     GL_TEXTURE_2D_ARRAY, GL_TEXTURE_3D,
 };
 
-static const GLenum valid_hint_mode_table[] = {
-    GL_FASTEST, GL_NICEST, GL_DONT_CARE,
+bool Validators::HintModeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_FASTEST:
+    case GL_NICEST:
+    case GL_DONT_CARE:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_hint_target_table[] = {
@@ -382,87 +480,176 @@ static const GLenum valid_index_type_table_es3[] = {
     GL_UNSIGNED_INT,
 };
 
-static const GLenum valid_indexed_buffer_target_table[] = {
-    GL_TRANSFORM_FEEDBACK_BUFFER, GL_UNIFORM_BUFFER,
+bool Validators::IndexedBufferTargetValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+    case GL_UNIFORM_BUFFER:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_indexed_g_l_state_table[] = {
-    GL_TRANSFORM_FEEDBACK_BUFFER_BINDING,
-    GL_TRANSFORM_FEEDBACK_BUFFER_SIZE,
-    GL_TRANSFORM_FEEDBACK_BUFFER_START,
-    GL_UNIFORM_BUFFER_BINDING,
-    GL_UNIFORM_BUFFER_SIZE,
-    GL_UNIFORM_BUFFER_START,
+bool Validators::IndexedGLStateValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
+    case GL_TRANSFORM_FEEDBACK_BUFFER_SIZE:
+    case GL_TRANSFORM_FEEDBACK_BUFFER_START:
+    case GL_UNIFORM_BUFFER_BINDING:
+    case GL_UNIFORM_BUFFER_SIZE:
+    case GL_UNIFORM_BUFFER_START:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_internal_format_parameter_table[] = {
-    GL_NUM_SAMPLE_COUNTS, GL_SAMPLES,
+bool Validators::InternalFormatParameterValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_NUM_SAMPLE_COUNTS:
+    case GL_SAMPLES:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_map_buffer_access_table[] = {
-    GL_MAP_READ_BIT,
-    GL_MAP_WRITE_BIT,
-    GL_MAP_INVALIDATE_RANGE_BIT,
-    GL_MAP_INVALIDATE_BUFFER_BIT,
-    GL_MAP_FLUSH_EXPLICIT_BIT,
-    GL_MAP_UNSYNCHRONIZED_BIT,
+bool Validators::MapBufferAccessValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_MAP_READ_BIT:
+    case GL_MAP_WRITE_BIT:
+    case GL_MAP_INVALIDATE_RANGE_BIT:
+    case GL_MAP_INVALIDATE_BUFFER_BIT:
+    case GL_MAP_FLUSH_EXPLICIT_BIT:
+    case GL_MAP_UNSYNCHRONIZED_BIT:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_matrix_mode_table[] = {
-    GL_PATH_PROJECTION_CHROMIUM, GL_PATH_MODELVIEW_CHROMIUM,
+bool Validators::MatrixModeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_PATH_PROJECTION_CHROMIUM:
+    case GL_PATH_MODELVIEW_CHROMIUM:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_path_coord_type_table[] = {
-    GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT, GL_FLOAT,
+bool Validators::PathCoordTypeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_BYTE:
+    case GL_UNSIGNED_BYTE:
+    case GL_SHORT:
+    case GL_UNSIGNED_SHORT:
+    case GL_FLOAT:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_path_cover_mode_table[] = {
-    GL_CONVEX_HULL_CHROMIUM, GL_BOUNDING_BOX_CHROMIUM,
+bool Validators::PathCoverModeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_CONVEX_HULL_CHROMIUM:
+    case GL_BOUNDING_BOX_CHROMIUM:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_path_fill_mode_table[] = {
-    GL_INVERT, GL_COUNT_UP_CHROMIUM, GL_COUNT_DOWN_CHROMIUM,
+bool Validators::PathFillModeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_INVERT:
+    case GL_COUNT_UP_CHROMIUM:
+    case GL_COUNT_DOWN_CHROMIUM:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_path_fragment_input_gen_mode_table[] = {
-    GL_NONE, GL_EYE_LINEAR_CHROMIUM, GL_OBJECT_LINEAR_CHROMIUM,
-    GL_CONSTANT_CHROMIUM,
+bool Validators::PathFragmentInputGenModeValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_NONE:
+    case GL_EYE_LINEAR_CHROMIUM:
+    case GL_OBJECT_LINEAR_CHROMIUM:
+    case GL_CONSTANT_CHROMIUM:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_path_instanced_cover_mode_table[] = {
-    GL_CONVEX_HULL_CHROMIUM, GL_BOUNDING_BOX_CHROMIUM,
-    GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
+bool Validators::PathInstancedCoverModeValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_CONVEX_HULL_CHROMIUM:
+    case GL_BOUNDING_BOX_CHROMIUM:
+    case GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_path_name_type_table[] = {
-    GL_UNSIGNED_BYTE, GL_BYTE,         GL_UNSIGNED_SHORT,
-    GL_SHORT,         GL_UNSIGNED_INT, GL_INT,
+bool Validators::PathNameTypeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_UNSIGNED_BYTE:
+    case GL_BYTE:
+    case GL_UNSIGNED_SHORT:
+    case GL_SHORT:
+    case GL_UNSIGNED_INT:
+    case GL_INT:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_path_parameter_table[] = {
-    GL_PATH_STROKE_WIDTH_CHROMIUM, GL_PATH_END_CAPS_CHROMIUM,
-    GL_PATH_JOIN_STYLE_CHROMIUM,   GL_PATH_MITER_LIMIT_CHROMIUM,
-    GL_PATH_STROKE_BOUND_CHROMIUM,
+bool Validators::PathParameterValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_PATH_STROKE_WIDTH_CHROMIUM:
+    case GL_PATH_END_CAPS_CHROMIUM:
+    case GL_PATH_JOIN_STYLE_CHROMIUM:
+    case GL_PATH_MITER_LIMIT_CHROMIUM:
+    case GL_PATH_STROKE_BOUND_CHROMIUM:
+      return true;
+  }
+  return false;
 };
 
-static const GLint valid_path_parameter_cap_values_table[] = {
-    GL_FLAT, GL_SQUARE_CHROMIUM, GL_ROUND_CHROMIUM,
+bool Validators::PathParameterCapValuesValidator::IsValid(
+    const GLint value) const {
+  switch (value) {
+    case GL_FLAT:
+    case GL_SQUARE_CHROMIUM:
+    case GL_ROUND_CHROMIUM:
+      return true;
+  }
+  return false;
 };
 
-static const GLint valid_path_parameter_join_values_table[] = {
-    GL_MITER_REVERT_CHROMIUM, GL_BEVEL_CHROMIUM, GL_ROUND_CHROMIUM,
+bool Validators::PathParameterJoinValuesValidator::IsValid(
+    const GLint value) const {
+  switch (value) {
+    case GL_MITER_REVERT_CHROMIUM:
+    case GL_BEVEL_CHROMIUM:
+    case GL_ROUND_CHROMIUM:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_path_transform_type_table[] = {
-    GL_NONE,
-    GL_TRANSLATE_X_CHROMIUM,
-    GL_TRANSLATE_Y_CHROMIUM,
-    GL_TRANSLATE_2D_CHROMIUM,
-    GL_TRANSLATE_3D_CHROMIUM,
-    GL_AFFINE_2D_CHROMIUM,
-    GL_AFFINE_3D_CHROMIUM,
-    GL_TRANSPOSE_AFFINE_2D_CHROMIUM,
-    GL_TRANSPOSE_AFFINE_3D_CHROMIUM,
+bool Validators::PathTransformTypeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_NONE:
+    case GL_TRANSLATE_X_CHROMIUM:
+    case GL_TRANSLATE_Y_CHROMIUM:
+    case GL_TRANSLATE_2D_CHROMIUM:
+    case GL_TRANSLATE_3D_CHROMIUM:
+    case GL_AFFINE_2D_CHROMIUM:
+    case GL_AFFINE_3D_CHROMIUM:
+    case GL_TRANSPOSE_AFFINE_2D_CHROMIUM:
+    case GL_TRANSPOSE_AFFINE_3D_CHROMIUM:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_pixel_store_table[] = {
@@ -475,8 +662,16 @@ static const GLenum valid_pixel_store_table_es3[] = {
     GL_UNPACK_SKIP_ROWS,  GL_UNPACK_SKIP_IMAGES,
 };
 
-static const GLint valid_pixel_store_alignment_table[] = {
-    1, 2, 4, 8,
+bool Validators::PixelStoreAlignmentValidator::IsValid(
+    const GLint value) const {
+  switch (value) {
+    case 1:
+    case 2:
+    case 4:
+    case 8:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_pixel_type_table[] = {
@@ -499,62 +694,76 @@ static const GLenum valid_pixel_type_table_es3[] = {
     GL_FLOAT_32_UNSIGNED_INT_24_8_REV,
 };
 
-static const GLenum valid_program_parameter_table[] = {
-    GL_DELETE_STATUS,
-    GL_LINK_STATUS,
-    GL_VALIDATE_STATUS,
-    GL_INFO_LOG_LENGTH,
-    GL_ATTACHED_SHADERS,
-    GL_ACTIVE_ATTRIBUTES,
-    GL_ACTIVE_ATTRIBUTE_MAX_LENGTH,
-    GL_ACTIVE_UNIFORMS,
-    GL_ACTIVE_UNIFORM_MAX_LENGTH,
+Validators::ProgramParameterValidator::ProgramParameterValidator()
+    : is_es3_(false) {}
+bool Validators::ProgramParameterValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_DELETE_STATUS:
+    case GL_LINK_STATUS:
+    case GL_VALIDATE_STATUS:
+    case GL_INFO_LOG_LENGTH:
+    case GL_ATTACHED_SHADERS:
+    case GL_ACTIVE_ATTRIBUTES:
+    case GL_ACTIVE_ATTRIBUTE_MAX_LENGTH:
+    case GL_ACTIVE_UNIFORMS:
+    case GL_ACTIVE_UNIFORM_MAX_LENGTH:
+      return true;
+    case GL_ACTIVE_UNIFORM_BLOCKS:
+    case GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH:
+    case GL_TRANSFORM_FEEDBACK_BUFFER_MODE:
+    case GL_TRANSFORM_FEEDBACK_VARYINGS:
+    case GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH:
+      return is_es3_;
+  }
+  return false;
 };
 
-static const GLenum valid_program_parameter_table_es3[] = {
-    GL_ACTIVE_UNIFORM_BLOCKS,
-    GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH,
-    GL_TRANSFORM_FEEDBACK_BUFFER_MODE,
-    GL_TRANSFORM_FEEDBACK_VARYINGS,
-    GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH,
+bool Validators::QueryObjectParameterValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_QUERY_RESULT_EXT:
+    case GL_QUERY_RESULT_AVAILABLE_EXT:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_query_object_parameter_table[] = {
-    GL_QUERY_RESULT_EXT, GL_QUERY_RESULT_AVAILABLE_EXT,
+bool Validators::QueryTargetValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_ANY_SAMPLES_PASSED_EXT:
+    case GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT:
+    case GL_COMMANDS_ISSUED_CHROMIUM:
+    case GL_LATENCY_QUERY_CHROMIUM:
+    case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
+    case GL_COMMANDS_COMPLETED_CHROMIUM:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_query_parameter_table[] = {
-    GL_CURRENT_QUERY_EXT,
-};
-
-static const GLenum valid_query_target_table[] = {
-    GL_ANY_SAMPLES_PASSED_EXT,
-    GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT,
-    GL_COMMANDS_ISSUED_CHROMIUM,
-    GL_LATENCY_QUERY_CHROMIUM,
-    GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM,
-    GL_COMMANDS_COMPLETED_CHROMIUM,
-};
-
-static const GLenum valid_read_buffer_table[] = {
-    GL_NONE,
-    GL_BACK,
-    GL_COLOR_ATTACHMENT0,
-    GL_COLOR_ATTACHMENT1,
-    GL_COLOR_ATTACHMENT2,
-    GL_COLOR_ATTACHMENT3,
-    GL_COLOR_ATTACHMENT4,
-    GL_COLOR_ATTACHMENT5,
-    GL_COLOR_ATTACHMENT6,
-    GL_COLOR_ATTACHMENT7,
-    GL_COLOR_ATTACHMENT8,
-    GL_COLOR_ATTACHMENT9,
-    GL_COLOR_ATTACHMENT10,
-    GL_COLOR_ATTACHMENT11,
-    GL_COLOR_ATTACHMENT12,
-    GL_COLOR_ATTACHMENT13,
-    GL_COLOR_ATTACHMENT14,
-    GL_COLOR_ATTACHMENT15,
+bool Validators::ReadBufferValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_NONE:
+    case GL_BACK:
+    case GL_COLOR_ATTACHMENT0:
+    case GL_COLOR_ATTACHMENT1:
+    case GL_COLOR_ATTACHMENT2:
+    case GL_COLOR_ATTACHMENT3:
+    case GL_COLOR_ATTACHMENT4:
+    case GL_COLOR_ATTACHMENT5:
+    case GL_COLOR_ATTACHMENT6:
+    case GL_COLOR_ATTACHMENT7:
+    case GL_COLOR_ATTACHMENT8:
+    case GL_COLOR_ATTACHMENT9:
+    case GL_COLOR_ATTACHMENT10:
+    case GL_COLOR_ATTACHMENT11:
+    case GL_COLOR_ATTACHMENT12:
+    case GL_COLOR_ATTACHMENT13:
+    case GL_COLOR_ATTACHMENT14:
+    case GL_COLOR_ATTACHMENT15:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_read_pixel_format_table[] = {
@@ -628,30 +837,65 @@ static const GLenum valid_render_buffer_target_table[] = {
     GL_RENDERBUFFER,
 };
 
-static const GLenum valid_reset_status_table[] = {
-    GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB,
-    GL_UNKNOWN_CONTEXT_RESET_ARB,
+bool Validators::ResetStatusValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_GUILTY_CONTEXT_RESET_ARB:
+    case GL_INNOCENT_CONTEXT_RESET_ARB:
+    case GL_UNKNOWN_CONTEXT_RESET_ARB:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_sampler_parameter_table[] = {
-    GL_TEXTURE_MAG_FILTER, GL_TEXTURE_MIN_FILTER,   GL_TEXTURE_MIN_LOD,
-    GL_TEXTURE_MAX_LOD,    GL_TEXTURE_WRAP_S,       GL_TEXTURE_WRAP_T,
-    GL_TEXTURE_WRAP_R,     GL_TEXTURE_COMPARE_MODE, GL_TEXTURE_COMPARE_FUNC,
+bool Validators::SamplerParameterValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_TEXTURE_MAG_FILTER:
+    case GL_TEXTURE_MIN_FILTER:
+    case GL_TEXTURE_MIN_LOD:
+    case GL_TEXTURE_MAX_LOD:
+    case GL_TEXTURE_WRAP_S:
+    case GL_TEXTURE_WRAP_T:
+    case GL_TEXTURE_WRAP_R:
+    case GL_TEXTURE_COMPARE_MODE:
+    case GL_TEXTURE_COMPARE_FUNC:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_shader_parameter_table[] = {
-    GL_SHADER_TYPE,          GL_DELETE_STATUS,
-    GL_COMPILE_STATUS,       GL_INFO_LOG_LENGTH,
-    GL_SHADER_SOURCE_LENGTH, GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
+bool Validators::ShaderParameterValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_SHADER_TYPE:
+    case GL_DELETE_STATUS:
+    case GL_COMPILE_STATUS:
+    case GL_INFO_LOG_LENGTH:
+    case GL_SHADER_SOURCE_LENGTH:
+    case GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_shader_precision_table[] = {
-    GL_LOW_FLOAT, GL_MEDIUM_FLOAT, GL_HIGH_FLOAT,
-    GL_LOW_INT,   GL_MEDIUM_INT,   GL_HIGH_INT,
+bool Validators::ShaderPrecisionValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_LOW_FLOAT:
+    case GL_MEDIUM_FLOAT:
+    case GL_HIGH_FLOAT:
+    case GL_LOW_INT:
+    case GL_MEDIUM_INT:
+    case GL_HIGH_INT:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_shader_type_table[] = {
-    GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,
+bool Validators::ShaderTypeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_VERTEX_SHADER:
+    case GL_FRAGMENT_SHADER:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_src_blend_factor_table[] = {
@@ -672,14 +916,31 @@ static const GLenum valid_src_blend_factor_table[] = {
     GL_SRC_ALPHA_SATURATE,
 };
 
-static const GLenum valid_stencil_op_table[] = {
-    GL_KEEP,      GL_ZERO, GL_REPLACE,   GL_INCR,
-    GL_INCR_WRAP, GL_DECR, GL_DECR_WRAP, GL_INVERT,
+bool Validators::StencilOpValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_KEEP:
+    case GL_ZERO:
+    case GL_REPLACE:
+    case GL_INCR:
+    case GL_INCR_WRAP:
+    case GL_DECR:
+    case GL_DECR_WRAP:
+    case GL_INVERT:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_string_type_table[] = {
-    GL_VENDOR,     GL_RENDERER, GL_VERSION, GL_SHADING_LANGUAGE_VERSION,
-    GL_EXTENSIONS,
+bool Validators::StringTypeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_VENDOR:
+    case GL_RENDERER:
+    case GL_VERSION:
+    case GL_SHADING_LANGUAGE_VERSION:
+    case GL_EXTENSIONS:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_subscription_target_table[] = {
@@ -690,12 +951,24 @@ static const GLbitfield valid_sync_flush_flags_table[] = {
     GL_SYNC_FLUSH_COMMANDS_BIT, 0,
 };
 
-static const GLenum valid_sync_parameter_table[] = {
-    GL_SYNC_STATUS, GL_OBJECT_TYPE, GL_SYNC_CONDITION, GL_SYNC_FLAGS,
+bool Validators::SyncParameterValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_SYNC_STATUS:
+    case GL_OBJECT_TYPE:
+    case GL_SYNC_CONDITION:
+    case GL_SYNC_FLAGS:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_texture_3_d_target_table[] = {
-    GL_TEXTURE_3D, GL_TEXTURE_2D_ARRAY,
+bool Validators::Texture3DTargetValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_TEXTURE_3D:
+    case GL_TEXTURE_2D_ARRAY:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_texture_bind_target_table[] = {
@@ -706,9 +979,20 @@ static const GLenum valid_texture_bind_target_table_es3[] = {
     GL_TEXTURE_3D, GL_TEXTURE_2D_ARRAY,
 };
 
-static const GLenum valid_texture_compare_func_table[] = {
-    GL_LEQUAL, GL_GEQUAL,   GL_LESS,   GL_GREATER,
-    GL_EQUAL,  GL_NOTEQUAL, GL_ALWAYS, GL_NEVER,
+bool Validators::TextureCompareFuncValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_LEQUAL:
+    case GL_GEQUAL:
+    case GL_LESS:
+    case GL_GREATER:
+    case GL_EQUAL:
+    case GL_NOTEQUAL:
+    case GL_ALWAYS:
+    case GL_NEVER:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_texture_compare_mode_table[] = {
@@ -867,17 +1151,28 @@ static const GLenum deprecated_texture_internal_format_storage_table_es3[] = {
     GL_ALPHA32F_EXT, GL_LUMINANCE32F_EXT, GL_LUMINANCE_ALPHA32F_EXT,
 };
 
-static const GLenum valid_texture_mag_filter_mode_table[] = {
-    GL_NEAREST, GL_LINEAR,
+bool Validators::TextureMagFilterModeValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_NEAREST:
+    case GL_LINEAR:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_texture_min_filter_mode_table[] = {
-    GL_NEAREST,
-    GL_LINEAR,
-    GL_NEAREST_MIPMAP_NEAREST,
-    GL_LINEAR_MIPMAP_NEAREST,
-    GL_NEAREST_MIPMAP_LINEAR,
-    GL_LINEAR_MIPMAP_LINEAR,
+bool Validators::TextureMinFilterModeValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_NEAREST:
+    case GL_LINEAR:
+    case GL_NEAREST_MIPMAP_NEAREST:
+    case GL_LINEAR_MIPMAP_NEAREST:
+    case GL_NEAREST_MIPMAP_LINEAR:
+    case GL_LINEAR_MIPMAP_LINEAR:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_texture_parameter_table[] = {
@@ -903,45 +1198,85 @@ static const GLenum valid_texture_target_table[] = {
     GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
 };
 
-static const GLenum valid_texture_usage_table[] = {
-    GL_NONE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE,
+bool Validators::TextureUsageValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_NONE:
+    case GL_FRAMEBUFFER_ATTACHMENT_ANGLE:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_texture_wrap_mode_table[] = {
-    GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_REPEAT,
+bool Validators::TextureWrapModeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_CLAMP_TO_EDGE:
+    case GL_MIRRORED_REPEAT:
+    case GL_REPEAT:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_transform_feedback_bind_target_table[] = {
     GL_TRANSFORM_FEEDBACK,
 };
 
-static const GLenum valid_transform_feedback_primitive_mode_table[] = {
-    GL_POINTS, GL_LINES, GL_TRIANGLES,
+bool Validators::TransformFeedbackPrimitiveModeValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_POINTS:
+    case GL_LINES:
+    case GL_TRIANGLES:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_uniform_block_parameter_table[] = {
-    GL_UNIFORM_BLOCK_BINDING,
-    GL_UNIFORM_BLOCK_DATA_SIZE,
-    GL_UNIFORM_BLOCK_NAME_LENGTH,
-    GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS,
-    GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES,
-    GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER,
-    GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER,
+bool Validators::UniformBlockParameterValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_UNIFORM_BLOCK_BINDING:
+    case GL_UNIFORM_BLOCK_DATA_SIZE:
+    case GL_UNIFORM_BLOCK_NAME_LENGTH:
+    case GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS:
+    case GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES:
+    case GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER:
+    case GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER:
+      return true;
+  }
+  return false;
 };
 
-static const GLenum valid_uniform_parameter_table[] = {
-    GL_UNIFORM_SIZE,          GL_UNIFORM_TYPE,         GL_UNIFORM_NAME_LENGTH,
-    GL_UNIFORM_BLOCK_INDEX,   GL_UNIFORM_OFFSET,       GL_UNIFORM_ARRAY_STRIDE,
-    GL_UNIFORM_MATRIX_STRIDE, GL_UNIFORM_IS_ROW_MAJOR,
+bool Validators::UniformParameterValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_UNIFORM_SIZE:
+    case GL_UNIFORM_TYPE:
+    case GL_UNIFORM_NAME_LENGTH:
+    case GL_UNIFORM_BLOCK_INDEX:
+    case GL_UNIFORM_OFFSET:
+    case GL_UNIFORM_ARRAY_STRIDE:
+    case GL_UNIFORM_MATRIX_STRIDE:
+    case GL_UNIFORM_IS_ROW_MAJOR:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_value_buffer_target_table[] = {
     GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM,
 };
 
-static const GLenum valid_vertex_attrib_i_type_table[] = {
-    GL_BYTE,           GL_UNSIGNED_BYTE, GL_SHORT,
-    GL_UNSIGNED_SHORT, GL_INT,           GL_UNSIGNED_INT,
+bool Validators::VertexAttribITypeValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_BYTE:
+    case GL_UNSIGNED_BYTE:
+    case GL_SHORT:
+    case GL_UNSIGNED_SHORT:
+    case GL_INT:
+    case GL_UNSIGNED_INT:
+      return true;
+  }
+  return false;
 };
 
 static const GLenum valid_vertex_attrib_type_table[] = {
@@ -973,94 +1308,27 @@ static const GLenum valid_vertex_pointer_table[] = {
 
 Validators::Validators()
     : attachment(valid_attachment_table, arraysize(valid_attachment_table)),
-      backbuffer_attachment(valid_backbuffer_attachment_table,
-                            arraysize(valid_backbuffer_attachment_table)),
-      blit_filter(valid_blit_filter_table, arraysize(valid_blit_filter_table)),
-      buffer_mode(valid_buffer_mode_table, arraysize(valid_buffer_mode_table)),
-      buffer_parameter(valid_buffer_parameter_table,
-                       arraysize(valid_buffer_parameter_table)),
-      buffer_parameter_64(valid_buffer_parameter_64_table,
-                          arraysize(valid_buffer_parameter_64_table)),
-      buffer_target(valid_buffer_target_table,
-                    arraysize(valid_buffer_target_table)),
-      buffer_usage(valid_buffer_usage_table,
-                   arraysize(valid_buffer_usage_table)),
       bufferfi(valid_bufferfi_table, arraysize(valid_bufferfi_table)),
-      bufferfv(valid_bufferfv_table, arraysize(valid_bufferfv_table)),
-      bufferiv(valid_bufferiv_table, arraysize(valid_bufferiv_table)),
       bufferuiv(valid_bufferuiv_table, arraysize(valid_bufferuiv_table)),
       capability(valid_capability_table, arraysize(valid_capability_table)),
-      cmp_function(valid_cmp_function_table,
-                   arraysize(valid_cmp_function_table)),
       compressed_texture_format(),
-      draw_mode(valid_draw_mode_table, arraysize(valid_draw_mode_table)),
       dst_blend_factor(valid_dst_blend_factor_table,
                        arraysize(valid_dst_blend_factor_table)),
       equation(valid_equation_table, arraysize(valid_equation_table)),
-      face_mode(valid_face_mode_table, arraysize(valid_face_mode_table)),
-      face_type(valid_face_type_table, arraysize(valid_face_type_table)),
       frame_buffer_parameter(valid_frame_buffer_parameter_table,
                              arraysize(valid_frame_buffer_parameter_table)),
       frame_buffer_target(valid_frame_buffer_target_table,
                           arraysize(valid_frame_buffer_target_table)),
       g_l_state(valid_g_l_state_table, arraysize(valid_g_l_state_table)),
-      get_max_index_type(valid_get_max_index_type_table,
-                         arraysize(valid_get_max_index_type_table)),
       get_tex_param_target(valid_get_tex_param_target_table,
                            arraysize(valid_get_tex_param_target_table)),
-      hint_mode(valid_hint_mode_table, arraysize(valid_hint_mode_table)),
       hint_target(valid_hint_target_table, arraysize(valid_hint_target_table)),
       image_internal_format(valid_image_internal_format_table,
                             arraysize(valid_image_internal_format_table)),
       image_usage(valid_image_usage_table, arraysize(valid_image_usage_table)),
       index_type(valid_index_type_table, arraysize(valid_index_type_table)),
-      indexed_buffer_target(valid_indexed_buffer_target_table,
-                            arraysize(valid_indexed_buffer_target_table)),
-      indexed_g_l_state(valid_indexed_g_l_state_table,
-                        arraysize(valid_indexed_g_l_state_table)),
-      internal_format_parameter(
-          valid_internal_format_parameter_table,
-          arraysize(valid_internal_format_parameter_table)),
-      map_buffer_access(valid_map_buffer_access_table,
-                        arraysize(valid_map_buffer_access_table)),
-      matrix_mode(valid_matrix_mode_table, arraysize(valid_matrix_mode_table)),
-      path_coord_type(valid_path_coord_type_table,
-                      arraysize(valid_path_coord_type_table)),
-      path_cover_mode(valid_path_cover_mode_table,
-                      arraysize(valid_path_cover_mode_table)),
-      path_fill_mode(valid_path_fill_mode_table,
-                     arraysize(valid_path_fill_mode_table)),
-      path_fragment_input_gen_mode(
-          valid_path_fragment_input_gen_mode_table,
-          arraysize(valid_path_fragment_input_gen_mode_table)),
-      path_instanced_cover_mode(
-          valid_path_instanced_cover_mode_table,
-          arraysize(valid_path_instanced_cover_mode_table)),
-      path_name_type(valid_path_name_type_table,
-                     arraysize(valid_path_name_type_table)),
-      path_parameter(valid_path_parameter_table,
-                     arraysize(valid_path_parameter_table)),
-      path_parameter_cap_values(
-          valid_path_parameter_cap_values_table,
-          arraysize(valid_path_parameter_cap_values_table)),
-      path_parameter_join_values(
-          valid_path_parameter_join_values_table,
-          arraysize(valid_path_parameter_join_values_table)),
-      path_transform_type(valid_path_transform_type_table,
-                          arraysize(valid_path_transform_type_table)),
       pixel_store(valid_pixel_store_table, arraysize(valid_pixel_store_table)),
-      pixel_store_alignment(valid_pixel_store_alignment_table,
-                            arraysize(valid_pixel_store_alignment_table)),
       pixel_type(valid_pixel_type_table, arraysize(valid_pixel_type_table)),
-      program_parameter(valid_program_parameter_table,
-                        arraysize(valid_program_parameter_table)),
-      query_object_parameter(valid_query_object_parameter_table,
-                             arraysize(valid_query_object_parameter_table)),
-      query_parameter(valid_query_parameter_table,
-                      arraysize(valid_query_parameter_table)),
-      query_target(valid_query_target_table,
-                   arraysize(valid_query_target_table)),
-      read_buffer(valid_read_buffer_table, arraysize(valid_read_buffer_table)),
       read_pixel_format(valid_read_pixel_format_table,
                         arraysize(valid_read_pixel_format_table)),
       read_pixel_type(valid_read_pixel_type_table,
@@ -1071,32 +1339,15 @@ Validators::Validators()
                               arraysize(valid_render_buffer_parameter_table)),
       render_buffer_target(valid_render_buffer_target_table,
                            arraysize(valid_render_buffer_target_table)),
-      reset_status(valid_reset_status_table,
-                   arraysize(valid_reset_status_table)),
-      sampler_parameter(valid_sampler_parameter_table,
-                        arraysize(valid_sampler_parameter_table)),
       shader_binary_format(),
-      shader_parameter(valid_shader_parameter_table,
-                       arraysize(valid_shader_parameter_table)),
-      shader_precision(valid_shader_precision_table,
-                       arraysize(valid_shader_precision_table)),
-      shader_type(valid_shader_type_table, arraysize(valid_shader_type_table)),
       src_blend_factor(valid_src_blend_factor_table,
                        arraysize(valid_src_blend_factor_table)),
-      stencil_op(valid_stencil_op_table, arraysize(valid_stencil_op_table)),
-      string_type(valid_string_type_table, arraysize(valid_string_type_table)),
       subscription_target(valid_subscription_target_table,
                           arraysize(valid_subscription_target_table)),
       sync_flush_flags(valid_sync_flush_flags_table,
                        arraysize(valid_sync_flush_flags_table)),
-      sync_parameter(valid_sync_parameter_table,
-                     arraysize(valid_sync_parameter_table)),
-      texture_3_d_target(valid_texture_3_d_target_table,
-                         arraysize(valid_texture_3_d_target_table)),
       texture_bind_target(valid_texture_bind_target_table,
                           arraysize(valid_texture_bind_target_table)),
-      texture_compare_func(valid_texture_compare_func_table,
-                           arraysize(valid_texture_compare_func_table)),
       texture_compare_mode(valid_texture_compare_mode_table,
                            arraysize(valid_texture_compare_mode_table)),
       texture_format(valid_texture_format_table,
@@ -1106,32 +1357,15 @@ Validators::Validators()
       texture_internal_format_storage(
           valid_texture_internal_format_storage_table,
           arraysize(valid_texture_internal_format_storage_table)),
-      texture_mag_filter_mode(valid_texture_mag_filter_mode_table,
-                              arraysize(valid_texture_mag_filter_mode_table)),
-      texture_min_filter_mode(valid_texture_min_filter_mode_table,
-                              arraysize(valid_texture_min_filter_mode_table)),
       texture_parameter(valid_texture_parameter_table,
                         arraysize(valid_texture_parameter_table)),
       texture_target(valid_texture_target_table,
                      arraysize(valid_texture_target_table)),
-      texture_usage(valid_texture_usage_table,
-                    arraysize(valid_texture_usage_table)),
-      texture_wrap_mode(valid_texture_wrap_mode_table,
-                        arraysize(valid_texture_wrap_mode_table)),
       transform_feedback_bind_target(
           valid_transform_feedback_bind_target_table,
           arraysize(valid_transform_feedback_bind_target_table)),
-      transform_feedback_primitive_mode(
-          valid_transform_feedback_primitive_mode_table,
-          arraysize(valid_transform_feedback_primitive_mode_table)),
-      uniform_block_parameter(valid_uniform_block_parameter_table,
-                              arraysize(valid_uniform_block_parameter_table)),
-      uniform_parameter(valid_uniform_parameter_table,
-                        arraysize(valid_uniform_parameter_table)),
       value_buffer_target(valid_value_buffer_target_table,
                           arraysize(valid_value_buffer_target_table)),
-      vertex_attrib_i_type(valid_vertex_attrib_i_type_table,
-                           arraysize(valid_vertex_attrib_i_type_table)),
       vertex_attrib_type(valid_vertex_attrib_type_table,
                          arraysize(valid_vertex_attrib_type_table)),
       vertex_attribute(valid_vertex_attribute_table,
@@ -1142,12 +1376,9 @@ Validators::Validators()
 void Validators::UpdateValuesES3() {
   attachment.AddValues(valid_attachment_table_es3,
                        arraysize(valid_attachment_table_es3));
-  buffer_parameter.AddValues(valid_buffer_parameter_table_es3,
-                             arraysize(valid_buffer_parameter_table_es3));
-  buffer_target.AddValues(valid_buffer_target_table_es3,
-                          arraysize(valid_buffer_target_table_es3));
-  buffer_usage.AddValues(valid_buffer_usage_table_es3,
-                         arraysize(valid_buffer_usage_table_es3));
+  buffer_parameter.SetIsES3(true);
+  buffer_target.SetIsES3(true);
+  buffer_usage.SetIsES3(true);
   capability.AddValues(valid_capability_table_es3,
                        arraysize(valid_capability_table_es3));
   compressed_texture_format.AddValues(
@@ -1173,8 +1404,7 @@ void Validators::UpdateValuesES3() {
                         arraysize(valid_pixel_store_table_es3));
   pixel_type.AddValues(valid_pixel_type_table_es3,
                        arraysize(valid_pixel_type_table_es3));
-  program_parameter.AddValues(valid_program_parameter_table_es3,
-                              arraysize(valid_program_parameter_table_es3));
+  program_parameter.SetIsES3(true);
   read_pixel_format.AddValues(valid_read_pixel_format_table_es3,
                               arraysize(valid_read_pixel_format_table_es3));
   read_pixel_type.AddValues(valid_read_pixel_type_table_es3,

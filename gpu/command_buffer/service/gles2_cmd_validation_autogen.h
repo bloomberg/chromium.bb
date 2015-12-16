@@ -12,94 +12,378 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_AUTOGEN_H_
 
 ValueValidator<GLenum> attachment;
-ValueValidator<GLenum> backbuffer_attachment;
-ValueValidator<GLenum> blit_filter;
-ValueValidator<GLenum> buffer_mode;
-ValueValidator<GLenum> buffer_parameter;
-ValueValidator<GLenum> buffer_parameter_64;
-ValueValidator<GLenum> buffer_target;
-ValueValidator<GLenum> buffer_usage;
+class BackbufferAttachmentValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+BackbufferAttachmentValidator backbuffer_attachment;
+
+class BlitFilterValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+BlitFilterValidator blit_filter;
+
+class BufferModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+BufferModeValidator buffer_mode;
+
+class BufferParameterValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+  BufferParameterValidator();
+  void SetIsES3(bool is_es3) { is_es3_ = is_es3; }
+
+ private:
+  bool is_es3_;
+};
+BufferParameterValidator buffer_parameter;
+
+class BufferParameter64Validator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+BufferParameter64Validator buffer_parameter_64;
+
+class BufferTargetValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+  BufferTargetValidator();
+  void SetIsES3(bool is_es3) { is_es3_ = is_es3; }
+
+ private:
+  bool is_es3_;
+};
+BufferTargetValidator buffer_target;
+
+class BufferUsageValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+  BufferUsageValidator();
+  void SetIsES3(bool is_es3) { is_es3_ = is_es3; }
+
+ private:
+  bool is_es3_;
+};
+BufferUsageValidator buffer_usage;
+
 ValueValidator<GLenum> bufferfi;
-ValueValidator<GLenum> bufferfv;
-ValueValidator<GLenum> bufferiv;
+class BufferfvValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+BufferfvValidator bufferfv;
+
+class BufferivValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+BufferivValidator bufferiv;
+
 ValueValidator<GLenum> bufferuiv;
 ValueValidator<GLenum> capability;
-ValueValidator<GLenum> cmp_function;
+class CmpFunctionValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+CmpFunctionValidator cmp_function;
+
 ValueValidator<GLenum> compressed_texture_format;
-ValueValidator<GLenum> draw_mode;
+class DrawModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+DrawModeValidator draw_mode;
+
 ValueValidator<GLenum> dst_blend_factor;
 ValueValidator<GLenum> equation;
-ValueValidator<GLenum> face_mode;
-ValueValidator<GLenum> face_type;
+class FaceModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+FaceModeValidator face_mode;
+
+class FaceTypeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+FaceTypeValidator face_type;
+
 ValueValidator<GLenum> frame_buffer_parameter;
 ValueValidator<GLenum> frame_buffer_target;
 ValueValidator<GLenum> g_l_state;
-ValueValidator<GLenum> get_max_index_type;
+class GetMaxIndexTypeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+GetMaxIndexTypeValidator get_max_index_type;
+
 ValueValidator<GLenum> get_tex_param_target;
-ValueValidator<GLenum> hint_mode;
+class HintModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+HintModeValidator hint_mode;
+
 ValueValidator<GLenum> hint_target;
 ValueValidator<GLenum> image_internal_format;
 ValueValidator<GLenum> image_usage;
 ValueValidator<GLenum> index_type;
-ValueValidator<GLenum> indexed_buffer_target;
-ValueValidator<GLenum> indexed_g_l_state;
-ValueValidator<GLenum> internal_format_parameter;
-ValueValidator<GLenum> map_buffer_access;
-ValueValidator<GLenum> matrix_mode;
-ValueValidator<GLenum> path_coord_type;
-ValueValidator<GLenum> path_cover_mode;
-ValueValidator<GLenum> path_fill_mode;
-ValueValidator<GLenum> path_fragment_input_gen_mode;
-ValueValidator<GLenum> path_instanced_cover_mode;
-ValueValidator<GLenum> path_name_type;
-ValueValidator<GLenum> path_parameter;
-ValueValidator<GLint> path_parameter_cap_values;
-ValueValidator<GLint> path_parameter_join_values;
-ValueValidator<GLenum> path_transform_type;
+class IndexedBufferTargetValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+IndexedBufferTargetValidator indexed_buffer_target;
+
+class IndexedGLStateValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+IndexedGLStateValidator indexed_g_l_state;
+
+class InternalFormatParameterValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+InternalFormatParameterValidator internal_format_parameter;
+
+class MapBufferAccessValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+MapBufferAccessValidator map_buffer_access;
+
+class MatrixModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+MatrixModeValidator matrix_mode;
+
+class PathCoordTypeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+PathCoordTypeValidator path_coord_type;
+
+class PathCoverModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+PathCoverModeValidator path_cover_mode;
+
+class PathFillModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+PathFillModeValidator path_fill_mode;
+
+class PathFragmentInputGenModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+PathFragmentInputGenModeValidator path_fragment_input_gen_mode;
+
+class PathInstancedCoverModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+PathInstancedCoverModeValidator path_instanced_cover_mode;
+
+class PathNameTypeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+PathNameTypeValidator path_name_type;
+
+class PathParameterValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+PathParameterValidator path_parameter;
+
+class PathParameterCapValuesValidator {
+ public:
+  bool IsValid(const GLint value) const;
+};
+PathParameterCapValuesValidator path_parameter_cap_values;
+
+class PathParameterJoinValuesValidator {
+ public:
+  bool IsValid(const GLint value) const;
+};
+PathParameterJoinValuesValidator path_parameter_join_values;
+
+class PathTransformTypeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+PathTransformTypeValidator path_transform_type;
+
 ValueValidator<GLenum> pixel_store;
-ValueValidator<GLint> pixel_store_alignment;
+class PixelStoreAlignmentValidator {
+ public:
+  bool IsValid(const GLint value) const;
+};
+PixelStoreAlignmentValidator pixel_store_alignment;
+
 ValueValidator<GLenum> pixel_type;
-ValueValidator<GLenum> program_parameter;
-ValueValidator<GLenum> query_object_parameter;
-ValueValidator<GLenum> query_parameter;
-ValueValidator<GLenum> query_target;
-ValueValidator<GLenum> read_buffer;
+class ProgramParameterValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+  ProgramParameterValidator();
+  void SetIsES3(bool is_es3) { is_es3_ = is_es3; }
+
+ private:
+  bool is_es3_;
+};
+ProgramParameterValidator program_parameter;
+
+class QueryObjectParameterValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+QueryObjectParameterValidator query_object_parameter;
+
+class QueryTargetValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+QueryTargetValidator query_target;
+
+class ReadBufferValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+ReadBufferValidator read_buffer;
+
 ValueValidator<GLenum> read_pixel_format;
 ValueValidator<GLenum> read_pixel_type;
 ValueValidator<GLenum> render_buffer_format;
 ValueValidator<GLenum> render_buffer_parameter;
 ValueValidator<GLenum> render_buffer_target;
-ValueValidator<GLenum> reset_status;
-ValueValidator<GLenum> sampler_parameter;
+class ResetStatusValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+ResetStatusValidator reset_status;
+
+class SamplerParameterValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+SamplerParameterValidator sampler_parameter;
+
 ValueValidator<GLenum> shader_binary_format;
-ValueValidator<GLenum> shader_parameter;
-ValueValidator<GLenum> shader_precision;
-ValueValidator<GLenum> shader_type;
+class ShaderParameterValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+ShaderParameterValidator shader_parameter;
+
+class ShaderPrecisionValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+ShaderPrecisionValidator shader_precision;
+
+class ShaderTypeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+ShaderTypeValidator shader_type;
+
 ValueValidator<GLenum> src_blend_factor;
-ValueValidator<GLenum> stencil_op;
-ValueValidator<GLenum> string_type;
+class StencilOpValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+StencilOpValidator stencil_op;
+
+class StringTypeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+StringTypeValidator string_type;
+
 ValueValidator<GLenum> subscription_target;
 ValueValidator<GLbitfield> sync_flush_flags;
-ValueValidator<GLenum> sync_parameter;
-ValueValidator<GLenum> texture_3_d_target;
+class SyncParameterValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+SyncParameterValidator sync_parameter;
+
+class Texture3DTargetValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+Texture3DTargetValidator texture_3_d_target;
+
 ValueValidator<GLenum> texture_bind_target;
-ValueValidator<GLenum> texture_compare_func;
+class TextureCompareFuncValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+TextureCompareFuncValidator texture_compare_func;
+
 ValueValidator<GLenum> texture_compare_mode;
 ValueValidator<GLenum> texture_format;
 ValueValidator<GLenum> texture_internal_format;
 ValueValidator<GLenum> texture_internal_format_storage;
-ValueValidator<GLenum> texture_mag_filter_mode;
-ValueValidator<GLenum> texture_min_filter_mode;
+class TextureMagFilterModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+TextureMagFilterModeValidator texture_mag_filter_mode;
+
+class TextureMinFilterModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+TextureMinFilterModeValidator texture_min_filter_mode;
+
 ValueValidator<GLenum> texture_parameter;
 ValueValidator<GLenum> texture_target;
-ValueValidator<GLenum> texture_usage;
-ValueValidator<GLenum> texture_wrap_mode;
+class TextureUsageValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+TextureUsageValidator texture_usage;
+
+class TextureWrapModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+TextureWrapModeValidator texture_wrap_mode;
+
 ValueValidator<GLenum> transform_feedback_bind_target;
-ValueValidator<GLenum> transform_feedback_primitive_mode;
-ValueValidator<GLenum> uniform_block_parameter;
-ValueValidator<GLenum> uniform_parameter;
+class TransformFeedbackPrimitiveModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+TransformFeedbackPrimitiveModeValidator transform_feedback_primitive_mode;
+
+class UniformBlockParameterValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+UniformBlockParameterValidator uniform_block_parameter;
+
+class UniformParameterValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+UniformParameterValidator uniform_parameter;
+
 ValueValidator<GLenum> value_buffer_target;
-ValueValidator<GLenum> vertex_attrib_i_type;
+class VertexAttribITypeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+VertexAttribITypeValidator vertex_attrib_i_type;
+
 ValueValidator<GLenum> vertex_attrib_type;
 ValueValidator<GLenum> vertex_attribute;
 ValueValidator<GLenum> vertex_pointer;

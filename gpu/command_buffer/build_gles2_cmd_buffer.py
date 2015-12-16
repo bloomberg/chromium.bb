@@ -644,6 +644,7 @@ _STATES = {
 _NAMED_TYPE_INFO = {
   'BlitFilter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_NEAREST',
       'GL_LINEAR',
@@ -676,6 +677,7 @@ _NAMED_TYPE_INFO = {
   },
   'BufferTarget': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_ARRAY_BUFFER',
       'GL_ELEMENT_ARRAY_BUFFER',
@@ -694,6 +696,7 @@ _NAMED_TYPE_INFO = {
   },
   'IndexedBufferTarget': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_TRANSFORM_FEEDBACK_BUFFER',
       'GL_UNIFORM_BUFFER',
@@ -704,6 +707,7 @@ _NAMED_TYPE_INFO = {
   },
   'MapBufferAccess': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_MAP_READ_BIT',
       'GL_MAP_WRITE_BIT',
@@ -718,6 +722,7 @@ _NAMED_TYPE_INFO = {
   },
   'Bufferiv': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_COLOR',
       'GL_STENCIL',
@@ -737,6 +742,7 @@ _NAMED_TYPE_INFO = {
   },
   'Bufferfv': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_COLOR',
       'GL_DEPTH',
@@ -756,6 +762,7 @@ _NAMED_TYPE_INFO = {
   },
   'BufferUsage': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_STREAM_DRAW',
       'GL_STATIC_DRAW',
@@ -932,6 +939,7 @@ _NAMED_TYPE_INFO = {
   },
   'IndexedGLState': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_TRANSFORM_FEEDBACK_BUFFER_BINDING',
       'GL_TRANSFORM_FEEDBACK_BUFFER_SIZE',
@@ -960,6 +968,7 @@ _NAMED_TYPE_INFO = {
   },
   'ReadBuffer': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_NONE',
       'GL_BACK',
@@ -1001,6 +1010,7 @@ _NAMED_TYPE_INFO = {
   },
   'Texture3DTarget': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_TEXTURE_3D',
       'GL_TEXTURE_2D_ARRAY',
@@ -1035,6 +1045,7 @@ _NAMED_TYPE_INFO = {
   },
   'TransformFeedbackPrimitiveMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_POINTS',
       'GL_LINES',
@@ -1046,6 +1057,7 @@ _NAMED_TYPE_INFO = {
   },
   'ShaderType': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_VERTEX_SHADER',
       'GL_FRAGMENT_SHADER',
@@ -1056,6 +1068,7 @@ _NAMED_TYPE_INFO = {
   },
   'FaceType': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_FRONT',
       'GL_BACK',
@@ -1064,6 +1077,7 @@ _NAMED_TYPE_INFO = {
   },
   'FaceMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_CW',
       'GL_CCW',
@@ -1071,6 +1085,7 @@ _NAMED_TYPE_INFO = {
   },
   'CmpFunction': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_NEVER',
       'GL_LESS',
@@ -1151,6 +1166,7 @@ _NAMED_TYPE_INFO = {
   },
   'DrawMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_POINTS',
       'GL_LINE_STRIP',
@@ -1180,6 +1196,7 @@ _NAMED_TYPE_INFO = {
   },
   'GetMaxIndexType': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_UNSIGNED_BYTE',
       'GL_UNSIGNED_SHORT',
@@ -1206,6 +1223,7 @@ _NAMED_TYPE_INFO = {
   },
   'BackbufferAttachment': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_COLOR_EXT',
       'GL_DEPTH_EXT',
@@ -1214,6 +1232,7 @@ _NAMED_TYPE_INFO = {
   },
   'BufferParameter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_BUFFER_SIZE',
       'GL_BUFFER_USAGE',
@@ -1228,6 +1247,7 @@ _NAMED_TYPE_INFO = {
   },
   'BufferParameter64': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_BUFFER_SIZE',
       'GL_BUFFER_MAP_LENGTH',
@@ -1239,6 +1259,7 @@ _NAMED_TYPE_INFO = {
   },
   'BufferMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_INTERLEAVED_ATTRIBS',
       'GL_SEPARATE_ATTRIBS',
@@ -1269,6 +1290,7 @@ _NAMED_TYPE_INFO = {
   },
   'MatrixMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_PATH_PROJECTION_CHROMIUM',
       'GL_PATH_MODELVIEW_CHROMIUM',
@@ -1276,6 +1298,7 @@ _NAMED_TYPE_INFO = {
   },
   'ProgramParameter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_DELETE_STATUS',
       'GL_LINK_STATUS',
@@ -1300,6 +1323,7 @@ _NAMED_TYPE_INFO = {
   },
   'QueryObjectParameter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_QUERY_RESULT_EXT',
       'GL_QUERY_RESULT_AVAILABLE_EXT',
@@ -1307,12 +1331,14 @@ _NAMED_TYPE_INFO = {
   },
   'QueryParameter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_CURRENT_QUERY_EXT',
     ],
   },
   'QueryTarget': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_ANY_SAMPLES_PASSED_EXT',
       'GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT',
@@ -1341,6 +1367,7 @@ _NAMED_TYPE_INFO = {
   },
   'InternalFormatParameter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_NUM_SAMPLE_COUNTS',
       'GL_SAMPLES',
@@ -1348,6 +1375,7 @@ _NAMED_TYPE_INFO = {
   },
   'SamplerParameter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_TEXTURE_MAG_FILTER',
       'GL_TEXTURE_MIN_FILTER',
@@ -1365,6 +1393,7 @@ _NAMED_TYPE_INFO = {
   },
   'ShaderParameter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_SHADER_TYPE',
       'GL_DELETE_STATUS',
@@ -1376,6 +1405,7 @@ _NAMED_TYPE_INFO = {
   },
   'ShaderPrecision': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_LOW_FLOAT',
       'GL_MEDIUM_FLOAT',
@@ -1387,6 +1417,7 @@ _NAMED_TYPE_INFO = {
   },
   'StringType': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_VENDOR',
       'GL_RENDERER',
@@ -1420,6 +1451,7 @@ _NAMED_TYPE_INFO = {
   },
   'TextureWrapMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_CLAMP_TO_EDGE',
       'GL_MIRRORED_REPEAT',
@@ -1428,6 +1460,7 @@ _NAMED_TYPE_INFO = {
   },
   'TextureMinFilterMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_NEAREST',
       'GL_LINEAR',
@@ -1439,6 +1472,7 @@ _NAMED_TYPE_INFO = {
   },
   'TextureMagFilterMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_NEAREST',
       'GL_LINEAR',
@@ -1446,6 +1480,7 @@ _NAMED_TYPE_INFO = {
   },
   'TextureCompareFunc': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_LEQUAL',
       'GL_GEQUAL',
@@ -1466,6 +1501,7 @@ _NAMED_TYPE_INFO = {
   },
   'TextureUsage': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_NONE',
       'GL_FRAMEBUFFER_ATTACHMENT_ANGLE',
@@ -1509,6 +1545,7 @@ _NAMED_TYPE_INFO = {
   },
   'HintMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_FASTEST',
       'GL_NICEST',
@@ -1538,6 +1575,7 @@ _NAMED_TYPE_INFO = {
   },
   'PixelStoreAlignment': {
     'type': 'GLint',
+    'is_complete': True,
     'valid': [
       '1',
       '2',
@@ -1593,6 +1631,7 @@ _NAMED_TYPE_INFO = {
   },
   'PathCoordType': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_BYTE',
       'GL_UNSIGNED_BYTE',
@@ -1603,6 +1642,7 @@ _NAMED_TYPE_INFO = {
   },
   'PathCoverMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_CONVEX_HULL_CHROMIUM',
       'GL_BOUNDING_BOX_CHROMIUM',
@@ -1610,6 +1650,7 @@ _NAMED_TYPE_INFO = {
   },
   'PathFillMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_INVERT',
       'GL_COUNT_UP_CHROMIUM',
@@ -1618,6 +1659,7 @@ _NAMED_TYPE_INFO = {
   },
   'PathInstancedCoverMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_CONVEX_HULL_CHROMIUM',
       'GL_BOUNDING_BOX_CHROMIUM',
@@ -1626,6 +1668,7 @@ _NAMED_TYPE_INFO = {
   },
   'PathNameType': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_UNSIGNED_BYTE',
       'GL_BYTE',
@@ -1637,6 +1680,7 @@ _NAMED_TYPE_INFO = {
   },
   'PathParameter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_PATH_STROKE_WIDTH_CHROMIUM',
       'GL_PATH_END_CAPS_CHROMIUM',
@@ -1647,6 +1691,7 @@ _NAMED_TYPE_INFO = {
   },
   'PathParameterCapValues': {
     'type': 'GLint',
+    'is_complete': True,
     'valid': [
       'GL_FLAT',
       'GL_SQUARE_CHROMIUM',
@@ -1655,6 +1700,7 @@ _NAMED_TYPE_INFO = {
   },
   'PathParameterJoinValues': {
     'type': 'GLint',
+    'is_complete': True,
     'valid': [
       'GL_MITER_REVERT_CHROMIUM',
       'GL_BEVEL_CHROMIUM',
@@ -1663,6 +1709,7 @@ _NAMED_TYPE_INFO = {
   },
   'PathTransformType': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_NONE',
       'GL_TRANSLATE_X_CHROMIUM',
@@ -1677,6 +1724,7 @@ _NAMED_TYPE_INFO = {
   },
   'PathFragmentInputGenMode': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_NONE',
       'GL_EYE_LINEAR_CHROMIUM',
@@ -1751,6 +1799,7 @@ _NAMED_TYPE_INFO = {
   },
   'StencilOp': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_KEEP',
       'GL_ZERO',
@@ -1975,6 +2024,7 @@ _NAMED_TYPE_INFO = {
   },
   'UniformParameter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_UNIFORM_SIZE',
       'GL_UNIFORM_TYPE',
@@ -1991,6 +2041,7 @@ _NAMED_TYPE_INFO = {
   },
   'UniformBlockParameter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_UNIFORM_BLOCK_BINDING',
       'GL_UNIFORM_BLOCK_DATA_SIZE',
@@ -2027,6 +2078,7 @@ _NAMED_TYPE_INFO = {
   },
   'VertexAttribIType': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_BYTE',
       'GL_UNSIGNED_BYTE',
@@ -2076,6 +2128,7 @@ _NAMED_TYPE_INFO = {
   },
   'ResetStatus': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_GUILTY_CONTEXT_RESET_ARB',
       'GL_INNOCENT_CONTEXT_RESET_ARB',
@@ -2114,6 +2167,7 @@ _NAMED_TYPE_INFO = {
   },
   'SyncParameter': {
     'type': 'GLenum',
+    'is_complete': True,
     'valid': [
       'GL_SYNC_STATUS',  # This needs to be the 1st; all others are cached.
       'GL_OBJECT_TYPE',
@@ -8504,6 +8558,7 @@ class NamedType(object):
     else:
       self.deprecated_es3 = []
     self.create_validator = info.get('validator', True)
+    self.is_complete = info.get('is_complete', False)
 
   def GetType(self):
     return self.info['type']
@@ -8520,14 +8575,17 @@ class NamedType(object):
   def GetDeprecatedValuesES3(self):
     return self.deprecated_es3
 
-  def IsConstant(self):
-    if not 'is_complete' in self.info:
-      return False
+  def HasES3Values(self):
+    return self.valid_es3 or self.deprecated_es3
 
-    return len(self.GetValidValues()) == 1
+  def IsConstant(self):
+    return self.is_complete and len(self.GetValidValues()) == 1
+
+  def IsComplete(self):
+    return self.is_complete
 
   def CreateValidator(self):
-    return self.create_validator
+    return self.create_validator and not self.IsConstant()
 
   def GetConstantValue(self):
     return self.GetValidValues()[0]
@@ -10850,10 +10908,26 @@ namespace mojo {
     with CHeaderWriter(filename) as f:
       for name in sorted(_NAMED_TYPE_INFO.keys()):
         named_type = NamedType(_NAMED_TYPE_INFO[name])
-        if named_type.IsConstant() or not named_type.CreateValidator():
+        if not named_type.CreateValidator():
           continue
-        f.write("ValueValidator<%s> %s;\n" %
-                   (named_type.GetType(), ToUnderscore(name)))
+        if named_type.IsComplete():
+          f.write("""class %(name)sValidator {
+                      public:
+                       bool IsValid(const %(type)s value) const;"""% {
+            'name': name,
+            'type': named_type.GetType()
+          })
+          if named_type.HasES3Values():
+            f.write("""%sValidator();
+                       void SetIsES3(bool is_es3) { is_es3_ = is_es3; }
+                      private:
+                       bool is_es3_;""" % name)
+          f.write("};\n")
+          f.write("%sValidator %s;\n\n" %
+                     (name, ToUnderscore(name)))
+        else:
+          f.write("ValueValidator<%s> %s;\n" %
+                     (named_type.GetType(), ToUnderscore(name)))
       f.write("\n")
     self.generated_cpp_filenames.append(filename)
 
@@ -10863,34 +10937,60 @@ namespace mojo {
       names = sorted(_NAMED_TYPE_INFO.keys())
       for name in names:
         named_type = NamedType(_NAMED_TYPE_INFO[name])
-        if named_type.IsConstant() or not named_type.CreateValidator():
+        if not named_type.CreateValidator():
           continue
-        if named_type.GetValidValues():
-          f.write("static const %s valid_%s_table[] = {\n" %
-                     (named_type.GetType(), ToUnderscore(name)))
-          for value in named_type.GetValidValues():
-            f.write("  %s,\n" % value)
-          f.write("};\n")
+        if named_type.IsComplete():
+          if named_type.HasES3Values():
+            f.write("""Validators::%(name)sValidator::%(name)sValidator()
+                         : is_es3_(false) {}""" % { 'name': name })
+
+          f.write("""bool Validators::%(name)sValidator::IsValid(
+                         const %(type)s value) const {
+                       switch(value) {\n""" % {
+            'name': name,
+            'type': named_type.GetType()
+          })
+          if named_type.GetValidValues():
+            for value in named_type.GetValidValues():
+                f.write("case %s:\n" % value)
+            f.write("return true;\n")
+          if named_type.GetValidValuesES3():
+            for value in named_type.GetValidValuesES3():
+                f.write("case %s:\n" % value)
+            f.write("return is_es3_;\n")
+          if named_type.GetDeprecatedValuesES3():
+            for value in named_type.GetDeprecatedValuesES3():
+                f.write("case %s:\n" % value)
+            f.write("return !is_es3_;\n")
+          f.write("}\nreturn false;\n};\n")
           f.write("\n")
-        if named_type.GetValidValuesES3():
-          f.write("static const %s valid_%s_table_es3[] = {\n" %
-                     (named_type.GetType(), ToUnderscore(name)))
-          for value in named_type.GetValidValuesES3():
-            f.write("  %s,\n" % value)
-          f.write("};\n")
-          f.write("\n")
-        if named_type.GetDeprecatedValuesES3():
-          f.write("static const %s deprecated_%s_table_es3[] = {\n" %
-                     (named_type.GetType(), ToUnderscore(name)))
-          for value in named_type.GetDeprecatedValuesES3():
-            f.write("  %s,\n" % value)
-          f.write("};\n")
+        else:
+          if named_type.GetValidValues():
+            f.write("static const %s valid_%s_table[] = {\n" %
+                       (named_type.GetType(), ToUnderscore(name)))
+            for value in named_type.GetValidValues():
+              f.write("  %s,\n" % value)
+            f.write("};\n")
+            f.write("\n")
+          if named_type.GetValidValuesES3():
+            f.write("static const %s valid_%s_table_es3[] = {\n" %
+                       (named_type.GetType(), ToUnderscore(name)))
+            for value in named_type.GetValidValuesES3():
+              f.write("  %s,\n" % value)
+            f.write("};\n")
+            f.write("\n")
+          if named_type.GetDeprecatedValuesES3():
+            f.write("static const %s deprecated_%s_table_es3[] = {\n" %
+                       (named_type.GetType(), ToUnderscore(name)))
+            for value in named_type.GetDeprecatedValuesES3():
+              f.write("  %s,\n" % value)
+            f.write("};\n")
           f.write("\n")
       f.write("Validators::Validators()")
       pre = '    : '
       for count, name in enumerate(names):
         named_type = NamedType(_NAMED_TYPE_INFO[name])
-        if named_type.IsConstant() or not named_type.CreateValidator():
+        if not named_type.CreateValidator() or named_type.IsComplete():
           continue
         if named_type.GetValidValues():
           code = """%(pre)s%(name)s(
@@ -10908,6 +11008,12 @@ namespace mojo {
       f.write("void Validators::UpdateValuesES3() {\n")
       for name in names:
         named_type = NamedType(_NAMED_TYPE_INFO[name])
+        if not named_type.IsConstant() and named_type.IsComplete():
+          if named_type.HasES3Values():
+            f.write("  %(name)s.SetIsES3(true);" % {
+              'name': ToUnderscore(name),
+            })
+          continue
         if named_type.GetDeprecatedValuesES3():
           code = """  %(name)s.RemoveValues(
       deprecated_%(name)s_table_es3, arraysize(deprecated_%(name)s_table_es3));
