@@ -14,7 +14,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_client.h"
@@ -371,8 +371,7 @@ bool AppWindowCreateFunction::RunAsync() {
   // PlzNavigate: delay sending the response until the newly created window has
   // been told to navigate, and blink has been correctly initialized in the
   // renderer.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableBrowserSideNavigation)) {
+  if (content::IsBrowserSideNavigationEnabled()) {
     app_window->SetOnFirstCommitCallback(
         base::Bind(&AppWindowCreateFunction::SendResponse, this, true));
     return true;

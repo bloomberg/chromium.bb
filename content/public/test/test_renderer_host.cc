@@ -4,7 +4,6 @@
 
 #include "content/public/test/test_renderer_host.h"
 
-#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -12,7 +11,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/browser_side_navigation_test_utils.h"
@@ -205,17 +204,13 @@ void RenderViewHostTestHarness::SetUp() {
 
   SetContents(CreateTestWebContents());
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled())
     BrowserSideNavigationSetUp();
-  }
 }
 
 void RenderViewHostTestHarness::TearDown() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled())
     BrowserSideNavigationTearDown();
-  }
 
   SetContents(NULL);
 #if defined(USE_AURA)

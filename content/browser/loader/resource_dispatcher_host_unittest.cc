@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -38,8 +37,8 @@
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/test/test_browser_context.h"
@@ -2485,8 +2484,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
 // Test transferred navigations with text/html, which doesn't trigger any
 // content sniffing.
 TEST_F(ResourceDispatcherHostTest, TransferNavigationHtml) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     SUCCEED() << "Test is not applicable with browser side navigation enabled";
     return;
   }
@@ -2560,8 +2558,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationHtml) {
 // Test transferring two navigations with text/html, to ensure the resource
 // accounting works.
 TEST_F(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     SUCCEED() << "Test is not applicable with browser side navigation enabled";
     return;
   }
@@ -2648,8 +2645,7 @@ TEST_F(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
 // MimeTypeResourceHandler to buffer the response to sniff the content before
 // the transfer occurs.
 TEST_F(ResourceDispatcherHostTest, TransferNavigationText) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     SUCCEED() << "Test is not applicable with browser side navigation enabled";
     return;
   }
@@ -2723,8 +2719,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationText) {
 }
 
 TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     SUCCEED() << "Test is not applicable with browser side navigation enabled";
     return;
   }
@@ -2814,8 +2809,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
 }
 
 TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     SUCCEED() << "Test is not applicable with browser side navigation enabled";
     return;
   }

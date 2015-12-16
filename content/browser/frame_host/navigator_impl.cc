@@ -4,7 +4,6 @@
 
 #include "content/browser/frame_host/navigator_impl.h"
 
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -35,9 +34,9 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
@@ -139,11 +138,8 @@ void NavigatorImpl::DidStartProvisionalLoad(
                                        is_error_page, is_iframe_srcdoc);
   }
 
-  if (is_error_page ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (is_error_page || IsBrowserSideNavigationEnabled())
     return;
-  }
 
   if (render_frame_host->navigation_handle()) {
     if (render_frame_host->navigation_handle()->is_transferring()) {
@@ -296,8 +292,7 @@ bool NavigatorImpl::NavigateToEntry(
   RenderFrameHostManager* manager = frame_tree_node->render_manager();
 
   // PlzNavigate: the RenderFrameHosts are no longer asked to navigate.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     navigation_data_.reset(new NavigationMetricsData(navigation_start, dest_url,
                                                      entry.restore_type()));
     RequestNavigation(frame_tree_node, dest_url, dest_referrer, frame_entry,
@@ -697,8 +692,7 @@ void NavigatorImpl::RequestTransferURL(
 // PlzNavigate
 void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
                                       bool proceed) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
   DCHECK(frame_tree_node);
 
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
@@ -727,8 +721,7 @@ void NavigatorImpl::OnBeginNavigation(
   // TODO(clamy): the url sent by the renderer should be validated with
   // FilterURL.
   // This is a renderer-initiated navigation.
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
   DCHECK(frame_tree_node);
 
   NavigationRequest* ongoing_navigation_request =
@@ -775,8 +768,7 @@ void NavigatorImpl::OnBeginNavigation(
 void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
                                      ResourceResponse* response,
                                      scoped_ptr<StreamHandle> body) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
 
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   DCHECK(navigation_request);
@@ -825,8 +817,7 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
 void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
                                      bool has_stale_copy_in_cache,
                                      int error_code) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
 
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   DCHECK(navigation_request);
@@ -854,8 +845,7 @@ void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
 
 // PlzNavigate
 void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
   frame_tree_node->ResetNavigationRequest(false);
   if (frame_tree_node->IsMainFrame())
     navigation_data_.reset();
@@ -909,8 +899,7 @@ void NavigatorImpl::RequestNavigation(
     NavigationController::ReloadType reload_type,
     bool is_same_document_history_load,
     base::TimeTicks navigation_start) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
   DCHECK(frame_tree_node);
 
   // This value must be set here because creating a NavigationRequest might

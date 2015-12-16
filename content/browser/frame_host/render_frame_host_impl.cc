@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
@@ -68,8 +67,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -86,7 +85,9 @@
 #endif
 
 #if defined(ENABLE_WEBVR)
+#include "base/command_line.h"
 #include "content/browser/vr/vr_device_manager.h"
+#include "content/public/common/content_switches.h"
 #endif
 
 using base::TimeDelta;
@@ -865,9 +866,7 @@ void RenderFrameHostImpl::OnDidStartProvisionalLoad(
 
 void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
     const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation) &&
-      navigation_handle_) {
+  if (!IsBrowserSideNavigationEnabled() && navigation_handle_) {
     navigation_handle_->set_net_error_code(
         static_cast<net::Error>(params.error_code));
   }
@@ -1020,10 +1019,8 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   }
 
   // PlzNavigate
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled())
     pending_commit_ = false;
-  }
 }
 
 void RenderFrameHostImpl::OnDidDropNavigation() {
@@ -1079,8 +1076,7 @@ void RenderFrameHostImpl::SetNavigationHandle(
 
 scoped_ptr<NavigationHandleImpl>
 RenderFrameHostImpl::PassNavigationHandleOwnership() {
-  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  DCHECK(!IsBrowserSideNavigationEnabled());
   navigation_handle_->set_is_transferring(true);
   return navigation_handle_.Pass();
 }
@@ -1211,9 +1207,7 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   // PlzNavigate: if the ACK is for a navigation, send it to the Navigator to
   // have the current navigation stop/proceed. Otherwise, send it to the
   // RenderFrameHostManager which handles closing.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation) &&
-      unload_ack_is_for_navigation_) {
+  if (IsBrowserSideNavigationEnabled() && unload_ack_is_for_navigation_) {
     // TODO(clamy): see if before_unload_end_time should be transmitted to the
     // Navigator.
     frame_tree_node_->navigator()->OnBeforeUnloadACK(
@@ -1497,8 +1491,7 @@ void RenderFrameHostImpl::OnBeginNavigation(
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params,
     scoped_refptr<ResourceRequestBody> body) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
   CommonNavigationParams validated_params = common_params;
   GetProcess()->FilterURL(false, &validated_params.url);
   frame_tree_node()->navigator()->OnBeginNavigation(
@@ -1855,8 +1848,7 @@ void RenderFrameHostImpl::Navigate(
     const StartNavigationParams& start_params,
     const RequestNavigationParams& request_params) {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::Navigate");
-  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  DCHECK(!IsBrowserSideNavigationEnabled());
 
   UpdatePermissionsForNavigation(common_params, request_params);
 
@@ -1896,8 +1888,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       FrameMsg_Navigate_Type::NORMAL, false, false, base::TimeTicks::Now(),
       FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(), LOFI_OFF,
       base::TimeTicks::Now());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     CommitNavigation(nullptr, nullptr, common_params,
                      RequestNavigationParams());
   } else {
@@ -1926,9 +1917,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation) {
   // TODO(creis): Support beforeunload on subframes.  For now just pretend that
   // the handler ran and allowed the navigation to proceed.
   if (!ShouldDispatchBeforeUnload()) {
-    DCHECK(!(base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kEnableBrowserSideNavigation) &&
-             for_navigation));
+    DCHECK(!(IsBrowserSideNavigationEnabled() && for_navigation));
     frame_tree_node_->render_manager()->OnBeforeUnloadACK(
         for_navigation, true, base::TimeTicks::Now());
     return;

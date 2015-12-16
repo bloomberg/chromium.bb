@@ -4,7 +4,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -31,7 +30,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/url_constants.h"
@@ -222,8 +221,7 @@ class NavigationControllerTest
   }
 
   bool HasNavigationRequest() {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableBrowserSideNavigation)) {
+    if (IsBrowserSideNavigationEnabled()) {
       return contents()->GetFrameTree()->root()->navigation_request() !=
              nullptr;
     }
@@ -232,8 +230,7 @@ class NavigationControllerTest
   }
 
   const GURL GetLastNavigationURL() {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableBrowserSideNavigation)) {
+    if (IsBrowserSideNavigationEnabled()) {
       NavigationRequest* navigation_request =
           contents()->GetFrameTree()->root()->navigation_request();
       CHECK(navigation_request);
@@ -1045,8 +1042,7 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation))
+  if (IsBrowserSideNavigationEnabled())
     EXPECT_EQ(4, delegate->navigation_state_change_count());
   else
     EXPECT_EQ(2, delegate->navigation_state_change_count());
@@ -4896,10 +4892,8 @@ TEST_F(NavigationControllerTest, ClearHistoryList) {
 
   // Assume that the RenderFrame correctly cleared its history and commit the
   // navigation.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled())
     contents()->GetMainFrame()->SendBeforeUnloadACK(true);
-  }
   contents()->GetPendingMainFrame()->
       set_simulate_history_list_was_cleared(true);
   contents()->CommitPendingNavigation();

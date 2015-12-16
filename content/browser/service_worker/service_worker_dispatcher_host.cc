@@ -4,7 +4,6 @@
 
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,8 +23,8 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_util.h"
@@ -738,8 +737,7 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
   }
 
   scoped_ptr<ServiceWorkerProviderHost> provider_host;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation) &&
+  if (IsBrowserSideNavigationEnabled() &&
       ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id)) {
     // PlzNavigate
     // Retrieve the provider host previously created for navigation requests.

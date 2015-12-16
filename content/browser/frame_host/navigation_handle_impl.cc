@@ -4,15 +4,14 @@
 
 #include "content/browser/frame_host/navigation_handle_impl.h"
 
-#include "base/command_line.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
 #include "net/url_request/redirect_info.h"
 
 namespace content {
@@ -62,11 +61,8 @@ NavigationHandleImpl::~NavigationHandleImpl() {
 
   // Cancel the navigation on the IO thread if the NavigationHandle is being
   // destroyed in the middle of the NavigationThrottles checks.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserSideNavigation) &&
-      !complete_callback_.is_null()) {
+  if (!IsBrowserSideNavigationEnabled() && !complete_callback_.is_null())
     RunCompleteCallback(NavigationThrottle::CANCEL_AND_IGNORE);
-  }
 }
 
 NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
@@ -211,8 +207,7 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
 
 void NavigationHandleImpl::InitServiceWorkerHandle(
     ServiceWorkerContextWrapper* service_worker_context) {
-  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  DCHECK(IsBrowserSideNavigationEnabled());
   service_worker_handle_.reset(
       new ServiceWorkerNavigationHandle(service_worker_context));
 }
@@ -290,10 +285,8 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
 
   // Only notify the WebContentsObservers when PlzNavigate is enabled, as
   // |render_frame_host_| may be wrong in the case of transfer navigations.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled())
     GetDelegate()->ReadyToCommitNavigation(this);
-  }
 }
 
 void NavigationHandleImpl::DidCommitNavigation(

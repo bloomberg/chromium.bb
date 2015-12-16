@@ -4,7 +4,6 @@
 
 #include "content/browser/loader/resource_request_info_impl.h"
 
-#include "base/command_line.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/global_routing_id.h"
 #include "content/browser/loader/resource_message_filter.h"
@@ -12,7 +11,7 @@
 #include "content/common/net/url_request_user_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/process_type.h"
 #include "net/url_request/url_request.h"
 
@@ -196,8 +195,7 @@ ResourceRequestInfoImpl::GetWebContentsGetterForRequest() const {
   // and invalid RenderProcessHost and RenderFrameHost IDs. The FrameTreeNode
   // ID should be used to access the WebContents.
   if (frame_tree_node_id_ != -1) {
-    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserSideNavigation));
+    DCHECK(IsBrowserSideNavigationEnabled());
     return base::Bind(&GetWebContentsFromFTNID, frame_tree_node_id_);
   }
 

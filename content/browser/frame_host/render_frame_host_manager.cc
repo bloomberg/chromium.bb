@@ -39,6 +39,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/browser_plugin_guest_mode.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
@@ -294,8 +295,7 @@ RenderViewHostImpl* RenderFrameHostManager::pending_render_view_host() const {
 }
 
 WebUIImpl* RenderFrameHostManager::GetNavigatingWebUI() const {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     if (speculative_render_frame_host_)
       return speculative_render_frame_host_->web_ui();
   } else {
@@ -491,8 +491,7 @@ void RenderFrameHostManager::Stop() {
   }
 
   // PlzNavigate: a loading speculative RenderFrameHost should also stop.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     if (speculative_render_frame_host_ &&
         speculative_render_frame_host_->is_loading()) {
       speculative_render_frame_host_->Send(
@@ -550,8 +549,7 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
     bool proceed,
     const base::TimeTicks& proceed_time) {
   if (for_cross_site_transition) {
-    DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserSideNavigation));
+    DCHECK(!IsBrowserSideNavigationEnabled());
     // Ignore if we're not in a cross-process navigation.
     if (!pending_render_frame_host_)
       return;
@@ -586,11 +584,8 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
       }
 
       // PlzNavigate: clean up the speculative RenderFrameHost if there is one.
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableBrowserSideNavigation) &&
-          speculative_render_frame_host_) {
+      if (IsBrowserSideNavigationEnabled() && speculative_render_frame_host_)
         CleanUpNavigation();
-      }
 
       // This is not a cross-process navigation; the tab is being closed.
       render_frame_host_->render_view_host()->ClosePage();
@@ -708,8 +703,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
       CommitPendingWebUI();
 
     // Decide on canceling the ongoing cross-process navigation.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableBrowserSideNavigation)) {
+    if (IsBrowserSideNavigationEnabled()) {
       CleanUpNavigation();
     } else {
       if (was_caused_by_user_gesture) {
@@ -991,8 +985,7 @@ void RenderFrameHostManager::ResetProxyHosts() {
 // PlzNavigate
 void RenderFrameHostManager::DidCreateNavigationRequest(
     const NavigationRequest& request) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
   // Clean up any state in case there's an ongoing navigation.
   // TODO(carlosk): remove this cleanup here once we properly cancel ongoing
   // navigations.
@@ -1005,8 +998,7 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
 // PlzNavigate
 RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     const NavigationRequest& request) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
 
   SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
 
@@ -1137,8 +1129,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
 // PlzNavigate
 void RenderFrameHostManager::CleanUpNavigation() {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
   render_frame_host_->ClearPendingWebUI();
   if (speculative_render_frame_host_)
     DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
@@ -1147,8 +1138,7 @@ void RenderFrameHostManager::CleanUpNavigation() {
 // PlzNavigate
 scoped_ptr<RenderFrameHostImpl>
 RenderFrameHostManager::UnsetSpeculativeRenderFrameHost() {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
   speculative_render_frame_host_->GetProcess()->RemovePendingView();
   return speculative_render_frame_host_.Pass();
 }
@@ -2162,8 +2152,7 @@ void RenderFrameHostManager::CommitPending() {
   // Swap in the pending or speculative frame and make it active. Also ensure
   // the FrameTree stays in sync.
   scoped_ptr<RenderFrameHostImpl> old_render_frame_host;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (!IsBrowserSideNavigationEnabled()) {
     DCHECK(!speculative_render_frame_host_);
     old_render_frame_host =
         SetRenderFrameHost(pending_render_frame_host_.Pass());

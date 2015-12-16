@@ -81,6 +81,7 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_message_macros.h"
@@ -498,7 +499,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
   // TODO(ricea): Make stale-while-revalidate and browser-side navigation work
   // together. Or disable stale-while-revalidate completely before browser-side
   // navigation becomes the default. crbug.com/561610
-  if (!command_line->HasSwitch(switches::kEnableBrowserSideNavigation) &&
+  if (!IsBrowserSideNavigationEnabled() &&
       (base::StartsWith(stale_while_revalidate_trial_group, "Enabled",
                         base::CompareCase::SENSITIVE) ||
        command_line->HasSwitch(switches::kEnableStaleWhileRevalidate))) {
@@ -1120,8 +1121,7 @@ void ResourceDispatcherHostImpl::OnRequestResource(
   // navigations.
   if (request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME &&
       request_data.transferred_request_request_id == -1 &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+      !IsBrowserSideNavigationEnabled()) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -1235,8 +1235,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   int child_id = filter_->child_id();
 
   // PlzNavigate: reject invalid renderer main resource request.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation) &&
+  if (IsBrowserSideNavigationEnabled() &&
       IsResourceTypeFrame(request_data.resource_type) &&
       !request_data.url.SchemeIs(url::kBlobScheme)) {
     bad_message::ReceivedBadMessage(filter_, bad_message::RDH_INVALID_URL);
@@ -1527,8 +1526,7 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
   // CrossSiteResourceHandler is not needed. This codepath is not used for the
   // actual navigation request, but only the subsequent blob URL load. This does
   // not require request transfers.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (!IsBrowserSideNavigationEnabled()) {
     // Install a CrossSiteResourceHandler for all main frame requests. This will
     // check whether a transfer is required and, if so, pause for the UI thread
     // to drive the transfer.
@@ -1562,9 +1560,8 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
   // PlzNavigate: do not add ResourceThrottles for main resource requests from
   // the renderer.  Decisions about the navigation should have been done in the
   // initial request.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation) &&
-      IsResourceTypeFrame(resource_type) && child_id != -1) {
+  if (IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type) &&
+      child_id != -1) {
     DCHECK(request->url().SchemeIs(url::kBlobScheme));
     return handler.Pass();
   }
@@ -1582,11 +1579,8 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
   // Add a NavigationResourceThrottle for navigations.
   // PlzNavigate: the throttle is unnecessary as communication with the UI
   // thread is handled by the NavigationURLloader.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation) &&
-      IsResourceTypeFrame(resource_type)) {
+  if (!IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type))
     throttles.push_back(new NavigationResourceThrottle(request));
-  }
 
   if (delegate_) {
     delegate_->RequestBeginning(request,
@@ -2058,8 +2052,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     ServiceWorkerNavigationHandleCore* service_worker_handle_core) {
   // PlzNavigate: BeginNavigationRequest currently should only be used for the
   // browser-side navigations project.
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
 
   ResourceType resource_type = info.is_main_frame ?
       RESOURCE_TYPE_MAIN_FRAME : RESOURCE_TYPE_SUB_FRAME;

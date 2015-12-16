@@ -31,7 +31,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -432,8 +432,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
       const NavigationEntryImpl& entry) {
     // Tests currently only navigate using main frame FrameNavigationEntries.
     FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserSideNavigation)) {
+    if (IsBrowserSideNavigationEnabled()) {
       NavigationControllerImpl* controller =
           static_cast<NavigationControllerImpl*>(manager->current_frame_host()
                                                      ->frame_tree_node()
@@ -470,10 +469,9 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
   // PlzNavigate: returns the speculative RenderFrameHost.
   RenderFrameHostImpl* GetPendingFrameHost(
       RenderFrameHostManager* manager) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserSideNavigation)) {
+    if (IsBrowserSideNavigationEnabled())
       return manager->speculative_render_frame_host_.get();
-    }
+
     return manager->pending_frame_host();
   }
 
@@ -1168,8 +1166,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
   // The Web UI is committed immediately because the RenderViewHost has not been
   // used yet. UpdateStateForNavigate() took the short cut path.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     // In PlzNavigate, there will be a navigating WebUI because
     // GetFrameHostForNavigation was already called twice and the committed
     // WebUI should be set to be reused.
@@ -1295,8 +1292,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIWasCleared) {
 // Also tests that only user-gesture navigations can interrupt cross-process
 // navigations. http://crbug.com/75195
 TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     // PlzNavigate uses a significantly different logic for renderer initiated
     // navigations and navigation cancellation. Adapting this test would make it
     // full of special cases and almost unreadable.
@@ -1915,10 +1911,8 @@ TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   // Start a navigation to a new site.
   controller().LoadURL(
       kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled())
     rfh1->PrepareForCommit();
-  }
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Simulate the unresponsiveness timer.  The tab should close.

@@ -23,6 +23,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/browser/app_window/app_delegate.h"
@@ -452,8 +453,7 @@ void AppWindow::SetOnFirstCommitCallback(const base::Closure& callback) {
 }
 
 void AppWindow::OnReadyToCommitFirstNavigation() {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableBrowserSideNavigation));
+  CHECK(content::IsBrowserSideNavigationEnabled());
   WindowEventsReady();
   if (on_first_commit_callback_.is_null())
     return;

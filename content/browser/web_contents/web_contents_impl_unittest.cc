@@ -30,8 +30,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
@@ -533,10 +533,8 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   entry_id = controller().GetPendingEntry()->GetUniqueID();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled())
     orig_rfh->PrepareForCommit();
-  }
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url2, contents()->GetVisibleURL());
@@ -546,8 +544,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
       &pending_rvh_delete_count);
 
   // Navigations should be suspended in pending_rfh until BeforeUnloadACK.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation)) {
+  if (!IsBrowserSideNavigationEnabled()) {
     EXPECT_TRUE(pending_rfh->are_navigations_suspended());
     orig_rfh->SendBeforeUnloadACK(true);
     EXPECT_FALSE(pending_rfh->are_navigations_suspended());
@@ -579,10 +576,8 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   // We should use the same RFH as before, swapping it back in.
   controller().GoBack();
   entry_id = controller().GetPendingEntry()->GetUniqueID();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled())
     contents()->GetMainFrame()->PrepareForCommit();
-  }
   TestRenderFrameHost* goback_rfh = contents()->GetPendingMainFrame();
   if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
     // Recycling the rfh is a behavior specific to swappedout://
@@ -591,8 +586,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Navigations should be suspended in goback_rfh until BeforeUnloadACK.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation)) {
+  if (!IsBrowserSideNavigationEnabled()) {
     EXPECT_TRUE(goback_rfh->are_navigations_suspended());
     pending_rfh->SendBeforeUnloadACK(true);
     EXPECT_FALSE(goback_rfh->are_navigations_suspended());
@@ -794,10 +788,8 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   entry_id = controller().GetPendingEntry()->GetUniqueID();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled())
     orig_rfh->PrepareForCommit();
-  }
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url2, contents()->GetVisibleURL());
@@ -807,8 +799,7 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
       &pending_rvh_delete_count);
 
   // Navigations should be suspended in pending_rvh until BeforeUnloadACK.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation)) {
+  if (!IsBrowserSideNavigationEnabled()) {
     EXPECT_TRUE(pending_rfh->are_navigations_suspended());
     orig_rfh->SendBeforeUnloadACK(true);
     EXPECT_FALSE(pending_rfh->are_navigations_suspended());
@@ -2930,10 +2921,8 @@ TEST_F(WebContentsImplTest, ActiveContentsCountNavigate) {
                                     ui::PAGE_TRANSITION_TYPED,
                                     std::string());
   int entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled())
     contents->GetMainFrame()->PrepareForCommit();
-  }
   EXPECT_TRUE(contents->CrossProcessNavigationPending());
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
   contents->GetPendingMainFrame()->SendNavigate(1, entry_id, true, kUrl);

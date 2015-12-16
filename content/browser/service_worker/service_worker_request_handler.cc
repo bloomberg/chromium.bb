@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
@@ -17,8 +16,8 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "ipc/ipc_message.h"
 #include "net/base/net_util.h"
@@ -101,8 +100,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBody> body) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
 
   // Only create a handler when there is a ServiceWorkerNavigationHandlerCore
   // to take ownership of a pre-created SeviceWorkerProviderHost.
@@ -201,8 +199,7 @@ bool ServiceWorkerRequestHandler::IsControlledByServiceWorker(
 
 void ServiceWorkerRequestHandler::PrepareForCrossSiteTransfer(
     int old_process_id) {
-  CHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(!IsBrowserSideNavigationEnabled());
   if (!provider_host_ || !context_)
     return;
   old_process_id_ = old_process_id;
@@ -214,8 +211,7 @@ void ServiceWorkerRequestHandler::PrepareForCrossSiteTransfer(
 
 void ServiceWorkerRequestHandler::CompleteCrossSiteTransfer(
     int new_process_id, int new_provider_id) {
-  CHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(!IsBrowserSideNavigationEnabled());
   if (!host_for_cross_site_transfer_.get() || !context_)
     return;
   DCHECK_EQ(provider_host_.get(), host_for_cross_site_transfer_.get());
@@ -226,8 +222,7 @@ void ServiceWorkerRequestHandler::CompleteCrossSiteTransfer(
 
 void ServiceWorkerRequestHandler::MaybeCompleteCrossSiteTransferInOldProcess(
     int old_process_id) {
-  CHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(!IsBrowserSideNavigationEnabled());
   if (!host_for_cross_site_transfer_.get() || !context_ ||
       old_process_id_ != old_process_id) {
     return;

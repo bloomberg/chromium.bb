@@ -6,7 +6,6 @@
 
 #include <queue>
 
-#include "base/command_line.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -17,7 +16,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 
 namespace content {
 
@@ -237,8 +236,7 @@ bool FrameTreeNode::IsLoading() const {
 
   DCHECK(current_frame_host);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     if (navigation_request_)
       return true;
 
@@ -262,8 +260,7 @@ bool FrameTreeNode::CommitPendingSandboxFlags() {
 
 void FrameTreeNode::CreatedNavigationRequest(
     scoped_ptr<NavigationRequest> navigation_request) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
   ResetNavigationRequest(false);
 
   // Force the throbber to start to keep it in sync with what is happening in
@@ -282,8 +279,7 @@ void FrameTreeNode::CreatedNavigationRequest(
 }
 
 void FrameTreeNode::ResetNavigationRequest(bool is_commit) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
+  CHECK(IsBrowserSideNavigationEnabled());
   if (!navigation_request_)
     return;
   navigation_request_.reset();
@@ -367,10 +363,8 @@ void FrameTreeNode::DidChangeLoadProgress(double load_progress) {
 }
 
 bool FrameTreeNode::StopLoading() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled())
     ResetNavigationRequest(false);
-  }
 
   // TODO(nasko): see if child frames should send IPCs in site-per-process
   // mode.

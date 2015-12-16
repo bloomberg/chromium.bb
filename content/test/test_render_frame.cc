@@ -4,9 +4,8 @@
 
 #include "content/test/test_render_frame.h"
 
-#include "base/command_line.h"
 #include "content/common/navigation_params.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_response.h"
 
 namespace content {
@@ -28,8 +27,7 @@ void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
                                const StartNavigationParams& start_params,
                                const RequestNavigationParams& request_params) {
   // PlzNavigate
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     OnCommitNavigation(ResourceResponseHead(), GURL(), common_params,
                        request_params);
   } else {

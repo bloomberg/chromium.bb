@@ -4,7 +4,6 @@
 
 #include "content/test/test_render_frame_host.h"
 
-#include "base/command_line.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -14,7 +13,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/stream_handle.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/browser_side_navigation_test_utils.h"
 #include "content/test/test_navigation_url_loader.h"
@@ -92,8 +91,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
 }
 
 void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     SendRendererInitiatedNavigationRequest(url, false);
     return;
   }
@@ -103,8 +101,7 @@ void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
 }
 
 void TestRenderFrameHost::SimulateRedirect(const GURL& new_url) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     NavigationRequest* request = frame_tree_node_->navigation_request();
     TestNavigationURLLoader* url_loader =
         static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
@@ -151,8 +148,7 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
 
 void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
                                                   int error_code) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     NavigationRequest* request = frame_tree_node_->navigation_request();
     CHECK(request);
     // Simulate a beforeUnload ACK from the renderer if the browser is waiting
@@ -195,8 +191,7 @@ void TestRenderFrameHost::SimulateNavigationErrorPageCommit() {
 void TestRenderFrameHost::SimulateNavigationStop() {
   if (is_loading()) {
     OnDidStopLoading();
-  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kEnableBrowserSideNavigation)) {
+  } else if (IsBrowserSideNavigationEnabled()) {
     // Even if the RenderFrameHost is not loading, there may still be an
     // ongoing navigation in the FrameTreeNode. Cancel this one as well.
     frame_tree_node()->ResetNavigationRequest(false);
@@ -323,9 +318,7 @@ void TestRenderFrameHost::NavigateAndCommitRendererInitiated(
   // stack commit.
   if (frame_tree_node()->navigation_request())
     PrepareForCommit();
-  bool browser_side_navigation =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation);
+  bool browser_side_navigation = IsBrowserSideNavigationEnabled();
   CHECK(!browser_side_navigation || is_loading());
   CHECK(!browser_side_navigation || !frame_tree_node()->navigation_request());
   SendNavigate(page_id, 0, did_create_new_entry, url);
@@ -338,8 +331,7 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   // initialized. Do it if it hasn't happened yet.
   InitializeRenderFrameIfNeeded();
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (IsBrowserSideNavigationEnabled()) {
     BeginNavigationParams begin_params("GET", std::string(), net::LOAD_NORMAL,
                                        has_user_gesture, false,
                                        REQUEST_CONTEXT_TYPE_HYPERLINK);
@@ -362,8 +354,7 @@ void TestRenderFrameHost::PrepareForCommit() {
 
 void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
     const GURL& redirect_url) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
+  if (!IsBrowserSideNavigationEnabled()) {
     // Non PlzNavigate
     if (is_waiting_for_beforeunload_ack())
       SendBeforeUnloadACK(true);

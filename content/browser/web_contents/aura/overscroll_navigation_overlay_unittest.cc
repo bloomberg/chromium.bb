@@ -5,13 +5,13 @@
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
 
 #include <vector>
-#include "base/command_line.h"
+
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/overscroll_configuration.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
@@ -118,12 +118,10 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
       EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::NONE);
     window->SetBounds(gfx::Rect(root_window()->bounds().size()));
     GetOverlay()->OnOverscrollCompleted(window.Pass());
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableBrowserSideNavigation)) {
+    if (IsBrowserSideNavigationEnabled())
       main_test_rfh()->PrepareForCommit();
-    } else {
+    else
       contents()->GetPendingMainFrame()->PrepareForCommit();
-    }
     if (window_created)
       EXPECT_TRUE(contents()->CrossProcessNavigationPending());
     else
