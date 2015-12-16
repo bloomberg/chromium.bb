@@ -27,7 +27,6 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 
-# Used here and in toolchain_build_bionic.py
 GCC_VERSION = '4.9.2'
 
 

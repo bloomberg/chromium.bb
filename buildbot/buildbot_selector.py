@@ -194,13 +194,6 @@ BOT_ASSIGNMENT = {
         ' --test_toolchain nacl_arm_glibc_raw'
         ' toolchain_build',
 
-    # BIONIC toolchain builders.
-    'precise64-toolchain_bionic':
-        python +
-        ' buildbot/buildbot_toolchain_build.py'
-        ' --buildbot'
-        ' toolchain_build_bionic',
-
     # Pnacl toolchain builders.
     'linux-pnacl-x86_32':
         python +
@@ -356,7 +349,6 @@ def HasNoPerfResults(builder):
       'mac-toolchain_arm',
       'win-pnacl-x86_32',
       'linux-pnacl-x86_32-tests-mips',
-      'precise64-toolchain_bionic',
   ]
 
 

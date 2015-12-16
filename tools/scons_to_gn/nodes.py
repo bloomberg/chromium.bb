@@ -29,7 +29,6 @@ REMAP = {
   'WIN' : 'win',
   'x86' : 'x86',
   'x64' : 'x64',
-  'bionic' : 'bionic',
   'glibc' : 'glibc',
   'newlib' : 'newlib',
   'pnacl' : 'pnacl'

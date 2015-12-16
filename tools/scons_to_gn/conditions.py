@@ -114,7 +114,7 @@ class TrustedConditions(Conditions):
 
 class UntrustedConditions(Conditions):
   def __init__(self):
-    LIBS = ['newlib', 'glibc', 'bionic']
+    LIBS = ['newlib', 'glibc']
     ARCH = ['arm', 'x86', 'x64', 'pnacl']
     Conditions.__init__(self, LIBS, ARCH)
     self.imports = [
