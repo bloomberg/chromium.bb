@@ -250,6 +250,7 @@ template("mojom") {
     java_target_name = target_name + "_java"
     android_library(java_target_name) {
       deps = [
+        "//base:base_java",
         "//mojo/public/java:bindings",
         "//mojo/public/java:system",
       ]

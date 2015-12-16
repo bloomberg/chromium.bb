@@ -433,6 +433,7 @@
            'dependencies': [
              'mojo_interface_bindings_java_sources',
              'mojo_public_java',
+             '<(DEPTH)/base/base.gyp:base_java',
            ],
            'includes': [ '../../build/java.gypi' ],
         },

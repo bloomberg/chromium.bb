@@ -261,11 +261,17 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
     }
 {%   for field in union.fields %}
 
+    // TODO(rockot): Fix the findbugs error and remove this suppression.
+    // See http://crbug.com/570386.
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public void set{{field|ucc}}({{field.kind|java_type}} {{field|name}}) {
         mTag_ = {{field.ordinal}};
         m{{field|ucc}} = {{field|name}};
     }
 
+    // TODO(rockot): Fix the findbugs error and remove this suppression.
+    // See http://crbug.com/570386.
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public {{field.kind|java_type}} get{{field|ucc}}() {
         assert mTag_ == {{field.ordinal}};
         return m{{field|ucc}};
