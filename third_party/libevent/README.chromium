@@ -19,6 +19,7 @@ static library using GYP.
    - Optimistically assume CLOCK_MONOTONIC is available and fallback if it
      fails, rather than explicitly testing for it.
    - Remove an unneeded variable that causes a -Werror build failure.
+   - Add an #ifndef to fix a preprocessor redefined -Werror build failure.
    - Revert the patch from http://sourceforge.net/p/levent/bugs/223/ that
      introduces use-after-free memory corruption when an event callback frees
      the struct event memory.
