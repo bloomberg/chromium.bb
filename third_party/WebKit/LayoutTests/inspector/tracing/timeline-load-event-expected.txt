@@ -13,7 +13,6 @@ MarkDOMContent Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "MarkDOMContent"
 }
 MarkLoad Properties:
@@ -26,7 +25,6 @@ MarkLoad Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "MarkLoad"
 }
 MarkFirstPaint Properties:
@@ -35,7 +33,6 @@ MarkFirstPaint Properties:
     }
     endTime : <number>
     startTime : <number>
-    thread : <string>
     type : "MarkFirstPaint"
 }
 

@@ -11,7 +11,6 @@ function test()
     var timelineData = InspectorTest.timelineData();
 
     var timeline = WebInspector.panels.timeline;
-    timeline._flameChartEnabledSetting.set(true);
     timeline._onModeChanged();
     timeline._currentViews[0]._automaticallySizeWindow = true;
 

@@ -6,7 +6,6 @@ EvaluateScript
 ----> Timestamp: SCRIPT TAG
 EvaluateScript Properties:
 {
-    children : <object>
     data : {
         columnNumber : <number>
         frame : <string>
@@ -18,7 +17,6 @@ EvaluateScript Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "EvaluateScript"
 }
 

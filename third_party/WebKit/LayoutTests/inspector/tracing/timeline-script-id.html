@@ -32,24 +32,24 @@ function test()
 
     var linkifier = new WebInspector.Linkifier();
 
-    var recordTypes = ["TimerInstall", "TimerRemove", "FunctionCall"];
-    function formatter(record)
+    var recordTypes = new Set(["TimerInstall", "TimerRemove", "FunctionCall"]);
+    function formatter(event)
     {
-        if (recordTypes.indexOf(record.type()) === -1)
+        if (!recordTypes.has(event.name))
             return;
 
-        var detailsText = WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(record.traceEvent(), InspectorTest.timelineModel().target());
-        InspectorTest.addResult("detailsTextContent for " + record.type() + " event: '" + detailsText + "'");
+        var detailsText = WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(event, InspectorTest.timelineModel().target());
+        InspectorTest.addResult("detailsTextContent for " + event.name + " event: '" + detailsText + "'");
 
-        var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), InspectorTest.timelineModel().target(), linkifier);
+        var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, InspectorTest.timelineModel().target(), linkifier);
         if (!details)
             return;
-        InspectorTest.addResult("details.textContent for " + record.type() + " event: '" + details.textContent.replace(/VM[\d]+/, "VM") + "'");
+        InspectorTest.addResult("details.textContent for " + event.name + " event: '" + details.textContent.replace(/VM[\d]+/, "VM") + "'");
     }
 
     function finish()
     {
-        InspectorTest.printTimelinePresentationRecords(null, formatter);
+        InspectorTest.walkTimelineEventTree(formatter);
         InspectorTest.completeTest();
     }
 }

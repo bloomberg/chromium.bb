@@ -11,13 +11,11 @@ RequestAnimationFrame Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "RequestAnimationFrame"
 }
 Text details for RequestAnimationFrame: timeline-animation-frame.html:8
 FireAnimationFrame Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         id : <number>
@@ -25,7 +23,6 @@ FireAnimationFrame Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "FireAnimationFrame"
 }
 Text details for FireAnimationFrame: timeline-animation-frame.html:8
@@ -40,7 +37,6 @@ CancelAnimationFrame Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "CancelAnimationFrame"
 }
 Text details for CancelAnimationFrame: timeline-animation-frame.html:11

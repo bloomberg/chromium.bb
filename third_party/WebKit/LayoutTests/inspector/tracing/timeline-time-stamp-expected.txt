@@ -9,7 +9,6 @@ TimeStamp Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "TimeStamp"
 }
 Text details for TimeStamp: null
@@ -23,7 +22,6 @@ TimeStamp Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "TimeStamp"
 }
 

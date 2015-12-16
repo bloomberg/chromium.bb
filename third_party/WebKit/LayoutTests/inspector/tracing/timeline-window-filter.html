@@ -12,7 +12,6 @@ function test()
     var timeline = WebInspector.panels.timeline;
     var overviewPane = timeline._overviewPane;
     var model = timeline._model;
-    InspectorTest.switchTimelineToWaterfallMode();
 
     function createFileReader(file, delegate)
     {
@@ -22,7 +21,7 @@ function test()
     InspectorTest.override(model, "_createFileReader", createFileReader);
 
     model.loadFromFile({}, new WebInspector.Progress());
-    timeline._currentViews[0]._refresh();
+    timeline._currentViews[0].refreshRecords();
 
     overviewPane._update();
     InspectorTest.addResult("OverviewPane:");
@@ -30,28 +29,14 @@ function test()
     dumpDividers(overviewPane._overviewCalculator);
     InspectorTest.addResult("");
 
-    function dumpRecordsCountForRange(windowLeft, windowRight)
-    {
-        var view = timeline._currentViews[0];
-        overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
-        view._refresh();
-        InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
-        InspectorTest.addResult("time range = " + view._windowStartTime + " - " + view._windowEndTime);
-        InspectorTest.addResult("records count: " + view._presentationModel.filteredRecords().length);
-        view._calculator.setDisplayWindow(455 + WebInspector.TimelineCalculator._minWidth, 5);
-        dumpDividers(view._calculator);
-        InspectorTest.addResult("");
-    }
-
     function dumpFlameChartRecordsCountForRange(windowLeft, windowRight)
     {
         var mainView = timeline._currentViews[0]._mainView;
+        mainView._muteAnimation = true;
         overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
         mainView.update();
         InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
         InspectorTest.addResult("time range = " + mainView._timeWindowLeft + " - " + mainView._timeWindowRight);
-        mainView._calculator.setDisplayWindow(455 + WebInspector.TimelineCalculator._minWidth, 5);
-        dumpDividers(mainView._calculator);
         InspectorTest.addResult("");
     }
 
@@ -63,32 +48,14 @@ function test()
         InspectorTest.addResult("divider offsets: [" + dividers.join(", ") + "]. We are expecting round numbers.");
     }
 
-    timeline._onModeChanged();
-    dumpRecordsCountForRange(0, 1);
-    dumpRecordsCountForRange(0.25, 0.75);
-    dumpRecordsCountForRange(0.33, 0.66);
-
-    timeline._flameChartEnabledSetting.set(true);
-    timeline._onModeChanged();
-    // FIXME(394762): uncomment once we support loading tracing events.
-//     dumpFlameChartRecordsCountForRange(0, 1);
-//     dumpFlameChartRecordsCountForRange(0.25, 0.5);
-//     dumpFlameChartRecordsCountForRange(0.33, 0.4);
+    dumpFlameChartRecordsCountForRange(0, 1);
+    dumpFlameChartRecordsCountForRange(0.25, 0.75);
+    dumpFlameChartRecordsCountForRange(0.33, 0.66);
 
     overviewPane._overviewGrid.setWindow(0.1, 0.9);
 
     InspectorTest.addResult("--------------------------------------------------------");
-
     InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
-    timeline._flameChartEnabledSetting.set(false);
-    timeline._onModeChanged();
-
-    InspectorTest.addResult("");
-
-    InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
-    timeline._flameChartEnabledSetting.set(true);
-    timeline._onModeChanged();
-
     InspectorTest.completeTest();
 }
 
@@ -102,9 +69,6 @@ Tests the Timeline window filter.
 
 <p>
 It applies different ranges to the OverviewGrid and expects that current view reflects the change.
-</p>
-<p>
-Also it detects that after switching to another view it gets the proper time range.
 </p>
 
 </body>

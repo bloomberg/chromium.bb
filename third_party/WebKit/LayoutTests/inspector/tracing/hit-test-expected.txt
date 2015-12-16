@@ -13,7 +13,6 @@ HitTest Properties:
     }
     endTime : <number>
     startTime : <number>
-    thread : <string>
     type : "HitTest"
 }
 Text details for HitTest: null

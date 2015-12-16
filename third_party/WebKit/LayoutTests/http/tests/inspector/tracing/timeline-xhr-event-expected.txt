@@ -12,13 +12,11 @@ XHRReadyStateChange Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "XHRReadyStateChange"
 }
 Text details for XHRReadyStateChange: network/resources/resource.php
 XHRReadyStateChange Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         readyState : 2
@@ -27,13 +25,11 @@ XHRReadyStateChange Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "XHRReadyStateChange"
 }
 Text details for XHRReadyStateChange: network/resources/resource.php
 XHRReadyStateChange Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         readyState : 3
@@ -42,13 +38,11 @@ XHRReadyStateChange Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "XHRReadyStateChange"
 }
 Text details for XHRReadyStateChange: network/resources/resource.php
 XHRReadyStateChange Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         readyState : 4
@@ -57,13 +51,11 @@ XHRReadyStateChange Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "XHRReadyStateChange"
 }
 Text details for XHRReadyStateChange: network/resources/resource.php
 XHRLoad Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         url : .../inspector/tracing/network/resources/resource.php
@@ -71,7 +63,6 @@ XHRLoad Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "XHRLoad"
 }
 Text details for XHRLoad: network/resources/resource.php

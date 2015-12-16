@@ -2,28 +2,17 @@ Test nesting of time/timeEnd records on Timeline
 
 
 Running: testSimpleConsoleTime
-Root
-----> FunctionCall
---------> a
+----> Function Call
 
 Running: testNestedConsoleTime
-Root
-----> FunctionCall
---------> a
-------------> b
-------------> c
-----------------> d
+----> Function Call
 
 Running: testUnbalancedConsoleTime
-Root
-----> FunctionCall
---------> a
+----> Function Call
 
 Running: testConsoleTimeWithoutConsoleTimeEnd
-Root
-----> FunctionCall
+----> Function Call
 --------> Timestamp: Foo
 --------> Timestamp: Bar
---------> d
-------------> Timestamp: Baz
+--------> Timestamp: Baz
 

@@ -29,30 +29,19 @@ function test()
         var recordTypes = WebInspector.TimelineModel.RecordType;
         var typesToDump = new Set([recordTypes.ResourceSendRequest, recordTypes.ResourceReceiveResponse, recordTypes.ResourceReceivedData, recordTypes.ResourceFinish,
             recordTypes.EventDispatch, recordTypes.FunctionCall]);
-        function dumpFormattedRecord(presentationRecord, prefix)
+        function dumpEvent(traceEvent, level)
         {
-            var record = presentationRecord.record();
-            prefix = prefix || "";
             // Ignore stray paint & rendering events for better stability.
-            var categoryName = WebInspector.TimelineUIUtils.categoryForRecord(record).name;
+            var categoryName = WebInspector.TimelineUIUtils.eventStyle(traceEvent).category.name;
                if (categoryName !== "loading" && categoryName !== "scripting")
                 return;
-            var childPrefix = prefix;
             // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
             // Filter out InjectedScript function call because they happen out of sync.
-            if (!presentationRecord.coalesced() && typesToDump.has(record.type())
-                && (record.type() !== "FunctionCall" || record.traceEvent().args["data"].scriptName)) {
-                InspectorTest.addResult(prefix + record.type());
-                childPrefix = childPrefix + "    ";
-            }
-            if (presentationRecord.presentationChildren()) {
-                for (var i = 0; i < presentationRecord.presentationChildren().length; ++i)
-                    dumpFormattedRecord(presentationRecord.presentationChildren()[i], childPrefix);
+            if (typesToDump.has(traceEvent.name) && (traceEvent.name !== "FunctionCall" || traceEvent.args["data"].scriptName)) {
+                InspectorTest.addResult("    ".repeat(level - 1) + traceEvent.name);
             }
         }
-        var records = InspectorTest.timelinePresentationModel().rootRecord().presentationChildren();
-        for (var i = 0; i < records.length; ++i)
-            dumpFormattedRecord(records[i]);
+        InspectorTest.walkTimelineEventTree(dumpEvent);
         InspectorTest.completeTest();
     }
 }

@@ -12,7 +12,6 @@ RequestIdleCallback Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "RequestIdleCallback"
 }
 Text details for RequestIdleCallback: idle-callback.html:8
@@ -28,7 +27,6 @@ RequestIdleCallback Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "RequestIdleCallback"
 }
 Text details for RequestIdleCallback: idle-callback.html:10
@@ -44,7 +42,6 @@ RequestIdleCallback Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "RequestIdleCallback"
 }
 Text details for RequestIdleCallback: idle-callback.html:13
@@ -59,13 +56,11 @@ CancelIdleCallback Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "CancelIdleCallback"
 }
 Text details for CancelIdleCallback: idle-callback.html:9
 FireIdleCallback Properties:
 {
-    children : <object>
     data : {
         allottedMilliseconds : <number>
         frame : <string>
@@ -75,13 +70,11 @@ FireIdleCallback Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "FireIdleCallback"
 }
 Text details for FireIdleCallback: idle-callback.html:10
 FireIdleCallback Properties:
 {
-    children : <object>
     data : {
         allottedMilliseconds : <number>
         frame : <string>
@@ -91,7 +84,6 @@ FireIdleCallback Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "FireIdleCallback"
 }
 Text details for FireIdleCallback: idle-callback.html:13

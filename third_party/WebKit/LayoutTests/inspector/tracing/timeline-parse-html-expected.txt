@@ -18,7 +18,6 @@ ParseHTML Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "ParseHTML"
 }
 Text details for ParseHTML: timeline-parse-html.html [1…]
@@ -39,7 +38,6 @@ ParseHTML Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "ParseHTML"
 }
 Text details for ParseHTML: timeline-parse-html.html [1…]

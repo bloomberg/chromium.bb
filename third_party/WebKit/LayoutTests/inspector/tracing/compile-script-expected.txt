@@ -10,7 +10,6 @@ v8.compile Properties:
     }
     endTime : <number>
     startTime : <number>
-    thread : <string>
     type : "v8.compile"
 }
 Text details for v8.compile: undefined
@@ -23,7 +22,6 @@ v8.compile Properties:
     }
     endTime : <number>
     startTime : <number>
-    thread : <string>
     type : "v8.compile"
 }
 Text details for v8.compile: undefined
@@ -36,7 +34,6 @@ v8.compile Properties:
     }
     endTime : <number>
     startTime : <number>
-    thread : <string>
     type : "v8.compile"
 }
 Text details for v8.compile: timeline-script-tag-2.js:1

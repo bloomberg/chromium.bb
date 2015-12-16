@@ -4,17 +4,6 @@
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function initialize_CategoryFilterTest()
-{
-    InspectorTest.dumpVisibleRecords = function()
-    {
-        var presentationModel = InspectorTest.timelinePresentationModel();
-        var records = presentationModel.filteredRecords();
-        for (var i = 0; i < records.length; ++i)
-            InspectorTest.addResult(records[i].record().type());
-    }
-}
-
 function test()
 {
     var sessionId = "4.20";
@@ -46,28 +35,33 @@ function test()
         {"name": "foooooo", "ts": 1099999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"toplevel", "args": {}}
     ];
 
-    InspectorTest.timelineModel().setEventsForTest(testData);
+    var panel = WebInspector.panels.timeline;
+    var model = InspectorTest.timelineModel();
+    model.setEventsForTest(testData);
+    var view = new WebInspector.EventsTimelineTreeView(model, null);
+    view.updateContents(WebInspector.TimelineSelection.fromRange(model.minimumRecordTime(), model.maximumRecordTime()));
+    var filtersControl = view._filtersControl;
 
-    var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
-    for (var i = 0; i < rootRecord.presentationChildren().length; ++i)
-        rootRecord.presentationChildren()[i].setCollapsed(false);
-
-    var filtersControl = WebInspector.panels.timeline._filtersControl;
     InspectorTest.addResult("Original records");
     filtersControl._notifyFiltersChanged();
-    InspectorTest.dumpVisibleRecords();
+    dumpVisibleRecords();
 
     InspectorTest.addResult("Visible records when 'loading' is disabled");
     WebInspector.TimelineUIUtils.categories().loading.hidden = true;
     filtersControl._notifyFiltersChanged();
-    InspectorTest.dumpVisibleRecords();
+    dumpVisibleRecords();
 
     InspectorTest.addResult("Visible records when 'scripting' is disabled");
     WebInspector.TimelineUIUtils.categories().scripting.hidden = true;
     filtersControl._notifyFiltersChanged();
-    InspectorTest.dumpVisibleRecords();
+    dumpVisibleRecords();
 
     InspectorTest.completeTest();
+
+    function dumpVisibleRecords()
+    {
+        InspectorTest.walkTimelineEventTreeUnderNode(event => InspectorTest.addResult(event.name), view._currentTree)
+    }
 }
 
 </script>

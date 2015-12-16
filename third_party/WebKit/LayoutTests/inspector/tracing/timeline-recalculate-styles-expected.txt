@@ -14,7 +14,6 @@ UpdateLayoutTree Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "UpdateLayoutTree"
 }
 Text details for UpdateLayoutTree: timeline-recalculate-styles.html:20

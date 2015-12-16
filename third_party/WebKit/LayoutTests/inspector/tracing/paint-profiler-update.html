@@ -27,7 +27,6 @@ function test()
     var panel = WebInspector.panels.timeline;
 
     panel._captureLayersAndPicturesSetting.set(true);
-    panel._flameChartEnabledSetting.set(true);
     panel._onModeChanged();
 
     InspectorTest.invokeAsyncWithTimeline("performActions", onRecordingDone);

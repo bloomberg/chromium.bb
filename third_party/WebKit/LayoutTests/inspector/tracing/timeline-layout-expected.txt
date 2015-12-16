@@ -24,7 +24,6 @@ Layout Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "Layout"
 }
 Text details for Layout: timeline-layout.html:17
@@ -48,7 +47,6 @@ Layout Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "Layout"
 }
 Text details for Layout: timeline-layout.html:17

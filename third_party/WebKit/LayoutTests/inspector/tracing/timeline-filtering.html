@@ -50,28 +50,21 @@ function test()
         {"name": "Program", "ts": 2590000, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default-devtools.timeline", "args": {}}
     ];
 
+
     var panel = WebInspector.panels.timeline;
-    var model = InspectorTest.timelinePresentationModel();
-
-    InspectorTest.timelineModel().setEventsForTest(testData);
-
-    function printRecord(record)
+    var model = InspectorTest.timelineModel();
+    model.setEventsForTest(testData);
+    var view = new WebInspector.EventsTimelineTreeView(model, null);
+    view.updateContents(WebInspector.TimelineSelection.fromRange(model.minimumRecordTime(), model.maximumRecordTime()));
+    var filtersControl = view._filtersControl;
+    function printEventMessage(event, level)
     {
-        var prefix = [];
-        var current = record.presentationParent();
-        while (current) {
-            current = current.presentationParent();
-            prefix.push(" ");
-        }
-        var mark = record.expandable() ? (record.collapsed() ? "+" : "-") : " ";
-        InspectorTest.addResult(prefix.join("") + mark + record.record().traceEvent().args["data"].message);
+        InspectorTest.addResult(" ".repeat(level) + event.args["data"].message);
     }
 
     function dumpRecords()
     {
-        var records = model.filteredRecords();
-        for (var i = 0; i < records.length; ++i)
-            printRecord(records[i]);
+        InspectorTest.walkTimelineEventTreeUnderNode(printEventMessage, view._currentTree);
         InspectorTest.addResult("");
     }
 
@@ -79,19 +72,8 @@ function test()
     dumpRecords();
 
     InspectorTest.addResult("Filtered by 'bar':");
-    var textFilterUI = panel._filtersControl._textFilterUI;
+    var textFilterUI = filtersControl._textFilterUI;
     textFilterUI.setValue("bar");
-    dumpRecords();
-
-    InspectorTest.addResult("Collapsed 'bar04' and 'foo13':");
-    var records = model.filteredRecords();
-    var collapseList = {"bar04":true, "foo13": true};
-    for (var i = 0; i < records.length; ++i) {
-        var record = records[i];
-        if (collapseList[record.record().traceEvent().args["data"].message])
-            record.setCollapsed(true);
-    }
-    model.invalidateFilteredRecords();
     dumpRecords();
 
     InspectorTest.addResult("Filtered by 'foo':");
@@ -106,7 +88,7 @@ function test()
 
 <body onload="runTest()">
 <p>
-Test filtering on timeline panel.</a>
+Test filtering in Timeline Tree View panel.</a>
 </p>
 
 </body>

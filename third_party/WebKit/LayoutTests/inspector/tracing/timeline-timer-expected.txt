@@ -13,7 +13,6 @@ TimerInstall Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "TimerInstall"
 }
 Text details for TimerInstall: timeline-timer.html:9
@@ -30,13 +29,11 @@ TimerInstall Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "TimerInstall"
 }
 Text details for TimerInstall: timeline-timer.html:10
 TimerFire Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         timerId : <number>
@@ -44,13 +41,11 @@ TimerFire Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "TimerFire"
 }
 Text details for TimerFire: timeline-timer.html:9
 TimerFire Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         timerId : <number>
@@ -58,13 +53,11 @@ TimerFire Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "TimerFire"
 }
 Text details for TimerFire: timeline-timer.html:10
 TimerFire Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         timerId : <number>
@@ -72,7 +65,6 @@ TimerFire Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "TimerFire"
 }
 Text details for TimerFire: timeline-timer.html:10
@@ -87,13 +79,11 @@ TimerRemove Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "TimerRemove"
 }
 Text details for TimerRemove: timeline-timer.html:17
 FunctionCall Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         scriptId : <string>
@@ -105,7 +95,6 @@ FunctionCall Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "FunctionCall"
 }
 FunctionCall Properties:
@@ -121,12 +110,10 @@ FunctionCall Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "FunctionCall"
 }
 FunctionCall Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         scriptId : <string>
@@ -138,12 +125,10 @@ FunctionCall Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "FunctionCall"
 }
 EvaluateScript Properties:
 {
-    children : <object>
     data : {
         columnNumber : <number>
         frame : <string>
@@ -155,7 +140,6 @@ EvaluateScript Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "EvaluateScript"
 }
 Text details for EvaluateScript: undefined

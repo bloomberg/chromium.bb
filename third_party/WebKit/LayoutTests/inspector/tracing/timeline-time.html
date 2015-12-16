@@ -75,11 +75,15 @@ function test()
 
     function performActions(actions, next)
     {
+        var namesToDump = new Set(["FunctionCall", "ConsoleTime", "TimeStamp"]);
+        function dumpName(event, level)
+        {
+            if (namesToDump.has(event.name))
+                InspectorTest.addResult("----".repeat(level) + "> " + WebInspector.TimelineUIUtils.eventTitle(event));
+        }
         function callback()
         {
-            var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
-            InspectorTest.dumpPresentationRecord(rootRecord, undefined, undefined, ["FunctionCall", "ConsoleTime", "TimeStamp"]);
-            InspectorTest.timelinePresentationModel().reset();
+            InspectorTest.walkTimelineEventTree(dumpName);
             next();
         }
         InspectorTest.evaluateWithTimeline(actions, InspectorTest.safeWrap(callback));

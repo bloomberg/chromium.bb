@@ -3,7 +3,6 @@ Tests the Timeline API instrumentation of a paint event
 
 Paint Properties:
 {
-    children : <object>
     data : {
         clip : <object>
         frame : <string>
@@ -13,7 +12,6 @@ Paint Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    thread : <string>
     type : "Paint"
 }
 

@@ -20,7 +20,6 @@ function test()
     var scriptUrl = "timeline-network-resource.js";
 
     var model = WebInspector.panels.timeline._model;
-    var presentationModel = InspectorTest.timelinePresentationModel();
 
     InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
@@ -35,17 +34,7 @@ function test()
                 printReceive(record);
             else if (record.type() === WebInspector.TimelineModel.RecordType.ResourceFinish)
                 printFinish(record);
-
-            var presentationRecord = presentationModel.toPresentationRecord(record);
-            if (presentationRecord && record.thread() === WebInspector.TimelineModel.MainThreadName) {
-                var parentIsRoot = presentationRecord.presentationParent() && !presentationRecord.presentationParent().presentationParent();
-                if (parentIsRoot) {
-                    if (lastRecordStartTime)
-                        InspectorTest.assertGreaterOrEqual(record.startTime(), lastRecordStartTime, "Top level records order violation");
-                    lastRecordStartTime = record.startTime();
-                }
-            }
-        }
+       }
         model.forAllRecords(format);
         InspectorTest.completeTest();
     }

@@ -10,7 +10,6 @@ EventDispatch Properties:
     endTime : <number>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "EventDispatch"
 }
 Text details for EventDispatch: mouseover
@@ -23,13 +22,11 @@ EventDispatch Properties:
     endTime : <number>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "EventDispatch"
 }
 Text details for EventDispatch: mousemove
 EventDispatch Properties:
 {
-    children : <object>
     data : {
         stackTrace : <object>
         type : "mousedown"
@@ -37,7 +34,6 @@ EventDispatch Properties:
     endTime : <number>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "EventDispatch"
 }
 Text details for EventDispatch: mousedown
@@ -50,7 +46,6 @@ EventDispatch Properties:
     endTime : <number>
     stackTrace : <object>
     startTime : <number>
-    thread : <string>
     type : "EventDispatch"
 }
 Text details for EventDispatch: selectstart
@@ -61,7 +56,6 @@ EventDispatch Properties:
     }
     endTime : <number>
     startTime : <number>
-    thread : <string>
     type : "EventDispatch"
 }
 Text details for EventDispatch: selectionchange
