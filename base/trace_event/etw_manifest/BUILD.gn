@@ -17,4 +17,9 @@ message_compiler("chrome_events_win") {
   ]
 
   user_mode_logging = true
+
+  # TOOD(brucedawson) bug 569989: Enable ETW manifest and compile and link it
+  # into the proper places. Enabling as-is may add the resources to too many
+  # targets. See the bug for more information.
+  compile_generated_code = false
 }

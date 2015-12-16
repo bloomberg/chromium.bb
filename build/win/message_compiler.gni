@@ -13,14 +13,30 @@ assert(is_win, "This only runs on Windows.")
 # user_mode_logging (optional bool)
 #   Generates user-mode logging code. Defaults to false (no logging code).
 #
+# compile_generated_code (optional, deafults = true)
+#   If unset or true, the generated code will be compiled and linked into
+#   targets that depend on it. If set to false, the .h and .rc files will only
+#   be generated.
+#
 # deps, public_deps, visibility
 #   Normal meaning.
 template("message_compiler") {
-  action_name = "${target_name}_mc"
-  source_set_name = target_name
+  if (defined(invoker.compile_generated_code) &&
+      !invoker.compile_generated_code) {
+    compile_generated_code = false
+    action_name = target_name
+  } else {
+    compile_generated_code = true
+    action_name = "${target_name}_mc"
+    source_set_name = target_name
+  }
 
   action_foreach(action_name) {
-    visibility = [ ":$source_set_name" ]
+    if (compile_generated_code) {
+      visibility = [ ":$source_set_name" ]
+    } else {
+      forward_variables_from(invoker, [ "visibility" ])
+    }
 
     script = "//build/win/message_compiler.py"
 
@@ -60,12 +76,14 @@ template("message_compiler") {
                            ])
   }
 
-  # Compile the generated rc file.
-  source_set(source_set_name) {
-    forward_variables_from(invoker, [ "visibility" ])
-    sources = get_target_outputs(":$action_name")
-    deps = [
-      ":$action_name",
-    ]
+  if (compile_generated_code) {
+    # Compile the generated rc file.
+    source_set(source_set_name) {
+      forward_variables_from(invoker, [ "visibility" ])
+      sources = get_target_outputs(":$action_name")
+      deps = [
+        ":$action_name",
+      ]
+    }
   }
 }
