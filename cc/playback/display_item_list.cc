@@ -238,7 +238,7 @@ DisplayItemList::AsValue(bool include_items) const {
     state->BeginArray("items");
     size_t item_index = 0;
     for (const DisplayItem& item : items_) {
-      item.AsValueInto(visual_rects_.size() >= item_index
+      item.AsValueInto(item_index < visual_rects_.size()
                            ? visual_rects_[item_index]
                            : gfx::Rect(),
                        state.get());
