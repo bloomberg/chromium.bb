@@ -3953,10 +3953,15 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
   if (!entry)
     return;
 
-  NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
-      static_cast<RenderFrameHostImpl*>(rvhi->GetMainFrame())->nav_entry_id());
+  // Sanity check that ensures nav_entry_id and page_id point to the same
+  // navigation entry.
+  if (rvhi->GetMainFrame()) {
+    NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
+        static_cast<RenderFrameHostImpl*>(rvhi->GetMainFrame())
+            ->nav_entry_id());
 
-  DCHECK_EQ(entry, new_entry);
+    DCHECK_EQ(entry, new_entry);
+  }
 
   if (page_state == entry->GetPageState())
     return;  // Nothing to update.
