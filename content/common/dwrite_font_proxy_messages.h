@@ -13,8 +13,13 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START DWriteFontProxyMsgStart
 
+#ifndef CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
+#define CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
+
 // The macros can't handle a complex template declaration, so we typedef it.
 typedef std::pair<base::string16, base::string16> DWriteStringPair;
+
+#endif  // CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
 
 // Locates the index of the specified font family within the system collection.
 IPC_SYNC_MESSAGE_CONTROL1_1(DWriteFontProxyMsg_FindFamily,
