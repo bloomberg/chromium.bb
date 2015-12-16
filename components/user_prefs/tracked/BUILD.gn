@@ -32,6 +32,8 @@ static_library("user_prefs_tracked") {
     "tracked_preference.h",
     "tracked_preference_helper.cc",
     "tracked_preference_helper.h",
+    "tracked_preference_histogram_names.cc",
+    "tracked_preference_histogram_names.h",
     "tracked_preference_validation_delegate.h",
     "tracked_preferences_migration.cc",
     "tracked_preferences_migration.h",

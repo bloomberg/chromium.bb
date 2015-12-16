@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "components/user_prefs/tracked/tracked_preference_histogram_names.h"
 
 TrackedPreferenceHelper::TrackedPreferenceHelper(
     const std::string& pref_path,
@@ -53,33 +54,39 @@ void TrackedPreferenceHelper::ReportValidationResult(
     PrefHashStoreTransaction::ValueState value_state) const {
   switch (value_state) {
     case PrefHashStoreTransaction::UNCHANGED:
-      UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceUnchanged",
-                                reporting_id_, reporting_ids_count_);
+      UMA_HISTOGRAM_ENUMERATION(
+          user_prefs::tracked::kTrackedPrefHistogramUnchanged, reporting_id_,
+          reporting_ids_count_);
       return;
     case PrefHashStoreTransaction::CLEARED:
-      UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceCleared",
-                                reporting_id_, reporting_ids_count_);
+      UMA_HISTOGRAM_ENUMERATION(
+          user_prefs::tracked::kTrackedPrefHistogramCleared, reporting_id_,
+          reporting_ids_count_);
       return;
     case PrefHashStoreTransaction::SECURE_LEGACY:
       UMA_HISTOGRAM_ENUMERATION(
-          "Settings.TrackedPreferenceMigratedLegacyDeviceId", reporting_id_,
-          reporting_ids_count_);
+          user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
+          reporting_id_, reporting_ids_count_);
       return;
     case PrefHashStoreTransaction::CHANGED:
-      UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceChanged",
-                                reporting_id_, reporting_ids_count_);
+      UMA_HISTOGRAM_ENUMERATION(
+          user_prefs::tracked::kTrackedPrefHistogramChanged, reporting_id_,
+          reporting_ids_count_);
       return;
     case PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE:
-      UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceInitialized",
-                                reporting_id_, reporting_ids_count_);
+      UMA_HISTOGRAM_ENUMERATION(
+          user_prefs::tracked::kTrackedPrefHistogramInitialized, reporting_id_,
+          reporting_ids_count_);
       return;
     case PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE:
-      UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceTrustedInitialized",
-                                reporting_id_, reporting_ids_count_);
+      UMA_HISTOGRAM_ENUMERATION(
+          user_prefs::tracked::kTrackedPrefHistogramTrustedInitialized,
+          reporting_id_, reporting_ids_count_);
       return;
     case PrefHashStoreTransaction::TRUSTED_NULL_VALUE:
-      UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceNullInitialized",
-                                reporting_id_, reporting_ids_count_);
+      UMA_HISTOGRAM_ENUMERATION(
+          user_prefs::tracked::kTrackedPrefHistogramNullInitialized,
+          reporting_id_, reporting_ids_count_);
       return;
   }
   NOTREACHED() << "Unexpected PrefHashStoreTransaction::ValueState: "
@@ -92,11 +99,12 @@ void TrackedPreferenceHelper::ReportAction(ResetAction reset_action) const {
       // No report for DONT_RESET.
       break;
     case WANTED_RESET:
-      UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceWantedReset",
-                                reporting_id_, reporting_ids_count_);
+      UMA_HISTOGRAM_ENUMERATION(
+          user_prefs::tracked::kTrackedPrefHistogramWantedReset, reporting_id_,
+          reporting_ids_count_);
       break;
     case DO_RESET:
-      UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceReset",
+      UMA_HISTOGRAM_ENUMERATION(user_prefs::tracked::kTrackedPrefHistogramReset,
                                 reporting_id_, reporting_ids_count_);
       break;
   }
@@ -107,12 +115,9 @@ void TrackedPreferenceHelper::ReportSplitPreferenceChangedCount(
   // The histogram below is an expansion of the UMA_HISTOGRAM_COUNTS_100 macro
   // adapted to allow for a dynamically suffixed histogram name.
   // Note: The factory creates and owns the histogram.
-  base::HistogramBase* histogram =
-      base::LinearHistogram::FactoryGet(
-          "Settings.TrackedSplitPreferenceChanged." + pref_path_,
-          1,
-          100,  // Allow counts up to 100.
-          101,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
+  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
+      user_prefs::tracked::kTrackedSplitPrefHistogramChanged + pref_path_, 1,
+      100,  // Allow counts up to 100.
+      101, base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(count);
 }

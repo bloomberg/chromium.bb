@@ -60,6 +60,8 @@
         'user_prefs/tracked/tracked_preference.h',
         'user_prefs/tracked/tracked_preference_helper.cc',
         'user_prefs/tracked/tracked_preference_helper.h',
+        'user_prefs/tracked/tracked_preference_histogram_names.cc',
+        'user_prefs/tracked/tracked_preference_histogram_names.h',
         'user_prefs/tracked/tracked_preference_validation_delegate.h',
         'user_prefs/tracked/tracked_preferences_migration.cc',
         'user_prefs/tracked/tracked_preferences_migration.h',

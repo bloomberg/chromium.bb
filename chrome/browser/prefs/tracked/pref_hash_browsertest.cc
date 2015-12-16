@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/default_search_manager.h"
+#include "components/user_prefs/tracked/tracked_preference_histogram_names.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 
@@ -254,7 +255,7 @@ class PrefHashBrowserTestBase
 
     if (IsPRETest()) {
       num_tracked_prefs_ = GetTrackedPrefHistogramCount(
-          "Settings.TrackedPreferenceNullInitialized", ALLOW_ANY);
+          user_prefs::tracked::kTrackedPrefHistogramNullInitialized, ALLOW_ANY);
       EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM,
                 num_tracked_prefs_ > 0);
 
@@ -262,7 +263,8 @@ class PrefHashBrowserTestBase
       // when an empty dictionary is encountered on first run (this should only
       // hit for pref #5 in the current design).
       int num_split_tracked_prefs = GetTrackedPrefHistogramCount(
-          "Settings.TrackedPreferenceUnchanged", BEGIN_ALLOW_SINGLE_BUCKET + 5);
+          user_prefs::tracked::kTrackedPrefHistogramUnchanged,
+          BEGIN_ALLOW_SINGLE_BUCKET + 5);
       EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
                 num_split_tracked_prefs);
 
@@ -373,37 +375,40 @@ class PrefHashBrowserTestUnchangedDefault : public PrefHashBrowserTestBase {
 
   void VerifyReactionToPrefAttack() override {
     // Expect all prefs to be reported as Unchanged with no resets.
-    EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
-                  ? num_tracked_prefs() : 0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceUnchanged", ALLOW_ANY));
+    EXPECT_EQ(
+        protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
+            ? num_tracked_prefs()
+            : 0,
+        GetTrackedPrefHistogramCount(
+            user_prefs::tracked::kTrackedPrefHistogramUnchanged, ALLOW_ANY));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramWantedReset,
+                     ALLOW_NONE));
     EXPECT_EQ(0,
               GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceWantedReset", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceReset",
-                                           ALLOW_NONE));
+                  user_prefs::tracked::kTrackedPrefHistogramReset, ALLOW_NONE));
 
     // Nothing else should have triggered.
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceChanged",
-                                           ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceCleared",
-                                           ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
     EXPECT_EQ(
-        0,
-        GetTrackedPrefHistogramCount(
-            "Settings.TrackedPreferenceMigratedLegacyDeviceId", ALLOW_NONE));
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramChanged, ALLOW_NONE));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramCleared, ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramInitialized,
+                     ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramTrustedInitialized,
+                  ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramNullInitialized,
+                     ALLOW_NONE));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
+               ALLOW_NONE));
   }
 };
 
@@ -460,36 +465,40 @@ class PrefHashBrowserTestClearedAtomic : public PrefHashBrowserTestBase {
     // cleared), but shouldn't have triggered a reset (as there is nothing we
     // can do when the pref is already gone).
     EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceCleared",
-                                           BEGIN_ALLOW_SINGLE_BUCKET + 2));
-    EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
-                  ? num_tracked_prefs() - 1 : 0,
               GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceUnchanged", ALLOW_ANY));
+                  user_prefs::tracked::kTrackedPrefHistogramCleared,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 2));
+    EXPECT_EQ(
+        protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
+            ? num_tracked_prefs() - 1
+            : 0,
+        GetTrackedPrefHistogramCount(
+            user_prefs::tracked::kTrackedPrefHistogramUnchanged, ALLOW_ANY));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramWantedReset,
+                     ALLOW_NONE));
     EXPECT_EQ(0,
               GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceWantedReset", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceReset",
-                                           ALLOW_NONE));
+                  user_prefs::tracked::kTrackedPrefHistogramReset, ALLOW_NONE));
 
     // Nothing else should have triggered.
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceChanged",
-                                           ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
     EXPECT_EQ(
-        0,
-        GetTrackedPrefHistogramCount(
-            "Settings.TrackedPreferenceMigratedLegacyDeviceId", ALLOW_NONE));
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramChanged, ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramInitialized,
+                     ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramTrustedInitialized,
+                  ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramNullInitialized,
+                     ALLOW_NONE));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
+               ALLOW_NONE));
   }
 };
 
@@ -534,7 +543,7 @@ class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
   void VerifyReactionToPrefAttack() override {
     // Preferences that are NULL by default will be NullInitialized.
     int num_null_values = GetTrackedPrefHistogramCount(
-        "Settings.TrackedPreferenceNullInitialized", ALLOW_ANY);
+        user_prefs::tracked::kTrackedPrefHistogramNullInitialized, ALLOW_ANY);
     EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM,
               num_null_values > 0);
     if (num_null_values > 0) {
@@ -546,9 +555,10 @@ class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
     // Expect all non-null prefs to be reported as Initialized (with
     // accompanying resets or wanted resets based on the current protection
     // level).
-    EXPECT_EQ(num_tracked_prefs() - num_null_values,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceInitialized", ALLOW_ANY));
+    EXPECT_EQ(
+        num_tracked_prefs() - num_null_values,
+        GetTrackedPrefHistogramCount(
+            user_prefs::tracked::kTrackedPrefHistogramInitialized, ALLOW_ANY));
 
     int num_protected_prefs = 0;
     // A switch statement falling through each protection level in decreasing
@@ -573,12 +583,13 @@ class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
         break;
     }
 
-    EXPECT_EQ(num_tracked_prefs() - num_null_values - num_protected_prefs,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceWantedReset", ALLOW_ANY));
+    EXPECT_EQ(
+        num_tracked_prefs() - num_null_values - num_protected_prefs,
+        GetTrackedPrefHistogramCount(
+            user_prefs::tracked::kTrackedPrefHistogramWantedReset, ALLOW_ANY));
     EXPECT_EQ(num_protected_prefs,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceReset",
-                                           ALLOW_ANY));
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramReset, ALLOW_ANY));
 
     // Explicitly verify the result of reported resets.
 
@@ -597,19 +608,19 @@ class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
                   SessionStartupPref::URLS);
 
     // Nothing else should have triggered.
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceUnchanged", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceChanged",
-                                           ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceCleared",
-                                           ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramUnchanged,
+                     ALLOW_NONE));
     EXPECT_EQ(
-        0,
-        GetTrackedPrefHistogramCount(
-            "Settings.TrackedPreferenceMigratedLegacyDeviceId", ALLOW_NONE));
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramChanged, ALLOW_NONE));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramCleared, ALLOW_NONE));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
+               ALLOW_NONE));
   }
 };
 
@@ -649,21 +660,27 @@ class PrefHashBrowserTestChangedAtomic : public PrefHashBrowserTestBase {
   void VerifyReactionToPrefAttack() override {
     // Expect a single Changed event for tracked pref #4 (startup URLs).
     EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceChanged",
-                                           BEGIN_ALLOW_SINGLE_BUCKET + 4));
-    EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
-                  ? num_tracked_prefs() - 1 : 0,
               GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceUnchanged", ALLOW_ANY));
-
+                  user_prefs::tracked::kTrackedPrefHistogramChanged,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 4));
     EXPECT_EQ(
-        (protection_level_ > PROTECTION_DISABLED_ON_PLATFORM &&
-         protection_level_ < PROTECTION_ENABLED_BASIC) ? 1 : 0,
-        GetTrackedPrefHistogramCount("Settings.TrackedPreferenceWantedReset",
-                                     BEGIN_ALLOW_SINGLE_BUCKET + 4));
+        protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
+            ? num_tracked_prefs() - 1
+            : 0,
+        GetTrackedPrefHistogramCount(
+            user_prefs::tracked::kTrackedPrefHistogramUnchanged, ALLOW_ANY));
+
+    EXPECT_EQ((protection_level_ > PROTECTION_DISABLED_ON_PLATFORM &&
+               protection_level_ < PROTECTION_ENABLED_BASIC)
+                  ? 1
+                  : 0,
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramWantedReset,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 4));
     EXPECT_EQ(protection_level_ >= PROTECTION_ENABLED_BASIC ? 1 : 0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceReset",
-                                           BEGIN_ALLOW_SINGLE_BUCKET + 4));
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramReset,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 4));
 
 // TODO(gab): This doesn't work on OS_CHROMEOS because we fail to attack
 // Preferences.
@@ -677,22 +694,23 @@ class PrefHashBrowserTestChangedAtomic : public PrefHashBrowserTestBase {
 #endif
 
     // Nothing else should have triggered.
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceCleared",
-                                           ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
     EXPECT_EQ(
-        0,
-        GetTrackedPrefHistogramCount(
-            "Settings.TrackedPreferenceMigratedLegacyDeviceId", ALLOW_NONE));
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramCleared, ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramInitialized,
+                     ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramTrustedInitialized,
+                  ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramNullInitialized,
+                     ALLOW_NONE));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
+               ALLOW_NONE));
   }
 };
 
@@ -741,48 +759,55 @@ class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
     // Expect a single split pref changed report with a count of 2 for tracked
     // pref #5 (extensions).
     EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceChanged",
-                                           BEGIN_ALLOW_SINGLE_BUCKET + 5));
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramChanged,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 5));
     EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
               GetTrackedPrefHistogramCount(
                   "Settings.TrackedSplitPreferenceChanged.extensions.settings",
                   BEGIN_ALLOW_SINGLE_BUCKET + 2));
 
     // Everything else should have remained unchanged.
-    EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
-                  ? num_tracked_prefs() - 1 : 0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceUnchanged", ALLOW_ANY));
-
     EXPECT_EQ(
-        (protection_level_ > PROTECTION_DISABLED_ON_PLATFORM &&
-         protection_level_ < PROTECTION_ENABLED_EXTENSIONS) ? 1 : 0,
-        GetTrackedPrefHistogramCount("Settings.TrackedPreferenceWantedReset",
-                                     BEGIN_ALLOW_SINGLE_BUCKET + 5));
+        protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
+            ? num_tracked_prefs() - 1
+            : 0,
+        GetTrackedPrefHistogramCount(
+            user_prefs::tracked::kTrackedPrefHistogramUnchanged, ALLOW_ANY));
+
+    EXPECT_EQ((protection_level_ > PROTECTION_DISABLED_ON_PLATFORM &&
+               protection_level_ < PROTECTION_ENABLED_EXTENSIONS)
+                  ? 1
+                  : 0,
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramWantedReset,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 5));
     EXPECT_EQ(protection_level_ >= PROTECTION_ENABLED_EXTENSIONS ? 1 : 0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceReset",
-                                           BEGIN_ALLOW_SINGLE_BUCKET + 5));
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramReset,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 5));
 
     EXPECT_EQ(protection_level_ < PROTECTION_ENABLED_EXTENSIONS,
               extension_service()->GetExtensionById(kGoodCrxId, true) != NULL);
 
     // Nothing else should have triggered.
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceCleared",
-                                           ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
     EXPECT_EQ(
-        0,
-        GetTrackedPrefHistogramCount(
-            "Settings.TrackedPreferenceMigratedLegacyDeviceId", ALLOW_NONE));
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramCleared, ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramInitialized,
+                     ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramTrustedInitialized,
+                  ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramNullInitialized,
+                     ALLOW_NONE));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
+               ALLOW_NONE));
   }
 };
 
@@ -813,42 +838,49 @@ class PrefHashBrowserTestUntrustedAdditionToPrefs
     // not protecting; if protection is enabled the change should be a no-op.
     int changed_expected =
         protection_level_ == PROTECTION_DISABLED_FOR_GROUP ? 1 : 0;
-    EXPECT_EQ(
-        (protection_level_ > PROTECTION_DISABLED_ON_PLATFORM &&
-         protection_level_ < PROTECTION_ENABLED_BASIC) ? changed_expected : 0,
-        GetTrackedPrefHistogramCount("Settings.TrackedPreferenceChanged",
-                                     BEGIN_ALLOW_SINGLE_BUCKET + 3));
-    EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
-                  ? num_tracked_prefs() - changed_expected : 0,
+    EXPECT_EQ((protection_level_ > PROTECTION_DISABLED_ON_PLATFORM &&
+               protection_level_ < PROTECTION_ENABLED_BASIC)
+                  ? changed_expected
+                  : 0,
               GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceUnchanged", ALLOW_ANY));
-
+                  user_prefs::tracked::kTrackedPrefHistogramChanged,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 3));
     EXPECT_EQ(
-        (protection_level_ > PROTECTION_DISABLED_ON_PLATFORM &&
-         protection_level_ < PROTECTION_ENABLED_BASIC) ? 1 : 0,
-        GetTrackedPrefHistogramCount("Settings.TrackedPreferenceWantedReset",
-                                     BEGIN_ALLOW_SINGLE_BUCKET + 3));
+        protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
+            ? num_tracked_prefs() - changed_expected
+            : 0,
+        GetTrackedPrefHistogramCount(
+            user_prefs::tracked::kTrackedPrefHistogramUnchanged, ALLOW_ANY));
+
+    EXPECT_EQ((protection_level_ > PROTECTION_DISABLED_ON_PLATFORM &&
+               protection_level_ < PROTECTION_ENABLED_BASIC)
+                  ? 1
+                  : 0,
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramWantedReset,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 3));
     EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceReset",
-                                           ALLOW_NONE));
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramReset, ALLOW_NONE));
 
     // Nothing else should have triggered.
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceCleared",
-                                           ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
     EXPECT_EQ(
-        0,
-        GetTrackedPrefHistogramCount(
-            "Settings.TrackedPreferenceMigratedLegacyDeviceId", ALLOW_NONE));
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramCleared, ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramInitialized,
+                     ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramTrustedInitialized,
+                  ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramNullInitialized,
+                     ALLOW_NONE));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
+               ALLOW_NONE));
   }
 };
 
@@ -886,39 +918,43 @@ class PrefHashBrowserTestUntrustedAdditionToPrefsAfterWipe
         protection_level_ >= PROTECTION_ENABLED_BASIC
         ? 1 : 0;
     EXPECT_EQ(changed_expected,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceChanged",
-                                           BEGIN_ALLOW_SINGLE_BUCKET + 2));
-    EXPECT_EQ(cleared_expected,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceCleared",
-                                           BEGIN_ALLOW_SINGLE_BUCKET + 2));
-    EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
-                  ? num_tracked_prefs() - changed_expected - cleared_expected
-                  : 0,
               GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceUnchanged", ALLOW_ANY));
-
+                  user_prefs::tracked::kTrackedPrefHistogramChanged,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 2));
+    EXPECT_EQ(cleared_expected,
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramCleared,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 2));
     EXPECT_EQ(
-        changed_expected,
-        GetTrackedPrefHistogramCount("Settings.TrackedPreferenceWantedReset",
-                                     BEGIN_ALLOW_SINGLE_BUCKET + 2));
+        protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
+            ? num_tracked_prefs() - changed_expected - cleared_expected
+            : 0,
+        GetTrackedPrefHistogramCount(
+            user_prefs::tracked::kTrackedPrefHistogramUnchanged, ALLOW_ANY));
+
+    EXPECT_EQ(changed_expected,
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramWantedReset,
+                  BEGIN_ALLOW_SINGLE_BUCKET + 2));
     EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceReset",
-                                           ALLOW_NONE));
+              GetTrackedPrefHistogramCount(
+                  user_prefs::tracked::kTrackedPrefHistogramReset, ALLOW_NONE));
 
     // Nothing else should have triggered.
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramInitialized,
+                     ALLOW_NONE));
     EXPECT_EQ(0,
               GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
-    EXPECT_EQ(0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
+                  user_prefs::tracked::kTrackedPrefHistogramTrustedInitialized,
+                  ALLOW_NONE));
+    EXPECT_EQ(0, GetTrackedPrefHistogramCount(
+                     user_prefs::tracked::kTrackedPrefHistogramNullInitialized,
+                     ALLOW_NONE));
     EXPECT_EQ(
-        0,
-        GetTrackedPrefHistogramCount(
-            "Settings.TrackedPreferenceMigratedLegacyDeviceId", ALLOW_NONE));
+        0, GetTrackedPrefHistogramCount(
+               user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
+               ALLOW_NONE));
   }
 };
 
