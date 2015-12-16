@@ -7,6 +7,7 @@
 
 #include "ui/events/blink/blink_event_util.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "base/time/time.h"

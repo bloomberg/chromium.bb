@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "cc/input/input_handler.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
