@@ -518,12 +518,12 @@ TEST_F(ActivityLoggerTest, RequestResource)
     const char* expectedActivities =
         "blinkAddElement | iframe | data:text/html;charset=utf-8,A\n"
         "blinkRequestResource | Main resource | data:text/html;charset=utf-8,A\n"
+        "blinkRequestResource | Image | data:text/html;charset=utf-8,B\n"
         "blinkAddElement | link | stylesheet | data:text/html;charset=utf-8,C\n"
         "blinkRequestResource | CSS stylesheet | data:text/html;charset=utf-8,C\n"
         "blinkAddElement | script | data:text/html;charset=utf-8,D\n"
         "blinkRequestResource | Script | data:text/html;charset=utf-8,D\n"
-        "blinkRequestResource | XMLHttpRequest | data:text/html;charset=utf-8,E\n"
-        "blinkRequestResource | Image | data:text/html;charset=utf-8,B";
+        "blinkRequestResource | XMLHttpRequest | data:text/html;charset=utf-8,E";
     executeScriptInMainWorld(code);
     ASSERT_TRUE(verifyActivities(""));
     executeScriptInIsolatedWorld(code);
