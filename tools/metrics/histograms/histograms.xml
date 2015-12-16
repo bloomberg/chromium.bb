@@ -64275,6 +64275,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1091" label="V8SVGSVGElement_CreateSVGTransform_Method"/>
   <int value="1092"
       label="V8SVGSVGElement_CreateSVGTransformFromMatrix_Method"/>
+  <int value="1093" label="FormNameAccessForNonDescendantImageElement"/>
+  <int value="1094" label="FormControlsCollectionNameAccessForImageElement"/>
+  <int value="1095" label="V8SVGSVGElement_Viewport_AttributeGetter"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
