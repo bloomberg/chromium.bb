@@ -83,19 +83,6 @@
 #error Either OS(WIN) or OS(POSIX) needs to be set.
 #endif
 
-/* Operating environments */
-
-#if OS(ANDROID)
-#define WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION 1
-#else
-#define WTF_USE_ICCJPEG 1
-#define WTF_USE_QCMSLIB 1
-#endif
-
-#if OS(MACOSX)
-#define WTF_USE_NEW_THEME 1
-#endif /* OS(MACOSX) */
-
 #ifdef __cplusplus
 
 // These undefs match up with defines in build/mac/Prefix.h for Mac OS X.
