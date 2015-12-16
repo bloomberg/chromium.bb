@@ -947,6 +947,8 @@ public:
         V8SVGSVGElement_CreateSVGRect_Method = 1090,
         V8SVGSVGElement_CreateSVGTransform_Method = 1091,
         V8SVGSVGElement_CreateSVGTransformFromMatrix_Method = 1092,
+        FormNameAccessForNonDescendantImageElement = 1093,
+        FormControlsCollectionNameAccessForImageElement = 1094,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

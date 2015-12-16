@@ -812,8 +812,17 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, RadioNodeLi
     ASSERT(!elements.isEmpty());
 
     bool onlyMatchImg = !elements.isEmpty() && isHTMLImageElement(*elements.first());
-    if (onlyMatchImg)
+    if (onlyMatchImg) {
         UseCounter::count(document(), UseCounter::FormNameAccessForImageElement);
+        // The following code has performance impact, but it should be small
+        // because <img> access via <form> name getter is rarely used.
+        for (auto& element : elements) {
+            if (isHTMLImageElement(*element) && !element->isDescendantOf(this)) {
+                UseCounter::count(document(), UseCounter::FormNameAccessForNonDescendantImageElement);
+                break;
+            }
+        }
+    }
     if (elements.size() == 1) {
         returnValue.setElement(elements.at(0));
         return;
