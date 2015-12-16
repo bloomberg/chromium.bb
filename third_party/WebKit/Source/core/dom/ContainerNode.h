@@ -296,27 +296,6 @@ inline ContainerNode::ContainerNode(TreeScope* treeScope, ConstructionType type)
 {
 }
 
-inline void ContainerNode::attachChildren(const AttachContext& context)
-{
-    AttachContext childrenContext(context);
-    childrenContext.resolvedStyle = nullptr;
-
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
-        ASSERT(child->needsAttach() || childAttachedAllowedWhenAttachingChildren(this));
-        if (child->needsAttach())
-            child->attach(childrenContext);
-    }
-}
-
-inline void ContainerNode::detachChildren(const AttachContext& context)
-{
-    AttachContext childrenContext(context);
-    childrenContext.resolvedStyle = nullptr;
-
-    for (Node* child = firstChild(); child; child = child->nextSibling())
-        child->detach(childrenContext);
-}
-
 inline bool ContainerNode::needsAdjacentStyleRecalc() const
 {
     if (!childrenAffectedByDirectAdjacentRules() && !childrenAffectedByIndirectAdjacentRules())

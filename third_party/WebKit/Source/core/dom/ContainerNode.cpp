@@ -866,14 +866,27 @@ void ContainerNode::notifyNodeRemoved(Node& root)
 
 void ContainerNode::attach(const AttachContext& context)
 {
-    attachChildren(context);
+    AttachContext childrenContext(context);
+    childrenContext.resolvedStyle = nullptr;
+
+    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+        ASSERT(child->needsAttach() || childAttachedAllowedWhenAttachingChildren(this));
+        if (child->needsAttach())
+            child->attach(childrenContext);
+    }
+
     clearChildNeedsStyleRecalc();
     Node::attach(context);
 }
 
 void ContainerNode::detach(const AttachContext& context)
 {
-    detachChildren(context);
+    AttachContext childrenContext(context);
+    childrenContext.resolvedStyle = nullptr;
+
+    for (Node* child = firstChild(); child; child = child->nextSibling())
+        child->detach(childrenContext);
+
     setChildNeedsStyleRecalc();
     Node::detach(context);
 }
