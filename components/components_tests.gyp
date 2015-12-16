@@ -607,6 +607,7 @@
     ],
     'safe_json_unittest_sources': [
       'safe_json/json_sanitizer_unittest.cc',
+      'safe_json/testing_json_parser_unittest.cc',
     ],
     'scheduler_unittest_sources': [
       'scheduler/base/task_queue_manager_delegate_for_test.cc',

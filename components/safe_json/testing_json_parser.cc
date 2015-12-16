@@ -48,11 +48,12 @@ void TestingJsonParser::Start() {
   scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
       unsafe_json_, base::JSON_PARSE_RFC, &error_code, &error);
 
-  // Run the callback asynchronously.
+  // Run the callback asynchronously. Post the delete task first, so that the
+  // completion callbacks may quit the run loop without leaking |this|.
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   base::MessageLoop::current()->PostTask(
       FROM_HERE, value ? base::Bind(success_callback_, base::Passed(&value))
                        : base::Bind(error_callback_, error));
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 }  // namespace
