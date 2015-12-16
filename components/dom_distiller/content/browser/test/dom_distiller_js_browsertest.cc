@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, RunJsTests) {
   // Add timeout in case JS Test execution fails. It is safe to call the
   // QuitClosure multiple times.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(15));
+      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(30));
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16(kRunJsTestsJs),
       base::Bind(&DomDistillerJsTest::OnJsTestExecutionDone,
