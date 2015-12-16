@@ -422,6 +422,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ScreenBrightness) {
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, VolumeSlider) {
   EnableChromeVox();
 
+  // Volume slider does not fire valueChanged event on first key press because
+  // it has no widget.
+  EXPECT_TRUE(PerformAcceleratorAction(ash::VOLUME_UP));
   EXPECT_TRUE(PerformAcceleratorAction(ash::VOLUME_UP));
   EXPECT_TRUE(
       base::MatchPattern(speech_monitor_.GetNextUtterance(), "* percent*"));

@@ -244,15 +244,12 @@ DesktopAutomationHandler.prototype = {
         ChromeVoxState.instance.mode === ChromeVoxMode.CLASSIC)
       return;
 
-    if (!evt.target.state.focused)
-      return;
-
     // Value change events fire on web editables when typing. Suppress them.
     if (!ChromeVoxState.instance.currentRange ||
         !this.isEditable_(evt.target)) {
-      this.onEventDefault(evt);
-      ChromeVoxState.instance.setCurrentRange(
-          cursors.Range.fromNode(evt.target));
+      var range = cursors.Range.fromNode(evt.target);
+      new Output().withSpeechAndBraille(range, range, evt.type)
+          .go();
     }
   },
 

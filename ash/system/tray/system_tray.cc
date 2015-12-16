@@ -98,9 +98,12 @@ class SystemBubbleWrapper {
         views::BubbleBorder::PAINT_NONE);
     is_persistent_ = is_persistent;
 
-    // If ChromeVox is enabled, focus the default item if no item is focused.
-    if (Shell::GetInstance()->accessibility_delegate()->
-        IsSpokenFeedbackEnabled()) {
+    // If ChromeVox is enabled, focus the default item if no item is focused and
+    // there isn't a delayed close.
+    if (Shell::GetInstance()
+            ->accessibility_delegate()
+            ->IsSpokenFeedbackEnabled() &&
+        !is_persistent) {
       bubble_->FocusDefaultIfNeeded();
     }
   }
