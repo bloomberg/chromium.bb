@@ -94,7 +94,7 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type)
     case WindowNamedItems:
     case DocumentNamedItems:
     case FormControls:
-        return NodeListIsRootedAtDocument;
+        return NodeListRootType::TreeScope;
     case ClassCollectionType:
     case TagCollectionType:
     case HTMLTagCollectionType:
@@ -107,7 +107,7 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type)
     case SelectedOptions:
     case DataListOptions:
     case MapAreas:
-        return NodeListIsRootedAtNode;
+        return NodeListRootType::Node;
     case NameNodeListType:
     case RadioNodeListType:
     case RadioImgNodeListType:
@@ -115,7 +115,7 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type)
         break;
     }
     ASSERT_NOT_REACHED();
-    return NodeListIsRootedAtNode;
+    return NodeListRootType::Node;
 }
 
 static NodeListInvalidationType invalidationTypeExcludingIdAndNameAttributes(CollectionType type)

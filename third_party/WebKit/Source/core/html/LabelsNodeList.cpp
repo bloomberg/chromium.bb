@@ -34,7 +34,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LabelsNodeList::LabelsNodeList(ContainerNode& ownerNode)
-    : LiveNodeList(ownerNode, LabelsNodeListType, InvalidateOnForAttrChange, NodeListIsRootedAtDocument)
+    : LiveNodeList(ownerNode, LabelsNodeListType, InvalidateOnForAttrChange, NodeListRootType::TreeScope)
 {
 }
 

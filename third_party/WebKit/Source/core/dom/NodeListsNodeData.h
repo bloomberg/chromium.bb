@@ -197,7 +197,7 @@ public:
         TagCollectionCacheNS::const_iterator tagEnd = m_tagCollectionCacheNS.end();
         for (TagCollectionCacheNS::const_iterator it = m_tagCollectionCacheNS.begin(); it != tagEnd; ++it) {
             LiveNodeListBase* list = it->value;
-            ASSERT(!list->isRootedAtDocument());
+            ASSERT(!list->isRootedAtTreeScope());
             list->didMoveToDocument(oldDocument, newDocument);
         }
     }

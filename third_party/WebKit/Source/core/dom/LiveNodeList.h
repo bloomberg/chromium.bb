@@ -38,7 +38,7 @@ class Element;
 class LiveNodeList : public NodeList, public LiveNodeListBase {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LiveNodeList);
 public:
-    LiveNodeList(ContainerNode& ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListIsRootedAtNode)
+    LiveNodeList(ContainerNode& ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListRootType::Node)
         : LiveNodeListBase(ownerNode, rootType, invalidationType, collectionType) { }
 
     unsigned length() const final;

@@ -3638,7 +3638,7 @@ void Document::registerNodeList(const LiveNodeListBase* list)
 #else
     m_nodeListCounts[list->invalidationType()]++;
 #endif
-    if (list->isRootedAtDocument())
+    if (list->isRootedAtTreeScope())
         m_listsInvalidatedAtDocument.add(list);
 }
 
@@ -3650,7 +3650,7 @@ void Document::unregisterNodeList(const LiveNodeListBase* list)
 #else
     m_nodeListCounts[list->invalidationType()]--;
 #endif
-    if (list->isRootedAtDocument()) {
+    if (list->isRootedAtTreeScope()) {
         ASSERT(m_listsInvalidatedAtDocument.contains(list));
         m_listsInvalidatedAtDocument.remove(list);
     }

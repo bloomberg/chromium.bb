@@ -34,11 +34,9 @@
 
 namespace blink {
 
-enum NodeListRootType {
-    NodeListIsRootedAtNode,
-    // TODO(tkent): Rename NodeListIsRootedAtDocument to
-    // NodeListIsRootedAtTreeScope.
-    NodeListIsRootedAtDocument
+enum class NodeListRootType {
+    Node,
+    TreeScope,
 };
 
 class CORE_EXPORT LiveNodeListBase : public WillBeGarbageCollectedMixin {
@@ -46,7 +44,7 @@ public:
     LiveNodeListBase(ContainerNode& ownerNode, NodeListRootType rootType, NodeListInvalidationType invalidationType,
         CollectionType collectionType)
         : m_ownerNode(ownerNode)
-        , m_rootType(rootType)
+        , m_rootType(static_cast<unsigned>(rootType))
         , m_invalidationType(invalidationType)
         , m_collectionType(collectionType)
     {
@@ -67,8 +65,7 @@ public:
     ContainerNode& rootNode() const;
 
     void didMoveToDocument(Document& oldDocument, Document& newDocument);
-    // TODO(tkent): Rename isRootedAtDocument() to isRootedAtTreeScope().
-    ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument; }
+    ALWAYS_INLINE bool isRootedAtTreeScope() const { return m_rootType == static_cast<unsigned>(NodeListRootType::TreeScope); }
     ALWAYS_INLINE NodeListInvalidationType invalidationType() const { return static_cast<NodeListInvalidationType>(m_invalidationType); }
     ALWAYS_INLINE CollectionType type() const { return static_cast<CollectionType>(m_collectionType); }
     ContainerNode& ownerNode() const { return *m_ownerNode; }

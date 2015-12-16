@@ -39,7 +39,7 @@ void LiveNodeListBase::invalidateCacheForAttribute(const QualifiedName* attrName
 
 ContainerNode& LiveNodeListBase::rootNode() const
 {
-    if (isRootedAtDocument() && m_ownerNode->isInTreeScope())
+    if (isRootedAtTreeScope() && m_ownerNode->isInTreeScope())
         return m_ownerNode->treeScope().rootNode();
     return *m_ownerNode;
 }
