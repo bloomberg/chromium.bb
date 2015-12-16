@@ -731,7 +731,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   // completing initialization.  Otherwise, we can finish it now.
   if (opener_id_ == MSG_ROUTING_NONE)
     did_show_ = true;
-  UpdateDeviceScaleFactor();
+  UpdateWebViewWithDeviceScaleFactor();
   webview()->setDisplayMode(display_mode_);
   webview()->settings()->setPreferCompositingToLCDTextEnabled(
       PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
@@ -3223,17 +3223,6 @@ void RenderViewImpl::OnImeConfirmComposition(
                                         keep_selection);
 }
 
-void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
-  RenderWidget::SetDeviceScaleFactor(device_scale_factor);
-  if (webview()) {
-    UpdateDeviceScaleFactor();
-    webview()->settings()->setPreferCompositingToLCDTextEnabled(
-        PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
-  }
-  if (auto_resize_mode_)
-    AutoResizeCompositor();
-}
-
 bool RenderViewImpl::SetDeviceColorProfile(
     const std::vector<char>& profile) {
   bool changed = RenderWidget::SetDeviceColorProfile(profile);
@@ -3331,6 +3320,13 @@ bool RenderViewImpl::CanComposeInline() {
 
 void RenderViewImpl::DidCompletePageScaleAnimation() {
   FocusChangeComplete();
+}
+
+void RenderViewImpl::OnDeviceScaleFactorChanged() {
+  RenderWidget::OnDeviceScaleFactorChanged();
+  UpdateWebViewWithDeviceScaleFactor();
+  if (auto_resize_mode_)
+    AutoResizeCompositor();
 }
 
 void RenderViewImpl::SetScreenMetricsEmulationParameters(
@@ -3723,14 +3719,16 @@ void RenderViewImpl::DidStopLoadingIcons() {
   SendUpdateFaviconURL(urls);
 }
 
-void RenderViewImpl::UpdateDeviceScaleFactor() {
+void RenderViewImpl::UpdateWebViewWithDeviceScaleFactor() {
+  if (!webview())
+    return;
   if (IsUseZoomForDSFEnabled()) {
-    compositor_->SetPaintedDeviceScaleFactor(device_scale_factor_);
-    webview()->setZoomFactorForDeviceScaleFactor(
-        device_scale_factor_);
+    webview()->setZoomFactorForDeviceScaleFactor(device_scale_factor_);
   } else {
     webview()->setDeviceScaleFactor(device_scale_factor_);
   }
+  webview()->settings()->setPreferCompositingToLCDTextEnabled(
+      PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
 }
 
 }  // namespace content

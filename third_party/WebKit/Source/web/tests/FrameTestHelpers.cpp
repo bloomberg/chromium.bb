@@ -265,7 +265,7 @@ WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient
         m_webView->settings()->setDeviceSupportsMouse(false);
     if (m_settingOverrider)
         m_settingOverrider->overrideSettings(m_webView->settings());
-
+    m_webView->setDeviceScaleFactor(webViewClient->screenInfo().deviceScaleFactor);
     m_webView->setDefaultPageScaleLimits(1, 4);
     WebLocalFrame* frame = WebLocalFrameImpl::create(WebTreeScopeType::Document, webFrameClient);
     m_webView->setMainFrame(frame);

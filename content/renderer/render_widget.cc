@@ -758,9 +758,8 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   WebSize visual_viewport_size;
 
   if (IsUseZoomForDSFEnabled()) {
-    gfx::SizeF scaled_visible_viewport_size =
-        gfx::ScaleSize(gfx::SizeF(visible_viewport_size), device_scale_factor_);
-    visual_viewport_size = gfx::ToCeiledSize(scaled_visible_viewport_size);
+    visual_viewport_size =
+        gfx::ScaleToCeiledSize(visible_viewport_size, device_scale_factor_);
   } else {
     visual_viewport_size = visible_viewport_size_;
   }
@@ -1196,7 +1195,7 @@ void RenderWidget::initializeLayerTreeView() {
 
   compositor_ = RenderWidgetCompositor::Create(this, compositor_deps_);
   compositor_->setViewportSize(physical_backing_size_);
-
+  OnDeviceScaleFactorChanged();
   // For background pages and certain tests, we don't want to trigger
   // OutputSurface creation.
   if (compositor_never_visible_ || !RenderThreadImpl::current())
@@ -1531,6 +1530,16 @@ void RenderWidget::OnImeConfirmComposition(const base::string16& text,
   UpdateCompositionInfo(true);
 }
 
+void RenderWidget::OnDeviceScaleFactorChanged() {
+  if (!compositor_)
+    return;
+
+  if (IsUseZoomForDSFEnabled())
+    compositor_->SetPaintedDeviceScaleFactor(device_scale_factor_);
+  else
+    compositor_->setDeviceScaleFactor(device_scale_factor_);
+}
+
 void RenderWidget::OnRepaint(gfx::Size size_to_paint) {
   // During shutdown we can just ignore this message.
   if (!webwidget_)
@@ -1619,7 +1628,7 @@ void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
 void RenderWidget::convertViewportToWindow(blink::WebRect* rect) {
   if (IsUseZoomForDSFEnabled()) {
     float reverse = 1 / device_scale_factor_;
-    // TODO(oshima): We may wait to allow pixel precision here as the the
+    // TODO(oshima): We may need to allow pixel precision here as the the
     // anchor element can be placed at half pixel.
     gfx::Rect window_rect =
         gfx::ScaleToEnclosedRect(gfx::Rect(*rect), reverse);
@@ -1679,6 +1688,9 @@ void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
     return;
 
   device_scale_factor_ = device_scale_factor;
+
+  OnDeviceScaleFactorChanged();
+
   ScheduleComposite();
 }
 

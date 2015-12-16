@@ -248,7 +248,6 @@ bool WebPagePopupImpl::initializePage()
     m_page = adoptPtrWillBeNoop(new Page(pageClients));
     m_page->settings().setScriptEnabled(true);
     m_page->settings().setAllowScriptsToCloseWindows(true);
-    m_page->setDeviceScaleFactor(m_webView->deviceScaleFactor());
     m_page->settings().setDeviceSupportsTouch(m_webView->page()->settings().deviceSupportsTouch());
     // FIXME: Should we support enabling a11y while a popup is shown?
     m_page->settings().setAccessibilityEnabled(m_webView->page()->settings().accessibilityEnabled());

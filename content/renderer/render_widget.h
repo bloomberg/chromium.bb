@@ -445,6 +445,10 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnImeConfirmComposition(const base::string16& text,
                                        const gfx::Range& replacement_range,
                                        bool keep_selection);
+  // Called when the device scale factor is changed, or the layer tree is
+  // initialized.
+  virtual void OnDeviceScaleFactorChanged();
+
   void OnRepaint(gfx::Size size_to_paint);
   void OnSyntheticGestureCompleted();
   void OnSetTextDirection(blink::WebTextDirection direction);

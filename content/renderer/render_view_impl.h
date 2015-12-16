@@ -489,7 +489,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnImeConfirmComposition(const base::string16& text,
                                const gfx::Range& replacement_range,
                                bool keep_selection) override;
-  void SetDeviceScaleFactor(float device_scale_factor) override;
   bool SetDeviceColorProfile(const std::vector<char>& color_profile) override;
   void OnOrientationChange() override;
   ui::TextInputType GetTextInputType() override;
@@ -500,6 +499,7 @@ class CONTENT_EXPORT RenderViewImpl
   bool CanComposeInline() override;
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
+  void OnDeviceScaleFactorChanged() override;
 
  protected:
   RenderViewImpl(CompositorDependencies* compositor_deps,
@@ -778,7 +778,7 @@ class CONTENT_EXPORT RenderViewImpl
   void UpdateThemePrefs() {}
 #endif
 
-  void UpdateDeviceScaleFactor();
+  void UpdateWebViewWithDeviceScaleFactor();
 
   // ---------------------------------------------------------------------------
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put

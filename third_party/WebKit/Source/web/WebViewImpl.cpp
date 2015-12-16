@@ -529,7 +529,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_page->makeOrdinary();
 
     if (m_client) {
-        setDeviceScaleFactor(m_client->screenInfo().deviceScaleFactor);
         setVisibilityState(m_client->visibilityState(), true);
     }
 
