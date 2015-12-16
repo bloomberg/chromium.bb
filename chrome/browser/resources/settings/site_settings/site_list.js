@@ -64,14 +64,6 @@ Polymer({
     },
 
     /**
-     * Whether this class has initialized or not.
-     */
-    initialized_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * Whether to show the Allow action in the action menu.
      */
     showAllowAction_: Boolean,
@@ -111,27 +103,22 @@ Polymer({
     'onCategoryChanged_(prefs.profile.content_settings.exceptions.*, category)',
   ],
 
+  ready: function() {
+    CrSettingsPrefs.initialized.then(function() {
+      this.initialize_();
+    }.bind(this));
+  },
+
   /**
    * One-time initialization routines for this class.
-   * @return {boolean} True if fully initialized, false otherwise.
    * @private
    */
   initialize_: function() {
-    if (this.initialized_)
-      return true;
-
-    if (this.categoryEnabled === undefined)
-      return false;
-    if (this.categorySubtype === undefined)
-      return false;
-
     this.setUpActionMenu_();
 
-    if (this.categorySubtype == settings.PermissionValues.ALLOW)
+    if (this.categorySubtype == settings.PermissionValues.ALLOW) {
       this.$.category.opened = true;
-
-    this.initialized_ = true;
-    return true;
+    }
   },
 
   /**
@@ -140,8 +127,7 @@ Polymer({
    * @private
    */
   onCategoryChanged_: function() {
-    if (this.initialize_())
-      this.populateList_();
+    this.populateList_();
   },
 
   /**
@@ -150,9 +136,6 @@ Polymer({
    * @private
    */
   onDataChanged_: function(newValue, oldValue) {
-    if (!this.initialize_())
-      return;
-
     this.$.category.hidden =
         !this.showSiteList_(this.sites_, this.categoryEnabled);
   },
