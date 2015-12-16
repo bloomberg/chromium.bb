@@ -176,6 +176,9 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)
     scrollbar->setNeedsPaintInvalidation();
     EXPECT_FALSE(scrollbar->trackNeedsRepaint());
     EXPECT_FALSE(scrollbar->thumbNeedsRepaint());
+
+    // Forced GC in order to finalize objects depending on the mock object.
+    Heap::collectAllGarbage();
 }
 
 class MockGraphicsLayerClient : public GraphicsLayerClient {

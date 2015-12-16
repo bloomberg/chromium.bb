@@ -48,6 +48,8 @@ class ScrollbarTheme;
 class PLATFORM_EXPORT Scrollbar : public Widget, public ScrollbarThemeClient {
 public:
     static PassRefPtrWillBeRawPtr<Scrollbar> create(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize);
+
+    // Theme object ownership remains with the caller and it must outlive the scrollbar.
     static PassRefPtrWillBeRawPtr<Scrollbar> createForTesting(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme*);
 
     ~Scrollbar() override;
