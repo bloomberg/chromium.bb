@@ -1,0 +1,120 @@
+Verifies AST editing of formatted source.
+
+div {
+    /* This is a regular comment */
+    color: red;
+    /* position: absolute; */
+    display: block
+}
+
+Running: testSetPropertyName
+div {
+    /* This is a regular comment */
+    NEW-NAME: red;
+    /* NEW-NAME: absolute; */
+    NEW-NAME: block
+}
+
+
+Running: testSetPropertyValue
+div {
+    /* This is a regular comment */
+    color:NEW-VALUE;
+    /* position:NEW-VALUE; */
+    display:NEW-VALUE}
+
+
+Running: testDisableProperties
+div {
+    /* This is a regular comment */
+    /* color: red; */
+    /* position: absolute; */
+    /* display: block
+ */}
+
+
+Running: testEnableProperties
+div {
+    /* This is a regular comment */
+    color: red;
+    position: absolute; 
+    display: block
+}
+
+
+Running: testRemoveFirstProperty
+div {
+    /* This is a regular comment */
+    /* position: absolute; */
+    display: block
+}
+
+
+Running: testRemoveAllProperties
+div {
+    /* This is a regular comment */
+    }
+
+
+Running: testInsertFirstProperty
+div {
+    /* This is a regular comment */
+    NEW-NAME: NEW-VALUE;
+    color: red;
+    /* position: absolute; */
+    display: block
+;}
+
+
+Running: testInsertLastProperty
+div {
+    /* This is a regular comment */
+    color: red;
+    /* position: absolute; */
+    display: block
+;
+    NEW-NAME: NEW-VALUE;}
+
+
+Running: testInsertDisabledProperty
+div {
+    /* This is a regular comment */
+    color: red;
+    /* NEW-NAME: NEW-VALUE; */
+    /* position: absolute; */
+    display: block
+;}
+
+
+Running: testInsertMultipleProperties
+div {
+    /* This is a regular comment */
+    color: red;
+    /* position: absolute; */
+    display: block
+;
+    TRAILING-4: VALUE;
+    TRAILING-3: VALUE;
+    TRAILING-2: VALUE;
+    TRAILING-1: VALUE;}
+
+
+Running: testAppendAndRemoveLastProperty
+div {
+    /* This is a regular comment */
+    color: red;
+    /* position: absolute; */
+    ;
+    NEW-NAME: NEW-VALUE;}
+
+
+Running: testComplexChange
+div {
+    /* This is a regular comment */
+    color:CHANGED;
+    /* position: absolute; */
+    CHANGED: block
+;
+    NEW-NAME: NEW-VALUE;}
+
+

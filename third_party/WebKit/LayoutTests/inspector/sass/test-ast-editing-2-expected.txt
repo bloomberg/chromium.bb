@@ -1,0 +1,49 @@
+Verifies AST editing of minified source.
+
+div{color:red;/*display:block;*/margin:0}
+
+Running: testSetPropertyName
+div{NEW-NAME:red;/*NEW-NAME:block;*/NEW-NAME:0}
+
+Running: testSetPropertyValue
+div{color:NEW-VALUE;/*display:NEW-VALUE;*/margin:NEW-VALUE}
+
+Running: testDisableProperties
+div{/* color:red; *//*display:block;*//* margin:0 */}
+
+Running: testEnableProperties
+div{color:red;display:block;margin:0}
+
+Running: testRemoveFirstProperty
+div{/*display:block;*/margin:0}
+
+Running: testRemoveAllProperties
+div{}
+
+Running: testInsertFirstProperty
+div{NEW-NAME: NEW-VALUE;
+color:red;/*display:block;*/margin:0;}
+
+Running: testInsertLastProperty
+div{color:red;/*display:block;*/margin:0;
+NEW-NAME: NEW-VALUE;}
+
+Running: testInsertDisabledProperty
+div{color:red;/* NEW-NAME: NEW-VALUE; */
+/*display:block;*/margin:0;}
+
+Running: testInsertMultipleProperties
+div{color:red;/*display:block;*/margin:0;
+TRAILING-4: VALUE;
+TRAILING-3: VALUE;
+TRAILING-2: VALUE;
+TRAILING-1: VALUE;}
+
+Running: testAppendAndRemoveLastProperty
+div{color:red;/*display:block;*/;
+NEW-NAME: NEW-VALUE;}
+
+Running: testComplexChange
+div{color:CHANGED;/*display:block;*/CHANGED:0;
+NEW-NAME: NEW-VALUE;}
+
