@@ -333,7 +333,7 @@ public class ExternalNavigationHandler {
         if (!isExternalProtocol) {
             if (!mDelegate.isSpecializedHandlerAvailable(intent)) {
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
-            } else if (params.getReferrerUrl() != null && isLink) {
+            } else if (params.getReferrerUrl() != null && (isLink || isFormSubmit)) {
                 // Current URL has at least one specialized handler available. For navigations
                 // within the same host, keep the navigation inside the browser unless the set of
                 // available apps to handle the new navigation is different. http://crbug.com/463138
@@ -349,11 +349,6 @@ public class ExternalNavigationHandler {
 
                 if (currentUri != null && previousUri != null
                         && TextUtils.equals(currentUri.getHost(), previousUri.getHost())) {
-
-                    if (isFormSubmit && !isRedirectFromFormSubmit) {
-                        return OverrideUrlLoadingResult.NO_OVERRIDE;
-                    }
-
                     Intent previousIntent;
                     try {
                         previousIntent = Intent.parseUri(
