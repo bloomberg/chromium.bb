@@ -20,6 +20,15 @@ print_int_array(const char *prefix, int *pos_list, int len)
   fprintf(stderr,"\n");
 }
 
+void
+print_typeform(const formtype *typeform, int len) {
+  int i;
+  fprintf(stderr,"Typeform:  ");
+  for (i = 0; i < len; i++)
+    fprintf(stderr,"%hi", typeform[i]);
+  fprintf(stderr,"\n");
+}
+
 #define UTF8_BUFSIZE 32
 #define UNICODE_SURROGATE_PAIR -1
 #define UNICODE_BAD_INPUT -1
@@ -252,7 +261,11 @@ int check_with_mode(
     {
       rv = 1;
       outbuf[outlen] = 0;
-      fprintf(stderr,"Input: '%s'\n", str);
+      fprintf(stderr,"Input:    '%s'\n", str);
+      /* Print the original typeform not the typeformbuf, as the
+	 latter has been modified by the translation and contains some
+	 information about outbuf */
+      if (typeform != NULL) print_typeform(typeform, inlen);
       fprintf(stderr,"Expected: '%s' (length %d)\n", expected, expectedlen);
       fprintf(stderr,"Received: '");
       print_widechars(outbuf, outlen);

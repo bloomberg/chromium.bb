@@ -5,8 +5,10 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** New features
 ** Bug fixes
 ** Other changes
-- Test suite now print to stderr. This helps with locating errors when
-  testing with the YAML test suite.
+- Improvements to the test suite:
+  - Output is printed to stderr. This helps with locating errors when
+    testing with the YAML test suite.
+  - typeform is included in output.
 
 ** Braille table improvements
 
