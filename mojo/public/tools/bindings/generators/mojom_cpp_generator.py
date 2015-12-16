@@ -429,6 +429,7 @@ class Generator(generator.Generator):
       "structs": self.GetStructs(),
       "unions": self.GetUnions(),
       "interfaces": self.GetInterfaces(),
+      "variant": self.variant,
     }
 
   @UseJinja("cpp_templates/module.h.tmpl", filters=cpp_filters)
@@ -444,9 +445,10 @@ class Generator(generator.Generator):
     return self.GetJinjaExports()
 
   def GenerateFiles(self, args):
+    suffix = "-%s" % self.variant if self.variant else ""
     self.Write(self.GenerateModuleHeader(),
-        self.MatchMojomFilePath("%s.h" % self.module.name))
+        self.MatchMojomFilePath("%s%s.h" % (self.module.name, suffix)))
     self.Write(self.GenerateModuleInternalHeader(),
-        self.MatchMojomFilePath("%s-internal.h" % self.module.name))
+        self.MatchMojomFilePath("%s%s-internal.h" % (self.module.name, suffix)))
     self.Write(self.GenerateModuleSource(),
-        self.MatchMojomFilePath("%s.cc" % self.module.name))
+        self.MatchMojomFilePath("%s%s.cc" % (self.module.name, suffix)))

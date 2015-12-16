@@ -8,8 +8,10 @@
 
 import argparse
 import imp
+import json
 import os
 import pprint
+import re
 import sys
 
 # Disable lint check for finding modules:
@@ -40,32 +42,29 @@ from mojom.parse.parser import Parse
 from mojom.parse.translate import Translate
 
 
+_BUILTIN_GENERATORS = {
+  "c++": "mojom_cpp_generator.py",
+  "javascript": "mojom_js_generator.py",
+  "java": "mojom_java_generator.py",
+}
+
 def LoadGenerators(generators_string):
   if not generators_string:
     return []  # No generators.
 
   script_dir = os.path.dirname(os.path.abspath(__file__))
-  generators = []
+  generators = {}
   for generator_name in [s.strip() for s in generators_string.split(",")]:
-    # "Built-in" generators:
-    if generator_name.lower() == "c++":
+    language = generator_name.lower()
+    if language in _BUILTIN_GENERATORS:
       generator_name = os.path.join(script_dir, "generators",
-                                    "mojom_cpp_generator.py")
-    elif generator_name.lower() == "javascript":
-      generator_name = os.path.join(script_dir, "generators",
-                                    "mojom_js_generator.py")
-    elif generator_name.lower() == "java":
-      generator_name = os.path.join(script_dir, "generators",
-                                    "mojom_java_generator.py")
-    # Specified generator python module:
-    elif generator_name.endswith(".py"):
-      pass
+                                    _BUILTIN_GENERATORS[language])
     else:
       print "Unknown generator name %s" % generator_name
       sys.exit(1)
     generator_module = imp.load_source(os.path.basename(generator_name)[:-3],
                                        generator_name)
-    generators.append(generator_module)
+    generators[language] = generator_module
   return generators
 
 
@@ -89,6 +88,20 @@ class MojomProcessor(object):
     self._should_generate = should_generate
     self._processed_files = {}
     self._parsed_files = {}
+    self._typemap = {}
+
+  def LoadTypemaps(self, typemaps):
+    # Support some very simple single-line comments in typemap JSON.
+    comment_expr = r"^\s*//.*$"
+    def no_comments(line):
+      return not re.match(comment_expr, line)
+    for filename in typemaps:
+      with open(filename) as f:
+        typemaps = json.loads("".join(filter(no_comments, f.readlines())))
+        for language, typemap in typemaps.iteritems():
+          language_map = self._typemap.get(language, {})
+          language_map.update(typemap)
+          self._typemap[language] = language_map
 
   def ProcessFile(self, args, remaining_args, generator_modules, filename):
     self._ParseFileAndImports(filename, args.import_directories, [])
@@ -126,8 +139,10 @@ class MojomProcessor(object):
     module.path = module.path.replace('\\', '/')
 
     if self._should_generate(filename):
-      for generator_module in generator_modules:
-        generator = generator_module.Generator(module, args.output_dir)
+      for language, generator_module in generator_modules.iteritems():
+        generator = generator_module.Generator(
+            module, args.output_dir, typemap=self._typemap.get(language, {}),
+            variant=args.variant)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -195,13 +210,22 @@ def main():
                       help="add a directory to be searched for import files")
   parser.add_argument("--use_bundled_pylibs", action="store_true",
                       help="use Python modules bundled in the SDK")
+  parser.add_argument("--typemap", action="append", metavar="TYPEMAP",
+                      default=[], dest="typemaps",
+                      help="apply TYPEMAP to generated output")
+  parser.add_argument("--variant", dest="variant", default=None,
+                      help="output a named variant of the bindings")
   (args, remaining_args) = parser.parse_known_args()
+
+  if args.variant == "none":
+    args.variant = None
 
   generator_modules = LoadGenerators(args.generators_string)
 
   fileutil.EnsureDirectoryExists(args.output_dir)
 
   processor = MojomProcessor(lambda filename: filename in args.filename)
+  processor.LoadTypemaps(set(args.typemaps))
   for filename in args.filename:
     processor.ProcessFile(args, remaining_args, generator_modules, filename)
 

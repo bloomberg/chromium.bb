@@ -25,6 +25,13 @@
 #       Mojo environment implementation. Defaults to |true| and in general
 #       should only be overridden by mojom targets within the Mojo EDK.
 #
+#   typemaps (optional)
+#       A list of typemap files to apply during bindings generation.
+#
+#   variant (optional)
+#       A variant name to apply to generated bindings. Variant influences
+#       generated source filenames as wells the symbols they define.
+#
 #   testonly (optional)
 #
 #   visibility (optional)
@@ -102,15 +109,26 @@ template("mojom") {
       "$generator_root/pylib/mojom/parse/parser.py",
       "$generator_root/pylib/mojom/parse/translate.py",
     ]
-    generator_cpp_outputs = [
-      "{{source_gen_dir}}/{{source_name_part}}.mojom.cc",
-      "{{source_gen_dir}}/{{source_name_part}}.mojom.h",
-      "{{source_gen_dir}}/{{source_name_part}}.mojom-internal.h",
-    ]
-    generator_js_outputs =
-        [ "{{source_gen_dir}}/{{source_name_part}}.mojom.js" ]
-    generator_java_outputs =
-        [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
+    if (defined(invoker.variant)) {
+      variant = invoker.variant
+      generator_cpp_outputs = [
+        "{{source_gen_dir}}/{{source_name_part}}.mojom-${variant}.cc",
+        "{{source_gen_dir}}/{{source_name_part}}.mojom-${variant}.h",
+        "{{source_gen_dir}}/{{source_name_part}}.mojom-${variant}-internal.h",
+      ]
+      generator_js_outputs = []
+      generator_java_outputs = []
+    } else {
+      generator_cpp_outputs = [
+        "{{source_gen_dir}}/{{source_name_part}}.mojom.cc",
+        "{{source_gen_dir}}/{{source_name_part}}.mojom.h",
+        "{{source_gen_dir}}/{{source_name_part}}.mojom-internal.h",
+      ]
+      generator_js_outputs =
+          [ "{{source_gen_dir}}/{{source_name_part}}.mojom.js" ]
+      generator_java_outputs =
+          [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
+    }
   }
 
   if (defined(invoker.sources)) {
@@ -140,6 +158,29 @@ template("mojom") {
           ]
         }
       }
+
+      if (defined(invoker.variant)) {
+        args += [
+          "--variant",
+          invoker.variant,
+          "-g",
+          "c++",
+        ]
+      } else {
+        args += [
+          "-g",
+          "c++,javascript,java",
+        ]
+      }
+
+      if (defined(invoker.typemaps)) {
+        foreach(typemap, invoker.typemaps) {
+          args += [
+            "--typemap",
+            rebase_path(typemap, root_build_dir),
+          ]
+        }
+      }
     }
   }
 
@@ -150,7 +191,7 @@ template("mojom") {
     if (defined(invoker.testonly)) {
       testonly = invoker.testonly
     }
-    if (defined(invoker.sources)) {
+    if (defined(invoker.sources) && !defined(invoker.variant)) {
       data = process_file_template(invoker.sources, generator_js_outputs)
     }
 
@@ -225,7 +266,7 @@ template("mojom") {
     }
   }
 
-  if (is_android) {
+  if (is_android && !defined(invoker.variant)) {
     import("//build/config/android/rules.gni")
 
     java_srcjar_target_name = target_name + "_java_sources"

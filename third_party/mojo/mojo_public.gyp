@@ -357,11 +357,48 @@
           '../../mojo/public/interfaces/bindings/tests/sample_service.mojom',
           '../../mojo/public/interfaces/bindings/tests/scoping.mojom',
           '../../mojo/public/interfaces/bindings/tests/serialization_test_structs.mojom',
+          '../../mojo/public/interfaces/bindings/tests/test_constants.mojom',
+          '../../mojo/public/interfaces/bindings/tests/test_native_types.mojom',
           '../../mojo/public/interfaces/bindings/tests/test_structs.mojom',
+          '../../mojo/public/interfaces/bindings/tests/test_unions.mojom',
           '../../mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom',
         ],
       },
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
+    },
+    {
+      'target_name': 'mojo_public_test_interfaces_mojom_blink',
+      'type': 'none',
+      'variables': {
+        'mojom_variant': 'blink',
+        'mojom_extra_generator_args': [
+          '--typemap', '<(DEPTH)/mojo/public/interfaces/bindings/tests/blink_test.typemap',
+        ],
+        'mojom_files': [
+          '../../mojo/public/interfaces/bindings/tests/test_native_types.mojom',
+        ],
+      },
+      'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
+      'dependencies': [
+        'mojo_public_test_interfaces_mojom',
+      ],
+    },
+    {
+      'target_name': 'mojo_public_test_interfaces_mojom_chromium',
+      'type': 'none',
+      'variables': {
+        'mojom_variant': 'chromium',
+        'mojom_extra_generator_args': [
+          '--typemap', '<(DEPTH)/mojo/public/interfaces/bindings/tests/chromium_test.typemap',
+        ],
+        'mojom_files': [
+          '../../mojo/public/interfaces/bindings/tests/test_native_types.mojom',
+        ],
+      },
+      'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
+      'dependencies': [
+        'mojo_public_test_interfaces_mojom',
+      ],
     },
     {
       # GN version: //mojo/public/interfaces/bindings/tests:test_interfaces
@@ -372,6 +409,30 @@
       ],
       'dependencies': [
         'mojo_public_test_interfaces_mojom',
+        'mojo_cpp_bindings',
+      ],
+    },
+    {
+      # GN version: //mojo/public/interfaces/bindings/tests:test_interfaces_blink
+      'target_name': 'mojo_public_test_interfaces_blink',
+      'type': 'static_library',
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_public_test_interfaces_mojom_blink',
+        'mojo_cpp_bindings',
+      ],
+    },
+    {
+      # GN version: //mojo/public/interfaces/bindings/tests:test_interfaces_chromium
+      'target_name': 'mojo_public_test_interfaces_chromium',
+      'type': 'static_library',
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_public_test_interfaces_mojom_chromium',
         'mojo_cpp_bindings',
       ],
     },

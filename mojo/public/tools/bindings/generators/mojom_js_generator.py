@@ -385,6 +385,9 @@ class Generator(generator.Generator):
     return self.GetParameters()
 
   def GenerateFiles(self, args):
+    if self.variant:
+      raise Exception("Variants not supported in JavaScript bindings.")
+
     self.Write(self.GenerateAMDModule(),
         self.MatchMojomFilePath("%s.js" % self.module.name))
 

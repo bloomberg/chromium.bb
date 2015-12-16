@@ -40,9 +40,11 @@ def WriteFile(contents, full_path):
 class Generator(object):
   # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all
   # files to stdout.
-  def __init__(self, module, output_dir=None):
+  def __init__(self, module, output_dir=None, typemap={}, variant=None):
     self.module = module
     self.output_dir = output_dir
+    self.typemap = typemap
+    self.variant = variant
 
   def GetStructsFromMethods(self):
     result = []

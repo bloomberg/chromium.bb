@@ -6,6 +6,25 @@
   'includes': [
     'mojom_bindings_generator_variables.gypi',
   ],
+  'variables': {
+    'variables': {
+      'mojom_variant%': 'none',
+    },
+    'mojom_variant%': '<(mojom_variant)',
+    'mojom_base_output_dir':
+        '<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))',
+    'mojom_generated_outputs': [
+      '<!@(python <(DEPTH)/mojo/public/tools/bindings/mojom_list_outputs.py --basedir <(mojom_base_output_dir) --variant <(mojom_variant) <@(_sources))',
+    ],
+    'mojom_extra_generator_args%': [],
+    'conditions': [
+      ['mojom_variant=="none"', {
+        'mojom_output_languages%': 'c++,javascript,java',
+      }, {
+        'mojom_output_languages%': 'c++',
+      }],
+    ],
+  },
   'actions': [
     {
       'variables': {
@@ -29,8 +48,6 @@
       'rule_name': '<(_target_name)_mojom_bindings_generator',
       'extension': 'mojom',
       'variables': {
-        'mojom_base_output_dir':
-            '<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))',
         'java_out_dir': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/src',
         'mojom_import_args%': [
          '-I<(DEPTH)',
@@ -41,11 +58,21 @@
         '<@(mojom_bindings_generator_sources)',
         '<(stamp_filename)',
       ],
-      'outputs': [
-        '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom.h',
-        '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom.js',
-        '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom-internal.h',
+      'conditions': [
+        ['mojom_variant=="none"', {
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom.h',
+            '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom.js',
+            '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom-internal.h',
+          ]
+        }, {
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom-<(mojom_variant).cc',
+            '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom-<(mojom_variant).h',
+            '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom-<(mojom_variant)-internal.h',
+          ],
+        }]
       ],
       'action': [
         'python', '<@(mojom_bindings_generator)',
@@ -55,6 +82,9 @@
         '<@(mojom_import_args)',
         '-o', '<(SHARED_INTERMEDIATE_DIR)',
         '--java_output_directory=<(java_out_dir)',
+        '--variant', '<(mojom_variant)',
+        '-g', '<(mojom_output_languages)',
+        '<@(mojom_extra_generator_args)',
       ],
       'message': 'Generating Mojo bindings from <(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom',
       'process_outputs_as_sources': 1,

@@ -503,6 +503,10 @@ class Generator(generator.Generator):
                  '%s.java' % GetConstantsMainEntityName(self.module))
 
   def GenerateFiles(self, unparsed_args):
+    # TODO(rockot): Support variant output for Java.
+    if self.variant:
+      raise Exception("Variants not supported in Java bindings.")
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--java_output_directory', dest='java_output_directory')
     args = parser.parse_args(unparsed_args)
