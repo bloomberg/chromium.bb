@@ -13,7 +13,6 @@
       'dependencies': [
         'battor_agent_lib',
         '../../device/serial/serial.gyp:device_serial',
-        '../../device/serial/serial.gyp:device_serial_mojo',
         '../../third_party/mojo/mojo_public.gyp:mojo_environment_standalone',
         '../../third_party/mojo/mojo_public.gyp:mojo_public',
       ],
@@ -30,13 +29,32 @@
       'sources': [
         'battor_agent.cc',
         'battor_agent.h',
+        'battor_connection.cc',
+        'battor_connection.h',
         'battor_error.h',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
         '../../device/serial/serial.gyp:device_serial',
-        '../../device/serial/serial.gyp:device_serial_mojo',
       ]
+    },
+    {
+      'target_name': 'battor_agent_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'battor_agent_lib',
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:run_all_unittests',
+        '../../base/base.gyp:test_support_base',
+        '../../device/serial/serial.gyp:device_serial',
+        '../../device/serial/serial.gyp:device_serial_test_util',        
+        '../../testing/gtest.gyp:gtest',
+        '../../third_party/mojo/mojo_public.gyp:mojo_environment_standalone',
+        '../../third_party/mojo/mojo_public.gyp:mojo_public',
+      ],
+      'sources': [
+        'battor_connection_unittest.cc',
+      ],
     },
   ],
 }

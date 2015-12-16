@@ -49,7 +49,7 @@ void PrintSupportsExplicitClockSync() {
 std::string GetArg(int argnum, int argc, char* argv[]) {
   if (argnum >= argc) {
     PrintUsage();
-    PLOG(FATAL);
+    exit(1);
   }
 
   return argv[argnum];
@@ -58,16 +58,13 @@ std::string GetArg(int argnum, int argc, char* argv[]) {
 // Checks if an error occurred and, if it did, prints the error and exits
 // with an error code.
 void CheckError(battor::BattOrError error) {
-  if (error != battor::BATTOR_ERROR_NONE) {
-    LOG(ERROR) << "Fatal error when communicating with the BattOr: " << error;
-    PLOG(FATAL);
-  }
+  if (error != battor::BATTOR_ERROR_NONE)
+    LOG(FATAL) << "Fatal error when communicating with the BattOr: " << error;
 }
 
 // Prints an error message and exits due to a required thread failing to start.
 void ExitFromThreadStartFailure(const std::string& thread_name) {
-  LOG(ERROR) << "Failed to start " << thread_name;
-  PLOG(FATAL);
+  LOG(FATAL) << "Failed to start " << thread_name;
 }
 
 }  // namespace
@@ -84,9 +81,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
         file_thread_(kFileThreadName),
         ui_thread_(kUiThreadName) {}
 
-  ~BattOrAgentBin() {
-    DCHECK(!agent_);
-  }
+  ~BattOrAgentBin() { DCHECK(!agent_); }
 
   // Runs the BattOr binary and returns the exit code.
   int Run(int argc, char* argv[]) {
