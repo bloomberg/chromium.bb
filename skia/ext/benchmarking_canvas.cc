@@ -743,16 +743,6 @@ void BenchmarkingCanvas::onDrawBitmapNine(const SkBitmap& bitmap,
   INHERITED::onDrawBitmapNine(bitmap, center, dst, op.paint());
 }
 
-void BenchmarkingCanvas::onDrawSprite(const SkBitmap& bitmap, int left, int top,
-                                      const SkPaint* paint)  {
-  AutoOp op(this, "DrawSprite", paint);
-  op.addParam("bitmap", AsValue(bitmap));
-  op.addParam("left", AsValue(SkIntToScalar(left)));
-  op.addParam("top", AsValue(SkIntToScalar(top)));
-
-  INHERITED::onDrawSprite(bitmap, left, top, op.paint());
-}
-
 void BenchmarkingCanvas::onDrawText(const void* text, size_t byteLength,
                                     SkScalar x, SkScalar y,
                                     const SkPaint& paint) {

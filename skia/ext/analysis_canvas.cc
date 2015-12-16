@@ -254,16 +254,6 @@ void AnalysisCanvas::onDrawImageRect(const SkImage*,
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::onDrawSprite(const SkBitmap& bitmap,
-                                  int left,
-                                  int top,
-                                  const SkPaint* paint) {
-  TRACE_EVENT0("disabled-by-default-skia", "AnalysisCanvas::onDrawSprite");
-  is_solid_color_ = false;
-  is_transparent_ = false;
-  ++draw_op_count_;
-}
-
 void AnalysisCanvas::onDrawText(const void* text,
                                 size_t len,
                                 SkScalar x,

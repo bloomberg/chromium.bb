@@ -61,10 +61,6 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkPicture::AbortCallback {
                        const SkRect& dst,
                        const SkPaint* paint,
                        SrcRectConstraint) override;
-  void onDrawSprite(const SkBitmap&,
-                    int left,
-                    int top,
-                    const SkPaint* paint = NULL) override;
   void onDrawVertices(VertexMode,
                       int vertexCount,
                       const SkPoint vertices[],

@@ -666,18 +666,6 @@ void LoggingCanvas::onDrawImageRect(const SkImage* image, const SkRect* src, con
     this->SkCanvas::onDrawImageRect(image, src, dst, paint, constraint);
 }
 
-void LoggingCanvas::onDrawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint* paint)
-{
-    AutoLogger logger(this);
-    RefPtr<JSONObject> params = logger.logItemWithParams("drawSprite");
-    params->setObject("bitmap", objectForSkBitmap(bitmap));
-    params->setNumber("left", left);
-    params->setNumber("top", top);
-    if (paint)
-        params->setObject("paint", objectForSkPaint(*paint));
-    this->SkCanvas::onDrawSprite(bitmap, left, top, paint);
-}
-
 void LoggingCanvas::onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[], const SkColor colors[], SkXfermode* xmode,
     const uint16_t indices[], int indexCount, const SkPaint& paint)
 {

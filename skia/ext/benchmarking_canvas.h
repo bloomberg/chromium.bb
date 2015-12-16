@@ -66,7 +66,6 @@ protected:
                        const SkPaint*, SrcRectConstraint) override;
   void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst,
                         const SkPaint*) override;
-  void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override;
 
   void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y,
                   const SkPaint&) override;
