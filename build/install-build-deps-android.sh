@@ -14,11 +14,6 @@
 
 args="$@"
 
-# TODO(dgn) remove this this argument from calls (http://crbug.com/541727)
-if test "$1" = "--skip-sdk-packages"; then
-  args="${@:2}"
-fi
-
 if ! uname -m | egrep -q "i686|x86_64"; then
   echo "Only x86 architectures are currently supported" >&2
   exit

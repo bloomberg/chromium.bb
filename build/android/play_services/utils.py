@@ -43,27 +43,75 @@ class ConfigParser(object):
       Number. Mirrors @integer/google_play_services_version from the library.
       Example: 815000
 
+   -  sdk_version
+      Version of the Play Services SDK to retrieve, when preprocessing the
+      library from a maven/gradle repository.
+      Example: "8.1.0"
+
+   -  clients
+      List of strings. Name of the clients (or play services modules) to
+      include when preprocessing the library.
+      Example: ["play-services-base", "play-services-cast"]
+
+   -  version_xml_path
+      String. Path to the version.xml string describing the current version.
+      Should be relative to the library base directory
+      Example: "res/values/version.xml"
+
+   -  locale_whitelist
+      List of strings. List of locales to keep from the resources. Can be
+      obtained by generating an android build and looking at the content of
+      `out/Debug/gen/chrome/java/res`; or looking at the android section in
+      `//chrome/app/generated_resources.grd`
+      Example: ["am", "ar", "bg", "ca", "cs"]
+
   '''
   _VERSION_NUMBER_KEY = 'version_number'
 
   def __init__(self, path):
     self.path = path
-    self.data = {}
+    self._data = {}
 
     with open(path, 'r') as stream:
-      self.data = json.load(stream)
+      self._data = json.load(stream)
 
   @property
   def version_number(self):
-    return self.data[self._VERSION_NUMBER_KEY]
+    return self._data.get(self._VERSION_NUMBER_KEY)
+
+  @property
+  def sdk_version(self):
+    return self._data.get('sdk_version')
+
+  @property
+  def clients(self):
+    return self._data.get('clients') or []
+
+  @property
+  def version_xml_path(self):
+    return self._data.get('version_xml_path')
+
+  @property
+  def locale_whitelist(self):
+    return self._data.get('locale_whitelist') or []
 
   def UpdateVersionNumber(self, new_version_number):
     '''Updates the version number and saves it in the configuration file. '''
 
     with open(self.path, 'w') as stream:
-      self.data[self._VERSION_NUMBER_KEY] = new_version_number
-      json.dump(self.data, stream, sort_keys=True, indent=2)
-      stream.write(os.linesep)
+      self._data[self._VERSION_NUMBER_KEY] = new_version_number
+      stream.write(DumpTrimmedJson(self._data))
+
+
+def DumpTrimmedJson(json_data):
+  '''
+  Default formatting when dumping json to string has trailing spaces and lacks
+  a new line at the end. This function fixes that.
+  '''
+
+  out = json.dumps(json_data, sort_keys=True, indent=2)
+  out = out.replace(' ' + os.linesep, os.linesep)
+  return out + os.linesep
 
 
 def FileEquals(expected_file, actual_file):

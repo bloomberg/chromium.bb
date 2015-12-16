@@ -29,20 +29,6 @@ look like:
     +-- CLIENT_2
     +-- etc.
 
-The json config (see the -c argument) file should provide the following fields:
-
-- lib_version: String. Used when building from the maven repository. It should
-  be the package's version (e.g. "7.3.0"). Unused with extracted repositories.
-
-- clients: String array. List of clients to pick. For example, when building
-  from the maven repository, it's the artifactId (e.g. "play-services-base") of
-  each client. With an extracted repository, it's the name of the
-  subdirectories.
-
-- locale_whitelist: String array. Locales that should be allowed in the final
-  resources. They are specified the same way they are appended to the `values`
-  directory in android resources (e.g. "us-GB", "it", "fil").
-
 The output is a directory with the following structure:
 
     OUT_DIR
@@ -65,66 +51,69 @@ Requires the `jar` utility in the path.
 import argparse
 import glob
 import itertools
-import json
 import os
-import re
 import shutil
 import stat
 import sys
+import tempfile
+import zipfile
 
 from datetime import datetime
-from devil.utils import cmd_helper
-from pylib import constants
 
-sys.path.append(
-    os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'android', 'gyp'))
-from util import build_utils # pylint: disable=import-error
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
+from devil.utils import cmd_helper
+from play_services import utils
+from pylib.utils import argparse_utils
 
 
 M2_PKG_PATH = os.path.join('com', 'google', 'android', 'gms')
-OUTPUT_FORMAT_VERSION = 1
-VERSION_FILE_NAME = 'version_info.json'
-VERSION_NUMBER_PATTERN = re.compile(
-    r'<integer name="google_play_services_version">(\d+)<\/integer>')
+
 
 def main():
-  parser = argparse.ArgumentParser(description=("Prepares the Google Play "
-      "services split client libraries before usage by Chrome's build system. "
-      "See the script's documentation for more a detailed help."))
-  parser.add_argument('-r',
-                      '--repository',
-                      help='The Google Play services repository location',
-                      required=True,
-                      metavar='FILE')
-  parser.add_argument('-o',
-                      '--out-dir',
-                      help='The output directory',
-                      required=True,
-                      metavar='FILE')
-  parser.add_argument('-c',
-                      '--config-file',
-                      help='Config file path',
-                      required=True,
-                      metavar='FILE')
+  parser = argparse.ArgumentParser(description=(
+      "Prepares the Google Play services split client libraries before usage "
+      "by Chrome's build system. See the script's documentation for more a "
+      "detailed help."))
+  argparse_utils.CustomHelpAction.EnableFor(parser)
+  required_args = parser.add_argument_group('required named arguments')
+  required_args.add_argument('-r',
+                             '--repository',
+                             help=('the Google Play services repository '
+                                   'location'),
+                             required=True,
+                             metavar='FILE')
+  required_args.add_argument('-o',
+                             '--out-dir',
+                             help='the output directory',
+                             required=True,
+                             metavar='FILE')
+  required_args.add_argument('-c',
+                             '--config-file',
+                             help='the config file path',
+                             required=True,
+                             metavar='FILE')
   parser.add_argument('-x',
                       '--is-extracted-repo',
                       action='store_true',
-                      default=False,
-                      help='The provided repository is not made of AAR files.')
+                      help='the provided repository is not made of AAR files')
+  parser.add_argument('--config-help',
+                      action='custom_help',
+                      custom_help_text=utils.ConfigParser.__doc__,
+                      help='show the configuration file format help')
 
   args = parser.parse_args()
 
-  ProcessGooglePlayServices(args.repository,
-                            args.out_dir,
-                            args.config_file,
-                            args.is_extracted_repo)
+  return ProcessGooglePlayServices(args.repository,
+                                   args.out_dir,
+                                   args.config_file,
+                                   args.is_extracted_repo)
 
 
 def ProcessGooglePlayServices(repo, out_dir, config_path, is_extracted_repo):
-  with open(config_path, 'r') as json_file:
-    config = json.load(json_file)
+  config = utils.ConfigParser(config_path)
 
-  with build_utils.TempDir() as tmp_root:
+  tmp_root = tempfile.mkdtemp()
+  try:
     tmp_paths = _SetupTempDir(tmp_root)
 
     if is_extracted_repo:
@@ -134,20 +123,19 @@ def ProcessGooglePlayServices(repo, out_dir, config_path, is_extracted_repo):
 
     _GenerateCombinedJar(tmp_paths)
     _ProcessResources(config, tmp_paths)
+    _BuildOutput(config, tmp_paths, out_dir)
+  finally:
+    shutil.rmtree(tmp_root)
 
-    if is_extracted_repo:
-      printable_repo = repo
-    else:
-      printable_repo = 'm2repository - ' + config['lib_version']
-    _BuildOutput(config, tmp_paths, out_dir, printable_repo)
+  return 0
 
 
 def _SetupTempDir(tmp_root):
   tmp_paths = {
-    'root': tmp_root,
-    'imported_clients': os.path.join(tmp_root, 'imported_clients'),
-    'extracted_jars': os.path.join(tmp_root, 'jar'),
-    'combined_jar': os.path.join(tmp_root, 'google-play-services.jar'),
+      'root': tmp_root,
+      'imported_clients': os.path.join(tmp_root, 'imported_clients'),
+      'extracted_jars': os.path.join(tmp_root, 'jar'),
+      'combined_jar': os.path.join(tmp_root, 'google-play-services.jar'),
   }
   os.mkdir(tmp_paths['imported_clients'])
   os.mkdir(tmp_paths['extracted_jars'])
@@ -157,10 +145,10 @@ def _SetupTempDir(tmp_root):
 
 def _SetupOutputDir(out_dir):
   out_paths = {
-    'root': out_dir,
-    'res': os.path.join(out_dir, 'res'),
-    'jar': os.path.join(out_dir, 'google-play-services.jar'),
-    'stub': os.path.join(out_dir, 'stub'),
+      'root': out_dir,
+      'res': os.path.join(out_dir, 'res'),
+      'jar': os.path.join(out_dir, 'google-play-services.jar'),
+      'stub': os.path.join(out_dir, 'stub'),
   }
 
   shutil.rmtree(out_paths['jar'], ignore_errors=True)
@@ -178,28 +166,26 @@ def _MakeWritable(dir_path):
 
 
 def _ImportFromAars(config, tmp_paths, repo):
-  for client in config['clients']:
-    aar_name = '%s-%s.aar' % (client, config['lib_version'])
+  for client in config.clients:
+    aar_name = '%s-%s.aar' % (client, config.sdk_version)
     aar_path = os.path.join(repo, M2_PKG_PATH, client,
-                            config['lib_version'], aar_name)
+                            config.sdk_version, aar_name)
     aar_out_path = os.path.join(tmp_paths['imported_clients'], client)
-    build_utils.ExtractAll(aar_path, aar_out_path)
+    _ExtractAll(aar_path, aar_out_path)
 
     client_jar_path = os.path.join(aar_out_path, 'classes.jar')
-    build_utils.ExtractAll(client_jar_path, tmp_paths['extracted_jars'],
-                           no_clobber=False)
+    _ExtractAll(client_jar_path, tmp_paths['extracted_jars'])
 
 
 def _ImportFromExtractedRepo(config, tmp_paths, repo):
   # Import the clients
   try:
-    for client in config['clients']:
+    for client in config.clients:
       client_out_dir = os.path.join(tmp_paths['imported_clients'], client)
       shutil.copytree(os.path.join(repo, client), client_out_dir)
 
       client_jar_path = os.path.join(client_out_dir, 'classes.jar')
-      build_utils.ExtractAll(client_jar_path, tmp_paths['extracted_jars'],
-                             no_clobber=False)
+      _ExtractAll(client_jar_path, tmp_paths['extracted_jars'])
   finally:
     _MakeWritable(tmp_paths['imported_clients'])
 
@@ -212,7 +198,7 @@ def _GenerateCombinedJar(tmp_paths):
 
 def _ProcessResources(config, tmp_paths):
   LOCALIZED_VALUES_BASE_NAME = 'values-'
-  locale_whitelist = set(config['locale_whitelist'])
+  locale_whitelist = set(config.locale_whitelist)
 
   glob_pattern = os.path.join(tmp_paths['imported_clients'], '*', 'res', '*')
   for res_dir in glob.glob(glob_pattern):
@@ -228,45 +214,17 @@ def _ProcessResources(config, tmp_paths):
         shutil.rmtree(res_dir)
 
 
-def _GetVersionNumber(config, tmp_paths):
-  version_file_path = os.path.join(tmp_paths['imported_clients'],
-                                   config['base_client'],
-                                   'res',
-                                   'values',
-                                   'version.xml')
-
-  with open(version_file_path, 'r') as version_file:
-    version_file_content = version_file.read()
-
-  match = VERSION_NUMBER_PATTERN.search(version_file_content)
-  if not match:
-    raise AttributeError('A value for google_play_services_version was not '
-                         'found in ' + version_file_path)
-
-  return match.group(1)
-
-
-def _BuildOutput(config, tmp_paths, out_dir, printable_repo):
+def _BuildOutput(config, tmp_paths, out_dir):
   generation_date = datetime.utcnow()
-  play_services_full_version = _GetVersionNumber(config, tmp_paths)
-
-  # Create a version text file to allow quickly checking the version
-  gen_info = {
-    '@Description@': 'Preprocessed Google Play services clients for chrome',
-    'Generator script': os.path.basename(__file__),
-    'Repository source': printable_repo,
-    'Library version': play_services_full_version,
-    'Directory format version': OUTPUT_FORMAT_VERSION,
-    'Generation Date (UTC)': str(generation_date)
-  }
-  tmp_version_file_path = os.path.join(tmp_paths['root'], VERSION_FILE_NAME)
-  with open(tmp_version_file_path, 'w') as version_file:
-    json.dump(gen_info, version_file, indent=2, sort_keys=True)
+  version_xml_path = os.path.join(tmp_paths['imported_clients'],
+                                  config.version_xml_path)
+  play_services_full_version = utils.GetVersionNumberFromLibraryResources(
+      version_xml_path)
 
   out_paths = _SetupOutputDir(out_dir)
 
   # Copy the resources to the output dir
-  for client in config['clients']:
+  for client in config.clients:
     res_in_tmp_dir = os.path.join(tmp_paths['imported_clients'], client, 'res')
     if os.path.isdir(res_in_tmp_dir) and os.listdir(res_in_tmp_dir):
       res_in_final_dir = os.path.join(out_paths['res'], client)
@@ -291,9 +249,12 @@ def _BuildOutput(config, tmp_paths, out_dir, printable_repo):
     content_str = 'google_play_services_version: %s\nutc_date: %s\n'
     stamp.write(content_str % (play_services_full_version, generation_date))
 
-  shutil.copyfile(tmp_version_file_path,
-                  os.path.join(out_paths['root'], VERSION_FILE_NAME))
+  config.UpdateVersionNumber(play_services_full_version)
 
+
+def _ExtractAll(zip_path, out_path):
+  with zipfile.ZipFile(zip_path, 'r') as zip_file:
+    zip_file.extractall(out_path)
 
 if __name__ == '__main__':
   sys.exit(main())

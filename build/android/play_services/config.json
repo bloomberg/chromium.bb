@@ -1,3 +1,4 @@
 {
-  "version_number": 8298000
+  "version_number": 8298000,
+  "version_xml_path": "res/values/version.xml"
 }

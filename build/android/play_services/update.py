@@ -151,7 +151,8 @@ def Download(args):
       logging.info('Skipping, not on an android checkout.')
       return 0
 
-  paths = PlayServicesPaths(args.sdk_root)
+  config = utils.ConfigParser(args.config)
+  paths = PlayServicesPaths(args.sdk_root, config.version_xml_path)
 
   if os.path.isdir(paths.package) and not os.access(paths.package, os.W_OK):
     logging.error('Failed updating the Google Play Services library. '
@@ -167,7 +168,6 @@ def Download(args):
     logging.info('Skipping, the Google Play services library is up to date.')
     return 0
 
-  config = utils.ConfigParser(args.config)
   bucket_path = _VerifyBucketPathFormat(args.bucket,
                                         config.version_number,
                                         args.dry_run)
@@ -260,13 +260,12 @@ def Upload(args):
   # disable breakpad to avoid spamming the logs.
   breakpad.IS_ENABLED = False
 
-  paths = PlayServicesPaths(args.sdk_root)
+  config = utils.ConfigParser(args.config)
+  paths = PlayServicesPaths(args.sdk_root, config.version_xml_path)
 
   if not args.skip_git and utils.IsRepoDirty(constants.DIR_SOURCE_ROOT):
     logging.error('The repo is dirty. Please commit or stash your changes.')
     return -1
-
-  config = utils.ConfigParser(args.config)
 
   new_version_number = utils.GetVersionNumberFromLibraryResources(
       paths.version_xml)
@@ -473,7 +472,7 @@ class PlayServicesPaths(object):
 
   '''
 
-  def __init__(self, sdk_root):
+  def __init__(self, sdk_root, version_xml_path):
     relative_package = os.path.join('extras', 'google', 'google_play_services')
     relative_lib = os.path.join(relative_package, 'libproject',
                                 'google-play-services_lib')
@@ -485,7 +484,7 @@ class PlayServicesPaths(object):
     self.source_prop = os.path.join(self.package, 'source.properties')
 
     self.lib = os.path.join(sdk_root, relative_lib)
-    self.version_xml = os.path.join(self.lib, 'res', 'values', 'version.xml')
+    self.version_xml = os.path.join(self.lib, version_xml_path)
 
 
 class DummyGsutil(download_from_google_storage.Gsutil):

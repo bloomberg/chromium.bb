@@ -301,7 +301,9 @@ class TestFunctions(unittest.TestCase):
     if config_version:
       _MakeDirs(os.path.dirname(self.paths.config_file))
       with open(self.paths.config_file, 'w') as stream:
-        stream.write('{"version_number":%d}\n' % config_version)
+        stream.write(('{"version_number":%d,'
+                      '"version_xml_path": "res/values/version.xml"}'
+                      '\n') % config_version)
 
     if existing_license:
       _MakeDirs(self.paths.gms_root)
