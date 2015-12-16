@@ -3059,6 +3059,12 @@
       'browser/task_manager/web_contents_resource_provider.cc',
       'browser/task_manager/web_contents_resource_provider.h',
     ],
+    'chrome_browser_task_manager_chromeos_sources': [
+      'browser/task_management/providers/arc/arc_process_task.cc',
+      'browser/task_management/providers/arc/arc_process_task.h',
+      'browser/task_management/providers/arc/arc_process_task_provider.cc',
+      'browser/task_management/providers/arc/arc_process_task_provider.h',
+    ],
     'chrome_browser_themes_sources': [
       'browser/sync/glue/theme_data_type_controller.cc',
       'browser/sync/glue/theme_data_type_controller.h',
@@ -3458,6 +3464,11 @@
         }],
         ['enable_task_manager==1', {
           'sources': [ '<@(chrome_browser_task_manager_sources)' ],
+          'conditions': [
+            ['chromeos==1', {
+              'sources': [ '<@(chrome_browser_task_manager_chromeos_sources)' ],
+            }],
+          ],
         }],
         ['enable_media_router==1', {
           'dependencies': [

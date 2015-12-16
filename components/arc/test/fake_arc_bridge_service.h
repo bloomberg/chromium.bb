@@ -79,6 +79,7 @@ class FakeArcBridgeService : public ArcBridgeService {
                       ScaleFactor scale_factor) override;
   bool SendNotificationEventToAndroid(const std::string& key,
                                       ArcNotificationEvent event) override;
+  bool RequestProcessList() override;
 
   int refresh_app_list_count() const { return refresh_app_list_count_; }
 

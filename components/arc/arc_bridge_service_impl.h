@@ -55,6 +55,9 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
                       const std::string& activity,
                       ScaleFactor scale_factor) override;
 
+  // Requests ARC process list.
+  bool RequestProcessList() override;
+
  private:
   friend class ArcBridgeTest;
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
@@ -84,6 +87,10 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
                  const mojo::String& activity,
                  ScaleFactor scale_factor,
                  mojo::Array<uint8_t> icon_png_data) override;
+
+  // Called when the latest process list is reported from ARC.
+  void OnUpdateProcessList(
+      mojo::Array<RunningAppProcessInfoPtr> processes_ptr) override;
 
   // Called when the instance requests wake lock services
   void OnAcquireDisplayWakeLock(DisplayWakeLockType type) override;

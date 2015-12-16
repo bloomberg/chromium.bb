@@ -466,6 +466,12 @@ source_set("browser") {
     sources += rebase_path(gypi_values.chrome_browser_task_manager_sources,
                            ".",
                            "//chrome")
+    if (is_chromeos) {
+      sources +=
+          rebase_path(gypi_values.chrome_browser_task_manager_chromeos_sources,
+                      ".",
+                      "//chrome")
+    }
   }
   if (enable_spellcheck) {
     sources += rebase_path(gypi_values.chrome_browser_spellchecker_sources,

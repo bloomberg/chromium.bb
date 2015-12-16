@@ -77,6 +77,16 @@ void ArcBridgeService::RemoveAppObserver(AppObserver* observer) {
   app_observer_list_.RemoveObserver(observer);
 }
 
+void ArcBridgeService::AddProcessObserver(ProcessObserver* observer) {
+  DCHECK(CalledOnValidThread());
+  process_observer_list_.AddObserver(observer);
+}
+
+void ArcBridgeService::RemoveProcessObserver(ProcessObserver* observer) {
+  DCHECK(CalledOnValidThread());
+  process_observer_list_.RemoveObserver(observer);
+}
+
 void ArcBridgeService::SetState(State state) {
   DCHECK(CalledOnValidThread());
   // DCHECK on enum classes not supported.

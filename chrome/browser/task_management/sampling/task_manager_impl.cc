@@ -11,6 +11,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/task_management/providers/arc/arc_process_task_provider.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace task_management {
 
 namespace {
@@ -39,6 +43,9 @@ TaskManagerImpl::TaskManagerImpl()
   task_providers_.push_back(new BrowserProcessTaskProvider());
   task_providers_.push_back(new ChildProcessTaskProvider());
   task_providers_.push_back(new WebContentsTaskProvider());
+#if defined(OS_CHROMEOS)
+  task_providers_.push_back(new ArcProcessTaskProvider());
+#endif  // defined(OS_CHROMEOS)
 
   content::GpuDataManager::GetInstance()->AddObserver(this);
 }

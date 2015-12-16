@@ -29,6 +29,15 @@ struct TypeConverter<arc::AppInfo, arc::AppInfoPtr> {
   }
 };
 
+template <>
+struct TypeConverter<arc::RunningAppProcessInfo,
+                     arc::RunningAppProcessInfoPtr> {
+  static arc::RunningAppProcessInfo Convert(
+      const arc::RunningAppProcessInfoPtr& process_ptr) {
+    return *process_ptr;
+  }
+};
+
 }  // namespace mojo
 
 namespace arc {
@@ -160,6 +169,16 @@ bool ArcBridgeServiceImpl::RequestAppIcon(const std::string& package,
   return true;
 }
 
+bool ArcBridgeServiceImpl::RequestProcessList() {
+  DCHECK(CalledOnValidThread());
+  if (state() != State::READY) {
+    LOG(ERROR) << "Called RequestProcessList when the service is not ready";
+    return false;
+  }
+  instance_ptr_->RequestProcessList();
+  return true;
+}
+
 void ArcBridgeServiceImpl::OnInstanceBootPhase(InstanceBootPhase phase) {
   DCHECK(CalledOnValidThread());
   // The state can be CONNECTED the first time this is called, and will then
@@ -201,6 +220,17 @@ void ArcBridgeServiceImpl::OnAppIcon(const mojo::String& package,
   FOR_EACH_OBSERVER(
       AppObserver, app_observer_list(),
       OnAppIcon(package, activity, scale_factor, icon_png_data.storage()));
+}
+
+void ArcBridgeServiceImpl::OnUpdateProcessList(
+    mojo::Array<RunningAppProcessInfoPtr> processes_ptr) {
+  DCHECK(CalledOnValidThread());
+  std::vector<RunningAppProcessInfo> processes(
+      processes_ptr.To<std::vector<RunningAppProcessInfo>>());
+  FOR_EACH_OBSERVER(
+      ProcessObserver,
+      process_observer_list(),
+      OnUpdateProcessList(processes));
 }
 
 void ArcBridgeServiceImpl::OnAcquireDisplayWakeLock(DisplayWakeLockType type) {

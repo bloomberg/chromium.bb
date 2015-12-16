@@ -34,6 +34,7 @@ class FakeArcBridgeInstance : public ArcBridgeInstance {
   void RequestAppIcon(const mojo::String& package,
                       const mojo::String& activity,
                       ScaleFactor scale_factor) override;
+  void RequestProcessList() override;
 
  private:
   // Mojo endpoints.

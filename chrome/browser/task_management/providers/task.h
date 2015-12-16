@@ -36,6 +36,7 @@ class Task {
     ZYGOTE,         /* A Linux zygote process. */
     SANDBOX_HELPER, /* A sandbox helper process. */
     GPU,            /* A graphics process. */
+    ARC,            /* An ARC process. */
   };
 
   // Create a task with the given |title| and the given favicon |icon|. This

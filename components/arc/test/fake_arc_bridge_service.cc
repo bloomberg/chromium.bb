@@ -58,6 +58,10 @@ bool FakeArcBridgeService::RequestAppIcon(const std::string& package,
   return true;
 }
 
+bool FakeArcBridgeService::RequestProcessList() {
+  return true;
+}
+
 void FakeArcBridgeService::SetReady() {
   SetState(State::READY);
 }

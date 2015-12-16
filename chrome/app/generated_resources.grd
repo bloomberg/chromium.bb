@@ -3699,6 +3699,9 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_TASK_MANAGER_SUBFRAME_INCOGNITO_PREFIX" desc="The prefix for an Incognito out-of-process-iframe process row in the Task Manager (these processes are created when site isolation is enabled, in incognito mode)">
           Incognito Subframe: <ph name="SUBFRAME_SITE">$1<ex>https://youtube.com/</ex></ph>
         </message>
+        <message name="IDS_TASK_MANAGER_ARC_PREFIX" desc="The prefix for an ARC process row">
+          ARC: <ph name="ARC_PROCESS_NAME">$1<ex>com.android.systemui</ex></ph>
+        </message>
       </if>
 
       <message name="IDS_UTILITY_PROCESS_COMPONENT_PATCHER_NAME" desc="The name of the utility process used for patching components.">

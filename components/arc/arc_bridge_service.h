@@ -110,6 +110,24 @@ class ArcBridgeService {
     virtual ~AppObserver() {}
   };
 
+  // Notifies ARC process related events.
+  class ProcessObserver {
+   public:
+    // Called when the latest process list has been received after
+    // ArcBridgeService::RequestProcessList() was called.
+    //
+    // NB: Due to the nature of Linux PID, we can not avoid the race condition
+    // that the process info is already outdated when the message is received.
+    // Do not use the process list obtained here for security-sensitive purpose.
+    // Good news is that Android processes are designed to be ready to be killed
+    // at any time, so killing a wrong process is not a disaster.
+    virtual void OnUpdateProcessList(
+        const std::vector<RunningAppProcessInfo>& processes) {}
+
+   protected:
+    virtual ~ProcessObserver() {}
+  };
+
   virtual ~ArcBridgeService();
 
   // Gets the global instance of the ARC Bridge Service. This can only be
@@ -146,6 +164,11 @@ class ArcBridgeService {
   void AddAppObserver(AppObserver* observer);
   void RemoveAppObserver(AppObserver* observer);
 
+  // Adds or removes ARC process observers. This can only be called on the
+  // thread that this class was created on.
+  void AddProcessObserver(ProcessObserver* observer);
+  void RemoveProcessObserver(ProcessObserver* observer);
+
   // Gets the current state of the bridge service.
   State state() const { return state_; }
 
@@ -178,6 +201,10 @@ class ArcBridgeService {
                               const std::string& activity,
                               ScaleFactor scale_factor) = 0;
 
+  // Requests a list of processes from the ARC instance.
+  // When the result comes back, Observer::OnUpdateProcessList() is called.
+  virtual bool RequestProcessList() = 0;
+
  protected:
   ArcBridgeService();
 
@@ -188,12 +215,17 @@ class ArcBridgeService {
   void SetAvailable(bool availability);
 
   base::ObserverList<Observer>& observer_list() { return observer_list_; }
+
   base::ObserverList<NotificationObserver>& notification_observer_list() {
     return notification_observer_list_;
   }
 
   base::ObserverList<AppObserver>& app_observer_list() {
     return app_observer_list_;
+  }
+
+  base::ObserverList<ProcessObserver>& process_observer_list() {
+    return process_observer_list_;
   }
 
   bool CalledOnValidThread();
@@ -206,8 +238,8 @@ class ArcBridgeService {
 
   base::ObserverList<Observer> observer_list_;
   base::ObserverList<NotificationObserver> notification_observer_list_;
-
   base::ObserverList<AppObserver> app_observer_list_;
+  base::ObserverList<ProcessObserver> process_observer_list_;
 
   base::ThreadChecker thread_checker_;
 

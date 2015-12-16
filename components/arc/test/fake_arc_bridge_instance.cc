@@ -34,6 +34,8 @@ void FakeArcBridgeInstance::RequestAppIcon(const mojo::String& package,
                                            const mojo::String& activity,
                                            ScaleFactor scale_factor) {}
 
+void FakeArcBridgeInstance::RequestProcessList() {}
+
 void FakeArcBridgeInstance::Bind(
     mojo::InterfaceRequest<ArcBridgeInstance> interface_request) {
   binding_.Bind(std::move(interface_request));
