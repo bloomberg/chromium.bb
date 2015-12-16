@@ -293,7 +293,7 @@ def Report(focus_build, builds_timings):
   stage_names = list(set(focus_stages.keys() + stats_stages.keys()))
   def name_key(name):
     f, s = focus_stages.get(name), stats_stages.get(name)
-    return s.start.median if s else f.start
+    return s.start.median if s else f.start or datetime.timedelta()
   stage_names.sort(key=name_key)
 
   # Display info about each stage.
