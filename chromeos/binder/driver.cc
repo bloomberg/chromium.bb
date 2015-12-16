@@ -39,7 +39,7 @@ bool Driver::Initialize() {
   }
   // Version check.
   int version = 0;
-  if (ioctl(fd_.get(), BINDER_VERSION, &version) != 0 ||
+  if (HANDLE_EINTR(ioctl(fd_.get(), BINDER_VERSION, &version)) != 0 ||
       version != BINDER_CURRENT_PROTOCOL_VERSION) {
     PLOG(ERROR) << "Version check failure: version = " << version;
     return false;
@@ -66,7 +66,8 @@ int Driver::GetFD() {
 
 bool Driver::SetMaxThreads(int max_threads) {
   base::ThreadRestrictions::AssertIOAllowed();
-  return ioctl(fd_.get(), BINDER_SET_MAX_THREADS, &max_threads) != -1;
+  return HANDLE_EINTR(ioctl(fd_.get(), BINDER_SET_MAX_THREADS, &max_threads)) !=
+         -1;
 }
 
 bool Driver::WriteRead(const char* write_buf,
@@ -81,7 +82,7 @@ bool Driver::WriteRead(const char* write_buf,
   params.write_size = write_buf_size;
   params.read_buffer = reinterpret_cast<uintptr_t>(read_buf);
   params.read_size = read_buf_size;
-  if (ioctl(fd_.get(), BINDER_WRITE_READ, &params) < 0) {
+  if (HANDLE_EINTR(ioctl(fd_.get(), BINDER_WRITE_READ, &params)) < 0) {
     PLOG(ERROR) << "BINDER_WRITE_READ failed: write_buf_size = "
                 << write_buf_size << ", read_buf_size = " << read_buf_size;
     return false;
@@ -93,7 +94,7 @@ bool Driver::WriteRead(const char* write_buf,
 
 bool Driver::NotifyCurrentThreadExiting() {
   base::ThreadRestrictions::AssertIOAllowed();
-  return ioctl(fd_.get(), BINDER_THREAD_EXIT, 0) != -1;
+  return HANDLE_EINTR(ioctl(fd_.get(), BINDER_THREAD_EXIT, 0)) != -1;
 }
 
 }  // namespace binder
