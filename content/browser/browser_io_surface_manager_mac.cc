@@ -66,8 +66,8 @@ bool BrowserIOSurfaceManager::RegisterIOSurface(gfx::IOSurfaceId io_surface_id,
 
   IOSurfaceMapKey key(io_surface_id, client_id);
   DCHECK(io_surfaces_.find(key) == io_surfaces_.end());
-  io_surfaces_.add(key, make_scoped_ptr(new base::mac::ScopedMachSendRight(
-                            IOSurfaceCreateMachPort(io_surface))));
+  io_surfaces_.insert(
+      std::make_pair(key, base::ScopedCFTypeRef<IOSurfaceRef>(io_surface)));
   return true;
 }
 
@@ -94,7 +94,9 @@ IOSurfaceRef BrowserIOSurfaceManager::AcquireIOSurface(
     return nullptr;
   }
 
-  return IOSurfaceLookupFromMachPort(it->second->get());
+  IOSurfaceRef io_surface = it->second;
+  CFRetain(io_surface);
+  return io_surface;
 }
 
 void BrowserIOSurfaceManager::EnsureRunning() {
@@ -254,10 +256,16 @@ void BrowserIOSurfaceManager::HandleRegisterIOSurfaceRequest(
     return;
   }
 
+  base::mac::ScopedMachSendRight io_surface_port(request.io_surface_port.name);
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
+      IOSurfaceLookupFromMachPort(io_surface_port.get()));
+  if (!io_surface) {
+    LOG(ERROR) << "Failed to open registered IOSurface port!";
+    return;
+  }
   IOSurfaceMapKey key(gfx::IOSurfaceId(request.io_surface_id),
                       request.client_id);
-  io_surfaces_.add(key, make_scoped_ptr(new base::mac::ScopedMachSendRight(
-                            request.io_surface_port.name)));
+  io_surfaces_.insert(std::make_pair(key, io_surface));
   reply->result = true;
 }
 
@@ -315,8 +323,8 @@ void BrowserIOSurfaceManager::HandleAcquireIOSurfaceRequest(
   }
 
   reply->body.msgh_descriptor_count = 1;
-  reply->io_surface_port.name = it->second->get();
-  reply->io_surface_port.disposition = MACH_MSG_TYPE_COPY_SEND;
+  reply->io_surface_port.name = IOSurfaceCreateMachPort(it->second);
+  reply->io_surface_port.disposition = MACH_MSG_TYPE_MOVE_SEND;
   reply->io_surface_port.type = MACH_MSG_PORT_DESCRIPTOR;
 }
 

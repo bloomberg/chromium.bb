@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BROWSER_IO_SURFACE_MANAGER_MAC_H_
 #define CONTENT_BROWSER_BROWSER_IO_SURFACE_MANAGER_MAC_H_
 
+#include <IOSurface/IOSurface.h>
 #include <mach/mach.h>
 
 #include <map>
@@ -12,6 +13,7 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/mac/dispatch_source_mach.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -105,8 +107,7 @@ class CONTENT_EXPORT BrowserIOSurfaceManager : public gfx::IOSurfaceManager {
   // id and the Child process unique id of the owner.
   using IOSurfaceMapKey = std::pair<gfx::IOSurfaceId, int>;
   using IOSurfaceMap =
-      base::ScopedPtrHashMap<IOSurfaceMapKey,
-                             scoped_ptr<base::mac::ScopedMachSendRight>>;
+      std::map<IOSurfaceMapKey, base::ScopedCFTypeRef<IOSurfaceRef>>;
   IOSurfaceMap io_surfaces_;
 
   // Stores the Child process unique id (RenderProcessHost ID) for every

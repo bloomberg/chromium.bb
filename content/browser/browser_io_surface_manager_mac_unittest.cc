@@ -5,6 +5,7 @@
 #include "content/browser/browser_io_surface_manager_mac.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/mac/io_surface_manager.h"
 
 namespace content {
 
@@ -56,15 +57,26 @@ class BrowserIOSurfaceManagerTest : public testing::Test {
     IOSurfaceManagerMsg_RegisterIOSurfaceReply reply = {{0}};
     request.io_surface_id = io_surface_id;
     request.client_id = client_id;
-    request.io_surface_port.name = io_surface_port;
+    request.io_surface_port.name = GetIOSurfaceMachPort();
     memcpy(request.token_name, gpu_process_token.name,
            sizeof(gpu_process_token.name));
     ASSERT_TRUE(HandleRegisterIOSurfaceRequest(request, &reply));
     ASSERT_TRUE(reply.result);
   }
 
+  mach_port_t GetIOSurfaceMachPort() {
+    if (!io_surface_) {
+      io_surface_.reset(gfx::IOSurfaceManager::CreateIOSurface(
+          gfx::Size(32, 32), gfx::BufferFormat::BGRA_8888));
+      io_surface_port_.reset(IOSurfaceCreateMachPort(io_surface_));
+    }
+    return io_surface_port_.get();
+  }
+
  private:
   BrowserIOSurfaceManager io_surface_manager_;
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
+  base::mac::ScopedMachSendRight io_surface_port_;
 };
 
 TEST_F(BrowserIOSurfaceManagerTest, EnsureRunning) {
@@ -78,6 +90,12 @@ TEST_F(BrowserIOSurfaceManagerTest, RegisterIOSurfaceSucceeds) {
   const int kIOSurfaceId = 1;
   const int kClientId = 1;
 
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
+      gfx::IOSurfaceManager::CreateIOSurface(gfx::Size(32, 32),
+                                             gfx::BufferFormat::BGRA_8888));
+  base::mac::ScopedMachSendRight io_surface_port(
+      IOSurfaceCreateMachPort(io_surface));
+
   IOSurfaceManagerToken gpu_process_token = GenerateGpuProcessToken();
 
   IOSurfaceManagerHostMsg_RegisterIOSurface request = {{0}};
@@ -85,6 +103,7 @@ TEST_F(BrowserIOSurfaceManagerTest, RegisterIOSurfaceSucceeds) {
 
   request.io_surface_id = kIOSurfaceId;
   request.client_id = kClientId;
+  request.io_surface_port.name = GetIOSurfaceMachPort();
   memcpy(request.token_name, gpu_process_token.name,
          sizeof(gpu_process_token.name));
   EXPECT_TRUE(HandleRegisterIOSurfaceRequest(request, &reply));
@@ -119,6 +138,31 @@ TEST_F(BrowserIOSurfaceManagerTest,
          sizeof(child_process_token.name));
   // Fails as child process is not allowed to register IOSurfaces.
   EXPECT_FALSE(HandleRegisterIOSurfaceRequest(request, &reply));
+}
+
+TEST_F(BrowserIOSurfaceManagerTest, RegisterIOSurfaceFailsWithInvalidPort) {
+  const int kIOSurfaceId = 1;
+  const int kClientId = 1;
+  const mach_port_t kIOInvalidSurfacePortId = 100u;
+
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
+      gfx::IOSurfaceManager::CreateIOSurface(gfx::Size(32, 32),
+                                             gfx::BufferFormat::BGRA_8888));
+  base::mac::ScopedMachSendRight io_surface_port(
+      IOSurfaceCreateMachPort(io_surface));
+
+  IOSurfaceManagerToken gpu_process_token = GenerateGpuProcessToken();
+
+  IOSurfaceManagerHostMsg_RegisterIOSurface request = {{0}};
+  IOSurfaceManagerMsg_RegisterIOSurfaceReply reply = {{0}};
+
+  request.io_surface_id = kIOSurfaceId;
+  request.client_id = kClientId;
+  request.io_surface_port.name = kIOInvalidSurfacePortId;
+  memcpy(request.token_name, gpu_process_token.name,
+         sizeof(gpu_process_token.name));
+  EXPECT_FALSE(HandleRegisterIOSurfaceRequest(request, &reply));
+  EXPECT_FALSE(reply.result);
 }
 
 TEST_F(BrowserIOSurfaceManagerTest, UnregisterIOSurfaceSucceeds) {
@@ -175,14 +219,14 @@ TEST_F(BrowserIOSurfaceManagerTest,
 TEST_F(BrowserIOSurfaceManagerTest, AcquireIOSurfaceSucceeds) {
   const int kIOSurfaceId = 10;
   const int kClientId = 1;
-  const mach_port_t kIOSurfacePortId = 100u;
+  const mach_port_t io_surface_port = GetIOSurfaceMachPort();
 
   IOSurfaceManagerToken gpu_process_token = GenerateGpuProcessToken();
   IOSurfaceManagerToken child_process_token =
       GenerateChildProcessToken(kClientId);
 
   RegisterIOSurface(gpu_process_token, kIOSurfaceId, kClientId,
-                    kIOSurfacePortId);
+                    io_surface_port);
 
   IOSurfaceManagerHostMsg_AcquireIOSurface request = {{0}};
   IOSurfaceManagerMsg_AcquireIOSurfaceReply reply = {{0}};
@@ -190,18 +234,17 @@ TEST_F(BrowserIOSurfaceManagerTest, AcquireIOSurfaceSucceeds) {
   memcpy(request.token_name, child_process_token.name,
          sizeof(child_process_token.name));
   EXPECT_TRUE(HandleAcquireIOSurfaceRequest(request, &reply));
-  EXPECT_EQ(kIOSurfacePortId, reply.io_surface_port.name);
 }
 
 TEST_F(BrowserIOSurfaceManagerTest, AcquireIOSurfaceFailsWithInvalidToken) {
   const int kIOSurfaceId = 10;
   const int kClientId = 1;
-  const mach_port_t kIOSurfacePortId = 100u;
+  const mach_port_t io_surface_port = GetIOSurfaceMachPort();
 
   IOSurfaceManagerToken gpu_process_token = GenerateGpuProcessToken();
 
   RegisterIOSurface(gpu_process_token, kIOSurfaceId, kClientId,
-                    kIOSurfacePortId);
+                    io_surface_port);
 
   IOSurfaceManagerHostMsg_AcquireIOSurface request = {{0}};
   IOSurfaceManagerMsg_AcquireIOSurfaceReply reply = {{0}};
@@ -215,14 +258,14 @@ TEST_F(BrowserIOSurfaceManagerTest,
   const int kIOSurfaceId = 10;
   const int kClientId1 = 1;
   const int kClientId2 = 2;
-  const mach_port_t kIOSurfacePortId = 100u;
+  const mach_port_t io_surface_port = GetIOSurfaceMachPort();
 
   IOSurfaceManagerToken gpu_process_token = GenerateGpuProcessToken();
   IOSurfaceManagerToken child_process_token2 =
       GenerateChildProcessToken(kClientId2);
 
   RegisterIOSurface(gpu_process_token, kIOSurfaceId, kClientId1,
-                    kIOSurfacePortId);
+                    io_surface_port);
 
   IOSurfaceManagerHostMsg_AcquireIOSurface request = {{0}};
   IOSurfaceManagerMsg_AcquireIOSurfaceReply reply = {{0}};
@@ -239,14 +282,14 @@ TEST_F(BrowserIOSurfaceManagerTest,
        AcquireIOSurfaceFailsAfterInvalidatingChildProcessToken) {
   const int kIOSurfaceId = 10;
   const int kClientId = 1;
-  const mach_port_t kIOSurfacePortId = 100u;
+  const mach_port_t io_surface_port = GetIOSurfaceMachPort();
 
   IOSurfaceManagerToken gpu_process_token = GenerateGpuProcessToken();
   IOSurfaceManagerToken child_process_token =
       GenerateChildProcessToken(kClientId);
 
   RegisterIOSurface(gpu_process_token, kIOSurfaceId, kClientId,
-                    kIOSurfacePortId);
+                    io_surface_port);
 
   InvalidateChildProcessToken(child_process_token);
 
@@ -263,14 +306,14 @@ TEST_F(BrowserIOSurfaceManagerTest,
        AcquireIOSurfaceAfterInvalidatingGpuProcessToken) {
   const int kIOSurfaceId = 10;
   const int kClientId = 1;
-  const mach_port_t kIOSurfacePortId = 100u;
+  const mach_port_t io_surface_port = GetIOSurfaceMachPort();
 
   IOSurfaceManagerToken gpu_process_token = GenerateGpuProcessToken();
   IOSurfaceManagerToken child_process_token =
       GenerateChildProcessToken(kClientId);
 
   RegisterIOSurface(gpu_process_token, kIOSurfaceId, kClientId,
-                    kIOSurfacePortId);
+                    io_surface_port);
 
   InvalidateGpuProcessToken();
 
