@@ -246,13 +246,20 @@ void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
                                  chrome::HostDesktopType host_desktop_type) {
   canvas->FillRect(bounds,
                    theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
-  canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
-                       background_origin.x(),
-                       background_origin.y(),
-                       bounds.x(),
-                       bounds.y(),
-                       bounds.width(),
-                       bounds.height());
+
+  // Always tile the background image in pre-MD. In MD, only tile if there's a
+  // non-default image.
+  // TODO(estade): remove IDR_THEME_TOOLBAR when MD is default.
+  if (theme_provider->HasCustomImage(IDR_THEME_TOOLBAR) ||
+      !ui::MaterialDesignController::IsModeMaterial()) {
+    canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
+                         background_origin.x(),
+                         background_origin.y(),
+                         bounds.x(),
+                         bounds.y(),
+                         bounds.width(),
+                         bounds.height());
+  }
 
   if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH &&
       !ui::MaterialDesignController::IsModeMaterial()) {
