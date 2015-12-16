@@ -33,8 +33,11 @@ TEST(GetShownOriginTest, RemovePrefixes) {
     autofill::PasswordForm password_form;
     password_form.signon_realm = "https://non.android.signon.com";
     password_form.origin = GURL(test_case.input);
-    EXPECT_EQ(test_case.output, GetShownOrigin(password_form, ""))
+    bool is_android_uri;
+    EXPECT_EQ(test_case.output,
+              GetShownOrigin(password_form, "", &is_android_uri))
         << "for input " << test_case.input;
+    EXPECT_FALSE(is_android_uri) << "for input " << test_case.input;
   }
 }
 
@@ -45,7 +48,10 @@ TEST(GetShownOriginTest, OriginFromAndroidForm) {
       "m3HSJL1i83hdltRq0-o9czGb-8KJDKra4t_"
       "3JRlnPKcjI8PZm6XBHXx6zG4UuMXaDEZjR1wuXDre9G9zvN7AQw=="
       "@com.example.android";
-  EXPECT_EQ(GetShownOrigin(android_form, ""), "android://com.example.android");
+  bool is_android_uri;
+  EXPECT_EQ(GetShownOrigin(android_form, "", &is_android_uri),
+            "android://com.example.android");
+  EXPECT_TRUE(is_android_uri);
 }
 
 }  // namespace password_manager

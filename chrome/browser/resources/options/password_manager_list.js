@@ -12,6 +12,7 @@ cr.define('options.passwordManager', function() {
   // chrome/browser/ui/webui/options/password_manager_handler.cc.
   /** @const */ var ORIGIN_FIELD = 'origin';
   /** @const */ var SHOWN_URL_FIELD = 'shownUrl';
+  /** @const */ var IS_ANDROID_URI_FIELD = 'isAndroidUri';
   /** @const */ var IS_SECURE_FIELD = 'isSecure';
   /** @const */ var USERNAME_FIELD = 'username';
   /** @const */ var PASSWORD_FIELD = 'password';
@@ -22,9 +23,8 @@ cr.define('options.passwordManager', function() {
    * Creates a new passwords list item.
    * @param {cr.ui.ArrayDataModel} dataModel The data model that contains this
    *     item.
-   * @param {Array} entry An array of the form [url, username, password,
-   *     federation]. When the list has been filtered, a fifth element [index]
-   *     may be present.
+   * @param {Object} entry A dictionary of data on new list item. When the
+   *     list has been filtered, one more element [index] may be present.
    * @param {boolean} showPasswords If true, add a button to the element to
    *     allow the user to reveal the saved password.
    * @constructor
@@ -42,23 +42,53 @@ cr.define('options.passwordManager', function() {
   }
 
   /**
-   * Returns title for password's origin (removes the scheme if the url is
-   * insecure and removes trailing punctuation symbols).
-   * @param {string} url The url.
-   * @param {boolean} isSecure True if the url is secure.
+   * Returns title for password's origin. If the origin is  Android URI, returns
+   * the origin as it is. Removes the scheme if the url is insecure and removes
+   * trailing punctuation symbols.
+   * @param {Object} item A dictionary of data on the list item.
    * @return {string} The title for password's origin.
    */
-  function getTitleForPasswordOrigin(url, isSecure) {
-    if (!isSecure) {
-      var ind = url.indexOf('://');
+  function getTitleForPasswordOrigin(item) {
+    var title = item.url;
+    if (item.isAndroidUri)
+      return title;
+    if (!item.isSecure) {
+      var ind = title.indexOf('://');
       if (ind >= 0) {
-        url = url.substring(ind + 3);
+        title = title.substring(ind + 3);
       }
     }
     // Since the direction is switched to RTL, punctuation symbols appear on the
     // left side, that is wrong. So, just remove trailing punctuation symbols.
-    url = url.replace(/[^A-Za-z0-9]+$/, '');
-    return url;
+    title = title.replace(/[^A-Za-z0-9]+$/, '');
+    return title;
+  }
+
+  /**
+   * Helper function that creates an HTML element for displaying the origin of
+   * saved password.
+   * @param {Object} item A dictionary of data on the list item.
+   * @param {Element} urlDiv div-element that will enclose the created
+   *     element.
+   * @return {Element} The element for displaying password origin.
+   */
+  function createUrlLink(item, urlDiv) {
+    var urlLink;
+    if (!item.isAndroidUri) {
+      urlLink = item.ownerDocument.createElement('a');
+      urlLink.href = item.url;
+      urlLink.setAttribute('target', '_blank');
+      urlLink.textContent = item.shownUrl.split('').reverse().join('');
+
+      urlDiv.classList.add('left-elided-url');
+    } else {
+      urlLink = item.ownerDocument.createElement('span');
+      urlLink.textContent = item.shownUrl;
+    }
+    urlLink.addEventListener('focus', function() {
+      item.handleFocus();
+    }.bind(item));
+    return urlLink;
   }
 
   PasswordListItem.prototype = {
@@ -70,21 +100,15 @@ cr.define('options.passwordManager', function() {
 
       // The URL of the site.
       var urlDiv = this.ownerDocument.createElement('div');
-      urlDiv.className = 'favicon-cell left-elided-url url';
-      urlDiv.setAttribute(
-          'title', getTitleForPasswordOrigin(this.url, this.isUrlSecure));
-      var urlLink = this.ownerDocument.createElement('a');
-      urlLink.href = this.url;
-      urlLink.setAttribute('target', '_blank');
-      urlLink.textContent = this.shownUrl.split('').reverse().join('');
-      urlLink.addEventListener('focus', function() {
-        this.handleFocus();
-      }.bind(this));
-      urlDiv.appendChild(urlLink);
+      urlDiv.className = 'favicon-cell url';
+      urlDiv.setAttribute('title', getTitleForPasswordOrigin(this));
       urlDiv.style.backgroundImage = getFaviconImageSet(
           'origin/' + this.url, 16);
+
+      this.urlLink = createUrlLink(this, urlDiv);
+      urlDiv.appendChild(this.urlLink);
+
       this.contentElement.appendChild(urlDiv);
-      this.urlLink = urlLink;
 
       // The stored username.
       var usernameDiv = this.ownerDocument.createElement('div');
@@ -107,6 +131,7 @@ cr.define('options.passwordManager', function() {
         var federationDiv = this.ownerDocument.createElement('div');
         federationDiv.className = 'federation';
         federationDiv.textContent = this.federation;
+        federationDiv.title = this.federation;
         this.contentElement.appendChild(federationDiv);
       } else {
         // The stored password.
@@ -124,7 +149,6 @@ cr.define('options.passwordManager', function() {
           this.handleFocus();
         }.bind(this));
         this.passwordField = passwordInput;
-        this.setFocusable_(false);
 
         // The show/hide button.
         if (this.showPasswords_) {
@@ -147,6 +171,7 @@ cr.define('options.passwordManager', function() {
         }
         this.contentElement.appendChild(passwordInputDiv);
       }
+      this.setFocusable_(false);
     },
 
     /** @override */
@@ -154,21 +179,24 @@ cr.define('options.passwordManager', function() {
       var usernameInput = this.usernameField;
       var passwordInput = this.passwordField;
       var button = this.passwordShowButton;
-      // The button doesn't exist when passwords can't be shown.
-      if (!button)
-        return;
+
+      this.setFocusable_(this.selected);
 
       if (this.selected) {
         usernameInput.classList.remove('inactive-item');
-        passwordInput.classList.remove('inactive-item');
-        this.setFocusable_(true);
-        button.hidden = false;
-        passwordInput.focus();
+        if (button) {
+          passwordInput.classList.remove('inactive-item');
+          button.hidden = false;
+          passwordInput.focus();
+        } else {
+          usernameInput.focus();
+        }
       } else {
         usernameInput.classList.add('inactive-item');
-        passwordInput.classList.add('inactive-item');
-        this.setFocusable_(false);
-        button.hidden = true;
+        if (button) {
+          passwordInput.classList.add('inactive-item');
+          button.hidden = true;
+        }
       }
     },
 
@@ -181,8 +209,9 @@ cr.define('options.passwordManager', function() {
       var tabIndex = focusable ? 0 : -1;
       this.urlLink.tabIndex = tabIndex;
       this.usernameField.tabIndex = tabIndex;
-      this.passwordField.tabIndex = tabIndex;
       this.closeButtonElement.tabIndex = tabIndex;
+      if (this.passwordShowButton)
+        this.passwordField.tabIndex = tabIndex;
     },
 
     /**
@@ -255,14 +284,25 @@ cr.define('options.passwordManager', function() {
     },
 
     /**
+     * Get and set whether the origin is Android URI.
+     * @type {boolean}
+     */
+    get isAndroidUri() {
+      return this.dataItem[IS_ANDROID_URI_FIELD];
+    },
+    set isAndroidUri(isAndroidUri) {
+      this.dataItem[IS_ANDROID_URI_FIELD] = isAndroidUri;
+    },
+
+    /**
      * Get and set whether the origin uses secure scheme.
      * @type {boolean}
      */
-    get isUrlSecure() {
+    get isSecure() {
       return this.dataItem[IS_SECURE_FIELD];
     },
-    set isUrlSecure(isUrlSecure) {
-      this.dataItem[IS_SECURE_FIELD] = isUrlSecure;
+    set isSecure(isSecure) {
+      this.dataItem[IS_SECURE_FIELD] = isSecure;
     },
 
     /**
@@ -301,7 +341,7 @@ cr.define('options.passwordManager', function() {
 
   /**
    * Creates a new PasswordExceptions list item.
-   * @param {Array} entry A pair of the form [url, username].
+   * @param {Object} entry A dictionary of data on new list item.
    * @constructor
    * @extends {options.DeletableItem}
    */
@@ -325,22 +365,14 @@ cr.define('options.passwordManager', function() {
 
       // The URL of the site.
       var urlDiv = this.ownerDocument.createElement('div');
-      urlDiv.className = 'url';
-      urlDiv.classList.add('favicon-cell');
-      urlDiv.classList.add('left-elided-url');
-      urlDiv.setAttribute(
-          'title', getTitleForPasswordOrigin(this.url, this.isUrlSecure));
-      var urlLink = this.ownerDocument.createElement('a');
-      urlLink.href = this.url;
-      urlLink.textContent = this.shownUrl.split('').reverse().join('');
-      urlLink.setAttribute('target', '_blank');
-      urlLink.addEventListener('focus', function() {
-        this.handleFocus();
-      }.bind(this));
-      this.urlLink = urlLink;
-      urlDiv.appendChild(urlLink);
+      urlDiv.className = 'favicon-cell url';
+      urlDiv.setAttribute('title', getTitleForPasswordOrigin(this));
       urlDiv.style.backgroundImage = getFaviconImageSet(
-          'origin/' + this.url, 16);
+        'origin/' + this.url, 16);
+
+      this.urlLink = createUrlLink(this, urlDiv);
+      urlDiv.appendChild(this.urlLink);
+
       this.contentElement.appendChild(urlDiv);
     },
 
@@ -388,14 +420,25 @@ cr.define('options.passwordManager', function() {
     },
 
     /**
+     * Get and set whether the origin is Android URI.
+     * @type {boolean}
+     */
+    get isAndroidUri() {
+      return this.dataItem[IS_ANDROID_URI_FIELD];
+    },
+    set isAndroidUri(isAndroidUri) {
+      this.dataItem[IS_ANDROID_URI_FIELD] = isAndroidUri;
+    },
+
+    /**
      * Get and set whether the origin uses secure scheme.
      * @type {boolean}
      */
-    get isUrlSecure() {
+    get isSecure() {
       return this.dataItem[IS_SECURE_FIELD];
     },
-    set isUrlSecure(isUrlSecure) {
-      this.dataItem[IS_SECURE_FIELD] = isUrlSecure;
+    set isSecure(isSecure) {
+      this.dataItem[IS_SECURE_FIELD] = isSecure;
     },
   };
 
