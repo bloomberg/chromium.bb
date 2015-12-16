@@ -42,7 +42,7 @@ promise_test(function(t) {
       '/serviceworker/resources/register.html';
 
     return redirect_and_register(target_url)
-      .then(result => {assert_equals(result, 'FAIL: NotSupportedError');});
+      .then(result => {assert_equals(result, 'FAIL: SecurityError');});
   }, 'register on a non-secure page after redirect from an non-secure url');
 </script>
 </body>
