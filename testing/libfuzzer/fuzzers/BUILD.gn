@@ -11,6 +11,7 @@ fuzzer_test("empty_fuzzer") {
   sources = [
     "empty_fuzzer.cc",
   ]
+  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 fuzzer_test("brotli_fuzzer") {

@@ -34,3 +34,9 @@ static_library("libfuzzer_main") {
     sources += [ "drfuzz_main.cc" ]
   }
 }
+
+# Noop config used to tag fuzzer tests excluded from clusterfuzz.
+# Libfuzzer build bot uses this to filter out targets while
+# building an archive for clusterfuzz.
+config("no_clusterfuzz") {
+}
