@@ -47,12 +47,6 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
       media::VideoCodecBridge*,
       const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
 
-  static media::VideoDecodeAccelerator::Capabilities::Flags
-  GetCapabilitiesFlags() {
-    return media::VideoDecodeAccelerator::Capabilities::
-        NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
-  }
-
  private:
   // Release any codec buffer that is associated with the given picture buffer
   // back to the codec.  It is okay if there is no such buffer.

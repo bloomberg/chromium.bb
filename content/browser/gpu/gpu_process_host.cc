@@ -107,6 +107,9 @@ static const char* const kSwitchNames[] = {
   switches::kEnableHeapProfiling,
   switches::kEnableLogging,
   switches::kEnableShareGroupAsyncTextureUpload,
+#if defined(OS_ANDROID)
+  switches::kEnableUnifiedMediaPipeline,
+#endif
 #if defined(OS_CHROMEOS)
   switches::kDisableVaapiAcceleratedVideoEncode,
 #endif

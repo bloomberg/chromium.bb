@@ -5,6 +5,7 @@
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -16,6 +17,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/limits.h"
+#include "media/base/media_switches.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
@@ -59,10 +61,6 @@ static const media::VideoCodecProfile kSupportedH264Profiles[] = {
   media::H264PROFILE_STEREOHIGH,
   media::H264PROFILE_MULTIVIEWHIGH
 };
-
-#define BACKING_STRATEGY AndroidDeferredRenderingBackingStrategy
-#else
-#define BACKING_STRATEGY AndroidCopyingBackingStrategy
 #endif
 
 // Because MediaCodec is thread-hostile (must be poked on a single thread) and
@@ -97,8 +95,12 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       state_(NO_ERROR),
       picturebuffers_requested_(false),
       gl_decoder_(decoder),
-      strategy_(new BACKING_STRATEGY()),
-      weak_this_factory_(this) {}
+      weak_this_factory_(this) {
+  if (UseDeferredRenderingStrategy())
+    strategy_.reset(new AndroidDeferredRenderingBackingStrategy());
+  else
+    strategy_.reset(new AndroidCopyingBackingStrategy());
+}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -645,6 +647,16 @@ void AndroidVideoDecodeAccelerator::NotifyError(
 }
 
 // static
+bool AndroidVideoDecodeAccelerator::UseDeferredRenderingStrategy() {
+#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableUnifiedMediaPipeline);
+#endif
+
+  return false;
+}
+
+// static
 media::VideoDecodeAccelerator::Capabilities
 AndroidVideoDecodeAccelerator::GetCapabilities() {
   Capabilities capabilities;
@@ -681,7 +693,10 @@ AndroidVideoDecodeAccelerator::GetCapabilities() {
   }
 #endif
 
-  capabilities.flags = BACKING_STRATEGY::GetCapabilitiesFlags();
+  if (UseDeferredRenderingStrategy()) {
+    capabilities.flags = media::VideoDecodeAccelerator::Capabilities::
+        NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
+  }
 
   return capabilities;
 }

@@ -40,11 +40,6 @@ class CONTENT_EXPORT AndroidCopyingBackingStrategy
       media::VideoCodecBridge*,
       const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
 
-  static media::VideoDecodeAccelerator::Capabilities::Flags
-  GetCapabilitiesFlags() {
-    return media::VideoDecodeAccelerator::Capabilities::NO_FLAGS;
-  }
-
  private:
   // Used for copy the texture from surface texture to picture buffers.
   scoped_ptr<gpu::CopyTextureCHROMIUMResourceManager> copier_;

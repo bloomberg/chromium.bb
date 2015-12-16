@@ -161,6 +161,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // Notifies about decoding errors.
   void NotifyError(media::VideoDecodeAccelerator::Error error);
 
+  // Return true if and only if we should use deferred rendering.
+  static bool UseDeferredRenderingStrategy();
+
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
