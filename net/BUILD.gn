@@ -787,7 +787,7 @@ if (use_v8_in_net && !is_android) {
 
     public_deps = [
       ":mojo_type_converters",
-      ":net",
+      ":net_with_v8",
       "//base",
       "//mojo/common",
       "//mojo/public/cpp/bindings",
@@ -811,6 +811,7 @@ if (use_v8_in_net && !is_android) {
 
     public_deps = [
       ":net",
+      "//base",
       "//mojo/public/cpp/bindings",
       "//net/interfaces",
     ]
@@ -829,6 +830,7 @@ if (use_v8_in_net && !is_android) {
 
     deps = [
       ":net_with_v8",
+      "//base",
     ]
 
     public_deps = [
@@ -1148,6 +1150,7 @@ if (is_linux) {
       ":balsa",
       ":epoll_server",
       ":net",
+      ":simple_quic_tools",
       "//base",
       "//base/third_party/dynamic_annotations",
       "//crypto",
@@ -1261,6 +1264,7 @@ source_set("simple_quic_tools") {
     "tools/quic/synchronous_host_resolver.h",
   ]
   deps = [
+    ":balsa",
     ":net",
     "//base",
     "//base/third_party/dynamic_annotations",
