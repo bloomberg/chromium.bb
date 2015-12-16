@@ -2359,7 +2359,7 @@ static void cachedAttributeAnyAttributeAttributeGetter(const v8::FunctionCallbac
     TestObject* impl = V8TestObject::toImpl(holder);
     if (!impl->isValueDirty()) {
         v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName);
-        if (!v8Value.IsEmpty()) {
+        if (!v8Value.IsEmpty() && !v8Value->IsUndefined()) {
             v8SetReturnValue(info, v8Value);
             return;
         }
@@ -2401,7 +2401,7 @@ static void cachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
     TestObject* impl = V8TestObject::toImpl(holder);
     if (!impl->isArrayDirty()) {
         v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName);
-        if (!v8Value.IsEmpty()) {
+        if (!v8Value.IsEmpty() && !v8Value->IsUndefined()) {
             v8SetReturnValue(info, v8Value);
             return;
         }
@@ -2446,7 +2446,7 @@ static void cachedStringOrNoneAttributeAttributeGetter(const v8::FunctionCallbac
     TestObject* impl = V8TestObject::toImpl(holder);
     if (!impl->isStringDirty()) {
         v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName);
-        if (!v8Value.IsEmpty()) {
+        if (!v8Value.IsEmpty() && !v8Value->IsUndefined()) {
             v8SetReturnValue(info, v8Value);
             return;
         }
@@ -3861,7 +3861,7 @@ static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(cons
     TestObject* impl = V8TestObject::toImpl(holder);
     if (!impl->isValueDirty()) {
         v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName);
-        if (!v8Value.IsEmpty()) {
+        if (!v8Value.IsEmpty() && !v8Value->IsUndefined()) {
             v8SetReturnValue(info, v8Value);
             return;
         }
@@ -4936,7 +4936,7 @@ static void cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeGett
     TestObject* impl = V8TestObject::toImpl(holder);
     if (!impl->isStringDirty()) {
         v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName);
-        if (!v8Value.IsEmpty()) {
+        if (!v8Value.IsEmpty() && !v8Value->IsUndefined()) {
             v8SetReturnValue(info, v8Value);
             return;
         }

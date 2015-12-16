@@ -43,7 +43,8 @@ bool V8HiddenValue::setHiddenValue(ScriptState* scriptState, v8::Local<v8::Objec
 
 bool V8HiddenValue::deleteHiddenValue(ScriptState* scriptState, v8::Local<v8::Object> object, v8::Local<v8::String> key)
 {
-    return v8CallBoolean(object->DeletePrivate(scriptState->context(), v8::Private::ForApi(scriptState->isolate(), key)));
+    // Actually deleting the value would make force the object into dictionary mode which is unnecessarily slow. Instead, we replace the hidden value with "undefined".
+    return v8CallBoolean(object->SetPrivate(scriptState->context(), v8::Private::ForApi(scriptState->isolate(), key), v8::Undefined(scriptState->isolate())));
 }
 
 v8::Local<v8::Value> V8HiddenValue::getHiddenValueFromMainWorldWrapper(ScriptState* scriptState, ScriptWrappable* wrappable, v8::Local<v8::String> key)

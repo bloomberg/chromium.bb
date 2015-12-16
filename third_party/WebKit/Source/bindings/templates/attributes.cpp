@@ -34,7 +34,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     if (!impl->{{attribute.cached_attribute_validation_method}}()) {
         v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName);
-        if (!v8Value.IsEmpty()) {
+        if (!v8Value.IsEmpty() && !v8Value->IsUndefined()) {
             v8SetReturnValue(info, v8Value);
             return;
         }

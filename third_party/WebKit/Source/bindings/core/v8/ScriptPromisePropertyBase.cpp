@@ -47,7 +47,7 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world)
     ASSERT(wrapper->CreationContext() == context);
 
     v8::Local<v8::Value> cachedPromise = V8HiddenValue::getHiddenValue(scriptState, wrapper, promiseName());
-    if (!cachedPromise.IsEmpty())
+    if (!cachedPromise.IsEmpty() && cachedPromise->IsPromise())
         return ScriptPromise(scriptState, cachedPromise);
 
     // Create and cache the Promise

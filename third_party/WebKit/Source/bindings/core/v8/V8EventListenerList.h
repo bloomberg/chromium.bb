@@ -61,13 +61,6 @@ public:
     template<typename WrapperType>
     static PassRefPtrWillBeRawPtr<V8EventListener> findOrCreateWrapper(v8::Local<v8::Value>, bool isAttribute, ScriptState*);
 
-    static void clearWrapper(v8::Local<v8::Object> listenerObject, bool isAttribute, ScriptState* scriptState)
-    {
-        ASSERT(scriptState->isolate()->InContext());
-        v8::Local<v8::String> wrapperProperty = getHiddenProperty(isAttribute, scriptState->isolate());
-        V8HiddenValue::deleteHiddenValue(scriptState, listenerObject, wrapperProperty);
-    }
-
     CORE_EXPORT static PassRefPtrWillBeRawPtr<EventListener> getEventListener(ScriptState*, v8::Local<v8::Value>, bool isAttribute, ListenerLookupType);
 
 private:
