@@ -4007,10 +4007,8 @@ TEST_F(GLES2ImplementationTest, ClientWaitSync) {
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::ClientWaitSync::Result));
   const GLuint64 kTimeout = 0xABCDEF0123456789;
-  uint32_t v32_0 = 0, v32_1 = 0;
-  GLES2Util::MapUint64ToTwoUint32(kTimeout, &v32_0, &v32_1);
   expected.cmd.Init(client_sync_id, GL_SYNC_FLUSH_COMMANDS_BIT,
-                    v32_0, v32_1, result1.id, result1.offset);
+                    kTimeout, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(SetMemory(result1.ptr, uint32_t(GL_CONDITION_SATISFIED)))
@@ -4030,9 +4028,7 @@ TEST_F(GLES2ImplementationTest, WaitSync) {
   };
   Cmds expected;
   const GLuint64 kTimeout = GL_TIMEOUT_IGNORED;
-  uint32_t v32_0 = 0, v32_1 = 0;
-  GLES2Util::MapUint64ToTwoUint32(kTimeout, &v32_0, &v32_1);
-  expected.cmd.Init(kClientSyncId, 0, v32_0, v32_1);
+  expected.cmd.Init(kClientSyncId, 0, kTimeout);
 
   gl_->WaitSync(reinterpret_cast<GLsync>(kClientSyncId), 0, kTimeout);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));

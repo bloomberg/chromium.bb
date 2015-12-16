@@ -12562,7 +12562,7 @@ error::Error GLES2DecoderImpl::HandleInsertFenceSyncCHROMIUM(
   const gles2::cmds::InsertFenceSyncCHROMIUM& c =
       *static_cast<const gles2::cmds::InsertFenceSyncCHROMIUM*>(cmd_data);
 
-  const uint64_t release_count = c.release_count;
+  const uint64_t release_count = c.release_count();
   if (!fence_sync_release_callback_.is_null())
     fence_sync_release_callback_.Run(release_count);
   return error::kNoError;
@@ -12602,8 +12602,8 @@ error::Error GLES2DecoderImpl::HandleWaitSyncTokenCHROMIUM(
        (c.namespace_id < static_cast<int32_t>(kMaxNamespaceId)))
           ? static_cast<gpu::CommandBufferNamespace>(c.namespace_id)
           : gpu::CommandBufferNamespace::INVALID;
-  const uint64_t command_buffer_id = c.command_buffer_id;
-  const uint64_t release = c.release_count;
+  const uint64_t command_buffer_id = c.command_buffer_id();
+  const uint64_t release = c.release_count();
   if (wait_fence_sync_callback_.is_null())
     return error::kNoError;
 
@@ -14516,9 +14516,9 @@ error::Error GLES2DecoderImpl::HandleClientWaitSync(
     return error::kUnknownCommand;
   const gles2::cmds::ClientWaitSync& c =
       *static_cast<const gles2::cmds::ClientWaitSync*>(cmd_data);
-  GLuint sync = static_cast<GLuint>(c.sync);
-  GLbitfield flags = static_cast<GLbitfield>(c.flags);
-  GLuint64 timeout = GLES2Util::MapTwoUint32ToUint64(c.timeout_0, c.timeout_1);
+  const GLuint sync = static_cast<GLuint>(c.sync);
+  const GLbitfield flags = static_cast<GLbitfield>(c.flags);
+  const GLuint64 timeout = c.timeout();
   typedef cmds::ClientWaitSync::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
@@ -14543,9 +14543,9 @@ error::Error GLES2DecoderImpl::HandleWaitSync(
     return error::kUnknownCommand;
   const gles2::cmds::WaitSync& c =
       *static_cast<const gles2::cmds::WaitSync*>(cmd_data);
-  GLuint sync = static_cast<GLuint>(c.sync);
-  GLbitfield flags = static_cast<GLbitfield>(c.flags);
-  GLuint64 timeout = GLES2Util::MapTwoUint32ToUint64(c.timeout_0, c.timeout_1);
+  const GLuint sync = static_cast<GLuint>(c.sync);
+  const GLbitfield flags = static_cast<GLbitfield>(c.flags);
+  const GLuint64 timeout = c.timeout();
   GLsync service_sync = 0;
   if (!group_->GetSyncServiceId(sync, &service_sync)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "WaitSync", "invalid sync");

@@ -2366,7 +2366,7 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'data_transfer_methods': ['shm'],
     'cmd_args': 'GLuint sync, GLbitfieldSyncFlushFlags flags, '
-                'GLuint timeout_0, GLuint timeout_1, GLenum* result',
+                'GLuint64 timeout, GLenum* result',
     'unsafe': True,
     'result': ['GLenum'],
     'trace_level': 2,
@@ -3824,7 +3824,7 @@ _FUNCTION_INFO = {
   'WaitSync': {
     'type': 'Custom',
     'cmd_args': 'GLuint sync, GLbitfieldSyncFlushFlags flags, '
-                'GLuint timeout_0, GLuint timeout_1',
+                'GLuint64 timeout',
     'impl_func': False,
     'client_test': False,
     'unsafe': True,
@@ -4595,34 +4595,42 @@ class TypeHandler(object):
     func.WriteCmdSetHeader(f)
     func.WriteCmdInit(f)
     func.WriteCmdSet(f)
+    func.WriteArgAccessors(f)
 
     f.write("  gpu::CommandHeader header;\n")
+    total_args = 0
     args = func.GetCmdArgs()
     for arg in args:
-      f.write("  %s %s;\n" % (arg.cmd_type, arg.name))
+      for cmd_type, name in arg.GetArgDecls():
+        f.write("  %s %s;\n" % (cmd_type, name))
+        total_args += 1
 
     consts = func.GetCmdConstants()
     for const in consts:
+      const_decls = const.GetArgDecls()
+      assert(len(const_decls) == 1)
+      const_cmd_type, const_name = const_decls[0]
       f.write("  static const %s %s = %s;\n" %
-                 (const.cmd_type, const.name, const.GetConstantValue()))
+                 (const_cmd_type, const_name, const.GetConstantValue()))
 
     f.write("};\n")
     f.write("\n")
 
-    size = len(args) * _SIZE_OF_UINT32 + _SIZE_OF_COMMAND_HEADER
+    size = total_args * _SIZE_OF_UINT32 + _SIZE_OF_COMMAND_HEADER
     f.write("static_assert(sizeof(%s) == %d,\n" % (func.name, size))
     f.write("              \"size of %s should be %d\");\n" %
-               (func.name, size))
+            (func.name, size))
     f.write("static_assert(offsetof(%s, header) == 0,\n" % func.name)
     f.write("              \"offset of %s header should be 0\");\n" %
-               func.name)
+            func.name)
     offset = _SIZE_OF_COMMAND_HEADER
     for arg in args:
-      f.write("static_assert(offsetof(%s, %s) == %d,\n" %
-                 (func.name, arg.name, offset))
-      f.write("              \"offset of %s %s should be %d\");\n" %
-                 (func.name, arg.name, offset))
-      offset += _SIZE_OF_UINT32
+      for _, name in arg.GetArgDecls():
+        f.write("static_assert(offsetof(%s, %s) == %d,\n" %
+                (func.name, name, offset))
+        f.write("              \"offset of %s %s should be %d\");\n" %
+                (func.name, name, offset))
+        offset += _SIZE_OF_UINT32
     if not result == None and len(result) > 1:
       offset = 0;
       for line in result:
@@ -4722,7 +4730,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     func.type_handler.WriteCmdSizeTest(func, f)
     for value, arg in enumerate(args):
       f.write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
-                 (arg.type, value + 11, arg.name))
+                 (arg.type, value + 11, arg.GetArgAccessor()))
     f.write("  CheckBytesWrittenMatchesExpectedSize(\n")
     f.write("      next_cmd, sizeof(cmd));\n")
     f.write("}\n")
@@ -5500,7 +5508,7 @@ class CustomHandler(TypeHandler):
     f.write("    SetHeader(total_size);\n")
     args = func.GetCmdArgs()
     for arg in args:
-      f.write("    %s = _%s;\n" % (arg.name, arg.name))
+      arg.WriteSetCode(f, 4, '_%s' % arg.name)
     f.write("  }\n")
     f.write("\n")
 
@@ -8528,13 +8536,14 @@ class Argument(object):
   """A class that represents a function argument."""
 
   cmd_type_map_ = {
-    'GLenum': 'uint32_t',
-    'GLint': 'int32_t',
-    'GLintptr': 'int32_t',
-    'GLsizei': 'int32_t',
-    'GLsizeiptr': 'int32_t',
-    'GLfloat': 'float',
-    'GLclampf': 'float',
+    'GLenum': ['uint32_t'],
+    'GLint': ['int32_t'],
+    'GLintptr': ['int32_t'],
+    'GLsizei': ['int32_t'],
+    'GLsizeiptr': ['int32_t'],
+    'GLfloat': ['float'],
+    'GLclampf': ['float'],
+    'GLuint64': ['uint32_t', 'uint32_t'],
   }
   need_validation_ = ['GLsizei*', 'GLboolean*', 'GLenum*', 'GLint*']
 
@@ -8548,7 +8557,7 @@ class Argument(object):
     if type in self.cmd_type_map_:
       self.cmd_type = self.cmd_type_map_[type]
     else:
-      self.cmd_type = 'uint32_t'
+      self.cmd_type = ['uint32_t']
 
   def IsPointer(self):
     """Returns true if argument is a pointer."""
@@ -8580,6 +8589,14 @@ class Argument(object):
 
     index = func.GetOriginalArgs().index(self)
     return str(index + 1)
+
+  def GetArgDecls(self):
+    if len(self.cmd_type) == 1:
+      return [(self.cmd_type[0], self.name)]
+    else:
+      return [(cmd_type, self.name + '_%d' % i)
+              for i, cmd_type
+              in enumerate(self.cmd_type)]
 
   def GetValidClientSideArg(self, func):
     """Gets a valid value for this argument."""
@@ -8638,6 +8655,10 @@ class Argument(object):
     """returns an invalid value and expected parse result by index."""
     return ("---ERROR0---", "---ERROR2---", None)
 
+  def GetArgAccessor(self):
+    """Returns the name of the accessor for the argument within the struct."""
+    return self.name
+
   def GetLogArg(self):
     """Get argument appropriate for LOG macro."""
     if self.type == 'GLboolean':
@@ -8654,6 +8675,13 @@ class Argument(object):
       my_type = self.type
     f.write("  %s %s = static_cast<%s>(c.%s);\n" %
                (my_type, self.name, my_type, self.name))
+
+  def WriteSetCode(self, f, indent, var):
+    f.write("%s%s = %s;\n" % (' ' * indent, self.name, var))
+
+  def WriteArgAccessor(self, f):
+    """Writes specialized accessor for argument."""
+    pass
 
   def WriteValidationCode(self, f, func):
     """Writes the validation code for an argument."""
@@ -8895,7 +8923,6 @@ class EnumArgument(EnumBaseArgument):
     """Overridden from Argument."""
     return ("GLES2Util::GetString%s(%s)" %
             (self.type_name, self.name))
-
 
 class IntArgument(EnumBaseArgument):
   """A class for a GLint argument that can only accept specific values.
@@ -9169,7 +9196,7 @@ class ResourceIdArgument(Argument):
       my_type = "GLuint"
     else:
       my_type = self.type
-    f.write("  %s %s = c.%s;\n" % (my_type, self.name, self.name))
+    f.write("  %s %s = c.%s;\n" % (my_type, self.name, self.GetArgAccessor()))
 
   def GetValidArg(self, func):
     return "client_%s_id_" % self.resource_type.lower()
@@ -9213,7 +9240,7 @@ class ResourceIdZeroArgument(Argument):
 
   def WriteGetCode(self, f):
     """Overridden from Argument."""
-    f.write("  %s %s = c.%s;\n" % (self.type, self.name, self.name))
+    f.write("  %s %s = c.%s;\n" % (self.type, self.name, self.GetArgAccessor()))
 
   def GetValidArg(self, func):
     return "client_%s_id_" % self.resource_type.lower()
@@ -9229,6 +9256,38 @@ class ResourceIdZeroArgument(Argument):
     """returns an invalid value by index."""
     return ("kInvalidClientId", "kNoError", "GL_INVALID_VALUE")
 
+
+class Int64Argument(Argument):
+  """Represents a GLuint64 argument which splits up into 2 uint32 items."""
+
+  def __init__(self, name, type):
+    Argument.__init__(self, name, type)
+
+  def GetArgAccessor(self):
+    return "%s()" % self.name
+
+  def WriteArgAccessor(self, f):
+    """Writes specialized accessor for compound members."""
+    f.write("  %s %s() const {\n" % (self.type, self.name))
+    f.write("    return static_cast<%s>(\n" % self.type)
+    f.write("        GLES2Util::MapTwoUint32ToUint64(\n")
+    f.write("            %s_0,\n" % self.name)
+    f.write("            %s_1));\n" % self.name)
+    f.write("  }\n")
+    f.write("\n")
+
+  def WriteGetCode(self, f):
+    """Writes the code to get an argument from a command structure."""
+    f.write("  %s %s = c.%s();\n" % (self.type, self.name, self.name))
+
+  def WriteSetCode(self, f, indent, var):
+    indent_str = ' ' * indent
+    f.write("%sGLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(%s),\n" %
+            (indent_str, var))
+    f.write("%s                                &%s_0,\n" %
+            (indent_str, self.name))
+    f.write("%s                                &%s_1);\n" %
+            (indent_str, self.name))
 
 class Function(object):
   """A class that represents a function."""
@@ -9606,7 +9665,7 @@ class Function(object):
     f.write("    SetHeader();\n")
     args = self.GetCmdArgs()
     for arg in args:
-      f.write("    %s = _%s;\n" % (arg.name, arg.name))
+      arg.WriteSetCode(f, 4, '_%s' % arg.name)
     f.write("  }\n")
     f.write("\n")
 
@@ -9619,6 +9678,11 @@ class Function(object):
     f.write("    return NextCmdAddress<ValueType>(cmd);\n")
     f.write("  }\n")
     f.write("\n")
+
+  def WriteArgAccessors(self, f):
+    """Writes the cmd's accessor functions."""
+    for arg in self.GetCmdArgs():
+      arg.WriteArgAccessor(f)
 
   def WriteStruct(self, f):
     self.type_handler.WriteStruct(self, f)
@@ -9893,6 +9957,8 @@ def CreateArg(arg_string):
     return SizeNotNegativeArgument(arg_name, t.replace('NotNegative', ''))
   elif t.startswith('GLsize'):
     return SizeArgument(arg_name, arg_type)
+  elif t == 'GLuint64' or t == 'GLint64':
+    return Int64Argument(arg_name, arg_type)
   else:
     return Argument(arg_name, arg_type)
 

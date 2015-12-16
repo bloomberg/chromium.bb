@@ -5937,11 +5937,8 @@ GLenum GLES2Implementation::ClientWaitSync(
     return GL_WAIT_FAILED;
   }
   *result = GL_WAIT_FAILED;
-  uint32_t v32_0 = 0, v32_1 = 0;
-  GLES2Util::MapUint64ToTwoUint32(timeout, &v32_0, &v32_1);
   helper_->ClientWaitSync(
-      ToGLuint(sync), flags, v32_0, v32_1,
-      GetResultShmId(), GetResultShmOffset());
+      ToGLuint(sync), flags, timeout, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GPU_CLIENT_LOG("returned " << *result);
   CheckGLError();
@@ -5953,9 +5950,7 @@ void GLES2Implementation::WaitSync(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glWaitSync(" << sync << ", "
                  << flags << ", " << timeout << ")");
-  uint32_t v32_0 = 0, v32_1 = 0;
-  GLES2Util::MapUint64ToTwoUint32(timeout, &v32_0, &v32_1);
-  helper_->WaitSync(ToGLuint(sync), flags, v32_0, v32_1);
+  helper_->WaitSync(ToGLuint(sync), flags, timeout);
   CheckGLError();
 }
 

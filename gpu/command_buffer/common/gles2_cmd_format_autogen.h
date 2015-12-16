@@ -1186,15 +1186,14 @@ struct ClientWaitSync {
 
   void Init(GLuint _sync,
             GLbitfield _flags,
-            GLuint _timeout_0,
-            GLuint _timeout_1,
+            GLuint64 _timeout,
             uint32_t _result_shm_id,
             uint32_t _result_shm_offset) {
     SetHeader();
     sync = _sync;
     flags = _flags;
-    timeout_0 = _timeout_0;
-    timeout_1 = _timeout_1;
+    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_timeout), &timeout_0,
+                                    &timeout_1);
     result_shm_id = _result_shm_id;
     result_shm_offset = _result_shm_offset;
   }
@@ -1202,13 +1201,17 @@ struct ClientWaitSync {
   void* Set(void* cmd,
             GLuint _sync,
             GLbitfield _flags,
-            GLuint _timeout_0,
-            GLuint _timeout_1,
+            GLuint64 _timeout,
             uint32_t _result_shm_id,
             uint32_t _result_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_sync, _flags, _timeout_0, _timeout_1,
-                                       _result_shm_id, _result_shm_offset);
+    static_cast<ValueType*>(cmd)
+        ->Init(_sync, _flags, _timeout, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
+  }
+
+  GLuint64 timeout() const {
+    return static_cast<GLuint64>(
+        GLES2Util::MapTwoUint32ToUint64(timeout_0, timeout_1));
   }
 
   gpu::CommandHeader header;
@@ -10649,24 +10652,22 @@ struct WaitSync {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLuint _sync,
-            GLbitfield _flags,
-            GLuint _timeout_0,
-            GLuint _timeout_1) {
+  void Init(GLuint _sync, GLbitfield _flags, GLuint64 _timeout) {
     SetHeader();
     sync = _sync;
     flags = _flags;
-    timeout_0 = _timeout_0;
-    timeout_1 = _timeout_1;
+    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_timeout), &timeout_0,
+                                    &timeout_1);
   }
 
-  void* Set(void* cmd,
-            GLuint _sync,
-            GLbitfield _flags,
-            GLuint _timeout_0,
-            GLuint _timeout_1) {
-    static_cast<ValueType*>(cmd)->Init(_sync, _flags, _timeout_0, _timeout_1);
+  void* Set(void* cmd, GLuint _sync, GLbitfield _flags, GLuint64 _timeout) {
+    static_cast<ValueType*>(cmd)->Init(_sync, _flags, _timeout);
     return NextCmdAddress<ValueType>(cmd);
+  }
+
+  GLuint64 timeout() const {
+    return static_cast<GLuint64>(
+        GLES2Util::MapTwoUint32ToUint64(timeout_0, timeout_1));
   }
 
   gpu::CommandHeader header;
@@ -13504,7 +13505,8 @@ struct InsertFenceSyncCHROMIUM {
 
   void Init(GLuint64 _release_count) {
     SetHeader();
-    release_count = _release_count;
+    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_release_count),
+                                    &release_count_0, &release_count_1);
   }
 
   void* Set(void* cmd, GLuint64 _release_count) {
@@ -13512,16 +13514,24 @@ struct InsertFenceSyncCHROMIUM {
     return NextCmdAddress<ValueType>(cmd);
   }
 
+  GLuint64 release_count() const {
+    return static_cast<GLuint64>(
+        GLES2Util::MapTwoUint32ToUint64(release_count_0, release_count_1));
+  }
+
   gpu::CommandHeader header;
-  uint32_t release_count;
+  uint32_t release_count_0;
+  uint32_t release_count_1;
 };
 
-static_assert(sizeof(InsertFenceSyncCHROMIUM) == 8,
-              "size of InsertFenceSyncCHROMIUM should be 8");
+static_assert(sizeof(InsertFenceSyncCHROMIUM) == 12,
+              "size of InsertFenceSyncCHROMIUM should be 12");
 static_assert(offsetof(InsertFenceSyncCHROMIUM, header) == 0,
               "offset of InsertFenceSyncCHROMIUM header should be 0");
-static_assert(offsetof(InsertFenceSyncCHROMIUM, release_count) == 4,
-              "offset of InsertFenceSyncCHROMIUM release_count should be 4");
+static_assert(offsetof(InsertFenceSyncCHROMIUM, release_count_0) == 4,
+              "offset of InsertFenceSyncCHROMIUM release_count_0 should be 4");
+static_assert(offsetof(InsertFenceSyncCHROMIUM, release_count_1) == 8,
+              "offset of InsertFenceSyncCHROMIUM release_count_1 should be 8");
 
 struct GenSyncTokenCHROMIUMImmediate {
   typedef GenSyncTokenCHROMIUMImmediate ValueType;
@@ -13541,7 +13551,8 @@ struct GenSyncTokenCHROMIUMImmediate {
   void Init(GLuint64 _fence_sync) {
     uint32_t total_size = 0;  // WARNING: compute correct size.
     SetHeader(total_size);
-    fence_sync = _fence_sync;
+    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_fence_sync),
+                                    &fence_sync_0, &fence_sync_1);
   }
 
   void* Set(void* cmd, GLuint64 _fence_sync) {
@@ -13550,16 +13561,26 @@ struct GenSyncTokenCHROMIUMImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
+  GLuint64 fence_sync() const {
+    return static_cast<GLuint64>(
+        GLES2Util::MapTwoUint32ToUint64(fence_sync_0, fence_sync_1));
+  }
+
   gpu::CommandHeader header;
-  uint32_t fence_sync;
+  uint32_t fence_sync_0;
+  uint32_t fence_sync_1;
 };
 
-static_assert(sizeof(GenSyncTokenCHROMIUMImmediate) == 8,
-              "size of GenSyncTokenCHROMIUMImmediate should be 8");
+static_assert(sizeof(GenSyncTokenCHROMIUMImmediate) == 12,
+              "size of GenSyncTokenCHROMIUMImmediate should be 12");
 static_assert(offsetof(GenSyncTokenCHROMIUMImmediate, header) == 0,
               "offset of GenSyncTokenCHROMIUMImmediate header should be 0");
-static_assert(offsetof(GenSyncTokenCHROMIUMImmediate, fence_sync) == 4,
-              "offset of GenSyncTokenCHROMIUMImmediate fence_sync should be 4");
+static_assert(
+    offsetof(GenSyncTokenCHROMIUMImmediate, fence_sync_0) == 4,
+    "offset of GenSyncTokenCHROMIUMImmediate fence_sync_0 should be 4");
+static_assert(
+    offsetof(GenSyncTokenCHROMIUMImmediate, fence_sync_1) == 8,
+    "offset of GenSyncTokenCHROMIUMImmediate fence_sync_1 should be 8");
 
 struct GenUnverifiedSyncTokenCHROMIUMImmediate {
   typedef GenUnverifiedSyncTokenCHROMIUMImmediate ValueType;
@@ -13579,7 +13600,8 @@ struct GenUnverifiedSyncTokenCHROMIUMImmediate {
   void Init(GLuint64 _fence_sync) {
     uint32_t total_size = 0;  // WARNING: compute correct size.
     SetHeader(total_size);
-    fence_sync = _fence_sync;
+    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_fence_sync),
+                                    &fence_sync_0, &fence_sync_1);
   }
 
   void* Set(void* cmd, GLuint64 _fence_sync) {
@@ -13588,18 +13610,29 @@ struct GenUnverifiedSyncTokenCHROMIUMImmediate {
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
+  GLuint64 fence_sync() const {
+    return static_cast<GLuint64>(
+        GLES2Util::MapTwoUint32ToUint64(fence_sync_0, fence_sync_1));
+  }
+
   gpu::CommandHeader header;
-  uint32_t fence_sync;
+  uint32_t fence_sync_0;
+  uint32_t fence_sync_1;
 };
 
-static_assert(sizeof(GenUnverifiedSyncTokenCHROMIUMImmediate) == 8,
-              "size of GenUnverifiedSyncTokenCHROMIUMImmediate should be 8");
+static_assert(sizeof(GenUnverifiedSyncTokenCHROMIUMImmediate) == 12,
+              "size of GenUnverifiedSyncTokenCHROMIUMImmediate should be 12");
 static_assert(
     offsetof(GenUnverifiedSyncTokenCHROMIUMImmediate, header) == 0,
     "offset of GenUnverifiedSyncTokenCHROMIUMImmediate header should be 0");
-static_assert(
-    offsetof(GenUnverifiedSyncTokenCHROMIUMImmediate, fence_sync) == 4,
-    "offset of GenUnverifiedSyncTokenCHROMIUMImmediate fence_sync should be 4");
+static_assert(offsetof(GenUnverifiedSyncTokenCHROMIUMImmediate, fence_sync_0) ==
+                  4,
+              "offset of GenUnverifiedSyncTokenCHROMIUMImmediate fence_sync_0 "
+              "should be 4");
+static_assert(offsetof(GenUnverifiedSyncTokenCHROMIUMImmediate, fence_sync_1) ==
+                  8,
+              "offset of GenUnverifiedSyncTokenCHROMIUMImmediate fence_sync_1 "
+              "should be 8");
 
 struct VerifySyncTokensCHROMIUMImmediate {
   typedef VerifySyncTokensCHROMIUMImmediate ValueType;
@@ -13656,8 +13689,10 @@ struct WaitSyncTokenCHROMIUM {
             GLuint64 _release_count) {
     SetHeader();
     namespace_id = _namespace_id;
-    command_buffer_id = _command_buffer_id;
-    release_count = _release_count;
+    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_command_buffer_id),
+                                    &command_buffer_id_0, &command_buffer_id_1);
+    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_release_count),
+                                    &release_count_0, &release_count_1);
   }
 
   void* Set(void* cmd,
@@ -13669,22 +13704,40 @@ struct WaitSyncTokenCHROMIUM {
     return NextCmdAddress<ValueType>(cmd);
   }
 
+  GLuint64 command_buffer_id() const {
+    return static_cast<GLuint64>(GLES2Util::MapTwoUint32ToUint64(
+        command_buffer_id_0, command_buffer_id_1));
+  }
+
+  GLuint64 release_count() const {
+    return static_cast<GLuint64>(
+        GLES2Util::MapTwoUint32ToUint64(release_count_0, release_count_1));
+  }
+
   gpu::CommandHeader header;
   int32_t namespace_id;
-  uint32_t command_buffer_id;
-  uint32_t release_count;
+  uint32_t command_buffer_id_0;
+  uint32_t command_buffer_id_1;
+  uint32_t release_count_0;
+  uint32_t release_count_1;
 };
 
-static_assert(sizeof(WaitSyncTokenCHROMIUM) == 16,
-              "size of WaitSyncTokenCHROMIUM should be 16");
+static_assert(sizeof(WaitSyncTokenCHROMIUM) == 24,
+              "size of WaitSyncTokenCHROMIUM should be 24");
 static_assert(offsetof(WaitSyncTokenCHROMIUM, header) == 0,
               "offset of WaitSyncTokenCHROMIUM header should be 0");
 static_assert(offsetof(WaitSyncTokenCHROMIUM, namespace_id) == 4,
               "offset of WaitSyncTokenCHROMIUM namespace_id should be 4");
-static_assert(offsetof(WaitSyncTokenCHROMIUM, command_buffer_id) == 8,
-              "offset of WaitSyncTokenCHROMIUM command_buffer_id should be 8");
-static_assert(offsetof(WaitSyncTokenCHROMIUM, release_count) == 12,
-              "offset of WaitSyncTokenCHROMIUM release_count should be 12");
+static_assert(
+    offsetof(WaitSyncTokenCHROMIUM, command_buffer_id_0) == 8,
+    "offset of WaitSyncTokenCHROMIUM command_buffer_id_0 should be 8");
+static_assert(
+    offsetof(WaitSyncTokenCHROMIUM, command_buffer_id_1) == 12,
+    "offset of WaitSyncTokenCHROMIUM command_buffer_id_1 should be 12");
+static_assert(offsetof(WaitSyncTokenCHROMIUM, release_count_0) == 16,
+              "offset of WaitSyncTokenCHROMIUM release_count_0 should be 16");
+static_assert(offsetof(WaitSyncTokenCHROMIUM, release_count_1) == 20,
+              "offset of WaitSyncTokenCHROMIUM release_count_1 should be 20");
 
 struct DrawBuffersEXTImmediate {
   typedef DrawBuffersEXTImmediate ValueType;

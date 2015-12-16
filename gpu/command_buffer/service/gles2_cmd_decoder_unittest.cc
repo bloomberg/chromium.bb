@@ -330,9 +330,7 @@ TEST_P(GLES3DecoderTest, ClientWaitSyncValid) {
   typedef cmds::ClientWaitSync::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
   cmds::ClientWaitSync cmd;
-  uint32_t v32_0 = 0, v32_1 = 0;
-  GLES2Util::MapUint64ToTwoUint32(0, &v32_0, &v32_1);
-  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, 0,
            shared_memory_id_, shared_memory_offset_);
   EXPECT_CALL(*gl_,
               ClientWaitSync(reinterpret_cast<GLsync>(kServiceSyncId),
@@ -353,9 +351,7 @@ TEST_P(GLES2DecoderTest, ClientWaitSyncNonZeroTimeoutValid) {
   Result* result = static_cast<Result*>(shared_memory_address_);
   cmds::ClientWaitSync cmd;
   const GLuint64 kTimeout = 0xABCDEF0123456789;
-  uint32_t v32_0 = 0, v32_1 = 0;
-  GLES2Util::MapUint64ToTwoUint32(kTimeout, &v32_0, &v32_1);
-  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, kTimeout,
            shared_memory_id_, shared_memory_offset_);
   EXPECT_CALL(*gl_,
               ClientWaitSync(reinterpret_cast<GLsync>(kServiceSyncId),
@@ -375,10 +371,8 @@ TEST_P(GLES2DecoderTest, ClientWaitSyncInvalidSyncFails) {
   typedef cmds::ClientWaitSync::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
   cmds::ClientWaitSync cmd;
-  uint32_t v32_0 = 0, v32_1 = 0;
-  GLES2Util::MapUint64ToTwoUint32(0, &v32_0, &v32_1);
   decoder_->set_unsafe_es3_apis_enabled(true);
-  cmd.Init(kInvalidClientId, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+  cmd.Init(kInvalidClientId, GL_SYNC_FLUSH_COMMANDS_BIT, 0,
            shared_memory_id_, shared_memory_offset_);
   *result = GL_WAIT_FAILED;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -390,10 +384,8 @@ TEST_P(GLES2DecoderTest, ClientWaitSyncResultNotInitFails) {
   typedef cmds::ClientWaitSync::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
   cmds::ClientWaitSync cmd;
-  uint32_t v32_0 = 0, v32_1 = 0;
-  GLES2Util::MapUint64ToTwoUint32(0, &v32_0, &v32_1);
   decoder_->set_unsafe_es3_apis_enabled(true);
-  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, 0,
            shared_memory_id_, shared_memory_offset_);
   *result = 1;  // Any value other than GL_WAIT_FAILED
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
@@ -403,16 +395,14 @@ TEST_P(GLES2DecoderTest, ClientWaitSyncBadSharedMemoryFails) {
   typedef cmds::ClientWaitSync::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
   cmds::ClientWaitSync cmd;
-  uint32_t v32_0 = 0, v32_1 = 0;
-  GLES2Util::MapUint64ToTwoUint32(0, &v32_0, &v32_1);
   decoder_->set_unsafe_es3_apis_enabled(true);
   *result = GL_WAIT_FAILED;
-  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, 0,
            kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 
   *result = GL_WAIT_FAILED;
-  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, 0,
            shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
@@ -424,10 +414,8 @@ TEST_P(GLES2DecoderTest, WaitSyncValidArgs) {
       .Times(1)
       .RetiresOnSaturation();
 
-  uint32_t v32_0 = 0, v32_1 = 0;
-  GLES2Util::MapUint64ToTwoUint32(kTimeout, &v32_0, &v32_1);
   cmds::WaitSync cmd;
-  cmd.Init(client_sync_id_, 0, v32_0, v32_1);
+  cmd.Init(client_sync_id_, 0, kTimeout);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
