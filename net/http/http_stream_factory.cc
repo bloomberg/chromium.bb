@@ -153,7 +153,7 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   http_server_properties->SetAlternativeService(
       RewriteHost(http_host_port_pair),
       AlternativeService(protocol, "", static_cast<uint16>(port)), probability,
-      base::Time::Now() + base::TimeDelta::FromDays(1));
+      base::Time::Now() + base::TimeDelta::FromDays(30));
 }
 
 GURL HttpStreamFactory::ApplyHostMappingRules(const GURL& url,
