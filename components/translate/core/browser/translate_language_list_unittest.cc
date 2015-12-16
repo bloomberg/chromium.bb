@@ -24,6 +24,7 @@ TEST(TranslateLanguageListTest, SetSupportedLanguages) {
   ASSERT_EQ(2u, results.size());
   EXPECT_EQ("en", results[0]);
   EXPECT_EQ("ja", results[1]);
+  manager->ResetForTesting();
 }
 
 TEST(TranslateLanguageListTest, SetSupportedLanguagesWithAlphaKey) {
@@ -42,6 +43,7 @@ TEST(TranslateLanguageListTest, SetSupportedLanguagesWithAlphaKey) {
   ASSERT_EQ(2u, results.size());
   EXPECT_EQ("en", results[0]);
   EXPECT_EQ("ja", results[1]);
+  manager->ResetForTesting();
 }
 
 }  // namespace translate

@@ -97,7 +97,6 @@ bool TranslateDownloadManager::IsSupportedLanguage(
     NOTREACHED();
     return false;
   }
-
   return language_list->IsSupportedLanguage(language);
 }
 

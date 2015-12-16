@@ -752,6 +752,7 @@
       'translate/core/browser/language_state_unittest.cc',
       'translate/core/browser/translate_browser_metrics_unittest.cc',
       'translate/core/browser/translate_language_list_unittest.cc',
+      'translate/core/browser/translate_manager_unittest.cc',
       'translate/core/browser/translate_prefs_unittest.cc',
       'translate/core/browser/translate_script_unittest.cc',
       'translate/core/common/translate_metrics_unittest.cc',
