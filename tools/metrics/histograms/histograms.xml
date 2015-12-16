@@ -8405,6 +8405,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Whether a Domain Reliability upload succeeded.</summary>
 </histogram>
 
+<histogram name="DomDistiller.BarCloseButtonUsage" enum="BooleanPanelWasOpen">
+  <owner>mdjones@chromium.org</owner>
+  <summary>
+    Records if the close button was used before or after opening and viewing
+    Reader Mode content.
+  </summary>
+</histogram>
+
 <histogram name="DomDistiller.DistillationQuality" enum="BooleanSuccess">
   <owner>nyquist@chromium.org</owner>
   <summary>
@@ -8498,6 +8506,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records the time from a swipe-up gesture on ReaderModePanel to the first
     paint of the empty template.
+  </summary>
+</histogram>
+
+<histogram name="DomDistiller.Time.ViewingReaderModePanel" units="milliseconds">
+  <owner>mdjones@chromium.org</owner>
+  <summary>
+    Records the amount of time between the Reader Mode panel opening and it
+    closing or returning to the peeking state.
   </summary>
 </histogram>
 
@@ -56860,6 +56876,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanOrphan" type="int">
   <int value="0" label="Non-orphan"/>
   <int value="1" label="Orphan"/>
+</enum>
+
+<enum name="BooleanPanelWasOpen" type="int">
+  <int value="0" label="Panel was closed"/>
+  <int value="1" label="Panel was open"/>
 </enum>
 
 <enum name="BooleanPopulated" type="int">

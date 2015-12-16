@@ -14,6 +14,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModePanel;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -34,6 +35,7 @@ import org.chromium.ui.base.PageTransition;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Manages UI effects for reader mode including hiding and showing the
@@ -276,7 +278,10 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
 
     @Override
     public void onCloseButtonPressed() {
-        // TODO(mdjones): Add user metrics for using the close button in the panel bar here.
+        if (mReaderModePanel == null) return;
+        RecordHistogram.recordBooleanHistogram("DomDistiller.BarCloseButtonUsage",
+                mReaderModePanel.getPanelState() == PanelState.EXPANDED
+                || mReaderModePanel.getPanelState() == PanelState.MAXIMIZED);
         // TODO(mdjones): If it is decided that Reader Mode cannot be permanently dismissed for a
         // tab, remove that remaining logic from this class.
     }
@@ -293,6 +298,12 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     public void closeReaderPanel(StateChangeReason reason, boolean animate) {
         if (mReaderModePanel == null) return;
         mReaderModePanel.closePanel(reason, animate);
+    }
+
+    @Override
+    public void recordTimeSpentInReader(long timeMs) {
+        RecordHistogram.recordLongTimesHistogram("DomDistiller.Time.ViewingReaderModePanel",
+                timeMs, TimeUnit.MILLISECONDS);
     }
 
     protected WebContentsObserver createWebContentsObserver(WebContents webContents) {

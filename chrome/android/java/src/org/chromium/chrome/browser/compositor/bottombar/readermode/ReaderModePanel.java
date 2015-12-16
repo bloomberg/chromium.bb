@@ -31,25 +31,23 @@ import org.chromium.ui.resources.ResourceManager;
  */
 public class ReaderModePanel extends OverlayPanel {
 
-    /**
-     * The compositor layer used for drawing the panel.
-     */
+    /** The compositor layer used for drawing the panel. */
     private ContextualSearchSceneLayer mSceneLayer;
 
-    /**
-     * Delegate for calling functions on the ReaderModeManager.
-     */
+    /** Delegate for calling functions on the ReaderModeManager. */
     private ReaderModeManagerDelegate mManagerDelegate;
 
-    /**
-     * Delegate for passing the current ContentViewCore to the layout manager.
-     */
+    /** Delegate for passing the current ContentViewCore to the layout manager. */
     private OverlayPanelContentViewDelegate mContentViewDelegate;
 
-    /**
-     * The opacity of the panel bar text.
-     */
+    /** The opacity of the panel bar text. */
     private float mReaderBarTextOpacity;
+
+    /** If the timer for counting how long a user has been reading is running. */
+    private boolean mTimerRunning;
+
+    /** The start time in ms of the current timer. */
+    private long mStartTime;
 
     // ============================================================================================
     // Constructor
@@ -247,6 +245,38 @@ public class ReaderModePanel extends OverlayPanel {
         }
 
         super.animatePanelToState(PanelState.MAXIMIZED, reason, duration);
+    }
+
+    @Override
+    protected void onAnimationFinished() {
+        super.onAnimationFinished();
+        boolean animatingToOpenState = getPanelState() == PanelState.EXPANDED
+                || getPanelState() == PanelState.MAXIMIZED;
+        // Start or stop the timer for how long the user has been reading.
+        if (!mTimerRunning && animatingToOpenState) {
+            mStartTime = System.currentTimeMillis();
+            mTimerRunning = true;
+        } else if (mTimerRunning && !animatingToOpenState) {
+            onTimerEnded();
+        }
+    }
+
+    @Override
+    public void closePanel(StateChangeReason reason, boolean animate) {
+        super.closePanel(reason, animate);
+        if (mTimerRunning) {
+            onTimerEnded();
+        }
+    }
+
+    /**
+     * Record the time spent in Reader Mode.
+     */
+    private void onTimerEnded() {
+        mTimerRunning = false;
+        long totalTime = System.currentTimeMillis() - mStartTime;
+        if (mStartTime <= 0 || totalTime < 0) return;
+        mManagerDelegate.recordTimeSpentInReader(totalTime);
     }
 
     @Override

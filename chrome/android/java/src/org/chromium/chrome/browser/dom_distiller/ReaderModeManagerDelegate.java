@@ -57,4 +57,10 @@ public interface ReaderModeManagerDelegate {
      * @return The ChromeActivity that owns the manager.
      */
     ChromeActivity getChromeActivity();
+
+    /**
+     * Record the amount of time that a user spent in the Reader Mode panel.
+     * @param timeInMs The amount of time spent in ms.
+     */
+    void recordTimeSpentInReader(long timeInMs);
 }
