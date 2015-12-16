@@ -76,6 +76,7 @@ static bool parseOptionalConstraintsVectorElement(const Dictionary& constraint, 
     return true;
 }
 
+// Old style parser. Deprecated.
 static bool parse(const Dictionary& constraintsDictionary, WebVector<WebMediaConstraint>& optional, WebVector<WebMediaConstraint>& mandatory)
 {
     if (constraintsDictionary.isUndefinedOrNull())
@@ -156,7 +157,7 @@ static bool parse(const MediaTrackConstraintSet& constraintsIn, WebVector<WebMed
     return true;
 }
 
-
+// Deprecated.
 WebMediaConstraints create(const Dictionary& constraintsDictionary, ExceptionState& exceptionState)
 {
     WebVector<WebMediaConstraint> optional;
@@ -171,16 +172,128 @@ WebMediaConstraints create(const Dictionary& constraintsDictionary, ExceptionSta
     return constraints;
 }
 
+void copyLongConstraint(ConstrainLongRange blinkForm, LongConstraint& webForm)
+{
+    if (blinkForm.hasMin()) {
+        webForm.setMin(blinkForm.min());
+    }
+    if (blinkForm.hasMax()) {
+        webForm.setMax(blinkForm.max());
+    }
+    if (blinkForm.hasIdeal()) {
+        webForm.setIdeal(blinkForm.ideal());
+    }
+    if (blinkForm.hasExact()) {
+        webForm.setExact(blinkForm.exact());
+    }
+}
+
+void copyDoubleConstraint(ConstrainDoubleRange blinkForm, DoubleConstraint& webForm)
+{
+    if (blinkForm.hasMin()) {
+        webForm.setMin(blinkForm.min());
+    }
+    if (blinkForm.hasMax()) {
+        webForm.setMax(blinkForm.max());
+    }
+    if (blinkForm.hasIdeal()) {
+        webForm.setIdeal(blinkForm.ideal());
+    }
+    if (blinkForm.hasExact()) {
+        webForm.setExact(blinkForm.exact());
+    }
+}
+
+void copyStringConstraint(ConstrainDOMStringParameters blinkForm, StringConstraint& webForm)
+{
+    WebVector<WebString> ideal;
+    WebVector<WebString> exact;
+    if (blinkForm.hasIdeal()) {
+        ideal = WebVector<WebString>(blinkForm.ideal());
+    }
+    if (blinkForm.hasExact()) {
+        exact = WebVector<WebString>(blinkForm.exact());
+    }
+    webForm = StringConstraint(ideal, exact);
+}
+
+void copyBooleanConstraint(ConstrainBooleanParameters blinkForm, BooleanConstraint& webForm)
+{
+    if (blinkForm.hasIdeal()) {
+        webForm.setIdeal(blinkForm.ideal());
+    }
+    if (blinkForm.hasExact()) {
+        webForm.setExact(blinkForm.exact());
+    }
+}
+
 WebMediaConstraints create(const MediaTrackConstraintSet& constraintsIn, ExceptionState& exceptionState)
 {
-    WebVector<WebMediaConstraint> optional;
-    WebVector<WebMediaConstraint> mandatory;
-    if (!parse(constraintsIn, optional, mandatory)) {
-        exceptionState.throwTypeError("Malformed constraints object.");
-        return WebMediaConstraints();
-    }
     WebMediaConstraints constraints;
-    constraints.initialize(optional, mandatory);
+    if (constraintsIn.hasOptional() || constraintsIn.hasMandatory()) {
+        if (constraintsIn.hasWidth() || constraintsIn.hasHeight()
+            || constraintsIn.hasAspectRatio() || constraintsIn.hasFrameRate()
+            || constraintsIn.hasFacingMode() || constraintsIn.hasVolume()
+            || constraintsIn.hasSampleRate() || constraintsIn.hasSampleSize()
+            || constraintsIn.hasEchoCancellation() || constraintsIn.hasLatency()
+            || constraintsIn.hasChannelCount() || constraintsIn.hasDeviceId()
+            || constraintsIn.hasGroupId()) {
+            exceptionState.throwTypeError("Malformed constraint: Cannot use both optional/mandatory and specific constraints.");
+            return WebMediaConstraints();
+        }
+        WebVector<WebMediaConstraint> optional;
+        WebVector<WebMediaConstraint> mandatory;
+        if (!parse(constraintsIn, optional, mandatory)) {
+            exceptionState.throwTypeError("Malformed constraints object.");
+            return WebMediaConstraints();
+        }
+        constraints.initialize(optional, mandatory);
+    } else {
+        // This code will remain once optional and mandatory have gone.
+        WebMediaTrackConstraintSet constraintBuffer;
+        WebVector<WebMediaTrackConstraintSet> advancedBuffer;
+        if (constraintsIn.hasWidth()) {
+            copyLongConstraint(constraintsIn.width(), constraintBuffer.width);
+        }
+        if (constraintsIn.hasHeight()) {
+            copyLongConstraint(constraintsIn.height(), constraintBuffer.height);
+        }
+        if (constraintsIn.hasAspectRatio()) {
+            copyDoubleConstraint(constraintsIn.aspectRatio(), constraintBuffer.aspectRatio);
+        }
+        if (constraintsIn.hasFrameRate()) {
+            copyDoubleConstraint(constraintsIn.frameRate(), constraintBuffer.frameRate);
+        }
+        if (constraintsIn.hasFacingMode()) {
+            copyStringConstraint(constraintsIn.facingMode(), constraintBuffer.facingMode);
+        }
+        if (constraintsIn.hasVolume()) {
+            copyDoubleConstraint(constraintsIn.volume(), constraintBuffer.volume);
+        }
+        if (constraintsIn.hasSampleRate()) {
+            copyLongConstraint(constraintsIn.sampleRate(), constraintBuffer.sampleRate);
+        }
+        if (constraintsIn.hasSampleSize()) {
+            copyLongConstraint(constraintsIn.sampleSize(), constraintBuffer.sampleSize);
+        }
+        if (constraintsIn.hasEchoCancellation()) {
+            copyBooleanConstraint(constraintsIn.echoCancellation(), constraintBuffer.echoCancellation);
+        }
+        if (constraintsIn.hasLatency()) {
+            copyDoubleConstraint(constraintsIn.latency(), constraintBuffer.latency);
+        }
+        if (constraintsIn.hasChannelCount()) {
+            copyLongConstraint(constraintsIn.channelCount(), constraintBuffer.channelCount);
+        }
+        if (constraintsIn.hasDeviceId()) {
+            copyStringConstraint(constraintsIn.deviceId(), constraintBuffer.deviceId);
+        }
+        if (constraintsIn.hasGroupId()) {
+            copyStringConstraint(constraintsIn.groupId(), constraintBuffer.groupId);
+        }
+        // TODO(hta): Add initialization of advanced constraints once present.
+        constraints.initialize(constraintBuffer, advancedBuffer);
+    }
     return constraints;
 }
 

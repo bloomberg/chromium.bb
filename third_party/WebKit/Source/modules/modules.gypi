@@ -1884,6 +1884,7 @@
       'indexeddb/MockWebIDBDatabase.cpp',
       'indexeddb/MockWebIDBDatabase.h',
       'mediasession/MediaSessionTest.cpp',
+      'mediastream/MediaConstraintsTest.cpp',
       'mediastream/RTCDataChannelTest.cpp',
       'notifications/NotificationDataTest.cpp',
       'presentation/PresentationAvailabilityTest.cpp',

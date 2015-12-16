@@ -30,6 +30,8 @@
 
 #include "config.h"
 
+#include <math.h>
+
 #include "public/platform/WebMediaConstraints.h"
 
 #include "wtf/PassRefPtr.h"
@@ -41,18 +43,24 @@ class WebMediaConstraintsPrivate final : public RefCounted<WebMediaConstraintsPr
 public:
     static PassRefPtr<WebMediaConstraintsPrivate> create();
     static PassRefPtr<WebMediaConstraintsPrivate> create(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory);
+    static PassRefPtr<WebMediaConstraintsPrivate> create(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced);
 
     bool isEmpty() const;
     void getOptionalConstraints(WebVector<WebMediaConstraint>&);
     void getMandatoryConstraints(WebVector<WebMediaConstraint>&);
     bool getMandatoryConstraintValue(const WebString& name, WebString& value);
     bool getOptionalConstraintValue(const WebString& name, WebString& value);
+    const WebMediaTrackConstraintSet& basic() const;
+    const WebVector<WebMediaTrackConstraintSet>& advanced() const;
 
 private:
     WebMediaConstraintsPrivate(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory);
+    WebMediaConstraintsPrivate(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced);
 
     WebVector<WebMediaConstraint> m_optional;
     WebVector<WebMediaConstraint> m_mandatory;
+    WebMediaTrackConstraintSet m_basic;
+    WebVector<WebMediaTrackConstraintSet> m_advanced;
 };
 
 PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create()
@@ -76,6 +84,17 @@ WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(const WebVector<WebMediaC
 bool WebMediaConstraintsPrivate::isEmpty() const
 {
     return m_optional.isEmpty() && m_mandatory.isEmpty();
+}
+
+PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
+{
+    return adoptRef(new WebMediaConstraintsPrivate(basic, advanced));
+}
+
+WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
+    : m_basic(basic)
+    , m_advanced(advanced)
+{
 }
 
 void WebMediaConstraintsPrivate::getOptionalConstraints(WebVector<WebMediaConstraint>& constraints)
@@ -108,6 +127,69 @@ bool WebMediaConstraintsPrivate::getOptionalConstraintValue(const WebString& nam
         }
     }
     return false;
+}
+
+const WebMediaTrackConstraintSet& WebMediaConstraintsPrivate::basic() const
+{
+    return m_basic;
+}
+
+const WebVector<WebMediaTrackConstraintSet>& WebMediaConstraintsPrivate::advanced() const
+{
+    return m_advanced;
+}
+
+// *Constraints
+
+double DoubleConstraint::kConstraintEpsilon = 0.00001;
+
+bool LongConstraint::matches(long value) const
+{
+    if (m_hasMin && value < m_min) {
+        return false;
+    }
+    if (m_hasMax && value > m_max) {
+        return false;
+    }
+    if (m_hasExact && value != m_exact) {
+        return false;
+    }
+    return true;
+}
+
+bool DoubleConstraint::matches(double value) const
+{
+    if (m_hasMin && value < m_min - kConstraintEpsilon) {
+        return false;
+    }
+    if (m_hasMax && value > m_max + kConstraintEpsilon) {
+        return false;
+    }
+    if (m_hasExact && fabs(static_cast<double>(value) - m_exact) > kConstraintEpsilon) {
+        return false;
+    }
+    return true;
+}
+
+bool StringConstraint::matches(WebString value) const
+{
+    if (m_exact.isEmpty()) {
+        return true;
+    }
+    for (const auto& choice : m_exact) {
+        if (value == choice) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool BooleanConstraint::matches(bool value) const
+{
+    if (m_hasExact && static_cast<bool>(m_exact) != value) {
+        return false;
+    }
+    return true;
 }
 
 // WebMediaConstraints
@@ -163,5 +245,22 @@ void WebMediaConstraints::initialize(const WebVector<WebMediaConstraint>& option
     m_private = WebMediaConstraintsPrivate::create(optional, mandatory);
 }
 
-} // namespace blink
+void WebMediaConstraints::initialize(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
+{
+    ASSERT(isNull());
+    m_private = WebMediaConstraintsPrivate::create(basic, advanced);
+}
 
+const WebMediaTrackConstraintSet& WebMediaConstraints::basic() const
+{
+    ASSERT(!isNull());
+    return m_private->basic();
+}
+
+const WebVector<WebMediaTrackConstraintSet>& WebMediaConstraints::advanced() const
+{
+    ASSERT(!isNull());
+    return m_private->advanced();
+}
+
+} // namespace blink

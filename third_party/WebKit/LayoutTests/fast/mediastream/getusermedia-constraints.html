@@ -98,6 +98,9 @@ check_constraints(
 check_constraints(
   'Constraint with naked string value should fail (until supported)',
   {'facingMode': 'user'}, 'TypeError');
+check_constraints(
+  'Using both mandatory and height should give TypeError',
+  {'mandatory': {'height': '270'}, 'height': '270'}, 'TypeError');
 
 </script>
 </body>
