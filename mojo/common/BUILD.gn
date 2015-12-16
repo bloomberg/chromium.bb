@@ -119,4 +119,10 @@ test("mojo_common_perftests") {
   sources = [
     "../message_pump/handle_watcher_perftest.cc",
   ]
+
+  if (is_linux && !is_component_build) {
+    # This test dynamically loads libmojo_test_support even in non-component
+    # builds.
+    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+  }
 }

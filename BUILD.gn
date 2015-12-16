@@ -620,6 +620,10 @@ group("gn_only") {
 
   deps = []
 
+  if (!is_ios) {
+    deps += [ "//mojo/common:mojo_common_perftests" ]
+  }
+
   if (!is_ios && !is_chromecast) {
     deps += [ "//mandoline:all" ]
   }
