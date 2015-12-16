@@ -153,7 +153,6 @@ EVENTS_EXPORT bool ShouldDefaultToNaturalScroll();
 EVENTS_EXPORT gfx::Display::TouchSupport GetInternalDisplayTouchSupport();
 
 #if defined(OS_WIN)
-EVENTS_EXPORT int GetModifiersFromACCEL(const ACCEL& accel);
 EVENTS_EXPORT int GetModifiersFromKeyState();
 
 // Returns true if |message| identifies a mouse event that was generated as the
