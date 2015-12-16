@@ -97,7 +97,7 @@
    obj:*
    ...
    fun:*LoadNativeLibrary*
-   fun:*CdmAdapterTest*
+   fun:*ExternalClearKeyTestHelper*
 }
 {
    b_555798_b
@@ -107,4 +107,12 @@
    ...
    fun:_dl_init
    fun:dl_open_worker
+}
+{
+   b_569736
+   Memcheck:Leak
+   fun:_Znw*
+   obj:*
+   ...
+   fun:_ZN5media14CdmWrapperImplIN3cdm25ContentDecryptionModule_8EE7DecryptERKNS1_11InputBufferEPNS1_14DecryptedBlockE
 }
