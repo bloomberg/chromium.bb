@@ -40,45 +40,18 @@ Polymer((function() {
 Polymer({
   is: 'controller-pairing-page',
 
-  behaviors: [
-    Polymer.NeonSharedElementAnimatableBehavior
-  ],
+  behaviors: [Polymer.NeonAnimatableBehavior],
 
   properties: {
-    sharedElements: {
-      value: function() {
-        return {
-          'top-hero': this.$.top,
-          'bottom-hero': this.$.bottom
-        };
-      }
-    },
-
     animationConfig: {
       value: function() {
         return {
           'entry': [{
-            name: 'hero-animation',
-            id: 'top-hero',
-            toPage: this
-          }, {
-            name: 'hero-animation',
-            id: 'bottom-hero',
-            toPage: this
-          }, {
             name: 'fade-in-animation',
             node: this
           }],
 
           'exit': [{
-            name: 'hero-animation',
-            id: 'top-hero',
-            fromPage: this
-          }, {
-            name: 'hero-animation',
-            id: 'bottom-hero',
-            fromPage: this
-          }, {
             name: 'fade-out-animation',
             node: this
           }]
