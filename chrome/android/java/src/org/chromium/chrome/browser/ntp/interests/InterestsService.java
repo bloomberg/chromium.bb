@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.ntp.interests;
 
+import android.text.TextUtils;
+
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -26,6 +29,29 @@ public class InterestsService {
             mName = name;
             mImageUrl = imageUrl;
             mRelevance = relevance;
+        }
+
+        @Override
+        public String toString() {
+            return "Interest [mName=" + mName + ", mImageUrl=" + mImageUrl + ", mRelevance="
+                    + mRelevance + "]";
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((mImageUrl == null) ? 0 : mImageUrl.hashCode());
+            result = prime * result + ((mName == null) ? 0 : mName.hashCode());
+            long temp = Double.doubleToLongBits(mRelevance);
+            return prime * result + (int) (temp ^ (temp >>> 32));
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (!(obj instanceof Interest)) return false;
+            return TextUtils.equals(toString(), obj.toString());
         }
 
         public String getName() {
@@ -58,6 +84,7 @@ public class InterestsService {
      *
      * @param profile The profile for which to fetch the interests
      */
+    @VisibleForTesting
     public InterestsService(Profile profile) {
         mNativeInterestsService = nativeInit(profile);
     }
@@ -71,6 +98,7 @@ public class InterestsService {
         mNativeInterestsService = 0;
     }
 
+    @VisibleForTesting
     public void getInterests(final GetInterestsCallback callback) {
         nativeGetInterests(mNativeInterestsService, callback);
     }
