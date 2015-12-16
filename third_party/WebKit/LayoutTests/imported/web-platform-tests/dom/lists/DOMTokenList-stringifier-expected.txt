@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL DOMTokenList stringifier assert_equals: String(classList) should compress whitespace expected "a b" but got "   a  a b"
+Harness: the test ran to completion.
+

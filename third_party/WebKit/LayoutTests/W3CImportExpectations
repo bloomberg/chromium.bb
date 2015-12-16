@@ -97,7 +97,8 @@ imported/web-platform-tests/cssom-view [ Skip ]
 # imported/web-platform-tests/custom-elements [ Pass ]
 imported/web-platform-tests/custom-elements/registering-custom-elements/unresolved-element-pseudoclass [ Skip ]
 imported/web-platform-tests/docs [ Skip ]
-imported/web-platform-tests/dom [ Skip ]
+## Owners: philipj@opera.com
+imported/web-platform-tests/dom [ Pass ]
 imported/web-platform-tests/domparsing [ Skip ]
 imported/web-platform-tests/domxpath [ Skip ]
 imported/web-platform-tests/editing [ Skip ]
@@ -205,6 +206,11 @@ imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-st
 imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-stream-038.html [ Skip ]
 
 # crbug.com/490939: The following tests are too large.  They cause time out frequently.
+imported/web-platform-tests/dom/ranges/Range-compareBoundaryPoints.html [ Skip ]
+imported/web-platform-tests/dom/ranges/Range-comparePoint.html [ Skip ]
+imported/web-platform-tests/dom/ranges/Range-isPointInRange.html [ Skip ]
+imported/web-platform-tests/dom/ranges/Range-mutations.html [ Skip ]
+imported/web-platform-tests/dom/ranges/Range-set.html [ Skip ]
 imported/web-platform-tests/html/dom/interfaces.html [ Skip ]
 imported/web-platform-tests/html/dom/reflection-embedded.html [ Skip ]
 imported/web-platform-tests/html/dom/reflection-forms.html [ Skip ]
@@ -302,6 +308,19 @@ imported/web-platform-tests/html/semantics/text-level-semantics/the-a-element/a-
 imported/web-platform-tests/html/webappapis/system-state-and-capabilities/the-navigator-object/NavigatorID.html [ Skip ]
 
 # crbug.com/490940: Needs to load extra HTML resources.
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace.html [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-getElementsByTagName-change-document-HTMLNess.html [ Skip ]
+imported/web-platform-tests/dom/nodes/Node-isEqualNode.xhtml [ Skip ]
+imported/web-platform-tests/dom/nodes/Node-parentNode.html [ Skip ]
+imported/web-platform-tests/dom/nodes/ParentNode-querySelector-All.html [ Skip ]
+imported/web-platform-tests/dom/nodes/ParentNode-querySelector-All.js [ Skip ]
+imported/web-platform-tests/dom/nodes/ParentNode-querySelector-All-xht.xht [ Skip ]
+imported/web-platform-tests/dom/nodes/getElementsByClassName-31.htm [ Skip ]
+imported/web-platform-tests/dom/ranges/Range-cloneContents.html [ Skip ]
+imported/web-platform-tests/dom/ranges/Range-deleteContents.html [ Skip ]
+imported/web-platform-tests/dom/ranges/Range-extractContents.html [ Skip ]
+imported/web-platform-tests/dom/ranges/Range-insertNode.html [ Skip ]
+imported/web-platform-tests/dom/ranges/Range-surroundContents.html [ Skip ]
 imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/001.html [ Skip ]
 imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/browsing_context_name.html [ Skip ]
 imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin.html [ Skip ]
@@ -374,6 +393,28 @@ imported/web-platform-tests/html/semantics/forms/attributes-common-to-form-contr
 imported/web-platform-tests/html/webappapis/scripting/events/onerroreventhandler.html [ Skip ]
 
 # crbug.com/493537: Need to support SVG reference tests
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/bare_mathml.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/bare_svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/bare_xhtml.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/empty.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/mathml.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/minimal_html.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/xhtml.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/xhtml_ns_changed.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/xhtml_ns_removed.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-childElement-null-svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-childElementCount-dynamic-add-svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-childElementCount-dynamic-remove-svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-childElementCount-nochild-svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-childElementCount-svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-firstElementChild-entity.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-firstElementChild-namespace-svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-firstElementChild-svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-lastElementChild-svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-nextElementSibling-svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-previousElementSibling-svg.svg [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-siblingElement-null-svg.svg [ Skip ]
 imported/web-platform-tests/html/editing/the-hidden-attribute/hidden-2.svg [ Skip ]
 
 # https://github.com/w3c/web-platform-tests/issues/1861: A function can be
@@ -421,6 +462,14 @@ imported/web-platform-tests/html-imports/loading-import.html [ Skip ]
 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/deny.html [ Skip ]
 
 # Requires http server.
+imported/web-platform-tests/dom/nodes/Document-URL.sub.html [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-characterSet-normalization.html [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-contentType/contentType/contenttype_mimeheader_01.html [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-contentType/contentType/contenttype_mimeheader_02.html [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-contentType/contentType/contenttype_xml.html [ Skip ]
+imported/web-platform-tests/dom/nodes/Document-contentType/contentType/xhr_responseType_document.html [ Skip ]
+imported/web-platform-tests/dom/nodes/Element-matches.html [ Skip ]
+imported/web-platform-tests/dom/nodes/Node-baseURI.html [ Skip ]
 imported/web-platform-tests/html/browsers/history/the-history-interface/008.html [ Skip ]
 imported/web-platform-tests/html/browsers/origin/relaxing-the-same-origin-restriction/document_domain.html [ Skip ]
 imported/web-platform-tests/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/creating_browsing_context_test_01.html [ Skip ]
@@ -559,3 +608,6 @@ imported/web-platform-tests/html/semantics/forms/form-submission-0/url-encoded.h
 # crbug.com/561421: Update meta refresh parsing to match the new spec
 imported/web-platform-tests/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/parsing.html [ Skip ]
 imported/web-platform-tests/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/support [ Skip ]
+
+# crbug.com/441355: MutationObserver incorrect for replaceChild (causes timeout)
+imported/web-platform-tests/dom/nodes/MutationObserver-childList.html [ Skip ]

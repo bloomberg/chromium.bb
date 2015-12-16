@@ -1,0 +1,19 @@
+This is a testharness.js-based test.
+FAIL Node.cloneNode HTMLAppletElement is not defined
+PASS createElement(a) 
+PASS createElement(abbr) 
+PASS createElement(acronym) 
+PASS createElement(address) 
+PASS createDocumentFragment 
+PASS createTextNode 
+PASS createComment 
+PASS createElement with attributes 
+PASS createElementNS HTML 
+PASS createElementNS non-HTML 
+PASS createProcessingInstruction 
+PASS implementation.createDocumentType 
+PASS implementation.createDocument 
+PASS implementation.createHTMLDocument 
+PASS node with children 
+Harness: the test ran to completion.
+

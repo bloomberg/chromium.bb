@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS Caching of Node.childNodes 
+PASS Node.childNodes on an Element. 
+PASS Node.childNodes on a DocumentFragment. 
+FAIL Node.childNodes on a Document. Illegal constructor
+Harness: the test ran to completion.
+
