@@ -177,6 +177,30 @@ TEST_F(LayerTreeHostCommonTest, DoNotSkipLayersWithHandlers) {
       grand_child->draw_properties().target_space_transform.IsIdentity());
 }
 
+TEST_F(LayerTreeHostCommonTest, EffectTreeTransformIdTest) {
+  // Tests that effect tree node gets a valid transform id when a layer
+  // has opacity but doesn't create a render surface.
+  LayerImpl* parent = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(parent);
+  child->SetDrawsContent(true);
+
+  gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(10, 10), gfx::Size(100, 100), true,
+                               false);
+  child->SetOpacity(0.f);
+  ExecuteCalculateDrawProperties(parent);
+  EffectTree effect_tree =
+      parent->layer_tree_impl()->property_trees()->effect_tree;
+  EffectNode* node = effect_tree.Node(child->effect_tree_index());
+  const int transform_tree_size = parent->layer_tree_impl()
+                                      ->property_trees()
+                                      ->transform_tree.next_available_id();
+  EXPECT_LT(node->data.transform_id, transform_tree_size);
+}
+
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   gfx::Transform identity_matrix;
   scoped_refptr<Layer> layer = Layer::Create(layer_settings());

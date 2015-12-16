@@ -582,11 +582,16 @@ bool AddEffectNodeIfNeeded(
   node.data.has_render_surface = should_create_render_surface;
 
   if (!is_root) {
-    // For every effect node, we create a transform node, so it's safe to use
-    // the next available id from the transform tree as this effect node's
-    // transform id.
-    node.data.transform_id =
-        data_from_ancestor.transform_tree->next_available_id();
+    // The effect node's transform id is used only when we create a render
+    // surface. So, we can leave the default value when we don't create a render
+    // surface.
+    if (should_create_render_surface) {
+      // In this case, we will create a transform node, so it's safe to use the
+      // next available id from the transform tree as this effect node's
+      // transform id.
+      node.data.transform_id =
+          data_from_ancestor.transform_tree->next_available_id();
+    }
     node.data.clip_id = data_from_ancestor.clip_tree_parent;
 
     node.data.screen_space_opacity *=
