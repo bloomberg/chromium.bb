@@ -175,13 +175,6 @@ jboolean ProfileSyncServiceAndroid::IsBackendInitialized(
   return sync_service_->IsBackendInitialized();
 }
 
-jboolean ProfileSyncServiceAndroid::IsFirstSetupInProgress(
-    JNIEnv* env,
-    const JavaParamRef<jobject>&) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->IsFirstSetupInProgress();
-}
-
 void ProfileSyncServiceAndroid::SetSetupInProgress(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -259,11 +252,6 @@ void ProfileSyncServiceAndroid::EnableEncryptEverything(
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   sync_service_->EnableEncryptEverything();
-}
-
-jboolean ProfileSyncServiceAndroid::IsPassphraseRequired(JNIEnv* env, jobject) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->IsPassphraseRequired();
 }
 
 jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForDecryption(

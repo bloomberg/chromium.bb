@@ -53,9 +53,6 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   jboolean IsBackendInitialized(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  jboolean IsFirstSetupInProgress(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   void SetSetupInProgress(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           jboolean in_progress);
@@ -85,7 +82,6 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
       const base::android::JavaParamRef<jobject>& obj);
   void EnableEncryptEverything(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
-  jboolean IsPassphraseRequired(JNIEnv* env, jobject obj);
   jboolean IsPassphraseRequiredForDecryption(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

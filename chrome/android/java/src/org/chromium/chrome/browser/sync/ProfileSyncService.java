@@ -244,15 +244,6 @@ public class ProfileSyncService {
     }
 
     /**
-     * Checks if the first sync setup is currently in progress.
-     *
-     * @return true if first sync setup is in progress
-     */
-    public boolean isFirstSetupInProgress() {
-        return nativeIsFirstSetupInProgress(mNativeProfileSyncServiceAndroid);
-    }
-
-    /**
      * Checks if encrypting all the data types is allowed.
      *
      * @return true if encrypting all data types is allowed, false if only passwords are allowed to
@@ -538,7 +529,6 @@ public class ProfileSyncService {
     private native String nativeQuerySyncStatusSummary(long nativeProfileSyncServiceAndroid);
     private native int nativeGetAuthError(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsBackendInitialized(long nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsFirstSetupInProgress(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsEncryptEverythingAllowed(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsEncryptEverythingEnabled(long nativeProfileSyncServiceAndroid);
     private native void nativeEnableEncryptEverything(long nativeProfileSyncServiceAndroid);
