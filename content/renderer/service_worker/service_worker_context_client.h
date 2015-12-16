@@ -235,11 +235,6 @@ class ServiceWorkerContextClient
   // Not owned; this object is destroyed when proxy_ becomes invalid.
   blink::WebServiceWorkerContextProxy* proxy_;
 
-  // Used for incoming messages from the browser for which an outgoing response
-  // back to the browser is expected, the id must be sent back with the
-  // response.
-  int current_request_id_;
-
   // Initialized on the worker thread in workerContextStarted and
   // destructed on the worker thread in willDestroyWorkerContext.
   scoped_ptr<WorkerContextData> context_;

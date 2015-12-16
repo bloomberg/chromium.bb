@@ -129,17 +129,6 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   base::Time last_update_check() const { return last_update_check_; }
   void set_last_update_check(base::Time last) { last_update_check_ = last; }
 
-  // Provide a storage mechanism to read/write arbitrary data associated with
-  // this registration in the storage. Stored data is deleted when this
-  // registration is deleted from the storage.
-  void GetUserData(const std::string& key,
-                   const GetUserDataCallback& callback);
-  void StoreUserData(const std::string& key,
-                     const std::string& data,
-                     const StatusCallback& callback);
-  void ClearUserData(const std::string& key,
-                     const StatusCallback& callback);
-
   // Unsets the version and deletes its resources. Also deletes this
   // registration from storage if there is no longer a stored version.
   void DeleteVersion(const scoped_refptr<ServiceWorkerVersion>& version);

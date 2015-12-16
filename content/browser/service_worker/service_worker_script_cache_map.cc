@@ -31,13 +31,6 @@ int64 ServiceWorkerScriptCacheMap::LookupResourceId(const GURL& url) {
   return found->second.resource_id;
 }
 
-int64 ServiceWorkerScriptCacheMap::LookupResourceSize(const GURL& url) {
-  ResourceMap::const_iterator found = resource_map_.find(url);
-  if (found == resource_map_.end())
-    return kInvalidServiceWorkerResourceId;
-  return found->second.size_bytes;
-}
-
 void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
     const GURL& url, int64 resource_id) {
   DCHECK_EQ(kInvalidServiceWorkerResourceId, LookupResourceId(url));

@@ -100,10 +100,6 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   DCHECK(handled) << "Unhandled message:" << msg.type();
 }
 
-bool ServiceWorkerDispatcher::Send(IPC::Message* msg) {
-  return thread_safe_sender_->Send(msg);
-}
-
 void ServiceWorkerDispatcher::RegisterServiceWorker(
     int provider_id,
     const GURL& pattern,

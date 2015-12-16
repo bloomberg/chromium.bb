@@ -37,7 +37,6 @@ class CONTENT_EXPORT ServiceWorkerHandleReference {
   int handle_id() const { return info_.handle_id; }
   const GURL& url() const { return info_.url; }
   blink::WebServiceWorkerState state() const { return info_.state; }
-  void set_state(blink::WebServiceWorkerState state) { info_.state = state; }
   int64 version_id() const { return info_.version_id; }
 
  private:

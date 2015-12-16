@@ -135,7 +135,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
       int handle_id,
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports);
-  void OnServiceWorkerObjectDestroyed(int handle_id);
   void OnTerminateWorker(int handle_id);
 
   ServiceWorkerRegistrationHandle* FindRegistrationHandle(

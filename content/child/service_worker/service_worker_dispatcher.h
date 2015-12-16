@@ -70,7 +70,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   ~ServiceWorkerDispatcher() override;
 
   void OnMessageReceived(const IPC::Message& msg);
-  bool Send(IPC::Message* msg);
 
   // Corresponds to navigator.serviceWorker.register().
   void RegisterServiceWorker(

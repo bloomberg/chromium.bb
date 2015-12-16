@@ -133,8 +133,6 @@ class ServiceWorkerProviderContext::ControllerDelegate
   scoped_ptr<ServiceWorkerHandleReference> waiting_;
   scoped_ptr<ServiceWorkerHandleReference> active_;
 
-  ServiceWorkerProviderContext* context_;
-
   DISALLOW_COPY_AND_ASSIGN(ControllerDelegate);
 };
 

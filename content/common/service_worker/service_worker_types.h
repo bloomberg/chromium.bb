@@ -30,11 +30,6 @@ namespace content {
 // messaging between the browser process and the child process.
 static const int kDocumentMainThreadId = 0;
 
-// Indicates invalid request ID (i.e. the sender does not expect it gets
-// response for the message) for messaging between browser process
-// and embedded worker.
-static const int kInvalidServiceWorkerRequestId = -1;
-
 // Constants for error messages.
 extern const char kServiceWorkerRegisterErrorPrefix[];
 extern const char kServiceWorkerUpdateErrorPrefix[];
@@ -51,7 +46,6 @@ static const int64 kInvalidServiceWorkerRegistrationId = -1;
 static const int64 kInvalidServiceWorkerVersionId = -1;
 static const int64 kInvalidServiceWorkerResourceId = -1;
 static const int kInvalidEmbeddedWorkerThreadId = -1;
-static const int kInvalidServiceWorkerClientId = 0;
 
 // The HTTP cache is bypassed for Service Worker scripts if the last network
 // fetch occurred over 24 hours ago.

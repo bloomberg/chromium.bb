@@ -120,8 +120,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void OnStoreRegistrationComplete(ServiceWorkerStatusCode status);
   void InstallAndContinue();
   void OnInstallFinished(ServiceWorkerStatusCode status);
-  void ActivateAndContinue();
-  void OnActivateFinished(ServiceWorkerStatusCode status);
   void Complete(ServiceWorkerStatusCode status);
   void Complete(ServiceWorkerStatusCode status,
                 const std::string& status_message);

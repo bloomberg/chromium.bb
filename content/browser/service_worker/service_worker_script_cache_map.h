@@ -28,9 +28,6 @@ class ServiceWorkerResponseMetadataWriter;
 class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
  public:
   int64 LookupResourceId(const GURL& url);
-  // A size of -1 means that we don't know the size yet
-  // (it has not finished caching).
-  int64 LookupResourceSize(const GURL& url);
 
   // Used during the initial run of a new version to build the map
   // of resources ids.
