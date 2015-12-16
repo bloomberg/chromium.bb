@@ -7,6 +7,8 @@ cr.define('settings_reset_page', function() {
   var TestNames = {
     PowerwashDialogAction: 'PowerwashDialogAction',
     PowerwashDialogOpenClose: 'PowerwashDialogOpenClose',
+    ResetBannerClose: 'ResetBannerClose',
+    ResetBannerReset: 'ResetBannerReset',
     ResetProfileDialogAction: 'ResetProfileDialogAction',
     ResetProfileDialogOpenClose: 'ResetProfileDialogOpenClose',
   };
@@ -23,7 +25,55 @@ cr.define('settings_reset_page', function() {
     });
   }
 
-  function registerTests() {
+  function registerBannerTests() {
+    suite('BannerTests', function() {
+      var resetBanner = null;
+
+      suiteSetup(function() {
+        return Promise.all([
+          PolymerTest.importHtml('chrome://md-settings/i18n_setup.html'),
+          PolymerTest.importHtml(
+              'chrome://md-settings/reset_page/reset_profile_banner.html')
+        ]);
+      });
+
+      setup(function() {
+        PolymerTest.clearBody();
+        resetBanner = document.createElement('settings-reset-profile-banner');
+        document.body.appendChild(resetBanner);
+      });
+
+      // Tests that the reset profile banner
+      //  - opens the reset profile dialog when the reset button is clicked.
+      //  - the reset profile dialog is closed after reset is done.
+      test(TestNames.ResetBannerReset, function() {
+        var dialog = resetBanner.$$('settings-reset-profile-dialog');
+        assertEquals(undefined, dialog);
+        MockInteractions.tap(resetBanner.$['reset']);
+        Polymer.dom.flush();
+        dialog = resetBanner.$$('settings-reset-profile-dialog');
+        assertNotEquals(undefined, dialog);
+
+        dialog.dispatchResetDoneEvent();
+        Polymer.dom.flush();
+        assertEquals('none', dialog.style.display);
+        return Promise.resolve();
+      });
+
+      // Tests that the reset profile banner removes itself from the DOM when
+      // the close button is clicked and that
+      // chrome.send('onHideResetProfileBanner') is called.
+      test(TestNames.ResetBannerClose, function() {
+        var whenOnHideResetProfileBanner = whenChromeSendCalled(
+            'onHideResetProfileBanner');
+        MockInteractions.tap(resetBanner.$['close']);
+        assertEquals(null, resetBanner.parentNode);
+        return whenOnHideResetProfileBanner;
+      });
+    });
+  }
+
+  function registerDialogTests() {
     suite('DialogTests', function() {
       var resetPage = null;
 
@@ -140,6 +190,7 @@ cr.define('settings_reset_page', function() {
   }
 
   return {
-    registerTests: registerTests,
+    registerBannerTests: registerBannerTests,
+    registerDialogTests: registerDialogTests
   };
 });

@@ -35,6 +35,16 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    showResetProfileBanner_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('showResetProfileBanner'),
+    },
+
+  },
+
+  onResetDone_: function() {
+    this.showResetProfileBanner_ = false;
   },
 
   behaviors: [SettingsPageVisibility],

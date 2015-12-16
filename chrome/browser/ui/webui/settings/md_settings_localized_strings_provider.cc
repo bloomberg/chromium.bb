@@ -278,6 +278,17 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "powerwashLearnMoreUrl", IDS_FACTORY_RESET_HELP_URL);
 #endif
+
+  // Automatic reset banner.
+  html_source->AddLocalizedString(
+      "resetProfileBannerButton",
+      IDS_AUTOMATIC_SETTINGS_RESET_BANNER_RESET_BUTTON_TEXT);
+  html_source->AddLocalizedString(
+      "resetProfileBannerDescription",
+      IDS_AUTOMATIC_SETTINGS_RESET_BANNER_TEXT);
+  html_source->AddString(
+      "resetProfileBannerLearnMoreUrl",
+      chrome::kAutomaticSettingsResetLearnMoreURL);
 }
 
 void AddDateTimeStrings(content::WebUIDataSource* html_source) {

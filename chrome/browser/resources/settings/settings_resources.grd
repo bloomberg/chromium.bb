@@ -260,6 +260,15 @@
       <structure name="IDR_SETTINGS_RESET_PROFILE_DIALOG_JS"
                  file="reset_page/reset_profile_dialog.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_RESET_PROFILE_BANNER_CSS"
+                 file="reset_page/reset_profile_banner.css"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_RESET_PROFILE_BANNER_HTML"
+                 file="reset_page/reset_profile_banner.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_RESET_PROFILE_BANNER_JS"
+                 file="reset_page/reset_profile_banner.js"
+                 type="chrome_html"/>
       <structure name="IDR_SETTINGS_LANGUAGES_HTML"
                  file="languages_page/languages.html"
                  type="chrome_html" />

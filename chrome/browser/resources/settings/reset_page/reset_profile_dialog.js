@@ -23,6 +23,7 @@ Polymer({
         doneResetting: function() {
           this.$.resetSpinner.active = false;
           this.$.dialog.close();
+          this.dispatchResetDoneEvent();
         }.bind(this),
 
         setFeedbackInfo: function(data) {
@@ -33,6 +34,10 @@ Polymer({
         }.bind(this),
       };
     }.bind(this));
+  },
+
+  dispatchResetDoneEvent: function() {
+    this.dispatchEvent(new CustomEvent('reset-done'));
   },
 
   open: function() {

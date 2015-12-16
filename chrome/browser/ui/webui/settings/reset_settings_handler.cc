@@ -9,8 +9,10 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_brand.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profile_resetter/profile_reset_report.pb.h"
@@ -65,6 +67,15 @@ ResetSettingsHandler* ResetSettingsHandler::Create(
   html_source->AddBoolean("allowPowerwash", allow_powerwash);
 #endif  // defined(OS_CHROMEOS)
 
+  bool show_reset_profile_banner = false;
+  static const int kBannerShowTimeInDays = 5;
+  const base::Time then = chrome_prefs::GetResetTime(profile);
+  if (!then.is_null()) {
+    show_reset_profile_banner =
+        (base::Time::Now() - then).InDays() < kBannerShowTimeInDays;
+  }
+  html_source->AddBoolean("showResetProfileBanner", show_reset_profile_banner);
+
   // Inject |allow_powerwash| for testing.
   return new ResetSettingsHandler(profile, allow_powerwash);
 }
@@ -78,6 +89,9 @@ void ResetSettingsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onHideResetProfileDialog",
       base::Bind(&ResetSettingsHandler::OnHideResetProfileDialog,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("onHideResetProfileBanner",
+      base::Bind(&ResetSettingsHandler::OnHideResetProfileBanner,
                  base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
@@ -153,6 +167,11 @@ void ResetSettingsHandler::OnHideResetProfileDialog(
     const base::ListValue* value) {
   if (!GetResetter()->IsActive())
     setting_snapshot_.reset();
+}
+
+void ResetSettingsHandler::OnHideResetProfileBanner(
+    const base::ListValue* value) {
+  chrome_prefs::ClearResetTime(profile_);
 }
 
 void ResetSettingsHandler::OnSettingsFetched() {
