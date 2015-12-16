@@ -85,6 +85,11 @@ const CGFloat kMavericksMenuOpacity = 251.0 / 255.0;
 const CGFloat kYosemiteMenuOpacity = 194.0 / 255.0;
 const int kYosemiteMenuBlur = 80;
 
+// Margin at edge and corners of the window that trigger resizing. These match
+// actual Cocoa resize margins.
+const int kResizeAreaEdgeSize = 3;
+const int kResizeAreaCornerSize = 12;
+
 int kWindowPropertiesKey;
 
 float GetDeviceScaleFactorFromView(NSView* view) {
@@ -114,6 +119,36 @@ gfx::Size GetClientSizeForWindowSize(NSWindow* window,
   // be zero at this point, because Widget::GetMinimumSize() may later increase
   // the size.
   return gfx::Size([window contentRectForFrameRect:frame_rect].size);
+}
+
+// Determine whether a point is within the resize area at the edges and corners
+// of a window. This is used to ensure that mouse downs which would resize the
+// window are not reposted. As there's no way to determine this from Cocoa APIs,
+// this should aim to match Cocoa behavior as closely as possible.
+bool IsPointInResizeArea(NSPoint point, NSWindow* window) {
+  if (!([window styleMask] & NSResizableWindowMask))
+    return false;
+
+  bool can_resize_x = [window maxSize].width > [window minSize].width;
+  bool can_resize_y = [window maxSize].height > [window minSize].height;
+  NSSize window_size = [window frame].size;
+
+  if (can_resize_x && (point.x < kResizeAreaEdgeSize ||
+                       point.x >= window_size.width - kResizeAreaEdgeSize))
+    return true;
+
+  if (can_resize_y && (point.y < kResizeAreaEdgeSize ||
+                       point.y >= window_size.height - kResizeAreaEdgeSize))
+    return true;
+
+  if (can_resize_x && can_resize_y &&
+      (point.x < kResizeAreaCornerSize ||
+       point.x >= window_size.width - kResizeAreaCornerSize) &&
+      (point.y < kResizeAreaCornerSize ||
+       point.y >= window_size.height - kResizeAreaCornerSize))
+    return true;
+
+  return false;
 }
 
 BOOL WindowWantsMouseDownReposted(NSEvent* ns_event) {
@@ -717,6 +752,9 @@ bool BridgedNativeWidget::ShouldRepostPendingLeftMouseDown(
     SetDraggable(false);
     return false;
   }
+
+  if (IsPointInResizeArea(location_in_window, window_))
+    return false;
 
   gfx::Point point(location_in_window.x,
                    NSHeight([window_ frame]) - location_in_window.y);
