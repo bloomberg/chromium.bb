@@ -1507,7 +1507,7 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
         return textAlternative;
 
     // Step 2E from: http://www.w3.org/TR/accname-aam-1.1
-    if (recursive && !inAriaLabelledByTraversal && isControl()) {
+    if (recursive && !inAriaLabelledByTraversal && isControl() && !isButton()) {
         // No need to set any name source info in a recursive call.
         if (isRange()) {
             const AtomicString& ariaValuetext = getAttribute(aria_valuetextAttr);
