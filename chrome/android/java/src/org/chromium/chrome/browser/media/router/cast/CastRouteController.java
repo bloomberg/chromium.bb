@@ -153,7 +153,6 @@ public class CastRouteController implements RouteController, MediaNotificationLi
         }
     }
 
-    private final String mMediaRouteId;
     private final String mOrigin;
     private final int mTabId;
     private final CastMessagingChannel mMessageChannel;
@@ -182,7 +181,6 @@ public class CastRouteController implements RouteController, MediaNotificationLi
      * Initializes a new {@link CastRouteController} instance.
      * @param apiClient The Google Play Services client used to create the session.
      * @param sessionId The session identifier to use with the Cast SDK.
-     * @param mediaRouteId The media route identifier associated with this session.
      * @param origin The origin of the frame requesting the route.
      * @param tabId the id of the tab containing the frame requesting the route.
      * @param source The {@link MediaSource} corresponding to this session.
@@ -194,14 +192,12 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             ApplicationMetadata metadata,
             String applicationStatus,
             CastDevice castDevice,
-            String mediaRouteId,
             String origin,
             int tabId,
             MediaSource source,
             RouteDelegate delegate) {
         mApiClient = apiClient;
         mSessionId = sessionId;
-        mMediaRouteId = mediaRouteId;
         mOrigin = origin;
         mTabId = tabId;
         mSource = source;
@@ -299,11 +295,6 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     @Override
     public String getSourceId() {
         return mSource.getUrn();
-    }
-
-    @Override
-    public String getRouteId() {
-        return mMediaRouteId;
     }
 
     @Override
@@ -436,7 +427,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                         mSessionId = null;
                         mApiClient = null;
 
-                        mRouteDelegate.onRouteClosed(getRouteId());
+                        mRouteDelegate.onSessionClosed();
                         mStoppingApplication = false;
 
                         MediaNotificationManager.hide(
@@ -511,8 +502,8 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
         mClients.add(clientId);
 
-        mRouteDelegate.onMessage(mMediaRouteId, buildInternalMessage(
-                "new_session", buildSessionMessage(), clientId, INVALID_SEQUENCE_NUMBER));
+        sendClientMessageTo(
+                clientId, "new_session", buildSessionMessage(), INVALID_SEQUENCE_NUMBER);
 
         if (mMediaPlayer != null && !isApiClientInvalid()) mMediaPlayer.requestStatus(mApiClient);
 
@@ -539,8 +530,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
         // TODO(avayvod): "leave" the other clients with the matching origin/tab id.
         // See https://crbug.com/549957.
-        mRouteDelegate.onMessage(mMediaRouteId,
-                buildInternalMessage("leave_session", null, clientId, sequenceNumber));
+        sendClientMessageTo(clientId, "leave_session", null, sequenceNumber);
 
         mClients.remove(clientId);
 
@@ -875,7 +865,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
     private void sendClientMessageTo(
             String clientId, String type, String message, int sequenceNumber) {
-        mRouteDelegate.onMessage(mMediaRouteId,
+        mRouteDelegate.onMessage(clientId,
                 buildInternalMessage(type, message, clientId, sequenceNumber));
     }
 

@@ -346,9 +346,9 @@ void PresentationDispatcher::OnDefaultSessionStarted(
     return;
 
   if (!session_info.is_null()) {
+    presentation_service_->ListenForSessionMessages(session_info.Clone());
     controller_->didStartDefaultSession(
-        new PresentationConnectionClient(session_info.Clone()));
-    presentation_service_->ListenForSessionMessages(session_info.Pass());
+        new PresentationConnectionClient(session_info.Pass()));
   }
 }
 
@@ -366,9 +366,9 @@ void PresentationDispatcher::OnSessionCreated(
   }
 
   DCHECK(!session_info.is_null());
+  presentation_service_->ListenForSessionMessages(session_info.Clone());
   callback->onSuccess(blink::adoptWebPtr(
-      new PresentationConnectionClient(session_info.Clone())));
-  presentation_service_->ListenForSessionMessages(session_info.Pass());
+      new PresentationConnectionClient(session_info.Pass())));
 }
 
 void PresentationDispatcher::OnConnectionStateChanged(

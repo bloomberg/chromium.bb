@@ -24,10 +24,9 @@ public interface RouteDelegate {
     void onRouteRequestError(String message, int requestId);
 
     /**
-     * Called when the route is closed.
-     * @param routeId the id of the closed route.
+     * Called when the session is closed.
      */
-    void onRouteClosed(String routeId);
+    void onSessionClosed();
 
     /**
      * Called when sending a message to the route has finished.
@@ -38,8 +37,8 @@ public interface RouteDelegate {
 
     /**
      * Called when the route receives a message.
-     * @param routeId The id of the route.
+     * @param clientId The id of the client receiving the message.
      * @param message The message received.
      */
-    void onMessage(String routeId, String message);
+    void onMessage(String clientId, String message);
 }

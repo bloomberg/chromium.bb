@@ -35,11 +35,6 @@ public interface RouteController {
     String getSourceId();
 
     /**
-     * @return the route id
-     */
-    String getRouteId();
-
-    /**
      * @return the media sink id for the route.
      */
     String getSinkId();

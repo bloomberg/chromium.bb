@@ -112,17 +112,23 @@ public class CastMediaRouteProvider
     }
 
     @Override
-    public void onRouteClosed(String routeId) {
-        mLastRemovedRouteRecord = getClientRecordByRouteId(routeId);
-        mClientRecords.remove(mLastRemovedRouteRecord);
+    public void onSessionClosed() {
+        if (mSession == null) return;
 
-        mManager.onRouteClosed(routeId);
-        if (mSession != null) {
-            for (String sessionRouteId : mSession.routeIds) {
-                if (sessionRouteId.equals(routeId)) continue;
+        if (mClientRecords.isEmpty()) {
+            mRoutes.clear();
+            mSession.clientIds.clear();
+            mSession.routeIds.clear();
+        } else {
+            mLastRemovedRouteRecord = mClientRecords.iterator().next();
+            for (ClientRecord client : mClientRecords) {
+                mManager.onRouteClosed(client.routeId);
 
-                mManager.onRouteClosed(routeId);
+                mRoutes.remove(client.routeId);
+                mSession.routeIds.remove(client.routeId);
+                mSession.clientIds.remove(client.clientId);
             }
+            mClientRecords.clear();
         }
 
         mSession = null;
@@ -141,8 +147,11 @@ public class CastMediaRouteProvider
     }
 
     @Override
-    public void onMessage(String routeId, String message) {
-        mManager.onMessage(routeId, message);
+    public void onMessage(String clientId, String message) {
+        ClientRecord clientRecord = getClientRecordByClientId(clientId);
+        if (clientRecord == null) return;
+
+        mManager.onMessage(clientRecord.routeId, message);
     }
 
     /**
@@ -282,8 +291,6 @@ public class CastMediaRouteProvider
         }
 
         MediaRoute route = new MediaRoute(mSession.session.getSinkId(), sourceId, presentationId);
-        mRoutes.put(route.id, route);
-
         this.onRouteCreated(nativeRequestId, route, mSession.session);
     }
 
@@ -291,15 +298,10 @@ public class CastMediaRouteProvider
     public void closeRoute(String routeId) {
         MediaRoute route = mRoutes.get(routeId);
 
-        if (route == null) {
-            onRouteClosed(routeId);
-            return;
-        }
+        if (route == null) return;
 
-        if (mSession == null || !mSession.routeIds.contains(routeId)) {
+        if (mSession == null) {
             mRoutes.remove(routeId);
-
-            onRouteClosed(routeId);
             return;
         }
 
@@ -314,13 +316,17 @@ public class CastMediaRouteProvider
     @Override
     public void detachRoute(String routeId) {
         mRoutes.remove(routeId);
-        if (mSession != null) mSession.routeIds.remove(routeId);
+        ClientRecord client = getClientRecordByRouteId(routeId);
 
-        for (int i = mClientRecords.size() - 1; i >= 0; --i) {
-            ClientRecord client = mClientRecords.get(i);
-            if (client.routeId.equals(routeId)) mClientRecords.remove(i);
-            if (mSession != null) mSession.clientIds.remove(client.clientId);
+        if (client != null) {
+            mClientRecords.remove(client);
+            mLastRemovedRouteRecord = client;
         }
+
+        if (mSession == null) return;
+
+        mSession.routeIds.remove(routeId);
+        if (client != null) mSession.clientIds.remove(client.clientId);
     }
 
     @Override
@@ -351,6 +357,8 @@ public class CastMediaRouteProvider
 
     @Nullable
     private boolean canAutoJoin(MediaSource source, String origin, int tabId) {
+        if (source.getAutoJoinPolicy().equals(MediaSource.AUTOJOIN_PAGE_SCOPED)) return false;
+
         MediaSource currentSource = MediaSource.from(mSession.session.getSourceId());
         if (!currentSource.getApplicationId().equals(source.getApplicationId())) return false;
 
@@ -365,9 +373,7 @@ public class CastMediaRouteProvider
 
         if (client == null) return false;
 
-        if (source.getAutoJoinPolicy().equals(MediaSource.AUTOJOIN_PAGE_SCOPED)) {
-            return false;
-        } else if (source.getAutoJoinPolicy().equals(MediaSource.AUTOJOIN_ORIGIN_SCOPED)) {
+        if (source.getAutoJoinPolicy().equals(MediaSource.AUTOJOIN_ORIGIN_SCOPED)) {
             return origin.equals(client.origin);
         } else if (source.getAutoJoinPolicy().equals(MediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED)) {
             return origin.equals(client.origin) && tabId == client.tabId;
@@ -391,6 +397,11 @@ public class CastMediaRouteProvider
             }
         }
         return false;
+    }
+
+    private void onRouteClosed(String routeId) {
+        mManager.onRouteClosed(routeId);
+        detachRoute(routeId);
     }
 
     @Nullable
