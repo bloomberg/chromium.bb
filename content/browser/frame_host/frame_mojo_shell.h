@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -36,12 +35,13 @@ class FrameMojoShell : public mojo::Shell {
       const ConnectToApplicationCallback& callback) override;
   void QuitApplication() override;
 
-  mojo::ServiceProvider* GetServiceProvider();
+  ServiceRegistryImpl* GetServiceRegistry();
 
   RenderFrameHost* frame_host_;
   mojo::WeakBindingSet<mojo::Shell> bindings_;
-  scoped_ptr<mojo::ServiceProvider> service_provider_;
 
+  // ServiceRegistry providing browser services to connected applications.
+  scoped_ptr<ServiceRegistryImpl> service_registry_;
   mojo::WeakBindingSet<mojo::ServiceProvider> service_provider_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameMojoShell);

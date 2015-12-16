@@ -4,17 +4,12 @@
 
 #include "content/browser/frame_host/frame_mojo_shell.h"
 
-#include <utility>
-
-#include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 
 #if defined(OS_ANDROID) && defined(ENABLE_MOJO_MEDIA)
 #include "content/browser/media/android/provision_fetcher_impl.h"
@@ -23,27 +18,6 @@
 namespace content {
 
 namespace {
-
-// This wraps a ServiceRegistryImpl in a mojo::ServiceProvider implementation
-// so it can be bound to a mojo::ServiceProvider pipe.
-class ServiceRegistryWrapper : public mojo::ServiceProvider {
- public:
-  explicit ServiceRegistryWrapper(scoped_ptr<ServiceRegistryImpl> registry)
-      : registry_(std::move(registry)) {
-  }
-  ~ServiceRegistryWrapper() override {}
-
- private:
-  // mojo::ServiceProvider:
-  void ConnectToService(const mojo::String& service_name,
-                        mojo::ScopedMessagePipeHandle pipe) override {
-    registry_->Connect(base::StringPiece(service_name), std::move(pipe));
-  }
-
-  const scoped_ptr<ServiceRegistryImpl> registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceRegistryWrapper);
-};
 
 void RegisterFrameMojoShellServices(ServiceRegistry* registry,
                                     RenderFrameHost* render_frame_host) {
@@ -77,7 +51,7 @@ void FrameMojoShell::ConnectToApplication(
     mojo::CapabilityFilterPtr filter,
     const ConnectToApplicationCallback& callback) {
   mojo::ServiceProviderPtr frame_services;
-  service_provider_bindings_.AddBinding(GetServiceProvider(),
+  service_provider_bindings_.AddBinding(GetServiceRegistry(),
                                         GetProxy(&frame_services));
 
   mojo::shell::CapabilityFilter capability_filter =
@@ -86,25 +60,25 @@ void FrameMojoShell::ConnectToApplication(
     capability_filter = filter->filter.To<mojo::shell::CapabilityFilter>();
   MojoShellContext::ConnectToApplication(
       GURL(application_url->url), frame_host_->GetSiteInstance()->GetSiteURL(),
-      std::move(services), std::move(frame_services), capability_filter,
-      callback);
+      services.Pass(), frame_services.Pass(), capability_filter, callback);
 }
 
 void FrameMojoShell::QuitApplication() {
 }
 
-mojo::ServiceProvider* FrameMojoShell::GetServiceProvider() {
-  if (!service_provider_) {
-    scoped_ptr<ServiceRegistryImpl> registry(new ServiceRegistryImpl());
+ServiceRegistryImpl* FrameMojoShell::GetServiceRegistry() {
+  if (!service_registry_) {
+    service_registry_.reset(new ServiceRegistryImpl());
+
     // TODO(rockot/xhwang): Currently all applications connected share the same
     // set of services registered in the |registry|. We may want to provide
     // different services for different apps for better isolation.
-    RegisterFrameMojoShellServices(registry.get(), frame_host_);
+    RegisterFrameMojoShellServices(service_registry_.get(), frame_host_);
     GetContentClient()->browser()->RegisterFrameMojoShellServices(
-        registry.get(), frame_host_);
-    service_provider_.reset(new ServiceRegistryWrapper(std::move(registry)));
+        service_registry_.get(), frame_host_);
   }
-  return service_provider_.get();
+
+  return service_registry_.get();
 }
 
 }  // namespace content

@@ -71,6 +71,7 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/render_frame_setup.mojom.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
@@ -341,6 +342,44 @@ void LowMemoryNotificationOnThisThread() {
   isolate->LowMemoryNotification();
 }
 
+class RenderFrameSetupImpl : public RenderFrameSetup {
+ public:
+  explicit RenderFrameSetupImpl(
+      mojo::InterfaceRequest<RenderFrameSetup> request)
+      : routing_id_highmark_(-1), binding_(this, request.Pass()) {}
+
+  void ExchangeServiceProviders(
+      int32_t frame_routing_id,
+      mojo::InterfaceRequest<mojo::ServiceProvider> services,
+      mojo::ServiceProviderPtr exposed_services)
+      override {
+    // TODO(morrita): This is for investigating http://crbug.com/415059 and
+    // should be removed once it is fixed.
+    CHECK_LT(routing_id_highmark_, frame_routing_id);
+    routing_id_highmark_ = frame_routing_id;
+
+    RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(frame_routing_id);
+    // We can receive a GetServiceProviderForFrame message for a frame not yet
+    // created due to a race between the message and a ViewMsg_New IPC that
+    // triggers creation of the RenderFrame we want.
+    if (!frame) {
+      RenderThreadImpl::current()->RegisterPendingRenderFrameConnect(
+          frame_routing_id, services.Pass(), exposed_services.Pass());
+      return;
+    }
+
+    frame->BindServiceRegistry(services.Pass(), exposed_services.Pass());
+  }
+
+ private:
+  int32_t routing_id_highmark_;
+  mojo::StrongBinding<RenderFrameSetup> binding_;
+};
+
+void CreateRenderFrameSetup(mojo::InterfaceRequest<RenderFrameSetup> request) {
+  new RenderFrameSetupImpl(request.Pass());
+}
+
 blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {
   blink::WebGraphicsContext3D::Attributes attributes;
   attributes.shareResources = true;
@@ -352,8 +391,8 @@ blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {
 }
 
 void SetupEmbeddedWorkerOnWorkerThread(
-    mojo::InterfaceRequest<RoutedServiceProvider> services,
-    mojo::InterfacePtrInfo<RoutedServiceProvider> exposed_services) {
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::InterfacePtrInfo<mojo::ServiceProvider> exposed_services) {
   ServiceWorkerContextClient* client =
       ServiceWorkerContextClient::ThreadSpecificInstance();
   // It is possible for client to be null if for some reason the worker died
@@ -373,8 +412,8 @@ class EmbeddedWorkerSetupImpl : public EmbeddedWorkerSetup {
 
   void ExchangeServiceProviders(
       int32_t thread_id,
-      mojo::InterfaceRequest<RoutedServiceProvider> services,
-      RoutedServiceProviderPtr exposed_services) override {
+      mojo::InterfaceRequest<mojo::ServiceProvider> services,
+      mojo::ServiceProviderPtr exposed_services) override {
     WorkerTaskRunner::Instance()->GetTaskRunnerFor(thread_id)->PostTask(
         FROM_HERE,
         base::Bind(&SetupEmbeddedWorkerOnWorkerThread, base::Passed(&services),
@@ -774,6 +813,8 @@ void RenderThreadImpl::Init() {
   base::DiscardableMemoryAllocator::SetInstance(
       ChildThreadImpl::discardable_shared_memory_manager());
 
+  service_registry()->AddService<RenderFrameSetup>(
+      base::Bind(CreateRenderFrameSetup));
   service_registry()->AddService<EmbeddedWorkerSetup>(
       base::Bind(CreateEmbeddedWorkerSetup));
 
@@ -992,6 +1033,24 @@ RenderThreadImpl::GetIOMessageLoopProxy() {
 
 void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
   ChildThreadImpl::GetRouter()->AddRoute(routing_id, listener);
+  PendingRenderFrameConnectMap::iterator it =
+      pending_render_frame_connects_.find(routing_id);
+  if (it == pending_render_frame_connects_.end())
+    return;
+
+  RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(routing_id);
+  if (!frame)
+    return;
+
+  scoped_refptr<PendingRenderFrameConnect> connection(it->second);
+  mojo::InterfaceRequest<mojo::ServiceProvider> services(
+      connection->services().Pass());
+  mojo::ServiceProviderPtr exposed_services(
+      connection->exposed_services().Pass());
+  exposed_services.set_connection_error_handler(mojo::Closure());
+  pending_render_frame_connects_.erase(it);
+
+  frame->BindServiceRegistry(services.Pass(), exposed_services.Pass());
 }
 
 void RenderThreadImpl::RemoveRoute(int32 routing_id) {
@@ -1013,6 +1072,18 @@ void RenderThreadImpl::RemoveEmbeddedWorkerRoute(int32 routing_id) {
     devtools_agent_message_filter_->RemoveEmbeddedWorkerRouteOnMainThread(
         routing_id);
   }
+}
+
+void RenderThreadImpl::RegisterPendingRenderFrameConnect(
+    int routing_id,
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::ServiceProviderPtr exposed_services) {
+  std::pair<PendingRenderFrameConnectMap::iterator, bool> result =
+      pending_render_frame_connects_.insert(std::make_pair(
+          routing_id,
+          make_scoped_refptr(new PendingRenderFrameConnect(
+              routing_id, services.Pass(), exposed_services.Pass()))));
+  CHECK(result.second) << "Inserting a duplicate item.";
 }
 
 int RenderThreadImpl::GenerateRoutingID() {
@@ -1996,6 +2067,31 @@ void RenderThreadImpl::ReleaseFreeMemory() {
 
   if (blink_platform_impl_)
     blink::decommitFreeableMemory();
+}
+
+RenderThreadImpl::PendingRenderFrameConnect::PendingRenderFrameConnect(
+    int routing_id,
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::ServiceProviderPtr exposed_services)
+    : routing_id_(routing_id),
+      services_(services.Pass()),
+      exposed_services_(exposed_services.Pass()) {
+  // The RenderFrame may be deleted before the ExchangeServiceProviders message
+  // is received. In that case, the RenderFrameHost should close the connection,
+  // which is detected by setting an error handler on |exposed_services_|.
+  exposed_services_.set_connection_error_handler(base::Bind(
+      &RenderThreadImpl::PendingRenderFrameConnect::OnConnectionError,
+      base::Unretained(this)));
+}
+
+RenderThreadImpl::PendingRenderFrameConnect::~PendingRenderFrameConnect() {
+}
+
+void RenderThreadImpl::PendingRenderFrameConnect::OnConnectionError() {
+  size_t erased =
+      RenderThreadImpl::current()->pending_render_frame_connects_.erase(
+          routing_id_);
+  DCHECK_EQ(1u, erased);
 }
 
 }  // namespace content

@@ -25,6 +25,7 @@
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/image_downloader/image_downloader.mojom.h"
+#include "content/common/mojo/service_registry_impl.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
@@ -73,7 +74,6 @@ class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class ResourceRequestBody;
-class ServiceRegistry;
 class StreamHandle;
 class TimeoutMonitor;
 struct ContextMenuParams;
@@ -811,7 +811,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // SiteInstance.
   scoped_ptr<TimeoutMonitor> swapout_event_monitor_timeout_;
 
-  scoped_ptr<ServiceRegistry> service_registry_;
+  scoped_ptr<ServiceRegistryImpl> service_registry_;
 
 #if defined(OS_ANDROID)
   scoped_ptr<ServiceRegistryAndroid> service_registry_android_;

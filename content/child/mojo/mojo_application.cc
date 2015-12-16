@@ -8,7 +8,6 @@
 #include "content/common/application_setup.mojom.h"
 #include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
-#include "content/common/routed_service_provider.mojom.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 
@@ -48,8 +47,8 @@ void MojoApplication::OnActivate(
   application_setup.Bind(
       mojo::InterfacePtrInfo<ApplicationSetup>(message_pipe.Pass(), 0u));
 
-  RoutedServiceProviderPtr services;
-  RoutedServiceProviderPtr exposed_services;
+  mojo::ServiceProviderPtr services;
+  mojo::ServiceProviderPtr exposed_services;
   service_registry_.Bind(GetProxy(&exposed_services));
   application_setup->ExchangeServiceProviders(GetProxy(&services),
                                               exposed_services.Pass());

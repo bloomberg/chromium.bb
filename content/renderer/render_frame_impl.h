@@ -19,6 +19,7 @@
 #include "base/process/process_handle.h"
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/frame_message_enums.h"
+#include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
@@ -130,7 +131,6 @@ class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
 class ScreenOrientationDispatcher;
-class ServiceRegistry;
 class UserMediaClientImpl;
 class WakeLockDispatcher;
 struct CommonNavigationParams;
@@ -618,6 +618,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // Make this frame show an empty, unscriptable page.
   // TODO(nasko): Remove this method once swapped out state is no longer used.
   void NavigateToSwappedOutURL();
+
+  // Binds this render frame's service registry.
+  void BindServiceRegistry(
+      mojo::InterfaceRequest<mojo::ServiceProvider> services,
+      mojo::ServiceProviderPtr exposed_services);
 
   ManifestManager* manifest_manager();
 
@@ -1110,11 +1115,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // initialized.
   PresentationDispatcher* presentation_dispatcher_;
 
-  scoped_ptr<ServiceRegistry> service_registry_;
-
-  // Used to vend WeakPtrs to our ServiceRegistry.
-  scoped_ptr<base::WeakPtrFactory<ServiceRegistry>>
-      service_registry_weak_factory_;
+  ServiceRegistryImpl service_registry_;
 
   // The shell proxy used to connect to Mojo applications.
   mojo::ShellPtr mojo_shell_;

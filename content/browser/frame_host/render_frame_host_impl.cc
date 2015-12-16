@@ -4,8 +4,6 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
-#include <utility>
-
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
@@ -51,8 +49,8 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
-#include "content/common/mojo/service_registry_for_route.h"
 #include "content/common/navigation_params.h"
+#include "content/common/render_frame_setup.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -2071,23 +2069,29 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   if (service_registry_.get())
     return;
 
-  ServiceRegistryImpl* process_wide_registry =
-      static_cast<ServiceRegistryImpl*>(GetProcess()->GetServiceRegistry());
-  if (!process_wide_registry)
+  service_registry_.reset(new ServiceRegistryImpl());
+  if (!GetProcess()->GetServiceRegistry())
     return;
 
-  scoped_ptr<ServiceRegistryForRoute> registry =
-      process_wide_registry->CreateServiceRegistryForRoute(routing_id_);
-  DCHECK(registry);
+  RegisterMojoServices();
+  RenderFrameSetupPtr setup;
+  GetProcess()->GetServiceRegistry()->ConnectToRemoteService(
+      mojo::GetProxy(&setup));
+
+  mojo::ServiceProviderPtr exposed_services;
+  service_registry_->Bind(GetProxy(&exposed_services));
+
+  mojo::ServiceProviderPtr services;
+  setup->ExchangeServiceProviders(routing_id_, GetProxy(&services),
+                                  exposed_services.Pass());
+  service_registry_->BindRemoteServiceProvider(services.Pass());
 
 #if defined(OS_ANDROID)
-  service_registry_android_.reset(new ServiceRegistryAndroid(registry.get()));
+  service_registry_android_.reset(
+      new ServiceRegistryAndroid(service_registry_.get()));
   ServiceRegistrarAndroid::RegisterFrameHostServices(
       service_registry_android_.get());
 #endif
-
-  service_registry_ = std::move(registry);
-  RegisterMojoServices();
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {

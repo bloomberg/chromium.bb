@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,8 @@ module content;
 
 import "mojo/application/public/interfaces/service_provider.mojom";
 
-interface ApplicationSetup {
-  ExchangeServiceProviders(mojo.ServiceProvider& services,
+interface RenderFrameSetup {
+  ExchangeServiceProviders(int32 frame_routing_id,
+                           mojo.ServiceProvider& services,
                            mojo.ServiceProvider exposed_services);
 };

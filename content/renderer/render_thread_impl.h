@@ -441,6 +441,11 @@ class CONTENT_EXPORT RenderThreadImpl
   void AddEmbeddedWorkerRoute(int32 routing_id, IPC::Listener* listener);
   void RemoveEmbeddedWorkerRoute(int32 routing_id);
 
+  void RegisterPendingRenderFrameConnect(
+      int routing_id,
+      mojo::InterfaceRequest<mojo::ServiceProvider> services,
+      mojo::ServiceProviderPtr exposed_services);
+
  protected:
   RenderThreadImpl(const InProcessChildThreadParams& params,
                    scoped_ptr<scheduler::RendererScheduler> scheduler);
@@ -654,6 +659,37 @@ class CONTENT_EXPORT RenderThreadImpl
   std::vector<unsigned> use_image_texture_targets_;
   bool are_image_decode_tasks_enabled_;
   bool is_threaded_animation_enabled_;
+
+  class PendingRenderFrameConnect
+      : public base::RefCounted<PendingRenderFrameConnect> {
+   public:
+    PendingRenderFrameConnect(
+        int routing_id,
+        mojo::InterfaceRequest<mojo::ServiceProvider> services,
+        mojo::ServiceProviderPtr exposed_services);
+
+    mojo::InterfaceRequest<mojo::ServiceProvider>& services() {
+      return services_;
+    }
+
+    mojo::ServiceProviderPtr& exposed_services() { return exposed_services_; }
+
+   private:
+    friend class base::RefCounted<PendingRenderFrameConnect>;
+
+    ~PendingRenderFrameConnect();
+
+    // Mojo error handler.
+    void OnConnectionError();
+
+    int routing_id_;
+    mojo::InterfaceRequest<mojo::ServiceProvider> services_;
+    mojo::ServiceProviderPtr exposed_services_;
+  };
+
+  typedef std::map<int, scoped_refptr<PendingRenderFrameConnect>>
+      PendingRenderFrameConnectMap;
+  PendingRenderFrameConnectMap pending_render_frame_connects_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

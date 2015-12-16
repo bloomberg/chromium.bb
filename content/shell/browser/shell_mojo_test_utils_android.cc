@@ -4,14 +4,11 @@
 
 #include "content/shell/browser/shell_mojo_test_utils_android.h"
 
-#include <utility>
-
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/mojo/service_registry_android.h"
 #include "content/common/mojo/service_registry_impl.h"
-#include "content/common/routed_service_provider.mojom.h"
 #include "jni/ShellMojoTestUtils_jni.h"
 
 namespace {
@@ -49,13 +46,13 @@ static ScopedJavaLocalRef<jobject> CreateServiceRegistryPair(
   content::ServiceRegistryImpl* registry_b = new ServiceRegistryImpl();
   test_environment->registries.push_back(registry_b);
 
-  RoutedServiceProviderPtr exposed_services_a;
+  mojo::ServiceProviderPtr exposed_services_a;
   registry_a->Bind(GetProxy(&exposed_services_a));
-  registry_b->BindRemoteServiceProvider(std::move(exposed_services_a));
+  registry_b->BindRemoteServiceProvider(exposed_services_a.Pass());
 
-  RoutedServiceProviderPtr exposed_services_b;
+  mojo::ServiceProviderPtr exposed_services_b;
   registry_b->Bind(GetProxy(&exposed_services_b));
-  registry_a->BindRemoteServiceProvider(std::move(exposed_services_b));
+  registry_a->BindRemoteServiceProvider(exposed_services_b.Pass());
 
   content::ServiceRegistryAndroid* wrapper_a =
       new ServiceRegistryAndroid(registry_a);

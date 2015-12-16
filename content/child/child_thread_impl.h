@@ -177,7 +177,7 @@ class CONTENT_EXPORT ChildThreadImpl
   static void ShutdownThread();
 #endif
 
-  ServiceRegistryImpl* service_registry() const {
+  ServiceRegistry* service_registry() const {
     return mojo_application_->service_registry();
   }
 

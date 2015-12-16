@@ -449,8 +449,6 @@
       'common/mojo/channel_init.cc',
       'common/mojo/channel_init.h',
       'common/mojo/mojo_messages.h',
-      'common/mojo/service_registry_for_route.cc',
-      'common/mojo/service_registry_for_route.h',
       'common/mojo/service_registry_impl.cc',
       'common/mojo/service_registry_impl.h',
       'common/navigation_gesture.h',
@@ -642,7 +640,6 @@
       'export_dependent_settings' : [
         '../mojo/mojo_base.gyp:mojo_application_bindings',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
-        'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
       ],
       'actions': [
         {

@@ -179,8 +179,6 @@ source_set("common") {
   ]
 
   if (!is_ios) {
-    public_deps += [ ":mojo_bindings" ]
-
     deps += [
       "//cc",
       "//device/bluetooth",
@@ -189,6 +187,7 @@ source_set("common") {
 
       # TODO: the dependency on gl_in_process_context should be decoupled from
       # content and moved to android_webview. See crbug.com/365797.
+      ":mojo_bindings",
       "//gpu/blink",
       "//gpu/command_buffer/client:gl_in_process_context",
       "//gpu/command_buffer/client:gles2_c_lib",
@@ -536,8 +535,8 @@ mojom("mojo_bindings") {
     "permission_service.mojom",
     "presentation/presentation_service.mojom",
     "process_control.mojom",
+    "render_frame_setup.mojom",
     "render_widget_window_tree_client_factory.mojom",
-    "routed_service_provider.mojom",
     "service_port_service.mojom",
     "service_worker/embedded_worker_setup.mojom",
     "vr_service.mojom",

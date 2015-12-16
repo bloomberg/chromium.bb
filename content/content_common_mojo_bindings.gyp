@@ -18,7 +18,7 @@
           'common/permission_service.mojom',
           'common/presentation/presentation_service.mojom',
           'common/process_control.mojom',
-          'common/routed_service_provider.mojom',
+          'common/render_frame_setup.mojom',
           'common/service_port_service.mojom',
           'common/service_worker/embedded_worker_setup.mojom',
           'common/vr_service.mojom',

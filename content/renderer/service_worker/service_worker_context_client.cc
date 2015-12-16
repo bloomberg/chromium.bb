@@ -277,8 +277,8 @@ void ServiceWorkerContextClient::OnMessageReceived(
 }
 
 void ServiceWorkerContextClient::BindServiceRegistry(
-    mojo::InterfaceRequest<RoutedServiceProvider> services,
-    RoutedServiceProviderPtr exposed_services) {
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::ServiceProviderPtr exposed_services) {
   context_->service_registry.Bind(services.Pass());
   context_->service_registry.BindRemoteServiceProvider(exposed_services.Pass());
 }

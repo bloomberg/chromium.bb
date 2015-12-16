@@ -4,10 +4,10 @@
 
 module content;
 
-import "content/common/routed_service_provider.mojom";
+import "mojo/application/public/interfaces/service_provider.mojom";
 
 interface EmbeddedWorkerSetup {
   ExchangeServiceProviders(int32 thread_id,
-                           RoutedServiceProvider& services,
-                           RoutedServiceProvider exposed_services);
+                           mojo.ServiceProvider& services,
+                           mojo.ServiceProvider exposed_services);
 };

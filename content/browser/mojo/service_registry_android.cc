@@ -4,12 +4,10 @@
 
 #include "content/browser/mojo/service_registry_android.h"
 
-#include <utility>
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/callback.h"
-#include "content/public/common/service_registry.h"
+#include "content/common/mojo/service_registry_impl.h"
 #include "jni/ServiceRegistry_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -44,7 +42,7 @@ bool ServiceRegistryAndroid::Register(JNIEnv* env) {
 
 // Constructor and destructor call into Java.
 ServiceRegistryAndroid::ServiceRegistryAndroid(
-    ServiceRegistry* service_registry)
+    ServiceRegistryImpl* service_registry)
     : service_registry_(service_registry) {
   JNIEnv* env = AttachCurrentThread();
   obj_.Reset(
@@ -74,10 +72,11 @@ void ServiceRegistryAndroid::AddService(
   ScopedJavaGlobalRef<jobject> j_scoped_factory;
   j_scoped_factory.Reset(env, j_factory);
 
-  service_registry_->Add(name,
-                         base::Bind(&CreateImplAndAttach,
-                                    j_scoped_service_registry,
-                                    j_scoped_manager, j_scoped_factory));
+  service_registry_->AddService(name,
+                                base::Bind(&CreateImplAndAttach,
+                                           j_scoped_service_registry,
+                                           j_scoped_manager,
+                                           j_scoped_factory));
 }
 
 void ServiceRegistryAndroid::RemoveService(
@@ -85,7 +84,7 @@ void ServiceRegistryAndroid::RemoveService(
     const JavaParamRef<jobject>& j_service_registry,
     const JavaParamRef<jstring>& j_name) {
   std::string name(ConvertJavaStringToUTF8(env, j_name));
-  service_registry_->Remove(name);
+  service_registry_->RemoveService(name);
 }
 
 void ServiceRegistryAndroid::ConnectToRemoteService(
@@ -95,7 +94,7 @@ void ServiceRegistryAndroid::ConnectToRemoteService(
     jint j_handle) {
   std::string name(ConvertJavaStringToUTF8(env, j_name));
   mojo::ScopedMessagePipeHandle handle((mojo::MessagePipeHandle(j_handle)));
-  service_registry_->Connect(name, std::move(handle));
+  service_registry_->ConnectToRemoteService(name, handle.Pass());
 }
 
 }  // namespace content

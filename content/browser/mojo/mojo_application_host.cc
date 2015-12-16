@@ -5,7 +5,6 @@
 #include "content/browser/mojo/mojo_application_host.h"
 
 #include "content/common/mojo/mojo_messages.h"
-#include "content/common/routed_service_provider.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
@@ -36,8 +35,8 @@ class ApplicationSetupImpl : public ApplicationSetup {
  private:
   // ApplicationSetup implementation.
   void ExchangeServiceProviders(
-      mojo::InterfaceRequest<RoutedServiceProvider> services,
-      RoutedServiceProviderPtr exposed_services) override {
+      mojo::InterfaceRequest<mojo::ServiceProvider> services,
+      mojo::ServiceProviderPtr exposed_services) override {
     service_registry_->Bind(services.Pass());
     service_registry_->BindRemoteServiceProvider(exposed_services.Pass());
   }
