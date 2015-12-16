@@ -112,6 +112,14 @@ deps_os = {
 }
 
 hooks = [
+  ###
+  ### From here until the similar marker below, these clauses are copied
+  ### almost verbatim from chromium/src/DEPS.  They are modified to drop
+  ### the src/ prefix on file names, and third_party/binutils/download.py
+  ### gets the extra --ignore-if-arch=arm argument, but otherwise they
+  ### should stay identical.
+  ###
+
   {
     # Downloads the current stable linux sysroot to build/linux/ if needed.
     # This sysroot updates at about the same rate that the chrome build deps
@@ -121,22 +129,6 @@ hooks = [
     'pattern': '.',
     'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--running-as-hook'],
-  },
-  # Pull NaCl Toolchain binaries. This needs to be before running GYP below.
-  {
-    "pattern": ".",
-    "action": ["python",
-               "native_client/build/package_version/package_version.py",
-               "sync", "--extract",
-    ],
-  },
-  # Cleanup any stale package_version files.
-  {
-    "pattern": ".",
-    "action": ["python",
-               "native_client/build/package_version/package_version.py",
-               "cleanup",
-    ],
   },
   {
     # Update the Windows toolchain if necessary.
@@ -156,85 +148,120 @@ hooks = [
         '--ignore-if-arch=arm',
     ],
   },
-  # Update clang
   {
-    "name": "clang",
-    "pattern": ".",
-    "action": ["python", "tools/clang/scripts/update.py", "--if-needed"],
+    # Pull clang if needed or requested via GYP_DEFINES.
+    # Note: On Win, this should run after win_toolchain, as it may use it.
+    'name': 'clang',
+    'pattern': '.',
+    'action': ['python', 'tools/clang/scripts/update.py', '--if-needed'],
   },
+
   # Pull GN binaries. This needs to be before running GYP below.
   {
-    "name": "gn_win",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=win32",
-                "--no_auth",
-                "--bucket", "chromium-gn",
-                "-s", "buildtools/win/gn.exe.sha1",
+    'name': 'gn_win',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=win32',
+                '--no_auth',
+                '--bucket', 'chromium-gn',
+                '-s', 'buildtools/win/gn.exe.sha1',
     ],
   },
   {
-    "name": "gn_mac",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=darwin",
-                "--no_auth",
-                "--bucket", "chromium-gn",
-                "-s", "buildtools/mac/gn.sha1",
+    'name': 'gn_mac',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=darwin',
+                '--no_auth',
+                '--bucket', 'chromium-gn',
+                '-s', 'buildtools/mac/gn.sha1',
     ],
   },
   {
-    "name": "gn_linux64",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=linux*",
-                "--no_auth",
-                "--bucket", "chromium-gn",
-                "-s", "buildtools/linux64/gn.sha1",
+    'name': 'gn_linux64',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=linux*',
+                '--no_auth',
+                '--bucket', 'chromium-gn',
+                '-s', 'buildtools/linux64/gn.sha1',
     ],
   },
+  # Pull clang-format binaries using checked-in hashes.
+  {
+    'name': 'clang_format_win',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=win32',
+                '--no_auth',
+                '--bucket', 'chromium-clang-format',
+                '-s', 'buildtools/win/clang-format.exe.sha1',
+    ],
+  },
+  {
+    'name': 'clang_format_mac',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=darwin',
+                '--no_auth',
+                '--bucket', 'chromium-clang-format',
+                '-s', 'buildtools/mac/clang-format.sha1',
+    ],
+  },
+  {
+    'name': 'clang_format_linux',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=linux*',
+                '--no_auth',
+                '--bucket', 'chromium-clang-format',
+                '-s', 'buildtools/linux64/clang-format.sha1',
+    ],
+  },
+  # Pull the prebuilt libc++ static library for mac.
+  {
+    'name': 'libcpp_mac',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=darwin',
+                '--no_auth',
+                '--bucket', 'chromium-libcpp',
+                '-s', 'third_party/libc++-static/libc++.a.sha1',
+    ],
+  },
+
+  ###
+  ### End of clauses copied (almost verbatim) from chromium/src/DEPS.
+  ###
+
+  # Pull NaCl Toolchain binaries. This needs to be before running GYP below.
+  {
+    "pattern": ".",
+    "action": ["python",
+               "native_client/build/package_version/package_version.py",
+               "sync", "--extract",
+    ],
+  },
+  # Cleanup any stale package_version files.
+  {
+    "pattern": ".",
+    "action": ["python",
+               "native_client/build/package_version/package_version.py",
+               "cleanup",
+    ],
+  },
+
   # Run GYP, do this last to make sure all the tools are present first.
   {
     "pattern": ".",
     "action": ["python", "native_client/build/gyp_nacl"],
-  },
-  # Pull clang-format binaries. Note that we currently do not support
-  # clang-format on linux32
-  {
-    "name": "clang-format_win",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=win32",
-                "--no_auth",
-                "--bucket", "chromium-clang-format",
-                "-s", "buildtools/win/clang-format.exe.sha1",
-    ],
-  },
-  {
-    "name": "clang-format_mac",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=darwin",
-                "--no_auth",
-                "--bucket", "chromium-clang-format",
-                "-s", "buildtools/mac/clang-format.sha1",
-    ],
-  },
-  {
-    "name": "clang-format_linux64",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=linux*",
-                "--no_auth",
-                "--bucket", "chromium-clang-format",
-                "-s", "buildtools/linux64/clang-format.sha1",
-    ],
   },
 ]
 
