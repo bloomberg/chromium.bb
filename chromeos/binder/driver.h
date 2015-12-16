@@ -48,7 +48,11 @@ class Driver {
   bool NotifyCurrentThreadExiting();
 
  private:
+  // Returns the size of the mmap region for transaction data.
+  size_t GetBinderMmapSize() const;
+
   base::ScopedFD fd_;
+  void* mmap_address_;
 
   DISALLOW_COPY_AND_ASSIGN(Driver);
 };

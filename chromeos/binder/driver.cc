@@ -22,10 +22,15 @@ const char kDriverPath[] = "/dev/binder";
 
 }  // namespace
 
-Driver::Driver() {}
+Driver::Driver() : mmap_address_(MAP_FAILED) {}
 
 Driver::~Driver() {
   base::ThreadRestrictions::AssertIOAllowed();
+  if (mmap_address_ != MAP_FAILED) {
+    if (munmap(mmap_address_, GetBinderMmapSize()) == -1) {
+      PLOG(ERROR) << "Failed to munmap";
+    }
+  }
   fd_.reset();  // Close FD.
 }
 
@@ -50,10 +55,9 @@ bool Driver::Initialize() {
     return false;
   }
   // Allocate buffer for transaction data.
-  // Subtract PAGESIZE * 2 to make room for guard pages. https://goo.gl/4Q6sPe
-  const int kBinderMmapSize = 1024 * 1024 - sysconf(_SC_PAGESIZE) * 2;
-  if (mmap(0, kBinderMmapSize, PROT_READ, MAP_PRIVATE | MAP_NORESERVE,
-           fd_.get(), 0) == MAP_FAILED) {
+  mmap_address_ = mmap(0, GetBinderMmapSize(), PROT_READ,
+                       MAP_PRIVATE | MAP_NORESERVE, fd_.get(), 0);
+  if (mmap_address_ == MAP_FAILED) {
     PLOG(ERROR) << "Failed to mmap";
     return false;
   }
@@ -95,6 +99,11 @@ bool Driver::WriteRead(const char* write_buf,
 bool Driver::NotifyCurrentThreadExiting() {
   base::ThreadRestrictions::AssertIOAllowed();
   return HANDLE_EINTR(ioctl(fd_.get(), BINDER_THREAD_EXIT, 0)) != -1;
+}
+
+size_t Driver::GetBinderMmapSize() const {
+  // Subtract PAGESIZE * 2 to make room for guard pages. https://goo.gl/4Q6sPe
+  return 1024 * 1024 - sysconf(_SC_PAGESIZE) * 2;
 }
 
 }  // namespace binder
