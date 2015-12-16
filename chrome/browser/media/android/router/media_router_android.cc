@@ -55,6 +55,15 @@ bool MediaRouterAndroid::Register(JNIEnv* env) {
   return ret;
 }
 
+const MediaRoute* MediaRouterAndroid::FindRouteBySource(
+    const MediaSource::Id& source_id) const {
+  for (const auto& route : active_routes_) {
+    if (route.media_source().id() == source_id)
+      return &route;
+  }
+  return nullptr;
+}
+
 void MediaRouterAndroid::CreateRoute(
     const MediaSource::Id& source_id,
     const MediaSink::Id& sink_id,

@@ -27,6 +27,8 @@ class MediaRouterAndroid : public MediaRouterBase {
 
   static bool Register(JNIEnv* env);
 
+  const MediaRoute* FindRouteBySource(const MediaSource::Id& source_id) const;
+
   // MediaRouter implementation.
   void CreateRoute(
       const MediaSource::Id& source_id,

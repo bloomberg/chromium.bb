@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
-#include "chrome/browser/media/router/media_routes_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace media_router {
@@ -19,8 +18,7 @@ namespace media_router {
 // Android implementation of the MediaRouterDialogController.
 class MediaRouterDialogControllerAndroid
     : public content::WebContentsUserData<MediaRouterDialogControllerAndroid>,
-      public MediaRouterDialogController,
-      public MediaRoutesObserver {
+      public MediaRouterDialogController {
  public:
   ~MediaRouterDialogControllerAndroid() override;
 
@@ -58,17 +56,9 @@ class MediaRouterDialogControllerAndroid
   void CloseMediaRouterDialog() override;
   bool IsShowingMediaRouterDialog() const override;
 
-  // MediaRoutesObserver:
-  void OnRoutesUpdated(const std::vector<MediaRoute>& routes) override;
-
   void CancelPresentationRequest();
 
   base::android::ScopedJavaGlobalRef<jobject> java_dialog_controller_;
-
-  // Null if no routes or more than one route exist. If there's only one route,
-  // keeps a copy to determine if the route controller dialog needs to be shown
-  // vs. the route chooser one.
-  scoped_ptr<MediaRoute> single_existing_route_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerAndroid);
 };
