@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
@@ -57,10 +56,10 @@ class RenderFrameObserver;
 //
 // blink::WebMediaPlayerClient
 //   WebKit client of this media player object.
-class CONTENT_EXPORT WebMediaPlayerMS
-    : public NON_EXPORTED_BASE(blink::WebMediaPlayer),
-      public NON_EXPORTED_BASE(base::SupportsWeakPtr<WebMediaPlayerMS>),
-      public NON_EXPORTED_BASE(RenderFrameObserver) {
+class WebMediaPlayerMS
+    : public blink::WebMediaPlayer,
+      public base::SupportsWeakPtr<WebMediaPlayerMS>,
+      public RenderFrameObserver {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
   // a MediaStreamClient which provides VideoFrameProvider.
@@ -148,8 +147,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
       bool flip_y) override;
 
  private:
-  friend class WebMediaPlayerMSTest;
-
   // The callback for VideoFrameProvider to signal a new frame is available.
   void OnFrameAvailable(const scoped_refptr<media::VideoFrame>& frame);
   // Need repaint due to state change.

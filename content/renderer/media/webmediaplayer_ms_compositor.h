@@ -14,7 +14,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/layers/video_frame_provider.h"
-#include "content/common/content_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -45,18 +44,13 @@ class WebMediaPlayerMS;
 // smoothness, if REFERENCE_TIMEs are populated for incoming VideoFrames.
 // Otherwise, WebMediaPlayerMSCompositor will simply store the most recent
 // frame, and submit it whenever asked by the compositor.
-class CONTENT_EXPORT WebMediaPlayerMSCompositor
-    : public NON_EXPORTED_BASE(cc::VideoFrameProvider) {
+class WebMediaPlayerMSCompositor : public cc::VideoFrameProvider {
  public:
-  // This |url| represents the media stream we are rendering. |url| is used to
-  // find out what web stream this WebMediaPlayerMSCompositor is playing, and
-  // together with flag "--disable-rtc-smoothness-algorithm" determine whether
-  // we enable algorithm or not.
+  // This |url| represents the media stream we are rendering.
   WebMediaPlayerMSCompositor(
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const blink::WebURL& url,
       const base::WeakPtr<WebMediaPlayerMS>& player);
-
   ~WebMediaPlayerMSCompositor() override;
 
   void EnqueueFrame(const scoped_refptr<media::VideoFrame>& frame);
@@ -81,8 +75,6 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   void ReplaceCurrentFrameWithACopy();
 
  private:
-  friend class WebMediaPlayerMSTest;
-
   bool MapTimestampsToRenderTimeTicks(
       const std::vector<base::TimeDelta>& timestamps,
       std::vector<base::TimeTicks>* wall_clock_times);
@@ -95,8 +87,6 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 
   void StartRenderingInternal();
   void StopRenderingInternal();
-
-  void SetAlgorithmEnabledForTesting(bool algorithm_enabled);
 
   // Used for DCHECKs to ensure method calls executed in the correct thread.
   base::ThreadChecker thread_checker_;

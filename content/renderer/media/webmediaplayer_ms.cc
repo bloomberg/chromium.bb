@@ -64,9 +64,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       gpu_factories_(gpu_factories),
       compositor_task_runner_(compositor_task_runner),
       initial_audio_output_device_id_(sink_id.utf8()),
-      initial_security_origin_(security_origin.isNull()
-                                   ? url::Origin()
-                                   : url::Origin(security_origin)) {
+      initial_security_origin_(security_origin) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(client);
   media_log_->AddEvent(
@@ -77,7 +75,7 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (compositor_ && !compositor_task_runner_->BelongsToCurrentThread())
+  if (compositor_)
     compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_.release());
 
   get_client()->setWebLayer(nullptr);
@@ -121,12 +119,9 @@ void WebMediaPlayerMS::load(LoadType load_type,
       gpu_factories_);
 
   RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
-
-  if (frame) {
-    audio_renderer_ = renderer_factory_->GetAudioRenderer(
-        url, frame->GetRoutingID(), initial_audio_output_device_id_,
-        initial_security_origin_);
-  }
+  audio_renderer_ = renderer_factory_->GetAudioRenderer(
+      url, frame->GetRoutingID(), initial_audio_output_device_id_,
+      initial_security_origin_);
 
   if (!video_frame_provider_ && !audio_renderer_) {
     SetNetworkState(WebMediaPlayer::NetworkStateNetworkError);
@@ -484,5 +479,4 @@ void WebMediaPlayerMS::ResetCanvasCache() {
   DCHECK(thread_checker_.CalledOnValidThread());
   video_renderer_.ResetCache();
 }
-
 }  // namespace content

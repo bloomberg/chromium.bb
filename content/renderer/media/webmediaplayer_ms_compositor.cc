@@ -108,8 +108,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
   const blink::WebMediaStream web_stream(
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  if (!web_stream.isNull())
-    web_stream.videoTracks(video_tracks);
+  web_stream.videoTracks(video_tracks);
 
   const bool remote_video =
       video_tracks.size() && video_tracks[0].source().remote();
@@ -372,19 +371,4 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
   main_message_loop_->PostTask(
       FROM_HERE, base::Bind(&WebMediaPlayerMS::ResetCanvasCache, player_));
 }
-
-void WebMediaPlayerMSCompositor::SetAlgorithmEnabledForTesting(
-    bool algorithm_enabled) {
-  if (!algorithm_enabled) {
-    rendering_frame_buffer_.reset();
-    return;
-  }
-
-  if (!rendering_frame_buffer_) {
-    rendering_frame_buffer_.reset(new media::VideoRendererAlgorithm(
-        base::Bind(&WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks,
-                   base::Unretained(this))));
-  }
 }
-
-}  // namespace content
