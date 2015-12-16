@@ -27,6 +27,8 @@ public:
         return *m_remoteFrame;
     }
 
+    void dispose() override;
+
     // Override to notify remote frame that its viewport size has changed.
     void frameRectsChanged() override;
 

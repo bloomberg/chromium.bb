@@ -97,6 +97,11 @@ void RemoteFrame::detach(FrameDetachType type)
     detachChildren();
     if (!client())
         return;
+
+    // Clean up the frame's view if needed. A remote frame only has a view if
+    // the parent is a local frame.
+    if (m_view)
+        m_view->dispose();
     client()->willBeDetached();
     m_windowProxyManager->clearForClose();
     setView(nullptr);

@@ -6,6 +6,7 @@
 #include "core/frame/RemoteFrameView.h"
 
 #include "core/frame/RemoteFrame.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutPart.h"
 
 namespace blink {
@@ -25,6 +26,16 @@ PassRefPtrWillBeRawPtr<RemoteFrameView> RemoteFrameView::create(RemoteFrame* rem
     RefPtrWillBeRawPtr<RemoteFrameView> view = adoptRefWillBeNoop(new RemoteFrameView(remoteFrame));
     view->show();
     return view.release();
+}
+
+void RemoteFrameView::dispose()
+{
+    HTMLFrameOwnerElement* ownerElement = m_remoteFrame->deprecatedLocalOwner();
+    // ownerElement can be null during frame swaps, because the
+    // RemoteFrameView is disconnected before detachment.
+    if (ownerElement && ownerElement->ownedWidget() == this)
+        ownerElement->setWidget(nullptr);
+    Widget::dispose();
 }
 
 void RemoteFrameView::invalidateRect(const IntRect& rect)
