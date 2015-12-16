@@ -2,6 +2,12 @@ var initialize_SassTest = function() {
 
 InspectorTest.preloadModule("sass");
 
+InspectorTest.loadSourceMap = function(header, callback)
+{
+    var completeSourceMapURL = WebInspector.ParsedURL.completeURL(header.sourceURL, header.sourceMapURL);
+    WebInspector.SourceMap.load(completeSourceMapURL, header.sourceURL, callback);
+}
+
 InspectorTest.dumpAST = function(ast)
 {
     var lines = [String.sprintf("=== AST === %s", ast.document.url)];
@@ -131,6 +137,29 @@ InspectorTest.validateASTRanges = function(ast)
     {
         if (textNode.range.extract(textNode.document.text) !== textNode.text)
             invalidNodes.push(textNode);
+    }
+}
+
+InspectorTest.validateMapping = function(mapping, cssAST, sassModels)
+{
+    InspectorTest.addResult("Mapped CSS: " + mapping._cssToSass.size);
+    InspectorTest.addResult("Mapped SCSS: " + mapping._sassToCss.size);
+    var cssNodes = mapping._cssToSass.keysArray();
+    var staleCSS = 0;
+    var staleSASS = 0;
+    for (var i = 0; i < cssNodes.length; ++i) {
+        var cssNode = cssNodes[i];
+        staleCSS += cssNode.document !== cssAST.document ? 1 : 0;
+        var sassNode = mapping.toSASSNode(cssNode);
+        var sassAST = sassModels.get(sassNode.document.url);
+        staleSASS += sassNode.document !== sassAST.document ? 1 : 0;
+    }
+    if (staleCSS || staleSASS) {
+        InspectorTest.addResult("ERROR: found stale entries");
+        InspectorTest.addResult("   -stale CSS: " + staleCSS);
+        InspectorTest.addResult("   -stale SASS: " + staleSASS);
+    } else {
+        InspectorTest.addResult("No stale entries found.");
     }
 }
 

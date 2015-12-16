@@ -1,0 +1,1 @@
+Verify that mapping is not valid for misaligned sources.

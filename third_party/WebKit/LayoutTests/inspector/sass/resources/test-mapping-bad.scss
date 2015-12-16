@@ -1,0 +1,11 @@
+div {
+    font-family: Arial;
+    color: red;
+    margin: 10px;
+
+    .message {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}

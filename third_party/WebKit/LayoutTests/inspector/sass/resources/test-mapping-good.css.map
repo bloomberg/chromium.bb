@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,GAAI,CACA,WAAW,CAAE,KAAK,CAClB,KAAK,CAAE,GAAG,CACV,MAAM,CAAE,IAAI,CAEZ,YAAS,CACL,OAAO,CAAE,IAAI,CACb,WAAW,CAAE,MAAM,CACnB,eAAe,CAAE,MAAM",
+"sources": ["test-mapping-good.scss"],
+"names": [],
+"file": "test-mapping-good.css"
+}

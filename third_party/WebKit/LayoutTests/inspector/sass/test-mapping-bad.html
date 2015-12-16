@@ -1,0 +1,63 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="resources/test-mapping-bad.css">
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="./sass-test.js"></script>
+<script>
+
+function test()
+{
+    var header = InspectorTest.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
+    InspectorTest.loadSourceMap(header, onSourceMapLoaded);
+    InspectorTest.waitForScriptSource("test-mapping-bad.css", onCSSLoaded);
+    InspectorTest.waitForScriptSource("test-mapping-bad.scss", onSCSSLoaded);
+
+    var cssAST;
+    var sassModels = new Map();
+    var sourceMap;
+
+    function onCSSLoaded(uiSourceCode)
+    {
+        uiSourceCode.requestContentPromise()
+            .then(text => InspectorTest.parseCSS(uiSourceCode.originURL(), text))
+            .then(ast => cssAST = ast)
+            .then(maybeCreateMapping);
+    }
+
+    function onSCSSLoaded(uiSourceCode)
+    {
+        uiSourceCode.requestContentPromise()
+            .then(text => InspectorTest.parseSCSS(uiSourceCode.originURL(), text))
+            .then(ast => sassModels.set(ast.document.url, ast))
+            .then(maybeCreateMapping);
+    }
+
+    function onSourceMapLoaded(sm)
+    {
+        sourceMap = sm;
+        maybeCreateMapping();
+    }
+
+    function maybeCreateMapping()
+    {
+        if (!cssAST || !sassModels.size || !sourceMap)
+            return;
+        var mapping = WebInspector.SASSLiveSourceMap.CSSToSASSMapping.fromSourceMap(sourceMap, cssAST, sassModels);
+        if (mapping.isValid()) {
+            InspectorTest.addResult("ERROR: a valid mapping created for misaligned sourcemap.");
+        }
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verify that mapping is not valid for misaligned sources.</p>
+</body>
+</html>
