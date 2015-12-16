@@ -92,9 +92,9 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void DrawUnsupportedQuad(const DrawingFrame* frame,
                            const DrawQuad* quad);
   bool ShouldApplyBackgroundFilters(const RenderPassDrawQuad* quad) const;
-  SkBitmap ApplyImageFilter(SkImageFilter* filter,
-                            const RenderPassDrawQuad* quad,
-                            const SkBitmap* to_filter) const;
+  skia::RefPtr<SkImage> ApplyImageFilter(SkImageFilter* filter,
+                                         const RenderPassDrawQuad* quad,
+                                         const SkBitmap* to_filter) const;
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       const DrawingFrame* frame,
       const RenderPassDrawQuad* quad,

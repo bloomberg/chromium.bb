@@ -491,24 +491,23 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
 
   const SkBitmap* content = lock.sk_bitmap();
 
-  SkBitmap filter_bitmap;
+  skia::RefPtr<SkImage> filter_image;
   if (!quad->filters.IsEmpty()) {
     skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, gfx::SizeF(content_texture->size()));
     // TODO(ajuma): Apply the filter in the same pass as the content where
     // possible (e.g. when there's no origin offset). See crbug.com/308201.
-    filter_bitmap = ApplyImageFilter(filter.get(), quad, content);
+    filter_image = ApplyImageFilter(filter.get(), quad, content);
   }
 
   skia::RefPtr<SkShader> shader;
-  if (filter_bitmap.isNull()) {
+  if (!filter_image) {
     shader = skia::AdoptRef(
         SkShader::CreateBitmapShader(*content, SkShader::kClamp_TileMode,
                                      SkShader::kClamp_TileMode, &content_mat));
   } else {
-    shader = skia::AdoptRef(
-        SkShader::CreateBitmapShader(filter_bitmap, SkShader::kClamp_TileMode,
-                                     SkShader::kClamp_TileMode, &content_mat));
+    shader = skia::AdoptRef(filter_image->newShader(
+        SkShader::kClamp_TileMode, SkShader::kClamp_TileMode, &content_mat));
   }
 
   scoped_ptr<ResourceProvider::ScopedReadLockSoftware> mask_lock;
@@ -627,25 +626,30 @@ bool SoftwareRenderer::ShouldApplyBackgroundFilters(
   return true;
 }
 
-SkBitmap SoftwareRenderer::ApplyImageFilter(SkImageFilter* filter,
-                                            const RenderPassDrawQuad* quad,
-                                            const SkBitmap* to_filter) const {
+skia::RefPtr<SkImage> SoftwareRenderer::ApplyImageFilter(
+    SkImageFilter* filter,
+    const RenderPassDrawQuad* quad,
+    const SkBitmap* to_filter) const {
   if (!filter)
-    return SkBitmap();
+    return nullptr;
 
-  SkBitmap filter_bitmap;
-  if (filter_bitmap.tryAllocPixels(SkImageInfo::MakeN32Premul(
-          to_filter->width(), to_filter->height()))) {
-    SkCanvas canvas(filter_bitmap);
-    SkPaint paint;
-    paint.setImageFilter(filter);
-    canvas.clear(SK_ColorTRANSPARENT);
-    canvas.translate(SkIntToScalar(-quad->rect.origin().x()),
-                     SkIntToScalar(-quad->rect.origin().y()));
-    canvas.scale(quad->filters_scale.x(), quad->filters_scale.y());
-    canvas.drawSprite(*to_filter, 0, 0, &paint);
-  }
-  return filter_bitmap;
+  SkImageInfo dst_info =
+      SkImageInfo::MakeN32Premul(to_filter->width(), to_filter->height());
+  skia::RefPtr<SkSurface> surface =
+      skia::AdoptRef(SkSurface::NewRaster(dst_info));
+
+  SkMatrix localM;
+  localM.setTranslate(SkIntToScalar(-quad->rect.origin().x()),
+                      SkIntToScalar(-quad->rect.origin().y()));
+  localM.preScale(quad->filters_scale.x(), quad->filters_scale.y());
+  skia::RefPtr<SkImageFilter> localIMF =
+      skia::AdoptRef(filter->newWithLocalMatrix(localM));
+
+  SkPaint paint;
+  paint.setImageFilter(localIMF.get());
+  surface->getCanvas()->drawBitmap(*to_filter, 0, 0, &paint);
+
+  return skia::AdoptRef(surface->newImageSnapshot());
 }
 
 SkBitmap SoftwareRenderer::GetBackdropBitmap(
@@ -708,15 +712,14 @@ skia::RefPtr<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
   skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
       quad->background_filters,
       gfx::SizeF(backdrop_bitmap.width(), backdrop_bitmap.height()));
-  SkBitmap filter_backdrop_bitmap =
+  skia::RefPtr<SkImage> filter_backdrop_image =
       ApplyImageFilter(filter.get(), quad, &backdrop_bitmap);
 
-  if (filter_backdrop_bitmap.empty())
-    return skia::RefPtr<SkShader>();
+  if (!filter_backdrop_image)
+    return nullptr;
 
-  return skia::AdoptRef(SkShader::CreateBitmapShader(
-      filter_backdrop_bitmap, content_tile_mode, content_tile_mode,
-      &filter_backdrop_transform));
+  return skia::AdoptRef(filter_backdrop_image->newShader(
+      content_tile_mode, content_tile_mode, &filter_backdrop_transform));
 }
 
 }  // namespace cc
