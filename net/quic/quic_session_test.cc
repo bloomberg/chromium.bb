@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_flags.h"
@@ -830,6 +831,12 @@ TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedCryptoStream) {
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
 }
 
+#if !defined(OS_IOS)
+// This test is failing flakily for iOS bots.
+// http://crbug.com/425050
+// NOTE: It's not possible to use the standard MAYBE_ convention to disable
+// this test on iOS because when this test gets instantiated it ends up with
+// various names that are dependent on the parameters passed.
 TEST_P(QuicSessionTestServer,
        HandshakeUnblocksFlowControlBlockedHeadersStream) {
   // Test that if the header stream is flow control blocked, then if the SHLO
@@ -879,6 +886,7 @@ TEST_P(QuicSessionTestServer,
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   EXPECT_FALSE(headers_stream->HasBufferedData());
 }
+#endif  // !defined(OS_IOS)
 
 TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstOutOfOrder) {
   // Test that when we receive an out of order stream RST we correctly adjust

@@ -27,6 +27,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if defined(OS_IOS)
+#include <TargetConditionals.h>
+#endif
+
 namespace net {
 
 namespace {
@@ -398,7 +402,14 @@ int PrivilegedRand(int min, int max) {
   return 4;
 }
 
-TEST_F(UDPSocketTest, ConnectFail) {
+#if defined(OS_IOS) && !TARGET_IPHONE_SIMULATOR
+// TODO(droger): On iOS this test fails on device (but passes on simulator).
+// See http://crbug.com/227760.
+#define MAYBE_ConnectFail DISABLED_ConnectFail
+#else
+#define MAYBE_ConnectFail ConnectFail
+#endif
+TEST_F(UDPSocketTest, MAYBE_ConnectFail) {
   IPEndPoint peer_address;
   CreateUDPAddress("0.0.0.0", 53, &peer_address);
 

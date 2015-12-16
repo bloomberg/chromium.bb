@@ -2095,9 +2095,14 @@ TEST_F(URLRequestTest, Identifiers) {
   ASSERT_NE(req->identifier(), other_req->identifier());
 }
 
-// Check that a failure to connect to the proxy is reported to the network
-// delegate.
-TEST_F(URLRequestTest, NetworkDelegateProxyError) {
+#if defined(OS_IOS)
+// TODO(droger): Check that a failure to connect to the proxy is reported to
+// the network delegate. crbug.com/496743
+#define MAYBE_NetworkDelegateProxyError DISABLED_NetworkDelegateProxyError
+#else
+#define MAYBE_NetworkDelegateProxyError NetworkDelegateProxyError
+#endif
+TEST_F(URLRequestTest, MAYBE_NetworkDelegateProxyError) {
   MockHostResolver host_resolver;
   host_resolver.rules()->AddSimulatedFailure("*");
 

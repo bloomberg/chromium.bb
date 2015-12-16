@@ -42,7 +42,15 @@ namespace {
 // The persistent cookie store is loaded into memory on eTLD at a time. This
 // variable controls the delay between loading eTLDs, so as to not overload the
 // CPU or I/O with these low priority requests immediately after start up.
+#if defined(OS_IOS)
+// TODO(ellyjones): This should be 200ms, but currently CookieStoreIOS is
+// waiting for -FinishedLoadingCookies to be called after all eTLD cookies are
+// loaded before making any network requests.  Changing to 0ms for now.
+// crbug.com/462593
 const int kLoadDelayMilliseconds = 0;
+#else
+const int kLoadDelayMilliseconds = 0;
+#endif
 
 }  // namespace
 

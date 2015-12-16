@@ -2213,8 +2213,14 @@ TEST_F(ClientSocketPoolBaseTest, DisableCleanupTimerReuse) {
       entries, 1, NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
 }
 
+#if defined(OS_IOS)
+// TODO(droger): Enable this test (crbug.com/512595).
+#define MAYBE_DisableCleanupTimerNoReuse DISABLED_DisableCleanupTimerNoReuse
+#else
+#define MAYBE_DisableCleanupTimerNoReuse DisableCleanupTimerNoReuse
+#endif
 // Make sure we cleanup old unused sockets when the cleanup timer is disabled.
-TEST_F(ClientSocketPoolBaseTest, DisableCleanupTimerNoReuse) {
+TEST_F(ClientSocketPoolBaseTest, MAYBE_DisableCleanupTimerNoReuse) {
   // Disable cleanup timer.
   internal::ClientSocketPoolBaseHelper::set_cleanup_timer_enabled(false);
 
