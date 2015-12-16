@@ -17,6 +17,7 @@
 #include "remoting/protocol/fake_authenticator.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "remoting/protocol/stream_channel_factory.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -128,20 +129,19 @@ class IceTransportTest : public testing::Test {
   }
 
   void InitializeConnection() {
-    port_allocator_ = ChromiumPortAllocator::Create(nullptr, network_settings_);
-
-    host_transport_.reset(new IceTransport(
-        port_allocator_.get(), network_settings_, TransportRole::SERVER));
-    host_transport_->GetCanStartClosure().Run();
-
+    host_transport_.reset(new IceTransport(new TransportContext(
+        signal_strategy_.get(),
+        make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
+        network_settings_, TransportRole::SERVER)));
     if (!host_authenticator_) {
       host_authenticator_.reset(new FakeAuthenticator(
           FakeAuthenticator::HOST, 0, FakeAuthenticator::ACCEPT, true));
     }
 
-    client_transport_.reset(new IceTransport(
-        port_allocator_.get(), network_settings_, TransportRole::CLIENT));
-    client_transport_->GetCanStartClosure().Run();
+    client_transport_.reset(new IceTransport(new TransportContext(
+        signal_strategy_.get(),
+        make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
+        network_settings_, TransportRole::CLIENT)));
     if (!client_authenticator_) {
       client_authenticator_.reset(new FakeAuthenticator(
           FakeAuthenticator::CLIENT, 0, FakeAuthenticator::ACCEPT, true));
@@ -208,14 +208,10 @@ class IceTransportTest : public testing::Test {
 
   base::TimeDelta transport_info_delay_;
 
-  scoped_ptr<cricket::PortAllocator> port_allocator_;
-
-  // scoped_ptr<IceTransportFactory> host_transport_factory_;
   scoped_ptr<IceTransport> host_transport_;
   TestTransportEventHandler host_event_handler_;
   scoped_ptr<FakeAuthenticator> host_authenticator_;
 
-  // scoped_ptr<IceTransportFactory> client_transport_factory_;
   scoped_ptr<IceTransport> client_transport_;
   TestTransportEventHandler client_event_handler_;
   scoped_ptr<FakeAuthenticator> client_authenticator_;

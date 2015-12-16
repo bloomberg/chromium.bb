@@ -18,7 +18,7 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/session_config.h"
-#include "remoting/protocol/transport.h"
+#include "remoting/protocol/transport_context.h"
 
 namespace remoting {
 
@@ -56,7 +56,7 @@ void ChromotingClient::SetConnectionToHostForTests(
 void ChromotingClient::Start(
     SignalStrategy* signal_strategy,
     scoped_ptr<protocol::Authenticator> authenticator,
-    scoped_ptr<protocol::TransportFactory> transport_factory,
+    scoped_refptr<protocol::TransportContext> transport_context,
     const std::string& host_jid,
     const std::string& capabilities) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -68,8 +68,8 @@ void ChromotingClient::Start(
   connection_->set_video_stub(video_renderer_->GetVideoStub());
   connection_->set_audio_stub(audio_decode_scheduler_.get());
 
-  connection_->Connect(signal_strategy, transport_factory.Pass(),
-                       authenticator.Pass(), host_jid, this);
+  connection_->Connect(signal_strategy, transport_context, authenticator.Pass(),
+                       host_jid, this);
 }
 
 void ChromotingClient::SetCapabilities(

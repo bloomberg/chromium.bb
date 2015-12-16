@@ -9,11 +9,12 @@
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "remoting/protocol/chromium_port_allocator_factory.h"
+#include "remoting/protocol/chromium_port_allocator.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_authenticator.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/p2p_stream_socket.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -90,17 +91,21 @@ class WebrtcTransportTest : public testing::Test {
     signal_strategy_.reset(new FakeSignalStrategy(kTestJid));
 
     host_transport_factory_.reset(new WebrtcTransportFactory(
-        jingle_glue::JingleThreadWrapper::current(), signal_strategy_.get(),
-        ChromiumPortAllocatorFactory::Create(network_settings_, nullptr),
-        TransportRole::SERVER));
+        jingle_glue::JingleThreadWrapper::current(),
+        new TransportContext(
+            signal_strategy_.get(),
+            make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
+            network_settings_, TransportRole::SERVER)));
     host_transport_ = host_transport_factory_->CreateTransport();
     host_authenticator_.reset(new FakeAuthenticator(
         FakeAuthenticator::HOST, 0, FakeAuthenticator::ACCEPT, false));
 
     client_transport_factory_.reset(new WebrtcTransportFactory(
-        jingle_glue::JingleThreadWrapper::current(), signal_strategy_.get(),
-        ChromiumPortAllocatorFactory::Create(network_settings_, nullptr),
-        TransportRole::CLIENT));
+        jingle_glue::JingleThreadWrapper::current(),
+        new TransportContext(
+            signal_strategy_.get(),
+            make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
+            network_settings_, TransportRole::CLIENT)));
     client_transport_ = client_transport_factory_->CreateTransport();
     host_authenticator_.reset(new FakeAuthenticator(
         FakeAuthenticator::CLIENT, 0, FakeAuthenticator::ACCEPT, false));

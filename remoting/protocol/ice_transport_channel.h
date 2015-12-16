@@ -26,6 +26,8 @@ class TransportChannelImpl;
 namespace remoting {
 namespace protocol {
 
+class TransportContext;
+
 class IceTransportChannel : public sigslot::has_slots<> {
  public:
   class Delegate {
@@ -59,13 +61,9 @@ class IceTransportChannel : public sigslot::has_slots<> {
 
   typedef base::Callback<void(scoped_ptr<P2PDatagramSocket>)> ConnectedCallback;
 
-  IceTransportChannel(cricket::PortAllocator* port_allocator,
-                      const NetworkSettings& network_settings,
-                      TransportRole role);
+  explicit IceTransportChannel(
+      scoped_refptr<TransportContext> transport_context);
   ~IceTransportChannel() override;
-
-  // Called by IceTransport when it has fresh Jingle info.
-  void OnCanStart();
 
   // Connects the channel and calls the |callback| after that.
   void Connect(const std::string& name,
@@ -87,7 +85,9 @@ class IceTransportChannel : public sigslot::has_slots<> {
   bool is_connected() const;
 
  private:
-  void DoStart();
+  void OnPortAllocatorCreated(
+      scoped_ptr<cricket::PortAllocator> port_allocator);
+
   void NotifyConnected();
 
   // Signal handlers for cricket::TransportChannel.
@@ -107,16 +107,14 @@ class IceTransportChannel : public sigslot::has_slots<> {
   // Tries to connect by restarting ICE. Called by |reconnect_timer_|.
   void TryReconnect();
 
-  cricket::PortAllocator* port_allocator_;
-  NetworkSettings network_settings_;
-  TransportRole role_;
+  scoped_refptr<TransportContext> transport_context_;
 
   std::string name_;
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
   ConnectedCallback callback_;
   std::string ice_username_fragment_;
 
-  bool can_start_;
+  scoped_ptr<cricket::PortAllocator> port_allocator_;
 
   std::string remote_ice_username_fragment_;
   std::string remote_ice_password_;

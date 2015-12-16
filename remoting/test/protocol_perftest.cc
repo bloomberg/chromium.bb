@@ -22,11 +22,12 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/fake_desktop_environment.h"
-#include "remoting/protocol/ice_transport_factory.h"
+#include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/session_config.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_frame_pump.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "remoting/test/fake_network_dispatcher.h"
@@ -224,21 +225,22 @@ class ProtocolPerfTest
     protocol::NetworkSettings network_settings(
         protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING);
 
-    scoped_ptr<FakePortAllocator> port_allocator(
-        FakePortAllocator::Create(fake_network_dispatcher_));
-    port_allocator->socket_factory()->SetBandwidth(GetParam().bandwidth,
-                                                   GetParam().max_buffers);
-    port_allocator->socket_factory()->SetLatency(GetParam().latency_average,
-                                                 GetParam().latency_stddev);
-    port_allocator->socket_factory()->set_out_of_order_rate(
+    scoped_ptr<FakePortAllocatorFactory> port_allocator_factory(
+        new FakePortAllocatorFactory(fake_network_dispatcher_));
+    port_allocator_factory->socket_factory()->SetBandwidth(
+        GetParam().bandwidth, GetParam().max_buffers);
+    port_allocator_factory->socket_factory()->SetLatency(
+        GetParam().latency_average, GetParam().latency_stddev);
+    port_allocator_factory->socket_factory()->set_out_of_order_rate(
         GetParam().out_of_order_rate);
-    scoped_ptr<protocol::TransportFactory> host_transport_factory(
-        new protocol::IceTransportFactory(
-            host_signaling_.get(), port_allocator.Pass(), network_settings,
-            protocol::TransportRole::SERVER));
+    scoped_refptr<protocol::TransportContext> transport_context(
+        new protocol::TransportContext(
+            host_signaling_.get(), port_allocator_factory.Pass(),
+            network_settings, protocol::TransportRole::SERVER));
 
     scoped_ptr<protocol::SessionManager> session_manager(
-        new protocol::JingleSessionManager(host_transport_factory.Pass()));
+        new protocol::JingleSessionManager(make_scoped_ptr(
+            new protocol::IceTransportFactory(transport_context))));
     session_manager->set_protocol_config(protocol_config_->Clone());
 
     // Encoder runs on a separate thread, main thread is used for everything
@@ -267,7 +269,6 @@ class ProtocolPerfTest
     scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::FromString(key_base64);
     ASSERT_TRUE(key_pair.get());
 
-
     protocol::SharedSecretHash host_secret;
     host_secret.hash_function = protocol::AuthenticationMethod::NONE;
     host_secret.value = "123456";
@@ -294,18 +295,18 @@ class ProtocolPerfTest
     client_context_.reset(
         new ClientContext(base::ThreadTaskRunnerHandle::Get()));
 
-    scoped_ptr<FakePortAllocator> port_allocator(
-        FakePortAllocator::Create(fake_network_dispatcher_));
-    port_allocator->socket_factory()->SetBandwidth(GetParam().bandwidth,
-                                                   GetParam().max_buffers);
-    port_allocator->socket_factory()->SetLatency(GetParam().latency_average,
-                                                 GetParam().latency_stddev);
-    port_allocator->socket_factory()->set_out_of_order_rate(
+    scoped_ptr<FakePortAllocatorFactory> port_allocator_factory(
+        new FakePortAllocatorFactory(fake_network_dispatcher_));
+    port_allocator_factory->socket_factory()->SetBandwidth(
+        GetParam().bandwidth, GetParam().max_buffers);
+    port_allocator_factory->socket_factory()->SetLatency(
+        GetParam().latency_average, GetParam().latency_stddev);
+    port_allocator_factory->socket_factory()->set_out_of_order_rate(
         GetParam().out_of_order_rate);
-    scoped_ptr<protocol::TransportFactory> client_transport_factory(
-        new protocol::IceTransportFactory(
-            client_signaling_.get(), port_allocator.Pass(), network_settings,
-            protocol::TransportRole::CLIENT));
+    scoped_refptr<protocol::TransportContext> transport_context(
+        new protocol::TransportContext(
+            host_signaling_.get(), port_allocator_factory.Pass(),
+            network_settings, protocol::TransportRole::SERVER));
 
     std::vector<protocol::AuthenticationMethod> auth_methods;
     auth_methods.push_back(protocol::AuthenticationMethod::Spake2(
@@ -322,7 +323,7 @@ class ProtocolPerfTest
         new ChromotingClient(client_context_.get(), this, this, nullptr));
     client_->set_protocol_config(protocol_config_->Clone());
     client_->Start(client_signaling_.get(), client_authenticator.Pass(),
-                   client_transport_factory.Pass(), kHostJid, std::string());
+                   transport_context, kHostJid, std::string());
   }
 
   void FetchPin(

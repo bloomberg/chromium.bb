@@ -12,7 +12,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/protocol/chromium_socket_factory.h"
-#include "remoting/protocol/network_settings.h"
 #include "url/gurl.h"
 
 namespace remoting {
@@ -131,35 +130,13 @@ void ChromiumPortAllocatorSession::OnURLFetchComplete(
 
 // static
 scoped_ptr<ChromiumPortAllocator> ChromiumPortAllocator::Create(
-    const scoped_refptr<net::URLRequestContextGetter>& url_context,
-    const NetworkSettings& network_settings) {
+    const scoped_refptr<net::URLRequestContextGetter>& url_context) {
   scoped_ptr<rtc::NetworkManager> network_manager(
       new rtc::BasicNetworkManager());
   scoped_ptr<rtc::PacketSocketFactory> socket_factory(
       new ChromiumPacketSocketFactory());
-  scoped_ptr<ChromiumPortAllocator> result(
-      new ChromiumPortAllocator(url_context, network_manager.Pass(),
-                            socket_factory.Pass()));
-
-  // We always use PseudoTcp to provide a reliable channel. It provides poor
-  // performance when combined with TCP-based transport, so we have to disable
-  // TCP ports. ENABLE_SHARED_UFRAG flag is specified so that the same username
-  // fragment is shared between all candidates for this channel.
-  int flags = cricket::PORTALLOCATOR_DISABLE_TCP |
-              cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
-              cricket::PORTALLOCATOR_ENABLE_IPV6;
-
-  if (!(network_settings.flags & NetworkSettings::NAT_TRAVERSAL_STUN))
-    flags |= cricket::PORTALLOCATOR_DISABLE_STUN;
-
-  if (!(network_settings.flags & NetworkSettings::NAT_TRAVERSAL_RELAY))
-    flags |= cricket::PORTALLOCATOR_DISABLE_RELAY;
-
-  result->set_flags(flags);
-  result->SetPortRange(network_settings.port_range.min_port,
-                       network_settings.port_range.max_port);
-
-  return result.Pass();
+  return make_scoped_ptr(new ChromiumPortAllocator(
+      url_context, network_manager.Pass(), socket_factory.Pass()));
 }
 
 ChromiumPortAllocator::ChromiumPortAllocator(
@@ -173,8 +150,7 @@ ChromiumPortAllocator::ChromiumPortAllocator(
       network_manager_(network_manager.Pass()),
       socket_factory_(socket_factory.Pass()) {}
 
-ChromiumPortAllocator::~ChromiumPortAllocator() {
-}
+ChromiumPortAllocator::~ChromiumPortAllocator() {}
 
 cricket::PortAllocatorSession* ChromiumPortAllocator::CreateSessionInternal(
     const std::string& content_name,
@@ -184,6 +160,17 @@ cricket::PortAllocatorSession* ChromiumPortAllocator::CreateSessionInternal(
   return new ChromiumPortAllocatorSession(
       this, content_name, component, ice_username_fragment, ice_password,
       stun_hosts(), relay_hosts(), relay_token(), url_context_);
+}
+
+ChromiumPortAllocatorFactory::ChromiumPortAllocatorFactory(
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
+    : url_request_context_getter_(url_request_context_getter) {}
+
+ChromiumPortAllocatorFactory::~ChromiumPortAllocatorFactory() {}
+
+scoped_ptr<cricket::HttpPortAllocatorBase>
+ChromiumPortAllocatorFactory::CreatePortAllocator() {
+  return ChromiumPortAllocator::Create(url_request_context_getter_);
 }
 
 }  // namespace protocol

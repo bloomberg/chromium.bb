@@ -19,9 +19,10 @@
 #include "remoting/protocol/chromium_port_allocator.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_authenticator.h"
-#include "remoting/protocol/ice_transport_factory.h"
+#include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/network_settings.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,11 +103,10 @@ class JingleSessionTest : public testing::Test {
     FakeSignalStrategy::Connect(host_signal_strategy_.get(),
                                 client_signal_strategy_.get());
 
-    scoped_ptr<TransportFactory> host_transport(new IceTransportFactory(
-        nullptr,
-        ChromiumPortAllocator::Create(nullptr, network_settings_).Pass(),
-        network_settings_, TransportRole::SERVER));
-    host_server_.reset(new JingleSessionManager(host_transport.Pass()));
+    host_server_.reset(new JingleSessionManager(
+        make_scoped_ptr(new IceTransportFactory(new TransportContext(
+            nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
+            network_settings_, TransportRole::SERVER)))));
     host_server_->Init(host_signal_strategy_.get(), &host_server_listener_);
 
     scoped_ptr<AuthenticatorFactory> factory(
@@ -114,12 +114,10 @@ class JingleSessionTest : public testing::Test {
           messages_till_start, auth_action, true));
     host_server_->set_authenticator_factory(factory.Pass());
 
-    scoped_ptr<TransportFactory> client_transport(new IceTransportFactory(
-        nullptr,
-        ChromiumPortAllocator::Create(nullptr, network_settings_).Pass(),
-        network_settings_, TransportRole::CLIENT));
-    client_server_.reset(
-        new JingleSessionManager(client_transport.Pass()));
+    client_server_.reset(new JingleSessionManager(
+        make_scoped_ptr(new IceTransportFactory(new TransportContext(
+            nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
+            network_settings_, TransportRole::CLIENT)))));
     client_server_->Init(client_signal_strategy_.get(),
                          &client_server_listener_);
   }

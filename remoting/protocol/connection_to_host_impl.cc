@@ -18,8 +18,10 @@
 #include "remoting/protocol/client_video_dispatcher.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/errors.h"
+#include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/transport.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_stub.h"
 
 namespace remoting {
@@ -66,7 +68,7 @@ const char* ConnectionToHost::StateToString(State state) {
 
 void ConnectionToHostImpl::Connect(
     SignalStrategy* signal_strategy,
-    scoped_ptr<TransportFactory> transport_factory,
+    scoped_refptr<TransportContext> transport_context,
     scoped_ptr<Authenticator> authenticator,
     const std::string& host_jid,
     HostEventCallback* event_callback) {
@@ -91,7 +93,8 @@ void ConnectionToHostImpl::Connect(
 
   signal_strategy_->AddListener(this);
 
-  session_manager_.reset(new JingleSessionManager(transport_factory.Pass()));
+  session_manager_.reset(new JingleSessionManager(
+      make_scoped_ptr(new IceTransportFactory(transport_context))));
   session_manager_->set_protocol_config(candidate_config_->Clone());
   session_manager_->Init(signal_strategy_, this);
 

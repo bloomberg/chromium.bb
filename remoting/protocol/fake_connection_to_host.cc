@@ -5,6 +5,7 @@
 #include "remoting/protocol/fake_connection_to_host.h"
 
 #include "remoting/protocol/authenticator.h"
+#include "remoting/protocol/transport_context.h"
 
 namespace remoting {
 namespace test {
@@ -36,7 +37,7 @@ void FakeConnectionToHost::set_audio_stub(protocol::AudioStub* audio_stub) {
 
 void FakeConnectionToHost::Connect(
     SignalStrategy* signal_strategy,
-    scoped_ptr<protocol::TransportFactory> transport_factory,
+    scoped_refptr<protocol::TransportContext> transport_context,
     scoped_ptr<protocol::Authenticator> authenticator,
     const std::string& host_jid,
     HostEventCallback* event_callback) {

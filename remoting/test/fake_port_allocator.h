@@ -9,7 +9,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/protocol/port_allocator_factory.h"
 #include "third_party/webrtc/p2p/client/httpportallocator.h"
+
+namespace rtc {
+class NetworkManager;
+}  // namespace rtc
 
 namespace remoting {
 
@@ -18,12 +23,9 @@ class FakePacketSocketFactory;
 
 class FakePortAllocator : public cricket::HttpPortAllocatorBase {
  public:
-  static scoped_ptr<FakePortAllocator> Create(
-      scoped_refptr<FakeNetworkDispatcher> fake_network_dispatcher);
-
+  FakePortAllocator(rtc::NetworkManager* network_manager,
+                    FakePacketSocketFactory* socket_factory);
   ~FakePortAllocator() override;
-
-  FakePacketSocketFactory* socket_factory() { return socket_factory_.get(); }
 
   // cricket::BasicPortAllocator overrides.
   cricket::PortAllocatorSession* CreateSessionInternal(
@@ -33,13 +35,25 @@ class FakePortAllocator : public cricket::HttpPortAllocatorBase {
       const std::string& ice_password) override;
 
  private:
-  FakePortAllocator(scoped_ptr<rtc::NetworkManager> network_manager,
-                    scoped_ptr<FakePacketSocketFactory> socket_factory);
+  DISALLOW_COPY_AND_ASSIGN(FakePortAllocator);
+};
 
+class FakePortAllocatorFactory : public protocol::PortAllocatorFactory {
+ public:
+  FakePortAllocatorFactory(
+      scoped_refptr<FakeNetworkDispatcher> fake_network_dispatcher);
+  ~FakePortAllocatorFactory() override;
+
+  FakePacketSocketFactory* socket_factory() { return socket_factory_.get(); }
+
+   // PortAllocatorFactory interface.
+  scoped_ptr<cricket::HttpPortAllocatorBase> CreatePortAllocator() override;
+
+ private:
   scoped_ptr<rtc::NetworkManager> network_manager_;
   scoped_ptr<FakePacketSocketFactory> socket_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakePortAllocator);
+  DISALLOW_COPY_AND_ASSIGN(FakePortAllocatorFactory);
 };
 
 }  // namespace remoting

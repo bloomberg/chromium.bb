@@ -9,22 +9,24 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "remoting/protocol/port_allocator_factory.h"
 #include "third_party/webrtc/p2p/client/httpportallocator.h"
+
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace remoting {
 namespace protocol {
 
 struct NetworkSettings;
 
-// An implementation of cricket::PortAllocator for libjingle that
-// uses Chromium's network stack and configures itself according
-// to the specified NetworkSettings.
+// An implementation of cricket::PortAllocator that uses Chromium's network
+// stack.
 class ChromiumPortAllocator : public cricket::HttpPortAllocatorBase {
  public:
   static scoped_ptr<ChromiumPortAllocator> Create(
-      const scoped_refptr<net::URLRequestContextGetter>& url_context,
-      const NetworkSettings& network_settings);
+      const scoped_refptr<net::URLRequestContextGetter>& url_context);
 
   ~ChromiumPortAllocator() override;
 
@@ -46,6 +48,21 @@ class ChromiumPortAllocator : public cricket::HttpPortAllocatorBase {
   scoped_ptr<rtc::PacketSocketFactory> socket_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromiumPortAllocator);
+};
+
+class ChromiumPortAllocatorFactory : public PortAllocatorFactory {
+ public:
+  ChromiumPortAllocatorFactory(
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+  ~ChromiumPortAllocatorFactory() override;
+
+   // PortAllocatorFactory interface.
+  scoped_ptr<cricket::HttpPortAllocatorBase> CreatePortAllocator() override;
+
+ private:
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromiumPortAllocatorFactory);
 };
 
 }  // namespace protocol

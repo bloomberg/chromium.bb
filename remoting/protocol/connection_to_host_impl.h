@@ -54,7 +54,7 @@ class ConnectionToHostImpl : public ConnectionToHost,
   void set_video_stub(VideoStub* video_stub) override;
   void set_audio_stub(AudioStub* audio_stub) override;
   void Connect(SignalStrategy* signal_strategy,
-               scoped_ptr<TransportFactory> transport_factory,
+               scoped_refptr<TransportContext> transport_context,
                scoped_ptr<Authenticator> authenticator,
                const std::string& host_jid,
                HostEventCallback* event_callback) override;

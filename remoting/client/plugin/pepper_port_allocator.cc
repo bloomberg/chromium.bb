@@ -225,17 +225,9 @@ PepperPortAllocator::PepperPortAllocator(
       instance_(instance),
       network_manager_(network_manager.Pass()),
       socket_factory_(socket_factory.Pass()) {
-  // TCP transport is disabled becase PseudoTCP works poorly over
-  // it. ENABLE_SHARED_UFRAG flag is specified so that the same
-  // username fragment is shared between all candidates for this
-  // channel.
-  set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
-            cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG|
-            cricket::PORTALLOCATOR_ENABLE_IPV6);
 }
 
-PepperPortAllocator::~PepperPortAllocator() {
-}
+PepperPortAllocator::~PepperPortAllocator() {}
 
 cricket::PortAllocatorSession* PepperPortAllocator::CreateSessionInternal(
     const std::string& content_name,
@@ -245,6 +237,17 @@ cricket::PortAllocatorSession* PepperPortAllocator::CreateSessionInternal(
    return new PepperPortAllocatorSession(
        this, content_name, component, ice_username_fragment, ice_password,
        stun_hosts(), relay_hosts(), relay_token(), instance_);
+}
+
+PepperPortAllocatorFactory::PepperPortAllocatorFactory(
+    const pp::InstanceHandle& instance)
+    : instance_(instance) {}
+
+PepperPortAllocatorFactory::~PepperPortAllocatorFactory() {}
+
+scoped_ptr<cricket::HttpPortAllocatorBase>
+PepperPortAllocatorFactory::CreatePortAllocator() {
+  return PepperPortAllocator::Create(instance_);
 }
 
 }  // namespace remoting

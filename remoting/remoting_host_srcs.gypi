@@ -218,8 +218,6 @@
       'host/screen_resolution.h',
       'host/server_log_entry_host.cc',
       'host/server_log_entry_host.h',
-      'host/session_manager_factory.cc',
-      'host/session_manager_factory.h',
       'host/shaped_desktop_capturer.cc',
       'host/shaped_desktop_capturer.h',
       'host/shutdown_watchdog.cc',

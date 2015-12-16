@@ -49,11 +49,6 @@ const char kWebRtcSDPMLineIndex[] = "sdpMLineIndex";
 const char kVideoLabel[] = "cast_video_label";
 const char kStreamLabel[] = "stream_label";
 
-// Default STUN server used to construct
-// ChromiumPortAllocator for the PeerConnection.
-const char kDefaultStunHost[] = "stun.l.google.com";
-const int kDefaultStunPort = 19302;
-
 const char kWorkerThreadName[] = "CastExtensionSessionWorkerThread";
 
 // Interval between each call to PollPeerConnectionStats().
@@ -491,17 +486,14 @@ bool CastExtensionSession::InitializePeerConnection() {
   constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
                            webrtc::MediaConstraintsInterface::kValueTrue);
 
-  rtc::scoped_ptr<protocol::ChromiumPortAllocator> port_allocator(
-      protocol::ChromiumPortAllocator::Create(url_request_context_getter_,
-                                              network_settings_)
-          .release());
-  std::vector<rtc::SocketAddress> stun_hosts;
-  stun_hosts.push_back(rtc::SocketAddress(kDefaultStunHost, kDefaultStunPort));
-  port_allocator->SetStunHosts(stun_hosts);
+  scoped_ptr<cricket::PortAllocator> port_allocator =
+      protocol::ChromiumPortAllocator::Create(url_request_context_getter_);
 
   webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
   peer_connection_ = peer_conn_factory_->CreatePeerConnection(
-      rtc_config, &constraints, port_allocator.Pass(), nullptr, this);
+      rtc_config, &constraints,
+      rtc::scoped_ptr<cricket::PortAllocator>(port_allocator.release()),
+      nullptr, this);
 
   if (!peer_connection_.get()) {
     CleanupPeerConnection();

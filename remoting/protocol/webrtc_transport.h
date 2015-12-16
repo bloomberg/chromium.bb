@@ -25,12 +25,13 @@ class FakeAudioDeviceModule;
 namespace remoting {
 namespace protocol {
 
+class TransportContext;
+
 class WebrtcTransport : public Transport,
                         public webrtc::PeerConnectionObserver {
  public:
   WebrtcTransport(rtc::Thread* worker_thread,
-                  PortAllocatorFactory* port_allocator_factory,
-                  TransportRole role);
+                  scoped_refptr<TransportContext> transport_context);
   ~WebrtcTransport() override;
 
   webrtc::PeerConnectionInterface* peer_connection() {
@@ -49,6 +50,9 @@ class WebrtcTransport : public Transport,
   WebrtcTransport* AsWebrtcTransport() override;
 
  private:
+  void OnPortAllocatorCreated(
+      scoped_ptr<cricket::PortAllocator> port_allocator);
+
   void OnLocalSessionDescriptionCreated(
       scoped_ptr<webrtc::SessionDescriptionInterface> description,
       const std::string& error);
@@ -80,8 +84,7 @@ class WebrtcTransport : public Transport,
 
   base::ThreadChecker thread_checker_;
 
-  PortAllocatorFactory* port_allocator_factory_;
-  TransportRole role_;
+  scoped_refptr<TransportContext> transport_context_;
   EventHandler* event_handler_ = nullptr;
   rtc::Thread* worker_thread_;
 
@@ -110,11 +113,8 @@ class WebrtcTransport : public Transport,
 
 class WebrtcTransportFactory : public TransportFactory {
  public:
-  WebrtcTransportFactory(
-      rtc::Thread* worker_thread,
-      SignalStrategy* signal_strategy,
-      scoped_ptr<PortAllocatorFactory> port_allocator_factory,
-      TransportRole role);
+  WebrtcTransportFactory(rtc::Thread* worker_thread,
+                         scoped_refptr<TransportContext> transport_context);
   ~WebrtcTransportFactory() override;
 
   // TransportFactory interface.
@@ -122,9 +122,7 @@ class WebrtcTransportFactory : public TransportFactory {
 
  private:
   rtc::Thread* worker_thread_;
-  SignalStrategy* signal_strategy_;
-  scoped_ptr<PortAllocatorFactory> port_allocator_factory_;
-  TransportRole role_;
+  scoped_refptr<TransportContext> transport_context_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcTransportFactory);
 };

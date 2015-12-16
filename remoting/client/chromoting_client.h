@@ -27,7 +27,7 @@ namespace remoting {
 
 namespace protocol {
 class CandidateSessionConfig;
-class TransportFactory;
+class TransportContext;
 }  // namespace protocol
 
 class AudioDecodeScheduler;
@@ -62,7 +62,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // must outlive the client.
   void Start(SignalStrategy* signal_strategy,
              scoped_ptr<protocol::Authenticator> authenticator,
-             scoped_ptr<protocol::TransportFactory> transport_factory,
+             scoped_refptr<protocol::TransportContext> transport_context,
              const std::string& host_jid,
              const std::string& capabilities);
 

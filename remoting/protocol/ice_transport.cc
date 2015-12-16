@@ -10,6 +10,7 @@
 #include "remoting/protocol/pseudotcp_channel_factory.h"
 #include "remoting/protocol/secure_channel_factory.h"
 #include "remoting/protocol/stream_channel_factory.h"
+#include "remoting/protocol/transport_context.h"
 
 namespace remoting {
 namespace protocol {
@@ -22,22 +23,14 @@ const int kTransportInfoSendDelayMs = 20;
 // Name of the multiplexed channel.
 static const char kMuxChannelName[] = "mux";
 
-IceTransport::IceTransport(cricket::PortAllocator* port_allocator,
-                           const NetworkSettings& network_settings,
-                           TransportRole role)
-    : port_allocator_(port_allocator),
-      network_settings_(network_settings),
-      role_(role),
-      weak_factory_(this) {}
+IceTransport::IceTransport(scoped_refptr<TransportContext> transport_context)
+    : transport_context_(transport_context), weak_factory_(this) {
+  transport_context->Prepare();
+}
 
 IceTransport::~IceTransport() {
   channel_multiplexer_.reset();
   DCHECK(channels_.empty());
-}
-
-base::Closure IceTransport::GetCanStartClosure() {
-  return base::Bind(&IceTransport::OnCanStart,
-                    weak_factory_.GetWeakPtr());
 }
 
 void IceTransport::Start(Transport::EventHandler* event_handler,
@@ -95,24 +88,12 @@ StreamChannelFactory* IceTransport::GetMultiplexedChannelFactory() {
   return channel_multiplexer_.get();
 }
 
-void IceTransport::OnCanStart() {
-  DCHECK(!can_start_);
-
-  can_start_ = true;
-  for (ChannelsMap::iterator it = channels_.begin(); it != channels_.end();
-       ++it) {
-    it->second->OnCanStart();
-  }
-}
-
 void IceTransport::CreateChannel(const std::string& name,
                                  const ChannelCreatedCallback& callback) {
   DCHECK(!channels_[name]);
 
   scoped_ptr<IceTransportChannel> channel(
-      new IceTransportChannel(port_allocator_, network_settings_, role_));
-  if (can_start_)
-    channel->OnCanStart();
+      new IceTransportChannel(transport_context_));
   channel->Connect(name, this, callback);
   AddPendingRemoteTransportInfo(channel.get());
   channels_[name] = channel.release();
@@ -203,6 +184,16 @@ void IceTransport::SendTransportInfo() {
   event_handler_->OnOutgoingTransportInfo(
       pending_transport_info_message_->ToXml());
   pending_transport_info_message_.reset();
+}
+
+IceTransportFactory::IceTransportFactory(
+    scoped_refptr<TransportContext> transport_context)
+    : transport_context_(transport_context) {}
+
+IceTransportFactory::~IceTransportFactory() {}
+
+scoped_ptr<Transport> IceTransportFactory::CreateTransport() {
+  return make_scoped_ptr(new IceTransport(transport_context_.get()));
 }
 
 }  // namespace protocol

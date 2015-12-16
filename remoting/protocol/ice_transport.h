@@ -27,15 +27,9 @@ class IceTransport : public Transport,
                      public IceTransportChannel::Delegate,
                      public DatagramChannelFactory {
  public:
-  // |port_allocator| must outlive the session.
-  IceTransport(cricket::PortAllocator* port_allocator,
-               const NetworkSettings& network_settings,
-               TransportRole role);
+  // |transport_context| must outlive the session.
+  explicit IceTransport(scoped_refptr<TransportContext> transport_context);
   ~IceTransport() override;
-
-  // Returns a closure that must be called before transport channels start
-  // connecting .
-  base::Closure GetCanStartClosure();
 
   // Transport interface.
   void Start(EventHandler* event_handler,
@@ -46,8 +40,6 @@ class IceTransport : public Transport,
 
  private:
   typedef std::map<std::string, IceTransportChannel*> ChannelsMap;
-
-  void OnCanStart();
 
   // DatagramChannelFactory interface.
   void CreateChannel(const std::string& name,
@@ -76,11 +68,7 @@ class IceTransport : public Transport,
   // Sends transport-info message with candidates from |pending_candidates_|.
   void SendTransportInfo();
 
-  cricket::PortAllocator* port_allocator_;
-  NetworkSettings network_settings_;
-  TransportRole role_;
-
-  bool can_start_ = false;
+  scoped_refptr<TransportContext> transport_context_;
 
   Transport::EventHandler* event_handler_ = nullptr;
 
@@ -100,6 +88,20 @@ class IceTransport : public Transport,
   base::WeakPtrFactory<IceTransport> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IceTransport);
+};
+
+class IceTransportFactory : public TransportFactory {
+ public:
+  IceTransportFactory(scoped_refptr<TransportContext> transport_context);
+  ~IceTransportFactory() override;
+
+  // TransportFactory interface.
+  scoped_ptr<Transport> CreateTransport() override;
+
+ private:
+  scoped_refptr<TransportContext> transport_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(IceTransportFactory);
 };
 
 }  // namespace protocol

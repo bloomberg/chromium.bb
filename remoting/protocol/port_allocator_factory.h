@@ -5,7 +5,11 @@
 #ifndef REMOTING_PROTOCOL_PORT_ALLOCATOR_FACTORY_H_
 #define REMOTING_PROTOCOL_PORT_ALLOCATOR_FACTORY_H_
 
-#include "third_party/webrtc/p2p/base/portallocator.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace cricket {
+class HttpPortAllocatorBase;
+}  // namespace cricket
 
 namespace remoting {
 namespace protocol {
@@ -14,7 +18,7 @@ namespace protocol {
 // for ICE negotiation.
 class PortAllocatorFactory {
  public:
-  virtual cricket::PortAllocator* CreatePortAllocator() = 0;
+  virtual scoped_ptr<cricket::HttpPortAllocatorBase> CreatePortAllocator() = 0;
 
   virtual ~PortAllocatorFactory() {}
 };

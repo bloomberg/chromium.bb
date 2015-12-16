@@ -52,7 +52,7 @@
 #include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/ice_transport_factory.h"
+#include "remoting/protocol/transport_context.h"
 #include "url/gurl.h"
 
 namespace remoting {
@@ -693,10 +693,11 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
       local_jid, base::Bind(&ChromotingInstance::SendOutgoingIq,
                             weak_factory_.GetWeakPtr())));
 
-  // Create TransportFactory.
-  scoped_ptr<protocol::TransportFactory> transport_factory(
-      new protocol::IceTransportFactory(
-          signal_strategy_.get(), PepperPortAllocator::Create(this).Pass(),
+  // Create TransportContext.
+  scoped_refptr<protocol::TransportContext> transport_context(
+      new protocol::TransportContext(
+          signal_strategy_.get(),
+          make_scoped_ptr(new PepperPortAllocatorFactory(this)),
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT));
@@ -731,7 +732,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   // Kick off the connection.
   client_->Start(signal_strategy_.get(), authenticator.Pass(),
-                 transport_factory.Pass(), host_jid, capabilities);
+                 transport_context, host_jid, capabilities);
 
   // Start timer that periodically sends perf stats.
   stats_update_timer_.Start(

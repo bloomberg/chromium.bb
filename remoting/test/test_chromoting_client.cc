@@ -19,11 +19,11 @@
 #include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/protocol/chromium_port_allocator.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/ice_transport_factory.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/third_party_client_authenticator.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 #include "remoting/test/connection_setup_info.h"
 #include "remoting/test/test_video_renderer.h"
@@ -122,14 +122,13 @@ void TestChromotingClient::StartConnection(
   protocol::NetworkSettings network_settings(
       protocol::NetworkSettings::NAT_TRAVERSAL_FULL);
 
-  scoped_ptr<protocol::ChromiumPortAllocator> port_allocator(
-      protocol::ChromiumPortAllocator::Create(request_context_getter,
-                                              network_settings));
+  scoped_ptr<protocol::ChromiumPortAllocatorFactory> port_allocator_factory(
+      new protocol::ChromiumPortAllocatorFactory(request_context_getter));
 
-  scoped_ptr<protocol::TransportFactory> transport_factory(
-      new protocol::IceTransportFactory(
-          signal_strategy_.get(), port_allocator.Pass(), network_settings,
-          protocol::TransportRole::CLIENT));
+  scoped_refptr<protocol::TransportContext> transport_context(
+      new protocol::TransportContext(
+          signal_strategy_.get(), port_allocator_factory.Pass(),
+          network_settings, protocol::TransportRole::CLIENT));
 
   scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
       token_fetcher(new TokenFetcherProxy(
@@ -153,7 +152,7 @@ void TestChromotingClient::StartConnection(
           connection_setup_info.auth_methods));
 
   chromoting_client_->Start(
-      signal_strategy_.get(), authenticator.Pass(), transport_factory.Pass(),
+      signal_strategy_.get(), authenticator.Pass(), transport_context,
       connection_setup_info.host_jid, connection_setup_info.capabilities);
 }
 

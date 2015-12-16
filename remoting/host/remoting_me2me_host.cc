@@ -63,7 +63,6 @@
 #include "remoting/host/oauth_token_getter_impl.h"
 #include "remoting/host/pairing_registry_delegate.h"
 #include "remoting/host/policy_watcher.h"
-#include "remoting/host/session_manager_factory.h"
 #include "remoting/host/shutdown_watchdog.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/host/single_window_desktop_environment.h"
@@ -75,13 +74,15 @@
 #include "remoting/host/video_frame_recorder_host_extension.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
-#include "remoting/protocol/chromium_port_allocator_factory.h"
+#include "remoting/protocol/chromium_port_allocator.h"
+#include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/port_range.h"
 #include "remoting/protocol/token_validator.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_transport.h"
 #include "remoting/signaling/push_notification_subscriber.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
@@ -1496,39 +1497,34 @@ void HostProcess::StartHost() {
     network_settings.port_range.max_port = NetworkSettings::kDefaultMaxPort;
   }
 
-  scoped_ptr<protocol::SessionManager> session_manager;
+  scoped_refptr<protocol::TransportContext> transport_context =
+      new protocol::TransportContext(
+          signal_strategy_.get(),
+          make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory(
+              context_->url_request_context_getter())),
+          network_settings, protocol::TransportRole::SERVER);
+  scoped_ptr<protocol::TransportFactory> transport_factory;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableWebrtc)) {
 #if !defined(NDEBUG)
-    network_settings.flags = protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING;
-
-    scoped_ptr<protocol::PortAllocatorFactory> port_allocator_factory =
-        protocol::ChromiumPortAllocatorFactory::Create(
-            network_settings, context_->url_request_context_getter());
-
     jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
     // The network thread is also used as worker thread for webrtc.
     //
     // TODO(sergeyu): Figure out if we would benefit from using a separate
     // thread as a worker thread.
-    scoped_ptr<protocol::TransportFactory> transport_factory(
-        new protocol::WebrtcTransportFactory(
-            jingle_glue::JingleThreadWrapper::current(), signal_strategy_.get(),
-            std::move(port_allocator_factory),
-            protocol::TransportRole::SERVER));
-
-    session_manager.reset(
-        new protocol::JingleSessionManager(transport_factory.Pass()));
+    transport_factory.reset(new protocol::WebrtcTransportFactory(
+        jingle_glue::JingleThreadWrapper::current(), transport_context));
 #else  // !defined(NDEBUG)
     LOG(ERROR) << "WebRTC is enabled only in debug builds.";
     ShutdownHost(kUsageExitCode);
     return;
 #endif  // defined(NDEBUG)
   } else {
-    session_manager =
-        CreateHostSessionManager(signal_strategy_.get(), network_settings,
-                                 context_->url_request_context_getter());
+    transport_factory.reset(
+        new protocol::IceTransportFactory(transport_context));
   }
+  scoped_ptr<protocol::SessionManager> session_manager(
+      new protocol::JingleSessionManager(transport_factory.Pass()));
 
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();

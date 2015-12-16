@@ -7,6 +7,7 @@
 #include "remoting/test/fake_network_dispatcher.h"
 #include "remoting/test/fake_network_manager.h"
 #include "remoting/test/fake_socket_factory.h"
+#include "third_party/webrtc/p2p/client/basicportallocator.h"
 
 namespace remoting {
 
@@ -82,35 +83,10 @@ void FakePortAllocatorSession::SendSessionRequest(
 
 }  // namespace
 
-// static
-scoped_ptr<FakePortAllocator> FakePortAllocator::Create(
-    scoped_refptr<FakeNetworkDispatcher> fake_network_dispatcher) {
-  scoped_ptr<FakePacketSocketFactory> socket_factory(
-      new FakePacketSocketFactory(fake_network_dispatcher.get()));
-  scoped_ptr<rtc::NetworkManager> network_manager(
-      new FakeNetworkManager(socket_factory->GetAddress()));
-
-  return make_scoped_ptr(
-      new FakePortAllocator(network_manager.Pass(), socket_factory.Pass()));
-}
-
-FakePortAllocator::FakePortAllocator(
-    scoped_ptr<rtc::NetworkManager> network_manager,
-    scoped_ptr<FakePacketSocketFactory> socket_factory)
-    : HttpPortAllocatorBase(network_manager.get(),
-                            socket_factory.get(),
-                            std::string()),
-      network_manager_(network_manager.Pass()),
-      socket_factory_(socket_factory.Pass()) {
-  set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
-            cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
-            cricket::PORTALLOCATOR_ENABLE_IPV6 |
-            cricket::PORTALLOCATOR_DISABLE_STUN |
-            cricket::PORTALLOCATOR_DISABLE_RELAY);
-}
-
-FakePortAllocator::~FakePortAllocator() {
-}
+FakePortAllocator::FakePortAllocator(rtc::NetworkManager* network_manager,
+                                     FakePacketSocketFactory* socket_factory)
+    : HttpPortAllocatorBase(network_manager, socket_factory, std::string()) {}
+FakePortAllocator::~FakePortAllocator() {}
 
 cricket::PortAllocatorSession* FakePortAllocator::CreateSessionInternal(
     const std::string& content_name,
@@ -120,6 +96,21 @@ cricket::PortAllocatorSession* FakePortAllocator::CreateSessionInternal(
   return new FakePortAllocatorSession(
       this, content_name, component, ice_username_fragment, ice_password,
       stun_hosts(), relay_hosts(), relay_token());
+}
+
+FakePortAllocatorFactory::FakePortAllocatorFactory(
+    scoped_refptr<FakeNetworkDispatcher> fake_network_dispatcher) {
+  socket_factory_.reset(
+      new FakePacketSocketFactory(fake_network_dispatcher.get()));
+  network_manager_.reset(new FakeNetworkManager(socket_factory_->GetAddress()));
+}
+
+FakePortAllocatorFactory::~FakePortAllocatorFactory() {}
+
+scoped_ptr<cricket::HttpPortAllocatorBase>
+FakePortAllocatorFactory::CreatePortAllocator() {
+  return make_scoped_ptr(
+      new FakePortAllocator(network_manager_.get(), socket_factory_.get()));
 }
 
 }  // namespace remoting

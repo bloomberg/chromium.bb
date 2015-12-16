@@ -10,6 +10,7 @@
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "remoting/protocol/transport_context.h"
 #include "third_party/libjingle/source/talk/app/webrtc/test/fakeconstraints.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/modules/audio_device/include/fake_audio_device.h"
@@ -99,11 +100,10 @@ class SetSessionDescriptionObserver
 
 }  // namespace
 
-WebrtcTransport::WebrtcTransport(rtc::Thread* worker_thread,
-                                 PortAllocatorFactory* port_allocator_factory,
-                                 TransportRole role)
-    : port_allocator_factory_(port_allocator_factory),
-      role_(role),
+WebrtcTransport::WebrtcTransport(
+    rtc::Thread* worker_thread,
+    scoped_refptr<TransportContext> transport_context)
+    : transport_context_(transport_context),
       worker_thread_(worker_thread),
       weak_factory_(this) {}
 
@@ -114,8 +114,14 @@ void WebrtcTransport::Start(EventHandler* event_handler,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   event_handler_ = event_handler;
-
   // TODO(sergeyu): Use the |authenticator| to authenticate PeerConnection.
+
+  transport_context_->CreatePortAllocator(base::Bind(
+      &WebrtcTransport::OnPortAllocatorCreated, weak_factory_.GetWeakPtr()));
+}
+
+void WebrtcTransport::OnPortAllocatorCreated(
+    scoped_ptr<cricket::PortAllocator> port_allocator) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
   // TODO(sergeyu): Investigate if it's possible to avoid Send().
@@ -136,16 +142,15 @@ void WebrtcTransport::Start(EventHandler* event_handler,
   constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
                            webrtc::MediaConstraintsInterface::kValueTrue);
 
-  rtc::scoped_ptr<cricket::PortAllocator> port_allocator(
-      port_allocator_factory_->CreatePortAllocator());
-
   peer_connection_ = peer_connection_factory_->CreatePeerConnection(
-      rtc_config, &constraints, std::move(port_allocator), nullptr, this);
+      rtc_config, &constraints,
+      rtc::scoped_ptr<cricket::PortAllocator>(port_allocator.release()),
+      nullptr, this);
 
-  data_stream_adapter_.Initialize(peer_connection_,
-                                  role_ == TransportRole::SERVER);
+  data_stream_adapter_.Initialize(
+      peer_connection_, transport_context_->role() == TransportRole::SERVER);
 
-  if (role_ == TransportRole::SERVER)
+  if (transport_context_->role() == TransportRole::SERVER)
     RequestNegotiation();
 }
 
@@ -162,7 +167,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
       QName(kTransportNamespace, "session-description"));
   if (session_description) {
     webrtc::PeerConnectionInterface::SignalingState expected_state =
-        role_ == TransportRole::CLIENT
+        transport_context_->role() == TransportRole::CLIENT
             ? webrtc::PeerConnectionInterface::kStable
             : webrtc::PeerConnectionInterface::kHaveLocalOffer;
     if (peer_connection_->signaling_state() != expected_state) {
@@ -365,7 +370,7 @@ void WebrtcTransport::OnDataChannel(
 void WebrtcTransport::OnRenegotiationNeeded() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (role_ == TransportRole::SERVER) {
+  if (transport_context_->role() == TransportRole::SERVER) {
     RequestNegotiation();
   } else {
     // TODO(sergeyu): Is it necessary to support renegotiation initiated by the
@@ -375,7 +380,7 @@ void WebrtcTransport::OnRenegotiationNeeded() {
 }
 
 void WebrtcTransport::RequestNegotiation() {
-  DCHECK(role_ == TransportRole::SERVER);
+  DCHECK(transport_context_->role() == TransportRole::SERVER);
 
   if (!negotiation_pending_) {
     negotiation_pending_ = true;
@@ -440,7 +445,7 @@ void WebrtcTransport::EnsurePendingTransportInfoMessage() {
 }
 
 void WebrtcTransport::SendOffer() {
-  DCHECK(role_ == TransportRole::SERVER);
+  DCHECK(transport_context_->role() == TransportRole::SERVER);
 
   DCHECK(negotiation_pending_);
   negotiation_pending_ = false;
@@ -488,19 +493,15 @@ void WebrtcTransport::AddPendingCandidatesIfPossible() {
 
 WebrtcTransportFactory::WebrtcTransportFactory(
     rtc::Thread* worker_thread,
-    SignalStrategy* signal_strategy,
-    scoped_ptr<PortAllocatorFactory> port_allocator_factory,
-    TransportRole role)
+    scoped_refptr<TransportContext> transport_context)
     : worker_thread_(worker_thread),
-      signal_strategy_(signal_strategy),
-      port_allocator_factory_(std::move(port_allocator_factory)),
-      role_(role) {}
+      transport_context_(transport_context) {}
 
 WebrtcTransportFactory::~WebrtcTransportFactory() {}
 
 scoped_ptr<Transport> WebrtcTransportFactory::CreateTransport() {
-  return make_scoped_ptr(new WebrtcTransport(
-      worker_thread_, port_allocator_factory_.get(), role_));
+  return make_scoped_ptr(
+      new WebrtcTransport(worker_thread_, transport_context_.get()));
 }
 
 }  // namespace protocol
