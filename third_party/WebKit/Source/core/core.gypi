@@ -920,6 +920,8 @@
             'animation/SVGInterpolation.h',
             'animation/SVGInterpolationType.cpp',
             'animation/SVGInterpolationType.h',
+            'animation/SVGLengthInterpolationType.cpp',
+            'animation/SVGLengthInterpolationType.h',
             'animation/SVGNumberInterpolationType.cpp',
             'animation/SVGNumberInterpolationType.h',
             'animation/SVGNumberListInterpolationType.cpp',

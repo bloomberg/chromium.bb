@@ -25,7 +25,7 @@ protected:
 
     PassOwnPtr<InterpolationValue> maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValue&, ConversionCheckers&) const override;
     PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const override;
-    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
+    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const override;
 };
 
 } // namespace blink
