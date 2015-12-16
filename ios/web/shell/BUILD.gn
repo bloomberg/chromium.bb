@@ -11,6 +11,34 @@ ios_app("ios_web_shell") {
   code_signing_identity = ""
 
   sources = [
+    "web_exe_main.mm",
+  ]
+
+  deps = [
+    ":ios_web_shell_lib",
+  ]
+
+  ldflags = [
+    "-Xlinker",
+    "-objc_abi_version",
+    "-Xlinker",
+    "2",
+  ]
+
+  # TODO(crbug.com/546283): once gn supports bundle resources, add support for
+  # the following gyp code:
+  #
+  # 'mac_bundle_resources': [
+  #   'shell/Default.png',
+  #   'shell/MainView.xib',
+  #   'shell/textfield_background@2x.png',
+  #   'shell/toolbar_back@2x.png',
+  #   'shell/toolbar_forward@2x.png',
+  # ],
+}
+
+source_set("shell") {
+  sources = [
     "app_delegate.h",
     "app_delegate.mm",
     "shell_browser_state.h",
@@ -27,7 +55,6 @@ ios_app("ios_web_shell") {
     "shell_web_main_parts.mm",
     "view_controller.h",
     "view_controller.mm",
-    "web_exe_main.mm",
   ]
 
   deps = [
@@ -43,28 +70,10 @@ ios_app("ios_web_shell") {
     "//build/config/sanitizers:deps",
   ]
 
-  ldflags = [
-    "-Xlinker",
-    "-objc_abi_version",
-    "-Xlinker",
-    "2",
-  ]
-
   libs = [
     "CoreGraphics.framework",
     "CoreFoundation.framework",
     "Foundation.framework",
     "UIKit.framework",
   ]
-
-  # TODO(crbug.com/546283): once gn supports bundle resources, add support for
-  # the following gyp code:
-  #
-  # 'mac_bundle_resources': [
-  #   'shell/Default.png',
-  #   'shell/MainView.xib',
-  #   'shell/textfield_background@2x.png',
-  #   'shell/toolbar_back@2x.png',
-  #   'shell/toolbar_forward@2x.png',
-  # ],
 }
