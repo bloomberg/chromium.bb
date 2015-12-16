@@ -44,13 +44,16 @@ source_set("sources") {
   ]
 
   deps = [
-    "//base",
     "//base:i18n",
-    "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/converters/network",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
+  ]
+
+  public_deps = [
+    "//base",
+    "//mojo/application/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
   ]
@@ -88,6 +91,7 @@ source_set("test_support") {
 
   public_deps = [
     ":cpp",
+    "//testing/gtest",
   ]
 
   deps = [
@@ -98,7 +102,6 @@ source_set("test_support") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/environment",
     "//mojo/public/cpp/system",
-    "//testing/gtest",
   ]
 
   data_deps = []
