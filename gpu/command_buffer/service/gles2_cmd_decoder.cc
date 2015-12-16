@@ -917,32 +917,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLsizei width,
       GLsizei height);
 
-  // Validation for TexSubImage2D.
-  bool ValidateTexSubImage2D(
-      error::Error* error,
-      const char* function_name,
-      GLenum target,
-      GLint level,
-      GLint xoffset,
-      GLint yoffset,
-      GLsizei width,
-      GLsizei height,
-      GLenum format,
-      GLenum type,
-      const void * data);
-
-  // Wrapper for TexSubImage2D.
-  error::Error DoTexSubImage2D(
-      GLenum target,
-      GLint level,
-      GLint xoffset,
-      GLint yoffset,
-      GLsizei width,
-      GLsizei height,
-      GLenum format,
-      GLenum type,
-      const void * data);
-
   // Wrapper for TexSubImage3D.
   error::Error DoTexSubImage3D(
       GLenum target,
