@@ -230,10 +230,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_HQ_DOWNSAMPLING
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_HAIR_IGNORES_CAPS
-#   define SK_SUPPORT_LEGACY_HAIR_IGNORES_CAPS
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_BITMAP_SAMPLER_BIAS
 #   define SK_SUPPORT_LEGACY_BITMAP_SAMPLER_BIAS
 #endif

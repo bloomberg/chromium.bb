@@ -318,6 +318,10 @@ crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure 
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
+# SK_SUPPORT_LEGACY_HAIR_IGNORES_CAPS
+crbug.com/552324 fast/backgrounds/svg-as-mask.html [ NeedsRebaseline ]
+crbug.com/552324 svg/as-background-image/svg-as-background-6.html [ NeedsRebaseline ]
+
 crbug.com/548904 [ Linux Win ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
 
 crbug.com/552433 svg/W3C-SVG-1.1/coords-units-02-b.svg [ Pass Failure ]
