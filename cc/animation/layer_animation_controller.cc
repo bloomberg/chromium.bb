@@ -139,6 +139,19 @@ void LayerAnimationController::RemoveAnimation(
     UpdatePotentiallyAnimatingTransform();
 }
 
+void LayerAnimationController::AbortAnimation(int animation_id) {
+  bool aborted_transform_animation = false;
+  if (Animation* animation = GetAnimationById(animation_id)) {
+    if (!animation->is_finished()) {
+      animation->SetRunState(Animation::ABORTED, last_tick_time_);
+      if (animation->target_property() == Animation::TRANSFORM)
+        aborted_transform_animation = true;
+    }
+  }
+  if (aborted_transform_animation)
+    UpdatePotentiallyAnimatingTransform();
+}
+
 void LayerAnimationController::AbortAnimations(
     Animation::TargetProperty target_property) {
   bool aborted_transform_animation = false;
@@ -161,6 +174,7 @@ void LayerAnimationController::PushAnimationUpdatesTo(
   DCHECK(this != controller_impl);
   if (!has_any_animation() && !controller_impl->has_any_animation())
     return;
+  MarkAbortedAnimationsForDeletion(controller_impl);
   PurgeAnimationsMarkedForDeletion();
   PushNewAnimationsToImplThread(controller_impl);
 
@@ -443,6 +457,7 @@ void LayerAnimationController::NotifyAnimationAborted(
     if (animations_[i]->group() == event.group_id &&
         animations_[i]->target_property() == event.target_property) {
       animations_[i]->SetRunState(Animation::ABORTED, event.monotonic_time);
+      animations_[i]->set_received_finished_event(true);
       if (event.target_property == Animation::TRANSFORM)
         aborted_transform_animation = true;
     }
@@ -921,9 +936,13 @@ void LayerAnimationController::MarkAnimationsForDeletion(
                                      monotonic_time);
         events->push_back(aborted_event);
       }
-      animations_[i]->SetRunState(Animation::WAITING_FOR_DELETION,
-                                  monotonic_time);
-      marked_animations_for_deletions = true;
+      // If on the compositor or on the main thread and received finish event,
+      // animation can be marked for deletion.
+      if (events || animations_[i]->received_finished_event()) {
+        animations_[i]->SetRunState(Animation::WAITING_FOR_DELETION,
+                                    monotonic_time);
+        marked_animations_for_deletions = true;
+      }
       continue;
     }
 
@@ -995,6 +1014,30 @@ void LayerAnimationController::MarkAnimationsForDeletion(
   }
   if (marked_animations_for_deletions)
     NotifyObserversAnimationWaitingForDeletion();
+}
+
+void LayerAnimationController::MarkAbortedAnimationsForDeletion(
+    LayerAnimationController* controller_impl) const {
+  bool aborted_transform_animation = false;
+  auto& animations_impl = controller_impl->animations_;
+  for (const auto& animation_impl : animations_impl) {
+    // If the animation has been aborted on the main thread, mark it for
+    // deletion.
+    if (Animation* animation = GetAnimationById(animation_impl->id())) {
+      if (animation->run_state() == Animation::ABORTED) {
+        animation_impl->SetRunState(Animation::WAITING_FOR_DELETION,
+                                    controller_impl->last_tick_time_);
+        animation->SetRunState(Animation::WAITING_FOR_DELETION,
+                               last_tick_time_);
+        if (animation_impl->target_property() == Animation::TRANSFORM) {
+          aborted_transform_animation = true;
+        }
+      }
+    }
+  }
+
+  if (aborted_transform_animation)
+    controller_impl->UpdatePotentiallyAnimatingTransform();
 }
 
 void LayerAnimationController::PurgeAnimationsMarkedForDeletion() {

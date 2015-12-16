@@ -1848,12 +1848,11 @@ TEST(LayerAnimationControllerTest, MainThreadAbortedAnimationGetsDeleted) {
 
   controller->Animate(kInitialTickTime);
   controller->UpdateState(true, nullptr);
-  EXPECT_TRUE(dummy.animation_waiting_for_deletion());
-  EXPECT_EQ(Animation::WAITING_FOR_DELETION,
+  EXPECT_FALSE(dummy.animation_waiting_for_deletion());
+  EXPECT_EQ(Animation::ABORTED,
             controller->GetAnimation(Animation::OPACITY)->run_state());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
-  controller_impl->ActivateAnimations();
   EXPECT_FALSE(controller->GetAnimationById(animation_id));
   EXPECT_FALSE(controller_impl->GetAnimationById(animation_id));
 }
