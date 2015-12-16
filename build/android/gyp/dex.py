@@ -94,6 +94,14 @@ def _AllSubpathsAreClassFiles(paths, changes):
   return True
 
 
+def _DexWasEmpty(paths, changes):
+  for path in paths:
+    if any(p.endswith('.class')
+           for p in changes.old_metadata.IterSubpaths(path)):
+      return False
+  return True
+
+
 def _RunDx(changes, options, dex_cmd, paths):
   with build_utils.TempDir() as classes_temp_dir:
     # --multi-dex is incompatible with --incremental.
@@ -112,7 +120,8 @@ def _RunDx(changes, options, dex_cmd, paths):
           return
         # When merging in other dex files, there's no easy way to know if
         # classes were removed from them.
-        if _AllSubpathsAreClassFiles(changed_paths, changes):
+        if (_AllSubpathsAreClassFiles(changed_paths, changes)
+            and not _DexWasEmpty(changed_paths, changes)):
           dex_cmd.append('--incremental')
           for path in changed_paths:
             changed_subpaths = set(changes.IterChangedSubpaths(path))
