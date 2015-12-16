@@ -169,9 +169,6 @@ static_library("renderer") {
     }
   }
 
-  if (is_mac) {
-    deps += [ "//third_party/mach_override" ]
-  }
   if (is_win) {
     deps += [ "//third_party/wtl" ]
   }

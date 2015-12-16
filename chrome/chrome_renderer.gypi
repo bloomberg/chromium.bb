@@ -367,11 +367,6 @@
             'renderer/spellchecker/hunspell_engine.h',
           ]
         }],
-        ['OS=="mac"', {
-          'dependencies': [
-            '../third_party/mach_override/mach_override.gyp:mach_override',
-          ],
-        }],
         ['enable_basic_printing==1 or enable_print_preview==1', {
           'dependencies': [
             '../components/components.gyp:printing_renderer',
