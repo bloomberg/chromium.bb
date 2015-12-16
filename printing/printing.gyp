@@ -139,7 +139,7 @@
             'cups',
           ],
           'variables': {
-            'cups_version': '<!(cups-config --api-version)',
+            'cups_version': '<!(python cups_config_helper.py --api-version <(sysroot))',
           },
           'conditions': [
             ['cups_version in ["1.6", "1.7"]', {
