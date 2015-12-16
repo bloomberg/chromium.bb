@@ -966,8 +966,7 @@ const size_t kMaxMessageQueueSize = 262144;
     DLOG(WARNING) << "Messages from JS ignored due to excessive length";
     return;
   }
-  NSString* commandString = [[nsurl fragment]
-      stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+  NSString* commandString = [nsurl.fragment stringByRemovingPercentEncoding];
 
   GURL originURL(net::GURLWithNSURL(request.mainDocumentURL));
 
