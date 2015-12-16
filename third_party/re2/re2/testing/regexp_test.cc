@@ -29,11 +29,10 @@ TEST(Regexp, BigConcat) {
   Regexp* x;
   x = Regexp::Parse("x", Regexp::NoParseFlags, NULL);
   vector<Regexp*> v(90000, x);  // ToString bails out at 100000
-  for (size_t i = 0; i < v.size(); i++)
+  for (int i = 0; i < v.size(); i++)
     x->Incref();
-  CHECK_EQ(x->Ref(), 1 + static_cast<int>(v.size())) << x->Ref();
-  Regexp* re = Regexp::Concat(v.data(), static_cast<int>(v.size()),
-                              Regexp::NoParseFlags);
+  CHECK_EQ(x->Ref(), 1 + v.size()) << x->Ref();
+  Regexp* re = Regexp::Concat(&v[0], v.size(), Regexp::NoParseFlags);
   CHECK_EQ(re->ToString(), string(v.size(), 'x'));
   re->Decref();
   CHECK_EQ(x->Ref(), 1) << x->Ref();

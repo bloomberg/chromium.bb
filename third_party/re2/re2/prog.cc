@@ -25,7 +25,7 @@ void Prog::Inst::InitByteRange(int lo, int hi, int foldcase, uint32 out) {
   set_out_opcode(out, kInstByteRange);
   lo_ = lo & 0xFF;
   hi_ = hi & 0xFF;
-  foldcase_ = foldcase & 0xFF;
+  foldcase_ = foldcase;
 }
 
 void Prog::Inst::InitCapture(int cap, uint32 out) {
@@ -295,15 +295,13 @@ uint32 Prog::EmptyFlags(const StringPiece& text, const char* p) {
 }
 
 void Prog::MarkByteRange(int lo, int hi) {
-  DCHECK_GE(lo, 0);
-  DCHECK_GE(hi, 0);
-  DCHECK_LE(lo, 255);
-  DCHECK_LE(hi, 255);
-  DCHECK_LE(lo, hi);
-  if (0 < lo && lo <= 255)
+  CHECK_GE(lo, 0);
+  CHECK_GE(hi, 0);
+  CHECK_LE(lo, 255);
+  CHECK_LE(hi, 255);
+  if (lo > 0)
     byterange_.Set(lo - 1);
-  if (0 <= hi && hi <= 255)
-    byterange_.Set(hi);
+  byterange_.Set(hi);
 }
 
 void Prog::ComputeByteMap() {
@@ -327,12 +325,12 @@ void Prog::ComputeByteMap() {
   bytemap_range_ = bytemap_[255] + 1;
   unbytemap_ = new uint8[bytemap_range_];
   for (int i = 0; i < 256; i++)
-    unbytemap_[bytemap_[i]] = static_cast<uint8>(i);
+    unbytemap_[bytemap_[i]] = i;
 
   if (0) {  // For debugging: use trivial byte map.
     for (int i = 0; i < 256; i++) {
-      bytemap_[i] = static_cast<uint8>(i);
-      unbytemap_[i] = static_cast<uint8>(i);
+      bytemap_[i] = i;
+      unbytemap_[i] = i;
     }
     bytemap_range_ = 256;
     LOG(INFO) << "Using trivial bytemap.";

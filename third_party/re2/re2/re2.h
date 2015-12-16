@@ -17,7 +17,7 @@
 // some of the more complicated things thrown away.  In particular,
 // backreferences and generalized assertions are not available, nor is \Z.
 //
-// See https://github.com/google/re2/wiki/Syntax for the syntax
+// See http://code.google.com/p/re2/wiki/Syntax for the syntax
 // supported by RE2, and a comparison with PCRE and PERL regexps.
 //
 // For those not familiar with Perl's regular expressions,
@@ -179,15 +179,12 @@
 //         RE2::Octal(&a), RE2::Hex(&b), RE2::CRadix(&c), RE2::CRadix(&d));
 // will leave 64 in a, b, c, and d.
 
+
 #include <stdint.h>
 #include <map>
 #include <string>
 #include "re2/stringpiece.h"
 #include "re2/variadic_function.h"
-
-#ifndef RE2_HAVE_LONGLONG
-#define RE2_HAVE_LONGLONG 1
-#endif
 
 namespace re2 {
 
@@ -243,7 +240,7 @@ class RE2 {
     ErrorBadPerlOp,          // bad perl operator
     ErrorBadUTF8,            // invalid UTF-8 in regexp
     ErrorBadNamedCapture,    // bad named capture group
-    ErrorPatternTooLarge     // pattern too large (compile failed)
+    ErrorPatternTooLarge,    // pattern too large (compile failed)
   };
 
   // Predefined common options.
@@ -292,11 +289,6 @@ class RE2 {
   // Returns the program size, a very approximate measure of a regexp's "cost".
   // Larger numbers are more expensive than smaller numbers.
   int ProgramSize() const;
-
-  // EXPERIMENTAL! SUBJECT TO CHANGE!
-  // Outputs the program fanout as a histogram bucketed by powers of 2.
-  // Returns the number of the largest non-empty bucket.
-  int ProgramFanout(map<int, int>* histogram) const;
 
   // Returns the underlying Regexp; not for general use.
   // Returns entire_regexp_ so that callers don't need
@@ -402,8 +394,6 @@ class RE2 {
   //
   // Returns true iff a match occurred and the extraction happened
   // successfully;  if no match occurs, the string is left unaffected.
-  //
-  // REQUIRES: "text" must not alias any part of "*out".
   static bool Extract(const StringPiece &text,
                       const RE2& pattern,
                       const StringPiece &rewrite,
@@ -439,13 +429,14 @@ class RE2 {
   enum Anchor {
     UNANCHORED,         // No anchoring
     ANCHOR_START,       // Anchor at start only
-    ANCHOR_BOTH         // Anchor at start and end
+    ANCHOR_BOTH,        // Anchor at start and end
   };
 
   // Return the number of capturing subpatterns, or -1 if the
   // regexp wasn't valid on construction.  The overall match ($0)
   // does not count: if the regexp is "(a)(b)", returns 2.
   int NumberOfCapturingGroups() const;
+
 
   // Return a map from names to capturing indices.
   // The map records the index of the leftmost group
@@ -521,7 +512,6 @@ class RE2 {
     //   max_mem          (see below)  approx. max memory footprint of RE2
     //   literal          (false) interpret string as literal, not regexp
     //   never_nl         (false) never match \n, even if it is in regexp
-    //   dot_nl           (false) dot matches everything including new line
     //   never_capture    (false) parse all parens as non-capturing
     //   case_sensitive   (true)  match is case-sensitive (regexp can override
     //                              with (?i) unless in posix_syntax mode)
@@ -562,29 +552,16 @@ class RE2 {
     // If this happens too often, RE2 falls back on the NFA implementation.
 
     // For now, make the default budget something close to Code Search.
+#ifndef WIN32
     static const int kDefaultMaxMem = 8<<20;
+#endif
 
     enum Encoding {
       EncodingUTF8 = 1,
       EncodingLatin1
     };
 
-    Options() :
-      encoding_(EncodingUTF8),
-      posix_syntax_(false),
-      longest_match_(false),
-      log_errors_(true),
-      max_mem_(kDefaultMaxMem),
-      literal_(false),
-      never_nl_(false),
-      dot_nl_(false),
-      never_capture_(false),
-      case_sensitive_(true),
-      perl_classes_(false),
-      word_boundary_(false),
-      one_line_(false) {
-    }
-
+    Options();
     /*implicit*/ Options(CannedOptions);
 
     Encoding encoding() const { return encoding_; }
@@ -610,17 +587,14 @@ class RE2 {
     bool log_errors() const { return log_errors_; }
     void set_log_errors(bool b) { log_errors_ = b; }
 
-    int64_t max_mem() const { return max_mem_; }
-    void set_max_mem(int64_t m) { max_mem_ = m; }
+    int max_mem() const { return max_mem_; }
+    void set_max_mem(int m) { max_mem_ = m; }
 
     bool literal() const { return literal_; }
     void set_literal(bool b) { literal_ = b; }
 
     bool never_nl() const { return never_nl_; }
     void set_never_nl(bool b) { never_nl_ = b; }
-
-    bool dot_nl() const { return dot_nl_; }
-    void set_dot_nl(bool b) { dot_nl_ = b; }
 
     bool never_capture() const { return never_capture_; }
     void set_never_capture(bool b) { never_capture_ = b; }
@@ -645,7 +619,6 @@ class RE2 {
       max_mem_ = src.max_mem_;
       literal_ = src.literal_;
       never_nl_ = src.never_nl_;
-      dot_nl_ = src.dot_nl_;
       never_capture_ = src.never_capture_;
       case_sensitive_ = src.case_sensitive_;
       perl_classes_ = src.perl_classes_;
@@ -663,14 +636,13 @@ class RE2 {
     int64_t max_mem_;
     bool literal_;
     bool never_nl_;
-    bool dot_nl_;
     bool never_capture_;
     bool case_sensitive_;
     bool perl_classes_;
     bool word_boundary_;
     bool one_line_;
 
-    //DISALLOW_COPY_AND_ASSIGN(Options);
+    //DISALLOW_EVIL_CONSTRUCTORS(Options);
     Options(const Options&);
     void operator=(const Options&);
   };
@@ -685,10 +657,8 @@ class RE2 {
   static inline Arg CRadix(unsigned int* x);
   static inline Arg CRadix(long* x);
   static inline Arg CRadix(unsigned long* x);
-  #if RE2_HAVE_LONGLONG
   static inline Arg CRadix(long long* x);
   static inline Arg CRadix(unsigned long long* x);
-  #endif
 
   static inline Arg Hex(short* x);
   static inline Arg Hex(unsigned short* x);
@@ -696,10 +666,8 @@ class RE2 {
   static inline Arg Hex(unsigned int* x);
   static inline Arg Hex(long* x);
   static inline Arg Hex(unsigned long* x);
-  #if RE2_HAVE_LONGLONG
   static inline Arg Hex(long long* x);
   static inline Arg Hex(unsigned long long* x);
-  #endif
 
   static inline Arg Octal(short* x);
   static inline Arg Octal(unsigned short* x);
@@ -707,10 +675,8 @@ class RE2 {
   static inline Arg Octal(unsigned int* x);
   static inline Arg Octal(long* x);
   static inline Arg Octal(unsigned long* x);
-  #if RE2_HAVE_LONGLONG
   static inline Arg Octal(long long* x);
   static inline Arg Octal(unsigned long long* x);
-  #endif
 
  private:
   void Init(const StringPiece& pattern, const Options& options);
@@ -745,7 +711,7 @@ class RE2 {
   // Map from capture indices to names
   mutable const map<int, string>* group_names_;
 
-  //DISALLOW_COPY_AND_ASSIGN(RE2);
+  //DISALLOW_EVIL_CONSTRUCTORS(RE2);
   RE2(const RE2&);
   void operator=(const RE2&);
 };
@@ -790,10 +756,8 @@ class RE2::Arg {
   MAKE_PARSER(unsigned int,       parse_uint);
   MAKE_PARSER(long,               parse_long);
   MAKE_PARSER(unsigned long,      parse_ulong);
-  #if RE2_HAVE_LONGLONG
   MAKE_PARSER(long long,          parse_longlong);
   MAKE_PARSER(unsigned long long, parse_ulonglong);
-  #endif
   MAKE_PARSER(float,              parse_float);
   MAKE_PARSER(double,             parse_double);
   MAKE_PARSER(string,             parse_string);
@@ -801,11 +765,12 @@ class RE2::Arg {
 
 #undef MAKE_PARSER
 
-  // Generic constructor templates
+  // Generic constructor
+  template <class T> Arg(T*, Parser parser);
+  // Generic constructor template
   template <class T> Arg(T* p)
-      : arg_(p), parser_(_RE2_MatchObject<T>::Parse) { }
-  template <class T> Arg(T* p, Parser parser)
-      : arg_(p), parser_(parser) { }
+    : arg_(p), parser_(_RE2_MatchObject<T>::Parse) {
+  }
 
   // Parse the data
   bool Parse(const char* str, int n) const;
@@ -838,10 +803,8 @@ class RE2::Arg {
   DECLARE_INTEGER_PARSER(uint);
   DECLARE_INTEGER_PARSER(long);
   DECLARE_INTEGER_PARSER(ulong);
-  #if RE2_HAVE_LONGLONG
   DECLARE_INTEGER_PARSER(longlong);
   DECLARE_INTEGER_PARSER(ulonglong);
-  #endif
 
 #undef DECLARE_INTEGER_PARSER
 };
@@ -862,16 +825,14 @@ inline bool RE2::Arg::Parse(const char* str, int n) const {
   inline RE2::Arg RE2::CRadix(type* ptr) { \
     return RE2::Arg(ptr, RE2::Arg::parse_ ## name ## _cradix); }
 
-MAKE_INTEGER_PARSER(short,              short)
-MAKE_INTEGER_PARSER(unsigned short,     ushort)
-MAKE_INTEGER_PARSER(int,                int)
-MAKE_INTEGER_PARSER(unsigned int,       uint)
-MAKE_INTEGER_PARSER(long,               long)
-MAKE_INTEGER_PARSER(unsigned long,      ulong)
-#if RE2_HAVE_LONGLONG
-MAKE_INTEGER_PARSER(long long,          longlong)
-MAKE_INTEGER_PARSER(unsigned long long, ulonglong)
-#endif
+MAKE_INTEGER_PARSER(short,              short);
+MAKE_INTEGER_PARSER(unsigned short,     ushort);
+MAKE_INTEGER_PARSER(int,                int);
+MAKE_INTEGER_PARSER(unsigned int,       uint);
+MAKE_INTEGER_PARSER(long,               long);
+MAKE_INTEGER_PARSER(unsigned long,      ulong);
+MAKE_INTEGER_PARSER(long long,          longlong);
+MAKE_INTEGER_PARSER(unsigned long long, ulonglong);
 
 #undef MAKE_INTEGER_PARSER
 

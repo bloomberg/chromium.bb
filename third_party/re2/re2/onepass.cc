@@ -53,6 +53,7 @@
 #include <string.h>
 #include <map>
 #include "util/util.h"
+#include "util/arena.h"
 #include "util/sparse_set.h"
 #include "re2/prog.h"
 #include "re2/stringpiece.h"
@@ -124,6 +125,9 @@ static const int Debug = 0;
 // and capture operations that must be performed.  It also records
 // whether a set of conditions required to finish a match at that
 // point in the input rather than process the next byte.
+
+// A state in the one-pass NFA (aka DFA) - just an array of actions.
+struct OneState;
 
 // A state in the one-pass NFA - just an array of actions indexed
 // by the bytemap_[] of the next input byte.  (The bytemap
@@ -331,8 +335,7 @@ done:
   if (!matched)
     return false;
   for (int i = 0; i < nmatch; i++)
-    match[i].set(matchcap[2*i],
-                 static_cast<int>(matchcap[2*i+1] - matchcap[2*i]));
+    match[i].set(matchcap[2*i], matchcap[2*i+1] - matchcap[2*i]);
   return true;
 }
 

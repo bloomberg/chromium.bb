@@ -44,7 +44,7 @@ TEST(FilteredRE2Test, SmallLatinTest) {
   FilterTestVars v;
   int id;
 
-  v.opts.set_encoding(RE2::Options::EncodingLatin1);
+  v.opts.set_utf8(false);
   v.f.Add("\xde\xadQ\xbe\xef", v.opts, &id);
   v.f.Compile(&v.atoms);
   EXPECT_EQ(1, v.atoms.size());
@@ -158,10 +158,10 @@ bool CheckExpectedAtoms(const char* atoms[],
   if (!pass) {
     LOG(WARNING) << "Failed " << testname;
     LOG(WARNING) << "Expected #atoms = " << expected.size();
-    for (size_t i = 0; i < expected.size(); i++)
+    for (int i = 0; i < expected.size(); i++)
       LOG(WARNING) << expected[i];
     LOG(WARNING) << "Found #atoms = " << v->atoms.size();
-    for (size_t i = 0; i < v->atoms.size(); i++)
+    for (int i = 0; i < v->atoms.size(); i++)
       LOG(WARNING) << v->atoms[i];
   }
 
@@ -189,16 +189,18 @@ TEST(FilteredRE2Test, AtomTests) {
   EXPECT_EQ(0, nfail);
 }
 
-void FindAtomIndices(const vector<string>& atoms,
-                     const vector<string>& matched_atoms,
+void FindAtomIndices(const vector<string> atoms,
+                     const vector<string> matched_atoms,
                      vector<int>* atom_indices) {
   atom_indices->clear();
-  for (size_t i = 0; i < matched_atoms.size(); i++) {
-    for (size_t j = 0; j < atoms.size(); j++) {
+  for (int i = 0; i < matched_atoms.size(); i++) {
+    int j = 0;
+    for (; j < atoms.size(); j++) {
       if (matched_atoms[i] == atoms[j]) {
-        atom_indices->push_back(static_cast<int>(j));
+        atom_indices->push_back(j);
         break;
       }
+      EXPECT_LT(j, atoms.size());
     }
   }
 }
@@ -264,7 +266,7 @@ TEST(FilteredRE2Test, MatchTests) {
   atoms.push_back("yyyzzz");
   FindAtomIndices(v.atoms, atoms, &atom_ids);
   LOG(INFO) << "S: " << atom_ids.size();
-  for (size_t i = 0; i < atom_ids.size(); i++)
+  for (int i = 0; i < atom_ids.size(); i++)
     LOG(INFO) << "i: " << i << " : " << atom_ids[i];
   v.f.AllMatches(text, atom_ids, &matching_regexps);
   EXPECT_EQ(2, matching_regexps.size());

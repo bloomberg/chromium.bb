@@ -246,7 +246,6 @@ TestInstance::TestInstance(const StringPiece& regexp_str, Prog::MatchKind kind,
   // 2. It treats $ as this weird thing meaning end of string
   //    or before the \n at the end of the string.
   // 3. It doesn't implement POSIX leftmost-longest matching.
-  // 4. It lets \s match vertical tab.
   // MimicsPCRE() detects 1 and 2.
   if ((Engines() & (1<<kEnginePCRE)) && regexp_->MimicsPCRE() &&
       kind_ != Prog::kLongestMatch) {
@@ -344,8 +343,7 @@ void TestInstance::RunSearch(Engine type,
                                Prog::kAnchored, Prog::kLongestMatch,
                                result->submatch,
                                &result->skipped, NULL)) {
-          LOG(ERROR) << "Reverse DFA inconsistency: "
-                     << CEscape(regexp_str_)
+          LOG(ERROR) << "Reverse DFA inconsistency: " << CEscape(regexp_str_)
                      << " on " << CEscape(text);
           result->matched = false;
         }
@@ -392,13 +390,10 @@ void TestInstance::RunSearch(Engine type,
       if (kind_ == Prog::kFullMatch)
         re_anchor = RE2::ANCHOR_BOTH;
 
-      result->matched = re2_->Match(
-          context,
-          static_cast<int>(text.begin() - context.begin()),
-          static_cast<int>(text.end() - context.begin()),
-          re_anchor,
-          result->submatch,
-          nsubmatch);
+      result->matched = re2_->Match(context,
+                                    text.begin() - context.begin(),
+                                    text.end() - context.begin(),
+                                    re_anchor, result->submatch, nsubmatch);
       result->have_submatch = nsubmatch > 0;
       break;
     }
@@ -406,14 +401,6 @@ void TestInstance::RunSearch(Engine type,
     case kEnginePCRE: {
       if (!re_ || text.begin() != context.begin() ||
           text.end() != context.end()) {
-        result->skipped = true;
-        break;
-      }
-
-      // PCRE 8.34 or so started allowing vertical tab to match \s,
-      // following a change made in Perl 5.18. RE2 does not.
-      if ((regexp_str_.contains("\\s") || regexp_str_.contains("\\S")) &&
-          text.contains("\v")) {
         result->skipped = true;
         break;
       }
@@ -518,7 +505,7 @@ bool TestInstance::RunCase(const StringPiece& text, const StringPiece& context,
     }
 
     // We disagree with PCRE on the meaning of some Unicode matches.
-    // In particular, we treat non-ASCII UTF-8 as non-word characters.
+    // In particular, we treat all non-ASCII UTF-8 as word characters.
     // We also treat "empty" character sets like [^\w\W] as being
     // impossible to match, while PCRE apparently excludes some code
     // points (e.g., 0x0080) from both \w and \W.
@@ -605,14 +592,14 @@ Tester::Tester(const StringPiece& regexp) {
 }
 
 Tester::~Tester() {
-  for (size_t i = 0; i < v_.size(); i++)
+  for (int i = 0; i < v_.size(); i++)
     delete v_[i];
 }
 
 bool Tester::TestCase(const StringPiece& text, const StringPiece& context,
                          Prog::Anchor anchor) {
   bool okay = true;
-  for (size_t i = 0; i < v_.size(); i++)
+  for (int i = 0; i < v_.size(); i++)
     okay &= (!v_[i]->error() && v_[i]->RunCase(text, context, anchor));
   return okay;
 }

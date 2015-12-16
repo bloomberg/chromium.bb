@@ -25,7 +25,7 @@ static void RandomTest(int maxatoms, int maxops,
                        const string& wrapper) {
   // Limit to smaller test cases in debug mode,
   // because everything is so much slower.
-  if (RE2_DEBUG_MODE) {
+  if (DEBUG_MODE) {
     maxatoms--;
     maxops--;
     maxstrlen /= 2;

@@ -220,25 +220,19 @@ class SparseArray {
   // and at the beginning and end of all public non-const member functions.
   inline void DebugCheckInvariants() const;
 
-  static bool InitMemory() {
-#ifdef MEMORY_SANITIZER
-    return true;
-#else
-    return RunningOnValgrind();
-#endif
-  }
-
   int size_;
   int max_size_;
   int* sparse_to_dense_;
   vector<IndexValue> dense_;
+  bool valgrind_;
 
-  DISALLOW_COPY_AND_ASSIGN(SparseArray);
+  DISALLOW_EVIL_CONSTRUCTORS(SparseArray);
 };
 
 template<typename Value>
 SparseArray<Value>::SparseArray()
-    : size_(0), max_size_(0), sparse_to_dense_(NULL), dense_() {}
+    : size_(0), max_size_(0), sparse_to_dense_(NULL), dense_(),
+      valgrind_(RunningOnValgrindOrMemorySanitizer()) {}
 
 // IndexValue pairs: exposed in SparseArray::iterator.
 template<typename Value>
@@ -281,20 +275,14 @@ void SparseArray<Value>::resize(int new_max_size) {
       memmove(a, sparse_to_dense_, max_size_*sizeof a[0]);
       delete[] sparse_to_dense_;
     }
+    // Don't need to zero the memory but appease Valgrind.
+    if (valgrind_) {
+      for (int i = max_size_; i < new_max_size; i++)
+        a[i] = 0xababababU;
+    }
     sparse_to_dense_ = a;
 
     dense_.resize(new_max_size);
-
-    // These don't need to be initialized for correctness,
-    // but Valgrind will warn about use of uninitialized memory,
-    // so initialize the new memory when compiling debug binaries.
-    // Initialize it to garbage to detect bugs in the future.
-    if (InitMemory()) {
-      for (int i = max_size_; i < new_max_size; i++) {
-        sparse_to_dense_[i] = 0xababababU;
-        dense_[i].index_ = 0xababababU;
-      }
-    }
   }
   max_size_ = new_max_size;
   if (size_ > max_size_)
@@ -307,7 +295,7 @@ template<typename Value>
 bool SparseArray<Value>::has_index(int i) const {
   DCHECK_GE(i, 0);
   DCHECK_LT(i, max_size_);
-  if (static_cast<uint>(i) >= static_cast<uint>(max_size_)) {
+  if (static_cast<uint>(i) >= max_size_) {
     return false;
   }
   // Unsigned comparison avoids checking sparse_to_dense_[i] < 0.
@@ -319,7 +307,7 @@ bool SparseArray<Value>::has_index(int i) const {
 template<typename Value>
 typename SparseArray<Value>::iterator SparseArray<Value>::set(int i, Value v) {
   DebugCheckInvariants();
-  if (static_cast<uint>(i) >= static_cast<uint>(max_size_)) {
+  if (static_cast<uint>(i) >= max_size_) {
     // Semantically, end() would be better here, but we already know
     // the user did something stupid, so begin() insulates them from
     // dereferencing an invalid pointer.
@@ -381,7 +369,7 @@ template<typename Value>
 typename SparseArray<Value>::iterator
 SparseArray<Value>::set_new(int i, Value v) {
   DebugCheckInvariants();
-  if (static_cast<uint>(i) >= static_cast<uint>(max_size_)) {
+  if (static_cast<uint>(i) >= max_size_) {
     // Semantically, end() would be better here, but we already know
     // the user did something stupid, so begin() insulates them from
     // dereferencing an invalid pointer.
@@ -431,9 +419,10 @@ void SparseArray<Value>::create_index(int i) {
 template<typename Value> SparseArray<Value>::SparseArray(int max_size) {
   max_size_ = max_size;
   sparse_to_dense_ = new int[max_size];
+  valgrind_ = RunningOnValgrindOrMemorySanitizer();
   dense_.resize(max_size);
   // Don't need to zero the new memory, but appease Valgrind.
-  if (InitMemory()) {
+  if (valgrind_) {
     for (int i = 0; i < max_size; i++) {
       sparse_to_dense_[i] = 0xababababU;
       dense_[i].index_ = 0xababababU;

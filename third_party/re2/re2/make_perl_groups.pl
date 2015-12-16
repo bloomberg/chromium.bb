@@ -32,20 +32,14 @@
 	"\\w",
 );
 
-%overrides = (
-	# Prior to Perl 5.18, \s did not match vertical tab.
-	# RE2 preserves that original behaviour.
-	"\\s:11" => 0,
-);
-
 sub ComputeClass($) {
-  my ($cname) = @_;
   my @ranges;
-  my $regexp = qr/[$cname]/;
+  my ($class) = @_;
+  my $regexp = "[$class]";
   my $start = -1;
   for (my $i=0; $i<=129; $i++) {
     if ($i == 129) { $i = 256; }
-    if ($i <= 128 && ($overrides{"$cname:$i"} // chr($i) =~ $regexp)) {
+    if ($i <= 128 && chr($i) =~ $regexp) {
       if ($start < 0) {
         $start = $i;
       }
@@ -60,15 +54,15 @@ sub ComputeClass($) {
 }
 
 sub PrintClass($$@) {
-  my ($cnum, $cname, @ranges) = @_;
-  print "static const URange16 code${cnum}[] = {  /* $cname */\n";
+  my ($cname, $name, @ranges) = @_;
+  print "static URange16 code${cname}[] = {  /* $name */\n";
   for (my $i=0; $i<@ranges; $i++) {
     my @a = @{$ranges[$i]};
     printf "\t{ 0x%x, 0x%x },\n", $a[0], $a[1];
   }
   print "};\n";
   my $n = @ranges;
-  my $escname = $cname;
+  my $escname = $name;
   $escname =~ s/\\/\\\\/g;
   $negname = $escname;
   if ($negname =~ /:/) {
@@ -76,25 +70,25 @@ sub PrintClass($$@) {
   } else {
     $negname =~ y/a-z/A-Z/;
   }
-  return "{ \"$escname\", +1, code$cnum, $n }", "{ \"$negname\", -1, code$cnum, $n }";
+  return "{ \"$escname\", +1, code$cname, $n }", "{ \"$negname\", -1, code$cname, $n }";
 }
 
-my $cnum = 0;
+my $gen = 0;
 
 sub PrintClasses($@) {
-  my ($pname, @classes) = @_;
+  my ($cname, @classes) = @_;
   my @entries;
-  foreach my $cname (@classes) {
-    my @ranges = ComputeClass($cname);
-    push @entries, PrintClass(++$cnum, $cname, @ranges);
+  foreach my $cl (@classes) {
+    my @ranges = ComputeClass($cl);
+    push @entries, PrintClass(++$gen, $cl, @ranges);
   }
-  print "const UGroup ${pname}_groups[] = {\n";
+  print "UGroup ${cname}_groups[] = {\n";
   foreach my $e (@entries) {
     print "\t$e,\n";
   }
   print "};\n";
   my $count = @entries;
-  print "const int num_${pname}_groups = $count;\n";
+  print "int num_${cname}_groups = $count;\n";
 }
 
 print <<EOF;

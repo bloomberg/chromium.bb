@@ -8,6 +8,11 @@
 #include "re2/prefilter_tree.h"
 #include "re2/re2.h"
 
+#ifdef WIN32
+#include <stdio.h>
+#define snprintf _snprintf
+#endif
+
 DEFINE_int32(filtered_re2_min_atom_len,
              3,
              "Strings less than this length are not stored as atoms");
@@ -19,10 +24,10 @@ PrefilterTree::PrefilterTree()
 }
 
 PrefilterTree::~PrefilterTree() {
-  for (size_t i = 0; i < prefilter_vec_.size(); i++)
+  for (int i = 0; i < prefilter_vec_.size(); i++)
     delete prefilter_vec_[i];
 
-  for (size_t i = 0; i < entries_.size(); i++)
+  for (int i = 0; i < entries_.size(); i++)
     delete entries_[i].parents;
 }
 
@@ -43,12 +48,12 @@ static bool KeepPart(Prefilter* prefilter, int level) {
 
     case Prefilter::ATOM:
       return prefilter->atom().size() >=
-          static_cast<size_t>(FLAGS_filtered_re2_min_atom_len);
+          FLAGS_filtered_re2_min_atom_len;
 
     case Prefilter::AND: {
       int j = 0;
       vector<Prefilter*>* subs = prefilter->subs();
-      for (size_t i = 0; i < subs->size(); i++)
+      for (int i = 0; i < subs->size(); i++)
         if (KeepPart((*subs)[i], level + 1))
           (*subs)[j++] = (*subs)[i];
         else
@@ -59,7 +64,7 @@ static bool KeepPart(Prefilter* prefilter, int level) {
     }
 
     case Prefilter::OR:
-      for (size_t i = 0; i < prefilter->subs()->size(); i++)
+      for (int i = 0; i < prefilter->subs()->size(); i++)
         if (!KeepPart((*prefilter->subs())[i], level + 1))
           return false;
       return true;
@@ -101,7 +106,7 @@ void PrefilterTree::Compile(vector<string>* atom_vec) {
   // no longer necessary for their parent to trigger; that is, we do
   // not miss out on any regexps triggering by getting rid of a
   // prefilter node.
-  for (size_t i = 0; i < entries_.size(); i++) {
+  for (int i = 0; i < entries_.size(); i++) {
     StdIntMap* parents = entries_[i].parents;
     if (parents->size() > 8) {
       // This one triggers too many things. If all the parents are AND
@@ -148,7 +153,7 @@ string PrefilterTree::NodeString(Prefilter* node) const {
   if (node->op() == Prefilter::ATOM) {
     s += node->atom();
   } else {
-    for (size_t i = 0; i < node->subs()->size(); i++) {
+    for (int i = 0; i < node->subs()->size() ; i++) {
       if (i > 0)
         s += ',';
       s += Itoa((*node->subs())[i]->unique_id());
@@ -165,10 +170,10 @@ void PrefilterTree::AssignUniqueIds(vector<string>* atom_vec) {
   vector<Prefilter*> v;
 
   // Add the top level nodes of each regexp prefilter.
-  for (size_t i = 0; i < prefilter_vec_.size(); i++) {
+  for (int i = 0; i < prefilter_vec_.size(); i++) {
     Prefilter* f = prefilter_vec_[i];
     if (f == NULL)
-      unfiltered_.push_back(static_cast<int>(i));
+      unfiltered_.push_back(i);
 
     // We push NULL also on to v, so that we maintain the
     // mapping of index==regexpid for level=0 prefilter nodes.
@@ -176,20 +181,20 @@ void PrefilterTree::AssignUniqueIds(vector<string>* atom_vec) {
   }
 
   // Now add all the descendant nodes.
-  for (size_t i = 0; i < v.size(); i++) {
+  for (int i = 0; i < v.size(); i++) {
     Prefilter* f = v[i];
     if (f == NULL)
       continue;
     if (f->op() == Prefilter::AND || f->op() == Prefilter::OR) {
       const vector<Prefilter*>& subs = *f->subs();
-      for (size_t j = 0; j < subs.size(); j++)
+      for (int j = 0; j < subs.size(); j++)
         v.push_back(subs[j]);
     }
   }
 
   // Identify unique nodes.
   int unique_id = 0;
-  for (int i = static_cast<int>(v.size()) - 1; i >= 0; i--) {
+  for (int i = v.size() - 1; i >= 0; i--) {
     Prefilter *node = v[i];
     if (node == NULL)
       continue;
@@ -211,7 +216,7 @@ void PrefilterTree::AssignUniqueIds(vector<string>* atom_vec) {
   entries_.resize(node_map_.size());
 
   // Create parent StdIntMap for the entries.
-  for (int i = static_cast<int>(v.size()) - 1; i >= 0; i--) {
+  for (int i = v.size()  - 1; i >= 0; i--) {
     Prefilter* prefilter = v[i];
     if (prefilter == NULL)
       continue;
@@ -224,7 +229,7 @@ void PrefilterTree::AssignUniqueIds(vector<string>* atom_vec) {
   }
 
   // Fill the entries.
-  for (int i = static_cast<int>(v.size()) - 1; i >= 0; i--) {
+  for (int i = v.size()  - 1; i >= 0; i--) {
     Prefilter* prefilter = v[i];
     if (prefilter == NULL)
       continue;
@@ -246,8 +251,8 @@ void PrefilterTree::AssignUniqueIds(vector<string>* atom_vec) {
 
       case Prefilter::OR:
       case Prefilter::AND: {
-        set<int> uniq_child;
-        for (size_t j = 0; j < prefilter->subs()->size(); j++) {
+        std::set<int> uniq_child;
+        for (int j = 0; j < prefilter->subs()->size() ; j++) {
           Prefilter* child = (*prefilter->subs())[j];
           Prefilter* canonical = CanonicalNode(child);
           if (canonical == NULL) {
@@ -259,13 +264,11 @@ void PrefilterTree::AssignUniqueIds(vector<string>* atom_vec) {
           // To the child, we want to add to parent indices.
           Entry* child_entry = &entries_[child_id];
           if (child_entry->parents->find(prefilter->unique_id()) ==
-              child_entry->parents->end()) {
+              child_entry->parents->end())
             (*child_entry->parents)[prefilter->unique_id()] = 1;
-          }
         }
-        entry->propagate_up_at_count = prefilter->op() == Prefilter::AND
-                                           ? static_cast<int>(uniq_child.size())
-                                           : 1;
+        entry->propagate_up_at_count =
+            prefilter->op() == Prefilter::AND ? uniq_child.size() : 1;
 
         break;
       }
@@ -273,13 +276,13 @@ void PrefilterTree::AssignUniqueIds(vector<string>* atom_vec) {
   }
 
   // For top level nodes, populate regexp id.
-  for (size_t i = 0; i < prefilter_vec_.size(); i++) {
+  for (int i = 0; i < prefilter_vec_.size(); i++) {
     if (prefilter_vec_[i] == NULL)
       continue;
     int id = CanonicalNode(prefilter_vec_[i])->unique_id();
     DCHECK_LE(0, id);
     Entry* entry = &entries_[id];
-    entry->regexps.push_back(static_cast<int>(i));
+    entry->regexps.push_back(i);
   }
 }
 
@@ -290,13 +293,13 @@ void PrefilterTree::RegexpsGivenStrings(
   regexps->clear();
   if (!compiled_) {
     LOG(WARNING) << "Compile() not called";
-    for (size_t i = 0; i < prefilter_vec_.size(); ++i)
-      regexps->push_back(static_cast<int>(i));
+    for (int i = 0; i < prefilter_vec_.size(); ++i)
+      regexps->push_back(i);
   } else {
     if (!prefilter_vec_.empty()) {
-      IntMap regexps_map(static_cast<int>(prefilter_vec_.size()));
+      IntMap regexps_map(prefilter_vec_.size());
       vector<int> matched_atom_ids;
-      for (size_t j = 0; j < matched_atoms.size(); j++) {
+      for (int j = 0; j < matched_atoms.size(); j++) {
         matched_atom_ids.push_back(atom_index_to_id_[matched_atoms[j]]);
         VLOG(10) << "Atom id:" << atom_index_to_id_[matched_atoms[j]];
       }
@@ -314,15 +317,15 @@ void PrefilterTree::RegexpsGivenStrings(
 
 void PrefilterTree::PropagateMatch(const vector<int>& atom_ids,
                                    IntMap* regexps) const {
-  IntMap count(static_cast<int>(entries_.size()));
-  IntMap work(static_cast<int>(entries_.size()));
-  for (size_t i = 0; i < atom_ids.size(); i++)
+  IntMap count(entries_.size());
+  IntMap work(entries_.size());
+  for (int i = 0; i < atom_ids.size(); i++)
     work.set(atom_ids[i], 1);
   for (IntMap::iterator it = work.begin(); it != work.end(); ++it) {
     const Entry& entry = entries_[it->index()];
     VLOG(10) << "Processing: " << it->index();
     // Record regexps triggered.
-    for (size_t i = 0; i < entry.regexps.size(); i++) {
+    for (int i = 0; i < entry.regexps.size(); i++) {
       VLOG(10) << "Regexp triggered: " << entry.regexps[i];
       regexps->set(entry.regexps[i], 1);
     }
@@ -362,7 +365,7 @@ void PrefilterTree::PrintDebugInfo() {
   VLOG(10) << "#Unique Atoms: " << atom_index_to_id_.size();
   VLOG(10) << "#Unique Nodes: " << entries_.size();
 
-  for (size_t i = 0; i < entries_.size(); ++i) {
+  for (int i = 0; i < entries_.size(); ++i) {
     StdIntMap* parents = entries_[i].parents;
     const vector<int>& regexps = entries_[i].regexps;
     VLOG(10) << "EntryId: " << i
@@ -387,7 +390,7 @@ string PrefilterTree::DebugNodeString(Prefilter* node) const {
     // Adding the operation disambiguates AND and OR nodes.
     node_string +=  node->op() == Prefilter::AND ? "AND" : "OR";
     node_string += "(";
-    for (size_t i = 0; i < node->subs()->size(); i++) {
+    for (int i = 0; i < node->subs()->size() ; i++) {
       if (i > 0)
         node_string += ',';
       node_string += Itoa((*node->subs())[i]->unique_id());

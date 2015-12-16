@@ -54,15 +54,17 @@ namespace re2 {
 class SparseSet {
  public:
   SparseSet()
-    : size_(0), max_size_(0), sparse_to_dense_(NULL), dense_(NULL) {}
+    : size_(0), max_size_(0), sparse_to_dense_(NULL), dense_(NULL),
+      valgrind_(RunningOnValgrindOrMemorySanitizer()) {}
 
   SparseSet(int max_size) {
     max_size_ = max_size;
     sparse_to_dense_ = new int[max_size];
     dense_ = new int[max_size];
+    valgrind_ = RunningOnValgrindOrMemorySanitizer();
     // Don't need to zero the memory, but do so anyway
     // to appease Valgrind.
-    if (InitMemory()) {
+    if (valgrind_) {
       for (int i = 0; i < max_size; i++) {
         dense_[i] = 0xababababU;
         sparse_to_dense_[i] = 0xababababU;
@@ -94,7 +96,7 @@ class SparseSet {
       int* a = new int[new_max_size];
       if (sparse_to_dense_) {
         memmove(a, sparse_to_dense_, max_size_*sizeof a[0]);
-        if (InitMemory()) {
+        if (valgrind_) {
           for (int i = max_size_; i < new_max_size; i++)
             a[i] = 0xababababU;
         }
@@ -105,7 +107,7 @@ class SparseSet {
       a = new int[new_max_size];
       if (dense_) {
         memmove(a, dense_, size_*sizeof a[0]);
-        if (InitMemory()) {
+        if (valgrind_) {
           for (int i = size_; i < new_max_size; i++)
             a[i] = 0xababababU;
         }
@@ -127,7 +129,7 @@ class SparseSet {
   bool contains(int i) const {
     DCHECK_GE(i, 0);
     DCHECK_LT(i, max_size_);
-    if (static_cast<uint>(i) >= static_cast<uint>(max_size_)) {
+    if (static_cast<uint>(i) >= max_size_) {
       return false;
     }
     // Unsigned comparison avoids checking sparse_to_dense_[i] < 0.
@@ -144,7 +146,7 @@ class SparseSet {
   // Set the value at the new index i to v.
   // Fast but unsafe: only use if contains(i) is false.
   void insert_new(int i) {
-    if (static_cast<uint>(i) >= static_cast<uint>(max_size_)) {
+    if (static_cast<uint>(i) >= max_size_) {
       // Semantically, end() would be better here, but we already know
       // the user did something stupid, so begin() insulates them from
       // dereferencing an invalid pointer.
@@ -164,20 +166,13 @@ class SparseSet {
   static bool less(int a, int b) { return a < b; }
 
  private:
-  static bool InitMemory() {
-#ifdef MEMORY_SANITIZER
-    return true;
-#else
-    return RunningOnValgrind();
-#endif
-  }
-
   int size_;
   int max_size_;
   int* sparse_to_dense_;
   int* dense_;
+  bool valgrind_;
 
-  DISALLOW_COPY_AND_ASSIGN(SparseSet);
+  DISALLOW_EVIL_CONSTRUCTORS(SparseSet);
 };
 
 }  // namespace re2

@@ -53,7 +53,7 @@ class RegexpGenerator {
   vector<string> atoms_;   // Possible atoms.
   vector<string> ops_;     // Possible ops.
   ACMRandom* acm_;         // Random generator.
-  DISALLOW_COPY_AND_ASSIGN(RegexpGenerator);
+  DISALLOW_EVIL_CONSTRUCTORS(RegexpGenerator);
 };
 
 // Helpers for preparing arguments to RegexpGenerator constructor.

@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "util/thread.h"
 #include "util/test.h"
+#include "util/thread.h"
 #include "re2/prog.h"
 #include "re2/re2.h"
 #include "re2/regexp.h"
 #include "re2/testing/regexp_generator.h"
 #include "re2/testing/string_generator.h"
-
-static const bool UsingMallocCounter = false;
 
 DECLARE_bool(re2_dfa_bail_when_slow);
 
@@ -44,7 +42,7 @@ TEST(Multithreaded, BuildEntireDFA) {
   // Check that single-threaded code works.
   {
     //LOG(INFO) << s;
-    Regexp* re = Regexp::Parse(s, Regexp::LikePerl, NULL);
+    Regexp* re = Regexp::Parse(s.c_str(), Regexp::LikePerl, NULL);
     CHECK(re);
     Prog* prog = re->CompileToProg(0);
     CHECK(prog);
@@ -59,7 +57,7 @@ TEST(Multithreaded, BuildEntireDFA) {
 
   // Build the DFA simultaneously in a bunch of threads.
   for (int i = 0; i < FLAGS_repeat; i++) {
-    Regexp* re = Regexp::Parse(s, Regexp::LikePerl, NULL);
+    Regexp* re = Regexp::Parse(s.c_str(), Regexp::LikePerl, NULL);
     CHECK(re);
     Prog* prog = re->CompileToProg(0);
     CHECK(prog);
@@ -94,13 +92,14 @@ TEST(SingleThreaded, BuildEntireDFA) {
     s += "[ab]";
   s += "b";
 
-  Regexp* re = Regexp::Parse(s, Regexp::LikePerl, NULL);
+  //LOG(INFO) << s;
+  Regexp* re = Regexp::Parse(s.c_str(), Regexp::LikePerl, NULL);
   CHECK(re);
   int max = 24;
   for (int i = 17; i < max; i++) {
-    int64 limit = 1<<i;
-    int64 usage;
-    //int64 progusage, dfamem;
+    int limit = 1<<i;
+    int usage;
+    //int progusage, dfamem;
     {
       testing::MallocCounter m(testing::MallocCounter::THIS_THREAD_ONLY);
       Prog* prog = re->CompileToProg(limit);
@@ -114,13 +113,10 @@ TEST(SingleThreaded, BuildEntireDFA) {
     }
     if (!UsingMallocCounter)
       continue;
-    //LOG(INFO) << "limit " << limit << ", "
-    //          << "prog usage " << progusage << ", "
-    //          << "DFA budget " << dfamem << ", "
-    //          << "total " << usage;
-    // Tolerate +/- 10%.
+    //LOG(INFO) << StringPrintf("Limit %d: prog used %d, DFA budget %d, total %d\n",
+    //                          limit, progusage, dfamem, usage);
     CHECK_GT(usage, limit*9/10);
-    CHECK_LT(usage, limit*11/10);
+    CHECK_LT(usage, limit + (16<<10));  // 16kB of slop okay
   }
   re->Decref();
 }
@@ -136,7 +132,7 @@ TEST(SingleThreaded, BuildEntireDFA) {
 // position in the input, never reusing any states until it gets to the
 // end of the string.  This is the worst possible case for DFA execution.
 static string DeBruijnString(int n) {
-  CHECK_LT(n, static_cast<int>(8*sizeof(int)));
+  CHECK_LT(n, 8*sizeof(int));
   CHECK_GT(n, 0);
 
   vector<bool> did(1<<n);
@@ -225,13 +221,13 @@ TEST(SingleThreaded, SearchDFA) {
     peak_usage = m.PeakHeapGrowth();
     delete prog;
   }
+  re->Decref();
+
   if (!UsingMallocCounter)
     return;
-  //LOG(INFO) << "usage " << usage << ", "
-  //          << "peak usage " << peak_usage;
+  //LOG(INFO) << "usage " << usage << " " << peak_usage;
   CHECK_LT(usage, 1<<n);
   CHECK_LT(peak_usage, 1<<n);
-  re->Decref();
 }
 
 // Helper thread: searches for match, which should match,

@@ -20,7 +20,7 @@ RE2::Set::Set(const RE2::Options& options, RE2::Anchor anchor) {
 }
 
 RE2::Set::~Set() {
-  for (size_t i = 0; i < re_.size(); i++)
+  for (int i = 0; i < re_.size(); i++)
     re_[i]->Decref();
   delete prog_;
 }
@@ -45,7 +45,7 @@ int RE2::Set::Add(const StringPiece& pattern, string* error) {
   }
 
   // Concatenate with match index and push on vector.
-  int n = static_cast<int>(re_.size());
+  int n = re_.size();
   re2::Regexp* m = re2::Regexp::HaveMatch(n, pf);
   if (re->op() == kRegexpConcat) {
     int nsub = re->nsub();
@@ -75,8 +75,8 @@ bool RE2::Set::Compile() {
 
   Regexp::ParseFlags pf = static_cast<Regexp::ParseFlags>(
     options_.ParseFlags());
-  re2::Regexp* re = re2::Regexp::Alternate(const_cast<re2::Regexp**>(re_.data()),
-                                           static_cast<int>(re_.size()), pf);
+  re2::Regexp* re = re2::Regexp::Alternate(const_cast<re2::Regexp**>(&re_[0]),
+                                           re_.size(), pf);
   re_.clear();
   re2::Regexp* sre = re->Simplify();
   re->Decref();

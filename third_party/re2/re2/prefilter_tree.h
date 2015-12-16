@@ -16,13 +16,15 @@
 #ifndef RE2_PREFILTER_TREE_H_
 #define RE2_PREFILTER_TREE_H_
 
+#include <map>
+
 #include "util/util.h"
 #include "util/sparse_array.h"
 
 namespace re2 {
 
 typedef SparseArray<int> IntMap;
-typedef map<int, int> StdIntMap;
+typedef std::map<int, int> StdIntMap;
 
 class Prefilter;
 
@@ -123,7 +125,7 @@ class PrefilterTree {
   // Has the prefilter tree been compiled.
   bool compiled_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrefilterTree);
+  DISALLOW_EVIL_CONSTRUCTORS(PrefilterTree);
 };
 
 }  // namespace

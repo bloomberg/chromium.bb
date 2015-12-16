@@ -10,40 +10,19 @@
 #ifndef RE2_UTIL_MUTEX_H_
 #define RE2_UTIL_MUTEX_H_
 
-#include <stdlib.h>
-
-#if !defined(_WIN32)
-#include <unistd.h>  // For POSIX options
-#endif
-
 namespace re2 {
 
-#if !defined(_WIN32)
-  // Possible values of POSIX options:
-  //   -1 means not supported,
-  //    0 means maybe supported (query at runtime),
-  //   >0 means supported.
-# if defined(_POSIX_THREADS) && _POSIX_THREADS > 0
-#   define HAVE_PTHREAD 1
-# else
-#   define HAVE_PTHREAD 0
-# endif
-# if defined(_POSIX_READER_WRITER_LOCKS) && _POSIX_READER_WRITER_LOCKS > 0
-#   define HAVE_RWLOCK 1
-# else
-#   define HAVE_RWLOCK 0
-# endif
-#else
-# define HAVE_PTHREAD 0
-# define HAVE_RWLOCK 0
+#ifndef WIN32
+#define HAVE_PTHREAD 1
+#define HAVE_RWLOCK 1
 #endif
 
 #if defined(NO_THREADS)
   typedef int MutexType;      // to keep a lock-count
-#elif HAVE_PTHREAD && HAVE_RWLOCK
+#elif defined(HAVE_PTHREAD) && defined(HAVE_RWLOCK)
   // Needed for pthread_rwlock_*.  If it causes problems, you could take it
-  // out, but then you'd have to set HAVE_RWLOCK to 0 (at least on linux --
-  // it *does* cause problems for FreeBSD, or MacOSX, but isn't needed
+  // out, but then you'd have to unset HAVE_RWLOCK (at least on linux -- it
+  // *does* cause problems for FreeBSD, or MacOSX, but isn't needed
   // for locking there.)
 # ifdef __linux__
 #   undef _XOPEN_SOURCE
@@ -51,12 +30,12 @@ namespace re2 {
 # endif
 # include <pthread.h>
   typedef pthread_rwlock_t MutexType;
-#elif HAVE_PTHREAD
+#elif defined(HAVE_PTHREAD)
 # include <pthread.h>
   typedef pthread_mutex_t MutexType;
-#elif defined(_WIN32)
+#elif defined(WIN32)
 # ifndef WIN32_LEAN_AND_MEAN
-#   define WIN32_LEAN_AND_MEAN  // We only need minimal includes
+#  define WIN32_LEAN_AND_MEAN  // We only need minimal includes
 # endif
 # ifdef GMUTEX_TRYLOCK
   // We need Windows NT or later for TryEnterCriticalSection().  If you
@@ -125,8 +104,9 @@ bool Mutex::TryLock()      { if (mutex_) return false; Lock(); return true; }
 void Mutex::ReaderLock()   { assert(++mutex_ > 0); }
 void Mutex::ReaderUnlock() { assert(mutex_-- > 0); }
 
-#elif HAVE_PTHREAD && HAVE_RWLOCK
+#elif defined(HAVE_PTHREAD) && defined(HAVE_RWLOCK)
 
+#include <stdlib.h>      // for abort()
 #define SAFE_PTHREAD(fncall)  do { if ((fncall) != 0) abort(); } while (0)
 
 Mutex::Mutex()             { SAFE_PTHREAD(pthread_rwlock_init(&mutex_, NULL)); }
@@ -139,8 +119,9 @@ void Mutex::ReaderUnlock() { SAFE_PTHREAD(pthread_rwlock_unlock(&mutex_)); }
 
 #undef SAFE_PTHREAD
 
-#elif HAVE_PTHREAD
+#elif defined(HAVE_PTHREAD)
 
+#include <stdlib.h>      // for abort()
 #define SAFE_PTHREAD(fncall)  do { if ((fncall) != 0) abort(); } while (0)
 
 Mutex::Mutex()             { SAFE_PTHREAD(pthread_mutex_init(&mutex_, NULL)); }
@@ -152,7 +133,7 @@ void Mutex::ReaderLock()   { Lock(); }      // we don't have read-write locks
 void Mutex::ReaderUnlock() { Unlock(); }
 #undef SAFE_PTHREAD
 
-#elif defined(_WIN32)
+#elif defined(WIN32)
 
 Mutex::Mutex()             { InitializeCriticalSection(&mutex_); }
 Mutex::~Mutex()            { DeleteCriticalSection(&mutex_); }
@@ -209,7 +190,7 @@ class WriterMutexLock {
 #define WriterMutexLock(x) COMPILE_ASSERT(0, wmutex_lock_decl_missing_var_name)
 
 // Provide safe way to declare and use global, linker-initialized mutex. Sigh.
-#if HAVE_PTHREAD
+#ifdef HAVE_PTHREAD
 
 #define GLOBAL_MUTEX(name) \
 	static pthread_mutex_t (name) = PTHREAD_MUTEX_INITIALIZER

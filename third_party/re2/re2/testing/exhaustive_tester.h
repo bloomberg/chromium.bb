@@ -13,16 +13,6 @@
 
 namespace re2 {
 
-#if !defined(NDEBUG)
-// We are in a debug build.
-const bool RE2_DEBUG_MODE = true;
-#elif ADDRESS_SANITIZER || MEMORY_SANITIZER || THREAD_SANITIZER
-// Not a debug build, but still under sanitizers.
-const bool RE2_DEBUG_MODE = true;
-#else
-const bool RE2_DEBUG_MODE = false;
-#endif
-
 // Exhaustive regular expression test: generate all regexps within parameters,
 // then generate all strings of a given length over a given alphabet,
 // then check that NFA, DFA, and PCRE agree about whether each regexp matches
@@ -73,7 +63,7 @@ class ExhaustiveTester : public RegexpGenerator {
   bool randomstrings_;  // Whether to use random strings
   int32 stringseed_;    // If so, the seed.
   int stringcount_;     // If so, how many to generate.
-  DISALLOW_COPY_AND_ASSIGN(ExhaustiveTester);
+  DISALLOW_EVIL_CONSTRUCTORS(ExhaustiveTester);
 };
 
 // Runs an exhaustive test on the given parameters.

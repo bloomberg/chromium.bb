@@ -23,7 +23,7 @@ TEST(EmptyString, Exhaustive) {
 TEST(Punctuation, Literals) {
   vector<string> alphabet = Explode("()*+?{}[]\\^$.");
   vector<string> escaped = alphabet;
-  for (size_t i = 0; i < escaped.size(); i++)
+  for (int i = 0; i < escaped.size(); i++)
     escaped[i] = "\\" + escaped[i];
   ExhaustiveTest(1, 1, escaped, RegexpGenerator::EgrepOps(),
                  2, alphabet, "", "");

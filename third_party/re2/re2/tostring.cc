@@ -42,7 +42,7 @@ class ToStringWalker : public Regexp::Walker<int> {
  private:
   string* t_;  // The string the walker appends to.
 
-  DISALLOW_COPY_AND_ASSIGN(ToStringWalker);
+  DISALLOW_EVIL_CONSTRUCTORS(ToStringWalker);
 };
 
 string Regexp::ToString() {
@@ -94,8 +94,6 @@ int ToStringWalker::PreVisit(Regexp* re, int parent_arg, bool* stop) {
 
     case kRegexpCapture:
       t_->append("(");
-      if (re->cap() == 0)
-        LOG(DFATAL) << "kRegexpCapture cap() == 0";
       if (re->name()) {
         t_->append("?P<");
         t_->append(*re->name());
@@ -122,13 +120,13 @@ int ToStringWalker::PreVisit(Regexp* re, int parent_arg, bool* stop) {
 static void AppendLiteral(string *t, Rune r, bool foldcase) {
   if (r != 0 && r < 0x80 && strchr("(){}[]*+?|.^$\\", r)) {
     t->append(1, '\\');
-    t->append(1, static_cast<char>(r));
+    t->append(1, r);
   } else if (foldcase && 'a' <= r && r <= 'z') {
     if ('a' <= r && r <= 'z')
       r += 'A' - 'a';
     t->append(1, '[');
-    t->append(1, static_cast<char>(r));
-    t->append(1, static_cast<char>(r) + 'a' - 'A');
+    t->append(1, r);
+    t->append(1, r + 'a' - 'A');
     t->append(1, ']');
   } else {
     AppendCCRange(t, r, r);
@@ -156,14 +154,12 @@ int ToStringWalker::PostVisit(Regexp* re, int parent_arg, int pre_arg,
       break;
 
     case kRegexpLiteral:
-      AppendLiteral(t_, re->rune(),
-                    (re->parse_flags() & Regexp::FoldCase) != 0);
+      AppendLiteral(t_, re->rune(), re->parse_flags() & Regexp::FoldCase);
       break;
 
     case kRegexpLiteralString:
       for (int i = 0; i < re->nrunes(); i++)
-        AppendLiteral(t_, re->runes()[i],
-                      (re->parse_flags() & Regexp::FoldCase) != 0);
+        AppendLiteral(t_, re->runes()[i], re->parse_flags() & Regexp::FoldCase);
       if (prec < PrecConcat)
         t_->append(")");
       break;
@@ -301,7 +297,7 @@ static void AppendCCChar(string* t, Rune r) {
   if (0x20 <= r && r <= 0x7E) {
     if (strchr("[]^-\\", r))
       t->append("\\");
-    t->append(1, static_cast<char>(r));
+    t->append(1, r);
     return;
   }
   switch (r) {

@@ -3,17 +3,15 @@
 // license that can be found in the LICENSE file.
 
 #include "util/util.h"
-#ifndef _WIN32
 #include "util/valgrind.h"
-#endif
 
 namespace re2 {
 
-bool RunningOnValgrind() {
+int RunningOnValgrind() {
 #ifdef RUNNING_ON_VALGRIND
-  return RUNNING_ON_VALGRIND != 0;
+	return RUNNING_ON_VALGRIND;
 #else
-  return false;
+	return 0;
 #endif
 }
 

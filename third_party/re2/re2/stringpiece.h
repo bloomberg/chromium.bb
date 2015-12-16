@@ -20,10 +20,12 @@
 #define STRINGS_STRINGPIECE_H__
 
 #include <string.h>
-#include <algorithm>
 #include <cstddef>
 #include <iosfwd>
 #include <string>
+#ifdef WIN32
+#include <algorithm>
+#endif
 
 namespace re2 {
 
@@ -137,17 +139,15 @@ class StringPiece {
   int max_size() const { return length_; }
   int capacity() const { return length_; }
 
-  size_type copy(char* buf, size_type n, size_type pos = 0) const;
+  int copy(char* buf, size_type n, size_type pos = 0) const;
 
-  bool contains(StringPiece s) const;
-
-  size_type find(const StringPiece& s, size_type pos = 0) const;
-  size_type find(char c, size_type pos = 0) const;
-  size_type rfind(const StringPiece& s, size_type pos = npos) const;
-  size_type rfind(char c, size_type pos = npos) const;
+  int find(const StringPiece& s, size_type pos = 0) const;
+  int find(char c, size_type pos = 0) const;
+  int rfind(const StringPiece& s, size_type pos = npos) const;
+  int rfind(char c, size_type pos = npos) const;
 
   StringPiece substr(size_type pos, size_type n = npos) const;
-
+  
   static bool _equal(const StringPiece&, const StringPiece&);
 };
 

@@ -122,7 +122,7 @@ class NFA {
 
   Thread* free_threads_;  // free list
 
-  DISALLOW_COPY_AND_ASSIGN(NFA);
+  DISALLOW_EVIL_CONSTRUCTORS(NFA);
 };
 
 NFA::NFA(Prog* prog) {
@@ -468,7 +468,7 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
 
   if (text.begin() > context.begin()) {
     c = text.begin()[-1] & 0xFF;
-    wasword = Prog::IsWordChar(static_cast<uint8>(c));
+    wasword = Prog::IsWordChar(c);
   }
 
   // Loop over the text, stepping the machine.
@@ -529,8 +529,7 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
             break;
 
           case kInstCapture:
-            if (ip->cap() < ncapture_)
-              match_[ip->cap()] = p;
+            match_[ip->cap()] = p;
             id = ip->out();
             continue;
 
@@ -608,8 +607,7 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
 
   if (matched_) {
     for (int i = 0; i < nsubmatch; i++)
-      submatch[i].set(match_[2*i],
-                      static_cast<int>(match_[2*i+1] - match_[2*i]));
+      submatch[i].set(match_[2*i], match_[2*i+1] - match_[2*i]);
     if (Debug)
       fprintf(stderr, "match (%d,%d)\n",
               static_cast<int>(match_[0] - btext_),
@@ -707,52 +705,5 @@ Prog::SearchNFA(const StringPiece& text, const StringPiece& context,
   return true;
 }
 
-// For each instruction i in the program reachable from the start, compute the
-// number of instructions reachable from i by following only empty transitions
-// and record that count as fanout[i].
-//
-// fanout holds the results and is also the work queue for the outer iteration.
-// reachable holds the reached nodes for the inner iteration.
-void Prog::Fanout(SparseArray<int>* fanout) {
-  DCHECK_EQ(fanout->max_size(), size());
-  SparseSet reachable(size());
-  fanout->clear();
-  fanout->set_new(start(), 0);
-  for (SparseArray<int>::iterator i = fanout->begin(); i != fanout->end(); ++i) {
-    int* count = &i->second;
-    reachable.clear();
-    reachable.insert(i->index());
-    for (SparseSet::iterator j = reachable.begin(); j != reachable.end(); ++j) {
-      Prog::Inst* ip = inst(*j);
-      switch (ip->opcode()) {
-        default:
-          LOG(DFATAL) << "unhandled " << ip->opcode() << " in Prog::Fanout()";
-          break;
-
-        case kInstByteRange:
-          (*count)++;
-          if (!fanout->has_index(ip->out())) {
-            fanout->set_new(ip->out(), 0);
-          }
-          break;
-
-        case kInstAlt:
-        case kInstAltMatch:
-          reachable.insert(ip->out1());
-          // fall through
-
-        case kInstCapture:
-        case kInstEmptyWidth:
-        case kInstNop:
-          reachable.insert(ip->out());
-          break;
-
-        case kInstMatch:
-        case kInstFail:
-          break;
-      }
-    }
-  }
-}
-
 }  // namespace re2
+
