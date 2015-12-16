@@ -30,6 +30,7 @@ class WebLocalFrame;
 class WebMediaStream;
 class WebPlugin;
 struct WebPluginParams;
+struct WebPoint;
 struct WebRect;
 struct WebSize;
 struct WebURLError;
@@ -280,6 +281,10 @@ class WebTestDelegate {
     const blink::WebPluginParams& params) = 0;
 
   virtual void OnWebTestProxyBaseDestroy(WebTestProxyBase* proxy) = 0;
+
+  // Convert the position in DIP to native coordinates.
+  virtual blink::WebPoint ConvertDIPToNative(
+      const blink::WebPoint& point_in_dip) const = 0;
 };
 
 }  // namespace test_runner

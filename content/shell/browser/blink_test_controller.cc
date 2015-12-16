@@ -413,6 +413,8 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
                         OnGetBluetoothManualChooserEvents)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SendBluetoothManualChooserEvent,
                         OnSendBluetoothManualChooserEvent)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetDeviceScaleFactor,
+                        OnSetDeviceScaleFactor)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -770,6 +772,10 @@ void BlinkTestController::OnSendBluetoothManualChooserEvent(
     return;
   }
   bluetooth_chooser_factory_->SendEvent(event, argument);
+}
+
+void BlinkTestController::OnSetDeviceScaleFactor(float scale) {
+  main_window_->SetDeviceScaleFactor(scale);
 }
 
 }  // namespace content

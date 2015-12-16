@@ -358,4 +358,10 @@ void WebTestDelegateImpl::OnWebTestProxyBaseDestroy(
     test_runner::WebTestProxyBase* base) {
 }
 
+blink::WebPoint WebTestDelegateImpl::ConvertDIPToNative(
+    const blink::WebPoint& point_in_dip) const {
+  NOTIMPLEMENTED();
+  return point_in_dip;
+}
+
 }  // namespace html_viewer

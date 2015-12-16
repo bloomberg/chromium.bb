@@ -670,7 +670,8 @@ void WebTestProxyBase::CapturePixelsAsync(
   web_widget_->compositeAndReadbackAsync(capture_callback);
   if (blink::WebPagePopup* popup = web_widget_->pagePopup()) {
     capture_callback->set_wait_for_popup(true);
-    capture_callback->set_popup_position(popup->positionRelativeToOwner());
+    capture_callback->set_popup_position(
+        delegate_->ConvertDIPToNative(popup->positionRelativeToOwner()));
     popup->compositeAndReadbackAsync(capture_callback);
   }
 }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+  window.enablePixelTesting = true;
+  function startTest() {
+    if (window.testRunner) {
+      testRunner.setBackingScaleFactor(2.0, function() {});
+    }
+  }
+  window.matchMedia('screen and (min-resolution: 2dppx)').
+     addListener(function(e) {
+       if (e.matches) {
+         openMenu();
+       }
+     });
+
+  function openMenu() {
+    openPicker(menu, done, function () {
+        testFailed('picker didn\'t open')
+        finishJSTest();
+    });
+  }
+  function done() {
+    finishJSTest();
+  }
+</script>
+<script src="../../resources/js-test.js"></script>
+<script src="../forms/resources/picker-common.js"></script>
+</head>
+<body onLoad="startTest()">
+<p>The font size in the popup should be same as the font size of the SELECT element except the third OPTION.</p>
+<select id="menu">
+  <option>foo</option>
+  <option selected>bar</option>
+  <option hidden>qux</option>
+  <option>baz</option>
+  <optgroup label="Group">
+    <option>foo</option>
+    <option>bar</option>
+  </optgroup>
+</select>
+<p id="description" style="opacity: 0"></p>
+select<sediv id="console" style="opacity: 0"></div>
+<script>
+</script>
+</body>
+</html>

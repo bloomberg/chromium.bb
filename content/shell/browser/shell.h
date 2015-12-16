@@ -150,6 +150,8 @@ class Shell : public WebContentsDelegate,
   void ActivateContents(WebContents* contents) override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
+  void SetDeviceScaleFactor(float scale);
+
   static gfx::Size GetShellDefaultSize();
 
  private:

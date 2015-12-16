@@ -32,6 +32,7 @@
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
+#include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -265,8 +266,8 @@ BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
       focused_view_(NULL),
       is_main_window_(false),
       focus_on_next_commit_(false),
-      leak_detector_(new LeakDetector(this)) {
-}
+      leak_detector_(new LeakDetector(this)),
+      device_scale_factor_(1.f) {}
 
 BlinkTestRunner::~BlinkTestRunner() {
 }
@@ -512,7 +513,11 @@ void BlinkTestRunner::SimulateWebNotificationClick(const std::string& title,
 }
 
 void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
+  if (device_scale_factor_ == factor)
+    return;
+  device_scale_factor_ = factor;
   content::SetDeviceScaleFactor(render_view(), factor);
+  Send(new ShellViewHostMsg_SetDeviceScaleFactor(routing_id(), factor));
 }
 
 void BlinkTestRunner::SetDeviceColorProfile(const std::string& name) {
@@ -760,6 +765,11 @@ void BlinkTestRunner::OnWebTestProxyBaseDestroy(
     test_runner::WebTestProxyBase* proxy) {
 }
 
+blink::WebPoint BlinkTestRunner::ConvertDIPToNative(
+    const blink::WebPoint& point_in_dip) const {
+  return blink::WebPoint(point_in_dip.x * device_scale_factor_,
+                         point_in_dip.y * device_scale_factor_);
+}
 bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
     blink::WebMediaStream* stream) {
   DCHECK(stream);

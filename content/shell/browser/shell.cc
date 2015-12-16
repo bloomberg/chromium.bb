@@ -18,6 +18,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
@@ -34,6 +35,12 @@
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/switches.h"
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_screen_x11.h"
+#endif
 
 namespace content {
 
@@ -381,6 +388,19 @@ void Shell::ActivateContents(WebContents* contents) {
 
 bool Shell::HandleContextMenu(const content::ContextMenuParams& params) {
   return PlatformHandleContextMenu(params);
+}
+
+void Shell::SetDeviceScaleFactor(float scale) {
+#if !defined(OS_CHROMEOS)
+  gfx::Display::ResetForceDeviceScaleFactorForTesting();
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kForceDeviceScaleFactor, base::StringPrintf("%f", scale));
+#if defined(USE_X11)
+  views::DesktopScreenX11::UpdateDeviceScaleFactorForTest();
+#endif
+#endif
+  RenderWidgetHostView* host_view = web_contents_->GetRenderWidgetHostView();
+  host_view->SetSize(host_view->GetViewBounds().size());
 }
 
 gfx::Size Shell::GetShellDefaultSize() {
