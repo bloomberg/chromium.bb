@@ -3218,6 +3218,15 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
       // information loss).
       {ProfileFields(), {{COMPANY_NAME, ""}}, {{COMPANY_NAME, "Fox"}}},
 
+      // Tests that saving an identical profile except a slightly different
+      // postal code results in a merge with the new value kept.
+      {{{ADDRESS_HOME_ZIP, "R2C 0A1"}}, {{ADDRESS_HOME_ZIP, "R2C0A1"}},
+        {{ADDRESS_HOME_ZIP, "R2C0A1"}}},
+      {{{ADDRESS_HOME_ZIP, "R2C0A1"}}, {{ADDRESS_HOME_ZIP, "R2C 0A1"}},
+        {{ADDRESS_HOME_ZIP, "R2C 0A1"}}},
+      {{{ADDRESS_HOME_ZIP, "r2c 0a1"}}, {{ADDRESS_HOME_ZIP, "R2C0A1"}},
+        {{ADDRESS_HOME_ZIP, "R2C0A1"}}},
+
       // Tests that saving an identical profile plus a new piece of information
       // on the address line 2 results in a merge and that the original empty
       // value gets overwritten by the new information.

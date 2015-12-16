@@ -599,6 +599,21 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
               app_locale)) {
         continue;
       }
+
+      // Special case for postal codes, where postal codes with/without spaces
+      // in them are considered equivalent.
+      if (field_type == ADDRESS_HOME_ZIP) {
+        base::string16 profile_zip;
+        base::string16 current_zip;
+        base::RemoveChars(profile.GetRawInfo(field_type), ASCIIToUTF16(" "),
+                          &profile_zip);
+        base::RemoveChars(GetRawInfo(field_type), ASCIIToUTF16(" "),
+                          &current_zip);
+        if (!compare.StringsEqual(profile_zip, current_zip))
+          return false;
+        continue;
+      }
+
       // Special case for the address because the comparison uses canonicalized
       // values. Start by comparing the address line by line. If it fails, make
       // sure that the address as a whole is different before returning false.
