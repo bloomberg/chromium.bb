@@ -32,6 +32,18 @@
 
 namespace extensions {
 
+namespace {
+
+void IgnoreAdapterResult(scoped_refptr<device::BluetoothAdapter> adapter) {}
+
+void IgnoreAdapterResultAndThen(
+    const base::Closure& callback,
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  callback.Run();
+}
+
+}  // namespace
+
 namespace bluetooth = api::bluetooth;
 namespace bt_private = api::bluetooth_private;
 
@@ -73,7 +85,9 @@ void BluetoothEventRouter::GetAdapter(
     return;
   }
 
-  device::BluetoothAdapterFactory::GetAdapter(callback);
+  device::BluetoothAdapterFactory::GetAdapter(
+      base::Bind(&BluetoothEventRouter::OnAdapterInitialized,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void BluetoothEventRouter::StartDiscoverySession(
@@ -85,8 +99,7 @@ void BluetoothEventRouter::StartDiscoverySession(
     // If |adapter_| isn't set yet, call GetAdapter() which will synchronously
     // invoke the callback (StartDiscoverySessionImpl).
     GetAdapter(base::Bind(
-        &BluetoothEventRouter::OnAdapterInitialized,
-        weak_ptr_factory_.GetWeakPtr(),
+        &IgnoreAdapterResultAndThen,
         base::Bind(&BluetoothEventRouter::StartDiscoverySessionImpl,
                    weak_ptr_factory_.GetWeakPtr(), make_scoped_refptr(adapter),
                    extension_id, callback, error_callback)));
@@ -193,14 +206,14 @@ BluetoothApiPairingDelegate* BluetoothEventRouter::GetPairingDelegate(
 }
 
 void BluetoothEventRouter::OnAdapterInitialized(
-    const base::Closure& callback,
+    const device::BluetoothAdapterFactory::AdapterCallback& callback,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   if (!adapter_.get()) {
     adapter_ = adapter;
     adapter_->AddObserver(this);
   }
 
-  callback.Run();
+  callback.Run(adapter);
 }
 
 void BluetoothEventRouter::MaybeReleaseAdapter() {
@@ -215,8 +228,7 @@ void BluetoothEventRouter::MaybeReleaseAdapter() {
 void BluetoothEventRouter::AddPairingDelegate(const std::string& extension_id) {
   if (!adapter_.get() && IsBluetoothSupported()) {
     GetAdapter(
-        base::Bind(&BluetoothEventRouter::OnAdapterInitialized,
-                   weak_ptr_factory_.GetWeakPtr(),
+        base::Bind(&IgnoreAdapterResultAndThen,
                    base::Bind(&BluetoothEventRouter::AddPairingDelegateImpl,
                               weak_ptr_factory_.GetWeakPtr(), extension_id)));
     return;
@@ -349,11 +361,8 @@ void BluetoothEventRouter::DeviceRemoved(device::BluetoothAdapter* adapter,
 void BluetoothEventRouter::OnListenerAdded() {
   num_event_listeners_++;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!adapter_.get()) {
-    GetAdapter(base::Bind(&BluetoothEventRouter::OnAdapterInitialized,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          base::Bind(&base::DoNothing)));
-  }
+  if (!adapter_.get())
+    GetAdapter(base::Bind(&IgnoreAdapterResult));
 }
 
 void BluetoothEventRouter::OnListenerRemoved() {

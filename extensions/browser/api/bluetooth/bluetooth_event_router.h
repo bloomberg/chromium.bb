@@ -137,8 +137,9 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
                                  const base::Closure& error_callback);
   void AddPairingDelegateImpl(const std::string& extension_id);
 
-  void OnAdapterInitialized(const base::Closure& callback,
-                            scoped_refptr<device::BluetoothAdapter> adapter);
+  void OnAdapterInitialized(
+      const device::BluetoothAdapterFactory::AdapterCallback& callback,
+      scoped_refptr<device::BluetoothAdapter> adapter);
   void MaybeReleaseAdapter();
   void DispatchAdapterStateEvent();
   void DispatchDeviceEvent(events::HistogramValue histogram_value,
