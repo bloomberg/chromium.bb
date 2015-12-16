@@ -29,6 +29,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_platform_key.h"
 #include "net/ssl/ssl_private_key.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -68,7 +69,7 @@ void TokenValidatorBase::ValidateThirdPartyToken(
   DCHECK(!on_token_validated.is_null());
 
   on_token_validated_ = on_token_validated;
-
+  token_ = token;
   StartValidateRequest(token);
 }
 
@@ -103,9 +104,26 @@ void TokenValidatorBase::OnReadCompleted(net::URLRequest* source,
   const net::URLRequestStatus status = request_->status();
 
   if (!status.is_io_pending()) {
+    retrying_request_ = false;
     std::string shared_token = ProcessResponse();
     request_.reset();
     on_token_validated_.Run(shared_token);
+  }
+}
+
+void TokenValidatorBase::OnReceivedRedirect(
+    net::URLRequest* request,
+    const net::RedirectInfo& redirect_info,
+    bool* defer_redirect) {
+  if (!retrying_request_ && redirect_info.new_method == "GET" &&
+      redirect_info.new_url == third_party_auth_config_.token_validation_url) {
+    // A sequence of redirects caused the original POST request to become a GET
+    // request for this URL. Cancel the request, and re-submit the POST request.
+    // The chain of redirects are expected to set some cookies that will
+    // ensure the new POST request succeeds.
+    retrying_request_ = true;
+    DCHECK(data_.empty());
+    StartValidateRequest(token_);
   }
 }
 
