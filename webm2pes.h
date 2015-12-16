@@ -169,9 +169,9 @@ class Webm2Pes {
   Webm2Pes(Webm2Pes&&) = delete;
   ~Webm2Pes() = default;
 
-  // Converts the VPx video stream to a PES and returns true. Returns false
+  // Converts the VPx video stream to a PES file and returns true. Returns false
   // to report failure.
-  bool Convert();
+  bool ConvertToFile();
 
  private:
   // fclose functor for wrapping FILE in std::unique_ptr.

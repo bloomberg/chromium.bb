@@ -243,7 +243,7 @@ bool PesHeader::Write(std::FILE* file, bool write_pts) const {
 // Webm2Pes methods.
 //
 
-bool Webm2Pes::Convert() {
+bool Webm2Pes::ConvertToFile() {
   if (input_file_name_.empty() || output_file_name_.empty()) {
     std::fprintf(stderr, "Webm2Pes: input and/or output file name(s) empty.\n");
     return false;
