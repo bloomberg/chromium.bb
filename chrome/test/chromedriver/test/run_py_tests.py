@@ -53,18 +53,29 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
     # crbug.com/469947
     'ChromeDriverTest.testTouchPinch',
+    'ChromeDriverTest.testReturningAFunctionInJavascript',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
-    # https://code.google.com/p/chromedriver/issues/detail?id=1278
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1278
     'ChromeDownloadDirTest.testFileDownloadWithGet',
+    'ChromeDriverTest.testDoesntHangOnDebugger',
+    'ChromeDriverTest.testDontGoBackOrGoForward',
+    'ChromeDriverTest.testSwitchesToTopFrameAfterGoingBack',
+    'ChromeDriverTest.testSwitchesToTopFrameAfterNavigation',
+    'ChromeDriverTest.testSwitchesToTopFrameAfterRefresh',
+    'ChromeDriverTest.testClickElement',
+    'ChromeDriverTest.testHasFocusOnStartup',
+    'ChromeDriverTest.testShadowDomHover',
+    'SessionHandlingTest.testGetSessions',
 ]
 _VERSION_SPECIFIC_FILTER['44'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=1202
     'ChromeDownloadDirTest.testFileDownloadWithGet',
+
 ]
 
 _OS_SPECIFIC_FILTER = {}
