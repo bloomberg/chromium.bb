@@ -27,7 +27,7 @@ private:
 
     PassRefPtr<JSONObject> toJSON() const;
 
-    uintptr_t m_address;
+    const LayoutObject* m_address;
     bool m_isAnonymous;
     bool m_isPositioned;
     bool m_isRelPositioned;

@@ -27,7 +27,7 @@ String TracedLayoutObject::asTraceFormat() const
 }
 
 TracedLayoutObject::TracedLayoutObject(const LayoutObject& object, bool traceGeometry)
-    : m_address(reinterpret_cast<uintptr_t>(&object))
+    : m_address(&object)
     , m_isAnonymous(object.isAnonymous())
     , m_isPositioned(object.isOutOfFlowPositioned())
     , m_isRelPositioned(object.isRelPositioned())
@@ -87,7 +87,7 @@ TracedLayoutObject::TracedLayoutObject(const LayoutObject& object, bool traceGeo
 PassRefPtr<JSONObject> TracedLayoutObject::toJSON() const
 {
     RefPtr<JSONObject> json(JSONObject::create());
-    json->setNumber("address", m_address);
+    json->setString("address", String::format("%p", m_address));
     json->setString("name", m_name);
     if (!m_tag.isEmpty())
         json->setString("tag", m_tag);
