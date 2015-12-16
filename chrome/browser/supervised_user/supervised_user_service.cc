@@ -142,9 +142,13 @@ ExtensionState GetExtensionState(const extensions::Extension* extension) {
 #endif
   // Note: Component extensions are protected from modification/uninstallation
   // anyway, so there's no need to enforce them again for supervised users.
+  // Also, leave policy-installed extensions alone - they have their own
+  // management; in particular we don't want to override the force-install list.
   if (extensions::Manifest::IsComponentLocation(extension->location()) ||
+      extensions::Manifest::IsPolicyLocation(extension->location()) ||
       extension->is_theme() ||
       extension->from_bookmark() ||
+      extension->is_shared_module() ||
       was_installed_by_default) {
     return EXTENSION_ALLOWED;
   }
