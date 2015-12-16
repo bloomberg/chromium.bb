@@ -1273,11 +1273,6 @@ crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
-crbug.com/570002 fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
-crbug.com/570002 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
-crbug.com/570002 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
-crbug.com/570002 virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
-
 crbug.com/543369 [ Linux ] fast/forms/select/popup-menu-appearance-tall.html [ Failure ]
 
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
