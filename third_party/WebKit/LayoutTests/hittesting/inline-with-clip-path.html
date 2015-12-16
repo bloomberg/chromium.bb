@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<script src="../resources/js-test.js"></script>
+<script src="../resources/ahem.js"></script>
+<script>
+    var referenceClipPathRect, shapeClipPathRect;
+
+    function test() {
+        // Check that a reference clip path affects hit testing for inlines.
+        // (25,75) is outside the triangular clip path, (75,25) is inside it.
+        referenceClipPathRect = referenceClipPath.getBoundingClientRect();
+        shouldNotBe("document.elementFromPoint(referenceClipPathRect.left + 25, referenceClipPathRect.top + 75).id", "'referenceClipPath'");
+        shouldBe("document.elementFromPoint(referenceClipPathRect.left + 75, referenceClipPathRect.top + 25).id", "'referenceClipPath'");
+
+        // Check that a shape clip path affects hit testing for inlines.
+        // (25,75) is outside the triangular clip path, (75,25) is inside it.
+        shapeClipPathRect = shapeClipPath.getBoundingClientRect();
+        shouldNotBe("document.elementFromPoint(shapeClipPathRect.left + 25, shapeClipPathRect.top + 75).id", "'shapeClipPath'");
+        shouldBe("document.elementFromPoint(shapeClipPathRect.left + 75, shapeClipPathRect.top + 25).id", "'shapeClipPath'");
+    }
+</script>
+<style>
+    #referenceClipPath {
+        -webkit-clip-path: url(#referenceClipPathTopLeft);
+        clip-path: url(#referenceClipPathTopLeft);
+        font-size: 100px;
+        font-family: Ahem;
+        color: blue;
+    }
+    #referenceClipPath:hover {
+        color: green;
+    }
+    #shapeClipPath {
+        -webkit-clip-path: polygon(0% 0%, 100% 100%, 100% 0%);
+        clip-path: polygon(0% 0%, 100% 100%, 100% 0%);
+        font-size: 100px;
+        font-family: Ahem;
+        color: purple;
+    }
+    #shapeClipPath:hover {
+        color: orange;
+    }
+</style>
+<body onload="test()">
+    <p>Inline hit testing should not include clipped-out regions.</p>
+    <svg width="0" height="0">
+        <defs>
+            <clipPath id="referenceClipPathTopLeft" clipPathUnits="objectBoundingBox">
+                <path id="path" d="M 0 0 L 100 100 L 100 0Z" />
+            </clipPath>
+        </defs>
+    </svg>
+    <span id="referenceClipPath">a</span>
+    <span id="shapeClipPath">a</span>
+    <div id="console"></div>
+</body>

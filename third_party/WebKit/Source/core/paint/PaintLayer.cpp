@@ -67,6 +67,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/page/Page.h"
@@ -1685,13 +1686,8 @@ PaintLayer* PaintLayer::hitTestLayer(PaintLayer* rootLayer, PaintLayer* containe
         return hitTestLayerByApplyingTransform(rootLayer, containerLayer, result, hitTestRect, hitTestLocation, transformState, zOffset);
     }
 
-    if (layoutObject()->hasClipPath()) {
-        ASSERT(layoutObject()->isBox() && isSelfPaintingLayer());
-        LayoutPoint offsetToRootLayer;
-        convertToLayerCoords(rootLayer, offsetToRootLayer);
-        if (toLayoutBox(layoutObject())->hitTestClippedOutByClipPath(hitTestLocation.point(), offsetToRootLayer))
-            return nullptr;
-    }
+    if (hitTestClippedOutByClipPath(rootLayer, hitTestLocation))
+        return nullptr;
 
     // Ensure our lists and 3d status are up-to-date.
     m_stackingNode->updateLayerListsIfNeeded();
@@ -1983,6 +1979,37 @@ PaintLayer* PaintLayer::hitTestChildren(ChildrenIteration childrentoVisit, Paint
     }
 
     return resultLayer;
+}
+
+bool PaintLayer::hitTestClippedOutByClipPath(PaintLayer* rootLayer, const HitTestLocation& hitTestLocation) const
+{
+    if (!layoutObject()->hasClipPath())
+        return false;
+    ASSERT(isSelfPaintingLayer());
+
+    LayoutPoint offsetToRootLayer;
+    if (rootLayer)
+        convertToLayerCoords(rootLayer, offsetToRootLayer);
+    LayoutRect rootRelativeBounds = physicalBoundingBoxIncludingReflectionAndStackingChildren(offsetToRootLayer);
+
+    ClipPathOperation* clipPathOperation = layoutObject()->style()->clipPath();
+    ASSERT(clipPathOperation);
+    if (clipPathOperation->type() == ClipPathOperation::SHAPE) {
+        ShapeClipPathOperation* clipPath = toShapeClipPathOperation(clipPathOperation);
+        if (!clipPath->path(FloatRect(rootRelativeBounds)).contains(FloatPoint(hitTestLocation.point()), clipPath->windRule()))
+            return true;
+    } else {
+        ASSERT(clipPathOperation->type() == ClipPathOperation::REFERENCE);
+        ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(clipPathOperation);
+        Element* element = layoutObject()->document().getElementById(referenceClipPathOperation->fragment());
+        if (isSVGClipPathElement(element) && element->layoutObject()) {
+            LayoutSVGResourceClipper* clipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
+            if (!clipper->hitTestClipContent(FloatRect(rootRelativeBounds), FloatPoint(hitTestLocation.point())))
+                return true;
+        }
+    }
+
+    return false;
 }
 
 void PaintLayer::blockSelectionGapsBoundsChanged()

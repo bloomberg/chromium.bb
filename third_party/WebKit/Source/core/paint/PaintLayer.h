@@ -663,6 +663,7 @@ private:
     bool hitTestContentsForFragments(const PaintLayerFragments&, HitTestResult&, const HitTestLocation&, HitTestFilter, bool& insideClipRect) const;
     PaintLayer* hitTestTransformedLayerInFragments(PaintLayer* rootLayer, PaintLayer* containerLayer, HitTestResult&,
         const LayoutRect& hitTestRect, const HitTestLocation&, const HitTestingTransformState*, double* zOffset, ClipRectsCacheSlot);
+    bool hitTestClippedOutByClipPath(PaintLayer* rootLayer, const HitTestLocation&) const;
 
     bool childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const;
 

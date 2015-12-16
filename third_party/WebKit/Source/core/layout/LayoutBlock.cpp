@@ -1657,9 +1657,6 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
             return true;
     }
 
-    // Clip path hit testing should already be handled by PaintLayer.
-    ASSERT(!hitTestClippedOutByClipPath(locationInContainer, adjustedLocation));
-
     // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
     //            case, similar to overflow clip below.
 

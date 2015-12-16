@@ -491,8 +491,6 @@ public:
     void paint(const PaintInfo&, const LayoutPoint&) const override;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
-    bool hitTestClippedOutByClipPath(const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset) const;
-
     LayoutUnit minPreferredLogicalWidth() const override;
     LayoutUnit maxPreferredLogicalWidth() const override;
 
