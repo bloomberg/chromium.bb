@@ -501,9 +501,9 @@ typedef unrestricted float GLclampf;
     void compileShader(WebGLShader? shader);
 
     void compressedTexImage2D(GLenum target, GLint level, GLenum internalformat,
-                              GLsizei width, GLsizei height, GLint border, ArrayBufferView? data);
+                              GLsizei width, GLsizei height, GLint border, ArrayBufferView data);
     void compressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-                                 GLsizei width, GLsizei height, GLenum format, ArrayBufferView? data);
+                                 GLsizei width, GLsizei height, GLenum format, ArrayBufferView data);
 
     void copyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
     void copyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);

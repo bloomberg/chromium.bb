@@ -5914,10 +5914,7 @@ bool WebGLRenderingContextBase::validateCompressedTexFormat(const char* function
 
 bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functionName, GLsizei width, GLsizei height, GLsizei depth, GLenum format, DOMArrayBufferView* pixels)
 {
-    if (!pixels) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "no pixels");
-        return false;
-    }
+    ASSERT(pixels);
 
     CheckedInt<unsigned> bytesRequired = 0;
 
