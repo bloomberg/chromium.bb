@@ -1,39 +1,70 @@
 Check to see that FilteredItemSelectionDialog uses proper regex to filter results.
 
 
-Empty query matches everything
-Query:""
+Running: emptyQueryMatchesEverything
 Input:["a","bc"]
+Query:""
 Output:["a","bc"]
+Completion:""
 Selected item index: 0
+History:[""]
 
-Case sensitive matching
-Query:"aB"
+Running: caseSensitiveMatching
 Input:["abc","acB"]
+Query:"aB"
 Output:["abc","acB"]
+Completion:"aB"
 Selected item index: 0
+History:["","aB"]
 
-Case insensitive matching
-Query:"ab"
+Running: caseInsensitiveMatching
 Input:["abc","bac","a_B"]
+Query:"ab"
 Output:["abc","a_B"]
+Completion:"ab"
 Selected item index: 0
+History:["","aB","ab"]
 
-Duplicate symbols in query
-Query:"aab"
+Running: dumplicateSymbolsInQuery
 Input:["abab","abaa","caab","baac","fooaab"]
+Query:"aab"
 Output:["abab","caab","fooaab"]
+Completion:"aab"
 Selected item index: 0
+History:["","aB","ab","aab"]
 
-Dangerous input escaping
-Query:"^[]{}()\\.$*+?|"
+Running: dangerousInputEscaping
 Input:["^[]{}()\\.$*+?|","0123456789abcdef"]
+Query:"^[]{}()\\.$*+?|"
 Output:["^[]{}()\\.$*+?|"]
+Completion:"^[]{}()\\.$*+?|"
 Selected item index: 0
+History:["","aB","ab","aab","^[]{}()\\.$*+?|"]
 
-Item index is not reported in go-to line
-Query:":1"
+Running: itemIndexIsNotReportedInGoToLine
 Input:[":1:2:3.js"]
+Query:":1"
 Output:[":1:2:3.js"]
+Completion:":1"
 Selected item index: null
+History:["","aB","ab","aab","^[]{}()\\.$*+?|",":1"]
+
+Running: autoCompleteIsLast
+Input:["abc","abcd"]
+Query:""
+Output:["abc","abcd"]
+Completion:":1"
+Selected item index: 0
+History:["","aB","ab","aab","^[]{}()\\.$*+?|",":1",""]
+
+Running: autoCompleteAccept
+Input:["abc","abcd","aabcd"]
+Query:"a"
+Output:["abc","abcd","aabcd"]
+Completion:"aab"
+Query:"aab"
+Output:["aabcd"]
+Completion:"aab"
+Selected item index: 2
+History:["","aB","ab","aab","^[]{}()\\.$*+?|",":1","","aab"]
 

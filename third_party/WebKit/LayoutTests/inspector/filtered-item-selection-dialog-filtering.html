@@ -8,12 +8,12 @@ function test()
 {
 
     var overridenInput = [];
-    var overridenQuery = "";
     var overrideShowMatchingItems = true;
+    var history = [];
 
     function StubDelegate()
     {
-        WebInspector.SelectionDialogContentProvider.call(this);
+        WebInspector.SelectionDialogContentProvider.call(this, history);
     }
     StubDelegate.prototype = {
         itemKeyAt: function(itemIndex) { return overridenInput[itemIndex]; },
@@ -23,43 +23,97 @@ function test()
         {
             InspectorTest.addResult("Selected item index: " + itemIndex);
         },
-        rewriteQuery: function(query) { return overridenQuery; },
         shouldShowMatchingItems: function() { return overrideShowMatchingItems; },
 
         __proto__: WebInspector.SelectionDialogContentProvider.prototype
     }
 
-    var overridenInput = [];
-    var overridenQuery = "";
     var delegate = new StubDelegate();
 
-    function checkQuery(title, query, input, hideMatchingItems)
+    function checkQuery(query, input, hideMatchingItems, acceptAutocomplete, next)
     {
         overridenInput = input;
-        overridenQuery = query;
         overrideShowMatchingItems = !hideMatchingItems;
 
-        InspectorTest.addResult("\n" + title);
-        InspectorTest.addResult("Query:" + JSON.stringify(query));
         InspectorTest.addResult("Input:" + JSON.stringify(input));
 
         var filteredSelectionDialog = new WebInspector.FilteredItemSelectionDialog(delegate);
+        InspectorTest.addSniffer(filteredSelectionDialog, "_autocompletedForTests", onautocomplete);
+        filteredSelectionDialog.setQuery(query);
         filteredSelectionDialog._updateAfterItemsLoaded();
-        var items = filteredSelectionDialog._filteredItems;
-        var output = [];
-        for (var i = 0; i < items.length; ++i)
-            output.push(delegate.itemKeyAt(items[i]));
-        InspectorTest.addResult("Output:" + JSON.stringify(output));
-        filteredSelectionDialog._onEnter(InspectorTest.createKeyEvent("Enter"));
+
+        function onautocomplete()
+        {
+            if (acceptAutocomplete) {
+                dump();
+                InspectorTest.addSniffer(filteredSelectionDialog, "_autocompletedForTests", accept);
+                filteredSelectionDialog._prompt.acceptAutoComplete();
+            } else {
+                accept();
+            }
+        }
+
+        function dump()
+        {
+            InspectorTest.addResult("Query:" + JSON.stringify(filteredSelectionDialog._value()));
+            var items = filteredSelectionDialog._filteredItems;
+            var output = [];
+            for (var i = 0; i < items.length; ++i)
+                output.push(delegate.itemKeyAt(items[i]));
+            InspectorTest.addResult("Output:" + JSON.stringify(output));
+            InspectorTest.addResult("Completion:" + JSON.stringify(filteredSelectionDialog._prompt.text()));
+        }
+
+        function accept()
+        {
+            dump();
+            filteredSelectionDialog._onEnter(InspectorTest.createKeyEvent("Enter"));
+            InspectorTest.addResult("History:" + JSON.stringify(history));
+            next();
+        }
     }
 
-    checkQuery("Empty query matches everything", "", ["a", "bc"]);
-    checkQuery("Case sensitive matching", "aB", ["abc", "acB"]);
-    checkQuery("Case insensitive matching", "ab", ["abc", "bac", "a_B"]);
-    checkQuery("Duplicate symbols in query", "aab", ["abab", "abaa", "caab", "baac", "fooaab"]);
-    checkQuery("Dangerous input escaping", "^[]{}()\\.$*+?|", ["^[]{}()\\.$*+?|", "0123456789abcdef"]);
-    checkQuery("Item index is not reported in go-to line", ":1", [":1:2:3.js"], true);
-    InspectorTest.completeTest();
+    InspectorTest.runTestSuite([
+        function emptyQueryMatchesEverything(next)
+        {
+            checkQuery("", ["a", "bc"], false, false, next);
+        },
+
+        function caseSensitiveMatching(next)
+        {
+            checkQuery("aB", ["abc", "acB"], false, false, next);
+        },
+
+        function caseInsensitiveMatching(next)
+        {
+            checkQuery("ab", ["abc", "bac", "a_B"], false, false, next);
+        },
+
+        function dumplicateSymbolsInQuery(next)
+        {
+            checkQuery("aab", ["abab", "abaa", "caab", "baac", "fooaab"], false, false, next);
+        },
+
+        function dangerousInputEscaping(next)
+        {
+            checkQuery("^[]{}()\\.$*+?|", ["^[]{}()\\.$*+?|", "0123456789abcdef"], false, false, next);
+        },
+
+        function itemIndexIsNotReportedInGoToLine(next)
+        {
+            checkQuery(":1", [":1:2:3.js"], true, false, next);
+        },
+
+        function autoCompleteIsLast(next)
+        {
+            checkQuery("", ["abc", "abcd"], false, false, next);
+        },
+
+        function autoCompleteAccept(next)
+        {
+            checkQuery("a", ["abc", "abcd", "aabcd"], false, true, next);
+        }
+    ]);
 }
 
 </script>
