@@ -64,8 +64,8 @@ namespace {
 class DOMOperationObserver : public NotificationObserver,
                              public WebContentsObserver {
  public:
-  explicit DOMOperationObserver(RenderViewHost* rvh)
-      : WebContentsObserver(WebContents::FromRenderViewHost(rvh)),
+  explicit DOMOperationObserver(RenderFrameHost* rfh)
+      : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
         did_respond_(false) {
     registrar_.Add(this, NOTIFICATION_DOM_OPERATION_RESPONSE,
                    Source<WebContents>(web_contents()));
@@ -142,7 +142,7 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
   //                automation id.
   std::string script =
       "window.domAutomationController.setAutomationId(0);" + original_script;
-  DOMOperationObserver dom_op_observer(render_frame_host->GetRenderViewHost());
+  DOMOperationObserver dom_op_observer(render_frame_host);
   render_frame_host->ExecuteJavaScriptWithUserGestureForTests(
       base::UTF8ToUTF16(script));
   std::string json;
@@ -178,7 +178,7 @@ bool ExecuteScriptInIsolatedWorldHelper(RenderFrameHost* render_frame_host,
                                         scoped_ptr<base::Value>* result) {
   std::string script =
       "window.domAutomationController.setAutomationId(0);" + original_script;
-  DOMOperationObserver dom_op_observer(render_frame_host->GetRenderViewHost());
+  DOMOperationObserver dom_op_observer(render_frame_host);
   render_frame_host->ExecuteJavaScriptInIsolatedWorld(
       base::UTF8ToUTF16(script),
       content::RenderFrameHost::JavaScriptResultCallback(), world_id);
