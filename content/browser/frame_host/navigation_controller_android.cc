@@ -149,6 +149,13 @@ void NavigationControllerAndroid::Reload(JNIEnv* env,
   navigation_controller_->Reload(check_for_repost);
 }
 
+void NavigationControllerAndroid::ReloadToRefreshContent(
+    JNIEnv* env,
+    jobject obj,
+    jboolean check_for_repost) {
+  navigation_controller_->ReloadToRefreshContent(check_for_repost);
+}
+
 void NavigationControllerAndroid::ReloadIgnoringCache(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

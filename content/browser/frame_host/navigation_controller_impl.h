@@ -82,6 +82,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   bool IsInitialNavigation() const override;
   bool IsInitialBlankNavigation() const override;
   void Reload(bool check_for_repost) override;
+  void ReloadToRefreshContent(bool check_for_repost) override;
   void ReloadIgnoringCache(bool check_for_repost) override;
   void ReloadOriginalRequestURL(bool check_for_repost) override;
   void ReloadDisableLoFi(bool check_for_repost) override;

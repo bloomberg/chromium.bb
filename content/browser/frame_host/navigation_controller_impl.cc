@@ -74,6 +74,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/mime_util.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -289,6 +290,14 @@ void NavigationControllerImpl::Restore(
 
 void NavigationControllerImpl::Reload(bool check_for_repost) {
   ReloadInternal(check_for_repost, RELOAD);
+}
+void NavigationControllerImpl::ReloadToRefreshContent(bool check_for_repost) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNonValidatingReloadOnRefreshContent)) {
+    ReloadInternal(check_for_repost, NO_RELOAD);
+  } else {
+    ReloadInternal(check_for_repost, RELOAD);
+  }
 }
 void NavigationControllerImpl::ReloadIgnoringCache(bool check_for_repost) {
   ReloadInternal(check_for_repost, RELOAD_IGNORING_CACHE);

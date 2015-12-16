@@ -92,7 +92,8 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
                             contentViewCore.getContext().getResources().getString(resId);
                 }
                 mSwipeRefreshLayout.announceForAccessibility(mAccessibilityRefreshString);
-                contentViewCore.getWebContents().getNavigationController().reload(true);
+                contentViewCore.getWebContents().getNavigationController().reloadToRefreshContent(
+                        true);
                 RecordUserAction.record("MobilePullGestureReload");
             }
         });

@@ -388,6 +388,11 @@ const char kEnableMojoShellConnection[] = "enable-mojo-shell-connection";
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
 
+// Enables non-validating reload on reload-to-refresh-content (e.g. pull-
+// to-refresh).
+const char kEnableNonValidatingReloadOnRefreshContent[] =
+    "enable-non-validating-reload-on-refresh-content";
+
 // Enables partial raster. Enabling this switch also enables the use of
 // persistent gpu memory buffers.
 const char kEnablePartialRaster[] = "enable-partial-raster";
