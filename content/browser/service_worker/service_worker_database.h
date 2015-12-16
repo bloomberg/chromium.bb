@@ -94,16 +94,6 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
       int64* next_avail_version_id,
       int64* next_avail_resource_id);
 
-  // Used for diskcache migration (http://crbug.com/487482). Returns true if the
-  // storage needs to migrate a disk cache.
-  Status IsDiskCacheMigrationNeeded(bool* migration_needed);
-  Status SetDiskCacheMigrationNotNeeded();
-
-  // Used for diskcache migration (http://crbug.com/487482). Returns true if the
-  // storage needs to delete an old disk cache.
-  Status IsOldDiskCacheDeletionNeeded(bool* deletion_needed);
-  Status SetOldDiskCacheDeletionNotNeeded();
-
   // Reads origins that have one or more than one registration from the
   // database. Returns OK if they are successfully read or not found.
   // Otherwise, returns an error.
@@ -374,11 +364,6 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   bool IsDatabaseInMemory() const;
 
-  void set_skip_writing_diskcache_migration_state_on_init_for_testing() {
-    skip_writing_diskcache_migration_state_on_init_for_testing_ = true;
-  }
-  bool skip_writing_diskcache_migration_state_on_init_for_testing_;
-
   base::SequenceChecker sequence_checker_;
 
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase);
@@ -390,12 +375,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest,
                            UserData_UninitializedDatabase);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DestroyDatabase);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DiskCacheMigrationState);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, UpgradeSchemaToVersion2);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDiskCacheMigratorTest,
-                           MigrateOnDiskCacheAccess);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDiskCacheMigratorTest,
-                           NotMigrateOnDatabaseAccess);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDatabase);
 };

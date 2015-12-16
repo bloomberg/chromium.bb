@@ -1357,8 +1357,6 @@
       'browser/service_worker/service_worker_database_task_manager.h',
       'browser/service_worker/service_worker_disk_cache.cc',
       'browser/service_worker/service_worker_disk_cache.h',
-      'browser/service_worker/service_worker_disk_cache_migrator.cc',
-      'browser/service_worker/service_worker_disk_cache_migrator.h',
       'browser/service_worker/service_worker_dispatcher_host.cc',
       'browser/service_worker/service_worker_dispatcher_host.h',
       'browser/service_worker/service_worker_fetch_dispatcher.cc',

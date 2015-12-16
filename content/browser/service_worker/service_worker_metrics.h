@@ -30,14 +30,6 @@ class ServiceWorkerMetrics {
     NUM_WRITE_RESPONSE_RESULT_TYPES,
   };
 
-  enum DiskCacheMigrationResult {
-    MIGRATION_OK,
-    MIGRATION_NOT_NECESSARY,
-    MIGRATION_ERROR_MIGRATION_FAILED,
-    MIGRATION_ERROR_UPDATE_DATABASE,
-    NUM_MIGRATION_RESULT_TYPES,
-  };
-
   enum DeleteAndStartOverResult {
     DELETE_OK,
     DELETE_DATABASE_ERROR,
@@ -108,7 +100,6 @@ class ServiceWorkerMetrics {
   // Used for ServiceWorkerStorage.
   static void RecordPurgeResourceResult(int net_error);
   static void RecordDeleteAndStartOverResult(DeleteAndStartOverResult result);
-  static void RecordDiskCacheMigrationResult(DiskCacheMigrationResult result);
 
   // Counts the number of page loads controlled by a Service Worker.
   static void CountControlledPageLoad(const GURL& url);

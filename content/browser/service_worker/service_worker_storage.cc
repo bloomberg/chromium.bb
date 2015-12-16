@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
-#include "content/browser/service_worker/service_worker_disk_cache_migrator.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -61,7 +60,6 @@ const base::FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("Database");
 const base::FilePath::CharType kDiskCacheName[] =
     FILE_PATH_LITERAL("ScriptCache");
-const base::FilePath::CharType kOldDiskCacheName[] = FILE_PATH_LITERAL("Cache");
 
 const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
 const int kMaxDiskCacheSize = 250 * 1024 * 1024;
@@ -85,10 +83,7 @@ ServiceWorkerStatusCode DatabaseStatusToStatusCode(
 ServiceWorkerStorage::InitialData::InitialData()
     : next_registration_id(kInvalidServiceWorkerRegistrationId),
       next_version_id(kInvalidServiceWorkerVersionId),
-      next_resource_id(kInvalidServiceWorkerResourceId),
-      disk_cache_migration_needed(false),
-      old_disk_cache_deletion_needed(false) {
-}
+      next_resource_id(kInvalidServiceWorkerResourceId) {}
 
 ServiceWorkerStorage::InitialData::~InitialData() {
 }
@@ -793,8 +788,6 @@ ServiceWorkerStorage::ServiceWorkerStorage(
       disk_cache_thread_(disk_cache_thread),
       quota_manager_proxy_(quota_manager_proxy),
       special_storage_policy_(special_storage_policy),
-      disk_cache_migration_needed_(false),
-      old_disk_cache_deletion_needed_(false),
       is_purge_pending_(false),
       has_checked_for_stale_resources_(false),
       weak_factory_(this) {
@@ -814,13 +807,6 @@ base::FilePath ServiceWorkerStorage::GetDiskCachePath() {
     return base::FilePath();
   return path_.Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
       .Append(kDiskCacheName);
-}
-
-base::FilePath ServiceWorkerStorage::GetOldDiskCachePath() {
-  if (path_.empty())
-    return base::FilePath();
-  return path_.Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
-      .Append(kOldDiskCacheName);
 }
 
 bool ServiceWorkerStorage::LazyInitialize(const base::Closure& callback) {
@@ -859,8 +845,6 @@ void ServiceWorkerStorage::DidReadInitialData(
     next_version_id_ = data->next_version_id;
     next_resource_id_ = data->next_resource_id;
     registered_origins_.swap(data->origins);
-    disk_cache_migration_needed_ = data->disk_cache_migration_needed;
-    old_disk_cache_deletion_needed_ = data->old_disk_cache_deletion_needed;
     foreign_fetch_origins_.swap(data->foreign_fetch_origins);
     state_ = INITIALIZED;
   } else {
@@ -1297,7 +1281,7 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
   if (disk_cache_)
     return disk_cache_.get();
 
-  disk_cache_ = ServiceWorkerDiskCache::CreateWithSimpleBackend();
+  disk_cache_.reset(new ServiceWorkerDiskCache);
 
   base::FilePath path = GetDiskCachePath();
   if (path.empty()) {
@@ -1307,85 +1291,8 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
     return disk_cache_.get();
   }
 
-  if (disk_cache_migration_needed_) {
-    // Defer the start of initialization until a migration is complete.
-    disk_cache_->set_is_waiting_to_initialize(true);
-    DCHECK(!disk_cache_migrator_);
-    disk_cache_migrator_.reset(new ServiceWorkerDiskCacheMigrator(
-        GetOldDiskCachePath(), GetDiskCachePath(), kMaxDiskCacheSize,
-        disk_cache_thread_));
-    disk_cache_migrator_->Start(
-        base::Bind(&ServiceWorkerStorage::DidMigrateDiskCache,
-                   weak_factory_.GetWeakPtr()));
-    return disk_cache_.get();
-  }
-
-  if (old_disk_cache_deletion_needed_) {
-    // Lazily delete the old diskcache.
-    BrowserThread::PostAfterStartupTask(
-        FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-        base::Bind(&ServiceWorkerStorage::DeleteOldDiskCache,
-                   weak_factory_.GetWeakPtr()));
-  }
-
-  ServiceWorkerMetrics::RecordDiskCacheMigrationResult(
-      ServiceWorkerMetrics::MIGRATION_NOT_NECESSARY);
-
   InitializeDiskCache();
   return disk_cache_.get();
-}
-
-void ServiceWorkerStorage::DidMigrateDiskCache(ServiceWorkerStatusCode status) {
-  disk_cache_migrator_.reset();
-  if (status != SERVICE_WORKER_OK) {
-    OnDiskCacheMigrationFailed(
-        ServiceWorkerMetrics::MIGRATION_ERROR_MIGRATION_FAILED);
-    return;
-  }
-
-  PostTaskAndReplyWithResult(
-      database_task_manager_->GetTaskRunner(), FROM_HERE,
-      base::Bind(&ServiceWorkerDatabase::SetDiskCacheMigrationNotNeeded,
-                 base::Unretained(database_.get())),
-      base::Bind(&ServiceWorkerStorage::DidSetDiskCacheMigrationNotNeeded,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void ServiceWorkerStorage::DidSetDiskCacheMigrationNotNeeded(
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK) {
-    OnDiskCacheMigrationFailed(
-        ServiceWorkerMetrics::MIGRATION_ERROR_UPDATE_DATABASE);
-    return;
-  }
-
-  // Lazily delete the old diskcache and update the database.
-  BrowserThread::PostAfterStartupTask(
-      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&ServiceWorkerStorage::DeleteOldDiskCache,
-                 weak_factory_.GetWeakPtr()));
-
-  ServiceWorkerMetrics::RecordDiskCacheMigrationResult(
-      ServiceWorkerMetrics::MIGRATION_OK);
-  InitializeDiskCache();
-}
-
-void ServiceWorkerStorage::OnDiskCacheMigrationFailed(
-    ServiceWorkerMetrics::DiskCacheMigrationResult result) {
-  DCHECK(ServiceWorkerMetrics::MIGRATION_ERROR_MIGRATION_FAILED == result ||
-         ServiceWorkerMetrics::MIGRATION_ERROR_UPDATE_DATABASE == result)
-      << result;
-  ServiceWorkerMetrics::RecordDiskCacheMigrationResult(result);
-
-  // Give up migration and recreate the whole storage.
-  ScheduleDeleteAndStartOver();
-
-  // Lazily delete the old diskcache. Don't have to update the database
-  // because it will be deleted by DeleteAndStartOver.
-  BrowserThread::PostAfterStartupTask(
-      FROM_HERE, disk_cache_thread_.get(),
-      base::Bind(base::IgnoreResult(&base::DeleteFile), GetOldDiskCachePath(),
-                 true));
 }
 
 void ServiceWorkerStorage::InitializeDiskCache() {
@@ -1405,15 +1312,6 @@ void ServiceWorkerStorage::OnDiskCacheInitialized(int rv) {
     ScheduleDeleteAndStartOver();
   }
   ServiceWorkerMetrics::CountInitDiskCacheResult(rv == net::OK);
-}
-
-void ServiceWorkerStorage::DeleteOldDiskCache() {
-  DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
-  if (IsDisabled())
-    return;
-  database_task_manager_->GetTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ServiceWorkerStorage::DeleteOldDiskCacheInDB,
-                            database_.get(), GetOldDiskCachePath()));
 }
 
 void ServiceWorkerStorage::StartPurgingResources(
@@ -1573,22 +1471,6 @@ void ServiceWorkerStorage::ReadInitialDataFromDB(
     return;
   }
 
-  status =
-      database->IsDiskCacheMigrationNeeded(&data->disk_cache_migration_needed);
-  if (status != ServiceWorkerDatabase::STATUS_OK) {
-    original_task_runner->PostTask(
-        FROM_HERE, base::Bind(callback, base::Passed(data.Pass()), status));
-    return;
-  }
-
-  status = database->IsOldDiskCacheDeletionNeeded(
-      &data->old_disk_cache_deletion_needed);
-  if (status != ServiceWorkerDatabase::STATUS_OK) {
-    original_task_runner->PostTask(
-        FROM_HERE, base::Bind(callback, base::Passed(data.Pass()), status));
-    return;
-  }
-
   status = database->GetOriginsWithRegistrations(&data->origins);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
@@ -1600,15 +1482,6 @@ void ServiceWorkerStorage::ReadInitialDataFromDB(
       &data->foreign_fetch_origins);
   original_task_runner->PostTask(
       FROM_HERE, base::Bind(callback, base::Passed(data.Pass()), status));
-}
-
-void ServiceWorkerStorage::DeleteOldDiskCacheInDB(
-    ServiceWorkerDatabase* database,
-    const base::FilePath& disk_cache_path) {
-  // Ignore a failure. A retry will happen on the next initialization.
-  if (!base::DeleteFile(disk_cache_path, true))
-    return;
-  database->SetOldDiskCacheDeletionNotNeeded();
 }
 
 void ServiceWorkerStorage::DeleteRegistrationFromDB(

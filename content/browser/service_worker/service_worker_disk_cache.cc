@@ -6,21 +6,8 @@
 
 namespace content {
 
-scoped_ptr<ServiceWorkerDiskCache>
-ServiceWorkerDiskCache::CreateWithBlockFileBackend() {
-  return make_scoped_ptr(
-      new ServiceWorkerDiskCache(false /* use_simple_cache*/));
-}
-
-scoped_ptr<ServiceWorkerDiskCache>
-ServiceWorkerDiskCache::CreateWithSimpleBackend() {
-  return make_scoped_ptr(
-      new ServiceWorkerDiskCache(true /* use_simple_cache */));
-}
-
-ServiceWorkerDiskCache::ServiceWorkerDiskCache(bool use_simple_cache)
-    : AppCacheDiskCache(use_simple_cache) {
-}
+ServiceWorkerDiskCache::ServiceWorkerDiskCache()
+    : AppCacheDiskCache(true /* use_simple_cache */) {}
 
 ServiceWorkerResponseReader::ServiceWorkerResponseReader(
     int64 resource_id,

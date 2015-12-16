@@ -99,12 +99,6 @@ void ServiceWorkerMetrics::RecordPurgeResourceResult(int net_error) {
                               std::abs(net_error));
 }
 
-void ServiceWorkerMetrics::RecordDiskCacheMigrationResult(
-    DiskCacheMigrationResult result) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Storage.DiskCacheMigrationResult",
-                            result, NUM_MIGRATION_RESULT_TYPES);
-}
-
 void ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
     DeleteAndStartOverResult result) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Storage.DeleteAndStartOverResult",

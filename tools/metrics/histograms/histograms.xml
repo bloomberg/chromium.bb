@@ -43122,6 +43122,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="ServiceWorker.DiskCacheMigrator.MigrationResult"
     enum="ServiceWorkerDiskCacheMigrationStatus">
   <owner>nhiroki@chromium.org</owner>
+  <obsolete>
+    Deprecated because the migrator was removed as of 12/2015.
+  </obsolete>
   <summary>
     Records result of ServiceWorkerDiskCacheMigrator::Start that migrates
     resources in BlockFile backend to Simple backend.
@@ -43131,6 +43134,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="ServiceWorker.DiskCacheMigrator.MigrationTime"
     units="milliseconds">
   <owner>nhiroki@chromium.org</owner>
+  <obsolete>
+    Deprecated because the migrator was removed as of 12/2015.
+  </obsolete>
   <summary>
     Execution time of ServiceWorkerDiskCache migration from BlockFile to Simple.
   </summary>
@@ -43139,6 +43145,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="ServiceWorker.DiskCacheMigrator.NumberOfMigratedResources"
     units="count">
   <owner>nhiroki@chromium.org</owner>
+  <obsolete>
+    Deprecated because the migrator was removed as of 12/2015.
+  </obsolete>
   <summary>
     The counts of resources migrated by ServiceWorkerDiskCacheMigrator. This
     includes the main script and imported scripts.
@@ -43444,6 +43453,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="ServiceWorker.Storage.DiskCacheMigrationResult"
     enum="ServiceWorkerDiskCacheMigrationResult">
   <owner>nhiroki@chromium.org</owner>
+  <obsolete>
+    Deprecated because the migrator was removed as of 12/2015.
+  </obsolete>
   <summary>
     Records the final result of diskcache migration in ServiceWorkerStorage.
     ServiceWorker.DiskCacheMigrator.MigrationResult records more detailed status
@@ -75483,6 +75495,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="ServiceWorkerDiskCacheMigrationResult" type="int">
+  <obsolete>
+    Deprecated because the migrator was removed as of 12/2015.
+  </obsolete>
   <int value="0" label="MIGRATION_OK"/>
   <int value="1" label="MIGRATION_NOT_NECESSARY"/>
   <int value="2" label="MIGRATION_ERROR_MIGRATION_FAILED"/>
@@ -75490,6 +75505,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="ServiceWorkerDiskCacheMigrationStatus" type="int">
+  <obsolete>
+    Deprecated because the migrator was removed as of 12/2015.
+  </obsolete>
   <int value="0" label="MIGRATION_STATUS_OK"/>
   <int value="1" label="MIGRATION_ERROR_FAILED"/>
   <int value="2" label="MIGRATION_ERROR_MOVE_DISKCACHE"/>

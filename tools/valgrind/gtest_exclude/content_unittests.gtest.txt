@@ -14,8 +14,3 @@ WebInputEventAuraTest.TestMakeWebKeyboardEventWindowsKeyCode
 # Flaky: https://crbug.com/460578
 DesktopCaptureDeviceTest.InvertedFrame
 DesktopCaptureDeviceTest.UnpackedFrame
-
-# Flaky: https://crbug.com/502983
-ServiceWorkerDiskCacheMigratorTest.MigrateDiskCache
-ServiceWorkerDiskCacheMigratorTest.RemoveExistingResourcesFromDest
-ServiceWorkerDiskCacheMigratorTest.ThrottleInflightTasks
