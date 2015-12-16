@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/macros.h"
@@ -52,7 +53,7 @@ class UserScriptSet {
   // |tab_id|, at the given |run_location|, to |injections|.
   // |extensions| is passed in to verify the corresponding extension is still
   // valid.
-  void GetInjections(ScopedVector<ScriptInjection>* injections,
+  void GetInjections(std::vector<scoped_ptr<ScriptInjection>>* injections,
                      content::RenderFrame* render_frame,
                      int tab_id,
                      UserScript::RunLocation run_location);

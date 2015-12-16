@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/i18n_custom_bindings.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -55,7 +57,7 @@ struct LanguageDetectionResult {
 
   // Array of detectedLanguage of size 1-3. The null is returned if
   // there were no languages detected
-  ScopedVector<DetectedLanguage> languages;
+  std::vector<scoped_ptr<DetectedLanguage>> languages;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LanguageDetectionResult);
@@ -98,9 +100,10 @@ v8::Local<v8::Value> LanguageDetectionResult::ToValue(ScriptContext* context) {
   return handle_scope.Escape(result);
 }
 
-void InitDetectedLanguages(CLD2::Language* languages,
-                           int* percents,
-                           ScopedVector<DetectedLanguage>* detected_languages) {
+void InitDetectedLanguages(
+    CLD2::Language* languages,
+    int* percents,
+    std::vector<scoped_ptr<DetectedLanguage>>* detected_languages) {
   for (int i = 0; i < kCldNumLangs; i++) {
     std::string language_code;
     // Convert LanguageCode 'zh' to 'zh-CN' and 'zh-Hant' to 'zh-TW' for
@@ -115,7 +118,7 @@ void InitDetectedLanguages(CLD2::Language* languages,
           CLD2::LanguageCode(static_cast<CLD2::Language>(languages[i]));
     }
     detected_languages->push_back(
-        new DetectedLanguage(language_code, percents[i]));
+        make_scoped_ptr(new DetectedLanguage(language_code, percents[i])));
   }
 }
 

@@ -63,7 +63,7 @@ void UserScriptSet::GetActiveExtensionIds(
 }
 
 void UserScriptSet::GetInjections(
-    ScopedVector<ScriptInjection>* injections,
+    std::vector<scoped_ptr<ScriptInjection>>* injections,
     content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location) {
@@ -77,7 +77,7 @@ void UserScriptSet::GetInjections(
         document_url,
         false /* is_declarative */);
     if (injection.get())
-      injections->push_back(injection.Pass());
+      injections->push_back(std::move(injection));
   }
 }
 

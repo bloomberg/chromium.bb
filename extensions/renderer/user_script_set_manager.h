@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/shared_memory.h"
@@ -67,7 +68,7 @@ class UserScriptSetManager : public content::RenderProcessObserver {
 
   // Append all injections from |static_scripts| and each of
   // |programmatic_scripts_| to |injections|.
-  void GetAllInjections(ScopedVector<ScriptInjection>* injections,
+  void GetAllInjections(std::vector<scoped_ptr<ScriptInjection>>* injections,
                         content::RenderFrame* render_frame,
                         int tab_id,
                         UserScript::RunLocation run_location);

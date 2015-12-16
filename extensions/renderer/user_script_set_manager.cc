@@ -61,7 +61,7 @@ bool UserScriptSetManager::OnControlMessageReceived(
 }
 
 void UserScriptSetManager::GetAllInjections(
-    ScopedVector<ScriptInjection>* injections,
+    std::vector<scoped_ptr<ScriptInjection>>* injections,
     content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location) {
