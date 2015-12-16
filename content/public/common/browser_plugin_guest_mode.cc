@@ -12,7 +12,7 @@ namespace content {
 // static
 bool BrowserPluginGuestMode::UseCrossProcessFramesForGuests() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
+      switches::kUseCrossProcessFramesForGuests);
 }
 
 }  // namespace content

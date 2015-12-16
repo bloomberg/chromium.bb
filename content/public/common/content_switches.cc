@@ -52,6 +52,11 @@ const char kBrowserCrashTest[]              = "crash-test";
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 
+// Causes the implementations of guests (inner WebContents) to use
+// out-of-process iframes.
+const char kUseCrossProcessFramesForGuests[]   =
+    "use-cross-process-frames-for-guests";
+
 // Dumps extra logging about plugin loading to the log file.
 const char kDebugPluginLoading[] = "debug-plugin-loading";
 
