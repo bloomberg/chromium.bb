@@ -222,7 +222,7 @@ void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
 
   std::vector<char> color_profile;
 
-  struct TestColorProfile {
+  struct TestColorProfile { // A whacked (aka color spin) profile.
     char* data() {
       static unsigned char color_profile_data[] = {
         0x00,0x00,0x01,0xea,0x54,0x45,0x53,0x54,0x00,0x00,0x00,0x00,
@@ -340,7 +340,7 @@ void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
 
   if (name == "sRGB") {
     color_profile.assign(name.data(), name.data() + name.size());
-  } else if (name == "test") {
+  } else if (name == "test" || name == "whacked") {
     TestColorProfile test;
     color_profile.assign(test.data(), test.data() + test.size());
   } else if (name == "adobeRGB") {
