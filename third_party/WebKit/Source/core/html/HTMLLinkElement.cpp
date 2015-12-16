@@ -53,6 +53,7 @@
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/style/StyleInheritedData.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "public/platform/Platform.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -515,9 +516,11 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
 
     CSSParserContext parserContext(m_owner->document(), 0, baseURL, charset);
 
+    bool restoredCachedStyleSheet = false;
     if (RefPtrWillBeRawPtr<StyleSheetContents> restoredSheet = const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->restoreParsedStyleSheet(parserContext)) {
         ASSERT(restoredSheet->isCacheable());
         ASSERT(!restoredSheet->isLoading());
+        restoredCachedStyleSheet = true;
 
         if (m_sheet)
             clearSheet();
@@ -530,6 +533,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
         restoredSheet->checkLoaded();
         return;
     }
+    Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet", restoredCachedStyleSheet, 2);
 
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(href, parserContext);
 
