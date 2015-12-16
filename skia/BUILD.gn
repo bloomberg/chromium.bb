@@ -623,6 +623,8 @@ source_set("skia_opts") {
     } else {
       sources = gypi_skia_opts.none_sourcees
     }
+  } else if (current_cpu == "arm64") {
+    sources = gypi_skia_opts.arm64_sources
   } else if (current_cpu == "mipsel") {
     cflags += [ "-fomit-frame-pointer" ]
 
@@ -631,8 +633,9 @@ source_set("skia_opts") {
     } else {
       sources = gypi_skia_opts.none_sources
     }
-  } else if (current_cpu == "arm64") {
-    sources = gypi_skia_opts.arm64_sources
+  } else if (current_cpu == "mips64el") {
+    cflags += [ "-fomit-frame-pointer" ]
+    sources = gypi_skia_opts.none_sources
   } else {
     assert(false, "Need to port cpu specific stuff from skia_library_opts.gyp")
   }
