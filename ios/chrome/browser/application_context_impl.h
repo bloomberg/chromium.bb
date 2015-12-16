@@ -65,6 +65,7 @@ class ApplicationContextImpl : public ApplicationContext {
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
   CRLSetFetcher* GetCRLSetFetcher() override;
+  safe_browsing::SafeBrowsingService* GetSafeBrowsingService() override;
 
  private:
   // Sets the locale used by the application.
@@ -87,6 +88,7 @@ class ApplicationContextImpl : public ApplicationContext {
   scoped_ptr<web_resource::PromoResourceService> promo_resource_service_;
   scoped_ptr<component_updater::ComponentUpdateService> component_updater_;
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
+  scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
   std::string application_locale_;
 
   // Sequenced task runner for local state related I/O tasks.

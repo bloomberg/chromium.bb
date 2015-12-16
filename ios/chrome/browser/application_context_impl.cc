@@ -15,6 +15,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/default_tick_clock.h"
+#include "base/tracked_objects.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/gcm_driver/gcm_client_factory.h"
@@ -43,6 +44,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
+#include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/update_client/ios_chrome_update_query_params_delegate.h"
 #include "ios/chrome/browser/web_resource/web_resource_util.h"
 #include "ios/chrome/common/channel_info.h"
@@ -84,6 +86,7 @@ ApplicationContextImpl::ApplicationContextImpl(
 
 ApplicationContextImpl::~ApplicationContextImpl() {
   DCHECK_EQ(this, GetApplicationContext());
+  tracked_objects::ThreadData::EnsureCleanupWasCalled(4);
   SetApplicationContext(nullptr);
 }
 
@@ -121,11 +124,14 @@ void ApplicationContextImpl::PreMainMessageLoopRun() {
 
 void ApplicationContextImpl::StartTearDown() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // We need to destroy the MetricsServicesManager and PromoResourceService
-  // before the IO thread gets destroyed, since their destructors can call the
-  // URLFetcher destructor, which does a PostDelayedTask operation on the IO
-  // thread. (The IO thread will handle that URLFetcher operation before going
-  // away.)
+  // We need to destroy the MetricsServicesManager, PromoResourceService and
+  // SafeBrowsing before the IO thread gets destroyed, since their destructors
+  // can call the URLFetcher destructor, which does a PostDelayedTask operation
+  // on the IO thread. (The IO thread will handle that URLFetcher operation
+  // before going away.)
+  if (safe_browsing_service_)
+    safe_browsing_service_->ShutDown();
+
   metrics_services_manager_.reset();
 
   // Need to clear browser states before the IO thread.
@@ -318,6 +324,17 @@ CRLSetFetcher* ApplicationContextImpl::GetCRLSetFetcher() {
     crl_set_fetcher_ = new CRLSetFetcher;
   }
   return crl_set_fetcher_.get();
+}
+
+safe_browsing::SafeBrowsingService*
+ApplicationContextImpl::GetSafeBrowsingService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!safe_browsing_service_) {
+    safe_browsing_service_ =
+        safe_browsing::SafeBrowsingService::CreateSafeBrowsingService();
+    safe_browsing_service_->Initialize();
+  }
+  return safe_browsing_service_.get();
 }
 
 void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {
