@@ -39,9 +39,6 @@ class RasterizeAndRecordBenchmark : public MicroBenchmark {
       scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) override;
 
  private:
-  void RunOnDisplayListLayer(PictureLayer* layer,
-                             const gfx::Rect& visible_layer_rect);
-
   void RecordRasterResults(scoped_ptr<base::Value> results);
 
   struct RecordResults {

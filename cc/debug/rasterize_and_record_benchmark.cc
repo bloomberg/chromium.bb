@@ -111,12 +111,6 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   if (visible_layer_rect.IsEmpty())
     return;
 
-  RunOnDisplayListLayer(layer, visible_layer_rect);
-}
-
-void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
-    PictureLayer* layer,
-    const gfx::Rect& visible_layer_rect) {
   ContentLayerClient* painter = layer->client();
 
   for (int mode_index = 0;
@@ -182,8 +176,8 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
     if (mode_index == DisplayListRecordingSource::RECORD_NORMALLY) {
       record_results_.bytes_used +=
           memory_used + painter->GetApproximateUnsharedMemoryUsage();
-      record_results_.pixels_recorded +=
-          visible_layer_rect.width() * visible_layer_rect.height();
+      record_results_.pixels_recorded += painter->PaintableRegion().width() *
+                                         painter->PaintableRegion().height();
     }
     record_results_.total_best_time[mode_index] += min_time;
   }
