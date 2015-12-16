@@ -191,7 +191,6 @@
     [RaisesException] DOMString mainThreadScrollingReasons(Document document);
     [RaisesException] ClientRectList nonFastScrollableRects(Document document);
 
-    void garbageCollectDocumentResources(Document document);
     void evictAllResources();
 
     unsigned long numberOfLiveNodes();

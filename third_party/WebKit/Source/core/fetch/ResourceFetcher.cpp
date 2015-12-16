@@ -166,7 +166,6 @@ static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Re
 
 ResourceFetcher::ResourceFetcher(FetchContext* context)
     : m_context(context)
-    , m_garbageCollectDocumentResourcesTimer(this, &ResourceFetcher::garbageCollectDocumentResourcesTimerFired)
     , m_resourceTimingReportTimer(this, &ResourceFetcher::resourceTimingReportTimerFired)
     , m_autoLoadImages(true)
     , m_imagesEnabled(true)
@@ -195,7 +194,8 @@ WebTaskRunner* ResourceFetcher::loadingTaskRunner()
 Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
 {
     KURL url = MemoryCache::removeFragmentIdentifierIfNeeded(resourceURL);
-    return m_documentResources.get(url).get();
+    const WeakPtrWillBeWeakMember<Resource>& resource = m_documentResources.get(url);
+    return resource.get();
 }
 
 bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sourceOrigin, const KURL& url, AccessControlLoggingDecision logErrorsDecision) const
@@ -321,7 +321,6 @@ void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFa
     resource->setCacheIdentifier(cacheIdentifier);
     resource->finish();
     memoryCache()->add(resource.get());
-    scheduleDocumentResourcesGC();
 }
 
 void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(Resource* resource)
@@ -458,7 +457,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
     requestLoadStarted(resource.get(), request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork, isStaticData);
 
     ASSERT(resource->url() == url.string());
-    m_documentResources.set(resource->url(), resource);
+    m_documentResources.set(resource->url(), resource->asWeakPtr());
     return resource;
 }
 
@@ -770,9 +769,12 @@ bool ResourceFetcher::shouldDeferImageLoad(const KURL& url) const
 
 void ResourceFetcher::reloadImagesIfNotDeferred()
 {
+    // TODO(japhet): Once oilpan ships, the const auto&
+    // can be replaced with a Resource*. Also, null checking
+    // the resource probably won't be necesssary.
     for (const auto& documentResource : m_documentResources) {
         Resource* resource = documentResource.value.get();
-        if (resource->type() == Resource::Image && resource->stillNeedsLoad() && !clientDefersImage(resource->url()))
+        if (resource && resource->type() == Resource::Image && resource->stillNeedsLoad() && !clientDefersImage(resource->url()))
             const_cast<Resource*>(resource)->load(this, defaultResourceOptions());
     }
 }
@@ -786,39 +788,7 @@ void ResourceFetcher::redirectReceived(Resource* resource, const ResourceRespons
 
 void ResourceFetcher::didLoadResource()
 {
-    scheduleDocumentResourcesGC();
     context().didLoadResource();
-}
-
-void ResourceFetcher::scheduleDocumentResourcesGC()
-{
-    if (!m_garbageCollectDocumentResourcesTimer.isActive())
-        m_garbageCollectDocumentResourcesTimer.startOneShot(0, BLINK_FROM_HERE);
-}
-
-// Garbage collecting m_documentResources is a workaround for the
-// ResourcePtrs on the RHS being strong references. Ideally this
-// would be a weak map, however ResourcePtrs perform additional
-// bookkeeping on Resources, so instead pseudo-GC them -- when the
-// reference count reaches 1, m_documentResources is the only reference, so
-// remove it from the map.
-void ResourceFetcher::garbageCollectDocumentResourcesTimerFired(Timer<ResourceFetcher>* timer)
-{
-    ASSERT_UNUSED(timer, timer == &m_garbageCollectDocumentResourcesTimer);
-    garbageCollectDocumentResources();
-}
-
-void ResourceFetcher::garbageCollectDocumentResources()
-{
-    typedef Vector<String, 10> StringVector;
-    StringVector resourcesToDelete;
-
-    for (const auto& documentResource : m_documentResources) {
-        if (documentResource.value->hasOneHandle())
-            resourcesToDelete.append(documentResource.key);
-    }
-
-    m_documentResources.removeAll(resourcesToDelete);
 }
 
 int ResourceFetcher::requestCount() const
@@ -1182,6 +1152,7 @@ DEFINE_TRACE(ResourceFetcher)
     visitor->trace(m_loaders);
     visitor->trace(m_nonBlockingLoaders);
 #if ENABLE(OILPAN)
+    visitor->trace(m_documentResources);
     visitor->trace(m_preloads);
     visitor->trace(m_resourceTimingInfoMap);
 #endif

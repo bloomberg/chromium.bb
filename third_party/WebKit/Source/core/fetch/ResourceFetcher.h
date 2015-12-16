@@ -78,7 +78,7 @@ public:
 
     Resource* cachedResource(const KURL&) const;
 
-    typedef HashMap<String, ResourcePtr<Resource>> DocumentResourceMap;
+    typedef WillBeHeapHashMap<String, WeakPtrWillBeWeakMember<Resource>> DocumentResourceMap;
     const DocumentResourceMap& allResources() const { return m_documentResources; }
 
     bool autoLoadImages() const { return m_autoLoadImages; }
@@ -90,8 +90,6 @@ public:
 
     FetchContext& context() const { return m_context ? *m_context.get() : FetchContext::nullInstance(); }
     void clearContext() { m_context.clear(); }
-
-    void garbageCollectDocumentResources();
 
     int requestCount() const;
 
@@ -174,8 +172,6 @@ private:
 
     static bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
 
-    void garbageCollectDocumentResourcesTimerFired(Timer<ResourceFetcher>*);
-
     void resourceTimingReportTimerFired(Timer<ResourceFetcher>*);
 
     void reloadImagesIfNotDeferred();
@@ -197,7 +193,6 @@ private:
     OwnPtrWillBeMember<WillBeHeapListHashSet<RawPtrWillBeMember<Resource>>> m_preloads;
     OwnPtrWillBeMember<ArchiveResourceCollection> m_archiveResourceCollection;
 
-    Timer<ResourceFetcher> m_garbageCollectDocumentResourcesTimer;
     Timer<ResourceFetcher> m_resourceTimingReportTimer;
 
     // We intentionally use a Member instead of a ResourcePtr.

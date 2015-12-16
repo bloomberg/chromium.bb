@@ -236,7 +236,6 @@ public:
     String mainThreadScrollingReasons(Document*, ExceptionState&) const;
     ClientRectList* nonFastScrollableRects(Document*, ExceptionState&) const;
 
-    void garbageCollectDocumentResources(Document*) const;
     void evictAllResources() const;
 
     unsigned numberOfLiveNodes() const;

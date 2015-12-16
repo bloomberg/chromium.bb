@@ -430,6 +430,8 @@ static void cachedResourcesForDocument(Document* document, WillBeHeapVector<RawP
     const ResourceFetcher::DocumentResourceMap& allResources = document->fetcher()->allResources();
     for (const auto& resource : allResources) {
         Resource* cachedResource = resource.value.get();
+        if (!cachedResource)
+            continue;
 
         switch (cachedResource->type()) {
         case Resource::Image:

@@ -265,6 +265,9 @@ public:
 
     static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
 
+    // TODO(japhet): Remove once oilpan ships, it doesn't need the WeakPtr.
+    WeakPtrWillBeRawPtr<Resource> asWeakPtr();
+
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     void assertAlive() const { RELEASE_ASSERT(!m_deleted); }
 #else
@@ -381,6 +384,10 @@ private:
     CachedMetadata* cachedMetadata(unsigned dataTypeID) const;
 
     String m_fragmentIdentifierForRequest;
+
+#if !ENABLE(OILPAN)
+    WeakPtrFactory<Resource> m_weakPtrFactory;
+#endif
 
     RefPtr<CachedMetadata> m_cachedMetadata;
     OwnPtrWillBeMember<CacheHandler> m_cacheHandler;

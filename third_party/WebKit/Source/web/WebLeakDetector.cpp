@@ -38,7 +38,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/Document.h"
 #include "core/fetch/MemoryCache.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/InstanceCounters.h"
 #include "core/layout/LayoutObject.h"
 #include "core/workers/WorkerThread.h"
@@ -92,12 +91,6 @@ void WebLeakDetectorImpl::prepareForLeakDetection(WebLocalFrame* frame)
 
     WorkerThread::terminateAndWaitForAllWorkers();
     memoryCache()->evictResources();
-
-    {
-        RefPtrWillBeRawPtr<Document> document = PassRefPtrWillBeRawPtr<Document>(frame->document());
-        if (ResourceFetcher* fetcher = document->fetcher())
-            fetcher->garbageCollectDocumentResources();
-    }
 
     // FIXME: HTML5 Notification should be closed because notification affects the result of number of DOM objects.
 

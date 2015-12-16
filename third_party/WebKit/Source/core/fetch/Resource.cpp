@@ -44,6 +44,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
+#include "wtf/WeakPtr.h"
 #include "wtf/text/CString.h"
 
 using namespace WTF;
@@ -147,6 +148,9 @@ Resource::Resource(const ResourceRequest& request, Type type)
     : m_resourceRequest(request)
     , m_responseTimestamp(currentTime())
     , m_cancelTimer(this, &Resource::cancelTimerFired)
+#if !ENABLE(OILPAN)
+    , m_weakPtrFactory(this)
+#endif
     , m_loadFinishTime(0)
     , m_identifier(0)
     , m_encodedSize(0)
@@ -514,6 +518,15 @@ void Resource::clearCachedMetadata(CachedMetadataHandler::CacheType cacheType)
 
     if (cacheType == CachedMetadataHandler::SendToPlatform)
         Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), 0, 0);
+}
+
+WeakPtrWillBeRawPtr<Resource> Resource::asWeakPtr()
+{
+#if ENABLE(OILPAN)
+    return this;
+#else
+    return m_weakPtrFactory.createWeakPtr();
+#endif
 }
 
 bool Resource::canDelete() const

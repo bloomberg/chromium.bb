@@ -1026,8 +1026,6 @@ void InspectorResourceAgent::setCacheDisabled(ErrorString*, bool cacheDisabled)
     m_state->setBoolean(ResourceAgentState::cacheDisabled, cacheDisabled);
     if (cacheDisabled)
         memoryCache()->evictResources();
-    for (LocalFrame* frame : *m_inspectedFrames)
-        frame->document()->fetcher()->garbageCollectDocumentResources();
 }
 
 void InspectorResourceAgent::emulateNetworkConditions(ErrorString*, bool, double, double, double)

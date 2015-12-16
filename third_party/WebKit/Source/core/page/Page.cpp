@@ -514,12 +514,8 @@ void Page::acceptLanguagesChanged()
 
 void Page::purgeMemory(DeviceKind deviceKind)
 {
-    Frame* frame = mainFrame();
-    if (deviceKind != DeviceKind::LowEnd || !frame || !frame->isLocalFrame())
-        return;
-    if (Document* document = toLocalFrame(frame)->document())
-        document->fetcher()->garbageCollectDocumentResources();
-    memoryCache()->pruneAll();
+    if (deviceKind == DeviceKind::LowEnd)
+        memoryCache()->pruneAll();
 }
 
 DEFINE_TRACE(Page)

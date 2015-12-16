@@ -26,11 +26,6 @@ function secondImageLoaded()
     console.log("Done2.");
 }
 
-function forceCachedResourceLoaderGC() {
-    if (window.internals)
-        window.internals.garbageCollectDocumentResources();
-}
-
 function test()
 {
     var imageRequest;
@@ -72,9 +67,6 @@ function test()
 
     function step6()
     {
-        // Force CachedResourceLoader garbage collector run.
-        InspectorTest.evaluateInPage("forceCachedResourceLoaderGC()");
-
         // Re-request content now that CachedResource should have been destroyed.
         delete imageRequest._content;
         imageRequest.requestContent(step7);

@@ -1722,15 +1722,6 @@ ClientRectList* Internals::nonFastScrollableRects(Document* document, ExceptionS
     return page->nonFastScrollableRects(document->frame());
 }
 
-void Internals::garbageCollectDocumentResources(Document* document) const
-{
-    ASSERT(document);
-    ResourceFetcher* fetcher = document->fetcher();
-    if (!fetcher)
-        return;
-    fetcher->garbageCollectDocumentResources();
-}
-
 void Internals::evictAllResources() const
 {
     memoryCache()->evictResources();
