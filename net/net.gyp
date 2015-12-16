@@ -847,14 +847,11 @@
     {
       # GN version: //net:stale_while_revalidate_experiment_domains
       'target_name': 'stale_while_revalidate_experiment_domains',
-      'type': '<(component)',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         'net',
         'net_derived_sources',
-      ],
-      'defines': [
-        'NET_IMPLEMENTATION',
       ],
       'sources': [
         'base/stale_while_revalidate_experiment_domains.cc',

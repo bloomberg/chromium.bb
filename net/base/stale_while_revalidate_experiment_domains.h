@@ -6,7 +6,6 @@
 #define NET_BASE_STALE_WHILE_REVALIDATE_EXPERIMENT_DOMAINS_H_
 
 #include "base/strings/string_piece.h"
-#include "net/base/net_export.h"
 
 namespace net {
 
@@ -17,7 +16,7 @@ namespace net {
 // ignored. |host| is expected to be canonicalised to lowercase (as performed by
 // GURL).
 // TODO(ricea): Remove this in April 2016 or before. crbug.com/348877
-NET_EXPORT bool IsHostInStaleWhileRevalidateExperimentDomain(
+bool IsHostInStaleWhileRevalidateExperimentDomain(
     const base::StringPiece& host);
 
 }  // namespace net
