@@ -54,9 +54,19 @@ function assertCSSResponsive(options) {
         return property;
       },
       createTargetContainer(container) {
+        if (options.targetTag) {
+          var svgRoot = createElement('svg', container, 'svg-root', svgNamespace);
+          svgRoot.setAttribute('width', 0);
+          svgRoot.setAttribute('height', 0);
+          return svgRoot;
+        }
+
         return createElement('div', container);
       },
       createTarget(container) {
+        if (options.targetTag)
+          return createElement(options.targetTag, container, 'target', svgNamespace);
+
         return createElement('div', container, 'target');
       },
       setValue(target, property, value) {

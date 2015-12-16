@@ -44,6 +44,7 @@
 #include "core/animation/animatable/AnimatableLengthPoint.h"
 #include "core/animation/animatable/AnimatableLengthPoint3D.h"
 #include "core/animation/animatable/AnimatableLengthSize.h"
+#include "core/animation/animatable/AnimatablePath.h"
 #include "core/animation/animatable/AnimatableRepeatable.h"
 #include "core/animation/animatable/AnimatableSVGPaint.h"
 #include "core/animation/animatable/AnimatableShadow.h"
@@ -245,6 +246,11 @@ inline static PassRefPtr<AnimatableValue> createFromShapeValue(ShapeValue* value
     if (value)
         return AnimatableShapeValue::create(value);
     return AnimatableUnknown::create(CSSValueNone);
+}
+
+static PassRefPtr<AnimatableValue> createFromPath(CSSPathValue* pathValue)
+{
+    return AnimatablePath::create(pathValue);
 }
 
 static double fontStretchToDouble(FontStretch fontStretch)
@@ -573,6 +579,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return AnimatableUnknown::create(CSSPrimitiveValue::create(style.verticalAlign()));
     case CSSPropertyVisibility:
         return AnimatableVisibility::create(style.visibility());
+    case CSSPropertyD:
+        return createFromPath(style.svgStyle().d());
     case CSSPropertyCx:
         return createFromLength(style.svgStyle().cx(), style);
     case CSSPropertyCy:

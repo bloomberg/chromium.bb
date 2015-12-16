@@ -40,6 +40,7 @@
 #include "core/animation/animatable/AnimatableColor.h"
 #include "core/animation/animatable/AnimatableImage.h"
 #include "core/animation/animatable/AnimatableNeutral.h"
+#include "core/animation/animatable/AnimatablePath.h"
 #include "core/animation/animatable/AnimatableRepeatable.h"
 #include "core/animation/animatable/AnimatableSVGPaint.h"
 #include "core/animation/animatable/AnimatableShapeValue.h"
@@ -59,6 +60,7 @@ void PrintTo(const AnimatableClipPathOperation&, ::std::ostream*);
 void PrintTo(const AnimatableColor&, ::std::ostream*);
 void PrintTo(const AnimatableImage&, ::std::ostream*);
 void PrintTo(const AnimatableNeutral&, ::std::ostream*);
+void PrintTo(const AnimatablePath&, ::std::ostream*);
 void PrintTo(const AnimatableRepeatable&, ::std::ostream*);
 void PrintTo(const AnimatableShapeValue&, ::std::ostream*);
 void PrintTo(const AnimatableStrokeDasharrayList&, ::std::ostream*);

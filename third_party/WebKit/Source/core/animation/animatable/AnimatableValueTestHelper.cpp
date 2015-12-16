@@ -61,6 +61,11 @@ void PrintTo(const AnimatableNeutral& animValue, ::std::ostream* os)
     *os << "AnimatableNeutral@" << &animValue;
 }
 
+void PrintTo(const AnimatablePath& animValue, ::std::ostream* os)
+{
+    *os << "AnimatablePath@" << &animValue;
+}
+
 void PrintTo(const AnimatableRepeatable& animValue, ::std::ostream* os)
 {
     *os << "AnimatableRepeatable(";

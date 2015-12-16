@@ -72,6 +72,7 @@ public:
     bool isLengthPoint3D() const { return type() == TypeLengthPoint3D; }
     bool isLengthSize() const { return type() == TypeLengthSize; }
     bool isNeutral() const { return type() == TypeNeutral; }
+    bool isPath() const { return type() == TypePath; }
     bool isRepeatable() const { return type() == TypeRepeatable; }
     bool isSVGLength() const { return type() == TypeSVGLength; }
     bool isSVGPaint() const { return type() == TypeSVGPaint; }
@@ -103,6 +104,7 @@ protected:
         TypeLengthPoint3D,
         TypeLengthSize,
         TypeNeutral,
+        TypePath,
         TypeRepeatable,
         TypeSVGLength,
         TypeSVGPaint,

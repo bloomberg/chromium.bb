@@ -980,6 +980,8 @@
             'animation/animatable/AnimatableLengthSize.cpp',
             'animation/animatable/AnimatableLengthSize.h',
             'animation/animatable/AnimatableNeutral.h',
+            'animation/animatable/AnimatablePath.cpp',
+            'animation/animatable/AnimatablePath.h',
             'animation/animatable/AnimatableRepeatable.cpp',
             'animation/animatable/AnimatableRepeatable.h',
             'animation/animatable/AnimatableSVGPaint.cpp',
