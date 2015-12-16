@@ -31,10 +31,9 @@ ServiceWorkerReadFromCacheJob::ServiceWorkerReadFromCacheJob(
     int64 resource_id)
     : net::URLRequestJob(request, network_delegate),
       resource_type_(resource_type),
+      resource_id_(resource_id),
       context_(context),
       version_(version),
-      resource_id_(resource_id),
-      has_been_killed_(false),
       weak_factory_(this) {}
 
 ServiceWorkerReadFromCacheJob::~ServiceWorkerReadFromCacheJob() {
@@ -53,7 +52,7 @@ void ServiceWorkerReadFromCacheJob::Kill() {
   has_been_killed_ = true;
   reader_.reset();
   context_.reset();
-  http_info_io_buffer_ = NULL;
+  http_info_io_buffer_ = nullptr;
   http_info_.reset();
   range_response_info_.reset();
   net::URLRequestJob::Kill();
@@ -145,7 +144,7 @@ void ServiceWorkerReadFromCacheJob::StartAsync() {
 
 const net::HttpResponseInfo* ServiceWorkerReadFromCacheJob::http_info() const {
   if (!http_info_)
-    return NULL;
+    return nullptr;
   if (range_response_info_)
     return range_response_info_.get();
   return http_info_.get();
@@ -166,7 +165,7 @@ void ServiceWorkerReadFromCacheJob::OnReadInfoComplete(int result) {
   http_info_.reset(http_info_io_buffer_->http_info.release());
   if (is_range_request())
     SetupRangeResponse(http_info_io_buffer_->response_data_size);
-  http_info_io_buffer_ = NULL;
+  http_info_io_buffer_ = nullptr;
   if (request_->url() == version_->script_url())
     version_->SetMainScriptHttpResponseInfo(*http_info_);
   TRACE_EVENT_ASYNC_END1("ServiceWorker",

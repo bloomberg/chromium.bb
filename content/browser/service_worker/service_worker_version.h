@@ -340,8 +340,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerMetrics;
-  friend class ServiceWorkerURLRequestJobTest;
+  friend class ServiceWorkerReadFromCacheJobTest;
   friend class ServiceWorkerStallInStoppingTest;
+  friend class ServiceWorkerURLRequestJobTest;
   friend class ServiceWorkerVersionBrowserTest;
 
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,

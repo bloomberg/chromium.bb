@@ -1,0 +1,231 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/browser/service_worker/service_worker_read_from_cache_job.h"
+
+#include "base/run_loop.h"
+#include "content/browser/fileapi/mock_url_request_delegate.h"
+#include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_version.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/io_buffer.h"
+#include "net/base/test_completion_callback.h"
+#include "net/http/http_response_headers.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_job_factory_impl.h"
+#include "net/url_request/url_request_status.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace content {
+
+namespace {
+
+const int64 kRegistrationId = 1;
+const int64 kVersionId = 2;
+const int64 kMainScriptResourceId = 10;
+const int64 kImportedScriptResourceId = 11;
+const int64 kResourceSize = 100;
+
+void DidStoreRegistration(ServiceWorkerStatusCode* status_out,
+                          const base::Closure& quit_closure,
+                          ServiceWorkerStatusCode status) {
+  *status_out = status;
+  quit_closure.Run();
+}
+
+void DidFindRegistration(
+    ServiceWorkerStatusCode* status_out,
+    const base::Closure& quit_closure,
+    ServiceWorkerStatusCode status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  *status_out = status;
+  quit_closure.Run();
+}
+
+}  // namespace
+
+class ServiceWorkerReadFromCacheJobTest : public testing::Test {
+ public:
+  ServiceWorkerReadFromCacheJobTest()
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        main_script_(kMainScriptResourceId,
+                     GURL("http://example.com/main.js"),
+                     kResourceSize),
+        imported_script_(kImportedScriptResourceId,
+                         GURL("http://example.com/imported.js"),
+                         kResourceSize) {}
+  ~ServiceWorkerReadFromCacheJobTest() override {}
+
+  void SetUp() override {
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    InitializeStorage();
+
+    url_request_context_.reset(new net::URLRequestContext);
+    url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
+    url_request_context_->set_job_factory(url_request_job_factory_.get());
+  }
+
+  void InitializeStorage() {
+    base::RunLoop run_loop;
+    context()->storage()->LazyInitialize(run_loop.QuitClosure());
+    run_loop.Run();
+
+    // Populate a registration in the storage.
+    registration_ =
+        new ServiceWorkerRegistration(GURL("http://example.com/scope"),
+                                      kRegistrationId, context()->AsWeakPtr());
+    version_ = new ServiceWorkerVersion(registration_.get(), main_script_.url,
+                                        kVersionId, context()->AsWeakPtr());
+    std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
+    resources.push_back(main_script_);
+    resources.push_back(imported_script_);
+    version_->script_cache_map()->SetResources(resources);
+    ASSERT_EQ(SERVICE_WORKER_OK, StoreRegistration());
+    ASSERT_TRUE(WriteResource(main_script_.resource_id));
+    ASSERT_TRUE(WriteResource(imported_script_.resource_id));
+  }
+
+  bool WriteResource(int64 resource_id) {
+    const char kHttpHeaders[] = "HTTP/1.0 200 OK\0Content-Length: 5\0\0";
+    const char kHttpBody[] = "Hello";
+    const int length = arraysize(kHttpBody);
+    std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
+    scoped_refptr<net::IOBuffer> body(new net::WrappedIOBuffer(kHttpBody));
+
+    scoped_ptr<ServiceWorkerResponseWriter> writer =
+        context()->storage()->CreateResponseWriter(resource_id);
+
+    scoped_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
+    info->request_time = base::Time::Now();
+    info->response_time = base::Time::Now();
+    info->was_cached = false;
+    info->headers = new net::HttpResponseHeaders(headers);
+    scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
+        new HttpResponseInfoIOBuffer(info.release());
+    {
+      net::TestCompletionCallback cb;
+      writer->WriteInfo(info_buffer.get(), cb.callback());
+      int rv = cb.WaitForResult();
+      if (rv < 0)
+        return false;
+    }
+    {
+      net::TestCompletionCallback cb;
+      writer->WriteData(body.get(), length, cb.callback());
+      int rv = cb.WaitForResult();
+      if (rv < 0)
+        return false;
+    }
+    return true;
+  }
+
+  ServiceWorkerStatusCode StoreRegistration() {
+    base::RunLoop run_loop;
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+    context()->storage()->StoreRegistration(
+        registration_.get(), version_.get(),
+        base::Bind(&DidStoreRegistration, &status, run_loop.QuitClosure()));
+    run_loop.Run();
+    return status;
+  }
+
+  ServiceWorkerStatusCode FindRegistration() {
+    base::RunLoop run_loop;
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+    context()->storage()->FindRegistrationForId(
+        registration_->id(), registration_->pattern().GetOrigin(),
+        base::Bind(&DidFindRegistration, &status, run_loop.QuitClosure()));
+    run_loop.Run();
+    return status;
+  }
+
+  void StartAndWaitForJob(
+      const scoped_ptr<ServiceWorkerReadFromCacheJob>& job) {
+    job->Start();
+    // MockURLRequestDelegate quits the loop when the request is completed.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  ServiceWorkerStatusCode DeduceStartWorkerFailureReason(
+      ServiceWorkerStatusCode default_code) {
+    return version_->DeduceStartWorkerFailureReason(default_code);
+  }
+
+  ServiceWorkerContextCore* context() const { return helper_->context(); }
+
+ protected:
+  TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+
+  scoped_refptr<ServiceWorkerRegistration> registration_;
+  scoped_refptr<ServiceWorkerVersion> version_;
+  ServiceWorkerDatabase::ResourceRecord main_script_;
+  ServiceWorkerDatabase::ResourceRecord imported_script_;
+
+  scoped_ptr<net::URLRequestContext> url_request_context_;
+  scoped_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
+  MockURLRequestDelegate delegate_;
+};
+
+TEST_F(ServiceWorkerReadFromCacheJobTest, ReadMainScript) {
+  // Read the main script from the diskcache.
+  scoped_ptr<net::URLRequest> request = url_request_context_->CreateRequest(
+      main_script_.url, net::DEFAULT_PRIORITY, &delegate_);
+  scoped_ptr<ServiceWorkerReadFromCacheJob> job(
+      new ServiceWorkerReadFromCacheJob(
+          request.get(), nullptr /* NetworkDelegate */,
+          RESOURCE_TYPE_SERVICE_WORKER, context()->AsWeakPtr(), version_,
+          main_script_.resource_id));
+  StartAndWaitForJob(job);
+
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
+  EXPECT_EQ(0, request->status().error());
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            DeduceStartWorkerFailureReason(SERVICE_WORKER_OK));
+}
+
+TEST_F(ServiceWorkerReadFromCacheJobTest, ReadImportedScript) {
+  // Read the imported script from the diskcache.
+  scoped_ptr<net::URLRequest> request = url_request_context_->CreateRequest(
+      imported_script_.url, net::DEFAULT_PRIORITY, &delegate_);
+  scoped_ptr<ServiceWorkerReadFromCacheJob> job(
+      new ServiceWorkerReadFromCacheJob(
+          request.get(), nullptr /* NetworkDelegate */, RESOURCE_TYPE_SCRIPT,
+          context()->AsWeakPtr(), version_, imported_script_.resource_id));
+  StartAndWaitForJob(job);
+
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
+  EXPECT_EQ(0, request->status().error());
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            DeduceStartWorkerFailureReason(SERVICE_WORKER_OK));
+}
+
+TEST_F(ServiceWorkerReadFromCacheJobTest, ResourceNotFound) {
+  ASSERT_EQ(SERVICE_WORKER_OK, FindRegistration());
+
+  // Try to read a nonexistent resource from the diskcache.
+  scoped_ptr<net::URLRequest> request = url_request_context_->CreateRequest(
+      GURL("http://example.com/nonexistent"), net::DEFAULT_PRIORITY,
+      &delegate_);
+  const int64 kNonexistentResourceId = 100;
+  scoped_ptr<ServiceWorkerReadFromCacheJob> job(
+      new ServiceWorkerReadFromCacheJob(
+          request.get(), nullptr /* NetworkDelegate */,
+          RESOURCE_TYPE_SERVICE_WORKER, context()->AsWeakPtr(), version_,
+          kNonexistentResourceId));
+  StartAndWaitForJob(job);
+
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(net::ERR_CACHE_MISS, request->status().error());
+  EXPECT_EQ(SERVICE_WORKER_ERROR_DISK_CACHE,
+            DeduceStartWorkerFailureReason(SERVICE_WORKER_OK));
+
+  // The version should be doomed by the job.
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version_->status());
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, FindRegistration());
+}
+
+}  // namespace content

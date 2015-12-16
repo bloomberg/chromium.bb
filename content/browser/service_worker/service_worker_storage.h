@@ -222,6 +222,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   friend class ServiceWorkerControlleeRequestHandlerTest;
   friend class ServiceWorkerContextRequestHandlerTest;
   friend class ServiceWorkerDiskCacheMigratorTest;
+  friend class ServiceWorkerReadFromCacheJobTest;
   friend class ServiceWorkerRequestHandlerTest;
   friend class ServiceWorkerURLRequestJobTest;
   friend class ServiceWorkerVersionBrowserTest;
