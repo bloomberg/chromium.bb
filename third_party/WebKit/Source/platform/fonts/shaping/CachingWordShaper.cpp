@@ -43,9 +43,14 @@ float CachingWordShaper::width(const Font* font, const TextRun& run,
     CachingWordShapeIterator iterator(m_shapeCache, run, font);
     while (iterator.next(&wordResult)) {
         if (wordResult) {
+            if (glyphBounds) {
+                FloatRect adjustedBounds = wordResult->bounds();
+                // Translate glyph bounds to the current glyph position which
+                // is the total width before this glyph.
+                adjustedBounds.setX(adjustedBounds.x() + width);
+                glyphBounds->unite(adjustedBounds);
+            }
             width += wordResult->width();
-            if (glyphBounds)
-                glyphBounds->unite(wordResult->bounds());
             if (fallbackFonts)
                 wordResult->fallbackFonts(fallbackFonts);
         }

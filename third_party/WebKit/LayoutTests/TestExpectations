@@ -880,6 +880,31 @@ crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure 
 
 crbug.com/567998 imported/web-platform-tests/html/obsolete/requirements-for-implementations/other-elements-attributes-and-apis/document-all.html [ NeedsManualRebaseline ]
 
+crbug.com/569833 fast/repaint/block-layout-inline-children-float-positioned.html [ NeedsRebaseline ]
+crbug.com/569833 css3/flexbox/repaint.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/bugzilla-6278.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/inline-style-change-in-scrolled-view.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/line-flow-with-floats-1.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/line-flow-with-floats-2.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/line-flow-with-floats-3.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/line-flow-with-floats-4.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/line-flow-with-floats-5.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/line-flow-with-floats-7.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/line-flow-with-floats-8.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/line-flow-with-floats-10.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/make-children-non-inline.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/invalidation-after-opacity-change-subtree.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/outline-clip-change.html [ NeedsRebaseline ]
+crbug.com/569833 fast/repaint/overflow-delete-line.html [ NeedsRebaseline ]
+crbug.com/569833 [ Win ] fast/repaint/text-append-dirty-lines.html [ NeedsRebaseline ]
+crbug.com/569833 [ Win ] fast/repaint/line-overflow.html [ NeedsRebaseline ]
+crbug.com/569833 [ Win ] fast/repaint/remove-block-after-layout.html [ NeedsRebaseline ]
+crbug.com/569833 [ Win ] fast/repaint/selection-clear.html [ NeedsRebaseline ]
+crbug.com/569833 [ Win ] fast/writing-mode/english-lr-text.html [ NeedsRebaseline ]
+crbug.com/569833 [ Win ] paint/invalidation/non-text-link-invalidation-optimization.html [ NeedsRebaseline ]
+
 # Significant Slimming Paint failure.
 crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
 

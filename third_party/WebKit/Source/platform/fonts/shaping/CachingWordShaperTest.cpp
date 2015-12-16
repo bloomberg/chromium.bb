@@ -203,4 +203,23 @@ TEST_F(CachingWordShaperTest, TextOrientationFallbackShouldNotInFallbackList)
     EXPECT_EQ(0u, fallbackFonts.size());
 }
 
+TEST_F(CachingWordShaperTest, GlyphBoundsWithSpaces)
+{
+    CachingWordShaper shaper(cache.get());
+
+    TextRun periods(reinterpret_cast<const LChar*>(".........."), 10);
+    FloatRect periodsGlyphBounds;
+    float periodsWidth = shaper.width(&font, periods, nullptr, &periodsGlyphBounds);
+
+    TextRun periodsAndSpaces(reinterpret_cast<const LChar*>(". . . . . . . . . ."), 19);
+    FloatRect periodsAndSpacesGlyphBounds;
+    float periodsAndSpacesWidth = shaper.width(&font, periodsAndSpaces, nullptr, &periodsAndSpacesGlyphBounds);
+
+    // The total width of periods and spaces should be longer than the width of periods alone.
+    ASSERT_GT(periodsAndSpacesWidth, periodsWidth);
+
+    // The glyph bounds of periods and spaces should be longer than the glyph bounds of periods alone.
+    ASSERT_GT(periodsAndSpacesGlyphBounds.width(), periodsGlyphBounds.width());
+}
+
 } // namespace blink
