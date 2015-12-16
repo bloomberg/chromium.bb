@@ -31,6 +31,7 @@ fuzzer_test("courgette_fuzzer") {
     "//base",
     "//courgette:courgette_lib",
   ]
+  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 fuzzer_test("dns_record_fuzzer") {
@@ -250,13 +251,12 @@ fuzzer_test("http_chunked_decoder_fuzzer") {
   ]
 }
 
-test("quic_crypto_framer_parse_message_fuzzer") {
+fuzzer_test("quic_crypto_framer_parse_message_fuzzer") {
   sources = [
     "quic_crypto_framer_parse_message_fuzzer.cc",
   ]
   deps = [
     "//base",
     "//net",
-    "//testing/libfuzzer:libfuzzer_main",
   ]
 }
