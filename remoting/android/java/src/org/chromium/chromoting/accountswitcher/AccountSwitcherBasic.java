@@ -4,10 +4,14 @@
 
 package org.chromium.chromoting.accountswitcher;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
@@ -27,26 +31,29 @@ public class AccountSwitcherBasic extends AccountSwitcherBase {
     private Spinner mAccountsSpinner;
     private LinearLayout mContainer;
 
+    private Activity mActivity;
+
     /**
      * The registered callback instance.
      */
     private Callback mCallback;
 
     /**
-     * Constructs an account-switcher, using the given Context to create any Views. Called from
+     * Constructs an account-switcher, using the given Activity to create any Views. Called from
      * the activity's onCreate() method.
-     * @param context Context used for creating Views and performing UI operations.
+     * @param activity Activity used for creating Views and performing UI operations.
      * @param callback Callback for receiving notifications from the account-switcher.
      */
-    public AccountSwitcherBasic(Context context, Callback callback) {
+    public AccountSwitcherBasic(Activity activity, Callback callback) {
+        mActivity = activity;
         mCallback = callback;
-        mAccountsSpinner = new Spinner(context);
+        mAccountsSpinner = new Spinner(activity);
         mAccountsSpinner.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
-        int padding = (int) (context.getResources().getDisplayMetrics().density * 16f);
+        int padding = (int) (activity.getResources().getDisplayMetrics().density * 16f);
         mAccountsSpinner.setPadding(padding, padding, padding, padding);
-        mContainer = new LinearLayout(context);
+        mContainer = new LinearLayout(activity);
         mContainer.setOrientation(LinearLayout.VERTICAL);
         mContainer.addView(mAccountsSpinner);
     }
@@ -80,8 +87,19 @@ public class AccountSwitcherBasic extends AccountSwitcherBase {
 
     @Override
     public void reloadAccounts() {
-        Context context = getView().getContext();
-        Account[] accounts = AccountManager.get(context).getAccountsByType(ACCOUNT_TYPE);
+        // AccountManager.getAccountsByType() requires the GET_ACCOUNTS permission, which is
+        // classed as a dangerous permission. If the permission is not granted, an exception might
+        // be thrown or the account-list might wrongly appear to be empty. Check if the permission
+        // has been granted, and request it if not, so the user is aware of the cause of this
+        // problem.
+        if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.GET_ACCOUNTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mActivity,
+                    new String[] {Manifest.permission.GET_ACCOUNTS}, 0);
+            return;
+        }
+
+        Account[] accounts = AccountManager.get(mActivity).getAccountsByType(ACCOUNT_TYPE);
         if (accounts.length == 0) {
             mCallback.onAccountsListEmpty();
             return;

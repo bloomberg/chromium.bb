@@ -10,6 +10,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -352,6 +353,22 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
                 mWaitingForAuthToken = false;
                 setHostListProgressVisible(false);
             }
+        }
+    }
+
+    /** Called when a permissions request has returned. */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            int[] grantResults) {
+        // This is currently only used by AccountSwitcherBasic.
+        // Check that the user has granted the needed permission, and reload the accounts.
+        // Otherwise, assume something unexpected occurred, or the user cancelled the request.
+        if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            mAccountSwitcher.reloadAccounts();
+        } else if (permissions.length == 0) {
+            Log.e(TAG, "User cancelled the permission request.");
+        } else {
+            Log.e(TAG, "Permission %s was not granted.", permissions[0]);
         }
     }
 
