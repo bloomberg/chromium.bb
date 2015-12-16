@@ -53,25 +53,3 @@ source_set("gles2") {
 source_set("gpu_thunks") {
   sources = []
 }
-
-source_set("mgl_thunks") {
-  sources = [
-    "mgl_thunks.c",
-    "mgl_thunks.h",
-  ]
-
-  deps = [
-    "//mojo/public/c/gpu:MGL",
-  ]
-}
-
-source_set("mgl_onscreen_thunks") {
-  sources = [
-    "mgl_onscreen_thunks.c",
-    "mgl_onscreen_thunks.h",
-  ]
-
-  deps = [
-    "//mojo/public/c/gpu:MGL_onscreen",
-  ]
-}
