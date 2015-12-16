@@ -879,6 +879,8 @@ void AutofillManager::OnDidGetUploadDetails(
         legal_message.Pass());
     client_->LoadRiskData(base::Bind(&AutofillManager::OnDidGetUploadRiskData,
                                      weak_ptr_factory_.GetWeakPtr()));
+    AutofillMetrics::LogCardUploadDecisionMetric(
+        AutofillMetrics::UPLOAD_OFFERED);
   } else {
     // If the upload details request failed, fall back to a local save. The
     // reasoning here is as follows:
@@ -894,6 +896,8 @@ void AutofillManager::OnDidGetUploadDetails(
     client_->ConfirmSaveCreditCardLocally(base::Bind(
         base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
         base::Unretained(personal_data_), upload_request_.card));
+    AutofillMetrics::LogCardUploadDecisionMetric(
+        AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
   }
 }
 
@@ -994,7 +998,11 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     }
 
     upload_request_ = payments::PaymentsClient::UploadRequestDetails();
-    if (IsCreditCardUploadEnabled()) {
+    if (!IsCreditCardUploadEnabled()) {
+      client_->ConfirmSaveCreditCardLocally(base::Bind(
+          base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
+          base::Unretained(personal_data_), *imported_credit_card));
+    } else {
       // Check for a CVC in order to determine whether we can prompt the user to
       // upload their card.
       for (const auto& field : submitted_form) {
@@ -1015,11 +1023,13 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
       if (!upload_request_.cvc.empty() && !upload_request_.profiles.empty()) {
         upload_request_.card = *imported_credit_card;
         payments_client_->GetUploadDetails(app_locale_);
+      } else if (upload_request_.cvc.empty()) {
+        AutofillMetrics::LogCardUploadDecisionMetric(
+            AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
+      } else {
+        AutofillMetrics::LogCardUploadDecisionMetric(
+            AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS);
       }
-    } else {
-      client_->ConfirmSaveCreditCardLocally(base::Bind(
-          base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
-          base::Unretained(personal_data_), *imported_credit_card));
     }
   }
 }

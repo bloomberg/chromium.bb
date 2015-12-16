@@ -3783,8 +3783,14 @@ TEST_F(AutofillManagerTest, UploadCreditCard) {
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
+
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
+
+  // Verify that the correct histogram entry (and only that) was logged.
+  histogram_tester.ExpectUniqueSample("Autofill.CardUploadDecision",
+                                      AutofillMetrics::UPLOAD_OFFERED, 1);
 }
 
 TEST_F(AutofillManagerTest, DontUploadCreditCardIfFeatureNotEnabled) {
@@ -3810,10 +3816,15 @@ TEST_F(AutofillManagerTest, DontUploadCreditCardIfFeatureNotEnabled) {
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
+
   // The save prompt should be shown instead of doing an upload.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
+
+  // Verify that no histogram entry was logged called.
+  histogram_tester.ExpectTotalCount("Autofill.CardUploadDecision", 0);
 }
 
 TEST_F(AutofillManagerTest, DontUploadCreditCardIfCvcUnavailable) {
@@ -3839,10 +3850,17 @@ TEST_F(AutofillManagerTest, DontUploadCreditCardIfCvcUnavailable) {
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // CVC MISSING
 
+  base::HistogramTester histogram_tester;
+
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
+
+  // Verify that the correct histogram entry (and only that) was logged.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.CardUploadDecision", AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC,
+      1);
 }
 
 TEST_F(AutofillManagerTest, DontUploadCreditCardIfNoMatchingProfileAvailable) {
@@ -3869,10 +3887,17 @@ TEST_F(AutofillManagerTest, DontUploadCreditCardIfNoMatchingProfileAvailable) {
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
+
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
+
+  // Verify that the correct histogram entry (and only that) was logged.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.CardUploadDecision",
+      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS, 1);
 }
 
 TEST_F(AutofillManagerTest, DontUploadCreditCardIfUploadDetailsFails) {
@@ -3902,10 +3927,17 @@ TEST_F(AutofillManagerTest, DontUploadCreditCardIfUploadDetailsFails) {
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
+
   // The save prompt should be shown instead of doing an upload.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
+
+  // Verify that the correct histogram entry (and only that) was logged.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.CardUploadDecision",
+      AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED, 1);
 }
 
 // Verify that typing "gmail" will match "theking@gmail.com" and

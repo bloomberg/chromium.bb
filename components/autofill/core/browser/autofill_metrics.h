@@ -39,6 +39,23 @@ class AutofillMetrics {
     AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE,
   };
 
+  enum CardUploadDecisionMetric {
+    // All the required conditions were satisfied and the card upload prompt was
+    // triggered.
+    UPLOAD_OFFERED,
+    // No CVC was detected. We don't know whether a valid address was available
+    // nor whether we would have been able to get upload details.
+    UPLOAD_NOT_OFFERED_NO_CVC,
+    // A CVC was detected but no valid address was available (recently created
+    // or used, with a name matching the card, and with a non-empty zip code).
+    // We don't know whether we would have been able to get upload details.
+    UPLOAD_NOT_OFFERED_NO_ADDRESS,
+    // A CVC was detected and a valid address was available but the request to
+    // Payments for upload details failed.
+    UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED,
+    NUM_CARD_UPLOAD_DECISION_METRICS,
+  };
+
   enum DeveloperEngagementMetric {
     // Parsed a form that is potentially autofillable.
     FILLABLE_FORM_PARSED = 0,
@@ -437,6 +454,7 @@ class AutofillMetrics {
     NUM_WALLET_REQUIRED_ACTIONS
   };
 
+  static void LogCardUploadDecisionMetric(CardUploadDecisionMetric metric);
   static void LogCreditCardInfoBarMetric(InfoBarMetric metric);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
 

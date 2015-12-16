@@ -2132,6 +2132,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.CardUploadDecision" enum="AutofillCardUploadDecision">
+  <owner>jdonnelly@chromium.org</owner>
+  <summary>
+    Whether upload was offered upon detecting a form submission with credit card
+    data and a reason if it wasn't.
+  </summary>
+</histogram>
+
 <histogram name="AutoFill.CCInfoBarAccepted">
   <obsolete>
     Deprecated as of 3/2011, replaced by Autofill.CreditCardInfoBar.
@@ -55977,6 +55985,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Missing field mappings"/>
   <int value="3" label="Missing advance element"/>
   <int value="4" label="Cannot proceed"/>
+</enum>
+
+<enum name="AutofillCardUploadDecision" type="int">
+  <int value="0" label="Upload offered"/>
+  <int value="1" label="Upload not offered, no CVC detected"/>
+  <int value="2" label="Upload not offered, no valid address available"/>
+  <int value="3" label="Upload not offered, get upload details RPC failed"/>
 </enum>
 
 <enum name="AutofillCreditCardInfoBar" type="int">
