@@ -33,13 +33,10 @@ namespace blink {
 // Scrollbar theme used in image snapshots, to eliminate appearance differences between platforms.
 class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
 public:
-    static void setShouldRepaintAllPartsOnInvalidation(bool);
-
     int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
     bool usesOverlayScrollbars() const override;
 
 protected:
-    bool shouldRepaintAllPartsOnInvalidation() const override;
     bool hasButtons(const ScrollbarThemeClient&) override { return false; }
     bool hasThumb(const ScrollbarThemeClient&) override { return true; }
 

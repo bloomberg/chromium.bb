@@ -48,6 +48,7 @@ class ScrollbarTheme;
 class PLATFORM_EXPORT Scrollbar : public Widget, public ScrollbarThemeClient {
 public:
     static PassRefPtrWillBeRawPtr<Scrollbar> create(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize);
+    static PassRefPtrWillBeRawPtr<Scrollbar> createForTesting(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme*);
 
     ~Scrollbar() override;
 

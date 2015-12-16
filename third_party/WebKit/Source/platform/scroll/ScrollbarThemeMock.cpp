@@ -33,13 +33,6 @@
 
 namespace blink {
 
-static bool gShouldRepaintAllPartsOnInvalidation = true;
-
-void ScrollbarThemeMock::setShouldRepaintAllPartsOnInvalidation(bool shouldRepaint)
-{
-    gShouldRepaintAllPartsOnInvalidation = shouldRepaint;
-}
-
 static int cScrollbarThickness[] = { 15, 11 };
 
 int ScrollbarThemeMock::scrollbarThickness(ScrollbarControlSize controlSize)
@@ -50,11 +43,6 @@ int ScrollbarThemeMock::scrollbarThickness(ScrollbarControlSize controlSize)
 bool ScrollbarThemeMock::usesOverlayScrollbars() const
 {
     return RuntimeEnabledFeatures::overlayScrollbarsEnabled();
-}
-
-bool ScrollbarThemeMock::shouldRepaintAllPartsOnInvalidation() const
-{
-    return gShouldRepaintAllPartsOnInvalidation;
 }
 
 IntRect ScrollbarThemeMock::trackRect(const ScrollbarThemeClient& scrollbar, bool)

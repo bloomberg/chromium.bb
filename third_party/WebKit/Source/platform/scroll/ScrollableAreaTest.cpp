@@ -138,14 +138,22 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync)
     EXPECT_EQ(100.0, scrollableArea->scrollAnimator().currentPosition().y());
 }
 
+namespace {
+
+class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeMock {
+public:
+    MOCK_CONST_METHOD0(shouldRepaintAllPartsOnInvalidation, bool());
+};
+
+} // namespace
+
 TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)
 {
-    ScrollbarTheme::setMockScrollbarsEnabled(true);
-    ScrollbarThemeMock::setShouldRepaintAllPartsOnInvalidation(true);
-
+    ScrollbarThemeWithMockInvalidation theme;
     OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(IntPoint(0, 100));
-    RefPtrWillBeRawPtr<Scrollbar> scrollbar = Scrollbar::create(scrollableArea.get(), HorizontalScrollbar, RegularScrollbar);
+    RefPtrWillBeRawPtr<Scrollbar> scrollbar = Scrollbar::createForTesting(scrollableArea.get(), HorizontalScrollbar, RegularScrollbar, &theme);
 
+    EXPECT_CALL(theme, shouldRepaintAllPartsOnInvalidation()).WillRepeatedly(Return(true));
     EXPECT_TRUE(scrollbar->trackNeedsRepaint());
     EXPECT_TRUE(scrollbar->thumbNeedsRepaint());
     scrollbar->setNeedsPaintInvalidation();
@@ -160,7 +168,7 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)
     EXPECT_TRUE(scrollbar->trackNeedsRepaint());
     EXPECT_TRUE(scrollbar->thumbNeedsRepaint());
 
-    ScrollbarThemeMock::setShouldRepaintAllPartsOnInvalidation(false);
+    EXPECT_CALL(theme, shouldRepaintAllPartsOnInvalidation()).WillRepeatedly(Return(false));
     scrollbar->setTrackNeedsRepaint(false);
     scrollbar->setThumbNeedsRepaint(false);
     EXPECT_FALSE(scrollbar->trackNeedsRepaint());

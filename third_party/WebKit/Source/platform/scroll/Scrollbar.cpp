@@ -46,6 +46,11 @@ PassRefPtrWillBeRawPtr<Scrollbar> Scrollbar::create(ScrollableArea* scrollableAr
     return adoptRefWillBeNoop(new Scrollbar(scrollableArea, orientation, size));
 }
 
+PassRefPtrWillBeRawPtr<Scrollbar> Scrollbar::createForTesting(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size, ScrollbarTheme* theme)
+{
+    return adoptRefWillBeNoop(new Scrollbar(scrollableArea, orientation, size, theme));
+}
+
 Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize controlSize, ScrollbarTheme* theme)
     : m_scrollableArea(scrollableArea)
     , m_orientation(orientation)
