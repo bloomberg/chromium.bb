@@ -8,10 +8,15 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "base/files/file.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/multiprocess_test.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
+#include "testing/multiprocess_func_list.h"
 
 namespace base {
 namespace debug {
@@ -23,7 +28,7 @@ void BusyWork(std::vector<std::string>* vec) {
   int64_t test_value = 0;
   for (int i = 0; i < 100000; ++i) {
     ++test_value;
-    vec->push_back(base::Int64ToString(test_value));
+    vec->push_back(Int64ToString(test_value));
   }
 }
 
@@ -292,7 +297,7 @@ TEST_F(SystemMetricsTest, ParseVmstat) {
 // the number of threads running on the process decreases between two successive
 // calls to it.
 TEST_F(SystemMetricsTest, TestNoNegativeCpuUsage) {
-  base::ProcessHandle handle = base::GetCurrentProcessHandle();
+  ProcessHandle handle = GetCurrentProcessHandle();
   scoped_ptr<ProcessMetrics> metrics(
       ProcessMetrics::CreateProcessMetrics(handle));
 
@@ -313,9 +318,9 @@ TEST_F(SystemMetricsTest, TestNoNegativeCpuUsage) {
   std::vector<std::string> vec2;
   std::vector<std::string> vec3;
 
-  thread1.task_runner()->PostTask(FROM_HERE, base::Bind(&BusyWork, &vec1));
-  thread2.task_runner()->PostTask(FROM_HERE, base::Bind(&BusyWork, &vec2));
-  thread3.task_runner()->PostTask(FROM_HERE, base::Bind(&BusyWork, &vec3));
+  thread1.task_runner()->PostTask(FROM_HERE, Bind(&BusyWork, &vec1));
+  thread2.task_runner()->PostTask(FROM_HERE, Bind(&BusyWork, &vec2));
+  thread3.task_runner()->PostTask(FROM_HERE, Bind(&BusyWork, &vec3));
 
   EXPECT_GE(metrics->GetCPUUsage(), 0.0);
 
@@ -334,8 +339,8 @@ TEST_F(SystemMetricsTest, TestNoNegativeCpuUsage) {
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
     defined(OS_LINUX) || defined(OS_ANDROID)
 TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
-  base::SystemMemoryInfoKB info;
-  EXPECT_TRUE(base::GetSystemMemoryInfo(&info));
+  SystemMemoryInfoKB info;
+  EXPECT_TRUE(GetSystemMemoryInfo(&info));
 
   // Ensure each field received a value.
   EXPECT_GT(info.total, 0);
@@ -380,7 +385,7 @@ TEST(ProcessMetricsTest, ParseProcStatCPU) {
       "20 0 1 0 121946157 15077376 314 18446744073709551615 4194304 "
       "4246868 140733983044336 18446744073709551615 140244213071219 "
       "0 0 0 138047495 0 0 0 17 1 0 0 0 0 0";
-  EXPECT_EQ(12 + 16, base::ParseProcStatCPU(kTopStat));
+  EXPECT_EQ(12 + 16, ParseProcStatCPU(kTopStat));
 
   // cat /proc/self/stat on a random other machine I have.
   const char kSelfStat[] = "5364 (cat) R 5354 5364 5354 34819 5364 "
@@ -389,7 +394,7 @@ TEST(ProcessMetricsTest, ParseProcStatCPU) {
       "16 0 1 0 1676099790 2957312 114 4294967295 134512640 134528148 "
       "3221224832 3221224344 3086339742 0 0 0 0 0 0 0 17 0 0 0";
 
-  EXPECT_EQ(0, base::ParseProcStatCPU(kSelfStat));
+  EXPECT_EQ(0, ParseProcStatCPU(kSelfStat));
 
   // Some weird long-running process with a weird name that I created for the
   // purposes of this test.
@@ -400,29 +405,96 @@ TEST(ProcessMetricsTest, ParseProcStatCPU) {
       "140735857761568 140735857761160 4195644 0 0 0 0 0 0 0 17 14 0 0 0 0 0 "
       "6295056 6295616 16519168 140735857770710 140735857770737 "
       "140735857770737 140735857774557 0";
-  EXPECT_EQ(5186 + 11, base::ParseProcStatCPU(kWeirdNameStat));
+  EXPECT_EQ(5186 + 11, ParseProcStatCPU(kWeirdNameStat));
 }
-#endif // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 // Disable on Android because base_unittests runs inside a Dalvik VM that
 // starts and stop threads (crbug.com/175563).
 #if defined(OS_LINUX)
 // http://crbug.com/396455
 TEST(ProcessMetricsTest, DISABLED_GetNumberOfThreads) {
-  const base::ProcessHandle current = base::GetCurrentProcessHandle();
-  const int initial_threads = base::GetNumberOfThreads(current);
+  const ProcessHandle current = GetCurrentProcessHandle();
+  const int initial_threads = GetNumberOfThreads(current);
   ASSERT_GT(initial_threads, 0);
   const int kNumAdditionalThreads = 10;
   {
-    scoped_ptr<base::Thread> my_threads[kNumAdditionalThreads];
+    scoped_ptr<Thread> my_threads[kNumAdditionalThreads];
     for (int i = 0; i < kNumAdditionalThreads; ++i) {
-      my_threads[i].reset(new base::Thread("GetNumberOfThreadsTest"));
+      my_threads[i].reset(new Thread("GetNumberOfThreadsTest"));
       my_threads[i]->Start();
-      ASSERT_EQ(base::GetNumberOfThreads(current), initial_threads + 1 + i);
+      ASSERT_EQ(GetNumberOfThreads(current), initial_threads + 1 + i);
     }
   }
   // The Thread destructor will stop them.
-  ASSERT_EQ(initial_threads, base::GetNumberOfThreads(current));
+  ASSERT_EQ(initial_threads, GetNumberOfThreads(current));
+}
+#endif  // defined(OS_LINUX)
+
+#if defined(OS_LINUX)
+namespace {
+
+// Keep these in sync so the GetOpenFdCount test can refer to correct test main.
+#define ChildMain ChildFdCount
+#define ChildMainString "ChildFdCount"
+
+// Command line flag name and file name used for synchronization.
+const char kTempDirFlag[] = "temp-dir";
+const char kSignalClosed[] = "closed";
+
+bool SignalEvent(const FilePath& signal_dir, const char* signal_file) {
+  File file(signal_dir.AppendASCII(signal_file),
+            File::FLAG_CREATE | File::FLAG_WRITE);
+  return file.IsValid();
+}
+
+// Check whether an event was signaled.
+bool CheckEvent(const FilePath& signal_dir, const char* signal_file) {
+  File file(signal_dir.AppendASCII(signal_file),
+            File::FLAG_OPEN | File::FLAG_READ);
+  return file.IsValid();
+}
+
+// Busy-wait for an event to be signaled.
+void WaitForEvent(const FilePath& signal_dir, const char* signal_file) {
+  while (!CheckEvent(signal_dir, signal_file))
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(10));
+}
+
+// Subprocess to test the number of open file descriptors.
+MULTIPROCESS_TEST_MAIN(ChildMain) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const FilePath temp_path = command_line->GetSwitchValuePath(kTempDirFlag);
+  CHECK(DirectoryExists(temp_path));
+
+  // Try to close all the file descriptors, so the open count goes to 0.
+  for (size_t i = 0; i < 1000; ++i)
+    close(i);
+  CHECK(SignalEvent(temp_path, kSignalClosed));
+
+  // Wait to be terminated.
+  while (true)
+    PlatformThread::Sleep(TimeDelta::FromSeconds(1));
+  return 0;
+}
+
+}  // namespace
+
+TEST(ProcessMetricsTest, GetOpenFdCount) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const FilePath temp_path = temp_dir.path();
+  CommandLine child_command_line(GetMultiProcessTestChildBaseCommandLine());
+  child_command_line.AppendSwitchPath(kTempDirFlag, temp_path);
+  Process child = SpawnMultiProcessTestChild(
+      ChildMainString, child_command_line, LaunchOptions());
+  ASSERT_TRUE(child.IsValid());
+  WaitForEvent(temp_path, kSignalClosed);
+
+  scoped_ptr<ProcessMetrics> metrics(
+      ProcessMetrics::CreateProcessMetrics(child.Handle()));
+  EXPECT_EQ(0, metrics->GetOpenFdCount());
+  ASSERT_TRUE(child.Terminate(0, true));
 }
 #endif  // defined(OS_LINUX)
 

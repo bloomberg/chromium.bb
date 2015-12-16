@@ -70,7 +70,7 @@ class DirReaderLinux {
 
   const char* name() const {
     if (!size_)
-      return NULL;
+      return nullptr;
 
     const linux_dirent* dirent =
         reinterpret_cast<const linux_dirent*>(&buf_[offset_]);
@@ -88,7 +88,8 @@ class DirReaderLinux {
  private:
   const int fd_;
   unsigned char buf_[512];
-  size_t offset_, size_;
+  size_t offset_;
+  size_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(DirReaderLinux);
 };

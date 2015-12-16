@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <utility>
 
+#include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/internal_linux.h"
@@ -291,17 +292,16 @@ int ProcessMetrics::GetOpenFdCount() const {
   // Use /proc/<pid>/fd to count the number of entries there.
   FilePath fd_path = internal::GetProcPidDir(process_).Append("fd");
 
-  DIR* dir = opendir(fd_path.value().c_str());
-  if (!dir) {
-    DPLOG(ERROR) << "opendir(" << fd_path.value() << ")";
+  DirReaderPosix dir_reader(fd_path.value().c_str());
+  if (!dir_reader.IsValid())
     return -1;
-  }
 
   int total_count = 0;
-  while (readdir(dir))
-    ++total_count;
-
-  closedir(dir);
+  for (; dir_reader.Next(); ) {
+    const char* name = dir_reader.name();
+    if (strcmp(name, ".") != 0 && strcmp(name, "..") != 0)
+      ++total_count;
+  }
 
   return total_count;
 }
