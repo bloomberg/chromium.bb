@@ -675,6 +675,12 @@ void WebGL2RenderingContextBase::renderbufferStorageImpl(
         if (!samples) {
             webContext()->renderbufferStorage(target, internalformat, width, height);
         } else {
+            GLint maxNumberOfSamples = 0;
+            webContext()->getInternalformativ(target, internalformat, GL_SAMPLES, 1, &maxNumberOfSamples);
+            if (samples > maxNumberOfSamples) {
+                synthesizeGLError(GL_INVALID_OPERATION, functionName, "samples out of range");
+                return;
+            }
             webContext()->renderbufferStorageMultisampleCHROMIUM(
                 target, samples, internalformat, width, height);
         }

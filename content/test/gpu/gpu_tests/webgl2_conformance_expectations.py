@@ -195,6 +195,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['mavericks'], bug=483282)
+    self.Fail('deqp/functional/gles3/rbostatequery.html',
+        ['mac'], bug=569808)
     self.Fail('conformance2/attribs/gl-vertex-attrib-i-render.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/buffers/buffer-overflow-test.html',
