@@ -5504,7 +5504,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Accelerated 2D canvas
       </message>
       <message name="IDS_FLAGS_ACCELERATED_2D_CANVAS_DESCRIPTION" desc="Description of the 'Accelerated 2D canvas' lab.">
-        Enables the use of the GPU to perform 2d canvas rendering and instead uses software rendering.
+        Enables the use of the GPU to perform 2d canvas rendering instead of using software rendering.
       </message>
       <message name="IDS_FLAGS_DISPLAY_LIST_2D_CANVAS_NAME" desc="Name of the 'Enable display list 2D canvas' lab.">
         Display list 2D canvas
