@@ -97,11 +97,25 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
 
 void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {
   if (current_frame_ &&
-      !current_frame_->delegated_frame_data->render_pass_list.empty())
-    current_frame_->delegated_frame_data->render_pass_list.back()
-        ->copy_requests.push_back(std::move(copy_request));
-  else
+      !current_frame_->delegated_frame_data->render_pass_list.empty()) {
+    std::vector<scoped_ptr<CopyOutputRequest>>& copy_requests =
+        current_frame_->delegated_frame_data->render_pass_list.back()
+            ->copy_requests;
+
+    if (void* source = copy_request->source()) {
+      // Remove existing CopyOutputRequests made on the Surface by the same
+      // source.
+      auto to_remove =
+          std::remove_if(copy_requests.begin(), copy_requests.end(),
+                         [source](const scoped_ptr<CopyOutputRequest>& x) {
+                           return x->source() == source;
+                         });
+      copy_requests.erase(to_remove, copy_requests.end());
+    }
+    copy_requests.push_back(std::move(copy_request));
+  } else {
     copy_request->SendEmptyResult();
+  }
 }
 
 void Surface::TakeCopyOutputRequests(
