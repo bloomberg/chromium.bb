@@ -40,6 +40,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     // has not been destroyed.
     private boolean mActiveState = false;
 
+    private boolean mIsUndoSupported;
+
     private final TabModelOrderController mOrderController;
 
     private OverviewModeBehavior mOverviewModeBehavior;
@@ -56,13 +58,22 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     private ChromeTabCreator mIncognitoTabCreator;
 
     /**
+     * @see #TabModelSelectorImpl(ChromeActivity, int, WindowAndroid, boolean)
+     */
+    public TabModelSelectorImpl(ChromeActivity activity, int selectorIndex,
+            WindowAndroid windowAndroid) {
+        this(activity, selectorIndex, windowAndroid, true);
+    }
+
+    /**
      * Builds a {@link TabModelSelectorImpl} instance.
      * @param activity      The {@link ChromeActivity} this model selector lives in.
      * @param selectorIndex The index this selector represents in the list of selectors.
      * @param windowAndroid The {@link WindowAndroid} associated with this model selector.
+     * @param supportUndo   Whether a tab closure can be undone.
      */
     public TabModelSelectorImpl(ChromeActivity activity, int selectorIndex,
-            WindowAndroid windowAndroid) {
+            WindowAndroid windowAndroid, boolean supportUndo) {
         super();
         mActivity = activity;
         mUma = new TabModelSelectorUma(mActivity);
@@ -87,6 +98,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             public void onMetadataSavedAsynchronously() {
             }
         };
+        mIsUndoSupported = supportUndo;
         mTabSaver = new TabPersistentStore(this, selectorIndex, mActivity, mActivity,
                 persistentStoreObserver);
         mOrderController = new TabModelOrderController(this);
@@ -143,8 +155,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         assert !mActiveState : "onNativeLibraryReady called twice!";
         mTabContentManager = tabContentProvider;
 
-        TabModel normalModel = new TabModelImpl(false, mRegularTabCreator, mIncognitoTabCreator,
-                mUma, mOrderController, mTabContentManager, mTabSaver, this);
+        TabModelImpl normalModel = new TabModelImpl(false, mRegularTabCreator, mIncognitoTabCreator,
+                mUma, mOrderController, mTabContentManager, mTabSaver, this, mIsUndoSupported);
         TabModel incognitoModel = new OffTheRecordTabModel(new OffTheRecordTabModelImplCreator(
                 mRegularTabCreator, mIncognitoTabCreator, mUma, mOrderController,
                 mTabContentManager, mTabSaver, this));

@@ -51,7 +51,7 @@ class OffTheRecordTabModelImplCreator implements OffTheRecordTabModelDelegate {
     @Override
     public TabModel createTabModel() {
         return new TabModelImpl(true, mRegularTabCreator, mIncognitoTabCreator, mUma,
-                mOrderController, mTabContentManager, mTabSaver, mModelDelegate);
+                mOrderController, mTabContentManager, mTabSaver, mModelDelegate, false);
     }
 
     @Override

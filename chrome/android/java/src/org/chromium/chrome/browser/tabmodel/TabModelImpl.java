@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tabmodel;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -60,10 +61,15 @@ public class TabModelImpl extends TabModelJniBridge {
      */
     private int mIndex = INVALID_TAB_INDEX;
 
+    /**
+     * Whether this tab model supports undoing.
+     */
+    private boolean mIsUndoSupported = true;
+
     public TabModelImpl(boolean incognito, TabCreator regularTabCreator,
             TabCreator incognitoTabCreator, TabModelSelectorUma uma,
             TabModelOrderController orderController, TabContentManager tabContentManager,
-            TabPersistentStore tabSaver, TabModelDelegate modelDelegate) {
+            TabPersistentStore tabSaver, TabModelDelegate modelDelegate, boolean supportUndo) {
         super(incognito);
         initializeNative();
         mRegularTabCreator = regularTabCreator;
@@ -73,6 +79,7 @@ public class TabModelImpl extends TabModelJniBridge {
         mTabContentManager = tabContentManager;
         mTabSaver = tabSaver;
         mModelDelegate = modelDelegate;
+        mIsUndoSupported = supportUndo;
         mObservers = new ObserverList<TabModelObserver>();
     }
 
@@ -233,7 +240,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
     @Override
     public boolean supportsPendingClosures() {
-        return !isIncognito();
+        return !isIncognito() && mIsUndoSupported;
     }
 
     @Override

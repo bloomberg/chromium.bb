@@ -100,20 +100,10 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
             }
         };
         mNormalTabModel = new TabModelImpl(false, null, null, null, orderController,
-                tabContentManager, tabPersistentStore, delegate) {
-            @Override
-            public boolean supportsPendingClosures() {
-                return false;
-            }
-        };
+                tabContentManager, tabPersistentStore, delegate, false);
 
         mIncognitoTabModel = new TabModelImpl(true, null, null, null, orderController,
-                tabContentManager, tabPersistentStore, delegate) {
-            @Override
-            public boolean supportsPendingClosures() {
-                return false;
-            }
-        };
+                tabContentManager, tabPersistentStore, delegate, false);
 
         mSelector.initialize(false, mNormalTabModel, mIncognitoTabModel);
     }

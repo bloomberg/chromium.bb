@@ -44,6 +44,9 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -54,6 +57,7 @@ import org.chromium.content.browser.BrowserStartupController.StartupCallback;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.ArrayList;
@@ -502,6 +506,33 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 return mActivity.getActivityTab().getUrl().equals(TEST_PAGE_2);
             }
         });
+    }
+
+    @SmallTest
+    public void testCreateNewTab() throws InterruptedException, TimeoutException {
+        final String testUrl = TestHttpServerClient.getUrl(
+                "chrome/test/data/android/customtabs/test_window_open.html");
+        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                getInstrumentation().getTargetContext(), testUrl, null));
+        final TabModelSelector tabSelector = getActivity().getTabModelSelector();
+
+        final CallbackHelper openTabHelper = new CallbackHelper();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                tabSelector.getModel(false).addObserver(new EmptyTabModelObserver() {
+                    @Override
+                    public void didAddTab(Tab tab, TabLaunchType type) {
+                        openTabHelper.notifyCalled();
+                    }
+                });
+            }
+        });
+        DOMUtils.clickNode(this, getActivity().getActivityTab().getContentViewCore(), "new_window");
+
+        openTabHelper.waitForCallback(0, 1);
+        assertEquals("A new tab should have been created.", 2,
+                tabSelector.getModel(false).getCount());
     }
 
     @SmallTest

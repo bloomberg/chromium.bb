@@ -145,7 +145,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
                             mTabCreatorManager.getTabCreator(false),
                             mTabCreatorManager.getTabCreator(true),
                             null, mTabModelOrderController, null, mTabPersistentStore,
-                            TestTabModelSelector.this);
+                            TestTabModelSelector.this, true);
                 }
             };
             TabModelImpl regularTabModel = ThreadUtils.runOnUiThreadBlocking(callable);

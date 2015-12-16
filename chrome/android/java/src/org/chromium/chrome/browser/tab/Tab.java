@@ -2704,7 +2704,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         int mruRank = 0;
         for (int i = 0; i < model.getCount(); i++) {
             Tab otherTab = model.getTabAt(i);
-            if (otherTab != tab && otherTab.getTabUma().getLastShownTimestamp() > tabLastShow) {
+            if (otherTab != tab && otherTab.getTabUma() != null
+                    && otherTab.getTabUma().getLastShownTimestamp() > tabLastShow) {
                 mruRank++;
             }
         }
