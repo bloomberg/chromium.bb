@@ -52,17 +52,13 @@ enum PushRegistrationStatus {
   // Registration failed because the public key could not be retrieved.
   PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE = 11,
 
-  // Registration failed because the manifest could not be retrieved or was
-  // empty.
-  PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING = 12,
-
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_REGISTRATION_STATUS_LAST below.
 
   PUSH_REGISTRATION_STATUS_LAST =
-      PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING
+      PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE
 };
 
 // Push unregistration success/error codes for internal use & reporting in UMA.
