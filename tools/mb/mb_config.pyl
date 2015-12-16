@@ -45,6 +45,7 @@
     'gn_debug_static_bot': ['gn', 'debug_static_bot'],
     'gn_linux_upload': ['gn_linux_upload', 'official', 'goma'],
     'gn_official': ['gn', 'official'],
+    'gn_official_cfi': ['gn', 'official', 'cfi'],
     'gn_official_goma': ['gn', 'official', 'goma'],
     'gn_release_bot': ['gn', 'release_bot'],
     'gn_release_bot_minimal_symbols': ['gn', 'release_bot_minimal_symbols'],
@@ -516,6 +517,7 @@
     },
     'chromium.fyi': {
       'CFI Linux': 'gn_cfi_release_bot',
+      'CFI Linux ToT': 'gn_official_cfi',
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'Libfuzzer Upload Linux': 'libfuzzer_upload_bot',
       'Site Isolation Linux': 'gn_release_trybot',
