@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.signin;
 import android.accounts.Account;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -74,6 +77,7 @@ public class AccountManagementFragment extends PreferenceFragment
                 SyncStateChangedListener, SignInStateObserver {
 
     public static final String SIGN_OUT_DIALOG_TAG = "sign_out_dialog_tag";
+    private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
 
     /**
      * The key for an integer value in
@@ -478,13 +482,51 @@ public class AccountManagementFragment extends PreferenceFragment
 
     // SignOutDialogListener implementation:
 
+    /**
+     * This class must be public and static. Otherwise an exception will be thrown when Android
+     * recreates the fragment (e.g. after a configuration change).
+     */
+    public static class ClearDataProgressDialog extends DialogFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            // Don't allow the dialog to be recreated by Android, since it wouldn't ever be
+            // dismissed after recreation.
+            if (savedInstanceState != null) dismiss();
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            setCancelable(false);
+            ProgressDialog dialog = new ProgressDialog(getActivity());
+            dialog.setTitle(getString(R.string.wiping_profile_data_title));
+            dialog.setMessage(getString(R.string.wiping_profile_data_message));
+            dialog.setIndeterminate(true);
+            return dialog;
+        }
+    }
+
     @Override
     public void onSignOutClicked() {
         // In case the user reached this fragment without being signed in, we guard the sign out so
         // we do not hit a native crash.
         if (!ChromeSigninController.get(getActivity()).isSignedIn()) return;
 
-        SigninManager.get(getActivity()).signOut(getActivity(), null);
+        final Activity activity = getActivity();
+        final DialogFragment clearDataProgressDialog = new ClearDataProgressDialog();
+        SigninManager.get(activity).signOut(null, new SigninManager.WipeDataHooks() {
+            @Override
+            public void preWipeData() {
+                clearDataProgressDialog.show(
+                        activity.getFragmentManager(), CLEAR_DATA_PROGRESS_DIALOG_TAG);
+            }
+            @Override
+            public void postWipeData() {
+                if (clearDataProgressDialog.isAdded()) {
+                    clearDataProgressDialog.dismissAllowingStateLoss();
+                }
+            }
+        });
         AccountManagementScreenHelper.logEvent(
                 ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT,
                 mGaiaServiceType);

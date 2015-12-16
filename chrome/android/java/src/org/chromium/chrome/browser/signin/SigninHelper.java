@@ -193,7 +193,7 @@ public class SigninHelper {
                 protected void onPostExecute(Void result) {
                     String renamedAccount = getNewSignedInAccountName(mContext);
                     if (renamedAccount == null) {
-                        mSigninManager.signOut(null, null);
+                        mSigninManager.signOut();
                     } else {
                         validateAccountSettings(true);
                     }
@@ -241,7 +241,7 @@ public class SigninHelper {
         // TODO(acleung): Deal with passphrase or just prompt user to re-enter it?
 
         // Perform a sign-out with a callback to sign-in again.
-        mSigninManager.signOut(null, new Runnable() {
+        mSigninManager.signOut(new Runnable() {
             @Override
             public void run() {
                 // Clear the shared perf only after signOut is successful.

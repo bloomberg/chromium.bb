@@ -179,7 +179,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                SigninManager.get(mContext).signOut(getActivity(), new Runnable() {
+                SigninManager.get(mContext).signOut(new Runnable() {
                     @Override
                     public void run() {
                         s.release();

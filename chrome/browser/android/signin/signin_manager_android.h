@@ -57,7 +57,8 @@ class SigninManagerAndroid {
       const base::android::JavaParamRef<jobject>& obj);
 
   void WipeProfileData(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj);
+                       const base::android::JavaParamRef<jobject>& obj,
+                       const base::android::JavaParamRef<jobject>& hooks);
 
   void LogInSignedInUser(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
@@ -81,7 +82,8 @@ class SigninManagerAndroid {
   void OnPolicyFetchDone(bool success);
 #endif
 
-  void OnBrowsingDataRemoverDone();
+  void OnBrowsingDataRemoverDone(
+      const base::android::ScopedJavaGlobalRef<jobject>& callback);
 
   void ClearLastSignedInUser();
 

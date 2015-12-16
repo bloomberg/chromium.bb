@@ -81,7 +81,7 @@ public class GoogleServicesManager implements ApplicationStateListener {
             SigninManager signinManager = SigninManager.get(mContext);
             if (!mChromeSigninController.isSignedIn() && signinManager.isSignedInOnNative()) {
                 Log.w(TAG, "Signed in state got out of sync, forcing native sign out");
-                signinManager.signOut(null, null);
+                signinManager.signOut();
             }
 
             // Initialize sync.

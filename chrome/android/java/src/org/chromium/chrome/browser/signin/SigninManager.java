@@ -6,12 +6,8 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 
@@ -22,7 +18,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.GoogleServicesNotificationController;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.sync.AndroidSyncSettings;
@@ -61,8 +56,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     /** Enable sync immediately. */
     public static final int SIGNIN_SYNC_IMMEDIATELY = 1;
 
-    private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
-
     private static final String TAG = "SigninManager";
 
     private static SigninManager sSigninManager;
@@ -88,7 +81,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private SignInFlowObserver mSignInFlowObserver;
     private boolean mPassive = false;
 
-    private DialogFragment mClearDataProgressDialog;
     private Runnable mSignOutCallback;
 
     private ConfirmManagedSigninFragment mPolicyConfirmationDialog;
@@ -138,6 +130,21 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
          * if possible.
          */
         void onSigninCancelled();
+    }
+
+    /**
+     * Hooks for wiping data during sign out.
+     */
+    public interface WipeDataHooks {
+        /**
+         * Called before data is wiped.
+         */
+        public void preWipeData();
+
+        /**
+         * Called after data is wiped.
+         */
+        public void postWipeData();
     }
 
     /**
@@ -408,17 +415,29 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     /**
+     * Invokes signOut with no callback or wipeDataHooks.
+     */
+    public void signOut() {
+        signOut(null, null);
+    }
+
+    /**
+     * Invokes signOut() with no wipeDataHooks.
+     */
+    public void signOut(Runnable callback) {
+        signOut(callback, null);
+    }
+
+    /**
      * Signs out of Chrome.
      * <p/>
      * This method clears the signed-in username, stops sync and sends out a
      * sign-out notification on the native side.
      *
-     * @param activity If not null then a progress dialog is shown over the activity until signout
-     * completes, in case the account had management enabled. The activity must be valid until the
-     * callback is invoked.
      * @param callback Will be invoked after signout completes, if not null.
+     * @param wipeDataHooks Hooks to call during data wiping in case the account is managed.
      */
-    public void signOut(Activity activity, Runnable callback) {
+    public void signOut(Runnable callback, WipeDataHooks wipeDataHooks) {
         mSignOutCallback = callback;
 
         boolean wipeData = getManagementDomain() != null;
@@ -433,7 +452,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         nativeSignOut(mNativeSigninManagerAndroid);
 
         if (wipeData) {
-            wipeProfileData(activity);
+            wipeProfileData(wipeDataHooks);
         } else {
             onSignOutDone();
         }
@@ -464,14 +483,10 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         notifySignInAllowedChanged();
     }
 
-    private void wipeProfileData(Activity activity) {
-        if (activity != null) {
-            mClearDataProgressDialog = new ClearDataProgressDialog();
-            mClearDataProgressDialog.show(activity.getFragmentManager(),
-                    CLEAR_DATA_PROGRESS_DIALOG_TAG);
-        }
+    private void wipeProfileData(WipeDataHooks hooks) {
+        if (hooks != null) hooks.preWipeData();
         // This will call back to onProfileDataWiped().
-        nativeWipeProfileData(mNativeSigninManagerAndroid);
+        nativeWipeProfileData(mNativeSigninManagerAndroid, hooks);
     }
 
     /**
@@ -528,38 +543,9 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         });
     }
 
-    /**
-     * This class must be public and static. Otherwise an exception will be thrown when Android
-     * recreates the fragment (e.g. after a configuration change).
-     */
-    public static class ClearDataProgressDialog extends DialogFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            if (savedInstanceState != null) {
-                // Don't allow the dialog to be recreated by Android, since it wouldn't ever
-                // be dismissed after recreation.
-                dismiss();
-            }
-        }
-
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            setCancelable(false);
-            ProgressDialog dialog = new ProgressDialog(getActivity());
-            dialog.setTitle(getString(R.string.wiping_profile_data_title));
-            dialog.setMessage(getString(R.string.wiping_profile_data_message));
-            dialog.setIndeterminate(true);
-            return dialog;
-        }
-    }
-
     @CalledByNative
-    private void onProfileDataWiped() {
-        if (mClearDataProgressDialog != null && mClearDataProgressDialog.isAdded()) {
-            mClearDataProgressDialog.dismissAllowingStateLoss();
-        }
-        mClearDataProgressDialog = null;
+    private void onProfileDataWiped(WipeDataHooks hooks) {
+        if (hooks != null) hooks.postWipeData();
         onSignOutDone();
     }
 
@@ -613,7 +599,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private native void nativeOnSignInCompleted(long nativeSigninManagerAndroid, String username);
     private native void nativeSignOut(long nativeSigninManagerAndroid);
     private native String nativeGetManagementDomain(long nativeSigninManagerAndroid);
-    private native void nativeWipeProfileData(long nativeSigninManagerAndroid);
+    private native void nativeWipeProfileData(long nativeSigninManagerAndroid, WipeDataHooks hooks);
     private native void nativeClearLastSignedInUser(long nativeSigninManagerAndroid);
     private native void nativeLogInSignedInUser(long nativeSigninManagerAndroid);
     private native boolean nativeIsSignedInOnNative(long nativeSigninManagerAndroid);

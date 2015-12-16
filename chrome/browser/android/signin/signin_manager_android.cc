@@ -181,13 +181,17 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env,
   return domain;
 }
 
-void SigninManagerAndroid::WipeProfileData(JNIEnv* env,
-                                           const JavaParamRef<jobject>& obj) {
+void SigninManagerAndroid::WipeProfileData(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& callback) {
+  base::android::ScopedJavaGlobalRef<jobject> java_callback;
+  java_callback.Reset(env, callback);
+
   // The ProfileDataRemover deletes itself once done.
   new ProfileDataRemover(
-      profile_,
-      base::Bind(&SigninManagerAndroid::OnBrowsingDataRemoverDone,
-                 weak_factory_.GetWeakPtr()));
+      profile_, base::Bind(&SigninManagerAndroid::OnBrowsingDataRemoverDone,
+                           weak_factory_.GetWeakPtr(), java_callback));
 }
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -222,7 +226,8 @@ void SigninManagerAndroid::OnPolicyFetchDone(bool success) {
 
 #endif
 
-void SigninManagerAndroid::OnBrowsingDataRemoverDone() {
+void SigninManagerAndroid::OnBrowsingDataRemoverDone(
+    const base::android::ScopedJavaGlobalRef<jobject>& callback) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
   model->RemoveAllUserBookmarks();
 
@@ -231,7 +236,8 @@ void SigninManagerAndroid::OnBrowsingDataRemoverDone() {
   ClearLastSignedInUser();
 
   Java_SigninManager_onProfileDataWiped(base::android::AttachCurrentThread(),
-                                        java_signin_manager_.obj());
+                                        java_signin_manager_.obj(),
+                                        callback.obj());
 }
 
 void SigninManagerAndroid::ClearLastSignedInUser(
