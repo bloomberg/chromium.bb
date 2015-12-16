@@ -881,6 +881,8 @@ crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/complex-character-based-fallback.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
 
+crbug.com/567998 imported/web-platform-tests/html/obsolete/requirements-for-implementations/other-elements-attributes-and-apis/document-all.html [ NeedsManualRebaseline ]
+
 # Significant Slimming Paint failure.
 crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
 
