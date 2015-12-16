@@ -3,6 +3,15 @@
 // found in the LICENSE file.
 
 /**
+ * @typedef {{
+ *   'title': string,
+ *   'tooltip': string,
+ *   'url': string
+ * }}
+ */
+var StartupPageInfo;
+
+/**
  * @fileoverview 'settings-startup-urls-page' is the settings page
  * containing the urls that will be opened when chrome is started.
  *
@@ -32,6 +41,12 @@ Polymer({
     newUrl: {
       type: String,
     },
+
+    /**
+     * Pages to load upon browser startup.
+     * @private {!Array<!StartupPageInfo>}
+     */
+    startupPages_: Array,
   },
 
   attached: function() {
@@ -43,14 +58,12 @@ Polymer({
         },
       };
     });
+    chrome.send('onStartupPrefsPageLoad');
   },
 
   /** @private */
-  updateStartupPages_: function(data) {
-    var urlArray = [];
-    for (var i = 0; i < data.length; ++i)
-      urlArray.push(data[i].url);
-    this.set('prefs.session.startup_urls.value', urlArray);
+  updateStartupPages_: function(startupPages) {
+    this.startupPages_ = startupPages;
   },
 
   /** @private */
@@ -73,7 +86,7 @@ Polymer({
     var value = this.newUrl && this.newUrl.trim();
     if (!value)
       return;
-    this.push('prefs.session.startup_urls.value', value);
+    chrome.send('addStartupPage', [value]);
     this.newUrl = '';
     this.$.addUrlDialog.close();
   },
@@ -83,6 +96,6 @@ Polymer({
    * @private
    */
   onRemoveUrlTap_: function(e) {
-    this.splice('prefs.session.startup_urls.value', e.model.index, 1);
+    chrome.send('removeStartupPage', [e.model.index]);
   },
 });

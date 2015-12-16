@@ -8,11 +8,12 @@
   <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="on_startup_shared.css">
   <template>
-    <template is="dom-repeat" items="{{prefs.session.startup_urls.value}}">
+    <template is="dom-repeat" items="[[startupPages_]]">
       <div class="list-item">
         <paper-icon-item>
           <iron-icon icon="image:brightness-1" item-icon></iron-icon>
-          <span class="flex">[[item]]</span>
+          <div>[[item.title]]</div>
+          <div>[[item.url]]</div>
           <iron-icon on-tap="onRemoveUrlTap_" icon="clear">
           </iron-icon>
         </paper-icon-item>
