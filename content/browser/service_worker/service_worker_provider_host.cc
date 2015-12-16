@@ -46,7 +46,8 @@ ServiceWorkerClientInfo FocusOnUIThread(int render_process_id,
   FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
 
   // Focus the frame in the frame tree node, in case it has changed.
-  frame_tree_node->frame_tree()->SetFocusedFrame(frame_tree_node);
+  frame_tree_node->frame_tree()->SetFocusedFrame(
+      frame_tree_node, render_frame_host->GetSiteInstance());
 
   // Focus the frame's view to make sure the frame is now considered as focused.
   render_frame_host->GetView()->Focus();

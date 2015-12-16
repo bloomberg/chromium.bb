@@ -398,6 +398,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // another renderer process.
   void UpdateOpener();
 
+  // Set this frame as focused in the renderer process.  This supports
+  // cross-process window.focus() calls.
+  void SetFocusedFrame();
+
   // Deletes the current selection plus the specified number of characters
   // before and after the selection or caret.
   void ExtendSelectionAndDelete(size_t before, size_t after);

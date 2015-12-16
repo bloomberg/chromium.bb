@@ -54,6 +54,9 @@ public:
     // the |source| frame is searching for the next focusable element (e.g., in
     // response to <tab>) and encounters a remote frame.
     virtual void advanceFocus(WebFocusType type, WebLocalFrame* source) { }
+
+    // This frame was focused by another frame.
+    virtual void frameFocused() { }
 };
 
 } // namespace blink

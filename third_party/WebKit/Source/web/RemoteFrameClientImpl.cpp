@@ -127,6 +127,12 @@ bool RemoteFrameClientImpl::willCheckAndDispatchMessageEvent(
     return true;
 }
 
+void RemoteFrameClientImpl::frameFocused() const
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->frameFocused();
+}
+
 void RemoteFrameClientImpl::navigate(const ResourceRequest& request, bool shouldReplaceCurrentEntry)
 {
     if (m_webFrame->client())

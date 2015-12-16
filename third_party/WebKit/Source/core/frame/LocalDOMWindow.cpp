@@ -732,32 +732,6 @@ Element* LocalDOMWindow::frameElement() const
     return toHTMLFrameOwnerElement(frame()->owner());
 }
 
-void LocalDOMWindow::focus(ExecutionContext* context)
-{
-    if (!frame())
-        return;
-
-    FrameHost* host = frame()->host();
-    if (!host)
-        return;
-
-    ASSERT(context);
-
-    bool allowFocus = context->isWindowInteractionAllowed();
-    if (allowFocus) {
-        context->consumeWindowInteraction();
-    } else {
-        ASSERT(isMainThread());
-        allowFocus = opener() && (opener() != this) && (toDocument(context)->domWindow() == opener());
-    }
-
-    // If we're a top level window, bring the window to the front.
-    if (frame()->isMainFrame() && allowFocus)
-        host->chromeClient().focus();
-
-    frame()->eventHandler().focusDocumentView();
-}
-
 void LocalDOMWindow::blur()
 {
 }

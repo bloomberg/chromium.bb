@@ -41,6 +41,8 @@ public:
     // Returns true if the embedder intercepted the postMessage call
     virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin* /*target*/, MessageEvent*, LocalFrame* /*sourceFrame*/) const { return false; }
 
+    virtual void frameFocused() const = 0;
+
     virtual ~FrameClient() { }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }

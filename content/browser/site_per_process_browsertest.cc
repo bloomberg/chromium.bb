@@ -3949,6 +3949,102 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_DocumentHasFocus) {
   EXPECT_TRUE(document_has_focus(child2));
 }
 
+// Check that window.focus works for cross-process subframes.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframeWindowFocus) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   |--Site B ------- proxies for A C\n"
+      "   +--Site C ------- proxies for A B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/\n"
+      "      C = http://c.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* child1 = root->child_at(0);
+  FrameTreeNode* child2 = root->child_at(1);
+
+  // The main frame should be focused to start with.
+  EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
+
+  DOMMessageQueue msg_queue;
+
+  // Register focus and blur events that will send messages when each frame's
+  // window gets or loses focus.
+  const char kSetupFocusEvents[] =
+      "window.addEventListener('focus', function() {"
+      "  domAutomationController.setAutomationId(0);"
+      "  domAutomationController.send('%s-got-focus');"
+      "});"
+      "window.addEventListener('blur', function() {"
+      "  domAutomationController.setAutomationId(0);"
+      "  domAutomationController.send('%s-lost-focus');"
+      "});";
+  std::string script = base::StringPrintf(kSetupFocusEvents, "main", "main");
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+  script = base::StringPrintf(kSetupFocusEvents, "child1", "child1");
+  EXPECT_TRUE(ExecuteScript(child1->current_frame_host(), script));
+  script = base::StringPrintf(kSetupFocusEvents, "child2", "child2");
+  EXPECT_TRUE(ExecuteScript(child2->current_frame_host(), script));
+
+  // Execute window.focus on the B subframe from the A main frame.
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), "frames[0].focus()"));
+
+  // Helper to wait for two specified messages to arrive on the specified
+  // DOMMessageQueue, assuming that the two messages can arrive in any order.
+  auto wait_for_two_messages = [](DOMMessageQueue* msg_queue,
+                                  const std::string& msg1,
+                                  const std::string& msg2) {
+    bool msg1_received = false;
+    bool msg2_received = false;
+    std::string status;
+    while (msg_queue->WaitForMessage(&status)) {
+      if (status == msg1)
+        msg1_received = true;
+      if (status == msg2)
+        msg2_received = true;
+      if (msg1_received && msg2_received)
+        break;
+    }
+  };
+
+  // Process A should fire a blur event, and process B should fire a focus
+  // event.  Wait for both events.
+  wait_for_two_messages(&msg_queue, "\"main-lost-focus\"",
+                        "\"child1-got-focus\"");
+
+  // The B subframe should now be focused in the browser process.
+  EXPECT_EQ(child1, root->frame_tree()->GetFocusedFrame());
+
+  // Now, execute window.focus on the C subframe from A main frame.  This
+  // checks that we can shift focus from one remote frame to another.
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), "frames[1].focus()"));
+
+  // Wait for the two subframes (B and C) to fire blur and focus events.
+  wait_for_two_messages(&msg_queue, "\"child1-lost-focus\"",
+                        "\"child2-got-focus\"");
+
+  // The C subframe should now be focused.
+  EXPECT_EQ(child2, root->frame_tree()->GetFocusedFrame());
+
+  // window.focus the main frame from the C subframe.
+  EXPECT_TRUE(ExecuteScript(child2->current_frame_host(), "parent.focus()"));
+
+  // Wait for the C subframe to blur and main frame to focus.
+  wait_for_two_messages(&msg_queue, "\"child2-lost-focus\"",
+                        "\"main-got-focus\"");
+
+  // The main frame should now be focused.
+  EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
+}
+
 // There are no cursors on Android.
 #if !defined(OS_ANDROID)
 class CursorMessageFilter : public content::BrowserMessageFilter {

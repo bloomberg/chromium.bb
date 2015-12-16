@@ -135,6 +135,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void didChangeOpener(blink::WebFrame* opener) override;
   void advanceFocus(blink::WebFocusType type,
                     blink::WebLocalFrame* source) override;
+  void frameFocused() override;
 
   // IPC handlers
   void OnDidStartLoading();

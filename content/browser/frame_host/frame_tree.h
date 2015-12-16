@@ -103,8 +103,12 @@ class CONTENT_EXPORT FrameTree {
   // Returns the focused frame.
   FrameTreeNode* GetFocusedFrame();
 
-  // Sets the focused frame.
-  void SetFocusedFrame(FrameTreeNode* node);
+  // Sets the focused frame to |node|.  |source| identifies the SiteInstance
+  // that initiated this focus change.  If this FrameTree has SiteInstances
+  // other than |source|, those SiteInstances will be notified about the new
+  // focused frame.   Note that |source| may differ from |node|'s current
+  // SiteInstance (e.g., this happens for cross-process window.focus() calls).
+  void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source);
 
   // Allows a client to listen for frame removal.  The listener should expect
   // to receive the RenderViewHostImpl containing the frame and the renderer-

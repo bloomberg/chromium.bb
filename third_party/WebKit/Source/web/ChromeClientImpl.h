@@ -61,7 +61,6 @@ public:
     bool canTakeFocus(WebFocusType) override;
     void takeFocus(WebFocusType) override;
     void focusedNodeChanged(Node* fromNode, Node* toNode) override;
-    void focusedFrameChanged(LocalFrame*) override;
     bool hadFormInteraction() const override;
     Page* createWindow(
         LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSetOpener) override;

@@ -133,7 +133,7 @@ public:
 
     virtual DOMSelection* getSelection() = 0;
 
-    virtual void focus(ExecutionContext*) = 0;
+    void focus(ExecutionContext*);
     virtual void blur() = 0;
     void close(ExecutionContext*);
     virtual void print() = 0;

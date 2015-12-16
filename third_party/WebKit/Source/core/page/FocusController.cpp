@@ -40,6 +40,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/Event.h"
+#include "core/frame/FrameClient.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -549,7 +550,7 @@ PassOwnPtrWillBeRawPtr<FocusController> FocusController::create(Page* page)
     return adoptPtrWillBeNoop(new FocusController(page));
 }
 
-void FocusController::setFocusedFrame(PassRefPtrWillBeRawPtr<Frame> frame)
+void FocusController::setFocusedFrame(PassRefPtrWillBeRawPtr<Frame> frame, bool notifyEmbedder)
 {
     ASSERT(!frame || frame->page() == m_page);
     if (m_focusedFrame == frame || m_isChangingFocusedFrame)
@@ -576,10 +577,11 @@ void FocusController::setFocusedFrame(PassRefPtrWillBeRawPtr<Frame> frame)
 
     m_isChangingFocusedFrame = false;
 
-    m_page->chromeClient().focusedFrameChanged(newFrame.get());
+    if (m_focusedFrame && notifyEmbedder)
+        m_focusedFrame->client()->frameFocused();
 }
 
-void FocusController::focusDocumentView(PassRefPtrWillBeRawPtr<Frame> frame)
+void FocusController::focusDocumentView(PassRefPtrWillBeRawPtr<Frame> frame, bool notifyEmbedder)
 {
     ASSERT(!frame || frame->page() == m_page);
     if (m_focusedFrame == frame)
@@ -601,7 +603,7 @@ void FocusController::focusDocumentView(PassRefPtrWillBeRawPtr<Frame> frame)
             dispatchFocusEvent(*document, *focusedElement);
     }
 
-    setFocusedFrame(frame);
+    setFocusedFrame(frame, notifyEmbedder);
 }
 
 LocalFrame* FocusController::focusedFrame() const

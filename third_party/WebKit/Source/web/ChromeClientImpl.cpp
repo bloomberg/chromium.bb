@@ -210,13 +210,6 @@ void ChromeClientImpl::focusedNodeChanged(Node* fromNode, Node* toNode)
     m_webView->client()->setKeyboardFocusURL(focusURL);
 }
 
-void ChromeClientImpl::focusedFrameChanged(LocalFrame* frame)
-{
-    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
-    if (webframe && webframe->client())
-        webframe->client()->frameFocused();
-}
-
 bool ChromeClientImpl::hadFormInteraction() const
 {
     return m_webView->pageImportanceSignals() && m_webView->pageImportanceSignals()->hadFormInteraction();

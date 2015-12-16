@@ -91,7 +91,6 @@ public:
     virtual void takeFocus(WebFocusType) = 0;
 
     virtual void focusedNodeChanged(Node*, Node*) = 0;
-    virtual void focusedFrameChanged(LocalFrame*) = 0;
 
     virtual bool hadFormInteraction() const = 0;
 

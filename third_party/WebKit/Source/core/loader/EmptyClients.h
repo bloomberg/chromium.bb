@@ -84,7 +84,6 @@ public:
     void takeFocus(WebFocusType) override {}
 
     void focusedNodeChanged(Node*, Node*) override {}
-    void focusedFrameChanged(LocalFrame*) override {}
     Page* createWindow(LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSetOpener) override { return nullptr; }
     void show(NavigationPolicy) override {}
 
@@ -190,6 +189,7 @@ public:
     Frame* lastChild() const override { return 0; }
     void willBeDetached() override {}
     void detached(FrameDetachType) override {}
+    void frameFocused() const override {}
 
     void dispatchWillSendRequest(DocumentLoader*, unsigned long, ResourceRequest&, const ResourceResponse&) override {}
     void dispatchDidReceiveResponse(DocumentLoader*, unsigned long, const ResourceResponse&) override {}

@@ -450,4 +450,8 @@ void RenderFrameProxy::advanceFocus(blink::WebFocusType type,
   Send(new FrameHostMsg_AdvanceFocus(routing_id_, type, source_routing_id));
 }
 
+void RenderFrameProxy::frameFocused() {
+  Send(new FrameHostMsg_FrameFocused(routing_id_));
+}
+
 }  // namespace

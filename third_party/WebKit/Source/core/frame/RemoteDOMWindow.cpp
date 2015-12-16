@@ -210,11 +210,6 @@ DOMSelection* RemoteDOMWindow::getSelection()
     return 0;
 }
 
-void RemoteDOMWindow::focus(ExecutionContext* override)
-{
-    // FIXME: Implement.
-}
-
 void RemoteDOMWindow::blur()
 {
     // FIXME: Implement.

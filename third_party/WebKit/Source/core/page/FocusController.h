@@ -53,8 +53,8 @@ class CORE_EXPORT FocusController final : public NoBaseWillBeGarbageCollectedFin
 public:
     static PassOwnPtrWillBeRawPtr<FocusController> create(Page*);
 
-    void setFocusedFrame(PassRefPtrWillBeRawPtr<Frame>);
-    void focusDocumentView(PassRefPtrWillBeRawPtr<Frame>);
+    void setFocusedFrame(PassRefPtrWillBeRawPtr<Frame>, bool notifyEmbedder = true);
+    void focusDocumentView(PassRefPtrWillBeRawPtr<Frame>, bool notifyEmbedder = true);
     LocalFrame* focusedFrame() const;
     Frame* focusedOrMainFrame() const;
 

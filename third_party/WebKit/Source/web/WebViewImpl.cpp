@@ -2900,7 +2900,11 @@ void WebViewImpl::setFocusedFrame(WebFrame* frame)
 
 void WebViewImpl::focusDocumentView(WebFrame* frame)
 {
-    page()->focusController().focusDocumentView(frame->toImplBase()->frame());
+    // This is currently only used when replicating focus changes for
+    // cross-process frames, and |notifyEmbedder| is disabled to avoid sending
+    // duplicate frameFocused updates from FocusController to the browser
+    // process, which already knows the latest focused frame.
+    page()->focusController().focusDocumentView(frame->toImplBase()->frame(), false /* notifyEmbedder */);
 }
 
 void WebViewImpl::setInitialFocus(bool reverse)

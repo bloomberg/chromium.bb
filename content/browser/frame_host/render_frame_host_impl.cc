@@ -820,7 +820,7 @@ void RenderFrameHostImpl::OnDetach() {
 }
 
 void RenderFrameHostImpl::OnFrameFocused() {
-  frame_tree_->SetFocusedFrame(frame_tree_node_);
+  frame_tree_->SetFocusedFrame(frame_tree_node_, GetSiteInstance());
 }
 
 void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
@@ -1969,6 +1969,10 @@ void RenderFrameHostImpl::UpdateOpener() {
   int opener_routing_id =
       frame_tree_node_->render_manager()->GetOpenerRoutingID(GetSiteInstance());
   Send(new FrameMsg_UpdateOpener(GetRoutingID(), opener_routing_id));
+}
+
+void RenderFrameHostImpl::SetFocusedFrame() {
+  Send(new FrameMsg_SetFocusedFrame(routing_id_));
 }
 
 void RenderFrameHostImpl::ExtendSelectionAndDelete(size_t before,

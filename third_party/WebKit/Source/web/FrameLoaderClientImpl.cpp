@@ -878,6 +878,12 @@ bool FrameLoaderClientImpl::willCheckAndDispatchMessageEvent(
         WebLocalFrameImpl::fromFrame(sourceFrame), m_webFrame, WebSecurityOrigin(target), WebDOMMessageEvent(event));
 }
 
+void FrameLoaderClientImpl::frameFocused() const
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->frameFocused();
+}
+
 void FrameLoaderClientImpl::didChangeName(const String& name)
 {
     if (!m_webFrame->client())

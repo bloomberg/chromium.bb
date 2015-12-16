@@ -268,23 +268,39 @@ FrameTreeNode* FrameTree::GetFocusedFrame() {
   return FindByID(focused_frame_tree_node_id_);
 }
 
-void FrameTree::SetFocusedFrame(FrameTreeNode* node) {
+void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
+  if (node == GetFocusedFrame())
+    return;
+
   std::set<SiteInstance*> frame_tree_site_instances;
   ForEach(base::Bind(&CollectSiteInstances, &frame_tree_site_instances));
+
+  SiteInstance* current_instance =
+      node->current_frame_host()->GetSiteInstance();
 
   // Update the focused frame in all other SiteInstances.  If focus changes to
   // a cross-process frame, this allows the old focused frame's renderer
   // process to clear focus from that frame and fire blur events.  It also
   // ensures that the latest focused frame is available in all renderers to
   // compute document.activeElement.
+  //
+  // We do not notify the |source| SiteInstance because it already knows the
+  // new focused frame (since it initiated the focus change), and we notify the
+  // new focused frame's SiteInstance (if it differs from |source|) separately
+  // below.
   for (const auto& instance : frame_tree_site_instances) {
-    if (instance != node->current_frame_host()->GetSiteInstance()) {
+    if (instance != source && instance != current_instance) {
       DCHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
       RenderFrameProxyHost* proxy =
           node->render_manager()->GetRenderFrameProxyHost(instance);
       proxy->SetFocusedFrame();
     }
   }
+
+  // If |node| was focused from a cross-process frame (i.e., via
+  // window.focus()), tell its RenderFrame that it should focus.
+  if (current_instance != source)
+    node->current_frame_host()->SetFocusedFrame();
 
   focused_frame_tree_node_id_ = node->frame_tree_node_id();
   node->DidFocus();

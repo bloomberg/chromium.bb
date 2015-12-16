@@ -29,6 +29,7 @@ public:
     Frame* firstChild() const override;
     Frame* lastChild() const override;
     bool willCheckAndDispatchMessageEvent(SecurityOrigin*, MessageEvent*, LocalFrame*) const override;
+    void frameFocused() const override;
 
     // RemoteFrameClient overrides:
     void navigate(const ResourceRequest&, bool shouldReplaceCurrentEntry) override;
