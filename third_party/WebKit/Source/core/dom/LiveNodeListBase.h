@@ -36,6 +36,8 @@ namespace blink {
 
 enum NodeListRootType {
     NodeListIsRootedAtNode,
+    // TODO(tkent): Rename NodeListIsRootedAtDocument to
+    // NodeListIsRootedAtTreeScope.
     NodeListIsRootedAtDocument
 };
 
@@ -65,6 +67,7 @@ public:
     ContainerNode& rootNode() const;
 
     void didMoveToDocument(Document& oldDocument, Document& newDocument);
+    // TODO(tkent): Rename isRootedAtDocument() to isRootedAtTreeScope().
     ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument; }
     ALWAYS_INLINE NodeListInvalidationType invalidationType() const { return static_cast<NodeListInvalidationType>(m_invalidationType); }
     ALWAYS_INLINE CollectionType type() const { return static_cast<CollectionType>(m_collectionType); }
