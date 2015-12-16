@@ -38,7 +38,7 @@ declare_args() {
   # Alsa should be used on non-Android, non-Mac POSIX systems, and Chromecast
   # builds for desktop Linux.
   if (is_posix && !is_headless && !is_android && !is_mac &&
-      (!is_chromecast || target_cpu != "arm")) {
+      (!is_chromecast || is_cast_desktop_build)) {
     use_alsa = true
     if (!use_cras) {
       use_pulseaudio = true

@@ -111,7 +111,7 @@
         '../url/url.gyp:url_unittests',
       ],
       'conditions': [
-        ['target_arch=="arm" and OS!="android"', {
+        ['OS=="linux" and is_cast_desktop_build==0', {
           'variables': {
             'filters': [
               # Run net_unittests first to avoid random failures due to slow python startup
@@ -153,7 +153,7 @@
               'url_unittests --gtest_filter=-URLCanonTest.DoAppendUTF8Invalid',
             ],
           },
-        }, { # else "x86" or "android"
+        }, { # else desktop or android
           'variables': {
             'filters': [
               # Disable PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM (not supported)

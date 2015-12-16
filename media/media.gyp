@@ -13,7 +13,7 @@
     'linux_link_pulseaudio%': 0,
     'conditions': [
       # Enable ALSA and Pulse for runtime selection.
-      ['(OS=="linux" or OS=="freebsd" or OS=="solaris") and (embedded!=1 or (chromecast==1 and target_arch!="arm"))', {
+      ['(OS=="linux" or OS=="freebsd" or OS=="solaris") and (chromecast==0 or is_cast_desktop_build==1)', {
         # ALSA is always needed for Web MIDI even if the cras is enabled.
         'use_alsa%': 1,
         'conditions': [

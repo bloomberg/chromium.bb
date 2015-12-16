@@ -12,9 +12,6 @@ declare_args() {
   # Set it to "public" for a Chromium build.
   chromecast_branding = "public"
 
-  # True if Chromecast build is targetted for linux desktop.
-  is_chromecast_desktop_build = is_linux && target_cpu != "arm"
-
   # Use Playready CDMs.
   use_playready = false
 }

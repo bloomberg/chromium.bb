@@ -40,8 +40,10 @@ declare_args() {
 
         # For desktop Chromecast builds, override the default "headless"
         # platform with --ozone-platform=egltest
-        # TODO(slan|halliwell): Make the default platform "cast" on desktop too.
-        if (target_os == "linux" && target_cpu != "arm") {
+        # TODO(halliwell): Create a libcast_graphics implementation for desktop
+        # using X11, and disable these two platforms. "cast" platform should be
+        # the default on every A/V build.
+        if (is_cast_desktop_build) {
           ozone_platform_egltest = true
           ozone_platform_ozonex = true
         } else {

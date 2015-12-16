@@ -50,7 +50,8 @@ cast_test_group("cast_tests") {
 
   filters = []
 
-  if (target_cpu == "arm" && target_os == "linux") {
+  # Apply filters to embedded linux devices.
+  if (target_os == "linux" && !is_cast_desktop_build) {
     filters += [
       # Run net_unittests first to avoid random failures due to slow python startup
       # KeygenHandlerTest.SmokeTest and KeygenHandlerTest.ConcurrencyTest fail due to
@@ -94,7 +95,7 @@ cast_test_group("cast_tests") {
       # DoAppendUTF8Invalid fails because of dcheck_always_on flag in Eng builds
       "url_unittests --gtest_filter=-URLCanonTest.DoAppendUTF8Invalid",
     ]
-  } else if (target_cpu != "arm" || target_os == "android") {
+  } else if (is_cast_desktop_build || target_os == "android") {
     filters += [
       # Disable PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM (not supported)
       "media_unittests --gtest_filter=-PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM",

@@ -233,6 +233,13 @@
             'toolkit_views%': 0,
           }],
 
+          # Chromecast builds on x86 Linux should default to desktop builds.
+          ['chromecast==1 and OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
+            'is_cast_desktop_build%': 1,
+          }, {
+            'is_cast_desktop_build%': 0,
+          }],
+
           # Enable HiDPI on Mac OS, Windows and Linux (including Chrome OS).
           ['OS=="mac" or OS=="win" or OS=="linux"', {
             'enable_hidpi%': 1,
@@ -322,6 +329,7 @@
       # Copy conditionally-set variables out one scope.
       'chromeos%': '<(chromeos)',
       'chromecast%': '<(chromecast)',
+      'is_cast_desktop_build%': '<(is_cast_desktop_build)',
       'host_arch%': '<(host_arch)',
       'target_arch%': '<(target_arch)',
       'target_subarch%': '<(target_subarch)',
@@ -1137,6 +1145,7 @@
     'linux_fpic%': '<(linux_fpic)',
     'chromeos%': '<(chromeos)',
     'chromecast%': '<(chromecast)',
+    'is_cast_desktop_build%': '<(is_cast_desktop_build)',
     'enable_viewport%': '<(enable_viewport)',
     'enable_hidpi%': '<(enable_hidpi)',
     'enable_topchrome_md%': '<(enable_topchrome_md)',
@@ -2392,7 +2401,7 @@
                 # TODO(slan|halliwell): Make the default platform "cast" on
                 # desktop too.
                 'conditions': [
-                  ['OS=="linux" and target_arch!="arm"', {
+                  ['is_cast_desktop_build==1', {
                     'ozone_platform_egltest%': 1,
                     'ozone_platform_ozonex%': 1,
                   }, {
