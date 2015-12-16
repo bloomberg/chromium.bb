@@ -326,11 +326,10 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString, const Strin
 
     IntSize size = expandedIntSize(layer->size());
 
-    GraphicsContext context(layer->paintController());
     IntRect interestRect(IntPoint(0, 0), size);
-    layer->paint(context, &interestRect);
-    layer->paintController().commitNewDisplayItems();
+    layer->paint(&interestRect);
 
+    GraphicsContext context(layer->paintController());
     context.beginRecording(interestRect);
     layer->paintController().paintArtifact().replay(context);
     RefPtr<PictureSnapshot> snapshot = adoptRef(new PictureSnapshot(context.endRecording()));

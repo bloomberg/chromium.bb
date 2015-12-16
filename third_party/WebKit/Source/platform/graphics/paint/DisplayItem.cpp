@@ -200,7 +200,6 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
         DEBUG_STRING_CASE(Subsequence);
         DEBUG_STRING_CASE(EndSubsequence);
         DEBUG_STRING_CASE(CachedSubsequence);
-        DEBUG_STRING_CASE(CachedDisplayItemList);
         DEBUG_STRING_CASE(UninitializedType);
         DEFAULT_CASE;
     }

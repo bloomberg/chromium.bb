@@ -308,13 +308,18 @@ IntRect GraphicsLayer::interestRect()
     return m_previousInterestRect;
 }
 
-void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
+void GraphicsLayer::paint(const IntRect* interestRect, GraphicsContext::DisabledMode disabledMode)
+{
+    if (paintWithoutCommit(interestRect, disabledMode))
+        paintController().commitNewDisplayItems();
+}
+
+bool GraphicsLayer::paintWithoutCommit(const IntRect* interestRect, GraphicsContext::DisabledMode disabledMode)
 {
     ASSERT(drawsContent());
-    ASSERT(&context.paintController() == m_paintController);
 
     if (!m_client)
-        return;
+        return false;
     if (firstPaintInvalidationTrackingEnabled())
         m_debugInfo.clearAnnotatedInvalidateRects();
     incrementPaintCount();
@@ -325,12 +330,11 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
         interestRect = &newInterestRect;
     }
 
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-        if (!m_client->needsRepaint() && !paintController().cacheIsEmpty() && m_previousInterestRect == *interestRect) {
-            paintController().createAndAppend<CachedDisplayItem>(*this, DisplayItem::CachedDisplayItemList);
-            return;
-        }
-    }
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()
+        && !m_client->needsRepaint() && !paintController().cacheIsEmpty() && m_previousInterestRect == *interestRect)
+        return false;
+
+    GraphicsContext context(paintController(), disabledMode);
 
 #ifndef NDEBUG
     if (contentsOpaque() && s_drawDebugRedFill) {
@@ -345,6 +349,7 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
     m_previousInterestRect = *interestRect;
     m_client->paintContents(this, context, m_paintingPhase, *interestRect);
     notifyFirstPaintToClient();
+    return true;
 }
 
 void GraphicsLayer::notifyFirstPaintToClient()

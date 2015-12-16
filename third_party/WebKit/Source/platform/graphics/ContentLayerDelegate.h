@@ -40,25 +40,14 @@ class Rect;
 
 namespace blink {
 
-class GraphicsContext;
 class IntRect;
-class PaintController;
-
-class PLATFORM_EXPORT GraphicsContextPainter {
-public:
-    virtual IntRect interestRect() = 0;
-    virtual void paint(GraphicsContext&, const IntRect* interestRect) = 0;
-    virtual PaintController& paintController() = 0;
-
-protected:
-    virtual ~GraphicsContextPainter() { }
-};
+class GraphicsLayer;
 
 class PLATFORM_EXPORT ContentLayerDelegate : public WebContentLayerClient {
     WTF_MAKE_NONCOPYABLE(ContentLayerDelegate);
     USING_FAST_MALLOC(ContentLayerDelegate);
 public:
-    explicit ContentLayerDelegate(GraphicsContextPainter*);
+    explicit ContentLayerDelegate(GraphicsLayer*);
     ~ContentLayerDelegate() override;
 
     gfx::Rect paintableRegion() override;
@@ -68,7 +57,7 @@ public:
     size_t approximateUnsharedMemoryUsage() const override;
 
 private:
-    GraphicsContextPainter* m_painter;
+    GraphicsLayer* m_graphicsLayer;
 };
 
 } // namespace blink

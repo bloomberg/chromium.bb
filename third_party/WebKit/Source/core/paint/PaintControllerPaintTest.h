@@ -61,19 +61,16 @@ protected:
         document().view()->synchronizedPaint();
     }
 
-    void paint(const IntRect* interestRect = nullptr)
+    bool paintWithoutCommit(const IntRect* interestRect = nullptr)
     {
         ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
-        // For v1, only root graphics layer is supported.
-        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !interestRect) {
-            document().view()->synchronizedPaint();
-        } else {
-            document().view()->lifecycle().advanceTo(DocumentLifecycle::InPaint);
-            GraphicsContext context(rootPaintController());
-            layoutView().layer()->graphicsLayerBacking()->paint(context, interestRect);
-            if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-                document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+        // Only root graphics layer is supported.
+        document().view()->lifecycle().advanceTo(DocumentLifecycle::InPaint);
+        if (!layoutView().layer()->graphicsLayerBacking()->paintWithoutCommit(interestRect)) {
+            document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+            return false;
         }
+        return true;
     }
 
     void commit()
@@ -81,6 +78,13 @@ protected:
         // Only root graphics layer is supported.
         rootPaintController().commitNewDisplayItems();
         document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+    }
+
+    void paint(const IntRect* interestRect = nullptr)
+    {
+        // Only root graphics layer is supported.
+        if (paintWithoutCommit(interestRect))
+            commit();
     }
 
 private:

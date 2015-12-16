@@ -2456,11 +2456,8 @@ void FrameView::synchronizedPaint()
 
 void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
 {
-    if (graphicsLayer->drawsContent()) {
-        GraphicsContext context(graphicsLayer->paintController());
-        graphicsLayer->paint(context, nullptr);
-        graphicsLayer->paintController().commitNewDisplayItems();
-    }
+    if (graphicsLayer->drawsContent())
+        graphicsLayer->paint(nullptr);
 
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())

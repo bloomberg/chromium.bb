@@ -32,6 +32,7 @@
 #include "platform/TracedValue.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/PaintArtifactToSkCanvas.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "public/platform/WebDisplayItemList.h"
@@ -41,8 +42,8 @@
 
 namespace blink {
 
-ContentLayerDelegate::ContentLayerDelegate(GraphicsContextPainter* painter)
-    : m_painter(painter)
+ContentLayerDelegate::ContentLayerDelegate(GraphicsLayer* graphicsLayer)
+    : m_graphicsLayer(graphicsLayer)
 {
 }
 
@@ -67,7 +68,7 @@ static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const Pa
 
 gfx::Rect ContentLayerDelegate::paintableRegion()
 {
-    IntRect interestRect = m_painter->interestRect();
+    IntRect interestRect = m_graphicsLayer->interestRect();
     return gfx::Rect(interestRect.x(), interestRect.y(), interestRect.width(), interestRect.height());
 }
 
@@ -76,7 +77,7 @@ void ContentLayerDelegate::paintContents(
 {
     TRACE_EVENT0("blink,benchmark", "ContentLayerDelegate::paintContents");
 
-    PaintController& paintController = m_painter->paintController();
+    PaintController& paintController = m_graphicsLayer->paintController();
     paintController.setDisplayItemConstructionIsDisabled(
         paintingControl == WebContentLayerClient::DisplayListConstructionDisabled);
 
@@ -89,18 +90,15 @@ void ContentLayerDelegate::paintContents(
     if (paintingControl == WebContentLayerClient::DisplayListPaintingDisabled
         || paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
         disabledMode = GraphicsContext::FullyDisabled;
-    GraphicsContext context(paintController, disabledMode);
 
-    m_painter->paint(context, nullptr);
-
-    paintController.commitNewDisplayItems();
+    m_graphicsLayer->paint(nullptr, disabledMode);
     paintArtifactToWebDisplayItemList(webDisplayItemList, paintController.paintArtifact(), paintableRegion());
     paintController.setDisplayItemConstructionIsDisabled(false);
 }
 
 size_t ContentLayerDelegate::approximateUnsharedMemoryUsage() const
 {
-    return m_painter->paintController().approximateUnsharedMemoryUsage();
+    return m_graphicsLayer->paintController().approximateUnsharedMemoryUsage();
 }
 
 } // namespace blink

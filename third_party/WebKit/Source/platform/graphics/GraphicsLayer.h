@@ -35,6 +35,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/ContentLayerDelegate.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
 #include "platform/graphics/ImageOrientation.h"
@@ -58,8 +59,6 @@
 namespace blink {
 
 class FloatRect;
-class GraphicsContext;
-class GraphicsLayer;
 class GraphicsLayerFactory;
 class GraphicsLayerFactoryChromium;
 class Image;
@@ -75,7 +74,7 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 // GraphicsLayer is an abstraction for a rendering surface with backing store,
 // which may have associated transformation and animations.
 
-class PLATFORM_EXPORT GraphicsLayer : public GraphicsContextPainter, public WebCompositorAnimationDelegate, public WebLayerScrollClient, public cc::LayerClient, public DisplayItemClient {
+class PLATFORM_EXPORT GraphicsLayer : public WebCompositorAnimationDelegate, public WebLayerScrollClient, public cc::LayerClient, public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(GraphicsLayer); USING_FAST_MALLOC(GraphicsLayer);
 public:
     static PassOwnPtr<GraphicsLayer> create(GraphicsLayerFactory*, GraphicsLayerClient*);
@@ -242,9 +241,8 @@ public:
     static void registerContentsLayer(WebLayer*);
     static void unregisterContentsLayer(WebLayer*);
 
-    // GraphicsContextPainter implementation.
     IntRect interestRect();
-    void paint(GraphicsContext&, const IntRect* interestRect) override;
+    void paint(const IntRect* interestRect, GraphicsContext::DisabledMode = GraphicsContext::NothingDisabled);
 
     // WebCompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;
@@ -256,7 +254,7 @@ public:
     // cc::LayerClient implementation.
     scoped_refptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(cc::Layer*) override;
 
-    PaintController& paintController() override;
+    PaintController& paintController();
 
     // Exposed for tests.
     WebLayer* contentsLayer() const { return m_contentsLayer; }
@@ -281,8 +279,12 @@ protected:
     // for testing
     friend class CompositedLayerMappingTest;
     friend class FakeGraphicsLayerFactory;
+    friend class PaintControllerPaintTestBase;
 
 private:
+    // Returns true if PaintController::paintArtifact() changed and needs commit.
+    bool paintWithoutCommit(const IntRect* interestRect, GraphicsContext::DisabledMode = GraphicsContext::NothingDisabled);
+
     // Adds a child without calling updateChildList(), so that adding children
     // can be batched before updating.
     void addChildInternal(GraphicsLayer*);

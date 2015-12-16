@@ -177,8 +177,6 @@ public:
         EndSubsequence,
         CachedSubsequence,
 
-        CachedDisplayItemList,
-
         UninitializedType,
         TypeLast = UninitializedType
     };
@@ -320,7 +318,7 @@ public:
 
     DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D)
 
-    static bool isCachedType(Type type) { return isCachedDrawingType(type) || type == CachedSubsequence || type == CachedDisplayItemList; }
+    static bool isCachedType(Type type) { return isCachedDrawingType(type) || type == CachedSubsequence; }
     bool isCached() const { return isCachedType(m_type); }
     static bool isCacheableType(Type type) { return isDrawingType(type) || type == Subsequence; }
     bool isCacheable() const { return !skippedCache() && isCacheableType(m_type); }

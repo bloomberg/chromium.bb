@@ -58,7 +58,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
     updateLifecyclePhasesBeforePaint();
-    paint();
+    bool needsCommit = paintWithoutCommit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 8,
         TestDisplayItem(layoutView(), cachedBackgroundType),
@@ -70,7 +70,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
         TestDisplayItem(container2Layer, DisplayItem::CachedSubsequence),
         TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 
-    commit();
+    if (needsCommit)
+        commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
         TestDisplayItem(layoutView(), backgroundType),
@@ -118,7 +119,6 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     updateLifecyclePhasesBeforePaint();
     IntRect interestRect(0, 0, 400, 300);
     paint(&interestRect);
-    commit();
 
     // Container1 is fully in the interest rect;
     // Container2 is partly (including its stacking chidren) in the interest rect;
@@ -143,7 +143,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
 
     updateLifecyclePhasesBeforePaint();
     IntRect newInterestRect(0, 100, 300, 1000);
-    paint(&newInterestRect);
+    bool needsCommit = paintWithoutCommit(&newInterestRect);
 
     // Container1 becomes partly in the interest rect, but uses cached subsequence
     // because it was fully painted before;
@@ -163,7 +163,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
         TestDisplayItem(container3Layer, DisplayItem::EndSubsequence),
         TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 
-    commit();
+    if (needsCommit)
+        commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 14,
         TestDisplayItem(layoutView(), backgroundType),
@@ -196,7 +197,6 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
     updateLifecyclePhasesBeforePaint();
     IntRect interestRect(0, 0, 50, 300); // PaintResult of all subsequences will be MayBeClippedByPaintDirtyRect.
     paint(&interestRect);
-    commit();
 
     PaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
     LayoutObject& container1 = *document().getElementById("container1")->layoutObject();
@@ -221,7 +221,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
     updateLifecyclePhasesBeforePaint();
-    paint(&interestRect);
+    bool needsCommit = paintWithoutCommit(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 8,
         TestDisplayItem(layoutView(), cachedBackgroundType),
@@ -233,7 +233,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
         TestDisplayItem(container2Layer, DisplayItem::CachedSubsequence),
         TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 
-    commit();
+    if (needsCommit)
+        commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
         TestDisplayItem(layoutView(), backgroundType),

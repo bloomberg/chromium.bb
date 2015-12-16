@@ -282,17 +282,6 @@ void PaintController::commitNewDisplayItems()
         "num_non_cached_new_items", (int)m_newDisplayItemList.size() - m_numCachedNewItems);
     m_numCachedNewItems = 0;
 
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()
-        && !m_newDisplayItemList.isEmpty()
-        && m_newDisplayItemList.last().type() == DisplayItem::CachedDisplayItemList) {
-        // The whole display item list is cached.
-        ASSERT(m_newDisplayItemList.size() == 1);
-        ASSERT(m_invalidations.isEmpty());
-        ASSERT(m_clientsCheckedPaintInvalidation.isEmpty());
-        m_newDisplayItemList.clear();
-        m_newPaintChunks.clear();
-        return;
-    }
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         m_clientsCheckedPaintInvalidation.clear();
 

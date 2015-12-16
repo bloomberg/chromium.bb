@@ -34,7 +34,6 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     updateLifecyclePhasesBeforePaint();
     IntRect interestRect(0, 0, 200, 200);
     paint(&interestRect);
-    commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
@@ -43,7 +42,6 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     updateLifecyclePhasesBeforePaint();
     interestRect = IntRect(0, 300, 200, 1000);
     paint(&interestRect);
-    commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
