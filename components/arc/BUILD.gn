@@ -20,7 +20,6 @@ static_library("arc") {
   ]
 
   deps = [
-    ":arc_bindings",
     "//base",
     "//base:prefs",
     "//chromeos",
@@ -30,6 +29,10 @@ static_library("arc") {
     "//ui/aura",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
+  ]
+
+  public_deps = [
+    ":arc_bindings",
   ]
 }
 
