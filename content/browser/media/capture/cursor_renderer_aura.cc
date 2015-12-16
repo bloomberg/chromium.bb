@@ -76,15 +76,20 @@ bool CursorRendererAura::SnapshotCursorState(const gfx::Rect& region_in_frame) {
     return false;
   }
 
-  aura::client::ActivationClient* activation_client =
-      aura::client::GetActivationClient(window_->GetRootWindow());
-  DCHECK(activation_client);
-  aura::Window* active_window = activation_client->GetActiveWindow();
-  if (!active_window->Contains(window_)) {
-    // Return early if the target window is not active.
-    DVLOG(2) << "Skipping update on an inactive window";
-    Clear();
-    return false;
+  // If we are sharing the root window, or namely the whole screen, we will
+  // render the mouse cursor. For ordinary window, we only render the mouse
+  // cursor when the window is active.
+  if (!window_->IsRootWindow()) {
+    aura::client::ActivationClient* activation_client =
+        aura::client::GetActivationClient(window_->GetRootWindow());
+    DCHECK(activation_client);
+    aura::Window* active_window = activation_client->GetActiveWindow();
+    if (!active_window->Contains(window_)) {
+      // Return early if the target window is not active.
+      DVLOG(2) << "Skipping update on an inactive window";
+      Clear();
+      return false;
+    }
   }
 
   gfx::NativeCursor cursor = window_->GetHost()->last_cursor();
