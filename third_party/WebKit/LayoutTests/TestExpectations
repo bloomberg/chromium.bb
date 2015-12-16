@@ -1375,3 +1375,19 @@ crbug.com/569811 inspector-protocol/debugger/updateCallFrameScopes.html [ Pass F
 
 crbug.com/570221 virtual/threaded/animations/svg-attribute-composition/svg-markerWidth-composition.html [ Pass Failure ]
 crbug.com/570221 virtual/threaded/animations/svg-attribute-composition/svg-markerHeight-composition.html [ Pass Failure ]
+
+crbug.com/569919 compositing/color-matching/image-color-matching.html [ Failure ]
+crbug.com/569919 fast/canvas/canvas-shadow-source-in.html [ Failure ]
+crbug.com/569919 fast/canvas/canvas-toBlob-jpeg-maximum-quality.html [ Failure ]
+crbug.com/569919 fast/canvas/canvas-toBlob-jpeg-medium-quality.html [ Failure ]
+crbug.com/569919 fast/canvas/canvas-toBlob-webp-maximum-quality.html [ Failure ]
+crbug.com/569919 fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ Failure ]
+
+crbug.com/570002 [ XP Linux ] virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ Failure ]
+crbug.com/570002 [ XP ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Failure ]
+crbug.com/570002 [ XP ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Failure ]
+
+crbug.com/530436 [ XP ] animations/svg-attribute-composition/svg-startOffset-composition.html [ Failure ]
+crbug.com/530436 [ XP ] virtual/threaded/animations/svg-attribute-composition/svg-startOffset-composition.html [ Failure ]
+crbug.com/530436 [ Mac10.7 ] animations/svg-attribute-composition/svg-markerHeight-composition.html [ Failure ]
+crbug.com/530436 [ Mac10.7 ] animations/svg-attribute-composition/svg-markerWidth-composition.html [ Failure ]
