@@ -563,6 +563,13 @@ void ContextState::UnbindTexture(TextureRef* texture) {
         active_unit = jj;
       }
       glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+    } else if (unit.bound_texture_rectangle_arb.get() == texture) {
+      unit.bound_texture_rectangle_arb = NULL;
+      if (active_unit != jj) {
+        glActiveTexture(GL_TEXTURE0 + jj);
+        active_unit = jj;
+      }
+      glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
     } else if (unit.bound_texture_3d.get() == texture) {
       unit.bound_texture_3d = NULL;
       if (active_unit != jj) {

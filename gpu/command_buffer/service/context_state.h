@@ -62,8 +62,6 @@ struct GPU_EXPORT TextureUnit {
 
   scoped_refptr<TextureRef> GetInfoForSamplerType(
       GLenum type) {
-    DCHECK(type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
-           type == GL_SAMPLER_EXTERNAL_OES || type == GL_SAMPLER_2D_RECT_ARB);
     switch (type) {
       case GL_SAMPLER_2D:
         return bound_texture_2d;
