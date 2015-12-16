@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from common import inspector_network
+from common import network_metrics
 from telemetry import decorators
-from telemetry.internal.backends.chrome_inspector import inspector_network
 from telemetry.testing import tab_test_case
 
 
@@ -20,12 +21,13 @@ class InspectorNetworkTabTest(tab_test_case.TabTestCase):
     super(InspectorNetworkTabTest, self).__init__(*args)
 
   def _NavigateAndGetHTTPResponseEvents(self, page):
-    self._tab.StartTimelineRecording()
+    network = inspector_network.InspectorNetwork(
+        self._tab._inspector_backend._websocket)
+    network.timeline_recorder.Start()
     self.Navigate(page)
-    self._tab.StopTimelineRecording()
-
-    self.assertTrue(self._tab.timeline_model)
-    return self._tab.timeline_model.GetAllEventsOfName('HTTPResponse')
+    timeline_model = network.timeline_recorder.Stop()
+    self.assertTrue(timeline_model)
+    return timeline_model.GetAllEventsOfName('HTTPResponse')
 
   # crbug.com/449979, crbug.com/452279, crbug.com/455269, crbug.com/483212
   @decorators.Disabled('mac', 'android', 'win', 'linux', 'chromeos')
