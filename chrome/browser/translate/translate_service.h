@@ -29,11 +29,6 @@ class TranslateService
   // test can initialize and use the service.
   static void ShutdownForTesting();
 
-  // Let the caller decide if and when we should fetch the language list from
-  // the translate server. This is a NOOP if switches::kDisableTranslate is set
-  // or if prefs::kEnableTranslate is set to false.
-  static void FetchLanguageListFromTranslateServer(PrefService* prefs);
-
   // Returns true if the new translate bubble is enabled.
   static bool IsTranslateBubbleEnabled();
 
