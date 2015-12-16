@@ -566,13 +566,13 @@ bool GetCurrentOwnerSid(wchar_t** sid) {
     return false;
 
   DWORD size = 0;
-  TOKEN_OWNER* owner = NULL;
   bool result = false;
   // We get the TokenOwner rather than the TokenUser because e.g. under UAC
   // elevation we want the admin to own the directory rather than the user.
-  ::GetTokenInformation(token, TokenOwner, &owner, 0, &size);
+  ::GetTokenInformation(token, TokenOwner, NULL, 0, &size);
   if (size && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-    if (owner = reinterpret_cast<TOKEN_OWNER*>(::LocalAlloc(LPTR, size))) {
+    if (TOKEN_OWNER* owner =
+            reinterpret_cast<TOKEN_OWNER*>(::LocalAlloc(LPTR, size))) {
       if (::GetTokenInformation(token, TokenOwner, owner, size, &size))
         result = ::ConvertSidToStringSid(owner->Owner, sid);
       ::LocalFree(owner);
