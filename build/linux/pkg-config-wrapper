@@ -28,13 +28,6 @@ then
   exit 1
 fi
 
-if [ "$target_arch" = "x64" ]
-then
-  : ${libpath:="lib64"}
-else
-  : ${libpath:="lib"}
-fi
-
 rewrite=`dirname $0`/rewrite_dirs.py
 package=${!#}
 

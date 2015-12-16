@@ -52,10 +52,11 @@ def SetConfigPath(options):
   if sysroot and not arch:
     print "You must specify an architecture via -a if using a sysroot."
     sys.exit(1)
-  if arch == 'x64':
-    libpath = 'lib64'
-  else:
-    libpath = 'lib'
+
+  # In the gyp world this is configurable via the 'system_libdir' variable,
+  # which doesn't seem to have an equivelent in gn yet.
+  # TOOD(sbc): Make this configurable like it is under gyp.
+  libpath = 'lib'
 
   # Add the sysroot path to the environment's PKG_CONFIG_PATH
   config_path = sysroot + '/usr/' + libpath + '/pkgconfig'
