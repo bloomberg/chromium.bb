@@ -1890,7 +1890,6 @@
       ['chromecast==1', {
         'enable_mpeg2ts_stream_parser%': 1,
         'ffmpeg_branding%': 'ChromeOS',
-        'ozone_platform_ozonex%': 1,
         'use_custom_freetype%': 0,
         'use_playready%': 0,
         'conditions': [
