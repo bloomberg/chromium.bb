@@ -168,7 +168,7 @@ group("installer_deps") {
   ]
   if (enable_nacl) {
     public_deps += [
-      "//components/nacl:nacl_helper",
+      "//components/nacl/loader:nacl_helper",
 
       # These are data_deps of nacl_helper, but that is not enough,
       # as explained above.
