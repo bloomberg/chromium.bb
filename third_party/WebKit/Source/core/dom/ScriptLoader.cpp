@@ -459,6 +459,7 @@ void ScriptLoader::notifyFinished(Resource* resource)
 
     ASSERT_UNUSED(resource, resource == m_resource);
 
+    ScriptRunner::ExecutionType runOrder = m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION;
     if (m_resource->errorOccurred()) {
         dispatchErrorEvent();
         // dispatchErrorEvent might move the HTMLScriptElement to a new
@@ -467,14 +468,10 @@ void ScriptLoader::notifyFinished(Resource* resource)
         contextDocument = m_element->document().contextDocument().get();
         if (!contextDocument)
             return;
-        contextDocument->scriptRunner()->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
+        contextDocument->scriptRunner()->notifyScriptLoadError(this, runOrder);
         return;
     }
-    if (m_willExecuteInOrder)
-        contextDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::IN_ORDER_EXECUTION);
-    else
-        contextDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::ASYNC_EXECUTION);
-
+    contextDocument->scriptRunner()->notifyScriptReady(this, runOrder);
     m_pendingScript.stopWatchingForLoad(this);
 }
 
