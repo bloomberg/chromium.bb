@@ -1,5 +1,15 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 3.0.0-pre (201?-??-??)
+
+** New features
+** Bug fixes
+** Other changes
+- Test suite now print to stderr. This helps with locating errors when
+  testing with the YAML test suite.
+
+** Braille table improvements
+
 * Noteworthy changes in release 2.6.4 (2015-08-31)
 This is a minor release in terms of features. But in terms of test
 coverage and stability it is a vast improvement over previous versions

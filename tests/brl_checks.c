@@ -14,10 +14,10 @@ void
 print_int_array(const char *prefix, int *pos_list, int len)
 {
   int i;
-  printf("%s ", prefix);
+  fprintf(stderr,"%s ", prefix);
   for (i = 0; i < len; i++)
-    printf("%d ", pos_list[i]);
-  printf("\n");
+    fprintf(stderr,"%d ", pos_list[i]);
+  fprintf(stderr,"\n");
 }
 
 #define UTF8_BUFSIZE 32
@@ -144,7 +144,7 @@ print_widechars(widechar * buf, int len)
 
   for (i = 0; i < len; i++) {
     ucs_to_utf8(buf[i], utf8);
-    printf("%s", utf8);
+    fprintf(stderr,"%s", utf8);
   }
 }
 
@@ -229,7 +229,7 @@ int check_with_mode(
   inlen = extParseChars(str, inbuf);
   if (!inlen)
     {
-      printf("Cannot parse input string.\n");
+      fprintf(stderr,"Cannot parse input string.\n");
       return 1;
     }
   if (direction == 0)
@@ -242,7 +242,7 @@ int check_with_mode(
     }
   if (!funcStatus)
     {
-      printf("Translation failed.\n");
+      fprintf(stderr,"Translation failed.\n");
       return 1;
     }
 
@@ -252,11 +252,11 @@ int check_with_mode(
     {
       rv = 1;
       outbuf[outlen] = 0;
-      printf("Input: '%s'\n", str);
-      printf("Expected: '%s' (length %d)\n", expected, expectedlen);
-      printf("Received: '");
+      fprintf(stderr,"Input: '%s'\n", str);
+      fprintf(stderr,"Expected: '%s' (length %d)\n", expected, expectedlen);
+      fprintf(stderr,"Received: '");
       print_widechars(outbuf, outlen);
-      printf("' (length %d)\n", outlen);
+      fprintf(stderr,"' (length %d)\n", outlen);
 
       if (i < outlen && i < expectedlen) 
 	{
@@ -265,21 +265,21 @@ int check_with_mode(
 
 	  ucs_to_utf8(expectedbuf[i], expected_utf8);
 	  ucs_to_utf8(outbuf[i], out_utf8);
-	  printf("Diff: Expected '%s' but received '%s' in index %d\n",
+	  fprintf(stderr,"Diff: Expected '%s' but received '%s' in index %d\n",
 		 expected_utf8, out_utf8, i);
 	}
       else if (i < expectedlen)
 	{
 	  unsigned char expected_utf8[UTF8_BUFSIZE];
 	  ucs_to_utf8(expectedbuf[i], expected_utf8);
-	  printf("Diff: Expected '%s' but received nothing in index %d\n",
+	  fprintf(stderr,"Diff: Expected '%s' but received nothing in index %d\n",
 		 expected_utf8, i);
 	}
       else 
 	{
 	  unsigned char out_utf8[UTF8_BUFSIZE];
 	  ucs_to_utf8(outbuf[i], out_utf8);
-	  printf("Diff: Expected nothing but received '%s' in index %d\n",
+	  fprintf(stderr,"Diff: Expected nothing but received '%s' in index %d\n",
 		 out_utf8, i);
 	}
     }
@@ -317,7 +317,7 @@ check_inpos(const char *tableList, const char *str, const int *expected_poslist)
       if (expected_poslist[i] != inpos[i])
 	{
 	  rv = 1;
-	  printf("Expected %d, recieved %d in index %d\n",
+	  fprintf(stderr,"Expected %d, recieved %d in index %d\n",
 		 expected_poslist[i], inpos[i], i);
 	}
     }
@@ -354,7 +354,7 @@ check_outpos(const char *tableList, const char *str, const int *expected_poslist
 		NULL, NULL, outpos, inpos, NULL, 0);
   if (inlen != origInlen)
     {
-      printf("original inlen %d and returned inlen %d differ\n",
+      fprintf(stderr,"original inlen %d and returned inlen %d differ\n",
         origInlen, inlen);
     }
 
@@ -363,7 +363,7 @@ check_outpos(const char *tableList, const char *str, const int *expected_poslist
       if (expected_poslist[i] != outpos[i])
 	{
 	  rv = 1;
-	  printf("Expected %d, recieved %d in index %d\n",
+	  fprintf(stderr,"Expected %d, recieved %d in index %d\n",
 		 expected_poslist[i], outpos[i], i);
 	}
     }
@@ -404,7 +404,7 @@ check_cursor_pos(const char *tableList, const char *str, const int *expected_pos
       if (expected_pos[i] != cursor_pos)
 	{
 	  rv = 1;
-	  printf("string='%s' cursor=%d ('%c') expected=%d \
+	  fprintf(stderr,"string='%s' cursor=%d ('%c') expected=%d \
 recieved=%d ('%c')\n", str, i, str[i], expected_pos[i], cursor_pos, (char) outbuf[cursor_pos]);
 	}
     }
@@ -432,22 +432,22 @@ check_hyphenation(const char *tableList, const char *str, const char *expected)
   inlen = extParseChars(str, inbuf);
   if (!inlen)
     {
-      printf("Cannot parse input string.\n");
+      fprintf(stderr,"Cannot parse input string.\n");
       return 1;
     }
   hyphens = calloc(inlen+1, sizeof(char));
 
   if (!lou_hyphenate(tableList, inbuf, inlen, hyphens, 0))
     {
-      printf("Hyphenation failed.\n");
+      fprintf(stderr,"Hyphenation failed.\n");
       return 1;
     }
 
   if (strcmp(expected, hyphens))
     {
-      printf("Input:    '%s'\n", str);
-      printf("Expected: '%s'\n", expected);
-      printf("Received: '%s'\n", hyphens);
+      fprintf(stderr,"Input:    '%s'\n", str);
+      fprintf(stderr,"Expected: '%s'\n", expected);
+      fprintf(stderr,"Received: '%s'\n", hyphens);
       rv = 1;
     }
 
