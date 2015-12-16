@@ -6,19 +6,27 @@
 
 #include <linux/android/binder.h>
 
+#include "base/bind.h"
 #include "chromeos/binder/buffer_reader.h"
 #include "chromeos/binder/driver.h"
+#include "chromeos/binder/transaction_data.h"
+#include "chromeos/binder/transaction_data_from_driver.h"
 #include "chromeos/binder/util.h"
 
 namespace binder {
 
 CommandStream::CommandStream(Driver* driver,
                              IncomingCommandHandler* incoming_command_handler)
-    : driver_(driver), incoming_command_handler_(incoming_command_handler) {}
+    : driver_(driver),
+      incoming_command_handler_(incoming_command_handler),
+      weak_ptr_factory_(this) {}
 
-CommandStream::~CommandStream() {}
+CommandStream::~CommandStream() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 bool CommandStream::Fetch() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!CanProcessIncomingCommand());
   // Use the same value as libbinder's IPCThreadState.
   const size_t kIncomingDataSize = 256;
@@ -37,10 +45,12 @@ bool CommandStream::Fetch() {
 }
 
 bool CommandStream::CanProcessIncomingCommand() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return incoming_data_reader_ && incoming_data_reader_->HasMoreData();
 }
 
 bool CommandStream::ProcessIncomingCommand() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(CanProcessIncomingCommand());
   uint32 command = 0;
   if (!incoming_data_reader_->Read(&command, sizeof(command)) ||
@@ -54,6 +64,7 @@ bool CommandStream::ProcessIncomingCommand() {
 void CommandStream::AppendOutgoingCommand(uint32 command,
                                           const void* data,
                                           size_t size) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "Appending " << CommandToString(command) << ", this = " << this;
 
   DCHECK_EQ(0u, size % 4);  // Must be 4-byte aligned.
@@ -66,6 +77,7 @@ void CommandStream::AppendOutgoingCommand(uint32 command,
 }
 
 bool CommandStream::Flush() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (size_t pos = 0; pos < outgoing_data_.size();) {
     size_t written_bytes = 0, read_bytes = 0;
     if (!driver_->WriteRead(outgoing_data_.data() + pos,
@@ -82,6 +94,7 @@ bool CommandStream::Flush() {
 }
 
 bool CommandStream::OnIncomingCommand(uint32 command, BufferReader* reader) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(hashimoto): Replace all NOTIMPLEMENTED with logic to handle incoming
   // commands.
   VLOG(1) << "Processing " << CommandToString(command) << ", this = " << this;
@@ -99,18 +112,27 @@ bool CommandStream::OnIncomingCommand(uint32 command, BufferReader* reader) {
     case BR_TRANSACTION:
       NOTIMPLEMENTED();
       break;
-    case BR_REPLY:
-      NOTIMPLEMENTED();
+    case BR_REPLY: {
+      scoped_ptr<TransactionDataFromDriver> data(new TransactionDataFromDriver(
+          base::Bind(&CommandStream::FreeTransactionBuffer,
+                     weak_ptr_factory_.GetWeakPtr())));
+      binder_transaction_data* data_struct = data->mutable_data();
+      if (!reader->Read(data_struct, sizeof(*data_struct))) {
+        LOG(ERROR) << "Failed to read transaction data.";
+        return false;
+      }
+      incoming_command_handler_->OnReply(data.Pass());
       break;
+    }
     case BR_ACQUIRE_RESULT:
       // Kernel's binder.h says this is not currently supported.
       NOTREACHED();
       break;
     case BR_DEAD_REPLY:
-      NOTIMPLEMENTED();
+      incoming_command_handler_->OnDeadReply();
       break;
     case BR_TRANSACTION_COMPLETE:
-      NOTIMPLEMENTED();
+      incoming_command_handler_->OnTransactionComplete();
       break;
     case BR_INCREFS:
     case BR_ACQUIRE:
@@ -135,13 +157,18 @@ bool CommandStream::OnIncomingCommand(uint32 command, BufferReader* reader) {
       NOTIMPLEMENTED();
       break;
     case BR_FAILED_REPLY:
-      NOTIMPLEMENTED();
+      incoming_command_handler_->OnFailedReply();
       break;
     default:
       LOG(ERROR) << "Unexpected command: " << command;
       return false;
   }
   return true;
+}
+
+void CommandStream::FreeTransactionBuffer(const void* ptr) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  AppendOutgoingCommand(BC_FREE_BUFFER, &ptr, sizeof(ptr));
 }
 
 }  // namespace binder

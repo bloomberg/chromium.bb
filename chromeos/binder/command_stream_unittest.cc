@@ -5,15 +5,17 @@
 #include <unistd.h>
 #include <linux/android/binder.h>
 
+#include "base/message_loop/message_loop.h"
 #include "chromeos/binder/command_stream.h"
+#include "chromeos/binder/constants.h"
 #include "chromeos/binder/driver.h"
+#include "chromeos/binder/transaction_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace binder {
 
 namespace {
 
-// TODO(hashimoto): Add tests for Fetch() and ProcessCommand().
 class BinderCommandStreamTest : public ::testing::Test,
                                 public CommandStream::IncomingCommandHandler {
  public:
@@ -22,9 +24,34 @@ class BinderCommandStreamTest : public ::testing::Test,
 
   void SetUp() override { ASSERT_TRUE(driver_.Initialize()); }
 
+  // CommandStream::IncomingCommandHandler override:
+  void OnReply(scoped_ptr<TransactionData> data) override {
+    received_response_ = RESPONSE_REPLY;
+    ASSERT_TRUE(data);
+    EXPECT_FALSE(data->HasStatus());  // No error.
+  }
+
+  void OnDeadReply() override { received_response_ = RESPONSE_DEAD; }
+
+  void OnTransactionComplete() override {
+    received_response_ = RESPONSE_COMPLETE;
+  }
+
+  void OnFailedReply() override { received_response_ = RESPONSE_FAILED; }
+
  protected:
+  base::MessageLoop message_loop_;
   Driver driver_;
   CommandStream command_stream_;
+
+  enum ResponseType {
+    RESPONSE_NONE,
+    RESPONSE_REPLY,
+    RESPONSE_DEAD,
+    RESPONSE_COMPLETE,
+    RESPONSE_FAILED,
+  };
+  ResponseType received_response_ = RESPONSE_NONE;
 };
 
 }  // namespace
@@ -42,6 +69,36 @@ TEST_F(BinderCommandStreamTest, Error) {
   command_stream_.AppendOutgoingCommand(BC_ATTEMPT_ACQUIRE, &params,
                                         sizeof(params));
   EXPECT_FALSE(command_stream_.Flush());
+}
+
+TEST_F(BinderCommandStreamTest, PingContextManager) {
+  // Perform ping transaction with the context manager.
+  binder_transaction_data data = {};
+  data.target.handle = kContextManagerHandle;
+  data.code = kPingTransactionCode;
+  command_stream_.AppendOutgoingCommand(BC_TRANSACTION, &data, sizeof(data));
+  ASSERT_TRUE(command_stream_.Flush());
+
+  // Wait for transaction complete.
+  while (received_response_ == RESPONSE_NONE) {
+    if (command_stream_.CanProcessIncomingCommand()) {
+      ASSERT_TRUE(command_stream_.ProcessIncomingCommand());
+    } else {
+      ASSERT_TRUE(command_stream_.Fetch());
+    }
+  }
+  ASSERT_EQ(RESPONSE_COMPLETE, received_response_);
+
+  // Wait for transaction reply.
+  received_response_ = RESPONSE_NONE;
+  while (received_response_ == RESPONSE_NONE) {
+    if (command_stream_.CanProcessIncomingCommand()) {
+      ASSERT_TRUE(command_stream_.ProcessIncomingCommand());
+    } else {
+      ASSERT_TRUE(command_stream_.Fetch());
+    }
+  }
+  ASSERT_EQ(RESPONSE_REPLY, received_response_);
 }
 
 }  // namespace binder

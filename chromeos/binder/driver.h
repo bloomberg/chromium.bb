@@ -11,6 +11,8 @@
 namespace binder {
 
 // Use this class to communicate with the binder driver provided by the kernel.
+// This class is stateless and it's safe to access this class from multiple
+// threads.
 class Driver {
  public:
   Driver();

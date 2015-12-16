@@ -10,11 +10,14 @@
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 
 namespace binder {
 
 class BufferReader;
 class Driver;
+class TransactionData;
 
 // Stream of incoming (binder driver to user process) BR_* commands and outgoing
 // (user process to binder driver) BC_* commands.
@@ -25,6 +28,19 @@ class CommandStream {
    public:
     virtual ~IncomingCommandHandler() {}
     // TODO(hashimoto): Add methods to handle incoming commands.
+
+    // Called to handle BR_REPLY.
+    // |data| is the reply for the previous transaction.
+    virtual void OnReply(scoped_ptr<TransactionData> data) = 0;
+
+    // Called to handle BR_DEAD_REPLY.
+    virtual void OnDeadReply() = 0;
+
+    // Called to handle BR_TRANSACTION_COMPLETE.
+    virtual void OnTransactionComplete() = 0;
+
+    // Called to handle BR_FAILED_REPLY.
+    virtual void OnFailedReply() = 0;
   };
 
   CommandStream(Driver* driver,
@@ -52,12 +68,19 @@ class CommandStream {
   // Calls the appropriate delegate method to handle the incoming command.
   bool OnIncomingCommand(uint32 command, BufferReader* reader);
 
+  // Frees the buffer used by the driver to pass transaction data payload.
+  void FreeTransactionBuffer(const void* ptr);
+
+  base::ThreadChecker thread_checker_;
+
   Driver* driver_;
   IncomingCommandHandler* incoming_command_handler_;
 
   std::vector<char> outgoing_data_;  // Buffer for outgoing commands.
   std::vector<char> incoming_data_;  // Buffer for incoming commands.
   scoped_ptr<BufferReader> incoming_data_reader_;
+
+  base::WeakPtrFactory<CommandStream> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandStream);
 };
