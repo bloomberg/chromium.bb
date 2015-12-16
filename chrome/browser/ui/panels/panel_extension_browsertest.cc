@@ -54,6 +54,7 @@ class PanelExtensionBrowserTest : public ExtensionBrowserTest {
         web_app::GenerateApplicationNameFromExtensionId(extension->id()),
         browser()->profile(),
         GURL(),
+        nullptr,
         gfx::Rect(),
         PanelManager::CREATE_AS_DETACHED);
     panel->ShowInactive();

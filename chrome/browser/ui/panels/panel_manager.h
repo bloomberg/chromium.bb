@@ -24,6 +24,10 @@ class PanelResizeController;
 class PanelMouseWatcher;
 class StackedPanelCollection;
 
+namespace content {
+class SiteInstance;
+}
+
 // This class manages a set of panels.
 class PanelManager : public DisplaySettingsProvider::DisplayObserver,
                      public DisplaySettingsProvider::FullScreenObserver {
@@ -63,12 +67,15 @@ class PanelManager : public DisplaySettingsProvider::DisplayObserver,
   // |app_name| is the default title for Panels when the page content does not
   // provide a title. For extensions, this is usually the application name
   // generated from the extension id.
+  // |source_site_instance| indicates the SiteInstance that requested to create
+  // this panel.
   // |requested_bounds| is the desired bounds for the panel, but actual
   // bounds may differ after panel layout depending on create |mode|.
   // |mode| indicates whether panel should be created as docked or detached.
   Panel* CreatePanel(const std::string& app_name,
                      Profile* profile,
                      const GURL& url,
+                     content::SiteInstance* source_site_instance,
                      const gfx::Rect& requested_bounds,
                      CreateMode mode);
 

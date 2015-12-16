@@ -298,6 +298,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticePanel) {
           last_loaded_extension_id()),
       browser()->profile(),
       url,
+      nullptr,
       gfx::Rect(300, 400),
       PanelManager::CREATE_AS_DOCKED);
 
@@ -351,6 +352,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticePanelChanges) {
           last_loaded_extension_id()),
       browser()->profile(),
       url,
+      nullptr,
       gfx::Rect(300, 400),
       PanelManager::CREATE_AS_DOCKED);
   ASSERT_NO_FATAL_FAILURE(
@@ -398,6 +400,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillPanelViaExtensionResource) {
           last_loaded_extension_id()),
       browser()->profile(),
       url,
+      nullptr,
       gfx::Rect(300, 400),
       PanelManager::CREATE_AS_DOCKED);
 
@@ -441,6 +444,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillPanelViaPanelResource) {
           last_loaded_extension_id()),
       browser()->profile(),
       url,
+      nullptr,
       gfx::Rect(300, 400),
       PanelManager::CREATE_AS_DOCKED);
 

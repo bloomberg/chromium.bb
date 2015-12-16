@@ -51,7 +51,7 @@ class PanelCocoaTest : public CocoaProfileTest {
     int panels_count = manager->num_panels();
 
     Panel* panel = manager->CreatePanel(panel_name, profile(),
-                                        GURL(), gfx::Rect(),
+                                        GURL(), nullptr, gfx::Rect(),
                                         PanelManager::CREATE_AS_DOCKED);
     EXPECT_EQ(panels_count + 1, manager->num_panels());
 

@@ -18,6 +18,7 @@ class PrefsTabHelper;
 class Profile;
 
 namespace content {
+class SiteInstance;
 class WebContents;
 }
 
@@ -39,7 +40,7 @@ class PanelHost : public content::WebContentsDelegate,
   PanelHost(Panel* panel, Profile* profile);
   ~PanelHost() override;
 
-  void Init(const GURL& url);
+  void Init(const GURL& url, content::SiteInstance* source_site_instance);
   content::WebContents* web_contents() { return web_contents_.get(); }
   void DestroyWebContents();
 

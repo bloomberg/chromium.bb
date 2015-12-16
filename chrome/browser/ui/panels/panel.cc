@@ -514,6 +514,7 @@ panel::Resizability Panel::CanResizeByMouse() const {
 }
 
 void Panel::Initialize(const GURL& url,
+                       content::SiteInstance* source_site_instance,
                        const gfx::Rect& bounds,
                        bool always_on_top) {
   DCHECK(!initialized_);
@@ -531,7 +532,7 @@ void Panel::Initialize(const GURL& url,
 
   // Set up hosting for web contents.
   panel_host_.reset(new PanelHost(this, profile_));
-  panel_host_->Init(url);
+  panel_host_->Init(url, source_site_instance);
   content::WebContents* web_contents = GetWebContents();
   // The contents might be NULL for most of our tests.
   if (web_contents) {

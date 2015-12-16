@@ -47,12 +47,15 @@ PanelHost::PanelHost(Panel* panel, Profile* profile)
 PanelHost::~PanelHost() {
 }
 
-void PanelHost::Init(const GURL& url) {
+void PanelHost::Init(const GURL& url,
+                     content::SiteInstance* source_site_instance) {
   if (url.is_empty())
     return;
 
-  content::WebContents::CreateParams create_params(
-      profile_, content::SiteInstance::CreateForURL(profile_, url));
+  content::SiteInstance* instance =
+      source_site_instance ? source_site_instance->GetRelatedSiteInstance(url)
+                           : content::SiteInstance::CreateForURL(profile_, url);
+  content::WebContents::CreateParams create_params(profile_, instance);
   web_contents_.reset(content::WebContents::Create(create_params));
   extensions::SetViewType(web_contents_.get(), extensions::VIEW_TYPE_PANEL);
   web_contents_->SetDelegate(this);

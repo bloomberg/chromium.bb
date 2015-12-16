@@ -215,6 +215,7 @@ int PanelManager::GetMaxPanelHeight(const gfx::Rect& work_area) const {
 Panel* PanelManager::CreatePanel(const std::string& app_name,
                                  Profile* profile,
                                  const GURL& url,
+                                 content::SiteInstance* source_site_instance,
                                  const gfx::Rect& requested_bounds,
                                  CreateMode mode) {
   // Need to sync the display area if no panel is present. This is because:
@@ -264,7 +265,8 @@ Panel* PanelManager::CreatePanel(const std::string& app_name,
       adjusted_requested_bounds);
   bounds.AdjustToFit(work_area);
 
-  panel->Initialize(url, bounds, collection->UsesAlwaysOnTopPanels());
+  panel->Initialize(url, source_site_instance, bounds,
+                    collection->UsesAlwaysOnTopPanels());
 
   // Auto resizable feature is enabled only if no initial size is requested.
   if (auto_sizing_enabled() && requested_bounds.width() == 0 &&

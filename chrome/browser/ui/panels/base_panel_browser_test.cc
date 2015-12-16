@@ -337,6 +337,7 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
       params.name,
       params.profile ? params.profile : browser()->profile(),
       params.url,
+      nullptr,
       params.bounds,
       params.create_mode);
 
