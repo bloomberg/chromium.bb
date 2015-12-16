@@ -98,15 +98,6 @@ class NavigationManager {
   // reload the page. In nearly all cases pass in true.  If a transient entry
   // is showing, initiates a new navigation to its URL.
   virtual void Reload(bool check_for_repost) = 0;
-
-  // Returns the number of items in the NavigationManager, excluding
-  // pending and transient entries.
-  // Obsolete, use GetItemCount() instead.
-  int GetEntryCount() const { return GetItemCount(); }
-
-  // Returns the index from which web would go back/forward or reload.
-  // Obsolete, use GetCurrrentItemIndex() instead.
-  int GetCurrentEntryIndex() const { return GetCurrentItemIndex(); }
 };
 
 }  // namespace web

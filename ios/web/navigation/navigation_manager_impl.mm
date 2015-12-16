@@ -129,14 +129,6 @@ CRWSessionController* NavigationManagerImpl::GetSessionController() {
   return session_controller_;
 }
 
-int NavigationManagerImpl::GetLastCommittedEntryIndex() const {
-  return GetLastCommittedItemIndex();
-}
-
-bool NavigationManagerImpl::RemoveEntryAtIndex(int index) {
-  return RemoveItemAtIndex(index);
-}
-
 void NavigationManagerImpl::LoadURL(const GURL& url,
                                     const web::Referrer& referrer,
                                     ui::PageTransition type) {

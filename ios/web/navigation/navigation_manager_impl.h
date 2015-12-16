@@ -73,8 +73,6 @@ class NavigationManagerImpl : public NavigationManager {
   // TODO(stuartmorgan): Re-evaluate this list once the refactorings have
   // settled down.
   CRWSessionController* GetSessionController();
-  int GetLastCommittedEntryIndex() const;
-  bool RemoveEntryAtIndex(int index);
   void LoadURL(const GURL& url,
                const Referrer& referrer,
                ui::PageTransition type);
