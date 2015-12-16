@@ -70,7 +70,7 @@ ForbiddenHeaderNames::ForbiddenHeaderNames()
 
 const ForbiddenHeaderNames& ForbiddenHeaderNames::get()
 {
-    AtomicallyInitializedStaticReference(const ForbiddenHeaderNames, instance, new ForbiddenHeaderNames);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(const ForbiddenHeaderNames, instance, new ForbiddenHeaderNames);
     return instance;
 }
 

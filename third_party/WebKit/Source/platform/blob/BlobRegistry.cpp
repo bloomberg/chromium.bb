@@ -68,10 +68,10 @@ typedef HashMap<String, RefPtr<SecurityOrigin>> BlobURLOriginMap;
 static ThreadSpecific<BlobURLOriginMap>& originMap()
 {
     // We want to create the BlobOriginCache exactly once because it is shared by all the threads.
-    AtomicallyInitializedStaticReference(BlobOriginCache, cache, new BlobOriginCache);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(BlobOriginCache, cache, new BlobOriginCache);
     (void)cache; // BlobOriginCache's constructor does the interesting work.
 
-    AtomicallyInitializedStaticReference(ThreadSpecific<BlobURLOriginMap>, map, new ThreadSpecific<BlobURLOriginMap>);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(ThreadSpecific<BlobURLOriginMap>, map, new ThreadSpecific<BlobURLOriginMap>);
     return map;
 }
 

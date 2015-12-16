@@ -70,7 +70,7 @@ RestrictedKeyMap* createRestrictedKeyMap()
 
 const RestrictedKeyMap& restrictedKeyMap()
 {
-    AtomicallyInitializedStaticReference(RestrictedKeyMap, map, createRestrictedKeyMap());
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(RestrictedKeyMap, map, createRestrictedKeyMap());
     return map;
 }
 

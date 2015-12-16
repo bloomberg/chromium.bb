@@ -37,31 +37,20 @@
 
 // For portability, we do not make use of C++11 thread-safe statics, as supported
 // by some toolchains. Make use of double-checked locking to reduce overhead.
-#define AtomicallyInitializedStaticReferenceInternal(T, name, initializer, LOCK, UNLOCK) \
+// Note that this uses system-wide default lock, and cannot be used before
+// WTF::initializeThreading() is called.
+#define DEFINE_STATIC_LOCAL_THREAD_SAFE(T, name, initializer) \
     /* Init to nullptr is thread-safe on all implementations. */        \
     static void* name##Pointer = nullptr;                               \
     if (!WTF::acquireLoad(&name##Pointer)) {                            \
-        LOCK;                                                           \
+        WTF::lockAtomicallyInitializedStaticMutex();                    \
         if (!WTF::acquireLoad(&name##Pointer)) {                        \
             std::remove_const<T>::type* initializerResult = initializer; \
             WTF::releaseStore(&name##Pointer, initializerResult);       \
         }                                                               \
-        UNLOCK;                                                         \
+        WTF::unlockAtomicallyInitializedStaticMutex();                  \
     }                                                                   \
     T& name = *static_cast<T*>(name##Pointer)
-
-// Uses system-wide default lock. This version cannot be used before
-// WTF::initializeThreading() is called.
-#define AtomicallyInitializedStaticReference(T, name, initializer)      \
-    AtomicallyInitializedStaticReferenceInternal(                       \
-        T, name, initializer, \
-        WTF::lockAtomicallyInitializedStaticMutex(),                    \
-        WTF::unlockAtomicallyInitializedStaticMutex())
-
-// Same as above but uses a given lock.
-#define AtomicallyInitializedStaticReferenceWithLock(T, name, initializer, lockable)  \
-    AtomicallyInitializedStaticReferenceInternal(                       \
-        T, name, initializer, lockable.lock(), lockable.unlock());
 
 namespace WTF {
 

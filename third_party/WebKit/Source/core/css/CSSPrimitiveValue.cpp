@@ -184,7 +184,7 @@ using CSSTextCacheWrapper = CSSTextCache;
 
 static CSSTextCache& cssTextCache()
 {
-    AtomicallyInitializedStaticReference(ThreadSpecific<CSSTextCacheWrapper>, cache, new ThreadSpecific<CSSTextCacheWrapper>);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(ThreadSpecific<CSSTextCacheWrapper>, cache, new ThreadSpecific<CSSTextCacheWrapper>);
     return *cache;
 }
 

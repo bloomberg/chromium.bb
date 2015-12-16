@@ -21,7 +21,7 @@ unsigned nextMessageId()
         unsigned value;
     };
 
-    AtomicallyInitializedStaticReference(WTF::ThreadSpecific<MessageId>, messageId, new WTF::ThreadSpecific<MessageId>);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(WTF::ThreadSpecific<MessageId>, messageId, new WTF::ThreadSpecific<MessageId>);
     return ++messageId->value;
 }
 

@@ -36,7 +36,7 @@ public:
 
     static const MockScriptData* instance()
     {
-        AtomicallyInitializedStaticReference(const MockScriptData, mockScriptData, (new MockScriptData()));
+        DEFINE_STATIC_LOCAL_THREAD_SAFE(const MockScriptData, mockScriptData, (new MockScriptData()));
 
         return &mockScriptData;
     }

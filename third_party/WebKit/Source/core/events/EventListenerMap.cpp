@@ -49,7 +49,7 @@ namespace blink {
 #if ENABLE(ASSERT)
 static Mutex& activeIteratorCountMutex()
 {
-    AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex());
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(Mutex, mutex, new Mutex());
     return mutex;
 }
 

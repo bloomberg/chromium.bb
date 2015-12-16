@@ -22,7 +22,7 @@ void GCInfoTable::ensureGCInfoIndex(const GCInfo* gcInfo, size_t* gcInfoIndexSlo
     ASSERT(gcInfo);
     ASSERT(gcInfoIndexSlot);
     // Keep a global GCInfoTable lock while allocating a new slot.
-    AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(Mutex, mutex, new Mutex);
     MutexLocker locker(mutex);
 
     // If more than one thread ends up allocating a slot for

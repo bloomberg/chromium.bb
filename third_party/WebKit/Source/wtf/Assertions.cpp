@@ -358,7 +358,7 @@ void ScopedLogger::print(const char* format, ...)
 
 ScopedLogger*& ScopedLogger::current()
 {
-    AtomicallyInitializedStaticReference(ThreadSpecific<ScopedLogger*>, ref, new ThreadSpecific<ScopedLogger*>);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(ThreadSpecific<ScopedLogger*>, ref, new ThreadSpecific<ScopedLogger*>);
     return *ref;
 }
 
@@ -427,4 +427,3 @@ void WTFLogAlways(const char* format, ...)
     vprintf_stderr_with_trailing_newline(format, args);
     va_end(args);
 }
-

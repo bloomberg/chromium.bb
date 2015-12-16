@@ -5321,13 +5321,13 @@ TEST(HeapTest, IndirectStrongToWeak)
 
 static Mutex& mainThreadMutex()
 {
-    AtomicallyInitializedStaticReference(Mutex, mainMutex, new Mutex);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(Mutex, mainMutex, new Mutex);
     return mainMutex;
 }
 
 static ThreadCondition& mainThreadCondition()
 {
-    AtomicallyInitializedStaticReference(ThreadCondition, mainCondition, new ThreadCondition);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(ThreadCondition, mainCondition, new ThreadCondition);
     return mainCondition;
 }
 
@@ -5344,13 +5344,13 @@ static void wakeMainThread()
 
 static Mutex& workerThreadMutex()
 {
-    AtomicallyInitializedStaticReference(Mutex, workerMutex, new Mutex);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(Mutex, workerMutex, new Mutex);
     return workerMutex;
 }
 
 static ThreadCondition& workerThreadCondition()
 {
-    AtomicallyInitializedStaticReference(ThreadCondition, workerCondition, new ThreadCondition);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(ThreadCondition, workerCondition, new ThreadCondition);
     return workerCondition;
 }
 
@@ -5645,7 +5645,7 @@ TEST(HeapTest, GarbageCollectionDuringMixinConstruction)
 
 static RecursiveMutex& recursiveMutex()
 {
-    AtomicallyInitializedStaticReference(RecursiveMutex, recursiveMutex, new RecursiveMutex);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(RecursiveMutex, recursiveMutex, new RecursiveMutex);
     return recursiveMutex;
 }
 

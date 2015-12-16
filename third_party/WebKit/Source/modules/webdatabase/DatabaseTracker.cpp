@@ -60,7 +60,7 @@ static void databaseClosed(Database* database)
 
 DatabaseTracker& DatabaseTracker::tracker()
 {
-    AtomicallyInitializedStaticReference(DatabaseTracker, tracker, new DatabaseTracker);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(DatabaseTracker, tracker, new DatabaseTracker);
     return tracker;
 }
 

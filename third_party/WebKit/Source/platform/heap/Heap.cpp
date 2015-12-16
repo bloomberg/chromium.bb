@@ -655,7 +655,7 @@ BasePage* Heap::lookup(Address address)
 
 static Mutex& regionTreeMutex()
 {
-    AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(Mutex, mutex, new Mutex);
     return mutex;
 }
 

@@ -46,7 +46,7 @@ namespace blink {
 
 static ExceptionState& emptyExceptionState()
 {
-    AtomicallyInitializedStaticReference(WTF::ThreadSpecific<NonThrowableExceptionState>, exceptionState, new ThreadSpecific<NonThrowableExceptionState>);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(WTF::ThreadSpecific<NonThrowableExceptionState>, exceptionState, new ThreadSpecific<NonThrowableExceptionState>);
     return *exceptionState;
 }
 

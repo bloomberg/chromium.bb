@@ -43,7 +43,7 @@ static UCollator* cachedCollator;
 static char cachedEquivalentLocale[Collator::ulocFullnameCapacity];
 static Mutex& cachedCollatorMutex()
 {
-    AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex);
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(Mutex, mutex, new Mutex);
     return mutex;
 }
 

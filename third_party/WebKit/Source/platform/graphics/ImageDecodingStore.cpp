@@ -55,7 +55,7 @@ ImageDecodingStore::~ImageDecodingStore()
 
 ImageDecodingStore& ImageDecodingStore::instance()
 {
-    AtomicallyInitializedStaticReference(ImageDecodingStore, store, ImageDecodingStore::create().leakPtr());
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(ImageDecodingStore, store, ImageDecodingStore::create().leakPtr());
     return store;
 }
 

@@ -77,7 +77,7 @@ MainThreadDebugger::~MainThreadDebugger()
 
 Mutex& MainThreadDebugger::creationMutex()
 {
-    AtomicallyInitializedStaticReference(Mutex, mutex, (new Mutex));
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(Mutex, mutex, (new Mutex));
     return mutex;
 }
 

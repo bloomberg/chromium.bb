@@ -30,7 +30,7 @@ class CompositorWorkerSharedState {
 public:
     static CompositorWorkerSharedState& instance()
     {
-        AtomicallyInitializedStaticReference(CompositorWorkerSharedState, compositorWorkerSharedState, (new CompositorWorkerSharedState()));
+        DEFINE_STATIC_LOCAL_THREAD_SAFE(CompositorWorkerSharedState, compositorWorkerSharedState, (new CompositorWorkerSharedState()));
         return compositorWorkerSharedState;
     }
 

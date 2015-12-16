@@ -70,7 +70,7 @@ public:
 
     static HeapSizeCache& forCurrentThread()
     {
-        AtomicallyInitializedStaticReference(ThreadSpecific<HeapSizeCache>, heapSizeCache, new ThreadSpecific<HeapSizeCache>);
+        DEFINE_STATIC_LOCAL_THREAD_SAFE(ThreadSpecific<HeapSizeCache>, heapSizeCache, new ThreadSpecific<HeapSizeCache>);
         return *heapSizeCache;
     }
 

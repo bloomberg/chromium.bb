@@ -187,7 +187,7 @@ void PerformanceBase::setFrameTimingBufferSize(unsigned size)
 
 static bool passesTimingAllowCheck(const ResourceResponse& response, const SecurityOrigin& initiatorSecurityOrigin, const AtomicString& originalTimingAllowOrigin)
 {
-    AtomicallyInitializedStaticReference(AtomicString, timingAllowOrigin, new AtomicString("timing-allow-origin"));
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(AtomicString, timingAllowOrigin, new AtomicString("timing-allow-origin"));
 
     RefPtr<SecurityOrigin> resourceOrigin = SecurityOrigin::create(response.url());
     if (resourceOrigin->isSameSchemeHostPort(&initiatorSecurityOrigin))

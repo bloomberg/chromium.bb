@@ -111,7 +111,7 @@ PairedBracketType ICUScriptData::getPairedBracketType(UChar32 ch) const
 
 const ICUScriptData* ICUScriptData::instance()
 {
-    AtomicallyInitializedStaticReference(const ICUScriptData, icuScriptDataInstance, (new ICUScriptData()));
+    DEFINE_STATIC_LOCAL_THREAD_SAFE(const ICUScriptData, icuScriptDataInstance, (new ICUScriptData()));
     return &icuScriptDataInstance;
 }
 
