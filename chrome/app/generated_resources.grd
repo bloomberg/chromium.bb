@@ -5137,6 +5137,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         If enabled, the chrome://extensions/ URL loads the Material Design extensions page.
       </message>
 
+      <!-- Device scale factor change in content crbug.com/485650. -->
+      <message name="IDS_FLAGS_ENABLE_USE_ZOOM_FOR_DSF_NAME" desc="Name for the flag to use Blink's zooming mechanism to implement device scale factor.">
+        Use Blink's zoom for device scale factor.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_USE_ZOOM_FOR_DSF_DESCRIPTION" desc="Description for the flag to use Blink's zooming mechanism to implement device scale factor.">
+        If enabled, Blink uses its zooming mechanism to scale content for device scale factor.
+      </message>
+
       <!-- Components -->
       <message name="IDS_COMPONENTS_TITLE" desc="Title for the chrome://components page.">
         Components

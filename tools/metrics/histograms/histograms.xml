@@ -68695,6 +68695,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2121776031" label="auto-virtual-keyboard"/>
   <int value="2122023503" label="enable-win32k-lockdown-mimetypes"/>
   <int value="2122876605" label="enable-bleeding-edge-rendering-fast-paths"/>
+  <int value="2129929643" label="enable-use-zoom-for-dsf"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>
   <int value="2141463681" label="enable-offer-upload-credit-cards"/>

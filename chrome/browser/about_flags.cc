@@ -1686,6 +1686,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_SITE_PER_PROCESS_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},
+    {"enable-use-zoom-for-dsf",
+     IDS_FLAGS_ENABLE_USE_ZOOM_FOR_DSF_NAME,
+     IDS_FLAGS_ENABLE_USE_ZOOM_FOR_DSF_DESCRIPTION,
+     kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kEnableUseZoomForDSF)},
 #if defined(OS_MACOSX)
     {"enable-harfbuzz-rendertext",
      IDS_FLAGS_HARFBUZZ_RENDERTEXT_NAME,
