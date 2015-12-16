@@ -326,7 +326,7 @@ class Struct(Definition):
 
   def __init__(self, name, attribute_list, body, **kwargs):
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
-    assert isinstance(body, StructBody)
+    assert isinstance(body, StructBody) or body is None
     super(Struct, self).__init__(name, **kwargs)
     self.attribute_list = attribute_list
     self.body = body

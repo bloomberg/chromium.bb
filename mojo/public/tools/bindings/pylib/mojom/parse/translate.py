@@ -130,12 +130,15 @@ class _MojomBuilder(object):
 
       assert isinstance(struct, ast.Struct)
       data = {'name': struct.name,
-              'fields': _MapTreeForType(StructFieldToDict, struct.body,
-                                        ast.StructField, struct.name),
-              'enums': _MapTreeForType(_EnumToDict, struct.body, ast.Enum,
-                                       struct.name),
-              'constants': _MapTreeForType(_ConstToDict, struct.body,
-                                           ast.Const, struct.name)}
+              'native_only': struct.body is None}
+      if not data['native_only']:
+        data.update({
+            'fields': _MapTreeForType(StructFieldToDict, struct.body,
+                                      ast.StructField, struct.name),
+            'enums': _MapTreeForType(_EnumToDict, struct.body, ast.Enum,
+                                     struct.name),
+            'constants': _MapTreeForType(_ConstToDict, struct.body,
+                                         ast.Const, struct.name)})
       _AddOptional(data, 'attributes',
                    _AttributeListToDict(struct.attribute_list))
       return data

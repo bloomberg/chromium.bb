@@ -20,6 +20,7 @@ mojom("test_interfaces") {
     "scoping.mojom",
     "serialization_test_structs.mojom",
     "test_constants.mojom",
+    "test_native_types.mojom",
     "test_structs.mojom",
     "validation_test_interfaces.mojom",
   ]

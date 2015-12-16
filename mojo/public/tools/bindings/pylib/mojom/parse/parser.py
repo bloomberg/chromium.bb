@@ -155,9 +155,13 @@ class Parser(object):
     # 'eval' the literal to strip the quotes.
     p[0] = eval(p[1])
 
-  def p_struct(self, p):
+  def p_struct_1(self, p):
     """struct : attribute_section STRUCT NAME LBRACE struct_body RBRACE SEMI"""
     p[0] = ast.Struct(p[3], p[1], p[5])
+
+  def p_struct_2(self, p):
+    """struct : attribute_section STRUCT NAME SEMI"""
+    p[0] = ast.Struct(p[3], p[1], None)
 
   def p_struct_body_1(self, p):
     """struct_body : """

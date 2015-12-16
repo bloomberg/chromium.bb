@@ -209,15 +209,29 @@ def StructToData(struct):
 def StructFromData(module, data):
   struct = mojom.Struct(module=module)
   struct.name = data['name']
+  struct.native_only = data['native_only']
   struct.spec = 'x:' + module.namespace + '.' + struct.name
   module.kinds[struct.spec] = struct
-  struct.enums = map(lambda enum:
-      EnumFromData(module, enum, struct), data['enums'])
-  struct.constants = map(lambda constant:
-      ConstantFromData(module, constant, struct), data['constants'])
-  # Stash fields data here temporarily.
-  struct.fields_data = data['fields']
+  if struct.native_only:
+    struct.enums = []
+    struct.constants = []
+    struct.fields_data = []
+  else:
+    struct.enums = map(lambda enum:
+        EnumFromData(module, enum, struct), data['enums'])
+    struct.constants = map(lambda constant:
+        ConstantFromData(module, constant, struct), data['constants'])
+    # Stash fields data here temporarily.
+    struct.fields_data = data['fields']
   struct.attributes = data.get('attributes')
+
+  # Enforce that a [native=True] attribute is set to make native-only struct
+  # declarations more explicit.
+  if struct.native_only:
+    if not struct.attributes or not struct.attributes.get('native', False):
+      raise Exception("Native-only struct declarations must include a " +
+                      "native=True attribute.")
+
   return struct
 
 def UnionToData(union):
