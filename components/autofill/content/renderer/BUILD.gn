@@ -36,7 +36,7 @@ static_library("renderer") {
     "//net",
     "//skia",
     "//third_party/WebKit/public:blink",
-    "//third_party/icu",
+    "//third_party/re2",
     "//ui/base",
   ]
 

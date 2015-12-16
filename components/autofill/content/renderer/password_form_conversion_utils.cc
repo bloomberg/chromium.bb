@@ -22,7 +22,7 @@
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
-#include "third_party/icu/source/i18n/unicode/regex.h"
+#include "third_party/re2/re2/re2.h"
 
 using blink::WebDocument;
 using blink::WebFormControlElement;
@@ -88,45 +88,34 @@ const char kAutocompleteUsername[] = "username";
 const char kAutocompleteCurrentPassword[] = "current-password";
 const char kAutocompleteNewPassword[] = "new-password";
 
-icu::RegexMatcher* CreateMatcher(
-    void* instance, const char* pattern) {
-  const icu::UnicodeString icu_pattern(pattern);
-
-  UErrorCode status = U_ZERO_ERROR;
+re2::RE2* CreateMatcher(void* instance, const char* pattern) {
+  re2::RE2::Options options;
+  options.set_case_sensitive(false);
   // Use placement new to initialize the instance in the preallocated space.
   // The "(instance)" is very important to force POD type initialization.
-  icu::RegexMatcher* matcher = new (instance) icu::RegexMatcher(
-      icu_pattern, UREGEX_CASE_INSENSITIVE, status);
-  DCHECK(U_SUCCESS(status));
+  re2::RE2* matcher = new (instance) re2::RE2(pattern, options);
+  DCHECK(matcher->ok());
   return matcher;
 }
 
 struct LoginAndSignupLazyInstanceTraits
-    : public base::DefaultLazyInstanceTraits<icu::RegexMatcher> {
-  static icu::RegexMatcher* New(void* instance) {
+    : public base::DefaultLazyInstanceTraits<re2::RE2> {
+  static re2::RE2* New(void* instance) {
     return CreateMatcher(instance, kLoginAndSignupRegex);
   }
 };
 
-bool Matches(icu::RegexMatcher* matcher, base::StringPiece expression) {
-  icu::UnicodeString icu_input(icu::UnicodeString::fromUTF8(
-      icu::StringPiece(expression.data(), expression.length())));
-  matcher->reset(icu_input);
-
-  UErrorCode status = U_ZERO_ERROR;
-  UBool match = matcher->find(0, status);
-  DCHECK(U_SUCCESS(status));
-  return match == TRUE;
-}
-
-base::LazyInstance<icu::RegexMatcher, LoginAndSignupLazyInstanceTraits>
-    login_and_signup_matcher = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<re2::RE2, LoginAndSignupLazyInstanceTraits>
+    g_login_and_signup_matcher = LAZY_INSTANCE_INITIALIZER;
 
 // Given the sequence of non-password and password text input fields of a form,
 // represented as a string of Ns (non-password) and Ps (password), computes the
 // layout type of that form.
 PasswordForm::Layout SequenceToLayout(base::StringPiece layout_sequence) {
-  if (Matches(login_and_signup_matcher.Pointer(), layout_sequence))
+  if (re2::RE2::FullMatch(
+          re2::StringPiece(layout_sequence.data(),
+                           base::checked_cast<int>(layout_sequence.size())),
+          g_login_and_signup_matcher.Get()))
     return PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
   return PasswordForm::Layout::LAYOUT_OTHER;
 }
@@ -286,19 +275,20 @@ void FindPredictedElements(
   }
 }
 
-// TODO(msramek): Move the reauthentication recognition code to the browser.
+// TODO(crbug.com/543085): Move the reauthentication recognition code to the
+// browser.
 const char kPasswordSiteUrlRegex[] =
     "passwords(?:-[a-z-]+\\.corp)?\\.google\\.com";
 
 struct PasswordSiteUrlLazyInstanceTraits
-    : public base::DefaultLazyInstanceTraits<icu::RegexMatcher> {
-  static icu::RegexMatcher* New(void* instance) {
+    : public base::DefaultLazyInstanceTraits<re2::RE2> {
+  static re2::RE2* New(void* instance) {
     return CreateMatcher(instance, kPasswordSiteUrlRegex);
   }
 };
 
-base::LazyInstance<icu::RegexMatcher, PasswordSiteUrlLazyInstanceTraits>
-    password_site_matcher = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<re2::RE2, PasswordSiteUrlLazyInstanceTraits>
+    g_password_site_matcher = LAZY_INSTANCE_INITIALIZER;
 
 // Returns the |input_field| name if its non-empty; otherwise a |dummy_name|.
 base::string16 FieldName(const WebInputElement& input_field,
@@ -582,7 +572,8 @@ bool IsGaiaReauthenticationForm(
     // There must be a hidden input named "continue", whose value points
     // to a password (or password testing) site.
     if (input->formControlName() == "continue" &&
-        Matches(password_site_matcher.Pointer(), input->value().utf8())) {
+        re2::RE2::PartialMatch(input->value().utf8(),
+                               g_password_site_matcher.Get())) {
       has_continue_field = true;
     }
   }
