@@ -999,8 +999,8 @@ if (!is_android) {
       }
       if (is_linux) {
         data_deps += [
-          "//components/nacl:nacl_helper",
-          "//components/nacl:helper_nonsfi",
+          "//components/nacl/loader:nacl_helper",
+          "//components/nacl/loader:helper_nonsfi",
         ]
       }
     }
