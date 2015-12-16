@@ -6,8 +6,12 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/cpu.h"
 #include "base/sys_info.h"
+#include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "components/version_info/version_info.h"
@@ -62,6 +66,16 @@ void CollectProcessData(ClientIncidentReport_EnvironmentData_Process* process) {
 }  // namespace
 
 void CollectEnvironmentData(ClientIncidentReport_EnvironmentData* data) {
+  // Toggling priority only makes sense in a thread pool.
+  DCHECK(base::SequencedWorkerPool::GetWorkerPoolForCurrentThread());
+  // Reset priority when done with this task.
+  base::ScopedClosureRunner restore_priority(
+      base::Bind(&base::PlatformThread::SetCurrentThreadPriority,
+                 base::PlatformThread::GetCurrentThreadPriority()));
+  // Lower priority for this task.
+  base::PlatformThread::SetCurrentThreadPriority(
+      base::ThreadPriority::BACKGROUND);
+
   // OS
   {
     ClientIncidentReport_EnvironmentData_OS* os = data->mutable_os();
