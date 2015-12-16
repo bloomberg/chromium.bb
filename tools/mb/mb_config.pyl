@@ -605,7 +605,7 @@
       'linux_chromium_msan_rel_ng': 'swarming_msan_gyp_release_trybot',
       'linux_chromium_tsan_rel_ng': 'swarming_tsan_gyp_release_trybot',
       'linux_chromium_practice_rel_ng': 'gyp_release_trybot',
-      'linux_arm_compile': 'swarming_gyp_release_trybot_arm',
+      'linux_arm': 'swarming_gyp_release_trybot_arm',
       'linux_chromium_compile_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
       'linux_chromium_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
       'linux_chromium_archive_rel_ng': 'noswarming_gn_release_bot',

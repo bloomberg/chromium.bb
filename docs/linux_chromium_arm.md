@@ -52,7 +52,7 @@ There are currently two builders setup, one on the FYI waterfall and one
 the the trybot waterfall:
 
 *   [Linux ARM](http://build.chromium.org/p/chromium.fyi/builders/Linux%20ARM)
-*   [linux_arm_compile](http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm_compile)
+*   [linux_arm](http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm)
 
 These bots run x86-64 linux and cross-compile the ARM targets.  Tests are
 run on ARM hardware via swarming.
