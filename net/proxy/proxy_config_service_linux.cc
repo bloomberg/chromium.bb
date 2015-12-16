@@ -5,7 +5,6 @@
 #include "net/proxy/proxy_config_service_linux.h"
 
 #include <errno.h>
-#include <fcntl.h>
 #if defined(USE_GCONF)
 #include <gconf/gconf-client.h>
 #endif  // defined(USE_GCONF)
@@ -949,9 +948,8 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
       PLOG(ERROR) << "inotify_init failed";
       return false;
     }
-    int flags = fcntl(inotify_fd_, F_GETFL);
-    if (fcntl(inotify_fd_, F_SETFL, flags | O_NONBLOCK) < 0) {
-      PLOG(ERROR) << "fcntl failed";
+    if (!base::SetNonBlocking(inotify_fd_)) {
+      PLOG(ERROR) << "base::SetNonBlocking failed";
       close(inotify_fd_);
       inotify_fd_ = -1;
       return false;
