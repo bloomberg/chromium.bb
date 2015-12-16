@@ -11,8 +11,6 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../ui/base/ui_base.gyp:ui_base',
-        '../ui/gfx/gfx.gyp:gfx',
         '../url/url.gyp:url_lib',
       ],
       'include_dirs': [

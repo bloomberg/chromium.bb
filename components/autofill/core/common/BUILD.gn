@@ -39,8 +39,6 @@ static_library("common") {
   deps = [
     "//base",
     "//base:i18n",
-    "//ui/base",
-    "//ui/gfx",
     "//url",
   ]
 
