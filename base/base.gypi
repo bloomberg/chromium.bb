@@ -147,6 +147,8 @@
           'debug/alias.h',
           'debug/asan_invalid_access.cc',
           'debug/asan_invalid_access.h',
+          'debug/close_handle_hook_win.cc',
+          'debug/close_handle_hook_win.h',
           'debug/crash_logging.cc',
           'debug/crash_logging.h',
           'debug/debugger.cc',

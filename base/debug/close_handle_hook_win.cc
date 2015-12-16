@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/app/close_handle_hook_win.h"
+#include "base/debug/close_handle_hook_win.h"
 
 #include <Windows.h>
 #include <psapi.h>
@@ -15,8 +15,9 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/common/channel_info.h"
-#include "components/version_info/version_info.h"
+
+namespace base {
+namespace debug {
 
 namespace {
 
@@ -121,33 +122,34 @@ void AutoProtectMemory::RevertProtection() {
 }
 
 // Performs an EAT interception.
-void EATPatch(HMODULE module, const char* function_name,
+bool EATPatch(HMODULE module, const char* function_name,
               void* new_function, void** old_function) {
   if (!module)
-    return;
+    return false;
 
   base::win::PEImage pe(module);
   if (!pe.VerifyMagic())
-    return;
+    return false;
 
   DWORD* eat_entry = pe.GetExportEntry(function_name);
   if (!eat_entry)
-    return;
+    return false;
 
   if (!(*old_function))
     *old_function = pe.RVAToAddr(*eat_entry);
 
   AutoProtectMemory memory;
   if (!memory.ChangeProtection(eat_entry, sizeof(DWORD)))
-    return;
+    return false;
 
   // Perform the patch.
 #pragma warning(push)
-#pragma warning(disable : 4311 4302)
-  // These casts generate truncation warnings because they are 32 bit specific.
+#pragma warning(disable: 4311)
+  // These casts generate warnings because they are 32 bit specific.
   *eat_entry = reinterpret_cast<DWORD>(new_function) -
                reinterpret_cast<DWORD>(module);
 #pragma warning(pop)
+  return true;
 }
 
 // Performs an IAT interception.
@@ -187,9 +189,9 @@ class HandleHooks {
   HandleHooks() {}
   ~HandleHooks() {}
 
-  void AddIATPatch(HMODULE module);
-  void AddEATPatch();
-  void Unpatch();
+  bool AddIATPatch(HMODULE module);
+  bool AddEATPatch();
+  bool Unpatch();
 
  private:
   std::vector<base::win::IATPatchFunction*> hooks_;
@@ -197,89 +199,84 @@ class HandleHooks {
 };
 base::LazyInstance<HandleHooks> g_hooks = LAZY_INSTANCE_INITIALIZER;
 
-void HandleHooks::AddIATPatch(HMODULE module) {
+bool HandleHooks::AddIATPatch(HMODULE module) {
   if (!module)
-    return;
+    return false;
 
   base::win::IATPatchFunction* patch = NULL;
   patch = IATPatch(module, "CloseHandle", &CloseHandleHook,
                    reinterpret_cast<void**>(&g_close_function));
   if (!patch)
-    return;
+    return false;
   hooks_.push_back(patch);
 
   patch = IATPatch(module, "DuplicateHandle", &DuplicateHandleHook,
                    reinterpret_cast<void**>(&g_duplicate_function));
   if (!patch)
-    return;
+    return false;
   hooks_.push_back(patch);
+  return true;
 }
 
-void HandleHooks::AddEATPatch() {
+bool HandleHooks::AddEATPatch() {
+   // An attempt to restore the entry on the table at destruction is not safe.
   // An attempt to restore the entry on the table at destruction is not safe.
-  EATPatch(GetModuleHandleA("kernel32.dll"), "CloseHandle",
-           &CloseHandleHook, reinterpret_cast<void**>(&g_close_function));
-  EATPatch(GetModuleHandleA("kernel32.dll"), "DuplicateHandle",
-           &DuplicateHandleHook,
-           reinterpret_cast<void**>(&g_duplicate_function));
+  return (EATPatch(GetModuleHandleA("kernel32.dll"), "CloseHandle",
+                   &CloseHandleHook,
+                   reinterpret_cast<void**>(&g_close_function)) &&
+          EATPatch(GetModuleHandleA("kernel32.dll"), "DuplicateHandle",
+                   &DuplicateHandleHook,
+                   reinterpret_cast<void**>(&g_duplicate_function)));
 }
 
-void HandleHooks::Unpatch() {
+bool HandleHooks::Unpatch() {
+  DWORD err = NO_ERROR;
   for (std::vector<base::win::IATPatchFunction*>::iterator it = hooks_.begin();
        it != hooks_.end(); ++it) {
-    (*it)->Unpatch();
+    err = (*it)->Unpatch();
+    if (err != NO_ERROR)
+      break;
     delete *it;
   }
+  return (err == NO_ERROR);
 }
 
-bool UseHooks() {
-#if defined(ARCH_CPU_X86_64)
-  return false;
-#elif defined(NDEBUG)
-  version_info::Channel channel = chrome::GetChannel();
-  if (channel == version_info::Channel::CANARY ||
-      channel == version_info::Channel::DEV) {
-    return true;
-  }
-
-  return false;
-#else  // NDEBUG
-  return true;
-#endif
-}
-
-void PatchLoadedModules(HandleHooks* hooks) {
+bool PatchLoadedModules(HandleHooks* hooks) {
   const DWORD kSize = 256;
   DWORD returned;
   scoped_ptr<HMODULE[]> modules(new HMODULE[kSize]);
   if (!EnumProcessModules(GetCurrentProcess(), modules.get(),
                           kSize * sizeof(HMODULE), &returned)) {
-    return;
+    return false;
   }
   returned /= sizeof(HMODULE);
   returned = std::min(kSize, returned);
 
+  bool success = false;
+
   for (DWORD current = 0; current < returned; current++) {
-    hooks->AddIATPatch(modules[current]);
+    success = hooks->AddIATPatch(modules[current]);
+    if (!success)
+      break;
   }
+
+  return success;
 }
 
 }  // namespace
 
-void InstallHandleHooks() {
-  if (UseHooks()) {
-    HandleHooks* hooks = g_hooks.Pointer();
+bool InstallHandleHooks() {
+  HandleHooks* hooks = g_hooks.Pointer();
 
-    // Performing EAT interception first is safer in the presence of other
-    // threads attempting to call CloseHandle.
-    hooks->AddEATPatch();
-    PatchLoadedModules(hooks);
-  } else {
-    base::win::DisableHandleVerifier();
-  }
+  // Performing EAT interception first is safer in the presence of other
+  // threads attempting to call CloseHandle.
+  return (hooks->AddEATPatch() && PatchLoadedModules(hooks));
 }
 
 void RemoveHandleHooks() {
-  // We are partching all loaded modules without forcing them to stay in memory,
+  // We are patching all loaded modules without forcing them to stay in memory,
   // removing patches is not safe.
 }
+
+}  // namespace debug
+}  // namespace base

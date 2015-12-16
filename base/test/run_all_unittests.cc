@@ -11,13 +11,24 @@
 #include "base/test/test_file_util.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/debug/close_handle_hook_win.h"
+#endif
+
 int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   base::RegisterContentUriTestUtils(env);
 #endif
   base::TestSuite test_suite(argc, argv);
-  return base::LaunchUnitTests(
+#if defined(OS_WIN)
+  base::debug::InstallHandleHooks();
+#endif
+  int ret = base::LaunchUnitTests(
       argc, argv,
       base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+#if defined(OS_WIN)
+  base::debug::RemoveHandleHooks();
+#endif
+  return ret;
 }
