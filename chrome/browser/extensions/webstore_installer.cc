@@ -526,25 +526,29 @@ void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
           FAILURE_REASON_OTHER);
       break;
     case DownloadItem::COMPLETE:
-      // Wait for other notifications if the download is really an extension.
-      if (!download_crx_util::IsExtensionDownload(*download)) {
-        ReportFailure(kInvalidDownloadError, FAILURE_REASON_OTHER);
-      } else {
-        if (crx_installer_.get())
-          return;  // DownloadItemImpl calls the observer twice, ignore it.
-        StartCrxInstaller(*download);
-
-        if (pending_modules_.size() == 1) {
-          // The download is the last module - the extension main module.
-          if (delegate_)
-            delegate_->OnExtensionDownloadProgress(id_, download);
-          extensions::InstallTracker* tracker =
-              extensions::InstallTrackerFactory::GetForBrowserContext(profile_);
-          tracker->OnDownloadProgress(id_, 100);
-        }
-      }
       // Stop the progress timer if it's running.
       download_progress_timer_.Stop();
+
+      // Only wait for other notifications if the download is really
+      // an extension.
+      if (!download_crx_util::IsExtensionDownload(*download)) {
+        ReportFailure(kInvalidDownloadError, FAILURE_REASON_OTHER);
+        return;
+      }
+
+      if (crx_installer_.get())
+        return;  // DownloadItemImpl calls the observer twice, ignore it.
+
+      StartCrxInstaller(*download);
+
+      if (pending_modules_.size() == 1) {
+        // The download is the last module - the extension main module.
+        if (delegate_)
+          delegate_->OnExtensionDownloadProgress(id_, download);
+        extensions::InstallTracker* tracker =
+            extensions::InstallTrackerFactory::GetForBrowserContext(profile_);
+        tracker->OnDownloadProgress(id_, 100);
+      }
       break;
     case DownloadItem::IN_PROGRESS: {
       if (delegate_ && pending_modules_.size() == 1) {
