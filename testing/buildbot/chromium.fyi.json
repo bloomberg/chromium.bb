@@ -1390,13 +1390,6 @@
         "test": "ui_base_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "unit_tests"
-      },
-      {
         "test": "url_unittests"
       }
     ]
