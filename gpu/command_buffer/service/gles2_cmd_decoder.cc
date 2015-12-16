@@ -7104,15 +7104,13 @@ bool GLES2DecoderImpl::CheckDrawingFeedbackLoops() {
     const Program::UniformInfo* uniform_info =
         state_.current_program->GetUniformInfo(sampler_indices[ii]);
     DCHECK(uniform_info);
-    if (uniform_info->type != GL_SAMPLER_2D)
-      continue;
     for (size_t jj = 0; jj < uniform_info->texture_units.size(); ++jj) {
       GLuint texture_unit_index = uniform_info->texture_units[jj];
       if (texture_unit_index >= state_.texture_units.size())
         continue;
       TextureUnit& texture_unit = state_.texture_units[texture_unit_index];
       TextureRef* texture_ref =
-          texture_unit.GetInfoForSamplerType(GL_SAMPLER_2D).get();
+          texture_unit.GetInfoForSamplerType(uniform_info->type).get();
       if (attachment->IsTexture(texture_ref))
         return true;
     }
