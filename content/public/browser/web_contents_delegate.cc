@@ -51,6 +51,10 @@ WebContents* WebContentsDelegate::OpenURLFromTab(WebContents* source,
   return source;
 }
 
+bool WebContentsDelegate::ShouldTransferNavigation() {
+  return true;
+}
+
 bool WebContentsDelegate::IsPopupOrPanel(const WebContents* source) const {
   return false;
 }

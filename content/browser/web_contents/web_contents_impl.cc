@@ -2995,6 +2995,12 @@ void WebContentsImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
   }
 }
 
+bool WebContentsImpl::ShouldTransferNavigation() {
+  if (!delegate_)
+    return true;
+  return delegate_->ShouldTransferNavigation();
+}
+
 bool WebContentsImpl::ShouldPreserveAbortedURLs() {
   if (!delegate_)
     return false;

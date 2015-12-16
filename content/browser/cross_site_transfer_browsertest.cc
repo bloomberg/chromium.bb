@@ -144,22 +144,9 @@ class NoTransferRequestDelegate : public WebContentsDelegate {
  public:
   NoTransferRequestDelegate() {}
 
-  WebContents* OpenURLFromTab(WebContents* source,
-                              const OpenURLParams& params) override {
-    bool is_transfer =
-        (params.transferred_global_request_id != GlobalRequestID());
-    if (is_transfer)
-      return nullptr;
-    NavigationController::LoadURLParams load_url_params(params.url);
-    load_url_params.referrer = params.referrer;
-    load_url_params.frame_tree_node_id = params.frame_tree_node_id;
-    load_url_params.transition_type = params.transition;
-    load_url_params.extra_headers = params.extra_headers;
-    load_url_params.should_replace_current_entry =
-        params.should_replace_current_entry;
-    load_url_params.is_renderer_initiated = true;
-    source->GetController().LoadURLWithParams(load_url_params);
-    return source;
+  bool ShouldTransferNavigation() override {
+    // Intentionally cancel the transfer.
+    return false;
   }
 
  private:

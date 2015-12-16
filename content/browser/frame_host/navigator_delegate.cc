@@ -10,6 +10,10 @@ bool NavigatorDelegate::CanOverscrollContent() const {
   return false;
 }
 
+bool NavigatorDelegate::ShouldTransferNavigation() {
+  return true;
+}
+
 bool NavigatorDelegate::ShouldPreserveAbortedURLs() {
   return false;
 }

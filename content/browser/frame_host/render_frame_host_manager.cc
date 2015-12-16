@@ -649,13 +649,10 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   std::vector<GURL> rest_of_chain = transfer_url_chain;
   rest_of_chain.pop_back();
 
-  // We don't know whether the original request had |user_action| set to true.
-  // However, since we force the navigation to be in the current tab, it
-  // doesn't matter.
   pending_render_frame_host->frame_tree_node()->navigator()->RequestTransferURL(
       pending_render_frame_host, transfer_url, nullptr, rest_of_chain, referrer,
       page_transition, CURRENT_TAB, global_request_id,
-      should_replace_current_entry, true);
+      should_replace_current_entry);
 
   // The transferring request was only needed during the RequestTransferURL
   // call, so it is safe to clear at this point.

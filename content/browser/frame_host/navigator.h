@@ -130,8 +130,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       ui::PageTransition page_transition,
       WindowOpenDisposition disposition,
       const GlobalRequestID& transferred_global_request_id,
-      bool should_replace_current_entry,
-      bool user_gesture) {}
+      bool should_replace_current_entry) {}
 
   // PlzNavigate
   // Called after receiving a BeforeUnloadACK IPC from the renderer. If

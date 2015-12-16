@@ -579,33 +579,11 @@ void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
     return;
   }
 
-  // Delegate to RequestTransferURL because this is just the generic
-  // case where |old_request_id| is empty.
   // TODO(creis): Pass the redirect_chain into this method to support client
   // redirects.  http://crbug.com/311721.
   std::vector<GURL> redirect_chain;
-  RequestTransferURL(render_frame_host, url, source_site_instance,
-                     redirect_chain, referrer, ui::PAGE_TRANSITION_LINK,
-                     disposition, GlobalRequestID(),
-                     should_replace_current_entry, user_gesture);
-}
 
-void NavigatorImpl::RequestTransferURL(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& url,
-    SiteInstance* source_site_instance,
-    const std::vector<GURL>& redirect_chain,
-    const Referrer& referrer,
-    ui::PageTransition page_transition,
-    WindowOpenDisposition disposition,
-    const GlobalRequestID& transferred_global_request_id,
-    bool should_replace_current_entry,
-    bool user_gesture) {
   GURL dest_url(url);
-  RenderFrameHostImpl* current_render_frame_host =
-      GetRenderManager(render_frame_host)->current_frame_host();
-  SiteInstance* current_site_instance =
-      current_render_frame_host->GetSiteInstance();
   if (!GetContentClient()->browser()->ShouldAllowOpenURL(
           current_site_instance, url)) {
     dest_url = GURL(url::kAboutBlankURL);
@@ -622,25 +600,26 @@ void NavigatorImpl::RequestTransferURL(
         render_frame_host->frame_tree_node()->frame_tree_node_id();
   }
 
-  OpenURLParams params(
-      dest_url, referrer, frame_tree_node_id, disposition, page_transition,
-      true /* is_renderer_initiated */);
+  OpenURLParams params(dest_url, referrer, frame_tree_node_id, disposition,
+                       ui::PAGE_TRANSITION_LINK,
+                       true /* is_renderer_initiated */);
   params.source_site_instance = source_site_instance;
   if (redirect_chain.size() > 0)
     params.redirect_chain = redirect_chain;
-  params.transferred_global_request_id = transferred_global_request_id;
+  // TODO(creis): Remove transferred_global_request_id from OpenURLParams.
+  // See https://crbug.com/495161.
+  params.transferred_global_request_id = GlobalRequestID();
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = user_gesture;
 
-  if (current_render_frame_host->web_ui()) {
+  if (render_frame_host->web_ui()) {
     // Web UI pages sometimes want to override the page transition type for
     // link clicks (e.g., so the new tab page can specify AUTO_BOOKMARK for
     // automatically generated suggestions).  We don't override other types
     // like TYPED because they have different implications (e.g., autocomplete).
     if (ui::PageTransitionCoreTypeIs(
         params.transition, ui::PAGE_TRANSITION_LINK))
-      params.transition =
-          current_render_frame_host->web_ui()->GetLinkTransitionType();
+      params.transition = render_frame_host->web_ui()->GetLinkTransitionType();
 
     // Note also that we hide the referrer for Web UI pages. We don't really
     // want web sites to see a referrer of "chrome://blah" (and some
@@ -654,6 +633,65 @@ void NavigatorImpl::RequestTransferURL(
 
   if (delegate_)
     delegate_->RequestOpenURL(render_frame_host, params);
+}
+
+void NavigatorImpl::RequestTransferURL(
+    RenderFrameHostImpl* render_frame_host,
+    const GURL& url,
+    SiteInstance* source_site_instance,
+    const std::vector<GURL>& redirect_chain,
+    const Referrer& referrer,
+    ui::PageTransition page_transition,
+    WindowOpenDisposition disposition,
+    const GlobalRequestID& transferred_global_request_id,
+    bool should_replace_current_entry) {
+  // Allow the delegate to cancel the transfer.
+  if (!delegate_->ShouldTransferNavigation())
+    return;
+
+  GURL dest_url(url);
+  Referrer referrer_to_use(referrer);
+  FrameTreeNode* node = render_frame_host->frame_tree_node();
+  SiteInstance* current_site_instance = render_frame_host->GetSiteInstance();
+  if (!GetContentClient()->browser()->ShouldAllowOpenURL(current_site_instance,
+                                                         url)) {
+    dest_url = GURL(url::kAboutBlankURL);
+  }
+
+  DCHECK_EQ(CURRENT_TAB, disposition);
+
+  // TODO(creis): Determine if this transfer started as a browser-initiated
+  // navigation.  See https://crbug.com/495161.
+  bool is_renderer_initiated = true;
+  if (render_frame_host->web_ui()) {
+    // Web UI pages sometimes want to override the page transition type for
+    // link clicks (e.g., so the new tab page can specify AUTO_BOOKMARK for
+    // automatically generated suggestions).  We don't override other types
+    // like TYPED because they have different implications (e.g., autocomplete).
+    if (ui::PageTransitionCoreTypeIs(page_transition, ui::PAGE_TRANSITION_LINK))
+      page_transition = render_frame_host->web_ui()->GetLinkTransitionType();
+
+    // Note also that we hide the referrer for Web UI pages. We don't really
+    // want web sites to see a referrer of "chrome://blah" (and some
+    // chrome: URLs might have search terms or other stuff we don't want to
+    // send to the site), so we send no referrer.
+    referrer_to_use = Referrer();
+
+    // Navigations in Web UI pages count as browser-initiated navigations.
+    is_renderer_initiated = false;
+  }
+
+  NavigationController::LoadURLParams load_url_params(dest_url);
+  load_url_params.source_site_instance = source_site_instance;
+  load_url_params.transition_type = page_transition;
+  load_url_params.frame_tree_node_id = node->frame_tree_node_id();
+  load_url_params.referrer = referrer_to_use;
+  load_url_params.redirect_chain = redirect_chain;
+  load_url_params.is_renderer_initiated = is_renderer_initiated;
+  load_url_params.transferred_global_request_id = transferred_global_request_id;
+  load_url_params.should_replace_current_entry = should_replace_current_entry;
+
+  controller_->LoadURLWithParams(load_url_params);
 }
 
 // PlzNavigate

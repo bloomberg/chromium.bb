@@ -108,6 +108,10 @@ class CONTENT_EXPORT NavigatorDelegate {
   virtual void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                               const OpenURLParams& params) {}
 
+  // Returns whether to continue a navigation that needs to transfer to a
+  // different process between the load start and commit.
+  virtual bool ShouldTransferNavigation();
+
   // Returns whether URLs for aborted browser-initiated navigations should be
   // preserved in the omnibox.  Defaults to false.
   virtual bool ShouldPreserveAbortedURLs();

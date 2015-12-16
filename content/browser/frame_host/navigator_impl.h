@@ -73,8 +73,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                           ui::PageTransition page_transition,
                           WindowOpenDisposition disposition,
                           const GlobalRequestID& transferred_global_request_id,
-                          bool should_replace_current_entry,
-                          bool user_gesture) override;
+                          bool should_replace_current_entry) override;
   void OnBeforeUnloadACK(FrameTreeNode* frame_tree_node, bool proceed) override;
   void OnBeginNavigation(FrameTreeNode* frame_tree_node,
                          const CommonNavigationParams& common_params,
