@@ -449,8 +449,8 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
     return -1;
 
   if (image_fence_sync) {
-    gpu::SyncToken sync_token(GetNamespaceID(), GetCommandBufferID(),
-                              GetExtraCommandBufferData(), image_fence_sync);
+    gpu::SyncToken sync_token(GetNamespaceID(), GetExtraCommandBufferData(),
+                              GetCommandBufferID(), image_fence_sync);
 
     // Force a synchronous IPC to validate sync token.
     channel_->ValidateFlushIDReachedServer(stream_id_, true);
