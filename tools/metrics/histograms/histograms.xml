@@ -5335,6 +5335,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Intervals between access time updates for each cookie.</summary>
 </histogram>
 
+<histogram name="Cookie.CookieDeleteEquivalent" enum="CookieDeleteEquivalent">
+  <owner>jww@chromium.org</owner>
+  <summary>
+    Record when at attempt is made to delete an equivalent cookie on a set
+    cookie operation and when such a cookie is found and deleted. Also measure
+    when strict secure cookie rules affect this outcome and prevent a cookie
+    from being deleted.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.CookiePrefix" enum="CookiePrefix">
   <owner>estark@chromium.org</owner>
   <summary>
@@ -58261,6 +58271,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
   <int value="0" label="Did force a translation"/>
   <int value="1" label="Would force a translation (if not disabled)"/>
+</enum>
+
+<enum name="CookieDeleteEquivalent" type="int">
+  <int value="0"
+      label="Attempt to delete an equivalent cookie during a set cookie
+             operation"/>
+  <int value="1" label="Equivalent cookie to delete was found"/>
+  <int value="2"
+      label="Secure cookie was skipped because of strict secure cookies rules"/>
+  <int value="3"
+      label="Secure cookie that was skipped because of strict secure cookie
+             rules would have been deleted in non-strict secure cookie case"/>
 </enum>
 
 <enum name="CookieDeletionCause" type="int">

@@ -364,8 +364,14 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // For CookieSource histogram enum.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, CookieSourceHistogram);
 
-  // For kSafeFromGlobalPurgeDays in CookieStore
+  // For kSafeFromGlobalPurgeDays in CookieStore.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterStrictSecureTest, EvictSecureCookies);
+
+  // For CookieDeleteEquivalent histogram enum.
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
+                           CookieDeleteEquivalentHistogramTest);
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterStrictSecureTest,
+                           CookieDeleteEquivalentHistogramTest);
 
   // Internal reasons for deletion, used to populate informative histograms
   // and to provide a public cause for onCookieChange notifications.
@@ -439,6 +445,25 @@ class NET_EXPORT CookieMonster : public CookieStore {
     COOKIE_SOURCE_NONSECURE_COOKIE_CRYPTOGRAPHIC_SCHEME,
     COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME,
     COOKIE_SOURCE_LAST_ENTRY
+  };
+
+  // Used to populate a histogram for cookie setting in the "delete equivalent"
+  // step. Measures total attempts to delete an equivalent cookie as well as if
+  // a cookie is found to delete, if a cookie is skipped because it is secure,
+  // and if it is skipped for being secure but would have been deleted
+  // otherwise. The last two are only possible if strict secure cookies is
+  // turned on and if an insecure origin attempts to a set a cookie where a
+  // cookie with the same name and secure attribute already exists.
+  //
+  // Enum for UMA. Do no reorder or remove entries. New entries must be place
+  // directly before COOKIE_DELETE_EQUIVALENT_LAST_ENTRY and histograms.xml must
+  // be updated accordingly.
+  enum CookieDeleteEquivalent {
+    COOKIE_DELETE_EQUIVALENT_ATTEMPT = 0,
+    COOKIE_DELETE_EQUIVALENT_FOUND,
+    COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE,
+    COOKIE_DELETE_EQUIVALENT_WOULD_HAVE_DELETED,
+    COOKIE_DELETE_EQUIVALENT_LAST_ENTRY
   };
 
   // The strategy for fetching cookies. Controlled by Finch experiment.
@@ -711,6 +736,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::HistogramBase* histogram_cookie_deletion_cause_;
   base::HistogramBase* histogram_cookie_type_;
   base::HistogramBase* histogram_cookie_source_scheme_;
+  base::HistogramBase* histogram_cookie_delete_equivalent_;
   base::HistogramBase* histogram_time_blocked_on_load_;
 
   CookieMap cookies_;
