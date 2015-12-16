@@ -10,20 +10,10 @@
 
 namespace blink {
 
-static FloatRect mapImageFilterRect(SkImageFilter* filter, const FloatRect& bounds)
-{
-    SkRect filterBounds;
-    filter->computeFastBounds(bounds, &filterBounds);
-    filterBounds.offset(-bounds.x(), -bounds.y());
-    return filterBounds;
-}
-
 void BeginFilterDisplayItem::replay(GraphicsContext& context) const
 {
+    FloatRect imageFilterBounds(FloatPoint(), m_bounds.size());
     context.save();
-
-    FloatRect imageFilterBounds = mapImageFilterRect(m_imageFilter.get(), m_bounds);
-
     context.translate(m_bounds.x(), m_bounds.y());
     context.beginLayer(1, SkXfermode::kSrcOver_Mode, &imageFilterBounds, ColorFilterNone, m_imageFilter.get());
     context.translate(-m_bounds.x(), -m_bounds.y());
