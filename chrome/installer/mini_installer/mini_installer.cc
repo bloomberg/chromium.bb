@@ -22,6 +22,15 @@
 #pragma comment(linker, "/MERGE:.rdata=.text")
 
 #include <windows.h>
+
+// #define needed to link in RtlGenRandom(), a.k.a. SystemFunction036.  See the
+// "Community Additions" comment on MSDN here:
+// http://msdn.microsoft.com/en-us/library/windows/desktop/aa387694.aspx
+#define SystemFunction036 NTAPI SystemFunction036
+#include <NTSecAPI.h>
+#undef SystemFunction036
+
+#include <sddl.h>
 #include <shellapi.h>
 #include <stdlib.h>
 
@@ -539,6 +548,71 @@ void DeleteExtractedFiles(const wchar_t* base_path,
   ::RemoveDirectory(base_path);
 }
 
+// Returns true if the supplied path supports ACLs.
+bool IsAclSupportedForPath(const wchar_t* path) {
+  PathString volume;
+  DWORD flags = 0;
+  return ::GetVolumePathName(path, volume.get(), volume.capacity()) &&
+             ::GetVolumeInformation(volume.get(), NULL, 0, NULL, NULL, &flags,
+                                    NULL, 0) && (flags & FILE_PERSISTENT_ACLS);
+}
+
+// Retrieves the SID of the default owner for objects created by this user
+// token (accounting for different behavior under UAC elevation, etc.).
+// NOTE: On success the |sid| parameter must be freed with LocalFree().
+bool GetCurrentOwnerSid(wchar_t** sid) {
+  HANDLE token;
+  if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token))
+    return false;
+
+  DWORD size = 0;
+  TOKEN_OWNER* owner = NULL;
+  bool result = false;
+  // We get the TokenOwner rather than the TokenUser because e.g. under UAC
+  // elevation we want the admin to own the directory rather than the user.
+  ::GetTokenInformation(token, TokenOwner, &owner, 0, &size);
+  if (size && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+    if (owner = reinterpret_cast<TOKEN_OWNER*>(::LocalAlloc(LPTR, size))) {
+      if (::GetTokenInformation(token, TokenOwner, owner, size, &size))
+        result = ::ConvertSidToStringSid(owner->Owner, sid);
+      ::LocalFree(owner);
+    }
+  }
+  ::CloseHandle(token);
+  return result;
+}
+
+// Populates |sd| suitable for use when creating directories within |path| with
+// ACLs allowing access to only the current owner, admin, and system.
+// NOTE: On success the |sd| parameter must be freed with LocalFree().
+bool SetSecurityDescriptor(const wchar_t* path, PSECURITY_DESCRIPTOR* sd) {
+  *sd = NULL;
+  // We succeed without doing anything if ACLs aren't supported.
+  if (!IsAclSupportedForPath(path))
+    return true;
+
+  wchar_t* sid = NULL;
+  if (!GetCurrentOwnerSid(&sid))
+    return false;
+
+  // The largest SID is under 200 characters, so 300 should give enough slack.
+  StackString<300> sddl;
+  bool result = sddl.append(L"D:PAI"  // Protected, auto-inherited DACL.
+                    L"(A;;FA;;;BA)"  // Admin: Full control.
+                    L"(A;OIIOCI;GA;;;BA)"
+                    L"(A;;FA;;;SY)"  // System: Full control.
+                    L"(A;OIIOCI;GA;;;SY)"
+                    L"(A;OIIOCI;GA;;;CO)"  // Owner: Full control.
+                    L"(A;;FA;;;") && sddl.append(sid) && sddl.append(L")");
+  if (result) {
+    result = ::ConvertStringSecurityDescriptorToSecurityDescriptor(
+        sddl.get(), SDDL_REVISION_1, sd, NULL);
+  }
+
+  ::LocalFree(sid);
+  return result;
+}
+
 // Creates a temporary directory under |base_path| and returns the full path
 // of created directory in |work_dir|. If successful return true, otherwise
 // false.  When successful, the returned |work_dir| will always have a trailing
@@ -549,7 +623,9 @@ void DeleteExtractedFiles(const wchar_t* base_path,
 // delete it and create a directory in its place.  So, we use our own mechanism
 // for creating a directory with a hopefully-unique name.  In the case of a
 // collision, we retry a few times with a new name before failing.
-bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir) {
+bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir,
+                   ProcessExitResult* exit_code) {
+  *exit_code = ProcessExitResult(PATH_STRING_OVERFLOW);
   if (!work_dir->assign(base_path) || !work_dir->append(kTempPrefix))
     return false;
 
@@ -563,20 +639,27 @@ bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir) {
   if ((work_dir->capacity() - end) < (_countof("fffff.tmp") + 1))
     return false;
 
-  // Generate a unique id.  We only use the lowest 20 bits, so take the top
-  // 12 bits and xor them with the lower bits.
-  DWORD id = ::GetTickCount();
-  id ^= (id >> 12);
+  // Add an ACL if supported by the filesystem. Otherwise system-level installs
+  // are potentially vulnerable to file squatting attacks.
+  SECURITY_ATTRIBUTES sa = {};
+  sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+  if (!SetSecurityDescriptor(base_path, &sa.lpSecurityDescriptor)) {
+    *exit_code = ProcessExitResult(UNABLE_TO_SET_DIRECTORY_ACL,
+                                   ::GetLastError());
+    return false;
+  }
 
-  int max_attempts = 10;
-  while (max_attempts--) {
+  unsigned int id;
+  *exit_code = ProcessExitResult(UNABLE_TO_GET_WORK_DIRECTORY);
+  for (int max_attempts = 10; max_attempts; --max_attempts) {
+    ::RtlGenRandom(&id, sizeof(id));  // Try a different name.
+
     // This converts 'id' to a string in the format "78563412" on windows
     // because of little endianness, but we don't care since it's just
-    // a name.
-    if (!HexEncode(&id, sizeof(id), work_dir->get() + end,
-                   work_dir->capacity() - end)) {
-      return false;
-    }
+    // a name. Since we checked capaity at the front end, we don't need to
+    // duplicate it here.
+    HexEncode(&id, sizeof(id), work_dir->get() + end,
+              work_dir->capacity() - end);
 
     // We only want the first 5 digits to remain within the 8.3 file name
     // format (compliant with previous implementation).
@@ -585,24 +668,30 @@ bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir) {
     // for consistency with the previous implementation which relied on
     // GetTempFileName, we append the .tmp extension.
     work_dir->append(L".tmp");
-    if (::CreateDirectory(work_dir->get(), NULL)) {
+
+    if (::CreateDirectory(work_dir->get(),
+                          sa.lpSecurityDescriptor ? &sa : NULL)) {
       // Yay!  Now let's just append the backslash and we're done.
-      return work_dir->append(L"\\");
+      work_dir->append(L"\\");
+      *exit_code = ProcessExitResult(SUCCESS_EXIT_CODE);
+      break;
     }
-    ++id;  // Try a different name.
   }
 
-  return false;
+  if (sa.lpSecurityDescriptor)
+    LocalFree(sa.lpSecurityDescriptor);
+  return exit_code->IsSuccess();
 }
 
 // Creates and returns a temporary directory in |work_dir| that can be used to
 // extract mini_installer payload. |work_dir| ends with a path separator.
-bool GetWorkDir(HMODULE module, PathString* work_dir) {
+bool GetWorkDir(HMODULE module, PathString* work_dir,
+                ProcessExitResult* exit_code) {
   PathString base_path;
   DWORD len = ::GetTempPath(static_cast<DWORD>(base_path.capacity()),
                             base_path.get());
   if (!len || len >= base_path.capacity() ||
-      !CreateWorkDir(base_path.get(), work_dir)) {
+      !CreateWorkDir(base_path.get(), work_dir, exit_code)) {
     // Problem creating the work dir under TEMP path, so try using the
     // current directory as the base path.
     len = ::GetModuleFileName(module, base_path.get(),
@@ -616,7 +705,8 @@ bool GetWorkDir(HMODULE module, PathString* work_dir) {
 
     *name = L'\0';
 
-    return CreateWorkDir(base_path.get(), work_dir);
+    *exit_code = ProcessExitResult(SUCCESS_EXIT_CODE);
+    return CreateWorkDir(base_path.get(), work_dir, exit_code);
   }
   return true;
 }
@@ -781,8 +871,8 @@ ProcessExitResult WMain(HMODULE module) {
 
   // First get a path where we can extract payload
   PathString base_path;
-  if (!GetWorkDir(module, &base_path))
-    return ProcessExitResult(UNABLE_TO_GET_WORK_DIRECTORY);
+  if (!GetWorkDir(module, &base_path, &exit_code))
+    return exit_code;
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Set the magic suffix in registry to try full installer next time. We ignore
