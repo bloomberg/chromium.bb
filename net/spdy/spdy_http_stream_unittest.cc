@@ -844,7 +844,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
             http_stream->stream()->send_window_size());
 
   // Read rest of data.
-  sequenced_data_->CompleteRead();
+  sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(static_cast<int64_t>(req->size() + chunk1->size()),

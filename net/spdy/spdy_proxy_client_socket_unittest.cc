@@ -108,8 +108,6 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   void AssertAsyncWriteSucceeds(const char* data, int len);
   void AssertWriteReturns(const char* data, int len, int rv);
   void AssertWriteLength(int len);
-  void AssertAsyncWriteWithReadsSucceeds(const char* data, int len,
-                                        int num_reads);
 
   void AddAuthToCache() {
     const base::string16 kFoo(base::ASCIIToUTF16("foo"));
@@ -203,9 +201,9 @@ bool SpdyProxyClientSocketTest::GetDependenciesFromPriority() const {
 }
 
 void SpdyProxyClientSocketTest::Initialize(MockRead* reads,
-                                                size_t reads_count,
-                                                MockWrite* writes,
-                                                size_t writes_count) {
+                                           size_t reads_count,
+                                           MockWrite* writes,
+                                           size_t writes_count) {
   data_.reset(new DeterministicSocketData(reads, reads_count,
                                           writes, writes_count));
   data_->set_connect_data(connect_data_);
@@ -270,7 +268,7 @@ void SpdyProxyClientSocketTest::AssertSyncReadEquals(const char* data,
 }
 
 void SpdyProxyClientSocketTest::AssertAsyncReadEquals(const char* data,
-                                                           int len) {
+                                                      int len) {
   data_->StopAfter(1);
   // Issue the read, which will be completed asynchronously
   scoped_refptr<IOBuffer> buf(new IOBuffer(len));
@@ -286,8 +284,7 @@ void SpdyProxyClientSocketTest::AssertAsyncReadEquals(const char* data,
   ASSERT_EQ(std::string(data, len), std::string(buf->data(), len));
 }
 
-void SpdyProxyClientSocketTest::AssertReadStarts(const char* data,
-                                                      int len) {
+void SpdyProxyClientSocketTest::AssertReadStarts(const char* data, int len) {
   data_->StopAfter(1);
   // Issue the read, which will be completed asynchronously
   read_buf_ = new IOBuffer(len);
@@ -296,8 +293,7 @@ void SpdyProxyClientSocketTest::AssertReadStarts(const char* data,
   EXPECT_TRUE(sock_->IsConnected());
 }
 
-void SpdyProxyClientSocketTest::AssertReadReturns(const char* data,
-                                                       int len) {
+void SpdyProxyClientSocketTest::AssertReadReturns(const char* data, int len) {
   EXPECT_TRUE(sock_->IsConnected());
 
   // Now the read will return
@@ -313,8 +309,8 @@ void SpdyProxyClientSocketTest::AssertAsyncWriteSucceeds(const char* data,
 }
 
 void SpdyProxyClientSocketTest::AssertWriteReturns(const char* data,
-                                                        int len,
-                                                        int rv) {
+                                                   int len,
+                                                   int rv) {
   scoped_refptr<IOBufferWithSize> buf(CreateBuffer(data, len));
   EXPECT_EQ(rv,
             sock_->Write(buf.get(), buf->size(), write_callback_.callback()));
@@ -322,21 +318,6 @@ void SpdyProxyClientSocketTest::AssertWriteReturns(const char* data,
 
 void SpdyProxyClientSocketTest::AssertWriteLength(int len) {
   EXPECT_EQ(len, write_callback_.WaitForResult());
-}
-
-void SpdyProxyClientSocketTest::AssertAsyncWriteWithReadsSucceeds(
-    const char* data, int len, int num_reads) {
-  scoped_refptr<IOBufferWithSize> buf(CreateBuffer(data, len));
-
-  EXPECT_EQ(ERR_IO_PENDING,
-            sock_->Write(buf.get(), buf->size(), write_callback_.callback()));
-
-  for (int i = 0; i < num_reads; i++) {
-    Run(1);
-    AssertSyncReadEquals(kMsg2, kLen2);
-  }
-
-  write_callback_.WaitForResult();
 }
 
 void SpdyProxyClientSocketTest::PopulateConnectRequestIR(

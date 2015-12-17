@@ -2358,9 +2358,12 @@ TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
                  helper.session(), GURL(GetDefaultUrl())));
   ASSERT_EQ(ERR_IO_PENDING, rv);
   // This forces an err_IO_pending, which sets the callback.
-  data.CompleteRead();
+  data.Resume();
+  data.RunUntilPaused();
+
   // This finishes the read.
-  data.CompleteRead();
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
   helper.VerifyDataConsumed();
 }
 
@@ -2405,7 +2408,7 @@ TEST_P(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
       base::Bind(&SpdyNetworkTransactionTest::DeleteSessionCallback,
                  base::Unretained(&helper)));
   ASSERT_EQ(ERR_IO_PENDING, rv);
-  data.CompleteRead();
+  data.Resume();
 
   // Finish running rest of tasks.
   base::RunLoop().RunUntilIdle();
@@ -3714,7 +3717,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferFull) {
     scoped_refptr<IOBuffer> buf(new IOBuffer(kSmallReadSize));
     rv = trans->Read(buf.get(), kSmallReadSize, read_callback.callback());
     if (rv == ERR_IO_PENDING) {
-      data.CompleteRead();
+      data.Resume();
       rv = read_callback.WaitForResult();
     }
     if (rv > 0) {
@@ -3806,7 +3809,7 @@ TEST_P(SpdyNetworkTransactionTest, Buffering) {
     scoped_refptr<IOBuffer> buf(new IOBuffer(kSmallReadSize));
     rv = trans->Read(buf.get(), kSmallReadSize, read_callback.callback());
     if (rv == ERR_IO_PENDING) {
-      data.CompleteRead();
+      data.Resume();
       rv = read_callback.WaitForResult();
     }
     if (rv > 0) {
@@ -3983,7 +3986,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
     scoped_refptr<IOBuffer> buf(new IOBuffer(kSmallReadSize));
     rv = trans->Read(buf.get(), kSmallReadSize, read_callback.callback());
     if (rv == ERR_IO_PENDING) {
-      data.CompleteRead();
+      data.Resume();
       rv = read_callback.WaitForResult();
     }
     if (rv > 0) {
@@ -4062,7 +4065,8 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
   ASSERT_EQ(ERR_IO_PENDING, rv) << "Unexpected read: " << rv;
 
   // Complete the read now, which causes buffering to start.
-  data.CompleteRead();
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
   // Destroy the transaction, causing the stream to get cancelled
   // and orphaning the buffered IO task.
   helper.ResetTrans();
@@ -4845,7 +4849,7 @@ TEST_P(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
         }
 
         // Now schedule the ERR_CONNECTION_RESET.
-        data1.CompleteRead();
+        data1.Resume();
       }
       rv = callback.WaitForResult();
       EXPECT_EQ(OK, rv);
@@ -5968,8 +5972,9 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
         CreateMockRead(*body_frames.back(), writes.size() + reads.size()));
     remaining -= frame_size;
   }
+  // Yield.
   reads.push_back(
-      MockRead(ASYNC, ERR_IO_PENDING, writes.size() + reads.size()));  // Yield.
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, writes.size() + reads.size()));
 
   writes.push_back(
       CreateMockWrite(*session_window_update, writes.size() + reads.size()));
@@ -6207,7 +6212,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   // since we're send-stalled.
   EXPECT_TRUE(stream->stream()->send_stalled_by_flow_control());
 
-  data.CompleteRead();  // Read in WINDOW_UPDATE frame.
+  data.Resume();  // Read in WINDOW_UPDATE frame.
   rv = callback.WaitForResult();
   helper.VerifyDataConsumed();
 }

@@ -39,6 +39,10 @@
 #include "net/udp/datagram_client_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
+class RunLoop;
+}
+
 namespace net {
 
 enum {
@@ -384,8 +388,20 @@ class SequencedSocketData : public SocketDataProvider {
   bool AllWriteDataConsumed() const override;
   bool IsIdle() const override;
 
-  bool IsReadPaused();
-  void CompleteRead();
+  // An ASYNC read event with a return value of ERR_IO_PENDING will cause the
+  // socket data to pause at that event, and advance no further, until Resume is
+  // invoked.  At that point, the socket will continue at the next event in the
+  // sequence.
+  //
+  // If a request just wants to simulate a connection that stays open and never
+  // receives any more data, instead of pausing and then resuming a request, it
+  // should use a SYNCHRONOUS event with a return value of ERR_IO_PENDING
+  // instead.
+  bool IsPaused() const;
+  // Resumes events once |this| is in the paused state.  The next even will
+  // occur synchronously with the call if it can.
+  void Resume();
+  void RunUntilPaused();
 
   // When true, IsConnectedAndIdle() will return false if the next event in the
   // sequence is a synchronous.  Otherwise, the socket claims to be idle as
@@ -404,7 +420,7 @@ class SequencedSocketData : public SocketDataProvider {
     PENDING,     // An async operation in waiting for another opteration to
                  // complete.
     COMPLETING,  // A task has been posted to complet an async operation.
-    PAUSED,      // IO is paused until CompleteRead() is called.
+    PAUSED,      // IO is paused until Resume() is called.
   };
 
   // From SocketDataProvider:
@@ -422,6 +438,9 @@ class SequencedSocketData : public SocketDataProvider {
   IoState write_state_;
 
   bool busy_before_sync_reads_;
+
+  // Used by RunUntilPaused.  NULL at all other times.
+  scoped_ptr<base::RunLoop> run_until_paused_run_loop_;
 
   base::WeakPtrFactory<SequencedSocketData> weak_factory_;
 

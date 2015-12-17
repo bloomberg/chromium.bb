@@ -117,7 +117,7 @@ class DnsSocketData {
     // Terminate the reads with ERR_IO_PENDING to prevent overrun and default to
     // timeout.
     reads_.push_back(
-        MockRead(ASYNC, ERR_IO_PENDING, writes_.size() + reads_.size()));
+        MockRead(SYNCHRONOUS, ERR_IO_PENDING, writes_.size() + reads_.size()));
     provider_.reset(new SequencedSocketData(&reads_[0], reads_.size(),
                                             &writes_[0], writes_.size()));
     if (use_tcp_) {

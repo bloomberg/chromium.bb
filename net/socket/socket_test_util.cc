@@ -319,15 +319,48 @@ SequencedSocketData::SequencedSocketData(MockRead* reads,
   size_t next_read = 0;
   size_t next_write = 0;
   int next_sequence_number = 0;
+  bool last_event_was_pause = false;
   while (next_read < reads_count || next_write < writes_count) {
     if (next_read < reads_count &&
         reads[next_read].sequence_number == next_sequence_number) {
+      // Check if this is a pause.
+      if (reads[next_read].mode == ASYNC &&
+          reads[next_read].result == ERR_IO_PENDING) {
+        CHECK(!last_event_was_pause) << "Two pauses in a row are not allowed: "
+                                     << next_sequence_number;
+        last_event_was_pause = true;
+      } else if (last_event_was_pause) {
+        CHECK_EQ(ASYNC, reads[next_read].mode)
+            << "A sync event after a pause makes no sense: "
+            << next_sequence_number;
+        CHECK_NE(ERR_IO_PENDING, reads[next_read].result)
+            << "A pause event after a pause makes no sense: "
+            << next_sequence_number;
+        last_event_was_pause = false;
+      }
+
       ++next_read;
       ++next_sequence_number;
       continue;
     }
     if (next_write < writes_count &&
         writes[next_write].sequence_number == next_sequence_number) {
+      // Check if this is a pause.
+      if (writes[next_write].mode == ASYNC &&
+          writes[next_write].result == ERR_IO_PENDING) {
+        CHECK(!last_event_was_pause) << "Two pauses in a row are not allowed: "
+                                     << next_sequence_number;
+        last_event_was_pause = true;
+      } else if (last_event_was_pause) {
+        CHECK_EQ(ASYNC, writes[next_write].mode)
+            << "A sync event after a pause makes no sense: "
+            << next_sequence_number;
+        CHECK_NE(ERR_IO_PENDING, writes[next_write].result)
+            << "A pause event after a pause makes no sense: "
+            << next_sequence_number;
+        last_event_was_pause = false;
+      }
+
       ++next_write;
       ++next_sequence_number;
       continue;
@@ -336,6 +369,12 @@ SequencedSocketData::SequencedSocketData(MockRead* reads,
                  << next_sequence_number;
     return;
   }
+
+  // Last event must not be a pause.  For the final event to indicate the
+  // operation never completes, it should be SYNCHRONOUS and return
+  // ERR_IO_PENDING.
+  CHECK(!last_event_was_pause);
+
   CHECK_EQ(next_read, reads_count);
   CHECK_EQ(next_write, writes_count);
 }
@@ -368,13 +407,12 @@ MockRead SequencedSocketData::OnRead() {
       return next_read;
     }
 
-    // If the result is ERR_IO_PENDING, then advance to the next state
-    // and pause reads.
+    // If the result is ERR_IO_PENDING, then pause.
     if (next_read.result == ERR_IO_PENDING) {
-      NET_TRACE(1, " *** ") << "Pausing at: " << sequence_number_;
-      ++sequence_number_;
-      helper_.AdvanceRead();
+      NET_TRACE(1, " *** ") << "Pausing read at: " << sequence_number_;
       read_state_ = PAUSED;
+      if (run_until_paused_run_loop_)
+        run_until_paused_run_loop_->Quit();
       return MockRead(SYNCHRONOUS, ERR_IO_PENDING);
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -418,6 +456,15 @@ MockWriteResult SequencedSocketData::OnWrite(const std::string& data) {
       return MockWriteResult(SYNCHRONOUS, rv);
     }
 
+    // If the result is ERR_IO_PENDING, then pause.
+    if (next_write.result == ERR_IO_PENDING) {
+      NET_TRACE(1, " *** ") << "Pausing write at: " << sequence_number_;
+      write_state_ = PAUSED;
+      if (run_until_paused_run_loop_)
+        run_until_paused_run_loop_->Quit();
+      return MockWriteResult(SYNCHRONOUS, ERR_IO_PENDING);
+    }
+
     NET_TRACE(1, " *** ") << "Posting task to complete write";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&SequencedSocketData::OnWriteComplete,
@@ -457,17 +504,58 @@ bool SequencedSocketData::IsIdle() const {
   return true;
 }
 
-bool SequencedSocketData::IsReadPaused() {
-  return read_state_ == PAUSED;
+bool SequencedSocketData::IsPaused() const {
+  // Both states should not be paused.
+  DCHECK(read_state_ != PAUSED || write_state_ != PAUSED);
+  return write_state_ == PAUSED || read_state_ == PAUSED;
 }
 
-void SequencedSocketData::CompleteRead() {
-  if (read_state_ != PAUSED) {
-    ADD_FAILURE() << "Unable to CompleteRead when not paused.";
+void SequencedSocketData::Resume() {
+  if (!IsPaused()) {
+    ADD_FAILURE() << "Unable to Resume when not paused.";
     return;
   }
+
+  sequence_number_++;
+  if (read_state_ == PAUSED) {
+    read_state_ = PENDING;
+    helper_.AdvanceRead();
+  } else {  // write_state_ == PAUSED
+    write_state_ = PENDING;
+    helper_.AdvanceWrite();
+  }
+
+  if (!helper_.AllWriteDataConsumed() &&
+      helper_.PeekWrite().sequence_number == sequence_number_) {
+    // The next event hasn't even started yet.  Pausing isn't really needed in
+    // that case, but may as well support it.
+    if (write_state_ != PENDING)
+      return;
+    write_state_ = COMPLETING;
+    OnWriteComplete();
+    return;
+  }
+
+  CHECK(!helper_.AllReadDataConsumed());
+
+  // The next event hasn't even started yet.  Pausing isn't really needed in
+  // that case, but may as well support it.
+  if (read_state_ != PENDING)
+    return;
   read_state_ = COMPLETING;
   OnReadComplete();
+}
+
+void SequencedSocketData::RunUntilPaused() {
+  CHECK(!run_until_paused_run_loop_);
+
+  if (IsPaused())
+    return;
+
+  run_until_paused_run_loop_.reset(new base::RunLoop());
+  run_until_paused_run_loop_->Run();
+  run_until_paused_run_loop_.reset();
+  DCHECK(IsPaused());
 }
 
 void SequencedSocketData::MaybePostReadCompleteTask() {
@@ -479,13 +567,12 @@ void SequencedSocketData::MaybePostReadCompleteTask() {
     return;
   }
 
-  // If the result is ERR_IO_PENDING, then advance to the next state
-  // and pause reads.
+  // If the result is ERR_IO_PENDING, then pause.
   if (helper_.PeekRead().result == ERR_IO_PENDING) {
     NET_TRACE(1, " *** ") << "Pausing read at: " << sequence_number_;
-    ++sequence_number_;
-    helper_.AdvanceRead();
     read_state_ = PAUSED;
+    if (run_until_paused_run_loop_)
+      run_until_paused_run_loop_->Quit();
     return;
   }
 
@@ -504,6 +591,15 @@ void SequencedSocketData::MaybePostWriteCompleteTask() {
   // which should complete at the current sequence number.
   if (write_state_ != PENDING ||
       helper_.PeekWrite().sequence_number != sequence_number_) {
+    return;
+  }
+
+  // If the result is ERR_IO_PENDING, then pause.
+  if (helper_.PeekWrite().result == ERR_IO_PENDING) {
+    NET_TRACE(1, " *** ") << "Pausing write at: " << sequence_number_;
+    write_state_ = PAUSED;
+    if (run_until_paused_run_loop_)
+      run_until_paused_run_loop_->Quit();
     return;
   }
 

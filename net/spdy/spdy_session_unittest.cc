@@ -403,7 +403,7 @@ TEST_P(SpdySessionTest, GoAwayWithActiveStreams) {
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_));
 
   // Read and process the GOAWAY frame.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
@@ -419,7 +419,7 @@ TEST_P(SpdySessionTest, GoAwayWithActiveStreams) {
   EXPECT_FALSE(spdy_stream1);
 
   EXPECT_TRUE(session_);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -471,7 +471,7 @@ TEST_P(SpdySessionTest, GoAwayWithActiveAndCreatedStream) {
 
   // Read and process the GOAWAY frame before the second stream could be
   // activated.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(session_);
@@ -539,7 +539,7 @@ TEST_P(SpdySessionTest, GoAwayTwice) {
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_));
 
   // Read and process the first GOAWAY frame.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
@@ -551,7 +551,7 @@ TEST_P(SpdySessionTest, GoAwayTwice) {
 
   // Read and process the second GOAWAY frame, which should close the
   // session.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -612,7 +612,7 @@ TEST_P(SpdySessionTest, GoAwayWithActiveStreamsThenClose) {
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_));
 
   // Read and process the GOAWAY frame.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
@@ -625,7 +625,7 @@ TEST_P(SpdySessionTest, GoAwayWithActiveStreamsThenClose) {
   session_->CloseSessionOnError(ERR_ABORTED, "Aborting session");
   EXPECT_FALSE(spdy_stream1);
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -734,7 +734,7 @@ TEST_P(SpdySessionTest, CreateStreamAfterGoAway) {
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_));
 
   // Read and process the GOAWAY frame.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
@@ -747,7 +747,7 @@ TEST_P(SpdySessionTest, CreateStreamAfterGoAway) {
   EXPECT_EQ(ERR_FAILED, rv);
 
   EXPECT_TRUE(session_);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -797,7 +797,7 @@ TEST_P(SpdySessionTest, SynStreamAfterGoAway) {
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_));
 
   // Read and process the GOAWAY frame.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
@@ -805,7 +805,7 @@ TEST_P(SpdySessionTest, SynStreamAfterGoAway) {
 
   // Read and process the SYN_STREAM frame, the subsequent RST_STREAM,
   // and EOF.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -868,7 +868,7 @@ TEST_P(SpdySessionTest, NetworkChangeWithActiveStreams) {
 #endif
   EXPECT_FALSE(spdy_stream);
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -916,7 +916,7 @@ TEST_P(SpdySessionTest, ClientPing) {
   EXPECT_FALSE(session_->check_ping_status_pending());
   EXPECT_GE(session_->last_activity_time(), before_ping_time);
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
@@ -1002,7 +1002,7 @@ TEST_P(SpdySessionTest, PingAndWriteLoop) {
   base::RunLoop().RunUntilIdle();
   session_->CloseSessionOnError(ERR_ABORTED, "Aborting");
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -1116,7 +1116,7 @@ TEST_P(SpdySessionTest, StreamIdSpaceExhausted) {
   EXPECT_EQ(0u, session_->pending_create_stream_queue_size(MEDIUM));
 
   // Read responses on remaining active streams.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OK, delegate1.WaitForClose());
   EXPECT_EQ(kUploadData, delegate1.TakeReceivedData());
@@ -1253,7 +1253,7 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
   // Shift time to expire the push stream. Read the second SYN_STREAM,
   // and verify a RST_STREAM was written.
   g_time_delta = base::TimeDelta::FromSeconds(301);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
   // Verify that the second pushed stream evicted the first pushed stream.
@@ -1272,7 +1272,7 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
 
   // Read and process EOF.
   EXPECT_TRUE(session_);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -1382,7 +1382,7 @@ TEST_P(SpdySessionTest, OnSettings) {
 
   EXPECT_EQ(OK, stream_releaser.WaitForResult());
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 
@@ -1462,7 +1462,7 @@ TEST_P(SpdySessionTest, ClearSettings) {
   EXPECT_EQ(kInitialMaxConcurrentStreams + 1,
             session_->max_concurrent_streams());
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -1775,7 +1775,7 @@ TEST_P(SpdySessionTest, SynCompressionHistograms) {
 
   // Read and process EOF.
   EXPECT_TRUE(session_);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -2112,7 +2112,7 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedSelfClosingStreams) {
   EXPECT_TRUE(delegate2.StreamIsClosed());
 
   EXPECT_TRUE(session_);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -2188,7 +2188,7 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedMutuallyClosingStreams) {
   EXPECT_TRUE(delegate2.StreamIsClosed());
 
   EXPECT_TRUE(session_);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -2483,7 +2483,7 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
   EXPECT_EQ(0u, session_->num_created_streams());
   EXPECT_EQ(0u, session_->pending_create_stream_queue_size(LOWEST));
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -2634,7 +2634,7 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
 
   // Read all the data and verify SpdySession::DoReadLoop has not
   // posted a task.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(spdy_stream1);
 
@@ -2731,7 +2731,7 @@ TEST_P(SpdySessionTest, TestYieldingSlowSynchronousReads) {
 
   MockRead reads[] = {
       CreateMockRead(*resp1, 1), MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*partial_data_frame, 3, SYNCHRONOUS),
+      CreateMockRead(*partial_data_frame, 3, ASYNC),
       CreateMockRead(*partial_data_frame, 4, SYNCHRONOUS),
       CreateMockRead(*partial_data_frame, 5, SYNCHRONOUS),
       CreateMockRead(*finish_data_frame, 6, SYNCHRONOUS),
@@ -2763,7 +2763,7 @@ TEST_P(SpdySessionTest, TestYieldingSlowSynchronousReads) {
   EXPECT_EQ(1u, delegate1.stream_id());
 
   // Read all the data and verify SpdySession::DoReadLoop has posted a task.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ("foo foo foo bar", delegate1.TakeReceivedData());
   EXPECT_FALSE(spdy_stream1);
@@ -2848,7 +2848,7 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
   EXPECT_EQ(0u, observer.executed_count());
 
   // Read all the data and verify SpdySession::DoReadLoop has posted a task.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(spdy_stream1);
 
@@ -2957,7 +2957,7 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
 
   // Read all the data and verify SpdySession::DoReadLoop has posted a
   // task.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(spdy_stream1);
 
@@ -3019,7 +3019,7 @@ TEST_P(SpdySessionTest, GoAwayWhileInDoReadLoop) {
   EXPECT_EQ(1u, spdy_stream1->stream_id());
 
   // Run until GoAway.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(spdy_stream1);
   EXPECT_TRUE(data.AllWriteDataConsumed());
@@ -3371,7 +3371,7 @@ TEST_P(SpdySessionTest, CreateStreamOnStreamReset) {
 
   // Cause the stream to be reset, which should cause another stream
   // to be created.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(spdy_stream);
@@ -3379,7 +3379,7 @@ TEST_P(SpdySessionTest, CreateStreamOnStreamReset) {
   EXPECT_EQ(0u, session_->num_active_streams());
   EXPECT_EQ(1u, session_->num_created_streams());
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -3437,7 +3437,7 @@ TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
   EXPECT_FALSE(spdy_stream2);
 
   EXPECT_TRUE(session_);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -3494,7 +3494,7 @@ TEST_P(SpdySessionTest, AdjustRecvWindowSize) {
   EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
 
   EXPECT_TRUE(session_);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -3561,7 +3561,7 @@ TEST_P(SpdySessionTest, SessionFlowControlInactiveStream) {
   EXPECT_EQ(kUploadDataSize, session_->session_unacked_recv_window_bytes_);
 
   EXPECT_TRUE(session_);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -3602,7 +3602,7 @@ TEST_P(SpdySessionTest, SessionFlowControlPadding) {
   EXPECT_EQ(kUploadDataSize + padding_length,
             session_->session_unacked_recv_window_bytes_);
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -3659,12 +3659,12 @@ TEST_P(SpdySessionTest, StreamFlowControlTooMuchData) {
   EXPECT_EQ(1u, spdy_stream->stream_id());
 
   // Too large data frame causes flow control error, should close stream.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(spdy_stream);
 
   EXPECT_TRUE(session_);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -3728,7 +3728,7 @@ TEST_P(SpdySessionTest, SessionFlowControlTooMuchDataTwoDataFrames) {
   EXPECT_EQ(SpdySession::STATE_AVAILABLE, session_->availability_state_);
 
   // Second data frame overflows receiving window, causes session to close.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SpdySession::STATE_DRAINING, session_->availability_state_);
 }
@@ -3801,7 +3801,7 @@ TEST_P(SpdySessionTest, StreamFlowControlTooMuchDataTwoDataFrames) {
   EXPECT_EQ(stream_max_recv_window_size, spdy_stream->recv_window_size());
 
   // First data frame.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(spdy_stream->IsLocallyClosed());
   EXPECT_EQ(stream_max_recv_window_size - first_data_frame_size,
@@ -3813,13 +3813,13 @@ TEST_P(SpdySessionTest, StreamFlowControlTooMuchDataTwoDataFrames) {
   EXPECT_EQ(stream_max_recv_window_size, spdy_stream->recv_window_size());
 
   // Second data frame overflows receiving window, causes the stream to close.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(spdy_stream.get());
 
   // RST_STREAM
   EXPECT_TRUE(session_);
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -3841,14 +3841,13 @@ class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
 // data. The receive window should still increase to its original
 // value, i.e. we shouldn't "leak" receive window bytes.
 TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
-  const int32 msg_data_size = 100;
-  const std::string msg_data(msg_data_size, 'a');
+  const int32 kMsgDataSize = 100;
+  const std::string msg_data(kMsgDataSize, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
-      kDefaultURL, 1, msg_data_size, MEDIUM, nullptr, 0));
-  scoped_ptr<SpdyFrame> msg(
-      spdy_util_.ConstructSpdyBodyFrame(
-          1, msg_data.data(), msg_data_size, false));
+      kDefaultURL, 1, kMsgDataSize, MEDIUM, nullptr, 0));
+  scoped_ptr<SpdyFrame> msg(spdy_util_.ConstructSpdyBodyFrame(
+      1, msg_data.data(), kMsgDataSize, false));
   MockWrite writes[] = {
     CreateMockWrite(*req, 0),
     CreateMockWrite(*msg, 2),
@@ -3856,12 +3855,10 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
 
   scoped_ptr<SpdyFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  scoped_ptr<SpdyFrame> echo(
-      spdy_util_.ConstructSpdyBodyFrame(
-          1, msg_data.data(), msg_data_size, false));
-  scoped_ptr<SpdyFrame> window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId, msg_data_size));
+  scoped_ptr<SpdyFrame> echo(spdy_util_.ConstructSpdyBodyFrame(
+      1, msg_data.data(), kMsgDataSize, false));
+  scoped_ptr<SpdyFrame> window_update(spdy_util_.ConstructSpdyWindowUpdate(
+      kSessionFlowControlStreamId, kMsgDataSize));
   MockRead reads[] = {
       CreateMockRead(*resp, 1),
       CreateMockRead(*echo, 3),
@@ -3886,7 +3883,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
   stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, msg_data_size));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, kMsgDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
@@ -3899,7 +3896,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(msg_data_size, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(kMsgDataSize, session_->session_unacked_recv_window_bytes_);
 
   stream->Close();
   EXPECT_FALSE(stream);
@@ -3907,9 +3904,9 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
   EXPECT_EQ(OK, delegate.WaitForClose());
 
   EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(msg_data_size, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(kMsgDataSize, session_->session_unacked_recv_window_bytes_);
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -3918,11 +3915,11 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
 // can be written to the socket. The send window should then increase
 // to its original value, i.e. we shouldn't "leak" send window bytes.
 TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
-  const int32 msg_data_size = 100;
-  const std::string msg_data(msg_data_size, 'a');
+  const int32 kMsgDataSize = 100;
+  const std::string msg_data(kMsgDataSize, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
-      kDefaultURL, 1, msg_data_size, MEDIUM, nullptr, 0));
+      kDefaultURL, 1, kMsgDataSize, MEDIUM, nullptr, 0));
   MockWrite writes[] = {
       CreateMockWrite(*req, 0),
   };
@@ -3952,7 +3949,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
   stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, msg_data_size));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, kMsgDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
@@ -3968,9 +3965,9 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
 
   // Read response, but do not run the message loop, so that the body is not
   // written to the socket.
-  data.CompleteRead();
+  data.Resume();
 
-  EXPECT_EQ(initial_window_size - msg_data_size,
+  EXPECT_EQ(initial_window_size - kMsgDataSize,
             session_->session_send_window_size_);
 
   // Closing the stream should increase the session's send window.
@@ -3991,14 +3988,13 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
 // Send data back and forth; the send and receive windows should
 // change appropriately.
 TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
-  const int32 msg_data_size = 100;
-  const std::string msg_data(msg_data_size, 'a');
+  const int32 kMsgDataSize = 100;
+  const std::string msg_data(kMsgDataSize, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
-      kDefaultURL, 1, msg_data_size, MEDIUM, nullptr, 0));
-  scoped_ptr<SpdyFrame> msg(
-      spdy_util_.ConstructSpdyBodyFrame(
-          1, msg_data.data(), msg_data_size, false));
+      kDefaultURL, 1, kMsgDataSize, MEDIUM, nullptr, 0));
+  scoped_ptr<SpdyFrame> msg(spdy_util_.ConstructSpdyBodyFrame(
+      1, msg_data.data(), kMsgDataSize, false));
   MockWrite writes[] = {
     CreateMockWrite(*req, 0),
     CreateMockWrite(*msg, 2),
@@ -4006,12 +4002,10 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
 
   scoped_ptr<SpdyFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  scoped_ptr<SpdyFrame> echo(
-      spdy_util_.ConstructSpdyBodyFrame(
-          1, msg_data.data(), msg_data_size, false));
-  scoped_ptr<SpdyFrame> window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId, msg_data_size));
+  scoped_ptr<SpdyFrame> echo(spdy_util_.ConstructSpdyBodyFrame(
+      1, msg_data.data(), kMsgDataSize, false));
+  scoped_ptr<SpdyFrame> window_update(spdy_util_.ConstructSpdyWindowUpdate(
+      kSessionFlowControlStreamId, kMsgDataSize));
   MockRead reads[] = {
       CreateMockRead(*resp, 1),
       MockRead(ASYNC, ERR_IO_PENDING, 3),
@@ -4039,7 +4033,7 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
   stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, msg_data_size));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, kMsgDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
@@ -4053,27 +4047,27 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
   // Send request and message.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(initial_window_size - msg_data_size,
+  EXPECT_EQ(initial_window_size - kMsgDataSize,
             session_->session_send_window_size_);
   EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
   EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
 
   // Read echo.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(initial_window_size - msg_data_size,
+  EXPECT_EQ(initial_window_size - kMsgDataSize,
             session_->session_send_window_size_);
-  EXPECT_EQ(initial_window_size - msg_data_size,
+  EXPECT_EQ(initial_window_size - kMsgDataSize,
             session_->session_recv_window_size_);
   EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
 
   // Read window update.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
-  EXPECT_EQ(initial_window_size - msg_data_size,
+  EXPECT_EQ(initial_window_size - kMsgDataSize,
             session_->session_recv_window_size_);
   EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
 
@@ -4083,7 +4077,7 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
   // receive window.
   EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
   EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(msg_data_size, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(kMsgDataSize, session_->session_unacked_recv_window_bytes_);
 
   stream->Close();
   EXPECT_FALSE(stream);
@@ -4092,9 +4086,9 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
 
   EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
   EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(msg_data_size, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(kMsgDataSize, session_->session_unacked_recv_window_bytes_);
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -4491,7 +4485,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
   EXPECT_TRUE(session_->IsStreamActive(stream_id2));
   EXPECT_FALSE(session_->IsStreamActive(stream_id3));
 
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(stream2);
   EXPECT_FALSE(session_);
@@ -4595,7 +4589,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
   // Close the session (since we can't do it from within the delegate
   // method, since it's in the stream's loop).
   session_->CloseSessionOnError(ERR_CONNECTION_CLOSED, "Closing session");
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 
@@ -4657,7 +4651,7 @@ TEST_P(SpdySessionTest, GoAwayOnSessionFlowControlError) {
 
   // Read response headers & body. Body overflows the session window, and a
   // goaway is written.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ERR_SPDY_FLOW_CONTROL_ERROR, delegate.WaitForClose());
@@ -4747,7 +4741,7 @@ TEST_P(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
   EXPECT_EQ(0u, session_->num_active_pushed_streams());
 
   // Run until pushed stream is created.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, session_->num_active_streams());
   EXPECT_EQ(0u, session_->num_created_streams());
@@ -4766,7 +4760,7 @@ TEST_P(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
   EXPECT_EQ(1u, session_->num_active_pushed_streams());
 
   // Read EOF.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -4827,7 +4821,7 @@ TEST_P(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
   EXPECT_EQ(0u, session_->num_active_pushed_streams());
 
   // Run until pushed stream is created.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, session_->num_active_streams());
   EXPECT_EQ(0u, session_->num_created_streams());
@@ -4835,7 +4829,7 @@ TEST_P(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
   EXPECT_EQ(1u, session_->num_active_pushed_streams());
 
   // Reset incoming pushed stream.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, session_->num_active_streams());
   EXPECT_EQ(0u, session_->num_created_streams());
@@ -4843,7 +4837,7 @@ TEST_P(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
   EXPECT_EQ(1u, session_->num_active_pushed_streams());
 
   // Read EOF.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -4915,7 +4909,7 @@ TEST_P(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
   EXPECT_EQ(0u, session_->num_active_pushed_streams());
 
   // Run until pushed stream is created.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, session_->num_active_streams());
   EXPECT_EQ(0u, session_->num_created_streams());
@@ -4923,7 +4917,7 @@ TEST_P(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
   EXPECT_EQ(1u, session_->num_active_pushed_streams());
 
   // Accept promised stream. It should not count towards pushed stream limit.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, session_->num_active_streams());
   EXPECT_EQ(0u, session_->num_created_streams());
@@ -4932,7 +4926,7 @@ TEST_P(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
 
   // Reset last pushed stream upon headers reception as it is going to be 2nd,
   // while we accept only one.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, session_->num_active_streams());
   EXPECT_EQ(0u, session_->num_created_streams());
@@ -4940,7 +4934,7 @@ TEST_P(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
   EXPECT_EQ(1u, session_->num_active_pushed_streams());
 
   // Read EOF.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
 }
@@ -5007,7 +5001,7 @@ TEST_P(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   EXPECT_EQ(0u, session_->num_active_pushed_streams());
 
   // Run until pushed stream is created.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, session_->num_active_streams());
   EXPECT_EQ(0u, session_->num_created_streams());
@@ -5024,7 +5018,7 @@ TEST_P(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
 
   // Receive headers for pushed stream. Delegate will cancel the stream, ensure
   // that all our counters are in consistent state.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, session_->num_active_streams());
   EXPECT_EQ(0u, session_->num_created_streams());
@@ -5032,7 +5026,7 @@ TEST_P(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   EXPECT_EQ(0u, session_->num_active_pushed_streams());
 
   // Read EOF.
-  data.CompleteRead();
+  data.Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data.AllWriteDataConsumed());
   EXPECT_TRUE(data.AllReadDataConsumed());

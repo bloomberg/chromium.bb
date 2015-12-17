@@ -4586,7 +4586,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   // Allow the SpdyProxyClientSocket's write callback to complete.
   base::MessageLoop::current()->RunUntilIdle();
   // Now allow the read of the response to complete.
-  spdy_data.CompleteRead();
+  spdy_data.Resume();
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
 
@@ -7735,7 +7735,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPush) {
       CreateMockRead(*stream2_syn, 2, ASYNC),
       CreateMockRead(*stream1_body, 3, ASYNC),
       CreateMockRead(*stream2_body, 4, ASYNC),
-      MockRead(ASYNC, ERR_IO_PENDING, 5),  // Force a pause
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),  // Force a hang
   };
 
   SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
@@ -7846,7 +7846,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
       CreateMockRead(*stream1_reply, 1, ASYNC),
       CreateMockRead(*stream2_syn, 2, ASYNC),
       CreateMockRead(*stream1_body, 4, ASYNC),
-      MockRead(ASYNC, ERR_IO_PENDING, 5),  // Force a pause
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),  // Force a hang
   };
 
   SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
@@ -10943,10 +10943,8 @@ TEST_P(HttpNetworkTransactionTest,
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> data(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead spdy_reads[] = {
-      MockRead(ASYNC, 1, kCONNECTResponse),
-      CreateMockRead(*resp.get(), 3),
-      CreateMockRead(*data.get(), 4),
-      MockRead(ASYNC, ERR_IO_PENDING, 5),
+      MockRead(ASYNC, 1, kCONNECTResponse), CreateMockRead(*resp.get(), 3),
+      CreateMockRead(*data.get(), 4), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),
   };
 
   SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
@@ -13109,11 +13107,8 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
 
   scoped_ptr<SpdyFrame> resp1(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body1(spdy_util_.ConstructSpdyBodyFrame(1, true));
-  MockRead reads1[] = {
-    CreateMockRead(*resp1, 1),
-    CreateMockRead(*body1, 2),
-    MockRead(ASYNC, ERR_IO_PENDING, 3)
-  };
+  MockRead reads1[] = {CreateMockRead(*resp1, 1), CreateMockRead(*body1, 2),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)};
 
   SequencedSocketData data1(reads1, arraysize(reads1), writes1,
                             arraysize(writes1));
@@ -13293,9 +13288,8 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
     int rv = trans1->Start(&request1, callback1.callback(), BoundNetLog());
     EXPECT_EQ(ERR_IO_PENDING, rv);
     base::MessageLoop::current()->RunUntilIdle();
-    if (data.IsReadPaused()) {
-      data.CompleteRead();
-    }
+    if (data.IsPaused())
+      data.Resume();
     rv = callback1.WaitForResult();
     if (valid) {
       EXPECT_EQ(OK, rv);
@@ -13654,14 +13648,12 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
       spdy_util_wrapped.ConstructWrappedSpdyFrame(body1, 1));
   scoped_ptr<SpdyFrame> resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
   scoped_ptr<SpdyFrame> body2(spdy_util_.ConstructSpdyBodyFrame(3, true));
-  MockRead reads1[] = {
-    CreateMockRead(*conn_resp, 1),
-    CreateMockRead(*wrapped_resp1, 3),
-    CreateMockRead(*wrapped_body1, 4),
-    CreateMockRead(*resp2, 6),
-    CreateMockRead(*body2, 7),
-    MockRead(ASYNC, ERR_IO_PENDING, 8)
-  };
+  MockRead reads1[] = {CreateMockRead(*conn_resp, 1),
+                       CreateMockRead(*wrapped_resp1, 3),
+                       CreateMockRead(*wrapped_body1, 4),
+                       CreateMockRead(*resp2, 6),
+                       CreateMockRead(*body2, 7),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 8)};
 
   DeterministicSocketData data1(reads1, arraysize(reads1),
                                 writes1, arraysize(writes1));
@@ -13952,9 +13944,8 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   scoped_ptr<SpdyFrame> host1_resp_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead spdy1_reads[] = {
-      CreateMockRead(*host1_resp, 1),
-      CreateMockRead(*host1_resp_body, 2),
-      MockRead(ASYNC, ERR_IO_PENDING, 3),
+      CreateMockRead(*host1_resp, 1), CreateMockRead(*host1_resp_body, 2),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3),
   };
 
   // Use a separate test instance for the separate SpdySession that will be
@@ -13975,9 +13966,8 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   scoped_ptr<SpdyFrame> host2_resp_body(
       spdy_util_2.ConstructSpdyBodyFrame(1, true));
   MockRead spdy2_reads[] = {
-      CreateMockRead(*host2_resp, 1),
-      CreateMockRead(*host2_resp_body, 2),
-      MockRead(ASYNC, ERR_IO_PENDING, 3),
+      CreateMockRead(*host2_resp, 1), CreateMockRead(*host2_resp_body, 2),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3),
   };
 
   scoped_ptr<SequencedSocketData> spdy2_data(
