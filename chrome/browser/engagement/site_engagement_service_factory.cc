@@ -32,7 +32,7 @@ SiteEngagementServiceFactory::~SiteEngagementServiceFactory() {
 }
 
 bool SiteEngagementServiceFactory::ServiceIsNULLWhileTesting() const {
-  return true;
+  return false;
 }
 
 KeyedService* SiteEngagementServiceFactory::BuildServiceInstanceFor(
