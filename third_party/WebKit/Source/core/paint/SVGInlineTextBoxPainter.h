@@ -34,7 +34,8 @@ private:
     bool shouldPaintSelection(const PaintInfo&) const;
     void paintTextFragments(const PaintInfo&, LayoutObject&);
     void paintDecoration(const PaintInfo&, TextDecoration, const SVGTextFragment&);
-    void paintTextWithShadows(const PaintInfo&, const ComputedStyle&, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, LayoutSVGResourceMode);
+    bool setupTextPaint(const PaintInfo&, const ComputedStyle&, LayoutSVGResourceMode, SkPaint&);
+    void paintText(const PaintInfo&, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, const SkPaint&);
     void paintText(const PaintInfo&, const ComputedStyle&, const ComputedStyle& selectionStyle, const SVGTextFragment&, LayoutSVGResourceMode, bool shouldPaintSelection);
 
     const SVGInlineTextBox& m_svgInlineTextBox;

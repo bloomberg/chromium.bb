@@ -296,41 +296,30 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
     }
 }
 
-void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, const ComputedStyle& style,
-    TextRun& textRun, const SVGTextFragment& fragment, int startPosition, int endPosition,
-    LayoutSVGResourceMode resourceMode)
+bool SVGInlineTextBoxPainter::setupTextPaint(const PaintInfo& paintInfo, const ComputedStyle& style,
+    LayoutSVGResourceMode resourceMode, SkPaint& paint)
 {
     LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(*LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem()));
 
     float scalingFactor = textLayoutObject.scalingFactor();
     ASSERT(scalingFactor);
 
-    const Font& scaledFont = textLayoutObject.scaledFont();
     const ShadowList* shadowList = style.textShadow();
-    GraphicsContext& context = paintInfo.context;
 
     // Text shadows are disabled when printing. http://crbug.com/258321
     bool hasShadow = shadowList && !paintInfo.isPrinting();
 
-    FloatPoint textOrigin(fragment.x, fragment.y);
-    FloatSize textSize(fragment.width, fragment.height);
     AffineTransform paintServerTransform;
     const AffineTransform* additionalPaintServerTransform = 0;
 
-    GraphicsContextStateSaver stateSaver(context, false);
     if (scalingFactor != 1) {
-        textOrigin.scale(scalingFactor, scalingFactor);
-        textSize.scale(scalingFactor);
-        stateSaver.save();
-        context.scale(1 / scalingFactor, 1 / scalingFactor);
         // Adjust the paint-server coordinate space.
         paintServerTransform.scale(scalingFactor);
         additionalPaintServerTransform = &paintServerTransform;
     }
 
-    SkPaint paint;
     if (!SVGPaintContext::paintForLayoutObject(paintInfo, style, *LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.parent()->lineLayoutItem()), resourceMode, paint, additionalPaintServerTransform))
-        return;
+        return false;
     paint.setAntiAlias(true);
 
     if (hasShadow) {
@@ -345,6 +334,28 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
         if (style.svgStyle().vectorEffect() != VE_NON_SCALING_STROKE)
             strokeData.setThickness(strokeData.thickness() * scalingFactor);
         strokeData.setupPaint(&paint);
+    }
+    return true;
+}
+
+void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, TextRun& textRun, const SVGTextFragment& fragment, int startPosition, int endPosition, const SkPaint& paint)
+{
+    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(*LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem()));
+    const Font& scaledFont = textLayoutObject.scaledFont();
+
+    float scalingFactor = textLayoutObject.scalingFactor();
+    ASSERT(scalingFactor);
+
+    FloatPoint textOrigin(fragment.x, fragment.y);
+    FloatSize textSize(fragment.width, fragment.height);
+
+    GraphicsContext& context = paintInfo.context;
+    GraphicsContextStateSaver stateSaver(context, false);
+    if (scalingFactor != 1) {
+        textOrigin.scale(scalingFactor, scalingFactor);
+        textSize.scale(scalingFactor);
+        stateSaver.save();
+        context.scale(1 / scalingFactor, 1 / scalingFactor);
     }
 
     TextRunPaintInfo textRunPaintInfo(textRun);
@@ -372,14 +383,19 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, const Comput
     // Fast path if there is no selection, just draw the whole chunk part using the regular style
     TextRun textRun = m_svgInlineTextBox.constructTextRun(style, fragment);
     if (!shouldPaintSelection || startPosition >= endPosition) {
-        paintTextWithShadows(paintInfo, style, textRun, fragment, 0, fragment.length, resourceMode);
+        SkPaint paint;
+        if (setupTextPaint(paintInfo, style, resourceMode, paint))
+            paintText(paintInfo, textRun, fragment, 0, fragment.length, paint);
         return;
     }
 
     // Eventually draw text using regular style until the start position of the selection
     bool paintSelectedTextOnly = paintInfo.phase == PaintPhaseSelection;
-    if (startPosition > 0 && !paintSelectedTextOnly)
-        paintTextWithShadows(paintInfo, style, textRun, fragment, 0, startPosition, resourceMode);
+    if (startPosition > 0 && !paintSelectedTextOnly) {
+        SkPaint paint;
+        if (setupTextPaint(paintInfo, style, resourceMode, paint))
+            paintText(paintInfo, textRun, fragment, 0, startPosition, paint);
+    }
 
     // Draw text using selection style from the start to the end position of the selection
     if (style != selectionStyle) {
@@ -388,7 +404,9 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, const Comput
         SVGResourcesCache::clientStyleChanged(LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.parent()->lineLayoutItem()), diff, selectionStyle);
     }
 
-    paintTextWithShadows(paintInfo, selectionStyle, textRun, fragment, startPosition, endPosition, resourceMode);
+    SkPaint paint;
+    if (setupTextPaint(paintInfo, selectionStyle, resourceMode, paint))
+        paintText(paintInfo, textRun, fragment, startPosition, endPosition, paint);
 
     if (style != selectionStyle) {
         StyleDifference diff;
@@ -397,8 +415,11 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, const Comput
     }
 
     // Eventually draw text using regular style from the end position of the selection to the end of the current chunk part
-    if (endPosition < static_cast<int>(fragment.length) && !paintSelectedTextOnly)
-        paintTextWithShadows(paintInfo, style, textRun, fragment, endPosition, fragment.length, resourceMode);
+    if (endPosition < static_cast<int>(fragment.length) && !paintSelectedTextOnly) {
+        SkPaint paint;
+        if (setupTextPaint(paintInfo, style, resourceMode, paint))
+            paintText(paintInfo, textRun, fragment, endPosition, fragment.length, paint);
+    }
 }
 
 void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext& context, const LayoutPoint&, DocumentMarker* marker, const ComputedStyle& style, const Font& font)
