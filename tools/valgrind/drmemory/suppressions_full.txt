@@ -1996,7 +1996,7 @@ MSVCR120.dll!vsnwprintf_s_l
 MSVCR120.dll!vsnwprintf_s
 *!base::`anonymous namespace'::StringAppendVT<>
 *!base::StringPrintf
-*!content::AccessibilityTreeFormatter::ToString
+*!content::AccessibilityTreeFormatterWin::ToString
 *!content::AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree
 
 UNADDRESSABLE ACCESS
