@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -34,47 +35,31 @@ import java.io.IOException;
 public class FullScreenActivityTab extends Tab {
     private static final String TAG = "FullScreenActivityTab";
 
-    /**
-     * A delegate to determine top controls visibility.
-     */
-    public interface TopControlsVisibilityDelegate {
-        /**
-         * Determines whether top controls should be shown.
-         *
-         * @param uri The URI to display.
-         * @param securityLevel Security level of the Tab.
-         * @return Whether the URL bar should be visible or not.
-         */
-        boolean shouldShowTopControls(String uri, int securityLevel);
-    }
-
     static final String BUNDLE_TAB_ID = "tabId";
     static final String BUNDLE_TAB_URL = "tabUrl";
 
     private WebContentsObserver mObserver;
-    private TopControlsVisibilityDelegate mTopControlsVisibilityDelegate;
 
     private FullScreenActivityTab(ChromeActivity activity, WindowAndroid window,
-            TopControlsVisibilityDelegate topControlsVisibilityDelegate) {
+            TabDelegateFactory delegateFactory) {
         super(INVALID_TAB_ID, INVALID_TAB_ID, false, activity, window,
                 TabLaunchType.FROM_MENU_OR_OVERVIEW, null, null);
         initializeFullScreenActivityTab(
-                activity.getTabContentManager(), false, topControlsVisibilityDelegate);
+                activity.getTabContentManager(), false, delegateFactory);
     }
 
     private FullScreenActivityTab(int id, ChromeActivity activity, WindowAndroid window,
-            TabState state, TopControlsVisibilityDelegate topControlsVisibilityDelegate) {
+            TabState state, TabDelegateFactory delegateFactory) {
         super(id, Tab.INVALID_TAB_ID, false, activity, window, TabLaunchType.FROM_RESTORE,
                 TabCreationState.FROZEN_ON_RESTORE, state);
         initializeFullScreenActivityTab(
-                activity.getTabContentManager(), true, topControlsVisibilityDelegate);
+                activity.getTabContentManager(), true, delegateFactory);
     }
 
     private void initializeFullScreenActivityTab(TabContentManager tabContentManager,
-            boolean unfreeze, TopControlsVisibilityDelegate topControlsVisibilityDelegate) {
-        initialize(null, tabContentManager, new FullScreenDelegateFactory(), false, unfreeze);
+            boolean unfreeze, TabDelegateFactory delegateFactory) {
+        initialize(null, tabContentManager, delegateFactory, false, unfreeze);
         mObserver = createWebContentsObserver();
-        mTopControlsVisibilityDelegate = topControlsVisibilityDelegate;
     }
 
     /**
@@ -149,12 +134,11 @@ public class FullScreenActivityTab extends Tab {
      * @param activity Activity that will own the Tab.
      * @param directory Directory associated with the Activity.  Null implies tab state isn't saved.
      * @param savedInstanceState Bundle saved out when the app was killed by Android.  May be null.
-     * @param topControlsVisibilityDelegate Delegate to determine top controls visibility.
+     * @param delegateFactory {@link TabDelegateFactory} to use while creating the {@link Tab}.
      * @return {@link FullScreenActivityTab} for the Activity.
      */
     public static FullScreenActivityTab create(ChromeActivity activity, WindowAndroid window,
-            File directory, Bundle savedInstanceState,
-            TopControlsVisibilityDelegate topControlsVisibilityDelegate) {
+            File directory, Bundle savedInstanceState, TabDelegateFactory delegateFactory) {
         FullScreenActivityTab tab = null;
 
         int tabId = Tab.INVALID_TAB_ID;
@@ -171,7 +155,7 @@ public class FullScreenActivityTab extends Tab {
                 stream = new FileInputStream(getTabFile(directory, tabId));
                 TabState tabState = TabState.readState(stream, false);
                 tab = new FullScreenActivityTab(
-                        tabId, activity, window, tabState, topControlsVisibilityDelegate);
+                        tabId, activity, window, tabState, delegateFactory);
             } catch (FileNotFoundException exception) {
                 Log.e(TAG, "Failed to restore tab state.", exception);
             } catch (IOException exception) {
@@ -183,24 +167,9 @@ public class FullScreenActivityTab extends Tab {
 
         if (tab == null) {
             // Create a new tab.
-            tab = new FullScreenActivityTab(activity, window, topControlsVisibilityDelegate);
+            tab = new FullScreenActivityTab(activity, window, delegateFactory);
         }
 
         return tab;
-    }
-
-    @Override
-    protected boolean isHidingTopControlsEnabled() {
-        if (getFullscreenManager() == null) return true;
-        if (getFullscreenManager().getPersistentFullscreenMode()) return true;
-        if (mTopControlsVisibilityDelegate == null) return false;
-        return !mTopControlsVisibilityDelegate.shouldShowTopControls(getUrl(), getSecurityLevel());
-    }
-
-    @Override
-    public boolean isShowingTopControlsEnabled() {
-        // On webapp activity and embedd content view activity, it's either hiding or showing.
-        // Users cannot change the visibility state by sliding it in or out.
-        return !isHidingTopControlsEnabled();
     }
 }

@@ -57,4 +57,13 @@ public class TabDelegateFactory {
     public AppBannerManager createAppBannerManager(Tab tab) {
         return new AppBannerManager(tab, tab.getApplicationContext());
     }
+
+    /**
+     * Creates the {@link TopControlsVisibilityDelegate} the tab will be initialized with.
+     * @param tab The associated {@link Tab}.
+     * @return {@link TopControlsVisibilityDelegate} to be used for the given tab.
+     */
+    public TopControlsVisibilityDelegate createTopControlsVisibilityDelegate(Tab tab) {
+        return new TopControlsVisibilityDelegate(tab);
+    }
 }

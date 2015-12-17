@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
+import org.chromium.chrome.browser.tab.TopControlsVisibilityDelegate;
 
 /**
  * A {@link TabDelegateFactory} class to be used in all {@link Tab} instances owned
@@ -60,5 +61,15 @@ public class FullScreenDelegateFactory extends TabDelegateFactory {
         return new ChromeContextMenuPopulator(
                 new TabContextMenuItemDelegate(tab, activity),
                 ChromeContextMenuPopulator.FULLSCREEN_TAB_MODE);
+    }
+
+    @Override
+    public TopControlsVisibilityDelegate createTopControlsVisibilityDelegate(Tab tab) {
+        return new TopControlsVisibilityDelegate(tab) {
+            @Override
+            public boolean isHidingTopControlsEnabled() {
+                return !isShowingTopControlsEnabled();
+            }
+        };
     }
 }

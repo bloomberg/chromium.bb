@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
+import org.chromium.chrome.browser.tab.TopControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -262,14 +263,7 @@ public class CustomTabActivity extends ChromeActivity {
         }
         Tab tab = new Tab(TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID),
                 Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
-                TabLaunchType.FROM_EXTERNAL_APP, null, null) {
-            @Override
-            protected boolean isHidingTopControlsEnabled() {
-                // TODO(yusufo) : Get rid of this call once all other Tab classes are removed.
-                return mIntentDataProvider.shouldEnableUrlBarHiding()
-                        && super.isHidingTopControlsEnabled();
-            }
-        };
+                TabLaunchType.FROM_EXTERNAL_APP, null, null);
         CustomTabsConnection customTabsConnection =
                 CustomTabsConnection.getInstance(getApplication());
         WebContents webContents =
@@ -282,8 +276,20 @@ public class CustomTabActivity extends ChromeActivity {
         if (webContents == null) {
             webContents = WebContentsFactory.createWebContents(false, false);
         }
-        tab.initialize(webContents, getTabContentManager(), new CustomTabDelegateFactory(), false,
-                false);
+        tab.initialize(webContents, getTabContentManager(),
+                new CustomTabDelegateFactory() {
+                    @Override
+                    public TopControlsVisibilityDelegate createTopControlsVisibilityDelegate(
+                            Tab tab) {
+                        return new TopControlsVisibilityDelegate(tab) {
+                            @Override
+                            public boolean isHidingTopControlsEnabled() {
+                                return mIntentDataProvider.shouldEnableUrlBarHiding()
+                                        && super.isHidingTopControlsEnabled();
+                            }
+                        };
+                    }
+            }, false, false);
         tab.getView().requestFocus();
         return tab;
     }

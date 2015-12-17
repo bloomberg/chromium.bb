@@ -49,7 +49,6 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -73,7 +72,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
@@ -520,6 +518,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     };
 
     private TabDelegateFactory mDelegateFactory;
+
+    private TopControlsVisibilityDelegate mTopControlsVisibilityDelegate;
 
     /**
      * Creates an instance of a {@link Tab}.
@@ -1263,6 +1263,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 if (mAppBannerManager != null) addObserver(mAppBannerManager);
             }
 
+            mTopControlsVisibilityDelegate =
+                    mDelegateFactory.createTopControlsVisibilityDelegate(this);
+
             // Attach the TabContentManager if we have one.  This will bind this Tab's content layer
             // to this manager.
             // TODO(dtrainor): Remove this and move to a pull model instead of pushing the layer.
@@ -1446,6 +1449,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mHandler.sendEmptyMessageDelayed(
                     MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, MAX_FULLSCREEN_LOAD_DELAY_MS);
         }
+    }
+
+    /**
+     * @return Whether fullscreen state is waiting for the load to finish for an update.
+     */
+    boolean isFullscreenWaitingForLoad() {
+        return mIsFullscreenWaitingForLoad;
     }
 
     /**
@@ -2406,29 +2416,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /**
      * @return Whether hiding top controls is enabled or not.
      */
-    protected boolean isHidingTopControlsEnabled() {
-        WebContents webContents = getWebContents();
-        if (webContents == null || webContents.isDestroyed()) return false;
-
-        String url = getUrl();
-        boolean enableHidingTopControls = url != null && !url.startsWith(UrlConstants.CHROME_SCHEME)
-                && !url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
-
-        int securityState = getSecurityLevel();
-        enableHidingTopControls &= (securityState != ConnectionSecurityLevel.SECURITY_ERROR
-                && securityState != ConnectionSecurityLevel.SECURITY_WARNING);
-
-        enableHidingTopControls &=
-                !AccessibilityUtil.isAccessibilityEnabled(getApplicationContext());
-        enableHidingTopControls &= !mContentViewCore.isFocusedNodeEditable();
-        enableHidingTopControls &= !mIsShowingErrorPage;
-        enableHidingTopControls &= !webContents.isShowingInterstitialPage();
-        enableHidingTopControls &= (mFullscreenManager != null);
-        enableHidingTopControls &= DeviceClassManager.enableFullscreen();
-        enableHidingTopControls &= !DeviceClassManager.isAutoHidingToolbarDisabled(mActivity);
-        enableHidingTopControls &= !mIsFullscreenWaitingForLoad;
-
-        return enableHidingTopControls;
+    private boolean isHidingTopControlsEnabled() {
+        return mTopControlsVisibilityDelegate.isHidingTopControlsEnabled();
     }
 
     /**
@@ -2464,8 +2453,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return Whether showing top controls is enabled or not.
      */
     public boolean isShowingTopControlsEnabled() {
-        if (mFullscreenManager == null) return true;
-        return !mFullscreenManager.getPersistentFullscreenMode();
+        return mTopControlsVisibilityDelegate.isShowingTopControlsEnabled();
     }
 
     /**

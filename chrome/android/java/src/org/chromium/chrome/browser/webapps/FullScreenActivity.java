@@ -12,6 +12,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -30,8 +31,7 @@ import java.io.File;
  * the regular browser's UI is either unnecessary or undesirable.
  * Subclasses can override {@link #createUI()} if they need something more exotic.
  */
-public abstract class FullScreenActivity extends ChromeActivity
-        implements FullScreenActivityTab.TopControlsVisibilityDelegate {
+public abstract class FullScreenActivity extends ChromeActivity {
     private FullScreenActivityTab mTab;
 
     @Override
@@ -62,8 +62,8 @@ public abstract class FullScreenActivity extends ChromeActivity
 
     @Override
     public void finishNativeInitialization() {
-        mTab = FullScreenActivityTab.create(
-                this, getWindowAndroid(), getActivityDirectory(), getSavedInstanceState(), this);
+        mTab = FullScreenActivityTab.create(this, getWindowAndroid(),
+                getActivityDirectory(), getSavedInstanceState(), createTabDelegateFactory());
         getTabModelSelector().setTab(mTab);
         mTab.show(TabSelectionType.FROM_NEW);
 
@@ -90,16 +90,17 @@ public abstract class FullScreenActivity extends ChromeActivity
     }
 
     /**
+     * @return {@link TabDelegateFactory} to be used while creating the associated {@link Tab}.
+     */
+    protected TabDelegateFactory createTabDelegateFactory() {
+        return new FullScreenDelegateFactory();
+    }
+
+    /**
      * @return {@link File} pointing at a directory specific for this class.
      */
     protected File getActivityDirectory() {
         return null;
-    }
-
-    // Implements {@link FullScreenActivityTab.TopControlsVisibilityDelegate}.
-    @Override
-    public boolean shouldShowTopControls(String url, int securityLevel) {
-        return false;
     }
 
     @Override

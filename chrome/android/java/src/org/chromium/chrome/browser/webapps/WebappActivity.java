@@ -31,7 +31,9 @@ import org.chromium.chrome.browser.metrics.WebappUma;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TopControlsVisibilityDelegate;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content.browser.ScreenOrientationProvider;
@@ -495,17 +497,32 @@ public class WebappActivity extends FullScreenActivity {
         return null;
     }
 
-    // Implements {@link FullScreenActivityTab.TopControlsVisibilityDelegate}.
     @Override
-    public boolean shouldShowTopControls(String url, int securityLevel) {
-        boolean visible = false;  // do not show top controls when URL is not ready yet.
-        if (!TextUtils.isEmpty(url)) {
-            boolean isSameWebsite =
-                    UrlUtilities.sameDomainOrHost(mWebappInfo.uri().toString(), url, true);
-            visible = !isSameWebsite || securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
-                    || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING;
-        }
+    protected TabDelegateFactory createTabDelegateFactory() {
+        return new FullScreenDelegateFactory() {
+            @Override
+            public TopControlsVisibilityDelegate createTopControlsVisibilityDelegate(Tab tab) {
+                return new TopControlsVisibilityDelegate(tab) {
+                    @Override
+                    public boolean isShowingTopControlsEnabled() {
+                        if (!super.isShowingTopControlsEnabled()) return false;
+                        return shouldShowTopControls(mTab.getUrl(), mTab.getSecurityLevel());
+                    }
+                };
+            }
+        };
+    }
 
+    public boolean shouldShowTopControls(String url, int securityLevel) {
+        // Do not show top controls when URL is not ready yet.
+        boolean visible = false;
+        if (TextUtils.isEmpty(url)) return false;
+
+        boolean isSameWebsite = UrlUtilities.sameDomainOrHost(
+                mWebappInfo.uri().toString(), url, true);
+        visible = !isSameWebsite
+                || securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING;
         return visible;
     }
 
