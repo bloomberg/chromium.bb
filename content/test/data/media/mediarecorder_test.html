@@ -13,11 +13,22 @@
 
 'use strict';
 
-// This test must be run with experimental GetUserMedia flag on.
-
 const DEFAULT_CONSTRAINTS= {audio:true, video:true};
 const DEFAULT_RECORDER_MIME_TYPE = 'video/vp8';
 const DEFAULT_TIME_SLICE = 100;
+
+// Function assert_throws inspired from Blink's
+// LayoutTests/resources/testharness.js
+
+function assertThrows(func, description) {
+  try {
+    func.call(this);
+    failTest('Error:' + func + description + " did not throw!");
+  } catch (e) {
+    console.log(e);
+    reportTestSuccess();
+  }
+}
 
 function createAndStartMediaRecorder(stream, mimeType, slice) {
   return new Promise(function(resolve, reject) {
@@ -43,34 +54,30 @@ function createMediaRecorder(stream, mimeType) {
   });
 }
 
+// Tests that the MediaRecorder's start() function will cause the |state| to be
+// 'recording' and that a 'start' event is fired.
 function testStartAndRecorderState() {
-  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
-      .then(function(stream) {
-        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
-      })
-      .then(function(recorder) {
-        assertEquals('recording', recorder.state);
-      })
-      .catch(function(err) {
-        return failTest(err.toString());
-      })
-      .then(function() {
-        reportTestSuccess();
-      });
-}
-
-function testStartStopAndRecorderState() {
   var theRecorder;
+  var startEventReceived = false;
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
-        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
+        return createMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
       })
       .then(function(recorder) {
         theRecorder = recorder;
-        theRecorder.stop();
+        theRecorder.onstart = function(event) {
+          startEventReceived = true;
+          assertEquals('recording', theRecorder.state);
+        };
       })
       .then(function() {
-        assertEquals('inactive', theRecorder.state);
+        theRecorder.start();
+      })
+      .then(function() {
+        return waitFor('Make sure the start event was received',
+            function() {
+              return startEventReceived == true;
+            });
       })
       .catch(function(err) {
         return failTest(err.toString());
@@ -80,6 +87,39 @@ function testStartStopAndRecorderState() {
       });
 }
 
+// Tests that the MediaRecorder's stop() function will effectively cause the
+// |state| to be 'inactive' and that a 'stop' event is fired.
+function testStartStopAndRecorderState() {
+  var theRecorder;
+  var stopEventReceived = false;
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        recorder.onstop = function(event) {
+          stopEventReceived = true;
+          assertEquals('inactive', theRecorder.state);
+        };
+        recorder.stop();
+      })
+      .then(function() {
+        return waitFor('Make sure the stop event was received',
+            function() {
+              return stopEventReceived == true;
+            });
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
+      });
+}
+
+// Tests that when MediaRecorder's start() functioo is called, some data is
+// made available by media recorder via dataavailable events, containing non
+// empty blob data.
 function testStartAndDataAvailable() {
   var videoSize = 0;
   var emptyBlobs = 0;
@@ -116,6 +156,8 @@ function testStartAndDataAvailable() {
       });
 }
 
+// Tests that when MediaRecorder's start(timeSlice) is called, some data
+// available events are fired containing non empty blob data.
 function testStartWithTimeSlice() {
   var videoSize = 0;
   var emptyBlobs = 0;
@@ -152,88 +194,10 @@ function testStartWithTimeSlice() {
       });
 }
 
-function testStartAndStartEventTriggered() {
-  var theRecorder;
-  var startEventReceived = false;
-  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
-      .then(function(stream) {
-        return createMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
-      })
-      .then(function(recorder) {
-        theRecorder = recorder;
-        theRecorder.onstart = function(event) {
-          startEventReceived = true;
-        };
-      })
-      .then(function() {
-        theRecorder.start();
-      })
-      .then(function() {
-        return waitFor('Make sure the start event was received',
-            function() {
-              return startEventReceived == true;
-            });
-      })
-      .catch(function(err) {
-        return failTest(err.toString());
-      })
-      .then(function() {
-        reportTestSuccess();
-      });
-}
 
-function testStartStopAndStopEventTriggered() {
-  var theRecorder;
-  var stopEventReceived = false;
-  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
-      .then(function(stream) {
-        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
-      })
-      .then(function(recorder) {
-        recorder.onstop = function(event) {
-          stopEventReceived = true;
-        };
-        recorder.stop();
-      })
-      .then(function() {
-        return waitFor('Make sure the stop event was received',
-            function() {
-              return stopEventReceived == true;
-            });
-      })
-      .catch(function(err) {
-        return failTest(err.toString());
-      })
-      .then(function() {
-        reportTestSuccess();
-      });
-}
-
+// Tests that when a MediaRecorder's resume() is called, the |state| is
+// 'recording' and a 'resume' event is fired.
 function testResumeAndRecorderState() {
-  var theRecorder;
-  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
-      .then(function(stream) {
-        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
-      })
-      .then(function(recorder) {
-        theRecorder = recorder;
-        theRecorder.pause();
-      })
-      .then(function() {
-        theRecorder.resume();
-      })
-      .then(function() {
-        assertEquals('recording', theRecorder.state);
-      })
-      .catch(function(err) {
-        return failTest(err.toString());
-      })
-      .then(function() {
-        reportTestSuccess();
-      });
-}
-
-function testResumeAndResumeEventTriggered() {
   var theRecorder;
   var resumeEventReceived = false;
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
@@ -247,6 +211,7 @@ function testResumeAndResumeEventTriggered() {
       .then(function() {
         theRecorder.onresume = function(event) {
           resumeEventReceived = true;
+          assertEquals('recording', theRecorder.state);
         }
         theRecorder.resume();
       })
@@ -264,6 +229,7 @@ function testResumeAndResumeEventTriggered() {
       });
 }
 
+// Tests that is it not possible to resume an inactive MediaRecorder.
 function testNoResumeWhileRecorderInactive() {
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
@@ -280,6 +246,7 @@ function testNoResumeWhileRecorderInactive() {
       });
 }
 
+// Tests that MediaRecorder sends data blobs when resume() is called.
 function testResumeAndDataAvailable() {
   var theRecorder;
   var videoSize = 0;
@@ -324,18 +291,28 @@ function testResumeAndDataAvailable() {
       });
 }
 
+// Tests that when paused the recorder will transition |state| to |paused| and
+// then trigger a |pause| event.
 function testPauseAndRecorderState() {
   var theRecorder;
+  var pauseEventReceived = false;
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
         return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
       })
       .then(function(recorder) {
         theRecorder = recorder;
+        theRecorder.onpause = function(event) {
+          pauseEventReceived = true;
+          assertEquals('paused', theRecorder.state);
+        }
         theRecorder.pause();
       })
       .then(function() {
-        assertEquals('paused', theRecorder.state);
+        return waitFor('Making sure the pause event has been received',
+            function() {
+              return pauseEventReceived == true;
+            });
       })
       .catch(function(err) {
         return failTest(err.toString());
@@ -345,6 +322,8 @@ function testPauseAndRecorderState() {
       });
 }
 
+// Tests that is is possible to stop a paused MediaRecorder and that the |state|
+// becomes 'inactive'.
 function testPauseStopAndRecorderState() {
   var theRecorder;
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
@@ -369,33 +348,9 @@ function testPauseStopAndRecorderState() {
       });
 }
 
-function testPauseAndPauseEventTriggered() {
-  var pauseEventReceived = false;
-  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
-      .then(function(stream) {
-        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
-      })
-      .then(function(recorder) {
-        recorder.onpause = function(event) {
-          pauseEventReceived = true;
-        }
-        recorder.pause();
-      })
-      .then(function() {
-        return waitFor('Making sure the pause event has been received',
-            function() {
-              return pauseEventReceived == true;
-            });
-      })
-      .catch(function(err) {
-        return failTest(err.toString());
-      })
-      .then(function() {
-        reportTestSuccess();
-      });
-}
-
-function testPauseAndNoDataAvailable() {
+// Tests that no dataavailable event is fired after MediaRecorder's pause()
+// function is called.
+function testPausePreventsDataavailableFromBeingFired() {
   var theRecorder;
   var videoSize = 0;
   var emptyBlobs = 0;
@@ -423,19 +378,16 @@ function testPauseAndNoDataAvailable() {
       });
 }
 
-function testNoPauseWhileRecorderInactive() {
+// Tests that MediaRecorder's pause() throws an exception if 'state' is not
+// 'recording'.
+function testIllegalPauseThrowsDOMError() {
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
         return createMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
       })
       .then(function(recorder) {
-        recorder.pause();
-      })
-      .then(function() {
-        return failTest('Recorder paused recording from inactive state.');
-      })
-      .catch(function(err) {
-        reportTestSuccess();
+        assertThrows(function() {recorder.pause()}, 'Calling pause() in' +
+          ' inactive state should cause a DOM error');
       });
 }
 

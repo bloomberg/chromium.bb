@@ -4,17 +4,6 @@
 
 'use strict';
 
-function getTimeStampDeltas(timeStamps) {
-  var old_time_stamp = 0;
-  var delta_time = [];
-  timeStamps.forEach(function(timeStamp) {
-    delta_time.push(timeStamp - old_time_stamp);
-    old_time_stamp = timeStamp;
-  });
-  delta_time.shift();
-  return delta_time;
-}
-
 // This function will be used only when we need to wait for data gathering.
 function waitDuration(duration) {
   return new Promise(function(resolve, reject) {

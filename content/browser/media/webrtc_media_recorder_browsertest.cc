@@ -68,24 +68,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
   MakeTypicalCall("testStartWithTimeSlice();", kMediaRecorderHtmlFile);
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest, MediaRecorderStartEvent) {
-  MakeTypicalCall("testStartAndStartEventTriggered();", kMediaRecorderHtmlFile);
-}
-
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
-                       MediaRecorderStopEvent) {
-  MakeTypicalCall("testStartStopAndStopEventTriggered();",
-      kMediaRecorderHtmlFile);
-}
-
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest, MediaRecorderResume) {
   MakeTypicalCall("testResumeAndRecorderState();", kMediaRecorderHtmlFile);
-}
-
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
-                       MediaRecorderResumeEvent) {
-  MakeTypicalCall("testResumeAndResumeEventTriggered();",
-      kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
@@ -110,18 +94,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
-                       MediaRecorderPauseEvent) {
-  MakeTypicalCall("testPauseAndPauseEventTriggered();", kMediaRecorderHtmlFile);
+                       MediaRecorderPausePreventsDataavailableFromBeingFired) {
+  MakeTypicalCall("testPausePreventsDataavailableFromBeingFired();",
+      kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
-                       MediaRecorderPauseAndNoDataAvailable) {
-  MakeTypicalCall("testPauseAndNoDataAvailable();", kMediaRecorderHtmlFile);
-}
-
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
-                       MediaRecorderNoPauseWhenRecorderInactive) {
-  MakeTypicalCall("testNoPauseWhileRecorderInactive();",
+                       MediaRecorderIllegalPauseThrowsDOMError) {
+  MakeTypicalCall("testIllegalPauseThrowsDOMError();",
       kMediaRecorderHtmlFile);
 }
 
