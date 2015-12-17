@@ -30,7 +30,6 @@
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/animation/ListSVGInterpolation.h"
 #include "core/animation/ListStyleInterpolation.h"
-#include "core/animation/PathSVGInterpolation.h"
 #include "core/animation/SVGAngleInterpolationType.h"
 #include "core/animation/SVGIntegerInterpolationType.h"
 #include "core/animation/SVGIntegerOptionalIntegerInterpolationType.h"
@@ -38,6 +37,7 @@
 #include "core/animation/SVGNumberInterpolationType.h"
 #include "core/animation/SVGNumberListInterpolationType.h"
 #include "core/animation/SVGNumberOptionalNumberInterpolationType.h"
+#include "core/animation/SVGPathInterpolationType.h"
 #include "core/animation/SVGPointListInterpolationType.h"
 #include "core/animation/SVGRectInterpolationType.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
@@ -331,6 +331,8 @@ const InterpolationTypes* applicableTypesForProperty(PropertyHandle property)
             || attribute == SVGNames::radiusAttr
             || attribute == SVGNames::stdDeviationAttr) {
             applicableTypes->append(adoptPtr(new SVGNumberOptionalNumberInterpolationType(attribute)));
+        } else if (attribute == SVGNames::dAttr) {
+            applicableTypes->append(adoptPtr(new SVGPathInterpolationType(attribute)));
         } else if (attribute == SVGNames::pointsAttr) {
             applicableTypes->append(adoptPtr(new SVGPointListInterpolationType(attribute)));
         } else if (attribute == SVGNames::viewBoxAttr) {
@@ -601,9 +603,6 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     case AnimatedLengthList:
         interpolation = ListSVGInterpolation<LengthSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
         break;
-    case AnimatedPath:
-        interpolation = PathSVGInterpolation::maybeCreate(fromValue, toValue, attribute);
-        break;
 
     // Handled by SVGInterpolationTypes.
     case AnimatedAngle:
@@ -613,6 +612,7 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     case AnimatedNumber:
     case AnimatedNumberList:
     case AnimatedNumberOptionalNumber:
+    case AnimatedPath:
     case AnimatedPoints:
     case AnimatedRect:
     case AnimatedTransformList:
