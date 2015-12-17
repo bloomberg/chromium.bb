@@ -14,3 +14,5 @@ chrome.runtime.onMessage.addListener(
     var url = sender.tab ? sender.tab.url : 'about:blank';
     chrome.test.sendMessage('execute: ' + url);
   });
+
+chrome.test.sendMessage('execute: ready');
