@@ -162,7 +162,9 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     return;
   }
 
-  DCHECK(!ContainsKey(instance_info_, embedded_worker_id))
+  // TODO(nhiroki): Make sure the instance info is not mixed up.
+  // (http://crbug.com/568915)
+  CHECK(!ContainsKey(instance_info_, embedded_worker_id))
       << embedded_worker_id << " already has a process allocated";
 
   int process_id = FindAvailableProcess(pattern);
@@ -227,7 +229,10 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
 
   std::map<int, ProcessInfo>::iterator info =
       instance_info_.find(embedded_worker_id);
-  DCHECK(info != instance_info_.end());
+  // TODO(nhiroki): Make sure the instance info is not mixed up.
+  // (http://crbug.com/568915)
+  CHECK(info != instance_info_.end());
+
   RenderProcessHost* rph = NULL;
   if (info->second.site_instance.get()) {
     rph = info->second.site_instance->GetProcess();
