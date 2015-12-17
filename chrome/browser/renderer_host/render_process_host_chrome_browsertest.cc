@@ -230,8 +230,8 @@ class ChromeRenderProcessHostTestWithCommandLine
   }
 };
 
-// Disable on Mac and Windows due to ongoing flakiness. (crbug.com/442785)
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// Disable on Mac due to ongoing flakiness. (crbug.com/442785)
+#if defined(OS_MACOSX)
 #define MAYBE_ProcessPerTab DISABLED_ProcessPerTab
 #else
 #define MAYBE_ProcessPerTab ProcessPerTab
@@ -297,13 +297,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
 // We don't change process priorities on Mac or Posix because the user lacks the
 // permission to raise a process' priority even after lowering it.
 #if defined(OS_WIN) || defined(OS_LINUX)
-#if defined(OS_WIN)
-// Flaky test: crbug.com/394368
-#define MAYBE_Backgrounding DISABLED_Backgrounding
-#else
-#define MAYBE_Backgrounding Backgrounding
-#endif
-IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_Backgrounding) {
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
   if (!base::Process::CanBackgroundProcesses()) {
     LOG(ERROR) << "Can't background processes";
     return;
@@ -353,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_Backgrounding) {
 
 // TODO(nasko): crbug.com/173137
 // Disable on Mac 10.9 due to ongoing flakiness. (crbug.com/442785)
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #define MAYBE_ProcessOverflow DISABLED_ProcessOverflow
 #else
 #define MAYBE_ProcessOverflow ProcessOverflow
@@ -366,10 +360,10 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessOverflow) {
 }
 
 // Disable on Mac 10.9 due to ongoing flakiness. (crbug.com/442785)
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_ProcessOverflowCommandLine DISABLED_ProcessOverflow
+#if defined(OS_MACOSX)
+#define MAYBE_ProcessOverflowCommandLine DISABLED_ProcessOverflowCommandLine
 #else
-#define MAYBE_ProcessOverflowCommandLine ProcessOverflow
+#define MAYBE_ProcessOverflowCommandLine ProcessOverflowCommandLine
 #endif
 
 // Variation of the ProcessOverflow test, which is driven through command line
