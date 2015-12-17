@@ -9,7 +9,6 @@
 #include "base/build_time.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/sha1.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
