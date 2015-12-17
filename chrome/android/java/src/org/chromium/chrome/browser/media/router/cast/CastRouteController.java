@@ -331,7 +331,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
     @Override
     public void onStop(int actionSource) {
-        stopApplication();
+        mRouteDelegate.onSessionStopAction();
     }
 
 
@@ -869,7 +869,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                 buildInternalMessage(type, message, clientId, sequenceNumber));
     }
 
-    private JSONArray getCapabilities(CastDevice device) {
+    static JSONArray getCapabilities(CastDevice device) {
         JSONArray jsonCapabilities = new JSONArray();
         if (device.hasCapability(CastDevice.CAPABILITY_AUDIO_IN)) {
             jsonCapabilities.put("audio_in");

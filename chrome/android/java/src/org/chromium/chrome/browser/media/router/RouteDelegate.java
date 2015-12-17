@@ -24,6 +24,11 @@ public interface RouteDelegate {
     void onRouteRequestError(String message, int requestId);
 
     /**
+     * Called when the user wants to stop the session via the UI (e.g. notification).
+     */
+    void onSessionStopAction();
+
+    /**
      * Called when the session is closed.
      */
     void onSessionClosed();
