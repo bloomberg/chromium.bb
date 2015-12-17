@@ -20,7 +20,7 @@ class BlimpClientSessionAndroid : public BlimpClientSession {
                             const base::android::JavaParamRef<jobject>& jobj);
 
   // Methods called from Java via JNI.
-  void Destroy(JNIEnv* env, jobject jobj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
 
  private:
   ~BlimpClientSessionAndroid() override;

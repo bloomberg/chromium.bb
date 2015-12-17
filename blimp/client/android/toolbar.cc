@@ -48,24 +48,27 @@ Toolbar::~Toolbar() {
   navigation_feature_->RemoveDelegate(kDummyTabId);
 }
 
-void Toolbar::Destroy(JNIEnv* env, jobject jobj) {
+void Toolbar::Destroy(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   delete this;
 }
 
-void Toolbar::OnUrlTextEntered(JNIEnv* env, jobject jobj, jstring text) {
+void Toolbar::OnUrlTextEntered(JNIEnv* env,
+                               const JavaParamRef<jobject>& jobj,
+                               const JavaParamRef<jstring>& text) {
   navigation_feature_->NavigateToUrlText(
       kDummyTabId, base::android::ConvertJavaStringToUTF8(env, text));
 }
 
-void Toolbar::OnReloadPressed(JNIEnv* env, jobject jobj) {
+void Toolbar::OnReloadPressed(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   navigation_feature_->Reload(kDummyTabId);
 }
 
-void Toolbar::OnForwardPressed(JNIEnv* env, jobject jobj) {
+void Toolbar::OnForwardPressed(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   navigation_feature_->GoForward(kDummyTabId);
 }
 
-jboolean Toolbar::OnBackPressed(JNIEnv* env, jobject jobj) {
+jboolean Toolbar::OnBackPressed(JNIEnv* env,
+                                const JavaParamRef<jobject>& jobj) {
   navigation_feature_->GoBack(kDummyTabId);
 
   // TODO(dtrainor): Find a way to determine whether or not we're at the end of

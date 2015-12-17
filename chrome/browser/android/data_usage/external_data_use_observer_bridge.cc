@@ -68,7 +68,7 @@ void ExternalDataUseObserverBridge::FetchMatchingRules() const {
 
 void ExternalDataUseObserverBridge::FetchMatchingRulesDone(
     JNIEnv* env,
-    jobject obj,
+    const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jobjectArray>& app_package_name,
     const base::android::JavaParamRef<jobjectArray>& domain_path_regex,
     const base::android::JavaParamRef<jobjectArray>& label) {
@@ -125,9 +125,10 @@ void ExternalDataUseObserverBridge::ReportDataUse(
       end_time_milliseconds, bytes_downloaded, bytes_uploaded);
 }
 
-void ExternalDataUseObserverBridge::OnReportDataUseDone(JNIEnv* env,
-                                                        jobject obj,
-                                                        bool success) {
+void ExternalDataUseObserverBridge::OnReportDataUseDone(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   io_task_runner_->PostTask(

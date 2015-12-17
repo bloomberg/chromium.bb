@@ -21,12 +21,13 @@ class TabControlFeatureAndroid {
                            TabControlFeature* tab_control_feature);
 
   // Methods called from Java via JNI.
-  void Destroy(JNIEnv* env, jobject jobj);
-  void OnContentAreaSizeChanged(JNIEnv* env,
-                                jobject jobj,
-                                jint width,
-                                jint height,
-                                jfloat dp_to_px);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
+  void OnContentAreaSizeChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      jint width,
+      jint height,
+      jfloat dp_to_px);
 
  private:
   virtual ~TabControlFeatureAndroid();

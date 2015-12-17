@@ -70,15 +70,16 @@ PlatformWindowAndroid::~PlatformWindowAndroid() {
   }
 }
 
-void PlatformWindowAndroid::Destroy(JNIEnv* env, jobject obj) {
+void PlatformWindowAndroid::Destroy(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj) {
   delegate_->OnClosed();
 }
 
-void PlatformWindowAndroid::SurfaceCreated(JNIEnv* env,
-                                           jobject obj,
-                                           jobject jsurface,
-                                           float device_pixel_ratio) {
-  base::android::ScopedJavaLocalRef<jobject> protector(env, jsurface);
+void PlatformWindowAndroid::SurfaceCreated(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jsurface,
+    float device_pixel_ratio) {
   // Note: This ensures that any local references used by
   // ANativeWindow_fromSurface are released immediately. This is needed as a
   // workaround for https://code.google.com/p/android/issues/detail?id=68174
@@ -89,14 +90,15 @@ void PlatformWindowAndroid::SurfaceCreated(JNIEnv* env,
   delegate_->OnAcceleratedWidgetAvailable(window_, device_pixel_ratio);
 }
 
-void PlatformWindowAndroid::SurfaceDestroyed(JNIEnv* env, jobject obj) {
+void PlatformWindowAndroid::SurfaceDestroyed(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
   DCHECK(window_);
   delegate_->OnAcceleratedWidgetDestroyed();
   ReleaseWindow();
 }
 
 void PlatformWindowAndroid::SurfaceSetSize(JNIEnv* env,
-                                           jobject obj,
+                                           const JavaParamRef<jobject>& obj,
                                            jint width,
                                            jint height,
                                            jfloat density) {
@@ -105,7 +107,7 @@ void PlatformWindowAndroid::SurfaceSetSize(JNIEnv* env,
 }
 
 bool PlatformWindowAndroid::TouchEvent(JNIEnv* env,
-                                       jobject obj,
+                                       const JavaParamRef<jobject>& obj,
                                        jlong time_ms,
                                        jint masked_action,
                                        jint pointer_id,
@@ -130,7 +132,7 @@ bool PlatformWindowAndroid::TouchEvent(JNIEnv* env,
 }
 
 bool PlatformWindowAndroid::KeyEvent(JNIEnv* env,
-                                     jobject obj,
+                                     const JavaParamRef<jobject>& obj,
                                      bool pressed,
                                      jint key_code,
                                      jint unicode_character) {

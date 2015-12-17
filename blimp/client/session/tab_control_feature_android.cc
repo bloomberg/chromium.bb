@@ -39,15 +39,17 @@ TabControlFeatureAndroid::TabControlFeatureAndroid(
 
 TabControlFeatureAndroid::~TabControlFeatureAndroid() {}
 
-void TabControlFeatureAndroid::Destroy(JNIEnv* env, jobject jobj) {
+void TabControlFeatureAndroid::Destroy(JNIEnv* env,
+                                       const JavaParamRef<jobject>& jobj) {
   delete this;
 }
 
-void TabControlFeatureAndroid::OnContentAreaSizeChanged(JNIEnv* env,
-                                                        jobject jobj,
-                                                        jint width,
-                                                        jint height,
-                                                        jfloat dp_to_px) {
+void TabControlFeatureAndroid::OnContentAreaSizeChanged(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    jint width,
+    jint height,
+    jfloat dp_to_px) {
   tab_control_feature_->SetSizeAndScale(gfx::Size(width, height), dp_to_px);
 }
 

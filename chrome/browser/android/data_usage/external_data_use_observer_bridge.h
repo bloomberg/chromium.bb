@@ -60,7 +60,7 @@ class ExternalDataUseObserverBridge {
   // active.
   void FetchMatchingRulesDone(
       JNIEnv* env,
-      jobject obj,
+      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobjectArray>& app_package_name,
       const base::android::JavaParamRef<jobjectArray>& domain_path_regex,
       const base::android::JavaParamRef<jobjectArray>& label);
@@ -79,7 +79,9 @@ class ExternalDataUseObserverBridge {
   // Called by Java when the reporting of data usage has finished. |success|
   // is true if the request was successfully submitted to the external data
   // use observer by Java.
-  void OnReportDataUseDone(JNIEnv* env, jobject obj, bool success);
+  void OnReportDataUseDone(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           bool success);
 
  private:
   // Java listener that provides regular expressions to |this|. Data use

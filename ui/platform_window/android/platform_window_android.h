@@ -27,19 +27,20 @@ class ANDROID_WINDOW_EXPORT PlatformWindowAndroid : public PlatformWindow {
   explicit PlatformWindowAndroid(PlatformWindowDelegate* delegate);
   ~PlatformWindowAndroid() override;
 
-  void Destroy(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void SurfaceCreated(JNIEnv* env,
-                      jobject obj,
-                      jobject jsurface,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      const base::android::JavaParamRef<jobject>& jsurface,
                       float device_pixel_ratio);
-  void SurfaceDestroyed(JNIEnv* env, jobject obj);
+  void SurfaceDestroyed(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
   void SurfaceSetSize(JNIEnv* env,
-                      jobject obj,
+                      const base::android::JavaParamRef<jobject>& obj,
                       jint width,
                       jint height,
                       jfloat density);
   bool TouchEvent(JNIEnv* env,
-                  jobject obj,
+                  const base::android::JavaParamRef<jobject>& obj,
                   jlong time_ms,
                   jint masked_action,
                   jint pointer_id,
@@ -52,7 +53,7 @@ class ANDROID_WINDOW_EXPORT PlatformWindowAndroid : public PlatformWindow {
                   jfloat h_wheel,
                   jfloat v_wheel);
   bool KeyEvent(JNIEnv* env,
-                jobject obj,
+                const base::android::JavaParamRef<jobject>& obj,
                 bool pressed,
                 jint key_code,
                 jint unicode_character);

@@ -21,13 +21,14 @@ class TranslateInfoBar : public InfoBarAndroid {
   ~TranslateInfoBar() override;
 
   // JNI methods specific to translate.
-  void ApplyTranslateOptions(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj,
-                             jstring source_language_code,
-                             jstring target_language_code,
-                             bool always_translate,
-                             bool never_translate_language,
-                             bool never_translate_site);
+  void ApplyTranslateOptions(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& source_language_code,
+      const base::android::JavaParamRef<jstring>& target_language_code,
+      bool always_translate,
+      bool never_translate_language,
+      bool never_translate_site);
 
  private:
   // InfoBarAndroid:

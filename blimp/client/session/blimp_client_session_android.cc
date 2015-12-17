@@ -34,7 +34,8 @@ BlimpClientSessionAndroid::BlimpClientSessionAndroid(
 
 BlimpClientSessionAndroid::~BlimpClientSessionAndroid() {}
 
-void BlimpClientSessionAndroid::Destroy(JNIEnv* env, jobject jobj) {
+void BlimpClientSessionAndroid::Destroy(JNIEnv* env,
+                                        const JavaParamRef<jobject>& jobj) {
   delete this;
 }
 

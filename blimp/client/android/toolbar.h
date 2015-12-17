@@ -26,11 +26,16 @@ class Toolbar : public NavigationFeature::NavigationFeatureDelegate {
           NavigationFeature* navigation_feature);
 
   // Methods called from Java via JNI.
-  void Destroy(JNIEnv* env, jobject jobj);
-  void OnUrlTextEntered(JNIEnv* env, jobject jobj, jstring text);
-  void OnReloadPressed(JNIEnv* env, jobject jobj);
-  void OnForwardPressed(JNIEnv* env, jobject jobj);
-  jboolean OnBackPressed(JNIEnv* env, jobject jobj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
+  void OnUrlTextEntered(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& jobj,
+                        const base::android::JavaParamRef<jstring>& text);
+  void OnReloadPressed(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& jobj);
+  void OnForwardPressed(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& jobj);
+  jboolean OnBackPressed(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& jobj);
 
   // NavigationFeatureDelegate implementation.
   void OnUrlChanged(int tab_id, const GURL& url) override;

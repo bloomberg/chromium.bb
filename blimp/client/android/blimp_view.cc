@@ -60,18 +60,19 @@ BlimpView::~BlimpView() {
   ReleaseAcceleratedWidget();
 }
 
-void BlimpView::Destroy(JNIEnv* env, jobject jobj) {
+void BlimpView::Destroy(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   delete this;
 }
 
-void BlimpView::SetNeedsComposite(JNIEnv* env, jobject jobj) {}
+void BlimpView::SetNeedsComposite(JNIEnv* env,
+                                  const JavaParamRef<jobject>& jobj) {}
 
 void BlimpView::OnSurfaceChanged(JNIEnv* env,
-                                 jobject jobj,
+                                 const JavaParamRef<jobject>& jobj,
                                  jint format,
                                  jint width,
                                  jint height,
-                                 jobject jsurface) {
+                                 const JavaParamRef<jobject>& jsurface) {
   if (current_surface_format_ != format) {
     current_surface_format_ = format;
     ReleaseAcceleratedWidget();
@@ -87,16 +88,20 @@ void BlimpView::OnSurfaceChanged(JNIEnv* env,
   compositor_->SetSize(gfx::Size(width, height));
 }
 
-void BlimpView::OnSurfaceCreated(JNIEnv* env, jobject jobj) {
+void BlimpView::OnSurfaceCreated(JNIEnv* env,
+                                 const JavaParamRef<jobject>& jobj) {
   current_surface_format_ = 0 /** PixelFormat.UNKNOWN */;
 }
 
-void BlimpView::OnSurfaceDestroyed(JNIEnv* env, jobject jobj) {
+void BlimpView::OnSurfaceDestroyed(JNIEnv* env,
+                                   const JavaParamRef<jobject>& jobj) {
   current_surface_format_ = 0 /** PixelFormat.UNKNOWN */;
   ReleaseAcceleratedWidget();
 }
 
-void BlimpView::SetVisibility(JNIEnv* env, jobject jobj, jboolean visible) {
+void BlimpView::SetVisibility(JNIEnv* env,
+                              const JavaParamRef<jobject>& jobj,
+                              jboolean visible) {
   compositor_->SetVisible(visible);
 }
 
@@ -110,33 +115,33 @@ void BlimpView::ReleaseAcceleratedWidget() {
 }
 
 jboolean BlimpView::OnTouchEvent(JNIEnv* env,
-                             jobject obj,
-                             jobject motion_event,
-                             jlong time_ms,
-                             jint android_action,
-                             jint pointer_count,
-                             jint history_size,
-                             jint action_index,
-                             jfloat pos_x_0,
-                             jfloat pos_y_0,
-                             jfloat pos_x_1,
-                             jfloat pos_y_1,
-                             jint pointer_id_0,
-                             jint pointer_id_1,
-                             jfloat touch_major_0,
-                             jfloat touch_major_1,
-                             jfloat touch_minor_0,
-                             jfloat touch_minor_1,
-                             jfloat orientation_0,
-                             jfloat orientation_1,
-                             jfloat tilt_0,
-                             jfloat tilt_1,
-                             jfloat raw_pos_x,
-                             jfloat raw_pos_y,
-                             jint android_tool_type_0,
-                             jint android_tool_type_1,
-                             jint android_button_state,
-                             jint android_meta_state) {
+                                 const JavaParamRef<jobject>& obj,
+                                 const JavaParamRef<jobject>& motion_event,
+                                 jlong time_ms,
+                                 jint android_action,
+                                 jint pointer_count,
+                                 jint history_size,
+                                 jint action_index,
+                                 jfloat pos_x_0,
+                                 jfloat pos_y_0,
+                                 jfloat pos_x_1,
+                                 jfloat pos_y_1,
+                                 jint pointer_id_0,
+                                 jint pointer_id_1,
+                                 jfloat touch_major_0,
+                                 jfloat touch_major_1,
+                                 jfloat touch_minor_0,
+                                 jfloat touch_minor_1,
+                                 jfloat orientation_0,
+                                 jfloat orientation_1,
+                                 jfloat tilt_0,
+                                 jfloat tilt_1,
+                                 jfloat raw_pos_x,
+                                 jfloat raw_pos_y,
+                                 jint android_tool_type_0,
+                                 jint android_tool_type_1,
+                                 jint android_button_state,
+                                 jint android_meta_state) {
   ui::MotionEventAndroid::Pointer pointer0(pointer_id_0,
                                            pos_x_0,
                                            pos_y_0,

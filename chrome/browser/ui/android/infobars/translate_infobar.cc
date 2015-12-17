@@ -101,13 +101,14 @@ void TranslateInfoBar::SetJavaInfoBar(
                                      reinterpret_cast<intptr_t>(this));
 }
 
-void TranslateInfoBar::ApplyTranslateOptions(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj,
-                                             jstring source_language_code,
-                                             jstring target_language_code,
-                                             bool always_translate,
-                                             bool never_translate_language,
-                                             bool never_translate_site) {
+void TranslateInfoBar::ApplyTranslateOptions(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& source_language_code,
+    const JavaParamRef<jstring>& target_language_code,
+    bool always_translate,
+    bool never_translate_language,
+    bool never_translate_site) {
   DCHECK(env);
   std::string source_code =
       base::android::ConvertJavaStringToUTF8(env, source_language_code);

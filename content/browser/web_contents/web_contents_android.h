@@ -175,7 +175,8 @@ class CONTENT_EXPORT WebContentsAndroid
                         jfloat width,
                         jfloat height);
 
-  void OnContextMenuClosed(JNIEnv* env, jobject obj);
+  void OnContextMenuClosed(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj);
 
   void set_synchronous_compositor_client(SynchronousCompositorClient* client) {
     synchronous_compositor_client_ = client;

@@ -675,7 +675,8 @@ void WebContentsAndroid::GetContentBitmap(
                                result_callback);
 }
 
-void WebContentsAndroid::OnContextMenuClosed(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::OnContextMenuClosed(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
   static_cast<WebContentsImpl*>(web_contents_)
       ->NotifyContextMenuClosed(CustomContextMenuContext());
 }

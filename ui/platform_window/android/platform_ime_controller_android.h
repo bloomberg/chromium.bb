@@ -21,7 +21,7 @@ class ANDROID_WINDOW_EXPORT PlatformImeControllerAndroid :
   ~PlatformImeControllerAndroid() override;
 
   // Native methods called by Java code.
-  void Init(JNIEnv* env, jobject jobj);
+  void Init(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
 
  private:
   // Overridden from PlatformImeController:
