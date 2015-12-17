@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// NOT DEAD CODE!
+// This code isn't dead, even if it isn't currently being used. Please refer to:
+// https://www.chromium.org/developers/how-tos/compact-language-detector-cld-data-source-configuration
+
 // Multiply-included message file, hence no include guard.
 
 #include "ipc/ipc_message_macros.h"
@@ -19,14 +23,14 @@
 // needed in the form of a data file.
 // This message is sent by a DataFileRendererCldDataProvider to a
 // DataFileBrowserCldDataProvider.
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_NeedCldDataFile)
+IPC_MESSAGE_ROUTED0(ChromeFrameHostMsg_NeedCldDataFile)
 
 // Informs the renderer process that Compact Language Detector (CLD) data is
 // available and provides an IPC::PlatformFileForTransit obtained from
 // IPC::GetFileHandleForProcess(...)
 // This message is sent by a DataFileBrowserCldDataProvider to a
 // DataFileRendererCldDataProvider.
-IPC_MESSAGE_ROUTED3(ChromeViewMsg_CldDataFileAvailable,
+IPC_MESSAGE_ROUTED3(ChromeFrameMsg_CldDataFileAvailable,
                     IPC::PlatformFileForTransit /* ipc_file_handle */,
                     uint64 /* data_offset */,
                     uint64 /* data_length */)

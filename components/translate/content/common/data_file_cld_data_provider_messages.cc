@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// NOT DEAD CODE!
+// This code isn't dead, even if it isn't currently being used. Please refer to:
+// https://www.chromium.org/developers/how-tos/compact-language-detector-cld-data-source-configuration
+
 // Get basic type definitions.
 #define IPC_MESSAGE_IMPL
 #include "components/translate/content/common/data_file_cld_data_provider_messages.h"

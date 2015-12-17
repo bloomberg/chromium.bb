@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// NOT DEAD CODE!
+// This code isn't dead, even if it isn't currently being used. Please refer to:
+// https://www.chromium.org/developers/how-tos/compact-language-detector-cld-data-source-configuration
+
 #include "components/translate/content/browser/data_file_browser_cld_data_provider.h"
 
 #include "base/basictypes.h"
@@ -16,8 +20,8 @@
 #include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/content/common/data_file_cld_data_provider_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -26,7 +30,7 @@
 namespace {
 // The data file,  cached as long as the process stays alive.
 // We also track the offset at which the data starts, and its length.
-base::FilePath g_cached_filepath;  // guarded by g_file_lock_
+base::LazyInstance<base::FilePath> g_cached_filepath;  // guarded by g_file_lock
 base::File* g_cached_file = NULL;  // guarded by g_file_lock_
 uint64 g_cached_data_offset = 0;  // guarded by g_file_lock_
 uint64 g_cached_data_length = 0;  // guarded by g_file_lock_
@@ -40,9 +44,9 @@ namespace translate {
 void SetCldDataFilePath(const base::FilePath& path) {
   VLOG(1) << "Setting CLD data file path to: " << path.value();
   base::AutoLock lock(g_file_lock_.Get());
-  if (g_cached_filepath == path)
+  if (g_cached_filepath.Get() == path)
     return;  // no change necessary
-  g_cached_filepath = path;
+  g_cached_filepath.Get() = path;
   // For sanity, clean these other values up just in case.
   g_cached_file = NULL;
   g_cached_data_length = 0;
@@ -51,10 +55,11 @@ void SetCldDataFilePath(const base::FilePath& path) {
 
 base::FilePath GetCldDataFilePath() {
   base::AutoLock lock(g_file_lock_.Get());
-  if (g_cached_filepath.empty()) {
-    g_cached_filepath = translate::CldDataSource::Get()->GetCldDataFilePath();
+  if (g_cached_filepath.Get().empty()) {
+    g_cached_filepath.Get() =
+      translate::CldDataSource::Get()->GetCldDataFilePath();
   }
-  return g_cached_filepath;
+  return g_cached_filepath.Get();
 }
 
 DataFileBrowserCldDataProvider::DataFileBrowserCldDataProvider(
@@ -70,7 +75,7 @@ bool DataFileBrowserCldDataProvider::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DataFileBrowserCldDataProvider, message)
-  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NeedCldDataFile, OnCldDataRequest)
+  IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_NeedCldDataFile, OnCldDataRequest)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -139,18 +144,18 @@ void DataFileBrowserCldDataProvider::SendCldDataResponseInternal(
     const uint64 data_length) {
   VLOG(1) << "Sending CLD data file response.";
 
-  content::RenderViewHost* render_view_host =
-      web_contents_->GetRenderViewHost();
-  if (render_view_host == NULL) {
-    // Render view destroyed, no need to bother.
-    VLOG(1) << "Lost render view host, giving up";
+  content::RenderFrameHost* render_frame_host =
+      web_contents_->GetMainFrame();
+  if (render_frame_host == NULL) {
+    // Render frame destroyed, no need to bother.
+    VLOG(1) << "Lost render frame host, giving up";
     return;
   }
 
   content::RenderProcessHost* render_process_host =
-      render_view_host->GetProcess();
+      render_frame_host->GetProcess();
   if (render_process_host == NULL) {
-    // Render process destroyed, render view not yet dead. No need to bother.
+    // Render process destroyed, render frame not yet dead. No need to bother.
     VLOG(1) << "Lost render process, giving up";
     return;
   }
@@ -167,8 +172,8 @@ void DataFileBrowserCldDataProvider::SendCldDataResponseInternal(
   // new request). Neither of these concerns is relevant in this code, so
   // sending the response from within the code path of the request handler is
   // safe.
-  render_view_host->Send(
-      new ChromeViewMsg_CldDataFileAvailable(render_view_host->GetRoutingID(),
+  render_frame_host->Send(
+      new ChromeFrameMsg_CldDataFileAvailable(render_frame_host->GetRoutingID(),
                                              ipc_platform_file,
                                              data_offset,
                                              data_length));

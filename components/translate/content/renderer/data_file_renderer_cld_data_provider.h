@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// NOT DEAD CODE!
+// This code isn't dead, even if it isn't currently being used. Please refer to:
+// https://www.chromium.org/developers/how-tos/compact-language-detector-cld-data-source-configuration
+
 #ifndef COMPONENTS_TRANSLATE_CONTENT_RENDERER_DATA_FILE_RENDERER_CLD_DATA_PROVIDER_H_
 #define COMPONENTS_TRANSLATE_CONTENT_RENDERER_DATA_FILE_RENDERER_CLD_DATA_PROVIDER_H_
 
@@ -11,14 +15,14 @@
 #include "ipc/ipc_platform_file.h"
 
 namespace content {
-class RenderViewObserver;
+class RenderFrameObserver;
 }
 
 namespace translate {
 
 class DataFileRendererCldDataProvider : public RendererCldDataProvider {
  public:
-  explicit DataFileRendererCldDataProvider(content::RenderViewObserver*);
+  explicit DataFileRendererCldDataProvider(content::RenderFrameObserver*);
   ~DataFileRendererCldDataProvider() override;
 
   // Load the CLD data from the specified file, starting at the specified byte
@@ -41,7 +45,7 @@ class DataFileRendererCldDataProvider : public RendererCldDataProvider {
   void OnCldDataAvailable(const IPC::PlatformFileForTransit ipc_file_handle,
                           const uint64 data_offset,
                           const uint64 data_length);
-  content::RenderViewObserver* render_view_observer_;
+  content::RenderFrameObserver* render_frame_observer_;
   base::Callback<void(void)> cld_available_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DataFileRendererCldDataProvider);

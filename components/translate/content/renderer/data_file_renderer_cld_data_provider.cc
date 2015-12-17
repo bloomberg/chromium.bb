@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// NOT DEAD CODE!
+// This code isn't dead, even if it isn't currently being used. Please refer to:
+// https://www.chromium.org/developers/how-tos/compact-language-detector-cld-data-source-configuration
+
 #include "data_file_renderer_cld_data_provider.h"
 
 #include "base/basictypes.h"
@@ -10,7 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "components/translate/content/common/data_file_cld_data_provider_messages.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -32,8 +36,8 @@ base::LazyInstance<CLDMmapWrapper>::Leaky g_cld_mmap =
 namespace translate {
 
 DataFileRendererCldDataProvider::DataFileRendererCldDataProvider(
-    content::RenderViewObserver* render_view_observer)
-    : render_view_observer_(render_view_observer) {
+    content::RenderFrameObserver* render_frame_observer)
+    : render_frame_observer_(render_frame_observer) {
 }
 
 DataFileRendererCldDataProvider::~DataFileRendererCldDataProvider() {
@@ -43,7 +47,7 @@ bool DataFileRendererCldDataProvider::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DataFileRendererCldDataProvider, message)
-  IPC_MESSAGE_HANDLER(ChromeViewMsg_CldDataFileAvailable, OnCldDataAvailable)
+  IPC_MESSAGE_HANDLER(ChromeFrameMsg_CldDataFileAvailable, OnCldDataAvailable)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -51,8 +55,8 @@ bool DataFileRendererCldDataProvider::OnMessageReceived(
 
 void DataFileRendererCldDataProvider::SendCldDataRequest() {
   // Else, send the IPC message to the browser process requesting the data...
-  render_view_observer_->Send(new ChromeViewHostMsg_NeedCldDataFile(
-      render_view_observer_->routing_id()));
+  render_frame_observer_->Send(new ChromeFrameHostMsg_NeedCldDataFile(
+      render_frame_observer_->routing_id()));
 }
 
 bool DataFileRendererCldDataProvider::IsCldDataAvailable() {
