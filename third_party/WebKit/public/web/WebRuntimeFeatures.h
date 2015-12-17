@@ -130,8 +130,6 @@ public:
 
     BLINK_EXPORT static void enableWebGLImageChromium(bool);
 
-    BLINK_EXPORT static void enableWebMIDI(bool);
-
     BLINK_EXPORT static void enableXSLT(bool);
 
     BLINK_EXPORT static void enableOverlayScrollbars(bool);
