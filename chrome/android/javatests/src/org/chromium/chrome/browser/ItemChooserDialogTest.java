@@ -90,8 +90,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         });
 
         // Verify first item selected gets selected.
-        // TODO(finnur): Stop using coordinates 10, 10 when crbug.com/532237 is fixed.
-        TouchCommon.singleClickView(items.getChildAt(position - 1), 10, 10);
+        TouchCommon.singleClickView(items.getChildAt(position - 1));
 
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
@@ -102,8 +101,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
         if (!expectedEnabledState) return;
 
-        // TODO(finnur): Stop using coordinates 10, 10 when crbug.com/532237 is fixed.
-        TouchCommon.singleClickView(button, 10, 10);
+        TouchCommon.singleClickView(button);
 
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
