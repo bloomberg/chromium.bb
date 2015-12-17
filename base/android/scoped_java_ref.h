@@ -227,7 +227,7 @@ class ScopedJavaGlobalRef : public JavaRef<T> {
  public:
   ScopedJavaGlobalRef() {}
 
-  explicit ScopedJavaGlobalRef(const ScopedJavaGlobalRef<T>& other) {
+  ScopedJavaGlobalRef(const ScopedJavaGlobalRef<T>& other) {
     this->Reset(other);
   }
 
@@ -240,6 +240,12 @@ class ScopedJavaGlobalRef : public JavaRef<T> {
 
   ~ScopedJavaGlobalRef() {
     this->Reset();
+  }
+
+  // Overloaded assignment operator defined for consistency with the implicit
+  // copy constructor.
+  void operator=(const ScopedJavaGlobalRef<T>& other) {
+    this->Reset(other);
   }
 
   void Reset() {
