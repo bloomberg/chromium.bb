@@ -570,18 +570,13 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif
 
 #if defined(OS_WIN)
-    bool init_device_scale_factor = true;
     if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {
       std::string scale_factor_string = command_line.GetSwitchValueASCII(
           switches::kDeviceScaleFactor);
       double scale_factor = 0;
-      if (base::StringToDouble(scale_factor_string, &scale_factor)) {
-        init_device_scale_factor = false;
-        gfx::InitDeviceScaleFactor(scale_factor);
-      }
+      if (base::StringToDouble(scale_factor_string, &scale_factor))
+        gfx::SetDefaultDeviceScaleFactor(scale_factor);
     }
-    if (init_device_scale_factor)
-      gfx::InitDeviceScaleFactor(gfx::GetDPIScale());
 #endif
 
     if (!GetContentClient())

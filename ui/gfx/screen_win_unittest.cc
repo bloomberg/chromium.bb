@@ -39,11 +39,11 @@ class ScreenWinTest : public testing::Test {
  private:
   void SetUp() override {
     testing::Test::SetUp();
-    gfx::InitDeviceScaleFactor(1.0);
+    gfx::SetDefaultDeviceScaleFactor(1.0);
   }
 
   void TearDown() override {
-    gfx::InitDeviceScaleFactor(1.0);
+    gfx::SetDefaultDeviceScaleFactor(1.0);
     testing::Test::TearDown();
   }
 };
@@ -62,7 +62,7 @@ TEST_F(ScreenWinTest, SingleDisplay1x) {
 }
 
 TEST_F(ScreenWinTest, SingleDisplay2x) {
-  gfx::InitDeviceScaleFactor(2.0);
+  gfx::SetDefaultDeviceScaleFactor(2.0);
 
   std::vector<MONITORINFOEX> monitor_infos;
   monitor_infos.push_back(CreateMonitorInfo(gfx::Rect(0, 0, 1920, 1200),

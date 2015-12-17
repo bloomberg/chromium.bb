@@ -516,7 +516,7 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
 // via ResourceBundle::GetImageNamed().
 TEST_F(ResourceBundleImageTest, GetImageNamed) {
 #if defined(OS_WIN)
-  gfx::InitDeviceScaleFactor(2.0);
+  gfx::SetDefaultDeviceScaleFactor(2.0);
 #endif
   std::vector<ScaleFactor> supported_factors;
   supported_factors.push_back(SCALE_FACTOR_100P);

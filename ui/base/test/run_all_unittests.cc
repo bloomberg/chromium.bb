@@ -48,7 +48,7 @@ void UIBaseTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
 #if defined(OS_WIN)
-  gfx::InitDeviceScaleFactor(1.0);
+  gfx::SetDefaultDeviceScaleFactor(1.0);
 #endif
 
 #if defined(OS_ANDROID)

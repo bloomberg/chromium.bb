@@ -651,11 +651,6 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
     supported_scale_factors.push_back(SCALE_FACTOR_100P);
 #endif
   ui::SetSupportedScaleFactors(supported_scale_factors);
-#if defined(OS_WIN)
-  // Must be called _after_ supported scale factors are set since it
-  // uses them.
-  gfx::InitDeviceScaleFactor(gfx::GetDPIScale());
-#endif
 }
 
 void ResourceBundle::FreeImages() {

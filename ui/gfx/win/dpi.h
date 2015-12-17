@@ -12,17 +12,18 @@
 
 namespace gfx {
 
-// Initialization of the scale factor that should be applied for rendering
-// in this process. Must be called before attempts to call any of the getter
-// methods below in this file, e.g. in the early toolkit/resource bundle setup.
-// This can be called multiple times during various tests, but subsequent calls
-// have no effect.
-GFX_EXPORT void InitDeviceScaleFactor(float scale);
+// Sets the device scale factor that will be used unless overridden on the
+// command line by --force-device-scale-factor.  If this is not called, and that
+// flag is not used, the scale factor used by the DIP conversion functions below
+// will be that returned by GetDPIScale().
+GFX_EXPORT void SetDefaultDeviceScaleFactor(float scale);
 
 GFX_EXPORT Size GetDPI();
 
 // Gets the scale factor of the display. For example, if the display DPI is
-// 96 then the scale factor is 1.0.
+// 96 then the scale factor is 1.0.  This clamps scale factors <= 1.25 to 1.0 to
+// maintain previous (non-DPI-aware) behavior where only the font size was
+// boosted.
 GFX_EXPORT float GetDPIScale();
 
 namespace win {

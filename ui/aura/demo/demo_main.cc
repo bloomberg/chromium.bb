@@ -129,7 +129,7 @@ int DemoMain() {
   gfx::GLSurface::InitializeOneOff();
 
 #if defined(OS_WIN)
-  gfx::InitDeviceScaleFactor(1.0f);
+  gfx::SetDefaultDeviceScaleFactor(1.0f);
 #endif
 
   // The ContextFactory must exist before any Compositors are created.

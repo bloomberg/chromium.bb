@@ -95,7 +95,7 @@ void LayoutTestBlinkSettingsImpl::ApplySettingsToWebView(
   blink::WebRuntimeFeatures::enableTestOnlyFeatures(true);
 
 #if defined(OS_WIN)
-  gfx::InitDeviceScaleFactor(1.0f);
+  gfx::SetDefaultDeviceScaleFactor(1.0f);
 #endif
 }
 

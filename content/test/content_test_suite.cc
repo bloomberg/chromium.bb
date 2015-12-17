@@ -82,7 +82,7 @@ void ContentTestSuite::Initialize() {
 #endif
 
 #if defined(OS_WIN)
-  gfx::InitDeviceScaleFactor(1.0f);
+  gfx::SetDefaultDeviceScaleFactor(1.0f);
 #endif
 
   ContentTestSuiteBase::Initialize();

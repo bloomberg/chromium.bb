@@ -134,7 +134,7 @@ void ChromeMetroViewerProcessHost::OnSetTargetSurface(
     float device_scale) {
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
 
-  gfx::InitDeviceScaleFactor(device_scale);
+  gfx::SetDefaultDeviceScaleFactor(device_scale);
   chrome::OpenAsh(hwnd);
   DCHECK(aura::RemoteWindowTreeHostWin::Instance());
   DCHECK_EQ(hwnd, aura::RemoteWindowTreeHostWin::Instance()->remote_window());

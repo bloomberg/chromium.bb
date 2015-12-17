@@ -13,25 +13,22 @@
 
 namespace {
 
-int kDefaultDPI = 96;
+const float kDefaultDPI = 96.f;
 
-float g_device_scale_factor = 0.0f;
+float g_device_scale_factor = 0.f;
 
 float GetUnforcedDeviceScaleFactor() {
-  // If the global device scale factor is initialized use it. This is to ensure
-  // we use the same scale factor across all callsites.
-  if (g_device_scale_factor)
-    return g_device_scale_factor;
-  return static_cast<float>(gfx::GetDPI().width()) /
-      static_cast<float>(kDefaultDPI);
+  return g_device_scale_factor ?
+      g_device_scale_factor :
+      static_cast<float>(gfx::GetDPI().width()) / kDefaultDPI;
 }
 
 }  // namespace
 
 namespace gfx {
 
-void InitDeviceScaleFactor(float scale) {
-  DCHECK_NE(0.0f, scale);
+void SetDefaultDeviceScaleFactor(float scale) {
+  DCHECK_NE(0.f, scale);
   g_device_scale_factor = scale;
 }
 
@@ -56,12 +53,7 @@ float GetDPIScale() {
   if (gfx::Display::HasForceDeviceScaleFactor())
     return gfx::Display::GetForcedDeviceScaleFactor();
   float dpi_scale = GetUnforcedDeviceScaleFactor();
-  if (dpi_scale <= 1.25) {
-    // Force 125% and below to 100% scale. We do this to maintain previous
-    // (non-DPI-aware) behavior where only the font size was boosted.
-    dpi_scale = 1.0;
-  }
-  return dpi_scale;
+  return (dpi_scale <= 1.25f) ? 1.f : dpi_scale;
 }
 
 namespace win {
@@ -101,7 +93,10 @@ Size DIPToScreenSize(const Size& dip_size) {
 }
 
 int GetSystemMetricsInDIP(int metric) {
-  return static_cast<int>(GetSystemMetrics(metric) / GetDPIScale() + 0.5);
+  // The system metrics always reflect the system DPI, not whatever scale we've
+  // forced or decided to use.
+  return static_cast<int>(
+      std::round(GetSystemMetrics(metric) / GetUnforcedDeviceScaleFactor()));
 }
 
 }  // namespace win

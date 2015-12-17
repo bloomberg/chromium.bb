@@ -30,7 +30,7 @@ void CompositorTestSuite::Initialize() {
   gfx::RegisterPathProvider();
 
 #if defined(OS_WIN)
-  gfx::InitDeviceScaleFactor(1.0f);
+  gfx::SetDefaultDeviceScaleFactor(1.0f);
 #endif
 
   message_loop_.reset(new base::MessageLoopForUI);
