@@ -180,12 +180,16 @@ TEST_F(DownloadFeedbackServiceTest, MaybeStorePingsForDownload) {
   EXPECT_TRUE(WillStorePings(DownloadProtectionService::UNCOMMON, ok_size));
   EXPECT_TRUE(
       WillStorePings(DownloadProtectionService::DANGEROUS_HOST, ok_size));
+  EXPECT_TRUE(
+      WillStorePings(DownloadProtectionService::POTENTIALLY_UNWANTED, ok_size));
 
   EXPECT_FALSE(WillStorePings(DownloadProtectionService::SAFE, bad_size));
   EXPECT_FALSE(WillStorePings(DownloadProtectionService::DANGEROUS, bad_size));
   EXPECT_FALSE(WillStorePings(DownloadProtectionService::UNCOMMON, bad_size));
   EXPECT_FALSE(
       WillStorePings(DownloadProtectionService::DANGEROUS_HOST, bad_size));
+  EXPECT_FALSE(WillStorePings(DownloadProtectionService::POTENTIALLY_UNWANTED,
+                              bad_size));
 }
 
 TEST_F(DownloadFeedbackServiceTest, SingleFeedbackComplete) {

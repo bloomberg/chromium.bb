@@ -91,9 +91,16 @@ void DownloadFeedbackService::MaybeStorePingsForDownload(
     content::DownloadItem* download,
     const std::string& ping,
     const std::string& response) {
-  if (result != DownloadProtectionService::UNCOMMON &&
-      result != DownloadProtectionService::DANGEROUS_HOST)
-    return;
+  switch (result) {
+    case DownloadProtectionService::UNKNOWN:
+    case DownloadProtectionService::SAFE:
+    case DownloadProtectionService::DANGEROUS:
+      return;
+    case DownloadProtectionService::UNCOMMON:
+    case DownloadProtectionService::DANGEROUS_HOST:
+    case DownloadProtectionService::POTENTIALLY_UNWANTED:
+      break;  // Fall through.
+  }
   UMA_HISTOGRAM_COUNTS("SBDownloadFeedback.SizeEligibleKB",
                        download->GetReceivedBytes() / 1024);
   if (download->GetReceivedBytes() > DownloadFeedback::kMaxUploadSize)
