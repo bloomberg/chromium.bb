@@ -8,10 +8,6 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"
-#if defined(OS_CHROMEOS)
-#include "remoting/host/chromeos/aura_desktop_capturer.h"
-#include "remoting/host/chromeos/mouse_cursor_monitor_aura.h"
-#endif
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/input_injector.h"
@@ -20,6 +16,14 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
+
+#if defined(OS_CHROMEOS)
+#include "remoting/host/chromeos/aura_desktop_capturer.h"
+#include "remoting/host/chromeos/mouse_cursor_monitor_aura.h"
+#endif
+#if defined(USE_X11)
+#include "remoting/host/linux/x11_util.h"
+#endif
 
 namespace remoting {
 
@@ -97,6 +101,9 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
               webrtc::DesktopCaptureOptions::CreateDefault())),
       supports_touch_events_(supports_touch_events) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+#if defined(USE_X11)
+  IgnoreXServerGrabs(desktop_capture_options_->x_display()->display(), true);
+#endif
 }
 
 BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory(

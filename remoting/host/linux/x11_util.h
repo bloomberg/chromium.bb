@@ -58,6 +58,11 @@ class ScopedXGrabServer {
   DISALLOW_COPY_AND_ASSIGN(ScopedXGrabServer);
 };
 
+
+// Make a connection to the X Server impervious to X Server grabs. Returns
+// true if successful or false if the required XTEST extension is not present.
+bool IgnoreXServerGrabs(Display* display, bool ignore);
+
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_LINUX_X11_UTIL_H_

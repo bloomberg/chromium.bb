@@ -24,6 +24,7 @@
 #endif
 #include "remoting/host/clipboard.h"
 #include "remoting/host/linux/unicode_to_keysym.h"
+#include "remoting/host/linux/x11_util.h"
 #include "remoting/proto/internal.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -180,9 +181,6 @@ class InputInjectorX11 : public InputInjector {
     Display* display_;
     Window root_window_;
 
-    int test_event_base_;
-    int test_error_base_;
-
     // Number of buttons we support.
     // Left, Right, Middle, VScroll Up/Down, HScroll Left/Right.
     static const int kNumPointerButtons = 7;
@@ -266,11 +264,7 @@ bool InputInjectorX11::Core::Init() {
     return false;
   }
 
-  // TODO(ajwong): Do we want to check the major/minor version at all for XTest?
-  int major = 0;
-  int minor = 0;
-  if (!XTestQueryExtension(display_, &test_event_base_, &test_error_base_,
-                           &major, &minor)) {
+  if (!IgnoreXServerGrabs(display_, true)) {
     LOG(ERROR) << "Server does not support XTest.";
     return false;
   }
