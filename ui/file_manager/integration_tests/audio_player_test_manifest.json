@@ -10,6 +10,7 @@
       "test_util.js",
       "remote_call.js",
       "audio_player/background.js",
+      "audio_player/click_control_buttons.js",
       "audio_player/open_audio_files.js"
     ]},
   "incognito" : "split",
