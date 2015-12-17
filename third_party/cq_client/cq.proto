@@ -55,6 +55,12 @@ message Config {
 
   // Deprecated. URL of the SVN repository. We are deprecating SVN support.
   optional string svn_repo_url = 12;
+
+  // If present, the CQ will refrain from processing any commits whose start
+  // time is >= this time.
+  //
+  // This is an UTC RFC3339 (stiptime(tm)) string representing the time.
+  optional string draining_start_time = 13;
 }
 
 message Rietveld {
