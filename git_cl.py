@@ -3569,8 +3569,9 @@ def CMDformat(parser, args):
       if opts.dry_run and stdout:
         return_value = 2
     except dart_format.NotFoundError as e:
-      print ('Unable to check dart code formatting. Dart SDK is not in ' +
-             'this checkout.')
+      print ('Warning: Unable to check Dart code formatting. Dart SDK not ' +
+             'found in this checkout. Files in other languages are still ' +
+             'formatted.')
 
   return return_value
 
