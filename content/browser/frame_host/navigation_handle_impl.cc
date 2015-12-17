@@ -275,6 +275,11 @@ void NavigationHandleImpl::WillRedirectRequest(
     RunCompleteCallback(result);
 }
 
+void NavigationHandleImpl::DidRedirectNavigation(const GURL& new_url) {
+  url_ = new_url;
+  GetDelegate()->DidRedirectNavigation(this);
+}
+
 void NavigationHandleImpl::ReadyToCommitNavigation(
     RenderFrameHostImpl* render_frame_host,
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
@@ -357,10 +362,6 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
   }
   next_index_ = 0;
   state_ = WILL_REDIRECT_REQUEST;
-
-  // Notify the delegate that a redirect was encountered and will be followed.
-  GetDelegate()->DidRedirectNavigation(this);
-
   return NavigationThrottle::PROCEED;
 }
 
