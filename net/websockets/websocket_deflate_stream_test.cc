@@ -315,7 +315,7 @@ class ReadFramesStub {
   }
 
   int result() const { return result_; }
-  const CompletionCallback callback() const { return callback_; }
+  const CompletionCallback& callback() const { return callback_; }
   std::vector<scoped_ptr<WebSocketFrame>>* frames_passed() {
     return frames_passed_;
   }
@@ -347,7 +347,7 @@ class WriteFramesStub {
   }
 
   int result() const { return result_; }
-  const CompletionCallback callback() const { return callback_; }
+  const CompletionCallback& callback() const { return callback_; }
   std::vector<scoped_ptr<WebSocketFrame>>* frames() { return &frames_; }
 
  private:
