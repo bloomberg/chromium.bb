@@ -4,6 +4,8 @@
 
 #include "net/dns/dns_util.h"
 
+#include <errno.h>
+
 #include <cstring>
 
 #include "build/build_config.h"
