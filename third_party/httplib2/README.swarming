@@ -9,8 +9,12 @@ Description:
 A comprehensive HTTP client library in Python.
 
 Local Modifications:
-Only python2 version is kept. Test and packaging code stripped.
-Appengine related code is removed. See MODIFICATIONS.diff.
+- Only python2 version is kept.
+- Test and packaging code stripped.
+- Appengine related code is removed.
+- Removed Symantec certificates as per
+  https://googleonlinesecurity.blogspot.com/2015/12/proactive-measures-in-digital.html
+- See MODIFICATIONS.diff.
 
 Notes:
 Required by oauth2client library.

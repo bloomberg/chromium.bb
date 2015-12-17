@@ -11,4 +11,6 @@ Python HTTP for Humans.
 Local Modifications:
 - Packaging code stripped.
 - Removed charade.
+- Removed Symantec certificates as per
+  https://googleonlinesecurity.blogspot.com/2015/12/proactive-measures-in-digital.html
 - Applied SWARMING.diff

@@ -1,7 +1,5 @@
-diff --git a/third_party/requests/compat.py b/third_party/requests/compat.py
-index 0d61a57..62e98be 100644
---- a/third_party/requests/compat.py
-+++ b/third_party/requests/compat.py
+--- a/compat.py
++++ b/compat.py
 @@ -4,7 +4,7 @@
  pythoncompat
  """
@@ -11,10 +9,8 @@ index 0d61a57..62e98be 100644
  
  import sys
  
-diff --git a/third_party/requests/models.py b/third_party/requests/models.py
-index 8fd9735..2354532 100644
---- a/third_party/requests/models.py
-+++ b/third_party/requests/models.py
+--- a/models.py
++++ b/models.py
 @@ -549,9 +549,8 @@ class Response(object):
  
      @property
@@ -27,3 +23,51 @@ index 8fd9735..2354532 100644
  
      def iter_content(self, chunk_size=1, decode_unicode=False):
          """Iterates over the response data.  When stream=True is set on the
+--- a/cacert.pem
++++ b/cacert.pem
+@@ -166,22 +166,6 @@ up/1902lMXucKS1M/mQ+7LZT/uqb7YLbdHVLB3luHtgZg3Pe9T7Qtd7nS2h9Qy4qIOF+oHhEngj1
+ mPnHfxsb1gYgAlihw6ID
+ -----END CERTIFICATE-----
+ 
+-Verisign Class 3 Public Primary Certification Authority
+-=======================================================
+------BEGIN CERTIFICATE-----
+-MIICPDCCAaUCEHC65B0Q2Sk0tjjKewPMur8wDQYJKoZIhvcNAQECBQAwXzELMAkGA1UEBhMCVVMx
+-FzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMTcwNQYDVQQLEy5DbGFzcyAzIFB1YmxpYyBQcmltYXJ5
+-IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MB4XDTk2MDEyOTAwMDAwMFoXDTI4MDgwMTIzNTk1OVow
+-XzELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMTcwNQYDVQQLEy5DbGFzcyAz
+-IFB1YmxpYyBQcmltYXJ5IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MIGfMA0GCSqGSIb3DQEBAQUA
+-A4GNADCBiQKBgQDJXFme8huKARS0EN8EQNvjV69qRUCPhAwL0TPZ2RHP7gJYHyX3KqhEBarsAx94
+-f56TuZoAqiN91qyFomNFx3InzPRMxnVx0jnvT0Lwdd8KkMaOIG+YD/isI19wKTakyYbnsZogy1Ol
+-hec9vn2a/iRFM9x2Fe0PonFkTGUugWhFpwIDAQABMA0GCSqGSIb3DQEBAgUAA4GBALtMEivPLCYA
+-TxQT3ab7/AoRhIzzKBxnki98tsX63/Dolbwdj2wsqFHMc9ikwFPwTtYmwHYBV4GSXiHx0bH/59Ah
+-WM1pF+NEHJwZRDmJXNycAA9WjQKZ7aKQRUzkuxCkPfAyAw7xzvjoyVGM5mKf5p/AfbdynMk2Omuf
+-Tqj/ZA1k
+------END CERTIFICATE-----
+-
+ Verisign Class 3 Public Primary Certification Authority - G2
+ ============================================================
+ -----BEGIN CERTIFICATE-----
+@@ -2683,22 +2667,6 @@ MCwXEGCSn1WHElkQwg9naRHMTh5+Spqtr0CodaxWkHS4oJyleW/c6RrIaQXpuvoDs3zk4E7Czp3o
+ tkYNbn5XOmeUwssfnHdKZ05phkOTOPu220+DkdRgfks+KzgHVZhepA==
+ -----END CERTIFICATE-----
+ 
+-Verisign Class 3 Public Primary Certification Authority
+-=======================================================
+------BEGIN CERTIFICATE-----
+-MIICPDCCAaUCEDyRMcsf9tAbDpq40ES/Er4wDQYJKoZIhvcNAQEFBQAwXzELMAkGA1UEBhMCVVMx
+-FzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMTcwNQYDVQQLEy5DbGFzcyAzIFB1YmxpYyBQcmltYXJ5
+-IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MB4XDTk2MDEyOTAwMDAwMFoXDTI4MDgwMjIzNTk1OVow
+-XzELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMTcwNQYDVQQLEy5DbGFzcyAz
+-IFB1YmxpYyBQcmltYXJ5IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MIGfMA0GCSqGSIb3DQEBAQUA
+-A4GNADCBiQKBgQDJXFme8huKARS0EN8EQNvjV69qRUCPhAwL0TPZ2RHP7gJYHyX3KqhEBarsAx94
+-f56TuZoAqiN91qyFomNFx3InzPRMxnVx0jnvT0Lwdd8KkMaOIG+YD/isI19wKTakyYbnsZogy1Ol
+-hec9vn2a/iRFM9x2Fe0PonFkTGUugWhFpwIDAQABMA0GCSqGSIb3DQEBBQUAA4GBABByUqkFFBky
+-CEHwxWsKzH4PIRnN5GfcX6kb5sroc50i2JhucwNhkcV8sEVAbkSdjbCxlnRhLQ2pRdKkkirWmnWX
+-bj9T/UWZYB2oK0z5XqcJ2HUw19JlYD1n1khVdWk/kfVIC0dpImmClr7JyDiGSnoscxlIaU5rfGW/
+-D/xwzoiQ
+------END CERTIFICATE-----
+-
+ Microsec e-Szigno Root CA 2009
+ ==============================
+ -----BEGIN CERTIFICATE-----
