@@ -83305,7 +83305,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.Timing2.NavigationToLoadEventFired"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PageLoadEventConditions">
+<histogram_suffixes name="PageLoadEventConditions" separator=".">
   <suffix name="BeforeCommit"/>
   <suffix name="AfterCommit.BeforePaint"/>
   <affected-histogram name="PageLoad.AbortTiming.Close"/>
