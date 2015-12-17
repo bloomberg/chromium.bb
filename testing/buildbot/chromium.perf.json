@@ -154,13 +154,6 @@
         ],
         "name": "gpu_perftests",
         "script": "gtest_perf_test.py"
-      },
-      {
-        "args": [
-          "cc_perftests"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
       }
     ]
   },
