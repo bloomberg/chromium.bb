@@ -4064,7 +4064,6 @@ typedef
 #endif /* PLAT_ppc64_aix5 */
 
 
-#ifndef WIN32
 /* ------------------------------------------------------------------ */
 /* ARCHITECTURE INDEPENDENT MACROS for CLIENT REQUESTS.               */
 /*                                                                    */
@@ -4171,7 +4170,7 @@ typedef
                                VG_USERREQ__DISCARD_TRANSLATIONS,  \
                                _qzz_addr, _qzz_len, 0, 0, 0);     \
    }
-#endif
+
 
 /* These requests are for getting Valgrind itself to print something.
    Possibly with a backtrace.  This is a really ugly hack.  The return value

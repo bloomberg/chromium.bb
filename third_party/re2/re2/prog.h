@@ -10,6 +10,7 @@
 #define RE2_PROG_H__
 
 #include "util/util.h"
+#include "util/sparse_array.h"
 #include "re2/re2.h"
 
 namespace re2 {
@@ -42,7 +43,7 @@ class Bitmap {
   static const int WordLog = 5;
   static const int Words = (Bits+31)/32;
   uint32 w_[Words];
-  DISALLOW_EVIL_CONSTRUCTORS(Bitmap);
+  DISALLOW_COPY_AND_ASSIGN(Bitmap);
 };
 
 
@@ -95,7 +96,7 @@ class Prog {
     void InitFail();
 
     // Getters
-    int id(Prog* p) { return this - p->inst_; }
+    int id(Prog* p) { return static_cast<int>(this - p->inst_); }
     InstOp opcode() { return static_cast<InstOp>(out_opcode_&7); }
     int out()     { return out_opcode_>>3; }
     int out1()    { DCHECK(opcode() == kInstAlt || opcode() == kInstAltMatch); return out1_; }
@@ -167,7 +168,7 @@ class Prog {
     friend struct PatchList;
     friend class Prog;
 
-    DISALLOW_EVIL_CONSTRUCTORS(Inst);
+    DISALLOW_COPY_AND_ASSIGN(Inst);
   };
 
   // Whether to anchor the search.
@@ -200,10 +201,10 @@ class Prog {
   int start_unanchored() { return start_unanchored_; }
   void set_start(int start) { start_ = start; }
   void set_start_unanchored(int start) { start_unanchored_ = start; }
-  int64 size() { return size_; }
+  int size() { return size_; }
   bool reversed() { return reversed_; }
   void set_reversed(bool reversed) { reversed_ = reversed; }
-  int64 byte_inst_count() { return byte_inst_count_; }
+  int byte_inst_count() { return byte_inst_count_; }
   const Bitmap<256>& byterange() { return byterange_; }
   void set_dfa_mem(int64 dfa_mem) { dfa_mem_ = dfa_mem; }
   int64 dfa_mem() { return dfa_mem_; }
@@ -329,6 +330,10 @@ class Prog {
   // Returns true on success, false on error.
   bool PossibleMatchRange(string* min, string* max, int maxlen);
 
+  // EXPERIMENTAL! SUBJECT TO CHANGE!
+  // Outputs the program fanout into the given sparse array.
+  void Fanout(SparseArray<int>* fanout);
+
   // Compiles a collection of regexps to Prog.  Each regexp will have
   // its own Match instruction recording the index in the vector.
   static Prog* CompileSet(const RE2::Options& options, RE2::Anchor anchor,
@@ -368,7 +373,7 @@ class Prog {
   uint8* onepass_nodes_;     // data for OnePass nodes
   OneState* onepass_start_;  // start node for OnePass program
 
-  DISALLOW_EVIL_CONSTRUCTORS(Prog);
+  DISALLOW_COPY_AND_ASSIGN(Prog);
 };
 
 }  // namespace re2

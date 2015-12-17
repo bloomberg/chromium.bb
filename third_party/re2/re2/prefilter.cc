@@ -15,6 +15,7 @@ static const int Trace = false;
 typedef set<string>::iterator SSIter;
 typedef set<string>::const_iterator ConstSSIter;
 
+GLOBAL_MUTEX(alloc_id_mutex);
 static int alloc_id = 100000;  // Used for debugging.
 // Initializes a Prefilter, allocating subs_ as necessary.
 Prefilter::Prefilter(Op op) {
@@ -23,7 +24,9 @@ Prefilter::Prefilter(Op op) {
   if (op_ == AND || op_ == OR)
     subs_ = new vector<Prefilter*>;
 
+  GLOBAL_MUTEX_LOCK(alloc_id_mutex);
   alloc_id_ = alloc_id++;
+  GLOBAL_MUTEX_UNLOCK(alloc_id_mutex);
   VLOG(10) << "alloc_id: " << alloc_id_;
 }
 
@@ -31,7 +34,7 @@ Prefilter::Prefilter(Op op) {
 Prefilter::~Prefilter() {
   VLOG(10) << "Deleted: " << alloc_id_;
   if (subs_) {
-    for (int i = 0; i < subs_->size(); i++)
+    for (size_t i = 0; i < subs_->size(); i++)
       delete (*subs_)[i];
     delete subs_;
     subs_ = NULL;
@@ -100,7 +103,7 @@ Prefilter* Prefilter::AndOr(Op op, Prefilter* a, Prefilter* b) {
 
   // If a and b match op, merge their contents.
   if (a->op() == op && b->op() == op) {
-    for (int i = 0; i < b->subs()->size(); i++) {
+    for (size_t i = 0; i < b->subs()->size(); i++) {
       Prefilter* bb = (*b->subs())[i];
       a->subs()->push_back(bb);
     }
@@ -175,7 +178,7 @@ static Rune ToLowerRune(Rune r) {
     return r;
   }
 
-  CaseFold *f = LookupCaseFold(unicode_tolower, num_unicode_tolower, r);
+  const CaseFold *f = LookupCaseFold(unicode_tolower, num_unicode_tolower, r);
   if (f == NULL || r < f->lo)
     return r;
   return ApplyFold(f, r);
@@ -492,7 +495,7 @@ class Prefilter::Info::Walker : public Regexp::Walker<Prefilter::Info*> {
   bool latin1() { return latin1_; }
  private:
   bool latin1_;
-  DISALLOW_EVIL_CONSTRUCTORS(Walker);
+  DISALLOW_COPY_AND_ASSIGN(Walker);
 };
 
 Prefilter::Info* Prefilter::BuildInfo(Regexp* re) {
@@ -500,7 +503,7 @@ Prefilter::Info* Prefilter::BuildInfo(Regexp* re) {
     LOG(INFO) << "BuildPrefilter::Info: " << re->ToString();
   }
 
-  bool latin1 = re->parse_flags() & Regexp::Latin1;
+  bool latin1 = (re->parse_flags() & Regexp::Latin1) != 0;
   Prefilter::Info::Walker w(latin1);
   Prefilter::Info* info = w.WalkExponential(re, NULL, 100000);
 
@@ -669,7 +672,7 @@ string Prefilter::DebugString() const {
       return "";
     case AND: {
       string s = "";
-      for (int i = 0; i < subs_->size(); i++) {
+      for (size_t i = 0; i < subs_->size(); i++) {
         if (i > 0)
           s += " ";
         Prefilter* sub = (*subs_)[i];
@@ -679,7 +682,7 @@ string Prefilter::DebugString() const {
     }
     case OR: {
       string s = "(";
-      for (int i = 0; i < subs_->size(); i++) {
+      for (size_t i = 0; i < subs_->size(); i++) {
         if (i > 0)
           s += "|";
         Prefilter* sub = (*subs_)[i];

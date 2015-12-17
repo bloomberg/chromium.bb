@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'build_for_tool%': '',
+  },
   'targets': [
     {
       'target_name': 're2',
@@ -44,6 +47,7 @@
         're2/set.cc',
         're2/set.h',
         're2/simplify.cc',
+        're2/stringpiece.cc',
         're2/stringpiece.h',
         're2/tostring.cc',
         're2/unicode_casefold.cc',
@@ -52,26 +56,34 @@
         're2/unicode_groups.h',
         're2/variadic_function.h',
         're2/walker-inl.h',
-        'util/arena.cc',
-        'util/arena.h',
         'util/atomicops.h',
         'util/flags.h',
         'util/hash.cc',
+        'util/logging.cc',
         'util/logging.h',
         'util/mutex.h',
         'util/rune.cc',
         'util/sparse_array.h',
         'util/sparse_set.h',
-        'util/stringpiece.cc',
         'util/stringprintf.cc',
         'util/strutil.cc',
         'util/utf.h',
         'util/util.h',
+        'util/valgrind.cc',
+        'util/valgrind.h',
       ],
       'conditions': [
         ['OS=="win"', {
           'msvs_disabled_warnings': [ 4018, 4722, 4267 ],
-        }]
+        }],
+        ['build_for_tool=="drmemory"', {
+          # Treat builds for Dr. Memory as builds for MSAN to prevent false
+          # positives created by lazily initialized memory.
+          # See crbug.com/568119#3 .
+          'defines': [
+            'MEMORY_SANITIZER'
+          ],
+        }],
       ]
     },
   ],
