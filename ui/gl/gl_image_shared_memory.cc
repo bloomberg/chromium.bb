@@ -76,7 +76,7 @@ bool GLImageSharedMemory::Initialize(
   }
 
   DCHECK(!shared_memory_);
-  shared_memory_ = duped_shared_memory.Pass();
+  shared_memory_ = std::move(duped_shared_memory);
   shared_memory_id_ = shared_memory_id;
   return true;
 }

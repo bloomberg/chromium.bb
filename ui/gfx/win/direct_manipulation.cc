@@ -18,7 +18,7 @@ DirectManipulationHelper::CreateInstance() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN10)
     instance.reset(new DirectManipulationHelper);
 
-  return instance.Pass();
+  return std::move(instance);
 }
 
 DirectManipulationHelper::DirectManipulationHelper() {}

@@ -225,7 +225,7 @@ scoped_ptr<uint8_t[]> GLES2RGBData(const gfx::Size& size,
   *data_format = GL_RGB;
   *data_type = GL_UNSIGNED_BYTE;
   *data_row_length = size.width();
-  return gles2_rgb_data.Pass();
+  return gles2_rgb_data;
 }
 
 scoped_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
@@ -269,7 +269,7 @@ scoped_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
                gles2_data_stride);
       }
       *data_row_length = size.width();
-      return gles2_data.Pass();
+      return gles2_data;
     }
     case BufferFormat::ATC:
     case BufferFormat::ATCIA:

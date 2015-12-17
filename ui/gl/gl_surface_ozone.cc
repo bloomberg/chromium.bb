@@ -75,7 +75,7 @@ GLSurfaceOzoneEGL::GLSurfaceOzoneEGL(
     scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
     AcceleratedWidget widget)
     : NativeViewGLSurfaceEGL(ozone_surface->GetNativeWindow()),
-      ozone_surface_(ozone_surface.Pass()),
+      ozone_surface_(std::move(ozone_surface)),
       widget_(widget) {}
 
 bool GLSurfaceOzoneEGL::Initialize() {
@@ -219,7 +219,7 @@ GLSurfaceOzoneSurfaceless::GLSurfaceOzoneSurfaceless(
     scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
     AcceleratedWidget widget)
     : SurfacelessEGL(gfx::Size()),
-      ozone_surface_(ozone_surface.Pass()),
+      ozone_surface_(std::move(ozone_surface)),
       widget_(widget),
       has_implicit_external_sync_(
           HasEGLExtension("EGL_ARM_implicit_external_sync")),
@@ -449,7 +449,7 @@ class GL_EXPORT GLSurfaceOzoneSurfacelessSurfaceImpl
 GLSurfaceOzoneSurfacelessSurfaceImpl::GLSurfaceOzoneSurfacelessSurfaceImpl(
     scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
     AcceleratedWidget widget)
-    : GLSurfaceOzoneSurfaceless(ozone_surface.Pass(), widget),
+    : GLSurfaceOzoneSurfaceless(std::move(ozone_surface), widget),
       context_(nullptr),
       fbo_(0),
       current_surface_(0) {
@@ -594,7 +594,7 @@ scoped_refptr<GLSurface> CreateViewGLSurfaceOzone(
   if (!surface_ozone)
     return nullptr;
   scoped_refptr<GLSurface> surface =
-      new GLSurfaceOzoneEGL(surface_ozone.Pass(), window);
+      new GLSurfaceOzoneEGL(std::move(surface_ozone), window);
   if (!surface->Initialize())
     return nullptr;
   return surface;
@@ -608,8 +608,8 @@ scoped_refptr<GLSurface> CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(
           ->CreateSurfacelessEGLSurfaceForWidget(window);
   if (!surface_ozone)
     return nullptr;
-  scoped_refptr<GLSurface> surface =
-      new GLSurfaceOzoneSurfacelessSurfaceImpl(surface_ozone.Pass(), window);
+  scoped_refptr<GLSurface> surface = new GLSurfaceOzoneSurfacelessSurfaceImpl(
+      std::move(surface_ozone), window);
   if (!surface->Initialize())
     return nullptr;
   return surface;
@@ -648,7 +648,7 @@ scoped_refptr<GLSurface> GLSurface::CreateSurfacelessViewGLSurface(
     if (!surface_ozone)
       return nullptr;
     scoped_refptr<GLSurface> surface;
-    surface = new GLSurfaceOzoneSurfaceless(surface_ozone.Pass(), window);
+    surface = new GLSurfaceOzoneSurfaceless(std::move(surface_ozone), window);
     if (surface->Initialize())
       return surface;
   }
