@@ -184,6 +184,7 @@ class Webm2Pes {
   };
   typedef std::unique_ptr<FILE, FILEDeleter> FilePtr;
 
+  bool InitWebmParser();
   bool WritePesPacket(const mkvparser::Block::Frame& vpx_frame,
                       double nanosecond_pts);
 
