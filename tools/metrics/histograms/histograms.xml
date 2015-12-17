@@ -29730,6 +29730,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Interests.ImageDownloadSuccess"
+    enum="BooleanSuccess">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    Android: Whether an attempt to download the image for an interest was
+    successful.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Interests.InterestsFetchSuccess"
+    enum="BooleanSuccess">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    Android: Whether an attempt to fetch the interests for a user was
+    successful.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Interests.NumInterests" units="interests">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    Android: The number of interests fetched for a user to display on the NTP.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.LoadTime" units="milliseconds">
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -30036,7 +30061,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.Snippets.NumArticles">
+<histogram name="NewTabPage.Snippets.NumArticles" units="articles">
   <owner>knn@chromium.org</owner>
   <summary>
     Android: The number of snippet articles available to show on the NTP logged
@@ -71027,6 +71052,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="Opened a recently closed tab"/>
   <int value="5" label="Opened a bookmark"/>
   <int value="6" label="Opened a foreign session (from other devices section)"/>
+  <int value="7" label="Navigated to the webpage for a snippet"/>
+  <int value="8" label="Clicked on an interest item"/>
 </enum>
 
 <enum name="NewTabPageBookmarkActionAndroid" type="int">

@@ -14,6 +14,7 @@ import android.widget.TextView;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsManager.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsManager.SnippetListItem;
 
@@ -64,6 +65,7 @@ class SnippetCardItemViewHolder extends SnippetListItemViewHolder implements Vie
                         "NewTabPage.Snippets.CardClicked", mPosition);
                 RecordHistogram.recordEnumeratedHistogram(SnippetsManager.SNIPPETS_STATE_HISTOGRAM,
                         SnippetsManager.SNIPPETS_CLICKED, SnippetsManager.NUM_SNIPPETS_ACTIONS);
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
             }
         });
         cardView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {

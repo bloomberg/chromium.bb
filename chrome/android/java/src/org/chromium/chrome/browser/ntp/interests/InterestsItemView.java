@@ -26,6 +26,7 @@ import android.view.View.OnClickListener;
 
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage.InterestsClickListener;
 import org.chromium.chrome.browser.ntp.interests.InterestsService.Interest;
@@ -230,9 +231,10 @@ class InterestsItemView extends AppCompatTextView implements OnClickListener {
      */
     private class ImageDownloadedCallback {
         public void onImageDownloaded(Drawable image, String url) {
-            if (image == null) {
-                return;
-            }
+            boolean imageDownloadSuccess = image != null;
+            RecordHistogram.recordBooleanHistogram(
+                    "NewTabPage.Interests.ImageDownloadSuccess", imageDownloadSuccess);
+            if (!imageDownloadSuccess) return;
             // If the Interest this View is displaying has changed while downloading, do not update
             // the image.
             if (TextUtils.equals(url, mInterest.getImageUrl())) {

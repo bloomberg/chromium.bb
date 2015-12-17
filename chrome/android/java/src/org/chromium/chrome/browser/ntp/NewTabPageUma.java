@@ -32,8 +32,12 @@ public class NewTabPageUma {
     public static final int ACTION_OPENED_BOOKMARK = 5;
     // User opened a foreign session (from recent tabs section)
     public static final int ACTION_OPENED_FOREIGN_SESSION = 6;
+    // User navigated to the webpage for a snippet shown on the NTP.
+    public static final int ACTION_OPENED_SNIPPET = 7;
+    // User clicked on an interest item.
+    public static final int ACTION_CLICKED_INTEREST = 8;
     // The number of possible actions
-    private static final int NUM_ACTIONS = 7;
+    private static final int NUM_ACTIONS = 9;
 
     // User navigated to a page using the omnibox.
     private static final int RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX = 0;

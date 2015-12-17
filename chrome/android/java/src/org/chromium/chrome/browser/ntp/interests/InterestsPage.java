@@ -8,9 +8,12 @@ import android.content.Context;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.interests.InterestsService.GetInterestsCallback;
 import org.chromium.chrome.browser.ntp.interests.InterestsService.Interest;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -26,12 +29,14 @@ import java.util.List;
  */
 public class InterestsPage implements NativePage {
 
-    private static final String TAG = "interests_page";
+    private static final String TAG = "InterestsPage";
 
     private final InterestsView mPageView;
     private final String mTitle;
     private final int mBackgroundColor;
     private final int mThemeColor;
+
+    private boolean mClicked;
 
     /**
      * Creates an InterestsPage.
@@ -51,21 +56,43 @@ public class InterestsPage implements NativePage {
                 new GetInterestsCallback() {
                     @Override
                     public void onInterestsAvailable(Interest[] interests) {
-                        if (interests == null) {
-                            Toast toast = Toast.makeText(context,
-                                    R.string.ntp_no_interests_toast, Toast.LENGTH_SHORT);
-                            toast.show();
+                        boolean gotInterests = interests != null;
+                        RecordHistogram.recordBooleanHistogram(
+                                "NewTabPage.Interests.InterestsFetchSuccess", gotInterests);
+                        if (!gotInterests) {
+                            showToastOnFailure();
                             return;
                         }
                         List<Interest> interestList = Arrays.asList(interests);
-
+                        // We use sparse histograms here like in NewTabPage.Snippets.NumArticles,
+                        // NewTabPage.NumberOfTiles etc as this will measure a small number (< 30)
+                        // which is expected to be constant for a user and prefer exact counts
+                        // without defining artificial bucket boundaries.
+                        RecordHistogram.recordSparseSlowlyHistogram(
+                                "NewTabPage.Interests.NumInterests", interestList.size());
+                        if (interestList.size() == 0) {
+                            showToastOnFailure();
+                            return;
+                        }
                         mPageView.setInterests(interestList);
+                    }
+
+                    private void showToastOnFailure() {
+                        Toast.makeText(context, R.string.ntp_no_interests_toast, Toast.LENGTH_SHORT)
+                                .show();
                     }
                 });
     }
 
-    public void setListener(InterestsClickListener listener) {
-        mPageView.setListener(listener);
+    public void setListener(final InterestsClickListener listener) {
+        mPageView.setListener(new InterestsClickListener() {
+            public void onInterestClicked(String interest) {
+                mClicked = true;
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_INTEREST);
+                RecordUserAction.record("MobileNTP.Interests.Click");
+                listener.onInterestClicked(interest);
+            }
+        });
     }
 
     /**
@@ -102,6 +129,8 @@ public class InterestsPage implements NativePage {
 
     @Override
     public void destroy() {
+        if (mClicked) return;
+        RecordUserAction.record("MobileNTP.Interests.Dismissed");
     }
 
     @Override
