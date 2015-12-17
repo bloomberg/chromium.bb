@@ -1,64 +1,48 @@
-function perfTestAddToLog(text) {
-  PerfTestRunner.log(text);
-}
-
-function perfTestAddToSummary(text) {
-}
-
-function perfTestMeasureValue(value) {
-  PerfTestRunner.measureValueAsync(value);
-  PerfTestRunner.gc();
-}
-
-function perfTestNotifyAbort() {
-  PerfTestRunner.logFatalError("benchmark aborted");
-}
-
 const numIterations = 10;
 const numWarmUpIterations = 5;
 
-function getConfigForPerformanceTest(connectionType, dataType, async,
-                                     verifyData) {
-  return {
-    prefixUrl:
-      connectionType === 'WebSocket' ? 'ws://localhost:8001/benchmark_helper' :
-      'http://localhost:8001/073be001e10950692ccbf3a2ad21c245', // XHR or fetch
-    printSize: true,
-    numXHRs: 1,
-    numFetches: 1,
-    numSockets: 1,
-    // + 1 is for a warmup iteration by the Telemetry framework.
-    numIterations: numIterations + numWarmUpIterations + 1,
-    numWarmUpIterations: numWarmUpIterations,
-    minTotal: 10240000,
-    startSize: 10240000,
-    stopThreshold: 10240000,
-    multipliers: [2],
-    verifyData: verifyData,
-    dataType: dataType,
-    async: async,
-    addToLog: perfTestAddToLog,
-    addToSummary: perfTestAddToSummary,
-    measureValue: perfTestMeasureValue,
-    notifyAbort: perfTestNotifyAbort
-  };
-}
-
 function startPerformanceTest(connectionType, benchmarkName,
     dataType, isWorker, async, verifyData){
-  initWorker(connectionType, 'http://localhost:8001');
+  var iframe = document.createElement('iframe');
+  if (connectionType === 'WebSocket') {
+    iframe.src = "http://localhost:8001/performance_test_iframe.html";
+  } else if (connectionType === 'XHR') {
+    iframe.src = "http://localhost:8001/xhr_performance_test_iframe.html";
+  } else {
+    iframe.src = "http://localhost:8001/fetch_performance_test_iframe.html";
+  }
+  iframe.onload = function() {
+    var child = iframe.contentWindow;
+    PerfTestRunner.prepareToMeasureValuesAsync({
+        done: function() {
+          child.postMessage({'command': 'stop'},
+                            'http://localhost:8001');
+        },
+        unit: 'ms',
+        dromaeoIterationCount: numIterations
+    });
 
-  PerfTestRunner.prepareToMeasureValuesAsync({
-      done: function() {
-        var config = getConfigForPerformanceTest(connectionType, dataType,
-                                                 async, verifyData);
-        doAction(config, isWorker, 'stop');
-      },
-      unit: 'ms',
-      dromaeoIterationCount: numIterations
-  });
-
-  var config = getConfigForPerformanceTest(connectionType, dataType, async,
-                                           verifyData);
-  doAction(config, isWorker, benchmarkName);
+    child.postMessage({'command': 'start',
+                       'connectionType': connectionType,
+                       'benchmarkName': benchmarkName,
+                       'dataType': dataType,
+                       'isWorker': isWorker,
+                       'async': async,
+                       'verifyData': verifyData,
+                       'numIterations': numIterations,
+                       'numWarmUpIterations': numWarmUpIterations},
+                      'http://localhost:8001');
+  };
+  document.body.appendChild(iframe);
 }
+
+onmessage = function(message) {
+  if (message.data.command === 'log') {
+    PerfTestRunner.log(message.data.value);
+  } else if (message.data.command === 'measureValue') {
+    PerfTestRunner.measureValueAsync(message.data.value);
+    PerfTestRunner.gc();
+  } else if (message.data.command === 'notifyAbort') {
+    PerfTestRunner.logFatalError("benchmark aborted");
+  }
+};

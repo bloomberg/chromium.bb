@@ -16,8 +16,6 @@ def generate(connection_type,
              is_worker,
              is_async,
              does_verify):
-    pywebsocket_server = 'http://localhost:8001'
-
     test_file_name = ('%s-%s%s-%s-%s-%s.html' %
                       (connection_type,
                        benchmark_name,
@@ -29,9 +27,7 @@ def generate(connection_type,
     test_file_content_template = '''<!DOCTYPE html>
 <head>
 <script src="../resources/runner.js"></script>
-<script src="{pywebsocket_server_root}/util.js"></script>
 <script src="resources/util_performance_test.js"></script>
-<script src="{pywebsocket_server_root}/{script_name}"></script>
 </head>
 <body onload="startPerformanceTest(
     '{connection_type}',
@@ -52,7 +48,6 @@ def generate(connection_type,
         script_name = 'fetch_benchmark.js'
 
     test_file_content = test_file_content_template.format(
-        pywebsocket_server_root=pywebsocket_server,
         script_name=script_name,
         connection_type=connection_type,
         benchmark_name=benchmark_name,

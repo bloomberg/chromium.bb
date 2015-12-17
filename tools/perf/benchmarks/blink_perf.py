@@ -125,15 +125,6 @@ class _BlinkPerfFullFrameMeasurement(_BlinkPerfMeasurement):
     options.AppendExtraBrowserArgs(['--expose-internals-for-testing'])
 
 
-class _BlinkPerfPywebsocketMeasurement(_BlinkPerfMeasurement):
-  def CustomizeBrowserOptions(self, options):
-    super(_BlinkPerfPywebsocketMeasurement, self).CustomizeBrowserOptions(
-        options)
-    # Cross-origin accesses are needed to run benchmarks spanning two servers,
-    # the Telemetry's HTTP server and the pywebsocket server.
-    options.AppendExtraBrowserArgs(['--disable-web-security'])
-
-
 class _SharedPywebsocketPageState(shared_page_state.SharedPageState):
   """Runs a pywebsocket server."""
   def __init__(self, test, finder_options, user_story_set):
@@ -341,7 +332,7 @@ class BlinkPerfPywebsocket(perf_benchmark.PerfBenchmark):
   regressions are often unreproducible (https://crbug.com/549017).
   '''
   tag = 'pywebsocket'
-  test = _BlinkPerfPywebsocketMeasurement
+  test = _BlinkPerfMeasurement
 
   @classmethod
   def Name(cls):
