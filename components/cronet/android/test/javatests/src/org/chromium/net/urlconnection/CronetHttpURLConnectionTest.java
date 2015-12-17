@@ -723,7 +723,9 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             fail();
         } catch (IOException e) {
             // Expected.
-            assertEquals("stream closed", e.getMessage());
+            if (!testingSystemHttpURLConnection()) {
+                assertEquals("stream closed", e.getMessage());
+            }
         }
         // Read once more, and make sure exception is thrown.
         try {
@@ -731,7 +733,9 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             fail();
         } catch (IOException e) {
             // Expected.
-            assertEquals("stream closed", e.getMessage());
+            if (!testingSystemHttpURLConnection()) {
+                assertEquals("stream closed", e.getMessage());
+            }
         }
     }
 
