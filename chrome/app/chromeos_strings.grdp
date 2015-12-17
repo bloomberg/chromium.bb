@@ -5973,6 +5973,21 @@ All users must sign out to continue.
   <message name="IDS_HOST_SETUP_NETWORK_ERROR_TITLE" desc="Title of the host's network error page during the bootstrapping process.">
     Could not set up network
   </message>
+  <message name="IDS_SLAVE_CONFIRMATION_TITLE" desc="Title of the host's confirmation page of the bootstrapping process. 6-digit confirmation code is displayed below.">
+    Initialize the connection
+  </message>
+  <message name="IDS_SLAVE_ENROLL_TITLE" desc="Title of the enroll page of the bootstrapping process.">
+    Enroll in your organization
+  </message>
+  <message name="IDS_SLAVE_ENROLLMENT_IN_PROGRESS" desc="Message shown on the host screen of the bootstrapping process.">
+    Enrolling in <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN_NAME">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>...
+  </message>
+  <message name="IDS_SLAVE_ENROLLMENT_ERROR_TITLE" desc="Title of the page shown when enrollment attempt is failed during the bootstrapping process.">
+    Unable to enroll
+  </message>
+  <message name="IDS_SLAVE_EROLLMENT_ERROR_NEEDS_RESTART" desc="Text on the host's page shown when enrollment attempt is failed during the bootstrapping process.">
+    Please restart the device and try again later.
+  </message>
 
   <!-- Strings for the le OAuth-based enterprise enrollment page -->
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">

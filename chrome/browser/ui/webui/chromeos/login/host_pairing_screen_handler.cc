@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/host_pairing_screen_handler.h"
 
+#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/login/localized_values_builder.h"
 #include "grit/generated_resources.h"
 
@@ -21,6 +23,11 @@ const char kMethodContextChanged[] = "contextChanged";
 // TODO(dzhioev): Move 'contextReady' logic to the base screen handler when
 // all screens migrate to context-based communications.
 const char kCallbackContextReady[] = "contextReady";
+
+bool IsBootstrappingSlave() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kOobeBootstrappingSlave);
+}
 
 }  // namespace
 
@@ -77,6 +84,16 @@ void HostPairingScreenHandler::DeclareLocalizedValues(
                IDS_HOST_SETUP_BASIC_CONFIGURATION_TITLE);
   builder->Add(prefix + "SetupNetworkErrorTitle",
                IDS_HOST_SETUP_NETWORK_ERROR_TITLE);
+
+  if (IsBootstrappingSlave()) {
+    builder->Add(prefix + "ConfirmationTitle", IDS_SLAVE_CONFIRMATION_TITLE);
+    builder->Add(prefix + "EnrollTitle", IDS_SLAVE_ENROLL_TITLE);
+    builder->Add(prefix + "EnrollingTitle", IDS_SLAVE_ENROLLMENT_IN_PROGRESS);
+    builder->Add(prefix + "EnrollmentErrorTitle",
+                 IDS_SLAVE_ENROLLMENT_ERROR_TITLE);
+    builder->Add(prefix + "ErrorNeedsRestart",
+                 IDS_SLAVE_EROLLMENT_ERROR_NEEDS_RESTART);
+  }
 }
 
 void HostPairingScreenHandler::RegisterMessages() {

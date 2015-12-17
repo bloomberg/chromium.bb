@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/controller_pairing_screen_handler.h"
 
+#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -20,6 +22,11 @@ const char kMethodContextChanged[] = "contextChanged";
 
 const char kCallbackUserActed[] = "userActed";
 const char kCallbackContextChanged[] = "contextChanged";
+
+bool IsBootstrappingMaster() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kOobeBootstrappingMaster);
+}
 
 }  // namespace
 
@@ -100,6 +107,30 @@ void ControllerPairingScreenHandler::DeclareLocalizedValues(
   builder->Add(prefix + "SuccessText", IDS_PAIRING_CONTROLLER_SUCCESS_TEXT);
   builder->Add(prefix + "ContinueToHangoutsBtn",
                IDS_PAIRING_CONTROLLER_CONTINUE_TO_HANGOUTS);
+
+  if (IsBootstrappingMaster()) {
+    // These strings are only for testing/demo purpose, so they are not put into
+    // grd file for translation.
+    builder->Add(prefix + "WelcomeTitle",
+                 "Welcome to the bootstrapping process");
+    builder->Add(prefix + "Searching",
+                 "Searching for nearby Chrome OS devices...");
+    builder->Add(prefix + "ConnectingAdvice",
+                 "Please make sure that your Chrome OS device is turned on.");
+    builder->Add(prefix + "SelectTitle", "Select a Chrome OS device to set up");
+    builder->Add(prefix + "ConfirmationTitle", "Initialize the connection");
+    builder->Add(prefix + "ConfirmationQuestion",
+                 "Does this code appear on your Chrome OS device\'s screen?");
+    builder->Add(prefix + "UpdateTitle", "Updating...");
+    builder->Add(prefix + "UpdateText",
+                 "In order to bring you the latest features, your Chrome OS "
+                 "device needs to update.");
+    builder->Add(prefix + "ConnectionLostTitle",
+                 "Connection to Chrome OS device lost");
+    builder->Add(prefix + "ConnectionLostText",
+                 " Lost connection to your Chrome OS device. Please move "
+                 "closer, or check your device and try again.");
+  }
 }
 
 void ControllerPairingScreenHandler::RegisterMessages() {
