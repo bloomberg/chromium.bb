@@ -12,6 +12,7 @@ recordActionTaken:
     FileSystemDirectoryContentReceived : 13
     ProfilesCPUProfileTaken : 5
     ProfilesHeapProfileTaken : 6
+    ResizedViewInResponsiveMode : 17
     RevisionApplied : 12
     ScriptsBreakpointSet : 3
     StyleRuleEdited : 14
