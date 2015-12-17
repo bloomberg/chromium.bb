@@ -154,6 +154,7 @@ void MessagePipeDispatcher::InitOnIO() {
 
 void MessagePipeDispatcher::CloseOnIO() {
   base::AutoLock locker(lock());
+  Release();  // To match CloseImplNoLock.
   if (transferable_) {
     if (channel_) {
       channel_->Shutdown();
@@ -435,6 +436,12 @@ void MessagePipeDispatcher::CancelAllAwakablesNoLock() {
 
 void MessagePipeDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
+  // We take a manual refcount because at shutdown, the task below might not get
+  // a chance to execute. If that happens, the RawChannel's will still call our
+  // OnError method because it always runs (since it watches thread
+  // destruction). So to avoid UAF, manually add a reference and only release it
+  // if the task runs.
+  AddRef();
   internal::g_io_thread_task_runner->PostTask(
       FROM_HERE, base::Bind(&MessagePipeDispatcher::CloseOnIO, this));
 }
