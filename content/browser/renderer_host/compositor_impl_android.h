@@ -48,8 +48,8 @@ class CONTENT_EXPORT CompositorImpl
  public:
   class VSyncObserver {
    public:
-    virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                                         base::TimeDelta interval) = 0;
+    virtual void OnVSync(base::TimeTicks timebase,
+                         base::TimeDelta interval) = 0;
   };
 
   CompositorImpl(CompositorClient* client, gfx::NativeWindow root_window);
@@ -64,6 +64,7 @@ class CONTENT_EXPORT CompositorImpl
 
   void AddObserver(VSyncObserver* observer);
   void RemoveObserver(VSyncObserver* observer);
+  void OnNeedsBeginFramesChange(bool needs_begin_frames);
 
   // ui::ResourceProvider implementation.
   cc::UIResourceId CreateUIResource(cc::UIResourceClient* client) override;
@@ -106,8 +107,6 @@ class CONTENT_EXPORT CompositorImpl
       override {}
 
   // LayerTreeHostSingleThreadClient implementation.
-  void ScheduleComposite() override;
-  void ScheduleAnimation() override;
   void DidPostSwapBuffers() override;
   void DidAbortSwapBuffers() override;
 
@@ -118,38 +117,8 @@ class CONTENT_EXPORT CompositorImpl
   void OnVSync(base::TimeTicks frame_time,
                base::TimeDelta vsync_period) override;
   void SetNeedsAnimate() override;
-
   void SetVisible(bool visible);
-
-  enum CompositingTrigger {
-    DO_NOT_COMPOSITE,
-    COMPOSITE_IMMEDIATELY,
-    COMPOSITE_EVENTUALLY,
-  };
-  void PostComposite(CompositingTrigger trigger);
-  void Composite(CompositingTrigger trigger);
   void CreateOutputSurface();
-
-  bool WillCompositeThisFrame() const {
-    return current_composite_task_ &&
-           !current_composite_task_->callback().is_null();
-  }
-  bool DidCompositeThisFrame() const {
-    return current_composite_task_ &&
-           current_composite_task_->callback().is_null();
-  }
-  bool WillComposite() const {
-    return WillCompositeThisFrame() ||
-           composite_on_vsync_trigger_ != DO_NOT_COMPOSITE;
-  }
-  void CancelComposite() {
-    DCHECK(WillComposite());
-    if (WillCompositeThisFrame())
-      current_composite_task_->Cancel();
-    current_composite_task_.reset();
-    composite_on_vsync_trigger_ = DO_NOT_COMPOSITE;
-    will_composite_immediately_ = false;
-  }
   void CreateLayerTreeHost();
 
   void OnGpuChannelEstablished();
@@ -177,38 +146,14 @@ class CONTENT_EXPORT CompositorImpl
 
   gfx::NativeWindow root_window_;
 
-  // Used locally to track whether a call to LTH::Composite() did result in
-  // a posted SwapBuffers().
-  bool did_post_swapbuffers_;
-
-  // Used locally to inhibit ScheduleComposite() during
-  // UpdateLayerTreeHost().
-  bool ignore_schedule_composite_;
-
-  // Whether we need to composite in general because of any invalidation or
-  // explicit request.
-  bool needs_composite_;
-
   // Whether we need to update animations on the next composite.
   bool needs_animate_;
-
-  // Whether we posted a task and are about to composite.
-  bool will_composite_immediately_;
-
-  // How we should schedule Composite during the next vsync.
-  CompositingTrigger composite_on_vsync_trigger_;
-
-  // The Composite operation scheduled for the current vsync interval.
-  scoped_ptr<base::CancelableClosure> current_composite_task_;
 
   // The number of SwapBuffer calls that have not returned and ACK'd from
   // the GPU thread.
   unsigned int pending_swapbuffers_;
 
   size_t num_successive_context_creation_failures_;
-
-  base::TimeDelta vsync_period_;
-  base::TimeTicks last_vsync_;
 
   base::OneShotTimer establish_gpu_channel_timeout_;
 
@@ -220,6 +165,7 @@ class CONTENT_EXPORT CompositorImpl
 
   gpu::Capabilities gpu_capabilities_;
 
+  bool needs_begin_frames_;
   base::ObserverList<VSyncObserver, true> observer_list_;
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
