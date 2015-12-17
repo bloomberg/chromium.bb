@@ -5,6 +5,7 @@
 import("//build/config/compiler/compiler.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/ui.gni")
+import("//build/nocompile.gni")
 import("//testing/test.gni")
 
 if (is_android) {
@@ -1273,14 +1274,11 @@ test("base_unittests") {
     "base64url_unittest.cc",
     "big_endian_unittest.cc",
     "bind_unittest.cc",
-    "bind_unittest.nc",
     "bits_unittest.cc",
     "build_time_unittest.cc",
     "callback_helpers_unittest.cc",
     "callback_list_unittest.cc",
-    "callback_list_unittest.nc",
     "callback_unittest.cc",
-    "callback_unittest.nc",
     "cancelable_callback_unittest.cc",
     "command_line_unittest.cc",
     "containers/adapters_unittest.cc",
@@ -1357,13 +1355,11 @@ test("base_unittests") {
     "memory/ref_counted_memory_unittest.cc",
     "memory/ref_counted_unittest.cc",
     "memory/scoped_ptr_unittest.cc",
-    "memory/scoped_ptr_unittest.nc",
     "memory/scoped_vector_unittest.cc",
     "memory/shared_memory_mac_unittest.cc",
     "memory/shared_memory_unittest.cc",
     "memory/singleton_unittest.cc",
     "memory/weak_ptr_unittest.cc",
-    "memory/weak_ptr_unittest.nc",
     "message_loop/message_loop_task_runner_unittest.cc",
     "message_loop/message_loop_unittest.cc",
     "message_loop/message_pump_glib_unittest.cc",
@@ -1609,6 +1605,24 @@ test("base_unittests") {
     } else if (is_mac) {
       data += [ "$root_out_dir/base_unittests.dSYM/" ]
     }
+  }
+}
+
+if (enable_nocompile_tests) {
+  nocompile_test("base_nocompile_tests") {
+    sources = [
+      "bind_unittest.nc",
+      "callback_list_unittest.nc",
+      "callback_unittest.nc",
+      "memory/scoped_ptr_unittest.nc",
+      "memory/weak_ptr_unittest.nc",
+    ]
+
+    deps = [
+      ":base",
+      "//base/test:run_all_unittests",
+      "//testing/gtest",
+    ]
   }
 }
 
