@@ -148,6 +148,9 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_LOCATION_AUTHORIZATION_ALERT" desc="Specifies the reason for sending the user's location to Google [Length: unlimited] [iOS only].">
           Get a better Google experience in Chromium based on your location.
       </message>
+      <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password. [Length: 60em]">
+        Do you want Chromium to save your password for this site?
+      </message>
     </messages>
   </release>
 </grit>

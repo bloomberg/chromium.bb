@@ -195,14 +195,15 @@ all other OS specific variables will be false.
       </message>
 
       <!-- Password Manager -->
-      <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password. [Length: 60em]">
-        Do you want <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to save your password for this site?
-      </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager [Length: 10em]">
         Save
       </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option [Length: 10em]">
         Never
+      </message>
+      <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT_SMART_LOCK_BRANDING" desc="Info bar message to save a password, referring to the Google Smart Lock
+brand. [Length: 70em]">
+        Do you want Google Smart Lock to save your password for this site?
       </message>
 
       <!-- Password Generation -->

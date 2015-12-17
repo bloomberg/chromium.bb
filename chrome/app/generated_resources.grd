@@ -6061,9 +6061,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_UPDATE_PASSWORD" desc="The title of the save password bubble when a password can be updated.">
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to update your password for this site?
       </message>
-      <message name="IDS_PASSWORD_MANAGER_SMART_LOCK" desc="The brand name of the password manager for the title of the save password bubble when a user is signed in.">
-        Google Smart Lock
-      </message>
       <message name="IDS_PASSWORD_MANAGER_SMART_LOCK_FOR_PASSWORDS" desc="The more descriptive brand name of the password manager when the user is signed in. Used in various UI elements, can be in link format.">
         Google Smart Lock for Passwords
       </message>
