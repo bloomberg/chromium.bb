@@ -7,9 +7,10 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "media/base/android/media_codec_audio_decoder.h"
-#include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_codec_video_decoder.h"
 #include "media/base/android/media_statistics.h"
+#include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/android/test_data_factory.h"
 #include "media/base/android/test_statistics.h"
 #include "media/base/timestamp_constants.h"
@@ -17,15 +18,6 @@
 #include "ui/gl/android/surface_texture.h"
 
 namespace media {
-
-// Helper macro to skip the test if MediaCodecBridge isn't available.
-#define SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE()        \
-  do {                                                            \
-    if (!MediaCodecBridge::IsAvailable()) {                       \
-      VLOG(0) << "Could not run test - not supported on device."; \
-      return;                                                     \
-    }                                                             \
-  } while (0)
 
 namespace {
 

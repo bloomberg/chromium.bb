@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
-#include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/base/android/sdk_media_codec_bridge.h"
 
 namespace media {
 

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_statistics.h"
+#include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/timestamp_constants.h"
 

@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_GPU_AVDA_SHARED_STATE_H_
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/sdk_media_codec_bridge.h"
 #include "ui/gl/gl_image.h"
 
 namespace gfx {
