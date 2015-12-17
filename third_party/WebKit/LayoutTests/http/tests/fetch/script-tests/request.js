@@ -331,6 +331,15 @@ test(function() {
   }, 'Request: valid method names and normalize test');
 
 test(function() {
+    assert_throws(new TypeError(),
+                  function() { new Request('http://user@localhost/'); },
+                  'Request with a URL with username must throw.');
+    assert_throws(new TypeError(),
+                  function() { new Request('http://user:pass@localhost/'); },
+                  'Request with a URL with username and password must throw.');
+  }, 'Request construction with URLs with credentials.');
+
+test(function() {
     var req = new Request(URL);
     assert_false(req.bodyUsed,
                  'Request should not be flagged as used if it has not been ' +

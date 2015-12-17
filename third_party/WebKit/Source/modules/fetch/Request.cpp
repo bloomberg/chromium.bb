@@ -101,9 +101,11 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
             exceptionState.throwTypeError("Failed to parse URL from " + inputString);
             return nullptr;
         }
-        // TODO(yhirano): Implement the following substep:
         //   "If |parsedURL| includes credentials, throw a TypeError."
-        //
+        if (!parsedURL.user().isEmpty() || !parsedURL.pass().isEmpty()) {
+            exceptionState.throwTypeError("Request cannot be constructed from a URL that includes credentials: " + inputString);
+            return nullptr;
+        }
         // "Set |request|'s url to |parsedURL| and replace |request|'s url list
         // single URL with a copy of |parsedURL|."
         request->setURL(parsedURL);
