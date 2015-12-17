@@ -67,6 +67,13 @@ def GetNameForKind(kind, internal = False):
   parts.append(kind.name)
   return "::".join(parts)
 
+def GetQualifiedNameForKind(kind):
+  # Always start with an empty part to force a leading "::" on output.
+  parts = [""]
+  parts.extend(NamespaceToArray(kind.module.namespace))
+  parts.append(kind.name)
+  return "::".join(parts)
+
 def GetCppType(kind):
   if mojom.IsArrayKind(kind):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
@@ -390,6 +397,7 @@ class Generator(generator.Generator):
     "get_map_validate_params_ctor_args": GetMapValidateParamsCtorArgs,
     "get_name_for_kind": GetNameForKind,
     "get_pad": pack.GetPad,
+    "get_qualified_name_for_kind": GetQualifiedNameForKind,
     "has_callbacks": mojom.HasCallbacks,
     "should_inline": ShouldInlineStruct,
     "should_inline_union": ShouldInlineUnion,

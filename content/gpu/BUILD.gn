@@ -49,6 +49,10 @@ source_set("gpu_sources") {
     "//ui/gl",
   ]
 
+  public_deps = [
+    "//content/common:mojo_bindings",
+  ]
+
   if (enable_mojo_media == "gpu") {
     deps += [ "//media/mojo/services:application" ]
   }

@@ -32,6 +32,8 @@ class InterfacePtr {
   DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(InterfacePtr)
 
  public:
+  using GenericInterface = typename Interface::GenericInterface;
+
   // Constructs an unbound InterfacePtr.
   InterfacePtr() {}
   InterfacePtr(decltype(nullptr)) {}
@@ -68,7 +70,7 @@ class InterfacePtr {
   // has the same effect as reset(). In this case, the InterfacePtr is not
   // considered as bound.
   void Bind(
-      InterfacePtrInfo<Interface> info,
+      InterfacePtrInfo<GenericInterface> info,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     reset();
     if (info.is_valid())
@@ -157,7 +159,7 @@ class InterfacePtr {
   //     on to associated interface endpoint handles at both sides of the
   //     message pipe in order to call this method. We need a way to forcefully
   //     invalidate associated interface endpoint handles.
-  InterfacePtrInfo<Interface> PassInterface() {
+  InterfacePtrInfo<GenericInterface> PassInterface() {
     CHECK(!HasAssociatedInterfaces());
     CHECK(!internal_state_.has_pending_callbacks());
     State state;

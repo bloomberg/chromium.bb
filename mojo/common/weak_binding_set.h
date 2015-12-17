@@ -21,6 +21,8 @@ class WeakBinding;
 template <typename Interface>
 class WeakBindingSet {
  public:
+  using GenericInterface = typename Interface::GenericInterface;
+
   WeakBindingSet() {}
   ~WeakBindingSet() { CloseAllBindings(); }
 
@@ -28,7 +30,8 @@ class WeakBindingSet {
     error_handler_ = error_handler;
   }
 
-  void AddBinding(Interface* impl, InterfaceRequest<Interface> request) {
+  void AddBinding(Interface* impl,
+                  InterfaceRequest<GenericInterface> request) {
     auto binding = new WeakBinding<Interface>(impl, request.Pass());
     binding->set_connection_error_handler([this]() { OnConnectionError(); });
     bindings_.push_back(binding->GetWeakPtr());
@@ -68,7 +71,9 @@ class WeakBindingSet {
 template <typename Interface>
 class WeakBinding {
  public:
-  WeakBinding(Interface* impl, InterfaceRequest<Interface> request)
+  using GenericInterface = typename Interface::GenericInterface;
+
+  WeakBinding(Interface* impl, InterfaceRequest<GenericInterface> request)
       : binding_(impl, request.Pass()),
         weak_ptr_factory_(this) {
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });

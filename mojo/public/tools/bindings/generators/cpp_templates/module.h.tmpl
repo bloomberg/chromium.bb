@@ -35,6 +35,9 @@
 {%- for import in imports %}
 #include "{{import.module.path}}.h"
 {%- endfor %}
+{%- if variant %}
+#include "{{module.path}}.h"
+{%- endif %}
 
 {%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {

@@ -13,6 +13,8 @@ class {{interface.name}} {
   static const uint32_t Version_ = {{interface.version}};
   static const bool PassesAssociatedKinds_ = {% if interface|passes_associated_kinds %}true{% else %}false{% endif %};
 
+  using GenericInterface = {{interface|get_qualified_name_for_kind}};
+
   using Proxy_ = {{interface.name}}Proxy;
   using Stub_ = {{interface.name}}Stub;
 

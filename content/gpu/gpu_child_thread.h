@@ -19,6 +19,7 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_config.h"
 #include "content/common/gpu/x_util.h"
+#include "content/common/process_control.mojom.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -36,7 +37,6 @@ namespace content {
 class GpuMemoryBufferFactory;
 class GpuProcessControlImpl;
 class GpuWatchdogThread;
-class ProcessControl;
 
 // The main thread of the GPU child process. There will only ever be one of
 // these per process. It does process initialization and shutdown. It forwards

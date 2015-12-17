@@ -22,6 +22,8 @@ class AssociatedInterfacePtr {
   DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(AssociatedInterfacePtr)
 
  public:
+  using GenericInterface = typename Interface::GenericInterface;
+
   // Constructs an unbound AssociatedInterfacePtr.
   AssociatedInterfacePtr() {}
   AssociatedInterfacePtr(decltype(nullptr)) {}
@@ -52,7 +54,7 @@ class AssociatedInterfacePtr {
   // NOTE: Please see the comments of
   // AssociatedGroup.CreateAssociatedInterface() about when you can use this
   // object to make calls.
-  void Bind(AssociatedInterfacePtrInfo<Interface> info) {
+  void Bind(AssociatedInterfacePtrInfo<GenericInterface> info) {
     reset();
 
     bool is_local =
@@ -120,7 +122,7 @@ class AssociatedInterfacePtr {
   // It is an error to call PassInterface() while there are pending responses.
   // TODO: fix this restriction, it's not always obvious when there is a
   // pending response.
-  AssociatedInterfacePtrInfo<Interface> PassInterface() {
+  AssociatedInterfacePtrInfo<GenericInterface> PassInterface() {
     DCHECK(!internal_state_.has_pending_callbacks());
     State state;
     internal_state_.Swap(&state);
@@ -173,11 +175,11 @@ class AssociatedInterfacePtr {
 // as soon as the request is sent, |ptr| is usable. There is no need to wait
 // until the request is bound to an implementation at the remote side.
 template <typename Interface>
-AssociatedInterfaceRequest<Interface> GetProxy(
+AssociatedInterfaceRequest<typename Interface::GenericInterface> GetProxy(
     AssociatedInterfacePtr<Interface>* ptr,
     AssociatedGroup* group) {
-  AssociatedInterfaceRequest<Interface> request;
-  AssociatedInterfacePtrInfo<Interface> ptr_info;
+  AssociatedInterfaceRequest<typename Interface::GenericInterface> request;
+  AssociatedInterfacePtrInfo<typename Interface::GenericInterface> ptr_info;
   group->CreateAssociatedInterface(AssociatedGroup::WILL_PASS_REQUEST,
                                    &ptr_info, &request);
 

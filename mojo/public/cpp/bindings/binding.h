@@ -59,6 +59,8 @@ class AssociatedGroup;
 template <typename Interface>
 class Binding {
  public:
+  using GenericInterface = typename Interface::GenericInterface;
+
   // Constructs an incomplete binding that will use the implementation |impl|.
   // The binding may be completed with a subsequent call to the |Bind| method.
   // Does not take ownership of |impl|, which must outlive the binding.
@@ -92,7 +94,7 @@ class Binding {
   // |impl|, which must outlive the binding. See class comment for definition of
   // |waiter|.
   Binding(Interface* impl,
-          InterfaceRequest<Interface> request,
+          InterfaceRequest<GenericInterface> request,
           const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : Binding(impl) {
     Bind(request.PassMessagePipe(), waiter);
@@ -132,7 +134,7 @@ class Binding {
   // binding it to the previously specified implementation. See class comment
   // for definition of |waiter|.
   void Bind(
-      InterfaceRequest<Interface> request,
+      InterfaceRequest<GenericInterface> request,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     Bind(request.PassMessagePipe(), waiter);
   }
@@ -186,7 +188,7 @@ class Binding {
   // on to associated interface endpoint handles at both sides of the
   // message pipe in order to call this method. We need a way to forcefully
   // invalidate associated interface endpoint handles.
-  InterfaceRequest<Interface> Unbind() {
+  InterfaceRequest<GenericInterface> Unbind() {
     CHECK(!HasAssociatedInterfaces());
     return internal_state_.Unbind();
   }

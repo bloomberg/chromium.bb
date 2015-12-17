@@ -44,9 +44,10 @@ class AssociatedGroup {
   // no need to wait until |request| is bound to an implementation at the remote
   // side.
   template <typename T>
-  void CreateAssociatedInterface(AssociatedInterfaceConfig config,
-                                 AssociatedInterfacePtrInfo<T>* ptr_info,
-                                 AssociatedInterfaceRequest<T>* request) {
+  void CreateAssociatedInterface(
+      AssociatedInterfaceConfig config,
+      AssociatedInterfacePtrInfo<T>* ptr_info,
+      AssociatedInterfaceRequest<T>* request) {
     internal::ScopedInterfaceEndpointHandle local;
     internal::ScopedInterfaceEndpointHandle remote;
     CreateEndpointHandlePair(&local, &remote);

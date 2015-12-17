@@ -21,6 +21,8 @@ namespace mojo {
 template <typename Interface>
 class AssociatedBinding {
  public:
+  using GenericInterface = typename Interface::GenericInterface;
+
   // Constructs an incomplete associated binding that will use the
   // implementation |impl|. It may be completed with a subsequent call to the
   // |Bind| method. Does not take ownership of |impl|, which must outlive this
@@ -34,7 +36,7 @@ class AssociatedBinding {
   // |associated_group| to setup the corresponding asssociated interface
   // pointer. |impl| must outlive this object.
   AssociatedBinding(Interface* impl,
-                    AssociatedInterfacePtrInfo<Interface>* ptr_info,
+                    AssociatedInterfacePtrInfo<GenericInterface>* ptr_info,
                     AssociatedGroup* associated_group)
       : AssociatedBinding(impl) {
     Bind(ptr_info, associated_group);
@@ -43,7 +45,7 @@ class AssociatedBinding {
   // Constructs a completed associated binding of |impl|. |impl| must outlive
   // the binding.
   AssociatedBinding(Interface* impl,
-                    AssociatedInterfaceRequest<Interface> request)
+                    AssociatedInterfaceRequest<GenericInterface> request)
       : AssociatedBinding(impl) {
     Bind(request.Pass());
   }
@@ -54,7 +56,7 @@ class AssociatedBinding {
   // implementation side. The output |ptr_info| should be passed through the
   // message pipe endpoint referred to by |associated_group| to setup the
   // corresponding asssociated interface pointer.
-  void Bind(AssociatedInterfacePtrInfo<Interface>* ptr_info,
+  void Bind(AssociatedInterfacePtrInfo<GenericInterface>* ptr_info,
             AssociatedGroup* associated_group) {
     AssociatedInterfaceRequest<Interface> request;
     associated_group->CreateAssociatedInterface(AssociatedGroup::WILL_PASS_PTR,
@@ -63,7 +65,7 @@ class AssociatedBinding {
   }
 
   // Sets up this object as the implementation side of an associated interface.
-  void Bind(AssociatedInterfaceRequest<Interface> request) {
+  void Bind(AssociatedInterfaceRequest<GenericInterface> request) {
     internal::ScopedInterfaceEndpointHandle handle =
         internal::AssociatedInterfaceRequestHelper::PassHandle(&request);
 
@@ -95,10 +97,10 @@ class AssociatedBinding {
   // Unbinds and returns the associated interface request so it can be
   // used in another context, such as on another thread or with a different
   // implementation. Puts this object into a state where it can be rebound.
-  AssociatedInterfaceRequest<Interface> Unbind() {
+  AssociatedInterfaceRequest<GenericInterface> Unbind() {
     DCHECK(endpoint_client_);
 
-    AssociatedInterfaceRequest<Interface> request;
+    AssociatedInterfaceRequest<GenericInterface> request;
     internal::AssociatedInterfaceRequestHelper::SetHandle(
         &request, endpoint_client_->PassHandle());
 

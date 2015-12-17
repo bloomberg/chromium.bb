@@ -107,10 +107,13 @@ InterfaceRequest<Interface> MakeRequest(ScopedMessagePipeHandle handle) {
 //   CreateSource(source_request.Pass());  // Create implementation locally.
 //
 template <typename Interface>
-InterfaceRequest<Interface> GetProxy(InterfacePtr<Interface>* ptr) {
+InterfaceRequest<typename Interface::GenericInterface>
+GetProxy(InterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
-  ptr->Bind(InterfacePtrInfo<Interface>(pipe.handle0.Pass(), 0u));
-  return MakeRequest<Interface>(pipe.handle1.Pass());
+  ptr->Bind(InterfacePtrInfo<typename Interface::GenericInterface>(
+      pipe.handle0.Pass(), 0u));
+  return MakeRequest<typename Interface::GenericInterface>(
+      pipe.handle1.Pass());
 }
 
 }  // namespace mojo

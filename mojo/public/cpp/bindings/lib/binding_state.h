@@ -37,6 +37,8 @@ class BindingState;
 template <typename Interface>
 class BindingState<Interface, false> {
  public:
+  using GenericInterface = typename Interface::GenericInterface;
+
   explicit BindingState(Interface* impl) : impl_(impl) {
     stub_.set_sink(impl_);
   }
@@ -81,9 +83,9 @@ class BindingState<Interface, false> {
     DestroyRouter();
   }
 
-  InterfaceRequest<Interface> Unbind() {
-    InterfaceRequest<Interface> request =
-        MakeRequest<Interface>(router_->PassMessagePipe());
+  InterfaceRequest<GenericInterface> Unbind() {
+    InterfaceRequest<GenericInterface> request =
+        MakeRequest<GenericInterface>(router_->PassMessagePipe());
     DestroyRouter();
     return request.Pass();
   }
@@ -128,6 +130,8 @@ class BindingState<Interface, false> {
 template <typename Interface>
 class BindingState<Interface, true> {
  public:
+  using GenericInterface = typename Interface::GenericInterface;
+
   explicit BindingState(Interface* impl) : impl_(impl) {
     stub_.set_sink(impl_);
   }
@@ -177,10 +181,10 @@ class BindingState<Interface, true> {
     router_ = nullptr;
   }
 
-  InterfaceRequest<Interface> Unbind() {
+  InterfaceRequest<GenericInterface> Unbind() {
     endpoint_client_.reset();
-    InterfaceRequest<Interface> request =
-        MakeRequest<Interface>(router_->PassMessagePipe());
+    InterfaceRequest<GenericInterface> request =
+        MakeRequest<GenericInterface>(router_->PassMessagePipe());
     router_ = nullptr;
     return request.Pass();
   }
