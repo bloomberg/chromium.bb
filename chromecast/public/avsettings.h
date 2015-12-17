@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_PUBLIC_AVSETTINGS_H_
 #define CHROMECAST_PUBLIC_AVSETTINGS_H_
 
+#include "output_restrictions.h"
 #include "task_runner.h"
 
 namespace chromecast {
@@ -63,6 +64,11 @@ class AvSettings {
     // On this event, GetScreenResolution() will be called on the thread where
     // Initialize() was called.
     SCREEN_INFO_CHANGED = 3,
+
+    // This event should be fired whenever the active output restrictions on the
+    // device outputs change. On this event, GetOutputRestrictions() will be
+    // called on the thread where Initialize() was called.
+    OUTPUT_RESTRICTIONS_CHANGED = 4,
 
     // This event should be fired when the device is connected to HDMI sinks.
     HDMI_CONNECTED = 100,
@@ -162,6 +168,19 @@ class AvSettings {
   // Retrieves the resolution of screen of the device (or HDMI sinks).
   // Returns true if it gets resolution successfully.
   virtual bool GetScreenResolution(int* width, int* height) = 0;
+
+  // If supported, retrieves the restrictions active on the device outputs (as
+  // specified by the PlayReady CDM; see output_restrictions.h). If reporting
+  // output restrictions is unsupported, should return false.
+  virtual bool GetOutputRestrictions(
+      OutputRestrictions* output_restrictions) = 0;
+
+  // If supported, sets which output restrictions should be active on the device
+  // (as specified by the PlayReady CDM; see output_restrictions.h). The device
+  // should try to apply these restrictions and fire OUTPUT_RESTRICTIONS_CHANGED
+  // if they result in a change of active restrictions.
+  virtual void ApplyOutputRestrictions(
+      const OutputRestrictions& restrictions) = 0;
 };
 
 }  // namespace chromecast
