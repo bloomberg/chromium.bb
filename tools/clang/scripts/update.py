@@ -19,6 +19,7 @@ import stat
 import sys
 import tarfile
 import tempfile
+import time
 import urllib2
 import zipfile
 
@@ -80,23 +81,38 @@ def DownloadUrl(url, output_file):
   """Download url into output_file."""
   CHUNK_SIZE = 4096
   TOTAL_DOTS = 10
-  sys.stdout.write('Downloading %s ' % url)
-  sys.stdout.flush()
-  response = urllib2.urlopen(url)
-  total_size = int(response.info().getheader('Content-Length').strip())
-  bytes_done = 0
-  dots_printed = 0
+  num_retries = 3
+  retry_wait_s = 5  # Doubled at each retry.
+
   while True:
-    chunk = response.read(CHUNK_SIZE)
-    if not chunk:
-      break
-    output_file.write(chunk)
-    bytes_done += len(chunk)
-    num_dots = TOTAL_DOTS * bytes_done / total_size
-    sys.stdout.write('.' * (num_dots - dots_printed))
-    sys.stdout.flush()
-    dots_printed = num_dots
-  print ' Done.'
+    try:
+      sys.stdout.write('Downloading %s ' % url)
+      sys.stdout.flush()
+      response = urllib2.urlopen(url)
+      total_size = int(response.info().getheader('Content-Length').strip())
+      bytes_done = 0
+      dots_printed = 0
+      while True:
+        chunk = response.read(CHUNK_SIZE)
+        if not chunk:
+          break
+        output_file.write(chunk)
+        bytes_done += len(chunk)
+        num_dots = TOTAL_DOTS * bytes_done / total_size
+        sys.stdout.write('.' * (num_dots - dots_printed))
+        sys.stdout.flush()
+        dots_printed = num_dots
+      print ' Done.'
+      return
+    except urllib2.URLError as e:
+      sys.stdout.write('\n')
+      print e
+      if num_retries == 0 or isinstance(e, urllib2.HTTPError) and e.code == 404:
+        raise e
+      num_retries -= 1
+      print 'Retrying in %d s ...' % retry_wait_s
+      time.sleep(retry_wait_s)
+      retry_wait_s *= 2
 
 
 def DownloadAndUnpack(url, output_dir):
@@ -332,14 +348,10 @@ def UpdateClang(args):
       assert sys.platform.startswith('linux')
       cds_full_url = CDS_URL + '/Linux_x64/' + cds_file
 
-    # Check if there's a prebuilt binary and if so just fetch that. That's
-    # faster, and goma relies on having matching binary hashes on client and
-    # server too.
-    print 'Trying to download prebuilt clang'
-
+    print 'Downloading prebuilt clang'
+    if os.path.exists(LLVM_BUILD_DIR):
+      RmTree(LLVM_BUILD_DIR)
     try:
-      if os.path.exists(LLVM_BUILD_DIR):
-        RmTree(LLVM_BUILD_DIR)
       DownloadAndUnpack(cds_full_url, LLVM_BUILD_DIR)
       print 'clang %s unpacked' % PACKAGE_VERSION
       # Download the gold plugin if requested to by an environment variable.
@@ -349,8 +361,11 @@ def UpdateClang(args):
         RunCommand(['python', CHROMIUM_DIR+'/build/download_gold_plugin.py'])
       WriteStampFile(PACKAGE_VERSION)
       return 0
-    except urllib2.HTTPError:
-      print 'Did not find prebuilt clang %s, building locally' % cds_file
+    except urllib2.URLError:
+      print 'Failed to download prebuilt clang %s' % cds_file
+      print 'Use --force-local-build if you want to build locally.'
+      print 'Exiting.'
+      return 1
 
   if args.with_android and not os.path.exists(ANDROID_NDK_DIR):
     print 'Android NDK not found at ' + ANDROID_NDK_DIR
