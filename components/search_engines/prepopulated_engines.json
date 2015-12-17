@@ -30,7 +30,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 86
+    "kCurrentDataVersion": 87
   },
 
   // The following engines are included in country lists and are added to the
@@ -80,6 +80,7 @@
       "keyword": "baidu.com",
       "favicon_url": "http://www.baidu.com/favicon.ico",
       "search_url": "http://www.baidu.com/#ie={inputEncoding}&wd={searchTerms}",
+      "suggest_url": "http://suggestion.baidu.com/su?wd={searchTerms}&action=opensearch&ie={inputEncoding}",
       "type": "SEARCH_ENGINE_BAIDU",
       "id": 21
     },
