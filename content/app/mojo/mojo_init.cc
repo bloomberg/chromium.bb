@@ -26,7 +26,7 @@ class MojoInitializer {
         *base::CommandLine::ForCurrentProcess();
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
-    if (process_type.empty() && !command_line.HasSwitch("use-old-edk")) {
+    if (0 && process_type.empty() && !command_line.HasSwitch("use-old-edk")) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
           "use-new-edk");
     }
