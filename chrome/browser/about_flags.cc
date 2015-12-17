@@ -2022,15 +2022,15 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kDisableAutoHidingToolbarThreshold,
                                  "800")},
 #endif
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
     {"enable-autofill-credit-card-upload",
      IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_NAME,
      IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_DESCRIPTION,
-     kOsCrOS | kOsWin | kOsLinux,
+     kOsCrOS | kOsWin | kOsLinux | kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(
          autofill::switches::kEnableOfferUploadCreditCards,
          autofill::switches::kDisableOfferUploadCreditCards)},
-#endif  // defined(TOOLKIT_VIEWS)
+#endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 #if defined(OS_ANDROID)
     {"enable-tab-switcher-in-document-mode",
      IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_NAME,

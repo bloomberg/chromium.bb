@@ -83,13 +83,13 @@ void AutofillClientIOS::ConfirmSaveCreditCardLocally(
   // was submitted, the WebContents is guaranteed to be live. Since the
   // InfoBarService is a WebContentsUserData, it must also be alive at this
   // time.
-  AutofillCCInfoBarDelegate::Create(infobar_manager_, this, callback);
+  AutofillCCInfoBarDelegate::CreateForLocalSave(infobar_manager_, callback);
 }
 
 void AutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const base::Closure& callback,
     scoped_ptr<base::DictionaryValue> legal_message) {
-  NOTIMPLEMENTED();
+  AutofillCCInfoBarDelegate::CreateForUpload(infobar_manager_, callback);
 }
 
 void AutofillClientIOS::LoadRiskData(

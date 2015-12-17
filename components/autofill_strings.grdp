@@ -168,45 +168,27 @@
     Use password for:
   </message>
 
-  <!-- Autofill infobar -->
-  <message name="IDS_AUTOFILL_CC_INFOBAR_ACCEPT" desc="Text to show for the Autofill credit card request infobar accept button.">
+  <!-- Autofill save credit card bubble or infobar prompt -->
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT" desc="Text to show for the Autofill save credit card prompt accept button. The prompt can be either a bubble or an infobar.">
     Save
   </message>
-  <message name="IDS_AUTOFILL_CC_INFOBAR_DENY" desc="Text to show for the Autofill credit card request infobar deny button.">
-    Don't save
-  </message>
-  <if expr="_google_chrome">
-    <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the Autofill credit card request infobar.">
-      Do you want Chrome to save this credit card information for completing web forms?
-    </message>
-  </if>
-  <if expr="not _google_chrome">
-    <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the Autofill credit card request infobar.">
-      Do you want Chromium to save this credit card information for completing web forms?
-    </message>
-  </if>
-
-  <!-- Autofill save credit card bubble -->
-  <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_ACCEPT" desc="Text to show for the Autofill save credit card bubble accept button.">
-    Save
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_DENY" desc="Text to show for the Autofill save credit card bubble deny button.">
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_DENY" desc="Text to show for the Autofill save credit card prompt deny button. The prompt can be either a bubble or an infobar.">
     No thanks
   </message>
   <if expr="_google_chrome">
-    <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_LOCAL" desc="Title text for the Autofill save card bubble when the card is to be saved locally.">
+    <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
       Do you want Chrome to save this card?
     </message>
   </if>
   <if expr="not _google_chrome">
-    <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_LOCAL" desc="Title text for the Autofill save card bubble when the card is to be saved locally.">
+    <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
       Do you want Chromium to save this card?
     </message>
   </if>
-  <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_TO_CLOUD" desc="Title text for the Autofill save card bubble when the card is to be saved by uploading it to Google Payments.">
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The prompt can be either a bubble or an infobar.">
     Do you want Google to save this card?
   </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_UPLOAD_EXPLANATION" desc="Explanation of the effect of the Autofill save card bubble when the card is to be saved by uploading it to Google Payments.">
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The prompt can be either a bubble or an infobar.">
     Pay quickly on sites and apps across devices using cards you have saved with Google.
   </message>
 

@@ -5,7 +5,6 @@
 #include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
 
 #include "base/logging.h"
-#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -20,20 +19,28 @@
 namespace autofill {
 
 // static
-void AutofillCCInfoBarDelegate::Create(
+void AutofillCCInfoBarDelegate::CreateForLocalSave(
     infobars::InfoBarManager* infobar_manager,
-    AutofillClient* autofill_client,
     const base::Closure& save_card_callback) {
   infobar_manager->AddInfoBar(
       infobar_manager->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new AutofillCCInfoBarDelegate(autofill_client, save_card_callback))));
+          new AutofillCCInfoBarDelegate(false, save_card_callback))));
+}
+
+// static
+void AutofillCCInfoBarDelegate::CreateForUpload(
+    infobars::InfoBarManager* infobar_manager,
+    const base::Closure& save_card_callback) {
+  infobar_manager->AddInfoBar(
+      infobar_manager->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+          new AutofillCCInfoBarDelegate(true, save_card_callback))));
 }
 
 AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
-    AutofillClient* autofill_client,
+    bool upload,
     const base::Closure& save_card_callback)
     : ConfirmInfoBarDelegate(),
-      autofill_client_(autofill_client),
+      upload_(upload),
       save_card_callback_(save_card_callback),
       had_user_interaction_(false) {
   AutofillMetrics::LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN);
@@ -82,13 +89,16 @@ void AutofillCCInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 AutofillCCInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_INFOBAR_TEXT);
+  return l10n_util::GetStringUTF16(
+      upload_ ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD
+              : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
 }
 
 base::string16 AutofillCCInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_AUTOFILL_CC_INFOBAR_ACCEPT : IDS_AUTOFILL_CC_INFOBAR_DENY);
+  return l10n_util::GetStringUTF16(button == BUTTON_OK
+                                       ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
+                                       : IDS_AUTOFILL_SAVE_CARD_PROMPT_DENY);
 }
 
 bool AutofillCCInfoBarDelegate::Accept() {

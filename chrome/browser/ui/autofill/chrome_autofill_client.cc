@@ -183,15 +183,18 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     return;
   }
 #endif
-  AutofillCCInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents()), this, callback);
+  AutofillCCInfoBarDelegate::CreateForLocalSave(
+      InfoBarService::FromWebContents(web_contents()), callback);
 }
 
 void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     const base::Closure& callback,
     scoped_ptr<base::DictionaryValue> legal_message) {
-// TODO(jdonnelly): Implement save card prompt for OS_ANDROID and OS_IOS.
-#if !defined(OS_ANDROID)
+// TODO(jdonnelly): Implement save card prompt for OS_IOS.
+#if defined(OS_ANDROID)
+  AutofillCCInfoBarDelegate::CreateForUpload(
+      InfoBarService::FromWebContents(web_contents()), callback);
+#else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =

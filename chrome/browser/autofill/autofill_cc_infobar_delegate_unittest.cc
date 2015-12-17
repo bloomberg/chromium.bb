@@ -90,7 +90,6 @@ AutofillCCInfobarDelegateTest::CreateDelegate() {
   base::HistogramTester histogram_tester;
   CreditCard credit_card;
   scoped_ptr<ConfirmInfoBarDelegate> delegate(AutofillCCInfoBarDelegate::Create(
-      ChromeAutofillClient::FromWebContents(web_contents()),
       base::Bind(
           base::IgnoreResult(&TestPersonalDataManager::SaveImportedCreditCard),
           base::Unretained(personal_data_.get()), credit_card)));

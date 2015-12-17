@@ -20,29 +20,27 @@ class InfoBarManager;
 
 namespace autofill {
 
-class AutofillClient;
-
 // An InfoBar delegate that enables the user to allow or deny storing credit
 // card information gathered from a form submission.
 class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates an autofill credit card infobar and delegate and adds the infobar
-  // to |infobar_manager|. The |autofill_client| must outlive the infobar.
-  static void Create(infobars::InfoBarManager* infobar_manager,
-                     AutofillClient* autofill_client,
-                     const base::Closure& save_card_callback);
+  // to |infobar_manager|.
+  static void CreateForLocalSave(infobars::InfoBarManager* infobar_manager,
+                                 const base::Closure& save_card_callback);
+  static void CreateForUpload(infobars::InfoBarManager* infobar_manager,
+                              const base::Closure& save_card_callback);
 
 #if defined(UNIT_TEST)
   static scoped_ptr<ConfirmInfoBarDelegate> Create(
-      AutofillClient* autofill_client,
       const base::Closure& save_card_callback) {
     return scoped_ptr<ConfirmInfoBarDelegate>(
-        new AutofillCCInfoBarDelegate(autofill_client, save_card_callback));
+        new AutofillCCInfoBarDelegate(false, save_card_callback));
   }
 #endif
 
  private:
-  AutofillCCInfoBarDelegate(AutofillClient* autofill_client,
+  AutofillCCInfoBarDelegate(bool upload,
                             const base::Closure& save_card_callback);
   ~AutofillCCInfoBarDelegate() override;
 
@@ -61,8 +59,7 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetLinkText() const override;
   GURL GetLinkURL() const override;
 
-  // Performs navigation to handle any link click. Guaranteed to outlive us.
-  AutofillClient* const autofill_client_;
+  bool upload_;
 
   // The callback to save credit card if the user accepts the infobar.
   base::Closure save_card_callback_;

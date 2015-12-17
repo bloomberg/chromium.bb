@@ -197,13 +197,13 @@ SaveCardBubbleView* SaveCardBubbleControllerImpl::save_card_bubble_view()
 
 base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(
-      is_uploading_ ? IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_TO_CLOUD
-                    : IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_LOCAL);
+      is_uploading_ ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD
+                    : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
 }
 
 base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
   return is_uploading_ ? l10n_util::GetStringUTF16(
-                             IDS_AUTOFILL_SAVE_CARD_BUBBLE_UPLOAD_EXPLANATION)
+                             IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION)
                        : base::string16();
 }
 
