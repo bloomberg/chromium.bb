@@ -115,12 +115,22 @@ void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
     if (collection)
       collection->StopAnimator(this);
   }
+  SwitchToLayer(delegate ? delegate->GetCcLayer() : nullptr);
   delegate_ = delegate;
   if (delegate_ && is_started_) {
     LayerAnimatorCollection* collection = GetLayerAnimatorCollection();
     if (collection)
       collection->StartAnimator(this);
   }
+}
+
+void LayerAnimator::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
+  if (delegate_) {
+    DCHECK(delegate_->GetCcLayer());
+    delegate_->GetCcLayer()->RemoveLayerAnimationEventObserver(this);
+  }
+  if (new_layer)
+    new_layer->AddLayerAnimationEventObserver(this);
 }
 
 void LayerAnimator::StartAnimation(LayerAnimationSequence* animation) {
@@ -848,6 +858,10 @@ void LayerAnimator::PurgeDeletedAnimations() {
 
 LayerAnimatorCollection* LayerAnimator::GetLayerAnimatorCollection() {
   return delegate_ ? delegate_->GetLayerAnimatorCollection() : NULL;
+}
+
+void LayerAnimator::OnAnimationStarted(const cc::AnimationEvent& event) {
+  OnThreadedAnimationStarted(event);
 }
 
 LayerAnimator::RunningAnimation::RunningAnimation(

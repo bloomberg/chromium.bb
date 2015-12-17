@@ -6,6 +6,7 @@
 #define UI_COMPOSITOR_TEST_TEST_LAYER_ANIMATION_DELEGATE_H_
 
 #include "base/compiler_specific.h"
+#include "cc/layers/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
@@ -38,8 +39,11 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   void AddThreadedAnimation(scoped_ptr<cc::Animation> animation) override;
   void RemoveThreadedAnimation(int animation_id) override;
   LayerAnimatorCollection* GetLayerAnimatorCollection() override;
+  cc::Layer* GetCcLayer() const override;
 
  private:
+  void CreateCcLayer();
+
   gfx::Rect bounds_;
   gfx::Transform transform_;
   float opacity_;
@@ -47,6 +51,7 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   float brightness_;
   float grayscale_;
   SkColor color_;
+  scoped_refptr<cc::Layer> cc_layer_;
 
   // Allow copy and assign.
 };

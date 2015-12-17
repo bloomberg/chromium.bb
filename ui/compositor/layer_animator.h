@@ -14,9 +14,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "cc/animation/layer_animation_event_observer.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/gfx/animation/tween.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace gfx {
 class Animation;
@@ -41,7 +46,9 @@ class ScopedLayerAnimationSettings;
 // ensure that it is not disposed of until it finishes executing. It does this
 // by holding a reference to itself for the duration of methods for which it
 // must guarantee that |this| is valid.
-class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator> {
+class COMPOSITOR_EXPORT LayerAnimator
+    : public base::RefCounted<LayerAnimator>,
+      NON_EXPORTED_BASE(public cc::LayerAnimationEventObserver) {
  public:
   enum PreemptionStrategy {
     IMMEDIATELY_SET_NEW_TARGET,
@@ -96,6 +103,9 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator> {
   // delegate for most of its operations, so do not call any methods without
   // a valid delegate installed.
   void SetDelegate(LayerAnimationDelegate* delegate);
+
+  // Unsubscribe from |cc_layer_| and subscribe to |new_layer|.
+  void SwitchToLayer(scoped_refptr<cc::Layer> new_layer);
 
   // Sets the animation preemption strategy. This determines the behaviour if
   // a property is set during an animation. The default is
@@ -193,7 +203,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator> {
   void RemoveFromCollection(LayerAnimatorCollection* collection);
 
  protected:
-  virtual ~LayerAnimator();
+  ~LayerAnimator() override;
 
   LayerAnimationDelegate* delegate() { return delegate_; }
   const LayerAnimationDelegate* delegate() const { return delegate_; }
@@ -310,6 +320,9 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator> {
   void PurgeDeletedAnimations();
 
   LayerAnimatorCollection* GetLayerAnimatorCollection();
+
+  // LayerAnimationEventObserver
+  void OnAnimationStarted(const cc::AnimationEvent& event) override;
 
   // This is the queue of animations to run.
   AnimationQueue animation_queue_;

@@ -120,7 +120,6 @@ Layer::~Layer() {
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->parent_ = NULL;
 
-  cc_layer_->RemoveLayerAnimationEventObserver(this);
   cc_layer_->RemoveFromParent();
 }
 
@@ -488,6 +487,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   if (animator_.get()) {
     animator_->StopAnimatingProperty(LayerAnimationElement::TRANSFORM);
     animator_->StopAnimatingProperty(LayerAnimationElement::OPACITY);
+    animator_->SwitchToLayer(new_layer);
   }
 
   if (texture_layer_.get())
@@ -499,7 +499,6 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
     cc_layer_->parent()->ReplaceChild(cc_layer_, new_layer);
   }
   cc_layer_->SetLayerClient(NULL);
-  cc_layer_->RemoveLayerAnimationEventObserver(this);
   new_layer->SetOpacity(cc_layer_->opacity());
   new_layer->SetTransform(cc_layer_->transform());
   new_layer->SetPosition(cc_layer_->position());
@@ -512,7 +511,6 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   delegated_renderer_layer_ = NULL;
   surface_layer_ = NULL;
 
-  cc_layer_->AddLayerAnimationEventObserver(this);
   for (size_t i = 0; i < children_.size(); ++i) {
     DCHECK(children_[i]->cc_layer_);
     cc_layer_->AddChild(children_[i]->cc_layer_);
@@ -819,11 +817,6 @@ scoped_refptr<base::trace_event::ConvertableToTraceFormat> Layer::TakeDebugInfo(
   return new LayerDebugInfo(name_);
 }
 
-void Layer::OnAnimationStarted(const cc::AnimationEvent& event) {
-  if (animator_.get())
-    animator_->OnThreadedAnimationStarted(event);
-}
-
 void Layer::CollectAnimators(
     std::vector<scoped_refptr<LayerAnimator>>* animators) {
   if (IsAnimating())
@@ -1007,6 +1000,10 @@ LayerAnimatorCollection* Layer::GetLayerAnimatorCollection() {
   return compositor ? compositor->layer_animator_collection() : NULL;
 }
 
+cc::Layer* Layer::GetCcLayer() const {
+  return cc_layer_;
+}
+
 void Layer::SendPendingThreadedAnimations() {
   for (auto& animation : pending_threaded_animations_)
     cc_layer_->AddAnimation(std::move(animation));
@@ -1030,7 +1027,6 @@ void Layer::CreateCcLayer() {
   cc_layer_->SetTransformOrigin(gfx::Point3F());
   cc_layer_->SetContentsOpaque(true);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
-  cc_layer_->AddLayerAnimationEventObserver(this);
   cc_layer_->SetLayerClient(this);
   RecomputePosition();
 }

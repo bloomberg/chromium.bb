@@ -2452,6 +2452,8 @@ TEST(LayerAnimatorTest, LayerAnimatorCollectionTickTime) {
 
   collection->StopAnimator(layer.GetAnimator());
   EXPECT_FALSE(collection->HasActiveAnimators());
+
+  animator->SetDelegate(nullptr);
 }
 
 TEST(LayerAnimatorTest, AnimatorStartedCorrectly) {
