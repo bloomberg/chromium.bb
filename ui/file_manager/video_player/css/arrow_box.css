@@ -17,7 +17,8 @@
   flex-grow: 1;
 }
 
-#video-player[tools] .arrow-box .arrow {
+#video-player[tools]:not([first-video]) .arrow.left,
+#video-player[tools]:not([last-video]) .arrow.right {
   pointer-events: auto;
 }
 
@@ -41,15 +42,15 @@
 }
 
 #video-player:not([first-video]) .arrow.left div {
-  cursor: pointer;
   background-image: -webkit-image-set(
       url(../images/100/arrow_left.png) 1x,
       url(../images/200/arrow_left.png) 2x);
+  cursor: pointer;
 }
 
 #video-player:not([last-video]) .arrow.right div {
-  cursor: pointer;
   background-image: -webkit-image-set(
       url(../images/100/arrow_right.png) 1x,
       url(../images/200/arrow_right.png) 2x);
+  cursor: pointer;
 }
