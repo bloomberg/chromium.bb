@@ -472,6 +472,10 @@ class InfoBarContainerLayout extends FrameLayout {
      */
     private int mBackInfobarHeight;
 
+    /**
+     * Determines whether any animations need to run in order to make the visible views match the
+     * current list of Items in mItems. If so, kicks off the next animation that's needed.
+     */
     private void processPendingAnimations() {
         // If an animation is running, wait until it finishes before beginning the next animation.
         if (mAnimation != null) return;
@@ -487,7 +491,7 @@ class InfoBarContainerLayout extends FrameLayout {
         // First, check if we can remove any back infobars.
         if (childCount > desiredChildCount + 1
                 || (childCount == desiredChildCount + 1 && !shouldRemoveFrontView)) {
-            scheduleAnimation(new InfoBarDisappearingAnimation());
+            runAnimation(new InfoBarDisappearingAnimation());
             return;
         }
 
@@ -496,12 +500,12 @@ class InfoBarContainerLayout extends FrameLayout {
             // The second to front infobar, if any, will become the new front infobar.
             if (!mItems.isEmpty() && childCount >= 2) {
                 mFrontItem = mItems.get(0);
-                scheduleAnimation(new FrontInfoBarDisappearingAndRevealingAnimation(
+                runAnimation(new FrontInfoBarDisappearingAndRevealingAnimation(
                         mFrontItem.getView()));
                 return;
             } else {
                 mFrontItem = null;
-                scheduleAnimation(new InfoBarDisappearingAnimation());
+                runAnimation(new InfoBarDisappearingAnimation());
                 return;
             }
         }
@@ -510,7 +514,7 @@ class InfoBarContainerLayout extends FrameLayout {
         if (mFrontItem != null && mItems.contains(mFrontItem)) {
             View frontInnerView = ((ViewGroup) getChildAt(0)).getChildAt(0);
             if (frontInnerView != mFrontItem.getView()) {
-                scheduleAnimation(new FrontInfoBarSwapContentsAnimation(mFrontItem.getView()));
+                runAnimation(new FrontInfoBarSwapContentsAnimation(mFrontItem.getView()));
                 return;
             }
         }
@@ -519,20 +523,23 @@ class InfoBarContainerLayout extends FrameLayout {
         if (childCount < desiredChildCount) {
             if (childCount == 0) {
                 mFrontItem = mItems.get(0);
-                scheduleAnimation(new FrontInfoBarAppearingAnimation(mFrontItem.getView()));
+                runAnimation(new FrontInfoBarAppearingAnimation(mFrontItem.getView()));
                 return;
             } else {
-                scheduleAnimation(new BackInfoBarAppearingAnimation());
+                runAnimation(new BackInfoBarAppearingAnimation());
                 return;
             }
         }
     }
 
-    private void scheduleAnimation(InfoBarAnimation animation) {
+    private void runAnimation(InfoBarAnimation animation) {
         mAnimation = animation;
         mAnimation.prepareAnimation();
-        // Trigger a layout. onLayout() will call mAnimation.start().
-        requestLayout();
+        if (isLayoutRequested()) {
+            // onLayout() will call mAnimation.start().
+        } else {
+            mAnimation.start();
+        }
     }
 
     private void updateLayoutParams() {
