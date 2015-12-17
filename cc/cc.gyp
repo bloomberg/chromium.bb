@@ -435,7 +435,6 @@
         'raster/single_thread_task_graph_runner.h',
         'raster/synchronous_task_graph_runner.cc',
         'raster/synchronous_task_graph_runner.h',
-        'raster/task_category.h',
         'raster/task_graph_runner.cc',
         'raster/task_graph_runner.h',
         'raster/task_graph_work_queue.cc',

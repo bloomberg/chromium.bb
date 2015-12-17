@@ -74,9 +74,9 @@ class CONTENT_EXPORT RasterWorkerPool
   class RasterWorkerPoolSequencedTaskRunner;
   friend class RasterWorkerPoolSequencedTaskRunner;
 
-  // Run next task. Caller must acquire |lock_| prior to calling this function.
-  // Returns true if there was a task available to run.
-  bool RunTaskWithLockAcquired();
+  // Run next task. Caller must acquire |lock_| prior to calling this function
+  // and make sure at least one task is ready to run.
+  void RunTaskWithLockAcquired();
 
   // Simple Task for the TaskGraphRunner that wraps a closure.
   // This class is used to schedule TaskRunner tasks on the

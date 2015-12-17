@@ -171,10 +171,7 @@ void InsertNodeForTask(TaskGraph* graph,
                       [task](const TaskGraph::Node& node) {
                         return node.task == task;
                       }) == graph->nodes.end());
-
-  // TODO(ericrk): Add in more logic around category selection.
-  graph->nodes.push_back(
-      TaskGraph::Node(task, 0 /* category */, priority, dependencies));
+  graph->nodes.push_back(TaskGraph::Node(task, priority, dependencies));
 }
 
 void InsertNodesForRasterTask(TaskGraph* graph,
