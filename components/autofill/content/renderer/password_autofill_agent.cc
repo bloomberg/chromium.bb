@@ -1053,16 +1053,10 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   }
 
   if (only_visible) {
-    bool is_last_load = true;
-    for (blink::WebFrame* frame = render_frame()->GetWebFrame()->top(); frame;
-         frame = frame->traverseNext(false)) {
-      if (frame != render_frame()->GetWebFrame() && frame->isLoading()) {
-        is_last_load = false;
-        break;
-      }
-    }
+    blink::WebFrame* main_frame = render_frame()->GetWebFrame()->top();
+    bool did_stop_loading = !main_frame || !main_frame->isLoading();
     Send(new AutofillHostMsg_PasswordFormsRendered(routing_id(), password_forms,
-                                                   is_last_load));
+                                                   did_stop_loading));
   } else {
     Send(new AutofillHostMsg_PasswordFormsParsed(routing_id(), password_forms));
   }
