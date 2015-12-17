@@ -236,17 +236,9 @@ void AwSettings::UpdateOffscreenPreRasterLocked(
   }
 }
 
-void AwSettings::RenderViewCreated(content::RenderViewHost* render_view_host) {
-  // A single WebContents can normally have 0 to many RenderViewHost instances
-  // associated with it.
-  // This is important since there is only one RenderViewHostExt instance per
-  // WebContents (and not one RVHExt per RVH, as you might expect) and updating
-  // settings via RVHExt only ever updates the 'current' RVH.
-  // In android_webview we don't swap out the RVH on cross-site navigations, so
-  // we shouldn't have to deal with the multiple RVH per WebContents case. That
-  // in turn means that the newly created RVH is always the 'current' RVH
-  // (since we only ever go from 0 to 1 RVH instances) and hence the DCHECK.
-  DCHECK_EQ(render_view_host, web_contents()->GetRenderViewHost());
+void AwSettings::RenderViewHostChanged(content::RenderViewHost* old_host,
+                                       content::RenderViewHost* new_host) {
+  DCHECK_EQ(new_host, web_contents()->GetRenderViewHost());
 
   UpdateEverything();
 }

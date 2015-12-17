@@ -64,7 +64,8 @@ class AwSettings : public content::WebContentsObserver {
   void UpdateEverything();
 
   // WebContentsObserver overrides:
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override;
   void WebContentsDestroyed() override;
 
   bool renderer_prefs_initialized_;
