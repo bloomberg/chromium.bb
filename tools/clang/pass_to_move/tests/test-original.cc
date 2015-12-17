@@ -18,16 +18,25 @@ struct D {
   D&& NotPass();
 };
 
+struct E {
+  E() : a(new A) {}
+  ~E() { delete a; }
+  A* a;
+};
+
 void F() {
   A a1;
   A a2 = a1.Pass();
 
   B b1;
-  B b2 = b2.Pass();
+  B b2 = b1.Pass();
 
   C c;
   A a3 = c.a.Pass();
 
   D d1;
   D d2 = d1.NotPass();
+
+  E e;
+  A a4 = e.a->Pass();
 }

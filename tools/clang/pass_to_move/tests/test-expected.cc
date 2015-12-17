@@ -18,16 +18,25 @@ struct D {
   D&& NotPass();
 };
 
+struct E {
+  E() : a(new A) {}
+  ~E() { delete a; }
+  A* a;
+};
+
 void F() {
   A a1;
   A a2 = std::move(a1);
 
   B b1;
-  B b2 = b2.Pass();
+  B b2 = b1.Pass();
 
   C c;
   A a3 = std::move(c.a);
 
   D d1;
   D d2 = d1.NotPass();
+
+  E e;
+  A a4 = std::move(*e.a);
 }
