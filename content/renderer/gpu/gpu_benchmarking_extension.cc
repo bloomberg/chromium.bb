@@ -104,6 +104,7 @@ class SkPictureSerializer {
 
     PNGSerializer serializer;
     picture->serialize(&file, &serializer);
+    file.fsync();
   }
 
  private:
