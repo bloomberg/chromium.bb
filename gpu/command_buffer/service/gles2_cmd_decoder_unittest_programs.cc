@@ -1413,6 +1413,37 @@ TEST_P(GLES2DecoderWithShaderTest, GetActiveUniformsivBadParamsFails) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+TEST_P(GLES2DecoderWithShaderTest, GetActiveUniformsivBadPnameFails) {
+  const uint32 kBucketId = 123;
+  const GLuint kIndices[] = { 1, 2 };
+  const size_t kCount = arraysize(kIndices);
+  SetBucketData(kBucketId, kIndices, sizeof(GLuint) * kCount);
+  GetActiveUniformsiv::Result* result =
+      static_cast<GetActiveUniformsiv::Result*>(shared_memory_address_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  GetActiveUniformsiv cmd;
+  // GL_UNIFORM_BLOCK_NAME_LENGTH should not be supported.
+  cmd.Init(client_program_id_,
+           kBucketId,
+           GL_UNIFORM_BLOCK_NAME_LENGTH,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  result->size = 0;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, result->GetNumResults());
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  // Invalid pname
+  cmd.Init(client_program_id_,
+           kBucketId,
+           1,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  result->size = 0;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, result->GetNumResults());
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
 TEST_P(GLES2DecoderWithShaderTest, GetActiveUniformsivResultNotInitFails) {
   const uint32 kBucketId = 123;
   const GLuint kIndices[] = { 1, 2 };

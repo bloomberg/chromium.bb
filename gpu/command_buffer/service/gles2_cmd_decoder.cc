@@ -11892,6 +11892,10 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformsiv(
   if (!bucket) {
     return error::kInvalidArguments;
   }
+  if (!validators_->uniform_parameter.IsValid(pname)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetActiveUniformsiv", pname, "pname");
+    return error::kNoError;
+  }
   GLsizei count = static_cast<GLsizei>(bucket->size() / sizeof(GLuint));
   const GLuint* indices = bucket->GetDataAs<const GLuint*>(0, bucket->size());
   typedef cmds::GetActiveUniformsiv::Result Result;

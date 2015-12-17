@@ -705,11 +705,13 @@ bool ProgramInfoManager::GetActiveUniformsiv(
       type = kES3Uniformsiv;
       break;
     default:
-      return false;
+      break;
   }
-  Program* info = GetProgramInfo(gl, program, type);
-  if (info) {
-    return info->GetUniformsiv(count, indices, pname, params);
+  if (type != kNone) {
+    Program* info = GetProgramInfo(gl, program, type);
+    if (info) {
+      return info->GetUniformsiv(count, indices, pname, params);
+    }
   }
   return gl->GetActiveUniformsivHelper(program, count, indices, pname, params);
 }
