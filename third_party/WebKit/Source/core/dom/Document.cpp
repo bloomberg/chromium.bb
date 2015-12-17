@@ -1127,11 +1127,6 @@ void Document::setXMLStandalone(bool standalone, ExceptionState& exceptionState)
     m_xmlStandalone = standalone ? Standalone : NotStandalone;
 }
 
-KURL Document::baseURI() const
-{
-    return m_baseURL;
-}
-
 void Document::setContent(const String& content)
 {
     open();

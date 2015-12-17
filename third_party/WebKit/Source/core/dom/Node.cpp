@@ -1061,9 +1061,9 @@ Document* Node::ownerDocument() const
     return doc == this ? nullptr : doc;
 }
 
-KURL Node::baseURI() const
+const KURL& Node::baseURI() const
 {
-    return parentNode() ? parentNode()->baseURI() : KURL();
+    return document().baseURL();
 }
 
 bool Node::isEqualNode(Node* other) const

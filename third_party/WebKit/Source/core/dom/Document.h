@@ -328,8 +328,6 @@ public:
     void setXMLStandalone(bool, ExceptionState&);
     void setHasXMLDeclaration(bool hasXMLDeclaration) { m_hasXMLDeclaration = hasXMLDeclaration ? 1 : 0; }
 
-    KURL baseURI() const final;
-
     String origin() const { return securityOrigin()->toString(); }
     String suborigin() const { return securityOrigin()->suboriginName(); }
 

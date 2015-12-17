@@ -36,11 +36,6 @@ DocumentType::DocumentType(Document* document, const String& name, const String&
 {
 }
 
-KURL DocumentType::baseURI() const
-{
-    return KURL();
-}
-
 String DocumentType::nodeName() const
 {
     return name();

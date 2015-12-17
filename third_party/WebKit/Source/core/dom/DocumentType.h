@@ -43,7 +43,6 @@ public:
 private:
     DocumentType(Document*, const String& name, const String& publicId, const String& systemId);
 
-    KURL baseURI() const override;
     String nodeName() const override;
     NodeType nodeType() const override;
     PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
