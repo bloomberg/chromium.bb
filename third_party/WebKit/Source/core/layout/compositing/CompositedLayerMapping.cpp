@@ -2341,11 +2341,16 @@ bool CompositedLayerMapping::interestRectChangedEnoughToRepaint(const IntRect& p
 
 IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphicsLayer, const IntRect& previousInterestRect) const
 {
+    // Use the previous interest rect if it covers the whole layer.
+    IntRect wholeLayerRect = IntRect(IntPoint(), expandedIntSize(graphicsLayer->size()));
+    if (!needsRepaint() && previousInterestRect == wholeLayerRect)
+        return previousInterestRect;
+
     // Paint the whole layer if "mainFrameClipsContent" is false, meaning that WebPreferences::record_whole_document is true.
     bool shouldPaintWholePage = !m_owningLayer.layoutObject()->document().settings()->mainFrameClipsContent();
     if (shouldPaintWholePage
         || (graphicsLayer != m_graphicsLayer && graphicsLayer != m_squashingLayer && graphicsLayer != m_squashingLayer && graphicsLayer != m_scrollingContentsLayer))
-        return IntRect(IntPoint(), expandedIntSize(graphicsLayer->size()));
+        return wholeLayerRect;
 
     IntRect newInterestRect = recomputeInterestRect(graphicsLayer);
     if (interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, expandedIntSize(graphicsLayer->size())))
