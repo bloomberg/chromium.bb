@@ -10,8 +10,10 @@
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "chrome/grit/chromium_strings.h"
 #include "components/version_info/version_info.h"
 #include "extensions/common/features/simple_feature.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 
@@ -90,9 +92,10 @@ Feature::Availability ChromeChannelFeatureFilter::IsAvailableToManifest(
     return Feature::Availability(
         Feature::UNSUPPORTED_CHANNEL,
         base::StringPrintf(
-            "'%s' requires Google Chrome %s channel or newer, but this is the "
-            "%s channel.",
-            feature()->name().c_str(), GetChannelName(channel_).c_str(),
+            "'%s' requires %s %s channel or newer, but this is the %s channel.",
+            feature()->name().c_str(),
+            l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str(),
+            GetChannelName(channel_).c_str(),
             GetChannelName(GetCurrentChannel()).c_str()));
   }
   return Feature::Availability(Feature::IS_AVAILABLE, std::string());
