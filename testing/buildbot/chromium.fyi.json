@@ -5690,14 +5690,14 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-BrowserTest.InterstitialCancelsGuestViewDialogs:BrowserTest.OtherRedirectsDontForkProcess:BrowserTest.WindowOpenClose:ChromeRenderProcessHostTest.*:ChromeRenderProcessHostTestWithCommandLine.*:ErrorPageTest.*:ExtensionApiTest.Tabs2:ExtensionApiTest.TabsOnUpdated:ExtensionOptionsApiTest.ExtensionCanEmbedOwnOptions:IsolatedAppTest.*:MimeHandlerViewTest.*:*PDFExtensionTest.*:PhishingDOMFeatureExtractorTest.SubFrames:PrerenderBrowserTest.*:ProcessManagementTest.*:RedirectTest.ClientEmptyReferer:ReferrerPolicyTest.HttpsRedirect:SSLUITest.TestGoodFrameNavigation:SSLUITest.TestMarkNonSecureAs:WebNavigationApiTest.CrossProcessFragment:WebNavigationApiTest.ServerRedirectSingleProcess:WebNavigationApiTest.CrossProcessHistory:WebViewDPITest.*:WebViewPluginTest.*:WebViewTest.AcceptTouchEvents:WebViewTest.IndexedDBIsolation:WebViewTest.ScreenCoordinates:WebViewTest.ContextMenusAPI_PreventDefault:WebViewTest.TestContextMenu:WebViewTest.NestedGuestContainerBounds:WebViewFocusTest.*:WebViewNewWindowTest.*:WebViewVisibilityTest.*:*.NavigateFromNTPToOptionsInSameTab:*.TabMove:*.WhitelistedExtension:*.NewTabPageURL:*.HomepageLocation:RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest*:PhishingClassifierDelegateTest.*:WebUIWebViewBrowserTest*:WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs:SingleProcessTracingBrowserTest.TestMemoryInfra"
+          "--gtest_filter=-AllUrlsApiTest.WhitelistedExtension:BrowserNavigatorTest.NavigateFromNTPToOptionsInSameTab:BrowserTest.OtherRedirectsDontForkProcess:BrowserTest.WindowOpenClose:ChromeRenderProcessHostTest.*:ChromeRenderProcessHostTestWithCommandLine.ProcessOverflow:ErrorPageTest.*:ExtensionApiTest.Tabs2:ExtensionApiTest.TabMove:ExtensionApiTest.TabsOnUpdated:ExtensionURLRewriteBrowserTest.NewTabPageURL:IsolatedAppTest.*:PhishingClassifierDelegateTest.*:PhishingDOMFeatureExtractorTest.SubFrames:PolicyTest.HomepageLocation:PrerenderBrowserTest.*:ProcessManagementTest.*:RedirectTest.ClientEmptyReferer:ReferrerPolicyTest.HttpsRedirect:RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest*:SSLUITest.TestGoodFrameNavigation:SSLUITest.TestMarkNonSecureAs:WebNavigationApiTest.CrossProcessFragment:WebNavigationApiTest.ServerRedirectSingleProcess:WebNavigationApiTest.CrossProcessHistory:WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs"
         ],
         "test": "browser_tests"
       },
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-*.PopupPendingAndBackToSameSiteInstance:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:DevToolsProtocolTest.NavigationPreservesMessages:NavigationControllerBrowserTest.ReloadOriginalRequest:*.RestoreSubframeFileAccessForHistoryNavigation"
+          "--gtest_filter=-SessionHistoryTest.FrameBackForward:NavigationControllerBrowserTest.ReloadOriginalRequest:*.RestoreSubframeFileAccessForHistoryNavigation"
         ],
         "test": "content_browsertests"
       },
@@ -5709,8 +5709,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--gtest_filter=-CaptivePortalTabHelperTest.HttpsSubframe*"
+          "--site-per-process"
         ],
         "test": "unit_tests"
       }
@@ -5721,14 +5720,14 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-BrowserTest.InterstitialCancelsGuestViewDialogs:BrowserTest.OtherRedirectsDontForkProcess:BrowserTest.WindowOpenClose:ChromeRenderProcessHostTest.*:ChromeRenderProcessHostTestWithCommandLine.*:ErrorPageTest.*:ExtensionApiTest.Tabs2:ExtensionApiTest.TabsOnUpdated:ExtensionOptionsApiTest.ExtensionCanEmbedOwnOptions:IsolatedAppTest.*:MimeHandlerViewTest.*:*PDFExtensionTest.*:PhishingDOMFeatureExtractorTest.SubFrames:PrerenderBrowserTest.*:ProcessManagementTest.*:RedirectTest.ClientEmptyReferer:ReferrerPolicyTest.HttpsRedirect:SSLUITest.TestGoodFrameNavigation:SSLUITest.TestMarkNonSecureAs:WebNavigationApiTest.CrossProcessFragment:WebNavigationApiTest.ServerRedirectSingleProcess:WebNavigationApiTest.CrossProcessHistory:WebViewDPITest.*:WebViewPluginTest.*:WebViewTest.AcceptTouchEvents:WebViewTest.IndexedDBIsolation:WebViewTest.ScreenCoordinates:WebViewTest.ContextMenusAPI_PreventDefault:WebViewTest.TestContextMenu:WebViewTest.NestedGuestContainerBounds:WebViewFocusTest.*:WebViewNewWindowTest.*:WebViewVisibilityTest.*:*.NavigateFromNTPToOptionsInSameTab:*.TabMove:*.WhitelistedExtension:*.NewTabPageURL:*.HomepageLocation:RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest*:PhishingClassifierDelegateTest.*:WebUIWebViewBrowserTest*:WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs:SingleProcessTracingBrowserTest.TestMemoryInfra"
+          "--gtest_filter=-AllUrlsApiTest.WhitelistedExtension:BrowserNavigatorTest.NavigateFromNTPToOptionsInSameTab:BrowserTest.OtherRedirectsDontForkProcess:BrowserTest.WindowOpenClose:ChromeRenderProcessHostTest.*:ChromeRenderProcessHostTestWithCommandLine.ProcessOverflow:ErrorPageTest.*:ExtensionApiTest.Tabs2:ExtensionApiTest.TabMove:ExtensionApiTest.TabsOnUpdated:ExtensionURLRewriteBrowserTest.NewTabPageURL:IsolatedAppTest.*:PhishingClassifierDelegateTest.*:PhishingDOMFeatureExtractorTest.SubFrames:PolicyTest.HomepageLocation:PrerenderBrowserTest.*:ProcessManagementTest.*:RedirectTest.ClientEmptyReferer:ReferrerPolicyTest.HttpsRedirect:RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest*:SSLUITest.TestGoodFrameNavigation:SSLUITest.TestMarkNonSecureAs:WebNavigationApiTest.CrossProcessFragment:WebNavigationApiTest.ServerRedirectSingleProcess:WebNavigationApiTest.CrossProcessHistory:WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs"
         ],
         "test": "browser_tests"
       },
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-*.PopupPendingAndBackToSameSiteInstance:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:DevToolsProtocolTest.NavigationPreservesMessages:NavigationControllerBrowserTest.ReloadOriginalRequest:*.RestoreSubframeFileAccessForHistoryNavigation"
+          "--gtest_filter=-SessionHistoryTest.FrameBackForward:NavigationControllerBrowserTest.ReloadOriginalRequest:*.RestoreSubframeFileAccessForHistoryNavigation"
         ],
         "test": "content_browsertests"
       },
@@ -5740,8 +5739,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--gtest_filter=-CaptivePortalTabHelperTest.HttpsSubframe*"
+          "--site-per-process"
         ],
         "test": "unit_tests"
       }
