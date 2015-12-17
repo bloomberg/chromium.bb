@@ -1452,13 +1452,15 @@
       'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.cc',
       'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h',
     ],
-    'chrome_browser_bookmark_android_sources': [
+    'chrome_browser_offline_pages_sources': [
       'browser/android/offline_pages/offline_page_bridge.cc',
       'browser/android/offline_pages/offline_page_bridge.h',
       'browser/android/offline_pages/offline_page_mhtml_archiver.cc',
       'browser/android/offline_pages/offline_page_mhtml_archiver.h',
       'browser/android/offline_pages/offline_page_model_factory.cc',
       'browser/android/offline_pages/offline_page_model_factory.h',
+      'browser/android/offline_pages/offline_page_utils.cc',
+      'browser/android/offline_pages/offline_page_utils.h',
     ],
     'chrome_browser_browser_process_sources': [
       'browser/browser_process.cc',
@@ -3751,7 +3753,7 @@
               ],
               'sources': [
                 '<@(chrome_browser_android_java_ui_sources)',
-                '<@(chrome_browser_bookmark_android_sources)',
+                '<@(chrome_browser_offline_pages_sources)',
                 '<@(chrome_browser_sync_android_java_ui_sources)',
                 '<@(chrome_browser_supervised_user_android_java_ui_sources)',
                 '<@(chrome_browser_ssl_android_java_ui_sources)',

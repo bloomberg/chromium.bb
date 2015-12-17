@@ -50,10 +50,6 @@ namespace infobars {
 class InfoBar;
 }
 
-namespace offline_pages {
-struct OfflinePageItem;
-}
-
 namespace prerender {
 class PrerenderManager;
 }
@@ -263,8 +259,6 @@ class TabAndroid : public CoreTabHelperDelegate,
   prerender::PrerenderManager* GetPrerenderManager() const;
 
   int64_t GetBookmarkIdHelper(bool only_editable) const;
-
-  const offline_pages::OfflinePageItem* GetOfflinePage(const GURL& url) const;
 
   JavaObjectWeakGlobalRef weak_java_tab_;
 

@@ -43,7 +43,13 @@ void OfflinePageTestArchiver::CreateArchive(
 void OfflinePageTestArchiver::CompleteCreateArchive() {
   DCHECK(!callback_.is_null());
   base::FilePath archive_path;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(archives_dir_, &archive_path));
+  if (filename_.empty()) {
+    ASSERT_TRUE(base::CreateTemporaryFileInDir(archives_dir_, &archive_path));
+  } else {
+    archive_path = archives_dir_.Append(filename_);
+    // This step ensures the file is created and closed immediately.
+    base::File file(archive_path, base::File::FLAG_OPEN_ALWAYS);
+  }
   observer_->SetLastPathCreatedByArchiver(archive_path);
   task_runner_->PostTask(FROM_HERE, base::Bind(callback_, this, result_, url_,
                                                archive_path, size_to_report_));

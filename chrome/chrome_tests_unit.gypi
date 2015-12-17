@@ -1650,6 +1650,9 @@
     # Sources for Offline pages. For now only for Android.
     'chrome_unit_tests_offline_pages_sources': [
       'browser/android/offline_pages/offline_page_mhtml_archiver_unittest.cc',
+      'browser/android/offline_pages/offline_page_utils_unittest.cc',
+      'browser/android/offline_pages/test_offline_page_model_builder.cc',
+      'browser/android/offline_pages/test_offline_page_model_builder.h',
     ],
   },
   'targets': [
@@ -1681,6 +1684,7 @@
         '../components/components.gyp:invalidation_impl',
         '../components/components.gyp:invalidation_test_support',
         '../components/components.gyp:metrics_test_support',
+        '../components/components.gyp:offline_pages_test_support',
         '../components/components.gyp:omnibox_test_support',
         '../components/components.gyp:password_manager_core_browser_test_support',
         '../components/components.gyp:pref_registry_test_support',
@@ -2314,7 +2318,7 @@
           ],
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
-            '../components/components.gyp:gcm_driver',
+            '../components/components.gyp:offline_pages',
           ],
         }, {  # Not Android.
           'sources': [ '<@(chrome_unit_tests_non_android_sources)' ],

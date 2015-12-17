@@ -22,9 +22,6 @@ namespace android {
  */
 class OfflinePageBridge : public OfflinePageModel::Observer {
  public:
-  // Returns true if |url| might points to an offline page.
-  static bool MightBeOfflineURL(const GURL& url);
-
   OfflinePageBridge(JNIEnv* env,
                     jobject obj,
                     content::BrowserContext* browser_context);

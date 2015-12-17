@@ -7,7 +7,6 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
-#include "base/strings/string_util.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -246,16 +245,6 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::CreateOfflinePageItem(
       offline_page.creation_time.ToJavaTime(),
       offline_page.access_count,
       offline_page.last_access_time.ToJavaTime());
-}
-
-// static
-bool OfflinePageBridge::MightBeOfflineURL(const GURL& url) {
-  // It has to be a file URL ending with .mhtml extension.
-  return url.is_valid() &&
-         url.SchemeIsFile() &&
-         base::EndsWith(url.spec(),
-                        OfflinePageMHTMLArchiver::GetFileNameExtension(),
-                        base::CompareCase::INSENSITIVE_ASCII);
 }
 
 static jlong Init(JNIEnv* env,

@@ -41,7 +41,8 @@ void OfflinePageTestStore::AddOrUpdateOfflinePage(
   bool result = scenario_ != TestScenario::WRITE_FAILED;
   if (result)
     offline_pages_[offline_page.bookmark_id] = offline_page;
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+  if (!callback.is_null())
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
 void OfflinePageTestStore::RemoveOfflinePages(

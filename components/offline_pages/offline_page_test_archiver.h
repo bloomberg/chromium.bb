@@ -22,6 +22,8 @@ namespace offline_pages {
 // for an actual web contents.
 class OfflinePageTestArchiver : public OfflinePageArchiver {
  public:
+  // TODO(fgorski): Try refactoring the observer out and replace it with a
+  // callback, or completely remove the call to |SetLastPathCreatedByArchiver|.
   class Observer {
    public:
     virtual ~Observer() {}
@@ -47,7 +49,12 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
 
   // When set to true, |CompleteCreateArchive| should be called explicitly for
   // the process to finish.
+  // TODO(fgorski): See if we can move this to the constructor.
   void set_delayed(bool delayed) { delayed_ = delayed; }
+
+  // Allows to explicitly specify a file name for the tests.
+  // TODO(fgorski): See if we can move this to the constructor.
+  void set_filename(const base::FilePath& filename) { filename_ = filename; }
 
   bool create_archive_called() const { return create_archive_called_; }
 
@@ -56,6 +63,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
   Observer* observer_;
   GURL url_;
   base::FilePath archives_dir_;
+  base::FilePath filename_;
   ArchiverResult result_;
   int64 size_to_report_;
   bool create_archive_called_;

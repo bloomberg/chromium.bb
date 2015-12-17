@@ -764,7 +764,7 @@ source_set("browser") {
     sources += rebase_path(gypi_values.chrome_browser_android_java_ui_sources,
                            ".",
                            "//chrome")
-    sources += rebase_path(gypi_values.chrome_browser_bookmark_android_sources,
+    sources += rebase_path(gypi_values.chrome_browser_offline_pages_sources,
                            ".",
                            "//chrome")
     deps += [
