@@ -212,18 +212,18 @@ function PDFViewer(browserApi) {
       this.viewport_.zoomOut.bind(this.viewport_));
 
   if (!this.isPrintPreview_) {
-    this.materialToolbar_ = $('material-toolbar');
-    this.materialToolbar_.hidden = false;
-    this.materialToolbar_.addEventListener('save', this.save_.bind(this));
-    this.materialToolbar_.addEventListener('print', this.print_.bind(this));
-    this.materialToolbar_.addEventListener('rotate-right',
+    this.toolbar_ = $('toolbar');
+    this.toolbar_.hidden = false;
+    this.toolbar_.addEventListener('save', this.save_.bind(this));
+    this.toolbar_.addEventListener('print', this.print_.bind(this));
+    this.toolbar_.addEventListener('rotate-right',
         this.rotateClockwise_.bind(this));
     // Must attach to mouseup on the plugin element, since it eats mousedown
     // and click events.
     this.plugin_.addEventListener('mouseup',
-        this.materialToolbar_.hideDropdowns.bind(this.materialToolbar_));
+        this.toolbar_.hideDropdowns.bind(this.toolbar_));
 
-    this.materialToolbar_.docTitle =
+    this.toolbar_.docTitle =
         getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl);
   }
 
@@ -232,7 +232,7 @@ function PDFViewer(browserApi) {
   }.bind(this));
 
   this.toolbarManager_ =
-      new ToolbarManager(window, this.materialToolbar_, this.zoomToolbar_);
+      new ToolbarManager(window, this.toolbar_, this.zoomToolbar_);
 
   // Set up the ZoomManager.
   this.zoomManager_ = new ZoomManager(
@@ -380,9 +380,9 @@ PDFViewer.prototype = {
         }
         return;
       case 71: // g key.
-        if (this.materialToolbar_ && (e.ctrlKey || e.metaKey) && e.altKey) {
+        if (this.toolbar_ && (e.ctrlKey || e.metaKey) && e.altKey) {
           this.toolbarManager_.showToolbars();
-          this.materialToolbar_.selectPageNumber();
+          this.toolbar_.selectPageNumber();
         }
         return;
       case 219:  // left bracket.
@@ -515,8 +515,8 @@ PDFViewer.prototype = {
    * @param {number} progress the progress as a percentage.
    */
   updateProgress_: function(progress) {
-    if (this.materialToolbar_)
-      this.materialToolbar_.loadProgress = progress;
+    if (this.toolbar_)
+      this.toolbar_.loadProgress = progress;
 
     if (progress == -1) {
       // Document load failed.
@@ -587,8 +587,8 @@ PDFViewer.prototype = {
         if (this.pageIndicator_)
           this.pageIndicator_.initialFadeIn();
 
-        if (this.materialToolbar_) {
-          this.materialToolbar_.docLength =
+        if (this.toolbar_) {
+          this.toolbar_.docLength =
               this.documentDimensions_.pageDimensions.length;
         }
         break;
@@ -644,9 +644,9 @@ PDFViewer.prototype = {
               getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl);
         }
         this.bookmarks_ = message.data.bookmarks;
-        if (this.materialToolbar_) {
-          this.materialToolbar_.docTitle = document.title;
-          this.materialToolbar_.bookmarks = this.bookmarks;
+        if (this.toolbar_) {
+          this.toolbar_.docTitle = document.title;
+          this.toolbar_.bookmarks = this.bookmarks;
         }
         break;
       case 'setIsSelecting':
@@ -724,10 +724,10 @@ PDFViewer.prototype = {
     // Update the page indicator.
     var visiblePage = this.viewport_.getMostVisiblePage();
 
-    if (this.materialToolbar_)
-      this.materialToolbar_.pageNo = visiblePage + 1;
+    if (this.toolbar_)
+      this.toolbar_.pageNo = visiblePage + 1;
 
-    // TODO(raymes): Give pageIndicator_ the same API as materialToolbar_.
+    // TODO(raymes): Give pageIndicator_ the same API as toolbar_.
     if (this.pageIndicator_) {
       this.pageIndicator_.index = visiblePage;
       if (this.documentDimensions_.pageDimensions.length > 1 &&

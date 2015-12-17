@@ -42,7 +42,7 @@ var tests = [
    */
   function testIgnoreKeyEvents() {
     // Test that the traversal through the shadow DOM works correctly.
-    var toolbar = document.getElementById('material-toolbar');
+    var toolbar = document.getElementById('toolbar');
     toolbar.$.pageselector.$.input.focus();
     chrome.test.assertTrue(shouldIgnoreKeyEvents(toolbar));
 
@@ -61,7 +61,7 @@ var tests = [
    * pressing escape.
    */
   function testOpenCloseBookmarks() {
-    var toolbar = $('material-toolbar');
+    var toolbar = $('toolbar');
     toolbar.show();
     var dropdown = toolbar.$.bookmarks;
     var plugin = $('plugin');

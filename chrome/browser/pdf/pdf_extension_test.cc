@@ -314,7 +314,7 @@ INSTANTIATE_TEST_CASE_P(PDFTestFiles,
                         testing::Range(0, kNumberLoadTestParts));
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
-  RunTestsInFile("basic_test_material.js", "test.pdf");
+  RunTestsInFile("basic_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BasicPlugin) {

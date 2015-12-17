@@ -24,8 +24,8 @@
       "js": ["content_script.js"]
     }
   ],
-  "mime_types_handler": "index-material.html",
+  "mime_types_handler": "index.html",
   "web_accessible_resources": [
-    "index-material.html"
+    "index.html"
   ]
 }

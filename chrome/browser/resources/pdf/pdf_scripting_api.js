@@ -275,7 +275,7 @@ function PDFCreateOutOfProcessPlugin(src) {
   iframe.setAttribute('tabindex', '-1');
 
   var EXTENSION_URL =
-      'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index-material.html';
+      'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html';
   iframe.setAttribute('src', EXTENSION_URL + '?' + src);
   iframe.onload = function() {
     client.setPlugin(iframe.contentWindow);

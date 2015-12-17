@@ -101,7 +101,7 @@ var tests = [
     var mockZoomToolbar = {
       clientHeight: 400
     };
-    var toolbar = document.getElementById('material-toolbar');
+    var toolbar = document.getElementById('toolbar');
     var bookmarksDropdown = toolbar.$.bookmarks;
 
     var toolbarManager =
