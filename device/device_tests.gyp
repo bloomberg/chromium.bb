@@ -96,7 +96,7 @@
             'battery/battery_status_manager_linux_unittest.cc',
           ],
         }],
-        ['chromeos==1 or OS=="linux"', {
+        ['(chromeos==1 or OS=="linux") and use_dbus==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../dbus/dbus.gyp:dbus',
