@@ -5,7 +5,7 @@
 
 import sys
 
-from devil.android.tools import screenshot
+from devil.android.tools import video_recorder
 
 if __name__ == '__main__':
-  sys.exit(screenshot.main())
+  sys.exit(video_recorder.main())
