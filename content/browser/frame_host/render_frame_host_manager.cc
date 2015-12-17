@@ -1568,8 +1568,8 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   // Don't swap processes for extensions embedded in DevTools. See
   // https://crbug.com/564216.
   if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kChromeDevToolsScheme)) {
-    CHECK(!dest_url.SchemeIs(url::kHttpScheme) &&
-          !dest_url.SchemeIs(url::kHttpsScheme));
+    // TODO(nick): https://crbug.com/570483 Check to see if |dest_url| is a
+    // devtools extension, and swap processes if not.
     return false;
   }
 
