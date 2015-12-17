@@ -5,6 +5,8 @@
 // Include test fixture.
 GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
 
+GEN_INCLUDE(['../../testing/snippets.js']);
+
 /**
  * Test fixture for automation_util.js.
  * @constructor
@@ -170,4 +172,23 @@ TEST_F('AutomationUtilE2ETest', 'IsInSameWebpageIframe', function() {
       desktop.addEventListener('loadComplete', listener, true);
     }.bind(this));
   }.bind(this));
+});
+
+TEST_F('AutomationUtilE2ETest', 'VisitContainer', function() {
+  this.runWithLoadedTree(toolbarDoc, function(r) {
+    var pred = function(n) { return n.role != 'rootWebArea'; };
+
+    var toolbar = AutomationUtil.findNextNode(r, 'forward', pred);
+    assertEquals('toolbar', toolbar.role);
+
+    var back = AutomationUtil.findNextNode(toolbar, 'forward', pred);
+    assertEquals('Back', back.name);
+    assertEquals(toolbar,
+                 AutomationUtil.findNextNode(back, 'backward', pred));
+
+    var forward = AutomationUtil.findNextNode(back, 'forward', pred);
+    assertEquals('Forward', forward.name);
+    assertEquals(back,
+                 AutomationUtil.findNextNode(forward, 'backward', pred));
+  });
 });

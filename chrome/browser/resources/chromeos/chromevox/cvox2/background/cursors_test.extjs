@@ -277,7 +277,7 @@ TEST_F('CursorsTest', 'DontSplitOnNodeNavigation', function() {
   this.runWithLoadedTree(this.multiInlineDoc, function(root) {
     var para = root.firstChild;
     assertEquals('paragraph', para.role);
-    var cursor = new cursors.Cursor(para, 0);
+    var cursor = new cursors.Cursor(para.firstChild, 0);
     cursor = cursor.move(DOM_NODE, DIRECTIONAL, FORWARD);
     assertEquals('staticText', cursor.node.role);
     assertEquals('end', cursor.node.name);

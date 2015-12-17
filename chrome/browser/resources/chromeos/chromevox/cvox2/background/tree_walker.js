@@ -8,6 +8,7 @@
 
 goog.provide('AutomationTreeWalker');
 goog.provide('AutomationTreeWalkerPhase');
+goog.provide('AutomationTreeWalkerRestriction');
 
 goog.require('constants');
 
@@ -28,17 +29,54 @@ AutomationTreeWalkerPhase = {
 };
 
 /**
+ * @typedef {{leaf: (AutomationPredicate.Unary|undefined),
+ *          root: (AutomationPredicate.Unary|undefined),
+ *          visit: (AutomationPredicate.Unary|undefined),
+ *          skipInitialSubtree: (boolean|undefined)}}
+ */
+var AutomationTreeWalkerRestriction;
+
+/**
+ * An AutomationTreeWalker provides an incremental pre order traversal of the
+ * automation tree starting at a particular node.
+ *
+ * Given a flat list of nodes in pre order, the walker moves forward or backward
+ * a node at a time on each call of |next|.
+ *
+ * A caller can visit a subset of this list by supplying restricting
+ * predicates. There are three such restricting predicates allowed:
+ * visit: this predicate determines if a given node should be returned when
+ * moving to a node in the flattened pre-order list. If not, this walker will
+ * continue to the next (directed) node in the list, looking for a predicate
+ * match.
+ * root: this predicate determines if a node should end upward movement in the
+ * tree.
+ * leaf: this predicate determines if a node should end downward movement in the
+ * tree.
+ *
+ * Finally, a boolean, |skipInitialSubtree|, makes the first invocation of
+ * |next| skip the initial node's subtree when finding a match. This is useful
+ * to establish a known initial state when the initial node may not match any of
+ * the given predicates.
+ *
+ * Given the above definitions, if supplied with a root and leaf predicate that
+ * always returns false, and a visit predicate that always returns true, the
+ * walker would visit all nodes in pre order. If a caller does not supply a
+ * particular predicate, it will default to these "identity" predicates.
+ *
  * @param {!chrome.automation.AutomationNode} node
- * @param {constants.Dir=} opt_dir Defaults to constants.Dir.FORWARD.
+ * @param {constants.Dir} dir
+ * @param {AutomationTreeWalkerRestriction=}
+ *        opt_restrictions
  * @constructor
  */
-AutomationTreeWalker = function(node, opt_dir) {
+AutomationTreeWalker = function(node, dir, opt_restrictions) {
   /** @type {chrome.automation.AutomationNode} @private */
   this.node_ = node;
   /** @type {AutomationTreeWalkerPhase} @private */
   this.phase_ = AutomationTreeWalkerPhase.INITIAL;
   /** @const {constants.Dir} @private */
-  this.dir_ = opt_dir ? opt_dir : constants.Dir.FORWARD;
+  this.dir_ = dir;
   /** @const {!chrome.automation.AutomationNode} @private */
   this.initialNode_ = node;
   /**
@@ -47,6 +85,27 @@ AutomationTreeWalker = function(node, opt_dir) {
    * @type {chrome.automation.AutomationNode} @private
    */
   this.backwardAncestor_ = node.parent;
+  var restrictions = opt_restrictions || {};
+
+  this.visitPred_ =
+      restrictions.visit ? restrictions.visit : function() { return true; };
+  /** @type {AutomationPredicate.Unary} @private */
+  this.leafPred_ = restrictions.leaf ? restrictions.leaf :
+      AutomationTreeWalker.falsePredicate_;
+  /** @type {AutomationPredicate.Unary} @private */
+  this.rootPred_ = restrictions.root ? restrictions.root :
+      AutomationTreeWalker.falsePredicate_;
+  /** @const {boolean} @private */
+  this.skipInitialSubtree_ = restrictions.skipInitialSubtree || false;
+};
+
+/**
+ * @param {!chrome.automation.AutomationNode} node
+ * @return {boolean}
+ * @private
+ */
+AutomationTreeWalker.falsePredicate_ = function(node) {
+  return false;
 };
 
 AutomationTreeWalker.prototype = {
@@ -68,10 +127,12 @@ AutomationTreeWalker.prototype = {
   next: function() {
     if (!this.node_)
       return this;
-    if (this.dir_ == constants.Dir.FORWARD)
-      this.forward_(this.node_);
-    else
-      this.backward_(this.node_);
+    do {
+      if (this.dir_ == constants.Dir.FORWARD)
+        this.forward_(this.node_);
+      else
+        this.backward_(this.node_);
+    } while (this.node_ && !this.visitPred_(this.node_));
     return this;
   },
 
@@ -80,11 +141,14 @@ AutomationTreeWalker.prototype = {
    * @private
    */
   forward_: function(node) {
-    if (node.firstChild) {
+    if (!this.leafPred_(node) && node.firstChild) {
       if (this.phase_ == AutomationTreeWalkerPhase.INITIAL)
         this.phase_ = AutomationTreeWalkerPhase.DESCENDANT;
-      this.node_ = node.firstChild;
-      return;
+      if (!this.skipInitialSubtree_ ||
+          this.phase != AutomationTreeWalkerPhase.DESCENDANT) {
+        this.node_ = node.firstChild;
+        return;
+      }
     }
 
     var searchNode = node;
@@ -97,6 +161,9 @@ AutomationTreeWalker.prototype = {
         this.node_ = searchNode.nextSibling;
         return;
       }
+      if (searchNode.parent && this.rootPred_(searchNode.parent))
+        break;
+
       searchNode = searchNode.parent;
     }
     this.node_ = null;
@@ -110,8 +177,10 @@ AutomationTreeWalker.prototype = {
     if (node.previousSibling) {
       this.phase_ = AutomationTreeWalkerPhase.OTHER;
       node = node.previousSibling;
-      while (node.lastChild)
+
+      while (!this.leafPred_(node) && node.lastChild)
         node = node.lastChild;
+
       this.node_ = node;
       return;
     }
@@ -119,6 +188,9 @@ AutomationTreeWalker.prototype = {
       this.phase_ = AutomationTreeWalkerPhase.ANCESTOR;
       this.backwardAncestor_ = node.parent.parent;
     }
-    this.node_ = node.parent;
+    if (node.parent && this.rootPred_(node.parent))
+      this.node_ = null;
+    else
+      this.node_ = node.parent;
   }
 };

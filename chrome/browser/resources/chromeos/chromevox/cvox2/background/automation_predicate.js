@@ -11,6 +11,7 @@ goog.provide('AutomationPredicate.Binary');
 goog.provide('AutomationPredicate.Unary');
 
 goog.scope(function() {
+var AutomationNode = chrome.automation.AutomationNode;
 var RoleType = chrome.automation.RoleType;
 
 /**
@@ -19,13 +20,12 @@ var RoleType = chrome.automation.RoleType;
 AutomationPredicate = function() {};
 
 /**
- * @typedef {function(chrome.automation.AutomationNode) : boolean}
+ * @typedef {function(!AutomationNode) : boolean}
  */
 AutomationPredicate.Unary;
 
 /**
- * @typedef {function(chrome.automation.AutomationNode,
- *                    chrome.automation.AutomationNode) : boolean}
+ * @typedef {function(!AutomationNode, !AutomationNode) : boolean}
  */
 AutomationPredicate.Binary;
 
@@ -57,7 +57,7 @@ AutomationPredicate.link = AutomationPredicate.withRole(RoleType.link);
 AutomationPredicate.table = AutomationPredicate.withRole(RoleType.table);
 
 /**
- * @param {chrome.automation.AutomationNode} node
+ * @param {!AutomationNode} node
  * @return {boolean}
  */
 AutomationPredicate.button = function(node) {
@@ -65,7 +65,7 @@ AutomationPredicate.button = function(node) {
 };
 
 /**
- * @param {chrome.automation.AutomationNode} node
+ * @param {!AutomationNode} node
  * @return {boolean}
  */
 AutomationPredicate.formField = function(node) {
@@ -98,7 +98,7 @@ AutomationPredicate.formField = function(node) {
 };
 
 /**
- * @param {chrome.automation.AutomationNode} node
+ * @param {!AutomationNode} node
  * @return {boolean}
  */
 AutomationPredicate.landmark = function(node) {
@@ -117,7 +117,7 @@ AutomationPredicate.landmark = function(node) {
 };
 
 /**
- * @param {chrome.automation.AutomationNode} node
+ * @param {!AutomationNode} node
  * @return {boolean}
  */
 AutomationPredicate.visitedLink = function(node) {
@@ -125,7 +125,7 @@ AutomationPredicate.visitedLink = function(node) {
 };
 
 /**
- * @param {chrome.automation.AutomationNode} node
+ * @param {!AutomationNode} node
  * @return {boolean}
  */
 AutomationPredicate.focused = function(node) {
@@ -133,7 +133,7 @@ AutomationPredicate.focused = function(node) {
 };
 
 /**
- * @param {chrome.automation.AutomationNode} node
+ * @param {!AutomationNode} node
  * @return {boolean}
  */
 AutomationPredicate.leaf = function(node) {
@@ -149,7 +149,7 @@ AutomationPredicate.leaf = function(node) {
 };
 
 /**
- * @param {chrome.automation.AutomationNode} node
+ * @param {!AutomationNode} node
  * @return {boolean}
  */
 AutomationPredicate.leafWithText = function(node) {
@@ -158,9 +158,8 @@ AutomationPredicate.leafWithText = function(node) {
 };
 
 /**
- * Matches against non-inline textbox 'nodes' which have an equivalent in the
- *     DOM.
- * @param {chrome.automation.AutomationNode} node
+ * Non-inline textbox nodes which have an equivalent in the DOM.
+ * @param {!AutomationNode} node
  * @return {boolean}
  */
 AutomationPredicate.leafDomNode = function(node) {
@@ -169,8 +168,20 @@ AutomationPredicate.leafDomNode = function(node) {
 };
 
 /**
- * @param {chrome.automation.AutomationNode} first
- * @param {chrome.automation.AutomationNode} second
+ * Matches against nodes visited during element navigation. An element as
+ * defined below, are all nodes that are focusable or static text. When used in
+ * tree walking, it should visit all nodes that tab traversal would as well as
+ * non-focusable static text.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.element = function(node) {
+  return node.role == RoleType.staticText || node.state.focusable;
+};
+
+/**
+ * @param {!AutomationNode} first
+ * @param {!AutomationNode} second
  * @return {boolean}
  */
 AutomationPredicate.linebreak = function(first, second) {
@@ -182,9 +193,19 @@ AutomationPredicate.linebreak = function(first, second) {
 };
 
 /**
+ * Matches against a node that should be visited but not considered a leaf.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.container = function(node) {
+  return node.state.focusable &&
+      node.role == RoleType.toolbar;
+};
+
+/**
  * Leaf nodes that should be ignored while traversing the automation tree. For
  * example, apply this predicate when moving to the next element.
- * @param {chrome.automation.AutomationNode} node
+ * @param {!AutomationNode} node
  * @return {boolean}
  */
 AutomationPredicate.shouldIgnoreLeaf = function(node) {

@@ -219,7 +219,7 @@ cursors.Cursor.prototype = {
             break;
           case Movement.DIRECTIONAL:
             var pred = unit == Unit.NODE ?
-                AutomationPredicate.leaf : AutomationPredicate.leafDomNode;
+                AutomationPredicate.leaf : AutomationPredicate.element;
             newNode = AutomationUtil.findNextNode(
                 newNode, dir, pred) || this.node_;
             newIndex = cursors.NODE_INDEX;

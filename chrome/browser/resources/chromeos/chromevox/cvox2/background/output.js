@@ -956,7 +956,7 @@ Output.prototype = {
               this.format_(node, formatString, buff);
           }
         } else if (token == 'descendants') {
-          if (AutomationPredicate.leaf(node))
+          if (!node || AutomationPredicate.leaf(node))
             return;
 
           // Construct a range to the leftmost and rightmost leaves.
