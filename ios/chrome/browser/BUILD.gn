@@ -507,6 +507,7 @@ source_set("browser") {
     "//components/metrics:net",
     "//components/metrics:profiler",
     "//components/metrics:ui",
+    "//components/metrics_services_manager",
     "//components/net_log",
     "//components/network_time",
     "//components/ntp_snippets",
