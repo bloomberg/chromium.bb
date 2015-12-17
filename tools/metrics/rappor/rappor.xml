@@ -1017,6 +1017,47 @@ components/rappor/rappor_service.cc.
   </flags-field>
 </rappor-metric>
 
+<rappor-metric name="SafeBrowsing.UnverifiedDownloads.Allowed"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL for which a download was allowed without
+    being verified by Safe Browsing.  Recorded before the download is started.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="SafeBrowsing.UnverifiedDownloads.AllowedByWhitelist"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL for which a download was allowed without
+    being verified by Safe Browsing because it was on a whitelisted domain.
+    Recorded before the download is started.  The candidates should come from
+    the domain whitelist.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="SafeBrowsing.UnverifiedDownloads.AllowedDueToDisabledService"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL for which a download was allowed without
+    being verified by Safe Browsing because the service was disabled at the
+    time.  Recorded before the download is started.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="SafeBrowsing.UnverifiedDownloads.Blocked"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL for which a download was blocked without
+    being verified by Safe Browsing because the extension matched the blacklist
+    provided by Finch.  Recorded before the download is started.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Search.DefaultSearchProvider" type="ETLD_PLUS_ONE">
   <owner>holte@chromium.org</owner>
   <summary>
