@@ -123,7 +123,7 @@ void ChildProcess::WaitForDebugger(const std::string& label) {
 #if defined(OS_ANDROID)
   LOG(ERROR) << label << " waiting for GDB.";
   // Wait 24 hours for a debugger to be attached to the current process.
-  base::debug::WaitForDebugger(24 * 60 * 60, false);
+  base::debug::WaitForDebugger(24 * 60 * 60, true);
 #else
   // TODO(playmobil): In the long term, overriding this flag doesn't seem
   // right, either use our own flag or open a dialog we can use.
