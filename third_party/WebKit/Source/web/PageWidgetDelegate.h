@@ -73,7 +73,6 @@ public:
     // to start performing the specified operation.
 
     // See documents of methods with the same names in FrameView class.
-    static void updateLifecycleToCompositingCleanPlusScrolling(Page&, LocalFrame& root);
     static void updateAllLifecyclePhases(Page&, LocalFrame& root);
 
     static void paint(Page&, WebCanvas*, const WebRect&, LocalFrame& root);

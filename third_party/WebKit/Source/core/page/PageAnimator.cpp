@@ -79,13 +79,6 @@ void PageAnimator::scheduleVisualUpdate(LocalFrame* frame)
     m_page->chromeClient().scheduleAnimation(frame->view());
 }
 
-void PageAnimator::updateLifecycleToCompositingCleanPlusScrolling(LocalFrame& rootFrame)
-{
-    RefPtrWillBeRawPtr<FrameView> view = rootFrame.view();
-    TemporaryChange<bool> servicing(m_updatingLayoutAndStyleForPainting, true);
-    view->updateLifecycleToCompositingCleanPlusScrolling();
-}
-
 void PageAnimator::updateAllLifecyclePhases(LocalFrame& rootFrame)
 {
     RefPtrWillBeRawPtr<FrameView> view = rootFrame.view();

@@ -1449,9 +1449,6 @@ void WebViewImpl::enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<Node>>
     // don't get a new target to highlight.
     m_linkHighlights.clear();
 
-    // LinkHighlight reads out layout and compositing state, so we need to make sure that's all up to date.
-    updateAllLifecyclePhases();
-
     for (size_t i = 0; i < highlightNodes.size(); ++i) {
         Node* node = highlightNodes[i];
 
@@ -1467,6 +1464,8 @@ void WebViewImpl::enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<Node>>
 
         m_linkHighlights.append(LinkHighlightImpl::create(node, this));
     }
+
+    updateAllLifecyclePhases();
 }
 
 void WebViewImpl::animateDoubleTapZoom(const IntPoint& pointInRootFrame)
@@ -2013,7 +2012,7 @@ void WebViewImpl::updateAllLifecyclePhases()
             m_pageColorOverlay->graphicsLayer()->paint(nullptr);
     }
 
-    // TODO(chrishtr): link highlight's don't currently paint themselves, it's still driven by cc.
+    // TODO(chrishtr): link highlights don't currently paint themselves, it's still driven by cc.
     // Fix this.
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->updateGeometry();
@@ -3933,8 +3932,6 @@ bool WebViewImpl::isTransparent() const
 
 void WebViewImpl::setBaseBackgroundColor(WebColor color)
 {
-    updateAllLifecyclePhases();
-
     if (m_baseBackgroundColor == color)
         return;
 
@@ -3943,7 +3940,7 @@ void WebViewImpl::setBaseBackgroundColor(WebColor color)
     if (m_page->mainFrame() && m_page->mainFrame()->isLocalFrame())
         m_page->deprecatedLocalMainFrame()->view()->setBaseBackgroundColor(color);
 
-    updateLayerTreeBackgroundColor();
+    updateAllLifecyclePhases();
 }
 
 void WebViewImpl::setIsActive(bool active)

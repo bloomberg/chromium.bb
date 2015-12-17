@@ -24,7 +24,6 @@ public:
     bool isServicingAnimations() const { return m_servicingAnimations; }
 
     // See documents of methods with the same names in FrameView class.
-    void updateLifecycleToCompositingCleanPlusScrolling(LocalFrame& rootFrame);
     void updateAllLifecyclePhases(LocalFrame& rootFrame);
     AnimationClock& clock() { return m_animationClock; }
 

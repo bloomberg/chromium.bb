@@ -58,11 +58,6 @@ void PageWidgetDelegate::animate(Page& page, double monotonicFrameBeginTime)
     page.animator().serviceScriptedAnimations(monotonicFrameBeginTime);
 }
 
-void PageWidgetDelegate::updateLifecycleToCompositingCleanPlusScrolling(Page& page, LocalFrame& root)
-{
-    page.animator().updateLifecycleToCompositingCleanPlusScrolling(root);
-}
-
 void PageWidgetDelegate::updateAllLifecyclePhases(Page& page, LocalFrame& root)
 {
     page.animator().updateAllLifecyclePhases(root);

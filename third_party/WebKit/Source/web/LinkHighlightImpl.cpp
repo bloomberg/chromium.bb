@@ -97,7 +97,6 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
     m_contentLayer->layer()->setDrawsContent(true);
     m_contentLayer->layer()->setOpacity(1);
     m_geometryNeedsUpdate = true;
-    updateGeometry();
 }
 
 LinkHighlightImpl::~LinkHighlightImpl()
