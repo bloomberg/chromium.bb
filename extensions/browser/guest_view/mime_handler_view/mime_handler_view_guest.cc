@@ -225,9 +225,18 @@ bool MimeHandlerViewGuest::SaveFrame(const GURL& url,
 }
 
 void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
-  embedder_web_contents()->Send(
-      new ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted(
-          element_instance_id()));
+  // Assume the embedder WebContents is valid here. Change this to a DCHECK
+  // after verifying https://crbug.com/569990.
+  CHECK(owner_web_contents());
+
+  // Although we should always be attached before loading is complete, the
+  // MimeHandlerViewGuest may become detached in some cases so we still need
+  // to check whether we're attached here.
+  if (attached()) {
+    embedder_web_contents()->Send(
+        new ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted(
+            element_instance_id()));
+  }
 }
 
 base::WeakPtr<StreamContainer> MimeHandlerViewGuest::GetStream() const {
