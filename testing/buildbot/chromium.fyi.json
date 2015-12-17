@@ -5689,10 +5689,34 @@
     "gtest_tests": [
       {
         "args": [
+          "--site-per-process"
+        ],
+        "test": "app_shell_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "blimp_unittests"
+      },
+      {
+        "args": [
           "--site-per-process",
           "--gtest_filter=-AllUrlsApiTest.WhitelistedExtension:BrowserNavigatorTest.NavigateFromNTPToOptionsInSameTab:BrowserTest.OtherRedirectsDontForkProcess:BrowserTest.WindowOpenClose:ChromeRenderProcessHostTest.*:ChromeRenderProcessHostTestWithCommandLine.ProcessOverflow:ErrorPageTest.*:ExtensionApiTest.Tabs2:ExtensionApiTest.TabMove:ExtensionApiTest.TabsOnUpdated:ExtensionURLRewriteBrowserTest.NewTabPageURL:IsolatedAppTest.*:PhishingClassifierDelegateTest.*:PhishingDOMFeatureExtractorTest.SubFrames:PolicyTest.HomepageLocation:PrerenderBrowserTest.*:ProcessManagementTest.*:RedirectTest.ClientEmptyReferer:ReferrerPolicyTest.HttpsRedirect:RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest*:SSLUITest.TestGoodFrameNavigation:SSLUITest.TestMarkNonSecureAs:WebNavigationApiTest.CrossProcessFragment:WebNavigationApiTest.ServerRedirectSingleProcess:WebNavigationApiTest.CrossProcessHistory:WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs"
         ],
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "components_browsertests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "components_unittests"
       },
       {
         "args": [
@@ -5706,6 +5730,36 @@
           "--site-per-process"
         ],
         "test": "content_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "extensions_browsertests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "extensions_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "sync_integration_tests"
       },
       {
         "args": [
@@ -5719,10 +5773,34 @@
     "gtest_tests": [
       {
         "args": [
+          "--site-per-process"
+        ],
+        "test": "app_shell_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "ash_unittests"
+      },
+      {
+        "args": [
           "--site-per-process",
           "--gtest_filter=-AllUrlsApiTest.WhitelistedExtension:BrowserNavigatorTest.NavigateFromNTPToOptionsInSameTab:BrowserTest.OtherRedirectsDontForkProcess:BrowserTest.WindowOpenClose:ChromeRenderProcessHostTest.*:ChromeRenderProcessHostTestWithCommandLine.ProcessOverflow:ErrorPageTest.*:ExtensionApiTest.Tabs2:ExtensionApiTest.TabMove:ExtensionApiTest.TabsOnUpdated:ExtensionURLRewriteBrowserTest.NewTabPageURL:IsolatedAppTest.*:PhishingClassifierDelegateTest.*:PhishingDOMFeatureExtractorTest.SubFrames:PolicyTest.HomepageLocation:PrerenderBrowserTest.*:ProcessManagementTest.*:RedirectTest.ClientEmptyReferer:ReferrerPolicyTest.HttpsRedirect:RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest*:SSLUITest.TestGoodFrameNavigation:SSLUITest.TestMarkNonSecureAs:WebNavigationApiTest.CrossProcessFragment:WebNavigationApiTest.ServerRedirectSingleProcess:WebNavigationApiTest.CrossProcessHistory:WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs"
         ],
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "components_browsertests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "components_unittests"
       },
       {
         "args": [
@@ -5736,6 +5814,42 @@
           "--site-per-process"
         ],
         "test": "content_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "extensions_browsertests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "extensions_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "installer_util_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "args": [
+          "--site-per-process"
+        ],
+        "test": "sync_integration_tests"
       },
       {
         "args": [
