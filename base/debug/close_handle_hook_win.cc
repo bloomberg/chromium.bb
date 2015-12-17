@@ -144,8 +144,8 @@ bool EATPatch(HMODULE module, const char* function_name,
 
   // Perform the patch.
 #pragma warning(push)
-#pragma warning(disable: 4311)
-  // These casts generate warnings because they are 32 bit specific.
+#pragma warning(disable : 4311 4302)
+  // These casts generate truncation warnings because they are 32 bit specific.
   *eat_entry = reinterpret_cast<DWORD>(new_function) -
                reinterpret_cast<DWORD>(module);
 #pragma warning(pop)
