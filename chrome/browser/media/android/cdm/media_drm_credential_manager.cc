@@ -51,11 +51,8 @@ void MediaDrmCredentialManager::ResetCredentials(
 
   reset_credentials_cb_ = reset_credentials_cb;
 
-  // First reset the L3 credential.
-  if (!ResetCredentialsInternal(media::MediaDrmBridge::SECURITY_LEVEL_3)) {
-    // TODO(qinmin): We should post a task instead.
-    base::ResetAndReturn(&reset_credentials_cb_).Run(false);
-  }
+  // First reset the L3 credentials.
+  ResetCredentialsInternal(media::MediaDrmBridge::SECURITY_LEVEL_3);
 }
 
 // static
@@ -80,9 +77,8 @@ void ResetCredentials(
 void MediaDrmCredentialManager::OnResetCredentialsCompleted(
     SecurityLevel security_level, bool success) {
   if (security_level == media::MediaDrmBridge::SECURITY_LEVEL_3 && success) {
-    if (ResetCredentialsInternal(media::MediaDrmBridge::SECURITY_LEVEL_1))
-      return;
-    success = false;
+    ResetCredentialsInternal(media::MediaDrmBridge::SECURITY_LEVEL_1);
+    return;
   }
 
   base::ResetAndReturn(&reset_credentials_cb_).Run(success);
@@ -90,31 +86,28 @@ void MediaDrmCredentialManager::OnResetCredentialsCompleted(
 }
 
 // TODO(ddorwin): The key system should be passed in. http://crbug.com/459400
-bool MediaDrmCredentialManager::ResetCredentialsInternal(
+void MediaDrmCredentialManager::ResetCredentialsInternal(
     SecurityLevel security_level) {
   // Create provision fetcher for the default browser http request context.
   media::CreateFetcherCB create_fetcher_cb =
       base::Bind(&content::CreateProvisionFetcher,
                  g_browser_process->system_request_context());
 
-  media_drm_bridge_ = media::MediaDrmBridge::CreateWithoutSessionSupport(
-      kWidevineKeySystem, create_fetcher_cb);
-  if (!media_drm_bridge_)
-    return false;
-
   ResetCredentialsCB reset_credentials_cb =
       base::Bind(&MediaDrmCredentialManager::OnResetCredentialsCompleted,
                  base::Unretained(this), security_level);
 
-  if (!media_drm_bridge_->SetSecurityLevel(security_level)) {
-    // No need to reset credentials for unsupported |security_level|.
+  media_drm_bridge_ = media::MediaDrmBridge::CreateWithoutSessionSupport(
+      kWidevineKeySystem, security_level, create_fetcher_cb);
+
+  // No need to reset credentials for unsupported |security_level|.
+  if (!media_drm_bridge_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(reset_credentials_cb, true));
-    return true;
+    return;
   }
 
   media_drm_bridge_->ResetDeviceCredentials(reset_credentials_cb);
-  return true;
 }
 
 // static

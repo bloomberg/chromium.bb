@@ -195,13 +195,15 @@ MediaDrmBridge::SecurityLevel GetSecurityLevelFromString(
   if (0 == security_level_str.compare("L3"))
     return MediaDrmBridge::SECURITY_LEVEL_3;
   DCHECK(security_level_str.empty());
-  return MediaDrmBridge::SECURITY_LEVEL_NONE;
+  return MediaDrmBridge::SECURITY_LEVEL_DEFAULT;
 }
 
+// Do not change the return values as they are part of Android MediaDrm API for
+// Widevine.
 std::string GetSecurityLevelString(
     MediaDrmBridge::SecurityLevel security_level) {
   switch (security_level) {
-    case MediaDrmBridge::SECURITY_LEVEL_NONE:
+    case MediaDrmBridge::SECURITY_LEVEL_DEFAULT:
       return "";
     case MediaDrmBridge::SECURITY_LEVEL_1:
       return "L1";
@@ -256,6 +258,7 @@ std::vector<std::string> MediaDrmBridge::GetPlatformKeySystemNames() {
 // static
 scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
     const std::string& key_system,
+    SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -271,10 +274,10 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
   if (scheme_uuid.empty())
     return nullptr;
 
-  scoped_refptr<MediaDrmBridge> media_drm_bridge(
-      new MediaDrmBridge(scheme_uuid, create_fetcher_cb, session_message_cb,
-                         session_closed_cb, legacy_session_error_cb,
-                         session_keys_change_cb, session_expiration_update_cb));
+  scoped_refptr<MediaDrmBridge> media_drm_bridge(new MediaDrmBridge(
+      scheme_uuid, security_level, create_fetcher_cb, session_message_cb,
+      session_closed_cb, legacy_session_error_cb, session_keys_change_cb,
+      session_expiration_update_cb));
 
   if (media_drm_bridge->j_media_drm_.is_null())
     media_drm_bridge = nullptr;
@@ -285,8 +288,9 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
 // static
 scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
     const std::string& key_system,
+    SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb) {
-  return MediaDrmBridge::Create(key_system, create_fetcher_cb,
+  return MediaDrmBridge::Create(key_system, security_level, create_fetcher_cb,
                                 SessionMessageCB(), SessionClosedCB(),
                                 LegacySessionErrorCB(), SessionKeysChangeCB(),
                                 SessionExpirationUpdateCB());
@@ -433,26 +437,6 @@ int MediaDrmBridge::RegisterPlayer(const base::Closure& new_key_cb,
 void MediaDrmBridge::UnregisterPlayer(int registration_id) {
   // |player_tracker_| can be accessed from any thread.
   player_tracker_.UnregisterPlayer(registration_id);
-}
-
-bool MediaDrmBridge::SetSecurityLevel(SecurityLevel security_level) {
-  if (security_level != SECURITY_LEVEL_NONE &&
-      !std::equal(scheme_uuid_.begin(), scheme_uuid_.end(), kWidevineUuid)) {
-    NOTREACHED() << "Widevine security level " << security_level
-                 << "used with another key system";
-    return false;
-  }
-
-  JNIEnv* env = AttachCurrentThread();
-
-  std::string security_level_str = GetSecurityLevelString(security_level);
-  if (security_level_str.empty())
-    return false;
-
-  ScopedJavaLocalRef<jstring> j_security_level =
-      ConvertUTF8ToJavaString(env, security_level_str);
-  return Java_MediaDrmBridge_setSecurityLevel(env, j_media_drm_.obj(),
-                                              j_security_level.obj());
 }
 
 bool MediaDrmBridge::IsProtectedSurfaceRequired() {
@@ -714,6 +698,7 @@ void MediaDrmBridge::OnResetDeviceCredentialsCompleted(
 
 MediaDrmBridge::MediaDrmBridge(
     const std::vector<uint8>& scheme_uuid,
+    SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -738,8 +723,14 @@ MediaDrmBridge::MediaDrmBridge(
 
   ScopedJavaLocalRef<jbyteArray> j_scheme_uuid =
       base::android::ToJavaByteArray(env, &scheme_uuid[0], scheme_uuid.size());
+
+  std::string security_level_str = GetSecurityLevelString(security_level);
+  ScopedJavaLocalRef<jstring> j_security_level =
+      ConvertUTF8ToJavaString(env, security_level_str);
+
   j_media_drm_.Reset(Java_MediaDrmBridge_create(
-      env, j_scheme_uuid.obj(), reinterpret_cast<intptr_t>(this)));
+      env, j_scheme_uuid.obj(), j_security_level.obj(),
+      reinterpret_cast<intptr_t>(this)));
 }
 
 MediaDrmBridge::~MediaDrmBridge() {

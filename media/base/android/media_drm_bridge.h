@@ -37,7 +37,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
  public:
   // TODO(ddorwin): These are specific to Widevine. http://crbug.com/459400
   enum SecurityLevel {
-    SECURITY_LEVEL_NONE = 0,
+    SECURITY_LEVEL_DEFAULT = 0,
     SECURITY_LEVEL_1 = 1,
     SECURITY_LEVEL_3 = 3,
   };
@@ -73,11 +73,12 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // are not handled by Chrome explicitly.
   static std::vector<std::string> GetPlatformKeySystemNames();
 
-  // Returns a MediaDrmBridge instance if |key_system| is supported, or a NULL
-  // pointer otherwise.
-  // TODO(xhwang): Is it okay not to update session expiration info?
+  // Returns a MediaDrmBridge instance if |key_system| and |security_level| are
+  // supported, and nullptr otherwise. The default security level will be used
+  // if |security_level| is SECURITY_LEVEL_DEFAULT.
   static scoped_refptr<MediaDrmBridge> Create(
       const std::string& key_system,
+      SecurityLevel security_level,
       const CreateFetcherCB& create_fetcher_cb,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
@@ -85,11 +86,11 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
       const SessionKeysChangeCB& session_keys_change_cb,
       const SessionExpirationUpdateCB& session_expiration_update_cb);
 
-  // Returns a MediaDrmBridge instance if |key_system| is supported, or a NULL
-  // otherwise. No session callbacks are provided. This is used when we need to
-  // use MediaDrmBridge without creating any sessions.
+  // Same as Create() except that no session callbacks are provided. This is
+  // used when we need to use MediaDrmBridge without creating any sessions.
   static scoped_refptr<MediaDrmBridge> CreateWithoutSessionSupport(
       const std::string& key_system,
+      SecurityLevel security_level,
       const CreateFetcherCB& create_fetcher_cb);
 
   // MediaKeys implementation.
@@ -122,15 +123,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   int RegisterPlayer(const base::Closure& new_key_cb,
                      const base::Closure& cdm_unset_cb) override;
   void UnregisterPlayer(int registration_id) override;
-
-  // Returns true if |security_level| is successfully set, or false otherwise.
-  // Call this function right after Create() and before any other calls.
-  // Note:
-  // - If this function is not called, the default security level of the device
-  //   will be used.
-  // - It's recommended to call this function only once on a MediaDrmBridge
-  //   object. Calling this function multiples times may cause errors.
-  bool SetSecurityLevel(SecurityLevel security_level);
 
   // Helper function to determine whether a protected surface is needed for the
   // video playback.
@@ -248,7 +240,11 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // For DeleteSoon() in DeleteOnCorrectThread().
   friend class base::DeleteHelper<MediaDrmBridge>;
 
+  // Constructs a MediaDrmBridge for |scheme_uuid| and |security_level|. The
+  // default security level will be used if |security_level| is
+  // SECURITY_LEVEL_DEFAULT.
   MediaDrmBridge(const std::vector<uint8>& scheme_uuid,
+                 SecurityLevel security_level,
                  const CreateFetcherCB& create_fetcher_cb,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,

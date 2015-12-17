@@ -30,8 +30,8 @@ const char kVideoMp4[] = "video/mp4";
 const char kAudioWebM[] = "audio/webm";
 const char kVideoWebM[] = "video/webm";
 const char kInvalidKeySystem[] = "invalid.keysystem";
-const MediaDrmBridge::SecurityLevel kLNone =
-    MediaDrmBridge::SECURITY_LEVEL_NONE;
+const MediaDrmBridge::SecurityLevel kDefault =
+    MediaDrmBridge::SECURITY_LEVEL_DEFAULT;
 const MediaDrmBridge::SecurityLevel kL1 = MediaDrmBridge::SECURITY_LEVEL_1;
 const MediaDrmBridge::SecurityLevel kL3 = MediaDrmBridge::SECURITY_LEVEL_3;
 
@@ -97,30 +97,26 @@ TEST(MediaDrmBridgeTest, IsKeySystemSupported_InvalidKeySystem) {
 TEST(MediaDrmBridgeTest, CreateWithoutSessionSupport_Widevine) {
   base::MessageLoop message_loop_;
   EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(MediaDrmBridge::CreateWithoutSessionSupport(
-      kWidevineKeySystem, base::Bind(&MockProvisionFetcher::Create)));
+      kWidevineKeySystem, kDefault, base::Bind(&MockProvisionFetcher::Create)));
 }
 
 // Invalid key system is NOT supported regardless whether MediaDrm is available.
 TEST(MediaDrmBridgeTest, CreateWithoutSessionSupport_InvalidKeySystem) {
   base::MessageLoop message_loop_;
   EXPECT_FALSE(MediaDrmBridge::CreateWithoutSessionSupport(
-      kInvalidKeySystem, base::Bind(&MockProvisionFetcher::Create)));
+      kInvalidKeySystem, kDefault, base::Bind(&MockProvisionFetcher::Create)));
 }
 
-TEST(MediaDrmBridgeTest, SetSecurityLevel_Widevine) {
+TEST(MediaDrmBridgeTest, CreateWithSecurityLevel_Widevine) {
   base::MessageLoop message_loop_;
-  scoped_refptr<MediaDrmBridge> media_drm_bridge =
-      MediaDrmBridge::CreateWithoutSessionSupport(
-          kWidevineKeySystem, base::Bind(&MockProvisionFetcher::Create));
-  EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(media_drm_bridge);
-  if (!media_drm_bridge)
-    return;
 
-  EXPECT_FALSE(media_drm_bridge->SetSecurityLevel(kLNone));
   // We test "L3" fully. But for "L1" we don't check the result as it depends on
   // whether the test device supports "L1".
-  EXPECT_TRUE(media_drm_bridge->SetSecurityLevel(kL3));
-  media_drm_bridge->SetSecurityLevel(kL1);
+  EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(MediaDrmBridge::CreateWithoutSessionSupport(
+      kWidevineKeySystem, kL3, base::Bind(&MockProvisionFetcher::Create)));
+
+  MediaDrmBridge::CreateWithoutSessionSupport(
+      kWidevineKeySystem, kL1, base::Bind(&MockProvisionFetcher::Create));
 }
 
 }  // namespace media

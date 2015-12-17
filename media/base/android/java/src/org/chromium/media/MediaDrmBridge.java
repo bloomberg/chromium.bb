@@ -309,10 +309,12 @@ public class MediaDrmBridge {
      * Create a new MediaDrmBridge from the crypto scheme UUID.
      *
      * @param schemeUUID Crypto scheme UUID.
+     * @param securityLevel Security level. If empty, the default one should be used.
      * @param nativeMediaDrmBridge Native object of this class.
      */
     @CalledByNative
-    private static MediaDrmBridge create(byte[] schemeUUID, long nativeMediaDrmBridge) {
+    private static MediaDrmBridge create(
+            byte[] schemeUUID, String securityLevel, long nativeMediaDrmBridge) {
         UUID cryptoScheme = getUUIDFromBytes(schemeUUID);
         if (cryptoScheme == null || !MediaDrm.isCryptoSchemeSupported(cryptoScheme)) {
             return null;
@@ -330,6 +332,14 @@ public class MediaDrmBridge {
             Log.e(TAG, "Failed to create MediaDrmBridge", e);
         }
 
+        if (mediaDrmBridge == null) {
+            return null;
+        }
+
+        if (!securityLevel.isEmpty() && !mediaDrmBridge.setSecurityLevel(securityLevel)) {
+            return null;
+        }
+
         return mediaDrmBridge;
     }
 
@@ -341,8 +351,9 @@ public class MediaDrmBridge {
      * @param securityLevel Security level to be set.
      * @return whether the security level was successfully set.
      */
-    @CalledByNative
     private boolean setSecurityLevel(String securityLevel) {
+        assert !securityLevel.isEmpty();
+
         if (mMediaDrm == null || mMediaCrypto != null) {
             return false;
         }

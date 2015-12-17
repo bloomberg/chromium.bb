@@ -46,28 +46,12 @@ void AndroidCdmFactory::Create(
     return;
   }
 
-  scoped_refptr<MediaDrmBridge> cdm(MediaDrmBridge::Create(
-      key_system, create_fetcher_cb_, session_message_cb, session_closed_cb,
-      legacy_session_error_cb, session_keys_change_cb,
-      session_expiration_update_cb));
-  if (!cdm) {
-    error_message = "MediaDrmBridge cannot be created for " + key_system;
-    NOTREACHED() << error_message;
-    bound_cdm_created_cb.Run(nullptr, error_message);
-    return;
-  }
-
+  MediaDrmBridge::SecurityLevel security_level =
+      MediaDrmBridge::SECURITY_LEVEL_DEFAULT;
   if (key_system == kWidevineKeySystem) {
-    MediaDrmBridge::SecurityLevel security_level =
-        cdm_config.use_hw_secure_codecs ? MediaDrmBridge::SECURITY_LEVEL_1
-                                        : MediaDrmBridge::SECURITY_LEVEL_3;
-    if (!cdm->SetSecurityLevel(security_level)) {
-      error_message =
-          "failed to set security level " + base::IntToString(security_level);
-      DVLOG(1) << error_message;
-      bound_cdm_created_cb.Run(nullptr, error_message);
-      return;
-    }
+    security_level = cdm_config.use_hw_secure_codecs
+                         ? MediaDrmBridge::SECURITY_LEVEL_1
+                         : MediaDrmBridge::SECURITY_LEVEL_3;
   } else if (!cdm_config.use_hw_secure_codecs) {
     // Assume other key systems require hardware-secure codecs and thus do not
     // support full compositing.
@@ -75,6 +59,18 @@ void AndroidCdmFactory::Create(
         key_system +
         " may require use_video_overlay_for_embedded_encrypted_video";
     NOTREACHED() << error_message;
+    bound_cdm_created_cb.Run(nullptr, error_message);
+    return;
+  }
+
+  scoped_refptr<MediaDrmBridge> cdm(MediaDrmBridge::Create(
+      key_system, security_level, create_fetcher_cb_, session_message_cb,
+      session_closed_cb, legacy_session_error_cb, session_keys_change_cb,
+      session_expiration_update_cb));
+  if (!cdm) {
+    error_message = "MediaDrmBridge cannot be created for " + key_system +
+                    " with security level " + base::IntToString(security_level);
+    LOG(ERROR) << error_message;
     bound_cdm_created_cb.Run(nullptr, error_message);
     return;
   }

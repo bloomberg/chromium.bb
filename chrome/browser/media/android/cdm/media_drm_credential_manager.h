@@ -14,7 +14,14 @@
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/provision_fetcher.h"
 
-// This class manages the media DRM credentials on Android.
+// This class resets the media DRM credentials on Android.
+//
+// Implementation Note: We create a MediaDrmBridge to reset the credentials.
+// If MediaDrmBridge creation failed, it's likely that the key system or
+// security level is not supported, hence no credentials need to be reset.
+// We treat this as a success. There's a slight chance that MediaDrmBridge
+// creation failed due to other reasons, but that should not happen in normal
+// cases.
 class MediaDrmCredentialManager {
  public:
   static MediaDrmCredentialManager* GetInstance();
@@ -45,11 +52,9 @@ class MediaDrmCredentialManager {
   // reset is completed.
   void OnResetCredentialsCompleted(SecurityLevel security_level, bool success);
 
-  // Resets DRM credentials for a particular |security_level|. Returns false if
-  // we fail to create the MediaDrmBridge at all, in which case we cannot reset
-  // the credentials. Otherwise, the result is returned asynchronously in
-  // OnResetCredentialsCompleted() function.
-  bool ResetCredentialsInternal(SecurityLevel security_level);
+  // Resets DRM credentials for a particular |security_level|. The result is
+  // returned asynchronously in OnResetCredentialsCompleted() function.
+  void ResetCredentialsInternal(SecurityLevel security_level);
 
   // The MediaDrmBridge object used to perform the credential reset.
   scoped_refptr<media::MediaDrmBridge> media_drm_bridge_;
