@@ -10,6 +10,7 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//components/version_info",
     "//content/public/common",
     "//ui/base",
   ]

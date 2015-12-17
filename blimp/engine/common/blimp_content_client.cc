@@ -4,6 +4,7 @@
 
 #include "blimp/engine/common/blimp_content_client.h"
 
+#include "components/version_info/version_info.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -11,11 +12,9 @@
 namespace blimp {
 namespace engine {
 
-// TODO(haibinlu) Generate proper version. See crbug/537367.
-const char kProduct[] = "Chrome/20.77.33.5";
-
 std::string GetBlimpEngineUserAgent() {
-  return content::BuildUserAgentFromProduct(kProduct);
+  return content::BuildUserAgentFromProduct(
+      version_info::GetProductNameAndVersionForUserAgent() + " Mobile");
 }
 
 BlimpContentClient::~BlimpContentClient() {}
