@@ -298,8 +298,10 @@ void ScaleCursor(float scaleFactor, int hotspotX, int hotspotY) {
   ICONINFO windowsIconInfo;
   EXPECT_TRUE(GetIconInfo(windowsCursorHandle, &windowsIconInfo));
   EXPECT_FALSE(windowsIconInfo.fIcon);
-  EXPECT_EQ(static_cast<int>(scaleFactor * hotspotX), windowsIconInfo.xHotspot);
-  EXPECT_EQ(static_cast<int>(scaleFactor * hotspotY), windowsIconInfo.yHotspot);
+  EXPECT_EQ(static_cast<DWORD>(scaleFactor * hotspotX),
+            windowsIconInfo.xHotspot);
+  EXPECT_EQ(static_cast<DWORD>(scaleFactor * hotspotY),
+            windowsIconInfo.yHotspot);
 }
 
 TEST(WebCursorTest, WindowsCursorScaledAtHiDpi) {
