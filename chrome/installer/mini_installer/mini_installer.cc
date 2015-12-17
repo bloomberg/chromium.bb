@@ -574,7 +574,7 @@ bool GetCurrentOwnerSid(wchar_t** sid) {
     if (TOKEN_OWNER* owner =
             reinterpret_cast<TOKEN_OWNER*>(::LocalAlloc(LPTR, size))) {
       if (::GetTokenInformation(token, TokenOwner, owner, size, &size))
-        result = ::ConvertSidToStringSid(owner->Owner, sid);
+        result = !!::ConvertSidToStringSid(owner->Owner, sid);
       ::LocalFree(owner);
     }
   }
@@ -605,7 +605,7 @@ bool SetSecurityDescriptor(const wchar_t* path, PSECURITY_DESCRIPTOR* sd) {
                     L"(A;OIIOCI;GA;;;CO)"  // Owner: Full control.
                     L"(A;;FA;;;") && sddl.append(sid) && sddl.append(L")");
   if (result) {
-    result = ::ConvertStringSecurityDescriptorToSecurityDescriptor(
+    result = !!::ConvertStringSecurityDescriptorToSecurityDescriptor(
         sddl.get(), SDDL_REVISION_1, sd, NULL);
   }
 
