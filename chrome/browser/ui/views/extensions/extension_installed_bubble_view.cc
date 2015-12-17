@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,6 +26,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_ui.h"
+#include "content/public/browser/user_metrics.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -424,6 +426,8 @@ void ExtensionInstalledBubbleUi::Show(BubbleReference bubble_reference) {
   delegate_view_->InitLayout(*bubble_);
 
   views::BubbleDelegateView::CreateBubble(delegate_view_)->Show();
+  content::RecordAction(
+      base::UserMetricsAction("Signin_Impression_FromExtensionInstallBubble"));
 }
 
 void ExtensionInstalledBubbleUi::Close() {

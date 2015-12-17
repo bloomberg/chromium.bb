@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -52,6 +53,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -147,6 +149,8 @@ void ConfirmEmailDialogDelegate::AskForConfirmation(
     const std::string& last_email,
     const std::string& email,
     Callback callback) {
+  content::RecordAction(
+      base::UserMetricsAction("Signin_Show_ImportDataPrompt"));
   TabModalConfirmDialog::Create(
       new ConfirmEmailDialogDelegate(contents, last_email, email, callback),
       contents);
@@ -399,6 +403,8 @@ void InlineSigninHelper::ConfirmEmailAction(
       profile_, chrome::GetActiveDesktop());
   switch (action) {
     case InlineSigninHelper::CREATE_NEW_USER:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_ImportDataPrompt_DontImport"));
       if (handler_) {
         handler_->SyncStarterCallback(
             OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
@@ -407,10 +413,14 @@ void InlineSigninHelper::ConfirmEmailAction(
                                   std::string(chrome::kCreateProfileSubPage));
       break;
     case InlineSigninHelper::START_SYNC:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_ImportDataPrompt_ImportData"));
       CreateSyncStarter(browser, web_contents, current_url_, GURL(),
                         refresh_token, start_mode, confirmation_required);
       break;
     case InlineSigninHelper::CLOSE:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_ImportDataPrompt_Cancel"));
       if (handler_) {
         handler_->SyncStarterCallback(
             OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);

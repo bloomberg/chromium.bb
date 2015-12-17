@@ -11960,6 +11960,305 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Signin_EnterpriseAccountPrompt_Cancel">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user clicks 'cancel' in the sign in enterprise account
+    confirmation dialog.
+  </description>
+</action>
+
+<action name="Signin_EnterpriseAccountPrompt_DontImportData">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user chooses to not import data in the sign in enterprise
+    account confirmation dialog.
+  </description>
+</action>
+
+<action name="Signin_EnterpriseAccountPrompt_ImportData">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user chooses to import data in the sign in enterprise
+    account confirmation dialog.
+  </description>
+</action>
+
+<action name="Signin_ImportDataPrompt_Cancel">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user chooses to cancel (abort) sign in in the import data
+    confirmation dialog.
+  </description>
+</action>
+
+<action name="Signin_ImportDataPrompt_DontImport">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user chooses to not import data (create new profile) in
+    the import data confirmation dialog of sign in.
+  </description>
+</action>
+
+<action name="Signin_ImportDataPrompt_ImportData">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user chooses to import data in the import data
+    confirmation dialog of sign in.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromAppsPageLink">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the chrome://apps page.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromBookmarkBubble">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the bookmark bubble.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromCloudPrint">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the cloud print preview page.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromDevicesPage">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the chrome://devices page.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromExtensionInstallBubble">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the extension installed bubble.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromMenu">
+  <owner>gogerald@chromium.org</owner>
+  <description>Recorded when showing sign in entry in the menu.</description>
+</action>
+
+<action name="Signin_Impression_FromNTP">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the new tab page.
+  </description>
+</action>
+
+<action name="Signin_Show_EnterpriseAccountPrompt">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in enterprise account confirmation dialog.
+  </description>
+</action>
+
+<action name="Signin_Show_ImportDataPrompt">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in import data confirmation dialog.
+  </description>
+</action>
+
+<action name="Signin_Show_UntrustedSigninPrompt">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing untrusted sign in confirmation dialog.
+  </description>
+</action>
+
+<action name="Signin_SigninPage_Loading">
+  <owner>gogerald@chromium.org</owner>
+  <description>Recorded when sign in page is loading.</description>
+</action>
+
+<action name="Signin_SigninPage_Shown">
+  <owner>gogerald@chromium.org</owner>
+  <description>Recorded when sign in page is shown.</description>
+</action>
+
+<action name="Signin_Signin_FromAppsPageLink">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromAvatarBubbleSignin">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromBookmarkBubble">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromBookmarkManager">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromCloudPrint">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_CLOUD_PRINT.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromContentArea">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_CONTENT_AREA.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromDevicesPage">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_DEVICES_PAGE.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromExtensionInstallBubble">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromExtensions">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromMenu">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_MENU.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromNTP">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromRecentTabs">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromSettings">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromSigninPromo">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromStartPage">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromSupervisedUser">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromUnspecifiedAccessPoint">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_UNSPECIFIED.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromUserManager">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER.
+  </description>
+</action>
+
+<action name="Signin_Signin_Succeed">
+  <owner>gogerald@chromium.org</owner>
+  <description>Recorded when user sign in was successful.</description>
+</action>
+
+<action name="Signin_Signin_WithAdvancedSyncSettings">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user chooses advanced sync settings in the sign in succeed
+    confirmation dialog.
+  </description>
+</action>
+
+<action name="Signin_Signin_WithDefaultSyncSettings">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user chooses default sync settings in the sign in succeed
+    confirmation dialog.
+  </description>
+</action>
+
+<action name="Signin_Undo_Signin">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user chooses to undo (abort) the sign in process. It
+    closes sign in page without signing user in.
+  </description>
+</action>
+
 <action name="SiteChipPress">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

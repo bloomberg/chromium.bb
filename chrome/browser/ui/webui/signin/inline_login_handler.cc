@@ -19,6 +19,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -59,6 +60,85 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
   }
 }
 
+void InlineLoginHandler::RecordSigninUserActionForAccessPoint(
+    signin_metrics::AccessPoint access_point) {
+  switch (access_point) {
+    case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromStartPage"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK:
+      content::RecordAction(base::UserMetricsAction("Signin_Signin_FromNTP"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_MENU:
+      content::RecordAction(base::UserMetricsAction("Signin_Signin_FromMenu"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromSettings"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromSupervisedUser"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromExtensionInstallBubble"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromExtensions"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromAppsPageLink"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromBookmarkBubble"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromBookmarkManager"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromAvatarBubbleSignin"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromUserManager"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_DEVICES_PAGE:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromDevicesPage"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_CLOUD_PRINT:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromCloudPrint"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_CONTENT_AREA:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromContentArea"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromSigninPromo"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromRecentTabs"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_UNSPECIFIED:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromUnspecifiedAccessPoint"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
+      NOTREACHED();
+      break;
+  }
+}
+
 void InlineLoginHandler::ContinueHandleInitializeMessage() {
   base::DictionaryValue params;
 
@@ -72,6 +152,8 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
   signin_metrics::AccessPoint access_point =
       signin::GetAccessPointForPromoURL(current_url);
   signin_metrics::LogSigninAccessPointStarted(access_point);
+  RecordSigninUserActionForAccessPoint(access_point);
+  content::RecordAction(base::UserMetricsAction("Signin_SigninPage_Loading"));
 
   params.SetString("continueUrl", signin::GetLandingURL(access_point).spec());
 

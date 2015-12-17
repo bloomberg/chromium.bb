@@ -40,6 +40,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync_driver/sync_prefs.h"
+#include "content/public/browser/user_metrics.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -185,12 +186,16 @@ OneClickSigninSyncStarter::SigninDialogDelegate::~SigninDialogDelegate() {
 
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnCancelSignin() {
   SetUserChoiceHistogram(SIGNIN_CHOICE_CANCEL);
+  content::RecordAction(
+      base::UserMetricsAction("Signin_EnterpriseAccountPrompt_Cancel"));
   if (sync_starter_ != NULL)
     sync_starter_->CancelSigninAndDelete();
 }
 
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnContinueSignin() {
   SetUserChoiceHistogram(SIGNIN_CHOICE_CONTINUE);
+  content::RecordAction(
+      base::UserMetricsAction("Signin_EnterpriseAccountPrompt_ImportData"));
 
   if (sync_starter_ != NULL)
     sync_starter_->LoadPolicyWithCachedCredentials();
@@ -198,6 +203,8 @@ void OneClickSigninSyncStarter::SigninDialogDelegate::OnContinueSignin() {
 
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnSigninWithNewProfile() {
   SetUserChoiceHistogram(SIGNIN_CHOICE_NEW_PROFILE);
+  content::RecordAction(
+      base::UserMetricsAction("Signin_EnterpriseAccountPrompt_DontImportData"));
 
   if (sync_starter_ != NULL)
     sync_starter_->CreateNewSignedInProfile();
@@ -230,6 +237,9 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
     CancelSigninAndDelete();
     return;
   }
+
+  content::RecordAction(
+      base::UserMetricsAction("Signin_Show_EnterpriseAccountPrompt"));
   TabDialogs::FromWebContents(web_contents)->ShowProfileSigninConfirmation(
       browser_,
       profile_,
@@ -356,6 +366,8 @@ void OneClickSigninSyncStarter::ConfirmAndSignin() {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   if (confirmation_required_ == CONFIRM_UNTRUSTED_SIGNIN) {
     browser_ = EnsureBrowser(browser_, profile_, desktop_type_);
+    content::RecordAction(
+        base::UserMetricsAction("Signin_Show_UntrustedSigninPrompt"));
     // Display a confirmation dialog to the user.
     browser_->window()->ShowOneClickSigninBubble(
         BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG,
@@ -373,6 +385,7 @@ void OneClickSigninSyncStarter::ConfirmAndSignin() {
 void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
     StartSyncMode response) {
   if (response == UNDO_SYNC) {
+    content::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
     CancelSigninAndDelete();  // This statement frees this object.
   } else {
     // If the user clicked the "Advanced" link in the confirmation dialog, then
@@ -396,8 +409,12 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
 void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
     bool configure_sync_first) {
   if (configure_sync_first) {
+    content::RecordAction(
+        base::UserMetricsAction("Signin_Signin_WithAdvancedSyncSettings"));
     chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
   } else {
+    content::RecordAction(
+        base::UserMetricsAction("Signin_Signin_WithDefaultSyncSettings"));
     ProfileSyncService* profile_sync_service = GetProfileSyncService();
     if (profile_sync_service)
       profile_sync_service->SetSyncSetupCompleted();
@@ -438,6 +455,7 @@ void OneClickSigninSyncStarter::SigninSuccess() {
       signin::GetAccessPointForPromoURL(current_url_));
   signin_metrics::LogSigninReason(
       signin::GetSigninReasonForPromoURL(current_url_));
+  content::RecordAction(base::UserMetricsAction("Signin_Signin_Succeed"));
 }
 
 void OneClickSigninSyncStarter::AccountAddedToCookie(

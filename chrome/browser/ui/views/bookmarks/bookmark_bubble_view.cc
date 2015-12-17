@@ -261,6 +261,8 @@ void BookmarkBubbleView::Init() {
         new BubbleSyncPromoView(delegate_.get(), IDS_BOOKMARK_SYNC_PROMO_LINK,
                                 IDS_BOOKMARK_SYNC_PROMO_MESSAGE);
     layout->AddView(sync_promo_view_);
+    content::RecordAction(
+        base::UserMetricsAction("Signin_Impression_FromBookmarkBubble"));
   }
 
   AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));

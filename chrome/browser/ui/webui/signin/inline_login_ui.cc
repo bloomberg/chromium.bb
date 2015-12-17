@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -101,6 +102,8 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
 #else
   web_ui->AddMessageHandler(new InlineLoginHandlerImpl());
 #endif
+  web_ui->AddMessageHandler(new MetricsHandler());
+
   content::WebContents* contents = web_ui->GetWebContents();
   // Required for intercepting extension function calls when the page is loaded
   // in a bubble (not a full tab, thus tab helpers are not registered

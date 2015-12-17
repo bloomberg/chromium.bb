@@ -34,6 +34,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/web_resource/promo_resource_service.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/page_zoom.h"
@@ -210,6 +211,12 @@ void AppLauncherLoginHandler::UpdateLogin() {
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
       sub_header = l10n_util::GetStringFUTF16(
           IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_SUB_HEADER, signed_in_link);
+
+      content::RecordAction(
+          web_ui()->GetWebContents()->GetURL().spec() ==
+                  chrome::kChromeUIAppsURL
+              ? base::UserMetricsAction("Signin_Impression_FromAppsPageLink")
+              : base::UserMetricsAction("Signin_Impression_FromNTP"));
       // Record that the user was shown the promo.
       RecordInHistogram(NTP_SIGN_IN_PROMO_VIEWED);
     }

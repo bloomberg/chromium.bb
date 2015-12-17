@@ -416,6 +416,13 @@ cr.define('local_discovery', function() {
       $('register-login-promo').hidden = isUserLoggedIn ||
         isUserSupervisedOrOffTheRecord;
     }
+    if (!($('register-login-promo').hidden) ||
+      !($('cloud-devices-login-promo').hidden) ||
+      !($('register-overlay-login-promo').hidden)) {
+      chrome.send(
+        'metricsHandler:recordAction',
+        ['Signin_Impression_FromDevicesPage']);
+    }
   }
 
   /**
