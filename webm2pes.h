@@ -8,11 +8,9 @@
 #ifndef LIBWEBM_WEBM2PES_H_
 #define LIBWEBM_WEBM2PES_H_
 
-#include <cstdio>
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "mkvparser.hpp"
 #include "mkvreader.hpp"
