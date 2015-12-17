@@ -143,6 +143,10 @@ public:
     void showDebugData() const;
 #endif
 
+#if ENABLE(ASSERT)
+    bool hasInvalidations() { return !m_invalidations.isEmpty(); }
+#endif
+
     void startTrackingPaintInvalidationObjects()
     {
         ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());

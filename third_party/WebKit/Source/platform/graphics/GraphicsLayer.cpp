@@ -331,8 +331,10 @@ bool GraphicsLayer::paintWithoutCommit(const IntRect* interestRect, GraphicsCont
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()
-        && !m_client->needsRepaint() && !paintController().cacheIsEmpty() && m_previousInterestRect == *interestRect)
+        && !m_client->needsRepaint() && !paintController().cacheIsEmpty() && m_previousInterestRect == *interestRect) {
+        ASSERT(!paintController().hasInvalidations());
         return false;
+    }
 
     GraphicsContext context(paintController(), disabledMode);
 
