@@ -26,10 +26,6 @@ const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
 // Enables consistent identity features.
 const char kEnableAccountConsistency[] = "enable-account-consistency";
 
-// Enables the old iframe-based flow for sign in.  When not enabled, uses the
-// webview-based flow.
-const char kEnableIframeBasedSignin[] = "enable-iframe-based-signin";
-
 // Enables new gaia password-separated sign in flow.
 const char kEnablePasswordSeparatedSigninFlow[] =
     "enable-password-separated-signin-flow";

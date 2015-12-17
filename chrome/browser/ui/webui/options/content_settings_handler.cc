@@ -737,21 +737,6 @@ void ContentSettingsHandler::InitializeHandler() {
               base::Bind(&ContentSettingsHandler::OnZoomLevelChanged,
                          base::Unretained(this)));
 
-  if (!switches::IsEnableWebviewBasedSignin()) {
-    // The legacy signin page uses a different storage partition, so we need to
-    // add a subscription for its HostZoomMap separately.
-    GURL signin_url(chrome::kChromeUIChromeSigninURL);
-    content::StoragePartition* signin_partition =
-        content::BrowserContext::GetStoragePartitionForSite(
-            GetBrowserContext(web_ui()), signin_url);
-    content::HostZoomMap* signin_host_zoom_map =
-        signin_partition->GetHostZoomMap();
-    signin_host_zoom_map_subscription_ =
-        signin_host_zoom_map->AddZoomLevelChangedCallback(
-            base::Bind(&ContentSettingsHandler::OnZoomLevelChanged,
-                       base::Unretained(this)));
-  }
-
   flash_settings_manager_.reset(new PepperFlashSettingsManager(this, context));
 
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -1203,42 +1188,6 @@ void ContentSettingsHandler::UpdateChooserExceptionsViewFromModel(
                                    exceptions);
 }
 
-void ContentSettingsHandler::AdjustZoomLevelsListForSigninPageIfNecessary(
-    content::HostZoomMap::ZoomLevelVector* zoom_levels) {
-  if (switches::IsEnableWebviewBasedSignin())
-    return;
-
-  GURL signin_url(chrome::kChromeUIChromeSigninURL);
-  content::HostZoomMap* signin_host_zoom_map =
-      content::BrowserContext::GetStoragePartitionForSite(
-          GetBrowserContext(web_ui()), signin_url)->GetHostZoomMap();
-
-  // Since zoom levels set for scheme + host are not persisted, and since the
-  // signin page zoom levels need to be persisted, they are stored without
-  // a scheme. We use an empty scheme string to indicate this.
-  std::string scheme;
-  std::string host = signin_url.host();
-
-  // If there's a WebView signin zoom level, remove it.
-  content::HostZoomMap::ZoomLevelVector::iterator it =
-      std::find_if(zoom_levels->begin(), zoom_levels->end(),
-                   [&host](content::HostZoomMap::ZoomLevelChange change) {
-                     return change.host == host;
-                   });
-  if (it != zoom_levels->end())
-    zoom_levels->erase(it);
-
-  // If there's a non-WebView signin zoom level, add it.
-  if (signin_host_zoom_map->HasZoomLevel(scheme, host)) {
-    content::HostZoomMap::ZoomLevelChange change = {
-        content::HostZoomMap::ZOOM_CHANGED_FOR_HOST,
-        host,
-        scheme,
-        signin_host_zoom_map->GetZoomLevelForHostAndScheme(scheme, host)};
-    zoom_levels->push_back(change);
-  }
-}
-
 void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
   base::ListValue zoom_levels_exceptions;
 
@@ -1247,8 +1196,6 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
           GetBrowserContext(web_ui()));
   content::HostZoomMap::ZoomLevelVector zoom_levels(
       host_zoom_map->GetAllZoomLevels());
-
-  AdjustZoomLevelsListForSigninPageIfNecessary(&zoom_levels);
 
   // Sort ZoomLevelChanges by host and scheme
   // (a.com < http://a.com < https://a.com < b.com).
@@ -1524,17 +1471,9 @@ void ContentSettingsHandler::RemoveZoomLevelException(
   }
 
   content::HostZoomMap* host_zoom_map;
-  if (switches::IsEnableWebviewBasedSignin() ||
-      pattern != chrome::kChromeUIChromeSigninHost) {
-    host_zoom_map =
-      content::HostZoomMap::GetDefaultForBrowserContext(
-          GetBrowserContext(web_ui()));
-  } else {
-    host_zoom_map =
-        content::BrowserContext::GetStoragePartitionForSite(
-            GetBrowserContext(web_ui()), GURL(chrome::kChromeUIChromeSigninURL))
-            ->GetHostZoomMap();
-  }
+  host_zoom_map =
+    content::HostZoomMap::GetDefaultForBrowserContext(
+        GetBrowserContext(web_ui()));
   double default_level = host_zoom_map->GetDefaultZoomLevel();
   host_zoom_map->SetZoomLevelForHost(pattern, default_level);
 }

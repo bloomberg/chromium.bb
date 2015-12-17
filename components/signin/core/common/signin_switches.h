@@ -19,7 +19,6 @@ extern const char kDisablePasswordSeparatedSigninFlow[];
 extern const char kDisableNewProfileManagement[];
 extern const char kDisableSigninScopedDeviceId[];
 extern const char kEnableAccountConsistency[];
-extern const char kEnableIframeBasedSignin[];
 extern const char kEnablePasswordSeparatedSigninFlow[];
 extern const char kEnableNewProfileManagement[];
 extern const char kEnableRefreshTokenAnnotationRequest[];

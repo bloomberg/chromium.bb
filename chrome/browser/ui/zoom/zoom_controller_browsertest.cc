@@ -297,9 +297,6 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(web_contents);
 
-  content::HostZoomMap* host_zoom_map_signin =
-      content::HostZoomMap::GetForWebContents(web_contents);
-
   GURL settings_url(chrome::kChromeUISettingsURL);
   ui_test_utils::NavigateToURL(browser(), settings_url);
   EXPECT_NE(
@@ -314,17 +311,6 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   // test not properly trigger a navigation to the settings page.
   EXPECT_EQ(settings_url, web_contents->GetLastCommittedURL());
   EXPECT_EQ(zoom_controller, ZoomController::FromWebContents(web_contents));
-
-  // For the webview based sign-in code, the sign in page uses the default host
-  // zoom map.
-  if (!switches::IsEnableWebviewBasedSignin()) {
-    // We expect the navigation from the chrome sign in page to the settings
-    // page to invoke a storage partition switch, and thus a different
-    // HostZoomMap for the web_contents.
-    content::HostZoomMap* host_zoom_map_settings =
-        content::HostZoomMap::GetForWebContents(web_contents);
-    EXPECT_NE(host_zoom_map_signin, host_zoom_map_settings);
-  }
 
   // If we zoom the new page, it should still generate a ZoomController event.
   double old_zoom_level = zoom_controller->GetZoomLevel();

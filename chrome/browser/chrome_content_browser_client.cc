@@ -807,14 +807,8 @@ std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
 
   // The partition ID for webview guest processes is the string value of its
   // SiteInstance URL - "chrome-guest://app_id/persist?partition".
-  if (site.SchemeIs(content::kGuestScheme)) {
+  if (site.SchemeIs(content::kGuestScheme))
     partition_id = site.spec();
-  } else if (!switches::IsEnableWebviewBasedSignin() &&
-             site.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL) {
-    // The non-webview Chrome signin page has an embedded iframe of extension
-    // and web content, thus it must be isolated from other webUI pages.
-    partition_id = site.GetOrigin().spec();
-  }
 
   DCHECK(IsValidStoragePartitionId(browser_context, partition_id));
   return partition_id;
@@ -843,9 +837,8 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
   partition_name->clear();
   *in_memory = false;
 
-  bool success = false;
 #if defined(ENABLE_EXTENSIONS)
-  success = extensions::WebViewGuest::GetGuestPartitionConfigForSite(
+  bool success = extensions::WebViewGuest::GetGuestPartitionConfigForSite(
       site, partition_domain, partition_name, in_memory);
 
   if (!success && site.SchemeIs(extensions::kExtensionScheme)) {
@@ -873,14 +866,6 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
     success = true;
   }
 #endif
-
-  if (!success &&
-      (!switches::IsEnableWebviewBasedSignin() &&
-       site.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL)) {
-    // The non-webview Chrome signin page has an embedded iframe of extension
-    // and web content, thus it must be isolated from other webUI pages.
-    *partition_domain = chrome::kChromeUIChromeSigninHost;
-  }
 
   // Assert that if |can_be_default| is false, the code above must have found a
   // non-default partition.  If this fails, the caller has a serious logic

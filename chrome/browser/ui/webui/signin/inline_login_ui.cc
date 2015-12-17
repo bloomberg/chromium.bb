@@ -62,9 +62,7 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->OverrideContentSecurityPolicyObjectSrc("object-src *;");
   source->SetJsonPath("strings.js");
 
-  bool is_webview_signin_enabled = switches::IsEnableWebviewBasedSignin();
-  source->SetDefaultResource(is_webview_signin_enabled ?
-      IDR_NEW_INLINE_LOGIN_HTML : IDR_INLINE_LOGIN_HTML);
+  source->SetDefaultResource(IDR_NEW_INLINE_LOGIN_HTML);
 
   // Only add a filter when runing as test.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -75,28 +73,15 @@ content::WebUIDataSource* CreateWebUIDataSource() {
 
   source->AddResourcePath("inline_login.css", IDR_INLINE_LOGIN_CSS);
   source->AddResourcePath("inline_login.js", IDR_INLINE_LOGIN_JS);
-  source->AddResourcePath("gaia_auth_host.js", is_webview_signin_enabled ?
-      IDR_GAIA_AUTH_AUTHENTICATOR_JS : IDR_GAIA_AUTH_HOST_JS);
+  source->AddResourcePath("gaia_auth_host.js", IDR_GAIA_AUTH_AUTHENTICATOR_JS);
 
   source->AddLocalizedString("title", IDS_CHROME_SIGNIN_TITLE);
   return source;
 }
 
-void AddToSetIfIsAuthIframe(std::set<content::RenderFrameHost*>* frame_set,
-                            const GURL& parent_origin,
-                            const std::string& parent_frame_name,
-                            content::RenderFrameHost* frame) {
-  content::RenderFrameHost* parent = frame->GetParent();
-  if (parent && parent->GetFrameName() == parent_frame_name &&
-      (parent_origin.is_empty() ||
-       parent->GetLastCommittedURL().GetOrigin() == parent_origin)) {
-    frame_set->insert(frame);
-  }
-}
-
-bool AddToSetIfSigninWebview(std::set<content::RenderFrameHost*>* frame_set,
-                             const std::string& web_view_name,
-                             content::WebContents* web_contents) {
+bool AddToSet(std::set<content::RenderFrameHost*>* frame_set,
+              const std::string& web_view_name,
+              content::WebContents* web_contents) {
   auto* web_view = extensions::WebViewGuest::FromWebContents(web_contents);
   if (web_view && web_view->name() == web_view_name)
     frame_set->insert(web_contents->GetMainFrame());
@@ -137,27 +122,16 @@ content::RenderFrameHost* InlineLoginUI::GetAuthFrame(
     const GURL& parent_origin,
     const std::string& parent_frame_name) {
   std::set<content::RenderFrameHost*> frame_set;
-  bool is_webview = switches::IsEnableWebviewBasedSignin();
-#if defined(OS_CHROMEOS)
-  is_webview = is_webview || chromeos::StartupUtils::IsWebviewSigninEnabled();
-#endif
-  if (is_webview) {
-    guest_view::GuestViewManager* manager =
-        guest_view::GuestViewManager::FromBrowserContext(
-            web_contents->GetBrowserContext());
-    if (manager) {
-      manager->ForEachGuest(
-          web_contents,
-          base::Bind(&AddToSetIfSigninWebview, &frame_set, parent_frame_name));
-    }
-  } else {
-    web_contents->ForEachFrame(
-        base::Bind(&AddToSetIfIsAuthIframe, &frame_set,
-                   parent_origin, parent_frame_name));
+  auto* manager =
+      guest_view::GuestViewManager::FromBrowserContext(
+          web_contents->GetBrowserContext());
+  if (manager) {
+    manager->ForEachGuest(web_contents,
+                          base::Bind(&AddToSet, &frame_set, parent_frame_name));
   }
   DCHECK_GE(1U, frame_set.size());
   if (!frame_set.empty())
     return *frame_set.begin();
 
-  return NULL;
+  return nullptr;
 }

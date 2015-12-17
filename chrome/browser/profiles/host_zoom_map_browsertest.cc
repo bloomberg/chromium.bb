@@ -265,54 +265,7 @@ IN_PROC_BROWSER_TEST_F(
   // zoom map.
   HostZoomMap* default_profile_host_zoom_map =
       HostZoomMap::GetDefaultForBrowserContext(browser()->profile());
-  // Since ChromeOS still uses IFrame-based signin, we should expect the
-  // storage partition to be different if Webview signin is not enabled.
-  if (switches::IsEnableWebviewBasedSignin())
-    EXPECT_EQ(host_zoom_map, default_profile_host_zoom_map);
-  else
-    EXPECT_NE(host_zoom_map, default_profile_host_zoom_map);
-}
-
-class HostZoomMapIframeSigninBrowserTest : public HostZoomMapBrowserTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableIframeBasedSignin);
-  }
-};
-
-// Regression test for crbug.com/435017.
-IN_PROC_BROWSER_TEST_F(HostZoomMapIframeSigninBrowserTest,
-                       EventsForNonDefaultStoragePartition) {
-  ZoomLevelChangeObserver observer(browser()->profile());
-  // TODO(wjmaclean): Make this test more general by implementing a way to
-  // force a generic URL to be loaded in a non-default storage partition. This
-  // test currently relies on the signin page being loaded into a non-default
-  // storage partition (and verifies this is the case), but ultimately it would
-  // be better not to rely on what the signin page is doing.
-  GURL test_url = ConstructTestServerURL(GetSigninPromoURL().c_str());
-  std::string test_host(test_url.host());
-  std::string test_scheme(test_url.scheme());
-  ui_test_utils::NavigateToURL(browser(), test_url);
-
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  // We are forcing non-webview based signin, so we expect the signin page to
-  // be in a different storage partition, and hence a different HostZoomMap.
-  HostZoomMap* host_zoom_map = HostZoomMap::GetForWebContents(web_contents);
-
-  EXPECT_FALSE(switches::IsEnableWebviewBasedSignin());
-  HostZoomMap* default_profile_host_zoom_map =
-      HostZoomMap::GetDefaultForBrowserContext(browser()->profile());
-  EXPECT_NE(host_zoom_map, default_profile_host_zoom_map);
-
-  double new_zoom_level =
-      host_zoom_map->GetZoomLevelForHostAndScheme(test_scheme, test_host) + 0.5;
-  host_zoom_map->SetZoomLevelForHostAndScheme(test_scheme, test_host,
-                                              new_zoom_level);
-  observer.BlockUntilZoomLevelForHostHasChanged(test_host);
-  EXPECT_EQ(new_zoom_level, host_zoom_map->GetZoomLevelForHostAndScheme(
-                                test_scheme, test_host));
+  EXPECT_EQ(host_zoom_map, default_profile_host_zoom_map);
 }
 
 // Regression test for crbug.com/364399.

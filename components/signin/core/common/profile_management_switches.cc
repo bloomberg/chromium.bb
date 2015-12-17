@@ -110,16 +110,6 @@ bool IsEnableAccountConsistency() {
   return GetProcessState() >= STATE_ACCOUNT_CONSISTENCY;
 }
 
-bool IsEnableWebviewBasedSignin() {
-  // For now, the webview is enabled only for desktop.
-#if defined(OS_CHROMEOS)
-  return false;
-#else
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableIframeBasedSignin);
-#endif
-}
-
 bool IsExtensionsMultiAccount() {
   return CheckFlag(switches::kExtensionsMultiAccount,
                    STATE_ACCOUNT_CONSISTENCY);

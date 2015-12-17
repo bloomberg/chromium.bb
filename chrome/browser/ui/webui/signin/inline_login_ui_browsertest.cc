@@ -310,41 +310,22 @@ void InlineLoginUIBrowserTest::SetAllowedUsernamePattern(
 #define MAYBE_DifferentStorageId DifferentStorageId
 #endif
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, MAYBE_DifferentStorageId) {
-  if (switches::IsEnableWebviewBasedSignin()) {
-    ContentInfo info =
-        NavigateAndGetInfo(browser(), GetSigninPromoURL(), CURRENT_TAB);
-    WaitUntilUIReady(browser());
+  ContentInfo info =
+      NavigateAndGetInfo(browser(), GetSigninPromoURL(), CURRENT_TAB);
+  WaitUntilUIReady(browser());
 
-    // Make sure storage partition of embedded webview is different from
-    // parent.
-    std::set<content::WebContents*> set;
-    GuestViewManager* manager = GuestViewManager::FromBrowserContext(
-        info.contents->GetBrowserContext());
-    manager->ForEachGuest(info.contents, base::Bind(&AddToSet, &set));
-    ASSERT_EQ(1u, set.size());
-    content::WebContents* webview_contents = *set.begin();
-    content::RenderProcessHost* process =
-        webview_contents->GetRenderProcessHost();
-    ASSERT_NE(info.pid, process->GetID());
-    ASSERT_NE(info.storage_partition, process->GetStoragePartition());
-  } else {
-    GURL test_url = ui_test_utils::GetTestUrl(
-        base::FilePath(base::FilePath::kCurrentDirectory),
-        base::FilePath(FILE_PATH_LITERAL("title1.html")));
-
-    ContentInfo info1 =
-        NavigateAndGetInfo(browser(), test_url, CURRENT_TAB);
-    ContentInfo info2 =
-        NavigateAndGetInfo(browser(), GetSigninPromoURL(), CURRENT_TAB);
-    NavigateAndGetInfo(browser(), test_url, CURRENT_TAB);
-    ContentInfo info3 =
-        NavigateAndGetInfo(browser(), GetSigninPromoURL(), NEW_FOREGROUND_TAB);
-
-    // The info for signin should be the same.
-    ASSERT_EQ(info2.storage_partition, info3.storage_partition);
-    // The info for test_url and signin should be different.
-    ASSERT_NE(info1.storage_partition, info2.storage_partition);
-  }
+  // Make sure storage partition of embedded webview is different from
+  // parent.
+  std::set<content::WebContents*> set;
+  GuestViewManager* manager = GuestViewManager::FromBrowserContext(
+      info.contents->GetBrowserContext());
+  manager->ForEachGuest(info.contents, base::Bind(&AddToSet, &set));
+  ASSERT_EQ(1u, set.size());
+  content::WebContents* webview_contents = *set.begin();
+  content::RenderProcessHost* process =
+      webview_contents->GetRenderProcessHost();
+  ASSERT_NE(info.pid, process->GetID());
+  ASSERT_NE(info.storage_partition, process->GetStoragePartition());
 }
 
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, OneProcessLimit) {
