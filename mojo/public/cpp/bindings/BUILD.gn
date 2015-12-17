@@ -86,6 +86,7 @@ source_set("bindings") {
   public_deps = [
     ":callback",
     "//base",
+    "//ipc:param_traits",
     "//mojo/public/cpp/system",
   ]
 

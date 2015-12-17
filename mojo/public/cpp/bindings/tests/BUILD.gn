@@ -25,6 +25,11 @@ source_set("tests") {
     "message_queue.cc",
     "message_queue.h",
     "multiplex_router_unittest.cc",
+    "pickle_unittest.cc",
+    "pickled_struct_blink.cc",
+    "pickled_struct_blink.h",
+    "pickled_struct_chromium.cc",
+    "pickled_struct_chromium.h",
     "request_response_unittest.cc",
     "router_test_util.cc",
     "router_test_util.h",
@@ -40,6 +45,7 @@ source_set("tests") {
 
   deps = [
     ":mojo_public_bindings_test_utils",
+    "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings",

@@ -4,6 +4,8 @@ include_rules = [
   "+build",
   "+testing",
 
+  "+ipc/ipc_param_traits.h",
+
   # internal includes.
   "+mojo",
 ]

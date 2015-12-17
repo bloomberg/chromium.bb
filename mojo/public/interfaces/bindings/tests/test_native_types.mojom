@@ -9,3 +9,6 @@ module mojo.test;
 [native=True]
 struct PickledStruct;
 
+interface PicklePasser {
+  PassPickle(PickledStruct pickle) => (PickledStruct passed);
+};

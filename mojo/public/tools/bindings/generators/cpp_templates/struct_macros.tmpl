@@ -14,7 +14,10 @@
 {%- macro get_serialized_size(struct, input_field_pattern) -%}
   size_t size = sizeof(internal::{{struct.name}}_Data);
 {%-   for pf in struct.packed.packed_fields_in_ordinal_order if pf.field.kind|is_object_kind %}
-{%-     if pf.field.kind|is_union_kind %}
+{%-     if pf.field.kind|is_native_only_kind %}
+  size += mojo::internal::GetSerializedSizeNative_(
+      {{input_field_pattern|format(pf.field.name)}});
+{%-     elif pf.field.kind|is_union_kind %}
   size += GetSerializedSize_({{input_field_pattern|format(pf.field.name)}}, true);
 {%-     else %}
   size += GetSerializedSize_({{input_field_pattern|format(pf.field.name)}});
@@ -54,6 +57,9 @@
       {{kind.value_kind|get_map_validate_params_ctor_args|indent(10)}});
   mojo::SerializeMap_(std::move({{input_field}}), {{buffer}},
       &{{output}}->{{name}}.ptr, &{{name}}_validate_params);
+{%-     elif kind|is_native_only_kind %}
+  mojo::internal::SerializeNative_(
+      {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr);
 {%-     elif kind|is_union_kind %}
   internal::{{kind.name}}_Data* {{name}}_ptr = &{{output}}->{{name}};
   SerializeUnion_(std::move({{input_field}}), {{buffer}}, &{{name}}_ptr, true);
@@ -132,7 +138,12 @@
     if ({{input}}->header_.version < {{pf.min_version}})
       break;
 {%-     endif %}
-{%-     if kind|is_object_kind %}
+{%-     if kind|is_native_only_kind %}
+    if (!DeserializeNative_(
+            {{input}}->{{name}}.ptr, &{{output_field}}, {{context}})) {
+      {{success}} = false;
+    }
+{%-     elif kind|is_object_kind %}
 {%-       if kind|is_union_kind %}
     if (!Deserialize_(&{{input}}->{{name}}, &{{output_field}}, {{context}}))
       {{success}} = false;

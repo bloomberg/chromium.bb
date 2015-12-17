@@ -603,6 +603,8 @@ def IsCloneableKind(kind):
     if IsArrayKind(kind):
       return _IsCloneable(kind.kind, visited_kinds)
     if IsStructKind(kind) or IsUnionKind(kind):
+      if IsStructKind(kind) and kind.native_only:
+        return False
       for field in kind.fields:
         if not _IsCloneable(field.kind, visited_kinds):
           return False
