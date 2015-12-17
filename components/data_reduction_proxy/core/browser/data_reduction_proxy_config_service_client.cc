@@ -339,9 +339,13 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
     succeeded = ParseAndApplyProxyConfig(config);
   }
 
-  base::TimeDelta expiration_time_delta;
+  // These are proxies listed in the config. The proxies that client eventually
+  // ends up using depend on the field trials.
+  std::vector<net::ProxyServer> proxies;
+  base::TimeDelta refresh_duration;
   if (succeeded) {
-    expiration_time_delta =
+    proxies = GetProxiesForHTTP(config.proxy_config());
+    refresh_duration =
         config_parser::DurationToTimeDelta(config.refresh_duration());
 
     base::TimeDelta configuration_fetch_latency =
@@ -357,13 +361,13 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
   }
 
   GetBackoffEntry()->InformOfRequest(succeeded);
-  base::TimeDelta next_config_refresh_time =
-      CalculateNextConfigRefreshTime(succeeded, expiration_time_delta,
-                                     GetBackoffEntry()->GetTimeUntilRelease());
+  base::TimeDelta next_config_refresh_time = CalculateNextConfigRefreshTime(
+      succeeded, refresh_duration, GetBackoffEntry()->GetTimeUntilRelease());
   SetConfigRefreshTimer(next_config_refresh_time);
-  event_creator_->EndConfigRequest(
-      bound_net_log_, status.error(), response_code,
-      GetBackoffEntry()->failure_count(), next_config_refresh_time);
+  event_creator_->EndConfigRequest(bound_net_log_, status.error(),
+                                   response_code,
+                                   GetBackoffEntry()->failure_count(), proxies,
+                                   refresh_duration, next_config_refresh_time);
 }
 
 bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(

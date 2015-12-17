@@ -101,6 +101,8 @@ class DataReductionProxyEventCreator {
                         int net_error,
                         int http_response_code,
                         int failure_count,
+                        const std::vector<net::ProxyServer>& proxies_for_http,
+                        const base::TimeDelta& refresh_duration,
                         const base::TimeDelta& retry_delay);
 
  private:

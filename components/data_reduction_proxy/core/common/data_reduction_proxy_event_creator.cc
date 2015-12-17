@@ -142,12 +142,20 @@ scoped_ptr<base::Value> EndConfigRequestCallback(
     int net_error,
     int http_response_code,
     int failure_count,
+    const std::vector<net::ProxyServer>& proxies_for_http,
+    int64 refresh_duration_minutes,
     int64 expiration_ticks,
     net::NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::ListValue> http_proxy_list(new base::ListValue());
+  for (const auto& proxy : proxies_for_http)
+    http_proxy_list->AppendString(proxy.ToURI());
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("net_error", net_error);
   dict->SetInteger("http_response_code", http_response_code);
   dict->SetInteger("failure_count", failure_count);
+  dict->Set("http_proxy_list_in_config", http_proxy_list.Pass());
+  dict->SetString("refresh_duration",
+                  base::Int64ToString(refresh_duration_minutes) + " minutes");
   dict->SetString("expiration", base::Int64ToString(expiration_ticks));
   return dict.Pass();
 }
@@ -278,11 +286,14 @@ void DataReductionProxyEventCreator::EndConfigRequest(
     int net_error,
     int http_response_code,
     int failure_count,
+    const std::vector<net::ProxyServer>& proxies_for_http,
+    const base::TimeDelta& refresh_duration,
     const base::TimeDelta& retry_delay) {
+  int64 refresh_duration_minutes = refresh_duration.InMinutes();
   int64 expiration_ticks = GetExpirationTicks(retry_delay.InSeconds());
-  const net::NetLog::ParametersCallback& parameters_callback =
-      base::Bind(&EndConfigRequestCallback, net_error, http_response_code,
-                 failure_count, expiration_ticks);
+  const net::NetLog::ParametersCallback& parameters_callback = base::Bind(
+      &EndConfigRequestCallback, net_error, http_response_code, failure_count,
+      proxies_for_http, refresh_duration_minutes, expiration_ticks);
   PostBoundNetLogConfigRequestEvent(
       net_log, net::NetLog::TYPE_DATA_REDUCTION_PROXY_CONFIG_REQUEST,
       net::NetLog::PHASE_END, parameters_callback);
