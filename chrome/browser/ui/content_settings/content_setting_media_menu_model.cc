@@ -18,8 +18,7 @@ ContentSettingMediaMenuModel::ContentSettingMediaMenuModel(
       callback_(callback) {
   DCHECK(type_ == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
          type_ == content::MEDIA_DEVICE_VIDEO_CAPTURE);
-  DCHECK_EQ(CONTENT_SETTINGS_TYPE_MEDIASTREAM,
-            media_bubble_model_->content_type());
+  DCHECK(media_bubble_model_->AsMediaStreamBubbleModel());
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   const content::MediaStreamDevices& devices =

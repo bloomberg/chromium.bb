@@ -30,6 +30,25 @@ namespace content {
 class WebContents;
 }
 
+// The hierarchy of bubble models:
+//
+// ContentSettingsBubbleModel                  - base class
+//   ContentSettingsTitleAndLinkModel            - manages title and link
+//     ContentSettingMediaStreamBubbleModel        - media (camera and mic)
+//     ContentSettingSimpleBubbleModel             - single content setting
+//       ContentSettingMixedScriptBubbleModel        - mixed script
+//       ContentSettingRPHBubbleModel                - protocol handlers
+//       ContentSettingMidiSysExBubbleModel          - midi sysex
+//       ContentSettingDomainListBubbleModel         - domain list (geolocation)
+//       ContentSettingSingleRadioGroup              - radio group
+//         ContentSettingCookiesBubbleModel            - cookies
+//         ContentSettingPluginBubbleModel             - plugins
+//         ContentSettingPopupBubbleModel              - popups
+
+// Forward declaration necessary for downcasts.
+class ContentSettingSimpleBubbleModel;
+class ContentSettingMediaStreamBubbleModel;
+
 // This model provides data for ContentSettingBubble, and also controls
 // the action triggered when the allow / block radio buttons are triggered.
 class ContentSettingBubbleModel : public content::NotificationObserver {
@@ -99,6 +118,10 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     DISALLOW_COPY_AND_ASSIGN(BubbleContent);
   };
 
+  // Creates a bubble model for a particular |content_type|. Note that not all
+  // bubbles fit this description.
+  // TODO(msramek): Move this to ContentSettingSimpleBubbleModel or remove
+  // entirely.
   static ContentSettingBubbleModel* CreateContentSettingBubbleModel(
       Delegate* delegate,
       content::WebContents* web_contents,
@@ -106,8 +129,6 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
       ContentSettingsType content_type);
 
   ~ContentSettingBubbleModel() override;
-
-  ContentSettingsType content_type() const { return content_type_; }
 
   const BubbleContent& bubble_content() const { return bubble_content_; }
 
@@ -128,16 +149,20 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   // Done button.
   virtual void OnDoneClicked() {}
 
+  // TODO(msramek): The casting methods below are only necessary because
+  // ContentSettingBubbleController in the Cocoa UI needs to know the type of
+  // the bubble it wraps. Find a solution that does not require reflection nor
+  // recreating the entire hierarchy for Cocoa UI.
+  // Cast this bubble into ContentSettingSimpleBubbleModel if possible.
+  virtual ContentSettingSimpleBubbleModel* AsSimpleBubbleModel();
+
+  // Cast this bubble into ContentSettingMediaStreamBubbleModel if possible.
+  virtual ContentSettingMediaStreamBubbleModel* AsMediaStreamBubbleModel();
+
  protected:
-  // Create a bubble tied to a certain |content_type|. Note that not all content
-  // settings types have a bubble, and not all bubbles are tied to a single
-  // content setting.
-  // TODO(msramek): Generalize the bubble so that it does not reference content
-  // settings, and subclass those that need it.
   ContentSettingBubbleModel(
       content::WebContents* web_contents,
-      Profile* profile,
-      ContentSettingsType content_type);
+      Profile* profile);
 
   content::WebContents* web_contents() const { return web_contents_; }
   Profile* profile() const { return profile_; }
@@ -183,7 +208,6 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
  private:
   content::WebContents* web_contents_;
   Profile* profile_;
-  ContentSettingsType content_type_;
   BubbleContent bubble_content_;
   // A registrar for listening for WEB_CONTENTS_DESTROYED notifications.
   content::NotificationRegistrar registrar_;
@@ -194,30 +218,53 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleModel);
 };
 
+// TODO(msramek): This is the only subclass of ContentSettingBubbleModel, and
+// as such it serves no purpose. Merge the two classes.
 class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
  public:
   ContentSettingTitleAndLinkModel(Delegate* delegate,
                                   content::WebContents* web_contents,
-                                  Profile* profile,
-                                  ContentSettingsType content_type);
-  ~ContentSettingTitleAndLinkModel() override {}
+                                  Profile* profile);
+  ~ContentSettingTitleAndLinkModel() override;
   Delegate* delegate() const { return delegate_; }
 
  private:
-  void SetTitle();
-  void SetManageLink();
-  void SetLearnMoreLink();
+  virtual void SetTitle() = 0;
+  virtual void SetManageLink() = 0;
 
-  // content::ContentSettingBubbleModel:
-  void OnManageLinkClicked() override;
-  void OnLearnMoreLinkClicked() override;
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingTitleAndLinkModel);
 };
 
+// A generic bubble used for a single content setting.
+class ContentSettingSimpleBubbleModel : public ContentSettingTitleAndLinkModel {
+ public:
+  ContentSettingSimpleBubbleModel(Delegate* delegate,
+                                  content::WebContents* web_contents,
+                                  Profile* profile,
+                                  ContentSettingsType content_type);
+
+  ContentSettingsType content_type() { return content_type_; }
+
+  // ContentSettingBubbleModel implementation.
+  ContentSettingSimpleBubbleModel* AsSimpleBubbleModel() override;
+
+ private:
+  // ContentSettingTitleAndLinkModel implementation.
+  void SetTitle() override;
+  void SetManageLink() override;
+  void OnManageLinkClicked() override;
+  void SetCustomLink();
+  void OnCustomLinkClicked() override;
+
+  ContentSettingsType content_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingSimpleBubbleModel);
+};
+
 // RPH stands for Register Protocol Handler.
-class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {
+class ContentSettingRPHBubbleModel : public ContentSettingSimpleBubbleModel {
  public:
   ContentSettingRPHBubbleModel(Delegate* delegate,
                                content::WebContents* web_contents,
@@ -251,6 +298,9 @@ class ContentSettingMediaStreamBubbleModel
 
   ~ContentSettingMediaStreamBubbleModel() override;
 
+  // ContentSettingBubbleModel:
+  ContentSettingMediaStreamBubbleModel* AsMediaStreamBubbleModel() override;
+
   // ContentSettingTitleAndLinkModel:
   void OnManageLinkClicked() override;
 
@@ -260,16 +310,15 @@ class ContentSettingMediaStreamBubbleModel
   bool MicrophoneAccessed() const;
   bool CameraAccessed() const;
 
-  void SetTitle();
+  // ContentSettingTitleAndLinkModel:
+  void SetTitle() override;
+  void SetManageLink() override;
 
   // Sets the data for the radio buttons of the bubble.
   void SetRadioGroup();
 
   // Sets the data for the media menus of the bubble.
   void SetMediaMenus();
-
-  // Sets the settings management link.
-  void SetManageLink();
 
   // Sets the string that suggests reloading after the settings were changed.
   void SetCustomLink();

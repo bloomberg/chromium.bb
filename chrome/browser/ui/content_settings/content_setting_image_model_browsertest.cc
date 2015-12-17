@@ -41,7 +41,14 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest, CreateBubbleModel) {
     scoped_ptr<ContentSettingBubbleModel> bubble(
         ContentSettingSimpleImageModel::CreateForContentTypeForTesting(type)
             ->CreateBubbleModel(nullptr, web_contents, profile));
-    EXPECT_EQ(type, bubble->content_type());
+
+    // All of the above content settings should create a
+    // ContentSettingSimpleBubbleModel that is tied to a particular setting,
+    // and thus it should be an instance of ContentSettingSimpleBubbleModel.
+    ContentSettingSimpleBubbleModel* simple_bubble =
+        bubble->AsSimpleBubbleModel();
+    ASSERT_TRUE(simple_bubble);
+    EXPECT_EQ(type, simple_bubble->content_type());
   }
 
   // For other models, we can only test that they create a valid bubble.

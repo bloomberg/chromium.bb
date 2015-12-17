@@ -21,6 +21,9 @@ class ContentSettingBubbleModelDelegate {
   // Shows the Content Settings page for a given content type.
   virtual void ShowContentSettingsPage(ContentSettingsType type) = 0;
 
+  // Shows the settings page for media.
+  virtual void ShowMediaSettingsPage() = 0;
+
   // Shows the Learn More page for a given content type.
   virtual void ShowLearnMorePage(ContentSettingsType type) = 0;
 

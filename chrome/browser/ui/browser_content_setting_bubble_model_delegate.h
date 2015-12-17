@@ -22,6 +22,7 @@ class BrowserContentSettingBubbleModelDelegate
   // ContentSettingBubbleModelDelegate implementation:
   void ShowCollectedCookiesDialog(content::WebContents* web_contents) override;
   void ShowContentSettingsPage(ContentSettingsType type) override;
+  void ShowMediaSettingsPage() override;
   void ShowLearnMorePage(ContentSettingsType type) override;
 
  private:

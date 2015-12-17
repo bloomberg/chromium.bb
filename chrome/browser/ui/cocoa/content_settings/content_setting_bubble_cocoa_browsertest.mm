@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest, Init) {
         model->CreateBubbleModel(nullptr, web_contents(), profile());
     ContentSettingBubbleController* controller = CreateBubbleController(bubble);
     // No bubble except the one for media should have media menus.
-    if (bubble->content_type() != CONTENT_SETTINGS_TYPE_MEDIASTREAM)
+    if (!bubble->AsMediaStreamBubbleModel())
       EXPECT_EQ(0u, [controller mediaMenus]->size());
     [parent_ close];
   }
