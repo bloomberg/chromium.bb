@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//build/config/nacl/config.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -121,7 +122,7 @@ source_set("test_support") {
 
   if (is_ios) {
     sources += [ "launcher/unit_test_launcher_ios.cc" ]
-  } else {
+  } else if (!is_nacl_nonsfi) {
     sources += [
       "launcher/test_launcher.cc",
       "launcher/test_launcher.h",
@@ -170,6 +171,37 @@ source_set("test_support") {
   if (is_android) {
     deps += [ ":base_unittests_jni_headers" ]
   }
+
+  if (is_nacl_nonsfi) {
+    sources += [
+      "launcher/test_launcher.h",
+      "launcher/test_result.h",
+      "launcher/unit_test_launcher.h",
+      "launcher/unit_test_launcher_nacl_nonsfi.cc",
+    ]
+    sources -= [
+      "gtest_xml_util.cc",
+      "gtest_xml_util.h",
+      "perf_test_suite.cc",
+      "perf_test_suite.h",
+      "scoped_path_override.cc",
+      "scoped_path_override.h",
+      "test_discardable_memory_allocator.cc",
+      "test_discardable_memory_allocator.h",
+      "test_file_util.cc",
+      "test_file_util.h",
+      "test_file_util_posix.cc",
+      "test_suite.cc",
+      "test_suite.h",
+      "trace_to_file.cc",
+      "trace_to_file.h",
+    ]
+    public_deps -= [ "//base:i18n" ]
+    deps -= [
+      "//third_party/icu:icuuc",
+      "//third_party/libxml",
+    ]
+  }
 }
 
 config("perf_test_config") {
@@ -188,6 +220,17 @@ source_set("test_support_perf") {
   ]
 
   public_configs = [ ":perf_test_config" ]
+}
+
+source_set("test_launcher_nacl_nonsfi") {
+  testonly = true
+  sources = [
+    "launcher/test_launcher_nacl_nonsfi.cc",
+    "launcher/test_launcher_nacl_nonsfi.h",
+  ]
+  deps = [
+    ":test_support",
+  ]
 }
 
 source_set("run_all_unittests") {

@@ -55,8 +55,6 @@ source_set("sandbox_linux_test_utils") {
     "tests/sandbox_test_runner.h",
     "tests/sandbox_test_runner_function_pointer.cc",
     "tests/sandbox_test_runner_function_pointer.h",
-    "tests/test_utils.cc",
-    "tests/test_utils.h",
     "tests/unit_tests.cc",
     "tests/unit_tests.h",
   ]
@@ -65,7 +63,14 @@ source_set("sandbox_linux_test_utils") {
     "//testing/gtest",
   ]
 
-  if (use_seccomp_bpf) {
+  if (!is_nacl_nonsfi) {
+    sources += [
+      "tests/test_utils.cc",
+      "tests/test_utils.h",
+    ]
+  }
+
+  if (use_seccomp_bpf || is_nacl_nonsfi) {
     sources += [
       "seccomp-bpf/bpf_tester_compatibility_delegate.h",
       "seccomp-bpf/bpf_tests.h",

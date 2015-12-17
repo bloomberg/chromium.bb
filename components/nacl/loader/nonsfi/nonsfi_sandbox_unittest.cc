@@ -113,13 +113,6 @@ void DoPipe(base::ScopedFD* fds) {
   fds[1].reset(tmp_fds[1]);
 }
 
-void DoSocketpair(base::ScopedFD* fds) {
-  int tmp_fds[2];
-  BPF_ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, tmp_fds));
-  fds[0].reset(tmp_fds[0]);
-  fds[1].reset(tmp_fds[1]);
-}
-
 TEST(NaClNonSfiSandboxTest, BPFIsSupported) {
   bool seccomp_bpf_supported = sandbox::SandboxBPF::SupportsSeccompSandbox(
       sandbox::SandboxBPF::SeccompLevel::SINGLE_THREADED);

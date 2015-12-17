@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/nacl/config.gni")
+
 source_set("json") {
   sources = [
     "json_file_value_serializer.cc",
@@ -20,7 +22,7 @@ source_set("json") {
     "string_escape.h",
   ]
 
-  if (is_nacl) {
+  if (is_nacl && !is_nacl_nonsfi) {
     sources -= [
       "json_file_value_serializer.cc",
       "json_file_value_serializer.h",

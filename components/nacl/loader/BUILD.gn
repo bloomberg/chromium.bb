@@ -75,6 +75,20 @@ test("nacl_loader_unittests") {
     "//ppapi/c",
     "//testing/gtest",
   ]
+
+  if (is_nacl_nonsfi) {
+    sources += [
+      # TODO(hamaji): Currently, we build them twice. Stop building
+      # them for components_unittests. See crbug.com/364751
+      "nonsfi/nonsfi_sandbox_sigsys_unittest.cc",
+      "nonsfi/nonsfi_sandbox_unittest.cc",
+    ]
+
+    deps += [
+      ":nacl_linux",
+      "//sandbox/linux:sandbox_linux_test_utils",
+    ]
+  }
 }
 
 if (is_linux) {
@@ -112,6 +126,39 @@ if (is_linux) {
     ]
     data_deps = [
       ":nacl_helper",
+    ]
+  }
+
+  test("nacl_helper_nonsfi_unittests") {
+    sources = [
+      "nonsfi/nacl_helper_nonsfi_unittests.cc",
+    ]
+    deps = [
+      "//base",
+      "//base/test:test_launcher_nacl_nonsfi",
+    ]
+  }
+
+  group("helper_nonsfi") {
+    deps = [
+      ":nacl_helper_nonsfi_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
+    ]
+  }
+
+  group("helper_nonsfi_unittests") {
+    testonly = true
+    data_deps = [
+      ":nacl_helper_nonsfi_unittests",
+      ":nacl_helper_nonsfi_unittests_main_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
+    ]
+  }
+
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("nacl_helper_nonsfi_unittests_run") {
+    testonly = true
+    data_deps = [
+      ":helper_nonsfi_unittests",
     ]
   }
 }
@@ -186,10 +233,37 @@ if (is_nacl_nonsfi) {
       ":nacl_helper_nonsfi_nexe",
     ]
   }
-}
 
-group("helper_nonsfi") {
-  deps = [
-    ":nacl_helper_nonsfi_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
-  ]
+  test("nacl_helper_nonsfi_unittests_main") {
+    sources = [
+      "nonsfi/nonsfi_sandbox_sigsys_unittest.cc",
+      "nonsfi/nonsfi_sandbox_unittest.cc",
+      "nonsfi/run_all_unittests.cc",
+    ]
+    deps = [
+      ":nacl_helper_nonsfi_sandbox",
+      "//base",
+      "//base/test:test_support",
+      "//content",
+      "//native_client/src/nonsfi/irt:nacl_sys_private",
+      "//native_client/src/untrusted/nacl:nacl",
+      "//sandbox/linux:sandbox",
+      "//sandbox/linux:sandbox_linux_test_utils",
+      "//sandbox/linux:sandbox_services_headers",
+      "//testing/gtest",
+    ]
+  }
+
+  copy("nacl_helper_nonsfi_unittests_main_copy") {
+    testonly = true
+    sources = [
+      "${root_out_dir}/nacl_helper_nonsfi_unittests_main",
+    ]
+    outputs = [
+      "${root_build_dir}/{{source_file_part}}",
+    ]
+    deps = [
+      ":nacl_helper_nonsfi_unittests_main",
+    ]
+  }
 }
