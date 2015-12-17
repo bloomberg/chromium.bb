@@ -1824,10 +1824,6 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   if (this.context.resizing)
     return;
 
-  // No capturing while taking.
-  if (this.taking_)
-    return;
-
   // If the animation is called more often than the video provides input, then
   // there is no reason to process it. This will cup FPS to the Web Cam frame
   // rate (eg. head tracker interpolation, nor ghost effect will not be updated
@@ -1918,14 +1914,14 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   {
     var finishMeasuring =
         this.performanceMonitors_.startMeasuring('draw-frame');
-    if (this.toolbarEffect_.animating ||
+    if (this.mainProcessor_.effect.isMultiframe()) {
+      // Always draw in best quality as taken pictures need multiple frames.
+      this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
+    } else if (this.taking_ || this.toolbarEffect_.animating ||
         this.controlsEffect_.animating || this.mainProcessor_.effect.isSlow() ||
         this.context.isUIAnimating() || this.toastEffect_.animating ||
         (this.scrollTracker_.scrolling && this.expanded_)) {
       this.drawCameraFrame_(camera.views.Camera.DrawMode.FAST);
-    } else if (this.mainProcessor_.effect.isMultiframe()) {
-      // Draw in best quality to render multiple frames for taking pictures.
-      this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
     } else {
       this.drawCameraFrame_(camera.views.Camera.DrawMode.NORMAL);
     }
@@ -1939,10 +1935,10 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   {
     var finishMeasuring =
         this.performanceMonitors_.startMeasuring('draw-ribbon');
-    if (!this.controlsEffect_.animating && !this.context.isUIAnimating() &&
-        !this.scrollTracker_.scrolling && !this.toolbarEffect_.animating &&
-        !this.toastEffect_.animating || this.ribbonInitialization_) {
-
+    if (!this.taking_ && !this.controlsEffect_.animating &&
+        !this.context.isUIAnimating() && !this.scrollTracker_.scrolling &&
+        !this.toolbarEffect_.animating && !this.toastEffect_.animating ||
+        this.ribbonInitialization_) {
       if (this.expanded_ &&
           this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
         // Render all visible + one not visible.
