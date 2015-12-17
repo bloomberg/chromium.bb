@@ -293,11 +293,8 @@ BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
   Context* ctx = reinterpret_cast<Context*>(context);
 
   PEResource resource(name, type, module);
-  if ((!resource.IsValid()) ||
-      (resource.Size() < 1) ||
-      (resource.Size() > kMaxResourceSize)) {
+  if (!resource.IsValid() || resource.Size() < 1)
     return FALSE;
-  }
 
   PathString full_path;
   if (!full_path.assign(ctx->base_path) ||
@@ -426,61 +423,37 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
   // setup.exe wasn't sent as 'B7', lets see if it was sent as 'BL'
   // (compressed setup).
   if (!::EnumResourceNames(module, kLZCResourceType, OnResourceFound,
-                           reinterpret_cast<LONG_PTR>(&context)) &&
-      ::GetLastError() != ERROR_RESOURCE_TYPE_NOT_FOUND) {
-    return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP_B7, ::GetLastError());
+                           reinterpret_cast<LONG_PTR>(&context))) {
+    return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP_BL, ::GetLastError());
+  }
+  if (setup_path->length() == 0) {
+    // Neither setup_patch.packed.7z nor setup.ex_ was found.
+    return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP);
   }
 
-  if (setup_path->length() > 0) {
-    // Uncompress LZ compressed resource. Setup is packed with 'MSCF'
-    // as opposed to old DOS way of 'SZDD'. Hence we don't use LZCopy.
-    bool success = mini_installer::Expand(setup_path->get(),
-                                          setup_dest_path.get());
-    ::DeleteFile(setup_path->get());
-    if (success) {
-      if (!setup_path->assign(setup_dest_path.get())) {
-        ::DeleteFile(setup_dest_path.get());
-        exit_code = ProcessExitResult(PATH_STRING_OVERFLOW);
-      }
-    } else {
-      exit_code = ProcessExitResult(UNABLE_TO_EXTRACT_SETUP_EXE);
+  // Uncompress LZ compressed resource. Setup is packed with 'MSCF'
+  // as opposed to old DOS way of 'SZDD'. Hence we don't use LZCopy.
+  bool success =
+      mini_installer::Expand(setup_path->get(), setup_dest_path.get());
+  ::DeleteFile(setup_path->get());
+  if (success) {
+    if (!setup_path->assign(setup_dest_path.get())) {
+      ::DeleteFile(setup_dest_path.get());
+      exit_code = ProcessExitResult(PATH_STRING_OVERFLOW);
     }
+  } else {
+    exit_code = ProcessExitResult(UNABLE_TO_EXTRACT_SETUP_EXE);
+  }
 
 #if defined(COMPONENT_BUILD)
+  if (exit_code.IsSuccess()) {
     // Extract the (uncompressed) modules required by setup.exe.
     if (!::EnumResourceNames(module, kBinResourceType, WriteResourceToDirectory,
                              reinterpret_cast<LONG_PTR>(base_path))) {
       return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP, ::GetLastError());
     }
+  }
 #endif
-
-    return exit_code;
-  }
-
-  // setup.exe still not found. So finally check if it was sent as 'BN'
-  // (uncompressed setup).
-  // TODO(tommi): We don't need BN anymore so let's remove it (and remove
-  // it from create_installer_archive.py).
-  if (!::EnumResourceNames(module, kBinResourceType, OnResourceFound,
-                           reinterpret_cast<LONG_PTR>(&context)) &&
-      ::GetLastError() != ERROR_RESOURCE_TYPE_NOT_FOUND) {
-    return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP_BN, ::GetLastError());
-  }
-
-  if (setup_path->length() > 0) {
-    if (setup_path->comparei(setup_dest_path.get()) != 0) {
-      if (!::MoveFileEx(setup_path->get(), setup_dest_path.get(),
-                        MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING)) {
-        ::DeleteFile(setup_path->get());
-        setup_path->clear();
-      } else if (!setup_path->assign(setup_dest_path.get())) {
-        ::DeleteFile(setup_dest_path.get());
-      }
-    }
-  }
-
-  if (setup_path->length() == 0)
-    exit_code = ProcessExitResult(UNABLE_TO_EXTRACT_SETUP);
 
   return exit_code;
 }

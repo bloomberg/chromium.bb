@@ -70,7 +70,4 @@ const wchar_t kClientStateKeyBase[] = L"Software\\Chromium";
 const wchar_t kCleanupRegistryKey[] = L"Software\\Chromium";
 #endif
 
-// One gigabyte is the biggest resource size that it can handle.
-const size_t kMaxResourceSize = 1024*1024*1024;
-
 }  // namespace mini_installer

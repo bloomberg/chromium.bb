@@ -43,8 +43,6 @@ extern const wchar_t kUninstallRegistryValue[];
 extern const wchar_t kClientStateKeyBase[];
 extern const wchar_t kCleanupRegistryKey[];
 
-extern const size_t kMaxResourceSize;
-
 }  // namespace mini_installer
 
 #endif  // CHROME_INSTALLER_MINI_INSTALLER_MINI_INSTALLER_CONSTANTS_H_
