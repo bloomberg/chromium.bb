@@ -15,6 +15,8 @@
 #include "mkvparser.hpp"
 #include "mkvreader.hpp"
 
+#include "common/libwebm_utils.h"
+
 namespace libwebm {
 
 // Stores a value and its size in bits for writing into a PES Optional Header.
@@ -174,16 +176,6 @@ class Webm2Pes {
   bool ConvertToFile();
 
  private:
-  // fclose functor for wrapping FILE in std::unique_ptr.
-  struct FILEDeleter {
-    int operator()(FILE* f) {
-      if (f != nullptr)
-        return fclose(f);
-      return 0;
-    }
-  };
-  typedef std::unique_ptr<FILE, FILEDeleter> FilePtr;
-
   bool InitWebmParser();
   bool WritePesPacket(const mkvparser::Block::Frame& vpx_frame,
                       double nanosecond_pts);
