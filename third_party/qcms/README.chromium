@@ -121,6 +121,8 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=562951
  - Add a color profile white point transform api
    - https://code.google.com/p/chromium/issues/detail?id=564355
+ - Compute the pole and zero values needed by lut_inverse_interp16 once
+   - https://code.google.com/p/chromium/issues/detail?id=505793
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src

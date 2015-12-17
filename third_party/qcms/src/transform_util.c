@@ -310,35 +310,25 @@ struct matrix build_colorant_matrix(qcms_profile *p)
  * I think it could be much better. For example, Argyll seems to have better code in
  * icmTable_lookup_bwd and icmTable_setup_bwd. However, for now this is a quick way
  * to a working solution and allows for easy comparing with lcms. */
-uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int length)
+uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int length, int NumZeroes, int NumPoles)
 {
         int l = 1;
         int r = 0x10000;
         int x = 0, res;       // 'int' Give spacing for negative values
-        int NumZeroes, NumPoles;
         int cell0, cell1;
         double val2;
         double y0, y1, x0, x1;
         double a, b, f;
 
         // July/27 2001 - Expanded to handle degenerated curves with an arbitrary
-        // number of elements containing 0 at the begining of the table (Zeroes)
+        // number of elements containing 0 at the beginning of the table (Zeroes)
         // and another arbitrary number of poles (FFFFh) at the end.
-        // First the zero and pole extents are computed, then value is compared.
-
-        NumZeroes = 0;
-        while (LutTable[NumZeroes] == 0 && NumZeroes < length-1)
-            NumZeroes++;
 
         // There are no zeros at the beginning and we are trying to find a zero, so
         // return anything. It seems zero would be the less destructive choice
 	/* I'm not sure that this makes sense, but oh well... */
         if (NumZeroes == 0 && Value == 0)
             return 0;
-
-        NumPoles = 0;
-        while (LutTable[length-1- NumPoles] == 0xFFFF && NumPoles < length-1)
-            NumPoles++;
 
         // Does the curve belong to this case?
         if (NumZeroes > 1 || NumPoles > 1)
@@ -439,6 +429,21 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
         return (uint16_fract_t) floor(f + 0.5);
 }
 
+// December/16 2015 - Moved this code out of lut_inverse_interp16
+// in order to save computation in invert_lut loop.
+static void count_zeroes_and_poles(uint16_t *LutTable, int length, int *NumZeroes, int *NumPoles)
+{
+    int z = 0, p = 0;
+
+    while (LutTable[z] == 0 && z < length - 1)
+    	z++;
+    *NumZeroes = z;
+
+    while (LutTable[length - 1 - p] == 0xFFFF && p < length - 1)
+    	p++;
+    *NumPoles = p;
+}
+
 /*
  The number of entries needed to invert a lookup table should not
  necessarily be the same as the original number of entries.  This is
@@ -454,6 +459,8 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
  For now, we punt the decision of output size to the caller. */
 static uint16_t *invert_lut(uint16_t *table, int length, size_t out_length)
 {
+        int NumZeroes;
+        int NumPoles;
         int i;
         /* for now we invert the lut by creating a lut of size out_length
          * and attempting to lookup a value for each entry using lut_inverse_interp16 */
@@ -461,11 +468,16 @@ static uint16_t *invert_lut(uint16_t *table, int length, size_t out_length)
         if (!output)
                 return NULL;
 
+        // December/16 2015 - Compute the input curve zero and pole extents outside
+        // the loop and pass them to lut_inverse_interp16.
+        count_zeroes_and_poles(table, length, &NumZeroes, &NumPoles);
+
         for (i = 0; i < out_length; i++) {
                 double x = ((double) i * 65535.) / (double) (out_length - 1);
                 uint16_fract_t input = floor(x + .5);
-                output[i] = lut_inverse_interp16(input, table, length);
+                output[i] = lut_inverse_interp16(input, table, length, NumZeroes, NumPoles);
         }
+
         return output;
 }
 
