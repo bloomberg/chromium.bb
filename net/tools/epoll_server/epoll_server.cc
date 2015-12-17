@@ -9,10 +9,10 @@
 #include <errno.h>    // for errno and strerror_r
 #include <algorithm>
 #include <utility>
-#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 
 // Design notes: An efficient implementation of ready list has the following
@@ -442,7 +442,7 @@ void EpollServer::VerifyReadyList() const {
 
 void EpollServer::RegisterAlarm(int64 timeout_time_in_us, AlarmCB* ac) {
   CHECK(ac);
-  if (ContainsAlarm(ac)) {
+  if (ContainsKey(all_alarms_, ac)) {
     LOG(FATAL) << "Alarm already exists " << ac;
   }
   VLOG(4) << "RegisteringAlarm at : " << timeout_time_in_us;

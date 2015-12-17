@@ -8,9 +8,7 @@
 #include <fcntl.h>
 #include <sys/queue.h>
 #include <map>
-#include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 // #define EPOLL_SERVER_EVENT_TRACING 1
@@ -474,10 +472,6 @@ class EpollServer {
   // Summary:
   // Returns true when the EpollServer() is being destroyed.
   bool in_shutdown() const { return in_shutdown_; }
-
-  bool ContainsAlarm(EpollAlarmCallbackInterface* alarm) const {
-    return all_alarms_.find(alarm) != all_alarms_.end();
-  }
 
   // Summary:
   //   A function for implementing the ready list. It invokes OnEvent for each
