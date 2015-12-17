@@ -839,6 +839,8 @@
       'scroll/ProgrammaticScrollAnimator.h',
       'scroll/ScrollAnimatorBase.cpp',
       'scroll/ScrollAnimatorBase.h',
+      'scroll/ScrollAnimatorCompositorCoordinator.cpp',
+      'scroll/ScrollAnimatorCompositorCoordinator.h',
       'scroll/ScrollAnimator.cpp',
       'scroll/ScrollAnimator.h',
       'scroll/ScrollTypes.h',
