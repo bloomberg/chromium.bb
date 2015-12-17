@@ -260,7 +260,7 @@ public class DocumentModeManager {
         if (optOutState == OPT_OUT_STATE_UNSET) {
             boolean hasMigrated = mSharedPreferences.getBoolean(
                     ChromePreferenceManager.MIGRATION_ON_UPGRADE_ATTEMPTED, false);
-            if (isDeviceTabbedModeByDefault() && !hasMigrated) {
+            if (!hasMigrated) {
                 optOutState = OPTED_OUT_OF_DOCUMENT_MODE;
             } else {
                 optOutState = OPT_IN_TO_DOCUMENT_MODE;
