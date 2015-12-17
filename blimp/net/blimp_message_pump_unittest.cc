@@ -33,7 +33,7 @@ class BlimpMessagePumpTest : public testing::Test {
   BlimpMessagePumpTest()
       : message1_(new BlimpMessage), message2_(new BlimpMessage) {
     message1_->set_type(BlimpMessage::INPUT);
-    message2_->set_type(BlimpMessage::CONTROL);
+    message2_->set_type(BlimpMessage::TAB_CONTROL);
     message_pump_.reset(new BlimpMessagePump(&reader_));
     message_pump_->set_error_observer(&error_observer_);
   }

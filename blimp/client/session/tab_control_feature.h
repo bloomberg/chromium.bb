@@ -22,7 +22,7 @@ class BLIMP_CLIENT_EXPORT TabControlFeature : public BlimpMessageProcessor {
   ~TabControlFeature() override;
 
   // Set the BlimpMessageProcessor that will be used to send
-  // BlimpMessage::CONTROL messages to the engine.
+  // BlimpMessage::TAB_CONTROL messages to the engine.
   void set_outgoing_message_processor(
       scoped_ptr<BlimpMessageProcessor> processor);
 
@@ -35,7 +35,7 @@ class BLIMP_CLIENT_EXPORT TabControlFeature : public BlimpMessageProcessor {
   void ProcessMessage(scoped_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
-  // Used to send BlimpMessage::CONTROL messages to the engine.
+  // Used to send BlimpMessage::TAB_CONTROL messages to the engine.
   scoped_ptr<BlimpMessageProcessor> outgoing_message_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(TabControlFeature);

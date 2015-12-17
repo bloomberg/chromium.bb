@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Message definitions for browser control messages.
+// Message definitions for browser tab control messages.
 
 syntax = "proto2";
 
@@ -12,7 +12,7 @@ import "size.proto";
 
 package blimp;
 
-message ControlMessage {
+message TabControlMessage {
   enum Type {
     UNKNOWN = 0;
 
@@ -27,7 +27,7 @@ message ControlMessage {
   optional Type type = 1;
 
   // Feature-specific messages follow.
-  // Only one of these fields may be set per ControlMessage.
+  // Only one of these fields may be set per TabControlMessage.
   // TODO(kmarshall): use a 'oneof' union when it's supported in Chromium.
   optional SizeMessage size = 1000;
 }

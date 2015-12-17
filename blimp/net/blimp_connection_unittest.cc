@@ -49,7 +49,7 @@ class BlimpConnectionTest : public testing::Test {
 
   scoped_ptr<BlimpMessage> CreateControlMessage() {
     scoped_ptr<BlimpMessage> msg(new BlimpMessage);
-    msg->set_type(BlimpMessage::CONTROL);
+    msg->set_type(BlimpMessage::TAB_CONTROL);
     return msg;
   }
 

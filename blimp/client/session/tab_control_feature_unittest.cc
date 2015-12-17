@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
-#include "blimp/common/proto/control.pb.h"
 #include "blimp/common/proto/size.pb.h"
+#include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/net/test_common.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,10 +20,10 @@ using testing::_;
 namespace blimp {
 
 MATCHER_P3(EqualsSizeMessage, width, height, dp_to_px, "") {
-  return arg.control().type() == ControlMessage::SIZE &&
-         arg.control().size().width() == width &&
-         arg.control().size().height() == height &&
-         arg.control().size().device_pixel_ratio() == dp_to_px;
+  return arg.tab_control().type() == TabControlMessage::SIZE &&
+         arg.tab_control().size().width() == width &&
+         arg.tab_control().size().height() == height &&
+         arg.tab_control().size().device_pixel_ratio() == dp_to_px;
 }
 
 class TabControlFeatureTest : public testing::Test {

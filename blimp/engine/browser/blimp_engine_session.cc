@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
-#include "blimp/common/proto/control.pb.h"
+#include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/engine/browser/blimp_browser_context.h"
 #include "blimp/engine/ui/blimp_layout_manager.h"
 #include "blimp/engine/ui/blimp_screen.h"
@@ -197,20 +197,20 @@ void BlimpEngineSession::OnCompositorMessageReceived(
 void BlimpEngineSession::ProcessMessage(
     scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
-  DCHECK(message->type() == BlimpMessage::CONTROL ||
-      message->type() == BlimpMessage::NAVIGATION);
+  DCHECK(message->type() == BlimpMessage::TAB_CONTROL ||
+         message->type() == BlimpMessage::NAVIGATION);
 
-  if (message->type() == BlimpMessage::CONTROL) {
-    switch (message->control().type()) {
-      case ControlMessage::CREATE_TAB:
+  if (message->type() == BlimpMessage::TAB_CONTROL) {
+    switch (message->tab_control().type()) {
+      case TabControlMessage::CREATE_TAB:
         CreateWebContents(message->target_tab_id());
         break;
-      case ControlMessage::CLOSE_TAB:
+      case TabControlMessage::CLOSE_TAB:
         CloseWebContents(message->target_tab_id());
-      case ControlMessage::SIZE:
-        HandleResize(message->control().size().device_pixel_ratio(),
-                     gfx::Size(message->control().size().width(),
-                               message->control().size().height()));
+      case TabControlMessage::SIZE:
+        HandleResize(message->tab_control().size().device_pixel_ratio(),
+                     gfx::Size(message->tab_control().size().width(),
+                               message->tab_control().size().height()));
         break;
       default:
         NOTIMPLEMENTED();

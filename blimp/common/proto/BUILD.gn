@@ -27,12 +27,12 @@ proto_library("proto_internal") {
   sources = [
     "blimp_message.proto",
     "compositor.proto",
-    "control.proto",
     "input.proto",
     "navigation.proto",
     "protocol_control.proto",
     "render_widget.proto",
     "size.proto",
+    "tab_control.proto",
   ]
 
   cc_generator_options = "dllexport_decl=BLIMP_PROTO_EXPORT:"

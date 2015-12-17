@@ -8,10 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
-#include "blimp/common/proto/control.pb.h"
 #include "blimp/common/proto/input.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
 #include "blimp/common/proto/size.pb.h"
+#include "blimp/common/proto/tab_control.pb.h"
 
 namespace blimp {
 
@@ -26,11 +26,12 @@ scoped_ptr<BlimpMessage> CreateBlimpMessage(
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateBlimpMessage(ControlMessage** control_message) {
+scoped_ptr<BlimpMessage> CreateBlimpMessage(
+    TabControlMessage** control_message) {
   DCHECK(control_message);
   scoped_ptr<BlimpMessage> output(new BlimpMessage);
-  output->set_type(BlimpMessage::CONTROL);
-  *control_message = output->mutable_control();
+  output->set_type(BlimpMessage::TAB_CONTROL);
+  *control_message = output->mutable_tab_control();
   return output;
 }
 
@@ -66,9 +67,9 @@ scoped_ptr<BlimpMessage> CreateBlimpMessage(
 
 scoped_ptr<BlimpMessage> CreateBlimpMessage(SizeMessage** size_message) {
   DCHECK(size_message);
-  ControlMessage* control_message;
+  TabControlMessage* control_message;
   scoped_ptr<BlimpMessage> output = CreateBlimpMessage(&control_message);
-  control_message->set_type(ControlMessage::SIZE);
+  control_message->set_type(TabControlMessage::SIZE);
   *size_message = control_message->mutable_size();
   return output;
 }

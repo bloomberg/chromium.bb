@@ -43,8 +43,8 @@ void BlimpBrowserMainParts::PreMainMessageLoopRun() {
   // TODO(haibinlu): Remove these test messages and switch to using the
   // MessageDispatcher for incoming messages.
   scoped_ptr<BlimpMessage> message(new BlimpMessage);
-  message->set_type(BlimpMessage::CONTROL);
-  message->mutable_control()->set_type(ControlMessage::CREATE_TAB);
+  message->set_type(BlimpMessage::TAB_CONTROL);
+  message->mutable_tab_control()->set_type(TabControlMessage::CREATE_TAB);
   engine_session_->ProcessMessage(std::move(message),
                                   net::CompletionCallback());
   message.reset(new BlimpMessage);

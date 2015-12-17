@@ -5,11 +5,11 @@
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
-#include "blimp/common/proto/control.pb.h"
 #include "blimp/common/proto/input.pb.h"
 #include "blimp/common/proto/navigation.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
 #include "blimp/common/proto/size.pb.h"
+#include "blimp/common/proto/tab_control.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blimp {
@@ -26,12 +26,12 @@ TEST(CreateBlimpMessageTest, CompositorMessage) {
   EXPECT_EQ(kTabId, message->target_tab_id());
 }
 
-TEST(CreateBlimpMessageTest, ControlMessage) {
-  ControlMessage* details = nullptr;
+TEST(CreateBlimpMessageTest, TabControlMessage) {
+  TabControlMessage* details = nullptr;
   scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
   EXPECT_NE(nullptr, details);
   EXPECT_NE(nullptr, message);
-  EXPECT_EQ(details, message->mutable_control());
+  EXPECT_EQ(details, message->mutable_tab_control());
 }
 
 TEST(CreateBlimpMessageTest, InputMessage) {
@@ -65,8 +65,8 @@ TEST(CreateBlimpMessageTest, SizeMessage) {
   scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
   EXPECT_NE(nullptr, details);
   EXPECT_NE(nullptr, message);
-  EXPECT_EQ(ControlMessage::SIZE, message->mutable_control()->type());
-  EXPECT_EQ(details, message->mutable_control()->mutable_size());
+  EXPECT_EQ(TabControlMessage::SIZE, message->mutable_tab_control()->type());
+  EXPECT_EQ(details, message->mutable_tab_control()->mutable_size());
 }
 
 TEST(CreateBlimpMessageTest, StartConnectionMessage) {

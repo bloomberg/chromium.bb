@@ -70,7 +70,7 @@ class BlimpEngineSession
                       const net::CompletionCallback& callback) override;
 
  private:
-  // ControlMessage handler methods.
+  // TabControlMessage handler methods.
   // Creates a new WebContents, which will be indexed by |target_tab_id|.
   void CreateWebContents(const int target_tab_id);
   void CloseWebContents(const int target_tab_id);

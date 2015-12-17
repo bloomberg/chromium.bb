@@ -18,8 +18,8 @@ BlimpClientSession::BlimpClientSession()
       render_widget_feature_(new RenderWidgetFeature) {
   // Connect the features with the network layer.
   tab_control_feature_->set_outgoing_message_processor(
-        connection_handler_->RegisterFeature(BlimpMessage::CONTROL,
-                                             tab_control_feature_.get()));
+      connection_handler_->RegisterFeature(BlimpMessage::TAB_CONTROL,
+                                           tab_control_feature_.get()));
   navigation_feature_->set_outgoing_message_processor(
       connection_handler_->RegisterFeature(BlimpMessage::NAVIGATION,
                                            navigation_feature_.get()));
