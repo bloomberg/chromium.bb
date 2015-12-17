@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -142,5 +143,108 @@ TEST_F(SQLiteFeaturesTest, ForeignKeySupport) {
   EXPECT_TRUE(sql::test::CountTableRows(&db(), "children", &rows));
   EXPECT_EQ(0u, rows);
 }
+
+#if defined(MOJO_APPTEST_IMPL) || defined(OS_IOS)
+// If the platform cannot support SQLite mmap'ed I/O, make sure SQLite isn't
+// offering to support it.
+TEST_F(SQLiteFeaturesTest, NoMmap) {
+  // For recent versions of SQLite, SQLITE_MAX_MMAP_SIZE=0 can be used to
+  // disable mmap support.  Alternately, sqlite3_config() could be used.  In
+  // that case, the pragma will run successfully, but the size will always be 0.
+  //
+  // The SQLite embedded in older iOS releases predates the addition of mmap
+  // support.  In that case the pragma will run without error, but no results
+  // are returned when querying the value.
+  //
+  // MojoVFS implements a no-op for xFileControl().  PRAGMA mmap_size is
+  // implemented in terms of SQLITE_FCNTL_MMAP_SIZE.  In that case, the pragma
+  // will succeed but with no effect.
+  ignore_result(db().Execute("PRAGMA mmap_size = 1048576"));
+  sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
+  ASSERT_TRUE(!s.Step() || !s.ColumnInt64(0));
+}
+#else
+// Verify that OS file writes are reflected in the memory mapping of a
+// memory-mapped file.  Normally SQLite writes to memory-mapped files using
+// memcpy(), which should stay consistent.  Our SQLite is slightly patched to
+// mmap read only, then write using OS file writes.  If the memory-mapped
+// version doesn't reflect the OS file writes, SQLite's memory-mapped I/O should
+// be disabled on this platform using SQLITE_MAX_MMAP_SIZE=0.
+TEST_F(SQLiteFeaturesTest, Mmap) {
+  // Try to turn on mmap'ed I/O.
+  ignore_result(db().Execute("PRAGMA mmap_size = 1048576"));
+  {
+    sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
+
+#if !defined(USE_SYSTEM_SQLITE)
+    // With Chromium's version of SQLite, the setting should always be non-zero.
+    ASSERT_TRUE(s.Step());
+    ASSERT_GT(s.ColumnInt64(0), 0);
+#else
+    // With the system SQLite, don't verify underlying mmap functionality if the
+    // SQLite is too old to support mmap, or if mmap is disabled (see NoMmap
+    // test).  USE_SYSTEM_SQLITE is not bundled into the NoMmap case because
+    // whether mmap is enabled or not is outside of Chromium's control.
+    if (!s.Step() || !s.ColumnInt64(0))
+      return;
+#endif
+  }
+  db().Close();
+
+  const uint32 kFlags =
+      base::File::FLAG_OPEN|base::File::FLAG_READ|base::File::FLAG_WRITE;
+  char buf[4096];
+
+  // Create a file with a block of '0', a block of '1', and a block of '2'.
+  {
+    base::File f(db_path(), kFlags);
+    ASSERT_TRUE(f.IsValid());
+    memset(buf, '0', sizeof(buf));
+    ASSERT_EQ(f.Write(0*sizeof(buf), buf, sizeof(buf)), (int)sizeof(buf));
+
+    memset(buf, '1', sizeof(buf));
+    ASSERT_EQ(f.Write(1*sizeof(buf), buf, sizeof(buf)), (int)sizeof(buf));
+
+    memset(buf, '2', sizeof(buf));
+    ASSERT_EQ(f.Write(2*sizeof(buf), buf, sizeof(buf)), (int)sizeof(buf));
+  }
+
+  // mmap the file and verify that everything looks right.
+  {
+    base::MemoryMappedFile m;
+    ASSERT_TRUE(m.Initialize(db_path()));
+
+    memset(buf, '0', sizeof(buf));
+    ASSERT_EQ(0, memcmp(buf, m.data() + 0*sizeof(buf), sizeof(buf)));
+
+    memset(buf, '1', sizeof(buf));
+    ASSERT_EQ(0, memcmp(buf, m.data() + 1*sizeof(buf), sizeof(buf)));
+
+    memset(buf, '2', sizeof(buf));
+    ASSERT_EQ(0, memcmp(buf, m.data() + 2*sizeof(buf), sizeof(buf)));
+
+    // Scribble some '3' into the first page of the file, and verify that it
+    // looks the same in the memory mapping.
+    {
+      base::File f(db_path(), kFlags);
+      ASSERT_TRUE(f.IsValid());
+      memset(buf, '3', sizeof(buf));
+      ASSERT_EQ(f.Write(0*sizeof(buf), buf, sizeof(buf)), (int)sizeof(buf));
+    }
+    ASSERT_EQ(0, memcmp(buf, m.data() + 0*sizeof(buf), sizeof(buf)));
+
+    // Repeat with a single '4' in case page-sized blocks are different.
+    const size_t kOffset = 1*sizeof(buf) + 123;
+    ASSERT_NE('4', m.data()[kOffset]);
+    {
+      base::File f(db_path(), kFlags);
+      ASSERT_TRUE(f.IsValid());
+      buf[0] = '4';
+      ASSERT_EQ(f.Write(kOffset, buf, 1), 1);
+    }
+    ASSERT_EQ('4', m.data()[kOffset]);
+  }
+}
+#endif
 
 }  // namespace
