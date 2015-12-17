@@ -68,13 +68,6 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
   }
 };
 
-class MockPasswordStoreObserver
-    : public password_manager::PasswordStore::Observer {
- public:
-  MOCK_METHOD1(OnLoginsChanged,
-               void(const password_manager::PasswordStoreChangeList& changes));
-};
-
 class StartSyncFlareMock {
  public:
   StartSyncFlareMock() {}

@@ -76,6 +76,14 @@ MATCHER_P(UnorderedPasswordFormElementsAre, expectations, "") {
                                              result_listener->stream());
 }
 
+class MockPasswordStoreObserver : public PasswordStore::Observer {
+ public:
+  MockPasswordStoreObserver();
+  ~MockPasswordStoreObserver() override;
+
+  MOCK_METHOD1(OnLoginsChanged, void(const PasswordStoreChangeList& changes));
+};
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_TEST_UTILS_H_

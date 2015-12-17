@@ -51,6 +51,10 @@ class PasswordStoreChange {
 
 typedef std::vector<PasswordStoreChange> PasswordStoreChangeList;
 
+// For testing.
+std::ostream& operator<<(std::ostream& os,
+                         const PasswordStoreChange& password_store_change);
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_CHANGE_H_

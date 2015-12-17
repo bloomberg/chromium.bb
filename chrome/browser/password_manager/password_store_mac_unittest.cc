@@ -21,6 +21,7 @@
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_store_origin_unittest.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/mock_apple_keychain.h"
@@ -74,12 +75,6 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
   void OnGetPasswordStoreResults(ScopedVector<PasswordForm> results) override {
     OnGetPasswordStoreResultsConstRef(results.get());
   }
-};
-
-class MockPasswordStoreObserver : public PasswordStore::Observer {
- public:
-  MOCK_METHOD1(OnLoginsChanged,
-               void(const password_manager::PasswordStoreChangeList& changes));
 };
 
 // A LoginDatabase that simulates an Init() method that takes a long time.
@@ -174,7 +169,76 @@ PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
       1, PasswordStoreChange(PasswordStoreChange::ADD, form));
 }
 
+class PasswordStoreMacTestDelegate {
+ public:
+  PasswordStoreMacTestDelegate();
+  ~PasswordStoreMacTestDelegate();
+
+  PasswordStoreMac* store() { return store_.get(); }
+
+  static void FinishAsyncProcessing();
+
+ private:
+  void Initialize();
+
+  void ClosePasswordStore();
+
+  base::FilePath test_login_db_file_path() const;
+
+  base::MessageLoopForUI message_loop_;
+  base::ScopedTempDir db_dir_;
+  scoped_ptr<LoginDatabase> login_db_;
+  scoped_refptr<PasswordStoreMac> store_;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordStoreMacTestDelegate);
+};
+
+PasswordStoreMacTestDelegate::PasswordStoreMacTestDelegate() {
+  Initialize();
+}
+
+PasswordStoreMacTestDelegate::~PasswordStoreMacTestDelegate() {
+  ClosePasswordStore();
+}
+
+void PasswordStoreMacTestDelegate::FinishAsyncProcessing() {
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+void PasswordStoreMacTestDelegate::Initialize() {
+  ASSERT_TRUE(db_dir_.CreateUniqueTempDir());
+
+  // Ensure that LoginDatabase will use the mock keychain if it needs to
+  // encrypt/decrypt a password.
+  OSCrypt::UseMockKeychain(true);
+  login_db_.reset(new LoginDatabase(test_login_db_file_path()));
+  ASSERT_TRUE(login_db_->Init());
+
+  // Create and initialize the password store.
+  store_ = new PasswordStoreMac(base::ThreadTaskRunnerHandle::Get(),
+                                base::ThreadTaskRunnerHandle::Get(),
+                                make_scoped_ptr(new MockAppleKeychain));
+  store_->set_login_metadata_db(login_db_.get());
+}
+
+void PasswordStoreMacTestDelegate::ClosePasswordStore() {
+  store_->ShutdownOnUIThread();
+  FinishAsyncProcessing();
+}
+
+base::FilePath PasswordStoreMacTestDelegate::test_login_db_file_path() const {
+  return db_dir_.path().Append(FILE_PATH_LITERAL("login.db"));
+}
+
 }  // namespace
+
+namespace password_manager {
+
+INSTANTIATE_TYPED_TEST_CASE_P(Mac,
+                              PasswordStoreOriginTest,
+                              PasswordStoreMacTestDelegate);
+
+}  // namespace password_manager
 
 #pragma mark -
 
@@ -1676,7 +1740,8 @@ TEST_F(PasswordStoreMacTest, TestRemoveLoginsMultiProfile) {
 // implicitly deleted. However, the observers shouldn't get notified about
 // deletion of non-existent forms like m.facebook.com.
 TEST_F(PasswordStoreMacTest, SilentlyRemoveOrphanedForm) {
-  testing::StrictMock<MockPasswordStoreObserver> mock_observer;
+  testing::StrictMock<password_manager::MockPasswordStoreObserver>
+      mock_observer;
   store()->AddObserver(&mock_observer);
 
   // 1. Add a password for www.facebook.com to the LoginDatabase.

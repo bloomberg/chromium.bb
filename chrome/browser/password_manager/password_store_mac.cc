@@ -27,6 +27,7 @@
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/apple_keychain.h"
+#include "url/origin.h"
 
 using autofill::PasswordForm;
 using crypto::AppleKeychain;
@@ -1128,6 +1129,34 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginImpl(
     }
 
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
+  }
+  return changes;
+}
+
+PasswordStoreChangeList PasswordStoreMac::RemoveLoginsByOriginAndTimeImpl(
+    const url::Origin& origin,
+    base::Time delete_begin,
+    base::Time delete_end) {
+  PasswordStoreChangeList changes;
+  ScopedVector<PasswordForm> forms_to_consider;
+  ScopedVector<PasswordForm> forms_to_remove;
+  if (login_metadata_db_ &&
+      login_metadata_db_->GetLoginsCreatedBetween(delete_begin, delete_end,
+                                                  &forms_to_consider)) {
+    MoveAllFormsOut(
+        &forms_to_consider,
+        [this, &origin, &forms_to_remove](
+            scoped_ptr<autofill::PasswordForm> form_to_consider) {
+          if (origin.IsSameOriginWith(url::Origin(form_to_consider->origin)) &&
+              login_metadata_db_->RemoveLogin(*form_to_consider))
+            forms_to_remove.push_back(form_to_consider.Pass());
+        });
+    if (!forms_to_remove.empty()) {
+      RemoveKeychainForms(forms_to_remove.get());
+      CleanOrphanedForms(&forms_to_remove);  // Add the orphaned forms.
+      changes = FormsToRemoveChangeList(forms_to_remove.get());
+      LogStatsForBulkDeletion(changes.size());
+    }
   }
   return changes;
 }

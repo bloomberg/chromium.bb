@@ -468,6 +468,7 @@
       'password_manager/core/browser/password_manager_unittest.cc',
       'password_manager/core/browser/password_manager_util_unittest.cc',
       'password_manager/core/browser/password_store_default_unittest.cc',
+      'password_manager/core/browser/password_store_origin_unittest.h',
       'password_manager/core/browser/password_store_unittest.cc',
       'password_manager/core/browser/password_syncable_service_unittest.cc',
       'password_manager/core/browser/password_ui_utils_unittest.cc',

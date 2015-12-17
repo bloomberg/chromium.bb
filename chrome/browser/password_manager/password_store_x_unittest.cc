@@ -49,13 +49,6 @@ class MockPasswordStoreConsumer
   }
 };
 
-class MockPasswordStoreObserver
-    : public password_manager::PasswordStore::Observer {
- public:
-  MOCK_METHOD1(OnLoginsChanged,
-               void(const password_manager::PasswordStoreChangeList& changes));
-};
-
 class FailingBackend : public PasswordStoreX::NativeBackend {
  public:
   bool Init() override { return true; }
@@ -324,7 +317,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   scoped_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(form_data);
 
-  MockPasswordStoreObserver observer;
+  password_manager::MockPasswordStoreObserver observer;
   store->AddObserver(&observer);
 
   const PasswordStoreChange expected_add_changes[] = {

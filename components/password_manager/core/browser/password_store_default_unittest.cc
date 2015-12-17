@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
+#include "components/password_manager/core/browser/password_store_origin_unittest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
@@ -41,11 +42,6 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
   void OnGetPasswordStoreResults(ScopedVector<PasswordForm> results) override {
     OnGetPasswordStoreResultsConstRef(results.get());
   }
-};
-
-class MockPasswordStoreObserver : public PasswordStore::Observer {
- public:
-  MOCK_METHOD1(OnLoginsChanged, void(const PasswordStoreChangeList& changes));
 };
 
 // A mock LoginDatabase that simulates a failing Init() method.
@@ -79,64 +75,92 @@ PasswordFormData CreateTestPasswordFormData() {
   return data;
 }
 
-PasswordFormData CreateTestPasswordFormDataByOrigin(const char* origin_url) {
-  PasswordFormData data = {PasswordForm::SCHEME_HTML,
-                           origin_url,
-                           origin_url,
-                           origin_url,
-                           L"submit_element",
-                           L"username_element",
-                           L"password_element",
-                           L"username_value",
-                           L"password_value",
-                           true,
-                           false,
-                           base::Time::Now().ToDoubleT()};
-  return data;
+class PasswordStoreDefaultTestDelegate {
+ public:
+  PasswordStoreDefaultTestDelegate();
+  explicit PasswordStoreDefaultTestDelegate(scoped_ptr<LoginDatabase> database);
+  ~PasswordStoreDefaultTestDelegate();
+
+  PasswordStoreDefault* store() { return store_.get(); }
+
+  static void FinishAsyncProcessing();
+
+ private:
+  void SetupTempDir();
+
+  void ClosePasswordStore();
+
+  scoped_refptr<PasswordStoreDefault> CreateInitializedStore(
+      scoped_ptr<LoginDatabase> database);
+
+  base::FilePath test_login_db_file_path() const;
+
+  base::MessageLoopForUI message_loop_;
+  base::ScopedTempDir temp_dir_;
+  scoped_refptr<PasswordStoreDefault> store_;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefaultTestDelegate);
+};
+
+PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate() {
+  SetupTempDir();
+  store_ = CreateInitializedStore(
+      make_scoped_ptr(new LoginDatabase(test_login_db_file_path())));
+}
+
+PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate(
+    scoped_ptr<LoginDatabase> database) {
+  SetupTempDir();
+  store_ = CreateInitializedStore(database.Pass());
+}
+
+PasswordStoreDefaultTestDelegate::~PasswordStoreDefaultTestDelegate() {
+  ClosePasswordStore();
+}
+
+void PasswordStoreDefaultTestDelegate::FinishAsyncProcessing() {
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+void PasswordStoreDefaultTestDelegate::SetupTempDir() {
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+}
+
+void PasswordStoreDefaultTestDelegate::ClosePasswordStore() {
+  store_->ShutdownOnUIThread();
+  base::MessageLoop::current()->RunUntilIdle();
+  ASSERT_TRUE(temp_dir_.Delete());
+}
+
+scoped_refptr<PasswordStoreDefault>
+PasswordStoreDefaultTestDelegate::CreateInitializedStore(
+    scoped_ptr<LoginDatabase> database) {
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      database.Pass()));
+  store->Init(syncer::SyncableService::StartSyncFlare());
+
+  return store;
+}
+
+base::FilePath PasswordStoreDefaultTestDelegate::test_login_db_file_path()
+    const {
+  return temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"));
 }
 
 }  // anonymous namespace
 
-class PasswordStoreDefaultTest : public testing::Test {
- protected:
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
-
-  void TearDown() override {
-    base::MessageLoop::current()->RunUntilIdle();
-    ASSERT_TRUE(temp_dir_.Delete());
-  }
-
-  base::FilePath test_login_db_file_path() const {
-    return temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"));
-  }
-
-  scoped_refptr<PasswordStoreDefault> CreateInitializedStore() {
-    return CreateInitializedStore(
-        make_scoped_ptr(new LoginDatabase(test_login_db_file_path())));
-  }
-
-  scoped_refptr<PasswordStoreDefault> CreateInitializedStore(
-      scoped_ptr<LoginDatabase> database) {
-    scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-        base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(), database.Pass()));
-    store->Init(syncer::SyncableService::StartSyncFlare());
-
-    return store;
-  }
-
-  base::MessageLoopForUI message_loop_;
-  base::ScopedTempDir temp_dir_;
-};
+INSTANTIATE_TYPED_TEST_CASE_P(Default,
+                              PasswordStoreOriginTest,
+                              PasswordStoreDefaultTestDelegate);
 
 ACTION(STLDeleteElements0) {
   STLDeleteContainerPointers(arg0.begin(), arg0.end());
 }
 
-TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
-  scoped_refptr<PasswordStoreDefault> store = CreateInitializedStore();
+TEST(PasswordStoreDefaultTest, NonASCIIData) {
+  PasswordStoreDefaultTestDelegate delegate;
+  PasswordStoreDefault* store = delegate.store();
 
   // Some non-ASCII password form data.
   static const PasswordFormData form_data[] = {
@@ -171,12 +195,11 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   store->GetAutofillableLogins(&consumer);
 
   base::MessageLoop::current()->RunUntilIdle();
-
-  store->ShutdownOnUIThread();
 }
 
-TEST_F(PasswordStoreDefaultTest, Notifications) {
-  scoped_refptr<PasswordStoreDefault> store = CreateInitializedStore();
+TEST(PasswordStoreDefaultTest, Notifications) {
+  PasswordStoreDefaultTestDelegate delegate;
+  PasswordStoreDefault* store = delegate.store();
 
   scoped_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(CreateTestPasswordFormData());
@@ -221,16 +244,15 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
   base::MessageLoop::current()->RunUntilIdle();
 
   store->RemoveObserver(&observer);
-  store->ShutdownOnUIThread();
 }
 
 // Verify that operations on a PasswordStore with a bad database cause no
 // explosions, but fail without side effect, return no data and trigger no
 // notifications.
-TEST_F(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
-  scoped_refptr<PasswordStoreDefault> bad_store =
-      CreateInitializedStore(make_scoped_ptr(new BadLoginDatabase));
-
+TEST(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
+  PasswordStoreDefaultTestDelegate delegate(
+      make_scoped_ptr(new BadLoginDatabase));
+  PasswordStoreDefault* bad_store = delegate.store();
   base::MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(nullptr, bad_store->login_db());
 
@@ -285,85 +307,6 @@ TEST_F(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
 
   // Ensure no notifications and no explosions during shutdown either.
   bad_store->RemoveObserver(&mock_observer);
-  bad_store->ShutdownOnUIThread();
-}
-
-TEST_F(PasswordStoreDefaultTest,
-       RemoveLoginsByOriginAndTimeImpl_FittingOriginAndTime) {
-  scoped_refptr<PasswordStoreDefault> store = CreateInitializedStore();
-
-  const char origin_url[] = "http://foo.example.com";
-  scoped_ptr<autofill::PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(
-          CreateTestPasswordFormDataByOrigin(origin_url));
-  store->AddLogin(*form);
-  base::MessageLoop::current()->RunUntilIdle();
-
-  MockPasswordStoreObserver observer;
-  store->AddObserver(&observer);
-  EXPECT_CALL(observer, OnLoginsChanged(ElementsAre(PasswordStoreChange(
-                            PasswordStoreChange::REMOVE, *form))));
-
-  const url::Origin origin((GURL(origin_url)));
-  base::RunLoop run_loop;
-  store->RemoveLoginsByOriginAndTime(origin, base::Time(), base::Time::Max(),
-                                     run_loop.QuitClosure());
-  run_loop.Run();
-
-  store->RemoveObserver(&observer);
-  store->ShutdownOnUIThread();
-}
-
-TEST_F(PasswordStoreDefaultTest,
-       RemoveLoginsByOriginAndTimeImpl_NonMatchingOrigin) {
-  scoped_refptr<PasswordStoreDefault> store = CreateInitializedStore();
-
-  const char origin_url[] = "http://foo.example.com";
-  scoped_ptr<autofill::PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(
-          CreateTestPasswordFormDataByOrigin(origin_url));
-  store->AddLogin(*form);
-  base::MessageLoop::current()->RunUntilIdle();
-
-  MockPasswordStoreObserver observer;
-  store->AddObserver(&observer);
-  EXPECT_CALL(observer, OnLoginsChanged(_)).Times(0);
-
-  const url::Origin other_origin(GURL("http://bar.example.com"));
-  base::RunLoop run_loop;
-  store->RemoveLoginsByOriginAndTime(other_origin, base::Time(),
-                                     base::Time::Max(), run_loop.QuitClosure());
-  run_loop.Run();
-
-  store->RemoveObserver(&observer);
-  store->ShutdownOnUIThread();
-}
-
-TEST_F(PasswordStoreDefaultTest,
-       RemoveLoginsByOriginAndTimeImpl_NotWithinTimeInterval) {
-  scoped_refptr<PasswordStoreDefault> store = CreateInitializedStore();
-
-  const char origin_url[] = "http://foo.example.com";
-  scoped_ptr<autofill::PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(
-          CreateTestPasswordFormDataByOrigin(origin_url));
-  store->AddLogin(*form);
-  base::MessageLoop::current()->RunUntilIdle();
-
-  MockPasswordStoreObserver observer;
-  store->AddObserver(&observer);
-  EXPECT_CALL(observer, OnLoginsChanged(_)).Times(0);
-
-  const url::Origin origin((GURL(origin_url)));
-  base::Time time_after_creation_date =
-      form->date_created + base::TimeDelta::FromDays(1);
-  base::RunLoop run_loop;
-  store->RemoveLoginsByOriginAndTime(origin, time_after_creation_date,
-                                     base::Time::Max(), run_loop.QuitClosure());
-  run_loop.Run();
-
-  store->RemoveObserver(&observer);
-  store->ShutdownOnUIThread();
 }
 
 }  // namespace password_manager

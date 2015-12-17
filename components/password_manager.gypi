@@ -101,6 +101,7 @@
         'password_manager/core/browser/password_manager_util.h',
         'password_manager/core/browser/password_store.cc',
         'password_manager/core/browser/password_store.h',
+        'password_manager/core/browser/password_store_change.cc',
         'password_manager/core/browser/password_store_change.h',
         'password_manager/core/browser/password_store_consumer.cc',
         'password_manager/core/browser/password_store_consumer.h',

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <ostream>
+#include <string>
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -93,5 +94,9 @@ bool ContainsEqualPasswordFormsUnordered(
 
   return !had_mismatched_actual_form && remaining_expectations.empty();
 }
+
+MockPasswordStoreObserver::MockPasswordStoreObserver() {}
+
+MockPasswordStoreObserver::~MockPasswordStoreObserver() {}
 
 }  // namespace password_manager

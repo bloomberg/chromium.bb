@@ -4,6 +4,8 @@
 
 #include "chrome/browser/password_manager/password_store_proxy_mac.h"
 
+#include <string>
+
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "chrome/browser/password_manager/simple_password_store_mac.h"
@@ -164,6 +166,14 @@ PasswordStoreChangeList PasswordStoreProxyMac::UpdateLoginImpl(
 PasswordStoreChangeList PasswordStoreProxyMac::RemoveLoginImpl(
     const autofill::PasswordForm& form) {
   return GetBackend()->RemoveLoginImpl(form);
+}
+
+PasswordStoreChangeList PasswordStoreProxyMac::RemoveLoginsByOriginAndTimeImpl(
+    const url::Origin& origin,
+    base::Time delete_begin,
+    base::Time delete_end) {
+  return GetBackend()->RemoveLoginsByOriginAndTimeImpl(origin, delete_begin,
+                                                       delete_end);
 }
 
 PasswordStoreChangeList PasswordStoreProxyMac::RemoveLoginsCreatedBetweenImpl(
