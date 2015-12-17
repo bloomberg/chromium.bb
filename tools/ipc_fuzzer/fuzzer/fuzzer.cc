@@ -1011,7 +1011,8 @@ struct FuzzTraits<content::WebCursor> {
     if (!(info.image_scale_factor > 0.0))
       info.image_scale_factor = 1;
 
-    *p = content::WebCursor(info);
+    *p = content::WebCursor();
+    p->InitFromCursorInfo(info);
     return true;
   }
 };
