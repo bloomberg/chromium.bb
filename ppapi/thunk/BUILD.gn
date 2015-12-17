@@ -172,14 +172,12 @@ source_set("thunk") {
     ]
   }
 
-  # We exclude a few more things for nacl_win64, to avoid pulling in more
-  # dependencies.
-  # TODO(GYP) this isn't correct. This should only be specifically for the
-  # nacl_win64 build (cross-compiled for a 32-bit Chrome), rather than all
-  # 64-bit builds.
+  # This condition is catching the build of nacl64.exe, which is built in
+  # the 64-bit toolchain when the overall build is 32-bit.  We exclude a
+  # few more things, to avoid pulling in more dependencies.
   # See also //ppapi/shared_impl
-  if (is_win && current_cpu == "x64" && current_toolchain != default_toolchain) {
-    sources += [
+  if (is_win && target_cpu == "x86" && current_cpu == "x64") {
+    sources -= [
       "ppb_graphics_3d_thunk.cc",
       "ppb_host_resolver_private_thunk.cc",
       "ppb_tcp_server_socket_private_thunk.cc",
