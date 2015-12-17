@@ -21,6 +21,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -1369,6 +1370,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
   // Called from AbortAllInProgressJobs. Completes all requests and destroys
   // the job. This currently assumes the abort is due to a network change.
+  // TODO This should not delete |this|.
   void Abort() {
     DCHECK(is_running());
     CompleteRequestsWithError(ERR_NETWORK_CHANGED);
@@ -2245,11 +2247,11 @@ bool HostResolverImpl::IsIPv6Reachable(const BoundNetLog& net_log) {
 void HostResolverImpl::AbortAllInProgressJobs() {
   // In Abort, a Request callback could spawn new Jobs with matching keys, so
   // first collect and remove all running jobs from |jobs_|.
-  ScopedVector<Job> jobs_to_abort;
+  std::vector<scoped_ptr<Job>> jobs_to_abort;
   for (JobMap::iterator it = jobs_.begin(); it != jobs_.end(); ) {
     Job* job = it->second;
     if (job->is_running()) {
-      jobs_to_abort.push_back(job);
+      jobs_to_abort.push_back(make_scoped_ptr(job));
       jobs_.erase(it++);
     } else {
       DCHECK(job->is_queued());
@@ -2271,7 +2273,7 @@ void HostResolverImpl::AbortAllInProgressJobs() {
   // Then Abort them.
   for (size_t i = 0; self.get() && i < jobs_to_abort.size(); ++i) {
     jobs_to_abort[i]->Abort();
-    jobs_to_abort[i] = NULL;
+    ignore_result(jobs_to_abort[i].release());
   }
 
   if (self)
