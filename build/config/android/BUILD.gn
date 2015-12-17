@@ -226,17 +226,19 @@ config("default_cygprofile_instrumentation") {
 }
 
 config("cygprofile_instrumentation") {
-  cflags = [
-    "-finstrument-functions",
-
-    # Allow mmx intrinsics to inline, so that the compiler can expand the intrinsics.
-    "-finstrument-functions-exclude-file-list=mmintrin.h",
-
-    # Avoid errors with current NDK:
-    # "third_party/android_tools/ndk/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/../lib/gcc/arm-linux-androideabi/4.6/include/arm_neon.h:3426:3: error: argument must be a constant"
-    "-finstrument-functions-exclude-file-list=arm_neon.h,SaturatedArithmeticARM.h",
-  ]
   defines = [ "CYGPROFILE_INSTRUMENTATION=1" ]
+  cflags = [ "-finstrument-functions" ]
+
+  if (!is_clang) {
+    cflags += [
+      # Allow mmx intrinsics to inline, so that the compiler can expand the intrinsics.
+      "-finstrument-functions-exclude-file-list=mmintrin.h",
+
+      # Avoid errors with current NDK:
+      # "third_party/android_tools/ndk/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/../lib/gcc/arm-linux-androideabi/4.6/include/arm_neon.h:3426:3: error: argument must be a constant"
+      "-finstrument-functions-exclude-file-list=arm_neon.h",
+    ]
+  }
 }
 
 config("no_cygprofile_instrumentation") {
