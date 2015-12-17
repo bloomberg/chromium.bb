@@ -58,6 +58,55 @@ views::Label* CreateLabel(const base::string16& text,
   return label;
 }
 
+class HeadingAndCloseButtonView : public views::View {
+ public:
+  HeadingAndCloseButtonView(views::Label* heading, views::LabelButton* close)
+      : heading_(heading), close_(close) {
+    AddChildView(heading_);
+    AddChildView(close_);
+  }
+  ~HeadingAndCloseButtonView() override {}
+
+  void Layout() override {
+    gfx::Size close_size = close_->GetPreferredSize();
+    gfx::Size view_size = size();
+
+    // Close button is in the upper right and always gets its full desired size.
+    close_->SetBounds(view_size.width() - close_size.width(),
+                      0,
+                      close_size.width(),
+                      close_size.height());
+    // The heading takes up the remaining room (modulo padding).
+    heading_->SetBounds(
+        0,
+        0,
+        view_size.width() - close_size.width() -
+            views::kUnrelatedControlHorizontalSpacing,
+        view_size.height());
+  }
+
+  gfx::Size GetPreferredSize() const override {
+    gfx::Size heading_size = heading_->GetPreferredSize();
+    gfx::Size close_size = close_->GetPreferredSize();
+    return gfx::Size(kRightColumnWidth,
+                     std::max(heading_size.height(), close_size.height()));
+  }
+
+  int GetHeightForWidth(int width) const override {
+    gfx::Size close_size = close_->GetPreferredSize();
+    int heading_width = width - views::kUnrelatedControlHorizontalSpacing -
+        close_size.width();
+    return std::max(heading_->GetHeightForWidth(heading_width),
+                    close_size.height());
+  }
+
+ private:
+  views::Label* heading_;
+  views::LabelButton* close_;
+
+  DISALLOW_COPY_AND_ASSIGN(HeadingAndCloseButtonView);
+};
+
 }  // namespace
 
 ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
@@ -277,15 +326,8 @@ void ExtensionInstalledBubbleView::InitLayout(
 
   close_ = views::BubbleFrameView::CreateCloseButton(this);
 
-  views::View* heading_and_close = new views::View();
-  views::BoxLayout* heading_and_close_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                           views::kUnrelatedControlHorizontalSpacing);
-  heading_and_close_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  heading_and_close->SetLayoutManager(heading_and_close_layout);
-  heading_and_close->AddChildView(heading);
-  heading_and_close->AddChildView(close_);
+  HeadingAndCloseButtonView* heading_and_close =
+      new HeadingAndCloseButtonView(heading, close_);
 
   layout->AddView(heading_and_close);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);

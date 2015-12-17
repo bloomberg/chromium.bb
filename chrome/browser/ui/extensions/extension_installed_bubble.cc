@@ -79,13 +79,12 @@ class ExtensionInstalledBubbleObserver
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override {
     if (extension == bubble_->extension()) {
-      bubble_->Initialize();
       // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
       // Only then can we be sure that a BrowserAction or PageAction has had
       // views created which we can inspect for the purpose of previewing of
       // pointing to them.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&ExtensionInstalledBubbleObserver::Show,
+          FROM_HERE, base::Bind(&ExtensionInstalledBubbleObserver::Initialize,
                                 weak_factory_.GetWeakPtr()));
     }
   }
@@ -98,6 +97,12 @@ class ExtensionInstalledBubbleObserver
       // Extension is going away.
       delete this;
     }
+  }
+
+  void Initialize() {
+    DCHECK(bubble_);
+    bubble_->Initialize();
+    Show();
   }
 
   // Called internally via PostTask to show the bubble.
@@ -192,15 +197,6 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
       type_(GENERIC),
       options_(NONE),
       anchor_position_(ANCHOR_APP_MENU) {
-  if (!extensions::OmniboxInfo::GetKeyword(extension).empty())
-    type_ = OMNIBOX_KEYWORD;
-  else if (extensions::ActionInfo::GetBrowserActionInfo(extension))
-    type_ = BROWSER_ACTION;
-  else if (extensions::ActionInfo::GetPageActionInfo(extension) &&
-           extensions::ActionInfo::IsVerboseInstallMessage(extension))
-    type_ = PAGE_ACTION;
-  else
-    type_ = GENERIC;
 }
 
 ExtensionInstalledBubble::~ExtensionInstalledBubble() {}
@@ -245,6 +241,21 @@ base::string16 ExtensionInstalledBubble::GetHowToUseDescription() const {
 }
 
 void ExtensionInstalledBubble::Initialize() {
+  bool extension_action_redesign_on =
+      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled();
+
+  if (extensions::ActionInfo::GetBrowserActionInfo(extension_)) {
+    type_ = BROWSER_ACTION;
+  } else if (extensions::ActionInfo::GetPageActionInfo(extension_) &&
+             (extensions::ActionInfo::IsVerboseInstallMessage(extension_) ||
+              extension_action_redesign_on)) {
+    type_ = PAGE_ACTION;
+  } else if (!extensions::OmniboxInfo::GetKeyword(extension_).empty()) {
+    type_ = OMNIBOX_KEYWORD;
+  } else {
+    type_ = GENERIC;
+  }
+
   action_command_ = GetCommand(extension_->id(), browser_->profile(), type_);
   if (extensions::sync_helper::IsSyncable(extension_) &&
       SyncPromoUI::ShouldShowSyncPromo(browser_->profile()))
@@ -264,8 +275,7 @@ void ExtensionInstalledBubble::Initialize() {
         options_ |= HOW_TO_MANAGE;
       }
 
-      if (type_ == BROWSER_ACTION ||
-          extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
+      if (type_ == BROWSER_ACTION || extension_action_redesign_on) {
         // If the toolbar redesign is enabled, all bubbles for extensions point
         // to their toolbar action.
         anchor_position_ = ANCHOR_BROWSER_ACTION;
