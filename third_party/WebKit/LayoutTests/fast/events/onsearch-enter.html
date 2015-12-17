@@ -7,6 +7,7 @@
             sf.focus();
             if (window.testRunner) {
                 testRunner.dumpAsText();
+                testRunner.waitUntilDone();
                 eventSender.keyDown("\r", []);
             }
         }
@@ -19,7 +20,7 @@
     </head>
     <body onload="test()">
         This tests that onSearch fires correctly.<br>
-        <input type="search" id="sf" onSearch="log('Test Passed');"></input>
+        <input type="search" id="sf" onSearch="log('Test Passed'); testRunner.notifyDone();"></input>
         <div id="res"></div>
     </body>
 </html>
