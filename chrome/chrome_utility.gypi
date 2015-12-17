@@ -153,7 +153,7 @@
                 ],
                 'AdditionalDependencies': [
                   'esent.lib',
-                ]
+                ],
               },
             },
           },
