@@ -616,8 +616,8 @@ void PaintLayerScrollableArea::updateScrollDimensions(DoubleSize& scrollOffset, 
     }
 
     // overflow:auto may need to lay out again if scrollbars got added/removed.
-    autoHorizontalScrollBarChanged = (box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow)) || (box().style()->overflowX() == OSCROLL && !horizontalScrollbar());
-    autoVerticalScrollBarChanged = (box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow)) || (box().style()->overflowY() == OSCROLL && !verticalScrollbar());
+    autoHorizontalScrollBarChanged |= (box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow)) || (box().style()->overflowX() == OSCROLL && !horizontalScrollbar());
+    autoVerticalScrollBarChanged |= (box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow)) || (box().style()->overflowY() == OSCROLL && !verticalScrollbar());
     if (!visualViewportSuppliesScrollbars() && (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)) {
         if (box().hasAutoHorizontalScrollbar())
             setHasHorizontalScrollbar(hasHorizontalOverflow);
@@ -721,8 +721,8 @@ void PaintLayerScrollableArea::finalizeScrollDimensions(const DoubleSize& origin
 void PaintLayerScrollableArea::updateAfterLayout()
 {
     DoubleSize originalScrollOffset;
-    bool autoHorizontalScrollBarChanged;
-    bool autoVerticalScrollBarChanged;
+    bool autoHorizontalScrollBarChanged = false;
+    bool autoVerticalScrollBarChanged = false;
     updateScrollDimensions(originalScrollOffset, autoHorizontalScrollBarChanged, autoVerticalScrollBarChanged);
     finalizeScrollDimensions(originalScrollOffset, autoHorizontalScrollBarChanged, autoVerticalScrollBarChanged);
 }

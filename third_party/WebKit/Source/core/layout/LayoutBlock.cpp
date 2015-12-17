@@ -109,6 +109,7 @@ static TrackedContainerMap* gPositionedContainerMap = nullptr;
 static TrackedContainerMap* gPercentHeightContainerMap = nullptr;
 
 struct ScrollInfo {
+    ScrollInfo() : autoHorizontalScrollBarChanged(false), autoVerticalScrollBarChanged(false) {}
     DoubleSize scrollOffset;
     bool autoHorizontalScrollBarChanged;
     bool autoVerticalScrollBarChanged;
@@ -863,6 +864,7 @@ void LayoutBlock::finishDelayUpdateScrollInfo()
             if (block.key->hasOverflowClip()) {
                 PaintLayerScrollableArea* scrollableArea = block.key->layer()->scrollableArea();
                 ScrollInfo& scrollInfo = block.value;
+                scrollableArea->updateScrollDimensions(scrollInfo.scrollOffset, scrollInfo.autoHorizontalScrollBarChanged, scrollInfo.autoVerticalScrollBarChanged);
                 scrollableArea->finalizeScrollDimensions(scrollInfo.scrollOffset, scrollInfo.autoHorizontalScrollBarChanged, scrollInfo.autoVerticalScrollBarChanged);
             }
         }
