@@ -1998,17 +1998,23 @@ void WebViewImpl::updateAllLifecyclePhases()
     if (!mainFrameImpl())
         return;
 
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        PageWidgetDelegate::updateLifecycleToCompositingCleanPlusScrolling(*m_page, *mainFrameImpl()->frame());
-    else
-        PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *mainFrameImpl()->frame());
-
     updateLayerTreeBackgroundColor();
 
-    // TODO(wangxianzhu): Refactor overlay and link highlights updating and painting to make clearer
-    // dependency between web/ and core/ in synchronized painting mode.
-    if (InspectorOverlay* overlay = inspectorOverlay())
-        overlay->layout();
+    PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *mainFrameImpl()->frame());
+
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+        if (InspectorOverlay* overlay = inspectorOverlay()) {
+            overlay->updateAllLifecyclePhases();
+            // TODO(chrishtr): integrate paint into the overlay's lifecycle.
+            if (overlay->pageOverlay() && overlay->pageOverlay()->graphicsLayer())
+                overlay->pageOverlay()->graphicsLayer()->paint(nullptr);
+        }
+        if (m_pageColorOverlay)
+            m_pageColorOverlay->graphicsLayer()->paint(nullptr);
+    }
+
+    // TODO(chrishtr): link highlight's don't currently paint themselves, it's still driven by cc.
+    // Fix this.
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->updateGeometry();
 
@@ -2032,10 +2038,6 @@ void WebViewImpl::updateAllLifecyclePhases()
             client()->didMeaningfulLayout(WebMeaningfulLayout::FinishedLoading);
         }
     }
-
-    // TODO(wangxianzhu): Avoid traversing frame tree for phases (style, layout, etc.) that we are sure no need to update.
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *mainFrameImpl()->frame());
 }
 
 void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect)

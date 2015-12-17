@@ -273,16 +273,18 @@ bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoi
 //
 // *rootTransformLayer
 //  +- *innerViewportContainerLayer (fixed pos container)
-//  |   +- *overscrollElasticityLayer
-//  |       +- *pageScaleLayer
-//  |           +- *innerViewportScrollLayer
-//  |               +-- overflowControlsHostLayer (root layer)
-//  |                   +-- outerViewportContainerLayer (fixed pos container) [frame container layer in PaintLayerCompositor]
-//  |                   |   +-- outerViewportScrollLayer [frame scroll layer in PaintLayerCompositor]
-//  |                   |       +-- content layers ...
-//  +- horizontalScrollbarLayer
-//  +- verticalScrollbarLayer
-//  +- scroll corner (non-overlay only)
+//     +- *overscrollElasticityLayer
+//     |   +- *pageScaleLayer
+//     |       +- *innerViewportScrollLayer
+//     |           +-- overflowControlsHostLayer (root layer) [ owned by PaintLayerCompositor ]
+//     |               +-- outerViewportContainerLayer (fixed pos container) [frame container layer in PaintLayerCompositor]
+//     |               |   +-- outerViewportScrollLayer [frame scroll layer in PaintLayerCompositor]
+//     |               |       +-- content layers ...
+//     +- *PageOverlay for InspectorOverlay
+//     +- *PageOverlay for ColorOverlay
+//     +- horizontalScrollbarLayer [ owned by PaintLayerCompositor ]
+//     +- verticalScrollbarLayer [ owned by PaintLayerCompositor ]
+//     +- scroll corner (non-overlay only) [ owned by PaintLayerCompositor ]
 //
 void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, GraphicsLayerFactory* graphicsLayerFactory)
 {

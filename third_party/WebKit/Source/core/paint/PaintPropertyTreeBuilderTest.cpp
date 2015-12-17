@@ -95,7 +95,7 @@ TEST_F(PaintPropertyTreeBuilderTest, PositionAndScroll)
     EXPECT_EQ(TransformationMatrix().translate(0, -100), scrollerProperties->scrollTranslation()->matrix());
     EXPECT_EQ(frameView->scrollTranslation(), scrollerProperties->scrollTranslation()->parent());
     EXPECT_EQ(frameView->scrollTranslation(), scrollerProperties->overflowClip()->localTransformSpace());
-    EXPECT_EQ(FloatRoundedRect(120, 340, 385, 285), scrollerProperties->overflowClip()->clipRect());
+    EXPECT_EQ(FloatRoundedRect(120, 340, 400, 300), scrollerProperties->overflowClip()->clipRect());
     EXPECT_EQ(frameView->contentClip(), scrollerProperties->overflowClip()->parent());
 
     // The relative-positioned element should have accumulated box offset (exclude scrolling),
@@ -105,7 +105,7 @@ TEST_F(PaintPropertyTreeBuilderTest, PositionAndScroll)
     EXPECT_EQ(TransformationMatrix().translate(680, 1120), relPosProperties->paintOffsetTranslation()->matrix());
     EXPECT_EQ(scrollerProperties->scrollTranslation(), relPosProperties->paintOffsetTranslation()->parent());
     EXPECT_EQ(relPosProperties->transform(), relPosProperties->overflowClip()->localTransformSpace());
-    EXPECT_EQ(FloatRoundedRect(0, 0, 385, 0), relPosProperties->overflowClip()->clipRect());
+    EXPECT_EQ(FloatRoundedRect(0, 0, 400, 0), relPosProperties->overflowClip()->clipRect());
     EXPECT_EQ(scrollerProperties->overflowClip(), relPosProperties->overflowClip()->parent());
 
     // The absolute-positioned element should not be affected by non-positioned scroller at all.
@@ -131,7 +131,7 @@ TEST_F(PaintPropertyTreeBuilderTest, FrameScrollingTraditional)
     EXPECT_EQ(TransformationMatrix().translate(0, -100), frameView->scrollTranslation()->matrix());
     EXPECT_EQ(frameView->preTranslation(), frameView->scrollTranslation()->parent());
     EXPECT_EQ(frameView->preTranslation(), frameView->contentClip()->localTransformSpace());
-    EXPECT_EQ(FloatRoundedRect(0, 0, 785, 600), frameView->contentClip()->clipRect());
+    EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), frameView->contentClip()->clipRect());
     EXPECT_EQ(nullptr, frameView->contentClip()->parent());
 
     LayoutView* layoutView = document().layoutView();
@@ -538,7 +538,7 @@ TEST_F(PaintPropertyTreeBuilderTest, BorderRadiusClip)
     EXPECT_EQ(frameView->scrollTranslation(), divProperties->overflowClip()->localTransformSpace());
     // The overflow clip rect includes only the padding box.
     // padding box = border box(500+60+50, 400+45+55) - border outset(60+50, 45+55) - scrollbars(15, 15)
-    EXPECT_EQ(FloatRoundedRect(60, 45, 485, 385), divProperties->overflowClip()->clipRect());
+    EXPECT_EQ(FloatRoundedRect(60, 45, 500, 400), divProperties->overflowClip()->clipRect());
     const ClipPaintPropertyNode* borderRadiusClip = divProperties->overflowClip()->parent();
     EXPECT_EQ(frameView->scrollTranslation(), borderRadiusClip->localTransformSpace());
     // The border radius clip is the area enclosed by inner border edge, including the scrollbars.

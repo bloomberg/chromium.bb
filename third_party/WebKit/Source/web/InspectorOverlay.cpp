@@ -224,7 +224,7 @@ void InspectorOverlay::invalidate()
     m_pageOverlay->update();
 }
 
-void InspectorOverlay::layout()
+void InspectorOverlay::updateAllLifecyclePhases()
 {
     if (isEmpty())
         return;

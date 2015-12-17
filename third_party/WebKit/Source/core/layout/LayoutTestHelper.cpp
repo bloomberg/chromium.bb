@@ -8,6 +8,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "platform/graphics/test/FakeGraphicsLayerFactory.h"
+#include "platform/scroll/ScrollbarTheme.h"
 
 namespace blink {
 
@@ -32,6 +33,10 @@ RenderingTest::RenderingTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoad
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FakeChromeClient>, chromeClient, (FakeChromeClient::create()));
     pageClients.chromeClient = chromeClient.get();
     m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients, frameLoaderClient, settingOverrider());
+
+    Settings::setMockScrollbarsEnabled(true);
+    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
+    EXPECT_TRUE(ScrollbarTheme::theme().usesOverlayScrollbars());
 }
 
 void RenderingTest::SetUp()

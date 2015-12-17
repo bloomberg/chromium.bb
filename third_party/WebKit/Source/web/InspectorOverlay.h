@@ -81,7 +81,10 @@ public:
 
     void clear();
     bool handleInputEvent(const WebInputEvent&);
-    void layout();
+
+    // Does not yet include paint.
+    void updateAllLifecyclePhases();
+
     PageOverlay* pageOverlay() { return m_pageOverlay.get(); };
     String evaluateInOverlayForTest(const String&);
 

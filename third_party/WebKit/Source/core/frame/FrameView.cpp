@@ -2439,13 +2439,16 @@ void FrameView::synchronizedPaint()
     // or when the FrameView is the main frame view of a page overlay. The page overlay is in the layer tree of
     // the host page and will be painted during synchronized painting of the host page.
     if (GraphicsLayer* rootGraphicsLayer = view->compositor()->rootGraphicsLayer()) {
-        // Find the real root GraphicsLayer because we also need to paint layers not under the root graphics layer of
-        // the LayoutView, e.g. scrollbar layers created by PaintLayerCompositor and VisualViewport.
-        // We could ask PaintLayerCompositor and VisualViewport for the real root GraphicsLayer, but the following loop
-        // has the least dependency to those things which might change for slimming paint v2.
-        while (GraphicsLayer* parent = rootGraphicsLayer->parent())
-            rootGraphicsLayer = parent;
         synchronizedPaintRecursively(rootGraphicsLayer);
+    }
+    if (GraphicsLayer* layerForHorizontalScrollbar = view->compositor()->layerForHorizontalScrollbar()) {
+        synchronizedPaintRecursively(layerForHorizontalScrollbar);
+    }
+    if (GraphicsLayer* layerForVerticalScrollbar = view->compositor()->layerForVerticalScrollbar()) {
+        synchronizedPaintRecursively(layerForVerticalScrollbar);
+    }
+    if (GraphicsLayer* layerForScrollCorner = view->compositor()->layerForScrollCorner()) {
+        synchronizedPaintRecursively(layerForScrollCorner);
     }
 
     forAllNonThrottledFrameViews([](FrameView& frameView) {
