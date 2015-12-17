@@ -883,8 +883,8 @@ SlideMode.prototype.onSplice_ = function(event) {
     if (!displayedItemNotRemvoed) {
       // There is the next item, select it. Otherwise, select the last item.
       var nextIndex = Math.min(event.index, this.dataModel_.length - 1);
-      // To force to dispatch a selection change event, clear selection before.
-      this.selectionModel_.clear();
+      // To force to dispatch a selection change event, unselect all before.
+      this.selectionModel_.unselectAll();
       this.select(nextIndex);
     }
   }.bind(this), 0);

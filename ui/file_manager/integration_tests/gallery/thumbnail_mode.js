@@ -3,6 +3,14 @@
 // found in the LICENSE file.
 
 /**
+ * Additional test image entry.
+ */
+ENTRIES.image4 = new TestEntryInfo(
+      EntryType.FILE, 'image3.jpg', 'image4.jpg',
+      'image/jpeg', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
+      'image3.jpg', '3 KB', 'JPEG image');
+
+/**
  * Renames an image in thumbnail mode and confirms that thumbnail of renamed
  * image is successfully updated.
  * @param {string} testVolumeName Test volume name.
@@ -161,13 +169,8 @@ function emptySpaceClickUnselectsInThumbnailMode(testVolumeName, volumeType) {
  * @return {!Promise} Promise to be fulfilled with on success.
  */
 function selectMultipleImagesWithShiftKey(testVolumeName, volumeType) {
-  var image4 = new TestEntryInfo(
-      EntryType.FILE, 'image3.jpg', 'image4.jpg',
-      'image/jpeg', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
-      'image3.jpg', '3 KB', 'JPEG image');
-
   var launchedPromise = launch(testVolumeName, volumeType,
-      [ENTRIES.image3, image4, ENTRIES.desktop], [ENTRIES.image3]);
+      [ENTRIES.image3, ENTRIES.image4, ENTRIES.desktop], [ENTRIES.image3]);
   var appId;
   return launchedPromise.then(function(result) {
     // Confirm initial state after the launch.
@@ -233,6 +236,49 @@ function selectMultipleImagesWithShiftKey(testVolumeName, volumeType) {
     chrome.test.assertEq(1, results.length);
     chrome.test.assertEq('My Desktop Background.png',
         results[0].attributes['title']);
+  });
+}
+
+/**
+ * Selects all images in thumbnail mode after deleted an image in slide mode.
+ * @param {string} testVolumeName Test volume name.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {!Promise} Promise to be fulfilled with on success.
+ */
+function selectAllImagesAfterImageDeletionOnDownloads(
+    testVolumeName, volumeType) {
+  var launchedPromise = launch(testVolumeName, volumeType,
+      [ENTRIES.image3, ENTRIES.image4, ENTRIES.desktop], [ENTRIES.image3]);
+  var appId;
+  return launchedPromise.then(function(result) {
+    appId = result.appId;
+    // Confirm initial state after launch.
+    return gallery.waitForSlideImage(appId, 640, 480, 'image3');
+  }).then(function() {
+    // Delete an image.
+    return gallery.waitAndClickElement(appId, 'button.delete');
+  }).then(function() {
+    // Press OK button in confirmation dialog.
+    return gallery.waitAndClickElement(appId, '.cr-dialog-ok');
+  }).then(function() {
+    // Confirm the state after the image is deleted.
+    return gallery.waitForSlideImage(appId, 640, 480, 'image4');
+  }).then(function() {
+    // Press thumbnail mode button.
+    return gallery.waitAndClickElement(appId, 'button.mode');
+  }).then(function() {
+    // Confirm mode has been changed to thumbnail mode.
+    return gallery.waitForElement(appId, '.gallery[mode="thumbnail"]');
+  }).then(function() {
+    // Press Ctrl+A to select all images.
+    return gallery.fakeKeyDown(appId, '.thumbnail-view',
+        'U+0041' /* A */, true /* Ctrl*/, false /* Shift */);
+  }).then(function() {
+    // Confirm that 2 images are selected.
+    return gallery.callRemoteTestUtil('queryAllElements', appId,
+        ['.thumbnail-view > ul > li.selected']);
+  }).then(function(results) {
+    chrome.test.assertEq(2, results.length);
   });
 }
 
@@ -308,4 +354,12 @@ testcase.emptySpaceClickUnselectsInThumbnailModeOnDrive = function() {
  */
 testcase.selectMultipleImagesWithShiftKeyOnDownloads = function() {
   return selectMultipleImagesWithShiftKey('local', 'downloads');
+};
+
+/**
+ * Selects all images in thumbnail mode after deleted an image in slide mode.
+ * @return {!Promise} Promise to be fulfilled with on success.
+ */
+testcase.selectAllImagesAfterImageDeletionOnDownloads = function() {
+  return selectAllImagesAfterImageDeletionOnDownloads('local', 'downloads');
 };

@@ -459,6 +459,19 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_SelectAllImagesAfterImageDeletionOnDownloads \
+  DISABLED_SelectAllImagesAfterImageDeletionOnDownloads
+#else
+#define MAYBE_SelectAllImagesAfterImageDeletionOnDownloads \
+  SelectAllImagesAfterImageDeletionOnDownloads
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       SelectAllImagesAfterImageDeletionOnDownloads) {
+  set_test_case_name("selectAllImagesAfterImageDeletionOnDownloads");
+  StartTest();
+}
+
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        SlideshowTraversalOnDownloads) {
   set_test_case_name("slideshowTraversalOnDownloads");
