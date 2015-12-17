@@ -7,8 +7,6 @@ Import('env')
 
 if not env.Bit('bitcode'):
   Return()
-if env['TOOLCHAIN_FEATURE_VERSION'] < 6:
-  Return()
 # Translating the PSO to an ELF DSO doesn't work on x86-64 yet.  The
 # Gold linker complains that the input "requires dynamic R_X86_64_32
 # reloc against <blah> which may overflow at runtime".  (In contrast,

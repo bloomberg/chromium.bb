@@ -53,11 +53,7 @@ AddLibcTest(env, 'strtoull.c')
 AddLibcTest(env, 'timezone.c')
 AddLibcTest(env, 'wcstoll.c', is_broken=env.Bit('nacl_glibc'))
 
-iconv_broken = (env.Bit('nacl_glibc') or
-  # The PNaCl archived frontend tests use an archived newlib,
-  # but the iconv test requires a new-enough newlib with fixes.
-  (env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] < 3))
-AddLibcTest(env, 'iconv.c', is_broken=iconv_broken)
+AddLibcTest(env, 'iconv.c', is_broken=env.Bit('nacl_glibc'))
 
 # Test that using link-time optimization does not convert calls to
 # library functions that were never linked in.
@@ -71,9 +67,4 @@ if env.Bit('bitcode'):
   opt_env.Append(LINKFLAGS=['-O3'])
   AddLibcTest(env, 'printf_to_puts.c', compile_env=unopt_env, link_env=opt_env)
 
-# This was only made to compile without warnings/hacks after modifying newlib
-# headers, so the PNaCl archived frontend test with older headers can't
-# compile the non-hacky version of the test. We don't test archived
-# GCC toolchains, so always let those run the test.
-if not env.Bit('bitcode') or env['TOOLCHAIN_FEATURE_VERSION'] >= 3:
-  AddLibcTest(env, 'posix_memalign.c')
+AddLibcTest(env, 'posix_memalign.c')

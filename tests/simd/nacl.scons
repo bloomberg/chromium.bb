@@ -59,7 +59,7 @@ AddTest(ref_env, 'simd.cc', test_suffix='_ref')
 
 # GCC 4.4 doesn't support all features of the vector extensions in C.
 # TODO(jfb) Re-enable testing when we migrate to a newer GCC.
-if env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] >= 5:
+if env.Bit('bitcode'):
   AddTest(native_env, 'vector_align.cc',
           golden_file=native_env.File('vector_align.stdout'),
           EXTRA_LIBS=['${PTHREAD_LIBS}'])

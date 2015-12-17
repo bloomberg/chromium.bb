@@ -105,19 +105,16 @@ if env.Bit('bitcode') or env.Bit('nacl_clang'):
   # inline case is currently broken:
   # https://code.google.com/p/nativeclient/issues/detail?id=4170
                      is_broken=should_inline)
-  # The test depends on the llvm.fabs intrinsic which was only allowed
-  # with feature version 12.
-  if env['TOOLCHAIN_FEATURE_VERSION'] >= 12:
-    AddIntrinsicTest(env, 'llvm_math_intrinsics.c', '0',
-                     golden_file=env.File('llvm_math_intrinsics.stdout'))
-    # Also test the math functions with -ffast-math, so we are a tiny bit more
-    # confident that sin() or __builtin_sin() doesn't get turned into
-    # something like llvm.sin.f64.
-    fastmath_env = env.Clone()
-    fastmath_env.Append(CCFLAGS=['-ffast-math'])
-    AddIntrinsicTest(fastmath_env, 'llvm_math_intrinsics.c', '0',
-                     golden_file=env.File('llvm_math_intrinsics.stdout'),
-                     test_suffix='_fast_math')
+  AddIntrinsicTest(env, 'llvm_math_intrinsics.c', '0',
+                   golden_file=env.File('llvm_math_intrinsics.stdout'))
+  # Also test the math functions with -ffast-math, so we are a tiny bit more
+  # confident that sin() or __builtin_sin() doesn't get turned into
+  # something like llvm.sin.f64.
+  fastmath_env = env.Clone()
+  fastmath_env.Append(CCFLAGS=['-ffast-math'])
+  AddIntrinsicTest(fastmath_env, 'llvm_math_intrinsics.c', '0',
+                   golden_file=env.File('llvm_math_intrinsics.stdout'),
+                   test_suffix='_fast_math')
 
 # Some of the intrinsic tests cover intrinsics that we do not want to
 # support. For example, llvm.frameaddress. If that is the case, we will
@@ -515,8 +512,7 @@ node = env.CommandSelLdrTestNacl('wrap.out', nexe,
 env.AddNodeToTestSuite(node, ['toolchain_tests','small_tests'], 'run_wrap_test')
 
 if (env.Bit('build_x86_32') and env.Bit('bitcode') and
-    not env.Bit('pnacl_generate_pexe') and
-    env['TOOLCHAIN_FEATURE_VERSION'] >= 8):
+    not env.Bit('pnacl_generate_pexe')):
   # This test compiles a file that will need to generate a call to a compiler-rt
   # function (__udivdi3) on x86-32. Ensure that when we pre-translate to a
   # native object file, libgcc is included in the bitcode link to satisfy the
