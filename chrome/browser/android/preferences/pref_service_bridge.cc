@@ -953,3 +953,10 @@ std::string PrefServiceBridge::GetAndroidPermissionForContentSetting(
 
   return ConvertJavaStringToUTF8(android_permission);
 }
+
+static void SetSupervisedUserId(JNIEnv* env,
+                                const JavaParamRef<jobject>& obj,
+                                const JavaParamRef<jstring>& pref) {
+  GetPrefService()->SetString(prefs::kSupervisedUserId,
+                              ConvertJavaStringToUTF8(env, pref));
+}

@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
@@ -923,6 +924,11 @@ public final class PrefServiceBridge {
         return nativeGetClickedUpdateMenuItem();
     }
 
+    @VisibleForTesting
+    public void setSupervisedUserId(String supervisedUserId) {
+        nativeSetSupervisedUserId(supervisedUserId);
+    }
+
     private native boolean nativeGetAcceptCookiesEnabled();
     private native boolean nativeGetAcceptCookiesManaged();
     private native boolean nativeGetBlockThirdPartyCookiesEnabled();
@@ -1017,4 +1023,5 @@ public final class PrefServiceBridge {
     private native boolean nativeHasSetMetricsReporting();
     private native void nativeSetClickedUpdateMenuItem(boolean clicked);
     private native boolean nativeGetClickedUpdateMenuItem();
+    private native void nativeSetSupervisedUserId(String supervisedUserId);
 }
