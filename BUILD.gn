@@ -278,42 +278,18 @@ group("both_gn_and_gyp") {
       "//components/invalidation/impl:components_invalidation_impl_junit_tests",
       "//components/policy/android:components_policy_junit_tests",
       "//content/public/android:content_junit_tests",
+      "//content/shell/android:content_shell_apk",
+      "//content/test:video_decode_accelerator_unittest",
       "//net/android:net_junit_tests",
       "//testing/android/junit:junit_unittests",
+      "//third_party/android_tools:uiautomator_java",
       "//third_party/errorprone:chromium_errorprone",
+      "//third_party/smhasher:murmurhash3",
       "//tools/android:android_tools",
       "//tools/android:memconsumer",
       "//tools/android/heap_profiler:heap_profiler_unittests",
       "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
       "//tools/imagediff($host_toolchain)",
-
-      # TODO(GYP): Remove these when the components_unittests work.
-      "//components/history/core/test:test",
-      "//components/policy:policy_component_test_support",
-      "//components/policy:test_support",
-      "//components/rappor:test_support",
-      "//components/signin/core/browser:test_support",
-      "//components/sync_driver:test_support",
-      "//components/user_manager",
-      "//components/wallpaper",
-      "//content/shell/android:content_shell_apk",
-      "//content/test:video_decode_accelerator_unittest",
-
-      # TODO(GYP): Are these needed, or will they be pulled in automatically?
-      "//third_party/android_tools:android_gcm_java",
-      "//third_party/android_tools:android_support_v13_java",
-      "//third_party/android_tools:android_support_v7_appcompat_java",
-      "//third_party/android_tools:android_support_v7_mediarouter_java",
-      "//third_party/android_tools:uiautomator_java",
-      "//third_party/mesa",
-      "//third_party/mockito:mockito_java",
-      "//third_party/openmax_dl/dl",
-      "//ui/android:ui_java",
-
-      # TODO(GYP): Are these needed?
-      "//chrome/test:test_support_unit",
-      "//third_party/smhasher:murmurhash3",
-      "//ui/message_center:test_support",
     ]
     deps -= [
       "//net:net_perftests",
