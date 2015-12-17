@@ -19,7 +19,12 @@ void BufferedDataSourceHostImpl::SetTotalBytes(int64 total_bytes) {
 }
 
 void BufferedDataSourceHostImpl::AddBufferedByteRange(int64 start, int64 end) {
-  buffered_byte_ranges_.Add(start, end);
+  const auto i = buffered_byte_ranges_.find(start);
+  if (i.value() && i.interval_end() >= end) {
+    // No change
+    return;
+  }
+  buffered_byte_ranges_.SetInterval(start, end, 1);
   did_loading_progress_ = true;
 }
 
@@ -40,13 +45,15 @@ void BufferedDataSourceHostImpl::AddBufferedTimeRanges(
     base::TimeDelta media_duration) const {
   DCHECK(media_duration != kNoTimestamp());
   DCHECK(media_duration != kInfiniteDuration());
-  if (total_bytes_ && buffered_byte_ranges_.size()) {
-    for (size_t i = 0; i < buffered_byte_ranges_.size(); ++i) {
-      int64 start = buffered_byte_ranges_.start(i);
-      int64 end = buffered_byte_ranges_.end(i);
-      buffered_time_ranges->Add(
-          TimeForByteOffset(start, total_bytes_, media_duration),
-          TimeForByteOffset(end, total_bytes_, media_duration));
+  if (total_bytes_ && !buffered_byte_ranges_.empty()) {
+    for (const auto i : buffered_byte_ranges_) {
+      if (i.second) {
+        int64 start = i.first.begin;
+        int64 end = i.first.end;
+        buffered_time_ranges->Add(
+            TimeForByteOffset(start, total_bytes_, media_duration),
+            TimeForByteOffset(end, total_bytes_, media_duration));
+      }
     }
   }
 }

@@ -6,7 +6,6 @@
 #define MEDIA_BLINK_BUFFERED_DATA_SOURCE_HOST_IMPL_H_
 
 #include "base/time/time.h"
-#include "media/base/ranges.h"
 #include "media/blink/buffered_data_source.h"
 #include "media/blink/media_blink_export.h"
 
@@ -37,7 +36,8 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
   int64 total_bytes_;
 
   // List of buffered byte ranges for estimating buffered time.
-  Ranges<int64> buffered_byte_ranges_;
+  // The InterValMap value is 1 for bytes that are buffered, 0 otherwise.
+  IntervalMap<int64, int> buffered_byte_ranges_;
 
   // True when AddBufferedByteRange() has been called more recently than
   // DidLoadingProgress().
