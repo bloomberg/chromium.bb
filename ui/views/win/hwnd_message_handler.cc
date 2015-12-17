@@ -7,6 +7,8 @@
 #include <dwmapi.h>
 #include <oleacc.h>
 #include <shellapi.h>
+#include <tchar.h>
+#include <tpcshrd.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -380,6 +382,18 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
       gfx::win::DirectManipulationHelper::CreateInstance();
   if (direct_manipulation_helper_)
     direct_manipulation_helper_->Initialize(hwnd());
+
+  // Disable pen flicks (http://crbug.com/506977)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
+    ATOM atom = ::GlobalAddAtom(MICROSOFT_TABLETPENSERVICE_PROPERTY);
+    DCHECK(atom);
+
+    ::SetProp(hwnd(), MICROSOFT_TABLETPENSERVICE_PROPERTY,
+        reinterpret_cast<HANDLE>(TABLET_DISABLE_FLICKS |
+            TABLET_DISABLE_FLICKFALLBACKKEYS));
+
+    ::GlobalDeleteAtom(atom);
+  }
 }
 
 void HWNDMessageHandler::InitModalType(ui::ModalType modal_type) {
@@ -405,6 +419,11 @@ void HWNDMessageHandler::Close() {
   // Modal dialog windows disable their owner windows; re-enable them now so
   // they can activate as foreground windows upon this window's destruction.
   RestoreEnabledIfNecessary();
+
+  // Remove the property which disables pen flicks (http://crbug.com/506977)
+  // for this window.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
+    ::RemoveProp(hwnd(), MICROSOFT_TABLETPENSERVICE_PROPERTY);
 
   if (!waiting_for_close_now_) {
     // And we delay the close so that if we are called from an ATL callback,
