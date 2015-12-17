@@ -1281,6 +1281,8 @@ crbug.com/543369 [ Linux ] fast/forms/select/popup-menu-appearance-tall.html [ F
 
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
+crbug.com/570391 inspector/sources/debugger/promise-events.html [ NeedsManualRebaseline ]
+
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass Slow ]
 crbug.com/549314 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ Failure ]
 
