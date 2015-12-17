@@ -2113,24 +2113,7 @@ ScopedGLErrorSuppressor::~ScopedGLErrorSuppressor() {
 static void RestoreCurrentTextureBindings(ContextState* state, GLenum target) {
   TextureUnit& info = state->texture_units[0];
   GLuint last_id;
-  scoped_refptr<TextureRef> texture_ref;
-  switch (target) {
-    case GL_TEXTURE_2D:
-      texture_ref = info.bound_texture_2d;
-      break;
-    case GL_TEXTURE_CUBE_MAP:
-      texture_ref = info.bound_texture_cube_map;
-      break;
-    case GL_TEXTURE_EXTERNAL_OES:
-      texture_ref = info.bound_texture_external_oes;
-      break;
-    case GL_TEXTURE_RECTANGLE_ARB:
-      texture_ref = info.bound_texture_rectangle_arb;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  scoped_refptr<TextureRef>& texture_ref = info.GetInfoForTarget(target);
   if (texture_ref.get()) {
     last_id = texture_ref->service_id();
   } else {
@@ -4904,29 +4887,7 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
 
   TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
   unit.bind_target = target;
-  switch (target) {
-    case GL_TEXTURE_2D:
-      unit.bound_texture_2d = texture_ref;
-      break;
-    case GL_TEXTURE_CUBE_MAP:
-      unit.bound_texture_cube_map = texture_ref;
-      break;
-    case GL_TEXTURE_EXTERNAL_OES:
-      unit.bound_texture_external_oes = texture_ref;
-      break;
-    case GL_TEXTURE_RECTANGLE_ARB:
-      unit.bound_texture_rectangle_arb = texture_ref;
-      break;
-    case GL_TEXTURE_3D:
-      unit.bound_texture_3d = texture_ref;
-      break;
-    case GL_TEXTURE_2D_ARRAY:
-      unit.bound_texture_2d_array = texture_ref;
-      break;
-    default:
-      NOTREACHED();  // Validation should prevent us getting here.
-      break;
-  }
+  unit.GetInfoForTarget(target) = texture_ref;
 }
 
 void GLES2DecoderImpl::DoBindSampler(GLuint unit, GLuint client_id) {
@@ -7707,9 +7668,8 @@ void GLES2DecoderImpl::RestoreStateForTextures() {
         if (!texture_ref || !texture_manager()->CanRender(texture_ref)) {
           glActiveTexture(GL_TEXTURE0 + texture_unit_index);
           // Get the texture_ref info that was previously bound here.
-          texture_ref = texture_unit.bind_target == GL_TEXTURE_2D
-                            ? texture_unit.bound_texture_2d.get()
-                            : texture_unit.bound_texture_cube_map.get();
+          texture_ref =
+              texture_unit.GetInfoForTarget(texture_unit.bind_target).get();
           glBindTexture(texture_unit.bind_target,
                         texture_ref ? texture_ref->service_id() : 0);
           continue;
@@ -14059,23 +14019,7 @@ void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
 
   TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
   unit.bind_target = target;
-  switch (target) {
-    case GL_TEXTURE_2D:
-      unit.bound_texture_2d = texture_ref;
-      break;
-    case GL_TEXTURE_CUBE_MAP:
-      unit.bound_texture_cube_map = texture_ref;
-      break;
-    case GL_TEXTURE_EXTERNAL_OES:
-      unit.bound_texture_external_oes = texture_ref;
-      break;
-    case GL_TEXTURE_RECTANGLE_ARB:
-      unit.bound_texture_rectangle_arb = texture_ref;
-      break;
-    default:
-      NOTREACHED();  // Validation should prevent us getting here.
-      break;
-  }
+  unit.GetInfoForTarget(target) = texture_ref;
 }
 
 void GLES2DecoderImpl::EnsureTextureForClientId(

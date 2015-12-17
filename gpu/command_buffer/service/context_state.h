@@ -80,6 +80,26 @@ struct GPU_EXPORT TextureUnit {
     NOTREACHED();
     return NULL;
   }
+
+  scoped_refptr<TextureRef>& GetInfoForTarget(GLenum target) {
+    switch (target) {
+      case GL_TEXTURE_2D:
+        return bound_texture_2d;
+      case GL_TEXTURE_CUBE_MAP:
+        return bound_texture_cube_map;
+      case GL_TEXTURE_EXTERNAL_OES:
+        return bound_texture_external_oes;
+      case GL_TEXTURE_RECTANGLE_ARB:
+        return bound_texture_rectangle_arb;
+      case GL_TEXTURE_3D:
+        return bound_texture_3d;
+      case GL_TEXTURE_2D_ARRAY:
+        return bound_texture_2d_array;
+    }
+
+    NOTREACHED();
+    return bound_texture_2d;
+  }
 };
 
 class GPU_EXPORT Vec4 {
