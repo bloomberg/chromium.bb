@@ -26,6 +26,8 @@ class PlatformMojoMediaClient {
  public:
   virtual ~PlatformMojoMediaClient();
 
+  // Called exactly once before any other method.
+  virtual void Initialize();
   // Returns the RendererFactory to be used by MojoRendererService. If returns
   // null, a RendererImpl will be used with audio/video decoders provided in
   // CreateAudioDecoders() and CreateVideoDecoders().
@@ -43,11 +45,12 @@ class PlatformMojoMediaClient {
 
 class MojoMediaClient {
  public:
-  // Returns an instance of the MojoMediaClient object.  Only one instance will
-  // exist per process.
-  static MojoMediaClient* Get();
+  ~MojoMediaClient();
+
+  static scoped_ptr<MojoMediaClient> Create();
 
   // Copy of the PlatformMojoMediaClient interface.
+  void Initialize();
   scoped_ptr<RendererFactory> CreateRendererFactory(
       const scoped_refptr<MediaLog>& media_log);
   scoped_refptr<AudioRendererSink> CreateAudioRendererSink();
@@ -57,12 +60,9 @@ class MojoMediaClient {
       mojo::ServiceProvider* service_provider);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<MojoMediaClient>;
+  MojoMediaClient(scoped_ptr<PlatformMojoMediaClient> platform_client);
 
-  MojoMediaClient();
-  ~MojoMediaClient();
-
-  scoped_ptr<PlatformMojoMediaClient> mojo_media_client_;
+  scoped_ptr<PlatformMojoMediaClient> platform_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoMediaClient);
 };

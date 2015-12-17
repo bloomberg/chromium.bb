@@ -20,6 +20,7 @@ namespace media {
 
 class CdmFactory;
 class MediaLog;
+class MojoMediaClient;
 class RendererFactory;
 
 class ServiceFactoryImpl : public interfaces::ServiceFactory {
@@ -27,7 +28,8 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
   ServiceFactoryImpl(mojo::InterfaceRequest<interfaces::ServiceFactory> request,
                      mojo::ServiceProvider* service_provider,
                      scoped_refptr<MediaLog> media_log,
-                     scoped_ptr<mojo::AppRefCount> parent_app_refcount);
+                     scoped_ptr<mojo::AppRefCount> parent_app_refcount,
+                     MojoMediaClient* mojo_media_client);
   ~ServiceFactoryImpl() final;
 
   // interfaces::ServiceFactory implementation.
@@ -46,6 +48,7 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
   mojo::ServiceProvider* service_provider_;
   scoped_refptr<MediaLog> media_log_;
   scoped_ptr<mojo::AppRefCount> parent_app_refcount_;
+  MojoMediaClient* mojo_media_client_;
 
   scoped_ptr<RendererFactory> renderer_factory_;
   scoped_ptr<CdmFactory> cdm_factory_;

@@ -20,7 +20,9 @@ namespace internal {
 
 class DefaultMojoMediaClient : public PlatformMojoMediaClient {
  public:
-  DefaultMojoMediaClient() {
+  DefaultMojoMediaClient() {}
+
+  void Initialize() override {
     InitializeMediaLibrary();
 
     // TODO(dalecurtis): We should find a single owner per process for the audio

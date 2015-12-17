@@ -20,11 +20,13 @@ ServiceFactoryImpl::ServiceFactoryImpl(
     mojo::InterfaceRequest<interfaces::ServiceFactory> request,
     mojo::ServiceProvider* service_provider,
     scoped_refptr<MediaLog> media_log,
-    scoped_ptr<mojo::AppRefCount> parent_app_refcount)
+    scoped_ptr<mojo::AppRefCount> parent_app_refcount,
+    MojoMediaClient* mojo_media_client)
     : binding_(this, std::move(request)),
       service_provider_(service_provider),
       media_log_(media_log),
-      parent_app_refcount_(std::move(parent_app_refcount)) {
+      parent_app_refcount_(std::move(parent_app_refcount)),
+      mojo_media_client_(mojo_media_client) {
   DVLOG(1) << __FUNCTION__;
 }
 
@@ -38,11 +40,10 @@ void ServiceFactoryImpl::CreateRenderer(
   // The created object is owned by the pipe.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::MessageLoop::current()->task_runner());
-  MojoMediaClient* mojo_media_client = MojoMediaClient::Get();
   scoped_refptr<AudioRendererSink> audio_renderer_sink =
-      mojo_media_client->CreateAudioRendererSink();
+      mojo_media_client_->CreateAudioRendererSink();
   scoped_ptr<VideoRendererSink> video_renderer_sink =
-      mojo_media_client->CreateVideoRendererSink(task_runner);
+      mojo_media_client_->CreateVideoRendererSink(task_runner);
   scoped_ptr<Renderer> renderer = GetRendererFactory()->CreateRenderer(
       task_runner, task_runner, audio_renderer_sink.get(),
       video_renderer_sink.get());
@@ -60,14 +61,13 @@ void ServiceFactoryImpl::CreateCdm(
 
 RendererFactory* ServiceFactoryImpl::GetRendererFactory() {
   if (!renderer_factory_)
-    renderer_factory_ =
-        MojoMediaClient::Get()->CreateRendererFactory(media_log_);
+    renderer_factory_ = mojo_media_client_->CreateRendererFactory(media_log_);
   return renderer_factory_.get();
 }
 
 CdmFactory* ServiceFactoryImpl::GetCdmFactory() {
   if (!cdm_factory_)
-    cdm_factory_ = MojoMediaClient::Get()->CreateCdmFactory(service_provider_);
+    cdm_factory_ = mojo_media_client_->CreateCdmFactory(service_provider_);
   return cdm_factory_.get();
 }
 

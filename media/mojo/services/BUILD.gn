@@ -81,14 +81,14 @@ source_set("proxy") {
 }
 
 source_set("media_client") {
+  sources = [
+    "mojo_media_client.cc",
+    "mojo_media_client.h",
+  ]
   if (is_android) {
-    sources = [
-      "android_mojo_media_client.cc",
-    ]
+    sources += [ "android_mojo_media_client.cc" ]
   } else {
-    sources = [
-      "default_mojo_media_client.cc",
-    ]
+    sources += [ "default_mojo_media_client.cc" ]
   }
 
   public_configs = [ ":enable_mojo_media_config" ]
@@ -158,8 +158,6 @@ source_set("application") {
   sources = [
     "mojo_media_application.cc",
     "mojo_media_application.h",
-    "mojo_media_client.cc",
-    "mojo_media_client.h",
     "service_factory_impl.cc",
     "service_factory_impl.h",
   ]
