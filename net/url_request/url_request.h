@@ -303,8 +303,9 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   ReferrerPolicy referrer_policy() const { return referrer_policy_; }
   void set_referrer_policy(ReferrerPolicy referrer_policy);
 
-  // Sets the delegate of the request.  This value may be changed at any time,
-  // and it is permissible for it to be null.
+  // Sets the delegate of the request.  This is only to allow creating a request
+  // before creating its delegate.  |delegate| must be non-NULL and the request
+  // must not yet have a Delegate set.
   void set_delegate(Delegate* delegate);
 
   // Indicates that the request body should be sent using chunked transfer
@@ -523,7 +524,8 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   uint64 identifier() const { return identifier_; }
 
   // This method is called to start the request.  The delegate will receive
-  // a OnResponseStarted callback when the request is started.
+  // a OnResponseStarted callback when the request is started.  The request
+  // must have a delegate set before this method is called.
   void Start();
 
   // This method may be called at any time after Start() has been called to
@@ -620,9 +622,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Returns true iff this request would be internally redirected to HTTPS
   // due to HSTS. If so, |redirect_url| is rewritten to the new HTTPS URL.
   bool GetHSTSRedirect(GURL* redirect_url) const;
-
-  // TODO(willchan): Undo this. Only temporarily public.
-  bool has_delegate() const { return delegate_ != NULL; }
 
   // NOTE(willchan): This is just temporary for debugging
   // http://crbug.com/90971.
@@ -726,9 +725,8 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // occurs.
   void NotifyResponseStarted();
 
-  // These functions delegate to |delegate_| and may only be used if
-  // |delegate_| is not NULL. See URLRequest::Delegate for the meaning
-  // of these functions.
+  // These functions delegate to |delegate_|.  See URLRequest::Delegate for the
+  // meaning of these functions.
   void NotifyAuthRequired(AuthChallengeInfo* auth_info);
   void NotifyAuthRequiredComplete(NetworkDelegate::AuthRequiredResponse result);
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);

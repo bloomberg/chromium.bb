@@ -379,9 +379,6 @@ void URLRequestJob::NotifyBeforeNetworkStart(bool* defer) {
 }
 
 void URLRequestJob::NotifyHeadersComplete() {
-  if (!request_->has_delegate())
-    return;  // The request was destroyed, so there is no more work to do.
-
   if (has_handled_response_)
     return;
 
@@ -420,10 +417,8 @@ void URLRequestJob::NotifyHeadersComplete() {
 
     // Ensure that the request wasn't detached, destroyed, or canceled in
     // NotifyReceivedRedirect.
-    if (!weak_this || !request_->has_delegate() ||
-        !request_->status().is_success()) {
+    if (!weak_this || !request_->status().is_success())
       return;
-    }
 
     if (defer_redirect) {
       deferred_redirect_info_ = redirect_info;
@@ -481,9 +476,6 @@ void URLRequestJob::ReadRawDataComplete(int result) {
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "475755 URLRequestJob::RawReadCompleted"));
-
-  if (!request_->has_delegate())
-    return;  // The request was destroyed, so there is no more work to do.
 
   // TODO(darin): Bug 1004233. Re-enable this test once all of the chrome
   // unit_tests have been fixed to not trip this.
@@ -614,7 +606,7 @@ void URLRequestJob::NotifyDone(const URLRequestStatus &status) {
 
 void URLRequestJob::CompleteNotifyDone() {
   // Check if we should notify the delegate that we're done because of an error.
-  if (!request_->status().is_success() && request_->has_delegate()) {
+  if (!request_->status().is_success()) {
     // We report the error differently depending on whether we've called
     // OnResponseStarted yet.
     if (has_handled_response_) {

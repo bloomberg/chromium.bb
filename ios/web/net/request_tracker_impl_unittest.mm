@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -120,6 +121,19 @@ namespace {
 
 // Used and incremented each time a tabId is created.
 int g_count = 0;
+
+// URLRequest::Delegate that does nothing.
+class DummyURLRequestDelegate : public net::URLRequest::Delegate {
+ public:
+  DummyURLRequestDelegate() {}
+  ~DummyURLRequestDelegate() override {}
+
+  void OnResponseStarted(net::URLRequest* request) override {}
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DummyURLRequestDelegate);
+};
 
 class RequestTrackerTest : public PlatformTest {
  public:
@@ -239,9 +253,10 @@ class RequestTrackerTest : public PlatformTest {
 
     while (i >= requests_.size()) {
       contexts_.push_back(new net::URLRequestContext());
-      requests_.push_back(contexts_[i]->CreateRequest(url,
-                                                      net::DEFAULT_PRIORITY,
-                                                      NULL).release());
+      requests_.push_back(
+          contexts_[i]
+              ->CreateRequest(url, net::DEFAULT_PRIORITY, &request_delegate_)
+              .release());
 
       if (secure) {
         // Put a valid SSLInfo inside
@@ -261,6 +276,8 @@ class RequestTrackerTest : public PlatformTest {
     EXPECT_TRUE(!secure == !requests_[i]->url().SchemeIsCryptographic());
     return requests_[i];
   }
+
+  DummyURLRequestDelegate request_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestTrackerTest);
 };

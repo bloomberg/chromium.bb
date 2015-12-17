@@ -493,10 +493,14 @@ void URLRequest::set_referrer_policy(ReferrerPolicy referrer_policy) {
 }
 
 void URLRequest::set_delegate(Delegate* delegate) {
+  DCHECK(!delegate_);
+  DCHECK(delegate);
   delegate_ = delegate;
 }
 
 void URLRequest::Start() {
+  DCHECK(delegate_);
+
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("456327 URLRequest::Start"));
@@ -792,7 +796,7 @@ void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
           this, network_delegate_, redirect_info.new_url);
   if (job) {
     RestartWithJob(job);
-  } else if (delegate_) {
+  } else {
     OnCallToDelegate();
     delegate_->OnReceivedRedirect(this, redirect_info, defer_redirect);
     // |this| may be have been destroyed here.
@@ -800,7 +804,7 @@ void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
 }
 
 void URLRequest::NotifyBeforeNetworkStart(bool* defer) {
-  if (delegate_ && !notified_before_network_start_) {
+  if (!notified_before_network_start_) {
     OnCallToDelegate();
     delegate_->OnBeforeNetworkStart(this, defer);
     if (!*defer)
@@ -830,23 +834,21 @@ void URLRequest::NotifyResponseStarted() {
   if (job) {
     RestartWithJob(job);
   } else {
-    if (delegate_) {
-      // In some cases (e.g. an event was canceled), we might have sent the
-      // completion event and receive a NotifyResponseStarted() later.
-      if (!has_notified_completion_ && status_.is_success()) {
-        if (network_delegate_)
-          network_delegate_->NotifyResponseStarted(this);
-      }
-
-      // Notify in case the entire URL Request has been finished.
-      if (!has_notified_completion_ && !status_.is_success())
-        NotifyRequestCompleted();
-
-      OnCallToDelegate();
-      delegate_->OnResponseStarted(this);
-      // Nothing may appear below this line as OnResponseStarted may delete
-      // |this|.
+    // In some cases (e.g. an event was canceled), we might have sent the
+    // completion event and receive a NotifyResponseStarted() later.
+    if (!has_notified_completion_ && status_.is_success()) {
+      if (network_delegate_)
+        network_delegate_->NotifyResponseStarted(this);
     }
+
+    // Notify in case the entire URL Request has been finished.
+    if (!has_notified_completion_ && !status_.is_success())
+      NotifyRequestCompleted();
+
+    OnCallToDelegate();
+    delegate_->OnResponseStarted(this);
+    // Nothing may appear below this line as OnResponseStarted may delete
+    // |this|.
   }
 }
 
@@ -1088,8 +1090,7 @@ void URLRequest::NotifyAuthRequiredComplete(
     case NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION:
       // Defer to the URLRequest::Delegate, since the NetworkDelegate
       // didn't take an action.
-      if (delegate_)
-        delegate_->OnAuthRequired(this, auth_info.get());
+      delegate_->OnAuthRequired(this, auth_info.get());
       break;
 
     case NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH:
@@ -1108,14 +1109,12 @@ void URLRequest::NotifyAuthRequiredComplete(
 
 void URLRequest::NotifyCertificateRequested(
     SSLCertRequestInfo* cert_request_info) {
-  if (delegate_)
-    delegate_->OnCertificateRequested(this, cert_request_info);
+  delegate_->OnCertificateRequested(this, cert_request_info);
 }
 
 void URLRequest::NotifySSLCertificateError(const SSLInfo& ssl_info,
                                            bool fatal) {
-  if (delegate_)
-    delegate_->OnSSLCertificateError(this, ssl_info, fatal);
+  delegate_->OnSSLCertificateError(this, ssl_info, fatal);
 }
 
 bool URLRequest::CanGetCookies(const CookieList& cookie_list) const {
@@ -1156,8 +1155,7 @@ void URLRequest::NotifyReadCompleted(int bytes_read) {
   if (bytes_read > 0 && !was_cached())
     NetworkChangeNotifier::NotifyDataReceived(*this, bytes_read);
 
-  if (delegate_)
-    delegate_->OnReadCompleted(this, bytes_read);
+  delegate_->OnReadCompleted(this, bytes_read);
 
   // Nothing below this line as OnReadCompleted may delete |this|.
 }

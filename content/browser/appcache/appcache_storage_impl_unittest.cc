@@ -391,8 +391,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   // Test harness --------------------------------------------------
 
-  AppCacheStorageImplTest() {
-  }
+  AppCacheStorageImplTest() { request_delegate_.set_quit_on_complete(false); }
 
   template <class Method>
   void RunTestOnIOThread(Method method) {
@@ -1765,7 +1764,7 @@ class AppCacheStorageImplTest : public testing::Test {
       AppCacheHost* host2 = backend_->GetHost(2);
       GURL manifest_url = MockHttpServer::GetMockUrl("manifest");
       request_ = service()->request_context()->CreateRequest(
-          manifest_url, net::DEFAULT_PRIORITY, NULL);
+          manifest_url, net::DEFAULT_PRIORITY, &request_delegate_);
       AppCacheInterceptor::SetExtraRequestInfo(
           request_.get(), service_.get(),
           backend_->process_id(), host2->host_id(),
@@ -1891,6 +1890,7 @@ class AppCacheStorageImplTest : public testing::Test {
   scoped_ptr<MockServiceObserver> observer_;
   MockAppCacheFrontend frontend_;
   scoped_ptr<AppCacheBackendImpl> backend_;
+  net::TestDelegate request_delegate_;
   scoped_ptr<net::URLRequest> request_;
 };
 

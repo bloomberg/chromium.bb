@@ -44,11 +44,8 @@ void FileWriterDelegate::Start(scoped_ptr<net::URLRequest> request,
 }
 
 void FileWriterDelegate::Cancel() {
-  if (request_) {
-    // This halts any callbacks on this delegate.
-    request_->set_delegate(NULL);
-    request_->Cancel();
-  }
+  // Destroy the request to prevent it from invoking any callbacks.
+  request_.reset();
 
   const int status = file_stream_writer_->Cancel(
       base::Bind(&FileWriterDelegate::OnWriteCancelled,
@@ -172,10 +169,8 @@ FileWriterDelegate::GetCompletionStatusOnError() const {
 }
 
 void FileWriterDelegate::OnError(base::File::Error error) {
-  if (request_) {
-    request_->set_delegate(NULL);
-    request_->Cancel();
-  }
+  // Destroy the request to prevent it from invoking any callbacks.
+  request_.reset();
 
   if (writing_started_)
     MaybeFlushForCompletion(error, 0, ERROR_WRITE_STARTED);
