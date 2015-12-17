@@ -120,7 +120,6 @@ Polymer({
     justOpened_: {
       type: Boolean,
       value: true,
-      observer: 'computeSpinnerHidden_',
     },
 
     /**
@@ -615,8 +614,8 @@ Polymer({
     // The clicked cast mode can come from one of two lists,
     // defaultCastModeList and nonDefaultCastModeList.
     var clickedMode =
-        this.$.defaultCastModeList.itemForElement(event.target) ||
-            this.$.nonDefaultCastModeList.itemForElement(event.target);
+        this.$$('#defaultCastModeList').itemForElement(event.target) ||
+            this.$$('#nonDefaultCastModeList').itemForElement(event.target);
 
     if (!clickedMode)
       return;
