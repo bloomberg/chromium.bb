@@ -540,10 +540,6 @@ RsaPssParameters::RsaPssParameters(DigestAlgorithm mgf1_hash,
     : mgf1_hash_(mgf1_hash), salt_length_(salt_length) {
 }
 
-bool RsaPssParameters::Equals(const RsaPssParameters* other) const {
-  return mgf1_hash_ == other->mgf1_hash_ && salt_length_ == other->salt_length_;
-}
-
 SignatureAlgorithm::~SignatureAlgorithm() {
 }
 
@@ -609,34 +605,6 @@ scoped_ptr<SignatureAlgorithm> SignatureAlgorithm::CreateRsaPss(
   return make_scoped_ptr(new SignatureAlgorithm(
       SignatureAlgorithmId::RsaPss, digest,
       make_scoped_ptr(new RsaPssParameters(mgf1_hash, salt_length))));
-}
-
-bool SignatureAlgorithm::Equals(const SignatureAlgorithm& other) const {
-  if (algorithm_ != other.algorithm_)
-    return false;
-
-  if (digest_ != other.digest_)
-    return false;
-
-  // Check that the parameters are equal.
-  switch (algorithm_) {
-    case SignatureAlgorithmId::RsaPss: {
-      const RsaPssParameters* params1 = ParamsForRsaPss();
-      const RsaPssParameters* params2 = other.ParamsForRsaPss();
-      if (!params1 || !params2 || !params1->Equals(params2))
-        return false;
-      break;
-    }
-
-    // There shouldn't be any parameters.
-    case SignatureAlgorithmId::RsaPkcs1:
-    case SignatureAlgorithmId::Ecdsa:
-      if (params_ || other.params_)
-        return false;
-      break;
-  }
-
-  return true;
 }
 
 const RsaPssParameters* SignatureAlgorithm::ParamsForRsaPss() const {

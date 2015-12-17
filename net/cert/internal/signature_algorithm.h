@@ -53,8 +53,6 @@ class NET_EXPORT RsaPssParameters : public SignatureAlgorithmParameters {
  public:
   RsaPssParameters(DigestAlgorithm mgf1_hash, uint32_t salt_length);
 
-  bool Equals(const RsaPssParameters* other) const;
-
   DigestAlgorithm mgf1_hash() const { return mgf1_hash_; }
   uint32_t salt_length() const { return salt_length_; }
 
@@ -83,10 +81,6 @@ class NET_EXPORT SignatureAlgorithm {
   static scoped_ptr<SignatureAlgorithm> CreateRsaPss(DigestAlgorithm digest,
                                                      DigestAlgorithm mgf1_hash,
                                                      uint32_t salt_length);
-
-  // Returns true if |*this| is equivalent to |other|. This compares both the
-  // algorithm ID and each parameter for equality.
-  bool Equals(const SignatureAlgorithm& other) const WARN_UNUSED_RESULT;
 
   // The following methods retrieve the parameters for the signature algorithm.
   //
