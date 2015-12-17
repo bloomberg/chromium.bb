@@ -235,8 +235,6 @@ crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/trustedeventsdefaultaction/fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/pointerevent/fast/events/click-count.html [ Pass Failure ]
 
-crbug.com/495750 fast/hidpi/popup-menu-appearance-dsf2.html [ NeedsRebaseline ]
-
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
