@@ -37,12 +37,28 @@ class CORE_EXPORT CSSSelectorList {
     USING_FAST_MALLOC(CSSSelectorList);
 public:
     CSSSelectorList() : m_selectorArray(nullptr) { }
-    CSSSelectorList(const CSSSelectorList&);
 
-    ~CSSSelectorList();
+    CSSSelectorList(CSSSelectorList&& o)
+        : m_selectorArray(o.m_selectorArray)
+    {
+        o.m_selectorArray = nullptr;
+    }
 
-    void adopt(CSSSelectorList&);
-    void adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectorVector);
+    CSSSelectorList& operator=(CSSSelectorList&& o)
+    {
+        deleteSelectorsIfNeeded();
+        m_selectorArray = o.m_selectorArray;
+        o.m_selectorArray = nullptr;
+        return *this;
+    }
+
+    ~CSSSelectorList()
+    {
+        deleteSelectorsIfNeeded();
+    }
+
+    static CSSSelectorList adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectorVector);
+    CSSSelectorList copy() const;
 
     bool isValid() const { return !!m_selectorArray; }
     const CSSSelector* first() const { return m_selectorArray; }
@@ -72,10 +88,16 @@ public:
 
 private:
     unsigned length() const;
+
+    void deleteSelectorsIfNeeded()
+    {
+        if (m_selectorArray)
+            deleteSelectors();
+    }
     void deleteSelectors();
 
-    // Hide.
-    CSSSelectorList& operator=(const CSSSelectorList&);
+    CSSSelectorList(const CSSSelectorList&) = delete;
+    CSSSelectorList& operator=(const CSSSelectorList&) = delete;
 
     // End of a multipart selector is indicated by m_isLastInTagHistory bit in the last item.
     // End of the array is indicated by m_isLastInSelectorList bit in the last item.

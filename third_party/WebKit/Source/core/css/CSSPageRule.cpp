@@ -71,14 +71,13 @@ String CSSPageRule::selectorText() const
 void CSSPageRule::setSelectorText(const String& selectorText)
 {
     CSSParserContext context(parserContext(), 0);
-    CSSSelectorList selectorList;
-    CSSParser::parseSelector(context, selectorText, selectorList);
+    CSSSelectorList selectorList = CSSParser::parseSelector(context, selectorText);
     if (!selectorList.isValid())
         return;
 
     CSSStyleSheet::RuleMutationScope mutationScope(this);
 
-    m_pageRule->wrapperAdoptSelectorList(selectorList);
+    m_pageRule->wrapperAdoptSelectorList(std::move(selectorList));
 }
 
 String CSSPageRule::cssText() const

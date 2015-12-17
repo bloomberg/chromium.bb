@@ -19,7 +19,7 @@ class StyleSheetContents;
 class CORE_EXPORT CSSSelectorParser {
     STACK_ALLOCATED();
 public:
-    static void parseSelector(CSSParserTokenRange, const CSSParserContext&, StyleSheetContents*, CSSSelectorList&);
+    static CSSSelectorList parseSelector(CSSParserTokenRange, const CSSParserContext&, StyleSheetContents*);
 
     static bool consumeANPlusB(CSSParserTokenRange&, std::pair<int, int>&);
 
@@ -28,8 +28,8 @@ private:
 
     // These will all consume trailing comments if successful
 
-    void consumeComplexSelectorList(CSSParserTokenRange&, CSSSelectorList&);
-    void consumeCompoundSelectorList(CSSParserTokenRange&, CSSSelectorList&);
+    CSSSelectorList consumeComplexSelectorList(CSSParserTokenRange&);
+    CSSSelectorList consumeCompoundSelectorList(CSSParserTokenRange&);
 
     PassOwnPtr<CSSParserSelector> consumeComplexSelector(CSSParserTokenRange&);
     PassOwnPtr<CSSParserSelector> consumeCompoundSelector(CSSParserTokenRange&);

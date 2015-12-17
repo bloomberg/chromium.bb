@@ -66,17 +66,16 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
     }
 }
 
-void CSSSelectorParser::parseSelector(CSSParserTokenRange range, const CSSParserContext& context, StyleSheetContents* styleSheet, CSSSelectorList& output)
+CSSSelectorList CSSSelectorParser::parseSelector(CSSParserTokenRange range, const CSSParserContext& context, StyleSheetContents* styleSheet)
 {
     CSSSelectorParser parser(context, styleSheet);
     range.consumeWhitespace();
-    CSSSelectorList result;
-    parser.consumeComplexSelectorList(range, result);
-    if (range.atEnd()) {
-        output.adopt(result);
-        recordSelectorStats(context, output);
-    }
-    ASSERT(!(output.isValid() && parser.m_failedParsing));
+    CSSSelectorList result = parser.consumeComplexSelectorList(range);
+    if (!range.atEnd())
+        return CSSSelectorList();
+
+    recordSelectorStats(context, result);
+    return result;
 }
 
 CSSSelectorParser::CSSSelectorParser(const CSSParserContext& context, StyleSheetContents* styleSheet)
@@ -86,32 +85,34 @@ CSSSelectorParser::CSSSelectorParser(const CSSParserContext& context, StyleSheet
 {
 }
 
-void CSSSelectorParser::consumeComplexSelectorList(CSSParserTokenRange& range, CSSSelectorList& output)
+CSSSelectorList CSSSelectorParser::consumeComplexSelectorList(CSSParserTokenRange& range)
 {
     Vector<OwnPtr<CSSParserSelector>> selectorList;
     OwnPtr<CSSParserSelector> selector = consumeComplexSelector(range);
     if (!selector)
-        return;
+        return CSSSelectorList();
     selectorList.append(selector.release());
     while (!range.atEnd() && range.peek().type() == CommaToken) {
         range.consumeIncludingWhitespace();
         selector = consumeComplexSelector(range);
         if (!selector)
-            return;
+            return CSSSelectorList();
         selectorList.append(selector.release());
     }
 
-    if (!m_failedParsing)
-        output.adoptSelectorVector(selectorList);
+    if (m_failedParsing)
+        return CSSSelectorList();
+
+    return CSSSelectorList::adoptSelectorVector(selectorList);
 }
 
-void CSSSelectorParser::consumeCompoundSelectorList(CSSParserTokenRange& range, CSSSelectorList& output)
+CSSSelectorList CSSSelectorParser::consumeCompoundSelectorList(CSSParserTokenRange& range)
 {
     Vector<OwnPtr<CSSParserSelector>> selectorList;
     OwnPtr<CSSParserSelector> selector = consumeCompoundSelector(range);
     range.consumeWhitespace();
     if (!selector)
-        return;
+        return CSSSelectorList();
     selectorList.append(selector.release());
     while (!range.atEnd() && range.peek().type() == CommaToken) {
         // FIXME: This differs from the spec grammar:
@@ -121,12 +122,14 @@ void CSSSelectorParser::consumeCompoundSelectorList(CSSParserTokenRange& range, 
         selector = consumeCompoundSelector(range);
         range.consumeWhitespace();
         if (!selector)
-            return;
+            return CSSSelectorList();
         selectorList.append(selector.release());
     }
 
-    if (!m_failedParsing)
-        output.adoptSelectorVector(selectorList);
+    if (m_failedParsing)
+        return CSSSelectorList();
+
+    return CSSSelectorList::adoptSelectorVector(selectorList);
 }
 
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeComplexSelector(CSSParserTokenRange& range)
@@ -357,7 +360,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
     case CSSSelector::PseudoCue:
         {
             OwnPtr<CSSSelectorList> selectorList = adoptPtr(new CSSSelectorList());
-            consumeCompoundSelectorList(block, *selectorList);
+            *selectorList = consumeCompoundSelectorList(block);
             if (!selectorList->isValid() || !block.atEnd())
                 return nullptr;
             selector->setSelectorList(selectorList.release());

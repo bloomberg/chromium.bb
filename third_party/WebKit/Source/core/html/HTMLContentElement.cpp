@@ -66,13 +66,11 @@ void HTMLContentElement::parseSelect()
 {
     ASSERT(m_shouldParseSelect);
 
-    CSSParser::parseSelector(CSSParserContext(document(), 0), m_select, m_selectorList);
+    m_selectorList = CSSParser::parseSelector(CSSParserContext(document(), 0), m_select);
     m_shouldParseSelect = false;
     m_isValidSelector = validateSelect();
-    if (!m_isValidSelector) {
-        CSSSelectorList emptyList;
-        m_selectorList.adopt(emptyList);
-    }
+    if (!m_isValidSelector)
+        m_selectorList = CSSSelectorList();
 }
 
 void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)

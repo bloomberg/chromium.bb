@@ -33,56 +33,51 @@
 
 namespace blink {
 
-CSSSelectorList::~CSSSelectorList()
+CSSSelectorList CSSSelectorList::copy() const
 {
-    deleteSelectors();
+    CSSSelectorList list;
+
+    unsigned length = this->length();
+    list.m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * length, WTF_HEAP_PROFILER_TYPE_NAME(CSSSelector)));
+    for (unsigned i = 0; i < length; ++i)
+        new (&list.m_selectorArray[i]) CSSSelector(m_selectorArray[i]);
+
+    return list;
 }
 
-CSSSelectorList::CSSSelectorList(const CSSSelectorList& other)
+CSSSelectorList CSSSelectorList::adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectorVector)
 {
-    unsigned otherLength = other.length();
-    m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * otherLength, WTF_HEAP_PROFILER_TYPE_NAME(CSSSelector)));
-    for (unsigned i = 0; i < otherLength; ++i)
-        new (&m_selectorArray[i]) CSSSelector(other.m_selectorArray[i]);
-}
-
-void CSSSelectorList::adopt(CSSSelectorList& list)
-{
-    deleteSelectors();
-    m_selectorArray = list.m_selectorArray;
-    list.m_selectorArray = 0;
-}
-
-void CSSSelectorList::adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectorVector)
-{
-    deleteSelectors();
     size_t flattenedSize = 0;
     for (size_t i = 0; i < selectorVector.size(); ++i) {
         for (CSSParserSelector* selector = selectorVector[i].get(); selector; selector = selector->tagHistory())
             ++flattenedSize;
     }
     ASSERT(flattenedSize);
-    m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * flattenedSize, WTF_HEAP_PROFILER_TYPE_NAME(CSSSelector)));
+
+    CSSSelectorList list;
+    list.m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * flattenedSize, WTF_HEAP_PROFILER_TYPE_NAME(CSSSelector)));
     size_t arrayIndex = 0;
     for (size_t i = 0; i < selectorVector.size(); ++i) {
         CSSParserSelector* current = selectorVector[i].get();
         while (current) {
             // Move item from the parser selector vector into m_selectorArray without invoking destructor (Ugh.)
             CSSSelector* currentSelector = current->releaseSelector().leakPtr();
-            memcpy(&m_selectorArray[arrayIndex], currentSelector, sizeof(CSSSelector));
+            memcpy(&list.m_selectorArray[arrayIndex], currentSelector, sizeof(CSSSelector));
             WTF::Partitions::fastFree(currentSelector);
 
             current = current->tagHistory();
-            ASSERT(!m_selectorArray[arrayIndex].isLastInSelectorList());
+            ASSERT(!list.m_selectorArray[arrayIndex].isLastInSelectorList());
             if (current)
-                m_selectorArray[arrayIndex].setNotLastInTagHistory();
+                list.m_selectorArray[arrayIndex].setNotLastInTagHistory();
             ++arrayIndex;
         }
-        ASSERT(m_selectorArray[arrayIndex - 1].isLastInTagHistory());
+        ASSERT(list.m_selectorArray[arrayIndex - 1].isLastInTagHistory());
     }
     ASSERT(flattenedSize == arrayIndex);
-    m_selectorArray[arrayIndex - 1].setLastInSelectorList();
+    list.m_selectorArray[arrayIndex - 1].setLastInSelectorList();
     selectorVector.clear();
+
+    return list;
 }
 
 unsigned CSSSelectorList::length() const
@@ -97,8 +92,7 @@ unsigned CSSSelectorList::length() const
 
 void CSSSelectorList::deleteSelectors()
 {
-    if (!m_selectorArray)
-        return;
+    ASSERT(m_selectorArray);
 
     bool finished = false;
     for (CSSSelector* s = m_selectorArray; !finished; ++s) {

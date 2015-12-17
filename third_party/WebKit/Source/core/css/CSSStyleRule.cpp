@@ -96,14 +96,13 @@ String CSSStyleRule::selectorText() const
 void CSSStyleRule::setSelectorText(const String& selectorText)
 {
     CSSParserContext context(parserContext(), 0);
-    CSSSelectorList selectorList;
-    CSSParser::parseSelector(context, selectorText, selectorList);
+    CSSSelectorList selectorList = CSSParser::parseSelector(context, selectorText);
     if (!selectorList.isValid())
         return;
 
     CSSStyleSheet::RuleMutationScope mutationScope(this);
 
-    m_styleRule->wrapperAdoptSelectorList(selectorList);
+    m_styleRule->wrapperAdoptSelectorList(std::move(selectorList));
 
     if (hasCachedSelectorText()) {
         selectorTextCache().remove(this);

@@ -251,17 +251,17 @@ unsigned StyleRule::averageSizeInBytes()
     return sizeof(StyleRule) + sizeof(CSSSelector) + StylePropertySet::averageSizeInBytes();
 }
 
-StyleRule::StyleRule(CSSSelectorList& selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
+StyleRule::StyleRule(CSSSelectorList selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
     : StyleRuleBase(Style)
     , m_properties(properties)
 {
-    m_selectorList.adopt(selectorList);
+    m_selectorList = std::move(selectorList);
 }
 
 StyleRule::StyleRule(const StyleRule& o)
     : StyleRuleBase(o)
     , m_properties(o.m_properties->mutableCopy())
-    , m_selectorList(o.m_selectorList)
+    , m_selectorList(o.m_selectorList.copy())
 {
 }
 
@@ -282,17 +282,17 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRule)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRulePage::StyleRulePage(CSSSelectorList& selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
+StyleRulePage::StyleRulePage(CSSSelectorList selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
     : StyleRuleBase(Page)
     , m_properties(properties)
+    , m_selectorList(std::move(selectorList))
 {
-    m_selectorList.adopt(selectorList);
 }
 
 StyleRulePage::StyleRulePage(const StyleRulePage& o)
     : StyleRuleBase(o)
     , m_properties(o.m_properties->mutableCopy())
-    , m_selectorList(o.m_selectorList)
+    , m_selectorList(o.m_selectorList.copy())
 {
 }
 
