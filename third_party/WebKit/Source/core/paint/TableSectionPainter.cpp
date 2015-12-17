@@ -16,6 +16,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TableCellPainter.h"
 #include "core/paint/TableRowPainter.h"
+#include <algorithm>
 
 namespace blink {
 

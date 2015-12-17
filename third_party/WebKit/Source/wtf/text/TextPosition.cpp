@@ -27,6 +27,7 @@
 
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
+#include <algorithm>
 
 namespace WTF {
 

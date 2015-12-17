@@ -39,6 +39,7 @@
 #include "wtf/HashFunctions.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/CString.h"
+#include <algorithm>
 
 namespace blink {
 

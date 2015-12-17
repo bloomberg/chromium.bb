@@ -11,6 +11,8 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Utility.h"
 
+#include <new>
+
 namespace WTF {
 
 // This is a lightweight template similar to std::experimental::optional.

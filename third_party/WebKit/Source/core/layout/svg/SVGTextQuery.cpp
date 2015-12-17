@@ -31,6 +31,7 @@
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Vector.h"
+#include <algorithm>
 
 namespace blink {
 

@@ -55,6 +55,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
+#include <algorithm>
 
 using blink::TypeBuilder::Array;
 using blink::RuleSourceDataList;

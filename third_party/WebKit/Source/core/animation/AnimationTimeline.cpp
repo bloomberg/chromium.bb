@@ -42,6 +42,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorAnimationTimeline.h"
 #include "public/platform/WebCompositorSupport.h"
+#include <algorithm>
 
 namespace blink {
 

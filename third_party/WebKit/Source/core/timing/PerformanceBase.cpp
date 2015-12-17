@@ -42,6 +42,7 @@
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
+#include <algorithm>
 
 namespace blink {
 

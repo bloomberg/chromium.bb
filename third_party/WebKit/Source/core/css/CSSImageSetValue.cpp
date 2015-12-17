@@ -38,6 +38,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
+#include <algorithm>
 
 namespace blink {
 

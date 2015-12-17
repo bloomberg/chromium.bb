@@ -73,6 +73,7 @@
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/line/InlineTextBox.h"
+#include <algorithm>
 
 namespace blink {
 

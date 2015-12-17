@@ -42,6 +42,7 @@
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/style/StyleInheritedData.h"
+#include <algorithm>
 
 namespace blink {
 

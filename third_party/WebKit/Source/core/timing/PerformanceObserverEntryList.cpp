@@ -7,6 +7,7 @@
 
 #include "core/timing/PerformanceEntry.h"
 #include "wtf/StdLibExtras.h"
+#include <algorithm>
 
 namespace blink {
 

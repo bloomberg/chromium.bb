@@ -34,6 +34,7 @@
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/UTF8.h"
 #include "wtf/text/Unicode.h"
+#include <algorithm>
 #include <stdarg.h>
 
 namespace WTF {

@@ -8,6 +8,7 @@
 #include "core/layout/LayoutGrid.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/PaintInfo.h"
+#include <algorithm>
 
 namespace blink {
 

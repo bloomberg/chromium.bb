@@ -33,6 +33,7 @@
 #include "platform/fonts/Font.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CharacterNames.h"
+#include <algorithm>
 
 namespace blink {
 

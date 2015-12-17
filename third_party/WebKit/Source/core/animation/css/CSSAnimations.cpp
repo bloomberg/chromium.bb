@@ -58,6 +58,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/BitArray.h"
 #include "wtf/HashSet.h"
+#include <algorithm>
 
 namespace blink {
 

@@ -35,6 +35,7 @@
 #include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
+#include <algorithm>
 
 #ifndef NDEBUG
 #include <stdio.h>

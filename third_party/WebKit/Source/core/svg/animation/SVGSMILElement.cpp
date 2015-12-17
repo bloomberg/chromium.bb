@@ -43,6 +43,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
+#include <algorithm>
 
 namespace blink {
 

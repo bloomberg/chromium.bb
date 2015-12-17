@@ -35,6 +35,7 @@
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/paint/TableSectionPainter.h"
 #include "wtf/HashSet.h"
+#include <algorithm>
 #include <limits>
 
 namespace blink {

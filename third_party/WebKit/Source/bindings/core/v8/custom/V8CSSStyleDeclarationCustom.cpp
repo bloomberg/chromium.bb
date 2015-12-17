@@ -48,6 +48,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringConcatenate.h"
+#include <algorithm>
 
 using namespace WTF;
 

@@ -48,6 +48,7 @@
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
 #include "public/platform/Platform.h"
+#include <algorithm>
 
 namespace blink {
 

@@ -14,6 +14,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorMutableProperties.h"
 #include "public/platform/WebTraceLocation.h"
+#include <algorithm>
 
 namespace blink {
 

@@ -41,6 +41,7 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
+#include <algorithm>
 #include <utility>
 
 namespace blink {

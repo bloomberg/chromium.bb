@@ -30,6 +30,7 @@
 #include "IntegerToStringConversion.h"
 #include "WTFString.h"
 #include "wtf/dtoa.h"
+#include <algorithm>
 
 namespace WTF {
 

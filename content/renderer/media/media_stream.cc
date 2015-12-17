@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/media_stream.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 

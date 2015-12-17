@@ -46,6 +46,7 @@
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/CString.h"
+#include <algorithm>
 
 using namespace WTF;
 

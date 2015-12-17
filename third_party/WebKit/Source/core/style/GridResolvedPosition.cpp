@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutBox.h"
 #include "core/style/GridCoordinate.h"
+#include <algorithm>
 
 namespace blink {
 

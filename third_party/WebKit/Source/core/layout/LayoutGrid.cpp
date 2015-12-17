@@ -33,6 +33,7 @@
 #include "core/style/ComputedStyle.h"
 #include "core/style/GridCoordinate.h"
 #include "platform/LengthFunctions.h"
+#include <algorithm>
 
 namespace blink {
 

@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
+#include <algorithm>
 
 namespace blink {
 

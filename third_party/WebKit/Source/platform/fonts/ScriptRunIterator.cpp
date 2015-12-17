@@ -8,6 +8,8 @@
 #include "platform/Logging.h"
 #include "wtf/Threading.h"
 
+#include <algorithm>
+
 namespace blink {
 
 typedef ScriptData::PairedBracketType PairedBracketType;

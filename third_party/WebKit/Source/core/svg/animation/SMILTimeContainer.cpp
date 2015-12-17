@@ -33,6 +33,7 @@
 #include "core/frame/Settings.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"
+#include <algorithm>
 
 namespace blink {
 

@@ -7,6 +7,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/DOMTimer.h"
+#include <algorithm>
 
 namespace blink {
 

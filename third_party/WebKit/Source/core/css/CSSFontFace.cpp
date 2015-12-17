@@ -34,6 +34,7 @@
 #include "core/frame/UseCounter.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
+#include <algorithm>
 
 namespace blink {
 

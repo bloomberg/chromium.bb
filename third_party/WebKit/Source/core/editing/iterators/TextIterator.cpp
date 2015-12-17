@@ -53,6 +53,7 @@
 #include "platform/fonts/Font.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
+#include <algorithm>
 #include <unicode/utf16.h>
 
 using namespace WTF::Unicode;
