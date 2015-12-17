@@ -49,18 +49,18 @@ assertAttributeInterpolation({
 ]);
 assertAttributeInterpolation({
   property: 'markerWidth',
-  underlying: '5',
-  from: '5',
+  underlying: '10',
+  from: '10',
   fromComposite: 'add',
-  to: '19ex',
+  to: '19em',
   toComposite: 'add'
 }, [
   {at: -0.4, is: '0'},
-  {at: 0, is: '10'},
-  {at: 0.2, is: '28'},
-  {at: 0.6, is: '64'},
-  {at: 1, is: '100'},
-  {at: 1.4, is: '136'}
+  {at: 0, is: '20'},
+  {at: 0.2, is: '56'},
+  {at: 0.6, is: '128'},
+  {at: 1, is: '200'},
+  {at: 1.4, is: '272'}
 ]);
 
 assertAttributeInterpolation({
@@ -95,10 +95,10 @@ assertAttributeInterpolation({
 ]);
 assertAttributeInterpolation({
   property: 'markerWidth',
-  underlying: '5ex',
+  underlying: '5em',
   from: '10',
   fromComposite: 'replace',
-  to: '15ex',
+  to: '5em',
   toComposite: 'add'
 }, [
   {at: -0.4, is: '0'},
@@ -141,7 +141,7 @@ assertAttributeInterpolation({
   property: 'markerWidth',
   underlying: '10',
   from: neutralKeyframe,
-  to: '20ex',
+  to: '10em',
   toComposite: 'replace'
 }, [
   {at: -0.4, is: '0'},
