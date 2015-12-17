@@ -63,8 +63,11 @@ struct output_info {
 
 	struct wl_output *output;
 
+	int32_t version;
+
 	struct {
 		int32_t x, y;
+		int32_t scale;
 		int32_t physical_width, physical_height;
 		enum wl_output_subpixel subpixel;
 		enum wl_output_transform output_transform;
@@ -233,8 +236,12 @@ print_output_info(void *data)
 		break;
 	}
 
-	printf("\tx: %d, y: %d,\n",
+	printf("\tx: %d, y: %d,",
 	       output->geometry.x, output->geometry.y);
+	if (output->version >= 2)
+		printf(" scale: %d,", output->geometry.scale);
+	printf("\n");
+
 	printf("\tphysical_width: %d mm, physical_height: %d mm,\n",
 	       output->geometry.physical_width,
 	       output->geometry.physical_height);
@@ -519,9 +526,28 @@ output_handle_mode(void *data, struct wl_output *wl_output,
 	wl_list_insert(output->modes.prev, &mode->link);
 }
 
+static void
+output_handle_done(void *data, struct wl_output *wl_output)
+{
+	/* don't bother waiting for this; there's no good reason a
+	 * compositor will wait more than one roundtrip before sending
+	 * these initial events. */
+}
+
+static void
+output_handle_scale(void *data, struct wl_output *wl_output,
+		    int32_t scale)
+{
+	struct output_info *output = data;
+
+	output->geometry.scale = scale;
+}
+
 static const struct wl_output_listener output_listener = {
 	output_handle_geometry,
 	output_handle_mode,
+	output_handle_done,
+	output_handle_scale,
 };
 
 static void
@@ -552,10 +578,12 @@ add_output_info(struct weston_info *info, uint32_t id, uint32_t version)
 	output->global.print = print_output_info;
 	output->global.destroy = destroy_output_info;
 
+	output->version = MIN(version, 2);
+	output->geometry.scale = 1;
 	wl_list_init(&output->modes);
 
 	output->output = wl_registry_bind(info->registry, id,
-					  &wl_output_interface, 1);
+					  &wl_output_interface, output->version);
 	wl_output_add_listener(output->output, &output_listener,
 			       output);
 
