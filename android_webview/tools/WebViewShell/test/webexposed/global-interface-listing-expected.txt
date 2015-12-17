@@ -226,6 +226,9 @@ interface Blob
     getter type
     method constructor
     method slice
+interface BlobEvent : Event
+    getter data
+    method constructor
 interface CDATASection : Text
     method constructor
 interface CSS
@@ -944,10 +947,6 @@ interface Element : Node
     getter onpaste
     getter onsearch
     getter onselectstart
-    getter ontouchcancel
-    getter ontouchend
-    getter ontouchmove
-    getter ontouchstart
     getter onwebkitfullscreenchange
     getter onwebkitfullscreenerror
     getter onwheel
@@ -1008,10 +1007,6 @@ interface Element : Node
     setter onpaste
     setter onsearch
     setter onselectstart
-    setter ontouchcancel
-    setter ontouchend
-    setter ontouchmove
-    setter ontouchstart
     setter onwebkitfullscreenchange
     setter onwebkitfullscreenerror
     setter onwheel
@@ -1299,9 +1294,11 @@ interface HTMLBodyElement : HTMLElement
     getter onpagehide
     getter onpageshow
     getter onpopstate
+    getter onrejectionhandled
     getter onresize
     getter onscroll
     getter onstorage
+    getter onunhandledrejection
     getter onunload
     getter text
     getter vLink
@@ -1324,9 +1321,11 @@ interface HTMLBodyElement : HTMLElement
     setter onpagehide
     setter onpageshow
     setter onpopstate
+    setter onrejectionhandled
     setter onresize
     setter onscroll
     setter onstorage
+    setter onunhandledrejection
     setter onunload
     setter text
     setter vLink
@@ -1495,6 +1494,10 @@ interface HTMLElement : Element
     getter onsuspend
     getter ontimeupdate
     getter ontoggle
+    getter ontouchcancel
+    getter ontouchend
+    getter ontouchmove
+    getter ontouchstart
     getter onvolumechange
     getter onwaiting
     getter outerText
@@ -1572,6 +1575,10 @@ interface HTMLElement : Element
     setter onsuspend
     setter ontimeupdate
     setter ontoggle
+    setter ontouchcancel
+    setter ontouchend
+    setter ontouchmove
+    setter ontouchstart
     setter onvolumechange
     setter onwaiting
     setter outerText
@@ -1684,9 +1691,11 @@ interface HTMLFrameSetElement : HTMLElement
     getter onpagehide
     getter onpageshow
     getter onpopstate
+    getter onrejectionhandled
     getter onresize
     getter onscroll
     getter onstorage
+    getter onunhandledrejection
     getter onunload
     getter rows
     method constructor
@@ -1705,9 +1714,11 @@ interface HTMLFrameSetElement : HTMLElement
     setter onpagehide
     setter onpageshow
     setter onpopstate
+    setter onrejectionhandled
     setter onresize
     setter onscroll
     setter onstorage
+    setter onunhandledrejection
     setter onunload
     setter rows
 interface HTMLHRElement : HTMLElement
@@ -2022,6 +2033,7 @@ interface HTMLMediaElement : HTMLElement
     getter currentTime
     getter defaultMuted
     getter defaultPlaybackRate
+    getter disableRemotePlayback
     getter duration
     getter ended
     getter error
@@ -2055,6 +2067,7 @@ interface HTMLMediaElement : HTMLElement
     setter currentTime
     setter defaultMuted
     setter defaultPlaybackRate
+    setter disableRemotePlayback
     setter loop
     setter muted
     setter onencrypted
@@ -2701,6 +2714,7 @@ interface KeyboardEvent : UIEvent
     attribute DOM_KEY_LOCATION_STANDARD
     getter altKey
     getter charCode
+    getter code
     getter ctrlKey
     getter keyCode
     getter keyIdentifier
@@ -2837,6 +2851,31 @@ interface MediaQueryListEvent : Event
     getter matches
     getter media
     method constructor
+interface MediaRecorder : EventTarget
+    static method isTypeSupported
+    getter ignoreMutedMedia
+    getter mimeType
+    getter ondataavailable
+    getter onerror
+    getter onpause
+    getter onresume
+    getter onstart
+    getter onstop
+    getter state
+    getter stream
+    method constructor
+    method pause
+    method requestData
+    method resume
+    method start
+    method stop
+    setter ignoreMutedMedia
+    setter ondataavailable
+    setter onerror
+    setter onpause
+    setter onresume
+    setter onstart
+    setter onstop
 interface MediaSource : EventTarget
     static method isTypeSupported
     getter activeSourceBuffers
@@ -3008,9 +3047,12 @@ interface Navigator
     method vibrate
     method webkitGetUserMedia
 interface NetworkInformation : EventTarget
+    getter downlinkMax
+    getter onchange
     getter ontypechange
     getter type
     method constructor
+    setter onchange
     setter ontypechange
 interface Node : EventTarget
     attribute ATTRIBUTE_NODE
@@ -3100,7 +3142,9 @@ interface OfflineAudioCompletionEvent : Event
 interface OfflineAudioContext : AudioContext
     getter oncomplete
     method constructor
+    method resume
     method startRendering
+    method suspend
     setter oncomplete
 interface Option
     method constructor
@@ -3235,6 +3279,10 @@ interface ProgressEvent : Event
     getter lengthComputable
     getter loaded
     getter total
+    method constructor
+interface PromiseRejectionEvent : Event
+    getter promise
+    getter reason
     method constructor
 interface RTCIceCandidate
     getter candidate
@@ -3533,6 +3581,10 @@ interface SVGElement : Element
     getter onsuspend
     getter ontimeupdate
     getter ontoggle
+    getter ontouchcancel
+    getter ontouchend
+    getter ontouchmove
+    getter ontouchstart
     getter onvolumechange
     getter onwaiting
     getter ownerSVGElement
@@ -3599,6 +3651,10 @@ interface SVGElement : Element
     setter onsuspend
     setter ontimeupdate
     setter ontoggle
+    setter ontouchcancel
+    setter ontouchend
+    setter ontouchmove
+    setter ontouchstart
     setter onvolumechange
     setter onwaiting
     setter style
@@ -3904,7 +3960,6 @@ interface SVGGraphicsElement : SVGElement
     method getBBox
     method getCTM
     method getScreenCTM
-    method getTransformToElement
 interface SVGImageElement : SVGGraphicsElement
     getter height
     getter href
@@ -4415,6 +4470,7 @@ interface ServiceWorkerMessageEvent : Event
 interface ServiceWorkerRegistration : EventTarget
     getter onupdatefound
     getter scope
+    getter sync
     method constructor
     method unregister
     method update
@@ -4475,6 +4531,10 @@ interface SubtleCrypto
     method unwrapKey
     method verify
     method wrapKey
+interface SyncManager
+    method constructor
+    method getTags
+    method register
 interface Text : CharacterData
     getter wholeText
     method constructor
@@ -5514,7 +5574,9 @@ interface webkitMediaStream : EventTarget
 interface webkitOfflineAudioContext : AudioContext
     getter oncomplete
     method constructor
+    method resume
     method startRendering
+    method suspend
     setter oncomplete
 interface webkitRTCPeerConnection : EventTarget
     getter iceConnectionState
@@ -5665,6 +5727,7 @@ interface webkitURL
     attribute onpopstate
     attribute onprogress
     attribute onratechange
+    attribute onrejectionhandled
     attribute onreset
     attribute onresize
     attribute onscroll
@@ -5684,6 +5747,7 @@ interface webkitURL
     attribute ontouchmove
     attribute ontouchstart
     attribute ontransitionend
+    attribute onunhandledrejection
     attribute onunload
     attribute onvolumechange
     attribute onwaiting
