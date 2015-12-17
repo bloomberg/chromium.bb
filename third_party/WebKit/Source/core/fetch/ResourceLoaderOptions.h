@@ -179,7 +179,7 @@ struct CrossThreadResourceLoaderOptionsData {
 };
 
 template<> struct CrossThreadCopierBase<false, false, false, ResourceLoaderOptions> {
-    typedef CrossThreadResourceLoaderOptionsData Type;
+    using Type = CrossThreadResourceLoaderOptionsData;
     static Type copy(const ResourceLoaderOptions& options)
     {
         return CrossThreadResourceLoaderOptionsData(options);

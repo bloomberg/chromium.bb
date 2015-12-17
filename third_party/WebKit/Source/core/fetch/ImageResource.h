@@ -46,7 +46,7 @@ class CORE_EXPORT ImageResource final : public Resource, public ImageObserver {
     friend class MemoryCache;
 
 public:
-    typedef ImageResourceClient ClientType;
+    using ClientType = ImageResourceClient;
 
     static ResourcePtr<ImageResource> fetch(FetchRequest&, ResourceFetcher*);
 

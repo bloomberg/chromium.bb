@@ -78,7 +78,7 @@ public:
 
     Resource* cachedResource(const KURL&) const;
 
-    typedef WillBeHeapHashMap<String, WeakPtrWillBeWeakMember<Resource>> DocumentResourceMap;
+    using DocumentResourceMap = WillBeHeapHashMap<String, WeakPtrWillBeWeakMember<Resource>>;
     const DocumentResourceMap& allResources() const { return m_documentResources; }
 
     bool autoLoadImages() const { return m_autoLoadImages; }
@@ -197,7 +197,7 @@ private:
 
     // We intentionally use a Member instead of a ResourcePtr.
     // See the comment on m_preloads.
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<Resource>, OwnPtr<ResourceTimingInfo>> ResourceTimingInfoMap;
+    using ResourceTimingInfoMap = WillBeHeapHashMap<RawPtrWillBeMember<Resource>, OwnPtr<ResourceTimingInfo>>;
     ResourceTimingInfoMap m_resourceTimingInfoMap;
 
     Vector<OwnPtr<ResourceTimingInfo>> m_scheduledResourceTimingReports;

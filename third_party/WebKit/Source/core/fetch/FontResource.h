@@ -41,7 +41,7 @@ class FontCustomPlatformData;
 
 class FontResource final : public Resource {
 public:
-    typedef ResourceClient ClientType;
+    using ClientType = ResourceClient;
 
     static ResourcePtr<FontResource> fetch(FetchRequest&, ResourceFetcher*);
     ~FontResource() override;

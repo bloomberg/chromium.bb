@@ -38,7 +38,7 @@ namespace blink {
 
 class ResourceLoaderSet final : public GarbageCollected<ResourceLoaderSet> {
 public:
-    typedef HeapHashSet<Member<ResourceLoader>> SetType;
+    using SetType = HeapHashSet<Member<ResourceLoader>>;
 
     static ResourceLoaderSet* create();
     DECLARE_TRACE();

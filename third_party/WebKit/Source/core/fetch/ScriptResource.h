@@ -47,7 +47,7 @@ public:
 
 class CORE_EXPORT ScriptResource final : public TextResource {
 public:
-    typedef ScriptResourceClient ClientType;
+    using ClientType = ScriptResourceClient;
     static ResourcePtr<ScriptResource> fetch(FetchRequest&, ResourceFetcher*);
 
     // Public for testing

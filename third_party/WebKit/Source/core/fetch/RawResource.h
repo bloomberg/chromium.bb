@@ -37,7 +37,7 @@ class SubstituteData;
 
 class CORE_EXPORT RawResource final : public Resource {
 public:
-    typedef RawResourceClient ClientType;
+    using ClientType = RawResourceClient;
 
     static ResourcePtr<Resource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
     static ResourcePtr<RawResource> fetch(FetchRequest&, ResourceFetcher*);

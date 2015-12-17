@@ -36,7 +36,7 @@
 
 namespace blink {
 
-typedef HashSet<String, CaseFoldingHash> HTTPHeaderSet;
+using HTTPHeaderSet = HashSet<String, CaseFoldingHash>;
 
 class Resource;
 struct ResourceLoaderOptions;

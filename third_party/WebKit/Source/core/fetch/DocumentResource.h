@@ -36,7 +36,7 @@ class ResourceFetcher;
 
 class DocumentResource final : public Resource {
 public:
-    typedef ResourceClient ClientType;
+    using ClientType = ResourceClient;
 
     static ResourcePtr<DocumentResource> fetchSVGDocument(FetchRequest&, ResourceFetcher*);
     ~DocumentResource() override;

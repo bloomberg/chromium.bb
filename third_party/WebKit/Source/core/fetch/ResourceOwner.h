@@ -39,7 +39,7 @@ namespace blink {
 template<class R, class C = typename R::ClientType>
 class ResourceOwner : public C {
 public:
-    typedef R ResourceType;
+    using ResourceType = R;
 
     virtual ~ResourceOwner();
     ResourceType* resource() const { return m_resource.get(); }

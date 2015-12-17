@@ -15,8 +15,9 @@
 namespace blink {
 
 class IntegrityMetadata;
-typedef std::pair<WTF::String, HashAlgorithm> IntegrityMetadataPair;
-typedef WTF::HashSet<IntegrityMetadataPair> IntegrityMetadataSet;
+
+using IntegrityMetadataPair = std::pair<WTF::String, HashAlgorithm>;
+using IntegrityMetadataSet = WTF::HashSet<IntegrityMetadataPair>;
 
 class CORE_EXPORT IntegrityMetadata {
 public:
