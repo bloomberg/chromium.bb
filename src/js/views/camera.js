@@ -629,7 +629,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
       chrome.storage.local.get(
           {
             effectIndex: 0,
-            toggleTimer: true,
+            toggleTimer: false,
             toggleMulti: false,
             toggleMirror: true,
           },
