@@ -117,14 +117,6 @@ class AppBannerSettingsHelper {
       const std::string& package_name_or_start_url,
       AppBannerEvent event);
 
-  // Record a UMA statistic measuring the minutes between the first visit to the
-  // site and the first showing of the banner.
-  static void RecordMinutesFromFirstVisitToShow(
-      content::WebContents* web_contents,
-      const GURL& origin_url,
-      const std::string& package_name_or_start_url,
-      base::Time time);
-
   // Set the engagement weights assigned to direct and indirect navigations.
   static void SetEngagementWeights(double direct_engagement,
                                    double indirect_engagement);
@@ -138,20 +130,12 @@ class AppBannerSettingsHelper {
   // Set the total engagement weight required to trigger a banner.
   static void SetTotalEngagementToTrigger(double total_engagement);
 
-  // Resets the engagement weights, minimum minutes, and total engagement to
-  // trigger to their default values.
-  static void SetDefaultParameters();
-
   // Bucket a given time to the given resolution in local time.
   static base::Time BucketTimeToResolution(base::Time time,
                                            unsigned int minutes);
 
   // Updates all values from field trial.
   static void UpdateFromFieldTrial();
-
-  // Returns true if the app banner trigger condition should use the site
-  // engagement score instead of the navigation-based heuristic.
-  static bool ShouldUseSiteEngagementScore();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AppBannerSettingsHelper);

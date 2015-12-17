@@ -188,9 +188,6 @@ void AppBannerDataFetcher::OnBannerPromptReply(
     return;
   }
 
-  AppBannerSettingsHelper::RecordMinutesFromFirstVisitToShow(
-      web_contents, validated_url_, GetAppIdentifier(), GetCurrentTime());
-
   // Definitely going to show the banner now.
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnDecidedWhetherToShow(this, true));
