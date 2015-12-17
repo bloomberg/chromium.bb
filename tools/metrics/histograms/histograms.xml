@@ -48381,13 +48381,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.PageRevisitBookmarksMatchTransition"
-    units="PageVisitTransitionType">
+    enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
   <summary>Transition type to a page that didn't match a bookmark.</summary>
 </histogram>
 
 <histogram name="Sync.PageRevisitBookmarksMissTransition"
-    units="PageVisitTransitionType">
+    enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
   <summary>Transition type to a page that matched a bookmark.</summary>
 </histogram>
@@ -48412,13 +48412,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.PageRevisitNavigationMatchTransition"
-    units="PageVisitTransitionType">
+    enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
   <summary>Transition type that matched a synced navigation.</summary>
 </histogram>
 
 <histogram name="Sync.PageRevisitNavigationMissTransition"
-    units="PageVisitTransitionType">
+    enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
   <summary>Transition type that didn't match a synced navigation.</summary>
 </histogram>
@@ -48439,13 +48439,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.PageRevisitTabMatchTransition"
-    units="PageVisitTransitionType">
+    enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
   <summary>Transition type that matched a synced tab.</summary>
 </histogram>
 
 <histogram name="Sync.PageRevisitTabMissTransition"
-    units="PageVisitTransitionType">
+    enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
   <summary>Transition type that didn't match a synced tab.</summary>
 </histogram>
@@ -48466,13 +48466,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.PageRevisitTypedUrlMatchTransition"
-    units="PageVisitTransitionType">
+    enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
   <summary>Transition type that didn't match a typed URL.</summary>
 </histogram>
 
 <histogram name="Sync.PageRevisitTypedUrlMissTransition"
-    units="PageVisitTransitionType">
+    enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
   <summary>Transition type that matched a typed URL.</summary>
 </histogram>
