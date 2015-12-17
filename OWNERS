@@ -13,7 +13,6 @@ rogerta@chromium.org
 stip@chromium.org
 tandrii@chromium.org
 
-per-file commit_queue*=akuegel@chromium.org
 per-file commit_queue*=phajdan.jr@chromium.org
 per-file commit_queue*=sergiyb@chromium.org
 per-file commit_queue*=tandrii@chromium.org
