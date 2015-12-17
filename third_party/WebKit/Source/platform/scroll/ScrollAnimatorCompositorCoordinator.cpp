@@ -174,9 +174,4 @@ WebCompositorAnimationPlayer* ScrollAnimatorCompositorCoordinator::compositorPla
     return m_compositorPlayer.get();
 }
 
-DEFINE_TRACE(ScrollAnimatorCompositorCoordinator)
-{
-    visitor->trace(m_compositorPlayer);
-}
-
 } // namespace blink

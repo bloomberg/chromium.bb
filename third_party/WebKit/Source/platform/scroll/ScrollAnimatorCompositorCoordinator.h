@@ -32,7 +32,7 @@ public:
     virtual void notifyCompositorAnimationFinished(int groupId) = 0;
     virtual void layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline*) = 0;
 
-    DECLARE_VIRTUAL_TRACE();
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     explicit ScrollAnimatorCompositorCoordinator();
