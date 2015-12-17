@@ -15,6 +15,7 @@
 #include "cc/proto/layer.pb.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
+#include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
@@ -26,6 +27,12 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/scroll_offset.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform.h"
 
 using ::testing::AnyNumber;
@@ -42,6 +49,321 @@ using ::testing::_;
   } while (false)
 
 namespace cc {
+
+// This class is a friend of Layer, and is used as a wrapper for all the tests
+// related to proto serialization. This is done so that it is unnecessary to
+// add FRIEND_TEST_ALL_PREFIXES in //cc/layers/layer.h for all the tests.
+// It is in the cc namespace so that it can be a friend of Layer.
+// The tests still have helpful names, and a test with the name FooBar would
+// have a wrapper method in this class called RunFooBarTest.
+class LayerSerializationTest : public testing::Test {
+ public:
+  LayerSerializationTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
+
+ protected:
+  void SetUp() override {
+    layer_tree_host_ =
+        FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
+  }
+
+  void TearDown() override {
+    layer_tree_host_->SetRootLayer(nullptr);
+    layer_tree_host_ = nullptr;
+  }
+
+  // Serializes |src| to proto and back again to a Layer, then verifies that
+  // the two Layers are equal for serialization purposes.
+  void VerifyBaseLayerPropertiesSerializationAndDeserialization(Layer* src) {
+    // This is required to ensure that properties are serialized.
+    src->SetNeedsPushProperties();
+    src->SetLayerTreeHost(layer_tree_host_.get());
+
+    // The following two members are reset during serialization, so
+    // store the original values.
+    bool stacking_order_changed = src->stacking_order_changed_;
+    gfx::Rect update_rect = src->update_rect_;
+
+    // Serialize |src| to protobuf and read the first entry in the
+    // LayerUpdate. There are no descendants, so the serialization
+    // of |src| is the only entry.
+    proto::LayerUpdate layer_update;
+    EXPECT_FALSE(src->ToLayerPropertiesProto(&layer_update));
+    ASSERT_EQ(1, layer_update.layers_size());
+    proto::LayerProperties props = layer_update.layers(0);
+
+    // The |dest| layer needs to be able to lookup the scroll and clip parents.
+    if (src->scroll_parent_)
+      layer_tree_host_->RegisterLayer(src->scroll_parent_);
+    if (src->scroll_children_) {
+      for (auto* child : *(src->scroll_children_))
+        layer_tree_host_->RegisterLayer(child);
+    }
+    if (src->clip_parent_)
+      layer_tree_host_->RegisterLayer(src->clip_parent_);
+    if (src->clip_children_) {
+      for (auto* child : *(src->clip_children_))
+        layer_tree_host_->RegisterLayer(child);
+    }
+    // Reset the LayerTreeHost registration for the |src| layer so
+    // it can be re-used for the |dest| layer.
+    src->SetLayerTreeHost(nullptr);
+
+    scoped_refptr<Layer> dest = Layer::Create(LayerSettings());
+    dest->layer_id_ = src->layer_id_;
+    dest->SetLayerTreeHost(layer_tree_host_.get());
+    dest->FromLayerPropertiesProto(props);
+
+    // Verify that both layers are equal.
+    EXPECT_EQ(src->transform_origin_, dest->transform_origin_);
+    EXPECT_EQ(src->background_color_, dest->background_color_);
+    EXPECT_EQ(src->bounds_, dest->bounds_);
+    EXPECT_EQ(src->transform_tree_index_, dest->transform_tree_index_);
+    EXPECT_EQ(src->effect_tree_index_, dest->effect_tree_index_);
+    EXPECT_EQ(src->clip_tree_index_, dest->clip_tree_index_);
+    EXPECT_EQ(src->offset_to_transform_parent_,
+              dest->offset_to_transform_parent_);
+    EXPECT_EQ(src->double_sided_, dest->double_sided_);
+    EXPECT_EQ(src->draws_content_, dest->draws_content_);
+    EXPECT_EQ(src->hide_layer_and_subtree_, dest->hide_layer_and_subtree_);
+    EXPECT_EQ(src->has_render_surface_, dest->has_render_surface_);
+    EXPECT_EQ(src->masks_to_bounds_, dest->masks_to_bounds_);
+    EXPECT_EQ(src->should_scroll_on_main_thread_,
+              dest->should_scroll_on_main_thread_);
+    EXPECT_EQ(src->have_wheel_event_handlers_,
+              dest->have_wheel_event_handlers_);
+    EXPECT_EQ(src->have_scroll_event_handlers_,
+              dest->have_scroll_event_handlers_);
+    EXPECT_EQ(src->non_fast_scrollable_region_,
+              dest->non_fast_scrollable_region_);
+    EXPECT_EQ(src->touch_event_handler_region_,
+              dest->touch_event_handler_region_);
+    EXPECT_EQ(src->scroll_blocks_on_, dest->scroll_blocks_on_);
+    EXPECT_EQ(src->contents_opaque_, dest->contents_opaque_);
+    EXPECT_EQ(src->opacity_, dest->opacity_);
+    EXPECT_EQ(src->blend_mode_, dest->blend_mode_);
+    EXPECT_EQ(src->is_root_for_isolated_group_,
+              dest->is_root_for_isolated_group_);
+    EXPECT_EQ(src->position_, dest->position_);
+    EXPECT_EQ(src->is_container_for_fixed_position_layers_,
+              dest->is_container_for_fixed_position_layers_);
+    EXPECT_EQ(src->position_constraint_, dest->position_constraint_);
+    EXPECT_EQ(src->should_flatten_transform_, dest->should_flatten_transform_);
+    EXPECT_EQ(src->should_flatten_transform_from_property_tree_,
+              dest->should_flatten_transform_from_property_tree_);
+    EXPECT_EQ(src->num_layer_or_descendants_with_copy_request_,
+              dest->num_layer_or_descendants_with_copy_request_);
+    EXPECT_EQ(src->draw_blend_mode_, dest->draw_blend_mode_);
+    EXPECT_EQ(src->use_parent_backface_visibility_,
+              dest->use_parent_backface_visibility_);
+    EXPECT_EQ(src->transform_, dest->transform_);
+    EXPECT_EQ(src->transform_is_invertible_, dest->transform_is_invertible_);
+    EXPECT_EQ(src->sorting_context_id_, dest->sorting_context_id_);
+    EXPECT_EQ(src->num_descendants_that_draw_content_,
+              dest->num_descendants_that_draw_content_);
+    EXPECT_EQ(src->scroll_clip_layer_id_, dest->scroll_clip_layer_id_);
+    EXPECT_EQ(src->user_scrollable_horizontal_,
+              dest->user_scrollable_horizontal_);
+    EXPECT_EQ(src->user_scrollable_vertical_, dest->user_scrollable_vertical_);
+    EXPECT_EQ(src->scroll_offset_, dest->scroll_offset_);
+    EXPECT_EQ(src->scroll_compensation_adjustment_,
+              dest->scroll_compensation_adjustment_);
+    EXPECT_EQ(update_rect, dest->update_rect_);
+    EXPECT_EQ(stacking_order_changed, dest->stacking_order_changed_);
+
+    if (src->scroll_parent_) {
+      ASSERT_TRUE(dest->scroll_parent_);
+      EXPECT_EQ(src->scroll_parent_->id(), dest->scroll_parent_->id());
+    } else {
+      EXPECT_FALSE(dest->scroll_parent_);
+    }
+    if (src->scroll_children_) {
+      ASSERT_TRUE(dest->scroll_children_);
+      EXPECT_EQ(*(src->scroll_children_), *(dest->scroll_children_));
+    } else {
+      EXPECT_FALSE(dest->scroll_children_);
+    }
+
+    if (src->clip_parent_) {
+      ASSERT_TRUE(dest->clip_parent_);
+      EXPECT_EQ(src->clip_parent_->id(), dest->clip_parent_->id());
+    } else {
+      ASSERT_FALSE(dest->clip_parent_);
+    }
+    if (src->clip_children_) {
+      ASSERT_TRUE(dest->clip_children_);
+      EXPECT_EQ(*(src->clip_children_), *(dest->clip_children_));
+    } else {
+      EXPECT_FALSE(dest->clip_children_);
+    }
+
+    // The following two members should have been reset during serialization.
+    EXPECT_FALSE(src->stacking_order_changed_);
+    EXPECT_EQ(gfx::Rect(), src->update_rect_);
+
+    // Before deleting |dest|, the LayerTreeHost must be unset.
+    dest->SetLayerTreeHost(nullptr);
+
+    // Cleanup scroll tree.
+    if (src->scroll_parent_)
+      layer_tree_host_->UnregisterLayer(src->scroll_parent_);
+    src->scroll_parent_ = nullptr;
+    dest->scroll_parent_ = nullptr;
+    if (src->scroll_children_) {
+      for (auto* child : *(src->scroll_children_))
+        layer_tree_host_->UnregisterLayer(child);
+      src->scroll_children_.reset();
+      dest->scroll_children_.reset();
+    }
+
+    // Cleanup clip tree.
+    if (src->clip_parent_)
+      layer_tree_host_->UnregisterLayer(src->clip_parent_);
+    src->clip_parent_ = nullptr;
+    dest->clip_parent_ = nullptr;
+    if (src->clip_children_) {
+      for (auto* child : *(src->clip_children_))
+        layer_tree_host_->UnregisterLayer(child);
+      src->clip_children_.reset();
+      dest->clip_children_.reset();
+    }
+  }
+
+  void RunNoMembersChangedTest() {
+    scoped_refptr<Layer> layer = Layer::Create(LayerSettings());
+    VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
+  }
+
+  void RunArbitraryMembersChangedTest() {
+    scoped_refptr<Layer> layer = Layer::Create(LayerSettings());
+    layer->transform_origin_ = gfx::Point3F(3.0f, 1.0f, 4.0f);
+    layer->background_color_ = SK_ColorRED;
+    layer->bounds_ = gfx::Size(3, 14);
+    layer->transform_tree_index_ = -1;
+    layer->effect_tree_index_ = -1;
+    layer->clip_tree_index_ = 71;
+    layer->offset_to_transform_parent_ = gfx::Vector2dF(3.14f, 1.618f);
+    layer->double_sided_ = true;
+    layer->draws_content_ = true;
+    layer->hide_layer_and_subtree_ = false;
+    layer->has_render_surface_ = false;
+    layer->masks_to_bounds_ = true;
+    layer->should_scroll_on_main_thread_ = false;
+    layer->have_wheel_event_handlers_ = true;
+    layer->have_scroll_event_handlers_ = false;
+    layer->non_fast_scrollable_region_ = Region(gfx::Rect(5, 1, 14, 3));
+    layer->touch_event_handler_region_ = Region(gfx::Rect(3, 14, 1, 5));
+    layer->scroll_blocks_on_ = SCROLL_BLOCKS_ON_NONE;
+    layer->contents_opaque_ = true;
+    layer->opacity_ = 1.f;
+    layer->blend_mode_ = SkXfermode::kSrcOver_Mode;
+    layer->is_root_for_isolated_group_ = true;
+    layer->position_ = gfx::PointF(3.14f, 6.28f);
+    layer->is_container_for_fixed_position_layers_ = true;
+    LayerPositionConstraint pos_con;
+    pos_con.set_is_fixed_to_bottom_edge(true);
+    layer->position_constraint_ = pos_con;
+    layer->should_flatten_transform_ = true;
+    layer->should_flatten_transform_from_property_tree_ = true;
+    layer->num_layer_or_descendants_with_copy_request_ = 19;
+    layer->draw_blend_mode_ = SkXfermode::kSrcOut_Mode;
+    layer->use_parent_backface_visibility_ = true;
+    gfx::Transform transform;
+    transform.Rotate(90);
+    layer->transform_ = transform;
+    layer->transform_is_invertible_ = true;
+    layer->sorting_context_id_ = 0;
+    layer->num_descendants_that_draw_content_ = 5;
+    layer->scroll_clip_layer_id_ = Layer::INVALID_ID;
+    layer->user_scrollable_horizontal_ = false;
+    layer->user_scrollable_vertical_ = true;
+    layer->scroll_offset_ = gfx::ScrollOffset(3, 14);
+    layer->scroll_compensation_adjustment_ = gfx::Vector2dF(6.28f, 3.14f);
+    layer->update_rect_ = gfx::Rect(14, 15);
+    layer->stacking_order_changed_ = true;
+
+    VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
+  }
+
+  void RunAllMembersChangedTest() {
+    scoped_refptr<Layer> layer = Layer::Create(LayerSettings());
+    layer->transform_origin_ = gfx::Point3F(3.0f, 1.0f, 4.0f);
+    layer->background_color_ = SK_ColorRED;
+    layer->bounds_ = gfx::Size(3, 14);
+    layer->transform_tree_index_ = 39;
+    layer->effect_tree_index_ = 17;
+    layer->clip_tree_index_ = 71;
+    layer->offset_to_transform_parent_ = gfx::Vector2dF(3.14f, 1.618f);
+    layer->double_sided_ = !layer->double_sided_;
+    layer->draws_content_ = !layer->draws_content_;
+    layer->hide_layer_and_subtree_ = !layer->hide_layer_and_subtree_;
+    layer->has_render_surface_ = !layer->has_render_surface_;
+    layer->masks_to_bounds_ = !layer->masks_to_bounds_;
+    layer->should_scroll_on_main_thread_ =
+        !layer->should_scroll_on_main_thread_;
+    layer->have_wheel_event_handlers_ = !layer->have_wheel_event_handlers_;
+    layer->have_scroll_event_handlers_ = !layer->have_scroll_event_handlers_;
+    layer->non_fast_scrollable_region_ = Region(gfx::Rect(5, 1, 14, 3));
+    layer->touch_event_handler_region_ = Region(gfx::Rect(3, 14, 1, 5));
+    layer->scroll_blocks_on_ = SCROLL_BLOCKS_ON_WHEEL_EVENT;
+    layer->contents_opaque_ = !layer->contents_opaque_;
+    layer->opacity_ = 3.14f;
+    layer->blend_mode_ = SkXfermode::kSrcIn_Mode;
+    layer->is_root_for_isolated_group_ = !layer->is_root_for_isolated_group_;
+    layer->position_ = gfx::PointF(3.14f, 6.28f);
+    layer->is_container_for_fixed_position_layers_ =
+        !layer->is_container_for_fixed_position_layers_;
+    LayerPositionConstraint pos_con;
+    pos_con.set_is_fixed_to_bottom_edge(true);
+    layer->position_constraint_ = pos_con;
+    layer->should_flatten_transform_ = !layer->should_flatten_transform_;
+    layer->should_flatten_transform_from_property_tree_ =
+        !layer->should_flatten_transform_from_property_tree_;
+    layer->num_layer_or_descendants_with_copy_request_ = 19;
+    layer->draw_blend_mode_ = SkXfermode::kSrcOut_Mode;
+    layer->use_parent_backface_visibility_ =
+        !layer->use_parent_backface_visibility_;
+    gfx::Transform transform;
+    transform.Rotate(90);
+    layer->transform_ = transform;
+    layer->transform_is_invertible_ = !layer->transform_is_invertible_;
+    layer->sorting_context_id_ = 42;
+    layer->num_descendants_that_draw_content_ = 5;
+    layer->scroll_clip_layer_id_ = 17;
+    layer->user_scrollable_horizontal_ = !layer->user_scrollable_horizontal_;
+    layer->user_scrollable_vertical_ = !layer->user_scrollable_vertical_;
+    layer->scroll_offset_ = gfx::ScrollOffset(3, 14);
+    layer->scroll_compensation_adjustment_ = gfx::Vector2dF(6.28f, 3.14f);
+    layer->update_rect_ = gfx::Rect(14, 15);
+    layer->stacking_order_changed_ = !layer->stacking_order_changed_;
+
+    VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
+  }
+
+  void RunScrollAndClipLayersTest() {
+    scoped_refptr<Layer> layer = Layer::Create(LayerSettings());
+
+    scoped_refptr<Layer> scroll_parent = Layer::Create(LayerSettings());
+    layer->scroll_parent_ = scroll_parent.get();
+    scoped_refptr<Layer> scroll_child = Layer::Create(LayerSettings());
+    layer->scroll_children_.reset(new std::set<Layer*>);
+    layer->scroll_children_->insert(scroll_child.get());
+
+    scoped_refptr<Layer> clip_parent = Layer::Create(LayerSettings());
+    layer->clip_parent_ = clip_parent.get();
+    layer->clip_children_.reset(new std::set<Layer*>);
+    scoped_refptr<Layer> clip_child1 = Layer::Create(LayerSettings());
+    layer->clip_children_->insert(clip_child1.get());
+    scoped_refptr<Layer> clip_child2 = Layer::Create(LayerSettings());
+    layer->clip_children_->insert(clip_child2.get());
+
+    VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
+  }
+
+  TestTaskGraphRunner task_graph_runner_;
+  FakeLayerTreeHostClient fake_client_;
+  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
+};
+
 namespace {
 
 class MockLayerTreeHost : public LayerTreeHost {
@@ -1678,8 +2000,9 @@ TEST_F(LayerTest, SimplePropertiesSerialization) {
   EXPECT_TRUE(dest_b_mask.has_base());
 }
 
-TEST_F(LayerTest, SimplePropertiesDeserialization) {
+TEST_F(LayerSerializationTest, SimplePropertiesDeserialization) {
   scoped_refptr<Layer> layer = Layer::Create(LayerSettings());
+  layer->SetLayerTreeHost(layer_tree_host_.get());
   proto::LayerProperties properties;
   properties.set_id(layer->id());
 
@@ -1706,6 +2029,24 @@ TEST_F(LayerTest, SimplePropertiesDeserialization) {
   layer->FromLayerPropertiesProto(properties);
   EXPECT_TRUE(layer->needs_push_properties());
   EXPECT_FALSE(layer->descendant_needs_push_properties());
+
+  layer->SetLayerTreeHost(nullptr);
+}
+
+TEST_F(LayerSerializationTest, NoMembersChanged) {
+  RunNoMembersChangedTest();
+}
+
+TEST_F(LayerSerializationTest, ArbitraryMembersChanged) {
+  RunArbitraryMembersChangedTest();
+}
+
+TEST_F(LayerSerializationTest, AllMembersChanged) {
+  RunAllMembersChangedTest();
+}
+
+TEST_F(LayerSerializationTest, ScrollAndClipLayers) {
+  RunScrollAndClipLayersTest();
 }
 
 TEST_F(LayerTest, ElementIdAndMutablePropertiesArePushed) {

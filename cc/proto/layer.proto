@@ -4,6 +4,17 @@
 
 syntax = "proto2";
 
+import "layer_position_constraint.proto";
+import "point3f.proto";
+import "pointf.proto";
+import "region.proto";
+import "rect.proto";
+import "scroll_offset.proto";
+import "size.proto";
+import "skxfermode.proto";
+import "transform.proto";
+import "vector2df.proto";
+
 package cc.proto;
 
 option optimize_for = LITE_RUNTIME;
@@ -50,5 +61,63 @@ message LayerProperties {
 }
 
 message BaseLayerProperties {
-  // TODO(nyquist): Add all the required properties below. Huzzah!
+  optional Point3F transform_origin = 1;
+  optional uint32 background_color = 2;
+  optional Size bounds = 3;
+  optional int64 transform_free_index = 4;
+  optional int64 effect_tree_index = 5;
+  optional int64 clip_tree_index = 6;
+  optional Vector2dF offset_to_transform_parent = 7;
+  optional bool double_sided = 8;
+  optional bool draws_content = 9;
+  optional bool hide_layer_and_subtree = 10;
+  optional bool has_render_surface = 11;
+  // TODO(nyquist): Add support for FilterOperation. See crbug.com/541321.
+  // repeated FilterOperation filters = 12;
+  // repeated FilterOperation background_filters = 13;
+  optional bool masks_to_bounds = 14;
+  optional bool should_scroll_on_main_thread = 15;
+  optional bool have_wheel_event_handlers = 16;
+  optional bool have_scroll_event_handlers = 17;
+  optional Region non_fast_scrollable_region = 18;
+  optional Region touch_event_handler_region = 19;
+  optional int32 scroll_blocks_on = 20;
+  optional bool contents_opaque = 21;
+  optional float opacity = 22;
+  optional SkXfermode.Mode blend_mode = 23;
+  optional bool is_root_for_isolated_group = 24;
+  optional PointF position = 25;
+  optional bool is_container_for_fixed_position_layers = 26;
+  optional LayerPositionConstraint position_constraint = 27;
+  optional bool should_flatten_transform = 28;
+  optional bool should_flatten_transform_from_property_tree = 29;
+  optional int32 num_layer_or_descendants_with_copy_request = 30;
+  optional SkXfermode.Mode draw_blend_mode = 31;
+  optional bool use_parent_backface_visibility = 32;
+  optional Transform transform = 33;
+  optional bool transform_is_invertible = 34;
+  optional int32 sorting_context_id = 35;
+  optional int32 num_descendants_that_draw_content = 36;
+
+  optional int32 scroll_clip_layer_id = 37;
+  optional bool user_scrollable_horizontal = 38;
+  optional bool user_scrollable_vertical = 39;
+
+  optional int32 scroll_parent_id = 40;
+  repeated int32 scroll_children_ids = 41;
+
+  optional int32 clip_parent_id = 42;
+  repeated int32 clip_children_ids = 43;
+
+  optional ScrollOffset scroll_offset = 44;
+  optional Vector2dF scroll_compensation_adjustment = 45;
+
+  optional Rect update_rect = 46;
+  optional bool stacking_order_changed = 47;
+
+  // TODO(nyquist): Figure out what to do with LayerAnimationController.
+  // optional LayerAnimationController layer_animation_controller = 48;
+
+  // TODO(nyquist): Figure out what to do with FrameTimingRequests.
+  // repeated FrameTimingRequest frame_timing_requests = 49;
 }

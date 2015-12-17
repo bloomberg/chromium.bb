@@ -623,7 +623,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // |needs_push_properties_| or |num_dependents_need_push_properties_| as they
   // are dealt with at a higher level. This is only called if
   // |needs_push_properties_| is set. For descendants of Layer, implementations
-  // must first call their parent class.
+  // must first call their parent class. This method is not marked as const
+  // as some implementations need reset member fields, similarly to
+  // PushPropertiesTo().
   virtual void LayerSpecificPropertiesToProto(proto::LayerProperties* proto);
 
   // Deserialize all the necessary properties from proto::LayerProperties into
@@ -669,7 +671,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
  private:
   friend class base::RefCounted<Layer>;
+  friend class LayerSerializationTest;
   friend class LayerTreeHostCommon;
+
   void SetParent(Layer* layer);
   bool DescendantIsFixedToContainerLayer() const;
 

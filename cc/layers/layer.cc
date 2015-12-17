@@ -27,7 +27,10 @@
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/proto/cc_conversions.h"
+#include "cc/proto/gfx_conversions.h"
 #include "cc/proto/layer.pb.h"
+#include "cc/proto/skia_conversions.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -1463,15 +1466,197 @@ void Layer::FromLayerPropertiesProto(const proto::LayerProperties& proto) {
 }
 
 void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
-  // TODO(nyquist): Write all required properties to |proto|.
-  // Create an empty proto::LayerProperties::base message.
-  proto->mutable_base();
+  proto::BaseLayerProperties* base = proto->mutable_base();
+
+  bool use_paint_properties = layer_tree_host_ &&
+                              paint_properties_.source_frame_number ==
+                                  layer_tree_host_->source_frame_number();
+
+  Point3FToProto(transform_origin_, base->mutable_transform_origin());
+  base->set_background_color(background_color_);
+  SizeToProto(use_paint_properties ? paint_properties_.bounds : bounds_,
+              base->mutable_bounds());
+
+  // TODO(nyquist): Figure out what to do with debug info. See crbug.com/570372.
+
+  base->set_transform_free_index(transform_tree_index_);
+  base->set_effect_tree_index(effect_tree_index_);
+  base->set_clip_tree_index(clip_tree_index_);
+  Vector2dFToProto(offset_to_transform_parent_,
+                   base->mutable_offset_to_transform_parent());
+  base->set_double_sided(double_sided_);
+  base->set_draws_content(draws_content_);
+  base->set_hide_layer_and_subtree(hide_layer_and_subtree_);
+  base->set_has_render_surface(has_render_surface_);
+
+  // TODO(nyquist): Add support for serializing FilterOperations for
+  // |filters_| and |background_filters_|. See crbug.com/541321.
+
+  base->set_masks_to_bounds(masks_to_bounds_);
+  base->set_should_scroll_on_main_thread(should_scroll_on_main_thread_);
+  base->set_have_wheel_event_handlers(have_wheel_event_handlers_);
+  base->set_have_scroll_event_handlers(have_scroll_event_handlers_);
+  RegionToProto(non_fast_scrollable_region_,
+                base->mutable_non_fast_scrollable_region());
+  RegionToProto(touch_event_handler_region_,
+                base->mutable_touch_event_handler_region());
+  base->set_scroll_blocks_on(scroll_blocks_on_);
+  base->set_contents_opaque(contents_opaque_);
+  base->set_opacity(opacity_);
+  base->set_blend_mode(SkXfermodeModeToProto(blend_mode_));
+  base->set_is_root_for_isolated_group(is_root_for_isolated_group_);
+  PointFToProto(position_, base->mutable_position());
+  base->set_is_container_for_fixed_position_layers(
+      is_container_for_fixed_position_layers_);
+  position_constraint_.ToProtobuf(base->mutable_position_constraint());
+  base->set_should_flatten_transform(should_flatten_transform_);
+  base->set_should_flatten_transform_from_property_tree(
+      should_flatten_transform_from_property_tree_);
+  base->set_num_layer_or_descendants_with_copy_request(
+      num_layer_or_descendants_with_copy_request_);
+  base->set_draw_blend_mode(SkXfermodeModeToProto(draw_blend_mode_));
+  base->set_use_parent_backface_visibility(use_parent_backface_visibility_);
+  TransformToProto(transform_, base->mutable_transform());
+  base->set_transform_is_invertible(transform_is_invertible_);
+  base->set_sorting_context_id(sorting_context_id_);
+  base->set_num_descendants_that_draw_content(
+      num_descendants_that_draw_content_);
+
+  base->set_scroll_clip_layer_id(scroll_clip_layer_id_);
+  base->set_user_scrollable_horizontal(user_scrollable_horizontal_);
+  base->set_user_scrollable_vertical(user_scrollable_vertical_);
+
+  int scroll_parent_id = scroll_parent_ ? scroll_parent_->id() : INVALID_ID;
+  base->set_scroll_parent_id(scroll_parent_id);
+
+  if (scroll_children_) {
+    for (auto* child : *scroll_children_)
+      base->add_scroll_children_ids(child->id());
+  }
+
+  int clip_parent_id = clip_parent_ ? clip_parent_->id() : INVALID_ID;
+  base->set_clip_parent_id(clip_parent_id);
+
+  if (clip_children_) {
+    for (auto* child : *clip_children_)
+      base->add_clip_children_ids(child->id());
+  }
+
+  ScrollOffsetToProto(scroll_offset_, base->mutable_scroll_offset());
+  Vector2dFToProto(scroll_compensation_adjustment_,
+                   base->mutable_scroll_compensation_adjustment());
+
+  // TODO(nyquist): Figure out what to do with CopyRequests.
+  // See crbug.com/570374.
+
+  RectToProto(update_rect_, base->mutable_update_rect());
+  base->set_stacking_order_changed(stacking_order_changed_);
+
+  // TODO(nyquist): Figure out what to do with LayerAnimationController.
+  // See crbug.com/570376.
+  // TODO(nyquist): Figure out what to do with FrameTimingRequests. See
+  // crbug.com/570377.
+
+  stacking_order_changed_ = false;
+  update_rect_ = gfx::Rect();
 }
 
 void Layer::FromLayerSpecificPropertiesProto(
     const proto::LayerProperties& proto) {
   DCHECK(proto.has_base());
-  // TODO(nyquist): Read all required properties from |proto|.
+  DCHECK(layer_tree_host_);
+  const proto::BaseLayerProperties& base = proto.base();
+
+  transform_origin_ = ProtoToPoint3F(base.transform_origin());
+  background_color_ = base.background_color();
+  bounds_ = ProtoToSize(base.bounds());
+
+  transform_tree_index_ = base.transform_free_index();
+  effect_tree_index_ = base.effect_tree_index();
+  clip_tree_index_ = base.clip_tree_index();
+  offset_to_transform_parent_ =
+      ProtoToVector2dF(base.offset_to_transform_parent());
+  double_sided_ = base.double_sided();
+  draws_content_ = base.draws_content();
+  hide_layer_and_subtree_ = base.hide_layer_and_subtree();
+  has_render_surface_ = base.has_render_surface();
+  masks_to_bounds_ = base.masks_to_bounds();
+  should_scroll_on_main_thread_ = base.should_scroll_on_main_thread();
+  have_wheel_event_handlers_ = base.have_wheel_event_handlers();
+  have_scroll_event_handlers_ = base.have_scroll_event_handlers();
+  non_fast_scrollable_region_ =
+      RegionFromProto(base.non_fast_scrollable_region());
+  touch_event_handler_region_ =
+      RegionFromProto(base.touch_event_handler_region());
+  scroll_blocks_on_ = (ScrollBlocksOn)base.scroll_blocks_on();
+  contents_opaque_ = base.contents_opaque();
+  opacity_ = base.opacity();
+  blend_mode_ = SkXfermodeModeFromProto(base.blend_mode());
+  is_root_for_isolated_group_ = base.is_root_for_isolated_group();
+  position_ = ProtoToPointF(base.position());
+  is_container_for_fixed_position_layers_ =
+      base.is_container_for_fixed_position_layers();
+  position_constraint_.FromProtobuf(base.position_constraint());
+  should_flatten_transform_ = base.should_flatten_transform();
+  should_flatten_transform_from_property_tree_ =
+      base.should_flatten_transform_from_property_tree();
+  num_layer_or_descendants_with_copy_request_ =
+      base.num_layer_or_descendants_with_copy_request();
+  draw_blend_mode_ = SkXfermodeModeFromProto(base.draw_blend_mode());
+  use_parent_backface_visibility_ = base.use_parent_backface_visibility();
+  transform_ = ProtoToTransform(base.transform());
+  transform_is_invertible_ = base.transform_is_invertible();
+  sorting_context_id_ = base.sorting_context_id();
+  num_descendants_that_draw_content_ = base.num_descendants_that_draw_content();
+
+  scroll_clip_layer_id_ = base.scroll_clip_layer_id();
+  user_scrollable_horizontal_ = base.user_scrollable_horizontal();
+  user_scrollable_vertical_ = base.user_scrollable_vertical();
+
+  scroll_parent_ = base.scroll_parent_id() == INVALID_ID
+                       ? nullptr
+                       : layer_tree_host_->LayerById(base.scroll_parent_id());
+
+  // If there have been scroll children entries in previous deserializations,
+  // clear out the set. If there have been none, initialize the set of children.
+  // After this, the set is in the correct state to only add the new children.
+  // If the set of children has not changed, for now this code still rebuilds
+  // the set.
+  if (scroll_children_)
+    scroll_children_->clear();
+  else if (base.scroll_children_ids_size() > 0)
+    scroll_children_.reset(new std::set<Layer*>);
+  for (int i = 0; i < base.scroll_children_ids_size(); ++i) {
+    int child_id = base.scroll_children_ids(i);
+    scoped_refptr<Layer> child = layer_tree_host_->LayerById(child_id);
+    scroll_children_->insert(child.get());
+  }
+
+  clip_parent_ = base.clip_parent_id() == INVALID_ID
+                     ? nullptr
+                     : layer_tree_host_->LayerById(base.clip_parent_id());
+
+  // If there have been clip children entries in previous deserializations,
+  // clear out the set. If there have been none, initialize the set of children.
+  // After this, the set is in the correct state to only add the new children.
+  // If the set of children has not changed, for now this code still rebuilds
+  // the set.
+  if (clip_children_)
+    clip_children_->clear();
+  else if (base.clip_children_ids_size() > 0)
+    clip_children_.reset(new std::set<Layer*>);
+  for (int i = 0; i < base.clip_children_ids_size(); ++i) {
+    int child_id = base.clip_children_ids(i);
+    scoped_refptr<Layer> child = layer_tree_host_->LayerById(child_id);
+    clip_children_->insert(child.get());
+  }
+
+  scroll_offset_ = ProtoToScrollOffset(base.scroll_offset());
+  scroll_compensation_adjustment_ =
+      ProtoToVector2dF(base.scroll_compensation_adjustment());
+
+  update_rect_.Union(ProtoToRect(base.update_rect()));
+  stacking_order_changed_ = base.stacking_order_changed();
 }
 
 scoped_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
