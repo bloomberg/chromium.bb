@@ -58,6 +58,10 @@ bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void SynchronousCompositorHost::DidBecomeCurrent() {
+  client_->DidBecomeCurrent(this);
+}
+
 scoped_ptr<cc::CompositorFrame> SynchronousCompositorHost::DemandDrawHw(
     const gfx::Size& surface_size,
     const gfx::Transform& transform,

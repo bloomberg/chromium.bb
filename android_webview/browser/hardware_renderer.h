@@ -51,6 +51,8 @@ class HardwareRenderer : public cc::DisplayClient,
                            cc::BeginFrameSource* begin_frame_source) override;
 
   void ReturnResourcesInChildFrame();
+  void ReturnResourcesToCompositor(const cc::ReturnedResourceArray& resources,
+                                   unsigned int compositor_routing_id);
 
   SharedRendererState* shared_renderer_state_;
 
@@ -76,6 +78,7 @@ class HardwareRenderer : public cc::DisplayClient,
   scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   cc::SurfaceId child_id_;
   cc::SurfaceId root_id_;
+  unsigned int compositor_id_;
 
   // This is owned by |display_|.
   ParentOutputSurface* output_surface_;

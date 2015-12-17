@@ -1837,6 +1837,8 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     sync_compositor_ = SynchronousCompositorBase::Create(
         this, content_view_core_->GetWebContents());
   }
+  if (sync_compositor_)
+    sync_compositor_->DidBecomeCurrent();
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks(

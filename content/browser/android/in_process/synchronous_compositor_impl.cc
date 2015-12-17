@@ -93,6 +93,7 @@ void SynchronousCompositorImpl::RegisterWithClient() {
   registered_with_client_ = true;
 
   compositor_client_->DidInitializeCompositor(this);
+  compositor_client_->DidBecomeCurrent(this);
 
   output_surface_->SetTreeActivationCallback(
     base::Bind(&SynchronousCompositorImpl::DidActivatePendingTree,
@@ -295,6 +296,13 @@ InputEventAckState SynchronousCompositorImpl::HandleInputEvent(
 bool SynchronousCompositorImpl::OnMessageReceived(const IPC::Message& message) {
   NOTREACHED();
   return false;
+}
+
+void SynchronousCompositorImpl::DidBecomeCurrent() {
+  // This is single process synchronous compositor. There is only one
+  // RenderViewHost.  DidBecomeCurrent could be called before the renderer
+  // objects are initialized. So hold off calling DidBecomeCurrent until
+  // RegisterWithClient. Intentional no-op here.
 }
 
 void SynchronousCompositorImpl::DeliverMessages() {

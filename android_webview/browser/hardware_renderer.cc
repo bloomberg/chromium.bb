@@ -36,6 +36,7 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
     : shared_renderer_state_(state),
       last_egl_context_(eglGetCurrentContext()),
       gl_surface_(new AwGLSurface),
+      compositor_id_(0),  // Valid compositor id starts at 1.
       output_surface_(NULL) {
   DCHECK(last_egl_context_);
 
@@ -52,7 +53,6 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
   surface_id_allocator_.reset(new cc::SurfaceIdAllocator(1));
   display_.reset(new cc::Display(this, surface_manager_.get(), nullptr, nullptr,
                                  settings));
-  surface_factory_.reset(new cc::SurfaceFactory(surface_manager_.get(), this));
 }
 
 HardwareRenderer::~HardwareRenderer() {
@@ -103,6 +103,22 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   // kModeProcess. Instead, submit the frame in "kModeDraw" stage to avoid
   // unnecessary kModeProcess.
   if (child_frame_.get() && child_frame_->frame.get()) {
+    if (compositor_id_ != child_frame_->compositor_id) {
+      if (!root_id_.is_null())
+        surface_factory_->Destroy(root_id_);
+      if (!child_id_.is_null())
+        surface_factory_->Destroy(child_id_);
+
+      root_id_ = cc::SurfaceId();
+      child_id_ = cc::SurfaceId();
+
+      // This will return all the resources to the previous compositor.
+      surface_factory_.reset();
+      compositor_id_ = child_frame_->compositor_id;
+      surface_factory_.reset(
+          new cc::SurfaceFactory(surface_manager_.get(), this));
+    }
+
     scoped_ptr<cc::CompositorFrame> child_compositor_frame =
         child_frame_->frame.Pass();
 
@@ -200,7 +216,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
 
 void HardwareRenderer::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
-  shared_renderer_state_->InsertReturnedResourcesOnRT(resources);
+  ReturnResourcesToCompositor(resources, compositor_id_);
 }
 
 void HardwareRenderer::SetBeginFrameSource(
@@ -221,9 +237,18 @@ void HardwareRenderer::ReturnResourcesInChildFrame() {
         child_frame_->frame->delegated_frame_data->resource_list,
         &resources_to_return);
 
-    ReturnResources(resources_to_return);
+    // The child frame's compositor id is not necessarily same as
+    // compositor_id_.
+    ReturnResourcesToCompositor(resources_to_return,
+                                child_frame_->compositor_id);
   }
   child_frame_.reset();
+}
+
+void HardwareRenderer::ReturnResourcesToCompositor(
+    const cc::ReturnedResourceArray& resources,
+    unsigned int compositor_id) {
+  shared_renderer_state_->InsertReturnedResourcesOnRT(resources, compositor_id);
 }
 
 }  // namespace android_webview

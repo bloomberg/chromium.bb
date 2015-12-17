@@ -212,22 +212,25 @@ bool SharedRendererState::IsInsideHardwareRelease() const {
 }
 
 void SharedRendererState::InsertReturnedResourcesOnRT(
-    const cc::ReturnedResourceArray& resources) {
+    const cc::ReturnedResourceArray& resources,
+    unsigned int compositor_id) {
   base::AutoLock lock(lock_);
-  returned_resources_.insert(
-      returned_resources_.end(), resources.begin(), resources.end());
+  cc::ReturnedResourceArray& returned_resources =
+      returned_resources_map_[compositor_id];
+  returned_resources.insert(returned_resources.end(), resources.begin(),
+                            resources.end());
 }
 
 void SharedRendererState::SwapReturnedResourcesOnUI(
-    cc::ReturnedResourceArray* resources) {
-  DCHECK(resources->empty());
+    std::map<unsigned int, cc::ReturnedResourceArray>* returned_resource_map) {
+  DCHECK(returned_resource_map->empty());
   base::AutoLock lock(lock_);
-  resources->swap(returned_resources_);
+  returned_resource_map->swap(returned_resources_map_);
 }
 
 bool SharedRendererState::ReturnedResourcesEmptyOnUI() const {
   base::AutoLock lock(lock_);
-  return returned_resources_.empty();
+  return returned_resources_map_.empty();
 }
 
 void SharedRendererState::DrawGL(AwDrawGLInfo* draw_info) {

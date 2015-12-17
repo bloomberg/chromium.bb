@@ -19,8 +19,10 @@ void TestSynchronousCompositor::SetClient(SynchronousCompositorClient* client) {
   if (client_)
     client_->DidDestroyCompositor(this);
   client_ = client;
-  if (client_)
+  if (client_) {
     client_->DidInitializeCompositor(this);
+    client_->DidBecomeCurrent(this);
+  }
 }
 
 scoped_ptr<cc::CompositorFrame> TestSynchronousCompositor::DemandDrawHw(

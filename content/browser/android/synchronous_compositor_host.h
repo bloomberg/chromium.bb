@@ -50,6 +50,7 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
       const blink::WebInputEvent& input_event) override;
   void BeginFrame(const cc::BeginFrameArgs& args) override;
   bool OnMessageReceived(const IPC::Message& message) override;
+  void DidBecomeCurrent() override;
 
  private:
   friend class SynchronousCompositorBase;

@@ -19,6 +19,7 @@ namespace android_webview {
 class ChildFrame {
  public:
   ChildFrame(scoped_ptr<cc::CompositorFrame> frame,
+             unsigned int compositor_id,
              bool viewport_rect_for_tile_priority_empty,
              const gfx::Transform& transform_for_tile_priority,
              bool offscreen_pre_raster,
@@ -26,6 +27,8 @@ class ChildFrame {
   ~ChildFrame();
 
   scoped_ptr<cc::CompositorFrame> frame;
+  // The id of the compositor this |frame| comes from.
+  const unsigned int compositor_id;
   const bool viewport_rect_for_tile_priority_empty;
   const gfx::Transform transform_for_tile_priority;
   const bool offscreen_pre_raster;

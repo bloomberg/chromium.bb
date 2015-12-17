@@ -80,6 +80,7 @@ class SynchronousCompositorImpl
   InputEventAckState HandleInputEvent(
       const blink::WebInputEvent& input_event) override;
   bool OnMessageReceived(const IPC::Message& message) override;
+  void DidBecomeCurrent() override;
 
   // SynchronousInputHandler
   void SetNeedsSynchronousAnimateInput() override;

@@ -104,9 +104,11 @@ BrowserViewRenderer::BrowserViewRenderer(
       on_new_picture_enable_(false),
       clear_view_(false),
       offscreen_pre_raster_(false),
-      fallback_tick_pending_(false) {}
+      fallback_tick_pending_(false),
+      next_compositor_id_(1) {}
 
 BrowserViewRenderer::~BrowserViewRenderer() {
+  DCHECK(compositor_map_.empty());
 }
 
 void BrowserViewRenderer::RegisterWithWebContents(
@@ -161,6 +163,9 @@ void BrowserViewRenderer::TrimMemory(const int level, const bool visible) {
 
   // Just set the memory limit to 0 and drop all tiles. This will be reset to
   // normal levels in the next DrawGL call.
+  // TODO(hush): need to setMemoryPolicy to 0 for non-current compositors too.
+  // But WebView only has non-current compositors temporarily. So don't have to
+  // do it now.
   if (!offscreen_pre_raster_)
     compositor_->SetMemoryPolicy(0u);
 }
@@ -265,10 +270,10 @@ bool BrowserViewRenderer::CompositeHw() {
     return shared_renderer_state_.HasFrameOnUI();
   }
 
-  scoped_ptr<ChildFrame> child_frame = make_scoped_ptr(
-      new ChildFrame(frame.Pass(), viewport_rect_for_tile_priority.IsEmpty(),
-                     transform_for_tile_priority, offscreen_pre_raster_,
-                     parent_draw_constraints.is_layer));
+  scoped_ptr<ChildFrame> child_frame = make_scoped_ptr(new ChildFrame(
+      frame.Pass(), GetCompositorID(compositor_),
+      viewport_rect_for_tile_priority.IsEmpty(), transform_for_tile_priority,
+      offscreen_pre_raster_, parent_draw_constraints.is_layer));
 
   // Uncommitted frame can happen with consecutive fallback ticks.
   ReturnUnusedResource(shared_renderer_state_.PassUncommittedFrameOnUI());
@@ -292,15 +297,24 @@ void BrowserViewRenderer::ReturnUnusedResource(
   cc::TransferableResource::ReturnResources(
       child_frame->frame->delegated_frame_data->resource_list,
       &frame_ack.resources);
-  if (compositor_ && !frame_ack.resources.empty())
-    compositor_->ReturnResources(frame_ack);
+  content::SynchronousCompositor* compositor =
+      compositor_map_[child_frame->compositor_id];
+  if (compositor && !frame_ack.resources.empty())
+    compositor->ReturnResources(frame_ack);
 }
 
 void BrowserViewRenderer::ReturnResourceFromParent() {
-  cc::CompositorFrameAck frame_ack;
-  shared_renderer_state_.SwapReturnedResourcesOnUI(&frame_ack.resources);
-  if (compositor_ && !frame_ack.resources.empty()) {
-    compositor_->ReturnResources(frame_ack);
+  std::map<unsigned int, cc::ReturnedResourceArray> returned_resource_map;
+  shared_renderer_state_.SwapReturnedResourcesOnUI(&returned_resource_map);
+  for (auto iterator = returned_resource_map.begin();
+       iterator != returned_resource_map.end(); iterator++) {
+    unsigned int compositor_id = iterator->first;
+    content::SynchronousCompositor* compositor = compositor_map_[compositor_id];
+    cc::CompositorFrameAck frame_ack;
+    frame_ack.resources.swap(iterator->second);
+
+    if (compositor && !frame_ack.resources.empty())
+      compositor->ReturnResources(frame_ack);
   }
 }
 
@@ -457,22 +471,59 @@ gfx::Rect BrowserViewRenderer::GetScreenRect() const {
   return gfx::Rect(client_->GetLocationOnScreen(), size_);
 }
 
+unsigned int BrowserViewRenderer::GetCompositorID(
+    content::SynchronousCompositor* compositor) {
+  for (auto iterator = compositor_map_.begin();
+       iterator != compositor_map_.end(); iterator++) {
+    if (iterator->second == compositor) {
+      return iterator->first;
+    }
+  }
+
+  DCHECK(false);
+  // Return an invalid ID (0), because ID starts with 1.
+  return 0;
+}
+
 void BrowserViewRenderer::DidInitializeCompositor(
     content::SynchronousCompositor* compositor) {
-  TRACE_EVENT0("android_webview",
-               "BrowserViewRenderer::DidInitializeCompositor");
+  TRACE_EVENT_INSTANT0("android_webview",
+                       "BrowserViewRenderer::DidInitializeCompositor",
+                       TRACE_EVENT_SCOPE_THREAD);
   DCHECK(compositor);
-  DCHECK(!compositor_);
-  compositor_ = compositor;
-  UpdateCompositorIsActive();
+  // This happens when id overflows to 0, unlikely in practice.
+  if (next_compositor_id_ == 0)
+    ++next_compositor_id_;
+
+  DCHECK(compositor_map_.find(next_compositor_id_) == compositor_map_.end());
+  compositor_map_[next_compositor_id_] = compositor;
+  next_compositor_id_++;
 }
 
 void BrowserViewRenderer::DidDestroyCompositor(
     content::SynchronousCompositor* compositor) {
-  TRACE_EVENT0("android_webview", "BrowserViewRenderer::DidDestroyCompositor");
+  TRACE_EVENT_INSTANT0("android_webview",
+                       "BrowserViewRenderer::DidDestroyCompositor",
+                       TRACE_EVENT_SCOPE_THREAD);
   DCHECK(compositor_);
-  compositor_->SetIsActive(false);
-  compositor_ = NULL;
+  if (compositor_ == compositor)
+    compositor_ = nullptr;
+  compositor->SetIsActive(false);
+  compositor_map_.erase(GetCompositorID(compositor));
+}
+
+void BrowserViewRenderer::DidBecomeCurrent(
+    content::SynchronousCompositor* compositor) {
+  TRACE_EVENT_INSTANT0("android_webview",
+                       "BrowserViewRenderer::DidBecomeCurrent",
+                       TRACE_EVENT_SCOPE_THREAD);
+  DCHECK(compositor);
+  DCHECK(GetCompositorID(compositor));
+  if (compositor_)
+    compositor_->SetIsActive(false);
+
+  compositor_ = compositor;
+  UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::SetDipScale(float dip_scale) {
