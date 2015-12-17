@@ -659,4 +659,85 @@ TEST(DisplayItemListTest, ApproximateMemoryUsage) {
   EXPECT_EQ(static_cast<size_t>(0), memory_usage);
 }
 
+TEST(DisplayItemListTest, AsValueWithRectAndNoItems) {
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(gfx::Rect(1, 2, 8, 9), DisplayItemListSettings());
+  list->Finalize();
+
+  std::string value = list->AsValue(true)->ToString();
+  EXPECT_NE(value.find("\"items\":[]"), std::string::npos);
+  EXPECT_NE(value.find("\"layer_rect\":[1,2,8,9]"), std::string::npos);
+  EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
+
+  value = list->AsValue(false)->ToString();
+  EXPECT_EQ(value.find("\"items\":"), std::string::npos);
+  EXPECT_NE(value.find("\"layer_rect\":[1,2,8,9]"), std::string::npos);
+  EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
+}
+
+TEST(DisplayItemListTest, AsValueWithRectAndItems) {
+  gfx::Rect layer_rect = gfx::Rect(1, 2, 8, 9);
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(layer_rect, DisplayItemListSettings());
+  gfx::Transform transform;
+  transform.Translate(6.f, 7.f);
+  list->CreateAndAppendItem<TransformDisplayItem>(kVisualRect, transform);
+  AppendFirstSerializationTestPicture(list, layer_rect.size());
+  list->CreateAndAppendItem<EndTransformDisplayItem>(kVisualRect);
+  list->Finalize();
+
+  std::string value = list->AsValue(true)->ToString();
+  EXPECT_NE(value.find("{\"items\":[\"TransformDisplayItem"),
+            std::string::npos);
+  EXPECT_NE(value.find("\"layer_rect\":[1,2,8,9]"), std::string::npos);
+  EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
+
+  value = list->AsValue(false)->ToString();
+  EXPECT_EQ(value.find("{\"items\":[\"TransformDisplayItem"),
+            std::string::npos);
+  EXPECT_NE(value.find("\"layer_rect\":[1,2,8,9]"), std::string::npos);
+  EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
+}
+
+TEST(DisplayItemListTest, AsValueWithEmptyRectAndNoItems) {
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(gfx::Rect(), DisplayItemListSettings());
+  list->Finalize();
+
+  std::string value = list->AsValue(true)->ToString();
+  EXPECT_NE(value.find("\"items\":[]"), std::string::npos);
+  EXPECT_NE(value.find("\"layer_rect\":[0,0,0,0]"), std::string::npos);
+  EXPECT_EQ(value.find("\"skp64\":"), std::string::npos);
+
+  value = list->AsValue(false)->ToString();
+  EXPECT_EQ(value.find("\"items\":"), std::string::npos);
+  EXPECT_NE(value.find("\"layer_rect\":[0,0,0,0]"), std::string::npos);
+  EXPECT_EQ(value.find("\"skp64\":"), std::string::npos);
+}
+
+TEST(DisplayItemListTest, AsValueWithEmptyRectAndItems) {
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(gfx::Rect(), DisplayItemListSettings());
+  gfx::Transform transform;
+  transform.Translate(6.f, 7.f);
+  list->CreateAndAppendItem<TransformDisplayItem>(kVisualRect, transform);
+  AppendFirstSerializationTestPicture(list, gfx::Size());
+  list->CreateAndAppendItem<EndTransformDisplayItem>(kVisualRect);
+  list->Finalize();
+
+  std::string value = list->AsValue(true)->ToString();
+  EXPECT_NE(value.find("\"items\":[\"TransformDisplayItem"), std::string::npos);
+  EXPECT_NE(value.find("\"layer_rect\":[0,0,0,0]"), std::string::npos);
+  // There should be one skp64 entry present associated with the test picture
+  // item, though the overall list has no skp64 as the layer rect is empty.
+  EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
+
+  value = list->AsValue(false)->ToString();
+  EXPECT_EQ(value.find("\"items\":"), std::string::npos);
+  EXPECT_NE(value.find("\"layer_rect\":[0,0,0,0]"), std::string::npos);
+  // There should be no skp64 entry present as the items aren't included and the
+  // layer rect is empty.
+  EXPECT_EQ(value.find("\"skp64\":"), std::string::npos);
+}
+
 }  // namespace cc
