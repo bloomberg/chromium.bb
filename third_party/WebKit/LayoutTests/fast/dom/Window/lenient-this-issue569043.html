@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<iframe name="frame1"></iframe>
+<script src="../../../resources/js-test.js"></script>
+<div id="description"></div>
+<div id="console"></div>
+<script>
+"use strict";
+
+description("Test that Issue 569043 has been fixed and [LenientThis] and 'super' are working as expected.");
+if (window.testRunner) {
+  testRunner.dumpAsText();
+}
+
+class A {
+  inject() {
+    super.onmousedown = Function;  // not [LenientThis]
+    super.onmouseenter = Function;  // [LenientThis]
+  }
+}
+
+A.prototype.__proto__ = window;
+
+var a = new A();
+
+a.inject.call(frame1)
+
+shouldBe("window.onmousedown", "Function");
+shouldBe("window.onmouseenter", "Function");
+shouldBeNull("frame1.onmousedown");
+shouldBeNull("frame1.onmouseenter");
+</script>
+</html>
