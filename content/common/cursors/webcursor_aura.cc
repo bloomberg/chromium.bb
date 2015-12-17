@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_util.h"
 
 using blink::WebCursorInfo;
 
@@ -110,5 +111,32 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
       return gfx::kNullCursor;
   }
 }
+
+float WebCursor::GetCursorScaleFactor() {
+  DCHECK(custom_scale_ != 0);
+  return device_scale_factor_ / custom_scale_;
+}
+
+void WebCursor::CreateScaledBitmapAndHotspotFromCustomData(
+    SkBitmap* bitmap,
+    gfx::Point* hotspot) {
+  DCHECK(custom_data_.size() > 0);
+  *hotspot = hotspot_;
+  bitmap->allocN32Pixels(custom_size_.width(), custom_size_.height());
+  memcpy(bitmap->getAddr32(0, 0), custom_data_.data(), custom_data_.size());
+  ui::ScaleAndRotateCursorBitmapAndHotpoint(
+      GetCursorScaleFactor(), gfx::Display::ROTATE_0, bitmap, hotspot);
+}
+
+// ozone has its own SetDisplayInfo that takes rotation into account
+#if !defined(USE_OZONE)
+void WebCursor::SetDisplayInfo(const gfx::Display& display) {
+  if (device_scale_factor_ == display.device_scale_factor())
+    return;
+
+  device_scale_factor_ = display.device_scale_factor();
+  CleanupPlatformData();
+}
+#endif
 
 }  // namespace content

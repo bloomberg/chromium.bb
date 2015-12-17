@@ -71,7 +71,6 @@ class CONTENT_EXPORT WebCursor {
   };
 
   WebCursor();
-  explicit WebCursor(const CursorInfo& cursor_info);
   ~WebCursor();
 
   // Copy constructor/assignment operator combine.
@@ -111,6 +110,12 @@ class CONTENT_EXPORT WebCursor {
   // Updates |device_scale_factor_| and |rotation_| based on |display|.
   void SetDisplayInfo(const gfx::Display& display);
 
+  float GetCursorScaleFactor();
+
+  void CreateScaledBitmapAndHotspotFromCustomData(
+      SkBitmap* bitmap,
+      gfx::Point* hotspot);
+
 #elif defined(OS_WIN)
   // Returns a HCURSOR representing the current WebCursor instance.
   // The ownership of the HCURSOR (does not apply to external cursors) remains
@@ -147,6 +152,13 @@ class CONTENT_EXPORT WebCursor {
   void CleanupPlatformData();
 
   void SetCustomData(const SkBitmap& image);
+
+  // Fills the custom_data vector and custom_size object with the image data
+  // taken from the bitmap.
+  void CreateCustomData(const SkBitmap& bitmap,
+                        std::vector<char>* custom_data,
+                        gfx::Size* custom_size);
+
   void ImageFromCustomData(SkBitmap* image) const;
 
   // Clamp the hotspot to the custom image's bounds, if this is a custom cursor.
@@ -173,10 +185,12 @@ class CONTENT_EXPORT WebCursor {
 #if defined(USE_AURA) && (defined(USE_X11) || defined(USE_OZONE))
   // Only used for custom cursors.
   ui::PlatformCursor platform_cursor_;
-  float device_scale_factor_;
 #elif defined(OS_WIN)
   // A custom cursor created from custom bitmap data by Webkit.
   HCURSOR custom_cursor_;
+#endif
+#if defined(USE_AURA)
+  float device_scale_factor_;
 #endif
 
 #if defined(USE_OZONE)

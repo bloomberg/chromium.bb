@@ -18,17 +18,20 @@ ui::PlatformCursor WebCursor::GetPlatformCursor() {
   if (custom_cursor_)
     return custom_cursor_;
 
-  custom_cursor_ =
-      IconUtil::CreateCursorFromDIB(
-          custom_size_,
-          hotspot_,
-          !custom_data_.empty() ? &custom_data_[0] : NULL,
-          custom_data_.size());
-  return custom_cursor_;
-}
+  SkBitmap bitmap;
+  gfx::Point hotspot;
+  CreateScaledBitmapAndHotspotFromCustomData(&bitmap, &hotspot);
 
-void WebCursor::SetDisplayInfo(const gfx::Display& display) {
-  // TODO(winguru): Add support for scaling the cursor.
+  gfx::Size custom_size;
+  std::vector<char> custom_data;
+  CreateCustomData(bitmap, &custom_data, &custom_size);
+
+  custom_cursor_ = IconUtil::CreateCursorFromDIB(
+      custom_size,
+      hotspot,
+      !custom_data.empty() ? &custom_data[0] : NULL,
+      custom_data.size());
+  return custom_cursor_;
 }
 
 void WebCursor::InitPlatformData() {

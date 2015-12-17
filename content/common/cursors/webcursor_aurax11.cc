@@ -12,7 +12,6 @@
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
-#include "ui/base/cursor/cursor_util.h"
 #include "ui/base/x/x11_util.h"
 
 namespace content {
@@ -21,31 +20,13 @@ ui::PlatformCursor WebCursor::GetPlatformCursor() {
   if (platform_cursor_)
     return platform_cursor_;
 
-  if (custom_data_.size() == 0)
-    return 0;
-
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(custom_size_.width(), custom_size_.height());
-  memcpy(bitmap.getAddr32(0, 0), custom_data_.data(), custom_data_.size());
-  gfx::Point hotspot = hotspot_;
-  ui::ScaleAndRotateCursorBitmapAndHotpoint(
-      device_scale_factor_, gfx::Display::ROTATE_0, &bitmap, &hotspot);
+  gfx::Point hotspot;
+  CreateScaledBitmapAndHotspotFromCustomData(&bitmap, &hotspot);
 
   XcursorImage* image = ui::SkBitmapToXcursorImage(&bitmap, hotspot);
   platform_cursor_ = ui::CreateReffedCustomXCursor(image);
   return platform_cursor_;
-}
-
-void WebCursor::SetDisplayInfo(const gfx::Display& display) {
-  if (device_scale_factor_ == display.device_scale_factor())
-    return;
-
-  device_scale_factor_ = display.device_scale_factor();
-  if (platform_cursor_)
-    ui::UnrefCustomXCursor(platform_cursor_);
-  platform_cursor_ = 0;
-  // It is not necessary to recreate platform_cursor_ yet, since it will be
-  // recreated on demand when GetPlatformCursor is called.
 }
 
 void WebCursor::InitPlatformData() {
