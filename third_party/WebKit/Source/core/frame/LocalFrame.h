@@ -174,12 +174,6 @@ public:
     ScrollResult applyScrollDelta(const FloatSize& delta, bool isScrollBegin);
     bool shouldScrollTopControls(const FloatSize& delta) const;
 
-#if ENABLE(OILPAN)
-    void registerPluginElement(HTMLPlugInElement*);
-    void unregisterPluginElement(HTMLPlugInElement*);
-    void clearWeakMembers(Visitor*);
-#endif
-
     // DisplayItemClient methods
     String debugName() const final { return "LocalFrame"; }
     // TODO(chrishtr): fix this.
@@ -232,23 +226,6 @@ private:
     OwnPtr<WebFrameScheduler> m_frameScheduler;
 
     int m_navigationDisableCount;
-
-#if ENABLE(OILPAN)
-    // Oilpan: in order to reliably finalize plugin elements with
-    // renderer-less plugins, the frame keeps track of them. When
-    // the frame is detached and disposed, these will be disposed
-    // of in the process. This is needed as the plugin element
-    // might not itself be attached to a DOM tree and be
-    // explicitly detached&disposed of.
-    //
-    // A weak reference is all wanted; the plugin element must
-    // otherwise be referenced and kept alive. So as to be able
-    // to process the set of weak references during the LocalFrame's
-    // weak callback, the set itself is not on the heap and the
-    // references are bare pointers (rather than WeakMembers.)
-    // See LocalFrame::clearWeakMembers().
-    HashSet<UntracedMember<HTMLPlugInElement>> m_pluginElements;
-#endif
 
     float m_pageZoomFactor;
     float m_textZoomFactor;

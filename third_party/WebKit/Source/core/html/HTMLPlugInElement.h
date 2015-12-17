@@ -46,10 +46,6 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
 public:
     ~HTMLPlugInElement() override;
     DECLARE_VIRTUAL_TRACE();
-#if ENABLE(OILPAN)
-    void disconnectContentFrame() override;
-    void shouldDisposePlugin();
-#endif
 
     void resetInstance();
     SharedPersistent<v8::Object>* pluginWrapper();
@@ -137,12 +133,6 @@ private:
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
 
     void setPersistedPluginWidget(Widget*);
-    PassRefPtrWillBeRawPtr<Widget> releasePersistedPluginWidget();
-
-#if ENABLE(OILPAN)
-    bool unregisterAsRenderlessIfNeeded();
-    void registerAsRenderless(Widget*);
-#endif
 
     mutable RefPtr<SharedPersistent<v8::Object>> m_pluginWrapper;
     NPObject* m_NPObject;

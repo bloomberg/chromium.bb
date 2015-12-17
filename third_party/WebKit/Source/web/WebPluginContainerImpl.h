@@ -62,6 +62,7 @@ struct WebPrintPresetOptions;
 
 class WebPluginContainerImpl final : public PluginView, public WebPluginContainer, public LocalFrameLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
+    WILL_BE_USING_PRE_FINALIZER(WebPluginContainerImpl, dispose);
 public:
     static PassRefPtrWillBeRawPtr<WebPluginContainerImpl> create(HTMLPlugInElement* element, WebPlugin* webPlugin)
     {
@@ -158,11 +159,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
     void dispose() override;
 
-#if ENABLE(OILPAN)
-    LocalFrame* pluginFrame() const override { return frame(); }
-    void shouldDisposePlugin() override;
-#endif
-
 private:
     // Sets |windowRect| to the content rect of the plugin in screen space.
     // Sets |clippedAbsoluteRect| to the visible rect for the plugin, clipped to the visible screen of the root frame, in local space of the plugin.
@@ -206,11 +202,6 @@ private:
     bool m_wantsWheelEvents;
 
     bool m_inDispose;
-#if ENABLE(OILPAN)
-    // Oilpan: if true, the plugin container must dispose
-    // of its plugin when being finalized.
-    bool m_shouldDisposePlugin;
-#endif
 };
 
 DEFINE_TYPE_CASTS(WebPluginContainerImpl, Widget, widget, widget->isPluginContainer(), widget.isPluginContainer());

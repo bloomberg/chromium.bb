@@ -90,33 +90,11 @@ DEFINE_TRACE(HTMLPlugInElement)
     HTMLFrameOwnerElement::trace(visitor);
 }
 
-#if ENABLE(OILPAN)
-void HTMLPlugInElement::disconnectContentFrame()
-{
-    if (m_persistedPluginWidget) {
-        if (m_persistedPluginWidget->isPluginView())
-            m_persistedPluginWidget->dispose();
-        else
-            ASSERT(m_persistedPluginWidget->isFrameView());
-        m_persistedPluginWidget = nullptr;
-    }
-    HTMLFrameOwnerElement::disconnectContentFrame();
-}
-
-void HTMLPlugInElement::shouldDisposePlugin()
-{
-    if (m_persistedPluginWidget && m_persistedPluginWidget->isPluginView())
-        toPluginView(m_persistedPluginWidget.get())->shouldDisposePlugin();
-}
-#endif
-
 void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
 {
     if (m_persistedPluginWidget == widget)
         return;
 #if ENABLE(OILPAN)
-    unregisterAsRenderlessIfNeeded();
-    registerAsRenderless(widget);
     if (m_persistedPluginWidget) {
         if (m_persistedPluginWidget->isPluginView()) {
             m_persistedPluginWidget->hide();
@@ -127,39 +105,6 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
     }
 #endif
     m_persistedPluginWidget = widget;
-}
-
-#if ENABLE(OILPAN)
-bool HTMLPlugInElement::unregisterAsRenderlessIfNeeded()
-{
-    if (!m_persistedPluginWidget || !m_persistedPluginWidget->isPluginView())
-        return false;
-
-    LocalFrame* frame = toPluginView(m_persistedPluginWidget.get())->pluginFrame();
-    ASSERT(frame);
-    frame->unregisterPluginElement(this);
-    return true;
-}
-
-void HTMLPlugInElement::registerAsRenderless(Widget* widget)
-{
-    if (!widget || !widget->isPluginView())
-        return;
-
-    LocalFrame* frame = toPluginView(widget)->pluginFrame();
-    ASSERT(frame);
-    frame->registerPluginElement(this);
-}
-#endif
-
-PassRefPtrWillBeRawPtr<Widget> HTMLPlugInElement::releasePersistedPluginWidget()
-{
-#if ENABLE(OILPAN)
-    // If we are in a renderer-less state, keep the registration.
-    if (layoutEmbeddedObject())
-        unregisterAsRenderlessIfNeeded();
-#endif
-    return m_persistedPluginWidget.release();
 }
 
 bool HTMLPlugInElement::canProcessDrag() const
@@ -561,7 +506,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     m_loadedUrl = url;
 
     if (m_persistedPluginWidget) {
-        setWidget(releasePersistedPluginWidget());
+        setWidget(m_persistedPluginWidget.release());
     } else {
         bool loadManually = document().isPluginDocument() && !document().containsPlugins();
         FrameLoaderClient::DetachedPluginPolicy policy = requireLayoutObject ? FrameLoaderClient::FailOnDetachedPlugin : FrameLoaderClient::AllowDetachedPlugin;

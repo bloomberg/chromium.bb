@@ -181,16 +181,6 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
     if (RefPtrWillBeRawPtr<Frame> frame = contentFrame()) {
         frame->detach(FrameDetachType::Remove);
     }
-#if ENABLE(OILPAN)
-    // Oilpan: a plugin container must be explicitly disposed before it
-    // is swept and finalized. This is because the underlying plugin needs
-    // to be able to access a fully-functioning frame (and all it refers
-    // to) while it destructs and cleans out its resources.
-    if (m_widget) {
-        m_widget->dispose();
-        m_widget = nullptr;
-    }
-#endif
 }
 
 HTMLFrameOwnerElement::~HTMLFrameOwnerElement()

@@ -57,11 +57,6 @@ public:
     virtual void layoutIfNeeded() { }
     virtual void invalidatePaintIfNeeded() { }
 
-#if ENABLE(OILPAN)
-    virtual LocalFrame* pluginFrame() const { return nullptr; }
-    virtual void shouldDisposePlugin() { }
-#endif
-
 protected:
     PluginView() : Widget() { }
 };

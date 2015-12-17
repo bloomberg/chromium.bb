@@ -776,19 +776,11 @@ PassRefPtrWillBeRawPtr<Widget> FrameLoaderClientImpl::createPlugin(
     RefPtrWillBeRawPtr<WebPluginContainerImpl> container =
         WebPluginContainerImpl::create(element, webPlugin);
 
-    if (!webPlugin->initialize(container.get())) {
-#if ENABLE(OILPAN)
-        container->dispose();
-#endif
+    if (!webPlugin->initialize(container.get()))
         return nullptr;
-    }
 
-    if (policy != AllowDetachedPlugin && !element->layoutObject()) {
-#if ENABLE(OILPAN)
-        container->dispose();
-#endif
+    if (policy != AllowDetachedPlugin && !element->layoutObject())
         return nullptr;
-    }
 
     return container;
 }

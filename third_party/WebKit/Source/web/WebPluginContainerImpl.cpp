@@ -684,17 +684,15 @@ WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPl
     , m_touchEventRequestType(TouchEventRequestTypeNone)
     , m_wantsWheelEvents(false)
     , m_inDispose(false)
-#if ENABLE(OILPAN)
-    , m_shouldDisposePlugin(false)
-#endif
 {
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
 }
 
 WebPluginContainerImpl::~WebPluginContainerImpl()
 {
 #if ENABLE(OILPAN)
-    if (m_shouldDisposePlugin)
-        dispose();
     // The plugin container must have been disposed of by now.
     ASSERT(!m_webPlugin);
 #else
@@ -722,21 +720,6 @@ void WebPluginContainerImpl::dispose()
 
     m_element = nullptr;
 }
-
-#if ENABLE(OILPAN)
-void WebPluginContainerImpl::shouldDisposePlugin()
-{
-    // If the LocalFrame is still alive, but the plugin element isn't, the
-    // LocalFrame will set m_shouldDisposePlugin via its weak pointer
-    // callback. This is a signal that the plugin container
-    // must dispose of its plugin when finalizing. The LocalFrame and
-    // all objects accessible from it can safely be accessed, but not
-    // the plugin element itself.
-    ASSERT(!m_shouldDisposePlugin);
-    m_shouldDisposePlugin = true;
-    m_element = nullptr;
-}
-#endif
 
 DEFINE_TRACE(WebPluginContainerImpl)
 {

@@ -220,7 +220,6 @@ DEFINE_TRACE(LocalFrame)
     visitor->trace(m_eventHandler);
     visitor->trace(m_console);
     visitor->trace(m_inputMethodController);
-    visitor->template registerWeakMembers<LocalFrame, &LocalFrame::clearWeakMembers>(this);
     HeapSupplementable<LocalFrame>::trace(visitor);
 #endif
     LocalFrameLifecycleNotifier::trace(visitor);
@@ -371,13 +370,6 @@ void LocalFrame::disconnectOwnerElement()
     if (owner()) {
         if (Document* document = this->document())
             document->topDocument().clearAXObjectCache();
-#if ENABLE(OILPAN)
-        // First give the plugin elements holding persisted,
-        // renderer-less plugins the opportunity to dispose of them.
-        for (const auto& pluginElement : m_pluginElements)
-            pluginElement->disconnectContentFrame();
-        m_pluginElements.clear();
-#endif
     }
     Frame::disconnectOwnerElement();
 }
@@ -833,32 +825,6 @@ bool LocalFrame::shouldScrollTopControls(const FloatSize& delta) const
         .visibleRectInDocument().location();
     return delta.height() > 0 || scrollPosition.y() < maximumScrollPosition.y();
 }
-
-#if ENABLE(OILPAN)
-void LocalFrame::registerPluginElement(HTMLPlugInElement* plugin)
-{
-    m_pluginElements.add(plugin);
-}
-
-void LocalFrame::unregisterPluginElement(HTMLPlugInElement* plugin)
-{
-    ASSERT(m_pluginElements.contains(plugin));
-    m_pluginElements.remove(plugin);
-}
-
-void LocalFrame::clearWeakMembers(Visitor* visitor)
-{
-    Vector<UntracedMember<HTMLPlugInElement>> deadPlugins;
-    for (const auto& pluginElement : m_pluginElements) {
-        if (!Heap::isHeapObjectAlive(pluginElement)) {
-            pluginElement->shouldDisposePlugin();
-            deadPlugins.append(pluginElement);
-        }
-    }
-    for (unsigned i = 0; i < deadPlugins.size(); ++i)
-        m_pluginElements.remove(deadPlugins[i]);
-}
-#endif
 
 String LocalFrame::localLayerTreeAsText(unsigned flags) const
 {
