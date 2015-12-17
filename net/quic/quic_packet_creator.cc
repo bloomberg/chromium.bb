@@ -542,40 +542,71 @@ SerializedPacket QuicPacketCreator::SerializePacket(
   bool possibly_truncated_by_length = packet_size_ == max_plaintext_size_ &&
                                       queued_frames_.size() == 1 &&
                                       queued_frames_.back().type == ACK_FRAME;
-  // The optimized encryption algorithm implementations run faster when
-  // operating on aligned memory.
-  // TODO(rtenneti): Change the default 64 alignas value (used the default
-  // value from CACHELINE_SIZE).
-  ALIGNAS(64) char buffer[kMaxPacketSize];
   // Use the packet_size_ instead of the buffer size to ensure smaller
   // packet sizes are properly used.
-  size_t length =
-      framer_->BuildDataPacket(header, queued_frames_, buffer, packet_size_);
-  if (length == 0) {
-    LOG(DFATAL) << "Failed to serialize " << queued_frames_.size()
-                << " frames.";
-    return NoPacket();
-  }
+  size_t encrypted_length = 0u;
+  if (FLAGS_quic_inplace_encryption) {
+    size_t length = framer_->BuildDataPacket(header, queued_frames_,
+                                             encrypted_buffer, packet_size_);
+    if (length == 0) {
+      LOG(DFATAL) << "Failed to serialize " << queued_frames_.size()
+                  << " frames.";
+      return NoPacket();
+    }
 
-  // TODO(ianswett) Consider replacing QuicPacket with something else,
-  // since it's only used to provide convenience methods to FEC and encryption.
-  QuicPacket packet(buffer, length,
-                    /* owns_buffer */ false,
-                    header.public_header.connection_id_length,
-                    header.public_header.version_flag,
-                    header.public_header.packet_number_length);
-  OnBuiltFecProtectedPayload(header, packet.FecProtectedData());
+    // TODO(ianswett) Consider replacing QuicPacket with something else, since
+    // it's only used to provide convenience methods to FEC and encryption.
+    QuicPacket packet(encrypted_buffer, length,
+                      /* owns_buffer */ false,
+                      header.public_header.connection_id_length,
+                      header.public_header.version_flag,
+                      header.public_header.packet_number_length);
+    OnBuiltFecProtectedPayload(header, packet.FecProtectedData());
 
-  // Because of possible truncation, we can't be confident that our
-  // packet size calculation worked correctly.
-  if (!possibly_truncated_by_length) {
-    DCHECK_EQ(packet_size_, length);
+    // Because of possible truncation, we can't be confident that our
+    // packet size calculation worked correctly.
+    if (!possibly_truncated_by_length) {
+      DCHECK_EQ(packet_size_, length);
+    }
+    // Immediately encrypt the packet, to ensure we don't encrypt the same
+    // packet number multiple times.
+    encrypted_length =
+        framer_->EncryptPayload(encryption_level_, packet_number_, packet,
+                                encrypted_buffer, encrypted_buffer_len);
+  } else {
+    // The optimized encryption algorithm implementations run faster when
+    // operating on aligned memory.
+    // TODO(rtenneti): Change the default 64 alignas value (used the default
+    // value from CACHELINE_SIZE).
+    ALIGNAS(64) char buffer[kMaxPacketSize];
+    size_t length =
+        framer_->BuildDataPacket(header, queued_frames_, buffer, packet_size_);
+    if (length == 0) {
+      LOG(DFATAL) << "Failed to serialize " << queued_frames_.size()
+                  << " frames.";
+      return NoPacket();
+    }
+
+    // TODO(ianswett) Consider replacing QuicPacket with something else, since
+    // it's only used to provide convenience methods to FEC and encryption.
+    QuicPacket packet(buffer, length,
+                      /* owns_buffer */ false,
+                      header.public_header.connection_id_length,
+                      header.public_header.version_flag,
+                      header.public_header.packet_number_length);
+    OnBuiltFecProtectedPayload(header, packet.FecProtectedData());
+
+    // Because of possible truncation, we can't be confident that our
+    // packet size calculation worked correctly.
+    if (!possibly_truncated_by_length) {
+      DCHECK_EQ(packet_size_, length);
+    }
+    // Immediately encrypt the packet, to ensure we don't encrypt the same
+    // packet number multiple times.
+    encrypted_length =
+        framer_->EncryptPayload(encryption_level_, packet_number_, packet,
+                                encrypted_buffer, encrypted_buffer_len);
   }
-  // Immediately encrypt the packet, to ensure we don't encrypt the same packet
-  // packet number multiple times.
-  size_t encrypted_length =
-      framer_->EncryptPayload(encryption_level_, packet_number_, packet,
-                              encrypted_buffer, encrypted_buffer_len);
   if (encrypted_length == 0) {
     LOG(DFATAL) << "Failed to encrypt packet number " << packet_number_;
     return NoPacket();
