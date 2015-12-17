@@ -34,10 +34,14 @@ static_library("utility") {
     "//components/search_engines",
     "//components/strings",
     "//components/url_formatter",
+    "//content/public/child",
     "//content/public/common",
     "//content/public/utility",
+    "//courgette:courgette_lib",
     "//media",
+    "//net:net_with_v8",
     "//skia",
+    "//sql",
     "//third_party/libxml",
   ]
 
@@ -124,5 +128,10 @@ static_library("utility") {
   if (safe_browsing_mode == 1) {
     sources +=
         rebase_path(gypi_values.chrome_utility_safe_browsing_sources, ".", "..")
+    deps += [ "//third_party/zlib" ]
+  }
+
+  if (enable_pdf) {
+    deps += [ "//pdf" ]
   }
 }

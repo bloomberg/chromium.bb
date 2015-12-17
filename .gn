@@ -27,6 +27,7 @@ check_targets = [
   "//chrome/common/*",
   "//chrome/installer/*",
   "//chrome/third_party/mozilla_security_manager/*",
+  "//chrome/utility/*",
   "//chromecast/*",
   "//chrome_elf/*",
   "//cloud_print/*",
