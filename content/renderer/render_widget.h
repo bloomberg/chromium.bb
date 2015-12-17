@@ -45,9 +45,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/surface/transport_dib.h"
 
-struct ViewHostMsg_UpdateRect_Params;
 struct ViewMsg_Resize_Params;
-class ViewHostMsg_UpdateRect;
 
 namespace IPC {
 class SyncMessage;
@@ -56,19 +54,14 @@ class SyncMessageFilter;
 
 namespace blink {
 struct WebDeviceEmulationParams;
-class WebFrameWidget;
 class WebGestureEvent;
-class WebKeyboardEvent;
 class WebLocalFrame;
 class WebMouseEvent;
 class WebNode;
 struct WebPoint;
-class WebTouchEvent;
-class WebView;
 }
 
 namespace cc {
-struct InputHandlerScrollResult;
 class OutputSurface;
 class SwapPromise;
 }
@@ -86,11 +79,9 @@ class CompositorDependencies;
 class ExternalPopupMenu;
 class FrameSwapMessageQueue;
 class ImeEventGuard;
-class PepperPluginInstanceImpl;
 class RenderFrameImpl;
 class RenderFrameProxy;
 class RenderWidgetCompositor;
-class RenderWidgetTest;
 class ResizingModeSelector;
 struct ContextMenuParams;
 struct DidOverscrollParams;

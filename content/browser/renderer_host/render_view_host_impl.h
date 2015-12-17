@@ -31,32 +31,13 @@
 #include "ui/base/window_open_disposition.h"
 
 class SkBitmap;
-class FrameMsg_Navigate;
-struct MediaPlayerAction;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewMsg_PostMessage_Params;
-
-namespace base {
-class ListValue;
-}
-
-namespace gfx {
-class Range;
-}
-
-namespace ui {
-class AXTree;
-}
 
 namespace content {
 
-class ChildProcessSecurityPolicyImpl;
-class MediaWebContentsObserver;
 class PageState;
 class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
-class SessionStorageNamespaceImpl;
-class TestRenderViewHost;
 struct FileChooserFileInfo;
 struct FileChooserParams;
 struct FrameReplicationState;
@@ -170,7 +151,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
       const gfx::Point& location,
       const blink::WebPluginAction& action) override;
   void FilesSelectedInChooser(
-      const std::vector<content::FileChooserFileInfo>& files,
+      const std::vector<FileChooserFileInfo>& files,
       FileChooserParams::Mode permissions) override;
   RenderViewHostDelegate* GetDelegate() const override;
   int GetEnabledBindings() const override;
