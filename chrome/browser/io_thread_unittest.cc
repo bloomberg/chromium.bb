@@ -707,7 +707,8 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateEnableAuthNegotiatePort) {
                  base::Unretained(this), true));
 }
 
-TEST_F(IOThreadTestWithIOThreadObject, UpdateServerWhitelist) {
+// Flaky: https://crbug.com/570605.
+TEST_F(IOThreadTestWithIOThreadObject, DISABLED_UpdateServerWhitelist) {
   GURL url("http://test.example.com");
 
   pref_service()->SetString(prefs::kAuthServerWhitelist, "xxx");
