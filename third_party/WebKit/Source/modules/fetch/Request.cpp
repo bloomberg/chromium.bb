@@ -607,6 +607,12 @@ bool Request::hasBody() const
     return bodyBuffer();
 }
 
+void Request::stop()
+{
+    if (bodyBuffer())
+        bodyBuffer()->stop();
+}
+
 void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest) const
 {
     webRequest.setMethod(method());

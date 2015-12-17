@@ -145,6 +145,12 @@ bool BodyStreamBuffer::hasPendingActivity() const
     return m_loader || (m_stream->isLocked() && m_stream->stateInternal() == ReadableStream::Readable);
 }
 
+void BodyStreamBuffer::stop()
+{
+    m_reader = nullptr;
+    m_handle = nullptr;
+}
+
 void BodyStreamBuffer::pullSource()
 {
     ASSERT(!m_streamNeedsMore);

@@ -6,6 +6,7 @@
 #define Response_h
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "modules/ModulesExport.h"
@@ -24,9 +25,8 @@ class DOMArrayBuffer;
 class ExceptionState;
 class FetchDataConsumerHandle;
 class ResponseInit;
+class ScriptState;
 class WebServiceWorkerResponse;
-
-typedef BlobOrArrayBufferOrArrayBufferViewOrFormDataOrUSVString BodyInit;
 
 class MODULES_EXPORT Response final : public Body {
     DEFINE_WRAPPERTYPEINFO();
@@ -35,8 +35,8 @@ public:
     ~Response() override { }
 
     // From Response.idl:
-    static Response* create(ExecutionContext*, ExceptionState&);
-    static Response* create(ExecutionContext*, const BodyInit&, const Dictionary&, ExceptionState&);
+    static Response* create(ScriptState*, ExceptionState&);
+    static Response* create(ScriptState*, ScriptValue body, const Dictionary&, ExceptionState&);
 
     static Response* create(ExecutionContext*, PassOwnPtr<FetchDataConsumerHandle> bodyHandle, const String& contentType, const ResponseInit&, ExceptionState&);
     static Response* create(ExecutionContext*, FetchResponseData*);
@@ -62,6 +62,7 @@ public:
 
     // ActiveDOMObject
     bool hasPendingActivity() const override;
+    void stop() override;
 
     // Does not call response.setBlobDataHandle().
     void populateWebServiceWorkerResponse(WebServiceWorkerResponse& /* response */);

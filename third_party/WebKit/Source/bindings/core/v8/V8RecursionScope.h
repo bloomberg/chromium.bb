@@ -32,6 +32,7 @@
 #define V8RecursionScope_h
 
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "core/CoreExport.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "wtf/Noncopyable.h"
 #include <v8.h>
@@ -55,7 +56,7 @@ namespace blink {
 // happen at the end of the outer-most script stack frame of calls into page script:
 //
 // http://www.whatwg.org/specs/web-apps/current-work/#perform-a-microtask-checkpoint
-class V8RecursionScope {
+class CORE_EXPORT V8RecursionScope {
     STACK_ALLOCATED();
 public:
     explicit V8RecursionScope(v8::Isolate* isolate)

@@ -44,6 +44,7 @@ public:
     PassOwnPtr<FetchDataConsumerHandle> releaseHandle(ExecutionContext*);
 
     bool hasPendingActivity() const;
+    void stop();
 
     // UnderlyingSource
     void pullSource() override;

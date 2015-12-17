@@ -6,12 +6,11 @@
 
 enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredirect" };
 
-// FIXME: Add union type: URLSearchParams
-typedef (Blob or ArrayBuffer or ArrayBufferView or FormData or USVString) BodyInit;
-
 [
-    Constructor(optional BodyInit body, optional Dictionary responseInitDict),
-    ConstructorCallWith=ExecutionContext,
+    // TODO(yhirano): We use "any" for body because the IDL processor doesn't
+    // recognize ReadableStream implemented with V8 extras. Fix it.
+    Constructor(optional any body, optional Dictionary responseInitDict),
+    ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker),
     RaisesException=Constructor,
     ActiveDOMObject,

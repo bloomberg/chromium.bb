@@ -61,6 +61,8 @@ public:
     BodyStreamBuffer* bodyBuffer() override { return m_request->buffer(); }
     const BodyStreamBuffer* bodyBuffer() const override { return m_request->buffer(); }
 
+    void stop() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
