@@ -323,19 +323,14 @@ const int kToolbarImageHeight = 128;
 
 // Values used as the new luminance and saturation values in the inactive tab
 // text color.
-const double kDarkInactiveLuminance = 0.85;
-const double kLightInactiveLuminance = 0.15;
-const double kHeavyInactiveSaturation = 0.7;
-const double kLightInactiveSaturation = 0.3;
+const double kInactiveLuminance = 0.15;
+const double kInactiveSaturation = 0.3;
 
 // TODO(erg): ThemeService has a whole interface just for reading default
 // constants. Figure out what to do with that more long term; for now, just
 // copy the constants themselves here.
 //
 // Default tints.
-const color_utils::HSL kDefaultTintButtons = { -1, -1, -1 };
-const color_utils::HSL kDefaultTintFrame = { -1, -1, -1 };
-const color_utils::HSL kDefaultTintFrameInactive = { -1, -1, 0.75f };
 const color_utils::HSL kDefaultTintFrameIncognito = { -1, 0.2f, 0.35f };
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3f, 0.6f };
 const color_utils::HSL kDefaultTintBackgroundTab = { -1, 0.5, 0.75 };
@@ -398,27 +393,6 @@ void PickButtonTintFromColors(SkColor accent_color,
       tint->l = text_tint.l;
     else
       tint->l = 0.9;
-  }
-}
-
-// Copied Default blah sections from ThemeService.
-color_utils::HSL GetDefaultTint(int id) {
-  switch (id) {
-    case ThemeProperties::TINT_FRAME:
-      return kDefaultTintFrame;
-    case ThemeProperties::TINT_FRAME_INACTIVE:
-      return kDefaultTintFrameInactive;
-    case ThemeProperties::TINT_FRAME_INCOGNITO:
-      return kDefaultTintFrameIncognito;
-    case ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE:
-      return kDefaultTintFrameIncognitoInactive;
-    case ThemeProperties::TINT_BUTTONS:
-      return kDefaultTintButtons;
-    case ThemeProperties::TINT_BACKGROUND_TAB:
-      return kDefaultTintBackgroundTab;
-    default:
-      color_utils::HSL result = {-1, -1, -1};
-      return result;
   }
 }
 
@@ -942,18 +916,12 @@ void Gtk2UI::LoadGtkValues() {
   // background tab color, with the lightness and saturation moved in the
   // opposite direction. (We don't touch the hue, since there should be subtle
   // hints of the color in the text.)
-  color_utils::HSL inactive_tab_text_hsl = ColorToTint(
-      ThemeProperties::TINT_BACKGROUND_TAB,
-      theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground));
-  if (inactive_tab_text_hsl.l < 0.5)
-    inactive_tab_text_hsl.l = kDarkInactiveLuminance;
-  else
-    inactive_tab_text_hsl.l = kLightInactiveLuminance;
-
-  if (inactive_tab_text_hsl.s < 0.5)
-    inactive_tab_text_hsl.s = kHeavyInactiveSaturation;
-  else
-    inactive_tab_text_hsl.s = kLightInactiveSaturation;
+  color_utils::HSL inactive_tab_text_hsl;
+  color_utils::SkColorToHSL(
+      theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground),
+      &inactive_tab_text_hsl);
+  inactive_tab_text_hsl.s = kInactiveLuminance;
+  inactive_tab_text_hsl.l = kInactiveSaturation;
 
   colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
       color_utils::HSLToSkColor(inactive_tab_text_hsl, 255);
@@ -1041,13 +1009,13 @@ SkColor Gtk2UI::BuildFrameColors() {
 
   temp_color = color_utils::HSLShift(
       frame_color,
-      GetDefaultTint(ThemeProperties::TINT_FRAME_INCOGNITO));
+      kDefaultTintFrameIncognito);
   theme->GetChromeStyleColor("incognito-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] = temp_color;
 
   temp_color = color_utils::HSLShift(
       frame_color,
-      GetDefaultTint(ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE));
+      kDefaultTintFrameIncognitoInactive);
   theme->GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
 #else
@@ -1079,20 +1047,6 @@ SkColor Gtk2UI::BuildFrameColors() {
 #endif
 
   return frame_color;
-}
-
-color_utils::HSL Gtk2UI::ColorToTint(int id, SkColor color) {
-  color_utils::HSL default_tint = GetDefaultTint(id);
-  color_utils::HSL hsl;
-  color_utils::SkColorToHSL(color, &hsl);
-
-  if (default_tint.s != -1)
-    hsl.s = default_tint.s;
-
-  if (default_tint.l != -1)
-    hsl.l = default_tint.l;
-
-  return hsl;
 }
 
 gfx::Image Gtk2UI::GenerateGtkThemeImage(int id) const {
@@ -1306,7 +1260,7 @@ SkBitmap Gtk2UI::GenerateFrameImage(
 SkBitmap Gtk2UI::GenerateTabImage(int base_id) const {
   const SkBitmap* base_image = GetThemeImageNamed(base_id).ToSkBitmap();
   SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
-      *base_image, GetDefaultTint(ThemeProperties::TINT_BACKGROUND_TAB));
+      *base_image, kDefaultTintBackgroundTab);
   return SkBitmapOperations::CreateTiledBitmap(
       bg_tint, 0, 0, bg_tint.width(), bg_tint.height());
 }
