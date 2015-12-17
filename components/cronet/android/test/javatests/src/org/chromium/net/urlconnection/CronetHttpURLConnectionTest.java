@@ -221,13 +221,12 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         checkExceptionsAreThrown(urlConnection);
     }
 
-    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testBadScheme() throws Exception {
         try {
-            URL url = new URL("flying://goat");
+            new URL("flying://goat");
             fail();
         } catch (MalformedURLException e) {
             // Expected.
@@ -503,7 +502,6 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     }
 
     @SuppressFBWarnings({
-            "DLS_DEAD_LOCAL_STORE",
             "RANGE_ARRAY_OFFSET",
             "RANGE_ARRAY_LENGTH"
             })
@@ -512,7 +510,6 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     @CompareDefaultWithCronet
     public void testInputStreamBatchReadBoundaryConditions() throws Exception {
         String testInputString = "this is a very important header";
-        byte[] testInputBytes = testInputString.getBytes();
         URL url = new URL(NativeTestServer.getEchoHeaderURL("foo"));
         HttpURLConnection urlConnection =
                 (HttpURLConnection) url.openConnection();
