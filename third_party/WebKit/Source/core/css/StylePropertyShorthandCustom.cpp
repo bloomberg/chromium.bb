@@ -24,18 +24,6 @@
 
 namespace blink {
 
-const StylePropertyShorthand& borderShorthandForParsing()
-{
-    static const CSSPropertyID borderShorthandProperties[] = { CSSPropertyBorderWidth, CSSPropertyBorderStyle, CSSPropertyBorderColor };
-    static const StylePropertyShorthand* propertiesForInitialization[] = {
-        &borderWidthShorthand(),
-        &borderStyleShorthand(),
-        &borderColorShorthand(),
-    };
-    DEFINE_STATIC_LOCAL(StylePropertyShorthand, borderForParsingLonghands, (CSSPropertyBorder, borderShorthandProperties, propertiesForInitialization, WTF_ARRAY_LENGTH(borderShorthandProperties)));
-    return borderForParsingLonghands;
-}
-
 const StylePropertyShorthand& animationShorthandForParsing()
 {
     // When we parse the animation shorthand we need to look for animation-name

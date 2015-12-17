@@ -306,28 +306,12 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     ASSERT(!m_parsedCalculation);
 
     CSSValueID id = value->id;
-
-    // TODO(timloh): Move to parseSingleValue
-    if (CSSParserFastPaths::isKeywordPropertyID(propId)) {
-        if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(propId, id))
-            return false;
-        if (m_valueList->next() && !inShorthand())
-            return false;
-        addProperty(propId, cssValuePool().createIdentifierValue(id), important);
-        return true;
-    }
-
     bool validPrimitive = false;
-    Units unitless = FUnknown;
     RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
 
     switch (propId) {
     case CSSPropertyBackgroundColor: // <color> | inherit
-    case CSSPropertyBorderTopColor: // <color> | inherit
-    case CSSPropertyBorderRightColor:
-    case CSSPropertyBorderBottomColor:
-    case CSSPropertyBorderLeftColor:
-        parsedValue = parseColor(m_valueList->current(), inQuirksMode() && (!inShorthand() || m_currentShorthand == CSSPropertyBorderColor));
+        parsedValue = parseColor(m_valueList->current(), inQuirksMode() && !inShorthand());
         if (parsedValue)
             m_valueList->next();
         break;
@@ -390,18 +374,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitMaskBoxImageSource:
         if (parseFillImage(m_valueList, parsedValue))
             m_valueList->next();
-        break;
-
-    case CSSPropertyBorderTopWidth:     //// <border-width> | inherit
-    case CSSPropertyBorderRightWidth:   //   Which is defined as
-    case CSSPropertyBorderBottomWidth:  //   thin | medium | thick | <length>
-    case CSSPropertyBorderLeftWidth:
-        if (!inShorthand() || m_currentShorthand == CSSPropertyBorderWidth)
-            unitless = FUnitlessQuirk;
-        if (id == CSSValueThin || id == CSSValueMedium || id == CSSValueThick)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FLength | FNonNeg | unitless);
         break;
 
     case CSSPropertyVerticalAlign:
@@ -623,38 +595,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             CSSPropertyWebkitMaskPosition, CSSPropertyWebkitMaskOrigin, CSSPropertyWebkitMaskClip, CSSPropertyWebkitMaskSize };
         return parseFillShorthand(propId, properties, WTF_ARRAY_LENGTH(properties), important);
     }
-    case CSSPropertyBorder:
-        // [ 'border-width' || 'border-style' || <color> ] | inherit
-    {
-        if (parseShorthand(propId, borderShorthandForParsing(), important)) {
-            // The CSS3 Borders and Backgrounds specification says that border also resets border-image. It's as
-            // though a value of none was specified for the image.
-            addExpandedPropertyForValue(CSSPropertyBorderImage, cssValuePool().createImplicitInitialValue(), important);
-            return true;
-        }
-        return false;
-    }
-    case CSSPropertyBorderTop:
-        // [ 'border-top-width' || 'border-style' || <color> ] | inherit
-        return parseShorthand(propId, borderTopShorthand(), important);
-    case CSSPropertyBorderRight:
-        // [ 'border-right-width' || 'border-style' || <color> ] | inherit
-        return parseShorthand(propId, borderRightShorthand(), important);
-    case CSSPropertyBorderBottom:
-        // [ 'border-bottom-width' || 'border-style' || <color> ] | inherit
-        return parseShorthand(propId, borderBottomShorthand(), important);
-    case CSSPropertyBorderLeft:
-        // [ 'border-left-width' || 'border-style' || <color> ] | inherit
-        return parseShorthand(propId, borderLeftShorthand(), important);
-    case CSSPropertyBorderColor:
-        // <color>{1,4} | inherit
-        return parse4Values(propId, borderColorShorthand().properties(), important);
-    case CSSPropertyBorderWidth:
-        // <border-width>{1,4} | inherit
-        return parse4Values(propId, borderWidthShorthand().properties(), important);
-    case CSSPropertyBorderStyle:
-        // <border-style>{1,4} | inherit
-        return parse4Values(propId, borderStyleShorthand().properties(), important);
     case CSSPropertyInvalid:
         return false;
     case CSSPropertyWebkitClipPath:
@@ -780,6 +720,22 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitTapHighlightColor:
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyColor:
+    case CSSPropertyBorderBottomColor:
+    case CSSPropertyBorderLeftColor:
+    case CSSPropertyBorderRightColor:
+    case CSSPropertyBorderTopColor:
+    case CSSPropertyBorderColor:
+    case CSSPropertyBorderStyle:
+    case CSSPropertyBorderBottomWidth:
+    case CSSPropertyBorderLeftWidth:
+    case CSSPropertyBorderRightWidth:
+    case CSSPropertyBorderTopWidth:
+    case CSSPropertyBorderWidth:
+    case CSSPropertyBorderBottom:
+    case CSSPropertyBorderLeft:
+    case CSSPropertyBorderRight:
+    case CSSPropertyBorderTop:
+    case CSSPropertyBorder:
     case CSSPropertyZIndex:
     case CSSPropertyTextShadow:
     case CSSPropertyBoxShadow:
@@ -893,7 +849,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     default:
         // If you crash here, it's because you added a css property and are not handling it
         // in either this switch statement or the one in CSSPropertyParser::parseSingleValue.
-        ASSERT_WITH_MESSAGE(0, "unimplemented propertyID: %d", propId);
+        ASSERT_WITH_MESSAGE(CSSParserFastPaths::isKeywordPropertyID(propId), "unimplemented propertyID: %d", propId);
         return false;
     }
 
@@ -1090,111 +1046,6 @@ bool CSSPropertyParser::parseFillShorthand(CSSPropertyID propId, const CSSProper
     }
 
     m_implicitShorthand = false;
-    return true;
-}
-
-bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, const StylePropertyShorthand& shorthand, bool important)
-{
-    // We try to match as many properties as possible
-    // We set up an array of booleans to mark which property has been found,
-    // and we try to search for properties until it makes no longer any sense.
-    ShorthandScope scope(this, propId);
-
-    bool found = false;
-    unsigned propertiesParsed = 0;
-    bool propertyFound[6] = { false, false, false, false, false, false }; // 6 is enough size.
-
-    while (m_valueList->current()) {
-        found = false;
-        for (unsigned propIndex = 0; !found && propIndex < shorthand.length(); ++propIndex) {
-            if (!propertyFound[propIndex] && parseValue(shorthand.properties()[propIndex], important)) {
-                propertyFound[propIndex] = found = true;
-                propertiesParsed++;
-            }
-        }
-
-        // if we didn't find at least one match, this is an
-        // invalid shorthand and we have to ignore it
-        if (!found)
-            return false;
-    }
-
-    if (propertiesParsed == shorthand.length())
-        return true;
-
-    // Fill in any remaining properties with the initial value.
-    ImplicitScope implicitScope(this);
-    const StylePropertyShorthand* const* const propertiesForInitialization = shorthand.propertiesForInitialization();
-    for (unsigned i = 0; i < shorthand.length(); ++i) {
-        if (propertyFound[i])
-            continue;
-
-        if (propertiesForInitialization) {
-            const StylePropertyShorthand& initProperties = *(propertiesForInitialization[i]);
-            for (unsigned propIndex = 0; propIndex < initProperties.length(); ++propIndex)
-                addProperty(initProperties.properties()[propIndex], cssValuePool().createImplicitInitialValue(), important);
-        } else
-            addProperty(shorthand.properties()[i], cssValuePool().createImplicitInitialValue(), important);
-    }
-
-    return true;
-}
-
-bool CSSPropertyParser::parse4Values(CSSPropertyID propId, const CSSPropertyID *properties,  bool important)
-{
-    /* From the CSS 2 specs, 8.3
-     * If there is only one value, it applies to all sides. If there are two values, the top and
-     * bottom margins are set to the first value and the right and left margins are set to the second.
-     * If there are three values, the top is set to the first value, the left and right are set to the
-     * second, and the bottom is set to the third. If there are four values, they apply to the top,
-     * right, bottom, and left, respectively.
-     */
-
-    int num = inShorthand() ? 1 : m_valueList->size();
-
-    ShorthandScope scope(this, propId);
-
-    // the order is top, right, bottom, left
-    switch (num) {
-        case 1: {
-            if (!parseValue(properties[0], important))
-                return false;
-            CSSValue* value = m_parsedProperties.last().value();
-            ImplicitScope implicitScope(this);
-            addProperty(properties[1], value, important);
-            addProperty(properties[2], value, important);
-            addProperty(properties[3], value, important);
-            break;
-        }
-        case 2: {
-            if (!parseValue(properties[0], important) || !parseValue(properties[1], important))
-                return false;
-            CSSValue* value = m_parsedProperties[m_parsedProperties.size() - 2].value();
-            ImplicitScope implicitScope(this);
-            addProperty(properties[2], value, important);
-            value = m_parsedProperties[m_parsedProperties.size() - 2].value();
-            addProperty(properties[3], value, important);
-            break;
-        }
-        case 3: {
-            if (!parseValue(properties[0], important) || !parseValue(properties[1], important) || !parseValue(properties[2], important))
-                return false;
-            CSSValue* value = m_parsedProperties[m_parsedProperties.size() - 2].value();
-            ImplicitScope implicitScope(this);
-            addProperty(properties[3], value, important);
-            break;
-        }
-        case 4: {
-            if (!parseValue(properties[0], important) || !parseValue(properties[1], important) ||
-                !parseValue(properties[2], important) || !parseValue(properties[3], important))
-                return false;
-            break;
-        }
-        default: {
-            return false;
-        }
-    }
-
     return true;
 }
 
