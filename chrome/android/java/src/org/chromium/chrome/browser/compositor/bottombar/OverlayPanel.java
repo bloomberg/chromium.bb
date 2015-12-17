@@ -318,16 +318,24 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
         content.setContentViewClient(new ContentViewClient() {
             @Override
             public int getDesiredWidthMeasureSpec() {
-                return MeasureSpec.makeMeasureSpec(
-                        getSearchContentViewWidthPx(),
-                        MeasureSpec.EXACTLY);
+                if (isFullscreenSizePanel()) {
+                    return super.getDesiredWidthMeasureSpec();
+                } else {
+                    return MeasureSpec.makeMeasureSpec(
+                            getSearchContentViewWidthPx(),
+                            MeasureSpec.EXACTLY);
+                }
             }
 
             @Override
             public int getDesiredHeightMeasureSpec() {
-                return MeasureSpec.makeMeasureSpec(
-                        getSearchContentViewHeightPx(),
-                        MeasureSpec.EXACTLY);
+                if (isFullscreenSizePanel()) {
+                    return super.getDesiredHeightMeasureSpec();
+                } else {
+                    return MeasureSpec.makeMeasureSpec(
+                            getSearchContentViewHeightPx(),
+                            MeasureSpec.EXACTLY);
+                }
             }
         });
         return content;
