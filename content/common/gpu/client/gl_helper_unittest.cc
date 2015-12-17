@@ -1790,40 +1790,44 @@ TEST_F(GLHelperPixelTest, YUVReadbackOptTest) {
   }
 }
 
-// Flaky. http://crbug.com/562114
-TEST_F(GLHelperPixelTest, DISABLED_YUVReadbackTest) {
-  int sizes[] = {2, 4, 14};
-  for (int flip = 0; flip <= 1; flip++) {
-    for (int use_mrt = 0; use_mrt <= 1; use_mrt++) {
-      for (unsigned int x = 0; x < arraysize(sizes); x++) {
-        for (unsigned int y = 0; y < arraysize(sizes); y++) {
-          for (unsigned int ox = x; ox < arraysize(sizes); ox++) {
-            for (unsigned int oy = y; oy < arraysize(sizes); oy++) {
-              // If output is a subsection of the destination frame, (letterbox)
-              // then try different variations of where the subsection goes.
-              for (Margin xm = x < ox ? MarginLeft : MarginRight;
-                   xm <= MarginRight;
-                   xm = NextMargin(xm)) {
-                for (Margin ym = y < oy ? MarginLeft : MarginRight;
-                     ym <= MarginRight;
-                     ym = NextMargin(ym)) {
-                  for (int pattern = 0; pattern < 3; pattern++) {
-                    TestYUVReadback(sizes[x],
-                                    sizes[y],
-                                    sizes[ox],
-                                    sizes[oy],
-                                    compute_margin(sizes[x], sizes[ox], xm),
-                                    compute_margin(sizes[y], sizes[oy], ym),
-                                    pattern,
-                                    flip == 1,
-                                    use_mrt == 1,
-                                    content::GLHelper::SCALER_QUALITY_GOOD);
-                    if (HasFailure()) {
-                      return;
-                    }
-                  }
-                }
-              }
+class GLHelperPixelYuvReadback :
+    public GLHelperPixelTest,
+    public ::testing::WithParamInterface<
+        std::tr1::tuple<bool, bool, unsigned int, unsigned int>> {};
+
+int kYUVReadBackSizes[] = {2, 4, 14};
+
+TEST_P(GLHelperPixelYuvReadback, Test) {
+  bool flip = std::tr1::get<0>(GetParam());
+  bool use_mrt = std::tr1::get<1>(GetParam());
+  unsigned int x = std::tr1::get<2>(GetParam());
+  unsigned int y = std::tr1::get<3>(GetParam());
+
+  for (unsigned int ox = x; ox < arraysize(kYUVReadBackSizes); ox++) {
+    for (unsigned int oy = y; oy < arraysize(kYUVReadBackSizes); oy++) {
+      // If output is a subsection of the destination frame, (letterbox)
+      // then try different variations of where the subsection goes.
+      for (Margin xm = x < ox ? MarginLeft : MarginRight;
+           xm <= MarginRight;
+           xm = NextMargin(xm)) {
+        for (Margin ym = y < oy ? MarginLeft : MarginRight;
+             ym <= MarginRight;
+             ym = NextMargin(ym)) {
+          for (int pattern = 0; pattern < 3; pattern++) {
+            TestYUVReadback(kYUVReadBackSizes[x],
+                            kYUVReadBackSizes[y],
+                            kYUVReadBackSizes[ox],
+                            kYUVReadBackSizes[oy],
+                            compute_margin(kYUVReadBackSizes[x],
+                                           kYUVReadBackSizes[ox], xm),
+                            compute_margin(kYUVReadBackSizes[y],
+                                           kYUVReadBackSizes[oy], ym),
+                            pattern,
+                            flip,
+                            use_mrt,
+                            content::GLHelper::SCALER_QUALITY_GOOD);
+            if (HasFailure()) {
+              return;
             }
           }
         }
@@ -1831,6 +1835,17 @@ TEST_F(GLHelperPixelTest, DISABLED_YUVReadbackTest) {
     }
   }
 }
+
+// First argument is intentionally empty.
+INSTANTIATE_TEST_CASE_P(
+    ,
+    GLHelperPixelYuvReadback,
+    ::testing::Combine(
+         ::testing::Bool(),
+         ::testing::Bool(),
+         ::testing::Range<unsigned int>(0, arraysize(kYUVReadBackSizes)),
+         ::testing::Range<unsigned int>(0, arraysize(kYUVReadBackSizes))));
+
 
 // Per pixel tests, all sizes are small so that we can print
 // out the generated bitmaps.
