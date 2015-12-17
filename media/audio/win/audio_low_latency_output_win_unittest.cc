@@ -103,9 +103,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
   }
 
   // AudioOutputStream::AudioSourceCallback implementation.
-  int OnMoreData(AudioBus* audio_bus,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override {
+  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) override {
     // Store time difference between two successive callbacks in an array.
     // These values will be written to a file in the destructor.
     const base::TimeTicks now_time = base::TimeTicks::Now();
@@ -384,7 +382,7 @@ TEST(WASAPIAudioOutputStreamTest, ValidPacketSize) {
 
   // Wait for the first callback and verify its parameters.  Ignore any
   // subsequent callbacks that might arrive.
-  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet), 0))
+  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet)))
       .WillOnce(DoAll(QuitLoop(loop.task_runner()),
                       Return(aosw.samples_per_packet())))
       .WillRepeatedly(Return(0));
@@ -578,7 +576,7 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeMinBufferSizeAt48kHz) {
       (aosw.bits_per_sample() / 8);
 
  // Wait for the first callback and verify its parameters.
-  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet), 0))
+  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet)))
       .WillOnce(DoAll(QuitLoop(loop.task_runner()),
                       Return(aosw.samples_per_packet())))
       .WillRepeatedly(Return(aosw.samples_per_packet()));
@@ -612,7 +610,7 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeMinBufferSizeAt44kHz) {
       (aosw.bits_per_sample() / 8);
 
   // Wait for the first callback and verify its parameters.
-  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet), 0))
+  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet)))
       .WillOnce(DoAll(QuitLoop(loop.task_runner()),
                       Return(aosw.samples_per_packet())))
       .WillRepeatedly(Return(aosw.samples_per_packet()));

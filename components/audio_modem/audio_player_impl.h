@@ -58,8 +58,7 @@ class AudioPlayerImpl final
 
   // AudioOutputStream::AudioSourceCallback overrides:
   // Following methods could be called from *ANY* thread.
-  int OnMoreData(media::AudioBus* dest, uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override;
+  int OnMoreData(media::AudioBus* dest, uint32 total_bytes_delay) override;
   void OnError(media::AudioOutputStream* stream) override;
 
   // Flushes the audio loop, making sure that any queued operations are

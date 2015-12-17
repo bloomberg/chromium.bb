@@ -43,7 +43,7 @@ void RunInterleaveBench(AudioBus* bus, const std::string& trace_name) {
 TEST(AudioBusPerfTest, Interleave) {
   scoped_ptr<AudioBus> bus = AudioBus::Create(2, 48000 * 120);
   FakeAudioRenderCallback callback(0.2);
-  callback.Render(bus.get(), 0, 0);
+  callback.Render(bus.get(), 0);
 
   RunInterleaveBench<int8>(bus.get(), "int8");
   RunInterleaveBench<int16>(bus.get(), "int16");

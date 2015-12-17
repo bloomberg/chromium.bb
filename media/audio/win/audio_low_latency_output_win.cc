@@ -532,8 +532,8 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
     // Read a data packet from the registered client source and
     // deliver a delay estimate in the same callback to the client.
 
-    int frames_filled =
-        source_->OnMoreData(audio_bus_.get(), audio_delay_bytes, 0);
+    int frames_filled = source_->OnMoreData(
+        audio_bus_.get(), audio_delay_bytes);
     uint32 num_filled_bytes = frames_filled * format_.Format.nBlockAlign;
     DCHECK_LE(num_filled_bytes, packet_size_bytes_);
 

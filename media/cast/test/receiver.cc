@@ -316,9 +316,7 @@ class NaivePlayer : public InProcessReceiver,
   ////////////////////////////////////////////////////////////////////
   // AudioSourceCallback implementation.
 
-  int OnMoreData(AudioBus* dest,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) final {
+  int OnMoreData(AudioBus* dest, uint32 total_bytes_delay) final {
     // Note: This method is being invoked by a separate thread unknown to us
     // (i.e., outside of CastEnvironment).
 

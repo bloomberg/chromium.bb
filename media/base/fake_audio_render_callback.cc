@@ -23,8 +23,7 @@ FakeAudioRenderCallback::FakeAudioRenderCallback(double step)
 FakeAudioRenderCallback::~FakeAudioRenderCallback() {}
 
 int FakeAudioRenderCallback::Render(AudioBus* audio_bus,
-                                    uint32_t audio_delay_milliseconds,
-                                    uint32_t frames_skipped) {
+                                    int audio_delay_milliseconds) {
   last_audio_delay_milliseconds_ = audio_delay_milliseconds;
   last_channel_count_ = audio_bus->channels();
 
@@ -47,7 +46,7 @@ int FakeAudioRenderCallback::Render(AudioBus* audio_bus,
 
 double FakeAudioRenderCallback::ProvideInput(AudioBus* audio_bus,
                                              base::TimeDelta buffer_delay) {
-  Render(audio_bus, buffer_delay.InMillisecondsF() + 0.5, 0);
+  Render(audio_bus, buffer_delay.InMillisecondsF() + 0.5);
   return volume_;
 }
 

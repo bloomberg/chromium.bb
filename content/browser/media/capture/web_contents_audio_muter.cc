@@ -49,7 +49,7 @@ class AudioDiscarder : public media::AudioOutputStream {
   ~AudioDiscarder() override {}
 
   void FetchAudioData(AudioSourceCallback* callback) {
-    callback->OnMoreData(audio_bus_.get(), 0, 0);
+    callback->OnMoreData(audio_bus_.get(), 0);
   }
 
   // Calls FetchAudioData() at regular intervals and discards the data.

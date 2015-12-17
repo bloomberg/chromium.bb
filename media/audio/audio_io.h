@@ -61,10 +61,7 @@ class MEDIA_EXPORT AudioOutputStream {
     // Provide more data by fully filling |dest|.  The source will return
     // the number of frames it filled.  |total_bytes_delay| contains current
     // number of bytes of delay buffered by the AudioOutputStream.
-    // |frames_skipped| contains the number of frames skipped by the consumer.
-    virtual int OnMoreData(AudioBus* dest,
-                           uint32_t total_bytes_delay,
-                           uint32_t frames_skipped) = 0;
+    virtual int OnMoreData(AudioBus* dest, uint32 total_bytes_delay) = 0;
 
     // There was an error while playing a buffer. Audio source cannot be
     // destroyed yet. No direct action needed by the AudioStream, but it is

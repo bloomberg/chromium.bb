@@ -82,7 +82,7 @@ double VirtualAudioOutputStream::ProvideInput(AudioBus* audio_bus,
       params_.GetBytesPerSecond() * buffer_delay /
           base::TimeDelta::FromSeconds(1);
   const int frames = callback_->OnMoreData(
-      audio_bus, static_cast<uint32>(upstream_delay_in_bytes), 0);
+      audio_bus, static_cast<uint32>(upstream_delay_in_bytes));
   if (frames < audio_bus->frames())
     audio_bus->ZeroFramesPartial(frames, audio_bus->frames() - frames);
 

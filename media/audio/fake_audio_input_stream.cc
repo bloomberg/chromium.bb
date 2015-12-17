@@ -98,7 +98,7 @@ void FakeAudioInputStream::ReadAudioFromSource() {
     audio_source_ = ChooseSource();
 
   const int kNoDelay = 0;
-  audio_source_->OnMoreData(audio_bus_.get(), kNoDelay, 0);
+  audio_source_->OnMoreData(audio_bus_.get(), kNoDelay);
   callback_->OnData(this, audio_bus_.get(), 0, 1.0);
 }
 

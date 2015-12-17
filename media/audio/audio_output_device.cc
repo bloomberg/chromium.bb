@@ -28,13 +28,12 @@ class AudioOutputDevice::AudioThreadCallback
   void MapSharedMemory() override;
 
   // Called whenever we receive notifications about pending data.
-  void Process(uint32_t pending_data) override;
+  void Process(uint32 pending_data) override;
 
  private:
   AudioRendererSink::RenderCallback* render_callback_;
   scoped_ptr<AudioBus> output_bus_;
   uint64 callback_num_;
-
   DISALLOW_COPY_AND_ASSIGN(AudioThreadCallback);
 };
 
@@ -396,19 +395,16 @@ AudioOutputDevice::AudioThreadCallback::~AudioThreadCallback() {
 void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
   CHECK_EQ(total_segments_, 1);
   CHECK(shared_memory_.Map(memory_length_));
-  DCHECK_EQ(static_cast<size_t>(memory_length_),
-            sizeof(AudioOutputBufferParameters) +
-                AudioBus::CalculateMemorySize(audio_parameters_));
+  DCHECK_EQ(memory_length_, AudioBus::CalculateMemorySize(audio_parameters_));
 
-  AudioOutputBuffer* buffer =
-      reinterpret_cast<AudioOutputBuffer*>(shared_memory_.memory());
-  output_bus_ = AudioBus::WrapMemory(audio_parameters_, buffer->audio);
+  output_bus_ =
+      AudioBus::WrapMemory(audio_parameters_, shared_memory_.memory());
 }
 
 // Called whenever we receive notifications about pending data.
-void AudioOutputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
+void AudioOutputDevice::AudioThreadCallback::Process(uint32 pending_data) {
   // Convert the number of pending bytes in the render buffer into milliseconds.
-  uint32_t audio_delay_milliseconds = pending_data / bytes_per_ms_;
+  int audio_delay_milliseconds = pending_data / bytes_per_ms_;
 
   callback_num_++;
   TRACE_EVENT1("audio", "AudioOutputDevice::FireRenderCallback",
@@ -421,18 +417,10 @@ void AudioOutputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
     TRACE_EVENT_ASYNC_END0("audio", "StartingPlayback", this);
   }
 
-  // Read and reset the number of frames skipped.
-  AudioOutputBuffer* buffer =
-      reinterpret_cast<AudioOutputBuffer*>(shared_memory_.memory());
-  uint32_t frames_skipped = buffer->params.frames_skipped;
-  buffer->params.frames_skipped = 0;
-
-  // Update the audio-delay measurement, inform about the number of skipped
-  // frames, and ask client to render audio.  Since |output_bus_| is wrapping
-  // the shared memory the Render() call is writing directly into the shared
-  // memory.
-  render_callback_->Render(output_bus_.get(), audio_delay_milliseconds,
-                           frames_skipped);
+  // Update the audio-delay measurement then ask client to render audio.  Since
+  // |output_bus_| is wrapping the shared memory the Render() call is writing
+  // directly into the shared memory.
+  render_callback_->Render(output_bus_.get(), audio_delay_milliseconds);
 }
 
-}  // namespace media
+}  // namespace media.

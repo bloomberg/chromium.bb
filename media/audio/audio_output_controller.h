@@ -8,7 +8,6 @@
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
@@ -83,12 +82,8 @@ class MEDIA_EXPORT AudioOutputController
 
     // Notify the synchronous reader the number of bytes in the
     // AudioOutputController not yet played. This is used by SyncReader to
-    // prepare more data and perform synchronization. Also inform about if any
-    // frames has been skipped by the renderer (typically the OS). The renderer
-    // source can handle this appropriately depending on the type of source. An
-    // ordinary file playout would ignore this.
-    virtual void UpdatePendingBytes(uint32_t bytes,
-                                    uint32_t frames_skipped) = 0;
+    // prepare more data and perform synchronization.
+    virtual void UpdatePendingBytes(uint32 bytes) = 0;
 
     // Attempts to completely fill |dest|, zeroing |dest| if the request can not
     // be fulfilled (due to timeout).
@@ -158,9 +153,7 @@ class MEDIA_EXPORT AudioOutputController
                           const base::Closure& callback);
 
   // AudioSourceCallback implementation.
-  int OnMoreData(AudioBus* dest,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override;
+  int OnMoreData(AudioBus* dest, uint32 total_bytes_delay) override;
   void OnError(AudioOutputStream* stream) override;
 
   // AudioDeviceListener implementation.  When called AudioOutputController will

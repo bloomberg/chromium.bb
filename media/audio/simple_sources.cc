@@ -110,8 +110,7 @@ SineWaveAudioSource::~SineWaveAudioSource() {
 // The implementation could be more efficient if a lookup table is constructed
 // but it is efficient enough for our simple needs.
 int SineWaveAudioSource::OnMoreData(AudioBus* audio_bus,
-                                    uint32_t total_bytes_delay,
-                                    uint32_t frames_skipped) {
+                                    uint32 total_bytes_delay) {
   base::AutoLock auto_lock(time_lock_);
   callbacks_++;
 
@@ -194,9 +193,7 @@ void FileSource::LoadWavFile(const base::FilePath& path_to_wav_file) {
   file_audio_converter_->AddInput(this);
 }
 
-int FileSource::OnMoreData(AudioBus* audio_bus,
-                           uint32_t total_bytes_delay,
-                           uint32_t frames_skipped) {
+int FileSource::OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) {
   // Load the file if we haven't already. This load needs to happen on the
   // audio thread, otherwise we'll run on the UI thread on Mac for instance.
   // This will massively delay the first OnMoreData, but we'll catch up.
@@ -245,9 +242,7 @@ BeepingSource::BeepingSource(const AudioParameters& params)
 BeepingSource::~BeepingSource() {
 }
 
-int BeepingSource::OnMoreData(AudioBus* audio_bus,
-                              uint32_t total_bytes_delay,
-                              uint32_t frames_skipped) {
+int BeepingSource::OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) {
   // Accumulate the time from the last beep.
   interval_from_last_beep_ += base::TimeTicks::Now() - last_callback_time_;
 

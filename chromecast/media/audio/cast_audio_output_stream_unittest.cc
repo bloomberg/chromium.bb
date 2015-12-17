@@ -165,8 +165,7 @@ class FakeAudioSourceCallback
 
   // ::media::AudioOutputStream::AudioSourceCallback overrides.
   int OnMoreData(::media::AudioBus* audio_bus,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override {
+                 uint32 total_bytes_delay) override {
     audio_bus->Zero();
     return audio_bus->frames();
   }

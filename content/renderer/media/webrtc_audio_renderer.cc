@@ -418,8 +418,7 @@ media::OutputDeviceStatus WebRtcAudioRenderer::GetDeviceStatus() {
 }
 
 int WebRtcAudioRenderer::Render(media::AudioBus* audio_bus,
-                                uint32_t audio_delay_milliseconds,
-                                uint32_t frames_skipped) {
+                                int audio_delay_milliseconds) {
   DCHECK(audio_renderer_thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   if (!source_)
@@ -428,8 +427,7 @@ int WebRtcAudioRenderer::Render(media::AudioBus* audio_bus,
   DVLOG(2) << "WebRtcAudioRenderer::Render()";
   DVLOG(2) << "audio_delay_milliseconds: " << audio_delay_milliseconds;
 
-  DCHECK_LE(audio_delay_milliseconds, static_cast<uint32_t>(INT_MAX));
-  audio_delay_milliseconds_ = static_cast<int>(audio_delay_milliseconds);
+  audio_delay_milliseconds_ = audio_delay_milliseconds;
 
   if (audio_fifo_)
     audio_fifo_->Consume(audio_bus, audio_bus->frames());

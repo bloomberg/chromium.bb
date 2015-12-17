@@ -126,8 +126,6 @@ class AUHALStream : public AudioOutputStream {
   // Gets the current playout latency value.
   double GetPlayoutLatency(const AudioTimeStamp* output_time_stamp);
 
-  // Updates playout timestamp, current lost frames, and total lost frames and
-  // glitches.
   void UpdatePlayoutTimestamp(const AudioTimeStamp* timestamp);
 
   // Called from the dtor and when the stream is reset.
@@ -183,11 +181,6 @@ class AUHALStream : public AudioOutputStream {
 
   // Current buffer delay.  Set by Render().
   uint32 current_hardware_pending_bytes_;
-
-  // Lost frames not yet reported to the provider. Increased in
-  // UpdatePlayoutTimestamp() if any lost frame since last time. Forwarded to
-  // the provider and reset in ProvideInput().
-  uint32_t current_lost_frames_;
 
   // Stores the timestamp of the previous audio buffer requested by the OS.
   // We use this in combination with |last_number_of_frames_| to detect when

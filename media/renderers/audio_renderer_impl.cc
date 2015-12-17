@@ -626,8 +626,7 @@ bool AudioRendererImpl::IsBeforeStartTime(
 }
 
 int AudioRendererImpl::Render(AudioBus* audio_bus,
-                              uint32_t audio_delay_milliseconds,
-                              uint32_t frames_skipped) {
+                              int audio_delay_milliseconds) {
   const int requested_frames = audio_bus->frames();
   base::TimeDelta playback_delay = base::TimeDelta::FromMilliseconds(
       audio_delay_milliseconds);

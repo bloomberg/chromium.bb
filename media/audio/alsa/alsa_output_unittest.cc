@@ -422,7 +422,7 @@ TEST_F(AlsaPcmOutputStreamTest, StartStop) {
       .WillRepeatedly(Return(SND_PCM_STATE_RUNNING));
   EXPECT_CALL(mock_alsa_wrapper_, PcmDelay(kFakeHandle, _))
       .WillRepeatedly(DoAll(SetArgumentPointee<1>(0), Return(0)));
-  EXPECT_CALL(mock_callback, OnMoreData(_, _, 0))
+  EXPECT_CALL(mock_callback, OnMoreData(_, _))
       .WillRepeatedly(DoAll(ClearBuffer(), Return(kTestFramesPerPacket)));
   EXPECT_CALL(mock_alsa_wrapper_, PcmWritei(kFakeHandle, _, _))
       .WillRepeatedly(Return(kTestFramesPerPacket));
@@ -585,7 +585,7 @@ TEST_F(AlsaPcmOutputStreamTest, BufferPacket) {
       .WillRepeatedly(Return(0));  // Buffer is full.
 
   // Return a partially filled packet.
-  EXPECT_CALL(mock_callback, OnMoreData(_, _, 0))
+  EXPECT_CALL(mock_callback, OnMoreData(_, _))
       .WillOnce(DoAll(ClearBuffer(), Return(kTestFramesPerPacket / 2)));
 
   bool source_exhausted;
@@ -611,7 +611,7 @@ TEST_F(AlsaPcmOutputStreamTest, BufferPacket_Negative) {
       .WillOnce(DoAll(SetArgumentPointee<1>(-1), Return(0)));
   EXPECT_CALL(mock_alsa_wrapper_, PcmAvailUpdate(_))
       .WillRepeatedly(Return(0));  // Buffer is full.
-  EXPECT_CALL(mock_callback, OnMoreData(_, _, 0))
+  EXPECT_CALL(mock_callback, OnMoreData(_, _))
       .WillOnce(DoAll(ClearBuffer(), Return(kTestFramesPerPacket / 2)));
 
   bool source_exhausted;
@@ -635,7 +635,7 @@ TEST_F(AlsaPcmOutputStreamTest, BufferPacket_Underrun) {
       .WillOnce(Return(SND_PCM_STATE_XRUN));
   EXPECT_CALL(mock_alsa_wrapper_, PcmAvailUpdate(_))
       .WillRepeatedly(Return(0));  // Buffer is full.
-  EXPECT_CALL(mock_callback, OnMoreData(_, 0, 0))
+  EXPECT_CALL(mock_callback, OnMoreData(_, 0))
       .WillOnce(DoAll(ClearBuffer(), Return(kTestFramesPerPacket / 2)));
 
   bool source_exhausted;
