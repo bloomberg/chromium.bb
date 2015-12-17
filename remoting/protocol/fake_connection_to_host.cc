@@ -11,36 +11,20 @@ namespace remoting {
 namespace test {
 
 FakeConnectionToHost::FakeConnectionToHost()
-    : state_(INITIALIZING),
-      session_config_(protocol::SessionConfig::ForTest()) {
-}
+    : session_config_(protocol::SessionConfig::ForTest()) {}
+FakeConnectionToHost::~FakeConnectionToHost() {}
 
-FakeConnectionToHost::~FakeConnectionToHost() {
-}
-
-void FakeConnectionToHost::set_candidate_config(
-    scoped_ptr<protocol::CandidateSessionConfig> config) {
-}
-
-void FakeConnectionToHost::set_client_stub(protocol::ClientStub* client_stub) {
-}
+void FakeConnectionToHost::set_client_stub(protocol::ClientStub* client_stub) {}
 
 void FakeConnectionToHost::set_clipboard_stub(
-    protocol::ClipboardStub* clipboard_stub) {
-}
+    protocol::ClipboardStub* clipboard_stub) {}
 
-void FakeConnectionToHost::set_video_stub(protocol::VideoStub* video_stub) {
-}
+void FakeConnectionToHost::set_video_stub(protocol::VideoStub* video_stub) {}
 
-void FakeConnectionToHost::set_audio_stub(protocol::AudioStub* audio_stub) {
-}
+void FakeConnectionToHost::set_audio_stub(protocol::AudioStub* audio_stub) {}
 
-void FakeConnectionToHost::Connect(
-    SignalStrategy* signal_strategy,
-    scoped_refptr<protocol::TransportContext> transport_context,
-    scoped_ptr<protocol::Authenticator> authenticator,
-    const std::string& host_jid,
-    HostEventCallback* event_callback) {
+void FakeConnectionToHost::Connect(scoped_ptr<protocol::Session> session,
+                                   HostEventCallback* event_callback) {
   DCHECK(event_callback);
 
   event_callback_ = event_callback;

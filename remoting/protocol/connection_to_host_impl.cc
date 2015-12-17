@@ -11,7 +11,6 @@
 #include "remoting/protocol/audio_reader.h"
 #include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/auth_util.h"
-#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/client_control_dispatcher.h"
 #include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
@@ -19,35 +18,14 @@
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/ice_transport.h"
-#include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/transport.h"
-#include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_stub.h"
 
 namespace remoting {
 namespace protocol {
 
-ConnectionToHostImpl::ConnectionToHostImpl()
-    : event_callback_(nullptr),
-      client_stub_(nullptr),
-      clipboard_stub_(nullptr),
-      audio_stub_(nullptr),
-      signal_strategy_(nullptr),
-      state_(INITIALIZING),
-      error_(OK) {}
-
-ConnectionToHostImpl::~ConnectionToHostImpl() {
-  CloseChannels();
-
-  if (session_.get())
-    session_.reset();
-
-  if (session_manager_.get())
-    session_manager_.reset();
-
-  if (signal_strategy_)
-    signal_strategy_->RemoveListener(this);
-}
+ConnectionToHostImpl::ConnectionToHostImpl() {}
+ConnectionToHostImpl::~ConnectionToHostImpl() {}
 
 #define RETURN_STRING_LITERAL(x) \
 case x: \
@@ -66,59 +44,18 @@ const char* ConnectionToHost::StateToString(State state) {
   return nullptr;
 }
 
-void ConnectionToHostImpl::Connect(
-    SignalStrategy* signal_strategy,
-    scoped_refptr<TransportContext> transport_context,
-    scoped_ptr<Authenticator> authenticator,
-    const std::string& host_jid,
-    HostEventCallback* event_callback) {
+void ConnectionToHostImpl::Connect(scoped_ptr<Session> session,
+                                   HostEventCallback* event_callback) {
   DCHECK(client_stub_);
   DCHECK(clipboard_stub_);
   DCHECK(monitored_video_stub_);
 
-  // Initialize default |candidate_config_| if set_candidate_config() wasn't
-  // called.
-  if (!candidate_config_)
-    candidate_config_ = CandidateSessionConfig::CreateDefault();
-  if (!audio_stub_)
-    candidate_config_->DisableAudioChannel();
+  session_ = session.Pass();
+  session_->SetEventHandler(this);
 
-  signal_strategy_ = signal_strategy;
   event_callback_ = event_callback;
-  authenticator_ = authenticator.Pass();
-
-  // Save jid of the host. The actual connection is created later after
-  // |signal_strategy_| is connected.
-  host_jid_ = host_jid;
-
-  signal_strategy_->AddListener(this);
-
-  session_manager_.reset(new JingleSessionManager(
-      make_scoped_ptr(new IceTransportFactory(transport_context)),
-      signal_strategy));
-  session_manager_->set_protocol_config(candidate_config_->Clone());
 
   SetState(CONNECTING, OK);
-
-  switch (signal_strategy_->GetState()) {
-    case SignalStrategy::CONNECTING:
-      // Nothing to do here. Just need to wait until |signal_strategy_| becomes
-      // connected.
-      break;
-    case SignalStrategy::CONNECTED:
-      StartSession();
-      break;
-    case SignalStrategy::DISCONNECTED:
-      signal_strategy_->Connect();
-      break;
-  }
-}
-
-void ConnectionToHostImpl::set_candidate_config(
-    scoped_ptr<CandidateSessionConfig> config) {
-  DCHECK_EQ(state_, INITIALIZING);
-
-  candidate_config_ = config.Pass();
 }
 
 const SessionConfig& ConnectionToHostImpl::config() {
@@ -157,35 +94,6 @@ void ConnectionToHostImpl::set_video_stub(VideoStub* video_stub) {
 
 void ConnectionToHostImpl::set_audio_stub(AudioStub* audio_stub) {
   audio_stub_ = audio_stub;
-}
-
-void ConnectionToHostImpl::StartSession() {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(state_, CONNECTING);
-
-  session_ = session_manager_->Connect(host_jid_, authenticator_.Pass());
-  session_->SetEventHandler(this);
-}
-
-void ConnectionToHostImpl::OnSignalStrategyStateChange(
-    SignalStrategy::State state) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(event_callback_);
-
-  if (state == SignalStrategy::CONNECTED) {
-    VLOG(1) << "Connected as: " << signal_strategy_->GetLocalJid();
-    // After signaling has been connected we can try connecting to the host.
-    if (state_ == CONNECTING)
-      StartSession();
-  } else if (state == SignalStrategy::DISCONNECTED) {
-    VLOG(1) << "Connection closed.";
-    CloseOnError(SIGNALING_ERROR);
-  }
-}
-
-bool ConnectionToHostImpl::OnSignalStrategyIncomingStanza(
-    const buzz::XmlElement* stanza) {
-  return false;
 }
 
 void ConnectionToHostImpl::OnSessionStateChange(Session::State state) {

@@ -67,7 +67,8 @@ class TestChromotingClient : public ClientUserInterface,
   // Unregisters an observerer from notifications for remote connection events.
   void RemoveRemoteConnectionObserver(RemoteConnectionObserver* observer);
 
-  // Used to set a fake/mock connection object for TestChromotingClient tests.
+  // Used to set a fake/mock dependencies for tests.
+  void SetSignalStrategyForTests(scoped_ptr<SignalStrategy> signal_strategy);
   void SetConnectionToHostForTests(
       scoped_ptr<protocol::ConnectionToHost> connection_to_host);
 
@@ -114,8 +115,8 @@ class TestChromotingClient : public ClientUserInterface,
   // Processes video packets from the host.
   scoped_ptr<VideoRenderer> video_renderer_;
 
-  // Used to establish an XMPP connection with the google talk service.
-  scoped_ptr<XmppSignalStrategy> signal_strategy_;
+  // SignalStrategy used for connection signaling.
+  scoped_ptr<SignalStrategy> signal_strategy_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromotingClient);
 };

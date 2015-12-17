@@ -107,17 +107,19 @@ void TestChromotingClient::StartConnection(
         test_connection_to_host_.Pass());
   }
 
-  XmppSignalStrategy::XmppServerConfig xmpp_server_config;
-  xmpp_server_config.host = kXmppHostName;
-  xmpp_server_config.port = kXmppPortNumber;
-  xmpp_server_config.use_tls = true;
-  xmpp_server_config.username = connection_setup_info.user_name;
-  xmpp_server_config.auth_token = connection_setup_info.access_token;
+  if (!signal_strategy_) {
+    XmppSignalStrategy::XmppServerConfig xmpp_server_config;
+    xmpp_server_config.host = kXmppHostName;
+    xmpp_server_config.port = kXmppPortNumber;
+    xmpp_server_config.use_tls = true;
+    xmpp_server_config.username = connection_setup_info.user_name;
+    xmpp_server_config.auth_token = connection_setup_info.access_token;
 
-  // Set up the signal strategy.  This must outlive the client object.
-  signal_strategy_.reset(
-      new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
-                             request_context_getter, xmpp_server_config));
+    // Set up the signal strategy.  This must outlive the client object.
+    signal_strategy_.reset(
+        new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
+                               request_context_getter, xmpp_server_config));
+  }
 
   protocol::NetworkSettings network_settings(
       protocol::NetworkSettings::NAT_TRAVERSAL_FULL);
@@ -185,6 +187,11 @@ void TestChromotingClient::RemoveRemoteConnectionObserver(
   DCHECK(observer);
 
   connection_observers_.RemoveObserver(observer);
+}
+
+void TestChromotingClient::SetSignalStrategyForTests(
+    scoped_ptr<SignalStrategy> signal_strategy) {
+  signal_strategy_ = signal_strategy.Pass();
 }
 
 void TestChromotingClient::SetConnectionToHostForTests(

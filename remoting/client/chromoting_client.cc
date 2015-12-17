@@ -4,35 +4,30 @@
 
 #include "remoting/client/chromoting_client.h"
 
-#include "base/bind.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/client/audio_decode_scheduler.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/video_renderer.h"
-#include "remoting/proto/audio.pb.h"
-#include "remoting/proto/video.pb.h"
-#include "remoting/protocol/authentication_method.h"
+#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/negotiating_client_authenticator.h"
+#include "remoting/protocol/ice_transport.h"
+#include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/transport_context.h"
 
 namespace remoting {
 
-using protocol::AuthenticationMethod;
-
 ChromotingClient::ChromotingClient(ClientContext* client_context,
                                    ClientUserInterface* user_interface,
                                    VideoRenderer* video_renderer,
                                    scoped_ptr<AudioPlayer> audio_player)
-    : task_runner_(client_context->main_task_runner()),
-      user_interface_(user_interface),
+    : user_interface_(user_interface),
       video_renderer_(video_renderer),
-      connection_(new protocol::ConnectionToHostImpl()),
-      host_capabilities_received_(false) {
+      connection_(new protocol::ConnectionToHostImpl()) {
+  DCHECK(client_context->main_task_runner()->BelongsToCurrentThread());
   if (audio_player) {
     audio_decode_scheduler_.reset(new AudioDecodeScheduler(
         client_context->main_task_runner(),
@@ -41,11 +36,8 @@ ChromotingClient::ChromotingClient(ClientContext* client_context,
 }
 
 ChromotingClient::~ChromotingClient() {
-}
-
-void ChromotingClient::set_protocol_config(
-    scoped_ptr<protocol::CandidateSessionConfig> config) {
-  connection_->set_candidate_config(config.Pass());
+  if (signal_strategy_)
+      signal_strategy_->RemoveListener(this);
 }
 
 void ChromotingClient::SetConnectionToHostForTests(
@@ -59,8 +51,10 @@ void ChromotingClient::Start(
     scoped_refptr<protocol::TransportContext> transport_context,
     const std::string& host_jid,
     const std::string& capabilities) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!session_manager_);  // Start must be called more than once.
 
+  host_jid_ = host_jid;
   local_capabilities_ = capabilities;
 
   connection_->set_client_stub(this);
@@ -68,13 +62,38 @@ void ChromotingClient::Start(
   connection_->set_video_stub(video_renderer_->GetVideoStub());
   connection_->set_audio_stub(audio_decode_scheduler_.get());
 
-  connection_->Connect(signal_strategy, transport_context, authenticator.Pass(),
-                       host_jid, this);
+  session_manager_.reset(new protocol::JingleSessionManager(
+      make_scoped_ptr(new protocol::IceTransportFactory(transport_context)),
+      signal_strategy));
+
+  if (!protocol_config_)
+    protocol_config_ = protocol::CandidateSessionConfig::CreateDefault();
+  if (!audio_decode_scheduler_)
+    protocol_config_->DisableAudioChannel();
+  session_manager_->set_protocol_config(protocol_config_.Pass());
+
+  authenticator_ = authenticator.Pass();
+
+  signal_strategy_ = signal_strategy;
+  signal_strategy_->AddListener(this);
+
+  switch (signal_strategy_->GetState()) {
+    case SignalStrategy::CONNECTING:
+      // Nothing to do here. Just need to wait until |signal_strategy_| becomes
+      // connected.
+      break;
+    case SignalStrategy::CONNECTED:
+      StartConnection();
+      break;
+    case SignalStrategy::DISCONNECTED:
+      signal_strategy_->Connect();
+      break;
+  }
 }
 
 void ChromotingClient::SetCapabilities(
     const protocol::Capabilities& capabilities) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Only accept the first |protocol::Capabilities| message.
   if (host_capabilities_received_) {
@@ -96,28 +115,28 @@ void ChromotingClient::SetCapabilities(
 
 void ChromotingClient::SetPairingResponse(
     const protocol::PairingResponse& pairing_response) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   user_interface_->SetPairingResponse(pairing_response);
 }
 
 void ChromotingClient::DeliverHostMessage(
     const protocol::ExtensionMessage& message) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   user_interface_->DeliverHostMessage(message);
 }
 
 void ChromotingClient::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   user_interface_->GetClipboardStub()->InjectClipboardEvent(event);
 }
 
 void ChromotingClient::SetCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   user_interface_->GetCursorShapeStub()->SetCursorShape(cursor_shape);
 }
@@ -125,7 +144,7 @@ void ChromotingClient::SetCursorShape(
 void ChromotingClient::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "ChromotingClient::OnConnectionState(" << state << ")";
 
   if (state == protocol::ConnectionToHost::AUTHENTICATED) {
@@ -148,8 +167,38 @@ void ChromotingClient::OnRouteChanged(const std::string& channel_name,
   user_interface_->OnRouteChanged(channel_name, route);
 }
 
+void ChromotingClient::OnSignalStrategyStateChange(
+    SignalStrategy::State state) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (state == SignalStrategy::CONNECTED) {
+    VLOG(1) << "Connected as: " << signal_strategy_->GetLocalJid();
+    // After signaling has been connected we can try connecting to the host.
+    if (connection_ &&
+        connection_->state() == protocol::ConnectionToHost::INITIALIZING) {
+      StartConnection();
+    }
+  } else if (state == SignalStrategy::DISCONNECTED) {
+    VLOG(1) << "Signaling connection closed.";
+    connection_.reset();
+    user_interface_->OnConnectionState(protocol::ConnectionToHost::CLOSED,
+                                       protocol::SIGNALING_ERROR);
+  }
+}
+
+bool ChromotingClient::OnSignalStrategyIncomingStanza(
+    const buzz::XmlElement* stanza) {
+  return false;
+}
+
+void ChromotingClient::StartConnection() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  connection_->Connect(
+      session_manager_->Connect(host_jid_, authenticator_.Pass()), this);
+}
+
 void ChromotingClient::OnAuthenticated() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Initialize the decoder.
   video_renderer_->OnSessionConfig(connection_->config());
@@ -158,7 +207,7 @@ void ChromotingClient::OnAuthenticated() {
 }
 
 void ChromotingClient::OnChannelsConnected() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Negotiate capabilities with the host.
   VLOG(1) << "Client capabilities: " << local_capabilities_;

@@ -23,13 +23,8 @@
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/session_manager.h"
-#include "remoting/signaling/signal_strategy.h"
 
 namespace remoting {
-
-class XmppProxy;
-class VideoPacket;
-
 namespace protocol {
 
 class AudioReader;
@@ -38,7 +33,6 @@ class ClientEventDispatcher;
 class ClientVideoDispatcher;
 
 class ConnectionToHostImpl : public ConnectionToHost,
-                             public SignalStrategy::Listener,
                              public Session::EventHandler,
                              public ChannelDispatcherBase::EventHandler,
                              public base::NonThreadSafe {
@@ -47,15 +41,11 @@ class ConnectionToHostImpl : public ConnectionToHost,
   ~ConnectionToHostImpl() override;
 
   // ConnectionToHost interface.
-  void set_candidate_config(scoped_ptr<CandidateSessionConfig> config) override;
   void set_client_stub(ClientStub* client_stub) override;
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override;
   void set_video_stub(VideoStub* video_stub) override;
   void set_audio_stub(AudioStub* audio_stub) override;
-  void Connect(SignalStrategy* signal_strategy,
-               scoped_refptr<TransportContext> transport_context,
-               scoped_ptr<Authenticator> authenticator,
-               const std::string& host_jid,
+  void Connect(scoped_ptr<Session> session,
                HostEventCallback* event_callback) override;
   const SessionConfig& config() override;
   ClipboardStub* clipboard_forwarder() override;
@@ -64,12 +54,6 @@ class ConnectionToHostImpl : public ConnectionToHost,
   State state() const override;
 
  private:
-  void StartSession();
-
-  // SignalStrategy::StatusObserver interface.
-  void OnSignalStrategyStateChange(SignalStrategy::State state) override;
-  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
-
   // Session::EventHandler interface.
   void OnSessionStateChange(Session::State state) override;
   void OnSessionRouteChange(const std::string& channel_name,
@@ -92,20 +76,13 @@ class ConnectionToHostImpl : public ConnectionToHost,
 
   void SetState(State state, ErrorCode error);
 
-  std::string host_jid_;
-  std::string host_public_key_;
-  scoped_ptr<Authenticator> authenticator_;
-
-  HostEventCallback* event_callback_;
-
-  scoped_ptr<CandidateSessionConfig> candidate_config_;
+  HostEventCallback* event_callback_ = nullptr;
 
   // Stub for incoming messages.
-  ClientStub* client_stub_;
-  ClipboardStub* clipboard_stub_;
-  AudioStub* audio_stub_;
+  ClientStub* client_stub_ = nullptr;
+  ClipboardStub* clipboard_stub_ = nullptr;
+  AudioStub* audio_stub_ = nullptr;
 
-  SignalStrategy* signal_strategy_;
   scoped_ptr<SessionManager> session_manager_;
   scoped_ptr<Session> session_;
   scoped_ptr<MonitoredVideoStub> monitored_video_stub_;
@@ -118,8 +95,8 @@ class ConnectionToHostImpl : public ConnectionToHost,
   InputFilter event_forwarder_;
 
   // Internal state of the connection.
-  State state_;
-  ErrorCode error_;
+  State state_ = INITIALIZING;
+  ErrorCode error_ = OK;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionToHostImpl);

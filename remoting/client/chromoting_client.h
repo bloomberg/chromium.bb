@@ -18,6 +18,7 @@
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/video_stub.h"
+#include "remoting/signaling/signal_strategy.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -37,9 +38,9 @@ class ClientUserInterface;
 class FrameConsumerProxy;
 class FrameProducer;
 class VideoRenderer;
-class SignalStrategy;
 
-class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
+class ChromotingClient : public SignalStrategy::Listener,
+                         public protocol::ConnectionToHost::HostEventCallback,
                          public protocol::ClientStub {
  public:
   // |client_context|, |user_interface| and |video_renderer| must outlive the
@@ -52,7 +53,10 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
 
   ~ChromotingClient() override;
 
-  void set_protocol_config(scoped_ptr<protocol::CandidateSessionConfig> config);
+  void set_protocol_config(
+      scoped_ptr<protocol::CandidateSessionConfig> config) {
+    protocol_config_ = config.Pass();
+  }
 
   // Used to set fake/mock objects for tests which use the ChromotingClient.
   void SetConnectionToHostForTests(
@@ -96,17 +100,32 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                       const protocol::TransportRoute& route) override;
 
  private:
+   // SignalStrategy::StatusObserver interface.
+  void OnSignalStrategyStateChange(SignalStrategy::State state) override;
+  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
+
+  // Starts connection once |signal_strategy_| is connected.
+  void StartConnection();
+
   // Called when the connection is authenticated.
   void OnAuthenticated();
 
   // Called when all channels are connected.
   void OnChannelsConnected();
 
-  // The following are not owned by this class.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  ClientUserInterface* user_interface_;
-  VideoRenderer* video_renderer_;
+  base::ThreadChecker thread_checker_;
 
+  scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
+
+  // The following are not owned by this class.
+  ClientUserInterface* user_interface_ = nullptr;
+  VideoRenderer* video_renderer_ = nullptr;
+  SignalStrategy* signal_strategy_ = nullptr;
+
+  std::string host_jid_;
+  scoped_ptr<protocol::Authenticator> authenticator_;
+
+  scoped_ptr<protocol::SessionManager> session_manager_;
   scoped_ptr<protocol::ConnectionToHost> connection_;
 
   scoped_ptr<AudioDecodeScheduler> audio_decode_scheduler_;
@@ -117,7 +136,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   std::string host_capabilities_;
 
   // True if |protocol::Capabilities| message has been received.
-  bool host_capabilities_received_;
+  bool host_capabilities_received_ = false;
 
   // Record the statistics of the connection.
   protocol::PerformanceTracker perf_tracker_;

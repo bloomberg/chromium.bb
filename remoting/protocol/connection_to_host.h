@@ -7,27 +7,20 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/errors.h"
 
 namespace remoting {
-
-class SignalStrategy;
-
 namespace protocol {
 
 class AudioStub;
 class Authenticator;
-class CandidateSessionConfig;
 class ClientStub;
 class ClipboardStub;
-class ExtensionMessage;
 class HostStub;
 class InputStub;
+class Session;
 class SessionConfig;
-class TransportContext;
 struct TransportRoute;
 class VideoStub;
 
@@ -69,11 +62,6 @@ class ConnectionToHost {
 
   virtual ~ConnectionToHost() {}
 
-  // Allows to set a custom protocol configuration (e.g. for tests). Cannot be
-  // called after Connect().
-  virtual void set_candidate_config(
-      scoped_ptr<CandidateSessionConfig> config) = 0;
-
   // Set the stubs which will handle messages from the host.
   // The caller must ensure that stubs out-live the connection.
   // Unless otherwise specified, all stubs must be set before Connect()
@@ -84,17 +72,10 @@ class ConnectionToHost {
   // If no audio stub is specified then audio will not be requested.
   virtual void set_audio_stub(AudioStub* audio_stub) = 0;
 
-  // Initiates a connection to the host specified by |host_jid|.
-  // |signal_strategy| is used to signal to the host, and must outlive the
-  // connection. Data channels will be negotiated over |transport_factory|.
-  // |authenticator| will be used to authenticate the session and data channels.
-  // |event_callback| will be notified of changes in the state of the connection
-  // and must outlive the ConnectionToHost.
-  // Caller must set stubs (see below) before calling Connect.
-  virtual void Connect(SignalStrategy* signal_strategy,
-                       scoped_refptr<TransportContext> transport_context,
-                       scoped_ptr<Authenticator> authenticator,
-                       const std::string& host_jid,
+  // Initiates a connection using |session|. |event_callback| will be notified
+  // of changes in the state of the connection and must outlive the
+  // ConnectionToHost. Caller must set stubs (see below) before calling Connect.
+  virtual void Connect(scoped_ptr<Session> session,
                        HostEventCallback* event_callback) = 0;
 
   // Returns the session configuration that was negotiated with the host.

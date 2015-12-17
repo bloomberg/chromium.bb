@@ -17,6 +17,7 @@ namespace remoting {
 namespace protocol {
 class ClipboardStub;
 class CursorShapeStub;
+class ExtensionMessage;
 class PairingResponse;
 }  // namespace protocol
 
