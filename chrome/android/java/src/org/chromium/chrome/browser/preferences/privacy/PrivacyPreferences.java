@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
@@ -55,6 +56,7 @@ public class PrivacyPreferences extends PreferenceFragment
     private static final String PREF_DO_NOT_TRACK = "do_not_track";
     private static final String PREF_CLEAR_BROWSING_DATA = "clear_browsing_data";
     private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
+    private static final String PREF_PHYSICAL_WEB = "physical_web";
 
     private ClearBrowsingDataDialogFragment mClearBrowsingDataDialogFragment;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
@@ -158,6 +160,11 @@ public class PrivacyPreferences extends PreferenceFragment
                     getArguments().getBoolean(SHOW_CLEAR_BROWSING_DATA_EXTRA, false);
             if (showClearBrowsingData) showClearBrowsingDialog();
         }
+
+        if (!PhysicalWeb.featureIsEnabled()) {
+            preferenceScreen.removePreference(findPreference(PREF_PHYSICAL_WEB));
+        }
+
         updateSummaries();
     }
 
@@ -218,6 +225,12 @@ public class PrivacyPreferences extends PreferenceFragment
     public void updateSummaries() {
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
 
+        PrivacyPreferencesManager privacyPrefManager =
+                PrivacyPreferencesManager.getInstance(getActivity());
+
+        CharSequence textOn = getActivity().getResources().getText(R.string.text_on);
+        CharSequence textOff = getActivity().getResources().getText(R.string.text_off);
+
         CheckBoxPreference navigationErrorPref = (CheckBoxPreference) findPreference(
                 PREF_NAVIGATION_ERROR);
         navigationErrorPref.setChecked(prefServiceBridge.isResolveNavigationErrorEnabled());
@@ -236,30 +249,24 @@ public class PrivacyPreferences extends PreferenceFragment
         safeBrowsingPref.setChecked(prefServiceBridge.isSafeBrowsingEnabled());
 
         Preference doNotTrackPref = findPreference(PREF_DO_NOT_TRACK);
-        if (prefServiceBridge.isDoNotTrackEnabled()) {
-            doNotTrackPref.setSummary(getActivity().getResources().getText(R.string.text_on));
-        } else {
-            doNotTrackPref.setSummary(getActivity().getResources().getText(R.string.text_off));
-        }
+        doNotTrackPref.setSummary(prefServiceBridge.isDoNotTrackEnabled() ? textOn : textOff);
+
         Preference contextualPref = findPreference(PREF_CONTEXTUAL_SEARCH);
         if (contextualPref != null) {
-            if (prefServiceBridge.isContextualSearchDisabled()) {
-                contextualPref.setSummary(getActivity().getResources().getText(R.string.text_off));
-            } else {
-                contextualPref.setSummary(getActivity().getResources().getText(R.string.text_on));
-            }
+            boolean isContextualSearchEnabled = !prefServiceBridge.isContextualSearchDisabled();
+            contextualPref.setSummary(isContextualSearchEnabled ? textOn : textOff);
         }
-        PrivacyPreferencesManager privacyPrefManager =
-                PrivacyPreferencesManager.getInstance(getActivity());
+
+        Preference physicalWebPref = findPreference(PREF_PHYSICAL_WEB);
+        if (physicalWebPref != null) {
+            physicalWebPref.setSummary(privacyPrefManager.isPhysicalWebEnabled()
+                    ? textOn : textOff);
+        }
+
         if (privacyPrefManager.isCellularExperimentEnabled()) {
             Preference usageAndCrashPref = findPreference(PREF_USAGE_AND_CRASH_REPORTING);
-            if (privacyPrefManager.isUsageAndCrashReportingEnabled()) {
-                usageAndCrashPref.setSummary(
-                        getActivity().getResources().getText(R.string.text_on));
-            } else {
-                usageAndCrashPref.setSummary(
-                        getActivity().getResources().getText(R.string.text_off));
-            }
+            usageAndCrashPref.setSummary(privacyPrefManager.isUsageAndCrashReportingEnabled()
+                    ? textOn : textOff);
         }
     }
 

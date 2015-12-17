@@ -54,5 +54,6 @@
     <string name="help_context_incognito_learn_more">chrome_incognito</string>
     <string name="help_context_usage_reports">send_crash_report</string>
     <string name="help_context_sad_tab">mobile_awsnap</string>
+    <string name="help_context_physical_web">physical_web</string>
 
 </resources>

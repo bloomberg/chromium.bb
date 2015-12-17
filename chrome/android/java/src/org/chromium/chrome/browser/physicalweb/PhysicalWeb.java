@@ -11,6 +11,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 
 /**
  * This class provides the basic interface to the Physical Web feature.
@@ -27,6 +28,38 @@ public class PhysicalWeb {
         boolean switchEnabled =
                 CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_PHYSICAL_WEB);
         return allowedChannel && switchEnabled;
+    }
+
+    /**
+     * Checks whether the Physical Web preference is switched to On.
+     *
+     * @param context An instance of android.content.Context
+     * @return boolean {@code true} if the preference is On.
+     */
+    public static boolean isPhysicalWebPreferenceEnabled(Context context) {
+        return PrivacyPreferencesManager.getInstance(context).isPhysicalWebEnabled();
+    }
+
+    /**
+     * Checks whether the Physical Web onboard flow is active and the user has
+     * not yet elected to either enable or decline the feature.
+     *
+     * @param context An instance of android.content.Context
+     * @return boolean {@code true} if onboarding is complete.
+     */
+    public static boolean isOnboarding(Context context) {
+        return PrivacyPreferencesManager.getInstance(context).isPhysicalWebOnboarding();
+    }
+
+    /**
+     * Evaluate whether the Physical Web should be enabled when the application starts.
+     *
+     * @param context An instance of android.content.Context
+     * @return true if the Physical Web should be started at launch
+     */
+    public static boolean shouldStartOnLaunch(Context context) {
+        // TODO(mattreynolds): start for onboarding
+        return featureIsEnabled() && isPhysicalWebPreferenceEnabled(context);
     }
 
     /**

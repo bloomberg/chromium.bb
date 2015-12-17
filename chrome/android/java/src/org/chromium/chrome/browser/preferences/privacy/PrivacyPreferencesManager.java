@@ -13,8 +13,10 @@ import android.preference.PreferenceManager;
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.preferences.NetworkPredictionOptions;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
@@ -31,6 +33,10 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     private static final String PREF_METRICS_REPORTING = "metrics_reporting";
     private static final String PREF_CELLULAR_EXPERIMENT = "cellular_experiment";
     private static final String ALLOW_PRERENDER_OLD = "allow_prefetch";
+    private static final String PREF_PHYSICAL_WEB = "physical_web";
+    private static final int PHYSICAL_WEB_OFF = 0;
+    private static final int PHYSICAL_WEB_ON = 1;
+    private static final int PHYSICAL_WEB_ONBOARDING = 2;
 
     private static PrivacyPreferencesManager sInstance;
 
@@ -407,5 +413,44 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     @Override
     public boolean isUploadLimited() {
         return isCellularExperimentEnabled() && !isWiFiOrEthernetNetwork();
+    }
+
+    /**
+     * Sets the Physical Web preference, which enables background scanning for bluetooth beacons
+     * and displays a notification when beacons are found.
+     *
+     * @param enabled A boolean indicating whether to notify on nearby beacons.
+     */
+    public void setPhysicalWebEnabled(boolean enabled) {
+        int state = enabled ? PHYSICAL_WEB_ON : PHYSICAL_WEB_OFF;
+        boolean isOnboarding = isPhysicalWebOnboarding();
+        mSharedPreferences.edit().putInt(PREF_PHYSICAL_WEB, state).apply();
+        if (enabled) {
+            if (!isOnboarding) {
+                PhysicalWeb.startPhysicalWeb((ChromeApplication) mContext);
+            }
+        } else {
+            PhysicalWeb.stopPhysicalWeb((ChromeApplication) mContext);
+        }
+    }
+
+    /**
+     * Check whether the user is still in the Physical Web onboarding flow.
+     *
+     * @return boolean {@code true} if onboarding is not yet complete.
+     */
+    public boolean isPhysicalWebOnboarding() {
+        int state = mSharedPreferences.getInt(PREF_PHYSICAL_WEB, PHYSICAL_WEB_ONBOARDING);
+        return (state == PHYSICAL_WEB_ONBOARDING);
+    }
+
+    /**
+     * Check whether Physical Web is configured to notify on nearby beacons.
+     *
+     * @return boolean {@code true} if the feature is enabled.
+     */
+    public boolean isPhysicalWebEnabled() {
+        int state = mSharedPreferences.getInt(PREF_PHYSICAL_WEB, PHYSICAL_WEB_ONBOARDING);
+        return (state == PHYSICAL_WEB_ON);
     }
 }
