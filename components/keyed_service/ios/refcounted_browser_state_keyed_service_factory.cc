@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
-#include "components/keyed_service/ios/browser_state_context_converter.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/web/public/browser_state.h"
 
@@ -32,7 +31,7 @@ RefcountedBrowserStateKeyedServiceFactory::SetTestingFactoryAndUse(
 RefcountedBrowserStateKeyedServiceFactory::
     RefcountedBrowserStateKeyedServiceFactory(
         const char* name,
-        /*BrowserState*/DependencyManager* manager)
+        BrowserStateDependencyManager* manager)
     : RefcountedKeyedServiceFactory(name, manager) {
 }
 
@@ -93,36 +92,6 @@ bool RefcountedBrowserStateKeyedServiceFactory::IsOffTheRecord(
     base::SupportsUserData* context) const {
   return static_cast<web::BrowserState*>(context)->IsOffTheRecord();
 }
-
-#if defined(OS_IOS)
-base::SupportsUserData*
-RefcountedBrowserStateKeyedServiceFactory::GetTypedContext(
-    base::SupportsUserData* context) const {
-  if (context) {
-    BrowserStateContextConverter* context_converter =
-        BrowserStateContextConverter::GetInstance();
-    if (context_converter) {
-      context = context_converter->GetBrowserStateForContext(context);
-      DCHECK(context);
-    }
-  }
-  return context;
-}
-
-base::SupportsUserData*
-RefcountedBrowserStateKeyedServiceFactory::GetContextForDependencyManager(
-    base::SupportsUserData* context) const {
-  if (context) {
-    BrowserStateContextConverter* context_converter =
-        BrowserStateContextConverter::GetInstance();
-    if (context_converter) {
-      context = context_converter->GetBrowserContextForContext(context);
-      DCHECK(context);
-    }
-  }
-  return context;
-}
-#endif  // defined(OS_IOS)
 
 base::SupportsUserData*
 RefcountedBrowserStateKeyedServiceFactory::GetContextToUse(

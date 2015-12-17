@@ -4,8 +4,6 @@
 
 source_set("ios") {
   sources = [
-    "browser_state_context_converter.cc",
-    "browser_state_context_converter.h",
     "browser_state_dependency_manager.cc",
     "browser_state_dependency_manager.h",
     "browser_state_keyed_service_factory.cc",

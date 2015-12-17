@@ -72,8 +72,7 @@ void KeyedServiceBaseFactory::RegisterPrefsIfNecessaryForContext(
 user_prefs::PrefRegistrySyncable*
 KeyedServiceBaseFactory::GetAssociatedPrefRegistry(
     base::SupportsUserData* context) const {
-  PrefService* prefs =
-      user_prefs::UserPrefs::Get(GetContextForDependencyManager(context));
+  PrefService* prefs = user_prefs::UserPrefs::Get(context);
   user_prefs::PrefRegistrySyncable* registry =
       static_cast<user_prefs::PrefRegistrySyncable*>(
           prefs->DeprecatedGetPrefRegistry());
@@ -84,14 +83,12 @@ KeyedServiceBaseFactory::GetAssociatedPrefRegistry(
 void KeyedServiceBaseFactory::AssertContextWasntDestroyed(
     base::SupportsUserData* context) const {
   DCHECK(CalledOnValidThread());
-  context = GetContextForDependencyManager(context);
   dependency_manager_->AssertContextWasntDestroyed(context);
 }
 
 void KeyedServiceBaseFactory::MarkContextLiveForTesting(
     base::SupportsUserData* context) {
   DCHECK(CalledOnValidThread());
-  context = GetContextForDependencyManager(context);
   dependency_manager_->MarkContextLiveForTesting(context);
 }
 #endif
@@ -122,15 +119,3 @@ void KeyedServiceBaseFactory::MarkPreferencesSetOn(
   DCHECK(!ArePreferencesSetOn(context));
   registered_preferences_.insert(context);
 }
-
-#if defined(OS_IOS)
-base::SupportsUserData* KeyedServiceBaseFactory::GetTypedContext(
-    base::SupportsUserData* context) const {
-  return context;
-}
-
-base::SupportsUserData* KeyedServiceBaseFactory::GetContextForDependencyManager(
-    base::SupportsUserData* context) const {
-  return context;
-}
-#endif  // defined(OS_IOS)

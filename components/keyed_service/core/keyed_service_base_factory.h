@@ -114,55 +114,6 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory
   // Mark context has having preferences registered.
   void MarkPreferencesSetOn(base::SupportsUserData* context);
 
-  // The iOS code downstream used BrowserContextKeyedServiceFactories. The code
-  // is currently ported to use BrowserStateKeyedServiceFactories instead but
-  // has to support mixed dependencies to ease the migration — which can then
-  // be done incrementally. This means that on iOS the DependencyManager can
-  // reference both type of factories and the context need to be converted to
-  // the correct typed context.
-  //
-  // GetTypedContext()/GetContextForDependencyManager() are there to supports
-  // the mixed dependencies. On all platform except iOS they are pass-through
-  // and returns the original object. On iOS, they convert the context to resp.
-  // web::BrowserState/content::BrowserContext casted as base::SupportsUserData.
-  //
-  // TODO(ios): migration is tracked by http://crbug.com/478763 and those two
-  // methods (and their *Internal implementation) must be removed once migration
-  // is complete.
-
-  // Returns the correctly typed context for the KeyedServiceFactory (either a
-  // content::BrowserContext for BrowserContextKeyedServiceFactory or a
-  // web::BrowserState for a BrowserStateKeyedServiceFactory) when using mixed
-  // dependency (iOS). Simple pass-through on all other platforms.
-  //
-  // TODO(ios): remove this method and its call-sites once iOS only uses
-  // BrowserStateKeyedServiceFactories, http://crbug.com/478763
-#if defined(OS_IOS)
-  virtual base::SupportsUserData* GetTypedContext(
-      base::SupportsUserData* context) const;
-#else
-  base::SupportsUserData* GetTypedContext(
-      base::SupportsUserData* context) const {
-    return context;
-  }
-#endif  // defined(OS_IOS)
-
-  // Returns the content::BrowserContext associated to |context| for interaction
-  // with the DependencyManager when using mixed dependency (iOS). Simple pass-
-  // through on all other platforms.
-  //
-  // TODO(ios): remove this method and its call-sites once iOS only uses
-  // BrowserStateKeyedServiceFactories, http://crbug.com/478763
-#if defined(OS_IOS)
-  virtual base::SupportsUserData* GetContextForDependencyManager(
-      base::SupportsUserData* context) const;
-#else
-  base::SupportsUserData* GetContextForDependencyManager(
-      base::SupportsUserData* context) const {
-    return context;
-  }
-#endif  // defined(OS_IOS)
-
  private:
   friend class DependencyManager;
 

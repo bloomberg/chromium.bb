@@ -58,7 +58,7 @@ class KEYED_SERVICE_EXPORT BrowserStateKeyedServiceFactory
   //         BrowserStateDependencyManager::GetInstance()) {
   //   }
   BrowserStateKeyedServiceFactory(const char* name,
-                                  /*BrowserState*/DependencyManager* manager);
+                                  BrowserStateDependencyManager* manager);
   ~BrowserStateKeyedServiceFactory() override;
 
   // Common implementation that maps |context| to some service object. Deals
@@ -121,12 +121,6 @@ class KEYED_SERVICE_EXPORT BrowserStateKeyedServiceFactory
   bool IsOffTheRecord(base::SupportsUserData* context) const final;
 
   // KeyedServiceBaseFactory:
-#if defined(OS_IOS)
-  base::SupportsUserData* GetTypedContext(
-      base::SupportsUserData* context) const override;
-  base::SupportsUserData* GetContextForDependencyManager(
-      base::SupportsUserData* context) const override;
-#endif  // defined(OS_IOS)
   base::SupportsUserData* GetContextToUse(
       base::SupportsUserData* context) const final;
   bool ServiceIsCreatedWithContext() const final;
