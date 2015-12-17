@@ -226,7 +226,8 @@ BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {
   for (MediaPlayerAndroid* player : players_)
     player->DeleteOnCorrectThread();
 
-  MediaSession::Get(web_contents())->RemovePlayers(this);
+  MediaSession::Get(web_contents())->RemovePlayers(
+      this, MediaSession::RemoveReason::DESTROYED);
   players_.weak_clear();
 }
 
@@ -302,7 +303,8 @@ void BrowserMediaPlayerManager::OnMediaMetadataChanged(
 
 void BrowserMediaPlayerManager::OnPlaybackComplete(int player_id) {
   Send(new MediaPlayerMsg_MediaPlaybackCompleted(RoutingID(), player_id));
-  MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
+  MediaSession::Get(web_contents())->RemovePlayer(
+      this, player_id, MediaSession::RemoveReason::PLAYBACK_COMPLETE);
 
   if (fullscreen_player_id_ == player_id)
     video_view_->OnPlaybackComplete();
@@ -550,7 +552,7 @@ void BrowserMediaPlayerManager::OnInitialize(
       << "Media source players must have positive demuxer client IDs: "
       << media_player_params.demuxer_client_id;
 
-  RemovePlayer(media_player_params.player_id);
+  DestroyPlayer(media_player_params.player_id);
 
   RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
       web_contents()->GetRenderProcessHost());
@@ -595,8 +597,10 @@ void BrowserMediaPlayerManager::OnPause(
   if (player)
     player->Pause(is_media_related_action);
 
-  if (is_media_related_action)
-    MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
+  if (is_media_related_action) {
+    MediaSession::Get(web_contents())->RemovePlayer(
+        this, player_id, MediaSession::RemoveReason::USER_PAUSE);
+  }
 }
 
 void BrowserMediaPlayerManager::OnSetVolume(int player_id, double volume) {
@@ -614,8 +618,10 @@ void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
   if (player) {
     // Videos can't play in the background, so are removed from the media
     // session.
-    if (player->GetVideoWidth() > 0)
-      MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
+    if (player->GetVideoWidth() > 0) {
+      MediaSession::Get(web_contents())->RemovePlayer(
+          this, player_id, MediaSession::RemoveReason::INVISIBLE);
+    }
 
     ReleasePlayer(player);
   }
@@ -624,7 +630,7 @@ void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
 }
 
 void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {
-  RemovePlayer(player_id);
+  DestroyPlayer(player_id);
   if (fullscreen_player_id_ == player_id)
     fullscreen_player_id_ = kInvalidMediaPlayerId;
 }
@@ -643,7 +649,7 @@ void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
   players_.push_back(player);
 }
 
-void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
+void BrowserMediaPlayerManager::DestroyPlayer(int player_id) {
   for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
@@ -652,7 +658,8 @@ void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
 #endif
       (*it)->DeleteOnCorrectThread();
       players_.weak_erase(it);
-      MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
+      MediaSession::Get(web_contents())->RemovePlayer(
+          this, player_id, MediaSession::RemoveReason::DESTROYED);
       break;
     }
   }

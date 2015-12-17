@@ -144,7 +144,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void AddPlayer(media::MediaPlayerAndroid* player);
 
   // Removes the player with the specified id.
-  void RemovePlayer(int player_id);
+  void DestroyPlayer(int player_id);
 
   // Replaces a player with the specified id with a given MediaPlayerAndroid
   // object. This will also return the original MediaPlayerAndroid object that

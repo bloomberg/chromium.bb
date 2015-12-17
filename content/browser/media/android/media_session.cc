@@ -93,15 +93,24 @@ bool MediaSession::AddPlayer(MediaSessionObserver* observer,
 }
 
 void MediaSession::RemovePlayer(MediaSessionObserver* observer,
-                                int player_id) {
+                                int player_id,
+                                RemoveReason remove_reason) {
   auto it = players_.find(PlayerIdentifier(observer, player_id));
-  if (it != players_.end())
+  if (it != players_.end()) {
+    if (RemoveReason::USER_PAUSE == remove_reason && players_.size() == 1) {
+      if (!IsSuspended())
+        Suspend();
+      return;
+    }
     players_.erase(it);
+  }
 
   AbandonSystemAudioFocusIfNeeded();
 }
 
-void MediaSession::RemovePlayers(MediaSessionObserver* observer) {
+void MediaSession::RemovePlayers(MediaSessionObserver* observer,
+                                 RemoveReason remove_reason) {
+  DCHECK(remove_reason == RemoveReason::DESTROYED);
   for (auto it = players_.begin(); it != players_.end();) {
     if (it->observer == observer)
       players_.erase(it++);
