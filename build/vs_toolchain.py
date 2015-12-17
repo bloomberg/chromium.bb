@@ -104,7 +104,7 @@ def _CopyRuntime2013(target_dir, source_dir, dll_pattern):
 def _CopyRuntime2015(target_dir, source_dir, dll_pattern):
   """Copy both the msvcp and vccorlib runtime DLLs, only if the target doesn't
   exist, but the target directory does exist."""
-  for file_part in ('msvcp', 'vccorlib'):
+  for file_part in ('msvcp', 'vccorlib', 'vcruntime'):
     dll = dll_pattern % file_part
     target = os.path.join(target_dir, dll)
     source = os.path.join(source_dir, dll)
