@@ -158,6 +158,10 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
       content::RecordAction(
           UserMetricsAction("DownloadNotification.Button_Resume"));
       break;
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_CopyToClipboard"));
+      break;
   }
 }
 
@@ -653,6 +657,8 @@ DownloadItemNotification::GetExtraActions() const {
       break;
     case content::DownloadItem::COMPLETE:
       actions->push_back(DownloadCommands::SHOW_IN_FOLDER);
+      if (!notification_->image().IsEmpty())
+        actions->push_back(DownloadCommands::COPY_TO_CLIPBOARD);
       break;
     case content::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
@@ -736,6 +742,9 @@ base::string16 DownloadItemNotification::GetCommandLabel(
       break;
     case DownloadCommands::LEARN_MORE_SCANNING:
       id = IDS_DOWNLOAD_LINK_LEARN_MORE_SCANNING;
+      break;
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+      id = IDS_DOWNLOAD_NOTIFICATION_COPY_TO_CLIPBOARD;
       break;
     case DownloadCommands::ALWAYS_OPEN_TYPE:
     case DownloadCommands::PLATFORM_OPEN:

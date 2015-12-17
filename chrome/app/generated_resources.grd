@@ -2083,6 +2083,12 @@ Even if you have downloaded files from this website before, the website might ha
         Downloaded in Incognito
       </message>
 
+      <!-- Download Notification Labels -->
+      <message name="IDS_DOWNLOAD_NOTIFICATION_COPY_TO_CLIPBOARD"
+               desc="In the download notification, the text of 'Copy to clipboard' button, which is to copy the file content (eg. an image for image files) to the clipboard">
+        Copy to clipboard
+      </message>
+
       <!-- Download Context Menu Items -->
       <if expr="not is_android">
         <if expr="not use_titlecase">

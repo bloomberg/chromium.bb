@@ -2882,6 +2882,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="DownloadNotification.Button_CopyToClipboard">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Copy to clipboard&quot; button on download notification.
+  </description>
+</action>
+
 <action name="DownloadNotification.Button_Discard">
   <owner>yoshiki@chromium.org</owner>
   <description>

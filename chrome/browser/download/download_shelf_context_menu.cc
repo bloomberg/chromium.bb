@@ -165,6 +165,10 @@ base::string16 DownloadShelfContextMenu::GetLabelForCommandId(
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
       id = IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED;
       break;
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+      // This command is implemented only for Donwload Notification.
+      NOTREACHED();
+      break;
   }
   CHECK(id != -1);
   return l10n_util::GetStringUTF16(id);
