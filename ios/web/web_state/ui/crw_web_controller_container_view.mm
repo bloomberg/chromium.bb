@@ -160,6 +160,10 @@
   if (![_webViewContentView isEqual:webViewContentView]) {
     [_webViewContentView removeFromSuperview];
     _webViewContentView.reset([webViewContentView retain]);
+    if (_webViewContentView) {
+      DCHECK(![_webViewContentView superview]);
+      [self addSubview:_webViewContentView];
+    }
   }
 }
 
@@ -215,12 +219,10 @@
 - (void)layoutSubviews {
   [super layoutSubviews];
 
-  // webViewcontentView layout.
-  if (self.webViewContentView) {
-    if (!self.webViewContentView.superview)
-      [self addSubview:self.webViewContentView];
-    self.webViewContentView.frame = self.bounds;
-  }
+  self.webViewContentView.frame = self.bounds;
+
+  // TODO(crbug.com/570114): Move adding of the following subviews to another
+  // place.
 
   // nativeController layout.
   if (self.nativeController) {
