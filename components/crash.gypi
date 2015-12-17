@@ -158,6 +158,14 @@
                 '../breakpad/src',
               ],
             }],
+            ['clang==1 and target_arch=="ia32"', {
+              'cflags!': [
+                # Clang's -mstackrealign doesn't work well with
+                # linux_syscall_support.h hand written asm syscalls.
+                # See https://crbug.com/556393
+                '-mstackrealign',
+              ],
+            }],
           ],
           'target_conditions': [
             # Need 'target_conditions' to override default filename_rules to include
