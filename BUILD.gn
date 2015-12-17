@@ -194,7 +194,7 @@ source_set("ffmpeg_internal") {
       cflags += [ "-w" ]
     }
 
-    if (current_cpu == "arm") {
+    if (current_cpu == "arm" || current_cpu == "arm64") {
       if (arm_float_abi == "hard") {
         cflags += [ "-DHAVE_VFP_ARGS=1" ]
       } else {

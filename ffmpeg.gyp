@@ -256,7 +256,7 @@
                 '-fno-omit-frame-pointer',
               ],
             }],  # target_arch == "ia32"
-            ['target_arch == "arm"', {
+            ['target_arch == "arm" or target_arch == "arm64"', {
               # On arm we use gcc to compile the assembly.
               'sources': [
                 '<@(asm_sources)',
