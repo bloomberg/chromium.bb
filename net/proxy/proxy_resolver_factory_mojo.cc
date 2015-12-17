@@ -196,11 +196,10 @@ ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
       results_(results),
       callback_(callback),
       binding_(this) {
-  binding_.set_connection_error_handler(base::Bind(
-      &ProxyResolverMojo::Job::OnConnectionError, base::Unretained(this)));
-
   interfaces::ProxyResolverRequestClientPtr client_ptr;
   binding_.Bind(mojo::GetProxy(&client_ptr));
+  binding_.set_connection_error_handler(base::Bind(
+      &ProxyResolverMojo::Job::OnConnectionError, base::Unretained(this)));
   resolver_->mojo_proxy_resolver_ptr_->GetProxyForUrl(mojo::String::From(url_),
                                                       client_ptr.Pass());
 }

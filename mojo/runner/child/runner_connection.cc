@@ -151,7 +151,10 @@ class ChildControllerImpl : public ChildController {
     connection->set_controller(impl.Pass());
   }
 
-  void Bind(ScopedMessagePipeHandle handle) { binding_.Bind(handle.Pass()); }
+  void Bind(ScopedMessagePipeHandle handle) {
+    binding_.Bind(handle.Pass());
+    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
+  }
 
   void OnConnectionError() {
     // A connection error means the connection to the shell is lost. This is not
@@ -184,9 +187,7 @@ class ChildControllerImpl : public ChildController {
         callback_(callback),
         unblocker_(unblocker),
         channel_info_(nullptr),
-        binding_(this) {
-    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
-  }
+        binding_(this) {}
 
   static void ReturnApplicationRequestOnMainThread(
       const GotApplicationRequestCallback& callback,

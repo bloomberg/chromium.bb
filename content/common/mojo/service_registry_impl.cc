@@ -9,11 +9,7 @@
 namespace content {
 
 ServiceRegistryImpl::ServiceRegistryImpl()
-    : binding_(this), weak_factory_(this) {
-  binding_.set_connection_error_handler(
-      base::Bind(&ServiceRegistryImpl::OnConnectionError,
-                 base::Unretained(this)));
-}
+    : binding_(this), weak_factory_(this) {}
 
 ServiceRegistryImpl::~ServiceRegistryImpl() {
   while (!pending_connects_.empty()) {
@@ -25,6 +21,8 @@ ServiceRegistryImpl::~ServiceRegistryImpl() {
 void ServiceRegistryImpl::Bind(
     mojo::InterfaceRequest<mojo::ServiceProvider> request) {
   binding_.Bind(request.Pass());
+  binding_.set_connection_error_handler(base::Bind(
+      &ServiceRegistryImpl::OnConnectionError, base::Unretained(this)));
 }
 
 void ServiceRegistryImpl::BindRemoteServiceProvider(

@@ -218,7 +218,10 @@ class ChildControllerImpl : public ChildController {
     app_context->set_controller(impl.Pass());
   }
 
-  void Bind(ScopedMessagePipeHandle handle) { binding_.Bind(handle.Pass()); }
+  void Bind(ScopedMessagePipeHandle handle) {
+    binding_.Bind(handle.Pass());
+    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
+  }
 
   void OnConnectionError() {
     // A connection error means the connection to the shell is lost. This is not
@@ -251,9 +254,7 @@ class ChildControllerImpl : public ChildController {
         app_library_(app_library),
         unblocker_(unblocker),
         channel_info_(nullptr),
-        binding_(this) {
-    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
-  }
+        binding_(this) {}
 
   static void StartAppOnMainThread(
       base::NativeLibrary app_library,

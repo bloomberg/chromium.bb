@@ -31,7 +31,6 @@ ApplicationInstance::ApplicationInstance(
       queue_requests_(false),
       native_runner_(nullptr),
       pid_(base::kNullProcessId) {
-  binding_.set_connection_error_handler([this]() { OnConnectionError(); });
 }
 
 ApplicationInstance::~ApplicationInstance() {
@@ -43,6 +42,7 @@ ApplicationInstance::~ApplicationInstance() {
 void ApplicationInstance::InitializeApplication() {
   ShellPtr shell;
   binding_.Bind(GetProxy(&shell));
+  binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   application_->Initialize(shell.Pass(), identity_.url().spec());
 }
 
