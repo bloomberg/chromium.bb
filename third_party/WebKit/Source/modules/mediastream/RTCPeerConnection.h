@@ -157,17 +157,19 @@ public:
 
 private:
     typedef Function<bool()> BoolFunction;
-    class EventWrapper {
+    class EventWrapper : public GarbageCollectedFinalized<EventWrapper> {
     public:
-        EventWrapper(PassRefPtrWillBeRawPtr<Event>, PassOwnPtrWillBeRawPtr<BoolFunction>);
+        EventWrapper(PassRefPtrWillBeRawPtr<Event>, PassOwnPtr<BoolFunction>);
         // Returns true if |m_setupFunction| returns true or it is null.
         // |m_event| will only be fired if setup() returns true;
         bool setup();
 
+        DECLARE_TRACE();
+
         RefPtrWillBeMember<Event> m_event;
 
     private:
-        PassOwnPtrWillBeRawPtr<BoolFunction> m_setupFunction;
+        OwnPtr<BoolFunction> m_setupFunction;
     };
 
     RTCPeerConnection(ExecutionContext*, RTCConfiguration*, WebMediaConstraints, ExceptionState&);
@@ -176,7 +178,7 @@ private:
     static RTCOfferOptions* parseOfferOptions(const Dictionary&, ExceptionState&);
 
     void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
-    void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>, PassOwnPtrWillBeRawPtr<BoolFunction>);
+    void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>, PassOwnPtr<BoolFunction>);
     void dispatchScheduledEvent();
     bool hasLocalStreamWithTrackId(const String& trackId);
 
@@ -202,7 +204,7 @@ private:
     OwnPtr<WebRTCPeerConnectionHandler> m_peerHandler;
 
     AsyncMethodRunner<RTCPeerConnection> m_dispatchScheduledEventRunner;
-    WillBeHeapVector<EventWrapper> m_scheduledEvents;
+    HeapVector<Member<EventWrapper>> m_scheduledEvents;
 
     bool m_stopped;
     bool m_closed;

@@ -130,7 +130,7 @@ private:
 
 RTCPeerConnection::EventWrapper::EventWrapper(
     PassRefPtrWillBeRawPtr<Event> event,
-    PassOwnPtrWillBeRawPtr<BoolFunction> function)
+    PassOwnPtr<BoolFunction> function)
     : m_event(event)
     , m_setupFunction(function)
 {
@@ -142,6 +142,11 @@ bool RTCPeerConnection::EventWrapper::setup()
         return (*m_setupFunction)();
     }
     return true;
+}
+
+DEFINE_TRACE(RTCPeerConnection::EventWrapper)
+{
+    visitor->trace(m_event);
 }
 
 RTCConfiguration* RTCPeerConnection::parseConfiguration(const Dictionary& configuration, ExceptionState& exceptionState)
@@ -1009,9 +1014,9 @@ void RTCPeerConnection::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> even
 }
 
 void RTCPeerConnection::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event,
-    PassOwnPtrWillBeRawPtr<BoolFunction> setupFunction)
+    PassOwnPtr<BoolFunction> setupFunction)
 {
-    m_scheduledEvents.append(EventWrapper(event, setupFunction));
+    m_scheduledEvents.append(new EventWrapper(event, setupFunction));
 
     m_dispatchScheduledEventRunner.runAsync();
 }
@@ -1021,13 +1026,13 @@ void RTCPeerConnection::dispatchScheduledEvent()
     if (m_stopped)
         return;
 
-    WillBeHeapVector<EventWrapper> events;
+    HeapVector<Member<EventWrapper>> events;
     events.swap(m_scheduledEvents);
 
-    WillBeHeapVector<EventWrapper>::iterator it = events.begin();
+    HeapVector<Member<EventWrapper>>::iterator it = events.begin();
     for (; it != events.end(); ++it) {
-        if ((*it).setup()) {
-            dispatchEvent((*it).m_event.release());
+        if ((*it)->setup()) {
+            dispatchEvent((*it)->m_event.release());
         }
     }
 
