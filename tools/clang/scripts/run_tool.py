@@ -2,7 +2,6 @@
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Wrapper script to help run clang tools across Chromium code.
 
 How to use this tool:
@@ -47,12 +46,28 @@ import os.path
 import subprocess
 import sys
 
+Edit = collections.namedtuple('Edit',
+                              ('edit_type', 'offset', 'length', 'replacement'))
 
-Edit = collections.namedtuple(
-    'Edit', ('edit_type', 'offset', 'length', 'replacement'))
+
+def _GenerateCompileDatabase(path):
+  """Generates a compile database.
+
+  Note: requires ninja.
+
+  Args:
+    path: The build directory to generate a compile database for.
+  """
+  # TODO(dcheng): Incorporate Windows-specific compile DB munging from
+  # https://codereview.chromium.org/718873004
+  print 'Generating compile database in %s...' % path
+  args = ['ninja', '-C', path, '-t', 'compdb', 'cc', 'cxx', 'objc', 'objcxx']
+  output = subprocess.check_output(args)
+  with file(os.path.join(path, 'compile_commands.json'), 'w') as f:
+    f.write(output)
 
 
-def _GetFilesFromGit(paths = None):
+def _GetFilesFromGit(paths=None):
   """Gets the list of files in the git repository.
 
   Args:
@@ -105,7 +120,7 @@ def _ExtractEditsFromStdout(build_directory, stdout):
   for line in lines[start_index + 1:end_index]:
     try:
       edit_type, path, offset, length, replacement = line.split(':::', 4)
-      replacement = replacement.replace("\0", "\n")
+      replacement = replacement.replace('\0', '\n')
       # Normalize the file path emitted by the clang tool.
       path = os.path.realpath(os.path.join(build_directory, path))
       edits[path].append(Edit(edit_type, int(offset), int(length), replacement))
@@ -135,9 +150,10 @@ def _ExecuteTool(toolname, build_directory, filename):
     Otherwise, the filename and the output from stderr are associated with the
     keys "filename" and "stderr" respectively.
   """
-  command = subprocess.Popen((toolname, '-p', build_directory, filename),
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
+  command = subprocess.Popen(
+      (toolname, '-p', build_directory, filename),
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE)
   stdout, stderr = command.communicate()
   if command.returncode != 0:
     return {'status': False, 'filename': filename, 'stderr': stderr}
@@ -178,8 +194,7 @@ class _CompilerDispatcher(object):
     pool = multiprocessing.Pool()
     result_iterator = pool.imap_unordered(
         functools.partial(_ExecuteTool, self.__toolname,
-                          self.__build_directory),
-        self.__filenames)
+                          self.__build_directory), self.__filenames)
     for result in result_iterator:
       self.__ProcessResult(result)
     sys.stdout.write('\n')
@@ -201,12 +216,11 @@ class _CompilerDispatcher(object):
       sys.stdout.write('\nFailed to process %s\n' % result['filename'])
       sys.stdout.write(result['stderr'])
       sys.stdout.write('\n')
-    percentage = (
-        float(self.__success_count + self.__failed_count) /
-        len(self.__filenames)) * 100
-    sys.stdout.write('Succeeded: %d, Failed: %d, Edits: %d [%.2f%%]\r' % (
-        self.__success_count, self.__failed_count, self.__edit_count,
-        percentage))
+    percentage = (float(self.__success_count + self.__failed_count) /
+                  len(self.__filenames)) * 100
+    sys.stdout.write('Succeeded: %d, Failed: %d, Edits: %d [%.2f%%]\r' %
+                     (self.__success_count, self.__failed_count,
+                      self.__edit_count, percentage))
     sys.stdout.flush()
 
 
@@ -288,6 +302,11 @@ def _ExtendDeletionIfElementIsInList(contents, offset):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('tool', help='clang tool to run')
+  parser.add_argument('--all', action='store_true')
+  parser.add_argument(
+      '--generate-compdb',
+      action='store_true',
+      help='regenerate the compile database before running the tool')
   parser.add_argument(
       'compile_database',
       help='path to the directory that contains the compile database')
@@ -295,9 +314,10 @@ def main():
       'path_filter',
       nargs='*',
       help='optional paths to filter what files the tool is run on')
-  parser.add_argument('--all', action='store_true')
   args = parser.parse_args()
-  print args
+
+  if args.generate_compdb:
+    _GenerateCompileDatabase(args.compile_database)
 
   if args.all:
     filenames = set(_GetFilesFromCompileDB(args.compile_database))
@@ -305,8 +325,9 @@ def main():
   else:
     filenames = set(_GetFilesFromGit(args.path_filter))
     # Filter out files that aren't C/C++/Obj-C/Obj-C++.
-    extensions = frozenset(('.c', '.cc', '.m', '.mm'))
-    source_filenames = [f for f in filenames
+    extensions = frozenset(('.c', '.cc', '.cpp', '.m', '.mm'))
+    source_filenames = [f
+                        for f in filenames
                         if os.path.splitext(f)[1] in extensions]
   dispatcher = _CompilerDispatcher(args.tool, args.compile_database,
                                    source_filenames)
