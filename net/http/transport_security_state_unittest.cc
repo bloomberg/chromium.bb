@@ -1553,13 +1553,13 @@ TEST_F(TransportSecurityStateTest, HPKPReportRateLimiting) {
 
 // Tests that static (preloaded) expect CT state is read correctly.
 TEST_F(TransportSecurityStateTest, PreloadedExpectCT) {
-  const char kHostname[] = "expect-ct-test.badssl.com";
+  const char kHostname[] = "preloaded-expect-ct.badssl.com";
   TransportSecurityState state;
   TransportSecurityStateTest::EnableStaticExpectCT(&state);
   TransportSecurityState::ExpectCTState expect_ct_state;
   EXPECT_TRUE(state.GetStaticExpectCTState(kHostname, &expect_ct_state));
   EXPECT_EQ(kHostname, expect_ct_state.domain);
-  EXPECT_EQ(GURL("https://expect-ct-test.badssl.com/report"),
+  EXPECT_EQ(GURL("https://report.badssl.com/expect-ct"),
             expect_ct_state.report_uri);
   EXPECT_FALSE(state.GetStaticExpectCTState("pinning-test.badssl.com",
                                             &expect_ct_state));
