@@ -404,6 +404,7 @@
       'browser/ui/cocoa/passwords/passwords_bubble_controller_unittest.mm',
       'browser/ui/cocoa/passwords/passwords_list_view_controller_unittest.mm',
       'browser/ui/cocoa/passwords/save_pending_password_view_controller_unittest.mm',
+      'browser/ui/cocoa/passwords/update_pending_password_view_controller_unittest.mm',
       'browser/ui/cocoa/profiles/avatar_button_controller_unittest.mm',
       'browser/ui/cocoa/profiles/avatar_button_unittest.mm',
       'browser/ui/cocoa/profiles/avatar_icon_controller_unittest.mm',

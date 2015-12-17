@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/save_pending_password_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/update_pending_password_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,13 +49,13 @@ class ManagePasswordsBubbleControllerTest
 };
 
 TEST_F(ManagePasswordsBubbleControllerTest, PendingStateShouldHavePendingView) {
-  SetUpPendingState();
+  SetUpSavePendingState(false);
   EXPECT_EQ([SavePendingPasswordViewController class],
             [[controller() currentController] class]);
 }
 
 TEST_F(ManagePasswordsBubbleControllerTest, DismissingShouldCloseWindow) {
-  SetUpPendingState();
+  SetUpSavePendingState(false);
   [controller() showWindow:nil];
 
   // Turn off animations so that closing happens immediately.
@@ -70,6 +71,13 @@ TEST_F(ManagePasswordsBubbleControllerTest, DismissingShouldCloseWindow) {
 TEST_F(ManagePasswordsBubbleControllerTest, ManageStateShouldHaveManageView) {
   SetUpManageState();
   EXPECT_EQ([ManagePasswordsBubbleManageViewController class],
+            [[controller() currentController] class]);
+}
+
+TEST_F(ManagePasswordsBubbleControllerTest,
+       PendingStateShouldHaveUpdatePendingView) {
+  SetUpUpdatePendingState(false);
+  EXPECT_EQ([UpdatePendingPasswordViewController class],
             [[controller() currentController] class]);
 }
 

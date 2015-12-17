@@ -286,7 +286,9 @@ NSTextField* FederationLabel(const base::string16& text) {
     delegate_ = delegate;
     passwordForm_ = passwordForm;
     if ([delegate_ model]->state() ==
-        password_manager::ui::PENDING_PASSWORD_STATE)
+            password_manager::ui::PENDING_PASSWORD_STATE ||
+        [delegate_ model]->state() ==
+            password_manager::ui::PENDING_PASSWORD_UPDATE_STATE)
       state_ = MANAGE_PASSWORD_ITEM_STATE_PENDING;
     else
       state_ = MANAGE_PASSWORD_ITEM_STATE_MANAGE;

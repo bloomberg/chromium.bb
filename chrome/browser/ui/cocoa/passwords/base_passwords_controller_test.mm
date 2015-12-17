@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -48,8 +49,11 @@ ManagePasswordsControllerTest::GetModelAndCreateIfNull() {
   return model_.get();
 }
 
-void ManagePasswordsControllerTest::SetUpPendingState() {
+void ManagePasswordsControllerTest::SetUpSavePendingState(bool empty_username) {
   autofill::PasswordForm form;
+  if (!empty_username) {
+    form.username_value = base::ASCIIToUTF16("username");
+  }
   EXPECT_CALL(*ui_controller_, GetPendingPassword()).WillOnce(ReturnRef(form));
   std::vector<const autofill::PasswordForm*> forms;
   EXPECT_CALL(*ui_controller_, GetCurrentForms()).WillOnce(ReturnRef(forms));
@@ -57,6 +61,24 @@ void ManagePasswordsControllerTest::SetUpPendingState() {
   EXPECT_CALL(*ui_controller_, GetOrigin()).WillOnce(ReturnRef(origin));
   EXPECT_CALL(*ui_controller_, GetState())
       .WillOnce(Return(password_manager::ui::PENDING_PASSWORD_STATE));
+  GetModelAndCreateIfNull();
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(ui_controller_));
+}
+
+void ManagePasswordsControllerTest::SetUpUpdatePendingState(
+    bool multiple_forms) {
+  autofill::PasswordForm form;
+  EXPECT_CALL(*ui_controller_, GetPendingPassword()).WillOnce(ReturnRef(form));
+  std::vector<const autofill::PasswordForm*> forms;
+  forms.push_back(&form);
+  if (multiple_forms) {
+    forms.push_back(&form);
+  }
+  EXPECT_CALL(*ui_controller_, GetCurrentForms()).WillOnce(ReturnRef(forms));
+  GURL origin(kSiteOrigin);
+  EXPECT_CALL(*ui_controller_, GetOrigin()).WillOnce(ReturnRef(origin));
+  EXPECT_CALL(*ui_controller_, GetState())
+      .WillOnce(Return(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE));
   GetModelAndCreateIfNull();
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(ui_controller_));
 }

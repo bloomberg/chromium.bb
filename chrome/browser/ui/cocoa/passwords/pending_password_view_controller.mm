@@ -133,8 +133,10 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
   // Password item.
   // It should be at least as wide as the box without the padding.
-  NSView* password = [self createPasswordView];
-  [view addSubview:password];
+  NSView* passwordRow = [self createPasswordView];
+  if (passwordRow) {
+    [view addSubview:passwordRow];
+  }
 
   base::scoped_nsobject<NSTextField> warm_welcome;
   if ([self shouldShowGoogleSmartLockWelcome]) {
@@ -176,11 +178,13 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
     curY = NSMaxY([warm_welcome frame]) + kUnrelatedControlVerticalPadding;
   }
 
-  // Password item goes on the next row.
-  [password setFrameOrigin:NSMakePoint(curX, curY)];
+  if (passwordRow) {
+    // Password item goes on the next row.
+    [passwordRow setFrameOrigin:NSMakePoint(curX, curY)];
 
-  // Title goes at the top after some padding.
-  curY = NSMaxY([password frame]) + kUnrelatedControlVerticalPadding;
+    // Title goes at the top after some padding.
+    curY = NSMaxY([passwordRow frame]) + kUnrelatedControlVerticalPadding;
+  }
   [titleView setFrameOrigin:NSMakePoint(curX, curY)];
   const CGFloat height = NSMaxY([titleView frame]) + kFramePadding;
 

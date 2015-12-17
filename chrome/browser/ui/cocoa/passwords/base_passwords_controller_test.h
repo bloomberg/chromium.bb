@@ -27,7 +27,8 @@ class ManagePasswordsControllerTest : public CocoaProfileTest {
   ManagePasswordsBubbleModel* GetModelAndCreateIfNull();
 
   // Sets the appropriate state for ManagePasswordsBubbleModel.
-  void SetUpPendingState();
+  void SetUpSavePendingState(bool empty_username);
+  void SetUpUpdatePendingState(bool multiple_forms);
   void SetUpConfirmationState();
   void SetUpManageState();
   void SetUpAccountChooser(

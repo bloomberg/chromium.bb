@@ -26,7 +26,6 @@ class SavePendingPasswordViewControllerTest
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
     delegate_.reset([[ContentViewDelegateMock alloc] init]);
-    SetUpPendingState();
   }
 
   ContentViewDelegateMock* delegate() { return delegate_.get(); }
@@ -48,6 +47,7 @@ class SavePendingPasswordViewControllerTest
 
 TEST_F(SavePendingPasswordViewControllerTest,
        ShouldSavePasswordAndDismissWhenSaveClicked) {
+  SetUpSavePendingState(false);
   EXPECT_CALL(*ui_controller(), SavePassword());
   EXPECT_CALL(*ui_controller(), NeverSavePassword()).Times(0);
   [controller().saveButton performClick:nil];
@@ -57,6 +57,7 @@ TEST_F(SavePendingPasswordViewControllerTest,
 
 TEST_F(SavePendingPasswordViewControllerTest,
        ShouldNeverAndDismissWhenNeverClicked) {
+  SetUpSavePendingState(false);
   EXPECT_CALL(*ui_controller(), SavePassword()).Times(0);
   EXPECT_CALL(*ui_controller(), NeverSavePassword());
   [controller().neverButton performClick:nil];
@@ -65,11 +66,24 @@ TEST_F(SavePendingPasswordViewControllerTest,
 }
 
 TEST_F(SavePendingPasswordViewControllerTest, ShouldDismissWhenCrossClicked) {
+  SetUpSavePendingState(false);
   EXPECT_CALL(*ui_controller(), SavePassword()).Times(0);
   EXPECT_CALL(*ui_controller(), NeverSavePassword()).Times(0);
   [controller().closeButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
+}
+
+TEST_F(SavePendingPasswordViewControllerTest,
+       ShouldShowPasswordRowWhenUsernameNonEmpty) {
+  SetUpSavePendingState(false);
+  EXPECT_TRUE([controller() createPasswordView]);
+}
+
+TEST_F(SavePendingPasswordViewControllerTest,
+       ShouldNotShowPasswordRowWhenUsernameEmpty) {
+  SetUpSavePendingState(true);
+  EXPECT_FALSE([controller() createPasswordView]);
 }
 
 }  // namespace

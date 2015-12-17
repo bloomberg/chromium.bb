@@ -39,6 +39,8 @@ initWithModel:(ManagePasswordsBubbleModel*)model
 }
 
 - (NSView*)createPasswordView {
+  if (self.model->pending_password().username_value.empty())
+    return nil;
   std::vector<const autofill::PasswordForm*> password_forms;
   password_forms.push_back(&self.model->pending_password());
   passwordItem_.reset([[PasswordsListViewController alloc]
