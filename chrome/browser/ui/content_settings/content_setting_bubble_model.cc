@@ -96,19 +96,6 @@ const content::MediaStreamDevice& GetMediaDeviceById(
 
 }  // namespace
 
-// ContentSettingTitleAndLinkModel ---------------------------------------------
-
-ContentSettingTitleAndLinkModel::ContentSettingTitleAndLinkModel(
-    Delegate* delegate,
-    WebContents* web_contents,
-    Profile* profile)
-    : ContentSettingBubbleModel(web_contents, profile),
-        delegate_(delegate) {
-}
-
-ContentSettingTitleAndLinkModel::~ContentSettingTitleAndLinkModel() {
-}
-
 // ContentSettingSimpleBubbleModel ---------------------------------------------
 
 ContentSettingSimpleBubbleModel::ContentSettingSimpleBubbleModel(
@@ -116,7 +103,7 @@ ContentSettingSimpleBubbleModel::ContentSettingSimpleBubbleModel(
     WebContents* web_contents,
     Profile* profile,
     ContentSettingsType content_type)
-    : ContentSettingTitleAndLinkModel(delegate, web_contents, profile),
+    : ContentSettingBubbleModel(delegate, web_contents, profile),
         content_type_(content_type) {
   // Notifications do not have a bubble.
   DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
@@ -573,7 +560,7 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
     Delegate* delegate,
     WebContents* web_contents,
     Profile* profile)
-    : ContentSettingTitleAndLinkModel(delegate, web_contents, profile),
+    : ContentSettingBubbleModel(delegate, web_contents, profile),
       selected_item_(0),
       state_(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED) {
   // TODO(msramek): The media bubble has three states - mic only, camera only,
@@ -1280,10 +1267,12 @@ ContentSettingBubbleModel*
 }
 
 ContentSettingBubbleModel::ContentSettingBubbleModel(
+    Delegate* delegate,
     WebContents* web_contents,
     Profile* profile)
     : web_contents_(web_contents),
       profile_(profile),
+      delegate_(delegate),
       setting_is_managed_(false) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::Source<WebContents>(web_contents));
