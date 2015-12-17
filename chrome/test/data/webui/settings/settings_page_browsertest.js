@@ -31,6 +31,7 @@ SettingsPageBrowserTest.prototype = {
 
   /** @override */
   setUp: function() {
+    PolymerTest.prototype.setUp.call(this);
     suiteSetup(function() {
       return CrSettingsPrefs.initialized;
     });
@@ -38,14 +39,14 @@ SettingsPageBrowserTest.prototype = {
 
   /**
    * @param {string} type The settings page type, e.g. 'advanced' or 'basic'.
-   * @return {Node} The DOM node for the page.
+   * @return {!PolymerElement} The PolymerElement for the page.
    */
   getPage: function(type) {
     var settings = document.querySelector('cr-settings');
     assertTrue(!!settings);
-    var settingsUi = settings.shadowRoot.querySelector('settings-ui');
+    var settingsUi = settings.$$('settings-ui');
     assertTrue(!!settingsUi);
-    var settingsMain = settingsUi.shadowRoot.querySelector('settings-main');
+    var settingsMain = settingsUi.$$('settings-main');
     assertTrue(!!settingsMain);
     var pages = settingsMain.$.pageContainer;
     assertTrue(!!pages);
@@ -56,7 +57,8 @@ SettingsPageBrowserTest.prototype = {
   },
 
   /**
-   * @param {Node} page The DOM node for the settings page containing |section|.
+   * @param {!PolymerElement} page The PolymerElement for the page containing
+   *     |section|.
    * @param {string} section The settings page section, e.g. 'appearance'.
    * @return {Node|undefined} The DOM node for the section.
    */
