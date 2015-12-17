@@ -114,21 +114,6 @@ void ExtensionSettingsUIBrowserTest::ShrinkWebContentsView() {
   ResizeWebContents(web_contents, gfx::Size(400, 400));
 }
 
-class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
- public:
-  explicit MockAutoConfirmExtensionInstallPrompt(
-      content::WebContents* web_contents)
-    : ExtensionInstallPrompt(web_contents) {}
-
-  // Proceed without confirmation prompt.
-  void ShowDialog(Delegate* delegate,
-                  const Extension* extension,
-                  const SkBitmap* icon,
-                  const ShowDialogCallback& show_dialog_callback) override {
-    delegate->InstallUIProceed();
-  }
-};
-
 const Extension* ExtensionSettingsUIBrowserTest::InstallUnpackedExtension(
     const base::FilePath& path) {
   if (path.empty())
@@ -161,9 +146,11 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
   service->set_show_extensions_prompts(false);
   size_t num_before = registry->enabled_extensions().size();
   {
-    scoped_ptr<ExtensionInstallPrompt> install_ui;
-    install_ui.reset(new MockAutoConfirmExtensionInstallPrompt(
-        browser()->tab_strip_model()->GetActiveWebContents()));
+    extensions::ScopedTestDialogAutoConfirm auto_confirm(
+        extensions::ScopedTestDialogAutoConfirm::ACCEPT);
+    scoped_ptr<ExtensionInstallPrompt> install_ui(
+        new ExtensionInstallPrompt(
+            browser()->tab_strip_model()->GetActiveWebContents()));
 
     base::FilePath crx_path = path;
     DCHECK(crx_path.Extension() == FILE_PATH_LITERAL(".crx"));

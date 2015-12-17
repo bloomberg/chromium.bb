@@ -21,6 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "url/gurl.h"
 
 using content::WebContents;
@@ -65,11 +66,13 @@ class ProgrammableInstallPrompt : public ExtensionInstallPrompt {
 
   ~ProgrammableInstallPrompt() override {}
 
-  void ShowDialog(Delegate* delegate,
-                  const Extension* extension,
-                  const SkBitmap* icon,
-                  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt,
-                  const ShowDialogCallback& callback) override {
+  void ShowDialog(
+      Delegate* delegate,
+      const Extension* extension,
+      const SkBitmap* icon,
+      scoped_ptr<ExtensionInstallPrompt::Prompt> prompt,
+      scoped_ptr<const extensions::PermissionSet> custom_permissions,
+      const ShowDialogCallback& callback) override {
     delegate_ = delegate;
   }
 

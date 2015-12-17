@@ -31,6 +31,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -74,9 +75,10 @@ class MockInstallPrompt;
 // MockInstallPrompt. We create the MockInstallPrompt but need to pass
 // ownership of it to CrxInstaller, so it isn't safe to hang this data on
 // MockInstallPrompt itself becuase we can't guarantee it's lifetime.
-class MockPromptProxy : public base::RefCountedThreadSafe<MockPromptProxy> {
+class MockPromptProxy {
  public:
   explicit MockPromptProxy(content::WebContents* web_contents);
+  ~MockPromptProxy();
 
   bool did_succeed() const { return !extension_id_.empty(); }
   const std::string& extension_id() { return extension_id_; }
@@ -84,14 +86,14 @@ class MockPromptProxy : public base::RefCountedThreadSafe<MockPromptProxy> {
   const base::string16& error() const { return error_; }
 
   void set_extension_id(const std::string& id) { extension_id_ = id; }
-  void set_confirmation_requested() { confirmation_requested_ = true; }
+  void set_confirmation_requested(bool requested) {
+    confirmation_requested_ = requested;
+  }
   void set_error(const base::string16& error) { error_ = error; }
 
   scoped_ptr<ExtensionInstallPrompt> CreatePrompt();
 
  private:
-  friend class base::RefCountedThreadSafe<MockPromptProxy>;
-  virtual ~MockPromptProxy();
 
   // Data used to create a prompt.
   content::WebContents* web_contents_;
@@ -100,6 +102,10 @@ class MockPromptProxy : public base::RefCountedThreadSafe<MockPromptProxy> {
   bool confirmation_requested_;
   std::string extension_id_;
   base::string16 error_;
+
+  scoped_ptr<ScopedTestDialogAutoConfirm> auto_confirm;
+
+  DISALLOW_COPY_AND_ASSIGN(MockPromptProxy);
 };
 
 SkBitmap CreateSquareBitmap(int size) {
@@ -139,28 +145,28 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
       proxy_(proxy) {}
 
   // Overriding some of the ExtensionInstallUI API.
-  void ShowDialog(Delegate* delegate,
-                  const Extension* extension,
-                  const SkBitmap* bitmap,
-                  const ShowDialogCallback& show_dialog_callback) override {
-    proxy_->set_confirmation_requested();
-    delegate->InstallUIProceed();
-  }
   void OnInstallSuccess(const Extension* extension, SkBitmap* icon) override {
     proxy_->set_extension_id(extension->id());
+    proxy_->set_confirmation_requested(did_call_show_dialog());
     base::MessageLoopForUI::current()->QuitWhenIdle();
   }
   void OnInstallFailure(const CrxInstallError& error) override {
     proxy_->set_error(error.message());
+    proxy_->set_confirmation_requested(did_call_show_dialog());
     base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
  private:
-  scoped_refptr<MockPromptProxy> proxy_;
+  MockPromptProxy* proxy_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockInstallPrompt);
 };
 
 MockPromptProxy::MockPromptProxy(content::WebContents* web_contents)
-    : web_contents_(web_contents), confirmation_requested_(false) {
+    : web_contents_(web_contents),
+      confirmation_requested_(false),
+      auto_confirm(new ScopedTestDialogAutoConfirm(
+          ScopedTestDialogAutoConfirm::ACCEPT)) {
 }
 
 MockPromptProxy::~MockPromptProxy() {}
@@ -171,10 +177,10 @@ scoped_ptr<ExtensionInstallPrompt> MockPromptProxy::CreatePrompt() {
 }
 
 
-scoped_refptr<MockPromptProxy> CreateMockPromptProxyForBrowser(
+scoped_ptr<MockPromptProxy> CreateMockPromptProxyForBrowser(
     Browser* browser) {
-  return new MockPromptProxy(
-      browser->tab_strip_model()->GetActiveWebContents());
+  return make_scoped_ptr(new MockPromptProxy(
+      browser->tab_strip_model()->GetActiveWebContents()));
 }
 
 class ManagementPolicyMock : public extensions::ManagementPolicy::Provider {
@@ -251,7 +257,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
   // data dir) with expected id |id|.
   void InstallWithPrompt(const char* ext_relpath,
                          const std::string& id,
-                         scoped_refptr<MockPromptProxy> mock_install_prompt) {
+                         MockPromptProxy* mock_install_prompt) {
     base::FilePath ext_path = test_data_dir_.AppendASCII(ext_relpath);
 
     scoped_ptr<WebstoreInstaller::Approval> approval;
@@ -272,10 +278,10 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
                                        bool record_oauth2_grant) {
     ScopedExperimentalCommandLine scope;
 
-    scoped_refptr<MockPromptProxy> mock_prompt =
+    scoped_ptr<MockPromptProxy> mock_prompt =
         CreateMockPromptProxyForBrowser(browser());
 
-    InstallWithPrompt("browsertest/scopes", std::string(), mock_prompt);
+    InstallWithPrompt("browsertest/scopes", std::string(), mock_prompt.get());
 
     scoped_ptr<const PermissionSet> permissions =
         ExtensionPrefs::Get(browser()->profile())
@@ -328,9 +334,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
       browser()->profile());
 
   // Even whitelisted extensions with NPAPI should not prompt.
-  scoped_refptr<MockPromptProxy> mock_prompt =
+  scoped_ptr<MockPromptProxy> mock_prompt =
       CreateMockPromptProxyForBrowser(browser());
-  InstallWithPrompt("uitest/plugins", id, mock_prompt);
+  InstallWithPrompt("uitest/plugins", id, mock_prompt.get());
   EXPECT_FALSE(mock_prompt->confirmation_requested());
   EXPECT_TRUE(registry->enabled_extensions().GetByID(id));
 }
@@ -389,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
   std::string crx_path_string(crx_path.value().begin(), crx_path.value().end());
   GURL url = GURL(std::string("file:///").append(crx_path_string));
 
-  scoped_refptr<MockPromptProxy> mock_prompt =
+  scoped_ptr<MockPromptProxy> mock_prompt =
       CreateMockPromptProxyForBrowser(browser());
   download_crx_util::SetMockInstallPromptForTesting(
       mock_prompt->CreatePrompt());
@@ -436,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, AllowOffStore) {
   const bool kTestData[] = {false, true};
 
   for (size_t i = 0; i < arraysize(kTestData); ++i) {
-    scoped_refptr<MockPromptProxy> mock_prompt =
+    scoped_ptr<MockPromptProxy> mock_prompt =
         CreateMockPromptProxyForBrowser(browser());
 
     scoped_refptr<CrxInstaller> crx_installer(
@@ -560,7 +566,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Blacklist) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, NonStrictManifestCheck) {
-  scoped_refptr<MockPromptProxy> mock_prompt =
+  scoped_ptr<MockPromptProxy> mock_prompt =
       CreateMockPromptProxyForBrowser(browser());
 
   // We want to simulate the case where the webstore sends a more recent

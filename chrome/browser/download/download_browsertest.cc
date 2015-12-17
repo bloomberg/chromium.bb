@@ -37,8 +37,6 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/download_test_file_activity_observer.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -88,6 +86,7 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/feature_switch.h"
 #include "net/base/filename_util.h"
@@ -284,48 +283,6 @@ class DownloadsHistoryDataCollector {
   bool result_valid_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
-};
-
-// Mock that simulates a permissions dialog where the user denies
-// permission to install.  TODO(skerner): This could be shared with
-// extensions tests.  Find a common place for this class.
-class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
- public:
-  MockAbortExtensionInstallPrompt() :
-      ExtensionInstallPrompt(NULL) {
-  }
-
-  // Simulate a user abort on an extension installation.
-  void ShowDialog(Delegate* delegate,
-                  const Extension* extension,
-                  const SkBitmap* icon,
-                  const ShowDialogCallback& show_dialog_callback) override {
-    delegate->InstallUIAbort(true);
-    base::MessageLoopForUI::current()->QuitWhenIdle();
-  }
-
-  void OnInstallSuccess(const Extension* extension, SkBitmap* icon) override {}
-  void OnInstallFailure(const extensions::CrxInstallError& error) override {}
-};
-
-// Mock that simulates a permissions dialog where the user allows
-// installation.
-class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
- public:
-  explicit MockAutoConfirmExtensionInstallPrompt(
-      content::WebContents* web_contents)
-      : ExtensionInstallPrompt(web_contents) {}
-
-  // Proceed without confirmation prompt.
-  void ShowDialog(Delegate* delegate,
-                  const Extension* extension,
-                  const SkBitmap* icon,
-                  const ShowDialogCallback& show_dialog_callback) override {
-    delegate->InstallUIProceed();
-  }
-
-  void OnInstallSuccess(const Extension* extension, SkBitmap* icon) override {}
-  void OnInstallFailure(const extensions::CrxInstallError& error) override {}
 };
 
 static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
@@ -1056,14 +1013,6 @@ class DownloadTest : public InProcessBrowserTest {
     for (size_t i = 0; i < count; ++i) {
       DownloadFilesCheckErrorsLoopBody(download_info[i], i);
     }
-  }
-
-  // A mock install prompt that simulates the user allowing an install request.
-  void SetAllowMockInstallPrompt() {
-    download_crx_util::SetMockInstallPromptForTesting(
-        scoped_ptr<ExtensionInstallPrompt>(
-            new MockAutoConfirmExtensionInstallPrompt(
-                browser()->tab_strip_model()->GetActiveWebContents())));
   }
 
   // This method:
@@ -1973,14 +1922,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
   FeatureSwitch::ScopedOverride enable_easy_off_store_install(
       FeatureSwitch::easy_off_store_install(), true);
+  extensions::ScopedTestDialogAutoConfirm auto_confirm_install_prompt(
+      extensions::ScopedTestDialogAutoConfirm::CANCEL);
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
-
-  // Install a mock install UI that simulates a user denying permission to
-  // finish the install.
-  download_crx_util::SetMockInstallPromptForTesting(
-      scoped_ptr<ExtensionInstallPrompt>(
-          new MockAbortExtensionInstallPrompt()));
 
   scoped_ptr<content::DownloadTestObserver> observer(
       DangerousDownloadWaiter(
@@ -2013,9 +1958,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
-  // Install a mock install UI that simulates a user allowing permission to
-  // finish the install.
-  SetAllowMockInstallPrompt();
+  // Simulate the user allowing permission to finish the install.
+  extensions::ScopedTestDialogAutoConfirm auto_confirm_install_prompt(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT);
 
   scoped_ptr<content::DownloadTestObserver> observer(
       DangerousDownloadWaiter(
@@ -2046,10 +1991,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
   GURL extension_url(
       URLRequestMockHTTPJob::GetMockUrl("extensions/bad_signature.crx"));
 
-  // Install a mock install UI that simulates a user allowing permission to
-  // finish the install, and dismisses any error message.  We check that the
-  // install failed below.
-  SetAllowMockInstallPrompt();
+  // Simulate the user allowing permission to finish the install.
+  extensions::ScopedTestDialogAutoConfirm auto_confirm_install_prompt(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT);
 
   scoped_ptr<content::DownloadTestObserver> observer(
       DangerousDownloadWaiter(
@@ -2074,9 +2018,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kLargeThemePath));
 
-  // Install a mock install UI that simulates a user allowing permission to
-  // finish the install.
-  SetAllowMockInstallPrompt();
+  // Simulate the user allowing permission to finish the install.
+  extensions::ScopedTestDialogAutoConfirm auto_confirm_install_prompt(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT);
 
   scoped_ptr<content::DownloadTestObserver> observer(
       DangerousDownloadWaiter(

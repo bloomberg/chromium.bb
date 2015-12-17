@@ -622,7 +622,8 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
       install_ui_(extensions::CreateExtensionInstallUI(
           ProfileForWebContents(contents))),
       show_params_(new ExtensionInstallPromptShowParams(contents)),
-      delegate_(NULL) {
+      delegate_(NULL),
+      did_call_show_dialog_(false) {
 }
 
 ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
@@ -633,7 +634,8 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
       install_ui_(extensions::CreateExtensionInstallUI(profile)),
       show_params_(
           new ExtensionInstallPromptShowParams(profile, native_window)),
-      delegate_(NULL) {
+      delegate_(NULL),
+      did_call_show_dialog_(false) {
 }
 
 ExtensionInstallPrompt::~ExtensionInstallPrompt() {
@@ -827,15 +829,16 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   }
   prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
 
-  g_last_prompt_type_for_tests = prompt_->type();
-
-  if (AutoConfirmPrompt(delegate_))
-    return;
-
   if (show_params_->WasParentDestroyed()) {
     delegate_->InstallUIAbort(false);
     return;
   }
+
+  g_last_prompt_type_for_tests = prompt_->type();
+  did_call_show_dialog_ = true;
+
+  if (AutoConfirmPrompt(delegate_))
+    return;
 
   if (show_dialog_callback_.is_null())
     GetDefaultShowDialogCallback().Run(show_params_.get(), delegate_,

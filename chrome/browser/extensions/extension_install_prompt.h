@@ -322,15 +322,18 @@ class ExtensionInstallPrompt
   // current permissions are used.
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ShowDialog(Delegate* delegate,
-                          const extensions::Extension* extension,
-                          const SkBitmap* icon,
-                          const ShowDialogCallback& show_dialog_callback);
-  virtual void ShowDialog(Delegate* delegate,
-                          const extensions::Extension* extension,
-                          const SkBitmap* icon,
-                          scoped_ptr<Prompt> prompt,
-                          const ShowDialogCallback& show_dialog_callback);
+  void ShowDialog(Delegate* delegate,
+                  const extensions::Extension* extension,
+                  const SkBitmap* icon,
+                  const ShowDialogCallback& show_dialog_callback);
+  void ShowDialog(Delegate* delegate,
+                  const extensions::Extension* extension,
+                  const SkBitmap* icon,
+                  scoped_ptr<Prompt> prompt,
+                  const ShowDialogCallback& show_dialog_callback);
+  // Declared virtual for testing purposes.
+  // Note: if all you want to do is automatically confirm or cancel, prefer
+  // ScopedTestDialogAutoConfirm from extension_dialog_auto_confirm.h
   virtual void ShowDialog(
       Delegate* delegate,
       const extensions::Extension* extension,
@@ -345,6 +348,8 @@ class ExtensionInstallPrompt
 
   // Installation failed. This is declared virtual for testing.
   virtual void OnInstallFailure(const extensions::CrxInstallError& error);
+
+  bool did_call_show_dialog() const { return did_call_show_dialog_; }
 
  protected:
   friend class extensions::ExtensionWebstorePrivateApiTest;
@@ -397,6 +402,9 @@ class ExtensionInstallPrompt
 
   // Used to show the confirm dialog.
   ShowDialogCallback show_dialog_callback_;
+
+  // Whether or not the |show_dialog_callback_| was called.
+  bool did_call_show_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallPrompt);
 };
