@@ -92,6 +92,7 @@ class AssociatedBinding {
   void Close() {
     DCHECK(endpoint_client_);
     endpoint_client_.reset();
+    connection_error_handler_.reset();
   }
 
   // Unbinds and returns the associated interface request so it can be
@@ -105,12 +106,18 @@ class AssociatedBinding {
         &request, endpoint_client_->PassHandle());
 
     endpoint_client_.reset();
+    connection_error_handler_.reset();
 
     return request.Pass();
   }
 
   // Sets an error handler that will be called if a connection error occurs.
+  //
+  // This method may only be called after this AssociatedBinding has been bound
+  // to a message pipe. The error handler will be reset when this
+  // AssociatedBinding is unbound or closed.
   void set_connection_error_handler(const Closure& error_handler) {
+    DCHECK(is_bound());
     connection_error_handler_ = error_handler;
   }
 

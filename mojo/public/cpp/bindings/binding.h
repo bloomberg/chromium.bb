@@ -195,7 +195,12 @@ class Binding {
 
   // Sets an error handler that will be called if a connection error occurs on
   // the bound message pipe.
+  //
+  // This method may only be called after this Binding has been bound to a
+  // message pipe. The error handler will be reset when this Binding is unbound
+  // or closed.
   void set_connection_error_handler(const Closure& error_handler) {
+    DCHECK(is_bound());
     internal_state_.set_connection_error_handler(error_handler);
   }
 

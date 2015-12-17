@@ -48,16 +48,14 @@ class StrongBinding {
   MOJO_MOVE_ONLY_TYPE(StrongBinding)
 
  public:
-  explicit StrongBinding(Interface* impl) : binding_(impl) {
-    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
-  }
+  explicit StrongBinding(Interface* impl) : binding_(impl) {}
 
   StrongBinding(
       Interface* impl,
       ScopedMessagePipeHandle handle,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : StrongBinding(impl) {
-    binding_.Bind(handle.Pass(), waiter);
+    Bind(handle.Pass(), waiter);
   }
 
   StrongBinding(
@@ -65,7 +63,7 @@ class StrongBinding {
       InterfacePtr<Interface>* ptr,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : StrongBinding(impl) {
-    binding_.Bind(ptr, waiter);
+    Bind(ptr, waiter);
   }
 
   StrongBinding(
@@ -73,7 +71,7 @@ class StrongBinding {
       InterfaceRequest<Interface> request,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : StrongBinding(impl) {
-    binding_.Bind(request.Pass(), waiter);
+    Bind(request.Pass(), waiter);
   }
 
   ~StrongBinding() {}
@@ -83,6 +81,7 @@ class StrongBinding {
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     assert(!binding_.is_bound());
     binding_.Bind(handle.Pass(), waiter);
+    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
   void Bind(
@@ -90,6 +89,7 @@ class StrongBinding {
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     assert(!binding_.is_bound());
     binding_.Bind(ptr, waiter);
+    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
   void Bind(
@@ -97,6 +97,7 @@ class StrongBinding {
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     assert(!binding_.is_bound());
     binding_.Bind(request.Pass(), waiter);
+    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
   bool WaitForIncomingMethodCall() {
@@ -104,7 +105,11 @@ class StrongBinding {
   }
 
   // Note: The error handler must not delete the interface implementation.
+  //
+  // This method may only be called after this StrongBinding has been bound to a
+  // message pipe.
   void set_connection_error_handler(const Closure& error_handler) {
+    assert(binding_.is_bound());
     connection_error_handler_ = error_handler;
   }
 

@@ -91,6 +91,7 @@ class BindingState<Interface, false> {
   }
 
   void set_connection_error_handler(const Closure& error_handler) {
+    DCHECK(is_bound());
     connection_error_handler_ = error_handler;
   }
 
@@ -115,6 +116,7 @@ class BindingState<Interface, false> {
     router_->set_connection_error_handler(Closure());
     delete router_;
     router_ = nullptr;
+    connection_error_handler_.reset();
   }
 
   internal::Router* router_ = nullptr;
@@ -179,6 +181,7 @@ class BindingState<Interface, true> {
     endpoint_client_.reset();
     router_->CloseMessagePipe();
     router_ = nullptr;
+    connection_error_handler_.reset();
   }
 
   InterfaceRequest<GenericInterface> Unbind() {
@@ -186,10 +189,12 @@ class BindingState<Interface, true> {
     InterfaceRequest<GenericInterface> request =
         MakeRequest<GenericInterface>(router_->PassMessagePipe());
     router_ = nullptr;
+    connection_error_handler_.reset();
     return request.Pass();
   }
 
   void set_connection_error_handler(const Closure& error_handler) {
+    DCHECK(is_bound());
     connection_error_handler_ = error_handler;
   }
 
