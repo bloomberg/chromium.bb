@@ -130,3 +130,6 @@ bool FLAGS_quic_validate_stk_without_scid = true;
 
 // If true, use the new write blocked list for QUIC.
 bool FLAGS_quic_new_blocked_list = true;
+
+// If true, use inplace encryption for QUIC.
+bool FLAGS_quic_inplace_encryption = true;

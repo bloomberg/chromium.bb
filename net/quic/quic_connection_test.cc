@@ -93,7 +93,7 @@ class TaggingEncrypter : public QuicEncrypter {
     if (max_output_length < len) {
       return false;
     }
-    memcpy(output, plaintext.data(), plaintext.size());
+    memmove(output, plaintext.data(), plaintext.size());
     output += plaintext.size();
     memset(output, tag_, kTagSize);
     *output_length = len;
