@@ -697,7 +697,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
         }
 
         if (item->isImageValue()) {
-            state.style()->setContent(state.elementStyleResources().cachedOrPendingFromValue(state.document(), CSSPropertyContent, toCSSImageValue(*item)), didSet);
+            state.style()->setContent(state.elementStyleResources().cachedOrPendingFromValue(CSSPropertyContent, toCSSImageValue(*item)), didSet);
             didSet = true;
             continue;
         }

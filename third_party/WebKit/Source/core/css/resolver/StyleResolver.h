@@ -34,7 +34,6 @@
 #include "core/css/resolver/MatchedPropertiesCache.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverStats.h"
-#include "core/css/resolver/StyleResourceLoader.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/style/CachedUAStyle.h"
 #include "platform/heap/Handle.h"
@@ -257,8 +256,6 @@ private:
 
     bool m_needCollectFeatures;
     bool m_printMediaType;
-
-    StyleResourceLoader m_styleResourceLoader;
 
     unsigned m_styleSharingDepth;
     WillBeHeapVector<OwnPtrWillBeMember<StyleSharingList>, styleSharingMaxDepth> m_styleSharingLists;

@@ -146,7 +146,6 @@ StyleResolver::StyleResolver(Document& document)
     , m_viewportStyleResolver(ViewportStyleResolver::create(&document))
     , m_needCollectFeatures(false)
     , m_printMediaType(false)
-    , m_styleResourceLoader(&document)
     , m_styleSharingDepth(0)
     , m_accessCount(0)
 {
@@ -554,7 +553,7 @@ void StyleResolver::adjustComputedStyle(StyleResolverState& state, Element* elem
 // Start loading resources referenced by this style.
 void StyleResolver::loadPendingResources(StyleResolverState& state)
 {
-    m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
+    state.elementStyleResources().loadPendingResources(state.style());
     document().styleEngine().fontSelector()->fontLoader()->loadPendingFonts();
 }
 
@@ -1558,7 +1557,6 @@ DEFINE_TRACE(StyleResolver)
     visitor->trace(m_uncommonAttributeRuleSet);
     visitor->trace(m_watchedSelectorsRules);
     visitor->trace(m_treeBoundaryCrossingScopes);
-    visitor->trace(m_styleResourceLoader);
     visitor->trace(m_styleSharingLists);
     visitor->trace(m_pendingStyleSheets);
     visitor->trace(m_document);

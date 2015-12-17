@@ -1326,8 +1326,6 @@
             'css/resolver/StyleResolverState.h',
             'css/resolver/StyleResolverStats.cpp',
             'css/resolver/StyleResolverStats.h',
-            'css/resolver/StyleResourceLoader.cpp',
-            'css/resolver/StyleResourceLoader.h',
             'css/resolver/TransformBuilder.cpp',
             'css/resolver/TransformBuilder.h',
             'css/resolver/ViewportStyleResolver.cpp',
