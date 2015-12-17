@@ -96,6 +96,7 @@ enum ExtensionType {
 @property(nonatomic, readonly) NSView* appInstalledShortcutLink;
 @property(nonatomic, readonly) NSView* manageShortcutLink;
 @property(nonatomic, readonly) NSView* promoContainer;
+@property(nonatomic, readonly) NSView* iconImage;
 @property(nonatomic) BOOL pageActionPreviewShowing;
 
 // Initialize the window. It will be shown by the BubbleManager.

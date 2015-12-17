@@ -201,6 +201,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest,
   NSRect howToUseFrame = [[controller howToUse] frame];
   NSRect howToManageFrame = [[controller howToManage] frame];
   NSRect syncPromoFrame = [[controller promoContainer] frame];
+  NSRect iconFrame = [[controller iconImage] frame];
 
   // We don't want to just test the bounds of these frames, because that results
   // in a change detector test (and just duplicates the logic in the class).
@@ -209,6 +210,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest,
   EXPECT_FALSE(NSIsEmptyRect(howToUseFrame));
   EXPECT_FALSE(NSIsEmptyRect(howToManageFrame));
   EXPECT_FALSE(NSIsEmptyRect(syncPromoFrame));
+  EXPECT_FALSE(NSIsEmptyRect(iconFrame));
 
   // Check 2: The overall layout of the bubble should be:
   // [ How to Use ]
@@ -220,6 +222,12 @@ TEST_F(ExtensionInstalledBubbleControllerTest,
 
   EXPECT_FALSE(NSIntersectsRect(howToManageFrame, syncPromoFrame));
   EXPECT_GT(NSMinY(howToManageFrame), NSMinY(syncPromoFrame));
+
+  EXPECT_FALSE(NSIntersectsRect(iconFrame, syncPromoFrame));
+  EXPECT_GT(NSMinY(iconFrame), NSMinY(syncPromoFrame));
+
+  EXPECT_GT(NSMinY(iconFrame), 0);
+  EXPECT_EQ(NSMinY(syncPromoFrame), 0);
 
   [controller close];
 }
@@ -242,6 +250,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest,
   NSRect howToUseFrame = [[controller howToUse] frame];
   NSRect manageShortcutFrame = [[controller manageShortcutLink] frame];
   NSRect syncPromoFrame = [[controller promoContainer] frame];
+  NSRect iconFrame = [[controller iconImage] frame];
 
   // Same checks as previous tests - layout should be:
   // [ How to Use ]
@@ -250,12 +259,19 @@ TEST_F(ExtensionInstalledBubbleControllerTest,
   EXPECT_FALSE(NSIsEmptyRect(howToUseFrame));
   EXPECT_FALSE(NSIsEmptyRect(manageShortcutFrame));
   EXPECT_FALSE(NSIsEmptyRect(syncPromoFrame));
+  EXPECT_FALSE(NSIsEmptyRect(iconFrame));
 
   EXPECT_FALSE(NSIntersectsRect(howToUseFrame, manageShortcutFrame));
   EXPECT_GT(NSMinY(howToUseFrame), NSMinY(manageShortcutFrame));
 
   EXPECT_FALSE(NSIntersectsRect(manageShortcutFrame, syncPromoFrame));
   EXPECT_GT(NSMinY(manageShortcutFrame), NSMinY(syncPromoFrame));
+
+  EXPECT_FALSE(NSIntersectsRect(iconFrame, syncPromoFrame));
+  EXPECT_GT(NSMinY(iconFrame), NSMinY(syncPromoFrame));
+
+  EXPECT_GT(NSMinY(iconFrame), 0);
+  EXPECT_EQ(NSMinY(syncPromoFrame), 0);
 
   [controller close];
 }
@@ -284,15 +300,19 @@ TEST_F(ExtensionInstalledBubbleControllerTest, BubbleLayoutPageActionUnpacked) {
 
   NSRect howToUseFrame = [[controller howToUse] frame];
   NSRect howToManageFrame = [[controller howToManage] frame];
+  NSRect iconFrame = [[controller iconImage] frame];
 
   // Same checks as previous tests - layout should be:
   // [ How to Use ]
   // [ Manage Shortcut ]
   EXPECT_FALSE(NSIsEmptyRect(howToUseFrame));
   EXPECT_FALSE(NSIsEmptyRect(howToManageFrame));
+  EXPECT_FALSE(NSIsEmptyRect(iconFrame));
 
   EXPECT_FALSE(NSIntersectsRect(howToUseFrame, howToManageFrame));
   EXPECT_GT(NSMinY(howToUseFrame), NSMinY(howToManageFrame));
+
+  EXPECT_GT(NSMinY(iconFrame), 0);
 
   // The page action preview should be visible.
   EXPECT_TRUE([controller pageActionPreviewShowing]);

@@ -140,6 +140,7 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
 @synthesize appInstalledShortcutLink = appInstalledShortcutLink_;
 @synthesize manageShortcutLink = manageShortcutLink_;
 @synthesize promoContainer = promoContainer_;
+@synthesize iconImage = iconImage_;
 @synthesize pageActionPreviewShowing = pageActionPreviewShowing_;
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
@@ -362,7 +363,12 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
 - (int)calculateWindowHeight {
   // Adjust the window height to reflect the sum height of all messages
   // and vertical padding.
-  int newWindowHeight = 2 * extension_installed_bubble::kOuterVerticalMargin;
+  // If there's few enough messages, the icon area may be larger than the
+  // messages.
+  int contentColumnHeight =
+      2 * extension_installed_bubble::kOuterVerticalMargin;
+  int iconColumnHeight = 2 * extension_installed_bubble::kOuterVerticalMargin +
+                         NSHeight([iconImage_ frame]);
 
   // If type is bundle, list the extensions that were installed and those that
   // failed.
@@ -377,13 +383,13 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
                      itemsView:failedItemsView_
                          state:BundleInstaller::Item::STATE_FAILED];
 
-    newWindowHeight += installedListHeight + failedListHeight;
+    contentColumnHeight += installedListHeight + failedListHeight;
 
     // Put some space between the lists if both are present.
     if (installedListHeight > 0 && failedListHeight > 0)
-      newWindowHeight += extension_installed_bubble::kInnerVerticalMargin;
+      contentColumnHeight += extension_installed_bubble::kInnerVerticalMargin;
 
-    return newWindowHeight;
+    return std::max(contentColumnHeight, iconColumnHeight);
   }
 
   CGFloat syncPromoHeight = 0;
@@ -420,7 +426,7 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
       IDS_EXTENSION_INSTALLED_HEADING, extension_name)];
   [GTMUILocalizerAndLayoutTweaker
       sizeToFitFixedWidthTextField:heading_];
-  newWindowHeight += NSHeight([heading_ frame]);
+  contentColumnHeight += NSHeight([heading_ frame]);
 
   if (installedBubble_->options() & ExtensionInstalledBubble::HOW_TO_USE) {
     [howToUse_ setStringValue:base::SysUTF16ToNSString(
@@ -430,7 +436,7 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
     [GTMUILocalizerAndLayoutTweaker
         sizeToFitFixedWidthTextField:howToUse_];
-    newWindowHeight += NSHeight([howToUse_ frame]) +
+    contentColumnHeight += NSHeight([howToUse_ frame]) +
         extension_installed_bubble::kInnerVerticalMargin;
   }
 
@@ -439,8 +445,8 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
   if (type_ == extension_installed_bubble::kApp) {
     [howToManage_ setHidden:YES];
     [appShortcutLink_ setHidden:NO];
-    newWindowHeight += 2 * extension_installed_bubble::kInnerVerticalMargin;
-    newWindowHeight += NSHeight([appShortcutLink_ frame]);
+    contentColumnHeight += 2 * extension_installed_bubble::kInnerVerticalMargin;
+    contentColumnHeight += NSHeight([appShortcutLink_ frame]);
   } else if (installedBubble_->options() &
                  ExtensionInstalledBubble::HOW_TO_MANAGE) {
     // Second part of extension installed message.
@@ -448,7 +454,7 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
     [GTMUILocalizerAndLayoutTweaker
         sizeToFitFixedWidthTextField:howToManage_];
-    newWindowHeight += NSHeight([howToManage_ frame]) +
+    contentColumnHeight += NSHeight([howToManage_ frame]) +
         extension_installed_bubble::kInnerVerticalMargin;
   } else {
     [howToManage_ setHidden:YES];
@@ -456,9 +462,14 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
 
   // Sync sign-in promo, if any.
   if (syncPromoHeight > 0) {
-    newWindowHeight += extension_installed_bubble::kInnerVerticalMargin;
-    newWindowHeight += syncPromoHeight;
-    newWindowHeight -= extension_installed_bubble::kOuterVerticalMargin;
+    // The sync promo goes at the bottom of the window and includes its own
+    // bottom margin. Thus, we subtract off the one of the outer margins, and
+    // apply it to both the icon area and content area.
+    int syncPromoDelta = extension_installed_bubble::kInnerVerticalMargin +
+                         syncPromoHeight -
+                         extension_installed_bubble::kOuterVerticalMargin;
+    contentColumnHeight += syncPromoDelta;
+    iconColumnHeight += syncPromoDelta;
   }
 
   if (installedBubble_->options() & ExtensionInstalledBubble::SHOW_KEYBINDING) {
@@ -469,11 +480,11 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
         setTextColor:skia::SkColorToCalibratedNSColor(
             chrome_style::GetLinkColor())];
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:manageShortcutLink_];
-    newWindowHeight += extension_installed_bubble::kInnerVerticalMargin;
-    newWindowHeight += NSHeight([manageShortcutLink_ frame]);
+    contentColumnHeight += extension_installed_bubble::kInnerVerticalMargin;
+    contentColumnHeight += NSHeight([manageShortcutLink_ frame]);
   }
 
-  return newWindowHeight;
+  return std::max(contentColumnHeight, iconColumnHeight);
 }
 
 - (NSInteger)addExtensionList:(NSTextField*)headingMsg
@@ -560,8 +571,15 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
   if (installedBubble_->options() & ExtensionInstalledBubble::SHOW_KEYBINDING)
     adjustView(manageShortcutLink_, &nextY);
 
-  if (installedBubble_->options() & ExtensionInstalledBubble::SIGN_IN_PROMO)
+  if (installedBubble_->options() & ExtensionInstalledBubble::SIGN_IN_PROMO) {
+    // The sync promo goes at the bottom of the bubble, but that might be
+    // different than directly below the previous content if the icon is larger
+    // than the messages. Workaround by just always setting nextY to be at the
+    // bottom.
+    nextY = NSHeight([promoContainer_ frame]) +
+            extension_installed_bubble::kInnerVerticalMargin;
     adjustView(promoContainer_, &nextY);
+  }
 }
 
 - (void)updateAnchorPosition {
