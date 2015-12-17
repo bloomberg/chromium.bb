@@ -55,6 +55,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Broker {
 
   // Called by |message_pipe| when it's closing so that its route can be
   // unregistered.
+  // It's ok to call this from a callback (i.e. from OnError or
+  // GotNonTransferableChannel).
   virtual void CloseMessagePipe(uint64_t pipe_id,
                                 MessagePipeDispatcher* message_pipe) = 0;
 };

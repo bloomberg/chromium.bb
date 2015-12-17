@@ -102,7 +102,6 @@ void BrokerState::ConnectMessagePipe(uint64_t pipe_id,
 void BrokerState::CloseMessagePipe(uint64_t pipe_id,
                                    MessagePipeDispatcher* message_pipe) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  base::AutoLock auto_lock(lock_);
 
   CHECK(connected_pipes_.find(message_pipe) != connected_pipes_.end());
   connected_pipes_[message_pipe]->RemoveRoute(pipe_id);
@@ -235,7 +234,9 @@ void BrokerState::AttachMessagePipe(MessagePipeDispatcher* message_pipe,
   // then when it's read it returns no messages because it doesn't have the
   // channel yet.
   message_pipe->GotNonTransferableChannel(raw_channel->channel());
-  raw_channel->AddRoute(pipe_id, message_pipe);
+  // The above call could have caused |CloseMessagePipe| to be called.
+  if (connected_pipes_.find(message_pipe) != connected_pipes_.end())
+    raw_channel->AddRoute(pipe_id, message_pipe);
 }
 
 }  // namespace edk

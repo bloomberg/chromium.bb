@@ -59,7 +59,9 @@ void RoutedRawChannel::AddRoute(uint64_t route_id,
 
 void RoutedRawChannel::RemoveRoute(uint64_t route_id) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  CHECK(routes_.find(route_id) != routes_.end());
+  // We don't check that routes_ contains route_id because it's possible for it
+  // to not have been added yet (i.e. it's waiting to be added later down the
+  // call stack).
   routes_.erase(route_id);
 
   // Only send a message to the other side to close the route if we hadn't
@@ -133,22 +135,20 @@ void RoutedRawChannel::OnReadMessage(
 void RoutedRawChannel::OnError(Error error) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
 
-  // This needs to match non-multiplexed MessagePipeDispatcher's destruction of
-  // the channel only when read errors occur.
-  if (error != ERROR_WRITE || routes_.empty()) {
-    channel_->Shutdown();
-    channel_ = nullptr;
+  // Note: we must ensure we don't call RawChannel::Shutdown until after we've
+  // called OnError on each route's delegate.
+  for (auto it = routes_.begin(); it != routes_.end();) {
+    // The delegate might call RemoveRoute in their OnError implementation which
+    // would invalidate |it|. So increment it first.
+    auto cur_it = it++;
+    cur_it->second->OnError(error);
   }
 
   if (routes_.empty()) {
+    channel_->Shutdown();
+    channel_ = nullptr;
     delete this;
     return;
-  }
-
-  for (auto it = routes_.begin(); it != routes_.end();) {
-    // Handle the delegate calling RemoveRoute in this call.
-    auto cur_it = it++;
-    cur_it->second->OnError(error);
   }
 }
 

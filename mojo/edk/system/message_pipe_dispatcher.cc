@@ -193,12 +193,7 @@ void MessagePipeDispatcher::GotNonTransferableChannel(RawChannel* channel) {
 
   if (non_transferable_state_ == WAITING_FOR_CONNECT_TO_CLOSE) {
     // We kept this object alive until it's connected, we can release it now.
-    // Since we're in a callback from the Broker, call it asynchronously.
-    internal::g_io_thread_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&Broker::CloseMessagePipe,
-                   base::Unretained(internal::g_broker), pipe_id_,
-                   base::Unretained(this)));
+    internal::g_broker->CloseMessagePipe(pipe_id_, this);
     non_transferable_state_ = CLOSED;
     channel_ = nullptr;
     base::MessageLoop::current()->ReleaseSoon(FROM_HERE, this);
@@ -924,12 +919,7 @@ void MessagePipeDispatcher::OnError(Error error) {
         channel_->Shutdown();
       } else {
         CHECK_NE(non_transferable_state_, CLOSED);
-        // Since we're in a callback from the Broker, call it asynchronously.
-        internal::g_io_thread_task_runner->PostTask(
-            FROM_HERE,
-            base::Bind(&Broker::CloseMessagePipe,
-                       base::Unretained(internal::g_broker), pipe_id_,
-                       base::Unretained(this)));
+        internal::g_broker->CloseMessagePipe(pipe_id_, this);
         non_transferable_state_ = CLOSED;
       }
       channel_ = nullptr;
