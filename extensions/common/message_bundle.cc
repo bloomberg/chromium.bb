@@ -25,27 +25,26 @@ namespace extensions {
 
 namespace errors = manifest_errors;
 
-const char* MessageBundle::kContentKey = "content";
-const char* MessageBundle::kMessageKey = "message";
-const char* MessageBundle::kPlaceholdersKey = "placeholders";
+const char MessageBundle::kContentKey[] = "content";
+const char MessageBundle::kMessageKey[] = "message";
+const char MessageBundle::kPlaceholdersKey[] = "placeholders";
 
-const char* MessageBundle::kPlaceholderBegin = "$";
-const char* MessageBundle::kPlaceholderEnd = "$";
-const char* MessageBundle::kMessageBegin = "__MSG_";
-const char* MessageBundle::kMessageEnd = "__";
+const char MessageBundle::kPlaceholderBegin[] = "$";
+const char MessageBundle::kPlaceholderEnd[] = "$";
+const char MessageBundle::kMessageBegin[] = "__MSG_";
+const char MessageBundle::kMessageEnd[] = "__";
 
 // Reserved messages names.
-const char* MessageBundle::kUILocaleKey = "@@ui_locale";
-const char* MessageBundle::kBidiDirectionKey = "@@bidi_dir";
-const char* MessageBundle::kBidiReversedDirectionKey =
-    "@@bidi_reversed_dir";
-const char* MessageBundle::kBidiStartEdgeKey = "@@bidi_start_edge";
-const char* MessageBundle::kBidiEndEdgeKey = "@@bidi_end_edge";
-const char* MessageBundle::kExtensionIdKey = "@@extension_id";
+const char MessageBundle::kUILocaleKey[] = "@@ui_locale";
+const char MessageBundle::kBidiDirectionKey[] = "@@bidi_dir";
+const char MessageBundle::kBidiReversedDirectionKey[] = "@@bidi_reversed_dir";
+const char MessageBundle::kBidiStartEdgeKey[] = "@@bidi_start_edge";
+const char MessageBundle::kBidiEndEdgeKey[] = "@@bidi_end_edge";
+const char MessageBundle::kExtensionIdKey[] = "@@extension_id";
 
 // Reserved messages values.
-const char* MessageBundle::kBidiLeftEdgeValue = "left";
-const char* MessageBundle::kBidiRightEdgeValue = "right";
+const char MessageBundle::kBidiLeftEdgeValue[] = "left";
+const char MessageBundle::kBidiRightEdgeValue[] = "right";
 
 // Formats message in case we encounter a bad formed key in the JSON object.
 // Returns false and sets |error| to actual error message.

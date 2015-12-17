@@ -93,7 +93,7 @@ struct BookmarkNodeData {
   };
 
   // The MIME type for the clipboard format for BookmarkNodeData.
-  static const char* kClipboardFormatString;
+  static const char kClipboardFormatString[];
 
   BookmarkNodeData();
 

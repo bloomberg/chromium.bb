@@ -62,7 +62,7 @@ class ThemeService : public base::NonThreadSafe,
                      public KeyedService {
  public:
   // Public constants used in ThemeService and its subclasses:
-  static const char* kDefaultThemeID;
+  static const char kDefaultThemeID[];
 
   ThemeService();
   ~ThemeService() override;

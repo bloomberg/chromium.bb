@@ -70,7 +70,7 @@ class refRegistrySyncable;
 class ProfileImpl : public Profile {
  public:
   // Value written to prefs when the exit type is EXIT_NORMAL. Public for tests.
-  static const char* const kPrefExitTypeNormal;
+  static const char kPrefExitTypeNormal[];
 
   ~ProfileImpl() override;
 

@@ -13,14 +13,14 @@
 //   sysdeps/unix/sysv/linux/i386/dl-librecon.h
 //   sysdeps/generic/unsecvars.h
 
-#ifndef SANDBOX_LINUX_SUID_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
-#define SANDBOX_LINUX_SUID_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
+#ifndef SANDBOX_LINUX_SUID_COMMON_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
+#define SANDBOX_LINUX_SUID_COMMON_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
 
 #include <stdint.h>
 #include <stdlib.h>  // malloc
 #include <string.h>  // memcpy
 
-static const char* kSUIDUnsafeEnvironmentVariables[] = {
+static const char* const kSUIDUnsafeEnvironmentVariables[] = {
   "LD_AOUT_LIBRARY_PATH",
   "LD_AOUT_PRELOAD",
   "GCONV_PATH",
@@ -70,4 +70,4 @@ static inline char* SandboxSavedEnvironmentVariable(const char* envvar) {
   return saved_envvar;
 }
 
-#endif  // SANDBOX_LINUX_SUID_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
+#endif  // SANDBOX_LINUX_SUID_COMMON_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_

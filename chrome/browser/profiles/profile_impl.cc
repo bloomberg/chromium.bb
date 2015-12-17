@@ -317,7 +317,7 @@ Profile* Profile::CreateProfile(const base::FilePath& path,
 }
 
 // static
-const char* const ProfileImpl::kPrefExitTypeNormal = "Normal";
+const char ProfileImpl::kPrefExitTypeNormal[] = "Normal";
 
 // static
 void ProfileImpl::RegisterProfilePrefs(

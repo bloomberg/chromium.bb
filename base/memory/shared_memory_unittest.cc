@@ -72,12 +72,12 @@ class MultipleThreadMain : public PlatformThread::Delegate {
  private:
   int16 id_;
 
-  static const char* const s_test_name_;
+  static const char s_test_name_[];
 
   DISALLOW_COPY_AND_ASSIGN(MultipleThreadMain);
 };
 
-const char* const MultipleThreadMain::s_test_name_ =
+const char MultipleThreadMain::s_test_name_[] =
     "SharedMemoryOpenThreadTest";
 #endif  // !defined(OS_MACOSX)
 
@@ -603,11 +603,11 @@ class SharedMemoryProcessTest : public MultiProcessTest {
     return errors;
   }
 
-  static const char* const s_test_name_;
+  static const char s_test_name_[];
   static const uint32 s_data_size_;
 };
 
-const char* const SharedMemoryProcessTest::s_test_name_ = "MPMem";
+const char SharedMemoryProcessTest::s_test_name_[] = "MPMem";
 const uint32 SharedMemoryProcessTest::s_data_size_ = 1024;
 
 TEST_F(SharedMemoryProcessTest, SharedMemoryAcrossProcesses) {

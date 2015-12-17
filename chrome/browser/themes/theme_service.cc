@@ -65,7 +65,7 @@ typedef ThemeProperties Properties;
 
 // The default theme if we haven't installed a theme yet or if we've clicked
 // the "Use Classic" button.
-const char* ThemeService::kDefaultThemeID = "";
+const char ThemeService::kDefaultThemeID[] = "";
 
 namespace {
 
@@ -73,7 +73,7 @@ namespace {
 // "Default" theme. We have to detect this case specifically. (By the time we
 // realize we've installed the default theme, we already have an extension
 // unpacked on the filesystem.)
-const char* kDefaultThemeGalleryID = "hkacjpbfdknhflllbcmjibkdeoafencn";
+const char kDefaultThemeGalleryID[] = "hkacjpbfdknhflllbcmjibkdeoafencn";
 
 // Wait this many seconds after startup to garbage collect unused themes.
 // Removing unused themes is done after a delay because there is no

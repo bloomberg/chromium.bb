@@ -86,25 +86,25 @@ class BookmarkCodec {
   bool ids_reassigned() const { return ids_reassigned_; }
 
   // Names of the various keys written to the Value.
-  static const char* kRootsKey;
-  static const char* kRootFolderNameKey;
-  static const char* kOtherBookmarkFolderNameKey;
-  static const char* kMobileBookmarkFolderNameKey;
-  static const char* kVersionKey;
-  static const char* kChecksumKey;
-  static const char* kIdKey;
-  static const char* kTypeKey;
-  static const char* kNameKey;
-  static const char* kDateAddedKey;
-  static const char* kURLKey;
-  static const char* kDateModifiedKey;
-  static const char* kChildrenKey;
-  static const char* kMetaInfo;
-  static const char* kSyncTransactionVersion;
+  static const char kRootsKey[];
+  static const char kRootFolderNameKey[];
+  static const char kOtherBookmarkFolderNameKey[];
+  static const char kMobileBookmarkFolderNameKey[];
+  static const char kVersionKey[];
+  static const char kChecksumKey[];
+  static const char kIdKey[];
+  static const char kTypeKey[];
+  static const char kNameKey[];
+  static const char kDateAddedKey[];
+  static const char kURLKey[];
+  static const char kDateModifiedKey[];
+  static const char kChildrenKey[];
+  static const char kMetaInfo[];
+  static const char kSyncTransactionVersion[];
 
   // Possible values for kTypeKey.
-  static const char* kTypeURL;
-  static const char* kTypeFolder;
+  static const char kTypeURL[];
+  static const char kTypeFolder[];
 
  private:
   // Encodes node and all its children into a Value object and returns it.

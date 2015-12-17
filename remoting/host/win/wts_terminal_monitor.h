@@ -20,7 +20,7 @@ extern const uint32 kInvalidSessionId;
 class WtsTerminalMonitor {
  public:
   // The console terminal ID.
-  static const char* kConsole;
+  static const char kConsole[];
 
   virtual ~WtsTerminalMonitor();
 

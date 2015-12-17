@@ -14,7 +14,7 @@
 
 namespace bookmarks {
 
-const char* BookmarkNodeData::kClipboardFormatString =
+const char BookmarkNodeData::kClipboardFormatString[] =
     "chromium/x-bookmark-entries";
 
 BookmarkNodeData::Element::Element() : is_url(false), id_(0) {

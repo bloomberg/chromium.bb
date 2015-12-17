@@ -24,7 +24,7 @@ namespace chrome_browser_net {
 // Used by DnsProbeService to probe the system and public DNS configurations.
 class DnsProbeRunner {
  public:
-  static const char* kKnownGoodHostname;
+  static const char kKnownGoodHostname[];
 
   // Used in histograms; add new entries at the bottom, and don't remove any.
   enum Result {

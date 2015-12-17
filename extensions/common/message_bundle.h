@@ -26,34 +26,34 @@ class MessageBundle {
   typedef std::vector<linked_ptr<base::DictionaryValue> > CatalogVector;
 
   // JSON keys of interest for messages file.
-  static const char* kContentKey;
-  static const char* kMessageKey;
-  static const char* kPlaceholdersKey;
+  static const char kContentKey[];
+  static const char kMessageKey[];
+  static const char kPlaceholdersKey[];
 
   // Begin/end markers for placeholders and messages
-  static const char* kPlaceholderBegin;
-  static const char* kPlaceholderEnd;
-  static const char* kMessageBegin;
-  static const char* kMessageEnd;
+  static const char kPlaceholderBegin[];
+  static const char kPlaceholderEnd[];
+  static const char kMessageBegin[];
+  static const char kMessageEnd[];
 
   // Reserved message names in the dictionary.
   // Update i18n documentation when adding new reserved value.
-  static const char* kUILocaleKey;
+  static const char kUILocaleKey[];
   // See http://code.google.com/apis/gadgets/docs/i18n.html#BIDI for
   // description.
   // TODO(cira): point to chrome docs once they are out.
-  static const char* kBidiDirectionKey;
-  static const char* kBidiReversedDirectionKey;
-  static const char* kBidiStartEdgeKey;
-  static const char* kBidiEndEdgeKey;
+  static const char kBidiDirectionKey[];
+  static const char kBidiReversedDirectionKey[];
+  static const char kBidiStartEdgeKey[];
+  static const char kBidiEndEdgeKey[];
   // Extension id gets added in the
   // browser/renderer_host/resource_message_filter.cc to enable message
   // replacement for non-localized extensions.
-  static const char* kExtensionIdKey;
+  static const char kExtensionIdKey[];
 
   // Values for some of the reserved messages.
-  static const char* kBidiLeftEdgeValue;
-  static const char* kBidiRightEdgeValue;
+  static const char kBidiLeftEdgeValue[];
+  static const char kBidiRightEdgeValue[];
 
   // Creates MessageBundle or returns NULL if there was an error. Expects
   // locale_catalogs to be sorted from more specific to less specific, with

@@ -16,7 +16,7 @@ namespace remoting {
 // Session id that does not represent any session.
 const uint32 kInvalidSessionId = 0xffffffffu;
 
-const char* WtsTerminalMonitor::kConsole = "console";
+const char WtsTerminalMonitor::kConsole[] = "console";
 
 WtsTerminalMonitor::~WtsTerminalMonitor() {
 }

@@ -6,13 +6,13 @@
 
 namespace extensions {
 
-const char* const BehaviorFeature::kServiceWorker = "service_worker";
+const char BehaviorFeature::kServiceWorker[] = "service_worker";
 
-const char* const BehaviorFeature::kWhitelistedForIncognito =
+const char BehaviorFeature::kWhitelistedForIncognito[] =
     "whitelisted_for_incognito";
 
-const char* const BehaviorFeature::kDoNotSync = "do_not_sync";
+const char BehaviorFeature::kDoNotSync[] = "do_not_sync";
 
-const char* const BehaviorFeature::kZoomWithoutBubble = "zoom_without_bubble";
+const char BehaviorFeature::kZoomWithoutBubble[] = "zoom_without_bubble";
 
 }  // namespace extensions

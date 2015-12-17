@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
 #if defined(ENABLE_PLUGINS)
 class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
  protected:
-  static const char* const kExternalClearKeyMimeType;
+  static const char kExternalClearKeyMimeType[];
 
   // Registers any CDM plugins not registered by default.
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -465,8 +465,8 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
   }
 };
 
-const char* const
-PepperContentSettingsSpecialCasesTest::kExternalClearKeyMimeType =
+const char
+PepperContentSettingsSpecialCasesTest::kExternalClearKeyMimeType[] =
     "application/x-ppapi-clearkey-cdm";
 
 class PepperContentSettingsSpecialCasesPluginsBlockedTest
