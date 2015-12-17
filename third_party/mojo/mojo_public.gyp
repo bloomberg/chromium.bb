@@ -147,6 +147,8 @@
         '../../mojo/public/cpp/bindings/lib/multiplex_router.cc',
         '../../mojo/public/cpp/bindings/lib/multiplex_router.h',
         '../../mojo/public/cpp/bindings/lib/no_interface.cc',
+        '../../mojo/public/cpp/bindings/lib/pickle_buffer.cc',
+        '../../mojo/public/cpp/bindings/lib/pickle_buffer.h',
         '../../mojo/public/cpp/bindings/lib/pipe_control_message_handler.cc',
         '../../mojo/public/cpp/bindings/lib/pipe_control_message_handler.h',
         '../../mojo/public/cpp/bindings/lib/pipe_control_message_handler_delegate.h',
@@ -176,6 +178,7 @@
         '>@(mojom_generated_sources)',
       ],
       'dependencies': [
+        '../../base/base.gyp:base',
         'mojo_interface_bindings_cpp_sources',
       ],
     },

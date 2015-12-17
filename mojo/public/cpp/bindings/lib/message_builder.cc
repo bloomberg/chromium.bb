@@ -17,10 +17,10 @@ void Allocate(Buffer* buf, Header** header) {
 }
 
 MessageBuilder::MessageBuilder(uint32_t name, size_t payload_size) {
-  Initialize(sizeof(MessageHeader) + payload_size);
+  InitializeMessage(sizeof(MessageHeader) + payload_size);
 
   MessageHeader* header;
-  Allocate(&buf_, &header);
+  Allocate(message_.buffer(), &header);
   header->version = 0;
   header->name = name;
 }
@@ -30,18 +30,19 @@ MessageBuilder::~MessageBuilder() {
 
 MessageBuilder::MessageBuilder() {}
 
-void MessageBuilder::Initialize(size_t size) {
-  message_.AllocData(static_cast<uint32_t>(Align(size)));
-  buf_.Initialize(message_.mutable_data(), message_.data_num_bytes());
+void MessageBuilder::InitializeMessage(size_t size) {
+  message_.Initialize(static_cast<uint32_t>(Align(size)),
+                      true /* zero_initialized */);
 }
 
 MessageWithRequestIDBuilder::MessageWithRequestIDBuilder(uint32_t name,
                                                          size_t payload_size,
                                                          uint32_t flags,
                                                          uint64_t request_id) {
-  Initialize(sizeof(MessageHeaderWithRequestID) + payload_size);
+  InitializeMessage(sizeof(MessageHeaderWithRequestID) + payload_size);
+
   MessageHeaderWithRequestID* header;
-  Allocate(&buf_, &header);
+  Allocate(message_.buffer(), &header);
   header->version = 1;
   header->name = name;
   header->flags = flags;

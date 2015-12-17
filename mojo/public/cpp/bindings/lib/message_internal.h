@@ -35,13 +35,6 @@ struct MessageHeaderWithRequestID : MessageHeader {
 static_assert(sizeof(MessageHeaderWithRequestID) == 32,
               "Bad sizeof(MessageHeaderWithRequestID)");
 
-struct MessageData {
-  MessageHeader header;
-};
-
-static_assert(sizeof(MessageData) == sizeof(MessageHeader),
-              "Bad sizeof(MessageData)");
-
 #pragma pack(pop)
 
 }  // namespace internal

@@ -49,6 +49,8 @@ class FixedBuffer : public Buffer {
   // memory is zero-filled.
   void* Allocate(size_t num_bytes) override;
 
+  PickleBuffer* AsPickleBuffer() override;
+
  protected:
   char* ptr_;
   size_t cursor_;

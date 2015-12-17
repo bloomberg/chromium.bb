@@ -148,9 +148,10 @@ bool ReadTestCase(const std::string& test,
     return false;
   }
 
-  message->AllocUninitializedData(static_cast<uint32_t>(data.size()));
+  message->Initialize(static_cast<uint32_t>(data.size()),
+                      false /* zero_initialized */);
   if (!data.empty())
-    memcpy(message->mutable_data(), &data[0], data.size());
+    memcpy(message->buffer()->Allocate(data.size()), &data[0], data.size());
   message->mutable_handles()->resize(num_handles);
 
   return true;

@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
 #include "mojo/public/cpp/bindings/message.h"
 
@@ -21,15 +20,14 @@ class MessageBuilder {
   MessageBuilder(uint32_t name, size_t payload_size);
   ~MessageBuilder();
 
-  Buffer* buffer() { return &buf_; }
+  Buffer* buffer() { return message_.buffer(); }
   Message* message() { return &message_; }
 
  protected:
   MessageBuilder();
-  void Initialize(size_t size);
+  void InitializeMessage(size_t size);
 
   Message message_;
-  FixedBuffer buf_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(MessageBuilder);
 };

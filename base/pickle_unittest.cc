@@ -524,4 +524,50 @@ TEST(PickleTest, DeepCopyResize) {
   EXPECT_EQ(pickle.capacity_after_header(), pickle2.capacity_after_header());
 }
 
+namespace {
+
+// Publicly exposes the ClaimBytes interface for testing.
+class TestingPickle : public Pickle {
+ public:
+  TestingPickle() {}
+
+  void* ClaimBytes(size_t num_bytes) { return Pickle::ClaimBytes(num_bytes); }
+};
+
+}  // namespace
+
+// Checks that claimed bytes are zero-initialized.
+TEST(PickleTest, ClaimBytesInitialization) {
+  static const int kChunkSize = 64;
+  TestingPickle pickle;
+  const char* bytes = static_cast<const char*>(pickle.ClaimBytes(kChunkSize));
+  for (size_t i = 0; i < kChunkSize; ++i) {
+    EXPECT_EQ(0, bytes[i]);
+  }
+}
+
+// Checks that ClaimBytes properly advances the write offset.
+TEST(PickleTest, ClaimBytes) {
+  std::string data("Hello, world!");
+
+  TestingPickle pickle;
+  pickle.WriteSizeT(data.size());
+  void* bytes = pickle.ClaimBytes(data.size());
+  pickle.WriteInt(42);
+  memcpy(bytes, data.data(), data.size());
+
+  PickleIterator iter(pickle);
+  size_t out_data_length;
+  EXPECT_TRUE(iter.ReadSizeT(&out_data_length));
+  EXPECT_EQ(data.size(), out_data_length);
+
+  const char* out_data = nullptr;
+  EXPECT_TRUE(iter.ReadBytes(&out_data, out_data_length));
+  EXPECT_EQ(data, std::string(out_data, out_data_length));
+
+  int out_value;
+  EXPECT_TRUE(iter.ReadInt(&out_value));
+  EXPECT_EQ(42, out_value);
+}
+
 }  // namespace base

@@ -329,6 +329,13 @@ void Pickle::Resize(size_t new_capacity) {
   header_ = reinterpret_cast<Header*>(p);
 }
 
+void* Pickle::ClaimBytes(size_t num_bytes) {
+  void* p = ClaimUninitializedBytesInternal(num_bytes);
+  CHECK(p);
+  memset(p, 0, num_bytes);
+  return p;
+}
+
 size_t Pickle::GetTotalAllocatedSize() const {
   if (capacity_after_header_ == kCapacityReadOnly)
     return 0;
@@ -384,10 +391,9 @@ template void Pickle::WriteBytesStatic<2>(const void* data);
 template void Pickle::WriteBytesStatic<4>(const void* data);
 template void Pickle::WriteBytesStatic<8>(const void* data);
 
-inline void Pickle::WriteBytesCommon(const void* data, size_t length) {
+inline void* Pickle::ClaimUninitializedBytesInternal(size_t length) {
   DCHECK_NE(kCapacityReadOnly, capacity_after_header_)
       << "oops: pickle is readonly";
-  MSAN_CHECK_MEM_IS_INITIALIZED(data, length);
   size_t data_len = bits::Align(length, sizeof(uint32_t));
   DCHECK_GE(data_len, length);
 #ifdef ARCH_CPU_64_BITS
@@ -404,10 +410,18 @@ inline void Pickle::WriteBytesCommon(const void* data, size_t length) {
   }
 
   char* write = mutable_payload() + write_offset_;
-  memcpy(write, data, length);
-  memset(write + length, 0, data_len - length);
+  memset(write + length, 0, data_len - length);  // Always initialize padding
   header_->payload_size = static_cast<uint32_t>(new_size);
   write_offset_ = new_size;
+  return write;
+}
+
+inline void Pickle::WriteBytesCommon(const void* data, size_t length) {
+  DCHECK_NE(kCapacityReadOnly, capacity_after_header_)
+      << "oops: pickle is readonly";
+  MSAN_CHECK_MEM_IS_INITIALIZED(data, length);
+  void* write = ClaimUninitializedBytesInternal(length);
+  memcpy(write, data, length);
 }
 
 }  // namespace base

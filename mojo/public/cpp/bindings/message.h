@@ -5,9 +5,12 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_H_
 
+#include <limits>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
+#include "mojo/public/cpp/bindings/lib/pickle_buffer.h"
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
@@ -21,66 +24,74 @@ class Message {
   Message();
   ~Message();
 
-  void Reset();
-
-  void AllocData(uint32_t num_bytes);
-  void AllocUninitializedData(uint32_t num_bytes);
+  void Initialize(size_t capacity, bool zero_initialized);
 
   // Transfers data and handles to |destination|.
   void MoveTo(Message* destination);
 
-  uint32_t data_num_bytes() const { return data_num_bytes_; }
+  uint32_t data_num_bytes() const {
+    MOJO_DCHECK(buffer_->data_num_bytes() <=
+                std::numeric_limits<uint32_t>::max());
+    return static_cast<uint32_t>(buffer_->data_num_bytes());
+  }
 
   // Access the raw bytes of the message.
   const uint8_t* data() const {
-    return reinterpret_cast<const uint8_t*>(data_);
+    return static_cast<const uint8_t*>(buffer_->data());
   }
-  uint8_t* mutable_data() { return reinterpret_cast<uint8_t*>(data_); }
+
+  uint8_t* mutable_data() { return static_cast<uint8_t*>(buffer_->data()); }
 
   // Access the header.
-  const internal::MessageHeader* header() const { return &data_->header; }
+  const internal::MessageHeader* header() const {
+    return static_cast<const internal::MessageHeader*>(buffer_->data());
+  }
 
-  uint32_t interface_id() const { return data_->header.interface_id; }
-  void set_interface_id(uint32_t id) { data_->header.interface_id = id; }
+  internal::MessageHeader* header() {
+    return const_cast<internal::MessageHeader*>(
+        static_cast<const Message*>(this)->header());
+  }
 
-  uint32_t name() const { return data_->header.name; }
-  bool has_flag(uint32_t flag) const { return !!(data_->header.flags & flag); }
+  uint32_t interface_id() const { return header()->interface_id; }
+  void set_interface_id(uint32_t id) { header()->interface_id = id; }
+
+  uint32_t name() const { return header()->name; }
+  bool has_flag(uint32_t flag) const { return !!(header()->flags & flag); }
 
   // Access the request_id field (if present).
-  bool has_request_id() const { return data_->header.version >= 1; }
+  bool has_request_id() const { return header()->version >= 1; }
   uint64_t request_id() const {
     MOJO_DCHECK(has_request_id());
     return static_cast<const internal::MessageHeaderWithRequestID*>(
-               &data_->header)->request_id;
+               header())->request_id;
   }
   void set_request_id(uint64_t request_id) {
     MOJO_DCHECK(has_request_id());
-    static_cast<internal::MessageHeaderWithRequestID*>(&data_->header)
+    static_cast<internal::MessageHeaderWithRequestID*>(header())
         ->request_id = request_id;
   }
 
   // Access the payload.
-  const uint8_t* payload() const {
-    return reinterpret_cast<const uint8_t*>(data_) + data_->header.num_bytes;
-  }
-  uint8_t* mutable_payload() {
-    return reinterpret_cast<uint8_t*>(data_) + data_->header.num_bytes;
-  }
+  const uint8_t* payload() const { return data() + header()->num_bytes; }
+  uint8_t* mutable_payload() { return const_cast<uint8_t*>(payload()); }
   uint32_t payload_num_bytes() const {
-    MOJO_DCHECK(data_num_bytes_ >= data_->header.num_bytes);
-    return data_num_bytes_ - data_->header.num_bytes;
+    MOJO_DCHECK(buffer_->data_num_bytes() >= header()->num_bytes);
+    size_t num_bytes = buffer_->data_num_bytes() - header()->num_bytes;
+    MOJO_DCHECK(num_bytes <= std::numeric_limits<uint32_t>::max());
+    return static_cast<uint32_t>(num_bytes);
   }
 
   // Access the handles.
   const std::vector<Handle>* handles() const { return &handles_; }
   std::vector<Handle>* mutable_handles() { return &handles_; }
 
- private:
-  void Initialize();
-  void FreeDataAndCloseHandles();
+  // Access the underlying Buffer interface.
+  internal::Buffer* buffer() { return buffer_.get(); }
 
-  uint32_t data_num_bytes_;
-  internal::MessageData* data_;
+ private:
+  void CloseHandles();
+
+  scoped_ptr<internal::PickleBuffer> buffer_;
   std::vector<Handle> handles_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Message);
