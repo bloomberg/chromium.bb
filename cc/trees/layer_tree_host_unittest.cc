@@ -2120,7 +2120,11 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
   void CallOnDraw() {
     // Synchronous compositor does not draw unless told to do so by the output
     // surface.
-    output_surface()->client()->OnDraw();
+    gfx::Transform identity;
+    gfx::Rect empty_rect;
+    bool resourceless_software_draw = false;
+    output_surface()->client()->OnDraw(identity, empty_rect, empty_rect,
+                                       resourceless_software_draw);
   }
 };
 
@@ -2422,6 +2426,10 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNumFramesPending);
 
 class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
  public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->using_synchronous_renderer_compositor = true;
+  }
+
   void SetupTree() override {
     root_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     root_layer_->SetIsDrawable(true);
@@ -2459,6 +2467,24 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
     swap_count_ = 0;
   }
 
+  void ScheduledActionInvalidateOutputSurface() override {
+    if (TestEnded())
+      return;
+
+    ImplThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostTestResourcelessSoftwareDraw::CallOnDraw,
+                   base::Unretained(this)));
+  }
+
+  void CallOnDraw() {
+    gfx::Transform identity;
+    gfx::Rect empty_rect;
+    bool resourceless_software_draw = true;
+    output_surface()->client()->OnDraw(identity, empty_rect, empty_rect,
+                                       resourceless_software_draw);
+  }
+
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
@@ -2481,17 +2507,9 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
   void SwapBuffersCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     swap_count_++;
     switch (swap_count_) {
-      case 1: {
-        gfx::Transform identity;
-        gfx::Rect empty_rect;
-        bool resourceless_software_draw = true;
-        host_impl->SetExternalDrawConstraints(identity, empty_rect, empty_rect,
-                                              empty_rect, identity,
-                                              resourceless_software_draw);
-        host_impl->SetFullRootLayerDamage();
+      case 1:
         host_impl->SetNeedsRedraw();
         break;
-      }
       case 2:
         EndTest();
         break;

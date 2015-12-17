@@ -71,7 +71,6 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       registry_(registry),
       registered_(false),
       sync_client_(nullptr),
-      next_hardware_draw_needs_damage_(false),
       current_sw_canvas_(nullptr),
       memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue) {
@@ -144,8 +143,10 @@ SynchronousCompositorOutputSurface::DemandDrawHw(
   DCHECK(context_provider_.get());
 
   surface_size_ = surface_size;
-  InvokeComposite(transform, viewport, clip, viewport_rect_for_tile_priority,
-                  transform_for_tile_priority, true);
+  client_->SetExternalTilePriorityConstraints(viewport_rect_for_tile_priority,
+                                              transform_for_tile_priority);
+  const bool software_draw = false;
+  InvokeComposite(transform, viewport, clip, software_draw);
 
   return frame_holder_.Pass();
 }
@@ -167,16 +168,8 @@ SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
 
   surface_size_ = gfx::Size(canvas->getBaseLayerSize().width(),
                             canvas->getBaseLayerSize().height());
-
-  // Pass in the cached hw viewport and transform for tile priority to avoid
-  // tile thrashing when the WebView is alternating between hardware and
-  // software draws.
-  InvokeComposite(transform,
-                  clip,
-                  clip,
-                  cached_hw_viewport_rect_for_tile_priority_,
-                  cached_hw_transform_for_tile_priority_,
-                  false);
+  const bool software_draw = true;
+  InvokeComposite(transform, clip, clip, software_draw);
 
   return frame_holder_.Pass();
 }
@@ -185,46 +178,12 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
     const gfx::Transform& transform,
     const gfx::Rect& viewport,
     const gfx::Rect& clip,
-    const gfx::Rect& viewport_rect_for_tile_priority,
-    const gfx::Transform& transform_for_tile_priority,
-    bool hardware_draw) {
+    bool software_draw) {
   DCHECK(!frame_holder_.get());
 
   gfx::Transform adjusted_transform = transform;
   adjusted_transform.matrix().postTranslate(-viewport.x(), -viewport.y(), 0);
-  SetExternalDrawConstraints(adjusted_transform, viewport, clip,
-                             viewport_rect_for_tile_priority,
-                             transform_for_tile_priority, !hardware_draw);
-  if (!hardware_draw || next_hardware_draw_needs_damage_) {
-    next_hardware_draw_needs_damage_ = false;
-    SetNeedsRedrawRect(gfx::Rect(viewport.size()));
-  }
-
-  client_->OnDraw();
-
-  // After software draws (which might move the viewport arbitrarily), restore
-  // the previous hardware viewport to allow CC's tile manager to prioritize
-  // properly.
-  if (hardware_draw) {
-    cached_hw_transform_ = adjusted_transform;
-    cached_hw_viewport_ = viewport;
-    cached_hw_clip_ = clip;
-    cached_hw_viewport_rect_for_tile_priority_ =
-        viewport_rect_for_tile_priority;
-    cached_hw_transform_for_tile_priority_ = transform_for_tile_priority;
-  } else {
-    bool resourceless_software_draw = false;
-    SetExternalDrawConstraints(cached_hw_transform_,
-                               cached_hw_viewport_,
-                               cached_hw_clip_,
-                               cached_hw_viewport_rect_for_tile_priority_,
-                               cached_hw_transform_for_tile_priority_,
-                               resourceless_software_draw);
-    // This draw may have reset all damage, which would lead to subsequent
-    // incorrect hardware draw, so explicitly set damage for next hardware
-    // draw as well.
-    next_hardware_draw_needs_damage_ = true;
-  }
+  client_->OnDraw(adjusted_transform, viewport, clip, software_draw);
 
   if (frame_holder_.get())
     client_->DidSwapBuffersComplete();

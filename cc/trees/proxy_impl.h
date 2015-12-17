@@ -82,7 +82,6 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override;
   void DidSwapBuffersOnImplThread() override;
   void DidSwapBuffersCompleteOnImplThread() override;
-  void OnResourcelessSoftareDrawStateChanged(bool resourceless_draw) override;
   void OnCanDrawStateChanged(bool can_draw) override;
   void NotifyReadyToActivate() override;
   void NotifyReadyToDraw() override;
@@ -105,7 +104,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void WillPrepareTiles() override;
   void DidPrepareTiles() override;
   void DidCompletePageScaleAnimationOnImplThread() override;
-  void OnDrawForOutputSurface() override;
+  void OnDrawForOutputSurface(bool resourceless_software_draw) override;
   // This should only be called by LayerTreeHostImpl::PostFrameTimingEvents.
   void PostFrameTimingEventsOnImplThread(
       scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,

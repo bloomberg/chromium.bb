@@ -335,7 +335,8 @@ class SchedulerTest : public testing::Test {
 
       if (scheduler_settings_.using_synchronous_renderer_compositor) {
         scheduler_->SetNeedsRedraw();
-        scheduler_->OnDrawForOutputSurface();
+        bool resourceless_software_draw = false;
+        scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
       } else {
         // Run the posted deadline task.
         EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
@@ -3091,7 +3092,8 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
 
   // Android onDraw. This doesn't consume the single begin frame request.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface();
+  bool resourceless_software_draw = false;
+  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
@@ -3109,7 +3111,7 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface();
+  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
@@ -3129,7 +3131,8 @@ TEST_F(SchedulerTest, SynchronousCompositorOnDrawDuringIdle) {
   SetUpScheduler(true);
 
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface();
+  bool resourceless_software_draw = false;
+  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
   EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 1, 2);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
@@ -3224,7 +3227,8 @@ TEST_F(SchedulerTest, SynchronousCompositorCommit) {
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface();
+  bool resourceless_software_draw = false;
+  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
@@ -3315,7 +3319,8 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface();
+  bool resourceless_software_draw = false;
+  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
@@ -3324,7 +3329,7 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface();
+  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
@@ -3359,7 +3364,8 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface();
+  bool resourceless_software_draw = false;
+  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -3387,7 +3393,7 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface();
+  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -3405,10 +3411,10 @@ TEST_F(SchedulerTest, SynchronousCompositorResourcelessOnDrawWhenInvisible) {
   SetUpScheduler(true);
 
   scheduler_->SetVisible(false);
-  scheduler_->SetResourcelessSoftareDraw(true);
 
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface();
+  bool resourceless_software_draw = true;
+  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
   // SynchronousCompositor has to draw regardless of visibility.
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());

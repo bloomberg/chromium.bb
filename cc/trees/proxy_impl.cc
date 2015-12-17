@@ -300,11 +300,6 @@ void ProxyImpl::DidSwapBuffersCompleteOnImplThread() {
   channel_impl_->DidCompleteSwapBuffers();
 }
 
-void ProxyImpl::OnResourcelessSoftareDrawStateChanged(bool resourceless_draw) {
-  DCHECK(IsImplThread());
-  scheduler_->SetResourcelessSoftareDraw(resourceless_draw);
-}
-
 void ProxyImpl::OnCanDrawStateChanged(bool can_draw) {
   TRACE_EVENT1("cc", "ProxyImpl::OnCanDrawStateChanged", "can_draw", can_draw);
   DCHECK(IsImplThread());
@@ -462,9 +457,9 @@ void ProxyImpl::DidCompletePageScaleAnimationOnImplThread() {
   channel_impl_->DidCompletePageScaleAnimation();
 }
 
-void ProxyImpl::OnDrawForOutputSurface() {
+void ProxyImpl::OnDrawForOutputSurface(bool resourceless_software_draw) {
   DCHECK(IsImplThread());
-  scheduler_->OnDrawForOutputSurface();
+  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
 }
 
 void ProxyImpl::PostFrameTimingEventsOnImplThread(

@@ -191,13 +191,6 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
   void ReclaimResources(const CompositorFrameAck* ack);
   void SetExternalStencilTest(bool enabled);
-  void SetExternalDrawConstraints(
-      const gfx::Transform& transform,
-      const gfx::Rect& viewport,
-      const gfx::Rect& clip,
-      const gfx::Rect& viewport_rect_for_tile_priority,
-      const gfx::Transform& transform_for_tile_priority,
-      bool resourceless_software_draw);
   void DetachFromClientInternal();
 
  private:

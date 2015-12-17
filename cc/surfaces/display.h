@@ -84,16 +84,15 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void DidSwapBuffersComplete() override;
   void ReclaimResources(const CompositorFrameAck* ack) override;
   void DidLoseOutputSurface() override;
-  void SetExternalDrawConstraints(
-      const gfx::Transform& transform,
-      const gfx::Rect& viewport,
-      const gfx::Rect& clip,
-      const gfx::Rect& viewport_rect_for_tile_priority,
-      const gfx::Transform& transform_for_tile_priority,
-      bool resourceless_software_draw) override;
+  void SetExternalTilePriorityConstraints(
+      const gfx::Rect& viewport_rect,
+      const gfx::Transform& transform) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
   void SetTreeActivationCallback(const base::Closure& callback) override;
-  void OnDraw() override;
+  void OnDraw(const gfx::Transform& transform,
+              const gfx::Rect& viewport,
+              const gfx::Rect& clip,
+              bool resourceless_software_draw) override;
 
   // RendererClient implementation.
   void SetFullRootLayerDamage() override;

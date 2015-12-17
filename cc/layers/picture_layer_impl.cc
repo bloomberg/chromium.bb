@@ -266,7 +266,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 
   // Ignore missing tiles outside of viewport for tile priority. This is
   // normally the same as draw viewport but can be independently overridden by
-  // embedders like Android WebView with SetExternalDrawConstraints.
+  // embedders like Android WebView with SetExternalTilePriorityConstraints.
   gfx::Rect scaled_viewport_for_tile_priority = gfx::ScaleToEnclosingRect(
       viewport_rect_for_tile_priority_in_content_space_, max_contents_scale);
 

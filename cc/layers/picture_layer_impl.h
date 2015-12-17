@@ -154,11 +154,11 @@ class CC_EXPORT PictureLayerImpl
   bool nearest_neighbor_;
 
   // Any draw properties derived from |transform|, |viewport|, and |clip|
-  // parameters in LayerTreeHostImpl::SetExternalDrawConstraints are not valid
-  // for prioritizing tiles during resourceless software draws. This is because
-  // resourceless software draws can have wildly different transforms/viewports
-  // from regular draws. Save a copy of the required draw properties of the last
-  // frame that has a valid viewport for prioritizing tiles.
+  // parameters in LayerTreeHostImpl::OnDraw are not valid for prioritizing
+  // tiles during resourceless software draws. This is because resourceless
+  // software draws can have wildly different transforms/viewports from regular
+  // draws. Save a copy of the required draw properties of the last frame that
+  // has a valid viewport for prioritizing tiles.
   gfx::Rect visible_rect_for_tile_priority_;
   gfx::Rect viewport_rect_for_tile_priority_in_content_space_;
   gfx::Transform screen_space_transform_for_tile_priority_;

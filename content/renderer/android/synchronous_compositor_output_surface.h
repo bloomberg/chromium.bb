@@ -97,8 +97,6 @@ class SynchronousCompositorOutputSurface
   void InvokeComposite(const gfx::Transform& transform,
                        const gfx::Rect& viewport,
                        const gfx::Rect& clip,
-                       const gfx::Rect& viewport_rect_for_tile_priority,
-                       const gfx::Transform& transform_for_tile_priority,
                        bool hardware_draw);
   bool CalledOnValidThread() const;
 
@@ -108,13 +106,6 @@ class SynchronousCompositorOutputSurface
 
   // Not owned.
   SynchronousCompositorOutputSurfaceClient* sync_client_;
-
-  gfx::Transform cached_hw_transform_;
-  gfx::Rect cached_hw_viewport_;
-  gfx::Rect cached_hw_clip_;
-  gfx::Rect cached_hw_viewport_rect_for_tile_priority_;
-  gfx::Transform cached_hw_transform_for_tile_priority_;
-  bool next_hardware_draw_needs_damage_;
 
   // Only valid (non-NULL) during a DemandDrawSw() call.
   SkCanvas* current_sw_canvas_;

@@ -54,6 +54,13 @@ class FakeOutputSurface : public OutputSurface {
         new FakeOutputSurface(std::move(software_device), false));
   }
 
+  static scoped_ptr<FakeOutputSurface>
+  Create3dWithResourcelessSoftwareSupport() {
+    return make_scoped_ptr(new FakeOutputSurface(
+        TestContextProvider::Create(),
+        make_scoped_ptr(new SoftwareOutputDevice), false));
+  }
+
   static scoped_ptr<FakeOutputSurface> CreateDelegating3d() {
     return make_scoped_ptr(
         new FakeOutputSurface(TestContextProvider::Create(),

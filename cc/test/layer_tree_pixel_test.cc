@@ -68,21 +68,6 @@ void LayerTreePixelTest::WillCommitCompleteOnThread(LayerTreeHostImpl* impl) {
 
   DirectRenderer* renderer = static_cast<DirectRenderer*>(impl->renderer());
   renderer->SetEnlargePassTextureAmountForTesting(enlarge_texture_amount_);
-
-  gfx::Rect viewport = impl->DeviceViewport();
-  // The viewport has a 0,0 origin without external influence.
-  EXPECT_EQ(gfx::Point().ToString(), viewport.origin().ToString());
-  // Be that influence!
-  viewport += gfx::Vector2d(20, 10);
-  bool resourceless_software_draw = false;
-  gfx::Transform identity = gfx::Transform();
-  impl->SetExternalDrawConstraints(identity,
-                                   viewport,
-                                   viewport,
-                                   viewport,
-                                   identity,
-                                   resourceless_software_draw);
-  EXPECT_EQ(viewport.ToString(), impl->DeviceViewport().ToString());
 }
 
 scoped_ptr<CopyOutputRequest> LayerTreePixelTest::CreateCopyOutputRequest() {

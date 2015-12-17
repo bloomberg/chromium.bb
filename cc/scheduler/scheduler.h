@@ -68,7 +68,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   // BeginFrameObserverBase
   bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override;
 
-  void OnDrawForOutputSurface();
+  void OnDrawForOutputSurface(bool resourceless_software_draw);
 
   const SchedulerSettings& settings() const { return settings_; }
 
@@ -78,7 +78,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   void SetVisible(bool visible);
   bool visible() { return state_machine_.visible(); }
-  void SetResourcelessSoftareDraw(bool resourceless_draw);
   void SetCanDraw(bool can_draw);
   void NotifyReadyToActivate();
   void NotifyReadyToDraw();

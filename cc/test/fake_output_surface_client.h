@@ -26,16 +26,15 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   void DidSwapBuffersComplete() override {}
   void ReclaimResources(const CompositorFrameAck* ack) override {}
   void DidLoseOutputSurface() override;
-  void SetExternalDrawConstraints(
-      const gfx::Transform& transform,
-      const gfx::Rect& viewport,
-      const gfx::Rect& clip,
+  void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect_for_tile_priority,
-      const gfx::Transform& transform_for_tile_priority,
-      bool resourceless_software_draw) override {}
+      const gfx::Transform& transform_for_tile_priority) override {}
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
   void SetTreeActivationCallback(const base::Closure&) override {}
-  void OnDraw() override {}
+  void OnDraw(const gfx::Transform& transform,
+              const gfx::Rect& viewport,
+              const gfx::Rect& clip,
+              bool resourceless_software_draw) override {}
 
   int swap_count() { return swap_count_; }
 

@@ -352,11 +352,6 @@ void SingleThreadProxy::Stop() {
   layer_tree_host_ = NULL;
 }
 
-void SingleThreadProxy::OnResourcelessSoftareDrawStateChanged(
-    bool resourceless_draw) {
-  NOTREACHED();
-}
-
 void SingleThreadProxy::OnCanDrawStateChanged(bool can_draw) {
   TRACE_EVENT1(
       "cc", "SingleThreadProxy::OnCanDrawStateChanged", "can_draw", can_draw);
@@ -498,7 +493,8 @@ void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
   layer_tree_host_->DidCompleteSwapBuffers();
 }
 
-void SingleThreadProxy::OnDrawForOutputSurface() {
+void SingleThreadProxy::OnDrawForOutputSurface(
+    bool resourceless_software_draw) {
   NOTREACHED() << "Implemented by ThreadProxy for synchronous compositor.";
 }
 

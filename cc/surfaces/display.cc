@@ -306,7 +306,10 @@ void Display::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
   client_->SetMemoryPolicy(policy);
 }
 
-void Display::OnDraw() {
+void Display::OnDraw(const gfx::Transform& transform,
+                     const gfx::Rect& viewport,
+                     const gfx::Rect& clip,
+                     bool resourceless_software_draw) {
   NOTREACHED();
 }
 
@@ -320,13 +323,9 @@ void Display::ReclaimResources(const CompositorFrameAck* ack) {
   NOTREACHED();
 }
 
-void Display::SetExternalDrawConstraints(
-    const gfx::Transform& transform,
-    const gfx::Rect& viewport,
-    const gfx::Rect& clip,
-    const gfx::Rect& viewport_rect_for_tile_priority,
-    const gfx::Transform& transform_for_tile_priority,
-    bool resourceless_software_draw) {
+void Display::SetExternalTilePriorityConstraints(
+    const gfx::Rect& viewport_rect,
+    const gfx::Transform& transform) {
   NOTREACHED();
 }
 

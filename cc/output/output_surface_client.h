@@ -30,13 +30,9 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void DidSwapBuffersComplete() = 0;
   virtual void ReclaimResources(const CompositorFrameAck* ack) = 0;
   virtual void DidLoseOutputSurface() = 0;
-  virtual void SetExternalDrawConstraints(
-      const gfx::Transform& transform,
-      const gfx::Rect& viewport,
-      const gfx::Rect& clip,
-      const gfx::Rect& viewport_rect_for_tile_priority,
-      const gfx::Transform& transform_for_tile_priority,
-      bool resourceless_software_draw) = 0;
+  virtual void SetExternalTilePriorityConstraints(
+      const gfx::Rect& viewport_rect,
+      const gfx::Transform& transform) = 0;
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
   // If set, |callback| will be called subsequent to each new tree activation,
   // regardless of the compositor visibility or damage. |callback| must remain
@@ -44,7 +40,10 @@ class CC_EXPORT OutputSurfaceClient {
   // use SetTreeActivationCallback(base::Closure()) to unregister it.
   virtual void SetTreeActivationCallback(const base::Closure& callback) = 0;
   // This allows the output surface to ask it's client for a draw.
-  virtual void OnDraw() = 0;
+  virtual void OnDraw(const gfx::Transform& transform,
+                      const gfx::Rect& viewport,
+                      const gfx::Rect& clip,
+                      bool resourceless_software_draw) = 0;
 
  protected:
   virtual ~OutputSurfaceClient() {}

@@ -21,7 +21,6 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override {}
   void DidSwapBuffersOnImplThread() override {}
   void DidSwapBuffersCompleteOnImplThread() override {}
-  void OnResourcelessSoftareDrawStateChanged(bool resourceless_draw) override {}
   void OnCanDrawStateChanged(bool can_draw) override {}
   void NotifyReadyToActivate() override {}
   void NotifyReadyToDraw() override {}
@@ -41,7 +40,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void WillPrepareTiles() override {}
   void DidPrepareTiles() override {}
   void DidCompletePageScaleAnimationOnImplThread() override {}
-  void OnDrawForOutputSurface() override {}
+  void OnDrawForOutputSurface(bool resourceless_software_draw) override {}
   void PostFrameTimingEventsOnImplThread(
       scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
       scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)

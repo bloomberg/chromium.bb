@@ -135,11 +135,6 @@ void Scheduler::SetVisible(bool visible) {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetResourcelessSoftareDraw(bool resourceless_draw) {
-  state_machine_.SetResourcelessSoftareDraw(resourceless_draw);
-  ProcessScheduledActions();
-}
-
 void Scheduler::SetCanDraw(bool can_draw) {
   state_machine_.SetCanDraw(can_draw);
   ProcessScheduledActions();
@@ -374,17 +369,19 @@ void Scheduler::SetVideoNeedsBeginFrames(bool video_needs_begin_frames) {
   ProcessScheduledActions();
 }
 
-void Scheduler::OnDrawForOutputSurface() {
+void Scheduler::OnDrawForOutputSurface(bool resourceless_software_draw) {
   DCHECK(settings_.using_synchronous_renderer_compositor);
   DCHECK_EQ(state_machine_.begin_impl_frame_state(),
             SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(!BeginImplFrameDeadlinePending());
 
+  state_machine_.SetResourcelessSoftareDraw(resourceless_software_draw);
   state_machine_.OnBeginImplFrameDeadline();
   ProcessScheduledActions();
 
   state_machine_.OnBeginImplFrameIdle();
   ProcessScheduledActions();
+  state_machine_.SetResourcelessSoftareDraw(false);
 }
 
 // BeginRetroFrame is called for BeginFrames that we've deferred because
