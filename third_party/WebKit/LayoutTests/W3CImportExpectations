@@ -470,7 +470,6 @@ imported/web-platform-tests/dom/nodes/Document-contentType/contentType/contentty
 imported/web-platform-tests/dom/nodes/Document-contentType/contentType/contenttype_xml.html [ Skip ]
 imported/web-platform-tests/dom/nodes/Document-contentType/contentType/xhr_responseType_document.html [ Skip ]
 imported/web-platform-tests/dom/nodes/Element-matches.html [ Skip ]
-imported/web-platform-tests/dom/nodes/Node-baseURI.html [ Skip ]
 imported/web-platform-tests/html/browsers/history/the-history-interface/008.html [ Skip ]
 imported/web-platform-tests/html/browsers/origin/relaxing-the-same-origin-restriction/document_domain.html [ Skip ]
 imported/web-platform-tests/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/creating_browsing_context_test_01.html [ Skip ]
