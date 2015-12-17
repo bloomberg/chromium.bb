@@ -8,6 +8,7 @@
 
 #include "base/ios/ios_util.h"
 #import "base/ios/weak_nsobject.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/test/web_test_util.h"
 #include "ios/web/public/web_client.h"
@@ -21,15 +22,11 @@ namespace web {
 namespace {
 
 class WKWebViewConfigurationProviderTest : public PlatformTest {
+ public:
+  WKWebViewConfigurationProviderTest()
+      : web_client_(make_scoped_ptr(new web::WebClient)) {}
+
  protected:
-  void SetUp() override {
-    PlatformTest::SetUp();
-    SetWebClient(&web_client_);
-  }
-  void TearDown() override {
-    SetWebClient(nullptr);
-    PlatformTest::TearDown();
-  }
   // Returns WKWebViewConfigurationProvider associated with |browser_state_|.
   WKWebViewConfigurationProvider& GetProvider() {
     return GetProvider(&browser_state_);
@@ -40,11 +37,8 @@ class WKWebViewConfigurationProviderTest : public PlatformTest {
     return WKWebViewConfigurationProvider::FromBrowserState(browser_state);
   }
   // BrowserState required for WKWebViewConfigurationProvider creation.
+  web::ScopedTestingWebClient web_client_;
   TestBrowserState browser_state_;
-
- private:
-  // WebClient required for getting early page script.
-  WebClient web_client_;
 };
 
 // Tests that each WKWebViewConfigurationProvider has own, non-nil

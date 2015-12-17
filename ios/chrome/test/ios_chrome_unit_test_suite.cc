@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/test/testing_application_context.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/test/test_chrome_provider_initializer.h"
 #include "ios/web/public/web_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,18 +25,28 @@ class IOSChromeUnitTestSuiteInitializer
   ~IOSChromeUnitTestSuiteInitializer() override {}
 
   void OnTestStart(const testing::TestInfo& test_info) override {
-    web_client_.reset(new web::WebClient());
+    DCHECK(!web_client_);
+    web_client_.reset(new web::WebClient);
     web::SetWebClient(web_client_.get());
+
+    DCHECK(!ios::GetChromeBrowserProvider());
     test_ios_chrome_provider_initializer_.reset(
         new ios::TestChromeProviderInitializer());
+
+    DCHECK(!GetApplicationContext());
     application_context_.reset(new TestingApplicationContext);
   }
 
   void OnTestEnd(const testing::TestInfo& test_info) override {
-    web_client_.reset();
-    web::SetWebClient(nullptr);
-    test_ios_chrome_provider_initializer_.reset();
+    DCHECK_EQ(GetApplicationContext(), application_context_.get());
     application_context_.reset();
+
+    test_ios_chrome_provider_initializer_.reset();
+    DCHECK(!ios::GetChromeBrowserProvider());
+
+    DCHECK_EQ(web::GetWebClient(), web_client_.get());
+    web::SetWebClient(nullptr);
+    web_client_.reset();
   }
 
  private:

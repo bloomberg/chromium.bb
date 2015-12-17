@@ -7,6 +7,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ios/web/public/browser_state.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -23,28 +24,22 @@ namespace {
 // A test fixture that sets up web-related classes for testing a
 // |WebViewCounter|.
 class WebViewCounterTest : public PlatformTest {
+ public:
+  WebViewCounterTest() : web_client_(make_scoped_ptr(new web::TestWebClient)) {}
+
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    SetWebClient(&test_web_client_);
     browser_state_.reset(new TestBrowserState());
   }
-  void TearDown() override {
-    // The BrowserState needs to be destroyed first so that it is outlived by
-    // the WebThreadBundle.
-    browser_state_.reset();
-    SetWebClient(nullptr);
-    PlatformTest::TearDown();
-  }
 
-  // The BrowserState used for testing purposes.
-  scoped_ptr<BrowserState> browser_state_;
-
- private:
   // Used to create TestWebThreads.
   TestWebThreadBundle thread_bundle_;
   // Required by web::CreateWebView/web::CreateWKWebView functions.
-  web::TestWebClient test_web_client_;
+  web::ScopedTestingWebClient web_client_;
+
+  // The BrowserState used for testing purposes.
+  scoped_ptr<BrowserState> browser_state_;
 };
 
 }  // namespace

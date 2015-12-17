@@ -9,6 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -43,14 +44,14 @@ class WebTest : public PlatformTest {
   void TearDown() override;
 
   // Returns the WebClient that is used for testing.
-  TestWebClient* GetWebClient() { return &client_; }
+  TestWebClient* GetWebClient();
 
   // Returns the BrowserState that is used for testing.
   BrowserState* GetBrowserState() { return &browser_state_; }
 
  private:
   // The WebClient used in tests.
-  TestWebClient client_;
+  ScopedTestingWebClient web_client_;
   // The threads used for testing.
   web::TestWebThreadBundle thread_bundle_;
   // The browser state used in tests.

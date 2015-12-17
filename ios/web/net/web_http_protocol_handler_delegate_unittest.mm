@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/web_client.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,21 +49,13 @@ class WebHTTPProtocolHandlerDelegateTest : public testing::Test {
       : context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
         delegate_(new WebHTTPProtocolHandlerDelegate(context_getter_.get())),
-        original_web_client_(GetWebClient()),
-        web_client_(new AppSpecificURLTestWebClient) {
-    SetWebClient(web_client_.get());
-  }
-
-  ~WebHTTPProtocolHandlerDelegateTest() override {
-    SetWebClient(original_web_client_);
-  }
+        web_client_(make_scoped_ptr(new AppSpecificURLTestWebClient)) {}
 
  protected:
   base::MessageLoop message_loop_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
   scoped_ptr<WebHTTPProtocolHandlerDelegate> delegate_;
-  WebClient* original_web_client_;  // Stash the web client, Weak.
-  scoped_ptr<AppSpecificURLTestWebClient> web_client_;
+  web::ScopedTestingWebClient web_client_;
 };
 
 }  // namespace

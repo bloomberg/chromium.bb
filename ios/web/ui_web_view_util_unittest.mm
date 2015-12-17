@@ -4,6 +4,7 @@
 
 #import "ios/web/ui_web_view_util.h"
 
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -16,20 +17,23 @@ NSString* GetUserAgent() {
 }
 
 class UIWebViewUtilTest : public PlatformTest {
+ public:
+  UIWebViewUtilTest() : web_client_(make_scoped_ptr(new web::TestWebClient)) {}
+
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    test_web_client_.SetUserAgent("DesktopUA", true);
-    test_web_client_.SetUserAgent("RegularUA", false);
-    web::SetWebClient(&test_web_client_);
+    test_web_client()->SetUserAgent("DesktopUA", true);
+    test_web_client()->SetUserAgent("RegularUA", false);
   }
-  void TearDown() override {
-    web::SetWebClient(nullptr);
-    PlatformTest::TearDown();
+
+  web::TestWebClient* test_web_client() {
+    return static_cast<web::TestWebClient*>(web_client_.Get());
   }
+
  private:
   // WebClient that returns test user agent.
-  web::TestWebClient test_web_client_;
+  web::ScopedTestingWebClient web_client_;
 };
 
 // Tests registration of a non-desktop user agent.

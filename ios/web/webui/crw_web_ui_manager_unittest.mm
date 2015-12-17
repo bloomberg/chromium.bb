@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/web_state/web_state_impl.h"
@@ -110,11 +111,13 @@ namespace web {
 
 // Test fixture for testing CRWWebUIManager
 class CRWWebUIManagerTest : public PlatformTest {
+ public:
+  CRWWebUIManagerTest()
+      : web_client_(make_scoped_ptr(new web::AppSpecificTestWebClient)) {}
+
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    test_web_client_.reset(new web::AppSpecificTestWebClient());
-    web::SetWebClient(test_web_client_.get());
     test_browser_state_.reset(new TestBrowserState());
     web_state_impl_.reset(new MockWebStateImpl(test_browser_state_.get()));
     web_ui_manager_.reset(
@@ -129,7 +132,7 @@ class CRWWebUIManagerTest : public PlatformTest {
   // WebUIManager for testing.
   base::scoped_nsobject<CRWTestWebUIManager> web_ui_manager_;
   // The WebClient used in tests.
-  scoped_ptr<AppSpecificTestWebClient> test_web_client_;
+  web::ScopedTestingWebClient web_client_;
 };
 
 // Tests that CRWWebUIManager observes provisional navigation and invokes an

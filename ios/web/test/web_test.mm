@@ -36,19 +36,21 @@ namespace web {
 
 #pragma mark -
 
-WebTest::WebTest() {}
+WebTest::WebTest() : web_client_(make_scoped_ptr(new TestWebClient)) {}
 WebTest::~WebTest() {}
 
 void WebTest::SetUp() {
   PlatformTest::SetUp();
-  web::SetWebClient(&client_);
   BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
 }
 
 void WebTest::TearDown() {
   BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
-  web::SetWebClient(nullptr);
   PlatformTest::TearDown();
+}
+
+TestWebClient* WebTest::GetWebClient() {
+  return static_cast<TestWebClient*>(web_client_.Get());
 }
 
 #pragma mark -

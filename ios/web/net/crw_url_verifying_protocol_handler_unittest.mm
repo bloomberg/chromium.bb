@@ -5,6 +5,7 @@
 #include "ios/web/net/crw_url_verifying_protocol_handler.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/web_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,10 +14,9 @@ namespace {
 
 // TODO(shreyasv): See if this can use the WebTest test fixture.
 TEST(CRWURLVerifyingProtocolHandlerTest, NonLazyInitializer) {
-  scoped_ptr<web::TestWebClient> test_web_client(new web::TestWebClient());
-  web::SetWebClient(test_web_client.get());
+  web::ScopedTestingWebClient web_client(
+      make_scoped_ptr(new web::TestWebClient));
   EXPECT_TRUE([CRWURLVerifyingProtocolHandler preInitialize]);
-  web::SetWebClient(nullptr);
 }
 
 }  // namespace

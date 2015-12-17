@@ -474,6 +474,8 @@
         'public/test/response_providers/response_provider.h',
         'public/test/response_providers/string_response_provider.h',
         'public/test/response_providers/string_response_provider.mm',
+        'public/test/scoped_testing_web_client.cc',
+        'public/test/scoped_testing_web_client.h',
         'public/test/test_browser_state.cc',
         'public/test/test_browser_state.h',
         'public/test/test_web_client.h',

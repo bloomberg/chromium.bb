@@ -10,16 +10,17 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "ios/web/net/request_group_util.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "ios/web/public/test/web_test_util.h"
 #import "ios/web/public/web_view_creation_util.h"
+#import "ios/web/test/web_test.h"
 #import "ios/web/web_state/ui/crw_debug_web_view.h"
 #import "ios/web/web_state/ui/crw_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/crw_static_file_web_view.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
-#import "ios/web/test/web_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest_mac.h"
 
@@ -49,19 +50,20 @@ class CreationUtilsWebClient : public TestWebClient {
 
 class WebViewCreationUtilsTest : public WebTest {
  public:
-  WebViewCreationUtilsTest() {}
+  WebViewCreationUtilsTest()
+      : web_client_(make_scoped_ptr(new CreationUtilsWebClient)) {}
 
  protected:
+  CreationUtilsWebClient* creation_utils_web_client() {
+    return static_cast<CreationUtilsWebClient*>(web_client_.Get());
+  }
   void SetUp() override {
     WebTest::SetUp();
     logJavaScriptPref_ =
         [[NSUserDefaults standardUserDefaults] boolForKey:@"LogJavascript"];
-    original_web_client_ = GetWebClient();
-    SetWebClient(&creation_utils_web_client_);
-    creation_utils_web_client_.SetUserAgent("TestUA", false);
+    creation_utils_web_client()->SetUserAgent("TestUA", false);
   }
   void TearDown() override {
-    SetWebClient(original_web_client_);
     [[NSUserDefaults standardUserDefaults] setBool:logJavaScriptPref_
                                             forKey:@"LogJavascript"];
     WebTest::TearDown();
@@ -69,9 +71,9 @@ class WebViewCreationUtilsTest : public WebTest {
   // Sets up expectation for WebClient::PreWebViewCreation and
   // WebClient::PostWebViewCreation calls. Captures UIWebView passed to
   // PostWebViewCreation into captured_web_view param.
-  void ExpectWebClientCalls(UIWebView** captured_web_view) const {
-    EXPECT_CALL(creation_utils_web_client_, PreWebViewCreation()).Times(1);
-    EXPECT_CALL(creation_utils_web_client_, PostWebViewCreation(testing::_))
+  void ExpectWebClientCalls(UIWebView** captured_web_view) {
+    EXPECT_CALL(*creation_utils_web_client(), PreWebViewCreation()).Times(1);
+    EXPECT_CALL(*creation_utils_web_client(), PostWebViewCreation(testing::_))
         .Times(1)
         .WillOnce(testing::SaveArg<0>(captured_web_view));
   }
@@ -80,9 +82,7 @@ class WebViewCreationUtilsTest : public WebTest {
   // Original value of @"LogJavascript" pref from NSUserDefaults.
   BOOL logJavaScriptPref_;
   // WebClient that stubs PreWebViewCreation/PostWebViewCreation.
-  CreationUtilsWebClient creation_utils_web_client_;
-  // The WebClient that was set before this test was run.
-  WebClient* original_web_client_;
+  web::ScopedTestingWebClient web_client_;
 };
 
 // Tests that a web view created with a certain id returns the same

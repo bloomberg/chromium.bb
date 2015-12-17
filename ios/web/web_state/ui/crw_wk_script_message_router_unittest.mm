@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/web_test_util.h"
@@ -25,10 +26,14 @@ id GetScriptMessageMock(WKWebView* web_view, NSString* name) {
 
 // Test fixture for CRWWKScriptMessageRouter.
 class CRWWKScriptMessageRouterTest : public web::WebTest {
+ public:
+  CRWWKScriptMessageRouterTest()
+      : web_client_(make_scoped_ptr(new web::WebClient)) {}
+
  protected:
   void SetUp() override {
+    web::WebTest::SetUp();
     CR_TEST_REQUIRES_WK_WEB_VIEW();
-    web::SetWebClient(&web_client_);
     // Mock WKUserContentController object.
     controller_mock_.reset(
         [[OCMockObject mockForClass:[WKUserContentController class]] retain]);
@@ -55,7 +60,7 @@ class CRWWKScriptMessageRouterTest : public web::WebTest {
   }
   void TearDown() override {
     EXPECT_OCMOCK_VERIFY(controller_mock_);
-    web::SetWebClient(nullptr);
+    web::WebTest::TearDown();
   }
 
   // WKUserContentController mock used to create testable router.
@@ -78,7 +83,7 @@ class CRWWKScriptMessageRouterTest : public web::WebTest {
 
  private:
   // WebClient and BrowserState for testing.
-  web::TestWebClient web_client_;
+  web::ScopedTestingWebClient web_client_;
   web::TestBrowserState browser_state_;
 };
 
