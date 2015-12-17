@@ -254,7 +254,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
         openAppMenuAndAssertMenuShown();
         final int expectedMenuSize = numMenuEntries + NUM_CHROME_MENU_ITEMS;
-        Menu menu = getActivity().getAppMenuHandler().getAppMenuForTest().getMenuForTest();
+        Menu menu = getActivity().getAppMenuHandler().getAppMenu().getMenu();
         assertNotNull("App menu is not initialized: ", menu);
         assertEquals(expectedMenuSize, menu.size());
         assertNotNull(menu.findItem(R.id.forward_menu_id));
@@ -276,7 +276,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
         openAppMenuAndAssertMenuShown();
         int expectedMenuSize = MAX_MENU_CUSTOM_ITEMS + NUM_CHROME_MENU_ITEMS;
-        Menu menu = getActivity().getAppMenuHandler().getAppMenuForTest().getMenuForTest();
+        Menu menu = getActivity().getAppMenuHandler().getAppMenu().getMenu();
         assertNotNull("App menu is not initialized: ", menu);
         assertEquals(expectedMenuSize, menu.size());
     }

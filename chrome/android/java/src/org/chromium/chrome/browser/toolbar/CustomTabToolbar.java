@@ -560,4 +560,18 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     @Override
     public void backKeyPressed() { }
+
+    @Override
+    public void showAppMenuUpdateBadge() {
+    }
+
+    @Override
+    public void removeAppMenuUpdateBadge() {
+    }
+
+    @Override
+    public View getMenuButtonWrapper() {
+        // This class has no menu button wrapper, so return the menu button instead.
+        return mMenuButton;
+    }
 }

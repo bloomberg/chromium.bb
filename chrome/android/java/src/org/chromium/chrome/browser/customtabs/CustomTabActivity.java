@@ -526,6 +526,10 @@ public class CustomTabActivity extends ChromeActivity {
         return (CustomTabAppMenuPropertiesDelegate) super.getAppMenuPropertiesDelegate();
     }
 
+    @Override
+    public void onCheckForUpdate(boolean updateAvailable) {
+    }
+
     /**
      * @return The {@link CustomTabIntentDataProvider} for this {@link CustomTabActivity}. For test
      *         purposes only.

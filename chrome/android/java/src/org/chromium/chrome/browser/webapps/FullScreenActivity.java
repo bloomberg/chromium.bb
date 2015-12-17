@@ -111,4 +111,8 @@ public abstract class FullScreenActivity extends ChromeActivity
         }
         return false;
     }
+
+    @Override
+    public void onCheckForUpdate(boolean updateAvailable) {
+    }
 }

@@ -17,6 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -24,6 +25,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -48,6 +50,10 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * The ImageButton view that represents the menu button.
      */
     protected TintedImageButton mMenuButton;
+    protected ImageView mMenuBadge;
+    protected View mMenuButtonWrapper;
+    protected boolean mShowMenuBadge;
+    protected Drawable mUnbadgedMenuButtonDrawable;
     private AppMenuButtonHelper mAppMenuButtonHelper;
 
     protected final ColorStateList mDarkModeTint;
@@ -92,6 +98,9 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         }
 
         mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
+        mMenuBadge = (ImageView) findViewById(R.id.menu_badge);
+        mMenuButtonWrapper = findViewById(R.id.menu_button_wrapper);
+
         // Initialize the provider to an empty version to avoid null checking everywhere.
         mToolbarDataProvider = new ToolbarDataProvider() {
             @Override
@@ -182,10 +191,10 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     /**
-     * @return The menu button view.
+     * @return The view containing the menu button and menu button badge.
      */
-    protected View getMenuButton() {
-        return mMenuButton;
+    protected View getMenuButtonWrapper() {
+        return mMenuButtonWrapper;
     }
 
     /**
@@ -608,5 +617,27 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected void openHomepage() {
         getLocationBar().hideSuggestions();
         if (mToolbarTabController != null) mToolbarTabController.openHomepage();
+    }
+
+    @Override
+    public void showAppMenuUpdateBadge() {
+        mShowMenuBadge = true;
+        mUnbadgedMenuButtonDrawable = ApiCompatibilityUtils.getDrawable(getResources(),
+                R.drawable.btn_menu);
+    }
+
+    @Override
+    public void removeAppMenuUpdateBadge() {
+        mMenuBadge.setVisibility(View.GONE);
+    }
+
+    /**
+     * Sets the update badge visibility to VISIBLE and sets the menu button image to the badged
+     * bitmap.
+     */
+    protected void setAppMenuUpdateBadgeToVisible() {
+        mMenuBadge.setVisibility(View.VISIBLE);
+        mMenuButton.setImageBitmap(
+                UpdateMenuItemHelper.getInstance().getBadgedMenuButtonBitmap(getContext()));
     }
 }

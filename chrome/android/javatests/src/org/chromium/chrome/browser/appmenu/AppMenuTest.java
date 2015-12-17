@@ -85,7 +85,7 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         super.setUp();
 
         showAppMenuAndAssertMenuShown();
-        mAppMenu = getActivity().getAppMenuHandler().getAppMenuForTest();
+        mAppMenu = getActivity().getAppMenuHandler().getAppMenu();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {

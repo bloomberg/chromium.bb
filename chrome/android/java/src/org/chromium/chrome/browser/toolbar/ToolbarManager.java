@@ -617,7 +617,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * @return The view that the pop up menu should be anchored to on the UI.
      */
     public View getMenuAnchor() {
-        return mToolbar.shouldShowMenuButton() ? mToolbar.getMenuButton()
+        return mToolbar.shouldShowMenuButton() ? mToolbar.getMenuButtonWrapper()
                 : mToolbar.getLocationBar().getMenuAnchor();
     }
 
@@ -933,7 +933,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         updateReloadState(tabCrashed);
         updateBookmarkButtonStatus();
 
-        mToolbar.getMenuButton().setVisibility(
+        mToolbar.getMenuButtonWrapper().setVisibility(
                 mToolbar.shouldShowMenuButton() ? View.VISIBLE : View.GONE);
     }
 

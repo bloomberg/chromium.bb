@@ -146,6 +146,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Preferences related to the avatar bubble and user manager tutorials.
   registry->RegisterIntegerPref(prefs::kProfileAvatarTutorialShown, 0);
 #endif
+
+#if defined(OS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kClickedUpdateMenuItem, false);
+#endif
 }
 
 std::string Profile::GetDebugName() {

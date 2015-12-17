@@ -40,9 +40,10 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     private OnClickListener mBookmarkListener;
     private OnClickListener mTabSwitcherListener;
 
-    private boolean mInTabSwitcherwMode = false;
+    private boolean mIsInTabSwitcherMode = false;
 
     private boolean mShowTabStack;
+
 
     private NavigationPopup mNavigationPopup;
 
@@ -85,12 +86,12 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
         mBookmarkButton = (TintedImageButton) findViewById(R.id.bookmark_button);
 
         mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
-        mMenuButton.setVisibility(
+        mMenuButtonWrapper.setVisibility(
                 shouldShowMenuButton() ? View.VISIBLE : View.GONE);
 
         if (mAccessibilitySwitcherButton.getVisibility() == View.GONE
-                && mMenuButton.getVisibility() == View.GONE) {
-            ApiCompatibilityUtils.setPaddingRelative((View) mMenuButton.getParent(), 0, 0,
+                && mMenuButtonWrapper.getVisibility() == View.GONE) {
+            ApiCompatibilityUtils.setPaddingRelative((View) mMenuButtonWrapper.getParent(), 0, 0,
                     getResources().getDimensionPixelSize(R.dimen.tablet_toolbar_end_padding), 0);
         }
     }
@@ -311,14 +312,14 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
 
     @Override
     protected void updateBackButtonVisibility(boolean canGoBack) {
-        boolean enableButton = canGoBack && !mInTabSwitcherwMode;
+        boolean enableButton = canGoBack && !mIsInTabSwitcherMode;
         mBackButton.setEnabled(enableButton);
         mBackButton.setFocusable(enableButton);
     }
 
     @Override
     protected void updateForwardButtonVisibility(boolean canGoForward) {
-        boolean enableButton = canGoForward && !mInTabSwitcherwMode;
+        boolean enableButton = canGoForward && !mIsInTabSwitcherMode;
         mForwardButton.setEnabled(enableButton);
         mForwardButton.setFocusable(enableButton);
     }
@@ -335,7 +336,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
                     R.string.accessibility_btn_refresh));
         }
         mReloadButton.setTint(isIncognito() ? mLightModeTint : mDarkModeTint);
-        mReloadButton.setEnabled(!mInTabSwitcherwMode);
+        mReloadButton.setEnabled(!mIsInTabSwitcherMode);
     }
 
     @Override
@@ -358,14 +359,21 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     protected void setTabSwitcherMode(
             boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
         if (mShowTabStack && inTabSwitcherMode) {
-            mInTabSwitcherwMode = true;
+            mIsInTabSwitcherMode = true;
             mBackButton.setEnabled(false);
             mForwardButton.setEnabled(false);
             mReloadButton.setEnabled(false);
             mLocationBar.getContainerView().setVisibility(View.INVISIBLE);
+            if (mShowMenuBadge && mUnbadgedMenuButtonDrawable != null) {
+                mMenuButton.setImageDrawable(mUnbadgedMenuButtonDrawable);
+                mMenuBadge.setVisibility(View.GONE);
+            }
         } else {
-            mInTabSwitcherwMode = false;
+            mIsInTabSwitcherMode = false;
             mLocationBar.getContainerView().setVisibility(View.VISIBLE);
+            if (mShowMenuBadge) {
+                setAppMenuUpdateBadgeToVisible();
+            }
         }
     }
 
@@ -405,4 +413,11 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
         return mLocationBar;
     }
 
+    @Override
+    public void showAppMenuUpdateBadge() {
+        super.showAppMenuUpdateBadge();
+        if (!mIsInTabSwitcherMode) {
+            setAppMenuUpdateBadgeToVisible();
+        }
+    }
 }

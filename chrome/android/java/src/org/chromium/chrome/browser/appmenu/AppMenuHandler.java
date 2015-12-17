@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 
@@ -155,8 +154,7 @@ public class AppMenuHandler {
     /**
      * @return The App Menu that the menu handler is interacting with.
      */
-    @VisibleForTesting
-    public AppMenu getAppMenuForTest() {
+    public AppMenu getAppMenu() {
         return mAppMenu;
     }
 

@@ -14820,6 +14820,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GoogleUpdate.MenuItem.ActionTakenAfterItemClicked"
+    enum="GoogleUpdateAfterItemClickedActions">
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    (Android-only) Records whether Chrome was updated after the update menu item
+    was clicked.
+  </summary>
+</histogram>
+
+<histogram name="GoogleUpdate.MenuItem.ActionTakenOnMenuOpen"
+    enum="GoogleUpdateMenuItemActions">
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    (Android-only) Records whether the update menu item was clicked when the app
+    menu was opened.
+  </summary>
+</histogram>
+
 <histogram name="GoogleUpdate.UnexpectedState">
   <owner>grt@chromium.org</owner>
   <summary>
@@ -65895,6 +65913,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="13" label="WEB_LOGIN_REQUIRED"/>
 </enum>
 
+<enum name="GoogleUpdateAfterItemClickedActions" type="int">
+  <int value="0" label="Updated"/>
+  <int value="1" label="Not updated"/>
+</enum>
+
 <enum name="GoogleUpdateErrorCode" type="int">
   <int value="0" label="GOOGLE_UPDATE_NO_ERROR"/>
   <int value="1" label="CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY"/>
@@ -65913,6 +65936,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Clicked to update appears successful"/>
   <int value="2" label="Clicked to update but failed"/>
   <int value="3" label="InfoBar dismissed implicitly (no interaction)"/>
+</enum>
+
+<enum name="GoogleUpdateMenuItemActions" type="int">
+  <int value="0" label="Not clicked"/>
+  <int value="1" label="Clicked, intent launched"/>
+  <int value="2" label="Clicked, intent failed"/>
 </enum>
 
 <enum name="GoogleUpdateUpgradeStatus" type="int">

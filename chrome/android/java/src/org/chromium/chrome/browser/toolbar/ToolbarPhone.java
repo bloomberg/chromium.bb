@@ -46,6 +46,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
 import org.chromium.chrome.browser.omnibox.UrlContainer;
@@ -108,7 +109,7 @@ public class ToolbarPhone extends ToolbarLayout
     private final List<View> mTabSwitcherModeViews = new ArrayList<View>();
     private final Set<View> mBrowsingModeViews = new HashSet<View>();
     @ViewDebug.ExportedProperty(category = "chrome")
-    private boolean mInTabSwitcherMode;
+    private boolean mIsInTabSwitcherMode;
 
     // This determines whether or not the toolbar draws as expected (false) or whether it always
     // draws as if it's showing the non-tabswitcher, non-animating toolbar. This is used in grabbing
@@ -124,6 +125,7 @@ public class ToolbarPhone extends ToolbarLayout
     private ColorDrawable mTabSwitcherAnimationBgOverlay;
     private TabSwitcherDrawable mTabSwitcherAnimationTabStackDrawable;
     private Drawable mTabSwitcherAnimationMenuDrawable;
+    private Drawable mTabSwitcherAnimationMenuBadgeDrawable;
     // Value that determines the amount of transition from the normal toolbar mode to TabSwitcher
     // mode.  0 = entirely in normal mode and 1.0 = entirely in TabSwitcher mode.  In between values
     // can be used for animating between the two view modes.
@@ -283,10 +285,10 @@ public class ToolbarPhone extends ToolbarLayout
 
         setLayoutTransition(null);
 
-        mMenuButton.setVisibility(shouldShowMenuButton() ? View.VISIBLE : View.GONE);
+        mMenuButtonWrapper.setVisibility(shouldShowMenuButton() ? View.VISIBLE : View.GONE);
         if (FeatureUtilities.isDocumentMode(getContext())) {
             ApiCompatibilityUtils.setMarginEnd(
-                    (MarginLayoutParams) mMenuButton.getLayoutParams(),
+                    (MarginLayoutParams) mMenuButtonWrapper.getLayoutParams(),
                     getResources().getDimensionPixelSize(R.dimen.document_toolbar_menu_offset));
         }
 
@@ -411,7 +413,7 @@ public class ToolbarPhone extends ToolbarLayout
         });
         onHomeButtonUpdate(HomepageManager.isHomepageEnabled(getContext()));
 
-        updateVisualsForToolbarState(mInTabSwitcherMode);
+        updateVisualsForToolbarState(mIsInTabSwitcherMode);
     }
 
     @Override
@@ -468,7 +470,7 @@ public class ToolbarPhone extends ToolbarLayout
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
             boolean changed = layoutLocationBar(MeasureSpec.getSize(widthMeasureSpec));
-            if (!mInTabSwitcherMode) setUrlFocusChangePercent(mUrlFocusChangePercent);
+            if (!mIsInTabSwitcherMode) setUrlFocusChangePercent(mUrlFocusChangePercent);
             if (!changed) return;
         } else {
             updateUnfocusedLocationBarLayoutParams();
@@ -739,7 +741,7 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void updateUrlExpansionAnimation() {
-        if (mInTabSwitcherMode || isTabSwitcherAnimationRunning()) return;
+        if (mIsInTabSwitcherMode || isTabSwitcherAnimationRunning()) return;
 
         mLocationBarBackgroundOffset.setEmpty();
 
@@ -824,7 +826,7 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void updateNtpTransitionAnimation(NewTabPage ntp) {
-        if (mInTabSwitcherMode) return;
+        if (mIsInTabSwitcherMode) return;
 
         setAncestorsShouldClipChildren(mUrlExpansionPercent == 0f);
         mToolbarShadow.setAlpha(0f);
@@ -966,6 +968,7 @@ public class ToolbarPhone extends ToolbarLayout
         // Draw the menu button if necessary.
         if (mTabSwitcherAnimationMenuDrawable != null
                 && mUrlExpansionPercent != 1f) {
+            canvas.save();
             mTabSwitcherAnimationMenuDrawable.setBounds(
                     mMenuButton.getPaddingLeft(), mMenuButton.getPaddingTop(),
                     mMenuButton.getWidth() - mMenuButton.getPaddingRight(),
@@ -977,6 +980,15 @@ public class ToolbarPhone extends ToolbarLayout
                     : mDarkModeDefaultColor;
             mTabSwitcherAnimationMenuDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
             mTabSwitcherAnimationMenuDrawable.draw(canvas);
+            canvas.restore();
+        }
+
+        // Draw the menu badge if necessary.
+        if (mShowMenuBadge && mTabSwitcherAnimationMenuBadgeDrawable != null
+                && mUrlExpansionPercent != 1f) {
+            translateCanvasToView(mToolbarButtonsContainer, mMenuBadge, canvas);
+            mTabSwitcherAnimationMenuBadgeDrawable.setAlpha(rgbAlpha);
+            mTabSwitcherAnimationMenuBadgeDrawable.draw(canvas);
         }
 
         canvas.restore();
@@ -1015,8 +1027,8 @@ public class ToolbarPhone extends ToolbarLayout
         boolean clipped = false;
 
         if (mLocationBarBackground != null
-                && ((!mInTabSwitcherMode && !mTabSwitcherModeViews.contains(child))
-                        || (mInTabSwitcherMode && mBrowsingModeViews.contains(child)))) {
+                && ((!mIsInTabSwitcherMode && !mTabSwitcherModeViews.contains(child))
+                        || (mIsInTabSwitcherMode && mBrowsingModeViews.contains(child)))) {
             canvas.save();
             if (mUrlExpansionPercent != 0f && mUrlViewportBounds.top < child.getBottom()) {
                 // For other child views, use the inverse clipping of the URL viewport.
@@ -1061,7 +1073,7 @@ public class ToolbarPhone extends ToolbarLayout
         float locationBarClipTop = 0;
         float locationBarClipBottom = 0;
 
-        if (mLocationBarBackground != null && (!mInTabSwitcherMode || mTextureCaptureMode)) {
+        if (mLocationBarBackground != null && (!mIsInTabSwitcherMode || mTextureCaptureMode)) {
             canvas.save();
             int backgroundAlpha = mUrlBackgroundAlpha;
             if (mTabSwitcherModeAnimation != null) {
@@ -1168,7 +1180,7 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     public boolean isReadyForTextureCapture() {
-        return !(mInTabSwitcherMode || mTabSwitcherModeAnimation != null
+        return !(mIsInTabSwitcherMode || mTabSwitcherModeAnimation != null
                 || urlHasFocus() || mUrlFocusChangeInProgress);
     }
 
@@ -1220,7 +1232,7 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     protected void onHomeButtonUpdate(boolean homeButtonEnabled) {
         if (homeButtonEnabled) {
-            mHomeButton.setVisibility(urlHasFocus() || mInTabSwitcherMode ? INVISIBLE : VISIBLE);
+            mHomeButton.setVisibility(urlHasFocus() || mIsInTabSwitcherMode ? INVISIBLE : VISIBLE);
             if (!mBrowsingModeViews.contains(mHomeButton)) {
                 mBrowsingModeViews.add(mHomeButton);
             }
@@ -1259,7 +1271,7 @@ public class ToolbarPhone extends ToolbarLayout
         exitAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                updateViewsForTabSwitcherMode(mInTabSwitcherMode);
+                updateViewsForTabSwitcherMode(mIsInTabSwitcherMode);
             }
         });
 
@@ -1274,7 +1286,7 @@ public class ToolbarPhone extends ToolbarLayout
         exitAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
-                updateViewsForTabSwitcherMode(mInTabSwitcherMode);
+                updateViewsForTabSwitcherMode(mIsInTabSwitcherMode);
                 // On older builds, force an update to ensure the new visuals are used
                 // when bringing in the toolbar.  crbug.com/404571
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN) {
@@ -1285,8 +1297,8 @@ public class ToolbarPhone extends ToolbarLayout
             @Override
             public void onAnimationEnd(Animator animation) {
                 mDelayedTabSwitcherModeAnimation = null;
-                updateShadowVisibility(mInTabSwitcherMode);
-                updateViewsForTabSwitcherMode(mInTabSwitcherMode);
+                updateShadowVisibility(mIsInTabSwitcherMode);
+                updateViewsForTabSwitcherMode(mIsInTabSwitcherMode);
             }
         });
 
@@ -1331,13 +1343,13 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     protected void setContentAttached(boolean attached) {
-        updateVisualsForToolbarState(mInTabSwitcherMode);
+        updateVisualsForToolbarState(mIsInTabSwitcherMode);
     }
 
     @Override
     protected void setTabSwitcherMode(
             boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
-        if (mInTabSwitcherMode == inTabSwitcherMode) return;
+        if (mIsInTabSwitcherMode == inTabSwitcherMode) return;
 
         finishAnimations();
 
@@ -1364,7 +1376,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         mAnimateNormalToolbar = showToolbar;
-        mInTabSwitcherMode = inTabSwitcherMode;
+        mIsInTabSwitcherMode = inTabSwitcherMode;
         if (mTabSwitcherModeAnimation != null) mTabSwitcherModeAnimation.start();
 
         if (SysUtils.isLowEndDevice()) finishAnimations();
@@ -1377,9 +1389,16 @@ public class ToolbarPhone extends ToolbarLayout
         setAlpha(1.f);
         mClipRect = null;
         mUIAnimatingTabSwitcherTransition = false;
+
+        if (mShowMenuBadge && !mIsInTabSwitcherMode) {
+            // If mInTabSwitcherMode is true, the menu button drawable will be updated in
+            // #updateVisualsForToolbarState().
+            mMenuButton.setImageBitmap(
+                    UpdateMenuItemHelper.getInstance().getBadgedMenuButtonBitmap(getContext()));
+        }
         if (!mAnimateNormalToolbar) {
             finishAnimations();
-            updateVisualsForToolbarState(mInTabSwitcherMode);
+            updateVisualsForToolbarState(mIsInTabSwitcherMode);
         }
 
         if (mDelayingTabSwitcherAnimation) {
@@ -1387,7 +1406,7 @@ public class ToolbarPhone extends ToolbarLayout
             mDelayedTabSwitcherModeAnimation = createPostExitTabSwitcherAnimation();
             mDelayedTabSwitcherModeAnimation.start();
         } else {
-            updateViewsForTabSwitcherMode(mInTabSwitcherMode);
+            updateViewsForTabSwitcherMode(mIsInTabSwitcherMode);
         }
     }
 
@@ -1408,15 +1427,7 @@ public class ToolbarPhone extends ToolbarLayout
         mTabSwitcherAnimationBgOverlay.setColor(getToolbarColorForVisualState(
                 mOverlayDrawablesVisualState));
 
-        if (shouldShowMenuButton()) {
-            Resources res = getResources();
-            mTabSwitcherAnimationMenuDrawable = ApiCompatibilityUtils.getDrawable(
-                    res, R.drawable.btn_menu).mutate();
-            mTabSwitcherAnimationMenuDrawable.setColorFilter(
-                    isIncognito() ? mLightModeDefaultColor : mDarkModeDefaultColor,
-                    PorterDuff.Mode.SRC_IN);
-            ((BitmapDrawable) mTabSwitcherAnimationMenuDrawable).setGravity(Gravity.CENTER);
-        }
+        setTabSwitcherAnimationMenuDrawable();
     }
 
     @Override
@@ -1486,12 +1497,12 @@ public class ToolbarPhone extends ToolbarLayout
                 URL_FOCUS_TOOLBAR_BUTTONS_TRANSLATION_X_DP, isRtl) * density;
 
         animator = ObjectAnimator.ofFloat(
-                mMenuButton, TRANSLATION_X, toolbarButtonTranslationX);
+                mMenuButtonWrapper, TRANSLATION_X, toolbarButtonTranslationX);
         animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
         animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
         animators.add(animator);
 
-        animator = ObjectAnimator.ofFloat(mMenuButton, ALPHA, 0);
+        animator = ObjectAnimator.ofFloat(mMenuButtonWrapper, ALPHA, 0);
         animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
         animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
         animators.add(animator);
@@ -1516,13 +1527,13 @@ public class ToolbarPhone extends ToolbarLayout
         animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         animators.add(animator);
 
-        animator = ObjectAnimator.ofFloat(mMenuButton, TRANSLATION_X, 0);
+        animator = ObjectAnimator.ofFloat(mMenuButtonWrapper, TRANSLATION_X, 0);
         animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
         animator.setStartDelay(URL_CLEAR_FOCUS_MENU_DELAY_MS);
         animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         animators.add(animator);
 
-        animator = ObjectAnimator.ofFloat(mMenuButton, ALPHA, 1);
+        animator = ObjectAnimator.ofFloat(mMenuButtonWrapper, ALPHA, 1);
         animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
         animator.setStartDelay(URL_CLEAR_FOCUS_MENU_DELAY_MS);
         animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
@@ -1693,14 +1704,14 @@ public class ToolbarPhone extends ToolbarLayout
     protected void onTabContentViewChanged() {
         super.onTabContentViewChanged();
         updateNtpAnimationState();
-        updateVisualsForToolbarState(mInTabSwitcherMode);
+        updateVisualsForToolbarState(mIsInTabSwitcherMode);
     }
 
     @Override
     protected void onTabOrModelChanged() {
         super.onTabOrModelChanged();
         updateNtpAnimationState();
-        updateVisualsForToolbarState(mInTabSwitcherMode);
+        updateVisualsForToolbarState(mIsInTabSwitcherMode);
     }
 
     private static boolean isVisualStateValidForBrandColorTransition(VisualState state) {
@@ -1746,7 +1757,7 @@ public class ToolbarPhone extends ToolbarLayout
             @Override
             public void onAnimationEnd(Animator animation) {
                 mBrandColorTransitionActive = false;
-                updateVisualsForToolbarState(mInTabSwitcherMode);
+                updateVisualsForToolbarState(mIsInTabSwitcherMode);
             }
         });
         mBrandColorTransitionAnimation.start();
@@ -1771,7 +1782,7 @@ public class ToolbarPhone extends ToolbarLayout
             // Convert the previous NTP scroll percentage to URL focus percentage because that
             // will give a nicer transition animation from the expanded NTP omnibox to the
             // collapsed normal omnibox on other non-NTP pages.
-            if (!mInTabSwitcherMode && previousNtpScrollPercent > 0f) {
+            if (!mIsInTabSwitcherMode && previousNtpScrollPercent > 0f) {
                 mUrlFocusChangePercent =
                         Math.max(previousNtpScrollPercent, mUrlFocusChangePercent);
                 triggerUrlFocusAnimation(false);
@@ -1792,7 +1803,7 @@ public class ToolbarPhone extends ToolbarLayout
         post(new Runnable() {
             @Override
             public void run() {
-                updateVisualsForToolbarState(mInTabSwitcherMode);
+                updateVisualsForToolbarState(mIsInTabSwitcherMode);
                 updateNtpAnimationState();
             }
         });
@@ -1913,7 +1924,6 @@ public class ToolbarPhone extends ToolbarLayout
                 : R.color.progress_bar_foreground);
         getProgressBar().setForegroundColor(progressBarForegroundColor);
 
-
         if (mToggleTabStackButton != null) {
             mToggleTabStackButton.setImageDrawable(mUseLightToolbarDrawables
                     ? mTabSwitcherButtonDrawableLight : mTabSwitcherButtonDrawable);
@@ -1924,6 +1934,13 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         if (shouldShowMenuButton()) {
+            // Only change the menu button drawable if isInTabSwitcherMode to avoid changing
+            // it too soon if we're in the process of existing tab switcher mode. The drawable
+            // will be changed in #onTabSwitcherTransitionFinished if we are exiting tab switcher
+            // mode.
+            if (mShowMenuBadge && isInTabSwitcherMode) {
+                mMenuButton.setImageDrawable(mUnbadgedMenuButtonDrawable);
+            }
             mMenuButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
         }
         if (mHomeButton.getVisibility() != GONE) {
@@ -1959,12 +1976,56 @@ public class ToolbarPhone extends ToolbarLayout
             mNewTabButton.setContentDescription(newTabContentDescription);
         }
 
-        getMenuButton().setVisibility(shouldShowMenuButton() ? View.VISIBLE : View.GONE);
+        getMenuButtonWrapper().setVisibility(shouldShowMenuButton() ? View.VISIBLE : View.GONE);
     }
 
     @Override
     public LocationBar getLocationBar() {
         return mPhoneLocationBar;
+    }
+
+    @Override
+    public void showAppMenuUpdateBadge() {
+        super.showAppMenuUpdateBadge();
+        // Set up variables.
+        if (!mBrowsingModeViews.contains(mMenuBadge)) {
+            mBrowsingModeViews.add(mMenuBadge);
+        }
+
+        // Finish any in-progress animations and set the TabSwitcherAnimationMenuDrawable.
+        finishAnimations();
+        setTabSwitcherAnimationMenuDrawable();
+
+        // Show the badge and update the menu button drawable.
+        if (!mIsInTabSwitcherMode) {
+            setAppMenuUpdateBadgeToVisible();
+        }
+
+        mPhoneLocationBar.showAppMenuUpdateBadge();
+    }
+
+    @Override
+    public void removeAppMenuUpdateBadge() {
+        super.removeAppMenuUpdateBadge();
+        mPhoneLocationBar.removeAppMenuUpdateBadge();
+    }
+
+    private void setTabSwitcherAnimationMenuDrawable() {
+        if (!shouldShowMenuButton()) return;
+        Resources res = getResources();
+        if (mShowMenuBadge) {
+            mTabSwitcherAnimationMenuDrawable = new BitmapDrawable(res,
+                    UpdateMenuItemHelper.getInstance().getBadgedMenuButtonBitmap(getContext()));
+            mTabSwitcherAnimationMenuBadgeDrawable = mMenuBadge.getDrawable().mutate();
+        } else {
+            mTabSwitcherAnimationMenuDrawable = ApiCompatibilityUtils.getDrawable(getResources(),
+                    R.drawable.btn_menu);
+        }
+        mTabSwitcherAnimationMenuDrawable.mutate();
+        mTabSwitcherAnimationMenuDrawable.setColorFilter(
+                isIncognito() ? mLightModeDefaultColor : mDarkModeDefaultColor,
+                PorterDuff.Mode.SRC_IN);
+        ((BitmapDrawable) mTabSwitcherAnimationMenuDrawable).setGravity(Gravity.CENTER);
     }
 }
 

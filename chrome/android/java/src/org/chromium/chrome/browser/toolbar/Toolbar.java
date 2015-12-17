@@ -44,4 +44,18 @@ public interface Toolbar {
      * @return Whether a dirty check for invalidation makes sense at this time.
      */
     boolean isReadyForTextureCapture();
+
+    /**
+     * Show the update badge on the app menu button. Will have no effect if there is no app menu
+     * button for the current Activity.
+     */
+    void showAppMenuUpdateBadge();
+
+    /**
+     * Remove the update badge on the app menu button. Initially the badge is invisible so that it
+     * gets measured and the tab switcher animation looks correct when the badge is first shown. If
+     * the badge will never be shown, this method should be called to change the visibility to
+     * gone to avoid unnecessary layout work.
+     */
+    void removeAppMenuUpdateBadge();
 }

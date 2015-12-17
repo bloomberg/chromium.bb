@@ -92,6 +92,7 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -369,6 +370,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             public void onMenuVisibilityChanged(boolean isVisible) {
                 if (!isVisible) {
                     mAppMenuPropertiesDelegate.onMenuDismissed();
+                    MenuItem updateMenuItem = mAppMenuHandler.getAppMenu().getMenu().findItem(
+                            R.id.update_menu_id);
+                    if (updateMenuItem != null && updateMenuItem.isVisible()) {
+                        UpdateMenuItemHelper.getInstance().onMenuDismissed();
+                    }
                 }
             }
         });
@@ -550,6 +556,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
+        UpdateMenuItemHelper.getInstance().onStart();
         getChromeApplication().onStartWithNative();
         FeatureUtilities.setDocumentModeEnabled(FeatureUtilities.isDocumentMode(this));
         WarmupManager.getInstance().clearWebContentsIfNecessary();
@@ -689,6 +696,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         });
 
         getChromeApplication().getUpdateInfoBarHelper().checkForUpdateOnBackgroundThread(this);
+        UpdateMenuItemHelper.getInstance().checkForUpdateOnBackgroundThread(this);
 
         removeSnapshotDatabase();
         if (mToolbarManager != null) {
@@ -1350,6 +1358,19 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+     * Callback after UpdateMenuItemHelper#checkForUpdateOnBackgroundThread is complete.
+     * @param updateAvailable Whether an update is available.
+     */
+    public void onCheckForUpdate(boolean updateAvailable) {
+        if (UpdateMenuItemHelper.getInstance().shouldShowToolbarBadge(this)) {
+            mToolbarManager.getToolbar().showAppMenuUpdateBadge();
+            mCompositorViewHolder.requestRender();
+        } else {
+            mToolbarManager.getToolbar().removeAppMenuUpdateBadge();
+        }
+    }
+
+    /**
      * Handles menu item selection and keyboard shortcuts.
      *
      * @param id The ID of the selected menu item (defined in main_menu.xml) or
@@ -1363,6 +1384,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             RecordUserAction.record("MobileMenuSettings");
         } else if (id == R.id.show_menu) {
             showAppMenuForKeyboardEvent();
+        }
+
+        if (id == R.id.update_menu_id) {
+            UpdateMenuItemHelper.getInstance().onMenuItemClicked(this);
+            return true;
         }
 
         // All the code below assumes currentTab is not null, so return early if it is null.

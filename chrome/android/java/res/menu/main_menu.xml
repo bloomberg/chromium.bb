@@ -24,6 +24,9 @@
                 android:icon="@drawable/btn_reload_stop"/>
             </menu>
         </item>
+        <item android:id="@+id/update_menu_id"
+            android:title="@string/menu_update"
+            android:icon="@drawable/menu_update" />
         <item android:id="@+id/new_tab_menu_id"
             android:title="@string/menu_new_tab" />
         <item android:id="@+id/new_incognito_tab_menu_id"

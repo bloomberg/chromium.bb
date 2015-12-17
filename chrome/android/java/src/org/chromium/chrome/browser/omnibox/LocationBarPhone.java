@@ -19,12 +19,14 @@ import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -44,6 +46,8 @@ public class LocationBarPhone extends LocationBarLayout {
     private View mIncognitoBadge;
     private View mUrlActionsContainer;
     private TintedImageButton mMenuButton;
+    private ImageView mMenuBadge;
+    private View mMenuButtonWrapper;
     private int mIncognitoBadgePadding;
     private boolean mVoiceSearchEnabled;
     private boolean mUrlFocusChangeInProgress;
@@ -76,10 +80,12 @@ public class LocationBarPhone extends LocationBarLayout {
         setTouchDelegate(touchDelegate);
 
         mMenuButton = (TintedImageButton) findViewById(R.id.document_menu_button);
+        mMenuBadge = (ImageView) findViewById(R.id.document_menu_badge);
+        mMenuButtonWrapper = findViewById(R.id.document_menu_button_wrapper);
 
         if (hasVisibleViewsAfterUrlBarWhenUnfocused()) mUrlActionsContainer.setVisibility(VISIBLE);
         if (!showMenuButtonInOmnibox()) {
-            ((ViewGroup) mMenuButton.getParent()).removeView(mMenuButton);
+            ((ViewGroup) mMenuButtonWrapper.getParent()).removeView(mMenuButtonWrapper);
         }
     }
 
@@ -164,7 +170,7 @@ public class LocationBarPhone extends LocationBarLayout {
 
         mDeleteButton.setAlpha(percent);
         mMicButton.setAlpha(percent);
-        if (showMenuButtonInOmnibox()) mMenuButton.setAlpha(1f - percent);
+        if (showMenuButtonInOmnibox()) mMenuButtonWrapper.setAlpha(1f - percent);
 
         updateDeleteButtonVisibility();
     }
@@ -367,5 +373,21 @@ public class LocationBarPhone extends LocationBarLayout {
     public void setLayoutDirection(int layoutDirection) {
         super.setLayoutDirection(layoutDirection);
         updateIncognitoBadgePadding();
+    }
+
+    /**
+     * Displays the update app menu badge.
+     */
+    public void showAppMenuUpdateBadge() {
+        mMenuBadge.setVisibility(View.VISIBLE);
+        mMenuButton.setImageBitmap(
+                UpdateMenuItemHelper.getInstance().getBadgedMenuButtonBitmap(getContext()));
+    }
+
+    /**
+     * Remove the update menu app menu badge.
+     */
+    public void removeAppMenuUpdateBadge() {
+        mMenuBadge.setVisibility(View.GONE);
     }
 }

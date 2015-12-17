@@ -908,6 +908,21 @@ public final class PrefServiceBridge {
         return nativeHasSetMetricsReporting();
     }
 
+    /**
+     * @param clicked Whether the update menu item was clicked. The preference is stored to
+     *                facilitate logging whether Chrome was updated after a click on the menu item.
+     */
+    public void setClickedUpdateMenuItem(boolean clicked) {
+        nativeSetClickedUpdateMenuItem(clicked);
+    }
+
+    /**
+     * @return Whether the update menu item was clicked.
+     */
+    public boolean getClickedUpdateMenuItem() {
+        return nativeGetClickedUpdateMenuItem();
+    }
+
     private native boolean nativeGetAcceptCookiesEnabled();
     private native boolean nativeGetAcceptCookiesManaged();
     private native boolean nativeGetBlockThirdPartyCookiesEnabled();
@@ -1000,4 +1015,6 @@ public final class PrefServiceBridge {
     private native boolean nativeGetMetricsReportingEnabled();
     private native void nativeSetMetricsReportingEnabled(boolean enabled);
     private native boolean nativeHasSetMetricsReporting();
+    private native void nativeSetClickedUpdateMenuItem(boolean clicked);
+    private native boolean nativeGetClickedUpdateMenuItem();
 }

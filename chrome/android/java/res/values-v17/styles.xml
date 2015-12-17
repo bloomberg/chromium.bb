@@ -465,4 +465,18 @@
         <item name="android:layout_height">56dp</item>
         <item name="android:scaleType">center</item>
     </style>
+    <style name="AppMenuItem">
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
+    </style>
+    <style name="UpdateMenuBadge">
+        <item name="android:layout_height">@dimen/menu_badge_size</item>
+        <item name="android:layout_width">@dimen/menu_badge_size</item>
+        <item name="android:layout_gravity">end|bottom</item>
+        <item name="android:layout_marginBottom">14dp</item>
+        <item name="android:focusable">false</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="android:visibility">invisible</item>
+    </style>
 </resources>

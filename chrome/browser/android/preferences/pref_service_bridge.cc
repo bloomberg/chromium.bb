@@ -452,6 +452,17 @@ static jboolean HasSetMetricsReporting(JNIEnv* env,
   return local_state->HasPrefPath(metrics::prefs::kMetricsReportingEnabled);
 }
 
+static void SetClickedUpdateMenuItem(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj,
+                                       jboolean clicked) {
+  GetPrefService()->SetBoolean(prefs::kClickedUpdateMenuItem, clicked);
+}
+
+static jboolean GetClickedUpdateMenuItem(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj) {
+  return GetPrefService()->GetBoolean(prefs::kClickedUpdateMenuItem);
+}
+
 namespace {
 
 // Redirects a BrowsingDataRemover completion callback back into Java.

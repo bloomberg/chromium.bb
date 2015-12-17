@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -109,6 +110,9 @@ public class AppMenuPropertiesDelegate {
                     bookmarkMenuItem.setTitleCondensed(null);
                 }
             }
+
+            menu.findItem(R.id.update_menu_id).setVisible(
+                    UpdateMenuItemHelper.getInstance().shouldShowMenuItem(mActivity));
 
             // Hide "Recent tabs" in incognito mode or when sync can't be enabled.
             MenuItem recentTabsMenuItem = menu.findItem(R.id.recent_tabs_menu_id);

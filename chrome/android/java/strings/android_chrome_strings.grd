@@ -1762,6 +1762,12 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       </message>
 
       <!-- Main menu items -->
+      <message name="IDS_MENU_UPDATE" desc="Menu item for updating chrome. [CHAR-LIMIT=27]">
+        Update Chrome
+      </message>
+      <message name="IDS_MENU_UPDATE_SUMMARY_DEFAULT" desc="Summary string for update menu item explaing why Chrome should be updated. [CHAR-LIMIT=27]">
+        Newer version is available
+      </message>
       <message name="IDS_MENU_NEW_TAB" desc="Menu item for opening a new tab. [CHAR-LIMIT=27]">
         New tab
       </message>

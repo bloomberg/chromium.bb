@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -35,24 +37,32 @@ class AppMenuAdapter extends BaseAdapter {
      * Regular Android menu item that contains a title and an icon if icon is specified.
      */
     private static final int STANDARD_MENU_ITEM = 0;
+
     /**
      * Menu item that has two buttons, the first one is a title and the second one is an icon.
      * It is different from the regular menu item because it contains two separate buttons.
      */
     private static final int TITLE_BUTTON_MENU_ITEM = 1;
+
     /**
      * Menu item that has four buttons. Every one of these buttons is displayed as an icon.
      */
     private static final int THREE_BUTTON_MENU_ITEM = 2;
+
     /**
      * Menu item that has four buttons. Every one of these buttons is displayed as an icon.
      */
     private static final int FOUR_BUTTON_MENU_ITEM = 3;
 
     /**
+     * Menu item for updating Chrome; uses a custom layout.
+     */
+    private static final int UPDATE_MENU_ITEM = 4;
+
+    /**
      * The number of view types specified above.  If you add a view type you MUST increment this.
      */
-    private static final int VIEW_TYPE_COUNT = 4;
+    private static final int VIEW_TYPE_COUNT = 5;
 
     /** MenuItem Animation Constants */
     private static final int ENTER_ITEM_DURATION_MS = 350;
@@ -90,7 +100,9 @@ class AppMenuAdapter extends BaseAdapter {
         MenuItem item = getItem(position);
         int viewCount = item.hasSubMenu() ? item.getSubMenu().size() : 1;
 
-        if (viewCount == 4) {
+        if (item.getItemId() == R.id.update_menu_id) {
+            return UPDATE_MENU_ITEM;
+        } else if (viewCount == 4) {
             return FOUR_BUTTON_MENU_ITEM;
         } else if (viewCount == 3) {
             return THREE_BUTTON_MENU_ITEM;
@@ -119,7 +131,8 @@ class AppMenuAdapter extends BaseAdapter {
         switch (getItemViewType(position)) {
             case STANDARD_MENU_ITEM: {
                 StandardMenuItemViewHolder holder = null;
-                if (convertView == null) {
+                if (convertView == null
+                        || !(convertView.getTag() instanceof StandardMenuItemViewHolder)) {
                     holder = new StandardMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.menu_item, parent, false);
                     holder.text = (TextView) convertView.findViewById(R.id.menu_item_text);
@@ -131,30 +144,40 @@ class AppMenuAdapter extends BaseAdapter {
                     holder = (StandardMenuItemViewHolder) convertView.getTag();
                 }
 
-                convertView.setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        mAppMenu.onItemClick(item);
-                    }
-                });
-                // Set up the icon.
-                Drawable icon = item.getIcon();
-                holder.image.setImageDrawable(icon);
-                holder.image.setVisibility(icon == null ? View.GONE : View.VISIBLE);
-                holder.image.setChecked(item.isChecked());
-                holder.text.setText(item.getTitle());
-                holder.text.setContentDescription(item.getTitleCondensed());
+                setupStandardMenuItemViewHolder(holder, convertView, item);
+                break;
+            }
+            case UPDATE_MENU_ITEM: {
+                CustomMenuItemViewHolder holder = null;
+                if (convertView == null
+                        || !(convertView.getTag() instanceof CustomMenuItemViewHolder)) {
+                    holder = new CustomMenuItemViewHolder();
+                    convertView = mInflater.inflate(R.layout.update_menu_item, parent, false);
+                    holder.text = (TextView) convertView.findViewById(R.id.menu_item_text);
+                    holder.image = (AppMenuItemIcon) convertView.findViewById(R.id.menu_item_icon);
+                    holder.summary = (TextView) convertView.findViewById(R.id.menu_item_summary);
+                    convertView.setTag(holder);
+                    convertView.setTag(R.id.menu_item_enter_anim_id,
+                            buildStandardItemEnterAnimator(convertView, position));
+                } else {
+                    holder = (CustomMenuItemViewHolder) convertView.getTag();
+                }
 
-                boolean isEnabled = item.isEnabled();
-                // Set the text color (using a color state list).
-                holder.text.setEnabled(isEnabled);
-                // This will ensure that the item is not highlighted when selected.
-                convertView.setEnabled(isEnabled);
+                setupStandardMenuItemViewHolder(holder, convertView, item);
+                String summary = UpdateMenuItemHelper.getInstance().getMenuItemSummaryText(
+                        mInflater.getContext());
+                if (TextUtils.isEmpty(summary)) {
+                    holder.summary.setVisibility(View.GONE);
+                } else {
+                    holder.summary.setText(summary);
+                }
+
                 break;
             }
             case THREE_BUTTON_MENU_ITEM: {
                 ThreeButtonMenuItemViewHolder holder = null;
-                if (convertView == null) {
+                if (convertView == null
+                        || !(convertView.getTag() instanceof ThreeButtonMenuItemViewHolder)) {
                     holder = new ThreeButtonMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.three_button_menu_item, parent, false);
                     holder.buttons[0] =
@@ -179,7 +202,8 @@ class AppMenuAdapter extends BaseAdapter {
             }
             case FOUR_BUTTON_MENU_ITEM: {
                 FourButtonMenuItemViewHolder holder = null;
-                if (convertView == null) {
+                if (convertView == null
+                        || !(convertView.getTag() instanceof FourButtonMenuItemViewHolder)) {
                     holder = new FourButtonMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.four_button_menu_item, parent, false);
                     holder.buttons[0] =
@@ -206,7 +230,8 @@ class AppMenuAdapter extends BaseAdapter {
             }
             case TITLE_BUTTON_MENU_ITEM: {
                 TitleButtonMenuItemViewHolder holder = null;
-                if (convertView == null) {
+                if (convertView == null
+                        || !(convertView.getTag() instanceof TitleButtonMenuItemViewHolder)) {
                     holder = new TitleButtonMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.title_button_menu_item, parent, false);
                     holder.title = (TextView) convertView.findViewById(R.id.title);
@@ -262,6 +287,30 @@ class AppMenuAdapter extends BaseAdapter {
         button.setContentDescription(item.getTitleCondensed());
 
         button.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAppMenu.onItemClick(item);
+            }
+        });
+    }
+
+    private void setupStandardMenuItemViewHolder(StandardMenuItemViewHolder holder,
+            View convertView, final MenuItem item) {
+        // Set up the icon.
+        Drawable icon = item.getIcon();
+        holder.image.setImageDrawable(icon);
+        holder.image.setVisibility(icon == null ? View.GONE : View.VISIBLE);
+        holder.image.setChecked(item.isChecked());
+        holder.text.setText(item.getTitle());
+        holder.text.setContentDescription(item.getTitleCondensed());
+
+        boolean isEnabled = item.isEnabled();
+        // Set the text color (using a color state list).
+        holder.text.setEnabled(isEnabled);
+        // This will ensure that the item is not highlighted when selected.
+        convertView.setEnabled(isEnabled);
+
+        convertView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 mAppMenu.onItemClick(item);
@@ -346,6 +395,10 @@ class AppMenuAdapter extends BaseAdapter {
     static class StandardMenuItemViewHolder {
         public TextView text;
         public AppMenuItemIcon image;
+    }
+
+    static class CustomMenuItemViewHolder extends StandardMenuItemViewHolder {
+        public TextView summary;
     }
 
     static class ThreeButtonMenuItemViewHolder {

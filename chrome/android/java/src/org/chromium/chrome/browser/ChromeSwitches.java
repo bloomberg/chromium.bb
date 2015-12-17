@@ -98,6 +98,21 @@ public abstract class ChromeSwitches {
      */
     public static final String ENABLE_INTERESTS = "enable-interests";
 
+    /**
+     * Forces the update menu item to show.
+     */
+    public static final String FORCE_SHOW_UPDATE_MENU_ITEM = "force-show-update-menu-item";
+
+    /**
+     * Forces the update menu badge to show.
+     */
+    public static final String FORCE_SHOW_UPDATE_MENU_BADGE = "force-show-update-menu-badge";
+
+    /**
+     * Sets the market URL for Chrome for use in testing.
+     */
+    public static final String MARKET_URL_FOR_TESTING = "market-url-for-testing";
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////
