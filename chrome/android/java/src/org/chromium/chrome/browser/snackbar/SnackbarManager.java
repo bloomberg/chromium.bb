@@ -67,7 +67,9 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     }
 
     /**
-     * Interface that shows the ability to provide a unified snackbar manager.
+     * Interface that shows the ability to provide a snackbar manager. Activities implementing this
+     * interface must call {@link SnackbarManager#onStart()} and {@link SnackbarManager#onStop()} in
+     * corresponding lifecycle events.
      */
     public interface SnackbarManageable {
         /**
@@ -123,6 +125,7 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     private final Handler mUIThreadHandler;
     private Stack<Snackbar> mStack = new Stack<Snackbar>();
     private SnackbarPopupWindow mPopup;
+    private boolean mActivityInForeground;
     private final Runnable mHideRunnable = new Runnable() {
         @Override
         public void run() {
@@ -145,10 +148,27 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     }
 
     /**
+     * Notifies the snackbar manager that the activity is running in foreground now.
+     */
+    public void onStart() {
+        mActivityInForeground = true;
+    }
+
+    /**
+     * Notifies the snackbar manager that the activity has been pushed to background.
+     */
+    public void onStop() {
+        dismissAllSnackbars(false);
+        mActivityInForeground = false;
+    }
+
+    /**
      * Shows a snackbar at the bottom of the screen, or above the keyboard if the keyboard is
      * visible.
      */
     public void showSnackbar(Snackbar snackbar) {
+        if (!mActivityInForeground) return;
+
         int durationMs = snackbar.getDuration();
         if (durationMs == 0) {
             durationMs = DeviceClassManager.isAccessibilityModeEnabled(mDecor.getContext())
@@ -184,6 +204,8 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void dismissAllSnackbars(boolean isTimeout) {
         mUIThreadHandler.removeCallbacks(mHideRunnable);
+
+        if (!mActivityInForeground) return;
 
         if (mPopup != null) {
             // TODO(ianwen): remove the try catch after crbug.com/553569 is fixed.

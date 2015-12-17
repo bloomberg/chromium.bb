@@ -51,9 +51,15 @@ public class EnhancedBookmarkActivity extends EnhancedBookmarkActivityBase imple
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        mSnackbarManager.onStart();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
-        mSnackbarManager.dismissAllSnackbars(false);
+        mSnackbarManager.onStop();
     }
 
     @Override
