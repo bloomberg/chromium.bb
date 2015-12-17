@@ -44,6 +44,13 @@ TermMatches MatchTermInString(const base::string16& term,
                               const base::string16& cleaned_string,
                               int term_num);
 
+// Sorts |matches| by offset and returns the result.
+TermMatches SortMatches(const TermMatches& matches);
+
+// Removes overlapping substring matches from |matches| and returns the
+// cleaned up matches.  Assumes |matches| is already sorted.
+TermMatches DeoverlapMatches(const TermMatches& sorted_matches);
+
 // Sorts and removes overlapping substring matches from |matches| and
 // returns the cleaned up matches.
 TermMatches SortAndDeoverlapMatches(const TermMatches& matches);

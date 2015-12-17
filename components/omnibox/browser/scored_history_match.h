@@ -118,7 +118,8 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // the page's title and where they are (e.g., at word boundaries).  Revises
   // url_matches and title_matches in the process so they only reflect matches
   // used for scoring.  (For instance, some mid-word matches are not given
-  // credit in scoring.)
+  // credit in scoring.)  Requires that |url_matches| and |title_matches| are
+  // sorted.
   float GetTopicalityScore(const int num_terms,
                            const base::string16& cleaned_up_url,
                            const WordStarts& terms_to_word_starts_offsets,

@@ -481,6 +481,11 @@ int OmniboxFieldTrial::KeywordScoreForSufficientlyCompleteMatch() {
   return value;
 }
 
+bool OmniboxFieldTrial::HQPAllowDupMatchesForScoring() {
+  return variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kHQPAllowDupMatchesForScoringRule) == "true";
+}
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
@@ -520,6 +525,8 @@ const char OmniboxFieldTrial::kKeywordRequiresPrefixMatchRule[] =
     "KeywordRequiresPrefixMatch";
 const char OmniboxFieldTrial::kKeywordScoreForSufficientlyCompleteMatchRule[] =
     "KeywordScoreForSufficientlyCompleteMatch";
+const char OmniboxFieldTrial::kHQPAllowDupMatchesForScoringRule[] =
+    "HQPAllowDupMatchesForScoring";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";
