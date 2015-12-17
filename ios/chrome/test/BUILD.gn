@@ -7,6 +7,8 @@ source_set("test") {
   sources = [
     "block_cleanup_test.h",
     "block_cleanup_test.mm",
+    "ios_chrome_scoped_testing_chrome_browser_provider.cc",
+    "ios_chrome_scoped_testing_chrome_browser_provider.h",
     "ios_chrome_scoped_testing_local_state.cc",
     "ios_chrome_scoped_testing_local_state.h",
     "ios_chrome_unit_test_suite.cc",

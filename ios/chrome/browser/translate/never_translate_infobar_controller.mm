@@ -35,8 +35,7 @@
   translate::TranslateInfoBarDelegate* translateInfoBarDelegate =
       delegate->AsTranslateInfoBarDelegate();
   ios::ChromeBrowserProvider* provider = ios::GetChromeBrowserProvider();
-  infoBarView.reset(
-      ios::GetChromeBrowserProvider()->CreateInfoBarView(frame, self.delegate));
+  infoBarView.reset(provider->CreateInfoBarView(frame, self.delegate));
   // Icon
   gfx::Image icon = translateInfoBarDelegate->GetIcon();
   if (!icon.IsEmpty())
