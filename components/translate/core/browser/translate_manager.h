@@ -54,8 +54,7 @@ class TranslateManager {
   //     the UI language
   //     the accept-language list
   // If no language is found then an empty string is returned.
-  static std::string GetTargetLanguage(
-      const std::vector<std::string>& accept_languages_list);
+  static std::string GetTargetLanguage(const TranslatePrefs* prefs);
 
   // Returns the language to automatically translate to. |original_language| is
   // the webpage's original language.

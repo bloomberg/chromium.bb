@@ -358,7 +358,8 @@ void TranslatePrefs::ResetDenialState() {
   prefs_->ClearPref(kPrefTranslateTooOftenDeniedForLanguage);
 }
 
-void TranslatePrefs::GetLanguageList(std::vector<std::string>* languages) {
+void TranslatePrefs::GetLanguageList(
+    std::vector<std::string>* languages) const {
   DCHECK(languages);
   DCHECK(languages->empty());
 

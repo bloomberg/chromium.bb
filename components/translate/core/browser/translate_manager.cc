@@ -143,12 +143,10 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
   }
 
-  // Get the accepted languages list.
-  std::vector<std::string> accept_languages_list = base::SplitString(
-      prefs->GetString(accept_languages_pref_name_), ",",
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  scoped_ptr<TranslatePrefs> translate_prefs(
+      translate_client_->GetTranslatePrefs());
 
-  std::string target_lang = GetTargetLanguage(accept_languages_list);
+  std::string target_lang = GetTargetLanguage(translate_prefs.get());
   std::string language_code =
       TranslateDownloadManager::GetLanguageCode(page_lang);
 
@@ -169,9 +167,6 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
         language_code);
     return;
   }
-
-  scoped_ptr<TranslatePrefs> translate_prefs(
-      translate_client_->GetTranslatePrefs());
 
   TranslateAcceptLanguages* accept_languages =
       translate_client_->GetTranslateAcceptLanguages();
@@ -360,8 +355,7 @@ void TranslateManager::OnTranslateScriptFetchComplete(
 }
 
 // static
-std::string TranslateManager::GetTargetLanguage(
-    const std::vector<std::string>& accept_languages_list) {
+std::string TranslateManager::GetTargetLanguage(const TranslatePrefs* prefs) {
   std::string ui_lang = TranslateDownloadManager::GetLanguageCode(
       TranslateDownloadManager::GetInstance()->application_locale());
   translate::ToTranslateLanguageSynonym(&ui_lang);
@@ -370,11 +364,11 @@ std::string TranslateManager::GetTargetLanguage(
     return ui_lang;
 
   // Will translate to the first supported language on the Accepted Language
-  // list or not at all if no such candidate exists
-  std::vector<std::string>::const_iterator iter;
-  for (iter = accept_languages_list.begin();
-       iter != accept_languages_list.end(); ++iter) {
-    std::string lang_code = TranslateDownloadManager::GetLanguageCode(*iter);
+  // list or not at all if no such candidate exists.
+  std::vector<std::string> accept_languages_list;
+  prefs->GetLanguageList(&accept_languages_list);
+  for (const auto& lang : accept_languages_list) {
+    std::string lang_code = TranslateDownloadManager::GetLanguageCode(lang);
     if (TranslateDownloadManager::IsSupportedLanguage(lang_code))
       return lang_code;
   }

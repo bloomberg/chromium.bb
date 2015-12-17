@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -115,10 +116,8 @@ bool TranslateService::IsTranslateBubbleEnabled() {
 
 // static
 std::string TranslateService::GetTargetLanguage(PrefService* prefs) {
-  std::vector<std::string> accept_languages_list = base::SplitString(
-      prefs->GetString(prefs::kAcceptLanguages), ",",
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  return translate::TranslateManager::GetTargetLanguage(accept_languages_list);
+  return translate::TranslateManager::GetTargetLanguage(
+      ChromeTranslateClient::CreateTranslatePrefs(prefs).get());
 }
 
 // static

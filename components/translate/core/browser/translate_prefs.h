@@ -132,7 +132,7 @@ class TranslatePrefs {
   void ResetDenialState();
 
   // Gets the language list of the language settings.
-  void GetLanguageList(std::vector<std::string>* languages);
+  void GetLanguageList(std::vector<std::string>* languages) const;
 
   // Updates the language list of the language settings.
   void UpdateLanguageList(const std::vector<std::string>& languages);
