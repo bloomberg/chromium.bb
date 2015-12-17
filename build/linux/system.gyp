@@ -154,15 +154,15 @@
             }, {
               'all_dependent_settings': {
                 'cflags': [
-                  '<!@(pkg-config --cflags <(gtk_packages))',
+                  '<!@(<(pkg-config) --cflags <(gtk_packages))',
                 ],
               },
               'link_settings': {
                 'ldflags': [
-                  '<!@(pkg-config --libs-only-L --libs-only-other <(gtk_packages))',
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other <(gtk_packages))',
                 ],
                 'libraries': [
-                  '<!@(pkg-config --libs-only-l <(gtk_packages))',
+                  '<!@(<(pkg-config) --libs-only-l <(gtk_packages))',
                 ],
               },
             }],
@@ -216,15 +216,15 @@
             }, {
               'direct_dependent_settings': {
                 'cflags': [
-                  '<!@(pkg-config --cflags x11)',
+                  '<!@(<(pkg-config) --cflags x11)',
                 ],
               },
               'link_settings': {
                 'ldflags': [
-                  '<!@(pkg-config --libs-only-L --libs-only-other x11 xi)',
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other x11 xi)',
                 ],
                 'libraries': [
-                  '<!@(pkg-config --libs-only-l x11 xi)',
+                  '<!@(<(pkg-config) --libs-only-l x11 xi)',
                 ],
               },
             }],
@@ -354,15 +354,15 @@
             }, {
               'direct_dependent_settings': {
                 'cflags': [
-                  '<!@(pkg-config --cflags xrandr)',
+                  '<!@(<(pkg-config) --cflags xrandr)',
                 ],
               },
               'link_settings': {
                 'ldflags': [
-                  '<!@(pkg-config --libs-only-L --libs-only-other xrandr)',
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other xrandr)',
                 ],
                 'libraries': [
-                  '<!@(pkg-config --libs-only-l xrandr)',
+                  '<!@(<(pkg-config) --libs-only-l xrandr)',
                 ],
               },
             }],
@@ -407,15 +407,15 @@
             }, {
               'direct_dependent_settings': {
                 'cflags': [
-                  '<!@(pkg-config --cflags xtst)',
+                  '<!@(<(pkg-config) --cflags xtst)',
                 ],
               },
               'link_settings': {
                 'ldflags': [
-                  '<!@(pkg-config --libs-only-L --libs-only-other xtst)',
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other xtst)',
                 ],
                 'libraries': [
-                  '<!@(pkg-config --libs-only-l xtst)',
+                  '<!@(<(pkg-config) --libs-only-l xtst)',
                 ],
               },
             }]
@@ -454,15 +454,15 @@
             }, {
               'all_dependent_settings': {
                 'cflags': [
-                  '<!@(pkg-config --cflags <(gtk_packages))',
+                  '<!@(<(pkg-config) --cflags <(gtk_packages))',
                 ],
               },
               'link_settings': {
                 'ldflags': [
-                  '<!@(pkg-config --libs-only-L --libs-only-other <(gtk_packages))',
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other <(gtk_packages))',
                 ],
                 'libraries': [
-                  '<!@(pkg-config --libs-only-l <(gtk_packages))',
+                  '<!@(<(pkg-config) --libs-only-l <(gtk_packages))',
                 ],
               },
             }],
@@ -931,15 +931,15 @@
         }, {
           'direct_dependent_settings': {
             'cflags': [
-              '<!@(pkg-config --cflags <(glib_packages))',
+              '<!@(<(pkg-config) --cflags <(glib_packages))',
             ],
           },
           'link_settings': {
             'ldflags': [
-              '<!@(pkg-config --libs-only-L --libs-only-other <(glib_packages))',
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other <(glib_packages))',
             ],
             'libraries': [
-              '<!@(pkg-config --libs-only-l <(glib_packages))',
+              '<!@(<(pkg-config) --libs-only-l <(glib_packages))',
             ],
           },
         }],
@@ -1197,15 +1197,15 @@
             }, {
               'direct_dependent_settings': {
                 'cflags': [
-                  '<!@(pkg-config --cflags pangocairo pangoft2)',
+                  '<!@(<(pkg-config) --cflags pangocairo pangoft2)',
                 ],
               },
               'link_settings': {
                 'ldflags': [
-                  '<!@(pkg-config --libs-only-L --libs-only-other pangocairo pangoft2)',
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other pangocairo pangoft2)',
                 ],
                 'libraries': [
-                  '<!@(pkg-config --libs-only-l pangocairo pangoft2)',
+                  '<!@(<(pkg-config) --libs-only-l pangocairo pangoft2)',
                 ],
               },
             }],
