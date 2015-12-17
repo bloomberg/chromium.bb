@@ -11,6 +11,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -58,6 +59,7 @@ public class PrerenderServiceTest extends
      * @throws InterruptedException
      */
     @SmallTest
+    @DisabledTest
     @Feature({"PrerenderService"})
     public void testBindingAndInitializing() throws InterruptedException {
         if (SysUtils.isLowEndDevice()) return;
@@ -75,6 +77,7 @@ public class PrerenderServiceTest extends
      * @Feature({"PrerenderService"})
      * @SmallTest
      */
+    @DisabledTest
     public void testPrerenderingSameUrl() throws InterruptedException {
         if (SysUtils.isLowEndDevice()) return;
         ensureBindingAndInitializingUI();
@@ -89,6 +92,7 @@ public class PrerenderServiceTest extends
      * @throws InterruptedException
      */
     @SmallTest
+    @DisabledTest
     @Feature({"PrerenderService"})
     public void testPrerenderingDifferentUrl() throws InterruptedException {
         if (SysUtils.isLowEndDevice()) return;
