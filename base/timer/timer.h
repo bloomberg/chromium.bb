@@ -39,10 +39,7 @@
 // other words, Reset is shorthand for calling Stop and then Start again with
 // the same arguments.
 //
-// These APIs are not thread safe. Always call from the same sequenced task
-// runner - thread or worker pool. By default the scheduled tasks will be run
-// on the same sequence that the APIs are called from, but this can be changed
-// prior to any tasks being scheduled using SetTaskRunner().
+// NOTE: These APIs are not thread safe. Always call from the same thread.
 
 #ifndef BASE_TIMER_TIMER_H_
 #define BASE_TIMER_TIMER_H_
@@ -58,18 +55,17 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/sequence_checker.h"
 #include "base/time/time.h"
 
 namespace base {
 
 class BaseTimerTaskInternal;
-class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 
 //-----------------------------------------------------------------------------
-// This class wraps TaskRunner::PostDelayedTask to manage delayed and
-// repeating tasks. It must be destructed on the same task runner that starts
-// tasks. There are DCHECKs in place to verify this.
+// This class wraps MessageLoop::PostDelayedTask to manage delayed and repeating
+// tasks. It must be destructed on the same thread that starts tasks. There are
+// DCHECKs in place to verify this.
 //
 class BASE_EXPORT Timer {
  public:
@@ -93,9 +89,9 @@ class BASE_EXPORT Timer {
   virtual TimeDelta GetCurrentDelay() const;
 
   // Set the task runner on which the task should be scheduled. This method can
-  // only be called before any tasks have been scheduled. |task_runner| must
-  // run tasks on the same sequence the timer is used on.
-  virtual void SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner);
+  // only be called before any tasks have been scheduled. The task runner must
+  // run tasks on the same thread the timer is used on.
+  virtual void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
 
   // Start the timer to run at the given |delay| from now. If the timer is
   // already running, it will be replaced to call the given |user_task|.
@@ -138,11 +134,10 @@ class BASE_EXPORT Timer {
   // and desired_run_time_ are reset to Now() + delay.
   void PostNewScheduledTask(TimeDelta delay);
 
-  // Returns the task runner on which the task should be scheduled. If
-  // |destination_task_runner_| field is null, returns the SequencedTaskRunner
-  // for the
-  // current thread.
-  scoped_refptr<SequencedTaskRunner> GetTaskRunner();
+  // Returns the task runner on which the task should be scheduled. If the
+  // corresponding task_runner_ field is null, the task runner for the current
+  // thread is returned.
+  scoped_refptr<SingleThreadTaskRunner> GetTaskRunner();
 
   // Disable scheduled_task_ and abandon it so that it no longer refers back to
   // this object.
@@ -162,8 +157,8 @@ class BASE_EXPORT Timer {
   BaseTimerTaskInternal* scheduled_task_;
 
   // The task runner on which the task should be scheduled. If it is null, the
-  // task runner for the current thread is used.
-  scoped_refptr<SequencedTaskRunner> destination_task_runner_;
+  // task runner for the current thread should be used.
+  scoped_refptr<SingleThreadTaskRunner> task_runner_;
 
   // Location in user code.
   tracked_objects::Location posted_from_;
@@ -186,15 +181,8 @@ class BASE_EXPORT Timer {
   // if the task must be run immediately.
   TimeTicks desired_run_time_;
 
-  // Calls to the timer are not thread safe, so a checker is used detect
-  // incorrect usage in debug builds. Note that this verifies the timer API
-  // calls; the tasks may be scheduled by the timer on a different sequence if
-  // SetTaskRunner() is used.
-  SequenceChecker origin_sequence_checker_;
-
-  // Once the timer has been scheduled, destination_task_runner_ may not be
-  // changed.
-  bool was_scheduled_;
+  // Thread ID of current MessageLoop for verifying single-threaded usage.
+  int thread_id_;
 
   // Repeating timers automatically post the task again before calling the task
   // callback.
@@ -254,7 +242,8 @@ class RepeatingTimer : public BaseTimerMethodPointer {
 
 //-----------------------------------------------------------------------------
 // A Delay timer is like The Button from Lost. Once started, you have to keep
-// calling Reset otherwise it will call the given method on the task runner.
+// calling Reset otherwise it will call the given method in the MessageLoop
+// thread.
 //
 // Once created, it is inactive until Reset is called. Once |delay| seconds have
 // passed since the last call to Reset, the callback is made. Once the callback
