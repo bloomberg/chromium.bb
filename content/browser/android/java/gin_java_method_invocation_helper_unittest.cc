@@ -43,7 +43,7 @@ class NullObjectDelegate
   }
 
  private:
-  base::android::ScopedJavaLocalRef<jclass> safe_annotation_class_;
+  base::android::ScopedJavaGlobalRef<jclass> safe_annotation_class_;
 
   DISALLOW_COPY_AND_ASSIGN(NullObjectDelegate);
 };
