@@ -170,6 +170,10 @@ public:
         m_clientsCheckedPaintInvalidation.add(&client);
     }
 
+#if ENABLE(ASSERT)
+    void assertDisplayItemClientsAreLive();
+#endif
+
 protected:
     PaintController()
         : m_newDisplayItemList(kInitialDisplayItemListCapacityBytes)
@@ -212,6 +216,8 @@ private:
     void checkCachedDisplayItemIsUnchanged(const char* messagePrefix, const DisplayItem& newItem, const DisplayItem& oldItem);
     void checkNoRemainingCachedDisplayItems();
 #endif
+
+    void commitNewDisplayItemsInternal();
 
     // The last complete paint artifact.
     // In SPv2, this includes paint chunks as well as display items.

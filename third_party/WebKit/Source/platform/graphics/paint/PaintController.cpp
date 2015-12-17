@@ -264,6 +264,17 @@ void PaintController::copyCachedSubsequence(DisplayItemList::iterator& currentIt
     } while (!endSubsequenceId.matches(updatedList.last()));
 }
 
+void PaintController::commitNewDisplayItems()
+{
+#if ENABLE(ASSERT)
+    m_newDisplayItemList.assertDisplayItemClientsAreAlive();
+#endif
+    commitNewDisplayItemsInternal();
+#if ENABLE(ASSERT)
+    m_currentPaintArtifact.displayItemList().assertDisplayItemClientsAreAlive();
+#endif
+}
+
 // Update the existing display items by removing invalidated entries, updating
 // repainted ones, and appending new items.
 // - For cached drawing display item, copy the corresponding cached DrawingDisplayItem;
@@ -275,7 +286,7 @@ void PaintController::copyCachedSubsequence(DisplayItemList::iterator& currentIt
 // Coefficients are related to the ratio of out-of-order CachedDisplayItems
 // and the average number of (Drawing|Subsequence)DisplayItems per client.
 //
-void PaintController::commitNewDisplayItems()
+void PaintController::commitNewDisplayItemsInternal()
 {
     TRACE_EVENT2("blink,benchmark", "PaintController::commitNewDisplayItems",
         "current_display_list_size", (int)m_currentPaintArtifact.displayItemList().size(),

@@ -977,6 +977,10 @@ double LayoutView::layoutViewportHeight() const
 
 void LayoutView::willBeDestroyed()
 {
+    // TODO(wangxianzhu): This is a workaround of crbug.com/570706.
+    // Should find and fix the root cause.
+    if (PaintLayer* layer = this->layer())
+        layer->setNeedsRepaint();
     LayoutBlockFlow::willBeDestroyed();
     m_compositor.clear();
 }
