@@ -239,18 +239,6 @@ bool UpdateModifiedTimeOnDBThread(const GURL& origin,
   return database->SetOriginLastModifiedTime(origin, type, modified_time);
 }
 
-int64_t CallSystemGetAmountOfFreeDiskSpace(const base::FilePath& profile_path) {
-  // crbug.com/349708
-  TRACE_EVENT0("io", "CallSystemGetAmountOfFreeDiskSpace");
-
-  // Ensure the profile path exists.
-  if (!base::CreateDirectory(profile_path)) {
-    LOG(WARNING) << "Create directory failed for path" << profile_path.value();
-    return 0;
-  }
-  return base::SysInfo::AmountOfFreeDiskSpace(profile_path);
-}
-
 int64_t CalculateTemporaryGlobalQuota(int64_t global_limited_usage,
                                       int64_t available_space) {
   DCHECK_GE(global_limited_usage, 0);
@@ -262,7 +250,9 @@ int64_t CalculateTemporaryGlobalQuota(int64_t global_limited_usage,
     // but make sure we'll have no overflow.
     avail_space += global_limited_usage;
   }
-  return avail_space * kTemporaryQuotaRatioToAvail;
+  int64_t pool_size = avail_space * kTemporaryQuotaRatioToAvail;
+  UMA_HISTOGRAM_MBYTES("Quota.GlobalTemporaryPoolSize", pool_size);
+  return pool_size;
 }
 
 void DispatchTemporaryGlobalQuotaCallback(
@@ -894,7 +884,7 @@ QuotaManager::QuotaManager(
       temporary_quota_override_(-1),
       desired_available_space_(-1),
       special_storage_policy_(special_storage_policy),
-      get_disk_space_fn_(&CallSystemGetAmountOfFreeDiskSpace),
+      get_disk_space_fn_(&QuotaManager::CallSystemGetAmountOfFreeDiskSpace),
       storage_monitor_(new StorageMonitor(this)),
       weak_factory_(this) {}
 
@@ -1767,6 +1757,24 @@ void QuotaManager::PostTaskAndReplyWithResultForDBThread(
       from_here,
       base::Bind(task, base::Unretained(database_.get())),
       reply);
+}
+
+//static
+int64_t QuotaManager::CallSystemGetAmountOfFreeDiskSpace(
+    const base::FilePath& profile_path) {
+  // crbug.com/349708
+  TRACE_EVENT0("io", "CallSystemGetAmountOfFreeDiskSpace");
+  if (!base::CreateDirectory(profile_path)) {
+    LOG(WARNING) << "Create directory failed for path" << profile_path.value();
+    return 0;
+  }
+  uint64_t available, total;
+  if (!QuotaManager::GetVolumeInfo(profile_path, &available, &total)) {
+    return 0;
+  }
+  UMA_HISTOGRAM_MBYTES("Quota.AvailableDiskSpace", available);
+  UMA_HISTOGRAM_MBYTES("Quota.TotalDiskSpace", total);
+  return static_cast<int64_t>(available);
 }
 
 //static

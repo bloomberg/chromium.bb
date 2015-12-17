@@ -38145,6 +38145,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Quota.AvailableDiskSpace" units="MB">
+  <owner>micaheln@chromium.org</owner>
+  <summary>
+    Amount of free disk space for the storage directory. Logged at irregular
+    intervals.
+  </summary>
+</histogram>
+
 <histogram name="Quota.DiskspaceShortage" units="MB">
   <owner>tzik@chromium.org</owner>
   <summary>
@@ -38203,8 +38211,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Quota.FreeDiskSpaceForProfile" units="MB">
+  <obsolete/>
   <owner>tzik@chromium.org</owner>
   <summary>Amount of free disk space for profile directory.</summary>
+</histogram>
+
+<histogram name="Quota.GlobalTemporaryPoolSize" units="MB">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    The size of the global temporary storage pool. Logged at irregular
+    intervals.
+  </summary>
 </histogram>
 
 <histogram name="Quota.GlobalUsageOfPersistentStorage" units="MB">
@@ -38218,6 +38235,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Quota.InitialTemporaryGlobalStorageQuota" units="MB">
+  <obsolete/>
   <owner>tzik@chromium.org</owner>
   <summary>Initial quota for global temporary storage.</summary>
 </histogram>
@@ -38286,6 +38304,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Quota.TimeSpentToAEvictionRound">
   <owner>tzik@chromium.org</owner>
   <summary>Time spent to an eviction round.</summary>
+</histogram>
+
+<histogram name="Quota.TotalDiskSpace" units="MB">
+  <owner>micaheln@chromium.org</owner>
+  <summary>
+    Total disk space for the storage directory. Logged at irregular intervals.
+  </summary>
 </histogram>
 
 <histogram name="Quota.UsageOverageOfTemporaryGlobalStorage" units="MB">

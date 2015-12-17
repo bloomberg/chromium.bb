@@ -441,6 +441,8 @@ class STORAGE_EXPORT QuotaManager
       const base::Callback<bool(QuotaDatabase*)>& task,
       const base::Callback<void(bool)>& reply);
 
+  static int64_t CallSystemGetAmountOfFreeDiskSpace(
+      const base::FilePath& profile_path);
   static bool GetVolumeInfo(const base::FilePath& path,
                             uint64_t* available_space,
                             uint64_t* total_size);
