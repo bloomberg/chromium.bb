@@ -92,6 +92,12 @@ public class CustomTabsIntent {
             "android.support.customtabs.extra.EXIT_ANIMATION_BUNDLE";
 
     /**
+     * Boolean that specifies whether a default share button will be shown in the menu.
+     */
+    public static final String EXTRA_DEFAULT_SHARE_MENU_ITEM =
+            "android.support.customtabs.extra.SHARE_MENU_ITEM";
+
+    /**
      * Convenience method to create a VIEW intent without a session for the given package.
      * @param packageName The package name to set in the intent.
      * @param data        The data {@link Uri} to be used in the intent.

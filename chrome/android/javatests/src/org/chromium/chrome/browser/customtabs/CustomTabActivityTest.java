@@ -178,6 +178,18 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     }
 
     /**
+     * @return The number of visible and enabled items in the given menu.
+     */
+    private int getActualMenuSize(Menu menu) {
+        int actualMenuSize = 0;
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            if (item.isVisible() && item.isEnabled()) actualMenuSize++;
+        }
+        return actualMenuSize;
+    }
+
+    /**
      * Test the entries in the context menu shown when long clicking an image.
      */
     @SmallTest
@@ -246,39 +258,60 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      * Test the entries in the app menu.
      */
     @SmallTest
-    public void testCustomTabAppMenu() throws InterruptedException {
+    public void testAppMenu() throws InterruptedException {
         Intent intent = createMinimalCustomTabIntent();
         int numMenuEntries = 1;
         addMenuEntriesToIntent(intent, numMenuEntries);
         startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        final int expectedMenuSize = numMenuEntries + NUM_CHROME_MENU_ITEMS;
         Menu menu = getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        final int expectedMenuSize = numMenuEntries + NUM_CHROME_MENU_ITEMS;
+        final int actualMenuSize = getActualMenuSize(menu);
+
         assertNotNull("App menu is not initialized: ", menu);
-        assertEquals(expectedMenuSize, menu.size());
+        assertEquals(expectedMenuSize, actualMenuSize);
         assertNotNull(menu.findItem(R.id.forward_menu_id));
         assertNotNull(menu.findItem(R.id.info_menu_id));
         assertNotNull(menu.findItem(R.id.reload_menu_id));
         assertNotNull(menu.findItem(R.id.find_in_page_id));
         assertNotNull(menu.findItem(R.id.open_in_chrome_id));
+        assertFalse(menu.findItem(R.id.share_menu_id).isVisible());
+        assertFalse(menu.findItem(R.id.share_menu_id).isEnabled());
     }
+
+    /**
+     * Tests if the default share item can be shown in the app menu.
+     */
+    @SmallTest
+    public void testShareMenuItem() throws InterruptedException {
+        Intent intent = createMinimalCustomTabIntent();
+        intent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
+        startCustomTabActivityWithIntent(intent);
+
+        openAppMenuAndAssertMenuShown();
+        Menu menu = getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        assertTrue(menu.findItem(R.id.share_menu_id).isVisible());
+        assertTrue(menu.findItem(R.id.share_menu_id).isEnabled());
+    }
+
 
     /**
      * Test that only up to 5 entries are added to the custom menu.
      */
     @SmallTest
-    public void testCustomTabMaxMenuItems() throws InterruptedException {
+    public void testMaxMenuItems() throws InterruptedException {
         Intent intent = createMinimalCustomTabIntent();
         int numMenuEntries = 7;
         addMenuEntriesToIntent(intent, numMenuEntries);
         startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        int expectedMenuSize = MAX_MENU_CUSTOM_ITEMS + NUM_CHROME_MENU_ITEMS;
         Menu menu = getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        final int expectedMenuSize = MAX_MENU_CUSTOM_ITEMS + NUM_CHROME_MENU_ITEMS;
+        final int actualMenuSize = getActualMenuSize(menu);
         assertNotNull("App menu is not initialized: ", menu);
-        assertEquals(expectedMenuSize, menu.size());
+        assertEquals(expectedMenuSize, actualMenuSize);
     }
 
     /**

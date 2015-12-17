@@ -366,7 +366,8 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
-        return new CustomTabAppMenuPropertiesDelegate(this, mIntentDataProvider.getMenuTitles());
+        return new CustomTabAppMenuPropertiesDelegate(this, mIntentDataProvider.getMenuTitles(),
+                mIntentDataProvider.shouldShowShareMenuItem());
     }
 
     @Override
@@ -453,7 +454,7 @@ public class CustomTabActivity extends ChromeActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int menuIndex = getAppMenuPropertiesDelegate().getIndexOfMenuItem(item);
         if (menuIndex >= 0) {
-            mIntentDataProvider.clickMenuItemWithUrl(getApplicationContext(), menuIndex,
+            mIntentDataProvider.clickMenuItemWithUrl(this, menuIndex,
                     getTabModelSelector().getCurrentTab().getUrl());
             RecordUserAction.record("CustomTabsMenuCustomMenuItem");
             return true;

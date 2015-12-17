@@ -25,6 +25,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
@@ -91,6 +92,7 @@ public class CustomTabIntentDataProvider {
     private Drawable mCloseButtonIcon;
     private List<Pair<String, PendingIntent>> mMenuEntries = new ArrayList<>();
     private Bundle mAnimationBundle;
+    private boolean mShowShareItem;
     // OnFinished listener for PendingIntents. Used for testing only.
     private PendingIntent.OnFinished mOnFinished;
 
@@ -144,6 +146,8 @@ public class CustomTabIntentDataProvider {
                 intent, CustomTabsIntent.EXTRA_EXIT_ANIMATION_BUNDLE);
         mTitleVisibilityState =
                 IntentUtils.safeGetIntExtra(intent, EXTRA_TITLE_VISIBILITY_STATE, NO_TITLE);
+        mShowShareItem = IntentUtils.safeGetBooleanExtra(intent,
+                CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, false);
     }
 
     /**
@@ -211,6 +215,13 @@ public class CustomTabIntentDataProvider {
     }
 
     /**
+     * @return Whether the default share item should be shown in the menu.
+     */
+    public boolean shouldShowShareMenuItem() {
+        return mShowShareItem;
+    }
+
+    /**
      * @return Whether the client app has provided sufficient info for the toolbar to show the
      *         action button.
      */
@@ -241,12 +252,12 @@ public class CustomTabIntentDataProvider {
      * @param menuIndex The index that the menu item is shown in the result of
      *                  {@link #getMenuTitles()}
      */
-    public void clickMenuItemWithUrl(Context context, int menuIndex, String url) {
+    public void clickMenuItemWithUrl(ChromeActivity activity, int menuIndex, String url) {
         Intent addedIntent = new Intent();
         addedIntent.setData(Uri.parse(url));
         try {
             PendingIntent pendingIntent = mMenuEntries.get(menuIndex).second;
-            pendingIntent.send(context, 0, addedIntent, mOnFinished, null);
+            pendingIntent.send(activity, 0, addedIntent, mOnFinished, null);
         } catch (CanceledException e) {
             Log.e(TAG, "Custom tab in Chrome failed to send pending intent.");
         }

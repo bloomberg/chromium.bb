@@ -22,14 +22,17 @@ import java.util.Map;
  */
 public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegate {
     private boolean mIsCustomEntryAdded;
+    private boolean mShowShare;
     private List<String> mMenuEntries;
     private Map<MenuItem, Integer> mItemToIndexMap = new HashMap<MenuItem, Integer>();
     /**
      * Creates an {@link CustomTabAppMenuPropertiesDelegate} instance.
      */
-    public CustomTabAppMenuPropertiesDelegate(ChromeActivity activity, List<String> menuEntries) {
+    public CustomTabAppMenuPropertiesDelegate(ChromeActivity activity, List<String> menuEntries,
+            boolean showShare) {
         super(activity);
         mMenuEntries = menuEntries;
+        mShowShare = showShare;
     }
 
     @Override
@@ -42,6 +45,10 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             mReloadMenuItem = menu.findItem(R.id.reload_menu_id);
             mReloadMenuItem.setIcon(R.drawable.btn_reload_stop);
             loadingStateChanged(currentTab.isLoading());
+
+            MenuItem shareItem = menu.findItem(R.id.share_menu_id);
+            shareItem.setVisible(mShowShare);
+            shareItem.setEnabled(mShowShare);
 
             MenuItem openInChromeItem = menu.findItem(R.id.open_in_chrome_id);
             openInChromeItem.setTitle(mActivity.getString(R.string.menu_open_in_product,

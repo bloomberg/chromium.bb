@@ -901,14 +901,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     /**
      * Triggered when the share menu item is selected.
      * This creates and shows a share intent picker dialog or starts a share intent directly.
-     *
-     * @param currentTab The {@link Tab} a user is watching.
      * @param shareDirectly Whether it should share directly with the activity that was most
      *                      recently used to share.
      * @param isIncognito Whether currentTab is incognito.
      */
-    public void onShareMenuItemSelected(final Tab currentTab,
-            final boolean shareDirectly, boolean isIncognito) {
+    public void onShareMenuItemSelected(final boolean shareDirectly, boolean isIncognito) {
+        final Tab currentTab = getActivityTab();
         if (currentTab == null) return;
 
         final Activity mainActivity = this;
@@ -1415,7 +1413,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             RecordUserAction.record("MobileMenuHistory");
             StartupMetrics.getInstance().recordOpenedHistory();
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
-            onShareMenuItemSelected(currentTab, id == R.id.direct_share_menu_id,
+            onShareMenuItemSelected(id == R.id.direct_share_menu_id,
                     getCurrentTabModel().isIncognito());
         } else if (id == R.id.print_id) {
             PrintingController printingController = getChromeApplication().getPrintingController();
