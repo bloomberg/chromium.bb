@@ -242,8 +242,10 @@ NSMutableURLRequest* requestForCrWebInvokeCommandAndKey(NSString* command,
                                                         NSString* key) {
   NSString* fullCommand =
       [NSString stringWithFormat:@"[{\"command\":\"%@\"}]", command];
+  NSCharacterSet* noCharacters =
+      [NSCharacterSet characterSetWithCharactersInString:@""];
   NSString* escapedCommand = [fullCommand
-      stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+      stringByAddingPercentEncodingWithAllowedCharacters:noCharacters];
   NSString* urlString =
       [NSString stringWithFormat:@"crwebinvoke://%@/#%@", key, escapedCommand];
   return [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
@@ -763,8 +765,7 @@ TEST_F(CRWUIWebViewWebControllerTest, UnicodeEncoding) {
         [NSString stringWithFormat:@"encodeURIComponent('%@');", unicodeString];
     NSString* encodedString =
         [testWebView stringByEvaluatingJavaScriptFromString:encodeJS];
-    NSString* decodedString = [encodedString
-        stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSString* decodedString = [encodedString stringByRemovingPercentEncoding];
     EXPECT_NSEQ(unicodeString, decodedString);
   }
 };
