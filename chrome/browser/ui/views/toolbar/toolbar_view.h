@@ -173,6 +173,12 @@ class ToolbarView : public views::AccessiblePaneView,
   // Returns the number of pixels above the location bar in non-normal display.
   int PopupTopSpacing() const;
 
+  // Used to avoid duplicating the near-identical logic of
+  // ToolbarView::GetPreferredSize() and ToolbarView::GetMinimumSize(). These
+  // two functions call through to GetSizeInternal(), passing themselves as the
+  // function pointer |View::*get_size|.
+  gfx::Size GetSizeInternal(gfx::Size (View::*get_size)() const) const;
+
   // Given toolbar contents of size |size|, returns the total toolbar size.
   gfx::Size SizeForContentSize(gfx::Size size) const;
 

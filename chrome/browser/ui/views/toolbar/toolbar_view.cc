@@ -478,51 +478,11 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 // ToolbarView, views::View overrides:
 
 gfx::Size ToolbarView::GetPreferredSize() const {
-  gfx::Size size(location_bar_->GetPreferredSize());
-  if (is_display_mode_normal()) {
-    const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
-    const int browser_actions_width =
-        browser_actions_->GetPreferredSize().width();
-    const int right_padding =
-        GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING);
-    const int content_width =
-        GetLayoutInsets(TOOLBAR).width() +
-        back_->GetPreferredSize().width() + element_padding +
-        forward_->GetPreferredSize().width() + element_padding +
-        reload_->GetPreferredSize().width() +
-        (show_home_button_.GetValue()
-             ? element_padding + home_->GetPreferredSize().width()
-             : 0) +
-        GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
-        (browser_actions_width > 0 ? browser_actions_width : right_padding) +
-        app_menu_button_->GetPreferredSize().width();
-    size.Enlarge(content_width, 0);
-  }
-  return SizeForContentSize(size);
+  return GetSizeInternal(&View::GetPreferredSize);
 }
 
 gfx::Size ToolbarView::GetMinimumSize() const {
-  gfx::Size size(location_bar_->GetMinimumSize());
-  if (is_display_mode_normal()) {
-    const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
-    const int browser_actions_width =
-        browser_actions_->GetMinimumSize().width();
-    const int right_padding =
-        GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING);
-    const int content_width =
-        GetLayoutInsets(TOOLBAR).width() +
-        back_->GetMinimumSize().width() + element_padding +
-        forward_->GetMinimumSize().width() + element_padding +
-        reload_->GetMinimumSize().width() +
-        (show_home_button_.GetValue()
-             ? element_padding + home_->GetMinimumSize().width()
-             : 0) +
-        GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
-        (browser_actions_width > 0 ? browser_actions_width : right_padding) +
-        app_menu_button_->GetMinimumSize().width();
-    size.Enlarge(content_width, 0);
-  }
-  return SizeForContentSize(size);
+  return GetSizeInternal(&View::GetMinimumSize);
 }
 
 void ToolbarView::Layout() {
@@ -730,6 +690,31 @@ int ToolbarView::PopupTopSpacing() const {
   return views::NonClientFrameView::kClientEdgeThickness +
       (GetWidget()->ShouldWindowContentsBeTransparent() ?
           0 : kAdditionalPopupTopSpacingNonGlass);
+}
+
+gfx::Size ToolbarView::GetSizeInternal(
+    gfx::Size (View::*get_size)() const) const {
+  gfx::Size size((location_bar_->*get_size)());
+  if (is_display_mode_normal()) {
+    const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+    const int browser_actions_width =
+        (browser_actions_->*get_size)().width();
+    const int right_padding =
+        GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING);
+    const int content_width =
+        GetLayoutInsets(TOOLBAR).width() +
+        (back_->*get_size)().width() + element_padding +
+        (forward_->*get_size)().width() + element_padding +
+        (reload_->*get_size)().width() +
+        (show_home_button_.GetValue()
+             ? element_padding + (home_->*get_size)().width()
+             : 0) +
+        GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
+        (browser_actions_width > 0 ? browser_actions_width : right_padding) +
+        (app_menu_button_->*get_size)().width();
+    size.Enlarge(content_width, 0);
+  }
+  return SizeForContentSize(size);
 }
 
 gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
