@@ -102,15 +102,17 @@ def _UpdateMetadataValue(metadata, key, value):
 class GceContext(object):
   """A convinient wrapper around the GCE Python API."""
 
+  # These constants are made public so that users can customize as they need.
+  DEFAULT_TIMEOUT_SEC = 5 * 60
+  INSTANCE_OPERATIONS_TIMEOUT_SEC = 10 * 60
+  IMAGE_OPERATIONS_TIMEOUT_SEC = 10 * 60
+
   _GCE_SCOPES = (
       'https://www.googleapis.com/auth/compute',  # CreateInstance, CreateImage
       'https://www.googleapis.com/auth/devstorage.full_control', # CreateImage
   )
   _DEFAULT_NETWORK = 'default'
   _DEFAULT_MACHINE_TYPE = 'n1-standard-8'
-  _DEFAULT_TIMEOUT_SEC = 5 * 60
-  _INSTANCE_OPERATIONS_TIMEOUT_SEC = 5 * 60
-  _IMAGE_OPERATIONS_TIMEOUT_SEC = 2* 60
 
   # Project default service account and scopes.
   _DEFAULT_SERVICE_ACCOUNT_EMAIL = 'default'
@@ -204,7 +206,7 @@ class GceContext(object):
         body=body).execute()
     self._WaitForRegionOperation(
         operation['name'], region,
-        timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC)
+        timeout_sec=self.INSTANCE_OPERATIONS_TIMEOUT_SEC)
 
     address = self.gce_client.addresses().get(
         project=self.project,
@@ -226,7 +228,7 @@ class GceContext(object):
         address=name).execute()
     self._WaitForRegionOperation(
         operation['name'], region=region or self.region,
-        timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC)
+        timeout_sec=self.INSTANCE_OPERATIONS_TIMEOUT_SEC)
 
   def GetZoneRegion(self, zone=None):
     """Resolves name of the region that a zone belongs to.
@@ -273,6 +275,7 @@ class GceContext(object):
     Returns:
       URL to the created instance.
     """
+    logging.info('Creating instance "%s" with image "%s" ...', name, image)
     network = 'global/networks/%s' % network or self._DEFAULT_NETWORK
     machine_type = 'zones/%s/machineTypes/%s' % (
         zone or self.zone, machine_type or self._DEFAULT_MACHINE_TYPE)
@@ -318,7 +321,7 @@ class GceContext(object):
         body=config).execute()
     self._WaitForZoneOperation(
         operation['name'],
-        timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC,
+        timeout_sec=self.INSTANCE_OPERATIONS_TIMEOUT_SEC,
         timeout_handler=lambda: self.DeleteInstance(name))
     return operation['targetLink']
 
@@ -329,12 +332,13 @@ class GceContext(object):
       name: Name of the instance to delete.
       zone: Zone where the instance is in. Default zone will be used if omitted.
     """
+    logging.info('Deleting instance "%s" ...', name)
     operation = self.gce_client.instances().delete(
         project=self.project,
         zone=zone or self.zone,
         instance=name).execute()
     self._WaitForZoneOperation(
-        operation['name'], timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC)
+        operation['name'], timeout_sec=self.INSTANCE_OPERATIONS_TIMEOUT_SEC)
 
   def StartInstance(self, name, zone=None):
     """Starts an instance with the name and waits until it's done.
@@ -343,12 +347,13 @@ class GceContext(object):
       name: Name of the instance to start.
       zone: Zone where the instance is in. Default zone will be used if omitted.
     """
+    logging.info('Starting instance "%s" ...', name)
     operation = self.gce_client.instances().start(
         project=self.project,
         zone=zone or self.zone,
         instance=name).execute()
     self._WaitForZoneOperation(
-        operation['name'], timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC)
+        operation['name'], timeout_sec=self.INSTANCE_OPERATIONS_TIMEOUT_SEC)
 
   def StopInstance(self, name, zone=None):
     """Stops an instance with the name and waits until it's done.
@@ -357,12 +362,13 @@ class GceContext(object):
       name: Name of the instance to stop.
       zone: Zone where the instance is in. Default zone will be used if omitted.
     """
+    logging.info('Stopping instance "%s" ...', name)
     operation = self.gce_client.instances().stop(
         project=self.project,
         zone=zone or self.zone,
         instance=name).execute()
     self._WaitForZoneOperation(
-        operation['name'], timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC)
+        operation['name'], timeout_sec=self.INSTANCE_OPERATIONS_TIMEOUT_SEC)
 
   def CreateImage(self, name, source):
     """Creates an image with the given |source|.
@@ -376,6 +382,7 @@ class GceContext(object):
     Returns:
       URL to the created image.
     """
+    logging.info('Creating image "%s" with "source" %s ...', name, source)
     config = {
         'name': name,
         'rawDisk': {
@@ -386,7 +393,7 @@ class GceContext(object):
         project=self.project,
         body=config).execute()
     self._WaitForGlobalOperation(operation['name'],
-                                 timeout_sec=self._IMAGE_OPERATIONS_TIMEOUT_SEC,
+                                 timeout_sec=self.IMAGE_OPERATIONS_TIMEOUT_SEC,
                                  timeout_handler=lambda: self.DeleteImage(name))
     return operation['targetLink']
 
@@ -396,11 +403,12 @@ class GceContext(object):
     Args:
       name: Name of the image to delete.
     """
+    logging.info('Deleting image "%s" ...', name)
     operation = self.gce_client.images().delete(
         project=self.project,
         image=name).execute()
     self._WaitForGlobalOperation(operation['name'],
-                                 timeout_sec=self._IMAGE_OPERATIONS_TIMEOUT_SEC)
+                                 timeout_sec=self.IMAGE_OPERATIONS_TIMEOUT_SEC)
 
   def ListInstances(self, zone=None):
     """Lists all instances.
@@ -649,7 +657,7 @@ class GceContext(object):
       return False
 
     try:
-      timeout = timeout_sec or self._DEFAULT_TIMEOUT_SEC
+      timeout = timeout_sec or self.DEFAULT_TIMEOUT_SEC
       logging.info('Waiting up to %d seconds for operation [%s] to complete...',
                    timeout, operation)
       timeout_util.WaitForReturnTrue(_IsDone, timeout, period=1)
