@@ -239,14 +239,15 @@ class ProtocolPerfTest
             network_settings, protocol::TransportRole::SERVER));
 
     scoped_ptr<protocol::SessionManager> session_manager(
-        new protocol::JingleSessionManager(make_scoped_ptr(
-            new protocol::IceTransportFactory(transport_context))));
+        new protocol::JingleSessionManager(
+            make_scoped_ptr(
+                new protocol::IceTransportFactory(transport_context)),
+            host_signaling_.get()));
     session_manager->set_protocol_config(protocol_config_->Clone());
 
     // Encoder runs on a separate thread, main thread is used for everything
     // else.
-    host_.reset(new ChromotingHost(host_signaling_.get(),
-                                   &desktop_environment_factory_,
+    host_.reset(new ChromotingHost(&desktop_environment_factory_,
                                    session_manager.Pass(),
                                    host_thread_.task_runner(),
                                    host_thread_.task_runner(),

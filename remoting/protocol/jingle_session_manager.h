@@ -32,26 +32,26 @@ class TransportFactory;
 class JingleSessionManager : public SessionManager,
                              public SignalStrategy::Listener {
  public:
-  explicit JingleSessionManager(scoped_ptr<TransportFactory> transport_factory);
+  JingleSessionManager(scoped_ptr<TransportFactory> transport_factory,
+                       SignalStrategy* signal_strategy);
   ~JingleSessionManager() override;
 
   // SessionManager interface.
-  void Init(SignalStrategy* signal_strategy,
-            SessionManager::Listener* listener) override;
+  void AcceptIncoming(
+      const IncomingSessionCallback& incoming_session_callback) override;
   void set_protocol_config(scoped_ptr<CandidateSessionConfig> config) override;
   scoped_ptr<Session> Connect(
       const std::string& host_jid,
       scoped_ptr<Authenticator> authenticator) override;
-  void Close() override;
   void set_authenticator_factory(
       scoped_ptr<AuthenticatorFactory> authenticator_factory) override;
+
+ private:
+  friend class JingleSession;
 
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
   bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
-
- private:
-  friend class JingleSession;
 
   typedef std::map<std::string, JingleSession*> SessionsMap;
 
@@ -62,15 +62,13 @@ class JingleSessionManager : public SessionManager,
   // Called by JingleSession when it is being destroyed.
   void SessionDestroyed(JingleSession* session);
 
+  scoped_ptr<TransportFactory> transport_factory_;
+  SignalStrategy* signal_strategy_;
+  IncomingSessionCallback incoming_session_callback_;
   scoped_ptr<CandidateSessionConfig> protocol_config_;
 
-  scoped_ptr<TransportFactory> transport_factory_;
-  bool fetch_stun_relay_config_;
-
-  SignalStrategy* signal_strategy_;
   scoped_ptr<AuthenticatorFactory> authenticator_factory_;
   scoped_ptr<IqSender> iq_sender_;
-  SessionManager::Listener* listener_;
 
   SessionsMap sessions_;
 

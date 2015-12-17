@@ -18,7 +18,6 @@
 #include "remoting/protocol/fake_desktop_capturer.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/session_config.h"
-#include "remoting/signaling/mock_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,16 +60,14 @@ class ChromotingHostTest : public testing::Test {
     desktop_environment_factory_.reset(new FakeDesktopEnvironmentFactory());
     session_manager_ = new protocol::MockSessionManager();
 
-    host_.reset(new ChromotingHost(
-        &signal_strategy_,
-        desktop_environment_factory_.get(),
-        make_scoped_ptr(session_manager_),
-        task_runner_,   // Audio
-        task_runner_,   // Input
-        task_runner_,   // Video capture
-        task_runner_,   // Video encode
-        task_runner_,   // Network
-        task_runner_)); // UI
+    host_.reset(new ChromotingHost(desktop_environment_factory_.get(),
+                                   make_scoped_ptr(session_manager_),
+                                   task_runner_,    // Audio
+                                   task_runner_,    // Input
+                                   task_runner_,    // Video capture
+                                   task_runner_,    // Video encode
+                                   task_runner_,    // Network
+                                   task_runner_));  // UI
     host_->AddStatusObserver(&host_status_observer_);
 
     xmpp_login_ = "host@domain";
@@ -189,11 +186,11 @@ class ChromotingHostTest : public testing::Test {
     desktop_environment_factory_.reset();
   }
 
-  // Expect the host and session manager to start, and return the expectation
-  // that the session manager has started.
-  Expectation ExpectHostAndSessionManagerStart() {
+  // Starts the host.
+  void StartHost() {
     EXPECT_CALL(host_status_observer_, OnStart(xmpp_login_));
-    return EXPECT_CALL(*session_manager_, Init(_, host_.get()));
+    EXPECT_CALL(*session_manager_, AcceptIncoming(_));
+    host_->Start(xmpp_login_);
   }
 
   // Expect a client to connect.
@@ -219,7 +216,6 @@ class ChromotingHostTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
   MockConnectionToClientEventHandler handler_;
-  MockSignalStrategy signal_strategy_;
   scoped_ptr<FakeDesktopEnvironmentFactory> desktop_environment_factory_;
   MockHostStatusObserver host_status_observer_;
   scoped_ptr<ChromotingHost> host_;
@@ -268,13 +264,11 @@ class ChromotingHostTest : public testing::Test {
 };
 
 TEST_F(ChromotingHostTest, StartAndShutdown) {
-  ExpectHostAndSessionManagerStart();
-  host_->Start(xmpp_login_);
+  StartHost();
 }
 
 TEST_F(ChromotingHostTest, Connect) {
-  ExpectHostAndSessionManagerStart();
-  host_->Start(xmpp_login_);
+  StartHost();
 
   // Shut down the host when the first video packet is received.
   ExpectClientConnected(0);
@@ -282,16 +276,14 @@ TEST_F(ChromotingHostTest, Connect) {
 }
 
 TEST_F(ChromotingHostTest, AuthenticationFailed) {
-  ExpectHostAndSessionManagerStart();
-  host_->Start(xmpp_login_);
+  StartHost();
 
   EXPECT_CALL(host_status_observer_, OnAccessDenied(session_jid1_));
   SimulateClientConnection(0, false, false);
 }
 
 TEST_F(ChromotingHostTest, Reconnect) {
-  ExpectHostAndSessionManagerStart();
-  host_->Start(xmpp_login_);
+  StartHost();
 
   // Connect first client.
   ExpectClientConnected(0);
@@ -311,8 +303,7 @@ TEST_F(ChromotingHostTest, Reconnect) {
 }
 
 TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
-  ExpectHostAndSessionManagerStart();
-  host_->Start(xmpp_login_);
+  StartHost();
 
   // Connect first client.
   ExpectClientConnected(0);
@@ -332,8 +323,7 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
 }
 
 TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
-  ExpectHostAndSessionManagerStart();
-  host_->Start(xmpp_login_);
+  StartHost();
 
   MockSession* session = session_unowned1_.get();
   protocol::SessionManager::IncomingSessionResponse response =
@@ -347,8 +337,7 @@ TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
 }
 
 TEST_F(ChromotingHostTest, LoginBackOffUponConnection) {
-  ExpectHostAndSessionManagerStart();
-  host_->Start(xmpp_login_);
+  StartHost();
 
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::DECLINE;
@@ -364,15 +353,13 @@ TEST_F(ChromotingHostTest, LoginBackOffUponConnection) {
 }
 
 TEST_F(ChromotingHostTest, LoginBackOffUponAuthenticating) {
-  ExpectHostAndSessionManagerStart();
+  StartHost();
 
   EXPECT_CALL(*session_unowned1_, Close(_)).WillOnce(
     InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed1));
 
   EXPECT_CALL(*session_unowned2_, Close(_)).WillOnce(
     InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed2));
-
-  host_->Start(xmpp_login_);
 
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::DECLINE;
@@ -394,8 +381,7 @@ TEST_F(ChromotingHostTest, LoginBackOffUponAuthenticating) {
 }
 
 TEST_F(ChromotingHostTest, OnSessionRouteChange) {
-  ExpectHostAndSessionManagerStart();
-  host_->Start(xmpp_login_);
+  StartHost();
 
 
   ExpectClientConnected(0);
@@ -409,8 +395,7 @@ TEST_F(ChromotingHostTest, OnSessionRouteChange) {
 }
 
 TEST_F(ChromotingHostTest, DisconnectAllClients) {
-  ExpectHostAndSessionManagerStart();
-  host_->Start(xmpp_login_);
+  StartHost();
 
   ExpectClientConnected(0);
   SimulateClientConnection(0, true, false);

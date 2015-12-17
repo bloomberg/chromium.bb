@@ -62,13 +62,10 @@ class DesktopEnvironmentFactory;
 //    incoming connection.
 class ChromotingHost : public base::NonThreadSafe,
                        public ClientSession::EventHandler,
-                       public protocol::SessionManager::Listener,
                        public HostStatusMonitor {
  public:
-  // Both |signal_strategy| and |desktop_environment_factory| should outlive
-  // this object.
+  // |desktop_environment_factory| must outlive this object.
   ChromotingHost(
-      SignalStrategy* signal_strategy,
       DesktopEnvironmentFactory* desktop_environment_factory,
       scoped_ptr<protocol::SessionManager> session_manager,
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
@@ -122,10 +119,10 @@ class ChromotingHost : public base::NonThreadSafe,
                             const std::string& channel_name,
                             const protocol::TransportRoute& route) override;
 
-  // SessionManager::Listener implementation.
+  // Callback for SessionManager to accept incoming sessions.
   void OnIncomingSession(
       protocol::Session* session,
-      protocol::SessionManager::IncomingSessionResponse* response) override;
+      protocol::SessionManager::IncomingSessionResponse* response);
 
   // The host uses a pairing registry to generate and store pairing information
   // for clients for PIN-less authentication.
@@ -164,9 +161,6 @@ class ChromotingHost : public base::NonThreadSafe,
   scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-
-  // Connection objects.
-  SignalStrategy* signal_strategy_;
 
   // Must be used on the network thread only.
   base::ObserverList<HostStatusObserver> status_observers_;

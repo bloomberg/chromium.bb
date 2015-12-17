@@ -48,7 +48,7 @@ namespace {
 const char kHostJid[] = "host1@gmail.com/123";
 const char kClientJid[] = "host2@gmail.com/321";
 
-class MockSessionManagerListener : public SessionManager::Listener {
+class MockSessionManagerListener {
  public:
   MOCK_METHOD2(OnIncomingSession,
                void(Session*,
@@ -106,8 +106,11 @@ class JingleSessionTest : public testing::Test {
     host_server_.reset(new JingleSessionManager(
         make_scoped_ptr(new IceTransportFactory(new TransportContext(
             nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
-            network_settings_, TransportRole::SERVER)))));
-    host_server_->Init(host_signal_strategy_.get(), &host_server_listener_);
+            network_settings_, TransportRole::SERVER))),
+        host_signal_strategy_.get()));
+    host_server_->AcceptIncoming(
+        base::Bind(&MockSessionManagerListener::OnIncomingSession,
+                   base::Unretained(&host_server_listener_)));
 
     scoped_ptr<AuthenticatorFactory> factory(
         new FakeHostAuthenticatorFactory(auth_round_trips,
@@ -117,9 +120,8 @@ class JingleSessionTest : public testing::Test {
     client_server_.reset(new JingleSessionManager(
         make_scoped_ptr(new IceTransportFactory(new TransportContext(
             nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
-            network_settings_, TransportRole::CLIENT)))));
-    client_server_->Init(client_signal_strategy_.get(),
-                         &client_server_listener_);
+            network_settings_, TransportRole::CLIENT))),
+        client_signal_strategy_.get()));
   }
 
   void CreateSessionManagers(int auth_round_trips,
@@ -128,14 +130,8 @@ class JingleSessionTest : public testing::Test {
   }
 
   void CloseSessionManager() {
-    if (host_server_.get()) {
-      host_server_->Close();
-      host_server_.reset();
-    }
-    if (client_server_.get()) {
-      client_server_->Close();
-      client_server_.reset();
-    }
+    host_server_.reset();
+    client_server_.reset();
     host_signal_strategy_.reset();
     client_signal_strategy_.reset();
   }
@@ -224,7 +220,6 @@ class JingleSessionTest : public testing::Test {
   scoped_ptr<JingleSessionManager> host_server_;
   MockSessionManagerListener host_server_listener_;
   scoped_ptr<JingleSessionManager> client_server_;
-  MockSessionManagerListener client_server_listener_;
 
   scoped_ptr<Session> host_session_;
   MockSessionEventHandler host_session_event_handler_;

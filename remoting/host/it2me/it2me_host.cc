@@ -239,7 +239,8 @@ void It2MeHost::FinishConnect() {
           network_settings, protocol::TransportRole::SERVER)));
 
   scoped_ptr<protocol::SessionManager> session_manager(
-      new protocol::JingleSessionManager(transport_factory.Pass()));
+      new protocol::JingleSessionManager(transport_factory.Pass(),
+                                         signal_strategy.get()));
 
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();
@@ -250,7 +251,7 @@ void It2MeHost::FinishConnect() {
 
   // Create the host.
   host_.reset(new ChromotingHost(
-      signal_strategy_.get(), desktop_environment_factory_.get(),
+      desktop_environment_factory_.get(),
       session_manager.Pass(), host_context_->audio_task_runner(),
       host_context_->input_task_runner(),
       host_context_->video_capture_task_runner(),

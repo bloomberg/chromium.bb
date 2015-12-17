@@ -94,9 +94,9 @@ void ConnectionToHostImpl::Connect(
   signal_strategy_->AddListener(this);
 
   session_manager_.reset(new JingleSessionManager(
-      make_scoped_ptr(new IceTransportFactory(transport_context))));
+      make_scoped_ptr(new IceTransportFactory(transport_context)),
+      signal_strategy));
   session_manager_->set_protocol_config(candidate_config_->Clone());
-  session_manager_->Init(signal_strategy_, this);
 
   SetState(CONNECTING, OK);
 
@@ -186,14 +186,6 @@ void ConnectionToHostImpl::OnSignalStrategyStateChange(
 bool ConnectionToHostImpl::OnSignalStrategyIncomingStanza(
     const buzz::XmlElement* stanza) {
   return false;
-}
-
-void ConnectionToHostImpl::OnIncomingSession(
-    Session* session,
-    SessionManager::IncomingSessionResponse* response) {
-  DCHECK(CalledOnValidThread());
-  // Client always rejects incoming sessions.
-  *response = SessionManager::DECLINE;
 }
 
 void ConnectionToHostImpl::OnSessionStateChange(Session::State state) {

@@ -21,22 +21,24 @@ namespace remoting {
 namespace protocol {
 
 JingleSessionManager::JingleSessionManager(
-    scoped_ptr<TransportFactory> transport_factory)
-    : protocol_config_(CandidateSessionConfig::CreateDefault()),
-      transport_factory_(transport_factory.Pass()) {}
-
-JingleSessionManager::~JingleSessionManager() {
-  Close();
+    scoped_ptr<TransportFactory> transport_factory,
+    SignalStrategy* signal_strategy)
+    : transport_factory_(transport_factory.Pass()),
+      signal_strategy_(signal_strategy),
+      protocol_config_(CandidateSessionConfig::CreateDefault()),
+      iq_sender_(new IqSender(signal_strategy_)) {
+  signal_strategy_->AddListener(this);
 }
 
-void JingleSessionManager::Init(
-    SignalStrategy* signal_strategy,
-    SessionManager::Listener* listener) {
-  listener_ = listener;
-  signal_strategy_ = signal_strategy;
-  iq_sender_.reset(new IqSender(signal_strategy_));
+JingleSessionManager::~JingleSessionManager() {
+  DCHECK(sessions_.empty());
+  signal_strategy_->RemoveListener(this);
+}
 
-  signal_strategy_->AddListener(this);
+void JingleSessionManager::AcceptIncoming(
+    const IncomingSessionCallback& incoming_session_callback) {
+  incoming_session_callback_ = incoming_session_callback;
+
 }
 
 void JingleSessionManager::set_protocol_config(
@@ -51,20 +53,6 @@ scoped_ptr<Session> JingleSessionManager::Connect(
   session->StartConnection(host_jid, authenticator.Pass());
   sessions_[session->session_id_] = session.get();
   return session.Pass();
-}
-
-void JingleSessionManager::Close() {
-  DCHECK(CalledOnValidThread());
-
-  // Close() can be called only after all sessions are destroyed.
-  DCHECK(sessions_.empty());
-
-  listener_ = nullptr;
-
-  if (signal_strategy_) {
-    signal_strategy_->RemoveListener(this);
-    signal_strategy_ = nullptr;
-  }
 }
 
 void JingleSessionManager::set_authenticator_factory(
@@ -111,7 +99,8 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
     }
 
     IncomingSessionResponse response = SessionManager::DECLINE;
-    listener_->OnIncomingSession(session, &response);
+    if (!incoming_session_callback_.is_null())
+      incoming_session_callback_.Run(session, &response);
 
     if (response == SessionManager::ACCEPT) {
       session->AcceptIncomingConnection(message);

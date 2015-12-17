@@ -187,7 +187,7 @@ class MockSessionManager : public SessionManager {
   MockSessionManager();
   ~MockSessionManager() override;
 
-  MOCK_METHOD2(Init, void(SignalStrategy*, Listener*));
+  MOCK_METHOD1(AcceptIncoming, void(const IncomingSessionCallback&));
   void set_protocol_config(scoped_ptr<CandidateSessionConfig> config) override {
   }
   MOCK_METHOD2(ConnectPtr,

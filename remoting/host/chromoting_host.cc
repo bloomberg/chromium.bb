@@ -60,7 +60,6 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 }  // namespace
 
 ChromotingHost::ChromotingHost(
-    SignalStrategy* signal_strategy,
     DesktopEnvironmentFactory* desktop_environment_factory,
     scoped_ptr<protocol::SessionManager> session_manager,
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
@@ -77,13 +76,11 @@ ChromotingHost::ChromotingHost(
       video_encode_task_runner_(video_encode_task_runner),
       network_task_runner_(network_task_runner),
       ui_task_runner_(ui_task_runner),
-      signal_strategy_(signal_strategy),
       started_(false),
       login_backoff_(&kDefaultBackoffPolicy),
       enable_curtaining_(false),
       weak_factory_(this) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  DCHECK(signal_strategy);
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 }
@@ -114,8 +111,8 @@ void ChromotingHost::Start(const std::string& host_owner_email) {
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
                     OnStart(host_owner_email));
 
-  // Start the SessionManager, supplying this ChromotingHost as the listener.
-  session_manager_->Init(signal_strategy_, this);
+  session_manager_->AcceptIncoming(
+      base::Bind(&ChromotingHost::OnIncomingSession, base::Unretained(this)));
 }
 
 void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {

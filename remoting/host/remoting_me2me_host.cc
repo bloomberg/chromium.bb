@@ -1524,7 +1524,8 @@ void HostProcess::StartHost() {
         new protocol::IceTransportFactory(transport_context));
   }
   scoped_ptr<protocol::SessionManager> session_manager(
-      new protocol::JingleSessionManager(transport_factory.Pass()));
+      new protocol::JingleSessionManager(transport_factory.Pass(),
+                                         signal_strategy_.get()));
 
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();
@@ -1540,7 +1541,7 @@ void HostProcess::StartHost() {
   session_manager->set_protocol_config(protocol_config.Pass());
 
   host_.reset(new ChromotingHost(
-      signal_strategy_.get(), desktop_environment_factory_.get(),
+      desktop_environment_factory_.get(),
       session_manager.Pass(), context_->audio_task_runner(),
       context_->input_task_runner(), context_->video_capture_task_runner(),
       context_->video_encode_task_runner(), context_->network_task_runner(),

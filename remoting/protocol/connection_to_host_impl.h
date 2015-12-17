@@ -39,7 +39,6 @@ class ClientVideoDispatcher;
 
 class ConnectionToHostImpl : public ConnectionToHost,
                              public SignalStrategy::Listener,
-                             public SessionManager::Listener,
                              public Session::EventHandler,
                              public ChannelDispatcherBase::EventHandler,
                              public base::NonThreadSafe {
@@ -70,11 +69,6 @@ class ConnectionToHostImpl : public ConnectionToHost,
   // SignalStrategy::StatusObserver interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
   bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
-
-  // SessionManager::Listener interface.
-  void OnIncomingSession(
-      Session* session,
-      SessionManager::IncomingSessionResponse* response) override;
 
   // Session::EventHandler interface.
   void OnSessionStateChange(Session::State state) override;
