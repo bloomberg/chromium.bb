@@ -59,9 +59,9 @@ protected:
 
     // To prevent audio glitches when parameters are changed,
     // dezippering is used to slowly change the parameters.
-    void updateCoefficientsIfNecessary(int);
+    void updateCoefficientsIfNecessary();
     // Update the biquad cofficients with the given parameters
-    void updateCoefficients(int, const float* frequency, const float* Q, const float* gain, const float* detune);
+    void updateCoefficients(double frequency, double Q, double gain, double detune);
 
 private:
     // Synchronize process() with getting and setting the filter coefficients.
