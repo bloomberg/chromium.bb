@@ -7,10 +7,13 @@
 {%- set namespace_as_string = "%s"|format(namespace|replace(".","::")) %}
 
 {%- macro alloc_params(struct, serialization_context) %}
+  bool success = true;
 {%-   for param in struct.packed.packed_fields_in_ordinal_order %}
   {{param.field.kind|cpp_result_type}} p_{{param.field.name}}{};
 {%-   endfor %}
-  {{struct_macros.deserialize(struct, "params", "p_%s", serialization_context)}}
+  {{struct_macros.deserialize(struct, "params", "p_%s", serialization_context, "success")}}
+  if (!success)
+    return false;
 {%- endmacro %}
 
 {%- macro pass_params(parameters) %}
@@ -224,11 +227,11 @@ bool {{class_name}}Stub::AcceptWithResponder(
               message->mutable_payload());
 
       params->DecodePointersAndHandles(message->mutable_handles());
+      {{alloc_params(method.param_struct, "&serialization_context_")|indent(4)}}
       {{class_name}}::{{method.name}}Callback::Runnable* runnable =
           new {{class_name}}_{{method.name}}_ProxyToResponder(
               message->request_id(), responder);
       {{class_name}}::{{method.name}}Callback callback(runnable);
-      {{alloc_params(method.param_struct, "&serialization_context_")|indent(4)}}
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");

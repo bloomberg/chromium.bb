@@ -113,7 +113,8 @@
     - method parameters/response parameters: the output is a list of
       arguments. #}
     |context| is the name of the serialization context.
-{%- macro deserialize(struct, input, output_field_pattern, context) -%}
+    |success| is the name of a bool variable to track success of the operation.
+{%- macro deserialize(struct, input, output_field_pattern, context, success) -%}
   do {
     // NOTE: The memory backing |{{input}}| may has be smaller than
     // |sizeof(*{{input}})| if the message comes from an older version.
@@ -133,9 +134,11 @@
 {%-     endif %}
 {%-     if kind|is_object_kind %}
 {%-       if kind|is_union_kind %}
-    Deserialize_(&{{input}}->{{name}}, &{{output_field}}, {{context}});
+    if (!Deserialize_(&{{input}}->{{name}}, &{{output_field}}, {{context}}))
+      {{success}} = false;
 {%-       else %}
-    Deserialize_({{input}}->{{name}}.ptr, &{{output_field}}, {{context}});
+    if (!Deserialize_({{input}}->{{name}}.ptr, &{{output_field}}, {{context}}))
+      {{success}} = false;
 {%-       endif %}
 {%-     elif kind|is_interface_kind %}
     mojo::internal::InterfaceDataToPointer(&{{input}}->{{name}}, &{{output_field}});

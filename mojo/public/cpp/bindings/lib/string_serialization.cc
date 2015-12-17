@@ -28,7 +28,7 @@ void Serialize_(const String& input,
   }
 }
 
-void Deserialize_(internal::String_Data* input,
+bool Deserialize_(internal::String_Data* input,
                   String* output,
                   internal::SerializationContext* context) {
   if (input) {
@@ -37,6 +37,7 @@ void Deserialize_(internal::String_Data* input,
   } else {
     output->reset();
   }
+  return true;
 }
 
 }  // namespace mojo

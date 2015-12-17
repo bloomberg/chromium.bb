@@ -16,14 +16,16 @@ void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buf,
   }
 }
 
-void Deserialize_(internal::{{struct.name}}_Data* input,
+bool Deserialize_(internal::{{struct.name}}_Data* input,
                   {{struct.name}}Ptr* output,
                   mojo::internal::SerializationContext* context) {
+  bool success = true;
   if (input) {
     {{struct.name}}Ptr result({{struct.name}}::New());
-    {{struct_macros.deserialize(struct, "input", "result->%s", "context")|indent(2)}}
+    {{struct_macros.deserialize(struct, "input", "result->%s", "context", "success")|indent(2)}}
     *output = result.Pass();
   } else {
     output->reset();
   }
+  return success;
 }

@@ -162,20 +162,27 @@ template <typename MapKey,
           typename MapValue,
           typename DataKey,
           typename DataValue>
-inline void Deserialize_(internal::Map_Data<DataKey, DataValue>* input,
+inline bool Deserialize_(internal::Map_Data<DataKey, DataValue>* input,
                          Map<MapKey, MapValue>* output,
                          internal::SerializationContext* context) {
+  bool success = true;
   if (input) {
     Array<MapKey> keys;
     Array<MapValue> values;
 
-    Deserialize_(input->keys.ptr, &keys, context);
-    Deserialize_(input->values.ptr, &values, context);
+    // Note that we rely on complete deserialization taking place in order to
+    // transfer ownership of all encoded handles. Therefore we don't
+    // short-circuit on failure here.
+    if (!Deserialize_(input->keys.ptr, &keys, context))
+      success = false;
+    if (!Deserialize_(input->values.ptr, &values, context))
+      success = false;
 
     *output = Map<MapKey, MapValue>(keys.Pass(), values.Pass());
   } else {
     output->reset();
   }
+  return success;
 }
 
 }  // namespace mojo
