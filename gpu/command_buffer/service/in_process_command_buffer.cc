@@ -343,7 +343,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
       new GpuScheduler(command_buffer.get(), decoder_.get(), decoder_.get()));
   command_buffer->SetGetBufferChangeCallback(base::Bind(
       &GpuScheduler::SetGetBuffer, base::Unretained(gpu_scheduler_.get())));
-  command_buffer_ = command_buffer.Pass();
+  command_buffer_ = std::move(command_buffer);
 
   decoder_->set_engine(gpu_scheduler_.get());
 

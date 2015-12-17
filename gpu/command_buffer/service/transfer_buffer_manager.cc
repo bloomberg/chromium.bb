@@ -69,7 +69,7 @@ bool TransferBufferManager::RegisterTransferBuffer(
   }
 
   // Register the shared memory with the ID.
-  scoped_refptr<Buffer> buffer(new gpu::Buffer(buffer_backing.Pass()));
+  scoped_refptr<Buffer> buffer(new gpu::Buffer(std::move(buffer_backing)));
 
   // Check buffer alignment is sane.
   DCHECK(!(reinterpret_cast<uintptr_t>(buffer->memory()) &

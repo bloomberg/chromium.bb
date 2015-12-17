@@ -103,7 +103,7 @@ void CommandBufferService::SetGetBuffer(int32 transfer_buffer_id) {
 
 void CommandBufferService::SetSharedStateBuffer(
     scoped_ptr<BufferBacking> shared_state_buffer) {
-  shared_state_buffer_ = shared_state_buffer.Pass();
+  shared_state_buffer_ = std::move(shared_state_buffer);
   DCHECK(shared_state_buffer_->GetSize() >= sizeof(*shared_state_));
 
   shared_state_ =
@@ -132,7 +132,7 @@ scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
   *id = next_id++;
 
   if (!RegisterTransferBuffer(
-          *id, MakeBackingFromSharedMemory(shared_memory.Pass(), size))) {
+          *id, MakeBackingFromSharedMemory(std::move(shared_memory), size))) {
     if (error_ == error::kNoError)
       error_ = gpu::error::kOutOfBounds;
     *id = -1;
@@ -160,7 +160,8 @@ scoped_refptr<Buffer> CommandBufferService::GetTransferBuffer(int32 id) {
 bool CommandBufferService::RegisterTransferBuffer(
     int32 id,
     scoped_ptr<BufferBacking> buffer) {
-  return transfer_buffer_manager_->RegisterTransferBuffer(id, buffer.Pass());
+  return transfer_buffer_manager_->RegisterTransferBuffer(id,
+                                                          std::move(buffer));
 }
 
 void CommandBufferService::SetToken(int32 token) {

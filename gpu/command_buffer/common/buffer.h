@@ -67,13 +67,14 @@ static inline scoped_ptr<BufferBacking> MakeBackingFromSharedMemory(
     scoped_ptr<base::SharedMemory> shared_memory,
     size_t size) {
   return scoped_ptr<BufferBacking>(
-      new SharedMemoryBufferBacking(shared_memory.Pass(), size));
+      new SharedMemoryBufferBacking(std::move(shared_memory), size));
 }
 
 static inline scoped_refptr<Buffer> MakeBufferFromSharedMemory(
     scoped_ptr<base::SharedMemory> shared_memory,
     size_t size) {
-  return new Buffer(MakeBackingFromSharedMemory(shared_memory.Pass(), size));
+  return new Buffer(
+      MakeBackingFromSharedMemory(std::move(shared_memory), size));
 }
 
 // Generates GUID which can be used to trace buffer using an Id.

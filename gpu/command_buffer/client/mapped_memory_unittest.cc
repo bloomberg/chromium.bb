@@ -90,7 +90,7 @@ class MemoryChunkTest : public MappedMemoryTestBase {
     MappedMemoryTestBase::SetUp();
     scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
     shared_memory->CreateAndMapAnonymous(kBufferSize);
-    buffer_ = MakeBufferFromSharedMemory(shared_memory.Pass(), kBufferSize);
+    buffer_ = MakeBufferFromSharedMemory(std::move(shared_memory), kBufferSize);
     chunk_.reset(new MemoryChunk(kShmId, buffer_, helper_.get()));
   }
 

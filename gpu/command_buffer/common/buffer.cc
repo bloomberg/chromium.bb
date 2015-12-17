@@ -13,7 +13,7 @@ namespace gpu {
 SharedMemoryBufferBacking::SharedMemoryBufferBacking(
     scoped_ptr<base::SharedMemory> shared_memory,
     size_t size)
-    : shared_memory_(shared_memory.Pass()), size_(size) {}
+    : shared_memory_(std::move(shared_memory)), size_(size) {}
 
 SharedMemoryBufferBacking::~SharedMemoryBufferBacking() {}
 
@@ -24,7 +24,7 @@ void* SharedMemoryBufferBacking::GetMemory() const {
 size_t SharedMemoryBufferBacking::GetSize() const { return size_; }
 
 Buffer::Buffer(scoped_ptr<BufferBacking> backing)
-    : backing_(backing.Pass()),
+    : backing_(std::move(backing)),
       memory_(backing_->GetMemory()),
       size_(backing_->GetSize()) {
   DCHECK(memory_) << "The memory must be mapped to create a Buffer";

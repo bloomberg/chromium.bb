@@ -42,11 +42,11 @@ TEST_F(TransferBufferManagerTest, CanRegisterTransferBuffer) {
   shm->CreateAndMapAnonymous(kBufferSize);
   base::SharedMemory* shm_raw_pointer = shm.get();
   scoped_ptr<SharedMemoryBufferBacking> backing(
-      new SharedMemoryBufferBacking(shm.Pass(), kBufferSize));
+      new SharedMemoryBufferBacking(std::move(shm), kBufferSize));
   SharedMemoryBufferBacking* backing_raw_ptr = backing.get();
 
   EXPECT_TRUE(
-      transfer_buffer_manager_->RegisterTransferBuffer(1, backing.Pass()));
+      transfer_buffer_manager_->RegisterTransferBuffer(1, std::move(backing)));
   scoped_refptr<Buffer> registered =
       transfer_buffer_manager_->GetTransferBuffer(1);
 

@@ -1897,7 +1897,7 @@ MockCommandBufferEngine() {
 
   scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
   shm->CreateAndMapAnonymous(kSharedBufferSize);
-  valid_buffer_ = MakeBufferFromSharedMemory(shm.Pass(), kSharedBufferSize);
+  valid_buffer_ = MakeBufferFromSharedMemory(std::move(shm), kSharedBufferSize);
 
   ClearSharedMemory();
 }

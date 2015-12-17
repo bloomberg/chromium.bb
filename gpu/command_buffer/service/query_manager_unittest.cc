@@ -101,13 +101,13 @@ class QueryManagerTest : public GpuServiceTest {
     MockCommandBufferEngine() {
       scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
       shared_memory->CreateAndMapAnonymous(kSharedBufferSize);
-      valid_buffer_ =
-          MakeBufferFromSharedMemory(shared_memory.Pass(), kSharedBufferSize);
+      valid_buffer_ = MakeBufferFromSharedMemory(std::move(shared_memory),
+                                                 kSharedBufferSize);
 
       scoped_ptr<base::SharedMemory> shared_memory2(new base::SharedMemory());
       shared_memory2->CreateAndMapAnonymous(kSharedBufferSize);
-      valid_buffer2_ =
-          MakeBufferFromSharedMemory(shared_memory2.Pass(), kSharedBufferSize);
+      valid_buffer2_ = MakeBufferFromSharedMemory(std::move(shared_memory2),
+                                                  kSharedBufferSize);
 
       ClearSharedMemory();
     }
