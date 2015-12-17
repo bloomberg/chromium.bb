@@ -101,7 +101,6 @@
     'version_info.gypi',
     'version_ui.gypi',
     'web_resource.gypi',
-    'web_restriction.gypi',
     'webdata.gypi',
     'webdata_services.gypi',
   ],

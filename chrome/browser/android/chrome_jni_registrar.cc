@@ -112,7 +112,6 @@
 #include "chrome/browser/ssl/security_state_model_android.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_feedback_reporter_android.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_android.h"
-#include "chrome/browser/supervised_user/supervised_user_content_provider_android.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_dialog_controller_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_dialog_result.h"
@@ -335,7 +334,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"SSLClientCertificateRequest", RegisterSSLClientCertificateRequestAndroid},
     {"StartupMetricUtils", RegisterStartupMetricUtils},
     {"StaticTabSceneLayer", chrome::android::RegisterStaticTabSceneLayer},
-    {"SupervisedUserContentProvider", SupervisedUserContentProvider::Register},
     {"Sync", syncer::RegisterSyncJni},
     {"TabAndroid", TabAndroid::RegisterTabAndroid},
     {"TabContentManager", chrome::android::RegisterTabContentManager},

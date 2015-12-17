@@ -35,10 +35,6 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
                    SupervisedUserURLFilter::FilteringBehaviorReason reason,
                    const base::Callback<void(bool)>& callback);
 
-  static std::string GetHTMLContents(
-      Profile* profile,
-      SupervisedUserURLFilter::FilteringBehaviorReason reason);
-
  private:
   SupervisedUserInterstitial(
       content::WebContents* web_contents,
