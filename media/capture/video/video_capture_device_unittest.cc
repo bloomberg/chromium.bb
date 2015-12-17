@@ -19,6 +19,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/windows_version.h"  // For fine-grained suppression.
 #include "media/capture/video/win/video_capture_device_factory_win.h"
 #endif
 
@@ -439,6 +440,12 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
     VLOG(1) << "No camera supports MJPEG format. Exiting test.";
     return;
   }
+#if defined(OS_WIN)
+  if (base::win::GetVersion() == base::win::VERSION_WIN10) {
+    VLOG(1) << "Skipped on Win10: http://crbug.com/570604.";
+    return;
+  }
+#endif
   scoped_ptr<VideoCaptureDevice> device(
       video_capture_device_factory_->Create(*name));
   ASSERT_TRUE(device);
