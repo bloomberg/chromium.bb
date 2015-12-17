@@ -207,20 +207,6 @@ SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
       read_only_(read_only),
       requested_size_(0) {}
 
-SharedMemory::SharedMemory(const SharedMemoryHandle& handle,
-                           bool read_only,
-                           ProcessHandle process)
-    : mapped_memory_mechanism_(SharedMemoryHandle::POSIX),
-      readonly_mapped_file_(-1),
-      mapped_size_(0),
-      memory_(NULL),
-      read_only_(read_only),
-      requested_size_(0) {
-  // We don't handle this case yet (note the ignored parameter); let's die if
-  // someone comes calling.
-  NOTREACHED();
-}
-
 SharedMemory::~SharedMemory() {
   Unmap();
   Close();
