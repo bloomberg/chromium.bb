@@ -797,6 +797,8 @@
             'style/StyleSelfAlignmentData.h',
             'style/StyleSurroundData.cpp',
             'style/StyleTransformData.cpp',
+            'style/StyleVariableData.cpp',
+            'style/StyleVariableData.h',
             'style/StyleVisualData.cpp',
             'style/StyleWillChangeData.cpp',
             'layout/svg/line/SVGInlineFlowBox.cpp',

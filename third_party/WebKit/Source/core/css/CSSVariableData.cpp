@@ -27,6 +27,11 @@ template<typename CharacterType> void CSSVariableData::updateTokens(const CSSPar
     ASSERT(currentOffset == m_backingString.getCharacters<CharacterType>() + m_backingString.length());
 }
 
+bool CSSVariableData::operator==(const CSSVariableData& other) const
+{
+    return tokens() == other.tokens();
+}
+
 void CSSVariableData::consumeAndUpdateTokens(const CSSParserTokenRange& range)
 {
     StringBuilder stringBuilder;

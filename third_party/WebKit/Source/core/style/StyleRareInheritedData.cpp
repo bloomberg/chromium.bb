@@ -223,7 +223,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_rubyPosition == o.m_rubyPosition
         && dataEquivalent(listStyleImage.get(), o.listStyleImage.get())
         && dataEquivalent(appliedTextDecorations, o.appliedTextDecorations)
-        && variables == o.variables;
+        && dataEquivalent(variables, o.variables);
 }
 
 bool StyleRareInheritedData::shadowDataEquivalent(const StyleRareInheritedData& o) const

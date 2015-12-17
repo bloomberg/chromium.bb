@@ -1,3 +1,7 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #ifndef StyleVariableData_h
 #define StyleVariableData_h
 
@@ -14,7 +18,7 @@ public:
     static PassRefPtr<StyleVariableData> create() { return adoptRef(new StyleVariableData()); }
     PassRefPtr<StyleVariableData> copy() const { return adoptRef(new StyleVariableData(*this)); }
 
-    bool operator==(const StyleVariableData& other) const { return other.m_data == m_data; }
+    bool operator==(const StyleVariableData& other) const;
     bool operator!=(const StyleVariableData& other) const { return !(*this == other); }
 
     void setVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value) { m_data.set(name, value); }

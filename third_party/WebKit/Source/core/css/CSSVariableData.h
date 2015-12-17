@@ -30,7 +30,9 @@ public:
 
     CSSParserTokenRange tokenRange() { return m_tokens; }
 
-    const Vector<CSSParserToken>& tokens() { return m_tokens; }
+    const Vector<CSSParserToken>& tokens() const { return m_tokens; }
+
+    bool operator==(const CSSVariableData& other) const;
 
     bool needsVariableResolution() const { return m_needsVariableResolution; }
 private:
