@@ -2300,7 +2300,10 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
 
   void WriteNextFile() {
     DCHECK(!waiting_for_callback_);
-    DCHECK(!aborted_);
+    if (aborted_) {
+      self_ref_ = nullptr;
+      return;
+    }
     if (iter_ == blobs_.end()) {
       DCHECK(!self_ref_.get());
       callback_->Run(true);
