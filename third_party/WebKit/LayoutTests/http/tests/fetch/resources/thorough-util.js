@@ -5,6 +5,11 @@ var BASE_URL = BASE_ORIGIN +
   '/serviceworker/resources/fetch-access-control.php?';
 var OTHER_BASE_URL = OTHER_ORIGIN +
   '/serviceworker/resources/fetch-access-control.php?';
+var BASE_URL_WITH_USERNAME = BASE_URL.replace('://', '://user@');
+var OTHER_BASE_URL_WITH_USERNAME = OTHER_BASE_URL.replace('://', '://user@');
+var BASE_URL_WITH_PASSWORD = BASE_URL.replace('://', '://user:pass@');
+var OTHER_BASE_URL_WITH_PASSWORD =
+  OTHER_BASE_URL.replace('://', '://user:pass@');
 var REDIRECT_URL = BASE_ORIGIN +
   '/serviceworker/resources/redirect.php?Redirect=';
 var OTHER_REDIRECT_URL = OTHER_ORIGIN +
