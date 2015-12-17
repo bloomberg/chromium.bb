@@ -302,7 +302,9 @@ void CastMetricsServiceClient::OnApplicationNotIdle() {
 
 void CastMetricsServiceClient::ProcessExternalEvents(const base::Closure& cb) {
 #if defined(OS_LINUX)
-  external_metrics_->ProcessExternalEvents(cb);
+  external_metrics_->ProcessExternalEvents(
+      base::Bind(&ExternalMetrics::ProcessExternalEvents,
+                 base::Unretained(platform_metrics_), cb));
 #else
   cb.Run();
 #endif  // defined(OS_LINUX)
