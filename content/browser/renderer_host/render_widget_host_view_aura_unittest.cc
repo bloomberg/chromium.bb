@@ -428,7 +428,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     }
 
     if (widget_host_uses_shutdown_to_destroy_)
-      widget_host_->Shutdown();
+      widget_host_->ShutdownAndDestroyWidget(true);
     else
       delete widget_host_;
 

@@ -283,7 +283,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (render_widget_host_ &&
       render_widget_host_->owned_by_render_frame_host()) {
     // Shutdown causes the RenderWidgetHost to delete itself.
-    render_widget_host_->Shutdown();
+    render_widget_host_->ShutdownAndDestroyWidget(true);
   }
 
   // Notify the FrameTree that this RFH is going away, allowing it to shut down

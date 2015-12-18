@@ -196,8 +196,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
     return owned_by_render_frame_host_;
   }
 
-  // Tells the renderer to die and then calls Destroy().
-  virtual void Shutdown();
+  // Tells the renderer to die and optionally delete |this|.
+  void ShutdownAndDestroyWidget(bool also_delete);
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -522,19 +522,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // crashes, its View is destroyed and this pointer becomes NULL, even though
   // render_view_host_ lives on to load another URL (creating a new View while
   // doing so).
-  RenderWidgetHostViewBase* view_;
-
-  // A weak pointer to the view. The above pointer should be weak, but changing
-  // that to be weak causes crashes on Android.
-  // TODO(ccameron): Fix this.
-  // http://crbug.com/404828
-  base::WeakPtr<RenderWidgetHostViewBase> view_weak_;
+  base::WeakPtr<RenderWidgetHostViewBase> view_;
 
  private:
   friend class MockRenderWidgetHost;
 
-  // Tell this object to destroy itself.
-  void Destroy();
+  // Tell this object to destroy itself. If |also_delete| is specified, the
+  // destructor is called as well.
+  void Destroy(bool also_delete);
 
   // Called by |hang_monitor_timeout_| on delayed response from the renderer.
   void RendererIsUnresponsive();
@@ -645,6 +640,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // tab only when we lose our renderer and not if a paint occurs during
   // initialization.
   bool renderer_initialized_;
+
+  // True if |Destroy()| has been called.
+  bool destroyed_;
 
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-NULL until DetachDelegate() is called.

@@ -179,8 +179,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                                            RenderProcessHost* process,
                                            int32_t routing_id,
                                            bool hidden)
-    : view_(NULL),
-      renderer_initialized_(false),
+    : renderer_initialized_(false),
+      destroyed_(false),
       delegate_(delegate),
       owner_delegate_(nullptr),
       process_(process),
@@ -251,16 +251,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 }
 
 RenderWidgetHostImpl::~RenderWidgetHostImpl() {
-  if (view_weak_)
-    view_weak_->RenderWidgetHostGone();
-  SetView(NULL);
-
-  process_->RemoveRoute(routing_id_);
-  g_routing_id_widget_map.Get().erase(
-      RenderWidgetHostID(process_->GetID(), routing_id_));
-
-  if (delegate_)
-    delegate_->RenderWidgetDeleted(this);
+  if (!destroyed_)
+    Destroy(false);
 }
 
 // static
@@ -320,10 +312,9 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
 
 void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
   if (view)
-    view_weak_ = view->GetWeakPtr();
+    view_ = view->GetWeakPtr();
   else
-    view_weak_.reset();
-  view_ = view;
+    view_.reset();
 
   // If the renderer has not yet been initialized, then the surface ID
   // namespace will be sent during initialization.
@@ -344,7 +335,7 @@ int RenderWidgetHostImpl::GetRoutingID() const {
 }
 
 RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() const {
-  return view_;
+  return view_.get();
 }
 
 gfx::NativeViewId RenderWidgetHostImpl::GetNativeViewId() const {
@@ -427,7 +418,7 @@ void RenderWidgetHostImpl::InitForFrame() {
   renderer_initialized_ = true;
 }
 
-void RenderWidgetHostImpl::Shutdown() {
+void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   RejectMouseLockOrUnlockIfNecessary();
 
   if (process_->HasConnection()) {
@@ -436,7 +427,7 @@ void RenderWidgetHostImpl::Shutdown() {
     DCHECK(rv);
   }
 
-  Destroy();
+  Destroy(also_delete);
 }
 
 bool RenderWidgetHostImpl::IsLoading() const {
@@ -1369,8 +1360,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
 
   if (view_) {
     view_->RenderProcessGone(status, exit_code);
-    view_ = nullptr;  // The View should be deleted by RenderProcessGone.
-    view_weak_.reset();
+    view_.reset();  // The View should be deleted by RenderProcessGone.
   }
 
   // Reconstruct the input router to ensure that it has fresh state for a new
@@ -1446,10 +1436,12 @@ void RenderWidgetHostImpl::SetAutoResize(bool enable,
   max_size_for_auto_resize_ = max_size;
 }
 
-void RenderWidgetHostImpl::Destroy() {
+void RenderWidgetHostImpl::Destroy(bool also_delete) {
+  DCHECK(!destroyed_);
+  destroyed_ = true;
+
   NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      Source<RenderWidgetHost>(this),
+      NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED, Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
 
   // Tell the view to die.
@@ -1458,10 +1450,18 @@ void RenderWidgetHostImpl::Destroy() {
   // do it after this call to view_->Destroy().
   if (view_) {
     view_->Destroy();
-    view_ = nullptr;
+    view_.reset();
   }
 
-  delete this;
+  process_->RemoveRoute(routing_id_);
+  g_routing_id_widget_map.Get().erase(
+      RenderWidgetHostID(process_->GetID(), routing_id_));
+
+  if (delegate_)
+    delegate_->RenderWidgetDeleted(this);
+
+  if (also_delete)
+    delete this;
 }
 
 void RenderWidgetHostImpl::RendererIsUnresponsive() {
@@ -1495,14 +1495,14 @@ void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
     // TODO(evanm): This synchronously ends up calling "delete this".
     // Is that really what we want in response to this message?  I'm matching
     // previous behavior of the code here.
-    Destroy();
+    Destroy(true);
   } else {
     RendererExited(static_cast<base::TerminationStatus>(status), exit_code);
   }
 }
 
 void RenderWidgetHostImpl::OnClose() {
-  Shutdown();
+  ShutdownAndDestroyWidget(true);
 }
 
 void RenderWidgetHostImpl::OnSetTooltipText(
@@ -1732,7 +1732,8 @@ void RenderWidgetHostImpl::SetTouchEventEmulationEnabled(
   if (enabled) {
     if (!touch_emulator_) {
       touch_emulator_.reset(new TouchEmulator(
-          this, view_ ? content::GetScaleFactorForView(view_) : 1.0f));
+          this,
+          view_.get() ? content::GetScaleFactorForView(view_.get()) : 1.0f));
     }
     touch_emulator_->Enable(config_type);
   } else {

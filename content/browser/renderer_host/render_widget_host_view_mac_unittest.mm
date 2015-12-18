@@ -723,7 +723,7 @@ TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
   testing::Mock::VerifyAndClearExpectations(rwh);
 
   // Clean up.
-  rwh->Shutdown();
+  rwh->ShutdownAndDestroyWidget(true);
 }
 
 TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
@@ -764,7 +764,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   ASSERT_EQ(2U, process_host->sink().message_count());
 
   // Clean up.
-  host->Shutdown();
+  host->ShutdownAndDestroyWidget(true);
 }
 
 TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
@@ -821,7 +821,7 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
   ASSERT_EQ(NO, view_delegate.get().unhandledWheelEventReceived);
 
   // Clean up.
-  host->Shutdown();
+  host->ShutdownAndDestroyWidget(true);
 }
 
 // Tests that when view initiated shutdown happens (i.e. RWHView is deleted
@@ -855,7 +855,7 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
   RecycleAndWait();
 
   // Clean up.
-  rwh->Shutdown();
+  rwh->ShutdownAndDestroyWidget(true);
 
   // Let |guest_rwhv_weak| have a chance to delete itself.
   base::RunLoop run_loop;
@@ -905,7 +905,7 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
   EXPECT_TRUE(base::get<0>(sent_background));
 
-  host->Shutdown();
+  host->ShutdownAndDestroyWidget(true);
 }
 
 class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
@@ -1057,7 +1057,7 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
   }
 
   // Clean up.
-  host->Shutdown();
+  host->ShutdownAndDestroyWidget(true);
 }
 
 

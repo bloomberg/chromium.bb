@@ -960,7 +960,7 @@ void RenderViewHostImpl::RenderWidgetDidInit() {
   PostRenderViewReady();
 }
 
-void RenderViewHostImpl::Shutdown() {
+void RenderViewHostImpl::ShutdownAndDestroy() {
   // We can't release the SessionStorageNamespace until our peer
   // in the renderer has wound down.
   if (GetProcess()->HasConnection()) {
@@ -970,7 +970,8 @@ void RenderViewHostImpl::Shutdown() {
         GetRoutingID());
   }
 
-  RenderWidgetHostImpl::Shutdown();
+  GetWidget()->ShutdownAndDestroyWidget(false);
+  delete this;
 }
 
 void RenderViewHostImpl::RenderWidgetWillBeHidden() {

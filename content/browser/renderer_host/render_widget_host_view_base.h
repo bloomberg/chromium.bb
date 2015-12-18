@@ -260,13 +260,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void RenderProcessGone(base::TerminationStatus status,
                                  int error_code) = 0;
 
-  // Notifies the View that the renderer's host has ceased to exist.
-  // The default implementation of this is a no-op. This hack exists to fix
-  // a crash on the branch.
-  // TODO(ccameron): Clean this up.
-  // http://crbug.com/404828
-  virtual void RenderWidgetHostGone() {}
-
   // Tells the View to destroy itself.
   virtual void Destroy() = 0;
 

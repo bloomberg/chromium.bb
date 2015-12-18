@@ -106,6 +106,9 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                      bool has_initialized_audio_host);
   ~RenderViewHostImpl() override;
 
+  // Shuts down this RenderViewHost and deletes it.
+  void ShutdownAndDestroy();
+
   // RenderViewHost implementation.
   bool Send(IPC::Message* msg) override;
   RenderWidgetHostImpl* GetWidget() const override;
@@ -259,7 +262,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   }
 
   // RenderWidgetHost public overrides.
-  void Shutdown() override;
   bool OnMessageReceived(const IPC::Message& msg) override;
 
   // Creates a new RenderView with the given route id.

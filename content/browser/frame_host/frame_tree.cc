@@ -376,7 +376,7 @@ void FrameTree::ReleaseRenderViewHostRef(RenderViewHostImpl* render_view_host) {
     CHECK_GT(iter->second->ref_count(), 0);
     iter->second->decrement_ref_count();
     if (iter->second->ref_count() == 0) {
-      iter->second->Shutdown();
+      iter->second->ShutdownAndDestroy();
       render_view_host_map_.erase(iter);
     }
   } else {
@@ -397,7 +397,7 @@ void FrameTree::ReleaseRenderViewHostRef(RenderViewHostImpl* render_view_host) {
       CHECK_GT(render_view_host->ref_count(), 0);
       render_view_host->decrement_ref_count();
       if (render_view_host->ref_count() == 0) {
-        render_view_host->Shutdown();
+        render_view_host->ShutdownAndDestroy();
         render_view_host_pending_shutdown_map_.erase(multi_iter);
       }
       break;

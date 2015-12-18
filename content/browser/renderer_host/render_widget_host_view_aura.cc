@@ -2619,7 +2619,7 @@ ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
 void RenderWidgetHostViewAura::Shutdown() {
   if (!in_shutdown_) {
     in_shutdown_ = true;
-    host_->Shutdown();
+    host_->ShutdownAndDestroyWidget(true);
   }
 }
 

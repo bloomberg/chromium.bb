@@ -1642,8 +1642,10 @@ void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {
   // This method is being called to enter renderer-initiated fullscreen mode.
   // Make sure any existing fullscreen widget is shut down first.
   RenderWidgetHostView* const widget_view = GetFullscreenRenderWidgetHostView();
-  if (widget_view)
-    RenderWidgetHostImpl::From(widget_view->GetRenderWidgetHost())->Shutdown();
+  if (widget_view) {
+    RenderWidgetHostImpl::From(widget_view->GetRenderWidgetHost())
+        ->ShutdownAndDestroyWidget(true);
+  }
 
   if (delegate_)
     delegate_->EnterFullscreenModeForTab(this, origin);
@@ -1657,8 +1659,10 @@ void WebContentsImpl::ExitFullscreenMode() {
   // This method is being called to leave renderer-initiated fullscreen mode.
   // Make sure any existing fullscreen widget is shut down first.
   RenderWidgetHostView* const widget_view = GetFullscreenRenderWidgetHostView();
-  if (widget_view)
-    RenderWidgetHostImpl::From(widget_view->GetRenderWidgetHost())->Shutdown();
+  if (widget_view) {
+    RenderWidgetHostImpl::From(widget_view->GetRenderWidgetHost())
+        ->ShutdownAndDestroyWidget(true);
+  }
 
 #if defined(OS_ANDROID)
   ContentVideoView* video_view = ContentVideoView::GetInstance();

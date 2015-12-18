@@ -303,7 +303,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const std::vector<gfx::Rect>& character_bounds) override;
   void RenderProcessGone(base::TerminationStatus status,
                          int error_code) override;
-  void RenderWidgetHostGone() override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
   void SelectionChanged(const base::string16& text,

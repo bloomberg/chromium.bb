@@ -61,8 +61,6 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -1059,23 +1057,6 @@ void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
   Destroy();
 }
 
-void RenderWidgetHostViewMac::RenderWidgetHostGone() {
-  // Clear SurfaceID namespace ownership before we shutdown the
-  // compositor.
-  if (UseSurfacesEnabled() && render_widget_host_ &&
-      render_widget_host_->delegate() &&
-      render_widget_host_->delegate()->GetInputEventRouter()) {
-    render_widget_host_->delegate()
-        ->GetInputEventRouter()
-        ->RemoveSurfaceIdNamespaceOwner(GetSurfaceIdNamespace());
-  }
-
-  // Destroy the DelegatedFrameHost, to prevent crashes when Destroy is never
-  // called on the view.
-  // http://crbug.com/404828
-  ShutdownBrowserCompositor();
-}
-
 void RenderWidgetHostViewMac::Destroy() {
   [[NSNotificationCenter defaultCenter]
       removeObserver:cocoa_view_
@@ -1649,7 +1630,7 @@ bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
 
 void RenderWidgetHostViewMac::ShutdownHost() {
   weak_factory_.InvalidateWeakPtrs();
-  render_widget_host_->Shutdown();
+  render_widget_host_->ShutdownAndDestroyWidget(true);
   // Do not touch any members at this point, |this| has been deleted.
 }
 
@@ -2113,7 +2094,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
         renderWidgetHostView_->fullscreen_parent_host_view();
     if (parent)
       parent->cocoa_view()->suppressNextEscapeKeyUp_ = YES;
-    widgetHost->Shutdown();
+    widgetHost->ShutdownAndDestroyWidget(true);
     return;
   }
 
