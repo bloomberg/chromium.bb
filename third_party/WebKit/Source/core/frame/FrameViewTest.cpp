@@ -136,6 +136,9 @@ TEST_F(FrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases)
     document().getElementById("a")->layoutObject()->setShouldDoFullPaintInvalidation();
     EXPECT_TRUE(chromeClient().m_hasScheduledAnimation);
     chromeClient().m_hasScheduledAnimation = false;
+    document().getElementById("a")->layoutObject()->setShouldDoFullPaintInvalidation();
+    EXPECT_TRUE(chromeClient().m_hasScheduledAnimation);
+    chromeClient().m_hasScheduledAnimation = false;
     document().view()->updateAllLifecyclePhases();
     EXPECT_FALSE(chromeClient().m_hasScheduledAnimation);
 }

@@ -3273,18 +3273,15 @@ void LayoutObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reas
 
     bool isUpgradingDelayedFullToFull = m_bitfields.fullPaintInvalidationReason() == PaintInvalidationDelayedFull && reason != PaintInvalidationDelayedFull;
 
-    if (m_bitfields.fullPaintInvalidationReason() != PaintInvalidationNone && !isUpgradingDelayedFullToFull)
-        return;
-
-    if (reason == PaintInvalidationFull)
-        reason = documentLifecycleBasedPaintInvalidationReason(document().lifecycle());
-    m_bitfields.setFullPaintInvalidationReason(reason);
-
-    if (!isUpgradingDelayedFullToFull) {
-        ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
-        markContainerChainForPaintInvalidation();
-        frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
+    if (m_bitfields.fullPaintInvalidationReason() == PaintInvalidationNone || isUpgradingDelayedFullToFull) {
+        if (reason == PaintInvalidationFull)
+            reason = documentLifecycleBasedPaintInvalidationReason(document().lifecycle());
+        m_bitfields.setFullPaintInvalidationReason(reason);
+        if (!isUpgradingDelayedFullToFull)
+            markContainerChainForPaintInvalidation();
     }
+
+    frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
 void LayoutObject::setMayNeedPaintInvalidation()
