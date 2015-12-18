@@ -86,13 +86,4 @@
 #error Either OS(WIN) or OS(POSIX) needs to be set.
 #endif
 
-#ifdef __cplusplus
-
-// These undefs match up with defines in build/mac/Prefix.h for Mac OS X.
-// Helps us catch if anyone uses new or delete by accident in code and doesn't include "config.h".
-#undef new
-#undef delete
-
-#endif
-
 #endif // WTF_build_config_h
