@@ -1226,8 +1226,7 @@ scoped_refptr<base::trace_event::ConvertableToTraceFormat> GraphicsLayer::TakeDe
 
 PaintController& GraphicsLayer::paintController()
 {
-    // TODO(wangxianzhu): Enable this assert after fixing root cause of crbug.com/570445.
-    // RELEASE_ASSERT(drawsContent());
+    RELEASE_ASSERT(drawsContent());
     if (!m_paintController)
         m_paintController = PaintController::create();
     return *m_paintController;
