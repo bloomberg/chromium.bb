@@ -254,13 +254,6 @@ uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
   return ui::POST_DISPATCH_NONE;
 }
 
-// static
-void DesktopScreenX11::UpdateDeviceScaleFactorForTest() {
-  DesktopScreenX11* screen =
-      static_cast<DesktopScreenX11*>(gfx::Screen::GetNativeScreen());
-  screen->ConfigureTimerFired();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopScreenX11, private:
 

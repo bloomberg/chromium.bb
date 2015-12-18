@@ -533,6 +533,8 @@
       'test/widget_test_aura.cc',
     ],
     'views_test_support_desktop_aura_x11_sources': [
+      'test/desktop_screen_x11_test_api.h',
+      'test/desktop_screen_x11_test_api.cc',
       'test/ui_controls_factory_desktop_aurax11.cc',
       'test/ui_controls_factory_desktop_aurax11.h',
     ],

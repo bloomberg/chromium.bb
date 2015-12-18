@@ -39,7 +39,7 @@
 #include "ui/gfx/switches.h"
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-#include "ui/views/widget/desktop_aura/desktop_screen_x11.h"
+#include "ui/views/test/desktop_screen_x11_test_api.h"
 #endif
 
 namespace content {
@@ -396,7 +396,7 @@ void Shell::SetDeviceScaleFactor(float scale) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kForceDeviceScaleFactor, base::StringPrintf("%f", scale));
 #if defined(USE_X11)
-  views::DesktopScreenX11::UpdateDeviceScaleFactorForTest();
+  views::test::DesktopScreenX11TestApi::UpdateDisplays();
 #endif
 #endif
   RenderWidgetHostView* host_view = web_contents_->GetRenderWidgetHostView();

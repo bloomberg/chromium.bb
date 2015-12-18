@@ -22,6 +22,10 @@ typedef struct _XDisplay Display;
 namespace views {
 class DesktopScreenX11Test;
 
+namespace test {
+class DesktopScreenX11TestApi;
+}
+
 // Our singleton screen implementation that talks to xrandr.
 class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
                                       public ui::PlatformEventDispatcher {
@@ -47,10 +51,9 @@ class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
   bool CanDispatchEvent(const ui::PlatformEvent& event) override;
   uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
-  static void UpdateDeviceScaleFactorForTest();
-
  private:
   friend class DesktopScreenX11Test;
+  friend class test::DesktopScreenX11TestApi;
 
   // Constructor used in tests.
   DesktopScreenX11(const std::vector<gfx::Display>& test_displays);
