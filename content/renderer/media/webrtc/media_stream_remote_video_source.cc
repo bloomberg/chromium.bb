@@ -148,6 +148,12 @@ MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
 
 MediaStreamRemoteVideoSource::~MediaStreamRemoteVideoSource() {
   DCHECK(CalledOnValidThread());
+  DCHECK(!observer_);
+}
+
+void MediaStreamRemoteVideoSource::OnSourceTerminated() {
+  DCHECK(CalledOnValidThread());
+  StopSourceImpl();
 }
 
 void MediaStreamRemoteVideoSource::GetCurrentSupportedFormats(
@@ -177,10 +183,18 @@ void MediaStreamRemoteVideoSource::StartSourceImpl(
 
 void MediaStreamRemoteVideoSource::StopSourceImpl() {
   DCHECK(CalledOnValidThread());
+  // StopSourceImpl is called either when MediaStreamTrack.stop is called from
+  // JS or blink gc the MediaStreamSource object or when OnSourceTerminated()
+  // is called. Garbage collection will happen after the PeerConnection no
+  // longer receives the video track.
+  if (!observer_)
+    return;
   DCHECK(state() != MediaStreamVideoSource::ENDED);
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->RemoveRenderer(delegate_.get());
+  // This removes the references to the webrtc video track.
+  observer_.reset();
 }
 
 webrtc::VideoRendererInterface*

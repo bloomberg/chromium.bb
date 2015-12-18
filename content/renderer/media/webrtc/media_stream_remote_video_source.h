@@ -26,6 +26,11 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
   MediaStreamRemoteVideoSource(scoped_ptr<TrackObserver> observer);
   ~MediaStreamRemoteVideoSource() override;
 
+  // Should be called when the remote video track this source originates from is
+  // no longer received on a PeerConnection. This cleans up the references to
+  // the webrtc::MediaStreamTrackInterface instance held by |observer_|.
+  void OnSourceTerminated();
+
  protected:
   // Implements MediaStreamVideoSource.
   void GetCurrentSupportedFormats(

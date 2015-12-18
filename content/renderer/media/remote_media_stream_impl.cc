@@ -140,7 +140,13 @@ class RemoteVideoTrackAdapter
   }
 
  protected:
-  ~RemoteVideoTrackAdapter() override {}
+  ~RemoteVideoTrackAdapter() override {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    if (initialized()) {
+      static_cast<MediaStreamRemoteVideoSource*>(
+          webkit_track()->source().extraData())->OnSourceTerminated();
+    }
+  }
 
  private:
   void InitializeWebkitVideoTrack(scoped_ptr<TrackObserver> observer,

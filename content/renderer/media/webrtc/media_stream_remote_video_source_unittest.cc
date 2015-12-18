@@ -56,6 +56,7 @@ class MediaStreamRemoteVideoSourceTest
   }
 
   void TearDown() override {
+    remote_source_->OnSourceTerminated();
     webkit_source_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
   }
