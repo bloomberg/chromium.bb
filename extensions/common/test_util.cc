@@ -13,16 +13,16 @@
 namespace extensions {
 namespace test_util {
 
-ExtensionBuilder& BuildExtension(ExtensionBuilder& builder) {
-  return builder
-         .SetManifest(DictionaryBuilder()
-                      .Set("name", "Test extension")
-                      .Set("version", "1.0")
-                      .Set("manifest_version", 2));
+ExtensionBuilder BuildExtension(ExtensionBuilder builder) {
+  builder.SetManifest(DictionaryBuilder()
+                          .Set("name", "Test extension")
+                          .Set("version", "1.0")
+                          .Set("manifest_version", 2));
+  return builder;
 }
 
-ExtensionBuilder& BuildApp(ExtensionBuilder& builder) {
-  return builder.SetManifest(
+ExtensionBuilder BuildApp(ExtensionBuilder builder) {
+  builder.SetManifest(
       DictionaryBuilder()
           .Set("name", "Test extension")
           .Set("version", "1.0")
@@ -33,6 +33,7 @@ ExtensionBuilder& BuildApp(ExtensionBuilder& builder) {
                    extensions::DictionaryBuilder().Set(
                        "scripts", std::move(extensions::ListBuilder().Append(
                                       "background.js"))))));
+  return builder;
 }
 
 scoped_refptr<Extension> CreateEmptyExtension() {

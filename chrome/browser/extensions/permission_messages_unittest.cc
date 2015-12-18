@@ -52,7 +52,7 @@ class PermissionMessagesUnittest : public testing::Test {
  protected:
   void CreateAndInstallAppWithPermissions(ListBuilder required_permissions,
                                           ListBuilder optional_permissions) {
-    app_ = test_util::BuildApp(ExtensionBuilder().Pass())
+    app_ = test_util::BuildApp(ExtensionBuilder())
                .MergeManifest(
                    DictionaryBuilder()
                        .Set("permissions", std::move(required_permissions))
@@ -67,7 +67,7 @@ class PermissionMessagesUnittest : public testing::Test {
   void CreateAndInstallExtensionWithPermissions(
       ListBuilder required_permissions,
       ListBuilder optional_permissions) {
-    app_ = test_util::BuildExtension(ExtensionBuilder().Pass())
+    app_ = test_util::BuildExtension(ExtensionBuilder())
                .MergeManifest(
                    DictionaryBuilder()
                        .Set("permissions", std::move(required_permissions))

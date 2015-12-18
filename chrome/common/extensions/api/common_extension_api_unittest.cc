@@ -807,7 +807,7 @@ TEST(ExtensionAPITest, NoPermissions) {
   scoped_ptr<ExtensionAPI> extension_api(
       ExtensionAPI::CreateWithDefaultConfiguration());
   scoped_refptr<Extension> extension =
-      BuildExtension(ExtensionBuilder().Pass()).Build();
+      BuildExtension(ExtensionBuilder()).Build();
 
   for (size_t i = 0; i < arraysize(kTests); ++i) {
     EXPECT_EQ(kTests[i].expect_success,
@@ -826,10 +826,10 @@ TEST(ExtensionAPITest, ManifestKeys) {
       ExtensionAPI::CreateWithDefaultConfiguration());
 
   scoped_refptr<Extension> extension =
-      BuildExtension(ExtensionBuilder().Pass())
-      .MergeManifest(DictionaryBuilder().Set("browser_action",
-                                             DictionaryBuilder().Pass()))
-      .Build();
+      BuildExtension(ExtensionBuilder())
+          .MergeManifest(DictionaryBuilder().Set("browser_action",
+                                                 DictionaryBuilder().Pass()))
+          .Build();
 
   EXPECT_TRUE(extension_api->IsAvailable("browserAction",
                                          extension.get(),
