@@ -1,0 +1,61 @@
+<html>
+<head>
+<style>
+body {
+    --a: red;
+}
+
+#id1 {
+    --b: 44px;
+}
+
+#id2 {
+    --a: green;
+}
+
+</style>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStylesWithComputed("id1", step1);
+    function step1(node)
+    {
+        InspectorTest.addResult("==== Computed style for ID1 ====");
+        InspectorTest.dumpSelectedElementStyles(false, true);
+        InspectorTest.cssModel.computedStylePromise(node.id).then(
+            function(style) {
+                InspectorTest.addResult("value of --a: " + style.get("--a"));
+                InspectorTest.selectNodeAndWaitForStylesWithComputed("id2", step2);
+            });
+    }
+
+    function step2(node)
+    {
+        InspectorTest.addResult("==== Computed style for ID2 ====");
+        InspectorTest.dumpSelectedElementStyles(false, true);
+        InspectorTest.cssModel.computedStylePromise(node.id).then(
+            function(style) {
+                InspectorTest.addResult("value of --b: " + style.get("--b"));
+                InspectorTest.completeTest();
+            });
+    }
+
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that computed styles expand and allow tracing to style rules.
+</p>
+
+<div id="id1">
+<div id="id2">
+</div>
+</div>
+
+</body>
+</html>

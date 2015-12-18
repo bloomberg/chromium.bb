@@ -34,6 +34,7 @@ namespace blink {
 
 class CSSPrimitiveValue;
 class CSSValueList;
+class CSSVariableData;
 class ExceptionState;
 class MutableStylePropertySet;
 class Node;
@@ -64,6 +65,7 @@ public:
 
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(AtomicString customPropertyName) const;
+    const HashMap<AtomicString, RefPtr<CSSVariableData>>* getVariables() const;
 
     PassRefPtrWillBeRawPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
     bool isMonospaceFont() const;

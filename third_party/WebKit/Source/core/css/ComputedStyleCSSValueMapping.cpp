@@ -1357,11 +1357,23 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForScrollSnapCoordinate(const Vecto
 
 PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(const AtomicString customPropertyName, const ComputedStyle& style)
 {
-    CSSVariableData* data = style.variables()->getVariable(customPropertyName);
+    StyleVariableData* variables = style.variables();
+    if (!variables)
+        return nullptr;
+
+    CSSVariableData* data = variables->getVariable(customPropertyName);
     if (!data)
         return nullptr;
 
     return CSSCustomPropertyDeclaration::create(customPropertyName, data);
+}
+
+const HashMap<AtomicString, RefPtr<CSSVariableData>>* ComputedStyleCSSValueMapping::getVariables(const ComputedStyle& style)
+{
+    StyleVariableData* variables = style.variables();
+    if (variables)
+        return variables->getVariables();
+    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)

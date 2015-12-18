@@ -24,6 +24,8 @@ public:
     void setVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value) { m_data.set(name, value); }
     CSSVariableData* getVariable(const AtomicString& name) const { return m_data.get(name); }
     void removeVariable(const AtomicString& name) { return m_data.remove(name); }
+
+    const HashMap<AtomicString, RefPtr<CSSVariableData>>* getVariables() const { return &m_data; }
 private:
     StyleVariableData() = default;
     StyleVariableData(const StyleVariableData& other) : RefCounted<StyleVariableData>(), m_data(other.m_data) { }

@@ -988,6 +988,20 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
     RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
     RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(computedStyleInfo, nullptr, nullptr);
     style = inspectorStyle->buildArrayForComputedStyle();
+
+    if (!RuntimeEnabledFeatures::cssVariablesEnabled())
+        return;
+
+    const HashMap<AtomicString, RefPtr<CSSVariableData>>* variables = computedStyleInfo->getVariables();
+
+    if (variables && !variables->isEmpty()) {
+        for (const auto& it : *variables) {
+            RefPtr<TypeBuilder::CSS::CSSComputedStyleProperty> entry = TypeBuilder::CSS::CSSComputedStyleProperty::create()
+                .setName(it.key)
+                .setValue(it.value->tokenRange().serialize());
+            style->addItem(entry);
+        }
+    }
 }
 
 void InspectorCSSAgent::collectPlatformFontsForLayoutObject(LayoutObject* layoutObject, HashCountedSet<String>* fontStats)

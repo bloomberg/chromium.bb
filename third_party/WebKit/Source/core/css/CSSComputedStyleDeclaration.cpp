@@ -535,6 +535,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     return ComputedStyleCSSValueMapping::get(customPropertyName, *computeComputedStyle());
 }
 
+const HashMap<AtomicString, RefPtr<CSSVariableData>>* CSSComputedStyleDeclaration::getVariables() const
+{
+    return ComputedStyleCSSValueMapping::getVariables(*computeComputedStyle());
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID) const
 {
     Node* styledNode = this->styledNode();

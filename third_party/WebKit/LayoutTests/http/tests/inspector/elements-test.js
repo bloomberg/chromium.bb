@@ -282,9 +282,9 @@ InspectorTest.selectNodeAndWaitForStylesWithComputed = function(idValue, callbac
     callback = InspectorTest.safeWrap(callback);
     InspectorTest.selectNodeAndWaitForStyles(idValue, onSidebarRendered);
 
-    function onSidebarRendered()
+    function onSidebarRendered(node)
     {
-        InspectorTest.computedStyleWidget().doUpdate().then(callback);
+        InspectorTest.computedStyleWidget().doUpdate().then(callback.bind(null, node));
     }
 }
 

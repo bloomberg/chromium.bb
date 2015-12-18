@@ -1,0 +1,21 @@
+Tests that computed styles expand and allow tracing to style rules.
+
+==== Computed style for ID1 ====
+--b:  44px
+     44px - #id1 styles-variables.html:8 -> styles-variables.html:8:1
+display: block
+    block - div user agent stylesheet
+[expanded] 
+element.style { ()
+
+value of --a:  red
+==== Computed style for ID2 ====
+--a:  green
+     green - #id2 styles-variables.html:12 -> styles-variables.html:12:1
+display: block
+    block - div user agent stylesheet
+[expanded] 
+element.style { ()
+
+value of --b:  44px
+
