@@ -516,8 +516,19 @@ public:
     const AtomicString& baseTarget() const { return m_baseTarget; }
     void processBaseElement();
 
+    // Creates URL based on passed relative url and this documents base URL.
+    // Depending on base URL value it is possible that parent document
+    // base URL will be used instead. Uses completeURLWithOverride internally.
     KURL completeURL(const String&) const;
+    // Creates URL based on passed relative url and passed base URL override.
+    // Depending on baseURLOverride value it is possible that parent document
+    // base URL will be used instead of it. See baseURLForOverride function
+    // for details.
     KURL completeURLWithOverride(const String&, const KURL& baseURLOverride) const;
+    // Determines which base URL should be used given specified override.
+    // If override is empty or is about:blank url and parent document exists
+    // base URL of parent will be returned, passed base URL override otherwise.
+    const KURL& baseURLForOverride(const KURL& baseURLOverride) const;
 
     String userAgent() const final;
     void disableEval(const String& errorMessage) final;

@@ -4307,6 +4307,15 @@ KURL Document::completeURLWithOverride(const String& url, const KURL& baseURLOve
     if (url.isNull())
         return KURL();
     // This logic is deliberately spread over many statements in an attempt to track down http://crbug.com/312410.
+    const KURL& baseURL = baseURLForOverride(baseURLOverride);
+    if (!encoding().isValid())
+        return KURL(baseURL, url);
+    return KURL(baseURL, url, encoding());
+}
+
+const KURL& Document::baseURLForOverride(const KURL& baseURLOverride) const
+{
+    // This logic is deliberately spread over many statements in an attempt to track down http://crbug.com/312410.
     const KURL* baseURLFromParent = 0;
     bool shouldUseParentBaseURL = baseURLOverride.isEmpty();
     if (!shouldUseParentBaseURL) {
@@ -4317,10 +4326,7 @@ KURL Document::completeURLWithOverride(const String& url, const KURL& baseURLOve
         if (Document* parent = parentDocument())
             baseURLFromParent = &parent->baseURL();
     }
-    const KURL& baseURL = baseURLFromParent ? *baseURLFromParent : baseURLOverride;
-    if (!encoding().isValid())
-        return KURL(baseURL, url);
-    return KURL(baseURL, url, encoding());
+    return baseURLFromParent ? *baseURLFromParent : baseURLOverride;
 }
 
 // Support for Javascript execCommand, and related methods
