@@ -485,7 +485,7 @@ TEST_F(MediaStreamAudioProcessorTest, GetAecDumpMessageFilter) {
   base::MessageLoopForUI message_loop;
   scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_(
       new AecDumpMessageFilter(message_loop.task_runner(),
-                               message_loop.task_runner()));
+                               message_loop.task_runner(), nullptr));
 
   MockMediaConstraintFactory constraint_factory;
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(

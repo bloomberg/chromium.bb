@@ -319,6 +319,11 @@ void MockRenderProcessHost::EnableAudioDebugRecordings(
 void MockRenderProcessHost::DisableAudioDebugRecordings() {
 }
 
+void MockRenderProcessHost::EnableEventLogRecordings(
+    const base::FilePath& file) {}
+
+void MockRenderProcessHost::DisableEventLogRecordings() {}
+
 void MockRenderProcessHost::SetWebRtcLogMessageCallback(
     base::Callback<void(const std::string&)> callback) {
 }

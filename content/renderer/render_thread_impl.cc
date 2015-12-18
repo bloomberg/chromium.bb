@@ -671,12 +671,15 @@ void RenderThreadImpl::Init() {
 
   webrtc_identity_service_.reset(new WebRTCIdentityService());
 
+  peer_connection_factory_.reset(
+      new PeerConnectionDependencyFactory(p2p_socket_dispatcher_.get()));
+
   aec_dump_message_filter_ = new AecDumpMessageFilter(
-      GetIOMessageLoopProxy(), message_loop()->task_runner());
+      GetIOMessageLoopProxy(), message_loop()->task_runner(),
+      peer_connection_factory_.get());
+
   AddFilter(aec_dump_message_filter_.get());
 
-  peer_connection_factory_.reset(new PeerConnectionDependencyFactory(
-      p2p_socket_dispatcher_.get()));
 #endif  // defined(ENABLE_WEBRTC)
 
   audio_input_message_filter_ =

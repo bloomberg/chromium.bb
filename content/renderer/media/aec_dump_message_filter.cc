@@ -6,10 +6,11 @@
 
 #include "base/single_thread_task_runner.h"
 #include "content/common/media/aec_dump_messages.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_sender.h"
-
+#
 namespace {
 const int kInvalidDelegateId = -1;
 }
@@ -20,11 +21,13 @@ AecDumpMessageFilter* AecDumpMessageFilter::g_filter = NULL;
 
 AecDumpMessageFilter::AecDumpMessageFilter(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+    PeerConnectionDependencyFactory* peerconnection_dependency_factory)
     : sender_(NULL),
       delegate_id_counter_(1),
       io_task_runner_(io_task_runner),
-      main_task_runner_(main_task_runner) {
+      main_task_runner_(main_task_runner),
+      peerconnection_dependency_factory_(peerconnection_dependency_factory) {
   DCHECK(!g_filter);
   g_filter = this;
 }
@@ -88,7 +91,9 @@ bool AecDumpMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AecDumpMessageFilter, message)
     IPC_MESSAGE_HANDLER(AecDumpMsg_EnableAecDump, OnEnableAecDump)
+    IPC_MESSAGE_HANDLER(WebRTCEventLogMsg_EnableEventLog, OnEnableEventLog)
     IPC_MESSAGE_HANDLER(AecDumpMsg_DisableAecDump, OnDisableAecDump)
+    IPC_MESSAGE_HANDLER(WebRTCEventLogMsg_DisableEventLog, OnDisableEventLog)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -124,10 +129,25 @@ void AecDumpMessageFilter::OnEnableAecDump(
                             file_handle));
 }
 
+void AecDumpMessageFilter::OnEnableEventLog(
+    int id,
+    IPC::PlatformFileForTransit file_handle) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&AecDumpMessageFilter::DoEnableEventLog, this, id,
+                            file_handle));
+}
+
 void AecDumpMessageFilter::OnDisableAecDump() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AecDumpMessageFilter::DoDisableAecDump, this));
+}
+
+void AecDumpMessageFilter::OnDisableEventLog() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&AecDumpMessageFilter::DoDisableEventLog, this));
 }
 
 void AecDumpMessageFilter::DoEnableAecDump(
@@ -145,12 +165,25 @@ void AecDumpMessageFilter::DoEnableAecDump(
   }
 }
 
+void AecDumpMessageFilter::DoEnableEventLog(
+    int id,
+    IPC::PlatformFileForTransit file_handle) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  peerconnection_dependency_factory_->StartRtcEventLog(
+      IPC::PlatformFileForTransitToPlatformFile(file_handle));
+}
+
 void AecDumpMessageFilter::DoDisableAecDump() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   for (DelegateMap::iterator it = delegates_.begin();
        it != delegates_.end(); ++it) {
     it->second->OnDisableAecDump();
   }
+}
+
+void AecDumpMessageFilter::DoDisableEventLog() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  peerconnection_dependency_factory_->StopRtcEventLog();
 }
 
 void AecDumpMessageFilter::DoChannelClosingOnDelegates() {

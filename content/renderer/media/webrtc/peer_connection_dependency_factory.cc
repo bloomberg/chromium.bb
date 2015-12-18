@@ -632,6 +632,15 @@ PeerConnectionDependencyFactory::CreateIceCandidate(
   return webrtc::CreateIceCandidate(sdp_mid, sdp_mline_index, sdp, nullptr);
 }
 
+bool PeerConnectionDependencyFactory::StartRtcEventLog(
+    base::PlatformFile file) {
+  return GetPcFactory()->StartRtcEventLog(file);
+}
+
+void PeerConnectionDependencyFactory::StopRtcEventLog() {
+  GetPcFactory()->StopRtcEventLog();
+}
+
 WebRtcAudioDeviceImpl*
 PeerConnectionDependencyFactory::GetWebRtcAudioDevice() {
   return audio_device_.get();

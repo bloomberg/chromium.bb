@@ -31,7 +31,8 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
 
   AecDumpMessageFilter(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+      PeerConnectionDependencyFactory* peerconnection_dependency_factory);
 
   // Getter for the one AecDumpMessageFilter object.
   static scoped_refptr<AecDumpMessageFilter> Get();
@@ -70,11 +71,15 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
 
   // Accessed on |io_task_runner_|.
   void OnEnableAecDump(int id, IPC::PlatformFileForTransit file_handle);
+  void OnEnableEventLog(int id, IPC::PlatformFileForTransit file_handle);
   void OnDisableAecDump();
+  void OnDisableEventLog();
 
   // Accessed on |main_task_runner_|.
   void DoEnableAecDump(int id, IPC::PlatformFileForTransit file_handle);
+  void DoEnableEventLog(int id, IPC::PlatformFileForTransit file_handle);
   void DoDisableAecDump();
+  void DoDisableEventLog();
   void DoChannelClosingOnDelegates();
   int GetIdForDelegate(AecDumpMessageFilter::AecDumpDelegate* delegate);
 
@@ -98,6 +103,9 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
 
   // The singleton instance for this filter.
   static AecDumpMessageFilter* g_filter;
+
+  // This pointer is used for calls to enable/disable the RTC event log.
+  PeerConnectionDependencyFactory* const peerconnection_dependency_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AecDumpMessageFilter);
 };

@@ -40,6 +40,16 @@ void WebRTCInternalsMessageHandler::RegisterMessages() {
           base::Unretained(this),
           false));
 
+  web_ui()->RegisterMessageCallback(
+      "enableEventLogRecordings",
+      base::Bind(&WebRTCInternalsMessageHandler::OnSetEventLogRecordingsEnabled,
+                 base::Unretained(this), true));
+
+  web_ui()->RegisterMessageCallback(
+      "disableEventLogRecordings",
+      base::Bind(&WebRTCInternalsMessageHandler::OnSetEventLogRecordingsEnabled,
+                 base::Unretained(this), false));
+
   web_ui()->RegisterMessageCallback("finishedDOMLoad",
       base::Bind(&WebRTCInternalsMessageHandler::OnDOMLoadDone,
                  base::Unretained(this)));
@@ -79,6 +89,13 @@ void WebRTCInternalsMessageHandler::OnSetAudioDebugRecordingsEnabled(
   } else {
     WebRTCInternals::GetInstance()->DisableAudioDebugRecordings();
   }
+}
+
+void WebRTCInternalsMessageHandler::OnSetEventLogRecordingsEnabled(
+    bool enable,
+    const base::ListValue* /* unused_list */) {
+  WebRTCInternals::GetInstance()->SetEventLogRecordings(
+      enable, enable ? web_ui()->GetWebContents() : nullptr);
 }
 
 void WebRTCInternalsMessageHandler::OnDOMLoadDone(

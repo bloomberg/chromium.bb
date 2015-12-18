@@ -332,6 +332,14 @@ function audioDebugRecordingsFileSelectionCancelled() {
 
 
 /**
+ * Notification that the event log recordings file selection dialog was
+ * cancelled, i.e. recordings have not been enabled.
+ */
+function eventLogRecordingsFileSelectionCancelled() {
+  dumpCreator.disableEventLogRecordings();
+}
+
+/**
  * Set
  */
 function enableAudioDebugRecordings() {

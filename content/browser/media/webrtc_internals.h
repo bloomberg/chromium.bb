@@ -94,6 +94,12 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   bool IsAudioDebugRecordingsEnabled() const;
   const base::FilePath& GetAudioDebugRecordingsFilePath() const;
 
+  // Enables or disables diagnostic event log.
+  void SetEventLogRecordings(bool enable, content::WebContents* web_contents);
+
+  bool IsEventLogRecordingsEnabled() const;
+  const base::FilePath& GetEventLogRecordingsFilePath() const;
+
   void ResetForTesting();
 
  private:
@@ -128,6 +134,10 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // Enables diagnostic audio recordings on all render process hosts using
   // |audio_debug_recordings_file_path_|.
   void EnableAudioDebugRecordingsOnAllRenderProcessHosts();
+
+  // Enables event log recordings on all render process hosts using
+  // |event_log_recordings_file_path_|.
+  void EnableEventLogRecordingsOnAllRenderProcessHosts();
 #endif
 
   // Called whenever an element is added to or removed from
@@ -168,6 +178,11 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // Diagnostic audio recording state.
   bool audio_debug_recordings_;
   base::FilePath audio_debug_recordings_file_path_;
+
+  // Diagnostic event log recording state.
+  bool event_log_recordings_;
+  bool selecting_event_log_;
+  base::FilePath event_log_recordings_file_path_;
 
   // While |peer_connection_data_| is non-empty, hold an instance of
   // PowerSaveBlocker.  This prevents the application from being suspended while

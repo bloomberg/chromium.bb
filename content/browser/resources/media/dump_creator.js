@@ -52,12 +52,30 @@ var DumpCreator = (function() {
         ' enabled using the same base filename, the files will be appended' +
         ' to and may become invalid. It is recommended to choose a new base' +
         ' filename each time or move the produced files before enabling' +
-        ' again.</p>';
-
+        ' again.</p>' +
+        '<p><label><input type=checkbox>' +
+        'Enable diagnostic packet and event recording</label></p>' +
+        '<p class=audio-recordings-info>A diagnostic packet and event' +
+        ' recording can be used for analyzing various issues related to' +
+        ' thread starvation, jitter buffers or bandwidth estimation. Two' +
+        ' types of data are logged. First, incoming and outgoing RTP headers' +
+        ' and RTCP packets are logged. These do not include any audio or' +
+        ' video information, nor any other types of personally identifiable' +
+        ' information (so no IP addresses or URLs). Checking this box will' +
+        ' enable the recording for ongoing WebRTC calls and for future' +
+        ' WebRTC calls. When the box is unchecked or this page is closed,' +
+        ' all ongoing recordings will be stopped and this recording' +
+        ' functionality will be disabled for future WebRTC calls. Recording' +
+        ' in multiple tabs or multiple recordings in the same tab is' +
+        ' currently not supported. When enabling, a filename for the' +
+        ' recording can be selected. If an existing file is selected, it' +
+        ' will be overwritten. </p>';
     content.getElementsByTagName('a')[0].addEventListener(
         'click', this.onDownloadData_.bind(this));
     content.getElementsByTagName('input')[0].addEventListener(
         'click', this.onAudioDebugRecordingsChanged_.bind(this));
+    content.getElementsByTagName('input')[1].addEventListener(
+        'click', this.onEventLogRecordingsChanged_.bind(this));
   }
 
   DumpCreator.prototype = {
@@ -69,6 +87,16 @@ var DumpCreator = (function() {
     // Mark the diagnostic audio recording checkbox unchecked.
     disableAudioDebugRecordings: function() {
       this.root_.getElementsByTagName('input')[0].checked = false;
+    },
+
+    // Mark the event log recording checkbox checked.
+    enableEventLogRecordings: function() {
+      this.root_.getElementsByTagName('input')[1].checked = true;
+    },
+
+    // Mark the event log recording checkbox unchecked.
+    disableEventLogRecordings: function() {
+      this.root_.getElementsByTagName('input')[1].checked = false;
     },
 
     /**
@@ -103,6 +131,20 @@ var DumpCreator = (function() {
         chrome.send('enableAudioDebugRecordings');
       } else {
         chrome.send('disableAudioDebugRecordings');
+      }
+    },
+
+    /**
+     * Handles the event of toggling the event log recordings state.
+     *
+     * @private
+     */
+    onEventLogRecordingsChanged_: function() {
+      var enabled = this.root_.getElementsByTagName('input')[1].checked;
+      if (enabled) {
+        chrome.send('enableEventLogRecordings');
+      } else {
+        chrome.send('disableEventLogRecordings');
       }
     },
   };

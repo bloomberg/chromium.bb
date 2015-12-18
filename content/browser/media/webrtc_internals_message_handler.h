@@ -40,6 +40,7 @@ class WebRTCInternalsMessageHandler : public WebUIMessageHandler,
   void OnGetAllStats(const base::ListValue* list);
   void OnSetAudioDebugRecordingsEnabled(bool enable,
                                         const base::ListValue* list);
+  void OnSetEventLogRecordingsEnabled(bool enable, const base::ListValue* list);
   void OnDOMLoadDone(const base::ListValue* list);
 
   DISALLOW_COPY_AND_ASSIGN(WebRTCInternalsMessageHandler);
