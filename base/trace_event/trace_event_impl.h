@@ -101,7 +101,6 @@ class BASE_EXPORT TraceEvent {
       const unsigned char* category_group_enabled,
       const char* name,
       unsigned long long id,
-      unsigned long long context_id,
       unsigned long long bind_id,
       int num_args,
       const char** arg_names,
@@ -133,7 +132,6 @@ class BASE_EXPORT TraceEvent {
   TimeDelta duration() const { return duration_; }
   TimeDelta thread_duration() const { return thread_duration_; }
   unsigned long long id() const { return id_; }
-  unsigned long long context_id() const { return context_id_; }
   unsigned int flags() const { return flags_; }
 
   // Exposed for unittesting:
@@ -160,8 +158,6 @@ class BASE_EXPORT TraceEvent {
   TimeDelta thread_duration_;
   // id_ can be used to store phase-specific data.
   unsigned long long id_;
-  // context_id_ is used to store context information.
-  unsigned long long context_id_;
   TraceValue arg_values_[kTraceMaxNumArgs];
   const char* arg_names_[kTraceMaxNumArgs];
   scoped_refptr<ConvertableToTraceFormat> convertable_values_[kTraceMaxNumArgs];

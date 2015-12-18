@@ -190,12 +190,12 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const unsigned long long* arg_values,
       const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
       unsigned int flags);
-  TraceEventHandle AddTraceEventWithContextId(
+  TraceEventHandle AddTraceEventWithBindId(
       char phase,
       const unsigned char* category_group_enabled,
       const char* name,
       unsigned long long id,
-      unsigned long long context_id,
+      unsigned long long bind_id,
       int num_args,
       const char** arg_names,
       const unsigned char* arg_types,
@@ -219,7 +219,6 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const unsigned char* category_group_enabled,
       const char* name,
       unsigned long long id,
-      unsigned long long context_id,
       int thread_id,
       const TimeTicks& timestamp,
       int num_args,
@@ -233,7 +232,6 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const unsigned char* category_group_enabled,
       const char* name,
       unsigned long long id,
-      unsigned long long context_id,
       unsigned long long bind_id,
       int thread_id,
       const TimeTicks& timestamp,

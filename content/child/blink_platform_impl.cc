@@ -681,9 +681,9 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
       base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp);
   base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
-          phase, category_group_enabled, name, id, trace_event_internal::kNoId,
-          bind_id, base::PlatformThread::CurrentId(), timestamp_tt, num_args,
-          arg_names, arg_types, arg_values, convertable_wrappers, flags);
+          phase, category_group_enabled, name, id, bind_id,
+          base::PlatformThread::CurrentId(), timestamp_tt, num_args, arg_names,
+          arg_types, arg_values, convertable_wrappers, flags);
   blink::Platform::TraceEventHandle result;
   memcpy(&result, &handle, sizeof(result));
   return result;

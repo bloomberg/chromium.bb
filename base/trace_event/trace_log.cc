@@ -139,7 +139,6 @@ void InitializeMetadataEvent(TraceEvent* trace_event,
       &g_category_group_enabled[g_category_metadata],
       metadata_name,
       trace_event_internal::kNoId,  // id
-      trace_event_internal::kNoId,  // context_id
       trace_event_internal::kNoId,  // bind_id
       num_args,
       &arg_name,
@@ -1066,7 +1065,6 @@ TraceEventHandle TraceLog::AddTraceEvent(
       category_group_enabled,
       name,
       id,
-      trace_event_internal::kNoId,  // context_id
       trace_event_internal::kNoId,  // bind_id
       thread_id,
       now,
@@ -1078,12 +1076,12 @@ TraceEventHandle TraceLog::AddTraceEvent(
       flags);
 }
 
-TraceEventHandle TraceLog::AddTraceEventWithContextId(
+TraceEventHandle TraceLog::AddTraceEventWithBindId(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
     unsigned long long id,
-    unsigned long long context_id,
+    unsigned long long bind_id,
     int num_args,
     const char** arg_names,
     const unsigned char* arg_types,
@@ -1097,8 +1095,7 @@ TraceEventHandle TraceLog::AddTraceEventWithContextId(
       category_group_enabled,
       name,
       id,
-      context_id,
-      trace_event_internal::kNoId,  // bind_id
+      bind_id,
       thread_id,
       now,
       num_args,
@@ -1127,7 +1124,6 @@ TraceEventHandle TraceLog::AddTraceEventWithProcessId(
       category_group_enabled,
       name,
       id,
-      trace_event_internal::kNoId,  // context_id
       trace_event_internal::kNoId,  // bind_id
       process_id,
       now,
@@ -1146,7 +1142,6 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     const unsigned char* category_group_enabled,
     const char* name,
     unsigned long long id,
-    unsigned long long context_id,
     int thread_id,
     const TimeTicks& timestamp,
     int num_args,
@@ -1160,7 +1155,6 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       category_group_enabled,
       name,
       id,
-      context_id,
       trace_event_internal::kNoId,  // bind_id
       thread_id,
       timestamp,
@@ -1177,7 +1171,6 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     const unsigned char* category_group_enabled,
     const char* name,
     unsigned long long id,
-    unsigned long long context_id,
     unsigned long long bind_id,
     int thread_id,
     const TimeTicks& timestamp,
@@ -1284,7 +1277,6 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
                               category_group_enabled,
                               name,
                               id,
-                              context_id,
                               bind_id,
                               num_args,
                               arg_names,
@@ -1361,7 +1353,6 @@ void TraceLog::AddMetadataEvent(
       TimeTicks(), ThreadTicks(), TRACE_EVENT_PHASE_METADATA,
       &g_category_group_enabled[g_category_metadata], name,
       trace_event_internal::kNoId,  // id
-      trace_event_internal::kNoId,  // context_id
       trace_event_internal::kNoId,  // bind_id
       num_args, arg_names, arg_types, arg_values, convertable_values, flags);
   AutoLock lock(lock_);
@@ -1733,7 +1724,6 @@ ScopedTraceBinaryEfficient::ScopedTraceBinaryEfficient(
             category_group_enabled_,
             name,
             trace_event_internal::kNoId,  // id
-            trace_event_internal::kNoId,  // context_id
             static_cast<int>(base::PlatformThread::CurrentId()),  // thread_id
             base::TimeTicks::Now(),
             trace_event_internal::kZeroNumArgs,

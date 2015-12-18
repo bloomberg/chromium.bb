@@ -58,7 +58,6 @@ void TraceEvent::CopyFrom(const TraceEvent& other) {
   thread_timestamp_ = other.thread_timestamp_;
   duration_ = other.duration_;
   id_ = other.id_;
-  context_id_ = other.context_id_;
   category_group_enabled_ = other.category_group_enabled_;
   name_ = other.name_;
   if (other.flags_ & TRACE_EVENT_FLAG_HAS_PROCESS_ID)
@@ -85,7 +84,6 @@ void TraceEvent::Initialize(
     const unsigned char* category_group_enabled,
     const char* name,
     unsigned long long id,
-    unsigned long long context_id,
     unsigned long long bind_id,
     int num_args,
     const char** arg_names,
@@ -97,7 +95,6 @@ void TraceEvent::Initialize(
   thread_timestamp_ = thread_timestamp;
   duration_ = TimeDelta::FromInternalValue(-1);
   id_ = id;
-  context_id_ = context_id;
   category_group_enabled_ = category_group_enabled;
   name_ = name;
   thread_id_ = thread_id;
@@ -370,11 +367,6 @@ void TraceEvent::AppendAsJSON(
     StringAppendF(out, ",\"flow_in\":true");
   if (flags_ & TRACE_EVENT_FLAG_FLOW_OUT)
     StringAppendF(out, ",\"flow_out\":true");
-
-  // Similar to id_, print the context_id as hex if present.
-  if (flags_ & TRACE_EVENT_FLAG_HAS_CONTEXT_ID)
-    StringAppendF(out, ",\"cid\":\"0x%" PRIx64 "\"",
-                  static_cast<uint64>(context_id_));
 
   // Instant events also output their scope.
   if (phase_ == TRACE_EVENT_PHASE_INSTANT) {
