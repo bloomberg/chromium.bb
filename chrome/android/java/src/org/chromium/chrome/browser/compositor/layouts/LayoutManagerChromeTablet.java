@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 
@@ -167,8 +166,7 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
             for (int j = 0; j < model.getCount(); j++) {
                 Tab tab = model.getTabAt(j);
                 if (tab != null && mTitleCache != null) {
-                    mTitleCache.put(tab.getId(), getTitleBitmap(tab), getFaviconBitmap(tab),
-                            tab.isIncognito(), tab.isTitleDirectionRtl());
+                    mTitleCache.getUpdatedTitle(tab, mDefaultTitle);
                 }
             }
         }
@@ -183,13 +181,6 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
                 updateTitle(getTabById(tab.getId()));
             }
         };
-    }
-
-    @Override
-    protected String getTitleForTab(Tab tab) {
-        String title = super.getTitleForTab(tab);
-        if (TextUtils.isEmpty(title)) title = mDefaultTitle;
-        return title;
     }
 
     @Override
@@ -208,10 +199,8 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
 
     private void updateTitle(Tab tab) {
         if (tab != null && mTitleCache != null) {
-            mTitleCache.put(tab.getId(), getTitleBitmap(tab), getFaviconBitmap(tab),
-                    tab.isIncognito(), tab.isTitleDirectionRtl());
-
-            getActiveLayout().tabTitleChanged(tab.getId(), getTitleForTab(tab));
+            String title = mTitleCache.getUpdatedTitle(tab, mDefaultTitle);
+            getActiveLayout().tabTitleChanged(tab.getId(), title);
         }
         requestUpdate();
     }

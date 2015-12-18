@@ -52,6 +52,7 @@ class DecorationTitle {
               int favicon_end_padding,
               bool is_incognito,
               bool is_rtl);
+  void SetFaviconResourceId(int favicon_resource_id);
   void SetUIResourceIds();
   void SetIsLoading(bool is_loading);
   void SetSpinnerRotation(float rotation);

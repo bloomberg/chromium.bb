@@ -83,6 +83,10 @@ void DecorationTitle::Update(int title_resource_id,
   fade_width_ = fade_width;
 }
 
+void DecorationTitle::SetFaviconResourceId(int favicon_resource_id) {
+  favicon_resource_id_ = favicon_resource_id;
+}
+
 void DecorationTitle::SetUIResourceIds() {
   ui::ResourceManager::Resource* title_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC_BITMAP,

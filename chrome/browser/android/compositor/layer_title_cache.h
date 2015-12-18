@@ -56,6 +56,12 @@ class LayerTitleCache {
                    bool is_incognito,
                    bool is_rtl);
 
+  // Called from Java, updates favicon.
+  void UpdateFavicon(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     jint tab_id,
+                     jint favicon_resource_id);
+
   void ClearExcept(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    jint except_id);

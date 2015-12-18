@@ -74,6 +74,16 @@ void LayerTitleCache::UpdateLayer(JNIEnv* env,
   }
 }
 
+void LayerTitleCache::UpdateFavicon(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj,
+                                    jint tab_id,
+                                    jint favicon_resource_id) {
+  DecorationTitle* title_layer = layer_cache_.Lookup(tab_id);
+  if (title_layer == nullptr && favicon_resource_id != -1) {
+    title_layer->SetFaviconResourceId(favicon_resource_id);
+  }
+}
+
 void LayerTitleCache::ClearExcept(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj,
                                   jint except_id) {

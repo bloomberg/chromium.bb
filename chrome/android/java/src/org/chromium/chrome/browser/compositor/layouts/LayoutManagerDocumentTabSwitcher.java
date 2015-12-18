@@ -6,17 +6,13 @@ package org.chromium.chrome.browser.compositor.layouts;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.compositor.TitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.compositor.layouts.content.TitleBitmapFactory;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.BlackHoleEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
@@ -51,8 +47,6 @@ public class LayoutManagerDocumentTabSwitcher
     private final GestureEventFilter mGestureEventFilter;
 
     private TitleCache mTitleCache;
-    private final TitleBitmapFactory mStandardTitleBitmapFactory;
-    private final TitleBitmapFactory mIncognitoTitleBitmapFactory;
     private final ObserverList<OverviewModeObserver> mOverviewModeObservers =
             new ObserverList<OverviewModeObserver>();
 
@@ -65,10 +59,6 @@ public class LayoutManagerDocumentTabSwitcher
         Context context = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
 
-        mStandardTitleBitmapFactory =
-                new TitleBitmapFactory(context, false, R.drawable.default_favicon);
-        mIncognitoTitleBitmapFactory =
-                new TitleBitmapFactory(context, true, R.drawable.default_favicon);
         mBlackHoleEventFilter = new BlackHoleEventFilter(context, this);
         mGestureEventFilter = new GestureEventFilter(context, this, mGestureHandler);
         mOverviewListLayout =
@@ -129,47 +119,9 @@ public class LayoutManagerDocumentTabSwitcher
         if (layoutTab == null) return;
 
         if (mTitleCache != null && layoutTab.isTitleNeeded()) {
-            mTitleCache.put(tabId, getTitleBitmap(tab), getFaviconBitmap(tab), tab.isIncognito(),
-                    tab.isTitleDirectionRtl());
+            mTitleCache.getUpdatedTitle(tab, "");
         }
         super.initLayoutTabFromHost(tabId);
-    }
-
-    /**
-     * Builds a title bitmap for a {@link Tab}. This function does not do anything in the
-     * general case because only the phone need to bake special resource.
-     *
-     * @param tab The tab to build the title bitmap for.
-     * @return The Title bitmap
-     */
-    private Bitmap getTitleBitmap(Tab tab) {
-        TitleBitmapFactory titleBitmapFactory =
-                tab.isIncognito() ? mIncognitoTitleBitmapFactory : mStandardTitleBitmapFactory;
-        return titleBitmapFactory.getTitleBitmap(mHost.getContext(), getTitleForTab(tab));
-    }
-
-    /**
-     * Comes up with a valid title to return for a tab.
-     * @param tab The {@link Tab} to build a title for.
-     * @return    The title to use.
-     */
-    private String getTitleForTab(Tab tab) {
-        String title = tab.getTitle();
-        if (TextUtils.isEmpty(title)) title = tab.getUrl();
-        return title;
-    }
-
-    /**
-     * Builds a favicon bitmap for a {@link Tab}. This function does not do anything in the
-     * general case because only the phone need to bake special texture.
-     *
-     * @param tab The tab to build the title bitmap for.
-     * @return The Favicon bitmap
-     */
-    private Bitmap getFaviconBitmap(Tab tab) {
-        TitleBitmapFactory titleBitmapFactory =
-                tab.isIncognito() ? mIncognitoTitleBitmapFactory : mStandardTitleBitmapFactory;
-        return titleBitmapFactory.getFaviconBitmap(mHost.getContext(), tab.getFavicon());
     }
 
     @Override
