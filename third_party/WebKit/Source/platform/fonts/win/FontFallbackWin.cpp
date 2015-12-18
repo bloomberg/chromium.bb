@@ -173,6 +173,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     static const UChar* thaiFonts[] = {L"tahoma", L"Leelawadee UI", L"Leelawadee", 0};
     static const UChar* hebrewFonts[] = {L"david", L"Segoe UI", 0};
     static const UChar* arabicFonts[] = {L"tahoma", L"Segoe UI", 0};
+    static const UChar* tifinaghFonts[] = {L"ebrima", 0};
     static const UChar* georgianFonts[] = {L"sylfaen", L"Segoe UI", 0};
     static const UChar* armenianFonts[] = {L"sylfaen", L"Segoe UI", 0};
     static const UChar* canadianAboriginalFonts[] = {L"euphemia", L"Gadugi", 0};
@@ -206,6 +207,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         {USCRIPT_THAI, thaiFonts},
         {USCRIPT_HEBREW, hebrewFonts},
         {USCRIPT_ARABIC, arabicFonts},
+        {USCRIPT_TIFINAGH, tifinaghFonts},
         {USCRIPT_GEORGIAN, georgianFonts},
         {USCRIPT_ARMENIAN, armenianFonts},
         {USCRIPT_CANADIAN_ABORIGINAL, canadianAboriginalFonts},

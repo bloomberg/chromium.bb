@@ -818,6 +818,7 @@ crbug.com/363099 [ Win ] plugins/nested-plugin-objects.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/open-and-close-window-with-plugin.html [ Failure ]
 
 crbug.com/418091 [ Mac10.6 ] fast/text/international/zerowidthjoiner.html [ Failure ]
+crbug.com/569421 inspector-protocol/layout-fonts/tifinagh.html [ NeedsRebaseline ]
 
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
 
