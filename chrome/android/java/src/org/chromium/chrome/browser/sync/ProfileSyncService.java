@@ -498,7 +498,10 @@ public class ProfileSyncService {
     @CalledByNative
     public boolean isMasterSyncEnabled() {
         ThreadUtils.assertOnUiThread();
-        assert mMasterSyncEnabledProvider != null;
+        // TODO(maxbogue): ensure that this method is never called before
+        // setMasterSyncEnabledProvider() and change the line below to an assert.
+        // See http://crbug.com/570569
+        if (mMasterSyncEnabledProvider == null) return true;
         return mMasterSyncEnabledProvider.isMasterSyncEnabled();
     }
 
