@@ -75,6 +75,11 @@
             "group_name": "Enabled"
         }
     ],
+    "PasswordBranding": [
+        {
+            "group_name": "SmartLockBranding"
+        }
+    ],
     "QUIC": [
         {
             "group_name": "Enabled",
