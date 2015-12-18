@@ -376,6 +376,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   const AlternativeService alternative_service1(NPN_HTTP_2, "bar1", 443);
   const base::Time now = base::Time::Now();
   base::Time expiration1 = now + base::TimeDelta::FromDays(1);
+  // 1st entry in the memory.
   impl_.SetAlternativeService(test_host_port_pair1, alternative_service1, 1.0,
                               expiration1);
 
@@ -389,6 +390,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service2, 1.0, expiration2));
   HostPortPair test_host_port_pair2("foo2", 80);
+  // 0th entry in the memory.
   impl_.SetAlternativeServices(test_host_port_pair2,
                                alternative_service_info_vector);
 
@@ -400,6 +402,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   base::Time expiration3 = now + base::TimeDelta::FromDays(3);
   const AlternativeServiceInfo alternative_service_info1(alternative_service3,
                                                          0.7, expiration3);
+  // Simulate updating data for 0th entry with data from Preferences.
   alternative_service_map.Put(
       test_host_port_pair2,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info1));
@@ -409,22 +412,21 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   base::Time expiration4 = now + base::TimeDelta::FromDays(4);
   const AlternativeServiceInfo alternative_service_info2(alternative_service4,
                                                          0.2, expiration4);
+  // Add an old entry from Preferences, this will be added to end of recency
+  // list.
   alternative_service_map.Put(
       test_host_port_pair3,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info2));
 
+  // MRU list will be test_host_port_pair2, test_host_port_pair1,
+  // test_host_port_pair3.
   impl_.InitializeAlternativeServiceServers(&alternative_service_map);
 
   // Verify alternative_service_map.
   const AlternativeServiceMap& map = impl_.alternative_service_map();
   ASSERT_EQ(3u, map.size());
   AlternativeServiceMap::const_iterator map_it = map.begin();
-  EXPECT_TRUE(map_it->first.Equals(test_host_port_pair3));
-  ASSERT_EQ(1u, map_it->second.size());
-  EXPECT_EQ(alternative_service4, map_it->second[0].alternative_service);
-  EXPECT_EQ(0.2, map_it->second[0].probability);
-  EXPECT_EQ(expiration4, map_it->second[0].expiration);
-  ++map_it;
+
   EXPECT_TRUE(map_it->first.Equals(test_host_port_pair2));
   ASSERT_EQ(1u, map_it->second.size());
   EXPECT_EQ(alternative_service3, map_it->second[0].alternative_service);
@@ -436,6 +438,12 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   EXPECT_EQ(alternative_service1, map_it->second[0].alternative_service);
   EXPECT_EQ(1.0, map_it->second[0].probability);
   EXPECT_EQ(expiration1, map_it->second[0].expiration);
+  ++map_it;
+  EXPECT_TRUE(map_it->first.Equals(test_host_port_pair3));
+  ASSERT_EQ(1u, map_it->second.size());
+  EXPECT_EQ(alternative_service4, map_it->second[0].alternative_service);
+  EXPECT_EQ(0.2, map_it->second[0].probability);
+  EXPECT_EQ(expiration4, map_it->second[0].expiration);
 }
 
 // Regression test for https://crbug.com/504032:

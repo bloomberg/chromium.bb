@@ -56,12 +56,26 @@ void HttpServerPropertiesImpl::InitializeSpdyServers(
 
 void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
     AlternativeServiceMap* alternative_service_map) {
+  AlternativeServiceMap new_alternative_service_map(
+      AlternativeServiceMap::NO_AUTO_EVICT);
   // Add the entries from persisted data.
   for (AlternativeServiceMap::reverse_iterator input_it =
            alternative_service_map->rbegin();
        input_it != alternative_service_map->rend(); ++input_it) {
     DCHECK(!input_it->second.empty());
-    alternative_service_map_.Put(input_it->first, input_it->second);
+    new_alternative_service_map.Put(input_it->first, input_it->second);
+  }
+
+  alternative_service_map_.Swap(new_alternative_service_map);
+
+  // Add the entries from the memory cache.
+  for (AlternativeServiceMap::reverse_iterator input_it =
+           new_alternative_service_map.rbegin();
+       input_it != new_alternative_service_map.rend(); ++input_it) {
+    if (alternative_service_map_.Get(input_it->first) ==
+        alternative_service_map_.end()) {
+      alternative_service_map_.Put(input_it->first, input_it->second);
+    }
   }
 
   // Attempt to find canonical servers.
