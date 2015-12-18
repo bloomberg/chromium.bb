@@ -1601,7 +1601,7 @@ void LayoutObject::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* 
     }
 
     if (LayoutObject* o = parent()) {
-        if (o != paintInvalidationContainer && o->hasOverflowClip()) {
+        if (o->hasOverflowClip()) {
             LayoutBox* boxParent = toLayoutBox(o);
             if (o == paintInvalidationContainer)
                 boxParent->applyCachedScrollOffsetForPaintInvalidation(rect);
