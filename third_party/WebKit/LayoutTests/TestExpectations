@@ -909,6 +909,7 @@ crbug.com/467127 [ Mac ] imported/csswg-test/css-flexbox-1/flex-minimum-width-fl
 crbug.com/467127 [ Mac Win ] imported/csswg-test/css-flexbox-1/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 crbug.com/467127 [ Mac Win ] imported/csswg-test/css-flexbox-1/ttwf-reftest-flex-wrap.html [ Failure ]
 
+crbug.com/570894 [ Win ] imported/csswg-test/css-flexbox-1/flexbox_flex-natural-mixed-basis-auto.html [ Failure Pass ]
 
 crbug.com/471066 [ Mac10.6 ] fast/text/apply-start-width-after-skipped-text.html [ Failure ]
 crbug.com/471066 [ Mac10.6 ] fast/text/bidi-explicit-embedding-past-end.html [ Failure ]
