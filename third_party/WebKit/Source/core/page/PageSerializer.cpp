@@ -171,29 +171,34 @@ void SerializerMarkupAccumulator::appendAttribute(
     const Attribute& attribute,
     Namespaces* namespaces)
 {
-    // Check if the delegate wants to rewrite the attribute.
-    PageSerializer::Delegate* delegate = m_serializer->delegate();
-    String newValue;
-    if (!delegate || !delegate->rewriteLink(element, newValue)) {
-        // Fallback to appending the original attribute.
-        MarkupAccumulator::appendAttribute(out, element, attribute, namespaces);
-        return;
+    // Check if link rewriting can affect the attribute.
+    bool isLinkAttribute = element.hasLegalLinkAttribute(attribute.name());
+    bool isSrcDocAttribute = isHTMLFrameElementBase(element)
+        && attribute.name() == HTMLNames::srcdocAttr;
+    if (isLinkAttribute || isSrcDocAttribute) {
+        // Check if the delegate wants to do link rewriting for the element.
+        PageSerializer::Delegate* delegate = m_serializer->delegate();
+        String newLinkForTheElement;
+        if (delegate && delegate->rewriteLink(element, newLinkForTheElement)) {
+            if (isLinkAttribute) {
+                // Rewrite element links.
+                appendRewrittenAttribute(
+                    out, element, attribute.name().toString(), newLinkForTheElement);
+            } else {
+                ASSERT(isSrcDocAttribute);
+                // Emit src instead of srcdoc attribute for frame elements - we want the
+                // serialized subframe to use html contents from the link provided by
+                // Delegate::rewriteLink rather than html contents from srcdoc
+                // attribute.
+                appendRewrittenAttribute(
+                    out, element, HTMLNames::srcAttr.localName(), newLinkForTheElement);
+            }
+            return;
+        }
     }
 
-    if (element.hasLegalLinkAttribute(attribute.name())) {
-        // Rewrite element links.
-        appendRewrittenAttribute(out, element, attribute.name().toString(), newValue);
-        return;
-    }
-
-    if (isHTMLFrameElementBase(&element) && attribute.name() == HTMLNames::srcdocAttr) {
-        // Emit src instead of srcdoc attribute for frame elements - we want the
-        // serialized subframe to use html contents from the link provided by
-        // Delegate::rewriteLink rather than html contents from srcdoc
-        // attribute.
-        appendRewrittenAttribute(out, element, HTMLNames::srcAttr.localName(), newValue);
-        return;
-    }
+    // Fallback to appending the original attribute.
+    MarkupAccumulator::appendAttribute(out, element, attribute, namespaces);
 }
 
 void SerializerMarkupAccumulator::appendStartTag(Node& node, Namespaces* namespaces)

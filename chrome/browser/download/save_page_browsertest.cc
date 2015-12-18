@@ -977,18 +977,18 @@ class SavePageMultiFrameBrowserTest
     }
 
     std::string forbidden_substrings[] = {
-        "head"  // Html markup should not be visible.
-        "err",  // "err" is a prefix of error messages + is included as text
-                // content of <object> elements in some test files (text content
-                // would be rendered in case the object itself doesn't work).
+        "head", // Html markup should not be visible.
+        "err",  // "err" is a prefix of error messages + is strategically
+                // included in some tests in contents that should not render
+                // (i.e. inside of an object element and/or inside of a frame
+                // that should be hidden).
     };
     for (const auto& forbidden_substring : forbidden_substrings) {
       int actual_number_of_matches = ui_test_utils::FindInPage(
           GetCurrentTab(browser()), base::UTF8ToUTF16(forbidden_substring),
           true,  // |forward|
-          true,  // |case_sensitive|
+          false,  // |case_sensitive|
           nullptr, nullptr);
-
       EXPECT_EQ(0, actual_number_of_matches)
           << "Verifying that \"" << forbidden_substring << "\" doesn't "
           << "appear in the text of web contents";
@@ -1171,6 +1171,21 @@ IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, Encoding) {
     return;
 
   TestMultiFramePage(save_page_type, url, 7, expected_substrings);
+}
+
+// Test for saving style element and attribute (see also crbug.com/568293).
+IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, Style) {
+  content::SavePageType save_page_type = GetParam();
+
+  std::string arr[] = {
+      "style.htm: af84c3ca-0fc6-4b0d-bf7a-5ac18a4dab62",
+      "frameE: c9539ccd-47b0-47cf-a03b-734614865872",
+  };
+  std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
+
+  GURL url(embedded_test_server()->GetURL("a.com", "/save_page/style.htm"));
+
+  TestMultiFramePage(save_page_type, url, 6, expected_substrings);
 }
 
 INSTANTIATE_TEST_CASE_P(
