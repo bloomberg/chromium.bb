@@ -1112,6 +1112,14 @@ void WizardController::ConfigureHostRequested(
   NetworkScreen* network_screen = NetworkScreen::Get(this);
   network_screen->SetApplicationLocaleAndInputMethod(lang, keyboard_layout);
   network_screen->SetTimezone(timezone);
+
+  // Don't block the OOBE update and the following enrollment process if there
+  // is available and valid network already.
+  const chromeos::NetworkState* network_state = chromeos::NetworkHandler::Get()
+                                                    ->network_state_handler()
+                                                    ->DefaultNetwork();
+  if (NetworkAllowUpdate(network_state))
+    InitiateOOBEUpdate();
 }
 
 void WizardController::AddNetworkRequested(const std::string& onc_spec) {
@@ -1121,8 +1129,6 @@ void WizardController::AddNetworkRequested(const std::string& onc_spec) {
                                                     ->DefaultNetwork();
 
   if (NetworkAllowUpdate(network_state)) {
-    // Don't block the OOBE update and the following enrollment process.
-    InitiateOOBEUpdate();
     network_screen->CreateAndConnectNetworkFromOnc(
         onc_spec, base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
   } else {
