@@ -10,6 +10,8 @@
 #include "remoting/protocol/ice_connection_to_client.h"
 #include "remoting/protocol/ice_connection_to_host.h"
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/protocol/webrtc_connection_to_client.h"
+#include "remoting/protocol/webrtc_connection_to_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,25 +50,37 @@ class MockConnectionToHostEventCallback
 
 }  // namespace
 
-class ConnectionTest : public testing::Test {
+class ConnectionTest : public testing::Test,
+                       public testing::WithParamInterface<bool> {
  public:
   ConnectionTest() {}
 
  protected:
   void SetUp() override {
-    // Setup host side.
+    // Create fake sessions.
     host_session_ = new FakeSession();
-    host_connection_.reset(new IceConnectionToClient(
-        make_scoped_ptr(host_session_), message_loop_.task_runner()));
+    owned_client_session_.reset(new FakeSession());
+    client_session_ = owned_client_session_.get();
+
+    // Create Connection objects
+    if (GetParam()) {
+      host_connection_.reset(
+          new WebrtcConnectionToClient(make_scoped_ptr(host_session_)));
+      client_connection_.reset(new WebrtcConnectionToHost());
+
+    } else {
+      host_connection_.reset(new IceConnectionToClient(
+          make_scoped_ptr(host_session_), message_loop_.task_runner()));
+      client_connection_.reset(new IceConnectionToHost());
+    }
+
+    // Setup host side.
     host_connection_->SetEventHandler(&host_event_handler_);
     host_connection_->set_clipboard_stub(&host_clipboard_stub_);
     host_connection_->set_host_stub(&host_stub_);
     host_connection_->set_input_stub(&host_input_stub_);
 
     // Setup client side.
-    owned_client_session_.reset(new FakeSession());
-    client_session_ = owned_client_session_.get();
-    client_connection_.reset(new IceConnectionToHost());
     client_connection_->set_client_stub(&client_stub_);
     client_connection_->set_clipboard_stub(&client_clipboard_stub_);
     client_connection_->set_video_stub(&client_video_stub_);
@@ -126,7 +140,10 @@ class ConnectionTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ConnectionTest);
 };
 
-TEST_F(ConnectionTest, RejectConnection) {
+INSTANTIATE_TEST_CASE_P(Ice, ConnectionTest, ::testing::Values(false));
+INSTANTIATE_TEST_CASE_P(Webrtc, ConnectionTest, ::testing::Values(true));
+
+TEST_P(ConnectionTest, RejectConnection) {
   EXPECT_CALL(client_event_handler_,
               OnConnectionState(ConnectionToHost::CONNECTING, OK));
   EXPECT_CALL(client_event_handler_,
@@ -137,7 +154,7 @@ TEST_F(ConnectionTest, RejectConnection) {
   client_session_->event_handler()->OnSessionStateChange(Session::CLOSED);
 }
 
-TEST_F(ConnectionTest, Disconnect) {
+TEST_P(ConnectionTest, Disconnect) {
   Connect();
 
   EXPECT_CALL(client_event_handler_,
@@ -149,7 +166,7 @@ TEST_F(ConnectionTest, Disconnect) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ConnectionTest, Control) {
+TEST_P(ConnectionTest, Control) {
   Connect();
 
   Capabilities capabilities_msg;
@@ -164,7 +181,7 @@ TEST_F(ConnectionTest, Control) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ConnectionTest, Events) {
+TEST_P(ConnectionTest, Events) {
   Connect();
 
   KeyEvent event;

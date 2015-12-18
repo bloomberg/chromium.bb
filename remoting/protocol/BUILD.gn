@@ -119,7 +119,6 @@ source_set("unit_tests") {
     "third_party_authenticator_unittest.cc",
     "v2_authenticator_unittest.cc",
     "video_frame_pump_unittest.cc",
-    "webrtc_connection_to_client_unittest.cc",
     "webrtc_transport_unittest.cc",
   ]
 

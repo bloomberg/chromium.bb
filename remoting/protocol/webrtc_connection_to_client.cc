@@ -32,7 +32,9 @@ const char kVideoLabel[] = "screen_video";
 
 WebrtcConnectionToClient::WebrtcConnectionToClient(
     scoped_ptr<protocol::Session> session)
-    : session_(session.Pass()) {
+    : session_(std::move(session)),
+      control_dispatcher_(new HostControlDispatcher()),
+      event_dispatcher_(new HostEventDispatcher()) {
   session_->SetEventHandler(this);
 }
 
@@ -142,12 +144,10 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
       break;
     case Session::AUTHENTICATED: {
       // Initialize channels.
-      control_dispatcher_.reset(new HostControlDispatcher());
       control_dispatcher_->Init(
           session_->GetTransport()->GetStreamChannelFactory(),
           this);
 
-      event_dispatcher_.reset(new HostEventDispatcher());
       event_dispatcher_->Init(
           session_->GetTransport()->GetStreamChannelFactory(), this);
       event_dispatcher_->set_on_input_event_callback(base::Bind(

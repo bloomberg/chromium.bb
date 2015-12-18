@@ -2,42 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_ICE_CONNECTION_TO_HOST_H_
-#define REMOTING_PROTOCOL_ICE_CONNECTION_TO_HOST_H_
+#ifndef REMOTING_PROTOCOL_WEBRTC_CONNECTION_TO_HOST_H_
+#define REMOTING_PROTOCOL_WEBRTC_CONNECTION_TO_HOST_H_
 
-#include <set>
 #include <string>
 
-#include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/non_thread_safe.h"
-#include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/input_filter.h"
-#include "remoting/protocol/message_reader.h"
-#include "remoting/protocol/monitored_video_stub.h"
 #include "remoting/protocol/session.h"
-#include "remoting/protocol/session_config.h"
 
 namespace remoting {
 namespace protocol {
 
-class AudioReader;
 class ClientControlDispatcher;
 class ClientEventDispatcher;
-class ClientVideoDispatcher;
+class SessionConfig;
 
-class IceConnectionToHost : public ConnectionToHost,
-                            public Session::EventHandler,
-                            public ChannelDispatcherBase::EventHandler,
-                            public base::NonThreadSafe {
+class WebrtcConnectionToHost : public ConnectionToHost,
+                               public Session::EventHandler,
+                               public ChannelDispatcherBase::EventHandler {
  public:
-  IceConnectionToHost();
-  ~IceConnectionToHost() override;
+  WebrtcConnectionToHost();
+  ~WebrtcConnectionToHost() override;
 
   // ConnectionToHost interface.
   void set_client_stub(ClientStub* client_stub) override;
@@ -63,14 +53,8 @@ class IceConnectionToHost : public ConnectionToHost,
   void OnChannelError(ChannelDispatcherBase* channel_dispatcher,
                       ErrorCode error) override;
 
-  // MonitoredVideoStub::EventHandler interface.
-  virtual void OnVideoChannelStatus(bool active);
-
   void NotifyIfChannelsReady();
 
-  void CloseOnError(ErrorCode error);
-
-  // Stops writing in the channels.
   void CloseChannels();
 
   void SetState(State state, ErrorCode error);
@@ -80,13 +64,9 @@ class IceConnectionToHost : public ConnectionToHost,
   // Stub for incoming messages.
   ClientStub* client_stub_ = nullptr;
   ClipboardStub* clipboard_stub_ = nullptr;
-  AudioStub* audio_stub_ = nullptr;
 
   scoped_ptr<Session> session_;
-  scoped_ptr<MonitoredVideoStub> monitored_video_stub_;
 
-  scoped_ptr<ClientVideoDispatcher> video_dispatcher_;
-  scoped_ptr<AudioReader> audio_reader_;
   scoped_ptr<ClientControlDispatcher> control_dispatcher_;
   scoped_ptr<ClientEventDispatcher> event_dispatcher_;
   ClipboardFilter clipboard_forwarder_;
@@ -97,10 +77,10 @@ class IceConnectionToHost : public ConnectionToHost,
   ErrorCode error_ = OK;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IceConnectionToHost);
+  DISALLOW_COPY_AND_ASSIGN(WebrtcConnectionToHost);
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_ICE_CONNECTION_TO_HOST_H_
+#endif  // REMOTING_PROTOCOL_WEBRTC_CONNECTION_TO_HOST_H_

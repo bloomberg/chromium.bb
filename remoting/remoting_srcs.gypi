@@ -214,6 +214,8 @@
       'protocol/video_frame_pump.h',
       'protocol/webrtc_connection_to_client.cc',
       'protocol/webrtc_connection_to_client.h',
+      'protocol/webrtc_connection_to_host.cc',
+      'protocol/webrtc_connection_to_host.h',
       'protocol/webrtc_data_stream_adapter.cc',
       'protocol/webrtc_data_stream_adapter.h',
       'protocol/webrtc_transport.cc',

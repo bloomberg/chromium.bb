@@ -333,7 +333,6 @@
         'protocol/third_party_authenticator_unittest.cc',
         'protocol/v2_authenticator_unittest.cc',
         'protocol/video_frame_pump_unittest.cc',
-        'protocol/webrtc_connection_to_client_unittest.cc',
         'protocol/webrtc_transport_unittest.cc',
         'signaling/iq_sender_unittest.cc',
         'signaling/jid_util_unittest.cc',
