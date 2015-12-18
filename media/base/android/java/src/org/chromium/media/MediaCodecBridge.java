@@ -9,8 +9,6 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaCodec;
-import android.media.MediaCodecInfo;
-import android.media.MediaCodecList;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.os.Build;
@@ -142,26 +140,6 @@ class MediaCodecBridge {
         }
     }
 
-    @SuppressWarnings("deprecation")
-    private static String getDecoderNameForMime(String mime) {
-        int count = MediaCodecList.getCodecCount();
-        for (int i = 0; i < count; ++i) {
-            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-            if (info.isEncoder()) {
-                continue;
-            }
-
-            String[] supportedTypes = info.getSupportedTypes();
-            for (int j = 0; j < supportedTypes.length; ++j) {
-                if (supportedTypes[j].equalsIgnoreCase(mime)) {
-                    return info.getName();
-                }
-            }
-        }
-
-        return null;
-    }
-
     private MediaCodecBridge(
             MediaCodec mediaCodec, String mime, boolean adaptivePlaybackSupported) {
         assert mediaCodec != null;
@@ -175,47 +153,23 @@ class MediaCodecBridge {
 
     @CalledByNative
     private static MediaCodecBridge create(String mime, boolean isSecure, int direction) {
-        // Creation of ".secure" codecs sometimes crash instead of throwing exceptions
-        // on pre-JBMR2 devices.
-        if (isSecure && Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            return null;
-        }
-        MediaCodec mediaCodec = null;
-        boolean adaptivePlaybackSupported = false;
+        MediaCodecUtil.CodecCreationInfo info = new MediaCodecUtil.CodecCreationInfo();
         try {
-            // |isSecure| only applies to video decoders.
-            if (mime.startsWith("video") && isSecure
-                    && direction == MediaCodecUtil.MEDIA_CODEC_DECODER) {
-                String decoderName = MediaCodecUtil.getDecoderNameForMime(mime);
-                if (decoderName == null) {
-                    return null;
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    // To work around an issue that we cannot get the codec info from the secure
-                    // decoder, create an insecure decoder first so that we can query its codec
-                    // info. http://b/15587335.
-                    MediaCodec insecureCodec = MediaCodec.createByCodecName(decoderName);
-                    adaptivePlaybackSupported = codecSupportsAdaptivePlayback(insecureCodec, mime);
-                    insecureCodec.release();
-                }
-                mediaCodec = MediaCodec.createByCodecName(decoderName + ".secure");
+            if (direction == MediaCodecUtil.MEDIA_CODEC_ENCODER) {
+                info.mediaCodec = MediaCodec.createEncoderByType(mime);
+                info.supportsAdaptivePlayback = false;
             } else {
-                if (direction == MediaCodecUtil.MEDIA_CODEC_ENCODER) {
-                    mediaCodec = MediaCodec.createEncoderByType(mime);
-                } else {
-                    mediaCodec = MediaCodec.createDecoderByType(mime);
-                    adaptivePlaybackSupported = codecSupportsAdaptivePlayback(mediaCodec, mime);
-                }
+                // |isSecure| only applies to video decoders.
+                info = MediaCodecUtil.createDecoder(mime, isSecure);
             }
         } catch (Exception e) {
             Log.e(TAG, "Failed to create MediaCodec: %s, isSecure: %s, direction: %d",
                     mime, isSecure, direction, e);
         }
 
-        if (mediaCodec == null) {
-            return null;
-        }
-        return new MediaCodecBridge(mediaCodec, mime, adaptivePlaybackSupported);
+        if (info.mediaCodec == null) return null;
+
+        return new MediaCodecBridge(info.mediaCodec, mime, info.supportsAdaptivePlayback);
     }
 
     @CalledByNative
@@ -507,25 +461,6 @@ class MediaCodecBridge {
     private boolean isAdaptivePlaybackSupported(int width, int height) {
         if (!mAdaptivePlaybackSupported) return false;
         return width <= MAX_ADAPTIVE_PLAYBACK_WIDTH && height <= MAX_ADAPTIVE_PLAYBACK_HEIGHT;
-    }
-
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    private static boolean codecSupportsAdaptivePlayback(MediaCodec mediaCodec, String mime) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT || mediaCodec == null) {
-            return false;
-        }
-        try {
-            MediaCodecInfo info = mediaCodec.getCodecInfo();
-            if (info.isEncoder()) {
-                return false;
-            }
-            MediaCodecInfo.CodecCapabilities capabilities = info.getCapabilitiesForType(mime);
-            return (capabilities != null) && capabilities.isFeatureSupported(
-                    MediaCodecInfo.CodecCapabilities.FEATURE_AdaptivePlayback);
-        } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Cannot retrieve codec information", e);
-        }
-        return false;
     }
 
     @CalledByNative
