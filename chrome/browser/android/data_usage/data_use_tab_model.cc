@@ -154,57 +154,13 @@ void DataUseTabModel::OnNavigationEvent(SessionID::id_type tab_id,
                                         const std::string& package) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsValidTabID(tab_id));
+  std::string current_label, new_label;
 
-  TabEntryMap::const_iterator tab_entry_iterator = active_tabs_.find(tab_id);
-  const std::string old_label =
-      (tab_entry_iterator != active_tabs_.end())
-          ? tab_entry_iterator->second.GetActiveTrackingSessionLabel()
-          : std::string();
-  std::string new_label;
-  bool matches;
-
-  switch (transition) {
-    case TRANSITION_OMNIBOX_SEARCH:
-    case TRANSITION_OMNIBOX_NAVIGATION:
-      // Enter or exit events.
-      if (!url.is_empty()) {
-        matches = data_use_matcher_->MatchesURL(url, &new_label);
-        DCHECK(matches != new_label.empty());
-      }
-      break;
-
-    case TRANSITION_CUSTOM_TAB:
-    case TRANSITION_LINK:
-    case TRANSITION_RELOAD:
-      // Enter events.
-      if (!old_label.empty()) {
-        new_label = old_label;
-        break;
-      }
-      // Package name should match, for transitions from external app.
-      if (transition == TRANSITION_CUSTOM_TAB && !package.empty()) {
-        matches = data_use_matcher_->MatchesAppPackageName(package, &new_label);
-        DCHECK_NE(matches, new_label.empty());
-      }
-      if (new_label.empty() && !url.is_empty()) {
-        matches = data_use_matcher_->MatchesURL(url, &new_label);
-        DCHECK_NE(matches, new_label.empty());
-      }
-      break;
-
-    case TRANSITION_BOOKMARK:
-    case TRANSITION_HISTORY_ITEM:
-      // Exit events.
-      DCHECK(new_label.empty());
-      break;
-
-    default:
-      NOTREACHED();
-      break;
-  }
-  if (!old_label.empty() && new_label.empty())
+  GetCurrentAndNewLabelForNavigationEvent(tab_id, transition, url, package,
+                                          &current_label, &new_label);
+  if (!current_label.empty() && new_label.empty())
     EndTrackingDataUse(tab_id);
-  else if (old_label.empty() && !new_label.empty())
+  else if (current_label.empty() && !new_label.empty())
     StartTrackingDataUse(tab_id, new_label);
 }
 
@@ -249,6 +205,17 @@ bool DataUseTabModel::GetLabelForDataUse(const data_usage::DataUse& data_use,
   return false;  // Tab session not found.
 }
 
+bool DataUseTabModel::WouldNavigationEventEndTracking(SessionID::id_type tab_id,
+                                                      TransitionType transition,
+                                                      const GURL& url) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(IsValidTabID(tab_id));
+  std::string current_label, new_label;
+  GetCurrentAndNewLabelForNavigationEvent(
+      tab_id, transition, url, std::string(), &current_label, &new_label);
+  return (!current_label.empty() && new_label.empty());
+}
+
 void DataUseTabModel::AddObserver(base::WeakPtr<TabDataUseObserver> observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observers_.push_back(observer);
@@ -285,6 +252,65 @@ void DataUseTabModel::NotifyObserversOfTrackingEnding(
     ui_task_runner_->PostTask(
         FROM_HERE, base::Bind(&TabDataUseObserver::NotifyTrackingEnding,
                               observer, tab_id));
+  }
+}
+
+void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(
+    SessionID::id_type tab_id,
+    TransitionType transition,
+    const GURL& url,
+    const std::string& package,
+    std::string* current_label,
+    std::string* new_label) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(IsValidTabID(tab_id));
+
+  TabEntryMap::const_iterator tab_entry_iterator = active_tabs_.find(tab_id);
+  *current_label =
+      (tab_entry_iterator != active_tabs_.end())
+          ? tab_entry_iterator->second.GetActiveTrackingSessionLabel()
+          : std::string();
+  bool matches;
+  *new_label = "";
+
+  switch (transition) {
+    case TRANSITION_OMNIBOX_SEARCH:
+    case TRANSITION_OMNIBOX_NAVIGATION:
+      // Enter or exit events.
+      if (!url.is_empty()) {
+        matches = data_use_matcher_->MatchesURL(url, new_label);
+        DCHECK_NE(matches, new_label->empty());
+      }
+      break;
+
+    case TRANSITION_CUSTOM_TAB:
+    case TRANSITION_LINK:
+    case TRANSITION_RELOAD:
+      // Enter events.
+      if (!current_label->empty()) {
+        *new_label = *current_label;
+        break;
+      }
+      // Package name should match, for transitions from external app.
+      if (transition == TRANSITION_CUSTOM_TAB && !package.empty()) {
+        matches = data_use_matcher_->MatchesAppPackageName(package, new_label);
+        DCHECK_NE(matches, new_label->empty());
+      }
+      if (new_label->empty() && !url.is_empty()) {
+        matches = data_use_matcher_->MatchesURL(url, new_label);
+        DCHECK_NE(matches, new_label->empty());
+      }
+      break;
+
+    case TRANSITION_BOOKMARK:
+    case TRANSITION_HISTORY_ITEM:
+      // Exit events.
+      DCHECK(new_label->empty());
+      break;
+
+    default:
+      NOTREACHED();
+      break;
   }
 }
 

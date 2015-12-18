@@ -494,18 +494,26 @@ TEST_F(DataUseTabModelTest, NavigationEnterEvent) {
 
   ExpectTabEntrySize(TabEntrySize::ZERO);
 
+  EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo)));
   data_use_tab_model_->OnNavigationEvent(
       kTabID1, DataUseTabModel::TRANSITION_CUSTOM_TAB, GURL(), kPackageFoo);
   ExpectTabEntrySize(TabEntrySize::ONE);
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
   ExpectDataUseLabel(kTabID1, kTestLabel1);
+  EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLBar)));
 
+  EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
+      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo)));
   data_use_tab_model_->OnNavigationEvent(
       kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo),
       std::string());
   ExpectTabEntrySize(TabEntrySize::TWO);
   EXPECT_TRUE(IsTrackingDataUse(kTabID2));
   ExpectDataUseLabel(kTabID2, kTestLabel2);
+  EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLBar)));
 }
 
 // Tests that a navigation event with empty url and empty package name does not
@@ -526,6 +534,10 @@ TEST_F(DataUseTabModelTest, EmptyNavigationEvent) {
       kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(),
       std::string());
   EXPECT_FALSE(IsTrackingDataUse(kTabID1));
+
+  EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL()));
+
   ExpectTabEntrySize(TabEntrySize::ZERO);
 }
 
@@ -540,11 +552,15 @@ TEST_F(DataUseTabModelTest, NavigationEnterAndExitEvent) {
   RegisterURLRegexesInDataUseObserver(app_package_names, domain_regexes,
                                       labels);
 
+  EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo)));
   data_use_tab_model_->OnNavigationEvent(
       kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo),
       std::string());
   ExpectTabEntrySize(TabEntrySize::ONE);
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
+  EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+      kTabID1, DataUseTabModel::TRANSITION_BOOKMARK, GURL()));
 }
 
 // Tests that any of the Enter transition events start the tracking.
@@ -589,6 +605,8 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
 
     EXPECT_TRUE(IsTrackingDataUse(tab_id));
     ExpectDataUseLabel(tab_id, test.expect_label);
+    EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+        tab_id, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLBar)));
     ExpectTabEntrySize(tab_id);
     ++tab_id;
   }
@@ -623,8 +641,12 @@ TEST_F(DataUseTabModelTest, AllNavigationExitEvents) {
     EXPECT_TRUE(IsTrackingDataUse(tab_id));
 
     // Tracking should end.
+    EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+        tab_id, test.transition, GURL(test.url)));
     data_use_tab_model_->OnNavigationEvent(tab_id, test.transition,
                                            GURL(test.url), std::string());
+    EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
+        tab_id, test.transition, GURL(test.url)));
 
     EXPECT_FALSE(IsTrackingDataUse(tab_id));
     ExpectTabEntrySize(tab_id);
@@ -654,6 +676,8 @@ TEST_F(DataUseTabModelTest, AllNavigationExitAndEnterEvents) {
                                            std::string());
     EXPECT_TRUE(IsTrackingDataUse(tab_id));
     ExpectDataUseLabel(tab_id, kTestLabel1);
+    EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+        tab_id, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLBar)));
 
     // No change in label.
     data_use_tab_model_->OnNavigationEvent(tab_id, transition, GURL(kURLFoo),
@@ -662,6 +686,8 @@ TEST_F(DataUseTabModelTest, AllNavigationExitAndEnterEvents) {
     ExpectDataUseLabel(tab_id, kTestLabel1);
 
     // Tracking should end.
+    EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+        tab_id, transition, GURL()));
     data_use_tab_model_->OnNavigationEvent(tab_id, transition, GURL(),
                                            std::string());
 
@@ -678,44 +704,45 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
   SessionID::id_type tab_id = kTabID1;
   MockTabDataUseObserver mock_observer;
 
-  enum ObserverEvent {
-    OBSERVE_EVENT_NONE,
-    OBSERVE_EVENT_STARTED,
-    OBSERVE_EVENT_ENDED
+  enum TrackingState {
+    NONE,
+    STARTED,
+    ENDED,
+    CONTINUES,
   };
   const struct {
     DataUseTabModel::TransitionType transition;
     std::string url;
     std::string package;
     std::string expected_label;
-    ObserverEvent observer_event;
+    TrackingState observer_event;
   } transition_tests[] = {
       // Opening Custom Tab starts tracking.
       {DataUseTabModel::TRANSITION_CUSTOM_TAB, std::string(), kPackageFoo,
-       kTestLabel1, ObserverEvent::OBSERVE_EVENT_STARTED},
+       kTestLabel1, STARTED},
       // Clicking on links in the page continues tracking.
       {DataUseTabModel::TRANSITION_LINK, kURLBar, std::string(), kTestLabel1,
-       ObserverEvent::OBSERVE_EVENT_NONE},
+       CONTINUES},
       {DataUseTabModel::TRANSITION_LINK, kURLFooBar, std::string(), kTestLabel1,
-       ObserverEvent::OBSERVE_EVENT_NONE},
+       CONTINUES},
       // Navigating to a non matching URL from omnibox ends tracking.
       {DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, kURLBar, std::string(),
-       std::string(), ObserverEvent::OBSERVE_EVENT_ENDED},
+       std::string(), ENDED},
       // Clicking on non matching URL links in the page does not start tracking.
       {DataUseTabModel::TRANSITION_LINK, kURLFooBar, std::string(),
-       std::string(), ObserverEvent::OBSERVE_EVENT_NONE},
+       std::string(), NONE},
       // Clicking on matching URL links in the page starts tracking.
       {DataUseTabModel::TRANSITION_LINK, kURLFoo, std::string(), kTestLabel2,
-       ObserverEvent::OBSERVE_EVENT_STARTED},
+       STARTED},
       // Navigating to bookmarks ends tracking.
       {DataUseTabModel::TRANSITION_BOOKMARK, std::string(), std::string(),
-       std::string(), ObserverEvent::OBSERVE_EVENT_ENDED},
+       std::string(), ENDED},
       // Navigating to a matching URL from omnibox starts tracking.
       {DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, kURLFoo, std::string(),
-       kTestLabel2, ObserverEvent::OBSERVE_EVENT_STARTED},
+       kTestLabel2, STARTED},
       // Navigating to history item ends tracking.
       {DataUseTabModel::TRANSITION_HISTORY_ITEM, std::string(), std::string(),
-       std::string(), ObserverEvent::OBSERVE_EVENT_ENDED},
+       std::string(), ENDED},
   };
 
   app_package_names.push_back(kPackageFoo);
@@ -730,6 +757,12 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
   data_use_tab_model_->AddObserver(mock_observer.GetWeakPtr());
   for (auto const& test : transition_tests) {
     tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
+
+    if (test.observer_event == ENDED) {
+      EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+          tab_id, test.transition, GURL(test.url)));
+    }
+
     data_use_tab_model_->OnNavigationEvent(tab_id, test.transition,
                                            GURL(test.url), test.package);
     tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
@@ -737,12 +770,15 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
     EXPECT_EQ(!test.expected_label.empty(), IsTrackingDataUse(tab_id));
     ExpectDataUseLabel(tab_id, test.expected_label);
 
+    if (test.observer_event == STARTED || test.observer_event == CONTINUES) {
+      EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+          tab_id, DataUseTabModel::TRANSITION_BOOKMARK, GURL()));
+    }
+
     EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1))
-        .Times(test.observer_event == ObserverEvent::OBSERVE_EVENT_STARTED ? 1
-                                                                           : 0);
+        .Times(test.observer_event == STARTED ? 1 : 0);
     EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1))
-        .Times(test.observer_event == ObserverEvent::OBSERVE_EVENT_ENDED ? 1
-                                                                         : 0);
+        .Times(test.observer_event == ENDED ? 1 : 0);
     base::RunLoop().RunUntilIdle();
     testing::Mock::VerifyAndClearExpectations(&mock_observer);
   }

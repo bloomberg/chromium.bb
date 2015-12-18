@@ -116,6 +116,13 @@ class DataUseTabModel {
   virtual bool GetLabelForDataUse(const data_usage::DataUse& data_use,
                                   std::string* output_label) const;
 
+  // Returns true if the navigation event would end the tracking session for
+  // |tab_id|. |transition| is the type of the UI event/transition. |url| is the
+  // URL in the tab.
+  bool WouldNavigationEventEndTracking(SessionID::id_type tab_id,
+                                       TransitionType transition,
+                                       const GURL& url) const;
+
   // Adds observers to the observer list. Must be called on IO thread.
   // |observer| is notified on UI thread.
   // TODO(tbansal): Remove observers that have been destroyed.
@@ -168,6 +175,22 @@ class DataUseTabModel {
                            UnexpiredTabEntryRemovaltimeHistogram);
 
   typedef base::hash_map<SessionID::id_type, TabDataUseEntry> TabEntryMap;
+
+  // Gets the current label of a tab, and the new label if a navigation event
+  // occurs in the tab. |tab_id| is the source tab of the generated event,
+  // |transition| indicates the type of the UI event/transition,  |url| is the
+  // URL in the source tab, |package| indicates the android package name of
+  // external application that initiated the event. |current_label| and
+  // |new_label| should not be null, and are set with current and new labels
+  // respectively. |current_label| will be set to empty string, if there is no
+  // active tracking session. |new_label| will be set to empty string if there
+  // would be no active tracking session if the navigation happens.
+  void GetCurrentAndNewLabelForNavigationEvent(SessionID::id_type tab_id,
+                                               TransitionType transition,
+                                               const GURL& url,
+                                               const std::string& package,
+                                               std::string* current_label,
+                                               std::string* new_label) const;
 
   // Initiates a new tracking session with the |label| for tab with id |tab_id|.
   void StartTrackingDataUse(SessionID::id_type tab_id,
