@@ -11,7 +11,6 @@ Google API fails, or gce.Error on other failures.
 from __future__ import print_function
 
 import httplib2
-import string
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import timeout_util
@@ -242,7 +241,7 @@ class GceContext(object):
     zone_resource = self.gce_client.zones().get(
         project=self.project,
         zone=zone or self.zone).execute()
-    return string.split(zone_resource['region'], '/')[-1]
+    return zone_resource['region'].split('/')[-1]
 
   def CreateInstance(self, name, image, zone=None, network=None,
                      machine_type=None, default_scopes=True,
