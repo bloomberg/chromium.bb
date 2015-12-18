@@ -44,10 +44,12 @@ namespace blink {
 class Element;
 class TreeScope;
 
-class DocumentOrderedMap : public NoBaseWillBeGarbageCollected<DocumentOrderedMap> {
+class DocumentOrderedMap : public NoBaseWillBeGarbageCollectedFinalized<DocumentOrderedMap> {
     USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentOrderedMap);
 public:
     static PassOwnPtrWillBeRawPtr<DocumentOrderedMap> create();
+    ~DocumentOrderedMap();
+
     void add(const AtomicString&, Element*);
     void remove(const AtomicString&, Element*);
 
@@ -62,7 +64,13 @@ public:
 
     DECLARE_TRACE();
 
+#if ENABLE(ASSERT)
+    void willRemoveId(const AtomicString&);
+#endif
+
 private:
+    DocumentOrderedMap();
+
     template<bool keyMatches(const AtomicString&, const Element&)>
     Element* get(const AtomicString&, const TreeScope*) const;
 
@@ -84,6 +92,9 @@ private:
     using Map = WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<MapEntry>>;
 
     mutable Map m_map;
+#if ENABLE(ASSERT)
+    AtomicString m_removingId;
+#endif
 };
 
 inline bool DocumentOrderedMap::contains(const AtomicString& id) const
