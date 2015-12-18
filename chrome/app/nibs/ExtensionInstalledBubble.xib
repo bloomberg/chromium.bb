@@ -62,7 +62,7 @@
                                 </connections>
                             </button>
                             <textField focusRingType="none" verticalHuggingPriority="750" id="33">
-                                <rect key="frame" x="71" y="134" width="285" height="17"/>
+                                <rect key="frame" x="71" y="134" width="275" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" focusRingType="none" title="^IDS_EXTENSION_INSTALLED_HEADING" id="34">
                                     <font key="font" metaFont="system"/>

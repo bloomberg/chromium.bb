@@ -91,6 +91,8 @@ enum ExtensionType {
 
 @property(nonatomic, readonly) const extensions::BundleInstaller* bundle;
 @property(nonatomic, readonly) ExtensionInstalledBubble* installedBubble;
+@property(nonatomic, readonly) NSView* heading;
+@property(nonatomic, readonly) NSView* closeButton;
 @property(nonatomic, readonly) NSView* howToUse;
 @property(nonatomic, readonly) NSView* howToManage;
 @property(nonatomic, readonly) NSView* appInstalledShortcutLink;

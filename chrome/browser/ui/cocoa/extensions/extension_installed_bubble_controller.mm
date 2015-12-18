@@ -135,6 +135,8 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
 @synthesize bundle = bundle_;
 @synthesize installedBubble = installedBubble_;
 // Exposed for unit tests.
+@synthesize heading = heading_;
+@synthesize closeButton = closeButton_;
 @synthesize howToUse = howToUse_;
 @synthesize howToManage = howToManage_;
 @synthesize appInstalledShortcutLink = appInstalledShortcutLink_;

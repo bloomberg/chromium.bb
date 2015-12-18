@@ -183,6 +183,22 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleControllerTest);
 };
 
+// We don't want to just test the bounds of these frames, because that results
+// in a change detector test (and just duplicates the logic in the class).
+// Instead, we do a few sanity checks.
+void SanityCheckFrames(NSRect frames[], size_t size) {
+  for (size_t i = 0; i < size; ++i) {
+    // Check 1: Non-hidden views should have a non-empty frame.
+    EXPECT_FALSE(NSIsEmptyRect(frames[i])) <<
+        "Frame at index " << i << " is empty";
+    // Check 2: No frames should overlap.
+    for (size_t j = 0; j < i; ++j) {
+      EXPECT_FALSE(NSIntersectsRect(frames[i], frames[j])) <<
+          "Frame at index " << i << " intersects frame at index " << j;
+    }
+  }
+}
+
 // Test the basic layout of the bubble for an extension that is from the store.
 TEST_F(ExtensionInstalledBubbleControllerTest,
        BubbleLayoutFromStoreNoKeybinding) {
@@ -198,34 +214,28 @@ TEST_F(ExtensionInstalledBubbleControllerTest,
   EXPECT_FALSE([[controller promoContainer] isHidden]);
   EXPECT_TRUE([[controller manageShortcutLink] isHidden]);
 
+  NSRect headingFrame = [[controller heading] frame];
+  NSRect closeFrame = [[controller closeButton] frame];
   NSRect howToUseFrame = [[controller howToUse] frame];
   NSRect howToManageFrame = [[controller howToManage] frame];
   NSRect syncPromoFrame = [[controller promoContainer] frame];
   NSRect iconFrame = [[controller iconImage] frame];
 
-  // We don't want to just test the bounds of these frames, because that results
-  // in a change detector test (and just duplicates the logic in the class).
-  // Instead, we do a few sanity checks.
-  // Check 1: Non-hidden views should have a non-empty frame.
-  EXPECT_FALSE(NSIsEmptyRect(howToUseFrame));
-  EXPECT_FALSE(NSIsEmptyRect(howToManageFrame));
-  EXPECT_FALSE(NSIsEmptyRect(syncPromoFrame));
-  EXPECT_FALSE(NSIsEmptyRect(iconFrame));
+  NSRect frames[] = {headingFrame, closeFrame, howToUseFrame, howToManageFrame,
+                     syncPromoFrame, iconFrame};
+  SanityCheckFrames(frames, arraysize(frames));
 
-  // Check 2: The overall layout of the bubble should be:
-  // [ How to Use ]
-  // [ How to Manage ]
-  // [ Sync Promo ]
-  // And none of the views should overlap.
-  EXPECT_FALSE(NSIntersectsRect(howToUseFrame, howToManageFrame));
+  // Check the overall layout of the bubble; it should be:
+  // |------| | Heading        |
+  // | icon | | How to Use     |
+  // |------| | How to Manage  |
+  // |-------------------------|
+  // |       Sync Promo        |
+  // |-------------------------|
+  EXPECT_GT(NSMinY(headingFrame), NSMinY(howToUseFrame));
   EXPECT_GT(NSMinY(howToUseFrame), NSMinY(howToManageFrame));
-
-  EXPECT_FALSE(NSIntersectsRect(howToManageFrame, syncPromoFrame));
   EXPECT_GT(NSMinY(howToManageFrame), NSMinY(syncPromoFrame));
-
-  EXPECT_FALSE(NSIntersectsRect(iconFrame, syncPromoFrame));
   EXPECT_GT(NSMinY(iconFrame), NSMinY(syncPromoFrame));
-
   EXPECT_GT(NSMinY(iconFrame), 0);
   EXPECT_EQ(NSMinY(syncPromoFrame), 0);
 
@@ -247,29 +257,28 @@ TEST_F(ExtensionInstalledBubbleControllerTest,
   EXPECT_FALSE([[controller manageShortcutLink] isHidden]);
   EXPECT_FALSE([[controller promoContainer] isHidden]);
 
+  NSRect headingFrame = [[controller heading] frame];
+  NSRect closeFrame = [[controller closeButton] frame];
   NSRect howToUseFrame = [[controller howToUse] frame];
   NSRect manageShortcutFrame = [[controller manageShortcutLink] frame];
   NSRect syncPromoFrame = [[controller promoContainer] frame];
   NSRect iconFrame = [[controller iconImage] frame];
 
-  // Same checks as previous tests - layout should be:
-  // [ How to Use ]
-  // [ Manage Shortcut ]
-  // [ Sync Promo ]
-  EXPECT_FALSE(NSIsEmptyRect(howToUseFrame));
-  EXPECT_FALSE(NSIsEmptyRect(manageShortcutFrame));
-  EXPECT_FALSE(NSIsEmptyRect(syncPromoFrame));
-  EXPECT_FALSE(NSIsEmptyRect(iconFrame));
+  NSRect frames[] = {headingFrame, closeFrame, howToUseFrame,
+                     manageShortcutFrame, syncPromoFrame, iconFrame};
+  SanityCheckFrames(frames, arraysize(frames));
 
-  EXPECT_FALSE(NSIntersectsRect(howToUseFrame, manageShortcutFrame));
+  // Layout should be:
+  // |------| | Heading         |
+  // | icon | | How to Use      |
+  // |------| | Manage shortcut |
+  // |--------------------------|
+  // |       Sync Promo         |
+  // |--------------------------|
+  EXPECT_GT(NSMinY(headingFrame), NSMinY(howToUseFrame));
   EXPECT_GT(NSMinY(howToUseFrame), NSMinY(manageShortcutFrame));
-
-  EXPECT_FALSE(NSIntersectsRect(manageShortcutFrame, syncPromoFrame));
   EXPECT_GT(NSMinY(manageShortcutFrame), NSMinY(syncPromoFrame));
-
-  EXPECT_FALSE(NSIntersectsRect(iconFrame, syncPromoFrame));
   EXPECT_GT(NSMinY(iconFrame), NSMinY(syncPromoFrame));
-
   EXPECT_GT(NSMinY(iconFrame), 0);
   EXPECT_EQ(NSMinY(syncPromoFrame), 0);
 
@@ -298,20 +307,23 @@ TEST_F(ExtensionInstalledBubbleControllerTest, BubbleLayoutPageActionUnpacked) {
   EXPECT_TRUE([[controller promoContainer] isHidden]);
   EXPECT_FALSE([[controller manageShortcutLink] isHidden]);
 
+  NSRect headingFrame = [[controller heading] frame];
+  NSRect closeFrame = [[controller closeButton] frame];
   NSRect howToUseFrame = [[controller howToUse] frame];
   NSRect howToManageFrame = [[controller howToManage] frame];
   NSRect iconFrame = [[controller iconImage] frame];
 
-  // Same checks as previous tests - layout should be:
-  // [ How to Use ]
-  // [ Manage Shortcut ]
-  EXPECT_FALSE(NSIsEmptyRect(howToUseFrame));
-  EXPECT_FALSE(NSIsEmptyRect(howToManageFrame));
-  EXPECT_FALSE(NSIsEmptyRect(iconFrame));
+  NSRect frames[] = {headingFrame, closeFrame, howToUseFrame, howToManageFrame,
+                     iconFrame};
+  SanityCheckFrames(frames, arraysize(frames));
 
+  // Layout should be:
+  // |------| | Heading         |
+  // | icon | | How to Use      |
+  // |------| | Manage shortcut |
   EXPECT_FALSE(NSIntersectsRect(howToUseFrame, howToManageFrame));
+  EXPECT_GT(NSMinY(headingFrame), NSMinY(howToManageFrame));
   EXPECT_GT(NSMinY(howToUseFrame), NSMinY(howToManageFrame));
-
   EXPECT_GT(NSMinY(iconFrame), 0);
 
   // The page action preview should be visible.
