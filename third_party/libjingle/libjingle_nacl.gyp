@@ -72,7 +72,6 @@
         '<(webrtc_base)/autodetectproxy.h',
         '<(webrtc_base)/base64.cc',
         '<(webrtc_base)/base64.h',
-        '<(webrtc_base)/basicdefs.h',
         '<(webrtc_base)/buffer.cc',
         '<(webrtc_base)/buffer.h',
         '<(webrtc_base)/bytebuffer.cc',
