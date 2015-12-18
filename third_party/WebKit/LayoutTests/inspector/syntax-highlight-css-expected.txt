@@ -2,8 +2,8 @@ Tests that (S)CSS syntax highlighter properly detects the tokens.
 
 a[href='/']: cm-css-tag, *, cm-css-tag, *, cm-css-string, *
 #content > a:hover: cm-css-builtin, *, cm-css-tag, *, cm-css-variable-3
-@import url(style.css);: cm-css-def, *, cm-css-tag, *, cm-css-string, *
-@import url("style.css") projection, tv;: cm-css-def, *, cm-css-tag, *, cm-css-string, *, cm-css-tag, *, cm-css-tag, *
+@import url(style.css);: cm-css-def, *, cm-css-atom, *, cm-css-string, *
+@import url("style.css") projection, tv;: cm-css-def, *, cm-css-atom, *, cm-css-string, *, cm-css-attribute, *, cm-css-attribute, *
 @import "/css/fireball_unicode.css"; html {}: cm-css-def, *, cm-css-string, *, cm-css-tag, *
 @media screen { body { color: red; } }: cm-css-def, *, cm-css-attribute, *, cm-css-tag, *, cm-css-property, *, cm-css-keyword, *
 @font-face { font-family: "MyHelvetica"; }: cm-css-def, *, cm-css-property, *, cm-css-string, *
