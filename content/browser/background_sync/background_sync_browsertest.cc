@@ -355,9 +355,17 @@ bool BackgroundSyncBrowserTest::RejectDelayedOneShot() {
   return script_result == BuildExpectedResult("delay", "rejecting");
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, OneShotFires) {
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, OneShotFiresControlled) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  EXPECT_TRUE(RegisterOneShot("foo"));
+  EXPECT_TRUE(PopConsole("foo fired"));
+  EXPECT_FALSE(GetRegistrationOneShot("foo"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, OneShotFiresUncontrolled) {
+  EXPECT_TRUE(RegisterServiceWorker());
 
   EXPECT_TRUE(RegisterOneShot("foo"));
   EXPECT_TRUE(PopConsole("foo fired"));
@@ -449,7 +457,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, Incognito) {
 
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));
   EXPECT_TRUE(RegisterServiceWorker());
-  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
 
   EXPECT_FALSE(GetRegistrationOneShot("normal"));
 
