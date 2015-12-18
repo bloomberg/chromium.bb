@@ -1042,11 +1042,16 @@ void RenderWidgetHostViewAura::RenderProcessGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewAura::Destroy() {
-  // Beware, this function is not called on all destruction paths. It will
-  // implicitly end up calling ~RenderWidgetHostViewAura though, so all
-  // destruction/cleanup code should happen there, not here.
+  // Beware, this function is not called on all destruction paths. If |window_|
+  // has been created, then it will implicitly end up calling
+  // ~RenderWidgetHostViewAura when |window_| is destroyed. Otherwise, The
+  // destructor is invoked directly from here. So all destruction/cleanup code
+  // should happen there, not here.
   in_shutdown_ = true;
-  delete window_;
+  if (window_)
+    delete window_;
+  else
+    delete this;
 }
 
 void RenderWidgetHostViewAura::SetTooltipText(
@@ -1956,19 +1961,16 @@ void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
   // Make sure that the input method no longer references to this object before
   // this object is removed from the root window (i.e. this object loses access
   // to the input method).
-  ui::InputMethod* input_method = GetInputMethod();
-  if (input_method)
-    input_method->DetachTextInputClient(this);
+  DetachFromInputMethod();
 
   if (overscroll_controller_)
     overscroll_controller_->Reset();
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroyed(aura::Window* window) {
-  // Ask the RWH to drop reference to us.
-  if (!is_guest_view_hack_)
-    host_->ViewDestroyed();
-
+  // This is not called on all destruction paths (e.g. if this view was never
+  // inialized properly to create the window). So the destruction/cleanup code
+  // that do not depend on |window_| should happen in the destructor, not here.
   delete this;
 }
 
@@ -2486,6 +2488,10 @@ void RenderWidgetHostViewAura::OnHostMoved(const aura::WindowTreeHost* host,
 // RenderWidgetHostViewAura, private:
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
+  // Ask the RWH to drop reference to us.
+  if (!is_guest_view_hack_)
+    host_->ViewDestroyed();
+
   selection_controller_.reset();
   selection_controller_client_.reset();
 
