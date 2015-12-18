@@ -242,6 +242,7 @@ Polymer({
     // status (playing or paused).
     this.$.audio.currentTime = 0;
     this.time = 0;
+    this.$.audio.play();
   },
 
   /**

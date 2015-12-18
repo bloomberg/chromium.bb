@@ -124,13 +124,19 @@ testcase.changeTracks = function() {
     return remoteCallAudioPlayer.waitForElement(
         appId, 'track-list[expanded]');
   }).then(function() {
-    // Clicking the first track should make it active, but shouldn't start
-    // playing.
+    // Clicking the first track should make it active and start playing it.
     return remoteCallAudioPlayer.callRemoteTestUtil(
         'fakeMouseClick', appId, ['.track[index="0"]']);
   }).then(function() {
     return remoteCallAudioPlayer.waitForElement(
         appId, '.track[index="0"][active]');
+  }).then(function() {
+    return remoteCallAudioPlayer.waitForElement(
+        appId, 'audio-player[playing]');
+  }).then(function() {
+    // Pause to prepare for remaining steps.
+    return remoteCallAudioPlayer.callRemoteTestUtil(
+        'fakeMouseClick', appId, ['#play']);
   }).then(function() {
     return remoteCallAudioPlayer.waitForElement(
         appId, 'audio-player:not([playing])');
