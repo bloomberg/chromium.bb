@@ -961,6 +961,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case CSSXGetComputedStyleQueries:
         return replacedWillBeRemoved("'getComputedStyle(e).cssXx' (except .cssFloat)", "'getComputedStyle(e).xx'", 50, "5006796888473600");
 
+    case DocumentDefaultCharset:
+        return willBeRemoved("'Document.defaultCharset'", 50, "6217124578066432");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

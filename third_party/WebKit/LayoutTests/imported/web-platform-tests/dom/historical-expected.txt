@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'Document.defaultCharset' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/6217124578066432 for more details.
 This is a testharness.js-based test.
 FAIL Historical DOM features must be removed: CDATASection assert_equals: expected (undefined) undefined but got (function) function "function CDATASection() { [native code] }"
 PASS Historical DOM features must be removed: DOMConfiguration 
