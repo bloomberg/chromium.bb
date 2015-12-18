@@ -2080,6 +2080,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPERIMENTAL_FRAMEWORK_DESCRIPTION,
      kOsAll,
      FEATURE_VALUE_TYPE(features::kExperimentalFramework)},
+#if defined(OS_ANDROID)
+    {"enable-unified-media-pipeline",
+     IDS_FLAGS_ENABLE_UNIFIED_MEDIA_PIPELINE_NAME,
+     IDS_FLAGS_ENABLE_UNIFIED_MEDIA_PIPELINE_DESCRIPTION, kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kEnableUnifiedMediaPipeline)},
+#endif  // OS_ANDROID
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

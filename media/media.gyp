@@ -748,20 +748,13 @@
               'defines': [
                 # On Android, FFmpeg is built without video decoders. We only
                 # support hardware video decoding.
-                'ENABLE_MEDIA_PIPELINE_ON_ANDROID',
                 'DISABLE_FFMPEG_VIDEO_DECODERS',
               ],
               'direct_dependent_settings': {
                 'defines': [
-                  'ENABLE_MEDIA_PIPELINE_ON_ANDROID',
                   'DISABLE_FFMPEG_VIDEO_DECODERS',
                 ],
               },
-            }, {  # media_use_ffmpeg == 0
-              'sources!': [
-                'filters/opus_audio_decoder.cc',
-                'filters/opus_audio_decoder.h',
-              ],
             }],
           ],
         }],
@@ -1355,18 +1348,22 @@
           ],
         }],
         # Even if FFmpeg is enabled on Android we don't want these.
-        # TODO(watk): Refactor tests that could be made to run on Android.
+        # TODO(watk): Refactor tests that could be made to run on Android. See
+        # http://crbug.com/570762
         ['media_use_ffmpeg==0 or OS=="android"', {
           'sources!': [
             'base/audio_video_metadata_extractor_unittest.cc',
-            'base/container_names_unittest.cc',
             'base/media_file_checker_unittest.cc',
-            'filters/audio_file_reader_unittest.cc',
-            'filters/blocking_url_protocol_unittest.cc',
             'filters/ffmpeg_video_decoder_unittest.cc',
-            'filters/in_memory_url_protocol_unittest.cc',
             'test/pipeline_integration_test.cc',
             'test/pipeline_integration_test_base.cc',
+
+            # These tests are confused by Android always having proprietary
+            # codecs enabled, but ffmpeg_branding=Chromium. These should be
+            # fixed, see http://crbug.com/570762.
+            'filters/audio_decoder_unittest.cc',
+            'filters/audio_file_reader_unittest.cc',
+            'filters/ffmpeg_demuxer_unittest.cc',
           ],
         }],
 
@@ -1481,6 +1478,15 @@
             'USE_NEON'
           ],
         }],
+        ['OS=="android" or media_use_ffmpeg==0', {
+          # TODO(watk): Refactor tests that could be made to run on Android.
+          # See http://crbug.com/570762
+          'sources!': [
+            'base/demuxer_perftest.cc',
+            'test/pipeline_integration_perftest.cc',
+            'test/pipeline_integration_test_base.cc',
+          ],
+        }],
         ['OS=="android"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
@@ -1490,12 +1496,6 @@
         ['media_use_ffmpeg==1', {
           'dependencies': [
             '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
-          ],
-        }, {  # media_use_ffmpeg==0
-          'sources!': [
-            'base/demuxer_perftest.cc',
-            'test/pipeline_integration_perftest.cc',
-            'test/pipeline_integration_test_base.cc',
           ],
         }],
       ],
@@ -1988,7 +1988,9 @@
         ],
       ],
     }],
-    ['media_use_ffmpeg==1', {
+    # TODO(watk): Refactor tests that could be made to run on Android. See
+    # http://crbug.com/570762
+    ['media_use_ffmpeg==1 and OS!="android"', {
       'targets': [
         {
           # GN version: //media:ffmpeg_regression_tests

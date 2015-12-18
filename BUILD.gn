@@ -457,7 +457,7 @@ group("both_gn_and_gyp") {
       }
     }
 
-    if (media_use_ffmpeg) {
+    if (media_use_ffmpeg && !is_android) {
       deps += [ "//media:ffmpeg_regression_tests" ]
     }
 

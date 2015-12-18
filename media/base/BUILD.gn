@@ -390,6 +390,7 @@ source_set("unittests") {
     "callback_holder_unittest.cc",
     "channel_mixer_unittest.cc",
     "channel_mixing_matrix_unittest.cc",
+    "container_names_unittest.cc",
     "data_buffer_unittest.cc",
     "decoder_buffer_queue_unittest.cc",
     "decoder_buffer_unittest.cc",
@@ -443,9 +444,7 @@ source_set("unittests") {
     ]
   }
 
-  if (!is_android) {
-    sources += [ "container_names_unittest.cc" ]
-  } else {
+  if (is_android) {
     deps += [ "//ui/gl" ]
   }
 

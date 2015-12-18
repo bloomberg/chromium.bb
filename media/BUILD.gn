@@ -57,10 +57,7 @@ config("media_dependent_config") {
     ]
   }
   if (media_use_ffmpeg && is_android) {
-    defines += [
-      "ENABLE_MEDIA_PIPELINE_ON_ANDROID",
-      "DISABLE_FFMPEG_VIDEO_DECODERS",
-    ]
+    defines += [ "DISABLE_FFMPEG_VIDEO_DECODERS" ]
   }
 }
 
@@ -718,19 +715,22 @@ test("media_unittests") {
   if (media_use_ffmpeg) {
     sources += [
       "ffmpeg/ffmpeg_common_unittest.cc",
-      "filters/audio_decoder_unittest.cc",
-      "filters/ffmpeg_demuxer_unittest.cc",
+      "filters/blocking_url_protocol_unittest.cc",
       "filters/ffmpeg_glue_unittest.cc",
+      "filters/in_memory_url_protocol_unittest.cc",
     ]
 
-    # Even if FFmpeg is enabled we do not want these files on Android.
-    # TODO(watk): Refactor tests that could be made to run on Android.
     if (!is_android) {
       sources += [
+        # These tests are confused by Android always having proprietary
+        # codecs enabled, but ffmpeg_branding=Chromium.  These should be
+        # fixed, http://crbug.com/570762.
+        "filters/audio_decoder_unittest.cc",
         "filters/audio_file_reader_unittest.cc",
-        "filters/blocking_url_protocol_unittest.cc",
+        "filters/ffmpeg_demuxer_unittest.cc",
+
+        # FFmpeg on Android does not include video decoders.
         "filters/ffmpeg_video_decoder_unittest.cc",
-        "filters/in_memory_url_protocol_unittest.cc",
       ]
     }
   }
@@ -881,7 +881,9 @@ component("shared_memory_support") {
   ]
 }
 
-if (media_use_ffmpeg) {
+# TODO(watk): Refactor tests that could be made to run on Android. See
+# http://crbug.com/570762
+if (media_use_ffmpeg && !is_android) {
   test("ffmpeg_regression_tests") {
     sources = [
       "base/run_all_unittests.cc",

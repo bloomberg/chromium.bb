@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "media/base/media_log.h"
 #include "media/filters/gpu_video_decoder.h"
+#include "media/filters/opus_audio_decoder.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/renderers/renderer_impl.h"
@@ -19,10 +20,6 @@
 #if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
 #include "media/filters/ffmpeg_video_decoder.h"
 #endif
-#endif
-
-#if !defined(OS_ANDROID) || defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
-#include "media/filters/opus_audio_decoder.h"
 #endif
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
@@ -57,9 +54,7 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
       new FFmpegAudioDecoder(media_task_runner, media_log_));
 #endif
 
-#if !defined(OS_ANDROID) || defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
   audio_decoders.push_back(new OpusAudioDecoder(media_task_runner));
-#endif
 
   scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
       media_task_runner, audio_renderer_sink, audio_decoders.Pass(),

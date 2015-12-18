@@ -43,7 +43,6 @@ enum { kNumPictureBuffers = media::limits::kMaxVideoFrames + 1 };
 // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
 enum { kMaxBitstreamsNotifiedInAdvance = 32 };
 
-#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 // MediaCodec is only guaranteed to support baseline, but some devices may
 // support others. Advertise support for all H264 profiles and let the
 // MediaCodec fail when decoding if it's not actually supported. It's assumed
@@ -61,7 +60,6 @@ static const media::VideoCodecProfile kSupportedH264Profiles[] = {
   media::H264PROFILE_STEREOHIGH,
   media::H264PROFILE_MULTIVIEWHIGH
 };
-#endif
 
 // Because MediaCodec is thread-hostile (must be poked on a single thread) and
 // has no callback mechanism (b/11990118), we must drive it by polling for
@@ -123,11 +121,9 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   codec_ = VideoCodecProfileToVideoCodec(config.profile);
   is_encrypted_ = config.is_encrypted;
 
-  bool profile_supported = codec_ == media::kCodecVP8;
-#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
-  profile_supported |=
-      (codec_ == media::kCodecVP9 || codec_ == media::kCodecH264);
-#endif
+  bool profile_supported = codec_ == media::kCodecVP8 ||
+                           codec_ == media::kCodecVP9 ||
+                           codec_ == media::kCodecH264;
 
   if (!profile_supported) {
     LOG(ERROR) << "Unsupported profile: " << config.profile;
@@ -674,12 +670,8 @@ void AndroidVideoDecodeAccelerator::ManageTimer(bool did_work) {
 
 // static
 bool AndroidVideoDecodeAccelerator::UseDeferredRenderingStrategy() {
-#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableUnifiedMediaPipeline);
-#endif
-
-  return false;
 }
 
 // static
@@ -697,7 +689,6 @@ AndroidVideoDecodeAccelerator::GetCapabilities() {
     profiles.push_back(profile);
   }
 
-#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
   if (!media::VideoCodecBridge::IsKnownUnaccelerated(
           media::kCodecVP9, media::MEDIA_CODEC_DECODER)) {
     SupportedProfile profile;
@@ -717,7 +708,6 @@ AndroidVideoDecodeAccelerator::GetCapabilities() {
     profile.max_resolution.SetSize(3840, 2160);
     profiles.push_back(profile);
   }
-#endif
 
   if (UseDeferredRenderingStrategy()) {
     capabilities.flags = media::VideoDecodeAccelerator::Capabilities::

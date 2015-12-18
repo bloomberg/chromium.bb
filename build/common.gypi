@@ -1882,7 +1882,6 @@
       }],
       ['chromecast==1', {
         'enable_mpeg2ts_stream_parser%': 1,
-        'ffmpeg_branding%': 'ChromeOS',
         'use_custom_freetype%': 0,
         'use_playready%': 0,
         'conditions': [
@@ -1890,6 +1889,11 @@
             'arm_arch%': '',
             'arm_tune%': 'cortex-a9',
             'arm_thumb%': 1,
+          }],
+          # TODO(dalecurtis): What audio codecs does Chromecast want here?  Sort
+          # out and add configs if necessary.  http://crbug.com/570754
+          ['OS!="android"', {
+            'ffmpeg_branding%': 'ChromeOS',
           }],
         ],
       }],

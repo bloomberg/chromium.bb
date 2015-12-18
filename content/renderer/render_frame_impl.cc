@@ -213,7 +213,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #endif
 
-#if defined(ENABLE_MOJO_MEDIA) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+#if defined(ENABLE_MOJO_MEDIA) && !defined(OS_ANDROID)
 #include "media/mojo/services/mojo_renderer_factory.h"
 #else
 #include "media/renderers/default_renderer_factory.h"
@@ -552,7 +552,6 @@ CommonNavigationParams MakeCommonNavigationParams(
       base::TimeTicks::Now());
 }
 
-#if !defined(OS_ANDROID) || defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 media::Context3D GetSharedMainThreadContext3D() {
   cc::ContextProvider* provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
@@ -560,7 +559,6 @@ media::Context3D GetSharedMainThreadContext3D() {
     return media::Context3D();
   return media::Context3D(provider->ContextGL(), provider->GrContext());
 }
-#endif
 
 bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
   return navigation_type == FrameMsg_Navigate_Type::RELOAD ||
@@ -2291,16 +2289,11 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
-#if defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
-  scoped_refptr<media::RestartableAudioRendererSink> audio_renderer_sink;
-  media::WebMediaPlayerParams::Context3DCB context_3d_cb;
-#else
   scoped_refptr<media::RestartableAudioRendererSink> audio_renderer_sink =
       render_thread->GetAudioRendererMixerManager()->CreateInput(
           routing_id_, sink_id.utf8(), frame->securityOrigin());
   media::WebMediaPlayerParams::Context3DCB context_3d_cb =
       base::Bind(&GetSharedMainThreadContext3D);
-#endif  // defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 
   scoped_refptr<media::MediaLog> media_log(new RenderMediaLog());
   media::WebMediaPlayerParams params(
@@ -2315,18 +2308,16 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
                  base::Unretained(blink::mainThreadIsolate())),
       GetMediaPermission(), initial_cdm);
 
-// TODO(xhwang, watk): Find a better way to specify these ifdef conditions.
-#if defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
-  return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
-#else
-#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+#if defined(OS_ANDROID)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableUnifiedMediaPipeline)) {
+    // TODO(sandersd): This check should be grown to include HLS and blacklist
+    // checks.  http://crbug.com/516765
     return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
   }
-#endif  // defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+#endif  // defined(OS_ANDROID)
 
-#if defined(ENABLE_MOJO_MEDIA) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+#if defined(ENABLE_MOJO_MEDIA) && !defined(OS_ANDROID)
   scoped_ptr<media::RendererFactory> media_renderer_factory(
       new media::MojoRendererFactory(GetMediaServiceFactory()));
 #else
@@ -2339,17 +2330,14 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
         media_log, render_thread->GetGpuFactories(),
         *render_thread->GetAudioHardwareConfig()));
   }
-#endif  // defined(ENABLE_MOJO_MEDIA) &&
-        // !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+#endif  // defined(ENABLE_MOJO_MEDIA) && !defined(OS_ANDROID)
 
-  if (!url_index_.get() || url_index_->frame() != frame) {
+  if (!url_index_.get() || url_index_->frame() != frame)
     url_index_.reset(new media::UrlIndex(frame));
-  }
 
   return new media::WebMediaPlayerImpl(
       frame, client, encrypted_client, GetWebMediaPlayerDelegate()->AsWeakPtr(),
       media_renderer_factory.Pass(), GetCdmFactory(), url_index_, params);
-#endif  // defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 }
 
 blink::WebMediaSession* RenderFrameImpl::createMediaSession() {

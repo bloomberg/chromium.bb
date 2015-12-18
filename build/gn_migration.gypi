@@ -374,7 +374,7 @@
             '../ui/views/examples/examples.gyp:views_examples_with_content_exe',
           ],
         }],
-        ['media_use_ffmpeg==1', {
+        ['media_use_ffmpeg==1 and OS!="android"', {
           'dependencies': [
             '../media/media.gyp:ffmpeg_regression_tests',
           ],

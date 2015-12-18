@@ -8,7 +8,8 @@ source_set("pipeline_integration_test_base") {
   testonly = true
 
   # Even if FFmpeg is enabled on Android we don't want these.
-  # TODO(watk): Refactor tests that could be made to run on Android.
+  # TODO(watk): Refactor tests that could be made to run on Android. See
+  # http://crbug.com/570762
   if (media_use_ffmpeg && !is_android) {
     sources = [
       "pipeline_integration_test_base.cc",
