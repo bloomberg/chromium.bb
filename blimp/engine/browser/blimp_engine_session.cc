@@ -15,8 +15,13 @@
 #include "blimp/engine/ui/blimp_ui_context_factory.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_multiplexer.h"
+#include "blimp/net/browser_connection_handler.h"
+#include "blimp/net/engine_authentication_handler.h"
+#include "blimp/net/engine_connection_manager.h"
 #include "blimp/net/null_blimp_message_processor.h"
+#include "blimp/net/tcp_engine_transport.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -44,6 +49,7 @@ const int kDummyTabId = 0;
 const float kDefaultScaleFactor = 1.f;
 const int kDefaultDisplayWidth = 800;
 const int kDefaultDisplayHeight = 600;
+const uint16 kDefaultPortNumber = 25467;
 
 base::LazyInstance<blimp::NullBlimpMessageProcessor> g_blimp_message_processor =
     LAZY_INSTANCE_INITIALIZER;
@@ -64,13 +70,62 @@ class FocusRulesImpl : public wm::BaseFocusRules {
 
 }  // namespace
 
+// This class's functions and destruction are all invoked on the IO thread by
+// the BlimpEngineSession.
+class BlimpNetworkComponents {
+ public:
+  explicit BlimpNetworkComponents(net::NetLog* net_log);
+  ~BlimpNetworkComponents();
+
+  void Initialize();
+
+ private:
+  net::NetLog* net_log_;
+  scoped_ptr<BrowserConnectionHandler> connection_handler_;
+  scoped_ptr<EngineAuthenticationHandler> authentication_handler_;
+  scoped_ptr<EngineConnectionManager> connection_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlimpNetworkComponents);
+};
+
+BlimpNetworkComponents::BlimpNetworkComponents(net::NetLog* net_log)
+    : net_log_(net_log) {}
+
+BlimpNetworkComponents::~BlimpNetworkComponents() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+}
+
+void BlimpNetworkComponents::Initialize() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(!connection_handler_);
+
+  // Creates and connects net components.
+  // A BlimpConnection flows from
+  // connection_manager_ --> authentication_handler_ --> connection_handler_
+  connection_handler_.reset(new BrowserConnectionHandler);
+  authentication_handler_.reset(
+      new EngineAuthenticationHandler(connection_handler_.get()));
+  connection_manager_.reset(
+      new EngineConnectionManager(authentication_handler_.get()));
+
+  // Adds BlimpTransports to connection_manager_.
+  net::IPAddressNumber local_ip_any;
+  bool success = net::ParseIPLiteralToNumber("0.0.0.0", &local_ip_any);
+  DCHECK(success);
+  net::IPEndPoint address(local_ip_any, kDefaultPortNumber);
+  connection_manager_->AddTransport(
+      make_scoped_ptr(new TCPEngineTransport(address, net_log_)));
+}
+
 BlimpEngineSession::BlimpEngineSession(
-    scoped_ptr<BlimpBrowserContext> browser_context)
+    scoped_ptr<BlimpBrowserContext> browser_context,
+    net::NetLog* net_log)
     : browser_context_(std::move(browser_context)),
       screen_(new BlimpScreen),
       // TODO(dtrainor, haibinlu): Properly pull these from the BlimpMessageMux.
       render_widget_processor_(g_blimp_message_processor.Pointer(),
-                               g_blimp_message_processor.Pointer()) {
+                               g_blimp_message_processor.Pointer()),
+      net_components_(new BlimpNetworkComponents(net_log)) {
   screen_->UpdateDisplayScaleAndSize(kDefaultScaleFactor,
                                      gfx::Size(kDefaultDisplayWidth,
                                                kDefaultDisplayHeight));
@@ -79,6 +134,10 @@ BlimpEngineSession::BlimpEngineSession(
 
 BlimpEngineSession::~BlimpEngineSession() {
   render_widget_processor_.RemoveDelegate(kDummyTabId);
+
+  // Safely delete network components on the IO thread.
+  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
+                                     net_components_.release());
 }
 
 void BlimpEngineSession::Initialize() {
@@ -110,6 +169,11 @@ void BlimpEngineSession::Initialize() {
 #endif
 
   window_tree_host_->SetBounds(gfx::Rect(screen_->GetPrimaryDisplay().size()));
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&BlimpNetworkComponents::Initialize,
+                 base::Unretained(net_components_.get())));
 }
 
 void BlimpEngineSession::CreateWebContents(const int target_tab_id) {

@@ -34,6 +34,10 @@ namespace gfx {
 class Size;
 }
 
+namespace net {
+class NetLog;
+}
+
 namespace wm {
 class FocusController;
 }
@@ -47,6 +51,7 @@ namespace engine {
 
 class BlimpBrowserContext;
 class BlimpFocusClient;
+class BlimpNetworkComponents;
 class BlimpScreen;
 class BlimpUiContextFactory;
 class BlimpWindowTreeHost;
@@ -57,9 +62,13 @@ class BlimpEngineSession
       public content::WebContentsObserver,
       public EngineRenderWidgetMessageProcessor::RenderWidgetMessageDelegate {
  public:
-  explicit BlimpEngineSession(scoped_ptr<BlimpBrowserContext> browser_context);
+  explicit BlimpEngineSession(scoped_ptr<BlimpBrowserContext> browser_context,
+                              net::NetLog* net_log);
   ~BlimpEngineSession() override;
 
+  // Starts the network stack on the IO thread, and sets default placeholder
+  // values for e.g. screen size pending real values being supplied by the
+  // client.
   void Initialize();
 
   BlimpBrowserContext* browser_context() { return browser_context_.get(); }
@@ -116,6 +125,7 @@ class BlimpEngineSession
   void PlatformSetContents(scoped_ptr<content::WebContents> new_contents);
 
   scoped_ptr<BlimpBrowserContext> browser_context_;
+
   scoped_ptr<BlimpScreen> screen_;
 
   // Context factory for compositor.
@@ -135,13 +145,15 @@ class BlimpEngineSession
   // Only one web_contents is supported for blimp 0.5
   scoped_ptr<content::WebContents> web_contents_;
 
-  // Currently attached client connection.
-  scoped_ptr<BlimpConnection> client_connection_;
-
   // The bridge to the network layer that does the RenderWidget proto/id work.
   // TODO(dtrainor, haibinlu): Move this to a higher level once we start dealing
   // with multiple tabs.
   EngineRenderWidgetMessageProcessor render_widget_processor_;
+
+  // Container for connection manager, authentication handler, and
+  // browser connection handler. The components run on the I/O thread, and
+  // this object is destroyed there.
+  scoped_ptr<BlimpNetworkComponents> net_components_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpEngineSession);
 };
