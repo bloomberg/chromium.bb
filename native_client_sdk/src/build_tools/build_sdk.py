@@ -340,31 +340,12 @@ def MakeNinjaRelPath(path):
   return os.path.join(os.path.relpath(OUT_DIR, SRC_DIR), path)
 
 
-# TODO(ncbray): stop building and copying libraries into the SDK that are
-# already provided by the toolchain.
-# Mapping from libc to libraries gyp-build trusted libraries
 TOOLCHAIN_LIBS = {
   'newlib' : [
-    'libminidump_generator.a',
-    'libnacl.a',
-    'libnacl_dyncode.a',
-    'libnacl_exception.a',
-    'libnacl_list_mappings.a',
-    'libnosys.a',
     'libppapi.a',
     'libppapi_stub.a',
-    'libpthread.a',
   ],
   'glibc': [
-    'libminidump_generator.a',
-    'libminidump_generator.so',
-    'libnacl.a',
-    'libnacl_dyncode.a',
-    'libnacl_dyncode.so',
-    'libnacl_exception.a',
-    'libnacl_exception.so',
-    'libnacl_list_mappings.a',
-    'libnacl_list_mappings.so',
     'libppapi.a',
     'libppapi.so',
     'libppapi_stub.a',
