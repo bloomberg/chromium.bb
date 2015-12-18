@@ -633,11 +633,9 @@ void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
 void NavigatorImpl::RequestTransferURL(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
-    SiteInstance* source_site_instance,
     const std::vector<GURL>& redirect_chain,
     const Referrer& referrer,
     ui::PageTransition page_transition,
-    WindowOpenDisposition disposition,
     const GlobalRequestID& transferred_global_request_id,
     bool should_replace_current_entry) {
   // Allow the delegate to cancel the transfer.
@@ -652,8 +650,6 @@ void NavigatorImpl::RequestTransferURL(
                                                          url)) {
     dest_url = GURL(url::kAboutBlankURL);
   }
-
-  DCHECK_EQ(CURRENT_TAB, disposition);
 
   // TODO(creis): Determine if this transfer started as a browser-initiated
   // navigation.  See https://crbug.com/495161.
@@ -677,7 +673,9 @@ void NavigatorImpl::RequestTransferURL(
   }
 
   NavigationController::LoadURLParams load_url_params(dest_url);
-  load_url_params.source_site_instance = source_site_instance;
+  // The source_site_instance only matters for navigations via RenderFrameProxy,
+  // which go through RequestOpenURL.
+  load_url_params.source_site_instance = nullptr;
   load_url_params.transition_type = page_transition;
   load_url_params.frame_tree_node_id = node->frame_tree_node_id();
   load_url_params.referrer = referrer_to_use;

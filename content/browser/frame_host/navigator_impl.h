@@ -67,11 +67,9 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                       bool user_gesture) override;
   void RequestTransferURL(RenderFrameHostImpl* render_frame_host,
                           const GURL& url,
-                          SiteInstance* source_site_instance,
                           const std::vector<GURL>& redirect_chain,
                           const Referrer& referrer,
                           ui::PageTransition page_transition,
-                          WindowOpenDisposition disposition,
                           const GlobalRequestID& transferred_global_request_id,
                           bool should_replace_current_entry) override;
   void OnBeforeUnloadACK(FrameTreeNode* frame_tree_node, bool proceed) override;
