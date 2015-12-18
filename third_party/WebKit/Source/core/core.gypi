@@ -3731,6 +3731,7 @@
             'testing/Internals.idl',
         ],
         'webcore_testing_dependency_idl_files': [
+            'experiments/testing/InternalsFrobulate.idl',
             'testing/PartialPrivateScriptTest.idl',
         ],
         'generated_webcore_testing_idl_files': [
@@ -3746,6 +3747,8 @@
         'webcore_testing_files': [
             '<(blink_core_output_dir)/testing/InternalSettingsGenerated.cpp',
             '<(blink_core_output_dir)/testing/InternalSettingsGenerated.h',
+            'experiments/testing/InternalsFrobulate.cpp',
+            'experiments/testing/InternalsFrobulate.h',
             'testing/CoreTestPrinters.cpp',
             'testing/DictionaryTest.cpp',
             'testing/DictionaryTest.h',

@@ -71,7 +71,7 @@ ComputedAccessibilityInfo status=experimental
 EventListenerOptions status=experimental
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
-ExperimentalFramework
+ExperimentalFramework status=test
 ExperimentalV8Extras status=experimental
 FastMobileScrolling
 FileAPIBlobClose status=experimental

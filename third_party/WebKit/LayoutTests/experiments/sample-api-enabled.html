@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="api-experiments" content="Frobulate">
+<title>Test Sample API when experiment enabled</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+
+// The sample API integrates experiment checks at various entry points. The
+// experiment is enabled by the API key above in the meta tag. The tests verify
+// that the API functions correctly with an enabled experiment.
+test(() => {
+    assert_idl_attribute(window.internals, 'frobulate');
+    assert_true(window.internals.frobulate, 'Attribute should return boolean value');
+  }, 'Attribute should exist and return value');
+
+</script>
