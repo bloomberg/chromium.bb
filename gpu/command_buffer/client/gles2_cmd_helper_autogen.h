@@ -2846,12 +2846,16 @@ void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
 void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                              GLfloat opacity,
                              GLuint background_color,
+                             GLuint edge_aa_mask,
+                             GLboolean is_clipped,
+                             GLint sorting_context_id,
                              GLuint shm_id,
                              GLuint shm_offset) {
   gles2::cmds::ScheduleCALayerCHROMIUM* c =
       GetCmdSpace<gles2::cmds::ScheduleCALayerCHROMIUM>();
   if (c) {
-    c->Init(contents_texture_id, opacity, background_color, shm_id, shm_offset);
+    c->Init(contents_texture_id, opacity, background_color, edge_aa_mask,
+            is_clipped, sorting_context_id, shm_id, shm_offset);
   }
 }
 

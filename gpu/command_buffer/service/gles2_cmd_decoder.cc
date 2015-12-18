@@ -9558,18 +9558,21 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
   }
 
   const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
-                                                         22 * sizeof(GLfloat));
+                                                         28 * sizeof(GLfloat));
   if (!mem) {
     return error::kOutOfBounds;
   }
   gfx::RectF contents_rect(mem[0], mem[1], mem[2], mem[3]);
-  gfx::SizeF bounds_size(mem[4], mem[5]);
-  gfx::Transform transform(mem[6], mem[10], mem[14], mem[18],
-                           mem[7], mem[11], mem[15], mem[19],
-                           mem[8], mem[12], mem[16], mem[20],
-                           mem[9], mem[13], mem[17], mem[21]);
+  gfx::RectF bounds_rect(mem[4], mem[5], mem[6], mem[7]);
+  gfx::RectF clip_rect(mem[8], mem[9], mem[10], mem[11]);
+  gfx::Transform transform(mem[12], mem[16], mem[20], mem[24],
+                           mem[13], mem[17], mem[21], mem[25],
+                           mem[14], mem[18], mem[22], mem[26],
+                           mem[15], mem[19], mem[23], mem[27]);
   if (!surface_->ScheduleCALayer(image, contents_rect, c.opacity,
-                                 c.background_color, bounds_size, transform)) {
+                                 c.background_color, c.edge_aa_mask,
+                                 bounds_rect, c.is_clipped ? true : false,
+                                 clip_rect, transform)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
                        "failed to schedule CALayer");
   }

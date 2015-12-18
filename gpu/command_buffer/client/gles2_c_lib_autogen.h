@@ -1521,12 +1521,17 @@ void GL_APIENTRY GLES2ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
 void GL_APIENTRY GLES2ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                               const GLfloat* contents_rect,
                                               GLfloat opacity,
-                                              const GLuint background_color,
-                                              const GLfloat* bounds_size,
+                                              GLuint background_color,
+                                              GLuint edge_aa_mask,
+                                              const GLfloat* bounds_rect,
+                                              GLboolean is_clipped,
+                                              const GLfloat* clip_rect,
+                                              GLint sorting_context_id,
                                               const GLfloat* transform) {
   gles2::GetGLContext()->ScheduleCALayerCHROMIUM(
       contents_texture_id, contents_rect, opacity, background_color,
-      bounds_size, transform);
+      edge_aa_mask, bounds_rect, is_clipped, clip_rect, sorting_context_id,
+      transform);
 }
 void GL_APIENTRY GLES2CommitOverlayPlanesCHROMIUM() {
   gles2::GetGLContext()->CommitOverlayPlanesCHROMIUM();

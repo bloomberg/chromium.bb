@@ -13925,12 +13925,18 @@ struct ScheduleCALayerCHROMIUM {
   void Init(GLuint _contents_texture_id,
             GLfloat _opacity,
             GLuint _background_color,
+            GLuint _edge_aa_mask,
+            GLboolean _is_clipped,
+            GLint _sorting_context_id,
             GLuint _shm_id,
             GLuint _shm_offset) {
     SetHeader();
     contents_texture_id = _contents_texture_id;
     opacity = _opacity;
     background_color = _background_color;
+    edge_aa_mask = _edge_aa_mask;
+    is_clipped = _is_clipped;
+    sorting_context_id = _sorting_context_id;
     shm_id = _shm_id;
     shm_offset = _shm_offset;
   }
@@ -13939,10 +13945,14 @@ struct ScheduleCALayerCHROMIUM {
             GLuint _contents_texture_id,
             GLfloat _opacity,
             GLuint _background_color,
+            GLuint _edge_aa_mask,
+            GLboolean _is_clipped,
+            GLint _sorting_context_id,
             GLuint _shm_id,
             GLuint _shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_contents_texture_id, _opacity,
-                                       _background_color, _shm_id, _shm_offset);
+    static_cast<ValueType*>(cmd)
+        ->Init(_contents_texture_id, _opacity, _background_color, _edge_aa_mask,
+               _is_clipped, _sorting_context_id, _shm_id, _shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -13950,12 +13960,15 @@ struct ScheduleCALayerCHROMIUM {
   uint32_t contents_texture_id;
   float opacity;
   uint32_t background_color;
+  uint32_t edge_aa_mask;
+  uint32_t is_clipped;
+  int32_t sorting_context_id;
   uint32_t shm_id;
   uint32_t shm_offset;
 };
 
-static_assert(sizeof(ScheduleCALayerCHROMIUM) == 24,
-              "size of ScheduleCALayerCHROMIUM should be 24");
+static_assert(sizeof(ScheduleCALayerCHROMIUM) == 36,
+              "size of ScheduleCALayerCHROMIUM should be 36");
 static_assert(offsetof(ScheduleCALayerCHROMIUM, header) == 0,
               "offset of ScheduleCALayerCHROMIUM header should be 0");
 static_assert(
@@ -13966,10 +13979,17 @@ static_assert(offsetof(ScheduleCALayerCHROMIUM, opacity) == 8,
 static_assert(
     offsetof(ScheduleCALayerCHROMIUM, background_color) == 12,
     "offset of ScheduleCALayerCHROMIUM background_color should be 12");
-static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_id) == 16,
-              "offset of ScheduleCALayerCHROMIUM shm_id should be 16");
-static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_offset) == 20,
-              "offset of ScheduleCALayerCHROMIUM shm_offset should be 20");
+static_assert(offsetof(ScheduleCALayerCHROMIUM, edge_aa_mask) == 16,
+              "offset of ScheduleCALayerCHROMIUM edge_aa_mask should be 16");
+static_assert(offsetof(ScheduleCALayerCHROMIUM, is_clipped) == 20,
+              "offset of ScheduleCALayerCHROMIUM is_clipped should be 20");
+static_assert(
+    offsetof(ScheduleCALayerCHROMIUM, sorting_context_id) == 24,
+    "offset of ScheduleCALayerCHROMIUM sorting_context_id should be 24");
+static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_id) == 28,
+              "offset of ScheduleCALayerCHROMIUM shm_id should be 28");
+static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_offset) == 32,
+              "offset of ScheduleCALayerCHROMIUM shm_offset should be 32");
 
 struct CommitOverlayPlanesCHROMIUM {
   typedef CommitOverlayPlanesCHROMIUM ValueType;

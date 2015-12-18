@@ -1040,8 +1040,12 @@ void GLES2InterfaceStub::ScheduleCALayerCHROMIUM(
     GLuint /* contents_texture_id */,
     const GLfloat* /* contents_rect */,
     GLfloat /* opacity */,
-    const GLuint /* background_color */,
-    const GLfloat* /* bounds_size */,
+    GLuint /* background_color */,
+    GLuint /* edge_aa_mask */,
+    const GLfloat* /* bounds_rect */,
+    GLboolean /* is_clipped */,
+    const GLfloat* /* clip_rect */,
+    GLint /* sorting_context_id */,
     const GLfloat* /* transform */) {}
 void GLES2InterfaceStub::CommitOverlayPlanesCHROMIUM() {}
 void GLES2InterfaceStub::SwapInterval(GLint /* interval */) {}

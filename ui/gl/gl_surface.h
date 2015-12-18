@@ -172,7 +172,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
                                const RectF& contents_rect,
                                float opacity,
                                unsigned background_color,
-                               const SizeF& size,
+                               unsigned edge_aa_mask,
+                               const RectF& bounds_rect,
+                               bool is_clipped,
+                               const RectF& clip_rect,
                                const Transform& transform);
 
   virtual bool IsSurfaceless() const;

@@ -4812,17 +4812,22 @@ TEST_F(GLES2FormatTest, ScheduleOverlayPlaneCHROMIUM) {
 TEST_F(GLES2FormatTest, ScheduleCALayerCHROMIUM) {
   cmds::ScheduleCALayerCHROMIUM& cmd =
       *GetBufferAs<cmds::ScheduleCALayerCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
-                           static_cast<GLfloat>(12), static_cast<GLuint>(13),
-                           static_cast<GLuint>(14), static_cast<GLuint>(15));
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLfloat>(12),
+              static_cast<GLuint>(13), static_cast<GLuint>(14),
+              static_cast<GLboolean>(15), static_cast<GLint>(16),
+              static_cast<GLuint>(17), static_cast<GLuint>(18));
   EXPECT_EQ(static_cast<uint32_t>(cmds::ScheduleCALayerCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.contents_texture_id);
   EXPECT_EQ(static_cast<GLfloat>(12), cmd.opacity);
   EXPECT_EQ(static_cast<GLuint>(13), cmd.background_color);
-  EXPECT_EQ(static_cast<GLuint>(14), cmd.shm_id);
-  EXPECT_EQ(static_cast<GLuint>(15), cmd.shm_offset);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.edge_aa_mask);
+  EXPECT_EQ(static_cast<GLboolean>(15), cmd.is_clipped);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.sorting_context_id);
+  EXPECT_EQ(static_cast<GLuint>(17), cmd.shm_id);
+  EXPECT_EQ(static_cast<GLuint>(18), cmd.shm_offset);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

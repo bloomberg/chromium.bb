@@ -809,13 +809,34 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULEOVERLAYPLANECHROMIUMPROC)(
 
 #ifndef GL_CHROMIUM_schedule_ca_layer
 #define GL_CHROMIUM_schedule_ca_layer 1
+
+#ifndef GL_CA_LAYER_EDGE_LEFT_CHROMIUM
+#define GL_CA_LAYER_EDGE_LEFT_CHROMIUM 0x1
+#endif
+
+#ifndef GL_CA_LAYER_EDGE_RIGHT_CHROMIUM
+#define GL_CA_LAYER_EDGE_RIGHT_CHROMIUM 0x2
+#endif
+
+#ifndef GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM
+#define GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM 0x4
+#endif
+
+#ifndef GL_CA_LAYER_EDGE_TOP_CHROMIUM
+#define GL_CA_LAYER_EDGE_TOP_CHROMIUM 0x8
+#endif
+
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL void GL_APIENTRY
 glScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                           const GLfloat* contents_rect,
                           GLfloat opacity,
                           GLuint background_color,
-                          const GLfloat* bounds_size,
+                          GLuint edge_aa_mask,
+                          const GLfloat* bounds_rect,
+                          GLboolean is_clipped,
+                          const GLfloat* clip_rect,
+                          GLint sorting_context_id,
                           const GLfloat* transform);
 #endif
 typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(
@@ -823,7 +844,11 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(
     const GLfloat* contents_rect,
     GLfloat opacity,
     GLuint background_color,
-    const GLfloat* bounds_size,
+    GLuint edge_aa_mask,
+    const GLfloat* bounds_rect,
+    GLboolean is_clipped,
+    const GLfloat* clip_rect,
+    GLint sorting_context_id,
     const GLfloat* transform);
 #endif /* GL_CHROMIUM_schedule_ca_layer */
 

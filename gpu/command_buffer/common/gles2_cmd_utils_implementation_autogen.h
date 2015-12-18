@@ -409,6 +409,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0DE1, "GL_TEXTURE_2D",
     },
     {
+        0x1, "GL_CA_LAYER_EDGE_LEFT_CHROMIUM",
+    },
+    {
         0x10000000, "GL_MULTISAMPLE_BUFFER_BIT4_QCOM",
     },
     {
@@ -535,6 +538,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x1F03, "GL_EXTENSIONS",
     },
     {
+        0x2, "GL_CA_LAYER_EDGE_RIGHT_CHROMIUM",
+    },
+    {
         0x20000000, "GL_MULTISAMPLE_BUFFER_BIT5_QCOM",
     },
     {
@@ -607,6 +613,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x300E, "GL_CONTEXT_LOST",
     },
     {
+        0x4, "GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM",
+    },
+    {
         0x40000000, "GL_MULTISAMPLE_BUFFER_BIT6_QCOM",
     },
     {
@@ -644,6 +653,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x78FC, "GL_RGB_YCBCR_420V_CHROMIUM",
+    },
+    {
+        0x8, "GL_CA_LAYER_EDGE_TOP_CHROMIUM",
     },
     {
         0x80000000, "GL_MULTISAMPLE_BUFFER_BIT7_QCOM",

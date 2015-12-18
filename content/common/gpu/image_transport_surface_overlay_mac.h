@@ -52,7 +52,10 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
                        const gfx::RectF& contents_rect,
                        float opacity,
                        unsigned background_color,
-                       const gfx::SizeF& bounds_size,
+                       unsigned edge_aa_mask,
+                       const gfx::RectF& bounds_rect,
+                       bool is_clipped,
+                       const gfx::RectF& clip_rect,
                        const gfx::Transform& transform) override;
   bool IsSurfaceless() const override;
 

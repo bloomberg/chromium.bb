@@ -760,7 +760,10 @@ bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
     const gfx::RectF& contents_rect,
     float opacity,
     unsigned background_color,
-    const gfx::SizeF& bounds_size,
+    unsigned edge_aa_mask,
+    const gfx::RectF& bounds_rect,
+    bool is_clipped,
+    const gfx::RectF& clip_rect,
     const gfx::Transform& transform) {
   // Extract the IOSurface, if this layer is not just a solid color.
   int io_surface_id = 0;
@@ -784,7 +787,7 @@ bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
 
   pending_overlay_planes_.push_back(OverlayPlane::CreateWithTransform(
       next_ca_layer_z_order_++, io_surface_id, io_surface, contents_rect,
-      opacity, srgb_background_color, bounds_size, transform));
+      opacity, srgb_background_color, bounds_rect.size(), transform));
   return true;
 }
 

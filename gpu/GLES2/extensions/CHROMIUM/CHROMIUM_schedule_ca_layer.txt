@@ -8,7 +8,7 @@ Name Strings
 
 Version
 
-    Last Modified Date: November 7, 2015
+    Last Modified Date: December 16, 2015
 
 Dependencies
 
@@ -29,7 +29,11 @@ Issues
 
 New Tokens
 
-    None
+    Accepted by the <edge_aa_mask> parameter of glScheduleCALayerCHROMIUM:
+    GL_CA_LAYER_EDGE_LEFT_CHROMIUM                    0x01
+    GL_CA_LAYER_EDGE_RIGHT_CHROMIUM                   0x02
+    GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM                  0x04
+    GL_CA_LAYER_EDGE_TOP_CHROMIUM                     0x08
 
 New Procedures and Functions
 
@@ -39,7 +43,10 @@ New Procedures and Functions
                                   const GLfloat* contents_rect,
                                   GLfloat opacity,
                                   GLuint background_color,
-                                  const GLfloat* bounds_size,
+                                  GLuint edge_aa_mask,
+                                  const GLfloat* bounds_rect,
+                                  GLboolean is_clipped,
+                                  const GLfloat* clip_rect,
                                   const GLfloat* transform);
 
     Set the CALayer parameters to be presented at the time of the next call to
@@ -53,8 +60,13 @@ New Procedures and Functions
     <opacity> specifies the opacity of the CALayer.
     <background_color> specifies the background color of the CALayer, as a
     32-bit ARGB value.
-    <bounds_size> contains two values indicating the width and height of the
-    layer in pixels.
+    <edge_aa_mask> is a bitfield specifying which of the edges of the layer are
+    to have anti-aliasing.
+    <bounds_rect> contains four values indicating the x, y, width, and height of
+    the layer in pixels.
+    <is_clipped> indicates if the layer should be clipped.
+    <clip_rect> contains four values indicating the x, y, width, and height of
+    the rectangle to clip the layer to, if it is to be clipped.
     <transform> contains sixteen values indicating the row major order 4x4
     transformation matrix to apply to the CALayer.
 
@@ -65,3 +77,9 @@ Errors
 New State
 
     None.
+
+Revision History
+
+    12/16/2015   Add clipping and edge anti-aliasing.
+    11/7/2015    Initial checkin
+
