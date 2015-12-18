@@ -24,3 +24,10 @@ message LayerSelectionBound {
   optional Point edge_bottom = 3;
   optional int32 layer_id = 4;
 }
+
+message LayerSelection {
+  optional LayerSelectionBound start = 1;
+  optional LayerSelectionBound end = 2;
+  optional bool is_editable = 3;
+  optional bool is_empty_text_form_control = 4;
+}

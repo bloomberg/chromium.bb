@@ -13,6 +13,7 @@
 namespace cc {
 
 namespace proto {
+class LayerSelection;
 class LayerSelectionBound;
 }  // namespace proto
 
@@ -34,6 +35,11 @@ struct CC_EXPORT LayerSelectionBound {
 };
 
 typedef Selection<LayerSelectionBound> LayerSelection;
+
+CC_EXPORT void LayerSelectionToProtobuf(const LayerSelection& selection,
+                                        proto::LayerSelection* proto);
+CC_EXPORT void LayerSelectionFromProtobuf(LayerSelection* selection,
+                                          const proto::LayerSelection& proto);
 
 }  // namespace cc
 

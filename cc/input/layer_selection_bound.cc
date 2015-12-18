@@ -77,4 +77,20 @@ void LayerSelectionBound::FromProtobuf(
   layer_id = proto.layer_id();
 }
 
+void LayerSelectionToProtobuf(const LayerSelection& selection,
+                              proto::LayerSelection* proto) {
+  selection.start.ToProtobuf(proto->mutable_start());
+  selection.end.ToProtobuf(proto->mutable_end());
+  proto->set_is_editable(selection.is_editable);
+  proto->set_is_empty_text_form_control(selection.is_empty_text_form_control);
+}
+
+void LayerSelectionFromProtobuf(LayerSelection* selection,
+                                const proto::LayerSelection& proto) {
+  selection->start.FromProtobuf(proto.start());
+  selection->end.FromProtobuf(proto.end());
+  selection->is_editable = proto.is_editable();
+  selection->is_empty_text_form_control = proto.is_empty_text_form_control();
+}
+
 }  // namespace cc
