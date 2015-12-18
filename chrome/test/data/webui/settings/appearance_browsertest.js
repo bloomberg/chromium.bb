@@ -16,11 +16,6 @@ function AppearanceSettingsBrowserTest() {}
 AppearanceSettingsBrowserTest.prototype = {
   __proto__: SettingsPageBrowserTest.prototype,
 
-  /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    'fake_settings_private.js',
-  ]),
-
   /** @return {string} */
   appearancePage: function(selector) {
     var section = this.getSection(this.getPage('basic'), 'appearance');

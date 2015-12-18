@@ -28,6 +28,7 @@ CrSettingsBrowserTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    '../fake_chrome_event.js',
     'fake_settings_private.js',
     'checkbox_tests.js',
     'dropdown_menu_tests.js',
