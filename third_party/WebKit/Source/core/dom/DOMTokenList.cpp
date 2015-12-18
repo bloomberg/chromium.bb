@@ -61,7 +61,7 @@ private:
 
 } // namespace
 
-bool DOMTokenList::validateToken(const String& token, ExceptionState& exceptionState)
+bool DOMTokenList::validateToken(const String& token, ExceptionState& exceptionState) const
 {
     if (token.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "The token provided must not be empty.");
@@ -76,7 +76,7 @@ bool DOMTokenList::validateToken(const String& token, ExceptionState& exceptionS
     return true;
 }
 
-bool DOMTokenList::validateTokens(const Vector<String>& tokens, ExceptionState& exceptionState)
+bool DOMTokenList::validateTokens(const Vector<String>& tokens, ExceptionState& exceptionState) const
 {
     for (size_t i = 0; i < tokens.size(); ++i) {
         if (!validateToken(tokens[i], exceptionState))
@@ -84,6 +84,13 @@ bool DOMTokenList::validateTokens(const Vector<String>& tokens, ExceptionState& 
     }
 
     return true;
+}
+
+// https://dom.spec.whatwg.org/#concept-domtokenlist-validation
+bool DOMTokenList::validateTokenValue(const AtomicString&, ExceptionState& exceptionState) const
+{
+    exceptionState.throwTypeError("DOMTokenList has no supported tokens.");
+    return false;
 }
 
 bool DOMTokenList::contains(const AtomicString& token, ExceptionState& exceptionState) const
@@ -116,10 +123,8 @@ void DOMTokenList::add(const Vector<String>& tokens, ExceptionState& exceptionSt
         filteredTokens.append(tokens[i]);
     }
 
-    if (filteredTokens.isEmpty())
-        return;
-
-    setValue(addTokens(value(), filteredTokens));
+    if (!filteredTokens.isEmpty())
+        setValue(addTokens(value(), filteredTokens));
 }
 
 void DOMTokenList::remove(const AtomicString& token, ExceptionState& exceptionState)
@@ -174,6 +179,11 @@ bool DOMTokenList::toggle(const AtomicString& token, bool force, ExceptionState&
         removeInternal(token);
 
     return force;
+}
+
+bool DOMTokenList::supports(const AtomicString& token, ExceptionState& exceptionState)
+{
+    return validateTokenValue(token, exceptionState);
 }
 
 void DOMTokenList::addInternal(const AtomicString& token)

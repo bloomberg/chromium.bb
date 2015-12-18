@@ -2914,6 +2914,8 @@
             'html/PublicURLManager.h',
             'html/RadioNodeList.cpp',
             'html/RadioNodeList.h',
+            'html/RelList.cpp',
+            'html/RelList.h',
             'html/TextDocument.cpp',
             'html/TextDocument.h',
             'html/TextMetrics.h',

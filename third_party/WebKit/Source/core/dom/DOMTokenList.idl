@@ -34,6 +34,7 @@
     [RaisesException, CustomElementCallbacks] void add(DOMString... tokens);
     [RaisesException, CustomElementCallbacks] void remove(DOMString... tokens);
     [RaisesException, CustomElementCallbacks] boolean toggle(DOMString token, optional boolean force);
+    [RaisesException, CustomElementCallbacks] boolean supports(DOMString token);
     // FIXME: stringifier should be enumerable.
     [NotEnumerable] stringifier;
     iterable<DOMString>;

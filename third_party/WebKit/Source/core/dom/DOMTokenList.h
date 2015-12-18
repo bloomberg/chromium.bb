@@ -59,6 +59,7 @@ public:
     void remove(const AtomicString&, ExceptionState&);
     bool toggle(const AtomicString&, ExceptionState&);
     bool toggle(const AtomicString&, bool force, ExceptionState&);
+    bool supports(const AtomicString&, ExceptionState&);
 
     const AtomicString& toString() const { return value(); }
 
@@ -67,6 +68,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
+
     virtual const AtomicString& value() const = 0;
     virtual void setValue(const AtomicString&) = 0;
 
@@ -74,8 +76,9 @@ protected:
     virtual bool containsInternal(const AtomicString&) const = 0;
     virtual void removeInternal(const AtomicString&);
 
-    static bool validateToken(const String&, ExceptionState&);
-    static bool validateTokens(const Vector<String>&, ExceptionState&);
+    bool validateToken(const String&, ExceptionState&) const;
+    bool validateTokens(const Vector<String>&, ExceptionState&) const;
+    virtual bool validateTokenValue(const AtomicString&, ExceptionState&) const;
     static AtomicString addToken(const AtomicString&, const AtomicString&);
     static AtomicString addTokens(const AtomicString&, const Vector<String>&);
     static AtomicString removeToken(const AtomicString&, const AtomicString&);

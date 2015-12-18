@@ -142,6 +142,7 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser
     : HTMLElement(linkTag, document)
     , m_linkLoader(this)
     , m_sizes(DOMSettableTokenList::create(this))
+    , m_relList(RelList::create(this))
     , m_createdByParser(createdByParser)
     , m_isInShadowTree(false)
 {
@@ -167,6 +168,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
 {
     if (name == relAttr) {
         m_relAttribute = LinkRelAttribute(value);
+        m_relList->setRelValues(value);
         process();
     } else if (name == hrefAttr) {
         // Log href attribute before logging resource fetching in process().
@@ -454,6 +456,7 @@ DEFINE_TRACE(HTMLLinkElement)
     visitor->trace(m_link);
     visitor->trace(m_sizes);
     visitor->trace(m_linkLoader);
+    visitor->trace(m_relList);
     HTMLElement::trace(visitor);
     DOMSettableTokenListObserver::trace(visitor);
 }

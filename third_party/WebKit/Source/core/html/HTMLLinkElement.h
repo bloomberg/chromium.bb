@@ -34,6 +34,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/html/LinkResource.h"
+#include "core/html/RelList.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/LinkLoaderClient.h"
 
@@ -140,6 +141,7 @@ public:
     String typeValue() const { return m_type; }
     String asValue() const { return m_as; }
     const LinkRelAttribute& relAttribute() const { return m_relAttribute; }
+    DOMTokenList& relList() const { return static_cast<DOMTokenList&>(*m_relList); }
 
     const AtomicString& type() const;
 
@@ -222,6 +224,7 @@ private:
     String m_media;
     RefPtrWillBeMember<DOMSettableTokenList> m_sizes;
     Vector<IntSize> m_iconSizes;
+    OwnPtrWillBeMember<RelList> m_relList;
     LinkRelAttribute m_relAttribute;
 
     bool m_createdByParser;

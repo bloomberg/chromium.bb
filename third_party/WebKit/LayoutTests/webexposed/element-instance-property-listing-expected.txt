@@ -675,6 +675,7 @@ html element link
     property integrity
     property media
     property rel
+    property relList
     property rev
     property sheet
     property sizes

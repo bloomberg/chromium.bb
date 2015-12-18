@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+    test(function() {
+        var link = document.createElement("link");
+        // Test that setting rel is also setting relList, for both valid and invalid values
+        link.rel = "whatever";
+        assert_true(link.relList.contains("whatever"));
+        link.rel = "prefetch";
+        assert_true(link.relList.contains("prefetch"));
+        // Test that "add()" works
+        link.relList.add("preloadwhatever");
+        assert_equals(link.rel, "prefetch preloadwhatever");
+        assert_true(link.relList.contains("preloadwhatever"));
+        // Test that "supports()" is returning true for valid values and false for invalid ones
+        assert_false(link.relList.supports("bogus"));
+        assert_true(link.relList.supports("preload"));
+    }, "Make sure that relList based feature detection is working");
+</script>

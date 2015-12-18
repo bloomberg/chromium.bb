@@ -861,6 +861,7 @@ interface DOMTokenList
     method item
     method keys
     method remove
+    method supports
     method toString
     method toggle
     method values
@@ -2325,6 +2326,7 @@ interface HTMLLinkElement : HTMLElement
     getter integrity
     getter media
     getter rel
+    getter relList
     getter rev
     getter sheet
     getter sizes

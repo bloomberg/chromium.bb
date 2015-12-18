@@ -67,9 +67,6 @@ public:
     unsigned length() const override { return m_tokens.size(); }
     const AtomicString item(unsigned index) const override;
 
-    void add(const Vector<String>&, ExceptionState&) override;
-    void remove(const Vector<String>&, ExceptionState&) override;
-
     const AtomicString& value() const override { return m_value; }
     void setValue(const AtomicString&) override;
 
@@ -82,9 +79,7 @@ protected:
     explicit DOMSettableTokenList(DOMSettableTokenListObserver*);
 
 private:
-    void addInternal(const AtomicString&) override;
     bool containsInternal(const AtomicString&) const override;
-    void removeInternal(const AtomicString&) override;
 
     AtomicString m_value;
     SpaceSplitString m_tokens;
