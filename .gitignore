@@ -450,8 +450,7 @@ vs-chromium-project.txt
 /ui/surface/surface.xml
 /ui/surface/surface_gpu_tests.xml
 /v8
-# Results directory for run-webkit-tests. http://crbug.com/488288
-/webkit
+/webkit/data
 /webpagereplay_logs/
 /win8/delegate_execute/delegate_execute_version_resources.xml
 /win8/metro_driver/metro_driver_version_resources.xml
