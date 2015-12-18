@@ -90,7 +90,7 @@ public class TouchEventData {
      * Returns the ID for this touch point.
      */
     @CalledByNative
-    private int getTouchPointId() {
+    public int getTouchPointId() {
         return mTouchPointId;
     }
 
@@ -103,7 +103,7 @@ public class TouchEventData {
      * Returns the x-coordinate of this touch point.
      */
     @CalledByNative
-    private float getTouchPointX() {
+    public float getTouchPointX() {
         return mTouchPointX;
     }
 
@@ -116,7 +116,7 @@ public class TouchEventData {
      * Returns the y-coordinate of this touch point.
      */
     @CalledByNative
-    private float getTouchPointY() {
+    public float getTouchPointY() {
         return mTouchPointY;
     }
 
@@ -129,7 +129,7 @@ public class TouchEventData {
      * Returns the size of this touch point as measured along the x-axis.
      */
     @CalledByNative
-    private float getTouchPointRadiusX() {
+    public float getTouchPointRadiusX() {
         return mTouchPointRadiusX;
     }
 
@@ -142,7 +142,7 @@ public class TouchEventData {
      * Returns the size of this touch point as measured along the y-axis.
      */
     @CalledByNative
-    private float getTouchPointRadiusY() {
+    public float getTouchPointRadiusY() {
         return mTouchPointRadiusY;
     }
 
@@ -156,7 +156,7 @@ public class TouchEventData {
      * Returns the angle of tool generating this touch point.
      */
     @CalledByNative
-    private float getTouchPointAngle() {
+    public float getTouchPointAngle() {
         return mTouchPointAngleInDegrees;
     }
 
@@ -169,7 +169,7 @@ public class TouchEventData {
      * Returns the pressure of this touch point.
      */
     @CalledByNative
-    private float getTouchPointPressure() {
+    public float getTouchPointPressure() {
         return mTouchPointPressure;
     }
 }
