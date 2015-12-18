@@ -64,6 +64,7 @@ const char* kPrefsToObserve[] = {
 #if defined(ENABLE_EXTENSIONS)
   prefs::kAnimationPolicy,
 #endif
+  prefs::kDataSaverEnabled,
   prefs::kDefaultCharset,
   prefs::kDisable3DAPIs,
   prefs::kEnableHyperlinkAuditing,

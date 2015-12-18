@@ -91,6 +91,7 @@
       'browser/content_settings/content_settings_browsertest.cc',
       'browser/crash_recovery_browsertest.cc',
       'browser/custom_handlers/protocol_handler_registry_browsertest.cc',
+      'browser/data_saver/data_saver_browsertest.cc',
       'browser/devtools/device/adb/adb_client_socket_browsertest.cc',
       'browser/devtools/device/adb/mock_adb_server.cc',
       'browser/devtools/device/adb/mock_adb_server.h',

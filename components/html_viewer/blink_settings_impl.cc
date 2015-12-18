@@ -191,6 +191,7 @@ void BlinkSettingsImpl::ApplySettings(blink::WebView* web_view,
       prefs.slimming_paint_v2_enabled);
   settings->setXSSAuditorEnabled(prefs.xss_auditor_enabled);
   settings->setDNSPrefetchingEnabled(prefs.dns_prefetching_enabled);
+  settings->setDataSaverEnabled(prefs.data_saver_enabled);
   settings->setLocalStorageEnabled(prefs.local_storage_enabled);
   settings->setSyncXHRInDocumentsEnabled(prefs.sync_xhr_in_documents_enabled);
   blink::WebRuntimeFeatures::enableDatabase(prefs.databases_enabled);

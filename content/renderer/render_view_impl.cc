@@ -927,6 +927,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::enableSlimmingPaintV2(prefs.slimming_paint_v2_enabled);
   settings->setXSSAuditorEnabled(prefs.xss_auditor_enabled);
   settings->setDNSPrefetchingEnabled(prefs.dns_prefetching_enabled);
+  settings->setDataSaverEnabled(prefs.data_saver_enabled);
   settings->setLocalStorageEnabled(prefs.local_storage_enabled);
   settings->setSyncXHRInDocumentsEnabled(prefs.sync_xhr_in_documents_enabled);
   WebRuntimeFeatures::enableDatabase(prefs.databases_enabled);

@@ -95,6 +95,9 @@ struct CONTENT_EXPORT WebPreferences {
   // we disable the feature at a lower layer so that we catch non-WebKit uses
   // of DNS prefetch as well.
   bool dns_prefetching_enabled;
+  // Preference to save data. When enabled, requests will contain the header
+  // 'Save-Data: on'.
+  bool data_saver_enabled;
   bool local_storage_enabled;
   bool databases_enabled;
   bool application_cache_enabled;

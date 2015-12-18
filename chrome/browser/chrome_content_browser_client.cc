@@ -2336,6 +2336,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->strict_powerful_feature_restrictions = true;
   }
 
+  web_prefs->data_saver_enabled =
+      prefs->GetBoolean(prefs::kDataSaverEnabled);
+
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->OverrideWebkitPrefs(rvh, web_prefs);
 }

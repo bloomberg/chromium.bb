@@ -119,6 +119,9 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request, Fe
     if (!request.url().isEmpty() && !request.url().protocolIsInHTTPFamily())
         return;
 
+    if (frame()->settings() && frame()->settings()->dataSaverEnabled())
+        request.addHTTPHeaderField("Save-Data", "on");
+
     frame()->loader().applyUserAgent(request);
 }
 

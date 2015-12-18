@@ -515,4 +515,20 @@ TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes)
     EXPECT_EQ(ResourceLoadPriorityVeryLow, childFetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Script, request, ResourcePriority::NotVisible));
 }
 
+TEST_F(FrameFetchContextTest, EnableDataSaver)
+{
+    Settings* settings = document->frame()->settings();
+    settings->setDataSaverEnabled(true);
+    ResourceRequest resourceRequest("http://www.example.com");
+    fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
+    EXPECT_STREQ("on", resourceRequest.httpHeaderField("Save-Data").utf8().data());
+}
+
+TEST_F(FrameFetchContextTest, DisabledDataSaver)
+{
+    ResourceRequest resourceRequest("http://www.example.com");
+    fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
+    EXPECT_STREQ("", resourceRequest.httpHeaderField("Save-Data").utf8().data());
+}
+
 } // namespace
