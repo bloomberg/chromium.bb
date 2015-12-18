@@ -315,7 +315,7 @@ RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
 
 bool RenderFrameHostManager::ForInnerDelegate() {
   return delegate_->GetOuterDelegateFrameTreeNodeId() !=
-      FrameTreeNode::kFrameTreeNodeInvalidID;
+      FrameTreeNode::kFrameTreeNodeInvalidId;
 }
 
 RenderWidgetHostImpl*

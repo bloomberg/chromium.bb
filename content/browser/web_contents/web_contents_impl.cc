@@ -319,7 +319,7 @@ WebContentsImpl::ColorChooserInfo::~ColorChooserInfo() {
 WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode()
     : outer_web_contents_(nullptr),
       outer_contents_frame_tree_node_id_(
-          FrameTreeNode::kFrameTreeNodeInvalidID) {
+          FrameTreeNode::kFrameTreeNodeInvalidId) {
 }
 
 WebContentsImpl::WebContentsTreeNode::~WebContentsTreeNode() {
@@ -4630,7 +4630,7 @@ int WebContentsImpl::GetOuterDelegateFrameTreeNodeId() {
   if (node_ && node_->outer_web_contents())
     return node_->outer_contents_frame_tree_node_id();
 
-  return FrameTreeNode::kFrameTreeNodeInvalidID;
+  return FrameTreeNode::kFrameTreeNodeInvalidId;
 }
 
 RenderFrameHostManager* WebContentsImpl::GetRenderManager() const {

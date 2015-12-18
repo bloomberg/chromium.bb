@@ -1102,7 +1102,7 @@ void SavePackage::GetSavableResourceLinks() {
   FrameTreeNode* main_frame_tree_node =
       static_cast<RenderFrameHostImpl*>(web_contents()->GetMainFrame())
           ->frame_tree_node();
-  EnqueueFrame(FrameTreeNode::kFrameTreeNodeInvalidID,  // No container.
+  EnqueueFrame(FrameTreeNode::kFrameTreeNodeInvalidId,  // No container.
                main_frame_tree_node->frame_tree_node_id(),
                main_frame_tree_node->current_url());
 }
