@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/c/gles2/gles2.h"
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
@@ -12,6 +12,7 @@
 // Even though this isn't used here, we need to include it to get the symbols to
 // be exported in component build.
 #include "mojo/public/c/gles2/chromium_extension.h"
+#include "mojo/public/c/gles2/gles2.h"
 
 using gles2::GLES2Context;
 
@@ -46,7 +47,7 @@ MojoGLES2Context MojoGLES2CreateContext(MojoHandle handle,
   }
   attribs.push_back(kNone);
   scoped_ptr<GLES2Context> client(new GLES2Context(
-      attribs, async_waiter, scoped_handle.Pass(), lost_callback, closure));
+      attribs, async_waiter, std::move(scoped_handle), lost_callback, closure));
   if (!client->Initialize())
     client.reset();
   return client.release();

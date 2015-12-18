@@ -4,6 +4,8 @@
 
 #include "mojo/fetcher/about_fetcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -17,7 +19,7 @@ namespace {
 void RunFetcherCallback(const shell::Fetcher::FetchCallback& callback,
                         scoped_ptr<shell::Fetcher> fetcher,
                         bool success) {
-  callback.Run(success ? fetcher.Pass() : nullptr);
+  callback.Run(success ? std::move(fetcher) : nullptr);
 }
 
 }  // namespace
@@ -83,7 +85,7 @@ URLResponsePtr AboutFetcher::AsURLResponse(base::TaskRunner* task_runner,
   // doesn't have a body.
   DCHECK(!response_->body.is_valid());
 
-  return response_.Pass();
+  return std::move(response_);
 }
 
 void AboutFetcher::AsPath(

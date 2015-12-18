@@ -51,7 +51,7 @@ Array<uint8_t> TypeConverter<Array<uint8_t>, std::string>::Convert(
   Array<uint8_t> result(input.size());
   if (input.size() > 0)
     memcpy(&result.front(), input.c_str(), input.size());
-  return result.Pass();
+  return result;
 }
 
 }  // namespace mojo

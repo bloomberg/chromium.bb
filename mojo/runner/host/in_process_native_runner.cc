@@ -4,6 +4,8 @@
 
 #include "mojo/runner/host/in_process_native_runner.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -38,7 +40,7 @@ void InProcessNativeRunner::Start(
   app_path_ = app_path;
 
   DCHECK(!application_request_.is_pending());
-  application_request_ = application_request.Pass();
+  application_request_ = std::move(application_request);
 
   DCHECK(app_completed_callback_runner_.is_null());
   app_completed_callback_runner_ = base::Bind(
@@ -73,7 +75,7 @@ void InProcessNativeRunner::Run() {
 #if !(defined(COMPONENT_BUILD) && defined(OS_WIN))
   CallLibraryEarlyInitialization(app_library);
 #endif
-  RunNativeApplication(app_library, application_request_.Pass());
+  RunNativeApplication(app_library, std::move(application_request_));
   app_completed_callback_runner_.Run();
   app_completed_callback_runner_.Reset();
 }

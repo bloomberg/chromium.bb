@@ -4,6 +4,8 @@
 
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
@@ -258,7 +260,7 @@ SurfaceIdPtr TypeConverter<SurfaceIdPtr, cc::SurfaceId>::Convert(
   SurfaceIdPtr id(SurfaceId::New());
   id->local = static_cast<uint32_t>(input.id);
   id->id_namespace = cc::SurfaceIdAllocator::NamespaceForId(input);
-  return id.Pass();
+  return id;
 }
 
 // static
@@ -274,7 +276,7 @@ cc::SurfaceId TypeConverter<cc::SurfaceId, SurfaceIdPtr>::Convert(
 ColorPtr TypeConverter<ColorPtr, SkColor>::Convert(const SkColor& input) {
   ColorPtr color(Color::New());
   color->rgba = input;
-  return color.Pass();
+  return color;
 }
 
 // static
@@ -290,7 +292,7 @@ RenderPassIdPtr TypeConverter<RenderPassIdPtr, cc::RenderPassId>::Convert(
   DCHECK_LE(input.index,
             static_cast<size_t>(std::numeric_limits<uint32_t>::max()));
   pass_id->index = static_cast<uint32_t>(input.index);
-  return pass_id.Pass();
+  return pass_id;
 }
 
 // static
@@ -320,7 +322,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
           DebugBorderQuadState::New();
       debug_border_state->color = Color::From(debug_border_quad->color);
       debug_border_state->width = debug_border_quad->width;
-      quad->debug_border_quad_state = debug_border_state.Pass();
+      quad->debug_border_quad_state = std::move(debug_border_state);
       break;
     }
     case cc::DrawQuad::RENDER_PASS: {
@@ -338,7 +340,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       pass_state->filters_scale = PointF::From(
           gfx::PointAtOffsetFromOrigin(render_pass_quad->filters_scale));
       // TODO(jamesr): pass_state->background_filters
-      quad->render_pass_quad_state = pass_state.Pass();
+      quad->render_pass_quad_state = std::move(pass_state);
       break;
     }
     case cc::DrawQuad::SOLID_COLOR: {
@@ -348,7 +350,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       color_state->color = Color::From(color_quad->color);
       color_state->force_anti_aliasing_off =
           color_quad->force_anti_aliasing_off;
-      quad->solid_color_quad_state = color_state.Pass();
+      quad->solid_color_quad_state = std::move(color_state);
       break;
     }
     case cc::DrawQuad::SURFACE_CONTENT: {
@@ -357,7 +359,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       SurfaceQuadStatePtr surface_state =
           SurfaceQuadState::New();
       surface_state->surface = SurfaceId::From(surface_quad->surface_id);
-      quad->surface_quad_state = surface_state.Pass();
+      quad->surface_quad_state = std::move(surface_state);
       break;
     }
     case cc::DrawQuad::TEXTURE_CONTENT: {
@@ -375,9 +377,9 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       for (size_t i = 0; i < 4; ++i) {
         vertex_opacity[i] = texture_quad->vertex_opacity[i];
       }
-      texture_state->vertex_opacity = vertex_opacity.Pass();
+      texture_state->vertex_opacity = std::move(vertex_opacity);
       texture_state->y_flipped = texture_quad->y_flipped;
-      quad->texture_quad_state = texture_state.Pass();
+      quad->texture_quad_state = std::move(texture_state);
       break;
     }
     case cc::DrawQuad::TILED_CONTENT: {
@@ -389,7 +391,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       tile_state->swizzle_contents = tile_quad->swizzle_contents;
       tile_state->nearest_neighbor = tile_quad->nearest_neighbor;
       tile_state->resource_id = tile_quad->resource_id();
-      quad->tile_quad_state = tile_state.Pass();
+      quad->tile_quad_state = std::move(tile_state);
       break;
     }
     case cc::DrawQuad::YUV_VIDEO_CONTENT: {
@@ -406,14 +408,14 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       yuv_state->a_plane_resource_id = yuv_quad->a_plane_resource_id();
       yuv_state->color_space =
           static_cast<YUVColorSpace>(yuv_quad->color_space);
-      quad->yuv_video_quad_state = yuv_state.Pass();
+      quad->yuv_video_quad_state = std::move(yuv_state);
       break;
     }
 
     default:
       NOTREACHED() << "Unsupported material " << input.material;
   }
-  return quad.Pass();
+  return quad;
 }
 
 // static
@@ -430,7 +432,7 @@ TypeConverter<mus::mojom::SharedQuadStatePtr, cc::SharedQuadState>::Convert(
   state->opacity = input.opacity;
   state->blend_mode = static_cast<mus::mojom::SkXfermode>(input.blend_mode);
   state->sorting_context_id = input.sorting_context_id;
-  return state.Pass();
+  return state;
 }
 
 // static
@@ -465,9 +467,9 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
   }
   // We should copy all shared quad states.
   DCHECK_EQ(next_sqs_iter.index(), shared_quad_state.size());
-  pass->quads = quads.Pass();
-  pass->shared_quad_states = shared_quad_state.Pass();
-  return pass.Pass();
+  pass->quads = std::move(quads);
+  pass->shared_quad_states = std::move(shared_quad_state);
+  return pass;
 }
 
 // static
@@ -488,7 +490,7 @@ scoped_ptr<cc::RenderPass> ConvertToRenderPass(
   cc::SharedQuadStateList::Iterator sqs_iter =
       pass->shared_quad_state_list.begin();
   for (size_t i = 0; i < input->quads.size(); ++i) {
-    QuadPtr quad = input->quads[i].Pass();
+    QuadPtr quad = std::move(input->quads[i]);
     while (quad->shared_quad_state_index > sqs_iter.index()) {
       ++sqs_iter;
     }
@@ -496,7 +498,7 @@ scoped_ptr<cc::RenderPass> ConvertToRenderPass(
                          custom_converter))
       return scoped_ptr<cc::RenderPass>();
   }
-  return pass.Pass();
+  return pass;
 }
 
 // static
@@ -516,8 +518,8 @@ MailboxPtr TypeConverter<MailboxPtr, gpu::Mailbox>::Convert(
     name[i] = input.name[i];
   }
   MailboxPtr mailbox(Mailbox::New());
-  mailbox->name = name.Pass();
-  return mailbox.Pass();
+  mailbox->name = std::move(name);
+  return mailbox;
 }
 
 // static
@@ -539,7 +541,7 @@ SyncTokenPtr TypeConverter<SyncTokenPtr, gpu::SyncToken>::Convert(
       static_cast<CommandBufferNamespace>(input.namespace_id());
   sync_token->command_buffer_id = input.command_buffer_id();
   sync_token->release_count = input.release_count();
-  return sync_token.Pass();
+  return sync_token;
 }
 
 // static
@@ -562,7 +564,7 @@ MailboxHolderPtr TypeConverter<MailboxHolderPtr, gpu::MailboxHolder>::Convert(
   holder->mailbox = Mailbox::From<gpu::Mailbox>(input.mailbox);
   holder->sync_token = SyncToken::From<gpu::SyncToken>(input.sync_token);
   holder->texture_target = input.texture_target;
-  return holder.Pass();
+  return holder;
 }
 
 // static
@@ -586,7 +588,7 @@ TypeConverter<TransferableResourcePtr, cc::TransferableResource>::Convert(
   transferable->size = Size::From(input.size);
   transferable->mailbox_holder = MailboxHolder::From(input.mailbox_holder);
   transferable->is_software = input.is_software;
-  return transferable.Pass();
+  return transferable;
 }
 
 // static
@@ -612,7 +614,7 @@ Array<TransferableResourcePtr> TypeConverter<
   for (size_t i = 0; i < input.size(); ++i) {
     resources[i] = TransferableResource::From(input[i]);
   }
-  return resources.Pass();
+  return resources;
 }
 
 // static
@@ -635,7 +637,7 @@ TypeConverter<ReturnedResourcePtr, cc::ReturnedResource>::Convert(
   returned->sync_token = SyncToken::From<gpu::SyncToken>(input.sync_token);
   returned->count = input.count;
   returned->lost = input.lost;
-  return returned.Pass();
+  return returned;
 }
 
 // static
@@ -658,7 +660,7 @@ TypeConverter<Array<ReturnedResourcePtr>, cc::ReturnedResourceArray>::Convert(
   for (size_t i = 0; i < input.size(); ++i) {
     resources[i] = ReturnedResource::From(input[i]);
   }
-  return resources.Pass();
+  return resources;
 }
 
 // static
@@ -678,7 +680,7 @@ TypeConverter<CompositorFrameMetadataPtr, cc::CompositorFrameMetadata>::Convert(
     const cc::CompositorFrameMetadata& input) {
   CompositorFrameMetadataPtr metadata = CompositorFrameMetadata::New();
   metadata->device_scale_factor = input.device_scale_factor;
-  return metadata.Pass();
+  return metadata;
 }
 
 // static
@@ -705,7 +707,7 @@ TypeConverter<CompositorFramePtr, cc::CompositorFrame>::Convert(
   for (size_t i = 0; i < pass_list.size(); ++i) {
     frame->passes[i] = Pass::From(*pass_list[i]);
   }
-  return frame.Pass();
+  return frame;
 }
 
 // static
@@ -722,13 +724,13 @@ scoped_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
         input->passes[i], input->metadata, custom_converter);
     if (!pass)
       return scoped_ptr<cc::CompositorFrame>();
-    frame_data->render_pass_list.push_back(pass.Pass());
+    frame_data->render_pass_list.push_back(std::move(pass));
   }
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   cc::CompositorFrameMetadata metadata =
       input->metadata.To<cc::CompositorFrameMetadata>();
-  frame->delegated_frame_data = frame_data.Pass();
-  return frame.Pass();
+  frame->delegated_frame_data = std::move(frame_data);
+  return frame;
 }
 
 // static

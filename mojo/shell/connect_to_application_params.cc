@@ -4,6 +4,8 @@
 
 #include "mojo/shell/connect_to_application_params.h"
 
+#include <utility>
+
 #include "mojo/shell/application_instance.h"
 
 namespace mojo {
@@ -38,12 +40,12 @@ void ConnectToApplicationParams::SetTargetURLRequest(URLRequestPtr request) {
   Identity target = request ? Identity(GURL(request->url), target_.qualifier(),
                                        target_.filter())
                             : Identity();
-  SetTargetURLRequest(request.Pass(), target);
+  SetTargetURLRequest(std::move(request), target);
 }
 
 void ConnectToApplicationParams::SetTargetURLRequest(URLRequestPtr request,
                                                      const Identity& target) {
-  target_url_request_ = request.Pass();
+  target_url_request_ = std::move(request);
   target_ = target;
 }
 

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/fetcher/network_fetcher.h"
+
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -10,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "mojo/fetcher/network_fetcher.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
@@ -28,7 +31,7 @@ const char kErrorRequest[] = "http://request_expect_error";
 class TestURLLoaderImpl : public URLLoader {
  public:
   explicit TestURLLoaderImpl(InterfaceRequest<URLLoader> request)
-      : binding_(this, request.Pass()) {}
+      : binding_(this, std::move(request)) {}
   ~TestURLLoaderImpl() override {}
 
  private:
@@ -50,7 +53,7 @@ class TestURLLoaderImpl : public URLLoader {
       response->error = NetworkError::New();
       response->error->code = -2;
     }
-    callback.Run(response.Pass());
+    callback.Run(std::move(response));
   }
   void FollowRedirect(const Callback<void(URLResponsePtr)>& callback) override {
     NOTREACHED();
@@ -67,13 +70,13 @@ class TestURLLoaderImpl : public URLLoader {
 class TestURLLoaderFactoryImpl : public URLLoaderFactory {
  public:
   explicit TestURLLoaderFactoryImpl(InterfaceRequest<URLLoaderFactory> request)
-      : binding_(this, request.Pass()) {}
+      : binding_(this, std::move(request)) {}
   ~TestURLLoaderFactoryImpl() override {}
 
  private:
   // URLLoaderFactory implementation.
   void CreateURLLoader(InterfaceRequest<URLLoader> loader) override {
-    new TestURLLoaderImpl(loader.Pass());
+    new TestURLLoaderImpl(std::move(loader));
   }
 
   StrongBinding<URLLoaderFactory> binding_;
@@ -100,7 +103,7 @@ class FetchCallbackHelper {
 
  private:
   void CallbackHandler(scoped_ptr<shell::Fetcher> fetcher) {
-    fetcher_ = fetcher.Pass();
+    fetcher_ = std::move(fetcher);
     if (run_loop_)
       run_loop_->Quit();
   }
@@ -132,7 +135,7 @@ class NetworkFetcherTest : public testing::Test {
 
     URLRequestPtr request(URLRequest::New());
     request->url = url;
-    new NetworkFetcher(true, request.Pass(), url_loader_factory_.get(),
+    new NetworkFetcher(true, std::move(request), url_loader_factory_.get(),
                        helper.GetCallback());
     helper.WaitForCallback();
 

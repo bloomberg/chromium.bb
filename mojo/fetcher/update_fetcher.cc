@@ -4,6 +4,8 @@
 
 #include "mojo/fetcher/update_fetcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -50,18 +52,18 @@ URLResponsePtr UpdateFetcher::AsURLResponse(base::TaskRunner* task_runner,
   URLResponsePtr response(URLResponse::New());
   response->url = String::From(url_);
   DataPipe data_pipe;
-  response->body = data_pipe.consumer_handle.Pass();
+  response->body = std::move(data_pipe.consumer_handle);
   int64 file_size;
   if (base::GetFileSize(path_, &file_size)) {
     response->headers = Array<HttpHeaderPtr>(1);
     HttpHeaderPtr header = HttpHeader::New();
     header->name = "Content-Length";
     header->value = base::StringPrintf("%" PRId64, file_size);
-    response->headers[0] = header.Pass();
+    response->headers[0] = std::move(header);
   }
-  common::CopyFromFile(path_, data_pipe.producer_handle.Pass(), skip,
+  common::CopyFromFile(path_, std::move(data_pipe.producer_handle), skip,
                        task_runner, base::Bind(&IgnoreResult));
-  return response.Pass();
+  return response;
 }
 
 void UpdateFetcher::AsPath(

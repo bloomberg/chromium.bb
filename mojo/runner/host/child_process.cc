@@ -4,6 +4,8 @@
 
 #include "mojo/runner/host/child_process.h"
 
+#include <utility>
+
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -156,7 +158,7 @@ class AppContext : public embedder::ProcessDelegate {
   ChildControllerImpl* controller() const { return controller_.get(); }
 
   void set_controller(scoped_ptr<ChildControllerImpl> controller) {
-    controller_ = controller.Pass();
+    controller_ = std::move(controller);
   }
 
  private:
@@ -213,13 +215,13 @@ class ChildControllerImpl : public ChildController {
     scoped_ptr<ChildControllerImpl> impl(
         new ChildControllerImpl(app_context, app_library, unblocker));
 
-    impl->Bind(host_message_pipe.Pass());
+    impl->Bind(std::move(host_message_pipe));
 
-    app_context->set_controller(impl.Pass());
+    app_context->set_controller(std::move(impl));
   }
 
   void Bind(ScopedMessagePipeHandle handle) {
-    binding_.Bind(handle.Pass());
+    binding_.Bind(std::move(handle));
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
@@ -259,7 +261,7 @@ class ChildControllerImpl : public ChildController {
   static void StartAppOnMainThread(
       base::NativeLibrary app_library,
       InterfaceRequest<Application> application_request) {
-    if (!RunNativeApplication(app_library, application_request.Pass())) {
+    if (!RunNativeApplication(app_library, std::move(application_request))) {
       LOG(ERROR) << "Failure to RunNativeApplication()";
     }
   }
@@ -298,15 +300,16 @@ scoped_ptr<mojo::runner::LinuxSandbox> InitializeSandbox() {
   sandbox->EngageNamespaceSandbox();
   sandbox->EngageSeccompSandbox();
   sandbox->Seal();
-  return sandbox.Pass();
+  return sandbox;
 }
 #endif
 
 ScopedMessagePipeHandle InitializeHostMessagePipe(
     embedder::ScopedPlatformHandle platform_channel,
     scoped_refptr<base::TaskRunner> io_task_runner) {
-  ScopedMessagePipeHandle host_message_pipe(embedder::CreateChannel(
-      platform_channel.Pass(), base::Bind(&DidCreateChannel), io_task_runner));
+  ScopedMessagePipeHandle host_message_pipe(
+      embedder::CreateChannel(std::move(platform_channel),
+                              base::Bind(&DidCreateChannel), io_task_runner));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
     // When using the new Mojo EDK, each message pipe is backed by a platform
@@ -336,7 +339,7 @@ ScopedMessagePipeHandle InitializeHostMessagePipe(
             broker_channel.release().handle)));
   }
 
-  return host_message_pipe.Pass();
+  return host_message_pipe;
 }
 
 }  // namespace
@@ -376,7 +379,7 @@ int ChildProcessMain() {
   AppContext app_context;
   app_context.Init();
   ScopedMessagePipeHandle host_message_pipe = InitializeHostMessagePipe(
-      platform_channel.Pass(), app_context.io_runner());
+      std::move(platform_channel), app_context.io_runner());
   app_context.StartControllerThread();
   Blocker blocker;
   app_context.controller_runner()->PostTask(

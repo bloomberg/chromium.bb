@@ -4,6 +4,8 @@
 
 #include "mojo/runner/host/child_process_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -56,7 +58,7 @@ ChildProcessHost::ChildProcessHost(ScopedHandle channel)
       weak_factory_(this) {
   CHECK(channel.is_valid());
   ScopedMessagePipeHandle handle(MessagePipeHandle(channel.release().value()));
-  controller_.Bind(InterfacePtrInfo<ChildController>(handle.Pass(), 0u));
+  controller_.Bind(InterfacePtrInfo<ChildController>(std::move(handle), 0u));
 }
 
 ChildProcessHost::~ChildProcessHost() {
@@ -84,7 +86,7 @@ void ChildProcessHost::Start() {
   }
 
   controller_.Bind(
-      InterfacePtrInfo<ChildController>(child_message_pipe_.Pass(), 0u));
+      InterfacePtrInfo<ChildController>(std::move(child_message_pipe_), 0u));
 
   launch_process_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -115,7 +117,7 @@ void ChildProcessHost::StartApp(
 
   on_app_complete_ = on_app_complete;
   controller_->StartApp(
-      application_request.Pass(),
+      std::move(application_request),
       base::Bind(&ChildProcessHost::AppCompleted, weak_factory_.GetWeakPtr()));
 }
 

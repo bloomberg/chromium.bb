@@ -11,7 +11,7 @@ URLRequestPtr TypeConverter<URLRequestPtr, std::string>::Convert(
     const std::string& input) {
   URLRequestPtr result(URLRequest::New());
   result->url = input;
-  return result.Pass();
+  return result;
 }
 
 }  // namespace mojo

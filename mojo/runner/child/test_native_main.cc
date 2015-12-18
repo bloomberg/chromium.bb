@@ -4,6 +4,8 @@
 
 #include "mojo/runner/child/test_native_main.h"
 
+#include <utility>
+
 #include "base/debug/stack_trace.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
@@ -63,7 +65,7 @@ int TestNativeMain(mojo::ApplicationDelegate* application_delegate) {
             &application_request, ScopedMessagePipeHandle()));
     base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
     mojo::ApplicationImpl impl(application_delegate,
-                                application_request.Pass());
+                               std::move(application_request));
     loop.Run();
 
     mojo::embedder::ShutdownIPCSupport();

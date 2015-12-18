@@ -4,6 +4,8 @@
 
 #include "mojo/application/public/cpp/lib/service_connector_registry.h"
 
+#include <utility>
+
 #include "mojo/application/public/cpp/service_connector.h"
 
 namespace mojo {
@@ -46,12 +48,12 @@ void ServiceConnectorRegistry::ConnectToService(
   auto iter = name_to_service_connector_.find(interface_name);
   if (iter != name_to_service_connector_.end()) {
     iter->second->ConnectToService(application_connection, interface_name,
-                                   client_handle.Pass());
+                                   std::move(client_handle));
     return;
   }
   if (service_connector_) {
     service_connector_->ConnectToService(application_connection, interface_name,
-                                         client_handle.Pass());
+                                         std::move(client_handle));
   }
 }
 

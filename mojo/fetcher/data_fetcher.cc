@@ -4,6 +4,8 @@
 
 #include "mojo/fetcher/data_fetcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -31,7 +33,7 @@ ScopedDataPipeConsumerHandle CreateConsumerHandleForString(
       WriteDataRaw(data_pipe.producer_handle.get(), data.data(), &num_bytes,
                    MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
   CHECK_EQ(MOJO_RESULT_OK, result);
-  return data_pipe.consumer_handle.Pass();
+  return std::move(data_pipe.consumer_handle);
 }
 
 // static
@@ -83,7 +85,7 @@ GURL DataFetcher::GetRedirectReferer() const {
 URLResponsePtr DataFetcher::AsURLResponse(base::TaskRunner* task_runner,
                                           uint32_t skip) {
   DCHECK(response_);
-  return response_.Pass();
+  return std::move(response_);
 }
 
 void DataFetcher::AsPath(

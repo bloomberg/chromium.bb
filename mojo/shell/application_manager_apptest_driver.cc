@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/base_paths.h"
 #include "base/base_switches.h"
@@ -76,7 +78,7 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
         platform_channel_pair.PassServerHandle();
 
     mojo::ScopedMessagePipeHandle handle(mojo::embedder::CreateChannel(
-        platform_channel.Pass(),
+        std::move(platform_channel),
         base::Bind(&TargetApplicationDelegate::DidCreateChannel,
                    weak_factory_.GetWeakPtr()),
         base::ThreadTaskRunnerHandle::Get()));
@@ -98,11 +100,11 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
     mojo::Array<mojo::String> test_interfaces;
     test_interfaces.push_back(
         mojo::shell::test::mojom::CreateInstanceForHandleTest::Name_);
-    filter->filter.insert("mojo:mojo_shell_apptests", test_interfaces.Pass());
+    filter->filter.insert("mojo:mojo_shell_apptests",
+                          std::move(test_interfaces));
     application_manager->CreateInstanceForHandle(
         mojo::ScopedHandle(mojo::Handle(handle.release().value())),
-        "exe:application_manager_apptest_target",
-        filter.Pass());
+        "exe:application_manager_apptest_target", std::move(filter));
     // Put the other end on the command line used to launch the target.
     platform_channel_pair.PrepareToPassClientHandleToChildProcess(
         &child_command_line, &handle_passing_info);
@@ -134,7 +136,7 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
   // mojo::InterfaceFactory<Driver>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<Driver> request) override {
-    bindings_.AddBinding(this, request.Pass());
+    bindings_.AddBinding(this, std::move(request));
   }
 
   // Driver:

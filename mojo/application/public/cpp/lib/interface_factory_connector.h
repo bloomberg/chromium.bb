@@ -5,6 +5,8 @@
 #ifndef MOJO_APPLICATION_PUBLIC_CPP_LIB_INTERFACE_FACTORY_CONNECTOR_H_
 #define MOJO_APPLICATION_PUBLIC_CPP_LIB_INTERFACE_FACTORY_CONNECTOR_H_
 
+#include <utility>
+
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/cpp/service_connector.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -23,7 +25,7 @@ class InterfaceFactoryConnector : public ServiceConnector {
                         const std::string& interface_name,
                         ScopedMessagePipeHandle client_handle) override {
     factory_->Create(application_connection,
-                     MakeRequest<Interface>(client_handle.Pass()));
+                     MakeRequest<Interface>(std::move(client_handle)));
   }
 
  private:

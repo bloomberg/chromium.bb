@@ -4,6 +4,8 @@
 
 #include "mojo/shell/connect_util.h"
 
+#include <utility>
+
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_to_application_params.h"
@@ -20,10 +22,10 @@ ScopedMessagePipeHandle ConnectToServiceByName(
   params->SetTarget(Identity(application_url, std::string(),
                              GetPermissiveCapabilityFilter()));
   params->set_services(GetProxy(&services));
-  application_manager->ConnectToApplication(params.Pass());
+  application_manager->ConnectToApplication(std::move(params));
   MessagePipe pipe;
-  services->ConnectToService(interface_name, pipe.handle1.Pass());
-  return pipe.handle0.Pass();
+  services->ConnectToService(interface_name, std::move(pipe.handle1));
+  return std::move(pipe.handle0);
 }
 
 }  // namespace shell

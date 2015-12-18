@@ -4,6 +4,8 @@
 
 #include "mojo/common/data_pipe_drainer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 
 namespace mojo {
@@ -11,7 +13,7 @@ namespace common {
 
 DataPipeDrainer::DataPipeDrainer(Client* client,
                                  mojo::ScopedDataPipeConsumerHandle source)
-    : client_(client), source_(source.Pass()), weak_factory_(this) {
+    : client_(client), source_(std::move(source)), weak_factory_(this) {
   DCHECK(client_);
   ReadData();
 }

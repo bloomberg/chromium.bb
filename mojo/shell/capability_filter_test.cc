@@ -4,6 +4,8 @@
 
 #include "mojo/shell/capability_filter_test.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -49,7 +51,7 @@ class ConnectionValidator : public ApplicationLoader,
  private:
   // Overridden from ApplicationLoader:
   void Load(const GURL& url, InterfaceRequest<Application> request) override {
-    app_.reset(new ApplicationImpl(this, request.Pass()));
+    app_.reset(new ApplicationImpl(this, std::move(request)));
   }
 
   // Overridden from ApplicationDelegate:
@@ -61,7 +63,7 @@ class ConnectionValidator : public ApplicationLoader,
   // Overridden from InterfaceFactory<Validator>:
   void Create(ApplicationConnection* connection,
               InterfaceRequest<Validator> request) override {
-    validator_bindings_.AddBinding(this, request.Pass());
+    validator_bindings_.AddBinding(this, std::move(request));
   }
 
   // Overridden from Validator:
@@ -129,13 +131,13 @@ class ServiceApplication : public ApplicationDelegate,
   // Overridden from InterfaceFactory<Safe>:
   void Create(ApplicationConnection* connection,
               InterfaceRequest<Safe> request) override {
-    safe_bindings_.AddBinding(this, request.Pass());
+    safe_bindings_.AddBinding(this, std::move(request));
   }
 
   // Overridden from InterfaceFactory<Unsafe>:
   void Create(ApplicationConnection* connection,
               InterfaceRequest<Unsafe> request) override {
-    unsafe_bindings_.AddBinding(this, request.Pass());
+    unsafe_bindings_.AddBinding(this, std::move(request));
   }
 
   template <typename Interface>
@@ -192,7 +194,7 @@ TestLoader::~TestLoader() {}
 
 void TestLoader::Load(const GURL& url,
                       InterfaceRequest<Application> request) {
-  app_.reset(new ApplicationImpl(delegate_.get(), request.Pass()));
+  app_.reset(new ApplicationImpl(delegate_.get(), std::move(request)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -302,9 +304,9 @@ void CapabilityFilterTest::RunApplication(const std::string& url,
       new ConnectToApplicationParams);
   params->SetTarget(Identity(GURL(url), std::string(), filter));
   params->set_services(GetProxy(&services));
-  params->set_exposed_services(exposed_services.Pass());
+  params->set_exposed_services(std::move(exposed_services));
   params->set_on_application_end(base::MessageLoop::QuitWhenIdleClosure());
-  application_manager_->ConnectToApplication(params.Pass());
+  application_manager_->ConnectToApplication(std::move(params));
 }
 
 void CapabilityFilterTest::InitValidator(

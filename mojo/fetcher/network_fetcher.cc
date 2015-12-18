@@ -4,6 +4,8 @@
 
 #include "mojo/fetcher/network_fetcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
@@ -37,7 +39,7 @@ NetworkFetcher::NetworkFetcher(bool disable_cache,
       disable_cache_(false),
       url_(request->url.To<GURL>()),
       weak_ptr_factory_(this) {
-  StartNetworkRequest(request.Pass(), url_loader_factory);
+  StartNetworkRequest(std::move(request), url_loader_factory);
 }
 
 NetworkFetcher::~NetworkFetcher() {
@@ -74,7 +76,7 @@ URLResponsePtr NetworkFetcher::AsURLResponse(base::TaskRunner* task_runner,
         MOJO_READ_DATA_FLAG_ALL_OR_NONE | MOJO_READ_DATA_FLAG_DISCARD);
     DCHECK_EQ(result, MOJO_RESULT_OK);
   }
-  return response_.Pass();
+  return std::move(response_);
 }
 
 void NetworkFetcher::RecordCacheToURLMapping(const base::FilePath& path,
@@ -197,7 +199,7 @@ void NetworkFetcher::AsPath(
   }
 
   base::CreateTemporaryFile(&path_);
-  common::CopyToFile(response_->body.Pass(), path_, task_runner,
+  common::CopyToFile(std::move(response_->body), path_, task_runner,
                      base::Bind(&NetworkFetcher::CopyCompleted,
                                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -226,7 +228,7 @@ void NetworkFetcher::StartNetworkRequest(mojo::URLRequestPtr request,
   request->bypass_cache = disable_cache_;
 
   url_loader_factory->CreateURLLoader(GetProxy(&url_loader_));
-  url_loader_->Start(request.Pass(),
+  url_loader_->Start(std::move(request),
                      base::Bind(&NetworkFetcher::OnLoadComplete,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
@@ -242,8 +244,8 @@ void NetworkFetcher::OnLoadComplete(URLResponsePtr response) {
     return;
   }
 
-  response_ = response.Pass();
-  loader_callback_.Run(owner.Pass());
+  response_ = std::move(response);
+  loader_callback_.Run(std::move(owner));
 }
 
 }  // namespace fetcher

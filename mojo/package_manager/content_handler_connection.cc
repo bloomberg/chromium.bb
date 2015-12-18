@@ -4,6 +4,8 @@
 
 #include "mojo/package_manager/content_handler_connection.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/shell/application_manager.h"
@@ -31,12 +33,12 @@ ContentHandlerConnection::ContentHandlerConnection(
   params->set_source(source);
   params->SetTarget(identity_);
   params->set_services(GetProxy(&services));
-  manager->ConnectToApplication(params.Pass());
+  manager->ConnectToApplication(std::move(params));
 
   MessagePipe pipe;
   content_handler_.Bind(
-      InterfacePtrInfo<ContentHandler>(pipe.handle0.Pass(), 0u));
-  services->ConnectToService(ContentHandler::Name_, pipe.handle1.Pass());
+      InterfacePtrInfo<ContentHandler>(std::move(pipe.handle0), 0u));
+  services->ConnectToService(ContentHandler::Name_, std::move(pipe.handle1));
   content_handler_.set_connection_error_handler(
       [this]() { CloseConnection(); });
 }
@@ -45,7 +47,7 @@ void ContentHandlerConnection::StartApplication(
     InterfaceRequest<Application> request,
     URLResponsePtr response) {
   content_handler_->StartApplication(
-      request.Pass(), response.Pass(),
+      std::move(request), std::move(response),
       base::Bind(&ContentHandlerConnection::ApplicationDestructed,
                  base::Unretained(this)));
   ref_count_++;

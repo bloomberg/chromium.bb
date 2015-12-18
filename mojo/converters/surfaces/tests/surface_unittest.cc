@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -180,14 +182,14 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
   mus_texture_quad->material = mus::mojom::MATERIAL_TEXTURE_CONTENT;
   TextureQuadStatePtr mus_texture_state = TextureQuadState::New();
   mus_texture_state->background_color = Color::New();
-  mus_texture_quad->texture_quad_state = mus_texture_state.Pass();
+  mus_texture_quad->texture_quad_state = std::move(mus_texture_state);
   PassPtr mus_pass = Pass::New();
   mus_pass->id = RenderPassId::New();
   mus_pass->id->layer_id = 1;
   mus_pass->id->index = 1u;
-  mus_pass->quads.push_back(mus_texture_quad.Pass());
+  mus_pass->quads.push_back(std::move(mus_texture_quad));
   SharedQuadStatePtr mus_sqs = SharedQuadState::New();
-  mus_pass->shared_quad_states.push_back(mus_sqs.Pass());
+  mus_pass->shared_quad_states.push_back(std::move(mus_sqs));
 
   scoped_ptr<cc::RenderPass> pass = mus_pass.To<scoped_ptr<cc::RenderPass>>();
 
@@ -199,14 +201,14 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
   mus_texture_quad->material = mus::mojom::MATERIAL_TEXTURE_CONTENT;
   TextureQuadStatePtr mus_texture_state = TextureQuadState::New();
   mus_texture_state->vertex_opacity = mojo::Array<float>::New(4);
-  mus_texture_quad->texture_quad_state = mus_texture_state.Pass();
+  mus_texture_quad->texture_quad_state = std::move(mus_texture_state);
   PassPtr mus_pass = Pass::New();
   mus_pass->id = RenderPassId::New();
   mus_pass->id->layer_id = 1;
   mus_pass->id->index = 1u;
-  mus_pass->quads.push_back(mus_texture_quad.Pass());
+  mus_pass->quads.push_back(std::move(mus_texture_quad));
   SharedQuadStatePtr mus_sqs = SharedQuadState::New();
-  mus_pass->shared_quad_states.push_back(mus_sqs.Pass());
+  mus_pass->shared_quad_states.push_back(std::move(mus_sqs));
 
   scoped_ptr<cc::RenderPass> pass = mus_pass.To<scoped_ptr<cc::RenderPass>>();
   EXPECT_FALSE(pass);

@@ -4,6 +4,8 @@
 
 #include "mojo/shell/shell_application_delegate.h"
 
+#include <utility>
+
 #include "base/process/process.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/shell/application_manager.h"
@@ -27,14 +29,15 @@ bool ShellApplicationDelegate::ConfigureIncomingConnection(
 void ShellApplicationDelegate::Create(
     ApplicationConnection* connection,
     InterfaceRequest<mojom::ApplicationManager> request) {
-  bindings_.AddBinding(this, request.Pass());
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void ShellApplicationDelegate::CreateInstanceForHandle(
     ScopedHandle channel,
     const String& url,
     CapabilityFilterPtr filter) {
-  manager_->CreateInstanceForHandle(channel.Pass(), GURL(url), filter.Pass());
+  manager_->CreateInstanceForHandle(std::move(channel), GURL(url),
+                                    std::move(filter));
 }
 
 void ShellApplicationDelegate::RegisterProcessWithBroker(
@@ -72,7 +75,7 @@ void ShellApplicationDelegate::RegisterProcessWithBroker(
   MojoResult rv = embedder::PassWrappedPlatformHandle(
       pipe.release().value(), &platform_pipe);
   CHECK_EQ(rv, MOJO_RESULT_OK);
-  embedder::ChildProcessLaunched(process.Handle(), platform_pipe.Pass());
+  embedder::ChildProcessLaunched(process.Handle(), std::move(platform_pipe));
 }
 
 void ShellApplicationDelegate::AddListener(

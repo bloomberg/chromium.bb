@@ -5,6 +5,8 @@
 #ifndef MOJO_APPLICATION_PUBLIC_CPP_CONNECT_H_
 #define MOJO_APPLICATION_PUBLIC_CPP_CONNECT_H_
 
+#include <utility>
+
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 
 namespace mojo {
@@ -14,8 +16,8 @@ template <typename Interface>
 inline void ConnectToService(ServiceProvider* service_provider,
                              InterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
-  ptr->Bind(InterfacePtrInfo<Interface>(pipe.handle0.Pass(), 0u));
-  service_provider->ConnectToService(Interface::Name_, pipe.handle1.Pass());
+  ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
+  service_provider->ConnectToService(Interface::Name_, std::move(pipe.handle1));
 }
 
 }  // namespace mojo

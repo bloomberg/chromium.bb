@@ -5,6 +5,7 @@
 #include "mojo/common/data_pipe_utils.h"
 
 #include <stdio.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -67,8 +68,8 @@ bool BlockingCopyToString(ScopedDataPipeConsumerHandle source,
                           std::string* result) {
   CHECK(result);
   result->clear();
-  return BlockingCopyHelper(
-      source.Pass(), base::Bind(&CopyToStringHelper, result));
+  return BlockingCopyHelper(std::move(source),
+                            base::Bind(&CopyToStringHelper, result));
 }
 
 bool MOJO_COMMON_EXPORT BlockingCopyFromString(
@@ -109,8 +110,8 @@ bool BlockingCopyToFile(ScopedDataPipeConsumerHandle source,
   base::ScopedFILE fp(base::OpenFile(destination, "wb"));
   if (!fp)
     return false;
-  return BlockingCopyHelper(
-      source.Pass(), base::Bind(&CopyToFileHelper, fp.get()));
+  return BlockingCopyHelper(std::move(source),
+                            base::Bind(&CopyToFileHelper, fp.get()));
 }
 
 void CopyToFile(ScopedDataPipeConsumerHandle source,

@@ -4,6 +4,8 @@
 
 #include "mojo/fetcher/data_fetcher.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -38,7 +40,7 @@ class FetchCallbackHelper {
 
  private:
   void CallbackHandler(scoped_ptr<shell::Fetcher> fetcher) {
-    fetcher_ = fetcher.Pass();
+    fetcher_ = std::move(fetcher);
     if (run_loop_)
       run_loop_->Quit();
   }

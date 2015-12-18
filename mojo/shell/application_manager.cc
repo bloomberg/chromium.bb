@@ -4,6 +4,8 @@
 
 #include "mojo/shell/application_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -51,15 +53,15 @@ bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
 
 ApplicationManager::ApplicationManager(
     scoped_ptr<PackageManager> package_manager)
-    : ApplicationManager(package_manager.Pass(), nullptr, nullptr) {}
+    : ApplicationManager(std::move(package_manager), nullptr, nullptr) {}
 
 ApplicationManager::ApplicationManager(
     scoped_ptr<PackageManager> package_manager,
     scoped_ptr<NativeRunnerFactory> native_runner_factory,
     base::TaskRunner* task_runner)
-    : package_manager_(package_manager.Pass()),
+    : package_manager_(std::move(package_manager)),
       task_runner_(task_runner),
-      native_runner_factory_(native_runner_factory.Pass()),
+      native_runner_factory_(std::move(native_runner_factory)),
       weak_ptr_factory_(this) {
   package_manager_->SetApplicationManager(this);
   SetLoaderForURL(make_scoped_ptr(new ShellApplicationLoader(this)),
@@ -89,7 +91,7 @@ void ApplicationManager::ConnectToApplication(
   ApplicationLoader* loader = GetLoaderForURL(params->target().url());
   if (loader) {
     GURL url = params->target().url();
-    loader->Load(url, CreateAndConnectToInstance(params.Pass(), nullptr));
+    loader->Load(url, CreateAndConnectToInstance(std::move(params), nullptr));
     return;
   }
 
@@ -97,7 +99,7 @@ void ApplicationManager::ConnectToApplication(
   auto callback =
       base::Bind(&ApplicationManager::HandleFetchCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&params));
-  package_manager_->FetchRequest(original_url_request.Pass(), callback);
+  package_manager_->FetchRequest(std::move(original_url_request), callback);
 }
 
 bool ApplicationManager::ConnectToRunningApplication(
@@ -106,7 +108,7 @@ bool ApplicationManager::ConnectToRunningApplication(
   if (!instance)
     return false;
 
-  instance->ConnectToClient(params->Pass());
+  instance->ConnectToClient(std::move(*params));
   return true;
 }
 
@@ -132,7 +134,7 @@ void ApplicationManager::CreateInstanceForHandle(ScopedHandle channel,
       CreateInstance(target_id, base::Closure(), &instance);
   scoped_ptr<NativeRunner> runner =
       native_runner_factory_->Create(base::FilePath());
-  runner->InitHost(channel.Pass(), application_request.Pass());
+  runner->InitHost(std::move(channel), std::move(application_request));
   instance->SetNativeRunner(runner.get());
   native_runners_.push_back(std::move(runner));
 }
@@ -153,10 +155,10 @@ InterfaceRequest<Application> ApplicationManager::CreateAndConnectToInstance(
   ApplicationInstance* instance = nullptr;
   InterfaceRequest<Application> application_request =
       CreateInstance(params->target(), params->on_application_end(), &instance);
-  instance->ConnectToClient(params.Pass());
+  instance->ConnectToClient(std::move(params));
   if (resulting_instance)
     *resulting_instance = instance;
-  return application_request.Pass();
+  return application_request;
 }
 
 InterfaceRequest<Application> ApplicationManager::CreateInstance(
@@ -166,7 +168,7 @@ InterfaceRequest<Application> ApplicationManager::CreateInstance(
   ApplicationPtr application;
   InterfaceRequest<Application> application_request = GetProxy(&application);
   ApplicationInstance* instance = new ApplicationInstance(
-      application.Pass(), this, target_id, Shell::kInvalidContentHandlerID,
+      std::move(application), this, target_id, Shell::kInvalidContentHandlerID,
       on_application_end);
   DCHECK(identity_to_instance_.find(target_id) ==
          identity_to_instance_.end());
@@ -180,7 +182,7 @@ InterfaceRequest<Application> ApplicationManager::CreateInstance(
   instance->InitializeApplication();
   if (resulting_instance)
     *resulting_instance = instance;
-  return application_request.Pass();
+  return application_request;
 }
 
 void ApplicationManager::HandleFetchCallback(
@@ -201,9 +203,9 @@ void ApplicationManager::HandleFetchCallback(
     HttpHeaderPtr header = HttpHeader::New();
     header->name = "Referer";
     header->value = fetcher->GetRedirectReferer().spec();
-    new_request->headers.push_back(header.Pass());
-    params->SetTargetURLRequest(new_request.Pass());
-    ConnectToApplication(params.Pass());
+    new_request->headers.push_back(std::move(header));
+    params->SetTargetURLRequest(std::move(new_request));
+    ConnectToApplication(std::move(params));
     return;
   }
 
@@ -220,7 +222,7 @@ void ApplicationManager::HandleFetchCallback(
   params->set_connect_callback(EmptyConnectCallback());
   ApplicationInstance* app = nullptr;
   InterfaceRequest<Application> request(
-      CreateAndConnectToInstance(params.Pass(), &app));
+      CreateAndConnectToInstance(std::move(params), &app));
 
   uint32_t content_handler_id = package_manager_->HandleWithContentHandler(
       fetcher.get(), source, target.url(), target.filter(), &request);
@@ -242,12 +244,12 @@ void ApplicationManager::HandleFetchCallback(
 
   connect_callback.Run(Shell::kInvalidContentHandlerID);
 
-  fetcher->AsPath(task_runner_,
-                  base::Bind(&ApplicationManager::RunNativeApplication,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              base::Passed(request.Pass()), start_sandboxed,
-                              base::Passed(fetcher.Pass()),
-                              base::Unretained(app)));
+  fetcher->AsPath(
+      task_runner_,
+      base::Bind(&ApplicationManager::RunNativeApplication,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(request)), start_sandboxed,
+                 base::Passed(std::move(fetcher)), base::Unretained(app)));
 }
 
 void ApplicationManager::RunNativeApplication(
@@ -271,7 +273,7 @@ void ApplicationManager::RunNativeApplication(
   TRACE_EVENT1("mojo_shell", "ApplicationManager::RunNativeApplication", "path",
                path.AsUTF8Unsafe());
   scoped_ptr<NativeRunner> runner = native_runner_factory_->Create(path);
-  runner->Start(path, start_sandboxed, application_request.Pass(),
+  runner->Start(path, start_sandboxed, std::move(application_request),
                 base::Bind(&ApplicationManager::CleanupRunner,
                            weak_ptr_factory_.GetWeakPtr(), runner.get()));
   instance->SetNativeRunner(runner.get());

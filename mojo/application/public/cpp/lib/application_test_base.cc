@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/application/public/cpp/application_test_base.h"
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/environment/environment.h"
@@ -31,7 +32,7 @@ ShellPtr g_shell;
 class ShellGrabber : public Application {
  public:
   explicit ShellGrabber(InterfaceRequest<Application> application_request)
-      : binding_(this, application_request.Pass()) {}
+      : binding_(this, std::move(application_request)) {}
 
   void WaitForInitialize() {
     // Initialize is always the first call made on Application.
@@ -43,7 +44,7 @@ class ShellGrabber : public Application {
   void Initialize(ShellPtr shell, const mojo::String& url) override {
     g_url = url;
     g_application_request = binding_.Unbind();
-    g_shell = shell.Pass();
+    g_shell = std::move(shell);
   }
 
   void AcceptConnection(const String& requestor_url,
@@ -127,11 +128,11 @@ void ApplicationTestBase::SetUp() {
 
   // New applications are constructed for each test to avoid persisting state.
   application_impl_ = new ApplicationImpl(GetApplicationDelegate(),
-                                          g_application_request.Pass());
+                                          std::move(g_application_request));
 
   // Fake application initialization.
   Application* application = application_impl_;
-  application->Initialize(g_shell.Pass(), g_url);
+  application->Initialize(std::move(g_shell), g_url);
 }
 
 void ApplicationTestBase::TearDown() {

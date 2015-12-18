@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -47,7 +49,7 @@ class TestFetcher : public shell::Fetcher {
   GURL GetRedirectReferer() const override { return GURL(); }
   URLResponsePtr AsURLResponse(base::TaskRunner* task_runner,
                                uint32_t skip) override {
-    return URLResponse::New().Pass();
+    return URLResponse::New();
   }
   void AsPath(
       base::TaskRunner* task_runner,
@@ -72,14 +74,14 @@ class TestContentHandler : public ContentHandler, public ApplicationDelegate {
  public:
   TestContentHandler(ApplicationConnection* connection,
                      InterfaceRequest<ContentHandler> request)
-      : binding_(this, request.Pass()) {}
+      : binding_(this, std::move(request)) {}
 
   // ContentHandler:
   void StartApplication(
       InterfaceRequest<Application> application_request,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback) override {
-    apps_.push_back(new ApplicationImpl(this, application_request.Pass()));
+    apps_.push_back(new ApplicationImpl(this, std::move(application_request)));
     destruct_callback.Run();
   }
 
@@ -105,7 +107,7 @@ class TestApplicationLoader : public shell::ApplicationLoader,
   void Load(const GURL& url,
             InterfaceRequest<Application> application_request) override {
     ++num_loads_;
-    test_app_.reset(new ApplicationImpl(this, application_request.Pass()));
+    test_app_.reset(new ApplicationImpl(this, std::move(application_request)));
   }
 
   // ApplicationDelegate implementation.
@@ -117,7 +119,7 @@ class TestApplicationLoader : public shell::ApplicationLoader,
   // InterfaceFactory<ContentHandler> implementation.
   void Create(ApplicationConnection* connection,
               InterfaceRequest<ContentHandler> request) override {
-    new TestContentHandler(connection, request.Pass());
+    new TestContentHandler(connection, std::move(request));
   }
 
   scoped_ptr<ApplicationImpl> test_app_;
@@ -200,7 +202,7 @@ TEST_F(ContentHandlerTest, ContentHandlerConnectionGetsRequestorURL) {
   params->SetTargetURL(GURL("test:test"));
   params->set_on_application_end(
       base::Bind(&QuitClosure, base::Unretained(&called)));
-  application_manager_->ConnectToApplication(params.Pass());
+  application_manager_->ConnectToApplication(std::move(params));
   loop_.Run();
   EXPECT_TRUE(called);
 
@@ -226,7 +228,7 @@ TEST_F(ContentHandlerTest,
       content_handler_id = t;
       run_loop.Quit();
     });
-    application_manager_->ConnectToApplication(params.Pass());
+    application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
     EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id);
   }
@@ -242,7 +244,7 @@ TEST_F(ContentHandlerTest,
       content_handler_id2 = t;
       run_loop.Quit();
     });
-    application_manager_->ConnectToApplication(params.Pass());
+    application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
     EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id2);
   }
@@ -266,7 +268,7 @@ TEST_F(ContentHandlerTest, DifferedContentHandlersGetDifferentIDs) {
       content_handler_id = t;
       run_loop.Quit();
     });
-    application_manager_->ConnectToApplication(params.Pass());
+    application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
     EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id);
   }
@@ -293,7 +295,7 @@ TEST_F(ContentHandlerTest, DifferedContentHandlersGetDifferentIDs) {
       content_handler_id2 = t;
       run_loop.Quit();
     });
-    application_manager_->ConnectToApplication(params.Pass());
+    application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
     EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id2);
   }
@@ -312,7 +314,7 @@ TEST_F(ContentHandlerTest,
   params->SetTargetURL(GURL("test:test"));
   params->set_connect_callback(
       [&content_handler_id](uint32_t t) { content_handler_id = t; });
-  application_manager_->ConnectToApplication(params.Pass());
+  application_manager_->ConnectToApplication(std::move(params));
   EXPECT_EQ(0u, content_handler_id);
 }
 

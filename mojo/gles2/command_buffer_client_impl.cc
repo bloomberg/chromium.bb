@@ -5,6 +5,7 @@
 #include "mojo/gles2/command_buffer_client_impl.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/process/process_handle.h"
@@ -71,7 +72,7 @@ CommandBufferClientImpl::CommandBufferClientImpl(
       flushed_fence_sync_release_(0),
       async_waiter_(async_waiter) {
   command_buffer_.Bind(mojo::InterfacePtrInfo<mus::mojom::CommandBuffer>(
-                           command_buffer_handle.Pass(), 0u),
+                           std::move(command_buffer_handle), 0u),
                        async_waiter);
   command_buffer_.set_connection_error_handler(
       [this]() { DidLoseContext(gpu::error::kUnknown); });
@@ -96,7 +97,8 @@ bool CommandBufferClientImpl::Initialize() {
   observer_binding_.Bind(GetProxy(&observer_ptr), async_waiter_);
   mus::mojom::CommandBufferInfoPtr info;
   command_buffer_->Initialize(
-      observer_ptr.Pass(), duped.Pass(), mojo::Array<int32_t>::From(attribs_),
+      std::move(observer_ptr), std::move(duped),
+      mojo::Array<int32_t>::From(attribs_),
       base::Bind(&Copy<mus::mojom::CommandBufferInfoPtr>, &info));
 
   base::ThreadRestrictions::ScopedAllowWait wait;
@@ -179,12 +181,12 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
 
   *id = ++next_transfer_buffer_id_;
 
-  command_buffer_->RegisterTransferBuffer(
-      *id, duped.Pass(), static_cast<uint32_t>(size));
+  command_buffer_->RegisterTransferBuffer(*id, std::move(duped),
+                                          static_cast<uint32_t>(size));
 
   scoped_ptr<gpu::BufferBacking> backing(
-      new mus::MojoBufferBacking(handle.Pass(), memory, size));
-  scoped_refptr<gpu::Buffer> buffer(new gpu::Buffer(backing.Pass()));
+      new mus::MojoBufferBacking(std::move(handle), memory, size));
+  scoped_refptr<gpu::Buffer> buffer(new gpu::Buffer(std::move(backing)));
   return buffer;
 }
 
@@ -235,7 +237,7 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
   mojo::ScopedHandle scoped_handle;
   scoped_handle.reset(mojo::Handle(mojo_handle));
   command_buffer_->CreateImage(
-      new_id, scoped_handle.Pass(), handle.type, size.Pass(),
+      new_id, std::move(scoped_handle), handle.type, std::move(size),
       static_cast<int32_t>(gpu_memory_buffer->GetFormat()), internalformat);
   if (requires_sync_point) {
     NOTIMPLEMENTED();

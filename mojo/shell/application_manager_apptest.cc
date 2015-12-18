@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -40,7 +42,7 @@ class ApplicationManagerAppTestDelegate
   void Create(
       ApplicationConnection* connection,
       InterfaceRequest<CreateInstanceForHandleTest> request) override {
-    binding_.Bind(request.Pass());
+    binding_.Bind(std::move(request));
   }
 
   // CreateInstanceForHandleTest:

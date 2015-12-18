@@ -4,6 +4,8 @@
 
 #include "mojo/application/public/cpp/lib/service_registry.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -21,7 +23,7 @@ ServiceRegistry::ServiceRegistry(
     : connection_url_(connection_url),
       remote_url_(remote_url),
       local_binding_(this),
-      remote_service_provider_(remote_services.Pass()),
+      remote_service_provider_(std::move(remote_services)),
       allowed_interfaces_(allowed_interfaces),
       allow_all_interfaces_(allowed_interfaces_.size() == 1 &&
                             allowed_interfaces_.count("*") == 1),
@@ -29,7 +31,7 @@ ServiceRegistry::ServiceRegistry(
       is_content_handler_id_valid_(false),
       weak_factory_(this) {
   if (local_services.is_pending())
-    local_binding_.Bind(local_services.Pass());
+    local_binding_.Bind(std::move(local_services));
 }
 
 ServiceRegistry::ServiceRegistry()
@@ -127,7 +129,7 @@ void ServiceRegistry::OnGotContentHandlerID(uint32_t content_handler_id) {
 void ServiceRegistry::ConnectToService(const mojo::String& service_name,
                                        ScopedMessagePipeHandle client_handle) {
   service_connector_registry_.ConnectToService(this, service_name,
-                                               client_handle.Pass());
+                                               std::move(client_handle));
 }
 
 }  // namespace internal

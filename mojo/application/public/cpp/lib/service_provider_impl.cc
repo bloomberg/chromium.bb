@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/application/public/cpp/service_provider_impl.h"
+#include <utility>
 
 #include "mojo/application/public/cpp/service_connector.h"
+#include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
@@ -14,14 +15,13 @@ ServiceProviderImpl::ServiceProviderImpl() : binding_(this) {
 
 ServiceProviderImpl::ServiceProviderImpl(
     InterfaceRequest<ServiceProvider> request)
-    : binding_(this, request.Pass()) {
-}
+    : binding_(this, std::move(request)) {}
 
 ServiceProviderImpl::~ServiceProviderImpl() {
 }
 
 void ServiceProviderImpl::Bind(InterfaceRequest<ServiceProvider> request) {
-  binding_.Bind(request.Pass());
+  binding_.Bind(std::move(request));
 }
 
 void ServiceProviderImpl::ConnectToService(
@@ -30,7 +30,7 @@ void ServiceProviderImpl::ConnectToService(
   // TODO(beng): perhaps take app connection thru ctor so that we can pass
   // ApplicationConnection through?
   service_connector_registry_.ConnectToService(nullptr, service_name,
-                                               client_handle.Pass());
+                                               std::move(client_handle));
 }
 
 void ServiceProviderImpl::SetServiceConnectorForName(

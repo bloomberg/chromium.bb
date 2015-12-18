@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/path_service.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -41,7 +43,7 @@ class TestFetcher : public shell::Fetcher {
                                uint32_t skip) override {
     URLResponsePtr response(URLResponse::New());
     response->url = url_.spec();
-    return response.Pass();
+    return response;
   }
   void AsPath(
       base::TaskRunner* task_runner,
@@ -92,7 +94,7 @@ class TestContentHandler : public ApplicationDelegate,
   // Overridden from InterfaceFactory<ContentHandler>:
   void Create(ApplicationConnection* connection,
               InterfaceRequest<ContentHandler> request) override {
-    bindings_.AddBinding(this, request.Pass());
+    bindings_.AddBinding(this, std::move(request));
   }
 
   // Overridden from ContentHandler:
@@ -102,8 +104,8 @@ class TestContentHandler : public ApplicationDelegate,
       const Callback<void()>& destruct_callback) override {
     scoped_ptr<ApplicationDelegate> delegate(new shell::test::TestApplication);
     embedded_apps_.push_back(
-        new ApplicationImpl(delegate.get(), application.Pass()));
-    embedded_app_delegates_.push_back(delegate.Pass());
+        new ApplicationImpl(delegate.get(), std::move(application)));
+    embedded_app_delegates_.push_back(std::move(delegate));
     destruct_callback.Run();
   }
 

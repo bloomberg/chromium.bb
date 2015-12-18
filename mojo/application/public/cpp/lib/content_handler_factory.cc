@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/application/public/cpp/content_handler_factory.h"
-
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -16,6 +15,7 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
+#include "mojo/application/public/cpp/content_handler_factory.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -36,8 +36,8 @@ class ApplicationThread : public base::PlatformThread::Delegate {
       : handler_thread_(handler_thread),
         termination_callback_(termination_callback),
         handler_delegate_(handler_delegate),
-        application_request_(application_request.Pass()),
-        response_(response.Pass()),
+        application_request_(std::move(application_request)),
+        response_(std::move(response)),
         destruct_callback_(destruct_callback) {}
 
   ~ApplicationThread() override {
@@ -46,8 +46,8 @@ class ApplicationThread : public base::PlatformThread::Delegate {
 
  private:
   void ThreadMain() override {
-    handler_delegate_->RunApplication(application_request_.Pass(),
-                                      response_.Pass());
+    handler_delegate_->RunApplication(std::move(application_request_),
+                                      std::move(response_));
     handler_thread_->PostTask(FROM_HERE,
                               base::Bind(termination_callback_, this));
   }
@@ -67,7 +67,7 @@ class ContentHandlerImpl : public ContentHandler {
   ContentHandlerImpl(ContentHandlerFactory::Delegate* delegate,
                      InterfaceRequest<ContentHandler> request)
       : delegate_(delegate),
-        binding_(this, request.Pass()),
+        binding_(this, std::move(request)),
         weak_factory_(this) {}
   ~ContentHandlerImpl() override {
     // We're shutting down and doing cleanup. Cleanup may trigger calls back to
@@ -87,12 +87,12 @@ class ContentHandlerImpl : public ContentHandler {
       InterfaceRequest<Application> application_request,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback) override {
-    ApplicationThread* thread = new ApplicationThread(
-        base::ThreadTaskRunnerHandle::Get(),
-        base::Bind(&ContentHandlerImpl::OnThreadEnd,
-                   weak_factory_.GetWeakPtr()),
-        delegate_, application_request.Pass(), response.Pass(),
-        destruct_callback);
+    ApplicationThread* thread =
+        new ApplicationThread(base::ThreadTaskRunnerHandle::Get(),
+                              base::Bind(&ContentHandlerImpl::OnThreadEnd,
+                                         weak_factory_.GetWeakPtr()),
+                              delegate_, std::move(application_request),
+                              std::move(response), destruct_callback);
     base::PlatformThreadHandle handle;
     bool launched = base::PlatformThread::Create(0, thread, &handle);
     DCHECK(launched);
@@ -128,15 +128,15 @@ void ContentHandlerFactory::ManagedDelegate::RunApplication(
     InterfaceRequest<Application> application_request,
     URLResponsePtr response) {
   base::MessageLoop loop(common::MessagePumpMojo::Create());
-  auto application =
-      this->CreateApplication(application_request.Pass(), response.Pass());
+  auto application = this->CreateApplication(std::move(application_request),
+                                             std::move(response));
   if (application)
     loop.Run();
 }
 
 void ContentHandlerFactory::Create(ApplicationConnection* connection,
                                    InterfaceRequest<ContentHandler> request) {
-  new ContentHandlerImpl(delegate_, request.Pass());
+  new ContentHandlerImpl(delegate_, std::move(request));
 }
 
 }  // namespace mojo

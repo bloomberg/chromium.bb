@@ -4,6 +4,7 @@
 
 #include "mojo/runner/context.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -141,7 +142,7 @@ void InitDevToolsServiceIfNeeded(shell::ApplicationManager* manager,
                                     std::string(),
                                     shell::GetPermissiveCapabilityFilter()));
   params->set_services(GetProxy(&devtools_service_provider));
-  manager->ConnectToApplication(params.Pass());
+  manager->ConnectToApplication(std::move(params));
 
   devtools_service::DevToolsCoordinatorPtr devtools_coordinator;
   devtools_service_provider->ConnectToService(
@@ -154,14 +155,14 @@ class TracingServiceProvider : public ServiceProvider {
  public:
   TracingServiceProvider(Tracer* tracer,
                          InterfaceRequest<ServiceProvider> request)
-      : tracer_(tracer), binding_(this, request.Pass()) {}
+      : tracer_(tracer), binding_(this, std::move(request)) {}
   ~TracingServiceProvider() override {}
 
   void ConnectToService(const mojo::String& service_name,
                         ScopedMessagePipeHandle client_handle) override {
     if (tracer_ && service_name == tracing::TraceProvider::Name_) {
       tracer_->ConnectToProvider(
-          MakeRequest<tracing::TraceProvider>(client_handle.Pass()));
+          MakeRequest<tracing::TraceProvider>(std::move(client_handle)));
     }
   }
 
@@ -233,7 +234,7 @@ bool Context::Init(const base::FilePath& shell_file_root) {
         new InProcessNativeRunnerFactory(task_runners_->blocking_pool()));
   }
   application_manager_.reset(new shell::ApplicationManager(
-      make_scoped_ptr(package_manager_), runner_factory.Pass(),
+      make_scoped_ptr(package_manager_), std::move(runner_factory),
       task_runners_->blocking_pool()));
 
   ServiceProviderPtr tracing_services;
@@ -247,15 +248,15 @@ bool Context::Init(const base::FilePath& shell_file_root) {
   params->SetTarget(shell::Identity(GURL("mojo:tracing"), std::string(),
                                     shell::GetPermissiveCapabilityFilter()));
   params->set_services(GetProxy(&tracing_services));
-  params->set_exposed_services(tracing_exposed_services.Pass());
-  application_manager_->ConnectToApplication(params.Pass());
+  params->set_exposed_services(std::move(tracing_exposed_services));
+  application_manager_->ConnectToApplication(std::move(params));
 
   if (command_line.HasSwitch(tracing::kTraceStartup)) {
     tracing::TraceCollectorPtr coordinator;
     auto coordinator_request = GetProxy(&coordinator);
     tracing_services->ConnectToService(tracing::TraceCollector::Name_,
                                        coordinator_request.PassMessagePipe());
-    tracer_.StartCollectingFromTracingService(coordinator.Pass());
+    tracer_.StartCollectingFromTracingService(std::move(coordinator));
   }
 
   // Record the shell startup metrics used for performance testing.
@@ -312,10 +313,10 @@ void Context::Run(const GURL& url) {
   params->SetTarget(shell::Identity(url, std::string(),
                                     shell::GetPermissiveCapabilityFilter()));
   params->set_services(GetProxy(&services));
-  params->set_exposed_services(exposed_services.Pass());
+  params->set_exposed_services(std::move(exposed_services));
   params->set_on_application_end(
       base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url));
-  application_manager_->ConnectToApplication(params.Pass());
+  application_manager_->ConnectToApplication(std::move(params));
 }
 
 void Context::RunCommandLineApplication(const base::Closure& callback) {

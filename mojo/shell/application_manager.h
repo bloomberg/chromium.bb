@@ -6,6 +6,7 @@
 #define MOJO_SHELL_APPLICATION_MANAGER_H_
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -78,7 +79,7 @@ class ApplicationManager {
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL().
   void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
-    default_loader_ = loader.Pass();
+    default_loader_ = std::move(loader);
   }
 
   // Sets a Loader to be used for a specific url.

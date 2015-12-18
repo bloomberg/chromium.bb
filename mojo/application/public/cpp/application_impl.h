@@ -5,6 +5,7 @@
 #ifndef MOJO_APPLICATION_PUBLIC_CPP_APPLICATION_IMPL_H_
 #define MOJO_APPLICATION_PUBLIC_CPP_APPLICATION_IMPL_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -66,11 +67,9 @@ class ApplicationImpl : public Application {
     explicit ConnectParams(URLRequestPtr request);
     ~ConnectParams();
 
-    URLRequestPtr TakeRequest() { return request_.Pass(); }
-    CapabilityFilterPtr TakeFilter() { return filter_.Pass(); }
-    void set_filter(CapabilityFilterPtr filter) {
-      filter_ = filter.Pass();
-    }
+    URLRequestPtr TakeRequest() { return std::move(request_); }
+    CapabilityFilterPtr TakeFilter() { return std::move(filter_); }
+    void set_filter(CapabilityFilterPtr filter) { filter_ = std::move(filter); }
 
    private:
     URLRequestPtr request_;

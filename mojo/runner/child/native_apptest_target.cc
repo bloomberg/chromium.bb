@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -41,7 +43,7 @@ class TargetApplicationDelegate
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::runner::test::TestNativeService>
                   request) override {
-    bindings_.AddBinding(this, request.Pass());
+    bindings_.AddBinding(this, std::move(request));
   }
 
   mojo::WeakBindingSet<mojo::runner::test::TestNativeService> bindings_;

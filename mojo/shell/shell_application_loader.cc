@@ -4,6 +4,8 @@
 
 #include "mojo/shell/shell_application_loader.h"
 
+#include <utility>
+
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/shell/shell_application_delegate.h"
 
@@ -19,7 +21,7 @@ void ShellApplicationLoader::Load(
     InterfaceRequest<Application> application_request) {
   DCHECK(application_request.is_pending());
   app_.reset(new ApplicationImpl(new ShellApplicationDelegate(manager_),
-                                 application_request.Pass()));
+                                 std::move(application_request)));
 }
 
 }  // namespace shell

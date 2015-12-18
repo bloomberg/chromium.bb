@@ -4,6 +4,8 @@
 
 #include "mojo/package_manager/package_manager_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/fetcher/about_fetcher.h"
@@ -122,7 +124,7 @@ void PackageManagerImpl::FetchRequest(
 
   // Ownership of this object is transferred to |loader_callback|.
   // TODO(beng): this is eff'n weird.
-  new fetcher::NetworkFetcher(disable_cache_, request.Pass(),
+  new fetcher::NetworkFetcher(disable_cache_, std::move(request),
                               url_loader_factory_.get(), loader_callback);
 }
 
@@ -141,7 +143,8 @@ uint32_t PackageManagerImpl::HandleWithContentHandler(
                                      &response)) {
     ContentHandlerConnection* connection =
         GetContentHandler(content_handler_identity, source);
-    connection->StartApplication(application_request->Pass(), response.Pass());
+    connection->StartApplication(std::move(*application_request),
+                                 std::move(response));
     return connection->id();
   }
   return Shell::kInvalidContentHandlerID;

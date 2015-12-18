@@ -4,6 +4,8 @@
 
 #include "mojo/platform_handle/platform_handle_functions.h"
 
+#include <utility>
+
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 extern "C" {
@@ -14,7 +16,7 @@ MojoResult MojoCreatePlatformHandleWrapper(MojoPlatformHandle platform_handle,
   mojo::embedder::ScopedPlatformHandle scoped_platform_handle(
       platform_handle_wrapper);
   return mojo::embedder::CreatePlatformHandleWrapper(
-      scoped_platform_handle.Pass(), wrapper);
+      std::move(scoped_platform_handle), wrapper);
 }
 
 MojoResult MojoExtractPlatformHandle(MojoHandle wrapper,

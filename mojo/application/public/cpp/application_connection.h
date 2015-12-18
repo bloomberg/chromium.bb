@@ -6,6 +6,7 @@
 #define MOJO_APPLICATION_PUBLIC_CPP_APPLICATION_CONNECTION_H_
 
 #include <string>
+#include <utility>
 
 #include "base/memory/weak_ptr.h"
 #include "mojo/application/public/cpp/lib/interface_factory_connector.h"
@@ -82,8 +83,8 @@ class ApplicationConnection {
   void ConnectToService(InterfacePtr<Interface>* ptr) {
     if (ServiceProvider* sp = GetServiceProvider()) {
       MessagePipe pipe;
-      ptr->Bind(InterfacePtrInfo<Interface>(pipe.handle0.Pass(), 0u));
-      sp->ConnectToService(Interface::Name_, pipe.handle1.Pass());
+      ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
+      sp->ConnectToService(Interface::Name_, std::move(pipe.handle1));
     }
   }
 

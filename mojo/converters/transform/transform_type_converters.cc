@@ -4,6 +4,8 @@
 
 #include "mojo/converters/transform/transform_type_converters.h"
 
+#include <utility>
+
 namespace mojo {
 
 // static
@@ -14,8 +16,8 @@ TransformPtr TypeConverter<TransformPtr, gfx::Transform>::Convert(
   mojo::Array<float> matrix;
   matrix.Swap(&storage);
   TransformPtr transform(Transform::New());
-  transform->matrix = matrix.Pass();
-  return transform.Pass();
+  transform->matrix = std::move(matrix);
+  return transform;
 }
 
 // static

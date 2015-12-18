@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -49,11 +50,11 @@ void Tracer::Start(const std::string& categories,
 
 void Tracer::StartCollectingFromTracingService(
     tracing::TraceCollectorPtr coordinator) {
-  coordinator_ = coordinator.Pass();
+  coordinator_ = std::move(coordinator);
   mojo::DataPipe data_pipe;
-  coordinator_->Start(data_pipe.producer_handle.Pass(), categories_);
+  coordinator_->Start(std::move(data_pipe.producer_handle), categories_);
   drainer_.reset(new mojo::common::DataPipeDrainer(
-      this, data_pipe.consumer_handle.Pass()));
+      this, std::move(data_pipe.consumer_handle)));
 }
 
 void Tracer::StopAndFlushToFile() {
@@ -63,7 +64,7 @@ void Tracer::StopAndFlushToFile() {
 
 void Tracer::ConnectToProvider(
     mojo::InterfaceRequest<tracing::TraceProvider> request) {
-  trace_provider_impl_.Bind(request.Pass());
+  trace_provider_impl_.Bind(std::move(request));
 }
 
 void Tracer::StopTracingAndFlushToDisk() {

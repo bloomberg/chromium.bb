@@ -4,6 +4,8 @@
 
 #include "mojo/runner/child/runner_connection.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -74,7 +76,7 @@ using GotApplicationRequestCallback =
 
 void OnGotApplicationRequest(InterfaceRequest<Application>* out_request,
                              InterfaceRequest<Application> request) {
-  *out_request = request.Pass();
+  *out_request = std::move(request);
 }
 
 class ChildControllerImpl;
@@ -99,7 +101,7 @@ class RunnerConnectionImpl : public RunnerConnection {
   ChildControllerImpl* controller() const { return controller_.get(); }
 
   void set_controller(scoped_ptr<ChildControllerImpl> controller) {
-    controller_ = controller.Pass();
+    controller_ = std::move(controller);
   }
 
  private:
@@ -146,13 +148,13 @@ class ChildControllerImpl : public ChildController {
     scoped_ptr<ChildControllerImpl> impl(
         new ChildControllerImpl(connection, callback, unblocker));
 
-    impl->Bind(runner_handle.Pass());
+    impl->Bind(std::move(runner_handle));
 
-    connection->set_controller(impl.Pass());
+    connection->set_controller(std::move(impl));
   }
 
   void Bind(ScopedMessagePipeHandle handle) {
-    binding_.Bind(handle.Pass());
+    binding_.Bind(std::move(handle));
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
@@ -192,7 +194,7 @@ class ChildControllerImpl : public ChildController {
   static void ReturnApplicationRequestOnMainThread(
       const GotApplicationRequestCallback& callback,
       InterfaceRequest<Application> application_request) {
-    callback.Run(application_request.Pass());
+    callback.Run(std::move(application_request));
   }
 
   base::ThreadChecker thread_checker_;
@@ -221,9 +223,9 @@ bool RunnerConnectionImpl::WaitForApplicationRequest(
     scoped_refptr<base::TaskRunner> task_runner;
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk"))
       task_runner = base::ThreadTaskRunnerHandle::Get();
-    handle = embedder::CreateChannel(platform_channel.Pass(),
-                                     base::Bind(&DidCreateChannel),
-                                     task_runner);
+    handle =
+        embedder::CreateChannel(std::move(platform_channel),
+                                base::Bind(&DidCreateChannel), task_runner);
     // Copy of code in child_process.cc
     if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
       // When using the new Mojo EDK, each message pipe is backed by a platform
@@ -275,7 +277,7 @@ RunnerConnection* RunnerConnection::ConnectToRunner(
     InterfaceRequest<Application>* request,
     ScopedMessagePipeHandle handle) {
   RunnerConnectionImpl* connection = new RunnerConnectionImpl;
-  if (!connection->WaitForApplicationRequest(request, handle.Pass())) {
+  if (!connection->WaitForApplicationRequest(request, std::move(handle))) {
     delete connection;
     return nullptr;
   }

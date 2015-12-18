@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/fetcher/about_fetcher.h"
+
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,7 +18,6 @@
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/common/weak_binding_set.h"
-#include "mojo/fetcher/about_fetcher.h"
 #include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
@@ -46,7 +49,7 @@ class TestContentHandler : public ApplicationDelegate,
   // Overridden from InterfaceFactory<ContentHandler>:
   void Create(ApplicationConnection* connection,
               InterfaceRequest<ContentHandler> request) override {
-    bindings_.AddBinding(this, request.Pass());
+    bindings_.AddBinding(this, std::move(request));
   }
 
   // Overridden from ContentHandler:
@@ -55,7 +58,7 @@ class TestContentHandler : public ApplicationDelegate,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback) override {
     response_number_++;
-    latest_response_ = response.Pass();
+    latest_response_ = std::move(response);
     destruct_callback.Run();
 
     // Drop |application| request. This results in the application manager
@@ -80,7 +83,7 @@ class TestLoader : public shell::ApplicationLoader {
  private:
   // Overridden from ApplicationLoader:
   void Load(const GURL& url, InterfaceRequest<Application> request) override {
-    app_.reset(new ApplicationImpl(delegate_, request.Pass()));
+    app_.reset(new ApplicationImpl(delegate_, std::move(request)));
   }
 
   ApplicationDelegate* delegate_;
@@ -115,8 +118,8 @@ class AboutFetcherTest : public testing::Test {
     scoped_ptr<shell::ConnectToApplicationParams> params(
         new shell::ConnectToApplicationParams);
     params->SetTargetURL(GURL(url));
-    params->set_services(service_provider_request.Pass());
-    application_manager_->ConnectToApplication(params.Pass());
+    params->set_services(std::move(service_provider_request));
+    application_manager_->ConnectToApplication(std::move(params));
 
     run_loop.Run();
   }
@@ -130,7 +133,7 @@ class AboutFetcherTest : public testing::Test {
     package_manager->RegisterContentHandler(
         "text/html", GURL("test:html_content_handler"));
     application_manager_.reset(
-        new shell::ApplicationManager(package_manager.Pass()));
+        new shell::ApplicationManager(std::move(package_manager)));
     application_manager_->SetLoaderForURL(
         make_scoped_ptr(new TestLoader(&html_content_handler_)),
         GURL("test:html_content_handler"));

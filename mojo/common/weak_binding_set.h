@@ -6,6 +6,7 @@
 #define MOJO_COMMON_WEAK_BINDING_SET_H_
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -32,7 +33,7 @@ class WeakBindingSet {
 
   void AddBinding(Interface* impl,
                   InterfaceRequest<GenericInterface> request) {
-    auto binding = new WeakBinding<Interface>(impl, request.Pass());
+    auto binding = new WeakBinding<Interface>(impl, std::move(request));
     binding->set_connection_error_handler([this]() { OnConnectionError(); });
     bindings_.push_back(binding->GetWeakPtr());
   }
@@ -74,8 +75,7 @@ class WeakBinding {
   using GenericInterface = typename Interface::GenericInterface;
 
   WeakBinding(Interface* impl, InterfaceRequest<GenericInterface> request)
-      : binding_(impl, request.Pass()),
-        weak_ptr_factory_(this) {
+      : binding_(impl, std::move(request)), weak_ptr_factory_(this) {
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 

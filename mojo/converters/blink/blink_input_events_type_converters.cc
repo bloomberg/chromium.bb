@@ -4,6 +4,8 @@
 
 #include "mojo/converters/blink/blink_input_events_type_converters.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "components/mus/public/interfaces/input_event_constants.mojom.h"
@@ -105,7 +107,7 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(
 
   web_event->clickCount = GetClickCount(event->flags);
 
-  return web_event.Pass();
+  return std::move(web_event);
 }
 
 scoped_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
@@ -137,7 +139,7 @@ scoped_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
   web_event->unmodifiedText[0] = event->key_data->unmodified_text;
 
   web_event->setKeyIdentifierFromWindowsKeyCode();
-  return web_event.Pass();
+  return std::move(web_event);
 }
 
 scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
@@ -188,7 +190,7 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
       break;
   }
 
-  return web_event.Pass();
+  return std::move(web_event);
 }
 
 }  // namespace
