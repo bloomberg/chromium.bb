@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BINDER_TRANSACTION_DATA_H_
-#define BINDER_TRANSACTION_DATA_H_
+#ifndef CHROMEOS_BINDER_TRANSACTION_DATA_H_
+#define CHROMEOS_BINDER_TRANSACTION_DATA_H_
 
 #include "base/basictypes.h"
 #include "chromeos/binder/status.h"
@@ -52,4 +52,4 @@ class TransactionData {
 
 }  // namespace binder
 
-#endif  // BINDER_TRANSACTION_DATA_H_
+#endif  // CHROMEOS_BINDER_TRANSACTION_DATA_H_

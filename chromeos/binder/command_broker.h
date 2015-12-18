@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/binder/command_stream.h"
+#include "chromeos/chromeos_export.h"
 
 namespace binder {
 
@@ -22,7 +23,8 @@ class TransactionData;
 // dispatches incoming commands to appropriate objects.
 // Usually this class lives as long as the corresponding thread.
 // TODO(hashimoto): Add code to handle incoming commands (e.g. transactions).
-class CommandBroker : public CommandStream::IncomingCommandHandler {
+class CHROMEOS_EXPORT CommandBroker
+    : public CommandStream::IncomingCommandHandler {
  public:
   explicit CommandBroker(Driver* driver);
   ~CommandBroker() override;

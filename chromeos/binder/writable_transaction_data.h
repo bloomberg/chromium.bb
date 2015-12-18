@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BINDER_WRITABLE_TRANSACTION_DATA_H_
-#define BINDER_WRITABLE_TRANSACTION_DATA_H_
+#ifndef CHROMEOS_BINDER_WRITABLE_TRANSACTION_DATA_H_
+#define CHROMEOS_BINDER_WRITABLE_TRANSACTION_DATA_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "chromeos/binder/transaction_data.h"
+#include "chromeos/chromeos_export.h"
 
 namespace binder {
 
 // Use this class to construct TransactionData (as parameters and replies) to
 // transact with remote objects.
 // GetSenderPID() and GetSenderEUID() return 0.
-class WritableTransactionData : public TransactionData {
+class CHROMEOS_EXPORT WritableTransactionData : public TransactionData {
  public:
   WritableTransactionData();
   ~WritableTransactionData() override;
@@ -76,4 +77,4 @@ class WritableTransactionData : public TransactionData {
 
 }  // namespace binder
 
-#endif  // BINDER_WRITABLE_TRANSACTION_DATA_H_
+#endif  // CHROMEOS_BINDER_WRITABLE_TRANSACTION_DATA_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BINDER_CONSTANTS_H_
-#define BINDER_CONSTANTS_H_
+#ifndef CHROMEOS_BINDER_CONSTANTS_H_
+#define CHROMEOS_BINDER_CONSTANTS_H_
 
 #define BINDER_PACK_CHARS(c1, c2, c3, c4) \
   (((c1) << 24) | ((c2) << 16) | ((c3) << 8) | (c4))
@@ -20,4 +20,4 @@ const uint32 kPingTransactionCode = BINDER_PACK_CHARS('_', 'P', 'N', 'G');
 
 }  // namespace binder
 
-#endif  // BINDER_CONSTANTS_H_
+#endif  // CHROMEOS_BINDER_CONSTANTS_H_

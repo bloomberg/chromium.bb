@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BINDER_BUFFER_READER_H_
-#define BINDER_BUFFER_READER_H_
+#ifndef CHROMEOS_BINDER_BUFFER_READER_H_
+#define CHROMEOS_BINDER_BUFFER_READER_H_
 
 #include "base/macros.h"
+#include "chromeos/chromeos_export.h"
 
 namespace binder {
 
 // BufferReader reads data from the given buffer.
-class BufferReader {
+class CHROMEOS_EXPORT BufferReader {
  public:
   BufferReader(const char* data, size_t size);
   ~BufferReader();
@@ -39,4 +40,4 @@ class BufferReader {
 
 }  // namespace binder
 
-#endif  // BINDER_BUFFER_READER_H_
+#endif  // CHROMEOS_BINDER_BUFFER_READER_H_

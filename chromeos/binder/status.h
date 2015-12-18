@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BINDER_STATUS_H_
-#define BINDER_STATUS_H_
+#ifndef CHROMEOS_BINDER_STATUS_H_
+#define CHROMEOS_BINDER_STATUS_H_
 
 #include <errno.h>
 
@@ -39,4 +39,4 @@ enum class Status : int32 {
 
 }  // namespace binder
 
-#endif  // BINDER_STATUS_H_
+#endif  // CHROMEOS_BINDER_STATUS_H_

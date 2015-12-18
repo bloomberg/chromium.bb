@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BINDER_TRANSACTION_DATA_FROM_DRIVER_H_
-#define BINDER_TRANSACTION_DATA_FROM_DRIVER_H_
+#ifndef CHROMEOS_BINDER_TRANSACTION_DATA_FROM_DRIVER_H_
+#define CHROMEOS_BINDER_TRANSACTION_DATA_FROM_DRIVER_H_
 
 #include <unistd.h>
 #include <linux/android/binder.h>
@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromeos/binder/transaction_data.h"
+#include "chromeos/chromeos_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -19,11 +20,9 @@ class SingleThreadTaskRunner;
 
 namespace binder {
 
-class CommandStream;
-
 // TransactionData passed by the driver, whose data needs to be freed with
 // BC_FREE_BUFFER command.
-class TransactionDataFromDriver : public TransactionData {
+class CHROMEOS_EXPORT TransactionDataFromDriver : public TransactionData {
  public:
   typedef base::Callback<void(const void* ptr)> BufferDeleter;
   explicit TransactionDataFromDriver(const BufferDeleter& buffer_deleter);
@@ -55,4 +54,4 @@ class TransactionDataFromDriver : public TransactionData {
 
 }  // namespace binder
 
-#endif  // BINDER_TRANSACTION_DATA_FROM_DRIVER_H_
+#endif  // CHROMEOS_BINDER_TRANSACTION_DATA_FROM_DRIVER_H_

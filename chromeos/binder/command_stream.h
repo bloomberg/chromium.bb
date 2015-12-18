@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BINDER_COMMAND_STREAM_H_
-#define BINDER_COMMAND_STREAM_H_
+#ifndef CHROMEOS_BINDER_COMMAND_STREAM_H_
+#define CHROMEOS_BINDER_COMMAND_STREAM_H_
 
 #include <vector>
 
@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "chromeos/chromeos_export.h"
 
 namespace binder {
 
@@ -21,7 +22,7 @@ class TransactionData;
 
 // Stream of incoming (binder driver to user process) BR_* commands and outgoing
 // (user process to binder driver) BC_* commands.
-class CommandStream {
+class CHROMEOS_EXPORT CommandStream {
  public:
   // IncomingCommandHandler is responsible to handle incoming commands.
   class IncomingCommandHandler {
@@ -87,4 +88,4 @@ class CommandStream {
 
 }  // namespace binder
 
-#endif  // BINDER_COMMAND_STREAM_H_
+#endif  // CHROMEOS_BINDER_COMMAND_STREAM_H_
