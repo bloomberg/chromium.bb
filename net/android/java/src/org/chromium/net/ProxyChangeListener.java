@@ -112,7 +112,7 @@ public class ProxyChangeListener {
                 final String getExclusionList = "getExclusionList";
                 String className;
                 String proxyInfo;
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                     className = "android.net.ProxyProperties";
                     proxyInfo = "proxy";
                 } else {
@@ -134,20 +134,21 @@ public class ProxyChangeListener {
                 int port = (Integer) getPortMethod.invoke(props);
 
                 String[] exclusionList;
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                     String s = (String) getExclusionListMethod.invoke(props);
                     exclusionList = s.split(",");
                 } else {
                     exclusionList = (String[]) getExclusionListMethod.invoke(props);
                 }
                 // TODO(xunjieli): rewrite this once the API is public.
-                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+                        && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                     Method getPacFileUrlMethod = cls.getDeclaredMethod(getPacFileUrl);
                     String pacFileUrl = (String) getPacFileUrlMethod.invoke(props);
                     if (!TextUtils.isEmpty(pacFileUrl)) {
                         return new ProxyConfig(host, port, pacFileUrl, exclusionList);
                     }
-                } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     Method getPacFileUrlMethod = cls.getDeclaredMethod(getPacFileUrl);
                     Uri pacFileUrl = (Uri) getPacFileUrlMethod.invoke(props);
                     if (!Uri.EMPTY.equals(pacFileUrl)) {
