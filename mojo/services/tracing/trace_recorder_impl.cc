@@ -4,13 +4,14 @@
 
 #include "mojo/services/tracing/trace_recorder_impl.h"
 
+#include <utility>
+
 namespace tracing {
 
 TraceRecorderImpl::TraceRecorderImpl(
     mojo::InterfaceRequest<TraceRecorder> request,
     TraceDataSink* sink)
-    : sink_(sink), binding_(this, request.Pass()) {
-}
+    : sink_(sink), binding_(this, std::move(request)) {}
 
 TraceRecorderImpl::~TraceRecorderImpl() {
 }

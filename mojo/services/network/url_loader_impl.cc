@@ -4,6 +4,7 @@
 
 #include "mojo/services/network/url_loader_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -78,7 +79,7 @@ URLResponsePtr MakeURLResponse(const net::URLRequest* url_request) {
       HttpHeaderPtr header = HttpHeader::New();
       header->name = name;
       header->value = value;
-      response->headers.push_back(header.Pass());
+      response->headers.push_back(std::move(header));
     }
   }
 
@@ -90,14 +91,14 @@ URLResponsePtr MakeURLResponse(const net::URLRequest* url_request) {
   url_request->GetCharset(&charset);
   response->charset = charset;
 
-  return response.Pass();
+  return response;
 }
 
 // Reads the request body upload data from a DataPipe.
 class UploadDataPipeElementReader : public net::UploadElementReader {
  public:
   UploadDataPipeElementReader(ScopedDataPipeConsumerHandle pipe)
-      : pipe_(pipe.Pass()), num_bytes_(0) {}
+      : pipe_(std::move(pipe)), num_bytes_(0) {}
   ~UploadDataPipeElementReader() override {}
 
   // UploadElementReader overrides:
@@ -142,8 +143,8 @@ URLLoaderImpl::URLLoaderImpl(NetworkContext* context,
       response_body_bytes_read_(0),
       auto_follow_redirects_(true),
       connected_(true),
-      binding_(this, request.Pass()),
-      app_refcount_(app_refcount.Pass()),
+      binding_(this, std::move(request)),
+      app_refcount_(std::move(app_refcount)),
       weak_ptr_factory_(this) {
   binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   context_->RegisterURLLoader(this);
@@ -196,7 +197,7 @@ void URLLoaderImpl::Start(URLRequestPtr request,
     std::vector<scoped_ptr<net::UploadElementReader>> element_readers;
     for (size_t i = 0; i < request->body.size(); ++i) {
       element_readers.push_back(make_scoped_ptr(
-          new UploadDataPipeElementReader(request->body[i].Pass())));
+          new UploadDataPipeElementReader(std::move(request->body[i]))));
     }
     url_request_->set_upload(make_scoped_ptr<net::UploadDataStream>(
         new net::ElementsUploadDataStream(std::move(element_readers), 0)));
@@ -245,7 +246,7 @@ void URLLoaderImpl::QueryStatus(
     status->is_loading = false;
   }
   // TODO(darin): Populate more status fields.
-  callback.Run(status.Pass());
+  callback.Run(std::move(status));
 }
 
 void URLLoaderImpl::OnConnectionError() {
@@ -271,7 +272,7 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
   response->redirect_url = String::From(redirect_info.new_url);
   response->redirect_referrer = redirect_info.new_referrer;
 
-  SendResponse(response.Pass());
+  SendResponse(std::move(response));
 
   DeleteIfNeeded();
 }
@@ -292,11 +293,11 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request) {
   // TODO(darin): Honor given buffer size.
 
   URLResponsePtr response = MakeURLResponse(url_request);
-  response->body = data_pipe.consumer_handle.Pass();
-  response_body_stream_ = data_pipe.producer_handle.Pass();
+  response->body = std::move(data_pipe.consumer_handle);
+  response_body_stream_ = std::move(data_pipe.producer_handle);
   ListenForPeerClosed();
 
-  SendResponse(response.Pass());
+  SendResponse(std::move(response));
 
   // Start reading...
   ReadMore();
@@ -323,13 +324,13 @@ void URLLoaderImpl::SendError(
   if (url_request_)
     response->url = String::From(url_request_->url());
   response->error = MakeNetworkError(error_code);
-  callback.Run(response.Pass());
+  callback.Run(std::move(response));
 }
 
 void URLLoaderImpl::SendResponse(URLResponsePtr response) {
   Callback<void(URLResponsePtr)> callback;
   std::swap(callback_, callback);
-  callback.Run(response.Pass());
+  callback.Run(std::move(response));
 }
 
 void URLLoaderImpl::OnResponseBodyStreamReady(MojoResult result) {

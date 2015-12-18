@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "network/public/cpp/udp_socket_wrapper.h"
-
 #include <assert.h>
+#include <utility>
 
 #include "mojo/public/cpp/environment/logging.h"
+#include "network/public/cpp/udp_socket_wrapper.h"
 
 namespace mojo {
 namespace {
@@ -37,7 +37,7 @@ UDPSocketWrapper::SendCallbackHandler::SendCallbackHandler(
 UDPSocketWrapper::SendCallbackHandler::~SendCallbackHandler() {}
 
 void UDPSocketWrapper::SendCallbackHandler::Run(NetworkErrorPtr result) const {
-  delegate_->OnSendToCompleted(result.Pass(), forward_callback_);
+  delegate_->OnSendToCompleted(std::move(result), forward_callback_);
 }
 
 UDPSocketWrapper::ReceiverBindingCallback::ReceiverBindingCallback(
@@ -53,8 +53,8 @@ void UDPSocketWrapper::ReceiverBindingCallback::Run(
     NetworkErrorPtr result,
     NetAddressPtr addr,
     InterfaceRequest<UDPSocketReceiver> request) const {
-  delegate_->StartReceivingData(request.Pass());
-  wrapper_callback_.Run(result.Pass(), addr.Pass());
+  delegate_->StartReceivingData(std::move(request));
+  wrapper_callback_.Run(std::move(result), std::move(addr));
 }
 
 UDPSocketWrapper::ReceivedData::ReceivedData() {}
@@ -65,7 +65,7 @@ UDPSocketWrapper::SendRequest::~SendRequest() {}
 
 UDPSocketWrapper::UDPSocketWrapper(UDPSocketPtr socket)
     : binding_(this),
-      socket_(socket.Pass()),
+      socket_(std::move(socket)),
       max_receive_queue_size_(kDefaultReceiveQueueSlots),
       max_pending_sends_(1),
       current_pending_sends_(0) {
@@ -76,7 +76,7 @@ UDPSocketWrapper::UDPSocketWrapper(UDPSocketPtr socket,
                                    uint32_t receive_queue_slots,
                                    uint32_t requested_max_pending_sends)
     : binding_(this),
-      socket_(socket.Pass()),
+      socket_(std::move(socket)),
       max_receive_queue_size_(receive_queue_slots),
       max_pending_sends_(1),
       current_pending_sends_(0) {
@@ -102,7 +102,7 @@ void UDPSocketWrapper::Bind(
     NetAddressPtr addr,
     const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
   socket_->Bind(
-      addr.Pass(),
+      std::move(addr),
       BindOrConnectCallback(static_cast<BindOrConnectCallback::Runnable*>(
           new ReceiverBindingCallback(this, callback))));
 }
@@ -111,7 +111,7 @@ void UDPSocketWrapper::Connect(
     NetAddressPtr remote_addr,
     const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
   socket_->Connect(
-      remote_addr.Pass(),
+      std::move(remote_addr),
       BindOrConnectCallback(static_cast<BindOrConnectCallback::Runnable*>(
           new ReceiverBindingCallback(this, callback))));
 }
@@ -135,7 +135,8 @@ bool UDPSocketWrapper::ReceiveFrom(const ReceiveCallback& callback) {
   ReceivedData* data = receive_queue_.front();
   receive_queue_.pop();
   socket_->ReceiveMore(1);
-  callback.Run(data->result.Pass(), data->src_addr.Pass(), data->data.Pass());
+  callback.Run(std::move(data->result), std::move(data->src_addr),
+               std::move(data->data));
   delete data;
   return true;
 }
@@ -145,8 +146,8 @@ void UDPSocketWrapper::SendTo(NetAddressPtr dest_addr,
                               const ErrorCallback& callback) {
   if (current_pending_sends_ >= max_pending_sends_) {
     SendRequest* request = new SendRequest();
-    request->dest_addr = dest_addr.Pass();
-    request->data = data.Pass();
+    request->dest_addr = std::move(dest_addr);
+    request->data = std::move(data);
     request->callback = callback;
     send_requests_.push(request);
     return;
@@ -154,7 +155,7 @@ void UDPSocketWrapper::SendTo(NetAddressPtr dest_addr,
 
   MOJO_DCHECK(send_requests_.empty());
   current_pending_sends_++;
-  socket_->SendTo(dest_addr.Pass(), data.Pass(),
+  socket_->SendTo(std::move(dest_addr), std::move(data),
                   ErrorCallback(static_cast<ErrorCallback::Runnable*>(
                       new SendCallbackHandler(this, callback))));
 }
@@ -171,15 +172,15 @@ void UDPSocketWrapper::OnReceived(NetworkErrorPtr result,
     ReceiveCallback callback = receive_requests_.front();
     receive_requests_.pop();
 
-    callback.Run(result.Pass(), src_addr.Pass(), data.Pass());
+    callback.Run(std::move(result), std::move(src_addr), std::move(data));
     return;
   }
 
   MOJO_DCHECK(receive_queue_.size() < max_receive_queue_size_);
   ReceivedData* received_data = new ReceivedData();
-  received_data->result = result.Pass();
-  received_data->src_addr = src_addr.Pass();
-  received_data->data = data.Pass();
+  received_data->result = std::move(result);
+  received_data->src_addr = std::move(src_addr);
+  received_data->data = std::move(data);
   receive_queue_.push(received_data);
 }
 
@@ -211,7 +212,7 @@ void UDPSocketWrapper::OnSendToCompleted(
   current_pending_sends_--;
   ProcessNextSendRequest();
 
-  forward_callback.Run(result.Pass());
+  forward_callback.Run(std::move(result));
 }
 
 bool UDPSocketWrapper::ProcessNextSendRequest() {
@@ -223,10 +224,9 @@ bool UDPSocketWrapper::ProcessNextSendRequest() {
 
   current_pending_sends_++;
 
-  socket_->SendTo(
-      request->dest_addr.Pass(), request->data.Pass(),
-      ErrorCallback(static_cast<ErrorCallback::Runnable*>(
-          new SendCallbackHandler(this, request->callback))));
+  socket_->SendTo(std::move(request->dest_addr), std::move(request->data),
+                  ErrorCallback(static_cast<ErrorCallback::Runnable*>(
+                      new SendCallbackHandler(this, request->callback))));
 
   delete request;
 
@@ -235,7 +235,7 @@ bool UDPSocketWrapper::ProcessNextSendRequest() {
 
 void UDPSocketWrapper::StartReceivingData(
     InterfaceRequest<UDPSocketReceiver> request) {
-  binding_.Bind(request.Pass());
+  binding_.Bind(std::move(request));
   socket_->ReceiveMore(max_receive_queue_size_);
 }
 

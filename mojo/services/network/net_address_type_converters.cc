@@ -52,7 +52,7 @@ NetAddressPtr TypeConverter<NetAddressPtr, net::IPEndPoint>::Convert(
       break;
   }
 
-  return net_address.Pass();
+  return net_address;
 }
 
 }  // namespace mojo

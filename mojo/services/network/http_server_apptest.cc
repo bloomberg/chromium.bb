@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
@@ -48,7 +50,7 @@ NetAddressPtr GetLocalHostWithAnyPort() {
   addr->ipv4->addr[2] = 0;
   addr->ipv4->addr[3] = 1;
 
-  return addr.Pass();
+  return addr;
 }
 
 using TestHeaders = std::vector<std::pair<std::string, std::string>>;
@@ -86,7 +88,7 @@ HttpResponsePtr MakeResponseStruct(const TestResponse& data) {
     HttpHeaderPtr header(HttpHeader::New());
     header->name = item.first;
     header->value = item.second;
-    response->headers[index++] = header.Pass();
+    response->headers[index++] = std::move(header);
   }
 
   if (data.body) {
@@ -97,14 +99,14 @@ HttpResponsePtr MakeResponseStruct(const TestResponse& data) {
     options.element_num_bytes = 1;
     options.capacity_num_bytes = num_bytes;
     DataPipe data_pipe(options);
-    response->body = data_pipe.consumer_handle.Pass();
+    response->body = std::move(data_pipe.consumer_handle);
     MojoResult result =
         WriteDataRaw(data_pipe.producer_handle.get(), data.body->data(),
                      &num_bytes, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
     EXPECT_EQ(MOJO_RESULT_OK, result);
   }
 
-  return response.Pass();
+  return response;
 }
 
 void CheckHeaders(const TestHeaders& expected,
@@ -132,7 +134,7 @@ void CheckRequest(const TestRequest& expected, HttpRequestPtr request) {
   if (expected.body) {
     EXPECT_TRUE(request->body.is_valid());
     std::string body;
-    common::BlockingCopyToString(request->body.Pass(), &body);
+    common::BlockingCopyToString(std::move(request->body), &body);
     EXPECT_EQ(*expected.body, body);
   } else {
     EXPECT_FALSE(request->body.is_valid());
@@ -280,14 +282,15 @@ class WebSocketClientImpl : public WebSocketClient {
 
   // Establishes a connection from the client side.
   void Connect(WebSocketPtr web_socket, const std::string& url) {
-    web_socket_ = web_socket.Pass();
+    web_socket_ = std::move(web_socket);
 
     DataPipe data_pipe;
-    send_stream_ = data_pipe.producer_handle.Pass();
+    send_stream_ = std::move(data_pipe.producer_handle);
     write_send_stream_.reset(new WebSocketWriteQueue(send_stream_.get()));
 
     web_socket_->Connect(url, Array<String>(0), "http://example.com",
-                         data_pipe.consumer_handle.Pass(), client_ptr_.Pass());
+                         std::move(data_pipe.consumer_handle),
+                         std::move(client_ptr_));
   }
 
   // Establishes a connection from the server side.
@@ -297,11 +300,11 @@ class WebSocketClientImpl : public WebSocketClient {
     InterfaceRequest<WebSocket> web_socket_request = GetProxy(&web_socket_);
 
     DataPipe data_pipe;
-    send_stream_ = data_pipe.producer_handle.Pass();
+    send_stream_ = std::move(data_pipe.producer_handle);
     write_send_stream_.reset(new WebSocketWriteQueue(send_stream_.get()));
 
-    callback.Run(web_socket_request.Pass(), data_pipe.consumer_handle.Pass(),
-                 client_ptr_.Pass());
+    callback.Run(std::move(web_socket_request),
+                 std::move(data_pipe.consumer_handle), std::move(client_ptr_));
   }
 
   void WaitForConnectCompletion() {
@@ -345,7 +348,7 @@ class WebSocketClientImpl : public WebSocketClient {
   void DidConnect(const String& selected_subprotocol,
                   const String& extensions,
                   ScopedDataPipeConsumerHandle receive_stream) override {
-    receive_stream_ = receive_stream.Pass();
+    receive_stream_ = std::move(receive_stream);
     read_receive_stream_.reset(new WebSocketReadQueue(receive_stream_.get()));
 
     web_socket_->FlowControl(2048);
@@ -414,8 +417,8 @@ class HttpConnectionDelegateImpl : public HttpConnectionDelegate {
 
   HttpConnectionDelegateImpl(HttpConnectionPtr connection,
                              InterfaceRequest<HttpConnectionDelegate> request)
-      : connection_(connection.Pass()),
-        binding_(this, request.Pass()),
+      : connection_(std::move(connection)),
+        binding_(this, std::move(request)),
         wait_for_request_count_(0),
         run_loop_(nullptr) {}
   ~HttpConnectionDelegateImpl() override {}
@@ -424,7 +427,7 @@ class HttpConnectionDelegateImpl : public HttpConnectionDelegate {
   void OnReceivedRequest(HttpRequestPtr request,
                          const OnReceivedRequestCallback& callback) override {
     linked_ptr<PendingRequest> pending_request(new PendingRequest);
-    pending_request->request = request.Pass();
+    pending_request->request = std::move(request);
     pending_request->callback = callback;
     pending_requests_.push_back(pending_request);
     if (run_loop_ && pending_requests_.size() >= wait_for_request_count_) {
@@ -448,7 +451,7 @@ class HttpConnectionDelegateImpl : public HttpConnectionDelegate {
     ASSERT_FALSE(pending_requests_.empty());
     linked_ptr<PendingRequest> request = pending_requests_[0];
     pending_requests_.erase(pending_requests_.begin());
-    request->callback.Run(response.Pass());
+    request->callback.Run(std::move(response));
   }
 
   void WaitForRequest(size_t count) {
@@ -506,8 +509,8 @@ class HttpServerDelegateImpl : public HttpServerDelegate {
   // HttpServerDelegate implementation.
   void OnConnected(HttpConnectionPtr connection,
                    InterfaceRequest<HttpConnectionDelegate> delegate) override {
-    connections_.push_back(make_linked_ptr(
-        new HttpConnectionDelegateImpl(connection.Pass(), delegate.Pass())));
+    connections_.push_back(make_linked_ptr(new HttpConnectionDelegateImpl(
+        std::move(connection), std::move(delegate))));
     if (run_loop_ && connections_.size() >= wait_for_connection_count_) {
       wait_for_connection_count_ = 0;
       run_loop_->Quit();
@@ -561,11 +564,11 @@ class HttpServerAppTest : public test::ApplicationTestBase {
   void CreateHttpServer(HttpServerDelegatePtr delegate,
                         NetAddressPtr* out_bound_to) {
     network_service_->CreateHttpServer(
-        GetLocalHostWithAnyPort(), delegate.Pass(),
+        GetLocalHostWithAnyPort(), std::move(delegate),
         [out_bound_to](NetworkErrorPtr result, NetAddressPtr bound_to) {
           ASSERT_EQ(net::OK, result->code);
           EXPECT_NE(0u, bound_to->ipv4->port);
-          *out_bound_to = bound_to.Pass();
+          *out_bound_to = std::move(bound_to);
         });
     network_service_.WaitForIncomingResponse();
   }
@@ -585,7 +588,7 @@ TEST_F(HttpServerAppTest, BasicHttpRequestResponse) {
   NetAddressPtr bound_to;
   HttpServerDelegatePtr server_delegate_ptr;
   HttpServerDelegateImpl server_delegate_impl(&server_delegate_ptr);
-  CreateHttpServer(server_delegate_ptr.Pass(), &bound_to);
+  CreateHttpServer(std::move(server_delegate_ptr), &bound_to);
 
   TestHttpClient client;
   client.Connect(bound_to.To<net::IPEndPoint>());
@@ -599,7 +602,8 @@ TEST_F(HttpServerAppTest, BasicHttpRequestResponse) {
 
   connection.WaitForRequest(1);
 
-  CheckRequest(request_data, connection.pending_requests()[0]->request.Pass());
+  CheckRequest(request_data,
+               std::move(connection.pending_requests()[0]->request));
 
   TestResponse response_data = {200, {{"Content-Length", "4"}}, nullptr};
   connection.SendResponse(MakeResponseStruct(response_data));
@@ -617,7 +621,7 @@ TEST_F(HttpServerAppTest, HttpRequestResponseWithBody) {
   NetAddressPtr bound_to;
   HttpServerDelegatePtr server_delegate_ptr;
   HttpServerDelegateImpl server_delegate_impl(&server_delegate_ptr);
-  CreateHttpServer(server_delegate_ptr.Pass(), &bound_to);
+  CreateHttpServer(std::move(server_delegate_ptr), &bound_to);
 
   TestHttpClient client;
   client.Connect(bound_to.To<net::IPEndPoint>());
@@ -637,7 +641,8 @@ TEST_F(HttpServerAppTest, HttpRequestResponseWithBody) {
 
   connection.WaitForRequest(1);
 
-  CheckRequest(request_data, connection.pending_requests()[0]->request.Pass());
+  CheckRequest(request_data,
+               std::move(connection.pending_requests()[0]->request));
 
   TestResponse response_data = {
       200,
@@ -655,13 +660,13 @@ TEST_F(HttpServerAppTest, WebSocket) {
   NetAddressPtr bound_to;
   HttpServerDelegatePtr server_delegate_ptr;
   HttpServerDelegateImpl server_delegate_impl(&server_delegate_ptr);
-  CreateHttpServer(server_delegate_ptr.Pass(), &bound_to);
+  CreateHttpServer(std::move(server_delegate_ptr), &bound_to);
 
   WebSocketPtr web_socket_ptr;
   web_socket_factory_->CreateWebSocket(GetProxy(&web_socket_ptr));
   WebSocketClientImpl socket_0;
   socket_0.Connect(
-      web_socket_ptr.Pass(),
+      std::move(web_socket_ptr),
       base::StringPrintf("ws://127.0.0.1:%d/hello", bound_to->ipv4->port));
 
   server_delegate_impl.WaitForConnection(1);

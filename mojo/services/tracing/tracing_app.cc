@@ -4,6 +4,8 @@
 
 #include "mojo/services/tracing/tracing_app.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -33,32 +35,33 @@ bool TracingApp::ConfigureIncomingConnection(
     TraceRecorderPtr recorder_ptr;
     recorder_impls_.push_back(
         new TraceRecorderImpl(GetProxy(&recorder_ptr), sink_.get()));
-    provider_ptr->StartTracing(tracing_categories_, recorder_ptr.Pass());
+    provider_ptr->StartTracing(tracing_categories_, std::move(recorder_ptr));
   }
-  provider_ptrs_.AddInterfacePtr(provider_ptr.Pass());
+  provider_ptrs_.AddInterfacePtr(std::move(provider_ptr));
   return true;
 }
 
 void TracingApp::Create(mojo::ApplicationConnection* connection,
                         mojo::InterfaceRequest<TraceCollector> request) {
-  collector_binding_.Bind(request.Pass());
+  collector_binding_.Bind(std::move(request));
 }
 
 void TracingApp::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<StartupPerformanceDataCollector> request) {
-  startup_performance_data_collector_bindings_.AddBinding(this, request.Pass());
+  startup_performance_data_collector_bindings_.AddBinding(this,
+                                                          std::move(request));
 }
 
 void TracingApp::Start(mojo::ScopedDataPipeProducerHandle stream,
                        const mojo::String& categories) {
   tracing_categories_ = categories;
-  sink_.reset(new TraceDataSink(stream.Pass()));
+  sink_.reset(new TraceDataSink(std::move(stream)));
   provider_ptrs_.ForAllPtrs([categories, this](TraceProvider* controller) {
     TraceRecorderPtr ptr;
     recorder_impls_.push_back(
         new TraceRecorderImpl(GetProxy(&ptr), sink_.get()));
-    controller->StartTracing(categories, ptr.Pass());
+    controller->StartTracing(categories, std::move(ptr));
   });
   tracing_active_ = true;
 }

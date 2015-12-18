@@ -4,6 +4,8 @@
 
 #include "mojo/services/test_service/tracked_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 
 namespace mojo {
@@ -15,7 +17,7 @@ TrackedService::TrackedService(TestRequestTrackerPtr tracker,
     : id_(0u),
       requests_since_upload_(0u),
       service_name_(service_name),
-      tracker_(tracker.Pass()),
+      tracker_(std::move(tracker)),
       tracking_connected_callback_(callback) {
   tracker_->SetNameAndReturnId(
       service_name, base::Bind(&TrackedService::SetId, base::Unretained(this)));
@@ -35,7 +37,7 @@ void TrackedService::SendStats() {
   ServiceStatsPtr stats(ServiceStats::New());
   stats->num_new_requests = requests_since_upload_;
   stats->health = 0.7;
-  tracker_->RecordStats(id_, stats.Pass());
+  tracker_->RecordStats(id_, std::move(stats));
   requests_since_upload_ = 0u;
 }
 

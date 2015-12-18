@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -30,14 +32,14 @@ NetAddressPtr GetLocalHostWithAnyPort() {
   addr->ipv4->addr[2] = 0;
   addr->ipv4->addr[3] = 1;
 
-  return addr.Pass();
+  return addr;
 }
 
 Array<uint8_t> CreateTestMessage(uint8_t initial, size_t size) {
   Array<uint8_t> array(size);
   for (size_t i = 0; i < size; ++i)
     array[i] = static_cast<uint8_t>((i + initial) % 256);
-  return array.Pass();
+  return array;
 }
 
 template <typename CallbackType>
@@ -120,7 +122,7 @@ class TestCallback : public TestCallbackBase<Callback<void(NetworkErrorPtr)>> {
     void Run(NetworkErrorPtr result) const override {
       if (test_callback_) {
         TestCallback* callback = static_cast<TestCallback*>(test_callback_);
-        callback->result_ = result.Pass();
+        callback->result_ = std::move(result);
       }
       NotifyRun();
     }
@@ -152,9 +154,9 @@ class TestCallbackWithAddressAndReceiver
       if (test_callback_) {
         TestCallbackWithAddressAndReceiver* callback =
             static_cast<TestCallbackWithAddressAndReceiver*>(test_callback_);
-        callback->result_ = result.Pass();
-        callback->net_address_ = net_address.Pass();
-        callback->receiver_ = receiver.Pass();
+        callback->result_ = std::move(result);
+        callback->net_address_ = std::move(net_address);
+        callback->receiver_ = std::move(receiver);
       }
       NotifyRun();
     }
@@ -184,8 +186,8 @@ class TestCallbackWithAddress
       if (test_callback_) {
         TestCallbackWithAddress* callback =
             static_cast<TestCallbackWithAddress*>(test_callback_);
-        callback->result_ = result.Pass();
-        callback->net_address_ = net_address.Pass();
+        callback->result_ = std::move(result);
+        callback->net_address_ = std::move(net_address);
       }
       NotifyRun();
     }
@@ -245,9 +247,9 @@ class TestReceiveCallback
       if (test_callback_) {
         TestReceiveCallback* callback =
             static_cast<TestReceiveCallback*>(test_callback_);
-        callback->result_ = result.Pass();
-        callback->src_addr_ = src_addr.Pass();
-        callback->data_ = data.Pass();
+        callback->result_ = std::move(result);
+        callback->src_addr_ = std::move(src_addr);
+        callback->data_ = std::move(data);
       }
       NotifyRun();
     }
@@ -295,9 +297,9 @@ class UDPSocketReceiverImpl : public UDPSocketReceiver {
                   NetAddressPtr src_addr,
                   Array<uint8_t> data) override {
     ReceiveResult* entry = new ReceiveResult();
-    entry->result = result.Pass();
-    entry->addr = src_addr.Pass();
-    entry->data = data.Pass();
+    entry->result = std::move(result);
+    entry->addr = std::move(src_addr);
+    entry->data = std::move(data);
 
     results_.push(entry);
 
@@ -395,7 +397,7 @@ TEST_F(UDPSocketAppTest, TestReadWrite) {
   ASSERT_EQ(net::OK, callback1.result()->code);
   ASSERT_NE(0u, callback1.net_address()->ipv4->port);
 
-  receiver_binding_.Bind(callback1.receiver().Pass());
+  receiver_binding_.Bind(std::move(callback1.receiver()));
 
   NetAddressPtr server_addr = callback1.net_address().Clone();
 
@@ -443,7 +445,7 @@ TEST_F(UDPSocketAppTest, TestConnectedReadWrite) {
   ASSERT_EQ(net::OK, callback1.result()->code);
   ASSERT_NE(0u, callback1.net_address()->ipv4->port);
 
-  receiver_binding_.Bind(callback1.receiver().Pass());
+  receiver_binding_.Bind(std::move(callback1.receiver()));
 
   NetAddressPtr server_addr = callback1.net_address().Clone();
 
@@ -458,7 +460,7 @@ TEST_F(UDPSocketAppTest, TestConnectedReadWrite) {
 
   UDPSocketReceiverImpl client_socket_receiver;
   Binding<UDPSocketReceiver> client_receiver_binding(
-      &client_socket_receiver, callback2.receiver().Pass());
+      &client_socket_receiver, std::move(callback2.receiver()));
 
   NetAddressPtr client_addr = callback2.net_address().Clone();
 
@@ -515,7 +517,7 @@ TEST_F(UDPSocketAppTest, TestConnectedReadWrite) {
 }
 
 TEST_F(UDPSocketAppTest, TestWrapperReadWrite) {
-  UDPSocketWrapper socket(socket_.Pass(), 4, 4);
+  UDPSocketWrapper socket(std::move(socket_), 4, 4);
 
   TestCallbackWithAddress callback1;
   socket.Bind(GetLocalHostWithAnyPort(), callback1.callback());
@@ -527,7 +529,7 @@ TEST_F(UDPSocketAppTest, TestWrapperReadWrite) {
 
   UDPSocketPtr raw_client_socket;
   network_service_->CreateUDPSocket(GetProxy(&raw_client_socket));
-  UDPSocketWrapper client_socket(raw_client_socket.Pass(), 4, 4);
+  UDPSocketWrapper client_socket(std::move(raw_client_socket), 4, 4);
 
   TestCallbackWithAddress callback2;
   client_socket.Bind(GetLocalHostWithAnyPort(), callback2.callback());
@@ -567,7 +569,7 @@ TEST_F(UDPSocketAppTest, TestWrapperReadWrite) {
 }
 
 TEST_F(UDPSocketAppTest, TestWrapperConnectedReadWrite) {
-  UDPSocketWrapper socket(socket_.Pass(), 4, 4);
+  UDPSocketWrapper socket(std::move(socket_), 4, 4);
 
   TestCallbackWithAddress callback1;
   socket.Bind(GetLocalHostWithAnyPort(), callback1.callback());
@@ -579,10 +581,10 @@ TEST_F(UDPSocketAppTest, TestWrapperConnectedReadWrite) {
 
   UDPSocketPtr raw_client_socket;
   network_service_->CreateUDPSocket(GetProxy(&raw_client_socket));
-  UDPSocketWrapper client_socket(raw_client_socket.Pass(), 4, 4);
+  UDPSocketWrapper client_socket(std::move(raw_client_socket), 4, 4);
 
   TestCallbackWithAddress callback2;
-  client_socket.Connect(server_addr.Pass(), callback2.callback());
+  client_socket.Connect(std::move(server_addr), callback2.callback());
   callback2.WaitForResult();
   ASSERT_EQ(net::OK, callback2.result()->code);
   ASSERT_NE(0u, callback2.net_address()->ipv4->port);

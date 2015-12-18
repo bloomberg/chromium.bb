@@ -4,6 +4,8 @@
 
 #include "mojo/services/network/cookie_store_impl.h"
 
+#include <utility>
+
 #include "mojo/common/url_type_converters.h"
 #include "mojo/services/network/network_context.h"
 #include "net/cookies/cookie_store.h"
@@ -24,16 +26,14 @@ void AdaptSetCookieCallback(const Callback<void(bool)>& callback,
 
 }  // namespace
 
-CookieStoreImpl::CookieStoreImpl(
-    NetworkContext* context,
-    const GURL& origin,
-    scoped_ptr<mojo::AppRefCount> app_refcount,
-    InterfaceRequest<CookieStore> request)
+CookieStoreImpl::CookieStoreImpl(NetworkContext* context,
+                                 const GURL& origin,
+                                 scoped_ptr<mojo::AppRefCount> app_refcount,
+                                 InterfaceRequest<CookieStore> request)
     : context_(context),
       origin_(origin),
-      app_refcount_(app_refcount.Pass()),
-      binding_(this, request.Pass()) {
-}
+      app_refcount_(std::move(app_refcount)),
+      binding_(this, std::move(request)) {}
 
 CookieStoreImpl::~CookieStoreImpl() {
 }

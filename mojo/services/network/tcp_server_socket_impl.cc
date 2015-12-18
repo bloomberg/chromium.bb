@@ -4,6 +4,8 @@
 
 #include "mojo/services/network/tcp_server_socket_impl.h"
 
+#include <utility>
+
 #include "mojo/services/network/net_adapters.h"
 #include "mojo/services/network/net_address_type_converters.h"
 #include "mojo/services/network/tcp_connected_socket_impl.h"
@@ -15,9 +17,9 @@ TCPServerSocketImpl::TCPServerSocketImpl(
     scoped_ptr<net::TCPSocket> socket,
     scoped_ptr<mojo::AppRefCount> app_refcount,
     InterfaceRequest<TCPServerSocket> request)
-    : socket_(socket.Pass()), app_refcount_(app_refcount.Pass()),
-      binding_(this, request.Pass()) {
-}
+    : socket_(std::move(socket)),
+      app_refcount_(std::move(app_refcount)),
+      binding_(this, std::move(request)) {}
 
 TCPServerSocketImpl::~TCPServerSocketImpl() {
 }
@@ -42,9 +44,9 @@ void TCPServerSocketImpl::Accept(
                  base::Unretained(this)));
   if (result == net::OK || result == net::ERR_IO_PENDING) {
     pending_callback_ = callback;
-    pending_send_stream_ = send_stream.Pass();
-    pending_receive_stream_ = receive_stream.Pass();
-    pending_client_socket_ = client_socket.Pass();
+    pending_send_stream_ = std::move(send_stream);
+    pending_receive_stream_ = std::move(receive_stream);
+    pending_client_socket_ = std::move(client_socket);
     if (result == net::OK)
       OnAcceptCompleted(net::OK);
   } else {
@@ -60,8 +62,8 @@ void TCPServerSocketImpl::OnAcceptCompleted(int result) {
     pending_client_socket_ = InterfaceRequest<TCPConnectedSocket>();
   } else {
     new TCPConnectedSocketImpl(
-        accepted_socket_.Pass(), pending_send_stream_.Pass(),
-        pending_receive_stream_.Pass(), pending_client_socket_.Pass(),
+        std::move(accepted_socket_), std::move(pending_send_stream_),
+        std::move(pending_receive_stream_), std::move(pending_client_socket_),
         app_refcount_->Clone());
     pending_callback_.Run(MakeNetworkError(net::OK),
                           NetAddress::From(accepted_address_));

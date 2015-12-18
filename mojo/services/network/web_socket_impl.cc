@@ -4,6 +4,8 @@
 
 #include "mojo/services/network/web_socket_impl.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/handle_watcher.h"
@@ -63,8 +65,7 @@ typedef net::WebSocketEventInterface::ChannelState ChannelState;
 struct WebSocketEventHandler : public net::WebSocketEventInterface {
  public:
   WebSocketEventHandler(WebSocketClientPtr client)
-      : client_(client.Pass()) {
-  }
+      : client_(std::move(client)) {}
   ~WebSocketEventHandler() override {}
 
  private:
@@ -106,10 +107,10 @@ ChannelState WebSocketEventHandler::OnAddChannelResponse(
     const std::string& selected_protocol,
     const std::string& extensions) {
   DataPipe data_pipe;
-  receive_stream_ = data_pipe.producer_handle.Pass();
+  receive_stream_ = std::move(data_pipe.producer_handle);
   write_queue_.reset(new WebSocketWriteQueue(receive_stream_.get()));
-  client_->DidConnect(
-      selected_protocol, extensions, data_pipe.consumer_handle.Pass());
+  client_->DidConnect(selected_protocol, extensions,
+                      std::move(data_pipe.consumer_handle));
   return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
@@ -177,13 +178,12 @@ void WebSocketEventHandler::DidWriteToReceiveStream(
 
 }  // namespace mojo
 
-WebSocketImpl::WebSocketImpl(
-    NetworkContext* context,
-    scoped_ptr<mojo::AppRefCount> app_refcount,
-    InterfaceRequest<WebSocket> request)
-    : context_(context), app_refcount_(app_refcount.Pass()),
-      binding_(this, request.Pass()) {
-}
+WebSocketImpl::WebSocketImpl(NetworkContext* context,
+                             scoped_ptr<mojo::AppRefCount> app_refcount,
+                             InterfaceRequest<WebSocket> request)
+    : context_(context),
+      app_refcount_(std::move(app_refcount)),
+      binding_(this, std::move(request)) {}
 
 WebSocketImpl::~WebSocketImpl() {
 }
@@ -194,11 +194,11 @@ void WebSocketImpl::Connect(const String& url,
                             ScopedDataPipeConsumerHandle send_stream,
                             WebSocketClientPtr client) {
   DCHECK(!channel_);
-  send_stream_ = send_stream.Pass();
+  send_stream_ = std::move(send_stream);
   read_queue_.reset(new WebSocketReadQueue(send_stream_.get()));
   scoped_ptr<net::WebSocketEventInterface> event_interface(
-      new WebSocketEventHandler(client.Pass()));
-  channel_.reset(new net::WebSocketChannel(event_interface.Pass(),
+      new WebSocketEventHandler(std::move(client)));
+  channel_.reset(new net::WebSocketChannel(std::move(event_interface),
                                            context_->url_request_context()));
   channel_->SendAddChannelRequest(GURL(url.get()),
                                   protocols.To<std::vector<std::string>>(),

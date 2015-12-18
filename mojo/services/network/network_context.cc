@@ -5,6 +5,7 @@
 #include "mojo/services/network/network_context.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -79,7 +80,7 @@ class NetworkContext::MojoNetLog : public net::NetLog {
       write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
       write_to_file_observer_->set_capture_mode(
           net::NetLogCaptureMode::IncludeCookiesAndCredentials());
-      write_to_file_observer_->StartObserving(this, file.Pass(), nullptr,
+      write_to_file_observer_->StartObserving(this, std::move(file), nullptr,
                                               nullptr);
     }
   }
@@ -98,7 +99,7 @@ class NetworkContext::MojoNetLog : public net::NetLog {
 NetworkContext::NetworkContext(
     scoped_ptr<net::URLRequestContext> url_request_context)
     : net_log_(new MojoNetLog),
-      url_request_context_(url_request_context.Pass()),
+      url_request_context_(std::move(url_request_context)),
       in_shutdown_(false) {
   url_request_context_->set_net_log(net_log_.get());
 }
@@ -165,10 +166,10 @@ scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
     scoped_ptr<net::HostResolver> host_resolver(
         net::HostResolver::CreateDefaultResolver(nullptr));
     scoped_ptr<net::MappedHostResolver> remapped_host_resolver(
-        new net::MappedHostResolver(host_resolver.Pass()));
+        new net::MappedHostResolver(std::move(host_resolver)));
     remapped_host_resolver->SetRulesFromString(
         command_line->GetSwitchValueASCII(kHostResolverRules));
-    builder.set_host_resolver(remapped_host_resolver.Pass());
+    builder.set_host_resolver(std::move(remapped_host_resolver));
   }
 
   builder.set_accept_language("en-us,en");
@@ -209,7 +210,7 @@ scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
         new net::CookieMonster(cookie_store, nullptr), nullptr);
   }
 
-  return builder.Build().Pass();
+  return builder.Build();
 }
 
 }  // namespace mojo

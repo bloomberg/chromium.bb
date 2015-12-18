@@ -5,9 +5,9 @@
 #include "mojo/services/network/udp_socket_impl.h"
 
 #include <string.h>
-
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -36,7 +36,7 @@ UDPSocketImpl::PendingSendRequest::~PendingSendRequest() {}
 
 UDPSocketImpl::UDPSocketImpl(InterfaceRequest<UDPSocket> request,
                              scoped_ptr<mojo::AppRefCount> app_refcount)
-    : binding_(this, request.Pass()),
+    : binding_(this, std::move(request)),
       socket_(net::DatagramSocket::DEFAULT_BIND,
               net::RandIntCallback(),
               nullptr,
@@ -45,8 +45,7 @@ UDPSocketImpl::UDPSocketImpl(InterfaceRequest<UDPSocket> request,
       allow_address_reuse_(false),
       remaining_recv_slots_(0),
       max_pending_send_requests_(kDefaultMaxPendingSendRequests),
-      app_refcount_(app_refcount.Pass()) {
-}
+      app_refcount_(std::move(app_refcount)) {}
 
 UDPSocketImpl::~UDPSocketImpl() {
   STLDeleteElements(&pending_send_requests_);
@@ -261,8 +260,8 @@ void UDPSocketImpl::SendTo(NetAddressPtr dest_addr,
     }
 
     PendingSendRequest* request = new PendingSendRequest;
-    request->addr = dest_addr.Pass();
-    request->data = data.Pass();
+    request->addr = std::move(dest_addr);
+    request->data = std::move(data);
     request->callback = callback;
     pending_send_requests_.push_back(request);
     return;
@@ -270,7 +269,7 @@ void UDPSocketImpl::SendTo(NetAddressPtr dest_addr,
 
   DCHECK_EQ(0u, pending_send_requests_.size());
 
-  DoSendTo(dest_addr.Pass(), data.Pass(), callback);
+  DoSendTo(std::move(dest_addr), std::move(data), callback);
 }
 
 void UDPSocketImpl::DoRecvFrom() {
@@ -349,8 +348,8 @@ void UDPSocketImpl::OnRecvFromCompleted(int net_result) {
   }
   recvfrom_buffer_ = nullptr;
 
-  receiver_->OnReceived(MakeNetworkError(net_result), net_address.Pass(),
-                        array.Pass());
+  receiver_->OnReceived(MakeNetworkError(net_result), std::move(net_address),
+                        std::move(array));
   DCHECK_GT(remaining_recv_slots_, 0u);
   remaining_recv_slots_--;
   if (remaining_recv_slots_ > 0)
@@ -372,7 +371,8 @@ void UDPSocketImpl::OnSendToCompleted(
   scoped_ptr<PendingSendRequest> request(pending_send_requests_.front());
   pending_send_requests_.pop_front();
 
-  DoSendTo(request->addr.Pass(), request->data.Pass(), request->callback);
+  DoSendTo(std::move(request->addr), std::move(request->data),
+           request->callback);
 }
 
 }  // namespace mojo

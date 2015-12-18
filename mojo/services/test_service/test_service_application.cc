@@ -5,6 +5,7 @@
 #include "mojo/services/test_service/test_service_application.h"
 
 #include <assert.h>
+#include <utility>
 
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_runner.h"
@@ -35,13 +36,13 @@ bool TestServiceApplication::ConfigureIncomingConnection(
 
 void TestServiceApplication::Create(ApplicationConnection* connection,
                                     InterfaceRequest<TestService> request) {
-  new TestServiceImpl(app_impl_, this, request.Pass());
+  new TestServiceImpl(app_impl_, this, std::move(request));
   AddRef();
 }
 
 void TestServiceApplication::Create(ApplicationConnection* connection,
                                     InterfaceRequest<TestTimeService> request) {
-  new TestTimeServiceImpl(app_impl_, request.Pass());
+  new TestTimeServiceImpl(app_impl_, std::move(request));
 }
 
 void TestServiceApplication::AddRef() {

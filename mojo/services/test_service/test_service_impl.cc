@@ -4,6 +4,8 @@
 
 #include "mojo/services/test_service/test_service_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,7 +22,7 @@ TestServiceImpl::TestServiceImpl(ApplicationImpl* app_impl,
                                  InterfaceRequest<TestService> request)
     : application_(application),
       app_impl_(app_impl),
-      binding_(this, request.Pass()) {
+      binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(
       [this]() { application_->ReleaseRef(); });
 }
@@ -55,7 +57,7 @@ void TestServiceImpl::StartTrackingRequests(
     const mojo::Callback<void()>& callback) {
   TestRequestTrackerPtr tracker;
   app_impl_->ConnectToService("mojo:test_request_tracker_app", &tracker);
-  tracking_.reset(new TrackedService(tracker.Pass(), Name_, callback));
+  tracking_.reset(new TrackedService(std::move(tracker), Name_, callback));
 }
 
 }  // namespace test

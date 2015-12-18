@@ -4,6 +4,8 @@
 
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
@@ -66,7 +68,7 @@ void TracingImpl::Initialize(ApplicationImpl* app) {
 
 void TracingImpl::Create(ApplicationConnection* connection,
                          InterfaceRequest<tracing::TraceProvider> request) {
-  provider_impl_.Bind(request.Pass());
+  provider_impl_.Bind(std::move(request));
 }
 
 }  // namespace mojo

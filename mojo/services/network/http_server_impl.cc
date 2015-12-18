@@ -4,6 +4,8 @@
 
 #include "mojo/services/network/http_server_impl.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "mojo/services/network/http_connection_impl.h"
 #include "mojo/services/network/net_adapters.h"
@@ -27,10 +29,10 @@ void HttpServerImpl::Create(
     HttpServerDelegatePtr delegate,
     scoped_ptr<mojo::AppRefCount> app_refcount,
     const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
-  HttpServerImpl* http_server = new HttpServerImpl(
-      delegate.Pass(), app_refcount.Pass());
+  HttpServerImpl* http_server =
+      new HttpServerImpl(std::move(delegate), std::move(app_refcount));
 
-  int net_error = http_server->Start(local_address.Pass());
+  int net_error = http_server->Start(std::move(local_address));
   if (net_error != net::OK) {
     callback.Run(MakeNetworkError(net_error), nullptr);
     delete http_server;
@@ -39,10 +41,9 @@ void HttpServerImpl::Create(
   callback.Run(MakeNetworkError(net::OK), http_server->GetLocalAddress());
 }
 
-HttpServerImpl::HttpServerImpl(
-    HttpServerDelegatePtr delegate,
-    scoped_ptr<mojo::AppRefCount> app_refcount)
-    : delegate_(delegate.Pass()), app_refcount_(app_refcount.Pass()) {
+HttpServerImpl::HttpServerImpl(HttpServerDelegatePtr delegate,
+                               scoped_ptr<mojo::AppRefCount> app_refcount)
+    : delegate_(std::move(delegate)), app_refcount_(std::move(app_refcount)) {
   DCHECK(delegate_);
   delegate_.set_connection_error_handler([this]() { delete this; });
 }
@@ -59,7 +60,7 @@ int HttpServerImpl::Start(NetAddressPtr local_address) {
   if (net_result != net::OK)
     return net_result;
 
-  server_.reset(new net::HttpServer(socket.Pass(), this));
+  server_.reset(new net::HttpServer(std::move(socket), this));
 
   return net::OK;
 }
@@ -83,13 +84,12 @@ void HttpServerImpl::OnConnect(int connection_id) {
   HttpConnectionDelegatePtr connection_delegate;
   InterfaceRequest<HttpConnectionDelegate> delegate_request =
       GetProxy(&connection_delegate);
-  linked_ptr<HttpConnectionImpl> connection_impl(
-      new HttpConnectionImpl(connection_id, this, connection_delegate.Pass(),
-                             &connection));
+  linked_ptr<HttpConnectionImpl> connection_impl(new HttpConnectionImpl(
+      connection_id, this, std::move(connection_delegate), &connection));
 
   connections_[connection_id] = connection_impl;
 
-  delegate_->OnConnected(connection.Pass(), delegate_request.Pass());
+  delegate_->OnConnected(std::move(connection), std::move(delegate_request));
 }
 
 void HttpServerImpl::OnHttpRequest(int connection_id,

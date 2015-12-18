@@ -4,6 +4,8 @@
 
 #include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -22,7 +24,7 @@ TraceProviderImpl::~TraceProviderImpl() {}
 
 void TraceProviderImpl::Bind(InterfaceRequest<tracing::TraceProvider> request) {
   if (!binding_.is_bound()) {
-    binding_.Bind(request.Pass());
+    binding_.Bind(std::move(request));
   } else {
     LOG(ERROR) << "Cannot accept two connections to TraceProvider.";
   }
@@ -31,7 +33,7 @@ void TraceProviderImpl::Bind(InterfaceRequest<tracing::TraceProvider> request) {
 void TraceProviderImpl::StartTracing(const String& categories,
                                      tracing::TraceRecorderPtr recorder) {
   DCHECK(!recorder_);
-  recorder_ = recorder.Pass();
+  recorder_ = std::move(recorder);
   tracing_forced_ = false;
   if (!base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
     std::string categories_str = categories.To<std::string>();

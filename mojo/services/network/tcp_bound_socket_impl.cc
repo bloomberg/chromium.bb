@@ -4,6 +4,8 @@
 
 #include "mojo/services/network/tcp_bound_socket_impl.h"
 
+#include <utility>
+
 #include "mojo/services/network/net_adapters.h"
 #include "mojo/services/network/net_address_type_converters.h"
 #include "mojo/services/network/tcp_connected_socket_impl.h"
@@ -15,8 +17,8 @@ namespace mojo {
 TCPBoundSocketImpl::TCPBoundSocketImpl(
     scoped_ptr<mojo::AppRefCount> app_refcount,
     InterfaceRequest<TCPBoundSocket> request)
-    : app_refcount_(app_refcount.Pass()), binding_(this, request.Pass()) {
-}
+    : app_refcount_(std::move(app_refcount)),
+      binding_(this, std::move(request)) {}
 
 TCPBoundSocketImpl::~TCPBoundSocketImpl() {
 }
@@ -66,8 +68,8 @@ void TCPBoundSocketImpl::StartListening(
   }
 
   // The server socket object takes ownership of the socket.
-  new TCPServerSocketImpl(socket_.Pass(), app_refcount_->Clone(),
-                          server.Pass());
+  new TCPServerSocketImpl(std::move(socket_), app_refcount_->Clone(),
+                          std::move(server));
   callback.Run(MakeNetworkError(net::OK));
 }
 
@@ -87,9 +89,9 @@ void TCPBoundSocketImpl::Connect(
 
   net::IPEndPoint end_point = remote_address.To<net::IPEndPoint>();
 
-  pending_connect_send_stream_ = send_stream.Pass();
-  pending_connect_receive_stream_ = receive_stream.Pass();
-  pending_connect_socket_ = client_socket.Pass();
+  pending_connect_send_stream_ = std::move(send_stream);
+  pending_connect_receive_stream_ = std::move(receive_stream);
+  pending_connect_socket_ = std::move(client_socket);
   pending_connect_callback_ = callback;
   int result = socket_->Connect(
       end_point,
@@ -109,9 +111,9 @@ void TCPBoundSocketImpl::Connect(
 void TCPBoundSocketImpl::OnConnected(int result) {
   if (result == net::OK) {
     new TCPConnectedSocketImpl(
-        socket_.Pass(), pending_connect_send_stream_.Pass(),
-        pending_connect_receive_stream_.Pass(), pending_connect_socket_.Pass(),
-        app_refcount_->Clone());
+        std::move(socket_), std::move(pending_connect_send_stream_),
+        std::move(pending_connect_receive_stream_),
+        std::move(pending_connect_socket_), app_refcount_->Clone());
   } else {
     pending_connect_send_stream_.reset();
     pending_connect_receive_stream_.reset();

@@ -4,6 +4,8 @@
 
 #include "mojo/services/network/tcp_connected_socket_impl.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "mojo/services/network/net_adapters.h"
 #include "net/base/net_errors.h"
@@ -16,11 +18,11 @@ TCPConnectedSocketImpl::TCPConnectedSocketImpl(
     ScopedDataPipeProducerHandle receive_stream,
     InterfaceRequest<TCPConnectedSocket> request,
     scoped_ptr<mojo::AppRefCount> app_refcount)
-    : socket_(socket.Pass()),
-      send_stream_(send_stream.Pass()),
-      receive_stream_(receive_stream.Pass()),
-      binding_(this, request.Pass()),
-      app_refcount_(app_refcount.Pass()),
+    : socket_(std::move(socket)),
+      send_stream_(std::move(send_stream)),
+      receive_stream_(std::move(receive_stream)),
+      binding_(this, std::move(request)),
+      app_refcount_(std::move(app_refcount)),
       weak_ptr_factory_(this) {
   // Queue up async communication.
   binding_.set_connection_error_handler([this]() { OnConnectionError(); });

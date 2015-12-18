@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
@@ -27,7 +29,7 @@ TestURLRequestJob* g_current_job = nullptr;
 
 template <class A>
 void PassA(A* destination, A value) {
-  *destination = value.Pass();
+  *destination = std::move(value);
 }
 
 class TestURLRequestJob : public net::URLRequestJob {
@@ -123,7 +125,7 @@ class UrlLoaderImplTest : public test::ApplicationTestBase {
             wait_for_request_.QuitClosure()))));
     url_request_context->set_job_factory(&url_request_job_factory_);
     url_request_context->Init();
-    network_context_.reset(new NetworkContext(url_request_context.Pass()));
+    network_context_.reset(new NetworkContext(std::move(url_request_context)));
     MessagePipe pipe;
     new URLLoaderImpl(network_context_.get(),
                       GetProxy(&url_loader_proxy_),
@@ -155,7 +157,7 @@ TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnTheNetwork) {
   request->url = "http://example.com";
 
   URLResponsePtr response;
-  url_loader_proxy_->Start(request.Pass(),
+  url_loader_proxy_->Start(std::move(request),
                            base::Bind(&PassA<URLResponsePtr>, &response));
   wait_for_request_.Run();
 
@@ -186,7 +188,7 @@ TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnThePipeToBeWriteable) {
   request->url = "http://example.com";
 
   URLResponsePtr response;
-  url_loader_proxy_->Start(request.Pass(),
+  url_loader_proxy_->Start(std::move(request),
                            base::Bind(&PassA<URLResponsePtr>, &response));
   wait_for_request_.Run();
 
@@ -227,7 +229,7 @@ TEST_F(UrlLoaderImplTest, RequestCompleted) {
   request->url = "http://example.com";
 
   URLResponsePtr response;
-  url_loader_proxy_->Start(request.Pass(),
+  url_loader_proxy_->Start(std::move(request),
                            base::Bind(&PassA<URLResponsePtr>, &response));
   wait_for_request_.Run();
 
@@ -258,7 +260,7 @@ TEST_F(UrlLoaderImplTest, RequestFailed) {
   request->url = "http://example.com";
 
   URLResponsePtr response;
-  url_loader_proxy_->Start(request.Pass(),
+  url_loader_proxy_->Start(std::move(request),
                            base::Bind(&PassA<URLResponsePtr>, &response));
   wait_for_request_.Run();
 

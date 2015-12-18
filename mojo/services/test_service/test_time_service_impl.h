@@ -14,6 +14,7 @@
 namespace mojo {
 
 class ApplicationConnection;
+class ApplicationImpl;
 
 namespace test {
 
