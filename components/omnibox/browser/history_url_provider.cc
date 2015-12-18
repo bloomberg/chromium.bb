@@ -1177,24 +1177,30 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
                                    net::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
           client()->GetSchemeClassifier());
-  if (!params.prevent_inline_autocomplete &&
-      (inline_autocomplete_offset != base::string16::npos)) {
+  // |inline_autocomplete_offset| was guaranteed not to be npos before the call
+  // to FormatUrl().  If it is npos now, that means the represented location no
+  // longer exists as such in the formatted string, e.g. if the offset pointed
+  // into the middle of a punycode sequence fixed up to Unicode.  In this case,
+  // there can be no inline autocompletion, and the match must not be allowed to
+  // be default.
+  const bool autocomplete_offset_valid =
+      inline_autocomplete_offset != base::string16::npos;
+  if (!params.prevent_inline_autocomplete && autocomplete_offset_valid) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
   }
   // The latter part of the test effectively asks "is the inline completion
   // empty?" (i.e., is this match effectively the what-you-typed match?).
-  match.allowed_to_be_default_match = !params.prevent_inline_autocomplete ||
-      ((inline_autocomplete_offset != base::string16::npos) &&
+  match.allowed_to_be_default_match = autocomplete_offset_valid &&
+      (!params.prevent_inline_autocomplete ||
        (inline_autocomplete_offset >= match.fill_into_edit.length()));
 
   size_t match_start = history_match.input_location;
   match.contents = url_formatter::FormatUrl(info.url(), languages, format_types,
                                             net::UnescapeRule::SPACES, nullptr,
                                             nullptr, &match_start);
-  if ((match_start != base::string16::npos) &&
-      (inline_autocomplete_offset != base::string16::npos) &&
+  if ((match_start != base::string16::npos) && autocomplete_offset_valid &&
       (inline_autocomplete_offset != match_start)) {
     DCHECK(inline_autocomplete_offset > match_start);
     AutocompleteMatch::ClassifyLocationInString(match_start,
