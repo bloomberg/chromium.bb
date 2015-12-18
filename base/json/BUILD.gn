@@ -4,7 +4,8 @@
 
 import("//build/config/nacl/config.gni")
 
-source_set("json") {
+# Should be static library, see documentation on //base:base for discussion.
+static_library("json") {
   sources = [
     "json_file_value_serializer.cc",
     "json_file_value_serializer.h",

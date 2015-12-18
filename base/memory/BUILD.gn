@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("memory") {
+# Should be static library, see documentation on //base:base for discussion.
+static_library("memory") {
   sources = [
     "aligned_memory.cc",
     "aligned_memory.h",
