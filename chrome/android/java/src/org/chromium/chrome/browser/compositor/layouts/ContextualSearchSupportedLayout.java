@@ -122,6 +122,16 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
         final boolean isToolbarVisible = getHeight() - getHeightMinusTopControls() <= mHalfPixelDp;
 
         mPanelManager.onSizeChanged(width, height, isToolbarVisible);
+        onSizeChanged(width, height);
+    }
+
+    /**
+     * Handles the resizing of the view.
+     * @param width  The new width in dp.
+     * @param height The new height in dp.
+     */
+    protected void onSizeChanged(float width, float height) {
+        // NOTE(pedrosimonetti): To be implemented by a supported Layout.
     }
 
     @Override

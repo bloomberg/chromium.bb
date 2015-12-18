@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -312,6 +313,13 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
+     * @return Whether the narrow version of the Panel is supported, in any orientation.
+     */
+    protected boolean isNarrowSizePanelSupported() {
+        return !isFullscreenSizePanel() || getFullscreenHeight() > SMALL_PANEL_WIDTH_THRESHOLD_DP;
+    }
+
+    /**
      * @return The current width of the Contextual Search Panel.
      */
     protected float calculateSearchPanelWidth() {
@@ -377,6 +385,13 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
             height += mToolbarHeight;
         }
         return height;
+    }
+
+    /**
+     * @return The maximum height of the Contextual Search Panel in dps.
+     */
+    public float getMaximumHeight() {
+        return mMaximumHeight;
     }
 
     /**
@@ -635,6 +650,18 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      */
     public float getBasePageBrightness() {
         return mBasePageBrightness;
+    }
+
+    /**
+     * @return The color to fill the base page when viewport is resized/changes orientation.
+     */
+    public int getBasePageBackgroundColor() {
+        // TODO(pedrosimonetti): Get the color from the CVC and apply a proper brightness transform.
+        // NOTE(pedrosimonetti): Assumes the background color of the base page to be white (255)
+        // and applies a simple brightness transformation based on the base page value.
+        int value = Math.round(255 * mBasePageBrightness);
+        value = MathUtils.clamp(value, 0, 255);
+        return Color.rgb(value, value, value);
     }
 
     // --------------------------------------------------------------------------------------------

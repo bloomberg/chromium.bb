@@ -503,6 +503,16 @@ public class ContextualSearchPanel extends OverlayPanel {
         getPeekPromoControl().onUpdateFromExpandToMaximize(percentage);
     }
 
+    @Override
+    protected void updatePanelForOrientationChange() {
+        // TODO(pedrosimonetti): find a better way of resizing the promo upon rotation.
+        // Destroys the Promo view so it can be properly resized. Once the Promo starts
+        // using the ViewResourceInflater, we could probably just call invalidate.
+        destroyPromoView();
+
+        super.updatePanelForOrientationChange();
+    }
+
     // ============================================================================================
     // ContextualSearchBarControl
     // ============================================================================================

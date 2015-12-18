@@ -314,7 +314,7 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      */
     private OverlayPanelContent createNewOverlayPanelContentInternal() {
         OverlayPanelContent content = mContentFactory.createNewOverlayPanelContent();
-        // Adds a ContentViewClient to override the default fullscreen size.
+
         content.setContentViewClient(new ContentViewClient() {
             @Override
             public int getDesiredWidthMeasureSpec() {
@@ -338,6 +338,7 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
                 }
             }
         });
+
         return content;
     }
 
@@ -488,6 +489,32 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      */
     public boolean supportsContextualSearchLayout() {
         return true;
+    }
+
+    /**
+     * Handles the device orientation change.
+     */
+    public void onOrientationChanged() {
+        if (isNarrowSizePanelSupported()) {
+            // TODO(pedrosimonetti): We cannot preserve the panel when rotating from/to a
+            // narrow version of the Panel because the Content is resized before the Panel
+            // gets a notification of the resize.
+            closePanel(StateChangeReason.UNKNOWN, false);
+        } else {
+            updatePanelForOrientationChange();
+        }
+    }
+
+    /**
+     * Updates the Panel so it preserves its state when the orientation changes.
+     */
+    protected void updatePanelForOrientationChange() {
+        // NOTE(pedrosimonetti): We cannot tell where the selection will be after the
+        // orientation change, so we are setting the selection position to zero, which
+        // means the base page will be positioned in its original state and we won't
+        // try to keep the selection in view.
+        updateBasePageSelectionYPx(0.f);
+        resizePanelToState(getPanelState(), StateChangeReason.UNKNOWN);
     }
 
     // ============================================================================================

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.layouts.phone;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.view.View;
 
@@ -56,13 +57,46 @@ public class ContextualSearchLayout extends ContextualSearchSupportedLayout {
             LayoutRenderHost renderHost, EventFilter eventFilter,
             OverlayPanelManager panelManager) {
         super(context, updateHost, renderHost, eventFilter, panelManager);
-        mTabListSceneLayer = new TabListSceneLayer();
+        mTabListSceneLayer = new TabListSceneLayer() {
+            @Override
+            protected int getTabListBackgroundColor(Context context) {
+                OverlayPanel panel = mPanelManager.getActivePanel();
+                // If the panel is null (which in theory should never happen in this case since
+                // this layout is only present when the Panel is open), we will assume the
+                // background color to be white (assuming most pages have a white background).
+                if (panel == null) {
+                    return Color.WHITE;
+                } else {
+                    return panel.getBasePageBackgroundColor();
+                }
+            }
+        };
+    }
+
+    /**
+     * Handles the resizing of the viewport.
+     * @param width  The new width in dp.
+     * @param height The new height in dp.
+     */
+    protected void onSizeChanged(float width, float height) {
+        if (mBaseTab != null) {
+            OverlayPanel panel = mPanelManager.getActivePanel();
+            if (panel != null) {
+                mBaseTab.setMaxContentWidth(width);
+                mBaseTab.setMaxContentHeight(panel.getMaximumHeight());
+                mBaseTab.setContentSize(width, panel.getMaximumHeight());
+            }
+        }
     }
 
     @Override
     public View getViewForInteraction() {
-        ContentViewCore content = mPanelManager.getActivePanel().getContentViewCore();
-        if (content != null) return content.getContainerView();
+        OverlayPanel panel = mPanelManager.getActivePanel();
+        if (panel != null) {
+            ContentViewCore content = panel.getContentViewCore();
+            if (content != null) return content.getContainerView();
+        }
+
         return super.getViewForInteraction();
     }
 

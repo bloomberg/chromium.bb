@@ -455,6 +455,8 @@ void ContextualSearchLayer::SetProperties(
   // ---------------------------------------------------------------------------
   content_view_container_->SetPosition(
       gfx::PointF(0.f, search_bar_bottom + search_promo_height));
+  content_view_container_->SetBounds(
+      gfx::Size(search_panel_width, search_panel_height));
   if (content_view_core && content_view_core->GetLayer().get()) {
     scoped_refptr<cc::Layer> content_view_layer = content_view_core->GetLayer();
     if (content_view_layer->parent() != content_view_container_)
@@ -590,7 +592,7 @@ ContextualSearchLayer::ContextualSearchLayer(
       close_icon_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       content_view_container_(
-          cc::Layer::Create(content::Compositor::LayerSettings())),
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
       search_bar_border_(
           cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
       progress_bar_(
@@ -664,6 +666,8 @@ ContextualSearchLayer::ContextualSearchLayer(
   progress_bar_->SetFillCenter(true);
 
   // Search Content View Container
+  content_view_container_->SetIsDrawable(true);
+  content_view_container_->SetBackgroundColor(kSearchBarBackgroundColor);
   layer_->AddChild(content_view_container_);
 
   // Search Bar Shadow

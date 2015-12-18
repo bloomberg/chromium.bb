@@ -74,7 +74,7 @@ public class TabListSceneLayer extends SceneLayer {
                     R.drawable.tabswitcher_border_frame_shadow,
                     R.drawable.tabswitcher_border_frame_decoration, R.drawable.logo_card_back,
                     borderResource, t.canUseLiveTexture(), t.getBackgroundColor(),
-                    ApiCompatibilityUtils.getColor(res, R.color.tab_switcher_background),
+                    getTabListBackgroundColor(context),
                     ApiCompatibilityUtils.getColor(res, borderColorResource), t.isIncognito(),
                     layout.getOrientation() == Orientation.PORTRAIT, t.getRenderX() * dpToPx,
                     t.getRenderY() * dpToPx, t.getScaledContentWidth() * dpToPx,
@@ -93,10 +93,17 @@ public class TabListSceneLayer extends SceneLayer {
                     t.getToolbarBackgroundColor(), t.anonymizeToolbar(), R.drawable.textbox,
                     t.getTextBoxBackgroundColor(), t.getTextBoxAlpha(), t.getToolbarAlpha(),
                     t.getToolbarYOffset() * dpToPx, t.getSideBorderScale(), true,
-                    t.insetBorderVertical(), layerTitleCache,
-                    tabContentManager, resourceManager);
+                    t.insetBorderVertical(), layerTitleCache, tabContentManager, resourceManager);
         }
         nativeFinishBuildingFrame(mNativePtr);
+    }
+
+    /**
+     * @return The background color
+     */
+    protected int getTabListBackgroundColor(Context context) {
+        return ApiCompatibilityUtils.getColor(
+                context.getResources(), R.color.tab_switcher_background);
     }
 
     @Override

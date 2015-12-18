@@ -404,7 +404,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
      */
     public void onOrientationChange() {
         if (!mIsInitialized) return;
-        hideContextualSearch(StateChangeReason.UNKNOWN);
+        mSearchPanel.onOrientationChanged();
     }
 
     /**

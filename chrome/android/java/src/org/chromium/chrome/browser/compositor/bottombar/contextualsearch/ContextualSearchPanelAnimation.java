@@ -195,7 +195,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
      * @param state The state to resize to.
      * @param reason The reason for the change of panel state.
      */
-    private void resizePanelToState(PanelState state, StateChangeReason reason) {
+    protected void resizePanelToState(PanelState state, StateChangeReason reason) {
         cancelHeightAnimation();
 
         final float height = getPanelHeightFromState(state);
