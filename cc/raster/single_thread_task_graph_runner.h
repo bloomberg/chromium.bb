@@ -40,7 +40,8 @@ class CC_EXPORT SingleThreadTaskGraphRunner
   void Shutdown();
 
  private:
-  void RunTaskWithLockAcquired();
+  // Returns true if there was a task to run.
+  bool RunTaskWithLockAcquired();
 
   scoped_ptr<base::SimpleThread> thread_;
 
