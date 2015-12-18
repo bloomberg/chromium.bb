@@ -124,8 +124,6 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
         TabSpecificContentSettings::FromWebContents(web_contents());
   }
 
-  DCHECK_NE(CONTENT_SETTINGS_TYPE_MEDIASTREAM, content_type());
-
   static const ContentSettingsTypeIdEntry kBlockedTitleIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_TITLE},
     {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_TITLE},

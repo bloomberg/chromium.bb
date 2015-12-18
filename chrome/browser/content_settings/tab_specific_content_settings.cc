@@ -239,9 +239,6 @@ bool TabSpecificContentSettings::IsContentBlocked(
   DCHECK_NE(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, content_type)
       << "Notifications settings handled by "
       << "ContentSettingsNotificationsImageModel";
-  DCHECK_NE(CONTENT_SETTINGS_TYPE_MEDIASTREAM, content_type)
-      << "The Mediastream content setting is deprecated. "
-      << "Call IsContentBlocked for camera and microphone settings instead.";
 
   if (content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
       content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
@@ -279,9 +276,8 @@ void TabSpecificContentSettings::SetBlockageHasBeenIndicated(
 bool TabSpecificContentSettings::IsContentAllowed(
     ContentSettingsType content_type) const {
   // This method currently only returns meaningful values for the content type
-  // cookies, mediastream, PPAPI broker, and downloads.
+  // cookies, media, PPAPI broker, downloads, and MIDI sysex.
   if (content_type != CONTENT_SETTINGS_TYPE_COOKIES &&
-      content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM &&
       content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
       content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA &&
       content_type != CONTENT_SETTINGS_TYPE_PPAPI_BROKER &&
@@ -835,7 +831,6 @@ void TabSpecificContentSettings::BlockAllContentForTesting() {
   for (const content_settings::ContentSettingsInfo* info : *registry) {
     ContentSettingsType type = info->website_settings_info()->type();
     if (type != CONTENT_SETTINGS_TYPE_GEOLOCATION &&
-        type != CONTENT_SETTINGS_TYPE_MEDIASTREAM &&
         type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
         type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
       OnContentBlocked(type);

@@ -662,10 +662,6 @@ scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     content_settings::SettingInfo* info) const {
-  // TODO(msramek): MEDIASTREAM is deprecated. Remove this check when all
-  // references to MEDIASTREAM are removed from the code.
-  DCHECK_NE(CONTENT_SETTINGS_TYPE_MEDIASTREAM, content_type);
-
   UsedContentSettingsProviders();
   ContentSettingsPattern* primary_pattern = NULL;
   ContentSettingsPattern* secondary_pattern = NULL;

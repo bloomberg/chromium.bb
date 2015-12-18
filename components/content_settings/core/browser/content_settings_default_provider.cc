@@ -34,6 +34,10 @@ namespace {
 const char kObsoleteMetroSwitchToDesktopSetting[] =
     "profile.default_content_setting_values.metro_switch_to_desktop";
 
+// TODO(msramek): Remove this cleanup code after two releases (i.e. in M51).
+const char kObsoleteMediaStreamSetting[] =
+    "profile.default_content_setting_values.media_stream";
+
 ContentSetting GetDefaultValue(const WebsiteSettingsInfo* info) {
   const base::Value* initial_default = info->initial_default_value();
   if (!initial_default)
@@ -95,6 +99,9 @@ void DefaultProvider::RegisterProfilePrefs(
       kObsoleteMetroSwitchToDesktopSetting,
       0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  // The removed content settings type MEDIASTREAM.
+  registry->RegisterIntegerPref(kObsoleteMediaStreamSetting, 0);
 }
 
 DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
@@ -350,6 +357,7 @@ scoped_ptr<base::Value> DefaultProvider::ReadFromPref(
 
 void DefaultProvider::DiscardObsoletePreferences() {
   prefs_->ClearPref(kObsoleteMetroSwitchToDesktopSetting);
+  prefs_->ClearPref(kObsoleteMediaStreamSetting);
 }
 
 }  // namespace content_settings

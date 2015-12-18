@@ -1552,9 +1552,6 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-
-  // The MEDIASTREAM setting is deprecated and has no UI.
-  DCHECK_NE(CONTENT_SETTINGS_TYPE_MEDIASTREAM, content_type);
   map->SetDefaultContentSetting(content_type, default_setting);
 
   const ExceptionsInfoMap& exceptions_info_map = GetExceptionsInfoMap();
@@ -1600,9 +1597,6 @@ void ContentSettingsHandler::SetException(const base::ListValue* args) {
   CHECK(args->GetString(3, &setting));
 
   ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
-
-  // The MEDIASTREAM setting is deprecated and has no UI.
-  DCHECK_NE(CONTENT_SETTINGS_TYPE_MEDIASTREAM, type);
 
   if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
       type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||

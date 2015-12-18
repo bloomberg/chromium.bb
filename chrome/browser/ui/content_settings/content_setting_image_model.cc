@@ -235,13 +235,6 @@ scoped_ptr<ContentSettingImageModel>
   if (content_settings_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
     return make_scoped_ptr(new ContentSettingRPHImageModel());
 
-  if (content_settings_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-    NOTREACHED() << "The mediastream content setting is deprecated. "
-                 << "Media image model that used to be tied to this setting "
-                 << "can no longer be created by this function.";
-    return nullptr;
-  }
-
   if (content_settings_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX)
     return make_scoped_ptr(new ContentSettingMIDISysExImageModel());
 

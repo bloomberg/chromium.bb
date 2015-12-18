@@ -273,13 +273,6 @@ void ContentSettingsRegistry::Init() {
            WhitelistedSchemes(), ValidSettings(),
            WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
-
-  // Deprecated.
-  Register(CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream",
-           CONTENT_SETTING_DEFAULT, WebsiteSettingsInfo::UNSYNCABLE,
-           WhitelistedSchemes(), ValidSettings(),
-           WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 }
 
 void ContentSettingsRegistry::Register(

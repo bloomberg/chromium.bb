@@ -49,8 +49,6 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
                                   ui::PAGE_TRANSITION_LINK);
   } else if (type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
     chrome::ShowSettingsSubPage(browser_, chrome::kHandlerSettingsSubPage);
-  } else if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-    NOTREACHED() << "The MEDIASTREAM setting is deprecated.";
   } else {
     chrome::ShowContentSettingsExceptions(browser_, type);
   }

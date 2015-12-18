@@ -58,9 +58,6 @@ PermissionMenuModel::PermissionMenuModel(
        permission_.type == CONTENT_SETTINGS_TYPE_MOUSELOCK) &&
       url.SchemeIsFile();
 
-  // The deprecated MEDIASTREAM setting is no longer used to represent media.
-  DCHECK_NE(CONTENT_SETTINGS_TYPE_MEDIASTREAM, permission_.type);
-
   // Media only supports CONTENT_SETTTING_ALLOW for secure origins.
   bool is_media_permission =
       permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||

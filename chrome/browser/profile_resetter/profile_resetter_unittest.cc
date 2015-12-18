@@ -503,10 +503,6 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
       // GetDefaultContentSetting() for them.
       continue;
     }
-    if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-      // This has been deprecated so we can neither set nor get it's value.
-      continue;
-    }
     ContentSetting default_setting =
         host_content_settings_map->GetDefaultContentSetting(content_type, NULL);
     default_settings[content_type] = default_setting;
@@ -536,7 +532,6 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
   for (const content_settings::ContentSettingsInfo* info : *registry) {
     ContentSettingsType content_type = info->website_settings_info()->type();
     if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
-        content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
         content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
       continue;
     ContentSetting default_setting =
