@@ -117,9 +117,21 @@ void HttpServerPropertiesImpl::InitializeServerNetworkStats(
 
 void HttpServerPropertiesImpl::InitializeQuicServerInfoMap(
     QuicServerInfoMap* quic_server_info_map) {
-  for (const std::pair<QuicServerId, std::string>& entry :
-       *quic_server_info_map) {
-    quic_server_info_map_.Put(entry.first, entry.second);
+  // Add the entries from persisted data.
+  QuicServerInfoMap temp_map(kMaxQuicServersToPersist);
+  for (QuicServerInfoMap::reverse_iterator it = quic_server_info_map->rbegin();
+       it != quic_server_info_map->rend(); ++it) {
+    temp_map.Put(it->first, it->second);
+  }
+
+  quic_server_info_map_.Swap(temp_map);
+
+  // Add the entries from the memory cache.
+  for (QuicServerInfoMap::reverse_iterator it = temp_map.rbegin();
+       it != temp_map.rend(); ++it) {
+    if (quic_server_info_map_.Get(it->first) == quic_server_info_map_.end()) {
+      quic_server_info_map_.Put(it->first, it->second);
+    }
   }
 }
 

@@ -1206,20 +1206,68 @@ typedef HttpServerPropertiesImplTest QuicServerInfoServerPropertiesTest;
 
 TEST_F(QuicServerInfoServerPropertiesTest, Initialize) {
   HostPortPair google_server("www.google.com", 443);
-  QuicServerId quic_server_id(google_server, PRIVACY_MODE_ENABLED);
+  QuicServerId google_quic_server_id(google_server, PRIVACY_MODE_ENABLED);
 
   // Check empty map.
-  QuicServerInfoMap quic_server_info_map(QuicServerInfoMap::NO_AUTO_EVICT);
-  impl_.InitializeQuicServerInfoMap(&quic_server_info_map);
+  QuicServerInfoMap init_quic_server_info_map(QuicServerInfoMap::NO_AUTO_EVICT);
+  impl_.InitializeQuicServerInfoMap(&init_quic_server_info_map);
   EXPECT_EQ(0u, impl_.quic_server_info_map().size());
 
-  // Check by adding a QuicServerInfo into the map.
-  std::string quic_server_info1("quic_server_info1");
-  quic_server_info_map.Put(quic_server_id, quic_server_info1);
+  // Check by initializing with www.google.com:443.
+  std::string google_server_info("google_quic_server_info");
+  init_quic_server_info_map.Put(google_quic_server_id, google_server_info);
+  impl_.InitializeQuicServerInfoMap(&init_quic_server_info_map);
+
+  // Verify data for www.google.com:443.
+  EXPECT_EQ(1u, impl_.quic_server_info_map().size());
+  EXPECT_EQ(google_server_info,
+            *impl_.GetQuicServerInfo(google_quic_server_id));
+
+  // Test recency order and overwriting of data.
+  //
+  // |docs_server| has a QuicServerInfo, which will be overwritten by
+  // InitializeQuicServerInfoMap(), because |quic_server_info_map| has an
+  // entry for |docs_server|.
+  HostPortPair docs_server("docs.google.com", 443);
+  QuicServerId docs_quic_server_id(docs_server, PRIVACY_MODE_ENABLED);
+  std::string docs_server_info("docs_quic_server_info");
+  impl_.SetQuicServerInfo(docs_quic_server_id, docs_server_info);
+
+  // Recency order will be |docs_server| and |google_server|.
+  const QuicServerInfoMap& map = impl_.quic_server_info_map();
+  ASSERT_EQ(2u, map.size());
+  QuicServerInfoMap::const_iterator map_it = map.begin();
+  EXPECT_EQ(map_it->first, docs_quic_server_id);
+  EXPECT_EQ(docs_server_info, map_it->second);
+  ++map_it;
+  EXPECT_EQ(map_it->first, google_quic_server_id);
+  EXPECT_EQ(google_server_info, map_it->second);
+
+  // Prepare |quic_server_info_map| to be loaded by
+  // InitializeQuicServerInfoMap().
+  QuicServerInfoMap quic_server_info_map(QuicServerInfoMap::NO_AUTO_EVICT);
+  // Change the values for |docs_server|.
+  std::string new_docs_server_info("new_docs_quic_server_info");
+  quic_server_info_map.Put(docs_quic_server_id, new_docs_server_info);
+  // Add data for mail.google.com:443.
+  HostPortPair mail_server("mail.google.com", 443);
+  QuicServerId mail_quic_server_id(mail_server, PRIVACY_MODE_ENABLED);
+  std::string mail_server_info("mail_quic_server_info");
+  quic_server_info_map.Put(mail_quic_server_id, mail_server_info);
   impl_.InitializeQuicServerInfoMap(&quic_server_info_map);
 
-  EXPECT_EQ(1u, impl_.quic_server_info_map().size());
-  EXPECT_EQ(quic_server_info1, *impl_.GetQuicServerInfo(quic_server_id));
+  // Recency order will be |docs_server|, |google_server| and |mail_server|.
+  const QuicServerInfoMap& memory_map = impl_.quic_server_info_map();
+  ASSERT_EQ(3u, memory_map.size());
+  QuicServerInfoMap::const_iterator memory_map_it = memory_map.begin();
+  EXPECT_EQ(memory_map_it->first, docs_quic_server_id);
+  EXPECT_EQ(new_docs_server_info, memory_map_it->second);
+  ++memory_map_it;
+  EXPECT_EQ(memory_map_it->first, google_quic_server_id);
+  EXPECT_EQ(google_server_info, memory_map_it->second);
+  ++memory_map_it;
+  EXPECT_EQ(memory_map_it->first, mail_quic_server_id);
+  EXPECT_EQ(mail_server_info, memory_map_it->second);
 }
 
 TEST_F(QuicServerInfoServerPropertiesTest, SetQuicServerInfo) {
