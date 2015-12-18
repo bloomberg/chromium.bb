@@ -269,3 +269,107 @@ TEST(MRUCacheTest, HashingMRUCache) {
   EXPECT_EQ(two.value, cache.Get("Second")->second.value);
   EXPECT_TRUE(cache.Get("First") == cache.end());
 }
+
+TEST(MRUCacheTest, Swap) {
+  typedef base::MRUCache<int, CachedItem> Cache;
+  Cache cache1(Cache::NO_AUTO_EVICT);
+
+  // Insert two items into cache1.
+  static const int kItem1Key = 1;
+  CachedItem item1(2);
+  Cache::iterator inserted_item = cache1.Put(kItem1Key, item1);
+  EXPECT_EQ(1U, cache1.size());
+
+  static const int kItem2Key = 3;
+  CachedItem item2(4);
+  cache1.Put(kItem2Key, item2);
+  EXPECT_EQ(2U, cache1.size());
+
+  // Verify cache1's elements.
+  {
+    Cache::iterator iter = cache1.begin();
+    ASSERT_TRUE(iter != cache1.end());
+    EXPECT_EQ(kItem2Key, iter->first);
+    EXPECT_EQ(item2.value, iter->second.value);
+
+    ++iter;
+    ASSERT_TRUE(iter != cache1.end());
+    EXPECT_EQ(kItem1Key, iter->first);
+    EXPECT_EQ(item1.value, iter->second.value);
+  }
+
+  // Create another cache2.
+  Cache cache2(Cache::NO_AUTO_EVICT);
+
+  // Insert three items into cache2.
+  static const int kItem3Key = 5;
+  CachedItem item3(6);
+  inserted_item = cache2.Put(kItem3Key, item3);
+  EXPECT_EQ(1U, cache2.size());
+
+  static const int kItem4Key = 7;
+  CachedItem item4(8);
+  cache2.Put(kItem4Key, item4);
+  EXPECT_EQ(2U, cache2.size());
+
+  static const int kItem5Key = 9;
+  CachedItem item5(10);
+  cache2.Put(kItem5Key, item5);
+  EXPECT_EQ(3U, cache2.size());
+
+  // Verify cache2's elements.
+  {
+    Cache::iterator iter = cache2.begin();
+    ASSERT_TRUE(iter != cache2.end());
+    EXPECT_EQ(kItem5Key, iter->first);
+    EXPECT_EQ(item5.value, iter->second.value);
+
+    ++iter;
+    ASSERT_TRUE(iter != cache2.end());
+    EXPECT_EQ(kItem4Key, iter->first);
+    EXPECT_EQ(item4.value, iter->second.value);
+
+    ++iter;
+    ASSERT_TRUE(iter != cache2.end());
+    EXPECT_EQ(kItem3Key, iter->first);
+    EXPECT_EQ(item3.value, iter->second.value);
+  }
+
+  // Swap cache1 and cache2 and verify cache2 has cache1's elements and cache1
+  // has cache2's elements.
+  cache2.Swap(cache1);
+
+  EXPECT_EQ(3U, cache1.size());
+  EXPECT_EQ(2U, cache2.size());
+
+  // Verify cache1's elements.
+  {
+    Cache::iterator iter = cache1.begin();
+    ASSERT_TRUE(iter != cache1.end());
+    EXPECT_EQ(kItem5Key, iter->first);
+    EXPECT_EQ(item5.value, iter->second.value);
+
+    ++iter;
+    ASSERT_TRUE(iter != cache1.end());
+    EXPECT_EQ(kItem4Key, iter->first);
+    EXPECT_EQ(item4.value, iter->second.value);
+
+    ++iter;
+    ASSERT_TRUE(iter != cache1.end());
+    EXPECT_EQ(kItem3Key, iter->first);
+    EXPECT_EQ(item3.value, iter->second.value);
+  }
+
+  // Verify cache2's elements.
+  {
+    Cache::iterator iter = cache2.begin();
+    ASSERT_TRUE(iter != cache2.end());
+    EXPECT_EQ(kItem2Key, iter->first);
+    EXPECT_EQ(item2.value, iter->second.value);
+
+    ++iter;
+    ASSERT_TRUE(iter != cache2.end());
+    EXPECT_EQ(kItem1Key, iter->first);
+    EXPECT_EQ(item1.value, iter->second.value);
+  }
+}
