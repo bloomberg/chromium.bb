@@ -7,8 +7,8 @@
 Pepper C++ API Reference (Stable)
 ############################################
 
-This page lists the C++ API for Pepper 40. Apps that use this API can
-run in Chrome 40 or higher.
+This page lists the C++ API for Pepper 47. Apps that use this API can
+run in Chrome 47 or higher.
 
 `Classes <pepper_stable/cpp/inherits.html>`__
 ==================================================
@@ -17,6 +17,8 @@ run in Chrome 40 or higher.
   * `AudioBuffer <pepper_stable/cpp/classpp_1_1_audio_buffer.html>`__
 
   * `AudioConfig <pepper_stable/cpp/classpp_1_1_audio_config.html>`__
+
+  * `AudioEncoder <pepper_stable/cpp/classpp_1_1_audio_encoder.html>`__
 
   * `CompletionCallback <pepper_stable/cpp/classpp_1_1_completion_callback.html>`__
 
@@ -126,6 +128,8 @@ run in Chrome 40 or higher.
 
   * `VideoDecoder <pepper_stable/cpp/classpp_1_1_video_decoder.html>`__
 
+  * `VideoEncoder <pepper_stable/cpp/classpp_1_1_video_encoder.html>`__
+
   * `VideoFrame <pepper_stable/cpp/classpp_1_1_video_frame.html>`__
 
   * `View <pepper_stable/cpp/classpp_1_1_view.html>`__
@@ -144,6 +148,8 @@ Files
   * `audio_buffer.h <pepper_stable/cpp/audio__buffer_8h.html>`__
 
   * `audio_config.h <pepper_stable/cpp/audio__config_8h.html>`__
+
+  * `audio_encoder.h <pepper_stable/cpp/audio__encoder_8h.html>`__
 
   * `completion_callback.h <pepper_stable/cpp/completion__callback_8h.html>`__
 
@@ -242,6 +248,8 @@ Files
   * `var_dictionary.h <pepper_stable/cpp/var__dictionary_8h.html>`__
 
   * `video_decoder.h <pepper_stable/cpp/video__decoder_8h.html>`__
+
+  * `video_encoder.h <pepper_stable/cpp/video__encoder_8h.html>`__
 
   * `video_frame.h <pepper_stable/cpp/video__frame_8h.html>`__
 

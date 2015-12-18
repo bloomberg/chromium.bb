@@ -34,6 +34,9 @@ Enumerations</h2><table class="memberdecls">
 <a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaa884e0f18fee1bae2472a15f6fb1d7e79">PP_VIDEOPROFILE_MAX</a> =  PP_VIDEOPROFILE_VP9_ANY
 <br />
  }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gadadb1eaddb4ea71cb8620db1f4ce301e">PP_AudioProfile</a> { <a class="el" href="group___enums.html#ggadadb1eaddb4ea71cb8620db1f4ce301ea7148c3f24ae9baffeae215261460a191">PP_AUDIOPROFILE_OPUS</a> =  0, 
+<a class="el" href="group___enums.html#ggadadb1eaddb4ea71cb8620db1f4ce301ea2d878bc8ba09116d5f62bb4965460e77">PP_AUDIOPROFILE_MAX</a> =  PP_AUDIOPROFILE_OPUS
+ }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga6a3fd7e22be02521243b52481afadae5">PP_HardwareAcceleration</a> { <a class="el" href="group___enums.html#gga6a3fd7e22be02521243b52481afadae5a6208cea63b7e6c1c8c9c67616df4ba85">PP_HARDWAREACCELERATION_ONLY</a> =  0, 
 <a class="el" href="group___enums.html#gga6a3fd7e22be02521243b52481afadae5ad29490655cc25165817de26c5caff7ea">PP_HARDWAREACCELERATION_WITHFALLBACK</a> =  1, 
 <a class="el" href="group___enums.html#gga6a3fd7e22be02521243b52481afadae5acf901685e6e14afe89e7d22ad35af4e1">PP_HARDWAREACCELERATION_NONE</a> =  2, 
@@ -188,13 +191,6 @@ Enumerations</h2><table class="memberdecls">
 &#160;&#160;<a class="el" href="group___enums.html#gga4c87e6dd19c1d49b66a9b37136a82e82a3ffa615692f3b3a2da0f1e04903eefce">PP_FILEOPENFLAG_EXCLUSIVE</a> =  1 &lt;&lt; 4, 
 <a class="el" href="group___enums.html#gga4c87e6dd19c1d49b66a9b37136a82e82a78c13cbbccebfa9c2b8b2f758397795c">PP_FILEOPENFLAG_APPEND</a> =  1 &lt;&lt; 5
 <br />
- }</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga07cb383dee51bc7e8e1f234068652668">PP_FileMapProtection</a> { <a class="el" href="group___enums.html#gga07cb383dee51bc7e8e1f234068652668a88619572d7d081c4b657fd8087a164fb">PP_FILEMAPPROTECTION_READ</a> =  1u &lt;&lt; 0, 
-<a class="el" href="group___enums.html#gga07cb383dee51bc7e8e1f234068652668aadebe6625bb49b575195f0d4d165c27e">PP_FILEMAPPROTECTION_WRITE</a> =  1u &lt;&lt; 1
- }</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga47ce032e16d18ba6fc6c16bbe8939bad">PP_FileMapFlags</a> { <a class="el" href="group___enums.html#gga47ce032e16d18ba6fc6c16bbe8939bada9233097e19d068b7d4ad0ac00140d03c">PP_FILEMAPFLAG_SHARED</a> =  1u &lt;&lt; 0, 
-<a class="el" href="group___enums.html#gga47ce032e16d18ba6fc6c16bbe8939bada74f65f6fbedce77b36bda16beab65a03">PP_FILEMAPFLAG_PRIVATE</a> =  1u &lt;&lt; 1, 
-<a class="el" href="group___enums.html#gga47ce032e16d18ba6fc6c16bbe8939badae37402f728fae4078d76a006d36bc26e">PP_FILEMAPFLAG_FIXED</a> =  1u &lt;&lt; 2
  }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gadcb0a92e6ca510586c3f34088d35dc9f">PP_MakeDirectoryFlags</a> { <a class="el" href="group___enums.html#ggadcb0a92e6ca510586c3f34088d35dc9fafeeef418b62780276c4671a57196ad3f">PP_MAKEDIRECTORYFLAG_NONE</a> =  0 &lt;&lt; 0, 
 <a class="el" href="group___enums.html#ggadcb0a92e6ca510586c3f34088d35dc9fa5c7f89c8784c9d8abfaeae51d9cb84ba">PP_MAKEDIRECTORYFLAG_WITH_ANCESTORS</a> =  1 &lt;&lt; 0, 
@@ -373,10 +369,15 @@ Enumerations</h2><table class="memberdecls">
 <a class="el" href="group___enums.html#gga5fef49ee4c2cc6dcead825340da0f116ad4371ecdd1a6631a78d4721d83062394">PP_TEXTINPUT_TYPE_URL</a> =  7
 <br />
  }</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga1a8472fa3e7150615c45c38fa8c12ce2">PP_UDPSocket_Option</a> { <a class="el" href="group___enums.html#gga1a8472fa3e7150615c45c38fa8c12ce2a79568403b8927bf98bea0f2d38469984">PP_UDPSOCKET_OPTION_ADDRESS_REUSE</a> =  0, 
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga1a8472fa3e7150615c45c38fa8c12ce2">PP_UDPSocket_Option</a> { <br />
+&#160;&#160;<a class="el" href="group___enums.html#gga1a8472fa3e7150615c45c38fa8c12ce2a79568403b8927bf98bea0f2d38469984">PP_UDPSOCKET_OPTION_ADDRESS_REUSE</a> =  0, 
 <a class="el" href="group___enums.html#gga1a8472fa3e7150615c45c38fa8c12ce2aeceda8fe978a52382b96939de7707c00">PP_UDPSOCKET_OPTION_BROADCAST</a> =  1, 
 <a class="el" href="group___enums.html#gga1a8472fa3e7150615c45c38fa8c12ce2a905f0adde2912a5db26883d45fb75d57">PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE</a> =  2, 
-<a class="el" href="group___enums.html#gga1a8472fa3e7150615c45c38fa8c12ce2a1264eb1d6d16eb3a074ee3d21ebb3b64">PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE</a> =  3
+<a class="el" href="group___enums.html#gga1a8472fa3e7150615c45c38fa8c12ce2a1264eb1d6d16eb3a074ee3d21ebb3b64">PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE</a> =  3, 
+<br />
+&#160;&#160;<a class="el" href="group___enums.html#gga1a8472fa3e7150615c45c38fa8c12ce2a0cde43fa32bc72658658f9a20c07194c">PP_UDPSOCKET_OPTION_MULTICAST_LOOP</a> =  4, 
+<a class="el" href="group___enums.html#gga1a8472fa3e7150615c45c38fa8c12ce2a29bfa5fc814589e4a5003a5d1c377b82">PP_UDPSOCKET_OPTION_MULTICAST_TTL</a> =  5
+<br />
  }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga41975630f0a4c49e47d4a21754f8402d">PP_URLRequestProperty</a> { <br />
 &#160;&#160;<a class="el" href="group___enums.html#gga41975630f0a4c49e47d4a21754f8402da89e44812e771fed9df0ff8994690e44d">PP_URLREQUESTPROPERTY_URL</a> =  0, 
@@ -464,8 +465,6 @@ Variables</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gaee750c350655f2fb0fe04c04029e0ff8">PP_AudioSampleRate</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gac39067c0883ec80b94290dd2a3bae440">PP_LogLevel</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga4c87e6dd19c1d49b66a9b37136a82e82">PP_FileOpenFlags</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga07cb383dee51bc7e8e1f234068652668">PP_FileMapProtection</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga47ce032e16d18ba6fc6c16bbe8939bad">PP_FileMapFlags</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gadb4b8db19266831040fc604f73c83a25">PP_HostResolver_Flag</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga2ee7ad01799553e5f17bdaa35dd952ee">PP_ImageDataFormat</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gaca7296cfec99fcb6646b7144d1d6a0c5">PP_InputEvent_Type</a></td></tr>
@@ -713,6 +712,27 @@ Variables</h2><table class="memberdecls">
 </dl>
 </div>
 </div>
+<a class="anchor" id="gadadb1eaddb4ea71cb8620db1f4ce301e"></a><!-- doxytag: member="pp_codecs.h::PP_AudioProfile" ref="gadadb1eaddb4ea71cb8620db1f4ce301e" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">enum <a class="el" href="group___enums.html#gadadb1eaddb4ea71cb8620db1f4ce301e">PP_AudioProfile</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>Audio profiles. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="ggadadb1eaddb4ea71cb8620db1f4ce301ea7148c3f24ae9baffeae215261460a191"></a><!-- doxytag: member="PP_AUDIOPROFILE_OPUS" ref="ggadadb1eaddb4ea71cb8620db1f4ce301ea7148c3f24ae9baffeae215261460a191" args="" -->PP_AUDIOPROFILE_OPUS</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggadadb1eaddb4ea71cb8620db1f4ce301ea2d878bc8ba09116d5f62bb4965460e77"></a><!-- doxytag: member="PP_AUDIOPROFILE_MAX" ref="ggadadb1eaddb4ea71cb8620db1f4ce301ea2d878bc8ba09116d5f62bb4965460e77" args="" -->PP_AUDIOPROFILE_MAX</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+</div>
 <a class="anchor" id="gaee750c350655f2fb0fe04c04029e0ff8"></a><!-- doxytag: member="ppb_audio_config.h::PP_AudioSampleRate" ref="gaee750c350655f2fb0fe04c04029e0ff8" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -808,59 +828,6 @@ Variables</h2><table class="memberdecls">
 <p>This flag allows any method taking such callback to complete synchronously and not call the callback if the operation would not block. </p>
 <p>This is useful when performance is an issue, and the operation bandwidth should not be limited to the processing speed of the message loop.</p>
 <p>On synchronous method completion, the completion result will be returned by the method itself. Otherwise, the method will return PP_OK_COMPLETIONPENDING, and the callback will be invoked asynchronously on the same thread on which the method was invoked. If there is no valid PPB_MessageLoop attached to that thread, and the callback would normally run asynchronously, the invoked method will return PP_ERROR_NO_MESSAGE_LOOP. </p>
-</td></tr>
-</table>
-</dd>
-</dl>
-</div>
-</div>
-<a class="anchor" id="ga47ce032e16d18ba6fc6c16bbe8939bad"></a><!-- doxytag: member="ppb_file_mapping.h::PP_FileMapFlags" ref="ga47ce032e16d18ba6fc6c16bbe8939bad" args="" -->
-<div class="memitem">
-<div class="memproto">
-<table class="memname">
-<tr>
-<td class="memname">enum <a class="el" href="group___enums.html#ga47ce032e16d18ba6fc6c16bbe8939bad">PP_FileMapFlags</a></td>
-</tr>
-</table>
-</div>
-<div class="memdoc">
-<p>The PP_FileMapFlags contain flag values for use with Map(). </p>
-<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="gga47ce032e16d18ba6fc6c16bbe8939bada9233097e19d068b7d4ad0ac00140d03c"></a><!-- doxytag: member="PP_FILEMAPFLAG_SHARED" ref="gga47ce032e16d18ba6fc6c16bbe8939bada9233097e19d068b7d4ad0ac00140d03c" args="" -->PP_FILEMAPFLAG_SHARED</em>&nbsp;</td><td>
-<p>Requests a shared mapping. </p>
-<p>If this flag is set, changes written to the memory region will be reflected in the underlying file and will thus eventually be visible to other processes which have opened the file. The file may not actually be updated until Unmap() is called. This is only valid if the PPB_FileIO resource was opened with write permission. </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga47ce032e16d18ba6fc6c16bbe8939bada74f65f6fbedce77b36bda16beab65a03"></a><!-- doxytag: member="PP_FILEMAPFLAG_PRIVATE" ref="gga47ce032e16d18ba6fc6c16bbe8939bada74f65f6fbedce77b36bda16beab65a03" args="" -->PP_FILEMAPFLAG_PRIVATE</em>&nbsp;</td><td>
-<p>Requests a copy-on-write mapping. </p>
-<p>If this flag is set, changes are not written to the underlying file, but only in the memory of the process (copy-on-write). </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga47ce032e16d18ba6fc6c16bbe8939badae37402f728fae4078d76a006d36bc26e"></a><!-- doxytag: member="PP_FILEMAPFLAG_FIXED" ref="gga47ce032e16d18ba6fc6c16bbe8939badae37402f728fae4078d76a006d36bc26e" args="" -->PP_FILEMAPFLAG_FIXED</em>&nbsp;</td><td>
-<p>Forces Map() to map the file contents at the provided |address|. </p>
-<p>If Map() can not comply, Map() will fail. </p>
-</td></tr>
-</table>
-</dd>
-</dl>
-</div>
-</div>
-<a class="anchor" id="ga07cb383dee51bc7e8e1f234068652668"></a><!-- doxytag: member="ppb_file_mapping.h::PP_FileMapProtection" ref="ga07cb383dee51bc7e8e1f234068652668" args="" -->
-<div class="memitem">
-<div class="memproto">
-<table class="memname">
-<tr>
-<td class="memname">enum <a class="el" href="group___enums.html#ga07cb383dee51bc7e8e1f234068652668">PP_FileMapProtection</a></td>
-</tr>
-</table>
-</div>
-<div class="memdoc">
-<p>The PP_FileMapProtection values indicate the permissions requested for the file mapping. </p>
-<p>These should be used in a uint32_t bitfield. </p>
-<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="gga07cb383dee51bc7e8e1f234068652668a88619572d7d081c4b657fd8087a164fb"></a><!-- doxytag: member="PP_FILEMAPPROTECTION_READ" ref="gga07cb383dee51bc7e8e1f234068652668a88619572d7d081c4b657fd8087a164fb" args="" -->PP_FILEMAPPROTECTION_READ</em>&nbsp;</td><td>
-<p>Requests read access to the mapped address. </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga07cb383dee51bc7e8e1f234068652668aadebe6625bb49b575195f0d4d165c27e"></a><!-- doxytag: member="PP_FILEMAPPROTECTION_WRITE" ref="gga07cb383dee51bc7e8e1f234068652668aadebe6625bb49b575195f0d4d165c27e" args="" -->PP_FILEMAPPROTECTION_WRITE</em>&nbsp;</td><td>
-<p>Requests write access to the mapped address. </p>
 </td></tr>
 </table>
 </dd>
@@ -1753,6 +1720,16 @@ Variables</h2><table class="memberdecls">
 <p>Value's type should be <code>PP_VARTYPE_INT32</code>. On version 1.0, this option can only be set after a successful <code>Bind()</code> call. On version 1.1 or later, there is no such limitation.</p>
 <p>Note: This is only treated as a hint for the browser to set the buffer size. Even if <code>SetOption()</code> succeeds, the browser doesn't guarantee it will conform to the size. </p>
 </td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga1a8472fa3e7150615c45c38fa8c12ce2a0cde43fa32bc72658658f9a20c07194c"></a><!-- doxytag: member="PP_UDPSOCKET_OPTION_MULTICAST_LOOP" ref="gga1a8472fa3e7150615c45c38fa8c12ce2a0cde43fa32bc72658658f9a20c07194c" args="" -->PP_UDPSOCKET_OPTION_MULTICAST_LOOP</em>&nbsp;</td><td>
+<p>Specifies whether the packets sent from the host to the multicast group should be looped back to the host or not. </p>
+<p>Value's type should be <code>PP_VARTYPE_BOOL</code>. This option can only be set before calling <code>Bind()</code>.</p>
+<p>This is only supported in version 1.2 of the API (Chrome 43) and later. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga1a8472fa3e7150615c45c38fa8c12ce2a29bfa5fc814589e4a5003a5d1c377b82"></a><!-- doxytag: member="PP_UDPSOCKET_OPTION_MULTICAST_TTL" ref="gga1a8472fa3e7150615c45c38fa8c12ce2a29bfa5fc814589e4a5003a5d1c377b82" args="" -->PP_UDPSOCKET_OPTION_MULTICAST_TTL</em>&nbsp;</td><td>
+<p>Specifies the time-to-live for packets sent to the multicast group. </p>
+<p>The value should be within 0 to 255 range. The default value is 1 and means that packets will not be routed beyond the local network. Value's type should be <code>PP_VARTYPE_INT32</code>. This option can only be set before calling <code>Bind()</code>.</p>
+<p>This is only supported in version 1.2 of the API (Chrome 43) and later. </p>
+</td></tr>
 </table>
 </dd>
 </dl>
@@ -2172,30 +2149,6 @@ Variables</h2><table class="memberdecls">
 <table class="memname">
 <tr>
 <td class="memname"><a class="el" href="group___enums.html#ga7610f0fba2396d46384859caa4d91798">PP_CompletionCallback_Flag</a></td>
-</tr>
-</table>
-</div>
-<div class="memdoc">
-</div>
-</div>
-<a class="anchor" id="ga47ce032e16d18ba6fc6c16bbe8939bad"></a><!-- doxytag: member="ppb_file_mapping.h::PP_FileMapFlags" ref="ga47ce032e16d18ba6fc6c16bbe8939bad" args="" -->
-<div class="memitem">
-<div class="memproto">
-<table class="memname">
-<tr>
-<td class="memname"><a class="el" href="group___enums.html#ga47ce032e16d18ba6fc6c16bbe8939bad">PP_FileMapFlags</a></td>
-</tr>
-</table>
-</div>
-<div class="memdoc">
-</div>
-</div>
-<a class="anchor" id="ga07cb383dee51bc7e8e1f234068652668"></a><!-- doxytag: member="ppb_file_mapping.h::PP_FileMapProtection" ref="ga07cb383dee51bc7e8e1f234068652668" args="" -->
-<div class="memitem">
-<div class="memproto">
-<table class="memname">
-<tr>
-<td class="memname"><a class="el" href="group___enums.html#ga07cb383dee51bc7e8e1f234068652668">PP_FileMapProtection</a></td>
 </tr>
 </table>
 </div>

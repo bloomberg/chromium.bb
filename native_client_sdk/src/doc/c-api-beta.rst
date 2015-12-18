@@ -7,8 +7,8 @@
 Pepper C API Reference (Beta)
 ##########################################
 
-This page lists the C API for Pepper 41. Apps that use this API can
-run in Chrome 41 or higher.
+This page lists the C API for Pepper 48. Apps that use this API can
+run in Chrome 48 or higher.
 
 `Interfaces <pepper_beta/c/group___interfaces.html>`__
 =============================================================
@@ -17,6 +17,8 @@ run in Chrome 41 or higher.
   * `PPB_AudioBuffer <pepper_beta/c/struct_p_p_b___audio_buffer__0__1.html>`__
 
   * `PPB_AudioConfig <pepper_beta/c/struct_p_p_b___audio_config__1__1.html>`__
+
+  * `PPB_AudioEncoder <pepper_beta/c/struct_p_p_b___audio_encoder__0__1.html>`__
 
   * `PPB_Compositor <pepper_beta/c/struct_p_p_b___compositor__0__1.html>`__
 
@@ -27,8 +29,6 @@ run in Chrome 41 or higher.
   * `PPB_Core <pepper_beta/c/struct_p_p_b___core__1__0.html>`__
 
   * `PPB_FileIO <pepper_beta/c/struct_p_p_b___file_i_o__1__1.html>`__
-
-  * `PPB_FileMapping <pepper_beta/c/struct_p_p_b___file_mapping__0__1.html>`__
 
   * `PPB_FileRef <pepper_beta/c/struct_p_p_b___file_ref__1__2.html>`__
 
@@ -114,7 +114,7 @@ run in Chrome 41 or higher.
 
   * `PPB_TouchInputEvent <pepper_beta/c/struct_p_p_b___touch_input_event__1__0.html>`__
 
-  * `PPB_UDPSocket <pepper_beta/c/struct_p_p_b___u_d_p_socket__1__1.html>`__
+  * `PPB_UDPSocket <pepper_beta/c/struct_p_p_b___u_d_p_socket__1__2.html>`__
 
   * `PPB_URLLoader <pepper_beta/c/struct_p_p_b___u_r_l_loader__1__0.html>`__
 
@@ -130,7 +130,9 @@ run in Chrome 41 or higher.
 
   * `PPB_VarDictionary <pepper_beta/c/struct_p_p_b___var_dictionary__1__0.html>`__
 
-  * `PPB_VideoDecoder <pepper_beta/c/struct_p_p_b___video_decoder__1__0.html>`__
+  * `PPB_VideoDecoder <pepper_beta/c/struct_p_p_b___video_decoder__1__1.html>`__
+
+  * `PPB_VideoEncoder <pepper_beta/c/struct_p_p_b___video_encoder__0__2.html>`__
 
   * `PPB_VideoFrame <pepper_beta/c/struct_p_p_b___video_frame__0__1.html>`__
 
@@ -156,6 +158,12 @@ run in Chrome 41 or higher.
 `Structures <pepper_beta/c/group___structs.html>`__
 ==========================================================
   * `PP_ArrayOutput <pepper_beta/c/struct_p_p___array_output.html>`__
+
+  * `PP_AudioBitstreamBuffer <pepper_beta/c/struct_p_p___audio_bitstream_buffer.html>`__
+
+  * `PP_AudioProfileDescription <pepper_beta/c/struct_p_p___audio_profile_description.html>`__
+
+  * `PP_BitstreamBuffer <pepper_beta/c/struct_p_p___bitstream_buffer.html>`__
 
   * `PP_CompletionCallback <pepper_beta/c/struct_p_p___completion_callback.html>`__
 
@@ -202,6 +210,10 @@ run in Chrome 41 or higher.
   * `PP_VideoPicture <pepper_beta/c/struct_p_p___video_picture.html>`__
 
   * `PP_VideoPicture <pepper_beta/c/struct_p_p___video_picture__0__1.html>`__
+
+  * `PP_VideoProfileDescription <pepper_beta/c/struct_p_p___video_profile_description.html>`__
+
+  * `PP_VideoProfileDescription <pepper_beta/c/struct_p_p___video_profile_description__0__1.html>`__
 
   * `PP_VarValue <pepper_beta/c/union_p_p___var_value.html>`__
 
@@ -266,6 +278,8 @@ Files
 
   * `ppb_audio_config.h <pepper_beta/c/ppb__audio__config_8h.html>`__
 
+  * `ppb_audio_encoder.h <pepper_beta/c/ppb__audio__encoder_8h.html>`__
+
   * `ppb_compositor.h <pepper_beta/c/ppb__compositor_8h.html>`__
 
   * `ppb_compositor_layer.h <pepper_beta/c/ppb__compositor__layer_8h.html>`__
@@ -275,8 +289,6 @@ Files
   * `ppb_core.h <pepper_beta/c/ppb__core_8h.html>`__
 
   * `ppb_file_io.h <pepper_beta/c/ppb__file__io_8h.html>`__
-
-  * `ppb_file_mapping.h <pepper_beta/c/ppb__file__mapping_8h.html>`__
 
   * `ppb_file_ref.h <pepper_beta/c/ppb__file__ref_8h.html>`__
 
@@ -341,6 +353,8 @@ Files
   * `ppb_var_dictionary.h <pepper_beta/c/ppb__var__dictionary_8h.html>`__
 
   * `ppb_video_decoder.h <pepper_beta/c/ppb__video__decoder_8h.html>`__
+
+  * `ppb_video_encoder.h <pepper_beta/c/ppb__video__encoder_8h.html>`__
 
   * `ppb_video_frame.h <pepper_beta/c/ppb__video__frame_8h.html>`__
 

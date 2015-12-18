@@ -7,8 +7,8 @@
 Pepper C++ API Reference (Dev)
 ############################################
 
-This page lists the C++ API for Pepper 42. Apps that use this API can
-run in Chrome 42 or higher.
+This page lists the C++ API for Pepper 49. Apps that use this API can
+run in Chrome 49 or higher.
 
 `Classes <pepper_dev/cpp/inherits.html>`__
 ==================================================
@@ -17,6 +17,8 @@ run in Chrome 42 or higher.
   * `AudioBuffer <pepper_dev/cpp/classpp_1_1_audio_buffer.html>`__
 
   * `AudioConfig <pepper_dev/cpp/classpp_1_1_audio_config.html>`__
+
+  * `AudioEncoder <pepper_dev/cpp/classpp_1_1_audio_encoder.html>`__
 
   * `CompletionCallback <pepper_dev/cpp/classpp_1_1_completion_callback.html>`__
 
@@ -126,6 +128,8 @@ run in Chrome 42 or higher.
 
   * `VideoDecoder <pepper_dev/cpp/classpp_1_1_video_decoder.html>`__
 
+  * `VideoEncoder <pepper_dev/cpp/classpp_1_1_video_encoder.html>`__
+
   * `VideoFrame <pepper_dev/cpp/classpp_1_1_video_frame.html>`__
 
   * `View <pepper_dev/cpp/classpp_1_1_view.html>`__
@@ -144,6 +148,8 @@ Files
   * `audio_buffer.h <pepper_dev/cpp/audio__buffer_8h.html>`__
 
   * `audio_config.h <pepper_dev/cpp/audio__config_8h.html>`__
+
+  * `audio_encoder.h <pepper_dev/cpp/audio__encoder_8h.html>`__
 
   * `completion_callback.h <pepper_dev/cpp/completion__callback_8h.html>`__
 
@@ -242,6 +248,8 @@ Files
   * `var_dictionary.h <pepper_dev/cpp/var__dictionary_8h.html>`__
 
   * `video_decoder.h <pepper_dev/cpp/video__decoder_8h.html>`__
+
+  * `video_encoder.h <pepper_dev/cpp/video__encoder_8h.html>`__
 
   * `video_frame.h <pepper_dev/cpp/video__frame_8h.html>`__
 

@@ -50,7 +50,7 @@ Data Fields</h2><table class="memberdecls">
 <p>Creates a new <code>PPB_CompositorLayer</code> and adds it to the end of the layer stack. </p>
 <p>A <code>PP_Resource</code> containing the layer is returned. It is uninitialized, <code>SetColor()</code>, <code>SetTexture</code> or <code>SetImage</code> should be used to initialize it. The layer will appear above other pre-existing layers. If <code>ResetLayers</code> is called or the <code>PPB_Compositor</code> is released, the returned layer will be invalidated, and any further calls on the layer will return <code>PP_ERROR_BADRESOURCE</code>.</p>
 <p>param[in] compositor A <code>PP_Resource</code> corresponding to a compositor layer resource.</p>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A <code>PP_Resource</code> containing the compositor layer resource if sucessful or 0 otherwise. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A <code>PP_Resource</code> containing the compositor layer resource if successful or 0 otherwise. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a5082b0dce4a58032439bc3dd4ff741fd"></a><!-- doxytag: member="PPB_Compositor::CommitLayers" ref="a5082b0dce4a58032439bc3dd4ff741fd" args=")(PP_Resource compositor, struct PP_CompletionCallback cc)" -->
@@ -91,7 +91,7 @@ Data Fields</h2><table class="memberdecls">
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A <code>PP_Resource</code> containing the compositor resource if sucessful or 0 otherwise. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A <code>PP_Resource</code> containing the compositor resource if successful or 0 otherwise. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a22fb77daabd3894db97ab1111d111a92"></a><!-- doxytag: member="PPB_Compositor::IsCompositor" ref="a22fb77daabd3894db97ab1111d111a92" args=")(PP_Resource resource)" -->

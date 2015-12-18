@@ -2,20 +2,20 @@
 
 <span class="target" id="c-api"><span id="pepper-stable-c-index"></span></span><section id="pepper-c-api-reference-stable">
 <h1 id="pepper-c-api-reference-stable">Pepper C API Reference (Stable)</h1>
-<p>This page lists the C API for Pepper 40. Apps that use this API can
-run in Chrome 40 or higher.</p>
+<p>This page lists the C API for Pepper 47. Apps that use this API can
+run in Chrome 47 or higher.</p>
 <h2 id="interfaces"><a class="reference external" href="pepper_stable/c/group___interfaces.html">Interfaces</a></h2>
 <blockquote>
 <div><ul class="small-gap">
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___audio__1__1.html">PPB_Audio</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___audio_buffer__0__1.html">PPB_AudioBuffer</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___audio_config__1__1.html">PPB_AudioConfig</a></li>
+<li><a class="reference external" href="pepper_stable/c/struct_p_p_b___audio_encoder__0__1.html">PPB_AudioEncoder</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___compositor__0__1.html">PPB_Compositor</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___compositor_layer__0__2.html">PPB_CompositorLayer</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___console__1__0.html">PPB_Console</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___core__1__0.html">PPB_Core</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___file_i_o__1__1.html">PPB_FileIO</a></li>
-<li><a class="reference external" href="pepper_stable/c/struct_p_p_b___file_mapping__0__1.html">PPB_FileMapping</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___file_ref__1__2.html">PPB_FileRef</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___file_system__1__0.html">PPB_FileSystem</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___fullscreen__1__0.html">PPB_Fullscreen</a></li>
@@ -55,10 +55,10 @@ run in Chrome 40 or higher.</p>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___open_g_l_e_s2_query__1__0.html">PPB_OpenGLES2Query</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___open_g_l_e_s2_vertex_array_object.html">PPB_OpenGLES2VertexArrayObject</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___open_g_l_e_s2_vertex_array_object__1__0.html">PPB_OpenGLES2VertexArrayObject</a></li>
-<li><a class="reference external" href="pepper_stable/c/struct_p_p_b___t_c_p_socket__1__1.html">PPB_TCPSocket</a></li>
+<li><a class="reference external" href="pepper_stable/c/struct_p_p_b___t_c_p_socket__1__2.html">PPB_TCPSocket</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___text_input_controller__1__0.html">PPB_TextInputController</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___touch_input_event__1__0.html">PPB_TouchInputEvent</a></li>
-<li><a class="reference external" href="pepper_stable/c/struct_p_p_b___u_d_p_socket__1__0.html">PPB_UDPSocket</a></li>
+<li><a class="reference external" href="pepper_stable/c/struct_p_p_b___u_d_p_socket__1__2.html">PPB_UDPSocket</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___u_r_l_loader__1__0.html">PPB_URLLoader</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___u_r_l_request_info__1__0.html">PPB_URLRequestInfo</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___u_r_l_response_info__1__0.html">PPB_URLResponseInfo</a></li>
@@ -66,7 +66,8 @@ run in Chrome 40 or higher.</p>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___var_array__1__0.html">PPB_VarArray</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___var_array_buffer__1__0.html">PPB_VarArrayBuffer</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___var_dictionary__1__0.html">PPB_VarDictionary</a></li>
-<li><a class="reference external" href="pepper_stable/c/struct_p_p_b___video_decoder__1__0.html">PPB_VideoDecoder</a></li>
+<li><a class="reference external" href="pepper_stable/c/struct_p_p_b___video_decoder__1__1.html">PPB_VideoDecoder</a></li>
+<li><a class="reference external" href="pepper_stable/c/struct_p_p_b___video_encoder__0__2.html">PPB_VideoEncoder</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___video_frame__0__1.html">PPB_VideoFrame</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___view__1__2.html">PPB_View</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p_b___web_socket__1__0.html">PPB_WebSocket</a></li>
@@ -83,6 +84,9 @@ run in Chrome 40 or higher.</p>
 <blockquote>
 <div><ul class="small-gap">
 <li><a class="reference external" href="pepper_stable/c/struct_p_p___array_output.html">PP_ArrayOutput</a></li>
+<li><a class="reference external" href="pepper_stable/c/struct_p_p___audio_bitstream_buffer.html">PP_AudioBitstreamBuffer</a></li>
+<li><a class="reference external" href="pepper_stable/c/struct_p_p___audio_profile_description.html">PP_AudioProfileDescription</a></li>
+<li><a class="reference external" href="pepper_stable/c/struct_p_p___bitstream_buffer.html">PP_BitstreamBuffer</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p___completion_callback.html">PP_CompletionCallback</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p___directory_entry.html">PP_DirectoryEntry</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p___file_info.html">PP_FileInfo</a></li>
@@ -106,6 +110,8 @@ run in Chrome 40 or higher.</p>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p___var.html">PP_Var</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p___video_picture.html">PP_VideoPicture</a></li>
 <li><a class="reference external" href="pepper_stable/c/struct_p_p___video_picture__0__1.html">PP_VideoPicture</a></li>
+<li><a class="reference external" href="pepper_stable/c/struct_p_p___video_profile_description.html">PP_VideoProfileDescription</a></li>
+<li><a class="reference external" href="pepper_stable/c/struct_p_p___video_profile_description__0__1.html">PP_VideoProfileDescription</a></li>
 <li><a class="reference external" href="pepper_stable/c/union_p_p___var_value.html">PP_VarValue</a></li>
 </ul>
 </div></blockquote>
@@ -139,12 +145,12 @@ run in Chrome 40 or higher.</p>
 <li><a class="reference external" href="pepper_stable/c/ppb__audio_8h.html">ppb_audio.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__audio__buffer_8h.html">ppb_audio_buffer.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__audio__config_8h.html">ppb_audio_config.h</a></li>
+<li><a class="reference external" href="pepper_stable/c/ppb__audio__encoder_8h.html">ppb_audio_encoder.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__compositor_8h.html">ppb_compositor.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__compositor__layer_8h.html">ppb_compositor_layer.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__console_8h.html">ppb_console.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__core_8h.html">ppb_core.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__file__io_8h.html">ppb_file_io.h</a></li>
-<li><a class="reference external" href="pepper_stable/c/ppb__file__mapping_8h.html">ppb_file_mapping.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__file__ref_8h.html">ppb_file_ref.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__file__system_8h.html">ppb_file_system.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__fullscreen_8h.html">ppb_fullscreen.h</a></li>
@@ -177,6 +183,7 @@ run in Chrome 40 or higher.</p>
 <li><a class="reference external" href="pepper_stable/c/ppb__var__array__buffer_8h.html">ppb_var_array_buffer.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__var__dictionary_8h.html">ppb_var_dictionary.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__video__decoder_8h.html">ppb_video_decoder.h</a></li>
+<li><a class="reference external" href="pepper_stable/c/ppb__video__encoder_8h.html">ppb_video_encoder.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__video__frame_8h.html">ppb_video_frame.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__view_8h.html">ppb_view.h</a></li>
 <li><a class="reference external" href="pepper_stable/c/ppb__websocket_8h.html">ppb_websocket.h</a></li>

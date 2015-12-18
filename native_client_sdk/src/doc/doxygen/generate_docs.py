@@ -200,6 +200,18 @@ def GenerateDoxyfile(template_filename, out_dirname, doc_dirname, doxyfile):
       'script_dirname': SCRIPT_DIR})
 
 
+def CheckDoxygenVersion(doxygen):
+  version = subprocess.check_output([doxygen, '--version']).strip()
+  url = 'http://ftp.stack.nl/pub/users/dimitri/doxygen-1.7.6.1.linux.bin.tar.gz'
+  if version != '1.7.6.1':
+    print 'Doxygen version 1.7.6.1 is required'
+    print 'The version being used (%s) is version %s' % (doxygen, version)
+    print 'The simplest way to grab this version is to download it directly:'
+    print url
+    print 'Then either add it to your $PATH or set $DOXYGEN to point to binary.'
+    sys.exit(1)
+
+
 def RunDoxygen(out_dirname, doxyfile):
   Trace('Removing old output directory %s' % out_dirname)
   RemoveDir(out_dirname)
@@ -208,6 +220,7 @@ def RunDoxygen(out_dirname, doxyfile):
   os.makedirs(out_dirname)
 
   doxygen = os.environ.get('DOXYGEN', 'doxygen')
+  CheckDoxygenVersion(doxygen)
   cmd = [doxygen, doxyfile]
   Trace('Running Doxygen:\n  %s' % ' '.join(cmd))
   subprocess.check_call(cmd)

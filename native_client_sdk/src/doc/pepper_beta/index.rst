@@ -9,8 +9,8 @@
 Pepper API Reference (Beta)
 ########################################
 
-This page lists the API for Pepper 41. Apps that use this API can
-run in Chrome 41 or higher.
+This page lists the API for Pepper 48. Apps that use this API can
+run in Chrome 48 or higher.
 
 :ref:`Pepper C API Reference <pepper_beta_c_index>`
 ===========================================================

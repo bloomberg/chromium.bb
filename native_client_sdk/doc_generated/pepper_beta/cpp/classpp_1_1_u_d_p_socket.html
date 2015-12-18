@@ -33,6 +33,8 @@ Public Member Functions</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_u_d_p_socket.html#a657309cd3bc38cf28e25f4c71190d1a0">SendTo</a> (const char *buffer, int32_t num_bytes, const <a class="el" href="classpp_1_1_net_address.html">NetAddress</a> &amp;addr, const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;callback)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_u_d_p_socket.html#aa1f03d8d0e7ef59c40724e2691f165f2">Close</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_u_d_p_socket.html#a5ff91fd2342e534b57980c0c2e414251">SetOption</a> (PP_UDPSocket_Option name, const <a class="el" href="classpp_1_1_var.html">Var</a> &amp;value, const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;callback)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_u_d_p_socket.html#a51bdeaeeef690d741850e7d691fa479d">JoinGroup</a> (const <a class="el" href="classpp_1_1_net_address.html">NetAddress</a> &amp;group, const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> callback)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_u_d_p_socket.html#a7efaa9eda9e58ffbd5f6b5c5c9e8b38c">LeaveGroup</a> (const <a class="el" href="classpp_1_1_net_address.html">NetAddress</a> &amp;group, const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> callback)</td></tr>
 </table><h2>
 Static Public Member Functions</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_u_d_p_socket.html#a76a2e93f2fa01d0dce8d8216d53b4f44">IsAvailable</a> ()</td></tr>
@@ -239,6 +241,76 @@ Static Public Member Functions</h2><table class="memberdecls">
 <div class="memdoc">
 <p>Static function for determining whether the browser supports the <code>PPB_UDPSocket</code> interface. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true if the interface is available, false otherwise. </dd></dl>
+</div>
+</div>
+<a class="anchor" id="a51bdeaeeef690d741850e7d691fa479d"></a><!-- doxytag: member="pp::UDPSocket::JoinGroup" ref="a51bdeaeeef690d741850e7d691fa479d" args="(const NetAddress &amp;group, const CompletionCallback callback)" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">int32_t <a class="el" href="classpp_1_1_u_d_p_socket.html#a51bdeaeeef690d741850e7d691fa479d">pp::UDPSocket::JoinGroup</a> </td>
+<td>(</td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_net_address.html">NetAddress</a> &amp;&#160;</td>
+<td class="paramname"><em>group</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a>&#160;</td>
+<td class="paramname"><em>callback</em>&#160;</td>
+</tr>
+<tr>
+<td></td>
+<td>)</td>
+<td></td><td></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>Joins the multicast group with address specified by <code>group</code> parameter, which is expected to be a <code><a class="el" href="classpp_1_1_net_address.html" title="The NetAddress class represents a network address.">NetAddress</a></code> object. </p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+<table class="params">
+<tr><td class="paramdir">[in]</td><td class="paramname">group</td><td>A <code><a class="el" href="classpp_1_1_net_address.html" title="The NetAddress class represents a network address.">NetAddress</a></code> corresponding to the network address of the multicast group. </td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>A <code><a class="el" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl...">CompletionCallback</a></code> to be called upon completion.</td></tr>
+</table>
+</dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. </dd></dl>
+</div>
+</div>
+<a class="anchor" id="a7efaa9eda9e58ffbd5f6b5c5c9e8b38c"></a><!-- doxytag: member="pp::UDPSocket::LeaveGroup" ref="a7efaa9eda9e58ffbd5f6b5c5c9e8b38c" args="(const NetAddress &amp;group, const CompletionCallback callback)" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">int32_t <a class="el" href="classpp_1_1_u_d_p_socket.html#a7efaa9eda9e58ffbd5f6b5c5c9e8b38c">pp::UDPSocket::LeaveGroup</a> </td>
+<td>(</td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_net_address.html">NetAddress</a> &amp;&#160;</td>
+<td class="paramname"><em>group</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a>&#160;</td>
+<td class="paramname"><em>callback</em>&#160;</td>
+</tr>
+<tr>
+<td></td>
+<td>)</td>
+<td></td><td></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>Leaves the multicast group with address specified by <code>group</code> parameter, which is expected to be a <code><a class="el" href="classpp_1_1_net_address.html" title="The NetAddress class represents a network address.">NetAddress</a></code> object. </p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+<table class="params">
+<tr><td class="paramdir">[in]</td><td class="paramname">group</td><td>A <code><a class="el" href="classpp_1_1_net_address.html" title="The NetAddress class represents a network address.">NetAddress</a></code> corresponding to the network address of the multicast group. </td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>A <code><a class="el" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl...">CompletionCallback</a></code> to be called upon completion.</td></tr>
+</table>
+</dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a72112f67b757bbbfaaf67ae3cfe2f602"></a><!-- doxytag: member="pp::UDPSocket::operator=" ref="a72112f67b757bbbfaaf67ae3cfe2f602" args="(const UDPSocket &amp;other)" -->

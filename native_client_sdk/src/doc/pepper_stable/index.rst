@@ -9,8 +9,8 @@
 Pepper API Reference (Stable)
 ########################################
 
-This page lists the API for Pepper 40. Apps that use this API can
-run in Chrome 40 or higher.
+This page lists the API for Pepper 47. Apps that use this API can
+run in Chrome 47 or higher.
 
 :ref:`Pepper C API Reference <pepper_stable_c_index>`
 ===========================================================
