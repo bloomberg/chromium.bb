@@ -555,8 +555,8 @@ source_set("test_support") {
 
   sources = [
     "browser.h",
-    "cocoa/extensions/browser_action_test_util_mac.mm",
-    "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
+    "cocoa/cocoa_test_helper.h",
+    "cocoa/cocoa_test_helper.mm",
     "cocoa/run_loop_testing.h",
     "cocoa/run_loop_testing.mm",
     "exclusive_access/fullscreen_controller_state_test.cc",
@@ -586,6 +586,11 @@ source_set("test_support") {
     sources += [
       "views/find_bar_host_unittest_util_views.cc",
       "views/toolbar/browser_action_test_util_views.cc",
+    ]
+  } else {
+    sources += [
+      "cocoa/extensions/browser_action_test_util_mac.mm",
+      "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
     ]
   }
 

@@ -1946,6 +1946,15 @@ test("unit_tests") {
       "//third_party/ocmock",
     ]
 
+    if (mac_views_browser) {
+      # TODO(tapted): Add chrome_unit_tests_views_non_mac_sources.
+    } else {
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_cocoa_sources,
+              ".",
+              "//chrome")
+    }
+
     # TODO(mark): We really want this for all non-static library targets,
     # but when we tried to pull it up to the common.gypi level, it broke
     # other things like the ui and startup tests. *shrug*
