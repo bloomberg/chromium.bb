@@ -1,23 +1,21 @@
 Test that watch expressions expansion state is restored after update.
 
 Bug 99304
-Exception while running: function step1()
-    {
-        var watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
-        watchExpressionsPane.expand();
-
-        watchExpressionsSection = watchExpressionsPane.section;
-        watchExpressionsSection.watchExpressions = [];
-        watchExpressionsSection.watchExpressions.push("globalObject");
-        watchExpressionsSection.watchExpressions.push("windowAlias");
-
-        InspectorTest.addSniffer(WebInspector.WatchExpressionsSection.prototype, "updateProperties", step2);
-        watchExpressionsSection.update();
-    }
-TypeError: Cannot set property 'watchExpressions' of undefined
-    at step1 (evaluateInWebInspector1.js:67:50)
-    at result (evaluateInWebInspector0.js:478:25)
-    at Object.InspectorTest.startDebuggerTest (evaluateInWebInspector0.js:1901:37)
-    at eval (evaluateInWebInspector1.js:59:19)
-    at eval (evaluateInWebInspector1.js:51:13)
+Watch expressions added.
+expanded foo [object Object]
+expanded bar [object Object]
+Watch expressions expanded.
+globalObject: Object
+    foo: Object
+      bar: Object
+    __proto__: Object
+windowAlias: Window
+Page reloaded.
+Watch expressions after page reload:
+globalObject: Object
+    foo: Object
+      bar: Object
+      __proto__: Object
+    __proto__: Object
+windowAlias: Window
 

@@ -16,72 +16,87 @@ var windowAlias = window;
 
 var test = function()
 {
-    var watchExpressionsSection;
-    InspectorTest.startDebuggerTest(step1);
-
-    function step1()
-    {
-        var watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
-        watchExpressionsPane.expand();
-
-        watchExpressionsSection = watchExpressionsPane.section;
-        watchExpressionsSection.watchExpressions = [];
-        watchExpressionsSection.watchExpressions.push("globalObject");
-        watchExpressionsSection.watchExpressions.push("windowAlias");
-
-        InspectorTest.addSniffer(WebInspector.WatchExpressionsSection.prototype, "updateProperties", step2);
-        watchExpressionsSection.update();
-    }
-
-    function expandProperty(parent, path, callback)
-    {
-        if (!path.length) return callback();
-        var childName = path.shift();
-        var child = InspectorTest._findChildPropertyTreeElement(parent, childName);
-        if (!child) {
-            InspectorTest.addResult("Child not found: " + childName);
-            InspectorTest.completeTest()
-            return;
-        }
-        InspectorTest.addResult("expanded " + childName + " " + child.property.value);
-        function afterGetOwnProperties() {
-            InspectorTest.runAfterPendingDispatches(expandProperty.bind(this, child, path, callback));
-        }
-        InspectorTest.addSniffer(child.property.value, "getOwnProperties", afterGetOwnProperties.bind(this));
-        child.expand();
-
-    }
-
-    function dumpObjectPropertiesTreeElement(treeElement, indent)
-    {
-        if (treeElement.property)
-            InspectorTest.addResult(indent + treeElement.property.name + ": " + treeElement.property.value._description);
-        for (var i = 0; i < treeElement.children.length; i++)
-            dumpObjectPropertiesTreeElement(treeElement.children[i], "  " + indent);
-    }
+    var watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
+    watchExpressionsPane.expand();
+    watchExpressionsPane.addExpression("globalObject");
+    watchExpressionsPane.addExpression("windowAlias");
+    InspectorTest.runAfterPendingDispatches(step2);
 
     function step2()
     {
         InspectorTest.addResult("Watch expressions added.");
-        expandProperty(watchExpressionsSection.propertiesTreeOutline, ["globalObject", "foo", "bar"], step3);
+        expandWatchExpression(["globalObject", "foo", "bar"], step3);
     }
 
     function step3()
     {
         InspectorTest.addResult("Watch expressions expanded.");
-        dumpObjectPropertiesTreeElement(watchExpressionsSection.propertiesTreeOutline, "");
+        dumpWatchExpressions();
         InspectorTest.reloadPage(step4);
     }
 
     function step4()
     {
         InspectorTest.addResult("Watch expressions after page reload:");
-        dumpObjectPropertiesTreeElement(watchExpressionsSection.propertiesTreeOutline, "");
+        dumpWatchExpressions();
+        InspectorTest.completeTest();
+    }
 
-        // Clear watch expressions after execution.
-        watchExpressionsSection.watchExpressions = [];
-        watchExpressionsSection.update();
-        InspectorTest.completeDebuggerTest();
+    function dumpWatchExpressions()
+    {
+        var pane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
+
+        for (var i = 0; i < pane._watchExpressions.length; i++) {
+            var watch = pane._watchExpressions[i];
+            InspectorTest.addResult(watch.expression() + ": " + watch._objectPropertiesSection._object._description);
+            dumpObjectPropertiesTreeElement(watch._objectPropertiesSection.objectTreeElement(), "  ");
+        }
+    }
+
+    function dumpObjectPropertiesTreeElement(treeElement, indent)
+    {
+        if (treeElement.property)
+            InspectorTest.addResult(indent + treeElement.property.name + ": " + treeElement.property.value._description);
+        for (var i = 0; i < treeElement.children().length; i++)
+            dumpObjectPropertiesTreeElement(treeElement.children()[i], "  " + indent);
+    }
+
+    function expandProperties(treeoutline, path, callback)
+    {
+        treeoutline.addEventListener(TreeOutline.Events.ElementAttached, elementAttached);
+        treeoutline.expand();
+
+        function elementAttached(event)
+        {
+            var treeElement = event.data;
+            if (treeElement.property.name !== path[0])
+                return;
+
+            var childName = path.shift();
+            InspectorTest.addResult("expanded " + childName + " " + treeElement.property.value);
+
+            if (path.length) {
+                treeElement.expand();
+                return;
+            }
+
+            treeoutline.removeEventListener(TreeOutline.Events.ElementAttached, elementAttached);
+            callback();
+        }
+    }
+
+    function expandWatchExpression(path, callback)
+    {
+        var pane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
+        var expression = path.shift();
+        for (var i = 0; i < pane._watchExpressions.length; i++) {
+            var watch = pane._watchExpressions[i];
+            if (watch.expression() === expression) {
+                expandProperties(watch._objectPropertiesSection, path, callback);
+                break;
+            }
+        }
+
     }
 }
 
