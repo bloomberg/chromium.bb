@@ -143,6 +143,8 @@ public class OverlayPanelContent {
         mActivity = activity;
 
         mWebContentsDelegate = new WebContentsDelegateAndroid() {
+            private boolean mIsFullscreen;
+
             @Override
             public void onLoadStarted(boolean toDifferentDocument) {
                 super.onLoadStarted(toDifferentDocument);
@@ -159,6 +161,16 @@ public class OverlayPanelContent {
             public void onLoadProgressChanged(int progress) {
                 super.onLoadProgressChanged(progress);
                 mProgressObserver.onProgressBarUpdated(progress);
+            }
+
+            @Override
+            public void toggleFullscreenModeForTab(boolean enterFullscreen) {
+                mIsFullscreen = enterFullscreen;
+            }
+
+            @Override
+            public boolean isFullscreenForTabOrPending() {
+                return mIsFullscreen;
             }
         };
     }
