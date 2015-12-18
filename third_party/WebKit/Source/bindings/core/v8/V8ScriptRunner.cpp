@@ -42,7 +42,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 
-#if defined(WTF_OS_WIN)
+#if OS(WIN)
 #include <malloc.h>
 #else
 #include <alloca.h>

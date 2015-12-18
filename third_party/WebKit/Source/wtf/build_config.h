@@ -24,7 +24,7 @@
 #ifndef WTF_build_config_h
 #define WTF_build_config_h
 
-/* Include compiler specific macros */
+#include "build/build_config.h"
 #include "wtf/Compiler.h"
 
 /* ==== Platform adaptation macros: these describe properties of the target environment. ==== */
@@ -33,7 +33,7 @@
 #define HAVE(WTF_FEATURE) (defined HAVE_##WTF_FEATURE  && HAVE_##WTF_FEATURE)
 /* OS() - underlying operating system; only to be used for mandated low-level services like
    virtual memory, not to choose a GUI toolkit */
-#define OS(WTF_FEATURE) (defined WTF_OS_##WTF_FEATURE  && WTF_OS_##WTF_FEATURE)
+#define OS(WTF_FEATURE) (defined OS_##WTF_FEATURE && OS_##WTF_FEATURE)
 
 /* ==== Policy decision macros: these define policy choices for a particular port. ==== */
 
@@ -41,41 +41,6 @@
 #define USE(WTF_FEATURE) (defined WTF_USE_##WTF_FEATURE  && WTF_USE_##WTF_FEATURE)
 /* ENABLE() - turn on a specific feature of WebKit */
 #define ENABLE(WTF_FEATURE) (defined ENABLE_##WTF_FEATURE  && ENABLE_##WTF_FEATURE)
-
-/* ==== OS() - underlying operating system; only to be used for mandated low-level services like
-   virtual memory, not to choose a GUI toolkit ==== */
-
-/* OS(ANDROID) - Android */
-#ifdef ANDROID
-#define WTF_OS_ANDROID 1
-/* OS(MACOSX) - Any Darwin-based OS, including Mac OS X and iPhone OS */
-#elif defined(__APPLE__)
-#define WTF_OS_MACOSX 1
-/* OS(FREEBSD) - FreeBSD */
-#elif defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__)
-#define WTF_OS_FREEBSD 1
-/* OS(LINUX) - Linux */
-#elif defined(__linux__)
-#define WTF_OS_LINUX 1
-/* OS(OPENBSD) - OpenBSD */
-#elif defined(__OpenBSD__)
-#define WTF_OS_OPENBSD 1
-/* OS(WIN) - Any version of Windows */
-#elif defined(WIN32) || defined(_WIN32)
-#define WTF_OS_WIN 1
-#endif
-
-/* OS(POSIX) - Any Unix-like system */
-#if OS(ANDROID)          \
-    || OS(MACOSX)           \
-    || OS(FREEBSD)          \
-    || OS(LINUX)            \
-    || OS(OPENBSD)          \
-    || defined(unix)        \
-    || defined(__unix)      \
-    || defined(__unix__)
-#define WTF_OS_POSIX 1
-#endif
 
 /* There is an assumption in the project that either OS(WIN) or OS(POSIX) is set. */
 #if !OS(WIN) && !OS(POSIX)
