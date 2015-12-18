@@ -3140,9 +3140,14 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
                            {" Elvis", NAME_FIRST},
                            {"Elvis ", NAME_FIRST},
 
-                           // Make sure fields that differ by case do no match.
-                           {"elvis ", UNKNOWN_TYPE},
-                           {"3734 Elvis Presley BLVD ", UNKNOWN_TYPE},
+                           // Make sure fields that differ by case match.
+                           {"elvis ", NAME_FIRST},
+                           {"UnItEd StAtEs", ADDRESS_HOME_COUNTRY},
+
+                           // Make sure fields that differ by punctuation dont
+                           // match.
+                           {"3734 Elvis Presley Blvd ", UNKNOWN_TYPE},
+                           {"3734, Elvis Presley Blvd. ", UNKNOWN_TYPE},
 
                            // Make sure unsupported variants do not match.
                            {"Elvis Aaron", UNKNOWN_TYPE},

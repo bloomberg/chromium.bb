@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/form_group.h"
 
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/common/autofill_l10n_util.h"
 
 namespace autofill {
 
@@ -16,10 +17,11 @@ void FormGroup::GetMatchingTypes(const base::string16& text,
     return;
   }
 
+  l10n::CaseInsensitiveCompare compare;
   ServerFieldTypeSet types;
   GetSupportedTypes(&types);
   for (const auto& type : types) {
-    if (GetInfo(AutofillType(type), app_locale) == text)
+    if (compare.StringsEqual(text, GetInfo(AutofillType(type), app_locale)))
       matching_types->insert(type);
   }
 }
