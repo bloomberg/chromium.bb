@@ -79,11 +79,19 @@ void HostPairingScreenHandler::DeclareLocalizedValues(
   builder->Add(prefix + "EnrollmentErrorTitle",
                IDS_PAIRING_ENROLLMENT_ERROR_TITLE);
   builder->Add(prefix + "ErrorNeedsRestart",
-               IDS_PAIRING_HOST_EROLLMENT_ERROR_NEEDS_RESTART);
+               IDS_PAIRING_HOST_ERROR_NEED_RESTART_TEXT);
   builder->Add(prefix + "SetupBasicConfigTitle",
                IDS_HOST_SETUP_BASIC_CONFIGURATION_TITLE);
   builder->Add(prefix + "SetupNetworkErrorTitle",
                IDS_HOST_SETUP_NETWORK_ERROR_TITLE);
+  builder->Add(prefix + "InitializationErrorTitle",
+               IDS_PAIRING_HOST_INITIALIZATION_ERROR_TITLE);
+  builder->Add(prefix + "ConnectionErrorTitle",
+               IDS_PAIRING_HOST_CONNECTION_ERROR_TITLE);
+  builder->Add(prefix + "ErrorNeedRestartText",
+               IDS_PAIRING_HOST_ERROR_NEED_RESTART_TEXT);
+  builder->Add(prefix + "ErrorNeedsRestart",
+               IDS_PAIRING_HOST_ERROR_NEED_RESTART_TEXT);
 
   if (IsBootstrappingSlave()) {
     builder->Add(prefix + "ConfirmationTitle", IDS_SLAVE_CONFIRMATION_TITLE);
@@ -91,8 +99,6 @@ void HostPairingScreenHandler::DeclareLocalizedValues(
     builder->Add(prefix + "EnrollingTitle", IDS_SLAVE_ENROLLMENT_IN_PROGRESS);
     builder->Add(prefix + "EnrollmentErrorTitle",
                  IDS_SLAVE_ENROLLMENT_ERROR_TITLE);
-    builder->Add(prefix + "ErrorNeedsRestart",
-                 IDS_SLAVE_EROLLMENT_ERROR_NEEDS_RESTART);
   }
 }
 

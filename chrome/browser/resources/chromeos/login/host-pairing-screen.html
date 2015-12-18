@@ -49,11 +49,23 @@
         </div>
         <div i18n-content="loginHostPairingScreenWelcomeText"></div>
       </host-pairing-page>
+      <host-pairing-page name="initialization-error">
+        <div class="title"
+            i18n-content="loginHostPairingScreenInitializationErrorTitle">
+        </div>
+        <div i18n-content="loginHostPairingScreenErrorNeedRestartText"></div>
+      </host-pairing-page>
       <host-pairing-page name="code-confirmation">
         <div class="title"
             i18n-content="loginHostPairingScreenConfirmationTitle">
         </div>
         <div id="code">{{C.code}}</div>
+      </host-pairing-page>
+      <host-pairing-page name="connection-error">
+        <div class="title"
+            i18n-content="loginHostPairingScreenConnectionErrorTitle">
+        </div>
+        <div i18n-content="loginHostPairingScreenErrorNeedRestartText"></div>
       </host-pairing-page>
       <host-pairing-page name="setup-basic-configuration">
         <div class="title"
@@ -64,6 +76,7 @@
         <div class="title"
             i18n-content="loginHostPairingScreenSetupNetworkErrorTitle">
         </div>
+        <div i18n-content="loginHostPairingScreenErrorNeedRestartText"></div>
       </host-pairing-page>
       <host-pairing-page name="update">
         <div class="title" i18n-content="loginHostPairingScreenUpdatingTitle">
@@ -85,7 +98,7 @@
         <div class="title"
             i18n-content="loginHostPairingScreenEnrollmentErrorTitle">
         </div>
-        <div i18n-content="loginHostPairingScreenErrorNeedsRestart"></div>
+        <div i18n-content="loginHostPairingScreenErrorNeedRestartText"></div>
       </host-pairing-page>
       <host-pairing-page name="pairing-done">
         <div class="title" i18n-content="loginHostPairingScreenDoneTitle">

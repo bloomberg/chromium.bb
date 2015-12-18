@@ -616,7 +616,7 @@ void WizardController::OnUpdateCompleted() {
                             ->IsSharkRequisition();
   if (is_shark || IsBootstrappingMaster()) {
     ShowControllerPairingScreen();
-  } else if (IsBootstrappingSlave()) {
+  } else if (IsBootstrappingSlave() && shark_controller_detected_) {
     ShowHostPairingScreen();
   } else {
     ShowAutoEnrollmentCheckScreen();
@@ -1326,7 +1326,7 @@ bool WizardController::SetOnTimeZoneResolvedForTesting(
 }
 
 bool WizardController::IsHostPairingOobe() const {
-  return IsRemoraRequisition() &&
+  return (IsRemoraRequisition() || IsBootstrappingSlave()) &&
          (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kHostPairingOobe) ||
           shark_controller_detected_);
@@ -1354,14 +1354,6 @@ void WizardController::OnSharkConnected(
   base::MessageLoop::current()->DeleteSoon(
       FROM_HERE, shark_connection_listener_.release());
   shark_controller_detected_ = true;
-
-  if (IsBootstrappingSlave()) {
-    g_browser_process->platform_part()
-        ->browser_policy_connector_chromeos()
-        ->GetDeviceCloudPolicyManager()
-        ->SetDeviceEnrollmentAutoStart();
-  }
-
   ShowHostPairingScreen();
 }
 

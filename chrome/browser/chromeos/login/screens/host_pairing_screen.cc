@@ -68,6 +68,10 @@ std::string HostPairingScreen::GetName() const {
 void HostPairingScreen::PairingStageChanged(Stage new_stage) {
   std::string desired_page;
   switch (new_stage) {
+    case HostPairingController::STAGE_INITIALIZATION_ERROR: {
+      desired_page = kPageIntializationError;
+      break;
+    }
     case HostPairingController::STAGE_WAITING_FOR_CONTROLLER:
     case HostPairingController::STAGE_WAITING_FOR_CONTROLLER_AFTER_UPDATE: {
       desired_page = kPageWelcome;
@@ -77,6 +81,10 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
       desired_page = kPageCodeConfirmation;
       context_.SetString(kContextKeyConfirmationCode,
                          remora_controller_->GetConfirmationCode());
+      break;
+    }
+    case HostPairingController::STAGE_CONTROLLER_CONNECTION_ERROR: {
+      desired_page = kPageConnectionError;
       break;
     }
     case HostPairingController::STAGE_SETUP_BASIC_CONFIGURATION: {

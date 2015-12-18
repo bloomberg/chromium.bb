@@ -308,17 +308,23 @@ void BluetoothHostPairingController::OnSetError() {
 void BluetoothHostPairingController::OnAcceptError(
     const std::string& error_message) {
   LOG(ERROR) << error_message;
+  ChangeStage(STAGE_CONTROLLER_CONNECTION_ERROR);
 }
 
 void BluetoothHostPairingController::OnSendError(
     const std::string& error_message) {
   LOG(ERROR) << error_message;
+  if (enrollment_status_ != ENROLLMENT_STATUS_ENROLLING &&
+      enrollment_status_ != ENROLLMENT_STATUS_SUCCESS) {
+    ChangeStage(STAGE_CONTROLLER_CONNECTION_ERROR);
+  }
 }
 
 void BluetoothHostPairingController::OnReceiveError(
     device::BluetoothSocket::ErrorReason reason,
     const std::string& error_message) {
   LOG(ERROR) << reason << ", " << error_message;
+  ChangeStage(STAGE_CONTROLLER_CONNECTION_ERROR);
 }
 
 void BluetoothHostPairingController::OnHostStatusMessage(
@@ -352,6 +358,7 @@ void BluetoothHostPairingController::OnCompleteSetupMessage(
     const pairing_api::CompleteSetup& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (current_stage_ != STAGE_ENROLLMENT_SUCCESS) {
+    ChangeStage(STAGE_ENROLLMENT_ERROR);
     AbortWithError(PAIRING_ERROR_PAIRING_OR_ENROLLMENT, kErrorInvalidProtocol);
     return;
   }

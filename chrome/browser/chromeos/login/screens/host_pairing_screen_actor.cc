@@ -17,7 +17,9 @@ const char kContextKeyEnrollmentDomain[] = "enrollmentDomain";
 const char kContextKeyUpdateProgress[] = "updateProgress";
 
 const char kPageWelcome[] = "welcome";
+const char kPageIntializationError[] = "initialization-error";
 const char kPageCodeConfirmation[] = "code-confirmation";
+const char kPageConnectionError[] = "connection-error";
 const char kPageSetupBasicConfiguration[] = "setup-basic-configuration";
 const char kPageSetupNetworkError[] = "setup-network-error";
 const char kPageUpdate[] = "update";

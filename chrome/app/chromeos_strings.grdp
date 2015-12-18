@@ -5962,8 +5962,8 @@ All users must sign out to continue.
   <message name="IDS_PAIRING_HOST_DONE_TEXT" desc="Title of the final host's page shown when the 'Chromebox for meeting' setup process is finished.">
     You're all set to continue on to Hangouts
   </message>
-  <message name="IDS_PAIRING_HOST_EROLLMENT_ERROR_NEEDS_RESTART" desc="Text on the host's page of the 'Chromebox for meeting' setup process shown when enrollment attempt is failed.">
-    Chromebox needs to restart...
+  <message name="IDS_PAIRING_HOST_ERROR_NEED_RESTART_TEXT" desc="Text on the host's error page shown when the bootstrapping attampt or 'Chromebox for meeting' setup process is failed.">
+    Please restart the device and try again later.
   </message>
 
   <!-- Strings for the bootstrapping OOBE process -->
@@ -5985,8 +5985,11 @@ All users must sign out to continue.
   <message name="IDS_SLAVE_ENROLLMENT_ERROR_TITLE" desc="Title of the page shown when enrollment attempt is failed during the bootstrapping process.">
     Unable to enroll
   </message>
-  <message name="IDS_SLAVE_EROLLMENT_ERROR_NEEDS_RESTART" desc="Text on the host's page shown when enrollment attempt is failed during the bootstrapping process.">
-    Please restart the device and try again later.
+  <message name="IDS_PAIRING_HOST_INITIALIZATION_ERROR_TITLE" desc="Title of the host's initialization error page during the bootstrapping process or 'Chromebox for meeting' setup process.">
+    Could not initialize the connection
+  </message>
+  <message name="IDS_PAIRING_HOST_CONNECTION_ERROR_TITLE" desc="Title of the host's connection error page during the bootstrapping process or 'Chromebox for meeting' setup process.">
+    Connection was lost
   </message>
 
   <!-- Strings for the le OAuth-based enterprise enrollment page -->
