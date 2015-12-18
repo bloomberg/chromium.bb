@@ -11,7 +11,6 @@
 #include "remoting/base/buffered_socket_writer.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
-#include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/fake_stream_socket.h"
 #include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/video_stub.h"
@@ -45,8 +44,8 @@ class ClientVideoDispatcherTest : public testing::Test,
   bool initialized_;
 
   // Client side.
+  FakeStreamChannelFactory client_channel_factory_;
   ClientVideoDispatcher dispatcher_;
-  FakeSession session_;
 
   // Host side.
   FakeStreamSocket host_socket_;
@@ -66,15 +65,11 @@ ClientVideoDispatcherTest::ClientVideoDispatcherTest()
       parser_(base::Bind(&ClientVideoDispatcherTest::OnVideoAck,
                          base::Unretained(this)),
               &reader_) {
-  dispatcher_.Init(&session_, ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-                                            kDefaultStreamVersion,
-                                            ChannelConfig::CODEC_UNDEFINED),
-                   this);
+  dispatcher_.Init(&client_channel_factory_, this);
   base::RunLoop().RunUntilIdle();
   DCHECK(initialized_);
   host_socket_.PairWith(
-      session_.GetTransport()->GetStreamChannelFactory()->GetFakeChannel(
-          kVideoChannelName));
+      client_channel_factory_.GetFakeChannel(kVideoChannelName));
   reader_.StartReading(&host_socket_,
                        base::Bind(&ClientVideoDispatcherTest::OnReadError,
                                   base::Unretained(this)));

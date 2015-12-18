@@ -144,17 +144,12 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
       // Initialize channels.
       control_dispatcher_.reset(new HostControlDispatcher());
       control_dispatcher_->Init(
-          session_.get(),
-          ChannelConfig(ChannelConfig::TRANSPORT_STREAM, kDefaultStreamVersion,
-                        ChannelConfig::CODEC_UNDEFINED),
+          session_->GetTransport()->GetStreamChannelFactory(),
           this);
 
       event_dispatcher_.reset(new HostEventDispatcher());
       event_dispatcher_->Init(
-          session_.get(),
-          ChannelConfig(ChannelConfig::TRANSPORT_STREAM, kDefaultStreamVersion,
-                        ChannelConfig::CODEC_UNDEFINED),
-          this);
+          session_->GetTransport()->GetStreamChannelFactory(), this);
       event_dispatcher_->set_on_input_event_callback(base::Bind(
           &ConnectionToClient::OnInputEventReceived, base::Unretained(this)));
 

@@ -142,22 +142,22 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
       break;
     case Session::AUTHENTICATED:
       // Initialize channels.
-      control_dispatcher_->Init(session_.get(),
-                                session_->config().control_config(), this);
+      control_dispatcher_->Init(
+          session_->GetTransport()->GetMultiplexedChannelFactory(), this);
 
-      event_dispatcher_->Init(session_.get(), session_->config().event_config(),
-                              this);
+      event_dispatcher_->Init(
+          session_->GetTransport()->GetMultiplexedChannelFactory(), this);
       event_dispatcher_->set_on_input_event_callback(
           base::Bind(&IceConnectionToClient::OnInputEventReceived,
                      base::Unretained(this)));
 
-      video_dispatcher_->Init(session_.get(), session_->config().video_config(),
-                              this);
+      video_dispatcher_->Init(
+          session_->GetTransport()->GetStreamChannelFactory(), this);
 
       audio_writer_ = AudioWriter::Create(session_->config());
       if (audio_writer_.get()) {
-        audio_writer_->Init(session_.get(), session_->config().audio_config(),
-                            this);
+        audio_writer_->Init(
+            session_->GetTransport()->GetMultiplexedChannelFactory(), this);
       }
 
       // Notify the handler after initializing the channels, so that

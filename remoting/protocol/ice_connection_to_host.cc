@@ -97,24 +97,24 @@ void IceConnectionToHost::OnSessionStateChange(Session::State state) {
       SetState(AUTHENTICATED, OK);
 
       control_dispatcher_.reset(new ClientControlDispatcher());
-      control_dispatcher_->Init(session_.get(),
-                                session_->config().control_config(), this);
+      control_dispatcher_->Init(
+          session_->GetTransport()->GetMultiplexedChannelFactory(), this);
       control_dispatcher_->set_client_stub(client_stub_);
       control_dispatcher_->set_clipboard_stub(clipboard_stub_);
 
       event_dispatcher_.reset(new ClientEventDispatcher());
-      event_dispatcher_->Init(session_.get(), session_->config().event_config(),
-                              this);
+      event_dispatcher_->Init(
+          session_->GetTransport()->GetMultiplexedChannelFactory(), this);
 
       video_dispatcher_.reset(
           new ClientVideoDispatcher(monitored_video_stub_.get()));
-      video_dispatcher_->Init(session_.get(), session_->config().video_config(),
-                              this);
+      video_dispatcher_->Init(
+          session_->GetTransport()->GetStreamChannelFactory(), this);
 
       if (session_->config().is_audio_enabled()) {
         audio_reader_.reset(new AudioReader(audio_stub_));
-        audio_reader_->Init(session_.get(), session_->config().audio_config(),
-                            this);
+        audio_reader_->Init(
+            session_->GetTransport()->GetMultiplexedChannelFactory(), this);
       }
       break;
 

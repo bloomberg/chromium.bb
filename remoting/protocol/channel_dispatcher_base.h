@@ -17,9 +17,7 @@
 namespace remoting {
 namespace protocol {
 
-struct ChannelConfig;
 class StreamChannelFactory;
-class Session;
 
 // Base class for channel message dispatchers. It's responsible for
 // creating the named channel. Derived dispatchers then dispatch
@@ -46,9 +44,7 @@ class ChannelDispatcherBase {
 
   // Creates and connects the channel in the specified
   // |session|. Caller retains ownership of the Session.
-  void Init(Session* session,
-            const ChannelConfig& config,
-            EventHandler* event_handler);
+  void Init(StreamChannelFactory* channel_factory, EventHandler* event_handler);
 
   const std::string& channel_name() { return channel_name_; }
 
