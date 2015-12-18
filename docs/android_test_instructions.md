@@ -150,10 +150,26 @@ tune2fs -e continue android_emulator_sdk/sdk/system-images/android-23/x86/userda
 ## Symbolizing Crashes
 
 Crash stacks are logged and can be viewed using adb logcat. To symbolize the
-traces, pipe the output through
-`third_party/android_platform/development/scripts/stack`. If you build in an
-output directory other than "out", pass
-`--chrome-symbols-dir=out_directory/{Debug,Release}/lib` to the script as well.
+traces, define `CHROMIUM_OUTPUT_DIR=$OUTDIR` where `$OUTDIR` is the argument you
+pass to `ninja -C`, and pipe the output through
+`third_party/android_platform/development/scripts/stack`. If
+`$CHROMIUM_OUTPUT_DIR` is unset, the script will search `out/Debug` and
+`out/Release`. For example:
+
+```shell
+# If you build with
+ninja -C out/Debug chrome_public_test_apk
+# You can run:
+adb logcat -d | third_party/android_platform/development/scripts/stack
+
+# If you build with
+ninja -C out/android chrome_public_test_apk
+# You can run:
+adb logcat -d | CHROMIUM_OUTPUT_DIR=out/android third_party/android_platform/development/scripts/stack
+# or
+export CHROMIUM_OUTPUT_DIR=out/android
+adb logcat -d | third_party/android_platform/development/scripts/stack
+```
 
 ## JUnit tests
 
