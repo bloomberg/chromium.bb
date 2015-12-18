@@ -415,7 +415,7 @@ class Builder(CommandRunner):
     # Start goma support from os/arch/toolname that have been tested.
     # Set NO_NACL_GOMA=true to force to avoid using goma.
     default_no_nacl_goma = True if pynacl.platform.IsWindows() else False
-    if (arch not in ['x86-32', 'x86-64', 'pnacl']
+    if (arch == 'mips'
         or toolname not in ['newlib', 'glibc']
         or IsEnvFlagTrue('NO_NACL_GOMA', default=default_no_nacl_goma)
         or IsEnvFlagTrue('GOMA_DISABLED')):
