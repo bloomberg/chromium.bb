@@ -354,6 +354,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
 #define TAG_CHAD 0x63686164
 #define TAG_desc 0x64657363
 #define TAG_vcgt 0x76636774
+#define TAG_wtpt 0x77747074
 
 static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
 {
@@ -1408,6 +1409,12 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
 		}
 	} else {
 		goto invalid_tag_table;
+	}
+
+	// Profiles other than DeviceLink should have a media white point.
+	// Here we read it if present.
+	if (find_tag(index, TAG_wtpt)) {
+		profile->mediaWhitePoint = read_tag_XYZType(src, index, TAG_wtpt);
 	}
 
 	if (!src->valid)
