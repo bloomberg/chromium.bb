@@ -273,7 +273,7 @@ static PassRefPtr<TraceEvent::ConvertableToTraceFormat> urlForTraceEvent(const K
     return value.release();
 }
 
-void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
+ResourcePtr<Resource> ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
     const KURL& url = request.resourceRequest().url();
     ASSERT(url.protocolIsData() || substituteData.isValid());
@@ -283,13 +283,13 @@ void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFa
     // layer where it isn't easy to mock out a network load. It uses data: urls to emulate the
     // behavior it wants to test, which would otherwise be reserved for network loads.
     if ((factory.type() == Resource::MainResource && !substituteData.isValid()) || factory.type() == Resource::Raw)
-        return;
+        return nullptr;
 
     const String cacheIdentifier = getCacheIdentifier();
     if (Resource* oldResource = memoryCache()->resourceForURL(url, cacheIdentifier)) {
         // There's no reason to re-parse if we saved the data from the previous parse.
         if (request.options().dataBufferingPolicy != DoNotBufferData)
-            return;
+            return oldResource;
         memoryCache()->remove(oldResource);
     }
 
@@ -303,7 +303,7 @@ void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFa
     } else {
         data = PassRefPtr<SharedBuffer>(Platform::current()->parseDataURL(url, mimetype, charset));
         if (!data)
-            return;
+            return nullptr;
     }
     ResourceResponse response(url, mimetype, data->size(), charset, String());
     response.setHTTPStatusCode(200);
@@ -321,6 +321,7 @@ void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFa
     resource->setCacheIdentifier(cacheIdentifier);
     resource->finish();
     memoryCache()->add(resource.get());
+    return resource;
 }
 
 void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(Resource* resource)
@@ -342,10 +343,6 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
     context().upgradeInsecureRequest(request);
     context().addClientHintsIfNecessary(request);
     context().addCSPHeaderIfNecessary(factory.type(), request);
-
-    bool isStaticData = request.resourceRequest().url().protocolIsData() || substituteData.isValid();
-    if (isStaticData)
-        preCacheData(request, factory, substituteData);
 
     KURL url = request.resourceRequest().url();
     TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url", urlForTraceEvent(url));
@@ -376,8 +373,14 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
         }
     }
 
+    bool isStaticData = request.resourceRequest().url().protocolIsData() || substituteData.isValid();
+    ResourcePtr<Resource> resource;
+    if (isStaticData)
+        resource = preCacheData(request, factory, substituteData);
+    if (!resource)
+        resource = memoryCache()->resourceForURL(url, getCacheIdentifier());
+
     // See if we can use an existing resource from the cache. If so, we need to move it to be load blocking.
-    ResourcePtr<Resource> resource = memoryCache()->resourceForURL(url, getCacheIdentifier());
     moveCachedNonBlockingResourceToBlocking(resource.get());
 
     const RevalidationPolicy policy = determineRevalidationPolicy(factory.type(), request, resource.get(), isStaticData);
