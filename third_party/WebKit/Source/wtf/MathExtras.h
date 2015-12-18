@@ -33,6 +33,11 @@
 #include <limits>
 
 #if COMPILER(MSVC)
+// Make math.h behave like other platforms.
+#define _USE_MATH_DEFINES
+// Even if math.h was already inlcuded, including math.h again with
+// _USE_MATH_DEFINES adds the extra defines.
+#include <math.h>
 #include <stdint.h>
 #endif
 
