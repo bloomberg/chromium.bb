@@ -184,6 +184,12 @@ void RestartTick(base::TimeTicks* time) {
   *time = base::TimeTicks().Now();
 }
 
+bool RequestExpired(const base::TimeTicks& expiration) {
+  if (expiration.is_null())
+    return false;
+  return base::TimeTicks().Now() >= expiration;
+}
+
 base::TimeDelta GetTickDuration(const base::TimeTicks& time) {
   if (time.is_null())
     return base::TimeDelta();
@@ -658,6 +664,7 @@ void ServiceWorkerVersion::DispatchFetchEvent(
 void ServiceWorkerVersion::DispatchSyncEvent(
     BackgroundSyncRegistrationHandle::HandleId handle_id,
     BackgroundSyncEventLastChance last_chance,
+    base::TimeDelta max_duration,
     const StatusCallback& callback) {
   OnBeginEvent();
   DCHECK_EQ(ACTIVATED, status()) << status();
@@ -666,11 +673,13 @@ void ServiceWorkerVersion::DispatchSyncEvent(
     StartWorker(base::Bind(
         &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(), callback,
         base::Bind(&self::DispatchSyncEvent, weak_factory_.GetWeakPtr(),
-                   handle_id, last_chance, callback)));
+                   handle_id, last_chance, max_duration, callback)));
     return;
   }
 
-  int request_id = AddRequest(callback, &sync_requests_, REQUEST_SYNC);
+  int request_id =
+      AddRequestWithExpiration(callback, &sync_requests_, REQUEST_SYNC,
+                               base::TimeTicks::Now() + max_duration);
   if (!background_sync_dispatcher_) {
     embedded_worker_->GetServiceRegistry()->ConnectToRemoteService(
         mojo::GetProxy(&background_sync_dispatcher_));
@@ -934,7 +943,7 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
     skip_recording_startup_time_ = true;
 
     // Cancel request timeouts.
-    SetAllRequestTimes(base::TimeTicks());
+    SetAllRequestExpirations(base::TimeTicks());
     return;
   }
   if (!start_callbacks_.empty()) {
@@ -945,8 +954,10 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
     RestartTick(&start_time_);
   }
 
-  // Reactivate request timeouts.
-  SetAllRequestTimes(base::TimeTicks::Now());
+  // Reactivate request timeouts, setting them all to the same expiration time.
+  SetAllRequestExpirations(
+      base::TimeTicks::Now() +
+      base::TimeDelta::FromMinutes(kRequestTimeoutMinutes));
 }
 
 void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
@@ -965,13 +976,18 @@ ServiceWorkerVersion::GetMainScriptHttpResponseInfo() {
   return main_script_http_info_.get();
 }
 
-ServiceWorkerVersion::RequestInfo::RequestInfo(int id,
-                                               RequestType type,
-                                               const base::TimeTicks& now)
-    : id(id), type(type), time(now) {
-}
+ServiceWorkerVersion::RequestInfo::RequestInfo(
+    int id,
+    RequestType type,
+    const base::TimeTicks& expiration)
+    : id(id), type(type), expiration(expiration) {}
 
 ServiceWorkerVersion::RequestInfo::~RequestInfo() {
+}
+
+bool ServiceWorkerVersion::RequestInfo::operator>(
+    const RequestInfo& other) const {
+  return expiration > other.expiration;
 }
 
 template <typename CallbackType>
@@ -1288,9 +1304,12 @@ void ServiceWorkerVersion::OnSyncEventFinished(
                "Request id", request_id);
   PendingRequest<StatusCallback>* request = sync_requests_.Lookup(request_id);
   if (!request) {
-    NOTREACHED() << "Got unexpected message: " << request_id;
+    // Assume the request timed out.
     return;
   }
+
+  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.BackgroundSyncEvent.Time",
+                             base::TimeTicks::Now() - request->start_time);
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   request->callback.Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));
@@ -1913,21 +1932,20 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     return;
   }
 
-  // Requests have not finished within a certain period.
-  bool request_timed_out = false;
+  // Requests have not finished before their expiration.
+  bool stop_for_timeout = false;
   while (!requests_.empty()) {
-    RequestInfo info = requests_.front();
-    if (GetTickDuration(info.time) <
-        base::TimeDelta::FromMinutes(kRequestTimeoutMinutes))
+    RequestInfo info = requests_.top();
+    if (!RequestExpired(info.expiration))
       break;
     if (MaybeTimeOutRequest(info)) {
-      request_timed_out = true;
+      stop_for_timeout = stop_for_timeout || ShouldStopIfRequestTimesOut(info);
       UMA_HISTOGRAM_ENUMERATION("ServiceWorker.RequestTimeouts.Count",
                                 info.type, NUM_REQUEST_TYPES);
     }
     requests_.pop();
   }
-  if (request_timed_out && running_status() != STOPPING)
+  if (stop_for_timeout && running_status() != STOPPING)
     embedded_worker_->Stop();
 
   // For the timeouts below, there are no callbacks to timeout so there is
@@ -2034,10 +2052,22 @@ int ServiceWorkerVersion::AddRequest(
     const CallbackType& callback,
     IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
     RequestType request_type) {
-  base::TimeTicks now = base::TimeTicks::Now();
-  int request_id =
-      callback_map->Add(new PendingRequest<CallbackType>(callback, now));
-  requests_.push(RequestInfo(request_id, request_type, now));
+  base::TimeTicks expiration_time =
+      base::TimeTicks::Now() +
+      base::TimeDelta::FromMinutes(kRequestTimeoutMinutes);
+  return AddRequestWithExpiration(callback, callback_map, request_type,
+                                  expiration_time);
+}
+
+template <typename CallbackType>
+int ServiceWorkerVersion::AddRequestWithExpiration(
+    const CallbackType& callback,
+    IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
+    RequestType request_type,
+    base::TimeTicks expiration) {
+  int request_id = callback_map->Add(
+      new PendingRequest<CallbackType>(callback, base::TimeTicks::Now()));
+  requests_.push(RequestInfo(request_id, request_type, expiration));
   return request_id;
 }
 
@@ -2078,11 +2108,35 @@ bool ServiceWorkerVersion::MaybeTimeOutRequest(const RequestInfo& info) {
   return false;
 }
 
-void ServiceWorkerVersion::SetAllRequestTimes(const base::TimeTicks& ticks) {
-  std::queue<RequestInfo> new_requests;
+bool ServiceWorkerVersion::ShouldStopIfRequestTimesOut(
+    const RequestInfo& info) {
+  // Note, returning false for a type means that the On*EventFinished should not
+  // call NOTREACHED if it can't find the matching request, it may have simply
+  // timed out.
+  switch (info.type) {
+    case REQUEST_SYNC:
+      return false;
+    case REQUEST_ACTIVATE:
+    case REQUEST_INSTALL:
+    case REQUEST_FETCH:
+    case REQUEST_NOTIFICATION_CLICK:
+    case REQUEST_PUSH:
+    case REQUEST_GEOFENCING:
+    case REQUEST_SERVICE_PORT_CONNECT:
+      return true;
+    case NUM_REQUEST_TYPES:
+      NOTREACHED() << "Got unexpected request type: " << info.type;
+  }
+  NOTREACHED() << "Got unexpected request type: " << info.type;
+  return false;
+}
+
+void ServiceWorkerVersion::SetAllRequestExpirations(
+    const base::TimeTicks& expiration) {
+  RequestInfoPriorityQueue new_requests;
   while (!requests_.empty()) {
-    RequestInfo info = requests_.front();
-    info.time = ticks;
+    RequestInfo info = requests_.top();
+    info.expiration = expiration;
     new_requests.push(info);
     requests_.pop();
   }

@@ -47,6 +47,9 @@ namespace {
 // The key used to index the background sync data in ServiceWorkerStorage.
 const char kBackgroundSyncUserDataKey[] = "BackgroundSyncUserData";
 
+// The amount of time that a sync event can fire for, in seconds.
+const int kSyncEventSec = 3 * 60;  // 3 minutes
+
 void PostErrorResponse(
     BackgroundSyncStatus status,
     const BackgroundSyncManager::StatusAndRegistrationCallback& callback) {
@@ -775,7 +778,9 @@ void BackgroundSyncManager::FireOneShotSync(
   // with the registration so don't give it a BackgroundSyncRegistrationHandle.
   // Once the render process gets the handle_id it can create its own handle
   // (with a new unique handle id).
-  active_version->DispatchSyncEvent(handle_id, last_chance, callback);
+  active_version->DispatchSyncEvent(handle_id, last_chance,
+                                    base::TimeDelta::FromSeconds(kSyncEventSec),
+                                    callback);
 }
 
 void BackgroundSyncManager::ScheduleDelayedTask(const base::Closure& callback,

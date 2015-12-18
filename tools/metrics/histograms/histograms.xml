@@ -43221,6 +43221,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The result of dispatching the activate event to the worker.</summary>
 </histogram>
 
+<histogram name="ServiceWorker.BackgroundSyncEvent.Time" units="milliseconds">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    The time taken between dispatching a SyncEvent to a Service Worker and
+    receiving a message that it finished handling the event. Includes the time
+    for the waitUntil() promise to settle.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.Database.DestroyDatabaseResult"
     enum="ServiceWorkerDatabaseStatus">
   <owner>nhiroki@chromium.org</owner>

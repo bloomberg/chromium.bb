@@ -214,11 +214,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Sends sync event to the associated embedded worker and asynchronously calls
   // |callback| when it errors out or it gets a response from the worker to
-  // notify completion.
+  // notify completion. |max_duration| is how long the event is allowed to run
+  // for before it times out.
   //
   // This must be called when the status() is ACTIVATED.
   void DispatchSyncEvent(BackgroundSyncRegistrationHandle::HandleId handle_id,
                          BackgroundSyncEventLastChance last_chance,
+                         base::TimeDelta max_duration,
                          const StatusCallback& callback);
 
   // Sends notificationclick event to the associated embedded worker and
@@ -344,6 +346,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class ServiceWorkerStallInStoppingTest;
   friend class ServiceWorkerURLRequestJobTest;
   friend class ServiceWorkerVersionBrowserTest;
+  friend class ServiceWorkerVersionTest;
 
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
@@ -366,12 +369,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStallInStoppingTest, DetachThenRestart);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
                            RegisterForeignFetchScopes);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestCustomizedTimeout);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWaitForeverInFetchTest,
+                           MixedRequestTimeouts);
 
   class Metrics;
   class PingController;
-
-  typedef ServiceWorkerVersion self;
-  using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
 
   // Used for UMA; add new entries to the end, before NUM_REQUEST_TYPES.
   enum RequestType {
@@ -387,11 +390,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   };
 
   struct RequestInfo {
-    RequestInfo(int id, RequestType type, const base::TimeTicks& time);
+    RequestInfo(int id, RequestType type, const base::TimeTicks& expiration);
     ~RequestInfo();
+    bool operator>(const RequestInfo& other) const;
     int id;
     RequestType type;
-    base::TimeTicks time;
+    base::TimeTicks expiration;
   };
 
   template <typename CallbackType>
@@ -402,6 +406,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
     CallbackType callback;
     base::TimeTicks start_time;
   };
+
+  typedef ServiceWorkerVersion self;
+  using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
+  using RequestInfoPriorityQueue =
+      std::priority_queue<RequestInfo,
+                          std::vector<RequestInfo>,
+                          std::greater<RequestInfo>>;
 
   // The timeout timer interval.
   static const int kTimeoutTimerDelaySeconds;
@@ -548,8 +559,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
       IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
       RequestType request_type);
 
+  template <typename CallbackType>
+  int AddRequestWithExpiration(
+      const CallbackType& callback,
+      IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
+      RequestType request_type,
+      base::TimeTicks expiration);
+
   bool MaybeTimeOutRequest(const RequestInfo& info);
-  void SetAllRequestTimes(const base::TimeTicks& ticks);
+  bool ShouldStopIfRequestTimesOut(const RequestInfo& info);
+  void SetAllRequestExpirations(const base::TimeTicks& expiration);
 
   // Returns the reason the embedded worker failed to start, using information
   // inaccessible to EmbeddedWorkerInstance. Returns |default_code| if it can't
@@ -629,10 +648,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::TimeTicks stale_time_;
 
   // New requests are added to |requests_| along with their entry in a callback
-  // map. The timeout timer periodically checks |requests_| for entries that
-  // should time out or have already been fulfilled (i.e., removed from the
-  // callback map).
-  std::queue<RequestInfo> requests_;
+  // map. Requests are sorted by their expiration time (soonest to expire on top
+  // of the priority queue). The timeout timer periodically checks |requests_|
+  // for entries that should time out or have already been fulfilled (i.e.,
+  // removed from the callback map).
+  RequestInfoPriorityQueue requests_;
 
   bool skip_waiting_ = false;
   bool skip_recording_startup_time_ = false;
