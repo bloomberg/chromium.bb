@@ -394,7 +394,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate
         InspectorInstrumentation::didExecuteScript(cookie);
     }
 
-    crashIfV8IsDead();
+    crashIfIsolateIsDead(isolate);
     return result;
 }
 
@@ -408,7 +408,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Local<
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
     v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
-    crashIfV8IsDead();
+    crashIfIsolateIsDead(isolate);
     return result;
 }
 
@@ -418,7 +418,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledInternalScript(v8::Isolate*
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
     v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
-    crashIfV8IsDead();
+    crashIfIsolateIsDead(isolate);
     return result;
 }
 
@@ -439,7 +439,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(v8::Local<v8::Function> f
     V8RecursionScope recursionScope(isolate);
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willExecuteScript(context, function->ScriptId());
     v8::MaybeLocal<v8::Value> result = function->Call(isolate->GetCurrentContext(), receiver, argc, args);
-    crashIfV8IsDead();
+    crashIfIsolateIsDead(isolate);
     InspectorInstrumentation::didExecuteScript(cookie);
     return result;
 }
@@ -450,7 +450,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callInternalFunction(v8::Local<v8::Fun
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
     v8::MaybeLocal<v8::Value> result = function->Call(isolate->GetCurrentContext(), receiver, argc, args);
-    crashIfV8IsDead();
+    crashIfIsolateIsDead(isolate);
     return result;
 }
 
@@ -461,7 +461,7 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolat
 
     V8RecursionScope::MicrotaskSuppression scope(isolate);
     v8::MaybeLocal<v8::Object> result = objectTemplate->NewInstance(isolate->GetCurrentContext());
-    crashIfV8IsDead();
+    crashIfIsolateIsDead(isolate);
     return result;
 }
 
@@ -472,7 +472,7 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolat
 
     V8RecursionScope::MicrotaskSuppression scope(isolate);
     v8::MaybeLocal<v8::Object> result = function->NewInstance(isolate->GetCurrentContext(), argc, argv);
-    crashIfV8IsDead();
+    crashIfIsolateIsDead(isolate);
     return result;
 }
 
@@ -486,7 +486,7 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObjectInDocument(v8::Isola
     }
     V8RecursionScope scope(isolate);
     v8::MaybeLocal<v8::Object> result = function->NewInstance(isolate->GetCurrentContext(), argc, argv);
-    crashIfV8IsDead();
+    crashIfIsolateIsDead(isolate);
     return result;
 }
 

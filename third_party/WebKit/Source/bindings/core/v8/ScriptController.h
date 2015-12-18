@@ -125,7 +125,7 @@ public:
 
     static bool canAccessFromCurrentOrigin(LocalFrame*);
 
-    static void setCaptureCallStackForUncaughtExceptions(bool);
+    static void setCaptureCallStackForUncaughtExceptions(v8::Isolate*, bool);
     void collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*>>&);
 
     bool canExecuteScripts(ReasonForCallingCanExecuteScripts);

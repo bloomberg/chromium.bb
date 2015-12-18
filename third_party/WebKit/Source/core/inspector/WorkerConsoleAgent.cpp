@@ -73,12 +73,12 @@ ConsoleMessageStorage* WorkerConsoleAgent::messageStorage()
 
 void WorkerConsoleAgent::enableStackCapturingIfNeeded()
 {
-    ScriptController::setCaptureCallStackForUncaughtExceptions(true);
+    ScriptController::setCaptureCallStackForUncaughtExceptions(m_workerGlobalScope->thread()->isolate(), true);
 }
 
 void WorkerConsoleAgent::disableStackCapturingIfNeeded()
 {
-    ScriptController::setCaptureCallStackForUncaughtExceptions(false);
+    ScriptController::setCaptureCallStackForUncaughtExceptions(m_workerGlobalScope->thread()->isolate(), false);
 }
 
 } // namespace blink

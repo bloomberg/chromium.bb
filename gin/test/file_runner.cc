@@ -72,7 +72,7 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate,
   gin::ShellRunner runner(delegate, instance.isolate());
   {
     gin::Runner::Scope scope(&runner);
-    v8::V8::SetCaptureStackTraceForUncaughtExceptions(true);
+    instance.isolate()->SetCaptureStackTraceForUncaughtExceptions(true);
     runner.Run(source, path.AsUTF8Unsafe());
 
     if (run_until_idle) {

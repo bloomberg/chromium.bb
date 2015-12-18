@@ -378,10 +378,10 @@ void V8Initializer::initializeMainThreadIfNeeded()
 
     initializeV8Common(isolate);
 
-    v8::V8::SetFatalErrorHandler(reportFatalErrorInMainThread);
-    v8::V8::AddMessageListener(messageHandlerInMainThread);
-    v8::V8::SetFailedAccessCheckCallbackFunction(failedAccessCheckCallbackInMainThread);
-    v8::V8::SetAllowCodeGenerationFromStringsCallback(codeGenerationCheckCallbackInMainThread);
+    isolate->SetFatalErrorHandler(reportFatalErrorInMainThread);
+    isolate->AddMessageListener(messageHandlerInMainThread);
+    isolate->SetFailedAccessCheckCallbackFunction(failedAccessCheckCallbackInMainThread);
+    isolate->SetAllowCodeGenerationFromStringsCallback(codeGenerationCheckCallbackInMainThread);
 
     if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
         WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
@@ -448,8 +448,8 @@ void V8Initializer::initializeWorker(v8::Isolate* isolate)
 {
     initializeV8Common(isolate);
 
-    v8::V8::AddMessageListener(messageHandlerInWorker);
-    v8::V8::SetFatalErrorHandler(reportFatalErrorInWorker);
+    isolate->AddMessageListener(messageHandlerInWorker);
+    isolate->SetFatalErrorHandler(reportFatalErrorInWorker);
 
     uint32_t here;
     isolate->SetStackLimit(reinterpret_cast<uintptr_t>(&here - kWorkerMaxStackSize / sizeof(uint32_t*)));

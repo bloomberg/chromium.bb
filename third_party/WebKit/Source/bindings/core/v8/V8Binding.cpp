@@ -805,9 +805,9 @@ v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame* frame, DOMWrapperWorld& 
     return frame->windowProxy(world)->context();
 }
 
-void crashIfV8IsDead()
+void crashIfIsolateIsDead(v8::Isolate* isolate)
 {
-    if (v8::V8::IsDead()) {
+    if (isolate->IsDead()) {
         // FIXME: We temporarily deal with V8 internal error situations
         // such as out-of-memory by crashing the renderer.
         CRASH();

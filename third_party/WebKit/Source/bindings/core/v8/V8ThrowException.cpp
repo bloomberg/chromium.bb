@@ -49,7 +49,7 @@ static void domExceptionStackSetter(v8::Local<v8::Name> name, v8::Local<v8::Valu
 
 v8::Local<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Local<v8::Object>& creationContext)
 {
-    if (ec <= 0 || v8::V8::IsExecutionTerminating())
+    if (ec <= 0 || isolate->IsExecutionTerminating())
         return v8Undefined();
 
     ASSERT(ec == SecurityError || unsanitizedMessage.isEmpty());
@@ -164,7 +164,7 @@ v8::Local<v8::Value> V8ThrowException::throwReferenceError(v8::Isolate* isolate,
 
 v8::Local<v8::Value> V8ThrowException::throwException(v8::Local<v8::Value> exception, v8::Isolate* isolate)
 {
-    if (!v8::V8::IsExecutionTerminating())
+    if (!isolate->IsExecutionTerminating())
         isolate->ThrowException(exception);
     return v8::Undefined(isolate);
 }

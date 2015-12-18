@@ -259,7 +259,7 @@ void visitWeakHandlesForMinorGC(v8::Isolate* isolate)
 void objectGroupingForMajorGC(v8::Isolate* isolate, bool constructRetainedObjectInfos)
 {
     MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
-    v8::V8::VisitHandlesWithClassIds(isolate, &visitor);
+    isolate->VisitHandlesWithClassIds(&visitor);
     visitor.notifyFinished();
 }
 
@@ -449,7 +449,7 @@ private:
 void V8GCController::traceDOMWrappers(v8::Isolate* isolate, Visitor* visitor)
 {
     DOMWrapperTracer tracer(visitor);
-    v8::V8::VisitHandlesWithClassIds(isolate, &tracer);
+    isolate->VisitHandlesWithClassIds(&tracer);
 }
 
 } // namespace blink

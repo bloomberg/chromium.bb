@@ -413,9 +413,9 @@ void ScriptController::clearWindowProxy()
     Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearWindowProxy", (currentTime() - start) * 1000, 0, 10000, 50);
 }
 
-void ScriptController::setCaptureCallStackForUncaughtExceptions(bool value)
+void ScriptController::setCaptureCallStackForUncaughtExceptions(v8::Isolate* isolate, bool value)
 {
-    v8::V8::SetCaptureStackTraceForUncaughtExceptions(value, ScriptCallStack::maxCallStackSizeToCapture, stackTraceOptions);
+    isolate->SetCaptureStackTraceForUncaughtExceptions(value, ScriptCallStack::maxCallStackSizeToCapture, stackTraceOptions);
 }
 
 void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*>>& result)

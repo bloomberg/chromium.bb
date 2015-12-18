@@ -113,7 +113,7 @@ public:
         if (m_workerCount > 1)
             return;
 
-        v8::V8::TerminateExecution(m_isolate);
+        m_isolate->TerminateExecution();
     }
 
     bool hasThreadForTest()

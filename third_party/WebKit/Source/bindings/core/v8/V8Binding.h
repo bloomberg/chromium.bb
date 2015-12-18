@@ -983,7 +983,7 @@ CORE_EXPORT void toFlexibleArrayBufferView(v8::Isolate*, v8::Local<v8::Value>, F
 // If the current context causes out of memory, JavaScript setting
 // is disabled and it returns true.
 bool handleOutOfMemory();
-void crashIfV8IsDead();
+void crashIfIsolateIsDead(v8::Isolate*);
 
 inline bool isUndefinedOrNull(v8::Local<v8::Value> value)
 {

@@ -32,6 +32,7 @@
 #include "core/inspector/PageConsoleAgent.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
@@ -121,14 +122,14 @@ void PageConsoleAgent::workerTerminated(WorkerInspectorProxy* workerInspectorPro
 void PageConsoleAgent::enableStackCapturingIfNeeded()
 {
     if (!s_enabledAgentCount)
-        ScriptController::setCaptureCallStackForUncaughtExceptions(true);
+        ScriptController::setCaptureCallStackForUncaughtExceptions(toIsolate(m_inspectedFrames->root()), true);
     ++s_enabledAgentCount;
 }
 
 void PageConsoleAgent::disableStackCapturingIfNeeded()
 {
     if (!(--s_enabledAgentCount))
-        ScriptController::setCaptureCallStackForUncaughtExceptions(false);
+        ScriptController::setCaptureCallStackForUncaughtExceptions(toIsolate(m_inspectedFrames->root()), false);
 }
 
 } // namespace blink

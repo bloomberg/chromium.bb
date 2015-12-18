@@ -505,7 +505,7 @@ void WorkerThread::destroyIsolate()
 void WorkerThread::terminateV8Execution()
 {
     ASSERT(isMainThread());
-    v8::V8::TerminateExecution(m_isolate);
+    m_isolate->TerminateExecution();
 }
 
 void WorkerThread::appendDebuggerTask(PassOwnPtr<WebTaskRunner::Task> task)

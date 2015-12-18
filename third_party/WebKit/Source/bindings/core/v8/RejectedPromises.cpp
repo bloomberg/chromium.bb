@@ -54,7 +54,7 @@ public:
         if (!m_scriptState->contextIsValid())
             return;
         // If execution termination has been triggered, quietly bail out.
-        if (v8::V8::IsExecutionTerminating(m_scriptState->isolate()))
+        if (m_scriptState->isolate()->IsExecutionTerminating())
             return;
         ExecutionContext* executionContext = m_scriptState->executionContext();
         if (!executionContext)
