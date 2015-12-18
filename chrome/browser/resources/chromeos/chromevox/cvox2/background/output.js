@@ -22,7 +22,10 @@ goog.require('cvox.ValueSpan');
 goog.require('goog.i18n.MessageFormat');
 
 goog.scope(function() {
+var AutomationNode = chrome.automation.AutomationNode;
 var Dir = constants.Dir;
+var EventType = chrome.automation.EventType;
+var RoleType = chrome.automation.RoleType;
 
 /**
  * An Output object formats a cursors.Range into speech, braille, or both
@@ -585,10 +588,9 @@ Output.SelectionSpan = function(startIndex, endIndex) {
 
 /**
  * Wrapper for automation nodes as annotations.  Since the
- * {@code chrome.automation.AutomationNode} constructor isn't exposed in
- * the API, this class is used to allow isntanceof checks on these
- * annotations.
- @ @param {chrome.automation.AutomationNode} node
+ * {@code AutomationNode} constructor isn't exposed in the API, this class is
+ * used to allow instanceof checks on these annotations.
+ @ @param {!AutomationNode} node
  * @constructor
  */
 Output.NodeSpan = function(node) {
@@ -657,7 +659,7 @@ Output.prototype = {
    * Specify ranges for speech.
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
-   * @param {chrome.automation.EventType|Output.EventType} type
+   * @param {EventType|Output.EventType} type
    * @return {!Output}
    */
   withSpeech: function(range, prevRange, type) {
@@ -670,7 +672,7 @@ Output.prototype = {
    * Specify ranges for braille.
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
-   * @param {chrome.automation.EventType|Output.EventType} type
+   * @param {EventType|Output.EventType} type
    * @return {!Output}
    */
   withBraille: function(range, prevRange, type) {
@@ -683,7 +685,7 @@ Output.prototype = {
    * Specify ranges for location.
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
-   * @param {chrome.automation.EventType|Output.EventType} type
+   * @param {EventType|Output.EventType} type
    * @return {!Output}
    */
   withLocation: function(range, prevRange, type) {
@@ -696,7 +698,7 @@ Output.prototype = {
    * Specify the same ranges for speech and braille.
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
-   * @param {chrome.automation.EventType|Output.EventType} type
+   * @param {EventType|Output.EventType} type
    * @return {!Output}
    */
   withSpeechAndBraille: function(range, prevRange, type) {
@@ -729,7 +731,7 @@ Output.prototype = {
    * Apply a format string directly to the output buffer. This lets you
    * output a message directly to the buffer using the format syntax.
    * @param {string} formatStr
-   * @param {!chrome.automation.AutomationNode=} opt_node An optional
+   * @param {!AutomationNode=} opt_node An optional
    *     node to apply the formatting to.
    * @return {!Output}
    */
@@ -828,7 +830,7 @@ Output.prototype = {
    * type.
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
-   * @param {chrome.automation.EventType|string} type
+   * @param {EventType|Output.EventType} type
    * @param {!Array<Spannable>} buff Buffer to receive rendered output.
    * @private
    */
@@ -841,7 +843,7 @@ Output.prototype = {
 
   /**
    * Format the node given the format specifier.
-   * @param {chrome.automation.AutomationNode} node
+   * @param {AutomationNode} node
    * @param {string|!Object} format The output format either specified as an
    * output template string or a parsed output format tree.
    * @param {!Array<Spannable>} buff Buffer to receive rendered output.
@@ -907,8 +909,8 @@ Output.prototype = {
             }
           }
           // Annotate this as a name so we don't duplicate names from ancestors.
-          if (node.role == chrome.automation.RoleType.inlineTextBox ||
-              node.role == chrome.automation.RoleType.staticText)
+          if (node.role == RoleType.inlineTextBox ||
+              node.role == RoleType.staticText)
             token = 'name';
           options.annotation.push(token);
           this.append_(buff, text, options);
@@ -973,7 +975,7 @@ Output.prototype = {
           var prev = null;
           if (node)
             prev = cursors.Range.fromNode(node);
-          this.range_(subrange, prev, 'navigate', buff);
+          this.range_(subrange, prev, Output.EventType.NAVIGATE, buff);
         } else if (token == 'role') {
           options.annotation.push(token);
           var msg = node.role;
@@ -1118,7 +1120,7 @@ Output.prototype = {
   /**
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
-   * @param {chrome.automation.EventType|string} type
+   * @param {EventType|Output.EventType} type
    * @param {!Array<Spannable>} rangeBuff
    * @private
    */
@@ -1153,9 +1155,9 @@ Output.prototype = {
   },
 
   /**
-   * @param {!chrome.automation.AutomationNode} node
-   * @param {!chrome.automation.AutomationNode} prevNode
-   * @param {chrome.automation.EventType|string} type
+   * @param {!AutomationNode} node
+   * @param {!AutomationNode} prevNode
+   * @param {EventType|Output.EventType} type
    * @param {!Array<Spannable>} buff
    * @param {!Object=} opt_exclude A list of attributes to exclude from
    * processing.
@@ -1225,9 +1227,9 @@ Output.prototype = {
   },
 
   /**
-   * @param {!chrome.automation.AutomationNode} node
-   * @param {!chrome.automation.AutomationNode} prevNode
-   * @param {chrome.automation.EventType|string} type
+   * @param {!AutomationNode} node
+   * @param {!AutomationNode} prevNode
+   * @param {EventType|Output.EventType} type
    * @param {!Array<Spannable>} buff
    * @private
    */
@@ -1242,7 +1244,7 @@ Output.prototype = {
   /**
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
-   * @param {chrome.automation.EventType|string} type
+   * @param {EventType|Output.EventType} type
    * @param {!Array<Spannable>} buff
    * @private
    */

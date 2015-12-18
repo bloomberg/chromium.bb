@@ -53,7 +53,7 @@ DesktopAutomationHandler.prototype = {
 
   /**
    * Provides all feedback once ChromeVox's focus changes.
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onEventDefault: function(evt) {
     var node = evt.target;
@@ -151,7 +151,8 @@ DesktopAutomationHandler.prototype = {
       Output.flushNextSpeechUtterance();
 
     this.onEventDefault(
-        {target: node, type: chrome.automation.EventType.focus});
+        /** @type {!AutomationEvent} */
+        ({target: node, type: chrome.automation.EventType.focus}));
   },
 
   /**
@@ -199,7 +200,7 @@ DesktopAutomationHandler.prototype = {
 
   /**
    * Provides all feedback once a text selection change event fires.
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onTextOrTextSelectionChanged: function(evt) {
     if (!this.isEditable_(evt.target))
@@ -236,7 +237,7 @@ DesktopAutomationHandler.prototype = {
 
   /**
    * Provides all feedback once a value changed event fires.
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onValueChanged: function(evt) {
     // Don't process nodes inside of web content if ChromeVox Next is inactive.

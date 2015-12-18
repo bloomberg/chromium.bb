@@ -26,7 +26,7 @@ BaseAutomationHandler = function(node) {
 
   /**
    * Maps an automation event to its listener.
-   * @type {!Object<EventType, function(Object) : void>}
+   * @type {!Object<EventType, function(!AutomationEvent) : void>}
    */
   this.listenerMap_ = {
     alert: this.onAlert,
@@ -41,7 +41,7 @@ BaseAutomationHandler = function(node) {
     valueChanged: this.onValueChanged
   };
 
-  /** @type {!Object<string, function(AutomationEvent): void>} @private */
+  /** @type {!Object<string, function(!AutomationEvent): void>} @private */
   this.listeners_ = {};
 
   this.register_();
@@ -73,7 +73,7 @@ BaseAutomationHandler.prototype = {
   },
 
   /**
-   * @return {!function(AutomationEvent): void}
+   * @return {!function(!AutomationEvent): void}
    * @private
    */
   makeListener_: function(callback) {
@@ -102,37 +102,37 @@ BaseAutomationHandler.prototype = {
   },
 
   /**
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onAlert: function(evt) {},
 
   /**
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onFocus: function(evt) {},
 
   /**
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onLoadComplete: function(evt) {},
 
   /**
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onEventDefault: function(evt) {},
 
   /**
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onScrollPositionChanged: function(evt) {},
 
   /**
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onTextOrTextSelectionChanged: function(evt) {},
 
   /**
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onValueChanged: function(evt) {}
 };

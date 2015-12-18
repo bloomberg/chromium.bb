@@ -58,7 +58,7 @@ goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
 var Dir = constants.Dir;
 var Movement = cursors.Movement;
-var Role = chrome.automation.RoleType;
+var RoleType = chrome.automation.RoleType;
 var Unit = cursors.Unit;
 
 /**
@@ -157,7 +157,7 @@ cursors.Cursor.prototype = {
       case Unit.WORD:
         switch (movement) {
           case Movement.BOUND:
-            if (newNode.role == Role.inlineTextBox) {
+            if (newNode.role == RoleType.inlineTextBox) {
               var start, end;
               for (var i = 0; i < newNode.wordStarts.length; i++) {
                 if (newIndex >= newNode.wordStarts[i] &&
@@ -174,7 +174,7 @@ cursors.Cursor.prototype = {
             }
             break;
           case Movement.DIRECTIONAL:
-            if (newNode.role == Role.inlineTextBox) {
+            if (newNode.role == RoleType.inlineTextBox) {
               var start, end;
               for (var i = 0; i < newNode.wordStarts.length; i++) {
                 if (newIndex >= newNode.wordStarts[i] &&
@@ -197,7 +197,7 @@ cursors.Cursor.prototype = {
                   if (newNode) {
                     newIndex = 0;
                     if (dir == Dir.BACKWARD &&
-                        newNode.role == Role.inlineTextBox) {
+                        newNode.role == RoleType.inlineTextBox) {
                       var starts = newNode.wordStarts;
                       newIndex = starts[starts.length - 1] || 0;
                     } else {
@@ -440,8 +440,8 @@ cursors.Range.prototype = {
    * @return {boolean}
   */
   isWebRange: function() {
-    return this.start.node.root.role != Role.desktop ||
-        this.end.node.root.role != Role.desktop;
+    return this.start.node.root.role != RoleType.desktop ||
+        this.end.node.root.role != RoleType.desktop;
   }
 };
 
