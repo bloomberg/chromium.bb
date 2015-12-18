@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "skia/ext/benchmarking_canvas.h"
+
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "skia/ext/benchmarking_canvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkRRect.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkString.h"
-#include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkTLazy.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 
 namespace {
@@ -47,14 +50,14 @@ WARN_UNUSED_RESULT
 scoped_ptr<base::Value> AsValue(bool b) {
   scoped_ptr<base::FundamentalValue> val(new base::FundamentalValue(b));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
 scoped_ptr<base::Value> AsValue(SkScalar scalar) {
   scoped_ptr<base::FundamentalValue> val(new base::FundamentalValue(scalar));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -63,7 +66,7 @@ scoped_ptr<base::Value> AsValue(const SkSize& size) {
   val->Set("width",  AsValue(size.width()));
   val->Set("height", AsValue(size.height()));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -72,7 +75,7 @@ scoped_ptr<base::Value> AsValue(const SkPoint& point) {
   val->Set("x", AsValue(point.x()));
   val->Set("y", AsValue(point.y()));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -83,7 +86,7 @@ scoped_ptr<base::Value> AsValue(const SkRect& rect) {
   val->Set("right", AsValue(rect.fRight));
   val->Set("bottom", AsValue(rect.fBottom));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -96,9 +99,9 @@ scoped_ptr<base::Value> AsValue(const SkRRect& rrect) {
 
   scoped_ptr<base::DictionaryValue> val(new base::DictionaryValue());
   val->Set("rect", AsValue(rrect.rect()));
-  val->Set("radii", radii_val.Pass());
+  val->Set("radii", std::move(radii_val));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -107,7 +110,7 @@ scoped_ptr<base::Value> AsValue(const SkMatrix& matrix) {
   for (int i = 0; i < 9; ++i)
     val->Append(AsValue(matrix[i]).release()); // no scoped_ptr-aware Append() variant
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -118,7 +121,7 @@ scoped_ptr<base::Value> AsValue(SkColor color) {
   val->SetInteger("g", SkColorGetG(color));
   val->SetInteger("b", SkColorGetB(color));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -126,7 +129,7 @@ scoped_ptr<base::Value> AsValue(SkXfermode::Mode mode) {
   scoped_ptr<base::StringValue> val(
       new base::StringValue(SkXfermode::ModeName(mode)));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -136,7 +139,7 @@ scoped_ptr<base::Value> AsValue(SkCanvas::PointMode mode) {
 
   scoped_ptr<base::StringValue> val(new base::StringValue(gModeStrings[mode]));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -146,7 +149,7 @@ scoped_ptr<base::Value> AsValue(const SkXfermode& xfermode) {
     return AsValue(mode);
 
   scoped_ptr<base::StringValue> val(new base::StringValue("unknown"));
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -167,7 +170,7 @@ scoped_ptr<base::Value> AsValue(const SkColorFilter& filter) {
     for (unsigned i = 0; i < 20; ++i)
       color_matrix_val->Append(AsValue(color_matrix[i]).release());
 
-    val->Set("color_matrix", color_matrix_val.Pass());
+    val->Set("color_matrix", std::move(color_matrix_val));
   }
 
   SkColor color;
@@ -178,17 +181,17 @@ scoped_ptr<base::Value> AsValue(const SkColorFilter& filter) {
     color_mode_val->Set("color", AsValue(color));
     color_mode_val->Set("mode", AsValue(mode));
 
-    val->Set("color_mode", color_mode_val.Pass());
+    val->Set("color_mode", std::move(color_mode_val));
   }
 
   if (filter.asComponentTable(nullptr)) {
     scoped_ptr<base::DictionaryValue> component_table_val(
         new base::DictionaryValue());
     // use this as a marker for now
-    val->Set("component_table", component_table_val.Pass());
+    val->Set("component_table", std::move(component_table_val));
   }
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -202,7 +205,7 @@ scoped_ptr<base::Value> AsValue(const SkImageFilter& filter) {
     SkSafeUnref(color_filter); // ref'd in asColorFilter
   }
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -267,7 +270,7 @@ scoped_ptr<base::Value> AsValue(const SkPaint& paint) {
   if (paint.getImageFilter())
     val->Set("ImageFilter", AsValue(*paint.getImageFilter()));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -282,7 +285,7 @@ scoped_ptr<base::Value> AsValue(SkCanvas::SaveFlags flags) {
 
   scoped_ptr<base::StringValue> val(new base::StringValue(builder.str()));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -296,7 +299,7 @@ scoped_ptr<base::Value> AsValue(SkRegion::Op op) {
                                     };
   DCHECK_LT(static_cast<size_t>(op), SK_ARRAY_COUNT(gOpStrings));
   scoped_ptr<base::StringValue> val(new base::StringValue(gOpStrings[op]));
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -304,7 +307,7 @@ scoped_ptr<base::Value> AsValue(const SkRegion& region) {
   scoped_ptr<base::DictionaryValue> val(new base::DictionaryValue());
   val->Set("bounds", AsValue(SkRect::Make(region.getBounds())));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -312,7 +315,7 @@ scoped_ptr<base::Value> AsValue(const SkBitmap& bitmap) {
   scoped_ptr<base::DictionaryValue> val(new base::DictionaryValue());
   val->Set("size", AsValue(SkSize::Make(bitmap.width(), bitmap.height())));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -320,7 +323,7 @@ scoped_ptr<base::Value> AsValue(const SkImage& image) {
   scoped_ptr<base::DictionaryValue> val(new base::DictionaryValue());
   val->Set("size", AsValue(SkSize::Make(image.width(), image.height())));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -328,7 +331,7 @@ scoped_ptr<base::Value> AsValue(const SkTextBlob& blob) {
   scoped_ptr<base::DictionaryValue> val(new base::DictionaryValue());
   val->Set("bounds", AsValue(blob.bounds()));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 WARN_UNUSED_RESULT
@@ -377,16 +380,16 @@ scoped_ptr<base::Value> AsValue(const SkPath& path) {
       for (int i = 0; i < gPtsPerVerb[verb]; ++i)
         pts_val->Append(AsValue(points[i + gPtOffsetPerVerb[verb]]).release());
 
-      verb_val->Set(gVerbStrings[verb], pts_val.Pass());
+      verb_val->Set(gVerbStrings[verb], std::move(pts_val));
 
       if (SkPath::kConic_Verb == verb)
         verb_val->Set("weight", AsValue(iter.conicWeight()));
 
       verbs_val->Append(verb_val.release());
   }
-  val->Set("verbs", verbs_val.Pass());
+  val->Set("verbs", std::move(verbs_val));
 
-  return val.Pass();
+  return std::move(val);
 }
 
 template<typename T>
@@ -397,7 +400,7 @@ scoped_ptr<base::Value> AsListValue(const T array[], size_t count) {
   for (size_t i = 0; i < count; ++i)
     val->Append(AsValue(array[i]).release());
 
-  return val.Pass();
+  return std::move(val);
 }
 
 class OverdrawXfermode : public SkXfermode {
@@ -485,7 +488,7 @@ public:
 
   void addParam(const char name[], scoped_ptr<base::Value> value) {
     scoped_ptr<base::DictionaryValue> param(new base::DictionaryValue());
-    param->Set(name, value.Pass());
+    param->Set(name, std::move(value));
 
     op_params_->Append(param.release());
   }

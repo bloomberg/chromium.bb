@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "SkDiscardableMemory_chrome.h"
+#include "skia/ext/SkDiscardableMemory_chrome.h"
+
+#include <utility>
 
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_memory_allocator.h"
@@ -23,8 +25,7 @@ void SkDiscardableMemoryChrome::unlock() {
 
 SkDiscardableMemoryChrome::SkDiscardableMemoryChrome(
     scoped_ptr<base::DiscardableMemory> memory)
-    : discardable_(memory.Pass()) {
-}
+    : discardable_(std::move(memory)) {}
 
 base::trace_event::MemoryAllocatorDump*
 SkDiscardableMemoryChrome::CreateMemoryAllocatorDump(
