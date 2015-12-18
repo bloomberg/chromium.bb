@@ -34,6 +34,7 @@ proto_library("proto_internal") {
     "display_list_recording_source.proto",
     "layer.proto",
     "layer_position_constraint.proto",
+    "layer_selection_bound.proto",
     "layer_tree_debug_state.proto",
     "layer_tree_settings.proto",
     "managed_memory_policy.proto",

@@ -12,6 +12,10 @@
 
 namespace cc {
 
+namespace proto {
+class LayerSelectionBound;
+}  // namespace proto
+
 // Marker for a selection end-point attached to a specific layer.
 struct CC_EXPORT LayerSelectionBound {
   LayerSelectionBound();
@@ -21,10 +25,13 @@ struct CC_EXPORT LayerSelectionBound {
   gfx::Point edge_top;
   gfx::Point edge_bottom;
   int layer_id;
-};
 
-bool operator==(const LayerSelectionBound& lhs, const LayerSelectionBound& rhs);
-bool operator!=(const LayerSelectionBound& lhs, const LayerSelectionBound& rhs);
+  bool operator==(const LayerSelectionBound& other) const;
+  bool operator!=(const LayerSelectionBound& other) const;
+
+  void ToProtobuf(proto::LayerSelectionBound* proto) const;
+  void FromProtobuf(const proto::LayerSelectionBound& proto);
+};
 
 typedef Selection<LayerSelectionBound> LayerSelection;
 

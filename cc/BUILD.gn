@@ -778,6 +778,7 @@ test("cc_unittests") {
     "debug/layer_tree_debug_state_unittest.cc",
     "debug/micro_benchmark_controller_unittest.cc",
     "debug/rendering_stats_unittest.cc",
+    "input/layer_selection_bound_unittest.cc",
     "input/scroll_state_unittest.cc",
     "input/top_controls_manager_unittest.cc",
     "layers/delegated_frame_provider_unittest.cc",

@@ -607,6 +607,7 @@
         'proto/layer_position_constraint.proto',
         'proto/layer_tree_debug_state.proto',
         'proto/layer_tree_settings.proto',
+        'proto/layer_selection_bound.proto',
         'proto/managed_memory_policy.proto',
         'proto/memory_allocation.proto',
         'proto/point.proto',
