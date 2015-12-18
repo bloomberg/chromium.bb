@@ -2247,7 +2247,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
 
     *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
         GetTaskRunner(), task_graph_runner, resource_provider_.get(),
-        settings_.renderer_settings.preferred_tile_format);
+        settings_.renderer_settings.use_rgba_4444_textures);
     return;
   }
 
@@ -2261,7 +2261,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
       GetTaskRunner(), task_graph_runner, context_provider,
       resource_provider_.get(), max_copy_texture_chromium_size,
       settings_.use_partial_raster, settings_.max_staging_buffer_usage_in_bytes,
-      settings_.renderer_settings.preferred_tile_format);
+      settings_.renderer_settings.use_rgba_4444_textures);
 }
 
 void LayerTreeHostImpl::RecordMainFrameTiming(

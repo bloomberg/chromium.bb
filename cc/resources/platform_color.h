@@ -24,19 +24,7 @@ class PlatformColor {
   }
 
   // Returns the most efficient texture format for this platform.
-  static ResourceFormat BestTextureFormat() {
-    switch (Format()) {
-      case SOURCE_FORMAT_BGRA8:
-        return BGRA_8888;
-      case SOURCE_FORMAT_RGBA8:
-        return RGBA_8888;
-    }
-    NOTREACHED();
-    return RGBA_8888;
-  }
-
-  // Returns the most efficient supported texture format for this platform.
-  static ResourceFormat BestSupportedTextureFormat(bool supports_bgra8888) {
+  static ResourceFormat BestTextureFormat(bool supports_bgra8888) {
     switch (Format()) {
       case SOURCE_FORMAT_BGRA8:
         return (supports_bgra8888) ? BGRA_8888 : RGBA_8888;

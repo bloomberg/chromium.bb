@@ -26,7 +26,6 @@ CC_EXPORT extern const char kTopControlsShowThreshold[];
 CC_EXPORT extern const char kSlowDownRasterScaleFactor[];
 CC_EXPORT extern const char kStrictLayerPropertyChangeChecking[];
 CC_EXPORT extern const char kEnablePropertyTreeVerification[];
-CC_EXPORT extern const char kEnableTileCompression[];
 
 // Switches for both the renderer and ui compositors.
 CC_EXPORT extern const char kEnableBeginFrameScheduling[];

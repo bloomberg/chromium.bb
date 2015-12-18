@@ -50,9 +50,6 @@ const char kStrictLayerPropertyChangeChecking[] =
 const char kEnablePropertyTreeVerification[] =
     "enable-property-tree-verification";
 
-// Compress tile textures for GPUs supporting it.
-const char kEnableTileCompression[] = "enable-tile-compression";
-
 // Use a BeginFrame signal from browser to renderer to schedule rendering.
 const char kEnableBeginFrameScheduling[] = "enable-begin-frame-scheduling";
 

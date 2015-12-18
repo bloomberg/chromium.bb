@@ -182,11 +182,11 @@ scoped_ptr<TileTaskWorkerPool> OneCopyTileTaskWorkerPool::Create(
     int max_copy_texture_chromium_size,
     bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes,
-    ResourceFormat preferred_tile_format) {
+    bool use_rgba_4444_texture_format) {
   return make_scoped_ptr<TileTaskWorkerPool>(new OneCopyTileTaskWorkerPool(
       task_runner, task_graph_runner, resource_provider,
       max_copy_texture_chromium_size, use_partial_raster,
-      max_staging_buffer_usage_in_bytes, preferred_tile_format));
+      max_staging_buffer_usage_in_bytes, use_rgba_4444_texture_format));
 }
 
 OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
@@ -196,7 +196,7 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
     int max_copy_texture_chromium_size,
     bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes,
-    ResourceFormat preferred_tile_format)
+    bool use_rgba_4444_texture_format)
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner->GetNamespaceToken()),
@@ -209,7 +209,7 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
       use_partial_raster_(use_partial_raster),
       bytes_scheduled_since_last_flush_(0),
       max_staging_buffer_usage_in_bytes_(max_staging_buffer_usage_in_bytes),
-      preferred_tile_format_(preferred_tile_format),
+      use_rgba_4444_texture_format_(use_rgba_4444_texture_format),
       staging_buffer_usage_in_bytes_(0),
       free_staging_buffer_usage_in_bytes_(0),
       staging_buffer_expiration_delay_(
@@ -282,13 +282,9 @@ void OneCopyTileTaskWorkerPool::CheckForCompletedTasks() {
 
 ResourceFormat OneCopyTileTaskWorkerPool::GetResourceFormat(
     bool must_support_alpha) const {
-  if (resource_provider_->IsResourceFormatSupported(preferred_tile_format_) &&
-      (DoesResourceFormatSupportAlpha(preferred_tile_format_) ||
-       !must_support_alpha)) {
-    return preferred_tile_format_;
-  }
-
-  return resource_provider_->best_texture_format();
+  return use_rgba_4444_texture_format_
+             ? RGBA_4444
+             : resource_provider_->best_texture_format();
 }
 
 bool OneCopyTileTaskWorkerPool::GetResourceRequiresSwizzle(
@@ -432,41 +428,32 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
 #endif
     }
 
-    // Since compressed texture's cannot be pre-allocated we might have an
-    // unallocated resource in which case we need to perform a full size copy.
-    if (IsResourceFormatCompressed(resource->format())) {
-      gl->CompressedCopyTextureCHROMIUM(GL_TEXTURE_2D,
-                                        staging_buffer->texture_id,
-                                        resource_lock->texture_id());
-    } else {
-      int bytes_per_row =
-          (BitsPerPixel(resource->format()) * resource->size().width()) / 8;
-      int chunk_size_in_rows =
-          std::max(1, max_bytes_per_copy_operation_ / bytes_per_row);
-      // Align chunk size to 4. Required to support compressed texture formats.
-      chunk_size_in_rows = MathUtil::UncheckedRoundUp(chunk_size_in_rows, 4);
-      int y = 0;
-      int height = resource->size().height();
-      while (y < height) {
-        // Copy at most |chunk_size_in_rows|.
-        int rows_to_copy = std::min(chunk_size_in_rows, height - y);
-        DCHECK_GT(rows_to_copy, 0);
+    int bytes_per_row =
+        (BitsPerPixel(resource->format()) * resource->size().width()) / 8;
+    int chunk_size_in_rows =
+        std::max(1, max_bytes_per_copy_operation_ / bytes_per_row);
+    // Align chunk size to 4. Required to support compressed texture formats.
+    chunk_size_in_rows = MathUtil::UncheckedRoundUp(chunk_size_in_rows, 4);
+    int y = 0;
+    int height = resource->size().height();
+    while (y < height) {
+      // Copy at most |chunk_size_in_rows|.
+      int rows_to_copy = std::min(chunk_size_in_rows, height - y);
+      DCHECK_GT(rows_to_copy, 0);
 
-        gl->CopySubTextureCHROMIUM(GL_TEXTURE_2D, staging_buffer->texture_id,
-                                   resource_lock->texture_id(), 0, y, 0, y,
-                                   resource->size().width(), rows_to_copy,
-                                   false, false, false);
-        y += rows_to_copy;
+      gl->CopySubTextureCHROMIUM(GL_TEXTURE_2D, staging_buffer->texture_id,
+                                 resource_lock->texture_id(), 0, y, 0, y,
+                                 resource->size().width(), rows_to_copy, false,
+                                 false, false);
+      y += rows_to_copy;
 
-        // Increment |bytes_scheduled_since_last_flush_| by the amount of memory
-        // used for this copy operation.
-        bytes_scheduled_since_last_flush_ += rows_to_copy * bytes_per_row;
+      // Increment |bytes_scheduled_since_last_flush_| by the amount of memory
+      // used for this copy operation.
+      bytes_scheduled_since_last_flush_ += rows_to_copy * bytes_per_row;
 
-        if (bytes_scheduled_since_last_flush_ >=
-            max_bytes_per_copy_operation_) {
-          gl->ShallowFlushCHROMIUM();
-          bytes_scheduled_since_last_flush_ = 0;
-        }
+      if (bytes_scheduled_since_last_flush_ >= max_bytes_per_copy_operation_) {
+        gl->ShallowFlushCHROMIUM();
+        bytes_scheduled_since_last_flush_ = 0;
       }
     }
 

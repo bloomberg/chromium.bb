@@ -796,6 +796,8 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
   if (resource) {
     resource_content_id = tile->invalidated_id();
     DCHECK_EQ(DetermineResourceFormat(tile), resource->format());
+    DCHECK_EQ(tile->desired_texture_size().ToString(),
+              resource->size().ToString());
   } else {
     resource = resource_pool_->AcquireResource(tile->desired_texture_size(),
                                                DetermineResourceFormat(tile));
