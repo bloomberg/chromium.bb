@@ -405,7 +405,7 @@ void ClientSideDetectionHost::DidNavigateMainFrame(
 
 void ClientSideDetectionHost::OnSafeBrowsingHit(
     const SafeBrowsingUIManager::UnsafeResource& resource) {
-  if (!web_contents() || !web_contents()->GetController().GetActiveEntry())
+  if (!web_contents())
     return;
 
   // Check that the hit is either malware or phishing.
@@ -420,9 +420,12 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
       web_contents() != content::WebContents::FromRenderViewHost(hit_rvh))
     return;
 
+  NavigationEntry *entry = resource.GetNavigationEntryForResource();
+  if (!entry)
+    return;
+
   // Store the unique page ID for later.
-  unsafe_unique_page_id_ =
-      web_contents()->GetController().GetActiveEntry()->GetUniqueID();
+  unsafe_unique_page_id_ = entry->GetUniqueID();
 
   // We also keep the resource around in order to be able to send the
   // malicious URL to the server.
@@ -673,8 +676,14 @@ bool ClientSideDetectionHost::DidShowSBInterstitial() const {
   if (unsafe_unique_page_id_ <= 0 || !web_contents()) {
     return false;
   }
+  // DidShowSBInterstitial is called after client side detection is finished to
+  // see if a SB interstitial was shown on the same page. Client Side Detection
+  // only runs on the currently committed page, so an unconditional
+  // GetLastCommittedEntry is correct here. GetNavigationEntryForResource cannot
+  // be used since it may no longer be valid (eg, if the UnsafeResource was for
+  // a blocking main page load which was then proceeded through).
   const NavigationEntry* nav_entry =
-      web_contents()->GetController().GetActiveEntry();
+      web_contents()->GetController().GetLastCommittedEntry();
   return (nav_entry && nav_entry->GetUniqueID() == unsafe_unique_page_id_);
 }
 

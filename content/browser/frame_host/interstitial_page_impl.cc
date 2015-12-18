@@ -182,11 +182,6 @@ InterstitialPageImpl::InterstitialPageImpl(
       delegate_(delegate),
       weak_ptr_factory_(this) {
   InitInterstitialPageMap();
-  // It would be inconsistent to create an interstitial with no new navigation
-  // (which is the case when the interstitial was triggered by a sub-resource on
-  // a page) when we have a pending entry (in the process of loading a new top
-  // frame).
-  DCHECK(new_navigation || !web_contents->GetController().GetPendingEntry());
 }
 
 InterstitialPageImpl::~InterstitialPageImpl() {

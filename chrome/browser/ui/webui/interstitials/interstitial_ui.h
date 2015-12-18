@@ -16,6 +16,8 @@ namespace content {
 class WebContents;
 }
 
+// Handler for chrome://interstitials demonstration pages. This class is not
+// used in displaying any real interstitials.
 class InterstitialUI : public content::WebUIController {
  public:
   explicit InterstitialUI(content::WebUI* web_ui);

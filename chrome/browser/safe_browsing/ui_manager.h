@@ -25,6 +25,10 @@ namespace base {
 class Thread;
 }  // namespace base
 
+namespace content {
+class NavigationEntry;
+}  // namespace content
+
 namespace net {
 class SSLInfo;
 }  // namespace net
@@ -47,7 +51,24 @@ class SafeBrowsingUIManager
     UnsafeResource();
     ~UnsafeResource();
 
+    // Returns true if this UnsafeResource is a main frame load that was blocked
+    // while the navigation is still pending. Note that a main frame hit may not
+    // be blocking, eg. client side detection happens after the load is
+    // committed.
     bool IsMainPageLoadBlocked() const;
+
+    // Returns the NavigationEntry for this resource (for a main frame hit) or
+    // for the page which contains this resource (for a subresource hit).
+    // This method must only be called while the UnsafeResource is still
+    // "valid".
+    // I.e,
+    //   For MainPageLoadBlocked resources, it must not be called if the load
+    //   was aborted (going back or replaced with a different navigation),
+    //   or resumed (proceeded through warning or matched whitelist).
+    //   For non-MainPageLoadBlocked resources, it must not be called if any
+    //   other navigation has committed (whether by going back or unrelated
+    //   navigations), though a pending navigation is okay.
+    content::NavigationEntry* GetNavigationEntryForResource() const;
 
     GURL url;
     GURL original_url;

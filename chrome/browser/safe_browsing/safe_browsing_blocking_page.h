@@ -65,6 +65,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   static SafeBrowsingBlockingPage* CreateBlockingPage(
       SafeBrowsingUIManager* ui_manager,
       content::WebContents* web_contents,
+      const GURL& main_frame_url,
       const UnsafeResource& unsafe_resource);
 
   // Shows a blocking page warning the user about phishing/malware for a
@@ -95,12 +96,31 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   friend class SafeBrowsingBlockingPageTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            ProceedThenDontProceed);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+                           MalwareReportsDisabled);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+                           MalwareReportsToggling);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+                           ExtendedReportingNotShownOnSecurePage);
+  FRIEND_TEST_ALL_PREFIXES(
+      SafeBrowsingBlockingPageTest,
+      ExtendedReportingNotShownOnSecurePageWithSecureSubresource);
+  FRIEND_TEST_ALL_PREFIXES(
+      SafeBrowsingBlockingPageTest,
+      ExtendedReportingNotShownOnSecurePageWithInsecureSubresource);
+  FRIEND_TEST_ALL_PREFIXES(
+      SafeBrowsingBlockingPageTest,
+      ExtendedReportingOnInsecurePageWithSecureSubresource);
+  FRIEND_TEST_ALL_PREFIXES(
+      SafeBrowsingBlockingPageTest,
+      ExtendedReportingNotShownOnSecurePageWithPendingInsecureLoad);
 
   void UpdateReportingPref();  // Used for the transition from old to new pref.
 
   // Don't instantiate this class directly, use ShowBlockingPage instead.
   SafeBrowsingBlockingPage(SafeBrowsingUIManager* ui_manager,
                            content::WebContents* web_contents,
+                           const GURL& main_frame_url,
                            const UnsafeResourceList& unsafe_resources);
 
   // SecurityInterstitialPage methods:
@@ -150,6 +170,9 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   // client-side detection where the interstitial is shown after page load
   // finishes.
   bool is_main_frame_load_blocked_;
+
+  // The URL of the main frame that caused the warning.
+  GURL main_frame_url_;
 
   // The index of a navigation entry that should be removed when DontProceed()
   // is invoked, -1 if not entry should be removed.
@@ -201,6 +224,7 @@ class SafeBrowsingBlockingPageFactory {
   virtual SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       SafeBrowsingUIManager* ui_manager,
       content::WebContents* web_contents,
+      const GURL& main_frame_url,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) = 0;
 };
 
