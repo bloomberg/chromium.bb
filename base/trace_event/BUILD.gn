@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Should be static library, see documentation on //base:base for discussion.
-static_library("trace_event") {
+source_set("trace_event") {
   sources = [
     "common/trace_event_common.h",
     "heap_profiler_allocation_context.cc",

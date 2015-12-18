@@ -5,8 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 
-# Should be static library, see documentation on //base:base for discussion.
-static_library("debug") {
+source_set("debug") {
   sources = [
     "alias.cc",
     "alias.h",

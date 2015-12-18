@@ -6,6 +6,7 @@ group("public") {
   # Meta-target, don't link into production code.
   testonly = true
   deps = [
+    ":libmojo_sdk",
     ":sdk",
     "cpp/bindings",
     "cpp/environment:standalone",
@@ -29,5 +30,12 @@ group("sdk") {
     "cpp/utility",
     "interfaces/bindings",
     "js",
+  ]
+}
+
+static_library("libmojo_sdk") {
+  complete_static_lib = true
+  deps = [
+    ":sdk",
   ]
 }

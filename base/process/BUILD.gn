@@ -4,8 +4,7 @@
 
 import("//build/config/nacl/config.gni")
 
-# Should be static library, see documentation on //base:base for discussion.
-static_library("process") {
+source_set("process") {
   sources = [
     "internal_linux.cc",
     "internal_linux.h",

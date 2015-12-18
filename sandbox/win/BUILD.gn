@@ -4,11 +4,7 @@
 
 import("//testing/test.gni")
 
-# This needs to be a static library rather than a sources set because small
-# portions of this are used in some contexts (like chrome_elf), and it
-# doesnn't seem to dead-code strip very well. This saves 12K on chrome_elf.dll,
-# over a source set, for example.
-static_library("sandbox") {
+source_set("sandbox") {
   sources = [
     "src/acl.cc",
     "src/acl.h",

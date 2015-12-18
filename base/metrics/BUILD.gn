@@ -2,20 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(phosek) bug 570839: If field_trial.cc is in a static library,
-# hacl_helper_nonsfi doesn't link properly on Linux in debug builds. The
-# reasons for this seem to involve obscure toolchain bugs. This should be fixed
-# and this target should be a static_library unconditionally.
-import("//build/config/nacl/config.gni")
-if (is_nacl_nonsfi) {
-  metrics_target_type = "source_set"
-} else {
-  metrics_target_type = "static_library"
-}
-
-# Should be static library, see documentation on //base:base for discussion.
-#static_library("metrics") {  # Should be this when above TODO is resolved.
-target(metrics_target_type, "metrics") {
+source_set("metrics") {
   sources = [
     "bucket_ranges.cc",
     "bucket_ranges.h",
