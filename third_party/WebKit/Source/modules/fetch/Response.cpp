@@ -117,7 +117,10 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
 
     OwnPtr<FetchDataConsumerHandle> bodyHandle;
     String contentType;
-    if (V8Blob::hasInstance(body, isolate)) {
+    if (bodyValue.isUndefined() || bodyValue.isNull()) {
+        // Note: The IDL processor cannot handle this situation. See
+        // https://crbug.com/335871.
+    } else if (V8Blob::hasInstance(body, isolate)) {
         Blob* blob = V8Blob::toImpl(body.As<v8::Object>());
         bodyHandle = FetchBlobDataConsumerHandle::create(executionContext, blob->blobDataHandle());
         contentType = blob->type();

@@ -150,14 +150,13 @@ promise_test(function() {
     var response = new Response(null);
     assert_equals(
       response.headers.get('Content-Type'),
-      'text/plain;charset=UTF-8',
-      'A Response constructed with a value coerced to string should have a ' +
-      'text Content-Type.');
+      null,
+      'A Response constructed with null body should have no Content-Type.');
     return response.text()
       .then(function(text) {
-          assert_equals(text, 'null',
-                        'A null value passed to Response constructor should ' +
-                        'be coerced to the string "null".');
+          assert_equals(text, '',
+                        'Response with null body accessed as text should ' +
+                        'resolve to the empty string.');
         });
   }, 'Behavior of Response passed null for body.');
 

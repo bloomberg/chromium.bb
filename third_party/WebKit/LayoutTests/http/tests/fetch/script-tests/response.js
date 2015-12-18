@@ -42,6 +42,26 @@ test(function() {
     assert_equals(cloned.body, null, 'Closing a null body response: dest');
   }, 'Response default value test');
 
+test(() => {
+    // No exception is thrown due to null body status.
+    var response = new Response(undefined, {status: 204});
+
+    assert_equals(response.body, null,
+                  'Response.body should be null when passing undefined.');
+    assert_equals(response.status, 204,
+                  'Response.status is set even when body is omitted.');
+  }, 'Construct a Response with null body using undefined.');
+
+test(() => {
+    // No exception is thrown due to null body status.
+    var response = new Response(null, {status: 204});
+
+    assert_equals(response.body, null,
+                  'Response.body should be null when passing null.');
+    assert_equals(response.status, 204,
+                  'Response.status is set even when null body is passed.');
+  }, 'Construct a Response with null body using null.');
+
 test(function() {
     var headersInit = new Headers;
     headersInit.set('X-Fetch-Test', 'test');
