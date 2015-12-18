@@ -151,13 +151,13 @@ struct SubsampleEntry {
 // unencrypted.
 struct InputBuffer {
   InputBuffer()
-      : data(NULL),
+      : data(nullptr),
         data_size(0),
-        key_id(NULL),
+        key_id(nullptr),
         key_id_size(0),
-        iv(NULL),
+        iv(nullptr),
         iv_size(0),
-        subsamples(NULL),
+        subsamples(nullptr),
         num_subsamples(0),
         timestamp(0) {}
 
@@ -188,7 +188,7 @@ struct AudioDecoderConfig {
         channel_count(0),
         bits_per_channel(0),
         samples_per_second(0),
-        extra_data(NULL),
+        extra_data(nullptr),
         extra_data_size(0) {}
 
   AudioCodec codec;
@@ -252,7 +252,7 @@ struct VideoDecoderConfig {
       : codec(kUnknownVideoCodec),
         profile(kUnknownVideoCodecProfile),
         format(kUnknownVideoFormat),
-        extra_data(NULL),
+        extra_data(nullptr),
         extra_data_size(0) {}
 
   VideoCodec codec;
@@ -294,7 +294,7 @@ struct PlatformChallengeResponse {
 
 // Used when passing arrays of binary data. Does not own the referenced data.
 struct BinaryData {
-  BinaryData() : data(NULL), length(0) {}
+  BinaryData() : data(nullptr), length(0) {}
   const uint8_t* data;
   uint32_t length;
 };
@@ -316,7 +316,10 @@ enum KeyStatus {
 // should be 0 when |status| == kUsable.
 struct KeyInformation {
   KeyInformation()
-      : key_id(NULL), key_id_size(0), status(kInternalError), system_code(0) {}
+      : key_id(nullptr),
+        key_id_size(0),
+        status(kInternalError),
+        system_code(0) {}
   const uint8_t* key_id;
   uint32_t key_id_size;
   KeyStatus status;
