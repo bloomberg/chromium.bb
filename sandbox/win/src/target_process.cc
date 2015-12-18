@@ -284,7 +284,7 @@ DWORD TargetProcess::Init(Dispatcher* ipc_dispatcher, void* policy,
     return ::GetLastError();
   }
 
-  DWORD access = FILE_MAP_READ | FILE_MAP_WRITE;
+  DWORD access = FILE_MAP_READ | FILE_MAP_WRITE | SECTION_QUERY;
   HANDLE target_shared_section;
   if (!::DuplicateHandle(::GetCurrentProcess(), shared_section_.Get(),
                          sandbox_process_info_.process_handle(),

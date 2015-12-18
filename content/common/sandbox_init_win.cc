@@ -47,9 +47,9 @@ bool BrokerDuplicateSharedMemoryHandle(
     base::ProcessId target_process_id,
     base::SharedMemoryHandle* target_handle) {
   HANDLE duped_handle;
-  if (!BrokerDuplicateHandle(source_handle.GetHandle(), target_process_id,
-                             &duped_handle,
-                             FILE_GENERIC_READ | FILE_GENERIC_WRITE, 0)) {
+  if (!BrokerDuplicateHandle(
+          source_handle.GetHandle(), target_process_id, &duped_handle,
+          FILE_MAP_READ | FILE_MAP_WRITE | SECTION_QUERY, 0)) {
     return false;
   }
 

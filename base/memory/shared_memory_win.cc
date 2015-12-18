@@ -14,6 +14,23 @@
 
 namespace {
 
+typedef enum _SECTION_INFORMATION_CLASS {
+  SectionBasicInformation,
+} SECTION_INFORMATION_CLASS;
+
+typedef struct _SECTION_BASIC_INFORMATION {
+  PVOID BaseAddress;
+  ULONG Attributes;
+  LARGE_INTEGER Size;
+} SECTION_BASIC_INFORMATION, *PSECTION_BASIC_INFORMATION;
+
+typedef ULONG(__stdcall* NtQuerySectionType)(
+    HANDLE SectionHandle,
+    SECTION_INFORMATION_CLASS SectionInformationClass,
+    PVOID SectionInformation,
+    ULONG SectionInformationLength,
+    PULONG ResultLength);
+
 // Returns the length of the memory section starting at the supplied address.
 size_t GetMemorySectionSize(void* address) {
   MEMORY_BASIC_INFORMATION memory_info;
@@ -21,6 +38,26 @@ size_t GetMemorySectionSize(void* address) {
     return 0;
   return memory_info.RegionSize - (static_cast<char*>(address) -
          static_cast<char*>(memory_info.AllocationBase));
+}
+
+// Checks if the section object is safe to map. At the moment this just means
+// it's not an image section.
+bool IsSectionSafeToMap(HANDLE handle) {
+  static NtQuerySectionType nt_query_section_func;
+  if (!nt_query_section_func) {
+    nt_query_section_func = reinterpret_cast<NtQuerySectionType>(
+        ::GetProcAddress(::GetModuleHandle(L"ntdll.dll"), "NtQuerySection"));
+    DCHECK(nt_query_section_func);
+  }
+
+  // The handle must have SECTION_QUERY access for this to succeed.
+  SECTION_BASIC_INFORMATION basic_information = {};
+  ULONG status =
+      nt_query_section_func(handle, SectionBasicInformation, &basic_information,
+                            sizeof(basic_information), nullptr);
+  if (status)
+    return false;
+  return (basic_information.Attributes & SEC_IMAGE) != SEC_IMAGE;
 }
 
 }  // namespace.
@@ -35,24 +72,25 @@ SharedMemoryCreateOptions::SharedMemoryCreateOptions()
       share_read_only(false) {}
 
 SharedMemory::SharedMemory()
-    : mapped_file_(NULL),
-      mapped_size_(0),
-      memory_(NULL),
-      read_only_(false),
-      requested_size_(0) {
-}
-
-SharedMemory::SharedMemory(const std::wstring& name)
-    : name_(name),
+    : external_section_(false),
       mapped_file_(NULL),
       mapped_size_(0),
       memory_(NULL),
       read_only_(false),
-      requested_size_(0) {
-}
+      requested_size_(0) {}
+
+SharedMemory::SharedMemory(const std::wstring& name)
+    : external_section_(false),
+      name_(name),
+      mapped_file_(NULL),
+      mapped_size_(0),
+      memory_(NULL),
+      read_only_(false),
+      requested_size_(0) {}
 
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
-    : mapped_file_(handle.GetHandle()),
+    : external_section_(true),
+      mapped_file_(handle.GetHandle()),
       mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
@@ -63,14 +101,16 @@ SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle,
                            bool read_only,
                            ProcessHandle process)
-    : mapped_file_(NULL),
+    : external_section_(true),
+      mapped_file_(NULL),
       mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
       requested_size_(0) {
-  ::DuplicateHandle(
-      process, handle.GetHandle(), GetCurrentProcess(), &mapped_file_,
-      read_only_ ? FILE_MAP_READ : FILE_MAP_READ | FILE_MAP_WRITE, FALSE, 0);
+  DWORD access = FILE_MAP_READ | SECTION_QUERY;
+  ::DuplicateHandle(process, handle.GetHandle(), GetCurrentProcess(),
+                    &mapped_file_,
+                    read_only_ ? access : access | FILE_MAP_WRITE, FALSE, 0);
 }
 
 SharedMemory::~SharedMemory() {
@@ -170,6 +210,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     // If the file already existed, set requested_size_ to 0 to show that
     // we don't know the size.
     requested_size_ = 0;
+    external_section_ = true;
     if (!options.open_existing_deprecated) {
       Close();
       return false;
@@ -186,17 +227,20 @@ bool SharedMemory::Delete(const std::string& name) {
 
 bool SharedMemory::Open(const std::string& name, bool read_only) {
   DCHECK(!mapped_file_);
-
+  DWORD access = FILE_MAP_READ | SECTION_QUERY;
+  if (!read_only)
+    access |= FILE_MAP_WRITE;
   name_ = ASCIIToUTF16(name);
   read_only_ = read_only;
-  mapped_file_ = OpenFileMapping(
-      read_only_ ? FILE_MAP_READ : FILE_MAP_READ | FILE_MAP_WRITE,
-      false, name_.empty() ? NULL : name_.c_str());
-  if (mapped_file_ != NULL) {
-    // Note: size_ is not set in this case.
-    return true;
-  }
-  return false;
+  mapped_file_ =
+      OpenFileMapping(access, false, name_.empty() ? nullptr : name_.c_str());
+  if (!mapped_file_)
+    return false;
+  // If a name specified assume it's an external section.
+  if (!name_.empty())
+    external_section_ = true;
+  // Note: size_ is not set in this case.
+  return true;
 }
 
 bool SharedMemory::MapAt(off_t offset, size_t bytes) {
@@ -207,6 +251,9 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
     return false;
 
   if (memory_)
+    return false;
+
+  if (external_section_ && !IsSectionSafeToMap(mapped_file_))
     return false;
 
   memory_ = MapViewOfFile(mapped_file_,
@@ -238,7 +285,7 @@ bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
                                         bool close_self,
                                         ShareMode share_mode) {
   *new_handle = SharedMemoryHandle();
-  DWORD access = FILE_MAP_READ;
+  DWORD access = FILE_MAP_READ | SECTION_QUERY;
   DWORD options = 0;
   HANDLE mapped_file = mapped_file_;
   HANDLE result;

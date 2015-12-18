@@ -284,6 +284,9 @@ class BASE_EXPORT SharedMemory {
                             ShareMode);
 
 #if defined(OS_WIN)
+  // If true indicates this came from an external source so needs extra checks
+  // before being mapped.
+  bool external_section_;
   std::wstring       name_;
   HANDLE             mapped_file_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)

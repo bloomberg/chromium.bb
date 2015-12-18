@@ -6,6 +6,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/process/kill.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -570,6 +571,55 @@ TEST(SharedMemoryTest, MapMinimumAlignment) {
       shared_memory.memory()) & (SharedMemory::MAP_MINIMUM_ALIGNMENT - 1));
   shared_memory.Close();
 }
+
+#if defined(OS_WIN)
+TEST(SharedMemoryTest, UnsafeImageSection) {
+  const char kTestSectionName[] = "UnsafeImageSection";
+  wchar_t path[MAX_PATH];
+  EXPECT_GT(::GetModuleFileName(nullptr, path, arraysize(path)), 0U);
+
+  // Map the current executable image to save us creating a new PE file on disk.
+  base::win::ScopedHandle file_handle(
+      ::CreateFile(path, GENERIC_READ, 0, nullptr, OPEN_EXISTING, 0, nullptr));
+  EXPECT_TRUE(file_handle.IsValid());
+  base::win::ScopedHandle section_handle(
+      ::CreateFileMappingA(file_handle.Get(), nullptr,
+                           PAGE_READONLY | SEC_IMAGE, 0, 0, kTestSectionName));
+  EXPECT_TRUE(section_handle.IsValid());
+
+  // Check direct opening by name, from handle and duplicated from handle.
+  SharedMemory shared_memory_open;
+  EXPECT_TRUE(shared_memory_open.Open(kTestSectionName, true));
+  EXPECT_FALSE(shared_memory_open.Map(1));
+  EXPECT_EQ(nullptr, shared_memory_open.memory());
+
+  SharedMemory shared_memory_handle_dup(
+      SharedMemoryHandle(section_handle.Get(), ::GetCurrentProcessId()), true,
+      GetCurrentProcess());
+  EXPECT_FALSE(shared_memory_handle_dup.Map(1));
+  EXPECT_EQ(nullptr, shared_memory_handle_dup.memory());
+
+  SharedMemory shared_memory_handle_local(
+      SharedMemoryHandle(section_handle.Take(), ::GetCurrentProcessId()), true);
+  EXPECT_FALSE(shared_memory_handle_local.Map(1));
+  EXPECT_EQ(nullptr, shared_memory_handle_local.memory());
+
+  // Check that a handle without SECTION_QUERY also can't be mapped as it can't
+  // be checked.
+  SharedMemory shared_memory_handle_dummy;
+  SharedMemoryCreateOptions options;
+  options.size = 0x1000;
+  EXPECT_TRUE(shared_memory_handle_dummy.Create(options));
+  HANDLE handle_no_query;
+  EXPECT_TRUE(::DuplicateHandle(
+      ::GetCurrentProcess(), shared_memory_handle_dummy.handle().GetHandle(),
+      ::GetCurrentProcess(), &handle_no_query, FILE_MAP_READ, FALSE, 0));
+  SharedMemory shared_memory_handle_no_query(
+      SharedMemoryHandle(handle_no_query, ::GetCurrentProcessId()), true);
+  EXPECT_FALSE(shared_memory_handle_no_query.Map(1));
+  EXPECT_EQ(nullptr, shared_memory_handle_no_query.memory());
+}
+#endif  // defined(OS_WIN)
 
 // iOS does not allow multiple processes.
 // Android ashmem does not support named shared memory.
