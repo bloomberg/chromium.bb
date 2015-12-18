@@ -127,7 +127,13 @@ public:
     // Converts plugin's local coordinate to root frame's coordinates.
     virtual WebPoint localToRootFramePoint(const WebPoint&) = 0;
 
+    // Returns the plugin this container owns. This plugin will be
+    // automatically destroyed when the container is destroyed.
     virtual WebPlugin* plugin() = 0;
+
+    // Sets the plugin owned by this container. If the container already owned
+    // a different plugin before this call, that old plugin is now unowned.
+    // The caller is then responsible for destroying the old plugin.
     virtual void setPlugin(WebPlugin*) = 0;
 
     virtual float deviceScaleFactor() = 0;

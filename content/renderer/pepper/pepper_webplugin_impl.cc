@@ -127,6 +127,9 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
     if (!replacement_plugin)
       return false;
 
+    // Since we are setting the container to own the replacement plugin, we must
+    // schedule ourselves for deletion.
+    destroy();
     container->setPlugin(replacement_plugin);
     if (!replacement_plugin->initialize(container)) {
       CHECK(replacement_plugin->container() == nullptr);
@@ -148,6 +151,8 @@ void PepperWebPluginImpl::destroy() {
   // Tell |container_| to clear references to this plugin's script objects.
   if (container_)
     container_->clearScriptObjects();
+
+  container_ = nullptr;
 
   if (instance_.get()) {
     ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);

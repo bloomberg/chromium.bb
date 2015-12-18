@@ -102,6 +102,12 @@ void LoadablePluginPlaceholder::ReplacePlugin(blink::WebPlugin* new_plugin) {
   if (!new_plugin)
     return;
   blink::WebPluginContainer* container = plugin()->container();
+  // This can occur if the container has been destroyed.
+  if (!container) {
+    new_plugin->destroy();
+    return;
+  }
+
   CHECK(container->plugin() == plugin());
   // Set the new plugin on the container before initializing it.
   container->setPlugin(new_plugin);
@@ -111,8 +117,10 @@ void LoadablePluginPlaceholder::ReplacePlugin(blink::WebPlugin* new_plugin) {
   bool plugin_needs_initialization =
       !premade_throttler_ || new_plugin != premade_throttler_->GetWebPlugin();
   if (plugin_needs_initialization && !new_plugin->initialize(container)) {
-    // We couldn't initialize the new plugin. Restore the old one and abort.
+    // Since the we couldn't initialize the new plugin, we must destroy it and
+    // restore the old one.
     container->setPlugin(plugin());
+    new_plugin->destroy();
     return;
   }
 

@@ -268,6 +268,7 @@ void WebPluginContainerImpl::setParent(Widget* widget)
 
 void WebPluginContainerImpl::setPlugin(WebPlugin* plugin)
 {
+    RELEASE_ASSERT(!m_inDispose);
     if (plugin != m_webPlugin) {
         m_element->resetInstance();
         m_webPlugin = plugin;
