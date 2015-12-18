@@ -1381,4 +1381,91 @@ TEST_F(SQLConnectionTest, RegisterIntentToUpload) {
 }
 #endif  // !defined(MOJO_APPTEST_IMPL)
 
+// Test that a fresh database has mmap enabled by default, if mmap'ed I/O is
+// enabled by SQLite.
+TEST_F(SQLConnectionTest, MmapInitiallyEnabled) {
+  {
+    sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
+
+    // SQLite doesn't have mmap support (perhaps an early iOS release).
+    if (!s.Step())
+      return;
+
+    // If mmap I/O is not on, attempt to turn it on.  If that succeeds, then
+    // Open() should have turned it on.  If mmap support is disabled, 0 is
+    // returned.  If the VFS does not understand SQLITE_FCNTL_MMAP_SIZE (for
+    // instance MojoVFS), -1 is returned.
+    if (s.ColumnInt(0) <= 0) {
+      ASSERT_TRUE(db().Execute("PRAGMA mmap_size = 1048576"));
+      s.Reset(true);
+      ASSERT_TRUE(s.Step());
+      EXPECT_LE(s.ColumnInt(0), 0);
+    }
+  }
+
+  // Test that explicit disable prevents mmap'ed I/O.
+  db().Close();
+  sql::Connection::Delete(db_path());
+  db().set_mmap_disabled();
+  ASSERT_TRUE(db().Open(db_path()));
+  {
+    sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
+    ASSERT_TRUE(s.Step());
+    EXPECT_LE(s.ColumnInt(0), 0);
+  }
+}
+
+// Test specific operation of the GetAppropriateMmapSize() helper.
+#if defined(OS_IOS)
+TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
+  ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
+}
+#else
+TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
+  const size_t kMmapAlot = 25 * 1024 * 1024;
+
+  // If there is no meta table (as for a fresh database), assume that everything
+  // should be mapped.
+  ASSERT_TRUE(!db().DoesTableExist("meta"));
+  ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
+
+  // Getting the status fails if there is an error.  GetAppropriateMmapSize()
+  // should not call GetMmapStatus() if the table does not exist, but this is an
+  // easy error to setup for testing.
+  int64_t mmap_status;
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_ERROR);
+    ASSERT_FALSE(MetaTable::GetMmapStatus(&db(), &mmap_status));
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+
+  // When the meta table is first created, it sets up to map everything.
+  MetaTable().Init(&db(), 1, 1);
+  ASSERT_TRUE(db().DoesTableExist("meta"));
+  ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
+  ASSERT_TRUE(MetaTable::GetMmapStatus(&db(), &mmap_status));
+  ASSERT_EQ(MetaTable::kMmapSuccess, mmap_status);
+
+  // Failure status maps nothing.
+  ASSERT_TRUE(db().Execute("REPLACE INTO meta VALUES ('mmap_status', -2)"));
+  ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
+
+  // Re-initializing the meta table does not re-create the key if the table
+  // already exists.
+  ASSERT_TRUE(db().Execute("DELETE FROM meta WHERE key = 'mmap_status'"));
+  MetaTable().Init(&db(), 1, 1);
+  ASSERT_EQ(MetaTable::kMmapSuccess, mmap_status);
+  ASSERT_TRUE(MetaTable::GetMmapStatus(&db(), &mmap_status));
+  ASSERT_EQ(0, mmap_status);
+
+  // With no key, map everything and create the key.
+  // TODO(shess): This really should be "maps everything after validating it",
+  // but that is more complicated to structure.
+  ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
+  ASSERT_TRUE(MetaTable::GetMmapStatus(&db(), &mmap_status));
+  ASSERT_EQ(MetaTable::kMmapSuccess, mmap_status);
+}
+#endif
+
 }  // namespace sql

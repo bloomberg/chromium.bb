@@ -24,6 +24,7 @@
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -458,6 +459,7 @@ bool Connection::Open(const base::FilePath& path) {
               base::HistogramBase::kUmaTargetedHistogramFlag);
       if (histogram)
         histogram->Add(sample);
+      UMA_HISTOGRAM_COUNTS("Sqlite.SizeKB", sample);
     }
   }
 
@@ -883,54 +885,43 @@ std::string Connection::CollectCorruptionInfo() {
 size_t Connection::GetAppropriateMmapSize() {
   AssertIOAllowed();
 
-  // TODO(shess): Using sql::MetaTable seems indicated, but mixing
-  // sql::MetaTable and direct access seems error-prone.  It might make sense to
-  // simply integrate sql::MetaTable functionality into sql::Connection.
-
 #if defined(OS_IOS)
   // iOS SQLite does not support memory mapping.
   return 0;
 #endif
 
-  // If the database doesn't have a place to track progress, assume the worst.
-  // This will happen when new databases are created.
-  if (!DoesTableExist("meta")) {
+  // How much to map if no errors are found.  50MB encompasses the 99th
+  // percentile of Chrome databases in the wild, so this should be good.
+  const size_t kMmapEverything = 256 * 1024 * 1024;
+
+  // If the database doesn't have a place to track progress, assume the best.
+  // This will happen when new databases are created, or if a database doesn't
+  // use a meta table.  sql::MetaTable::Init() will preload kMmapSuccess.
+  // TODO(shess): Databases not using meta include:
+  //   DOMStorageDatabase (localstorage)
+  //   ActivityDatabase (extensions activity log)
+  //   PredictorDatabase (prefetch and autocomplete predictor data)
+  //   SyncDirectory (sync metadata storage)
+  // For now, these all have mmap disabled to allow other databases to get the
+  // default-enable path.  sqlite-diag could be an alternative for all but
+  // DOMStorageDatabase, which creates many small databases.
+  // http://crbug.com/537742
+  if (!MetaTable::DoesTableExist(this)) {
     RecordOneEvent(EVENT_MMAP_META_MISSING);
-    return 0;
+    return kMmapEverything;
   }
 
-  // Key into meta table to get status from a previous run.  The value
-  // represents how much data in bytes has successfully been read from the
-  // database.  |kMmapFailure| indicates that there was a read error and the
-  // database should not be memory-mapped, while |kMmapSuccess| indicates that
-  // the entire file was read at some point and can be memory-mapped without
-  // constraint.
-  const char* kMmapStatusKey = "mmap_status";
-  static const sqlite3_int64 kMmapFailure = -2;
-  static const sqlite3_int64 kMmapSuccess = -1;
-
-  // Start reading from 0 unless status is found in meta table.
-  sqlite3_int64 mmap_ofs = 0;
-
-  // Retrieve the current status.  It is fine for the status to be missing
-  // entirely, but any error prevents memory-mapping.
-  {
-    const char* kMmapStatusSql = "SELECT value FROM meta WHERE key = ?";
-    Statement s(GetUniqueStatement(kMmapStatusSql));
-    s.BindString(0, kMmapStatusKey);
-    if (s.Step()) {
-      mmap_ofs = s.ColumnInt64(0);
-    } else if (!s.Succeeded()) {
-      RecordOneEvent(EVENT_MMAP_META_FAILURE_READ);
-      return 0;
-    }
+  int64_t mmap_ofs = 0;
+  if (!MetaTable::GetMmapStatus(this, &mmap_ofs)) {
+    RecordOneEvent(EVENT_MMAP_META_FAILURE_READ);
+    return 0;
   }
 
   // Database read failed in the past, don't memory map.
-  if (mmap_ofs == kMmapFailure) {
+  if (mmap_ofs == MetaTable::kMmapFailure) {
     RecordOneEvent(EVENT_MMAP_FAILED);
     return 0;
-  } else if (mmap_ofs != kMmapSuccess) {
+  } else if (mmap_ofs != MetaTable::kMmapSuccess) {
     // Continue reading from previous offset.
     DCHECK_GE(mmap_ofs, 0);
 
@@ -981,7 +972,7 @@ size_t Connection::GetAppropriateMmapSize() {
           break;
         } else {
           // TODO(shess): Consider calling OnSqliteError().
-          mmap_ofs = kMmapFailure;
+          mmap_ofs = MetaTable::kMmapFailure;
           break;
         }
       }
@@ -989,20 +980,16 @@ size_t Connection::GetAppropriateMmapSize() {
       // Log these events after update to distinguish meta update failure.
       Events event;
       if (mmap_ofs >= db_size) {
-        mmap_ofs = kMmapSuccess;
+        mmap_ofs = MetaTable::kMmapSuccess;
         event = EVENT_MMAP_SUCCESS_NEW;
       } else if (mmap_ofs > 0) {
         event = EVENT_MMAP_SUCCESS_PARTIAL;
       } else {
-        DCHECK_EQ(kMmapFailure, mmap_ofs);
+        DCHECK_EQ(MetaTable::kMmapFailure, mmap_ofs);
         event = EVENT_MMAP_FAILED_NEW;
       }
 
-      const char* kMmapUpdateStatusSql = "REPLACE INTO meta VALUES (?, ?)";
-      Statement s(GetUniqueStatement(kMmapUpdateStatusSql));
-      s.BindString(0, kMmapStatusKey);
-      s.BindInt64(1, mmap_ofs);
-      if (!s.Run()) {
+      if (!MetaTable::SetMmapStatus(this, mmap_ofs)) {
         RecordOneEvent(EVENT_MMAP_META_FAILURE_UPDATE);
         return 0;
       }
@@ -1011,10 +998,10 @@ size_t Connection::GetAppropriateMmapSize() {
     }
   }
 
-  if (mmap_ofs == kMmapFailure)
+  if (mmap_ofs == MetaTable::kMmapFailure)
     return 0;
-  if (mmap_ofs == kMmapSuccess)
-    return 256 * 1024 * 1024;
+  if (mmap_ofs == MetaTable::kMmapSuccess)
+    return kMmapEverything;
   return mmap_ofs;
 }
 

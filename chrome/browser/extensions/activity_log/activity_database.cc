@@ -66,6 +66,10 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
   db_.set_page_size(4096);
   db_.set_cache_size(32);
 
+  // TODO(shess): The current mitigation for http://crbug.com/537742 stores
+  // state in the meta table, which this database does not use.
+  db_.set_mmap_disabled();
+
   if (!db_.Open(db_name)) {
     LOG(ERROR) << db_.GetErrorMessage();
     return LogInitFailure();

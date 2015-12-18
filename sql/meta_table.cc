@@ -13,9 +13,10 @@
 
 namespace {
 
-// Key used in our meta table for version numbers.
+// Keys understood directly by sql:MetaTable.
 const char kVersionKey[] = "version";
 const char kCompatibleVersionKey[] = "last_compatible_version";
+const char kMmapStatusKey[] = "mmap_status";
 
 // Used to track success/failure of deprecation checks.
 enum DeprecationEventType {
@@ -59,9 +60,38 @@ MetaTable::~MetaTable() {
 }
 
 // static
+int64_t MetaTable::kMmapFailure = -2;
+int64_t MetaTable::kMmapSuccess = -1;
+
+// static
 bool MetaTable::DoesTableExist(sql::Connection* db) {
   DCHECK(db);
   return db->DoesTableExist("meta");
+}
+
+// static
+bool MetaTable::GetMmapStatus(Connection* db, int64_t* status) {
+  const char* kMmapStatusSql = "SELECT value FROM meta WHERE key = ?";
+  Statement s(db->GetUniqueStatement(kMmapStatusSql));
+  if (!s.is_valid())
+    return false;
+
+  // It is fine for the status to be missing entirely, but any error prevents
+  // memory-mapping.
+  s.BindString(0, kMmapStatusKey);
+  *status = s.Step() ? s.ColumnInt64(0) : 0;
+  return s.Succeeded();
+}
+
+// static
+bool MetaTable::SetMmapStatus(Connection* db, int64_t status) {
+  DCHECK(status == kMmapFailure || status == kMmapSuccess || status >= 0);
+
+  const char* kMmapUpdateStatusSql = "REPLACE INTO meta VALUES (?, ?)";
+  Statement s(db->GetUniqueStatement(kMmapUpdateStatusSql));
+  s.BindString(0, kMmapStatusKey);
+  s.BindInt64(1, status);
+  return s.Run();
 }
 
 // static
@@ -130,6 +160,10 @@ bool MetaTable::Init(Connection* db, int version, int compatible_version) {
     if (!db_->Execute("CREATE TABLE meta"
         "(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY, value LONGVARCHAR)"))
       return false;
+
+    // Newly-created databases start out with mmap'ed I/O, but have no place to
+    // store the setting.  Set here so that later opens don't need to validate.
+    SetMmapStatus(db_, kMmapSuccess);
 
     // Note: there is no index over the meta table. We currently only have a
     // couple of keys, so it doesn't matter. If we start storing more stuff in

@@ -21,6 +21,13 @@ class SQL_EXPORT MetaTable {
   MetaTable();
   ~MetaTable();
 
+  // Values for Get/SetMmapStatus().  |kMmapFailure| indicates that there was at
+  // some point a read error and the database should not be memory-mapped, while
+  // |kMmapSuccess| indicates that the entire file was read at some point and
+  // can be memory-mapped without constraint.
+  static int64_t kMmapFailure;
+  static int64_t kMmapSuccess;
+
   // Returns true if the 'meta' table exists.
   static bool DoesTableExist(Connection* db);
 
@@ -38,10 +45,18 @@ class SQL_EXPORT MetaTable {
   // transaction.
   static void RazeIfDeprecated(Connection* db, int deprecated_version);
 
+  // Used to tuck some data into the meta table about mmap status.  The value
+  // represents how much data in bytes has successfully been read from the
+  // database, or |kMmapFailure| or |kMmapSuccess|.
+  static bool GetMmapStatus(Connection* db, int64_t* status);
+  static bool SetMmapStatus(Connection* db, int64_t status);
+
   // Initializes the MetaTableHelper, creating the meta table if necessary. For
   // new tables, it will initialize the version number to |version| and the
   // compatible version number to |compatible_version|.  Versions must be
   // greater than 0 to distinguish missing versions (see GetVersionNumber()).
+  // If there was no meta table (proxy for a fresh database), mmap status is set
+  // to |kMmapSuccess|.
   bool Init(Connection* db, int version, int compatible_version);
 
   // Resets this MetaTable object, making another call to Init() possible.

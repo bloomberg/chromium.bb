@@ -70,6 +70,11 @@ PredictorDatabaseInternal::PredictorDatabaseInternal(Profile* profile)
       autocomplete_table_(new AutocompleteActionPredictorTable()),
       resource_prefetch_tables_(new ResourcePrefetchPredictorTables()) {
   db_->set_histogram_tag("Predictor");
+
+  // TODO(shess): The current mitigation for http://crbug.com/537742 stores
+  // state in the meta table, which this database does not use.
+  db_->set_mmap_disabled();
+
   ResourcePrefetchPredictorConfig config;
   is_resource_prefetch_predictor_enabled_ =
       IsSpeculativeResourcePrefetchingEnabled(profile, &config);
