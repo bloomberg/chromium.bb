@@ -34,6 +34,13 @@ bool FakeArcBridgeService::RegisterInputDevice(const std::string& name,
   return true;
 }
 
+bool FakeArcBridgeService::SendBroadcast(const std::string& action,
+                                         const std::string& package,
+                                         const std::string& clazz,
+                                         const base::DictionaryValue& extras) {
+  return true;
+}
+
 bool FakeArcBridgeService::SendNotificationEventToAndroid(
     const std::string& key,
     ArcNotificationEvent event) {

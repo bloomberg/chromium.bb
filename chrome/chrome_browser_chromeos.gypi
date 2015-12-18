@@ -52,6 +52,8 @@
         'browser/chromeos/app_mode/kiosk_session_plugin_handler_delegate.h',
         'browser/chromeos/app_mode/startup_app_launcher.cc',
         'browser/chromeos/app_mode/startup_app_launcher.h',
+        'browser/chromeos/arc/arc_settings_bridge_impl.cc',
+        'browser/chromeos/arc/arc_settings_bridge_impl.h',
         'browser/chromeos/attestation/attestation_ca_client.cc',
         'browser/chromeos/attestation/attestation_ca_client.h',
         'browser/chromeos/attestation/attestation_policy_observer.cc',

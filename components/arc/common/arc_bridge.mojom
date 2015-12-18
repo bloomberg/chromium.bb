@@ -263,4 +263,15 @@ interface ArcBridgeInstance {
 
   // Requests ARC instance to return the current process list.
   RequestProcessList();
+
+  // Send an Android broadcast message to the Android package and class
+  // specified.  Data can be sent as extras by including a JSON map string which
+  // will be automatically converted to a bundle accessible by the receiver.
+  //
+  // Note: Broadcasts can only be sent to whitelisted packages.  Packages can be
+  // added to the whitelist in ArcBridgeService.java in the Android source.
+  SendBroadcast(string action,
+                string package,
+                string cls,
+                string extras);
 };

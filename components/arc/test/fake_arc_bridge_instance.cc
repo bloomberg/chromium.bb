@@ -33,6 +33,10 @@ void FakeArcBridgeInstance::LaunchApp(const mojo::String& package,
 void FakeArcBridgeInstance::RequestAppIcon(const mojo::String& package,
                                            const mojo::String& activity,
                                            ScaleFactor scale_factor) {}
+void FakeArcBridgeInstance::SendBroadcast(const mojo::String& action,
+                                          const mojo::String& package,
+                                          const mojo::String& clazz,
+                                          const mojo::String& extras) {}
 
 void FakeArcBridgeInstance::RequestProcessList() {}
 

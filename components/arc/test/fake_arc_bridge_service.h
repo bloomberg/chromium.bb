@@ -71,6 +71,10 @@ class FakeArcBridgeService : public ArcBridgeService {
   bool RegisterInputDevice(const std::string& name,
                            const std::string& device_type,
                            base::ScopedFD fd) override;
+  bool SendBroadcast(const std::string& action,
+                     const std::string& package,
+                     const std::string& clazz,
+                     const base::DictionaryValue& extras) override;
   bool RefreshAppList() override;
   bool LaunchApp(const std::string& package,
                  const std::string& activity) override;

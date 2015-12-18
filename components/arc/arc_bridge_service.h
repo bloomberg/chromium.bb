@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/values.h"
 #include "components/arc/common/arc_bridge.mojom.h"
 
 namespace base {
@@ -204,6 +205,17 @@ class ArcBridgeService {
   // Requests a list of processes from the ARC instance.
   // When the result comes back, Observer::OnUpdateProcessList() is called.
   virtual bool RequestProcessList() = 0;
+
+  // Send an Android broadcast message to the Android package and class
+  // specified.  The 'extras' DictionaryValue will be converted to an Android
+  // Bundle accessible by the broadcast receiver.
+  //
+  // Note: Broadcasts can only be sent to whitelisted packages.  Packages can be
+  // added to the whitelist in ArcBridgeService.java in the Android source.
+  virtual bool SendBroadcast(const std::string& action,
+                             const std::string& package,
+                             const std::string& clazz,
+                             const base::DictionaryValue& extras) = 0;
 
  protected:
   ArcBridgeService();

@@ -17,6 +17,8 @@ static_library("arc") {
     "input/arc_input_bridge.h",
     "input/arc_input_bridge_impl.cc",
     "input/arc_input_bridge_impl.h",
+    "settings/arc_settings_bridge.cc",
+    "settings/arc_settings_bridge.h",
   ]
 
   deps = [

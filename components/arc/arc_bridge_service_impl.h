@@ -40,6 +40,11 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
                            const std::string& device_type,
                            base::ScopedFD fd) override;
 
+  bool SendBroadcast(const std::string& action,
+                     const std::string& package,
+                     const std::string& clazz,
+                     const base::DictionaryValue& extras) override;
+
   bool SendNotificationEventToAndroid(const std::string& key,
                                       ArcNotificationEvent event) override;
 

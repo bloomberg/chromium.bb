@@ -9,6 +9,7 @@
 #include "components/arc/arc_bridge_bootstrap.h"
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/input/arc_input_bridge.h"
+#include "components/arc/settings/arc_settings_bridge.h"
 
 namespace arc {
 
@@ -19,12 +20,16 @@ ArcServiceManager* g_arc_service_manager = nullptr;
 
 }  // namespace
 
-ArcServiceManager::ArcServiceManager()
+ArcServiceManager::ArcServiceManager(
+    scoped_ptr<ArcSettingsBridge> settings_bridge)
     : arc_bridge_service_(
-          new ArcBridgeServiceImpl(ArcBridgeBootstrap::Create())) {
+          new ArcBridgeServiceImpl(ArcBridgeBootstrap::Create())),
+      arc_settings_bridge_(std::move(settings_bridge)) {
   DCHECK(!g_arc_service_manager);
   arc_input_bridge_ = ArcInputBridge::Create(arc_bridge_service_.get());
   g_arc_service_manager = this;
+
+  arc_settings_bridge_->StartObservingBridgeServiceChanges();
 }
 
 ArcServiceManager::~ArcServiceManager() {

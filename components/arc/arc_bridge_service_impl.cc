@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/json/json_writer.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
@@ -117,6 +118,26 @@ bool ArcBridgeServiceImpl::RegisterInputDevice(const std::string& name,
   }
   instance_ptr_->RegisterInputDevice(
       name, device_type, mojo::ScopedHandle(mojo::Handle(wrapped_handle)));
+  return true;
+}
+
+bool ArcBridgeServiceImpl::SendBroadcast(const std::string& action,
+                                         const std::string& package,
+                                         const std::string& clazz,
+                                         const base::DictionaryValue& extras) {
+  DCHECK(CalledOnValidThread());
+  if (action.empty() || package.empty() || clazz.empty()) {
+    LOG(ERROR) << "SendBroadcast failed: Invalid parameter";
+    return false;
+  }
+  std::string extras_json;
+  bool write_success = base::JSONWriter::Write(extras, &extras_json);
+  DCHECK(write_success);
+  if (state() != State::READY) {
+    LOG(ERROR) << "Called SendBroadcast when the service is not ready";
+    return false;
+  }
+  instance_ptr_->SendBroadcast(action, package, clazz, extras_json);
   return true;
 }
 

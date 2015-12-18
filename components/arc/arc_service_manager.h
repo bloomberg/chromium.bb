@@ -13,12 +13,13 @@ namespace arc {
 
 class ArcBridgeService;
 class ArcInputBridge;
+class ArcSettingsBridge;
 
 // Manages creation and destruction of services that communicate with the ARC
 // instance via the ArcBridgeService.
 class ArcServiceManager {
  public:
-  ArcServiceManager();
+  explicit ArcServiceManager(scoped_ptr<ArcSettingsBridge> settings_bridge);
   virtual ~ArcServiceManager();
 
   // |arc_bridge_service| can only be accessed on the thread that this
@@ -33,6 +34,7 @@ class ArcServiceManager {
   base::ThreadChecker thread_checker_;
   scoped_ptr<ArcBridgeService> arc_bridge_service_;
   scoped_ptr<ArcInputBridge> arc_input_bridge_;
+  scoped_ptr<ArcSettingsBridge> arc_settings_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);
 };

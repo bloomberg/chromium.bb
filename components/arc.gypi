@@ -31,6 +31,8 @@
         'arc/input/arc_input_bridge.h',
         'arc/input/arc_input_bridge_impl.cc',
         'arc/input/arc_input_bridge_impl.h',
+        'arc/settings/arc_settings_bridge.cc',
+        'arc/settings/arc_settings_bridge.h',
       ],
     },
     {

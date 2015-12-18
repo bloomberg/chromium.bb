@@ -1646,6 +1646,9 @@
     'chrome_unit_tests_app_list_chromeos_arc_sources': [
       'browser/ui/app_list/arc/arc_app_unittest.cc',
     ],
+    'chrome_unit_tests_arc_settings_bridge_sources': [
+      'browser/chromeos/arc/arc_settings_bridge_unittest.cc',
+    ],
     # Sources for Offline pages. For now only for Android.
     'chrome_unit_tests_offline_pages_sources': [
       'browser/android/offline_pages/offline_page_mhtml_archiver_unittest.cc',
@@ -2798,6 +2801,12 @@
         }],
         ['enable_app_list==1 and chromeos==1', {
           'sources': [ '<@(chrome_unit_tests_app_list_chromeos_arc_sources)' ],
+          'dependencies': [
+            '../components/components.gyp:arc_test_support',
+          ],
+        }],
+        ['chromeos==1', {
+          'sources': [ '<@(chrome_unit_tests_arc_settings_bridge_sources)' ],
           'dependencies': [
             '../components/components.gyp:arc_test_support',
           ],
