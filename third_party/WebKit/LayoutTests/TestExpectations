@@ -1235,9 +1235,6 @@ crbug.com/521730 [ Win10 ] svg/text/bidi-tspans.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/text/text-selection-fonts-01-t.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/text/text-selection-intro-05-t.svg [ Failure ]
 
-# This test's results will be tweaked slightly by an upcoming Skia change.
-crbug.com/240827 svg/filters/feOffset.svg [ NeedsRebaseline ]
-
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 crbug.com/474759 fast/block/line-layout/selection-highlight-overlap.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
@@ -1341,11 +1338,6 @@ crbug.com/569919 fast/canvas/canvas-toBlob-jpeg-maximum-quality.html [ Failure ]
 crbug.com/569919 fast/canvas/canvas-toBlob-jpeg-medium-quality.html [ Failure ]
 crbug.com/569919 fast/canvas/canvas-toBlob-webp-maximum-quality.html [ Failure ]
 crbug.com/569919 fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ NeedsRebaseline ]
-
-crbug.com/570002 fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
-crbug.com/570002 [ XP Linux ] virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
-crbug.com/570002 [ XP ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
-crbug.com/570002 [ XP ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
 
 crbug.com/570893 [ Win10 Mac10.8 ] css3/flexbox/repaint.html [ Pass Failure ]
 
