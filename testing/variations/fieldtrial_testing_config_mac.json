@@ -77,7 +77,7 @@
     ],
     "PasswordBranding": [
         {
-            "group_name": "SmartLockBranding"
+            "group_name": "SmartLockBrandingSavePromptOnly"
         }
     ],
     "QUIC": [
