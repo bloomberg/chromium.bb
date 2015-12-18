@@ -27,7 +27,8 @@ import javax.annotation.concurrent.ThreadSafe;
 class PhysicalWebUma {
     private static final String TAG = "PhysicalWeb";
     private static final String NOTIFICATION_PRESS_COUNT = "PhysicalWeb.NotificationPressed";
-    private static final String PWS_RESPONSE_TIMES = "PhysicalWeb.RoundTripTimeMilliseconds";
+    private static final String PWS_BACKGROUND_RESOLVE_TIMES = "PhysicalWeb.ResolveTime.Background";
+    private static final String PWS_FOREGROUND_RESOLVE_TIMES = "PhysicalWeb.ResolveTime.Foreground";
     private static final String URL_SELECTED_COUNT = "PhysicalWeb.UrlSelected";
     private static final String URLS_DISPLAYED_COUNTS = "PhysicalWeb.TotalBeaconsDetected";
     private static boolean sUploadAllowed = false;
@@ -47,16 +48,19 @@ class PhysicalWebUma {
     }
 
     /**
-     * Records a response time from PWS.
+     * Records a response time from PWS for a resolution during a background scan.
      * @param duration The length of time PWS took to respond.
      */
-    public static void onPwsResponse(Context context, long duration) {
-        if (sUploadAllowed) {
-            RecordHistogram.recordTimesHistogram(PWS_RESPONSE_TIMES, duration,
-                                                 TimeUnit.MILLISECONDS);
-        } else {
-            storeValue(context, PWS_RESPONSE_TIMES, duration);
-        }
+    public static void onBackgroundPwsResolution(Context context, long duration) {
+        handleTime(context, PWS_BACKGROUND_RESOLVE_TIMES, duration, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Records a response time from PWS for a resolution during a foreground scan.
+     * @param duration The length of time PWS took to respond.
+     */
+    public static void onForegroundPwsResolution(Context context, long duration) {
+        handleTime(context, PWS_FOREGROUND_RESOLVE_TIMES, duration, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -85,7 +89,8 @@ class PhysicalWebUma {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         uploader.notificationPressCount = prefs.getInt(NOTIFICATION_PRESS_COUNT, 0);
         uploader.urlSelectedCount = prefs.getInt(URL_SELECTED_COUNT, 0);
-        uploader.pwsResponseTimes = prefs.getString(PWS_RESPONSE_TIMES, "[]");
+        uploader.pwsBackgroundResolveTimes = prefs.getString(PWS_BACKGROUND_RESOLVE_TIMES, "[]");
+        uploader.pwsForegroundResolveTimes = prefs.getString(PWS_FOREGROUND_RESOLVE_TIMES, "[]");
         uploader.urlsDisplayedCounts = prefs.getString(URLS_DISPLAYED_COUNTS, "[]");
 
         // If the metrics are empty, we are done.
@@ -97,7 +102,8 @@ class PhysicalWebUma {
         prefs.edit()
                 .remove(NOTIFICATION_PRESS_COUNT)
                 .remove(URL_SELECTED_COUNT)
-                .remove(PWS_RESPONSE_TIMES)
+                .remove(PWS_BACKGROUND_RESOLVE_TIMES)
+                .remove(PWS_FOREGROUND_RESOLVE_TIMES)
                 .remove(URLS_DISPLAYED_COUNTS)
                 .apply();
 
@@ -135,16 +141,26 @@ class PhysicalWebUma {
         }
     }
 
+    private static void handleTime(Context context, String key, long duration, TimeUnit tu) {
+        if (sUploadAllowed) {
+            RecordHistogram.recordTimesHistogram(key, duration, tu);
+        } else {
+            storeValue(context, key, duration);
+        }
+    }
+
     private static class UmaUploader implements Runnable {
         public int notificationPressCount;
         public int urlSelectedCount;
-        public String pwsResponseTimes;
+        public String pwsBackgroundResolveTimes;
+        public String pwsForegroundResolveTimes;
         public String urlsDisplayedCounts;
 
         public boolean isEmpty() {
             return notificationPressCount == 0
                     && urlSelectedCount == 0
-                    && pwsResponseTimes.equals("[]")
+                    && pwsBackgroundResolveTimes.equals("[]")
+                    && pwsForegroundResolveTimes.equals("[]")
                     && urlsDisplayedCounts.equals("[]");
         }
 
@@ -155,7 +171,10 @@ class PhysicalWebUma {
         public void run() {
             uploadActions(notificationPressCount, NOTIFICATION_PRESS_COUNT);
             uploadActions(urlSelectedCount, URL_SELECTED_COUNT);
-            uploadTimes(pwsResponseTimes, PWS_RESPONSE_TIMES, TimeUnit.MILLISECONDS);
+            uploadTimes(pwsBackgroundResolveTimes, PWS_BACKGROUND_RESOLVE_TIMES,
+                    TimeUnit.MILLISECONDS);
+            uploadTimes(pwsForegroundResolveTimes, PWS_FOREGROUND_RESOLVE_TIMES,
+                    TimeUnit.MILLISECONDS);
             uploadCounts(urlsDisplayedCounts, URLS_DISPLAYED_COUNTS);
         }
 

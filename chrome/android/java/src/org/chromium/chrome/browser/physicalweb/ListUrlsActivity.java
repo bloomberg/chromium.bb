@@ -104,7 +104,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
             @Override
             public void onPwsResults(Collection<PwsResult> pwsResults) {
                 long duration = SystemClock.elapsedRealtime() - timestamp;
-                PhysicalWebUma.onPwsResponse(ListUrlsActivity.this, duration);
+                PhysicalWebUma.onForegroundPwsResolution(ListUrlsActivity.this, duration);
                 // filter out duplicate site URLs
                 Collection<String> siteUrls = new HashSet<>();
                 for (PwsResult pwsResult : pwsResults) {

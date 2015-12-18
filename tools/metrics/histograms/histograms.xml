@@ -32704,6 +32704,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PhysicalWeb.ResolveTime.Background" units="ms">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>
+    Round trip time to the metadata server for a Physical Web URL resolution
+    which the client requests during a background scan.
+  </summary>
+</histogram>
+
+<histogram name="PhysicalWeb.ResolveTime.Foreground" units="ms">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>
+    Round trip time to the metadata server for a Physical Web URL resolution
+    which the client requests during a foreground scan.
+  </summary>
+</histogram>
+
 <histogram name="Platform.AsvGroup">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

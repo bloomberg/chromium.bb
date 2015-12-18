@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
@@ -198,9 +199,13 @@ class UrlManager {
 
     private void resolveUrl(final String url) {
         Set<String> urls = new HashSet<String>(Arrays.asList(url));
+        final long timestamp = SystemClock.elapsedRealtime();
         mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
             @Override
             public void onPwsResults(Collection<PwsResult> pwsResults) {
+                long duration = SystemClock.elapsedRealtime() - timestamp;
+                PhysicalWebUma.onBackgroundPwsResolution(mContext, duration);
+
                 for (PwsResult pwsResult : pwsResults) {
                     String requestUrl = pwsResult.requestUrl;
                     if (url.equalsIgnoreCase(requestUrl)) {
