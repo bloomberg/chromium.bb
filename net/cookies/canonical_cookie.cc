@@ -264,7 +264,7 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
   bool is_cookie_valid =
       CanonicalCookie::IsCookiePrefixValid(prefix, url, parsed_cookie);
   CanonicalCookie::RecordCookiePrefixMetrics(prefix, is_cookie_valid);
-  if (options.enforce_prefixes() && !is_cookie_valid) {
+  if (!is_cookie_valid) {
     VLOG(kVlogSetCookies)
         << "Create() failed because the cookie violated prefix rules.";
     return nullptr;

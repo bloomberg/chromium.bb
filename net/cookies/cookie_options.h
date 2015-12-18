@@ -36,11 +36,6 @@ class NET_EXPORT CookieOptions {
   void set_first_party(const url::Origin& origin) { first_party_ = origin; }
   const url::Origin& first_party() const { return first_party_; }
 
-  // TODO(estark): Remove once we decide whether to ship cookie
-  // prefixes. https://crbug.com/541511
-  void set_enforce_prefixes() { enforce_prefixes_ = true; }
-  bool enforce_prefixes() const { return enforce_prefixes_; }
-
   // TODO(jww): Remove once we decide whether to ship modifying 'secure' cookies
   // only from secure schemes. https://crbug.com/546820
   void set_enforce_strict_secure() { enforce_strict_secure_ = true; }
@@ -59,7 +54,6 @@ class NET_EXPORT CookieOptions {
   bool exclude_httponly_;
   bool include_first_party_only_;
   url::Origin first_party_;
-  bool enforce_prefixes_;
   bool enforce_strict_secure_;
   base::Time server_time_;
 };

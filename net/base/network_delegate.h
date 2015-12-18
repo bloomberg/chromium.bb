@@ -107,7 +107,7 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
                             const GURL& first_party_for_cookies) const;
 
   // TODO(mkwst): Remove this once we decide whether or not we wish to ship
-  // first-party cookies, cookie prefixes, and setting secure cookies require
+  // first-party cookies and setting secure cookies require
   // secure scheme. https://crbug.com/459154, https://crbug.com/541511,
   // https://crbug.com/546820
   bool AreExperimentalCookieFeaturesEnabled() const;

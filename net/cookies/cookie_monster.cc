@@ -1164,8 +1164,6 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   CookieOptions options;
   options.set_include_httponly();
   options.set_include_first_party_only();
-  if (enforce_prefixes)
-    options.set_enforce_prefixes();
   if (enforce_strict_secure)
     options.set_enforce_strict_secure();
   return SetCanonicalCookie(&cc, creation_time, options);

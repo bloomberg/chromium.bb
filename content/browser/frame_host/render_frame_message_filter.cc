@@ -356,8 +356,6 @@ void RenderFrameMessageFilter::OnSetCookie(int render_frame_id,
           switches::kEnableExperimentalWebPlatformFeatures);
   const std::string enforce_strict_secure_group =
       base::FieldTrialList::FindFullName(kEnforceStrictSecureExperiment);
-  if (experimental_web_platform_features_enabled)
-    options.set_enforce_prefixes();
   if (experimental_web_platform_features_enabled ||
       base::StartsWith(enforce_strict_secure_group, "Enabled",
                        base::CompareCase::INSENSITIVE_ASCII)) {

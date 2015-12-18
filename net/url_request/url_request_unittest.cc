@@ -2773,13 +2773,12 @@ TEST_F(URLRequestTest, SecureCookiePrefixOnNonsecureOrigin) {
   ASSERT_TRUE(http_server.Start());
   ASSERT_TRUE(https_server.Start());
 
-  TestExperimentalFeaturesNetworkDelegate network_delegate;
+  TestNetworkDelegate network_delegate;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
   context.Init();
 
-  // Try to set a Secure __Secure- cookie, with experimental features
-  // enabled.
+  // Try to set a Secure __Secure- cookie.
   {
     TestDelegate d;
     scoped_ptr<URLRequest> req(context.CreateRequest(
@@ -2806,7 +2805,7 @@ TEST_F(URLRequestTest, SecureCookiePrefixOnNonsecureOrigin) {
   }
 }
 
-TEST_F(URLRequestTest, SecureCookiePrefixNonexperimental) {
+TEST_F(URLRequestTest, SecureCookiePrefixNonsecure) {
   EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
   https_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
@@ -2817,66 +2816,7 @@ TEST_F(URLRequestTest, SecureCookiePrefixNonexperimental) {
   context.set_network_delegate(&network_delegate);
   context.Init();
 
-  // Without experimental features, there should be no restrictions on
-  // __Secure- cookies.
-
-  // Set a non-Secure cookie with the __Secure- prefix.
-  {
-    TestDelegate d;
-    scoped_ptr<URLRequest> req(context.CreateRequest(
-        https_server.GetURL(
-            "/set-cookie?__Secure-nonsecure-not-experimental=1"),
-        DEFAULT_PRIORITY, &d));
-    req->Start();
-    base::RunLoop().Run();
-    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
-    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-  }
-
-  // Set a Secure cookie with the __Secure- prefix.
-  {
-    TestDelegate d;
-    scoped_ptr<URLRequest> req(context.CreateRequest(
-        https_server.GetURL(
-            "/set-cookie?__Secure-secure-not-experimental=1;Secure"),
-        DEFAULT_PRIORITY, &d));
-    req->Start();
-    base::RunLoop().Run();
-    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
-    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-  }
-
-  // Verify that the cookies are set. Neither should have any
-  // restrictions because the experimental flag is off.
-  {
-    TestDelegate d;
-    scoped_ptr<URLRequest> req(context.CreateRequest(
-        https_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d));
-    req->Start();
-    base::RunLoop().Run();
-
-    EXPECT_NE(d.data_received().find("__Secure-secure-not-experimental=1"),
-              std::string::npos);
-    EXPECT_NE(d.data_received().find("__Secure-nonsecure-not-experimental=1"),
-              std::string::npos);
-    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
-    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-  }
-}
-
-TEST_F(URLRequestTest, SecureCookiePrefixExperimentalNonsecure) {
-  EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-  ASSERT_TRUE(https_server.Start());
-
-  TestExperimentalFeaturesNetworkDelegate network_delegate;
-  TestURLRequestContext context(true);
-  context.set_network_delegate(&network_delegate);
-  context.Init();
-
-  // Try to set a non-Secure __Secure- cookie, with experimental features
-  // enabled.
+  // Try to set a non-Secure __Secure- cookie.
   {
     TestDelegate d;
     scoped_ptr<URLRequest> req(
@@ -2902,19 +2842,18 @@ TEST_F(URLRequestTest, SecureCookiePrefixExperimentalNonsecure) {
   }
 }
 
-TEST_F(URLRequestTest, SecureCookiePrefixExperimentalSecure) {
+TEST_F(URLRequestTest, SecureCookiePrefixSecure) {
   EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
   https_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(https_server.Start());
 
-  TestExperimentalFeaturesNetworkDelegate network_delegate;
+  TestNetworkDelegate network_delegate;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
   context.Init();
 
-  // Try to set a Secure __Secure- cookie, with experimental features
-  // enabled.
+  // Try to set a Secure __Secure- cookie.
   {
     TestDelegate d;
     scoped_ptr<URLRequest> req(context.CreateRequest(

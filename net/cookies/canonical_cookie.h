@@ -160,7 +160,7 @@ class NET_EXPORT CanonicalCookie {
   bool FullCompare(const CanonicalCookie& other) const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(CanonicalCookiePrefixHistogramTest, TestHistograms);
+  FRIEND_TEST_ALL_PREFIXES(CanonicalCookieTest, TestPrefixHistograms);
 
   // The special cookie prefixes as defined in
   // https://tools.ietf.org/html/draft-west-cookie-prefixes

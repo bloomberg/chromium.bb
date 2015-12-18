@@ -748,11 +748,6 @@ void URLRequestHttpJob::SaveNextCookie() {
     options.set_server_time(response_date_);
 
     if (network_delegate() &&
-        network_delegate()->AreExperimentalCookieFeaturesEnabled()) {
-      options.set_enforce_prefixes();
-    }
-
-    if (network_delegate() &&
         network_delegate()->AreStrictSecureCookiesEnabled()) {
       options.set_enforce_strict_secure();
     }
