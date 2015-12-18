@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/connection_to_host_impl.h"
+#include "remoting/protocol/ice_connection_to_host.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -24,28 +24,11 @@
 namespace remoting {
 namespace protocol {
 
-ConnectionToHostImpl::ConnectionToHostImpl() {}
-ConnectionToHostImpl::~ConnectionToHostImpl() {}
+IceConnectionToHost::IceConnectionToHost() {}
+IceConnectionToHost::~IceConnectionToHost() {}
 
-#define RETURN_STRING_LITERAL(x) \
-case x: \
-return #x;
-
-const char* ConnectionToHost::StateToString(State state) {
-  switch (state) {
-    RETURN_STRING_LITERAL(INITIALIZING);
-    RETURN_STRING_LITERAL(CONNECTING);
-    RETURN_STRING_LITERAL(AUTHENTICATED);
-    RETURN_STRING_LITERAL(CONNECTED);
-    RETURN_STRING_LITERAL(CLOSED);
-    RETURN_STRING_LITERAL(FAILED);
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
-void ConnectionToHostImpl::Connect(scoped_ptr<Session> session,
-                                   HostEventCallback* event_callback) {
+void IceConnectionToHost::Connect(scoped_ptr<Session> session,
+                                  HostEventCallback* event_callback) {
   DCHECK(client_stub_);
   DCHECK(clipboard_stub_);
   DCHECK(monitored_video_stub_);
@@ -58,45 +41,45 @@ void ConnectionToHostImpl::Connect(scoped_ptr<Session> session,
   SetState(CONNECTING, OK);
 }
 
-const SessionConfig& ConnectionToHostImpl::config() {
+const SessionConfig& IceConnectionToHost::config() {
   return session_->config();
 }
 
-ClipboardStub* ConnectionToHostImpl::clipboard_forwarder() {
+ClipboardStub* IceConnectionToHost::clipboard_forwarder() {
   return &clipboard_forwarder_;
 }
 
-HostStub* ConnectionToHostImpl::host_stub() {
+HostStub* IceConnectionToHost::host_stub() {
   // TODO(wez): Add a HostFilter class, equivalent to input filter.
   return control_dispatcher_.get();
 }
 
-InputStub* ConnectionToHostImpl::input_stub() {
+InputStub* IceConnectionToHost::input_stub() {
   return &event_forwarder_;
 }
 
-void ConnectionToHostImpl::set_client_stub(ClientStub* client_stub) {
+void IceConnectionToHost::set_client_stub(ClientStub* client_stub) {
   client_stub_ = client_stub;
 }
 
-void ConnectionToHostImpl::set_clipboard_stub(ClipboardStub* clipboard_stub) {
+void IceConnectionToHost::set_clipboard_stub(ClipboardStub* clipboard_stub) {
   clipboard_stub_ = clipboard_stub;
 }
 
-void ConnectionToHostImpl::set_video_stub(VideoStub* video_stub) {
+void IceConnectionToHost::set_video_stub(VideoStub* video_stub) {
   DCHECK(video_stub);
   monitored_video_stub_.reset(new MonitoredVideoStub(
       video_stub, base::TimeDelta::FromSeconds(
                       MonitoredVideoStub::kConnectivityCheckDelaySeconds),
-      base::Bind(&ConnectionToHostImpl::OnVideoChannelStatus,
+      base::Bind(&IceConnectionToHost::OnVideoChannelStatus,
                  base::Unretained(this))));
 }
 
-void ConnectionToHostImpl::set_audio_stub(AudioStub* audio_stub) {
+void IceConnectionToHost::set_audio_stub(AudioStub* audio_stub) {
   audio_stub_ = audio_stub;
 }
 
-void ConnectionToHostImpl::OnSessionStateChange(Session::State state) {
+void IceConnectionToHost::OnSessionStateChange(Session::State state) {
   DCHECK(CalledOnValidThread());
   DCHECK(event_callback_);
 
@@ -159,17 +142,17 @@ void ConnectionToHostImpl::OnSessionStateChange(Session::State state) {
   }
 }
 
-void ConnectionToHostImpl::OnSessionRouteChange(const std::string& channel_name,
-                                                const TransportRoute& route) {
+void IceConnectionToHost::OnSessionRouteChange(const std::string& channel_name,
+                                               const TransportRoute& route) {
   event_callback_->OnRouteChanged(channel_name, route);
 }
 
-void ConnectionToHostImpl::OnChannelInitialized(
+void IceConnectionToHost::OnChannelInitialized(
     ChannelDispatcherBase* channel_dispatcher) {
   NotifyIfChannelsReady();
 }
 
-void ConnectionToHostImpl::OnChannelError(
+void IceConnectionToHost::OnChannelError(
     ChannelDispatcherBase* channel_dispatcher,
     ErrorCode error) {
   LOG(ERROR) << "Failed to connect channel " << channel_dispatcher;
@@ -177,15 +160,15 @@ void ConnectionToHostImpl::OnChannelError(
   return;
 }
 
-void ConnectionToHostImpl::OnVideoChannelStatus(bool active) {
+void IceConnectionToHost::OnVideoChannelStatus(bool active) {
   event_callback_->OnConnectionReady(active);
 }
 
-ConnectionToHost::State ConnectionToHostImpl::state() const {
+ConnectionToHost::State IceConnectionToHost::state() const {
   return state_;
 }
 
-void ConnectionToHostImpl::NotifyIfChannelsReady() {
+void IceConnectionToHost::NotifyIfChannelsReady() {
   if (!control_dispatcher_.get() || !control_dispatcher_->is_connected())
     return;
   if (!event_dispatcher_.get() || !event_dispatcher_->is_connected())
@@ -205,12 +188,12 @@ void ConnectionToHostImpl::NotifyIfChannelsReady() {
   SetState(CONNECTED, OK);
 }
 
-void ConnectionToHostImpl::CloseOnError(ErrorCode error) {
+void IceConnectionToHost::CloseOnError(ErrorCode error) {
   CloseChannels();
   SetState(FAILED, error);
 }
 
-void ConnectionToHostImpl::CloseChannels() {
+void IceConnectionToHost::CloseChannels() {
   control_dispatcher_.reset();
   event_dispatcher_.reset();
   clipboard_forwarder_.set_clipboard_stub(nullptr);
@@ -219,7 +202,7 @@ void ConnectionToHostImpl::CloseChannels() {
   audio_reader_.reset();
 }
 
-void ConnectionToHostImpl::SetState(State state, ErrorCode error) {
+void IceConnectionToHost::SetState(State state, ErrorCode error) {
   DCHECK(CalledOnValidThread());
   // |error| should be specified only when |state| is set to FAILED.
   DCHECK(state == FAILED || error == OK);

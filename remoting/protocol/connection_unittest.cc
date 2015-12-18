@@ -6,9 +6,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/base/constants.h"
-#include "remoting/protocol/connection_to_host_impl.h"
 #include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/ice_connection_to_client.h"
+#include "remoting/protocol/ice_connection_to_host.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +66,7 @@ class ConnectionTest : public testing::Test {
     // Setup client side.
     owned_client_session_.reset(new FakeSession());
     client_session_ = owned_client_session_.get();
-    client_connection_.reset(new ConnectionToHostImpl());
+    client_connection_.reset(new IceConnectionToHost());
     client_connection_->set_client_stub(&client_stub_);
     client_connection_->set_clipboard_stub(&client_clipboard_stub_);
     client_connection_->set_video_stub(&client_video_stub_);

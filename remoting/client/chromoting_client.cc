@@ -13,6 +13,7 @@
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
+#include "remoting/protocol/ice_connection_to_host.h"
 #include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/session_config.h"
@@ -26,7 +27,7 @@ ChromotingClient::ChromotingClient(ClientContext* client_context,
                                    scoped_ptr<AudioPlayer> audio_player)
     : user_interface_(user_interface),
       video_renderer_(video_renderer),
-      connection_(new protocol::ConnectionToHostImpl()) {
+      connection_(new protocol::IceConnectionToHost()) {
   DCHECK(client_context->main_task_runner()->BelongsToCurrentThread());
   if (audio_player) {
     audio_decode_scheduler_.reset(new AudioDecodeScheduler(

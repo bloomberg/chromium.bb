@@ -14,6 +14,8 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
+#include "remoting/proto/control.pb.h"
+#include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"

@@ -14,9 +14,9 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
-#include "remoting/protocol/connection_to_host_impl.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/performance_tracker.h"
+#include "remoting/protocol/session_config.h"
 #include "remoting/protocol/video_stub.h"
 #include "remoting/signaling/signal_strategy.h"
 
@@ -28,6 +28,7 @@ namespace remoting {
 
 namespace protocol {
 class CandidateSessionConfig;
+class SessionManager;
 class TransportContext;
 }  // namespace protocol
 

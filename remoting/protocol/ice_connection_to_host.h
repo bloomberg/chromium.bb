@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_CONNECTION_TO_HOST_IMPL_H_
-#define REMOTING_PROTOCOL_CONNECTION_TO_HOST_IMPL_H_
+#ifndef REMOTING_PROTOCOL_ICE_CONNECTION_TO_HOST_H_
+#define REMOTING_PROTOCOL_ICE_CONNECTION_TO_HOST_H_
 
 #include <set>
 #include <string>
@@ -32,13 +32,13 @@ class ClientControlDispatcher;
 class ClientEventDispatcher;
 class ClientVideoDispatcher;
 
-class ConnectionToHostImpl : public ConnectionToHost,
-                             public Session::EventHandler,
-                             public ChannelDispatcherBase::EventHandler,
-                             public base::NonThreadSafe {
+class IceConnectionToHost : public ConnectionToHost,
+                            public Session::EventHandler,
+                            public ChannelDispatcherBase::EventHandler,
+                            public base::NonThreadSafe {
  public:
-  ConnectionToHostImpl();
-  ~ConnectionToHostImpl() override;
+  IceConnectionToHost();
+  ~IceConnectionToHost() override;
 
   // ConnectionToHost interface.
   void set_client_stub(ClientStub* client_stub) override;
@@ -99,10 +99,10 @@ class ConnectionToHostImpl : public ConnectionToHost,
   ErrorCode error_ = OK;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ConnectionToHostImpl);
+  DISALLOW_COPY_AND_ASSIGN(IceConnectionToHost);
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_CONNECTION_TO_HOST_IMPL_H_
+#endif  // REMOTING_PROTOCOL_ICE_CONNECTION_TO_HOST_H_

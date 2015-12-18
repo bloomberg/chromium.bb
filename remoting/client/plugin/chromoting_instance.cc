@@ -50,6 +50,7 @@
 #include "remoting/client/plugin/pepper_video_renderer_3d.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/client/token_fetcher_proxy.h"
+#include "remoting/proto/control.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/transport_context.h"
