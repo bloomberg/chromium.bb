@@ -131,6 +131,9 @@ wl_display_add_socket(struct wl_display *display, const char *name);
 const char *
 wl_display_add_socket_auto(struct wl_display *display);
 
+int
+wl_display_add_socket_fd(struct wl_display *display, int sock_fd);
+
 void
 wl_display_terminate(struct wl_display *display);
 

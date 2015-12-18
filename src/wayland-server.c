@@ -1198,6 +1198,49 @@ wl_display_add_socket_auto(struct wl_display *display)
 	return NULL;
 }
 
+/**  Add a socket with an existing fd to Wayland display for the clients to connect.
+ *
+ * \param display Wayland display to which the socket should be added.
+ * \param sock_fd The existing socket file descriptor to be used
+ * \return 0 if success. -1 if failed.
+ *
+ * The existing socket fd must already be created, opened, and locked.
+ * The fd must be properly set to CLOEXEC and bound to a socket file
+ * with both bind() and listen() already called.
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT int
+wl_display_add_socket_fd(struct wl_display *display, int sock_fd)
+{
+	struct wl_socket *s;
+	struct stat buf;
+
+	/* Require a valid fd or fail */
+	if (sock_fd < 0 || fstat(sock_fd, &buf) < 0 || !S_ISSOCK(buf.st_mode)) {
+		return -1;
+	}
+
+	s = wl_socket_alloc();
+	if (s == NULL)
+		return -1;
+
+	/* Reuse the existing fd */
+	s->fd = sock_fd;
+
+	s->source = wl_event_loop_add_fd(display->loop, s->fd,
+					 WL_EVENT_READABLE,
+					 socket_data, display);
+	if (s->source == NULL) {
+		wl_log("failed to establish event source\n");
+		return -1;
+	}
+
+	wl_list_insert(display->socket_list.prev, &s->link);
+
+	return 0;
+}
+
 /** Add a socket to Wayland display for the clients to connect.
  *
  * \param display Wayland display to which the socket should be added.
