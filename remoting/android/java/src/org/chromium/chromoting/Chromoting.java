@@ -36,6 +36,7 @@ import org.chromium.chromoting.accountswitcher.AccountSwitcher;
 import org.chromium.chromoting.accountswitcher.AccountSwitcherFactory;
 import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
+import org.chromium.chromoting.jni.ConnectionListener;
 import org.chromium.chromoting.jni.JniInterface;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ import java.util.Arrays;
  * The user interface for querying and displaying a user's host list from the directory server. It
  * also requests and renews authentication tokens using the system account manager.
  */
-public class Chromoting extends AppCompatActivity implements JniInterface.ConnectionListener,
+public class Chromoting extends AppCompatActivity implements ConnectionListener,
         AccountSwitcher.Callback, HostListLoader.Callback, View.OnClickListener {
     private static final String TAG = "Chromoting";
 
@@ -571,8 +572,7 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
     }
 
     @Override
-    public void onConnectionState(JniInterface.ConnectionListener.State state,
-            JniInterface.ConnectionListener.Error error) {
+    public void onConnectionState(ConnectionListener.State state, ConnectionListener.Error error) {
         boolean dismissProgress = false;
         switch (state) {
             case INITIALIZING:
