@@ -93,9 +93,6 @@ inline WindRule SkFillTypeToWindRule(SkPath::FillType fillType)
     return RULE_NONZERO;
 }
 
-// Determine if a given WebKit point is contained in a path
-bool SkPathContainsPoint(const SkPath&, const FloatPoint&, SkPath::FillType);
-
 SkMatrix PLATFORM_EXPORT affineTransformToSkMatrix(const AffineTransform&);
 
 bool nearlyIntegral(float value);
