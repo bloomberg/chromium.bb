@@ -12,6 +12,7 @@ import sys
 import threading
 import urllib2
 import urlparse
+import zlib
 
 ALGO = hashlib.sha1
 
@@ -203,6 +204,14 @@ class MockIsolateServer(object):
   @property
   def contents(self):
     return self._server.contents
+
+  def add_content_compressed(self, namespace, content):
+    assert not self._server.discard_content
+    h = hash_content(content)
+    logging.info('add_content_compressed(%s, %s)', namespace, h)
+    self._server.contents.setdefault(namespace, {})[h] = base64.b64encode(
+        zlib.compress(content))
+    return h
 
   def add_content(self, namespace, content):
     assert not self._server.discard_content

@@ -431,9 +431,9 @@ def main(args):
       help='dump output metadata to json file. When used, run_isolated returns '
            'non-zero only on internal failure')
   parser.add_option(
-      '--hard-timeout', type='int', help='Enforce hard timeout in execution')
+      '--hard-timeout', type='float', help='Enforce hard timeout in execution')
   parser.add_option(
-      '--grace-period', type='int',
+      '--grace-period', type='float',
       help='Grace period between SIGTERM and SIGKILL')
   data_group = optparse.OptionGroup(parser, 'Data source')
   data_group.add_option(
