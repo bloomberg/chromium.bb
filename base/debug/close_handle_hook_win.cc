@@ -16,9 +16,6 @@
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
 
-namespace base {
-namespace debug {
-
 namespace {
 
 typedef BOOL (WINAPI* CloseHandleType) (HANDLE handle);
@@ -264,6 +261,9 @@ bool PatchLoadedModules(HandleHooks* hooks) {
 }
 
 }  // namespace
+
+namespace base {
+namespace debug {
 
 bool InstallHandleHooks() {
   HandleHooks* hooks = g_hooks.Pointer();
