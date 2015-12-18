@@ -21,7 +21,7 @@
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_server_session.h"
-#include "net/tools/quic/quic_spdy_server_stream.h"
+#include "net/tools/quic/quic_simple_server_stream.h"
 
 namespace net {
 namespace tools {

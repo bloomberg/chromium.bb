@@ -9,6 +9,7 @@
 #include "net/quic/crypto/quic_random.h"
 
 namespace net {
+namespace test {
 
 class MockRandom : public QuicRandom {
  public:
@@ -35,6 +36,7 @@ class MockRandom : public QuicRandom {
   DISALLOW_COPY_AND_ASSIGN(MockRandom);
 };
 
+}  // namespace test
 }  // namespace net
 
 #endif  // NET_QUIC_TEST_TOOLS_MOCK_RANDOM_H_

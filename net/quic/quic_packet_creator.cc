@@ -266,9 +266,17 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
     MaybeStartFecProtection();
   }
   CreateStreamFrame(id, iov, iov_offset, offset, fin, frame);
-  bool success = AddFrame(*frame,
-                          /*save_retransmittable_frames=*/true, needs_padding);
+  bool success = AddFrame(*frame, /*save_retransmittable_frames=*/true);
+  if (needs_padding) {
+    needs_padding_ = true;
+  }
   DCHECK(success);
+  if (fec_protection == MUST_FEC_PROTECT &&
+      iov_offset + frame->stream_frame->frame_length == iov.total_length) {
+    // Turn off FEC protection when we're done writing protected data.
+    DVLOG(1) << "Turning FEC protection OFF";
+    should_fec_protect_next_packet_ = false;
+  }
   return true;
 }
 
@@ -347,54 +355,43 @@ void QuicPacketCreator::CopyToBuffer(QuicIOVector iov,
   }
   DCHECK_LE(iovnum, iov.iov_count);
   DCHECK_LE(iov_offset, iov.iov[iovnum].iov_len);
-  if (FLAGS_quic_packet_creator_prefetch) {
-    if (iovnum >= iov.iov_count || length == 0) {
-      return;
-    }
+  if (iovnum >= iov.iov_count || length == 0) {
+    return;
+  }
 
-    // Unroll the first iteration that handles iov_offset.
-    const size_t iov_available = iov.iov[iovnum].iov_len - iov_offset;
-    size_t copy_len = min(length, iov_available);
+  // Unroll the first iteration that handles iov_offset.
+  const size_t iov_available = iov.iov[iovnum].iov_len - iov_offset;
+  size_t copy_len = min(length, iov_available);
 
-    // Try to prefetch the next iov if there is at least one more after the
-    // current. Otherwise, it looks like an irregular access that the hardware
-    // prefetcher won't speculatively prefetch. Only prefetch one iov because
-    // generally, the iov_offset is not 0, input iov consists of 2K buffers and
-    // the output buffer is ~1.4K.
-    if (copy_len == iov_available && iovnum + 1 < iov.iov_count) {
-      // TODO(ckrasic) - this is unused without prefetch()
-      // char* next_base = static_cast<char*>(iov.iov[iovnum + 1].iov_base);
-      // Prefetch 2 cachelines worth of data to get the prefetcher started;
-      // leave it to the hardware prefetcher after that.
+  // Try to prefetch the next iov if there is at least one more after the
+  // current. Otherwise, it looks like an irregular access that the hardware
+  // prefetcher won't speculatively prefetch. Only prefetch one iov because
+  // generally, the iov_offset is not 0, input iov consists of 2K buffers and
+  // the output buffer is ~1.4K.
+  if (copy_len == iov_available && iovnum + 1 < iov.iov_count) {
+    // TODO(ckrasic) - this is unused without prefetch()
+    // char* next_base = static_cast<char*>(iov.iov[iovnum + 1].iov_base);
+    // char* next_base = static_cast<char*>(iov.iov[iovnum + 1].iov_base);
+    // Prefetch 2 cachelines worth of data to get the prefetcher started; leave
+    // it to the hardware prefetcher after that.
+    // TODO(ckrasic) - investigate what to do about prefetch directives.
+    // prefetch(next_base, PREFETCH_HINT_T0);
+    if (iov.iov[iovnum + 1].iov_len >= 64) {
       // TODO(ckrasic) - investigate what to do about prefetch directives.
-      // prefetch(next_base, PREFETCH_HINT_T0);
-      if (iov.iov[iovnum + 1].iov_len >= 64) {
-        // TODO(ckrasic) - investigate what to do about prefetch directives.
-        // prefetch(next_base + CACHELINE_SIZE, PREFETCH_HINT_T0);
-      }
+      // prefetch(next_base + CACHELINE_SIZE, PREFETCH_HINT_T0);
     }
+  }
 
-    const char* src = static_cast<char*>(iov.iov[iovnum].iov_base) + iov_offset;
-    while (true) {
-      memcpy(buffer, src, copy_len);
-      length -= copy_len;
-      buffer += copy_len;
-      if (length == 0 || ++iovnum >= iov.iov_count) {
-        break;
-      }
-      src = static_cast<char*>(iov.iov[iovnum].iov_base);
-      copy_len = min(length, iov.iov[iovnum].iov_len);
+  const char* src = static_cast<char*>(iov.iov[iovnum].iov_base) + iov_offset;
+  while (true) {
+    memcpy(buffer, src, copy_len);
+    length -= copy_len;
+    buffer += copy_len;
+    if (length == 0 || ++iovnum >= iov.iov_count) {
+      break;
     }
-  } else {
-    while (iovnum < iov.iov_count && length > 0) {
-      const size_t copy_len = min(length, iov.iov[iovnum].iov_len - iov_offset);
-      memcpy(buffer, static_cast<char*>(iov.iov[iovnum].iov_base) + iov_offset,
-             copy_len);
-      iov_offset = 0;
-      length -= copy_len;
-      buffer += copy_len;
-      ++iovnum;
-    }
+    src = static_cast<char*>(iov.iov[iovnum].iov_base);
+    copy_len = min(length, iov.iov[iovnum].iov_len);
   }
   LOG_IF(DFATAL, length > 0) << "Failed to copy entire length to buffer.";
 }
@@ -444,7 +441,7 @@ SerializedPacket QuicPacketCreator::SerializeAllFrames(const QuicFrames& frames,
   LOG_IF(DFATAL, frames.empty())
       << "Attempt to serialize empty packet";
   for (const QuicFrame& frame : frames) {
-    bool success = AddFrame(frame, false, false);
+    bool success = AddFrame(frame, false);
     DCHECK(success);
   }
   SerializedPacket packet = SerializePacket(buffer, buffer_len);
@@ -462,7 +459,29 @@ void QuicPacketCreator::Flush() {
   ALIGNAS(64) char seralized_packet_buffer[kMaxPacketSize];
   SerializedPacket serialized_packet =
       SerializePacket(seralized_packet_buffer, kMaxPacketSize);
-  delegate_->OnSerializedPacket(&serialized_packet);
+  OnSerializedPacket(&serialized_packet);
+}
+
+void QuicPacketCreator::OnSerializedPacket(SerializedPacket* packet) {
+  if (packet->packet == nullptr) {
+    LOG(DFATAL) << "Failed to SerializePacket. fec_policy:" << fec_send_policy()
+                << " should_fec_protect_:" << should_fec_protect_next_packet_;
+    delegate_->CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false);
+    return;
+  }
+  // There may be AckListeners interested in this packet.
+  packet->listeners.swap(ack_listeners_);
+  DCHECK(ack_listeners_.empty());
+  delegate_->OnSerializedPacket(packet);
+  has_ack_ = false;
+  has_stop_waiting_ = false;
+  MaybeSendFecPacketAndCloseGroup(/*force_send_fec=*/false,
+                                  /*is_fec_timeout=*/false);
+  // Maximum packet size may be only enacted while no packet is currently being
+  // constructed, so here we have a good opportunity to actually change it.
+  if (CanSetMaxPacketLength()) {
+    SetMaxPacketLength(max_packet_length_);
+  }
 }
 
 bool QuicPacketCreator::HasPendingFrames() const {
@@ -507,15 +526,21 @@ size_t QuicPacketCreator::PacketSize() const {
 }
 
 bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame) {
-  return AddFrame(frame,
-                  /*save_retransmittable_frames=*/true,
-                  /*needs_padding=*/false);
+  return AddFrame(frame, /*save_retransmittable_frames=*/true);
 }
 
 bool QuicPacketCreator::AddPaddedSavedFrame(const QuicFrame& frame) {
-  return AddFrame(frame,
-                  /*save_retransmittable_frames=*/true,
-                  /*needs_padding=*/true);
+  if (AddFrame(frame, /*save_retransmittable_frames=*/true)) {
+    needs_padding_ = true;
+    return true;
+  }
+  return false;
+}
+
+void QuicPacketCreator::AddAckListener(QuicAckListenerInterface* listener,
+                                       QuicPacketLength length) {
+  DCHECK(!queued_frames_.empty());
+  ack_listeners_.push_back(AckListenerWrapper(listener, length));
 }
 
 SerializedPacket QuicPacketCreator::SerializePacket(
@@ -620,10 +645,6 @@ SerializedPacket QuicPacketCreator::SerializePacket(
     queued_retransmittable_frames_->set_needs_padding(needs_padding_);
   }
 
-  const bool has_ack = has_ack_;
-  const bool has_stop_waiting = has_stop_waiting_;
-  has_ack_ = false;
-  has_stop_waiting_ = false;
   packet_size_ = 0;
   queued_frames_.clear();
   needs_padding_ = false;
@@ -631,7 +652,7 @@ SerializedPacket QuicPacketCreator::SerializePacket(
       header.packet_number, header.public_header.packet_number_length,
       encrypted_buffer, encrypted_length, /* owns_buffer*/ false,
       QuicFramer::GetPacketEntropyHash(header),
-      queued_retransmittable_frames_.release(), has_ack, has_stop_waiting,
+      queued_retransmittable_frames_.release(), has_ack_, has_stop_waiting_,
       encryption_level_);
 }
 
@@ -714,8 +735,7 @@ bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
 }
 
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
-                                 bool save_retransmittable_frames,
-                                 bool needs_padding) {
+                                 bool save_retransmittable_frames) {
   DVLOG(1) << "Adding frame: " << frame;
   InFecGroup is_in_fec_group = MaybeUpdateLengthsAndStartFec();
 
@@ -745,9 +765,6 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
   if (frame.type == STOP_WAITING_FRAME) {
     has_stop_waiting_ = true;
   }
-  if (needs_padding) {
-    needs_padding_ = true;
-  }
   if (debug_delegate_ != nullptr) {
     debug_delegate_->OnFrameAddedToPacket(frame);
   }
@@ -765,7 +782,7 @@ void QuicPacketCreator::MaybeAddPadding() {
     return;
   }
 
-  bool success = AddFrame(QuicFrame(QuicPaddingFrame()), false, false);
+  bool success = AddFrame(QuicFrame(QuicPaddingFrame()), false);
   DCHECK(success);
 }
 
@@ -795,7 +812,7 @@ void QuicPacketCreator::MaybeSendFecPacketAndCloseGroup(bool force_send_fec,
       ALIGNAS(64) char seralized_fec_buffer[kMaxPacketSize];
       SerializedPacket serialized_fec =
           SerializeFec(seralized_fec_buffer, kMaxPacketSize);
-      delegate_->OnSerializedPacket(&serialized_fec);
+      OnSerializedPacket(&serialized_fec);
     }
   }
 

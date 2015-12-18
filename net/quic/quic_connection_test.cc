@@ -460,10 +460,11 @@ class TestConnection : public QuicConnection {
         QuicConnectionPeer::GetFramer(this)->EncryptPayload(
             ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize);
     delete packet;
-    OnSerializedPacket(SerializedPacket(
+    SerializedPacket serialized_packet(
         packet_number, PACKET_6BYTE_PACKET_NUMBER, buffer, encrypted_length,
         false, entropy_hash, retransmittable_frames, has_ack,
-        has_pending_frames, ENCRYPTION_NONE));
+        has_pending_frames, ENCRYPTION_NONE);
+    OnSerializedPacket(&serialized_packet);
   }
 
   QuicConsumedData SendStreamDataWithString(
@@ -1382,9 +1383,10 @@ TEST_P(QuicConnectionTest, AckReceiptCausesAckSendBadEntropy) {
 
   ProcessPacket(1);
   // Delay sending, then queue up an ack.
-  EXPECT_CALL(*send_algorithm_,
-              TimeUntilSend(_, _, _)).WillOnce(
-                  testing::Return(QuicTime::Delta::FromMicroseconds(1)));
+  if (!FLAGS_quic_respect_send_alarm2) {
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+        .WillOnce(testing::Return(QuicTime::Delta::FromMicroseconds(1)));
+  }
   QuicConnectionPeer::SendAck(&connection_);
 
   // Process an ack with a least unacked of the received ack.
@@ -2218,19 +2220,14 @@ TEST_P(QuicConnectionTest, NoTLPForFECPacket) {
 }
 
 TEST_P(QuicConnectionTest, FramePacking) {
-  CongestionBlockWrites();
-
   // Send an ack and two stream frames in 1 packet by queueing them.
-  connection_.SendAck();
-  EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
-      IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendStreamData3)),
-      IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendStreamData5))));
-
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  CongestionUnblockWrites();
-  connection_.GetSendAlarm()->Fire();
+  {
+    QuicConnection::ScopedPacketBundler bundler(&connection_,
+                                                QuicConnection::SEND_ACK);
+    connection_.SendStreamData3();
+    connection_.SendStreamData5();
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  }
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   EXPECT_FALSE(connection_.HasQueuedData());
 
@@ -2245,20 +2242,15 @@ TEST_P(QuicConnectionTest, FramePacking) {
 }
 
 TEST_P(QuicConnectionTest, FramePackingNonCryptoThenCrypto) {
-  CongestionBlockWrites();
-
   // Send an ack and two stream frames (one non-crypto, then one crypto) in 2
   // packets by queueing them.
-  connection_.SendAck();
-  EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
-      IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendStreamData3)),
-      IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendCryptoStreamData))));
-
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
-  CongestionUnblockWrites();
-  connection_.GetSendAlarm()->Fire();
+  {
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
+    QuicConnection::ScopedPacketBundler bundler(&connection_,
+                                                QuicConnection::SEND_ACK);
+    connection_.SendStreamData3();
+    connection_.SendCryptoStreamData();
+  }
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   EXPECT_FALSE(connection_.HasQueuedData());
 
@@ -2269,20 +2261,15 @@ TEST_P(QuicConnectionTest, FramePackingNonCryptoThenCrypto) {
 }
 
 TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
-  CongestionBlockWrites();
-
   // Send an ack and two stream frames (one crypto, then one non-crypto) in 2
   // packets by queueing them.
-  connection_.SendAck();
-  EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
-      IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendCryptoStreamData)),
-      IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendStreamData3))));
-
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
-  CongestionUnblockWrites();
-  connection_.GetSendAlarm()->Fire();
+  {
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
+    QuicConnection::ScopedPacketBundler bundler(&connection_,
+                                                QuicConnection::SEND_ACK);
+    connection_.SendCryptoStreamData();
+    connection_.SendStreamData3();
+  }
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   EXPECT_FALSE(connection_.HasQueuedData());
 
@@ -2295,20 +2282,15 @@ TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
 TEST_P(QuicConnectionTest, FramePackingFEC) {
   EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
 
-  CongestionBlockWrites();
-
   // Queue an ack and two stream frames. Ack gets flushed when FEC is turned on
   // for sending protected data; two stream frames are packed in 1 packet.
-  EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
-      IgnoreResult(InvokeWithoutArgs(
-          &connection_, &TestConnection::SendStreamData3WithFec)),
-      IgnoreResult(InvokeWithoutArgs(
-          &connection_, &TestConnection::SendStreamData5WithFec))));
-  connection_.SendAck();
-
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
-  CongestionUnblockWrites();
-  connection_.GetSendAlarm()->Fire();
+  {
+    QuicConnection::ScopedPacketBundler bundler(&connection_,
+                                                QuicConnection::SEND_ACK);
+    connection_.SendStreamData3WithFec();
+    connection_.SendStreamData5WithFec();
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  }
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   EXPECT_FALSE(connection_.HasQueuedData());
 
@@ -5477,7 +5459,7 @@ TEST_P(QuicConnectionTest, DoNotSendGoAwayTwice) {
 }
 
 TEST_P(QuicConnectionTest, ReevaluateTimeUntilSendOnAck) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_respect_send_alarm, true);
+  ValueRestore<bool> old_flag(&FLAGS_quic_respect_send_alarm2, true);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   connection_.SendStreamDataWithString(kClientDataStreamId1, "foo", 0, !kFin,
                                        nullptr);
@@ -5508,6 +5490,12 @@ TEST_P(QuicConnectionTest, ReevaluateTimeUntilSendOnAck) {
   EXPECT_EQ(clock_.Now().Add(QuicTime::Delta::FromMilliseconds(2)),
             connection_.GetSendAlarm()->deadline());
   writer_->Reset();
+}
+
+TEST_P(QuicConnectionTest, SendAcksImmediately) {
+  FLAGS_quic_respect_send_alarm2 = true;
+  CongestionBlockWrites();
+  SendAckPacketToPeer();
 }
 
 TEST_P(QuicConnectionTest, SendingUnencryptedStreamDataFails) {

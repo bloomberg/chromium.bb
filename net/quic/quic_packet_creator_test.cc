@@ -38,25 +38,21 @@ namespace {
 struct TestParams {
   TestParams(QuicVersion version,
              bool version_serialization,
-             QuicConnectionIdLength length,
-             bool copy_use_prefetch)
+             QuicConnectionIdLength length)
       : version(version),
         connection_id_length(length),
-        version_serialization(version_serialization),
-        copy_use_prefetch(copy_use_prefetch) {}
+        version_serialization(version_serialization) {}
 
   friend ostream& operator<<(ostream& os, const TestParams& p) {
     os << "{ client_version: " << QuicVersionToString(p.version)
        << " connection id length: " << p.connection_id_length
-       << " include version: " << p.version_serialization
-       << " copy use prefetch: " << p.copy_use_prefetch << " }";
+       << " include version: " << p.version_serialization << " }";
     return os;
   }
 
   QuicVersion version;
   QuicConnectionIdLength connection_id_length;
   bool version_serialization;
-  bool copy_use_prefetch;
 };
 
 // Constructs various test permutations.
@@ -65,16 +61,16 @@ vector<TestParams> GetTestParams() {
   QuicConnectionIdLength max = PACKET_8BYTE_CONNECTION_ID;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
   for (size_t i = 0; i < all_supported_versions.size(); ++i) {
-    params.push_back(TestParams(all_supported_versions[i], true, max, false));
-    params.push_back(TestParams(all_supported_versions[i], false, max, false));
+    params.push_back(TestParams(all_supported_versions[i], true, max));
+    params.push_back(TestParams(all_supported_versions[i], false, max));
   }
-  params.push_back(TestParams(all_supported_versions[0], true,
-                              PACKET_0BYTE_CONNECTION_ID, false));
-  params.push_back(TestParams(all_supported_versions[0], true,
-                              PACKET_1BYTE_CONNECTION_ID, false));
-  params.push_back(TestParams(all_supported_versions[0], true,
-                              PACKET_4BYTE_CONNECTION_ID, false));
-  params.push_back(TestParams(all_supported_versions[0], true, max, true));
+  params.push_back(
+      TestParams(all_supported_versions[0], true, PACKET_0BYTE_CONNECTION_ID));
+  params.push_back(
+      TestParams(all_supported_versions[0], true, PACKET_1BYTE_CONNECTION_ID));
+  params.push_back(
+      TestParams(all_supported_versions[0], true, PACKET_4BYTE_CONNECTION_ID));
+  params.push_back(TestParams(all_supported_versions[0], true, max));
   return params;
 }
 
@@ -85,6 +81,7 @@ class MockDelegate : public QuicPacketCreator::DelegateInterface {
 
   MOCK_METHOD1(OnSerializedPacket, void(SerializedPacket* packet));
   MOCK_METHOD0(OnResetFecGroup, void());
+  MOCK_METHOD2(CloseConnection, void(QuicErrorCode, bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
@@ -130,7 +127,6 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
     client_framer_.set_visitor(&framer_visitor_);
     client_framer_.set_received_entropy_calculator(&entropy_calculator_);
     server_framer_.set_visitor(&framer_visitor_);
-    FLAGS_quic_packet_creator_prefetch = GetParam().copy_use_prefetch;
   }
 
   ~QuicPacketCreatorTest() override {}
@@ -503,7 +499,6 @@ TEST_P(QuicPacketCreatorTest, SerializeWithFECChangingSequenceNumberLength) {
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   // Turn off FEC protection.
-  creator_.set_should_fec_protect_next_packet(false);
   creator_.MaybeSendFecPacketAndCloseGroup(/*force_send_fec=*/true,
                                            /*is_fec_timeout=*/false);
   EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
@@ -708,7 +703,6 @@ TEST_P(QuicPacketCreatorTest, SwitchFecOnOffWithGroupInProgress) {
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacket));
   // Turn off FEC protection.
-  creator_.set_should_fec_protect_next_packet(false);
   creator_.MaybeSendFecPacketAndCloseGroup(/*force_send_fec=*/true,
                                            /*is_fec_timeout=*/false);
   EXPECT_FALSE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
@@ -834,11 +828,11 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumption) {
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
     QuicFrame frame;
     QuicIOVector io_vector(MakeIOVector(data));
-    size_t bytes_consumed = QuicPacketCreatorPeer::CreateStreamFrame(
-        &creator_, kClientDataStreamId1, io_vector, 0u, kOffset, false, &frame);
-    EXPECT_EQ(capacity - bytes_free, bytes_consumed);
+    ASSERT_TRUE(creator_.ConsumeData(kClientDataStreamId1, io_vector, 0u,
+                                     kOffset, false, false, &frame,
+                                     MAY_FEC_PROTECT));
+    ASSERT_TRUE(frame.stream_frame);
 
-    ASSERT_TRUE(creator_.AddSavedFrame(frame));
     // BytesFree() returns bytes available for the next frame, which will
     // be two bytes smaller since the stream frame would need to be grown.
     EXPECT_EQ(2u, creator_.ExpansionOnNewFrame());
@@ -861,6 +855,7 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumptionWithFec) {
   ASSERT_TRUE(creator_.ConsumeData(1u, io_vector, 0u, 0u, false, false, &frame,
                                    MUST_FEC_PROTECT));
   EXPECT_TRUE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
+
   // Serialize the packet.
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacket));
@@ -876,19 +871,27 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumptionWithFec) {
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
     QuicFrame frame;
     QuicIOVector io_vector(MakeIOVector(data));
-    size_t bytes_consumed = QuicPacketCreatorPeer::CreateStreamFrame(
-        &creator_, kClientDataStreamId1, io_vector, 0u, kOffset, false, &frame);
-    EXPECT_EQ(capacity - bytes_free, bytes_consumed);
-
-    ASSERT_TRUE(creator_.AddSavedFrame(frame));
+    ASSERT_TRUE(creator_.ConsumeData(kClientDataStreamId1, io_vector, 0u,
+                                     kOffset, false, false, &frame,
+                                     MUST_FEC_PROTECT));
+    ASSERT_TRUE(frame.stream_frame);
     // BytesFree() returns bytes available for the next frame. Since stream
     // frame does not grow for FEC protected packets, this should be the same
     // as bytes_free (bound by 0).
     EXPECT_EQ(0u, creator_.ExpansionOnNewFrame());
     size_t expected_bytes_free = bytes_free > 0 ? bytes_free : 0;
     EXPECT_EQ(expected_bytes_free, creator_.BytesFree()) << "delta: " << delta;
-    EXPECT_CALL(delegate_, OnSerializedPacket(_))
-        .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
+    {
+      InSequence s;
+      EXPECT_CALL(delegate_, OnSerializedPacket(_))
+          .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
+      // Every 6th packet will generate an extra FEC packet.
+      if (delta == -1 || delta == 5) {
+        EXPECT_CALL(delegate_, OnSerializedPacket(_))
+            .WillOnce(
+                Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacket));
+      }
+    }
     creator_.Flush();
     ASSERT_TRUE(serialized_packet_.packet);
     ClearSerializedPacket(&serialized_packet_);
@@ -1280,10 +1283,9 @@ TEST_P(QuicPacketCreatorTest, ResetFecGroup) {
   // not fire.
   EXPECT_CALL(delegate_, OnResetFecGroup()).Times(1);
   creator_.set_fec_send_policy(FEC_ALARM_TRIGGER);
-  creator_.set_should_fec_protect_next_packet(true);
   creator_.MaybeSendFecPacketAndCloseGroup(/*force_send_fec=*/true,
                                            /*is_fec_timeout=*/false);
-  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
+  EXPECT_FALSE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
   EXPECT_FALSE(creator_.IsFecGroupOpen());
   // We do not have enough packets in the FEC group to trigger an FEC packet.
   EXPECT_FALSE(creator_.ShouldSendFec(/*force_close=*/false));
@@ -1319,7 +1321,6 @@ TEST_P(QuicPacketCreatorTest, ResetFecGroup) {
   creator_.set_fec_send_policy(FEC_ANY_TRIGGER);
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
-  creator_.set_should_fec_protect_next_packet(false);
   creator_.MaybeSendFecPacketAndCloseGroup(/*force_send_fec=*/true,
                                            /*is_fec_timeout=*/false);
   ASSERT_EQ(3u, serialized_packet_.packet_number);
@@ -1350,7 +1351,6 @@ TEST_P(QuicPacketCreatorTest, ResetFecGroupWithQueuedFrames) {
   // not fire.
   EXPECT_CALL(delegate_, OnResetFecGroup()).Times(1);
   creator_.set_fec_send_policy(FEC_ALARM_TRIGGER);
-  creator_.set_should_fec_protect_next_packet(true);
   creator_.MaybeSendFecPacketAndCloseGroup(/*force_send_fec=*/true,
                                            /*is_fec_timeout=*/false);
   EXPECT_FALSE(creator_.IsFecGroupOpen());
@@ -1452,7 +1452,7 @@ TEST_P(QuicPacketCreatorTest, SetCurrentPathWithFec) {
   EXPECT_EQ(0u, creator_.packet_number());
   EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
             QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
-  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
+  EXPECT_FALSE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
 
   // Change current path back.
   creator_.SetCurrentPath(kDefaultPathId, 3, 2);

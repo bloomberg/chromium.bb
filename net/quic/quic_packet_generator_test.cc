@@ -49,7 +49,7 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
                     IsHandshake handshake));
   MOCK_METHOD1(PopulateAckFrame, void(QuicAckFrame*));
   MOCK_METHOD1(PopulateStopWaitingFrame, void(QuicStopWaitingFrame*));
-  MOCK_METHOD1(OnSerializedPacket, void(const SerializedPacket& packet));
+  MOCK_METHOD1(OnSerializedPacket, void(SerializedPacket* packet));
   MOCK_METHOD2(CloseConnection, void(QuicErrorCode, bool));
   MOCK_METHOD0(OnResetFecGroup, void());
 
@@ -125,9 +125,9 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
     }
   }
 
-  void SavePacket(const SerializedPacket& packet) {
-    packets_.push_back(packet);
-    ASSERT_FALSE(packet.packet->owns_buffer());
+  void SavePacket(SerializedPacket* packet) {
+    packets_.push_back(*packet);
+    ASSERT_FALSE(packet->packet->owns_buffer());
     scoped_ptr<QuicEncryptedPacket> encrypted_deleter(packets_.back().packet);
     packets_.back().packet = packets_.back().packet->Clone();
   }

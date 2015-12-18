@@ -125,7 +125,7 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
       // If a batch write stream was set, it should only be preempted by the
       // crypto or headers streams.  Any higher priority data stream would
       // *become* the new batch write stream.
-      if (FLAGS_quic_respect_send_alarm && FLAGS_quic_batch_writes) {
+      if (FLAGS_quic_respect_send_alarm2 && FLAGS_quic_batch_writes) {
         DCHECK(stream_id == kCryptoStreamId || stream_id == kHeadersStreamId ||
                batch_write_stream_id_[last_priority_popped_] == 0 ||
                bytes == 0);

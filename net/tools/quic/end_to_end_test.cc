@@ -23,6 +23,7 @@
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
+#include "net/quic/quic_session.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -38,9 +39,9 @@
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_server.h"
+#include "net/tools/quic/quic_simple_server_stream.h"
 #include "net/tools/quic/quic_socket_utils.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
-#include "net/tools/quic/quic_spdy_server_stream.h"
 #include "net/tools/quic/test_tools/http_message.h"
 #include "net/tools/quic/test_tools/packet_dropping_test_writer.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
@@ -672,7 +673,8 @@ TEST_P(EndToEndTest, PostMissingBytes) {
   // This should be detected as stream fin without complete request,
   // triggering an error response.
   client_->SendCustomSynchronousRequest(request);
-  EXPECT_EQ(QuicSpdyServerStream::kErrorResponseBody, client_->response_body());
+  EXPECT_EQ(QuicSimpleServerStream::kErrorResponseBody,
+            client_->response_body());
   EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
 }
 
@@ -1976,12 +1978,12 @@ TEST_P(EndToEndTest, BadEncryptedData) {
 }
 
 // A test stream that gives |response_body_| as an error response body.
-class ServerStreamWithErrorResponseBody : public QuicSpdyServerStream {
+class ServerStreamWithErrorResponseBody : public QuicSimpleServerStream {
  public:
   ServerStreamWithErrorResponseBody(QuicStreamId id,
                                     QuicSpdySession* session,
                                     string response_body)
-      : QuicSpdyServerStream(id, session), response_body_(response_body) {}
+      : QuicSimpleServerStream(id, session), response_body_(response_body) {}
 
   ~ServerStreamWithErrorResponseBody() override {}
 
@@ -2007,8 +2009,8 @@ class StreamWithErrorFactory : public QuicTestServer::StreamFactory {
 
   ~StreamWithErrorFactory() override {}
 
-  QuicSpdyServerStream* CreateStream(QuicStreamId id,
-                                     QuicSpdySession* session) override {
+  QuicSimpleServerStream* CreateStream(QuicStreamId id,
+                                       QuicSpdySession* session) override {
     return new ServerStreamWithErrorResponseBody(id, session, response_body_);
   }
 
@@ -2146,13 +2148,12 @@ TEST_P(EndToEndTest, Trailers) {
   SetReorderPercentage(30);
 
   // Add a response with headers, body, and trailers.
-  const int kBodySize = 64 * 1024;  // 1 MB;
+  const string kBody = "body content";
+
   SpdyHeaderBlock headers;
   headers[":status"] = "200";
   headers[":version"] = "HTTP/1.1";
-  headers["content-length"] = IntToString(kBodySize);
-
-  const string kBody = string(kBodySize, 'x');
+  headers["content-length"] = IntToString(kBody.size());
 
   SpdyHeaderBlock trailers;
   trailers["some-trailing-header"] = "trailing-header-value";

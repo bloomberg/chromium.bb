@@ -738,7 +738,7 @@ TEST_F(ReliableQuicStreamTest, EarlyResponseFinHandling) {
   // Receive data for the request.
   QuicStreamFrame frame1(stream_->id(), false, 0, StringPiece("Start"));
   stream_->OnStreamFrame(frame1);
-  // When QuicSpdyServerStream sends the response, it calls
+  // When QuicSimpleServerStream sends the response, it calls
   // ReliableQuicStream::CloseReadSide() first.
   ReliableQuicStreamPeer::CloseReadSide(stream_);
   // Send data and FIN for the response.

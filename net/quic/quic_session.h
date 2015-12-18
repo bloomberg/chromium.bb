@@ -225,7 +225,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Return the reserved crypto stream.
   virtual QuicCryptoStream* GetCryptoStream() = 0;
 
-  // Adds 'stream' to the active stream map.
+  // Adds |stream| to the dynamic stream map.
+  // Takes ownership of |stream|.
   virtual void ActivateStream(ReliableQuicStream* stream);
 
   // Returns the stream ID for a new outgoing stream, and increments the
@@ -331,7 +332,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // that create these streams.
   StreamMap static_stream_map_;
 
-  // Map from StreamId to pointers to streams that are owned by the caller.
+  // Map from StreamId to pointers to streams. Owns the streams.
   StreamMap dynamic_stream_map_;
 
   // The ID to use for the next outgoing stream.

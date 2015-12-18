@@ -5,6 +5,7 @@
 #include "net/quic/test_tools/mock_random.h"
 
 namespace net {
+namespace test {
 
 MockRandom::MockRandom()
     : base_(0xDEADBEEF),
@@ -31,4 +32,5 @@ void MockRandom::ChangeValue() {
   increment_++;
 }
 
+}  // namespace test
 }  // namespace net

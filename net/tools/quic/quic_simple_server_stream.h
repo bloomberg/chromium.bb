@@ -1,9 +1,9 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// // Use of this source code is governed by a BSD-style license that can be
+// // found in the LICENSE file.
 
-#ifndef NET_TOOLS_QUIC_QUIC_SPDY_SERVER_STREAM_H_
-#define NET_TOOLS_QUIC_QUIC_SPDY_SERVER_STREAM_H_
+#ifndef NET_TOOLS_QUIC_QUIC_SIMPLE_SERVER_STREAM_H_
+#define NET_TOOLS_QUIC_QUIC_SIMPLE_SERVER_STREAM_H_
 
 #include <string>
 
@@ -19,15 +19,15 @@ class QuicSpdySession;
 namespace tools {
 
 namespace test {
-class QuicSpdyServerStreamPeer;
+class QuicSimpleServerStreamPeer;
 }  // namespace test
 
 // All this does right now is aggregate data, and on fin, send an HTTP
 // response.
-class QuicSpdyServerStream : public QuicSpdyStream {
+class QuicSimpleServerStream : public QuicSpdyStream {
  public:
-  QuicSpdyServerStream(QuicStreamId id, QuicSpdySession* session);
-  ~QuicSpdyServerStream() override;
+  QuicSimpleServerStream(QuicStreamId id, QuicSpdySession* session);
+  ~QuicSimpleServerStream() override;
 
   // QuicSpdyStream
   void OnInitialHeadersComplete(bool fin, size_t frame_len) override;
@@ -60,17 +60,17 @@ class QuicSpdyServerStream : public QuicSpdyStream {
   const std::string& body() { return body_; }
 
  private:
-  friend class test::QuicSpdyServerStreamPeer;
+  friend class test::QuicSimpleServerStreamPeer;
 
   // The parsed headers received from the client.
   SpdyHeaderBlock request_headers_;
   int content_length_;
   std::string body_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuicSpdyServerStream);
+  DISALLOW_COPY_AND_ASSIGN(QuicSimpleServerStream);
 };
 
 }  // namespace tools
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_QUIC_SPDY_SERVER_STREAM_H_
+#endif  // NET_TOOLS_QUIC_QUIC_SIMPLE_SERVER_STREAM_H_

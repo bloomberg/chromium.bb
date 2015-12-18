@@ -55,6 +55,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/quic_utils.h"
@@ -83,6 +84,9 @@ string FLAGS_host = "";
 int32 FLAGS_port = 0;
 // If set, send a POST with this body.
 string FLAGS_body = "";
+// If set, contents are converted from hex to ascii, before sending as body of
+// a POST. e.g. --body_hex=\"68656c6c6f\"
+string FLAGS_body_hex = "";
 // A semicolon separated list of key:value pairs to add to request headers.
 string FLAGS_headers = "";
 // Set to true for a quieter output experience.
@@ -117,6 +121,18 @@ class FakeCertVerifier : public net::CertVerifier {
   bool SupportsOCSPStapling() override { return false; }
 };
 
+static bool DecodeHexString(const base::StringPiece& hex, std::string* bytes) {
+  bytes->clear();
+  if (hex.empty())
+    return true;
+  std::vector<uint8> v;
+  if (!base::HexStringToBytes(hex.as_string(), &v))
+    return false;
+  if (!v.empty())
+    bytes->assign(reinterpret_cast<const char*>(&v[0]), v.size());
+  return true;
+};
+
 int main(int argc, char *argv[]) {
   base::CommandLine::Init(argc, argv);
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
@@ -125,6 +141,8 @@ int main(int argc, char *argv[]) {
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   CHECK(logging::InitLogging(settings));
+
+  FLAGS_quic_supports_trailers = true;
 
   if (line->HasSwitch("h") || line->HasSwitch("help") || urls.empty()) {
     const char* help_str =
@@ -137,6 +155,7 @@ int main(int argc, char *argv[]) {
         "connect to\n"
         "--port=<port>               specify the port to connect to\n"
         "--body=<body>               specify the body to post\n"
+        "--body_hex=<body_hex>       specify the body_hex to be printed out\n"
         "--headers=<headers>         specify a semicolon separated list of "
         "key:value pairs to add to request headers\n"
         "--quiet                     specify for a quieter output experience\n"
@@ -162,6 +181,9 @@ int main(int argc, char *argv[]) {
   }
   if (line->HasSwitch("body")) {
     FLAGS_body = line->GetSwitchValueASCII("body");
+  }
+  if (line->HasSwitch("body_hex")) {
+    FLAGS_body_hex = line->GetSwitchValueASCII("body_hex");
   }
   if (line->HasSwitch("headers")) {
     FLAGS_headers = line->GetSwitchValueASCII("headers");
@@ -270,10 +292,17 @@ int main(int argc, char *argv[]) {
   }
   cout << "Connected to " << host_port << endl;
 
+  // Construct the string body from flags, if provided.
+  string body = FLAGS_body;
+  if (!FLAGS_body_hex.empty()) {
+    DCHECK(FLAGS_body.empty()) << "Only set one of --body and --body_hex.";
+    DecodeHexString(FLAGS_body_hex, &body);
+  }
+
   // Construct a GET or POST request for supplied URL.
   net::BalsaHeaders headers;
-  headers.SetRequestFirstlineFromStringPieces(
-      FLAGS_body.empty() ? "GET" : "POST", url.spec(), "HTTP/1.1");
+  headers.SetRequestFirstlineFromStringPieces(body.empty() ? "GET" : "POST",
+                                              url.spec(), "HTTP/1.1");
 
   // Append any additional headers supplied on the command line.
   for (const std::string& header :
@@ -300,13 +329,13 @@ int main(int argc, char *argv[]) {
   // Send the request.
   net::SpdyHeaderBlock header_block =
       net::tools::SpdyBalsaUtils::RequestHeadersToSpdyHeaders(headers);
-  client.SendRequestAndWaitForResponse(headers, FLAGS_body, /*fin=*/true);
+  client.SendRequestAndWaitForResponse(headers, body, /*fin=*/true);
 
   // Print request and response details.
   if (!FLAGS_quiet) {
     cout << "Request:" << endl;
     cout << "headers:" << header_block.DebugString();
-    cout << "body: " << FLAGS_body << endl;
+    cout << "body: " << body << endl;
     cout << endl;
     cout << "Response:" << endl;
     cout << "headers: " << client.latest_response_headers() << endl;

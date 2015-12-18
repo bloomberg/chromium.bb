@@ -13,7 +13,7 @@
 #include "net/quic/quic_session.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_server.h"
-#include "net/tools/quic/quic_spdy_server_stream.h"
+#include "net/tools/quic/quic_simple_server_stream.h"
 
 namespace net {
 
@@ -39,14 +39,14 @@ class QuicTestServer : public QuicServer {
         const QuicCryptoServerConfig* crypto_config) = 0;
   };
 
-  // Factory for creating QuicServerStreams.
+  // Factory for creating QuicSimpleServerStreams.
   class StreamFactory {
    public:
     virtual ~StreamFactory() {}
 
     // Returns a new stream owned by the caller.
-    virtual QuicSpdyServerStream* CreateStream(QuicStreamId id,
-                                               QuicSpdySession* session) = 0;
+    virtual QuicSimpleServerStream* CreateStream(QuicStreamId id,
+                                                 QuicSpdySession* session) = 0;
   };
 
   class CryptoStreamFactory {

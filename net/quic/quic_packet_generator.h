@@ -65,23 +65,18 @@ namespace test {
 class QuicPacketGeneratorPeer;
 }  // namespace test
 
-class NET_EXPORT_PRIVATE QuicPacketGenerator
-    : public QuicPacketCreator::DelegateInterface {
+class NET_EXPORT_PRIVATE QuicPacketGenerator {
  public:
-  class NET_EXPORT_PRIVATE DelegateInterface {
+  class NET_EXPORT_PRIVATE DelegateInterface
+      : public QuicPacketCreator::DelegateInterface {
    public:
-    virtual ~DelegateInterface() {}
+    ~DelegateInterface() override {}
     // Consults delegate whether a packet should be generated.
     virtual bool ShouldGeneratePacket(HasRetransmittableData retransmittable,
                                       IsHandshake handshake) = 0;
     virtual void PopulateAckFrame(QuicAckFrame* ack) = 0;
     virtual void PopulateStopWaitingFrame(
         QuicStopWaitingFrame* stop_waiting) = 0;
-    // Takes ownership of |packet.packet| and |packet.retransmittable_frames|.
-    virtual void OnSerializedPacket(const SerializedPacket& packet) = 0;
-    virtual void CloseConnection(QuicErrorCode error, bool from_peer) = 0;
-    // Called when a FEC Group is reset (closed).
-    virtual void OnResetFecGroup() = 0;
   };
 
   QuicPacketGenerator(QuicConnectionId connection_id,
@@ -89,7 +84,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
                       QuicRandom* random_generator,
                       DelegateInterface* delegate);
 
-  ~QuicPacketGenerator() override;
+  ~QuicPacketGenerator();
 
   // Called by the connection in the event of the congestion window changing.
   void OnCongestionWindowChange(QuicPacketCount max_packets_in_flight);
@@ -176,10 +171,6 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
   // Sets the encrypter to use for the encryption level.
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
 
-  // QuicPacketCreator::DelegateInterface.
-  void OnSerializedPacket(SerializedPacket* serialized_packet) override;
-  void OnResetFecGroup() override;
-
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level);
 
@@ -247,9 +238,6 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
   // retransmitted.
   QuicAckFrame pending_ack_frame_;
   QuicStopWaitingFrame pending_stop_waiting_frame_;
-
-  // Stores ack listeners that should be attached to the next packet.
-  std::list<AckListenerWrapper> ack_listeners_;
 
   // Stores the maximum packet size we are allowed to send.  This might not be
   // the maximum size we are actually using now, if we are in the middle of the

@@ -72,9 +72,6 @@ bool FLAGS_quic_disable_pacing = false;
 // TcpLossAlgorithm or TimeLossAlgorithm.
 bool FLAGS_quic_general_loss_algorithm = true;
 
-// If true, use the unrolled prefetch path in QuicPacketCreator::CopyToBuffer.
-bool FLAGS_quic_packet_creator_prefetch = false;
-
 // If true, only migrate QUIC connections when client address changes are
 // considered to be caused by NATs.
 bool FLAGS_quic_disable_non_nat_address_migration = true;
@@ -88,7 +85,7 @@ bool FLAGS_quic_use_new_idle_timeout = true;
 bool FLAGS_quic_use_stream_sequencer_buffer = true;
 
 // If true, don't send QUIC packets if the send alarm is set.
-bool FLAGS_quic_respect_send_alarm = true;
+bool FLAGS_quic_respect_send_alarm2 = true;
 
 // If ture, sets callback pointer to nullptr after calling Cancel() in
 // QuicCryptoServerStream::CancelOutstandingCallbacks.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_spdy_server_stream.h"
+#include "net/tools/quic/quic_simple_server_stream.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -23,15 +23,14 @@ using std::string;
 namespace net {
 namespace tools {
 
-QuicSpdyServerStream::QuicSpdyServerStream(QuicStreamId id,
-                                           QuicSpdySession* session)
+QuicSimpleServerStream::QuicSimpleServerStream(QuicStreamId id,
+                                               QuicSpdySession* session)
     : QuicSpdyStream(id, session), content_length_(-1) {}
 
-QuicSpdyServerStream::~QuicSpdyServerStream() {
-}
+QuicSimpleServerStream::~QuicSimpleServerStream() {}
 
-void QuicSpdyServerStream::OnInitialHeadersComplete(bool fin,
-                                                    size_t frame_len) {
+void QuicSimpleServerStream::OnInitialHeadersComplete(bool fin,
+                                                      size_t frame_len) {
   QuicSpdyStream::OnInitialHeadersComplete(fin, frame_len);
   if (!SpdyUtils::ParseHeaders(decompressed_headers().data(),
                                decompressed_headers().length(),
@@ -42,13 +41,13 @@ void QuicSpdyServerStream::OnInitialHeadersComplete(bool fin,
   MarkHeadersConsumed(decompressed_headers().length());
 }
 
-void QuicSpdyServerStream::OnTrailingHeadersComplete(bool fin,
-                                                     size_t frame_len) {
+void QuicSimpleServerStream::OnTrailingHeadersComplete(bool fin,
+                                                       size_t frame_len) {
   LOG(DFATAL) << "Server does not support receiving Trailers.";
   SendErrorResponse();
 }
 
-void QuicSpdyServerStream::OnDataAvailable() {
+void QuicSimpleServerStream::OnDataAvailable() {
   while (HasBytesToRead()) {
     struct iovec iov;
     if (GetReadableRegions(&iov, 1) == 0) {
@@ -97,7 +96,7 @@ void QuicSpdyServerStream::OnDataAvailable() {
   SendResponse();
 }
 
-void QuicSpdyServerStream::SendResponse() {
+void QuicSimpleServerStream::SendResponse() {
   if (!ContainsKey(request_headers_, ":authority") ||
       !ContainsKey(request_headers_, ":path")) {
     DVLOG(1) << "Request headers do not contain :authority or :path.";
@@ -158,7 +157,7 @@ void QuicSpdyServerStream::SendResponse() {
                                 response->trailers());
 }
 
-void QuicSpdyServerStream::SendErrorResponse() {
+void QuicSimpleServerStream::SendErrorResponse() {
   DVLOG(1) << "Sending error response for stream " << id();
   SpdyHeaderBlock headers;
   headers[":status"] = "500";
@@ -166,13 +165,13 @@ void QuicSpdyServerStream::SendErrorResponse() {
   SendHeadersAndBody(headers, kErrorResponseBody);
 }
 
-void QuicSpdyServerStream::SendHeadersAndBody(
+void QuicSimpleServerStream::SendHeadersAndBody(
     const SpdyHeaderBlock& response_headers,
     StringPiece body) {
   SendHeadersAndBodyAndTrailers(response_headers, body, SpdyHeaderBlock());
 }
 
-void QuicSpdyServerStream::SendHeadersAndBodyAndTrailers(
+void QuicSimpleServerStream::SendHeadersAndBodyAndTrailers(
     const SpdyHeaderBlock& response_headers,
     StringPiece body,
     const SpdyHeaderBlock& response_trailers) {
@@ -208,7 +207,7 @@ void QuicSpdyServerStream::SendHeadersAndBodyAndTrailers(
   WriteTrailers(response_trailers, nullptr);
 }
 
-const char* const QuicSpdyServerStream::kErrorResponseBody = "bad";
+const char* const QuicSimpleServerStream::kErrorResponseBody = "bad";
 
 }  // namespace tools
 }  // namespace net

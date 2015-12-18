@@ -231,6 +231,7 @@ QuicTime::Delta TcpCubicSender::TimeUntilSend(
     QuicByteCount bytes_in_flight,
     HasRetransmittableData has_retransmittable_data) const {
   if (has_retransmittable_data == NO_RETRANSMITTABLE_DATA) {
+    DCHECK(!FLAGS_quic_respect_send_alarm2);
     // For TCP we can always send an ACK immediately.
     return QuicTime::Delta::Zero();
   }

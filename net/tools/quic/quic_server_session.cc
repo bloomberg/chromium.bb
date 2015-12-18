@@ -10,7 +10,7 @@
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_spdy_session.h"
 #include "net/quic/reliable_quic_stream.h"
-#include "net/tools/quic/quic_spdy_server_stream.h"
+#include "net/tools/quic/quic_simple_server_stream.h"
 
 namespace net {
 namespace tools {
@@ -202,7 +202,7 @@ QuicSpdyStream* QuicServerSession::CreateIncomingDynamicStream(
     return nullptr;
   }
 
-  return new QuicSpdyServerStream(id, this);
+  return new QuicSimpleServerStream(id, this);
 }
 
 bool QuicServerSession::ShouldCreateOutgoingDynamicStream() {
@@ -229,7 +229,7 @@ QuicSpdyStream* QuicServerSession::CreateOutgoingDynamicStream(
   }
 
   QuicSpdyStream* stream =
-      new QuicSpdyServerStream(GetNextOutgoingStreamId(), this);
+      new QuicSimpleServerStream(GetNextOutgoingStreamId(), this);
   stream->SetPriority(priority);
   ActivateStream(stream);
   return stream;

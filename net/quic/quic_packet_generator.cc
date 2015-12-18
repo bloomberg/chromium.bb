@@ -21,7 +21,7 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
                                          QuicRandom* random_generator,
                                          DelegateInterface* delegate)
     : delegate_(delegate),
-      packet_creator_(connection_id, framer, random_generator, this),
+      packet_creator_(connection_id, framer, random_generator, delegate),
       batch_mode_(false),
       should_send_ack_(false),
       should_send_stop_waiting_(false),
@@ -132,11 +132,9 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
 
     // A stream frame is created and added.
     size_t bytes_consumed = frame.stream_frame->frame_length;
-
     if (listener != nullptr) {
-      ack_listeners_.push_back(AckListenerWrapper(listener, bytes_consumed));
+      packet_creator_.AddAckListener(listener, bytes_consumed);
     }
-
     total_bytes_consumed += bytes_consumed;
     fin_consumed = fin && total_bytes_consumed == iov.total_length;
     DCHECK(total_bytes_consumed == iov.total_length ||
@@ -153,11 +151,6 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
       // We're done writing the data. Exit the loop.
       // We don't make this a precondition because we could have 0 bytes of data
       // if we're simply writing a fin.
-      if (fec_protection == MUST_FEC_PROTECT) {
-        // Turn off FEC protection when we're done writing protected data.
-        DVLOG(1) << "Turning FEC protection OFF";
-        packet_creator_.set_should_fec_protect_next_packet(false);
-      }
       break;
     }
   }
@@ -192,7 +185,7 @@ void QuicPacketGenerator::GenerateMtuDiscoveryPacket(
   SetMaxPacketLength(target_mtu, /*force=*/true);
   const bool success = packet_creator_.AddPaddedSavedFrame(frame);
   if (listener != nullptr) {
-    ack_listeners_.push_back(AckListenerWrapper(listener, 0));
+    packet_creator_.AddAckListener(listener, 0);
   }
   packet_creator_.Flush();
   // The only reason AddFrame can fail is that the packet is too full to fit in
@@ -374,35 +367,6 @@ void QuicPacketGenerator::set_encryption_level(EncryptionLevel level) {
 void QuicPacketGenerator::SetEncrypter(EncryptionLevel level,
                                        QuicEncrypter* encrypter) {
   packet_creator_.SetEncrypter(level, encrypter);
-}
-
-void QuicPacketGenerator::OnSerializedPacket(
-    SerializedPacket* serialized_packet) {
-  if (serialized_packet->packet == nullptr) {
-    LOG(DFATAL) << "Failed to SerializePacket. fec_policy:" << fec_send_policy()
-                << " should_fec_protect_:"
-                << packet_creator_.should_fec_protect_next_packet();
-    delegate_->CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false);
-    return;
-  }
-
-  // There may be AckListeners interested in this packet.
-  serialized_packet->listeners.swap(ack_listeners_);
-  ack_listeners_.clear();
-
-  delegate_->OnSerializedPacket(*serialized_packet);
-  packet_creator_.MaybeSendFecPacketAndCloseGroup(/*force_send_fec=*/false,
-                                                  /*is_fec_timeout=*/false);
-
-  // Maximum packet size may be only enacted while no packet is currently being
-  // constructed, so here we have a good opportunity to actually change it.
-  if (packet_creator_.CanSetMaxPacketLength()) {
-    packet_creator_.SetMaxPacketLength(max_packet_length_);
-  }
-}
-
-void QuicPacketGenerator::OnResetFecGroup() {
-  delegate_->OnResetFecGroup();
 }
 
 void QuicPacketGenerator::SetCurrentPath(

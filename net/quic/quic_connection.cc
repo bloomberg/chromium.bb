@@ -710,7 +710,7 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
     return false;
   }
 
-  if (FLAGS_quic_respect_send_alarm && send_alarm_->IsSet()) {
+  if (FLAGS_quic_respect_send_alarm2 && send_alarm_->IsSet()) {
     send_alarm_->Cancel();
   }
   ProcessAckFrame(incoming_ack);
@@ -781,17 +781,17 @@ bool QuicConnection::OnPingFrame(const QuicPingFrame& frame) {
 
 bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
   if (incoming_ack.largest_observed > packet_generator_.packet_number()) {
-    DLOG(ERROR) << ENDPOINT << "Peer's observed unsent packet:"
-                << incoming_ack.largest_observed << " vs "
-                << packet_generator_.packet_number();
+    LOG(WARNING) << ENDPOINT << "Peer's observed unsent packet:"
+                 << incoming_ack.largest_observed << " vs "
+                 << packet_generator_.packet_number();
     // We got an error for data we have not sent.  Error out.
     return false;
   }
 
   if (incoming_ack.largest_observed < sent_packet_manager_.largest_observed()) {
-    DLOG(ERROR) << ENDPOINT << "Peer's largest_observed packet decreased:"
-                << incoming_ack.largest_observed << " vs "
-                << sent_packet_manager_.largest_observed();
+    LOG(WARNING) << ENDPOINT << "Peer's largest_observed packet decreased:"
+                 << incoming_ack.largest_observed << " vs "
+                 << sent_packet_manager_.largest_observed();
     // A new ack has a diminished largest_observed value.  Error out.
     // If this was an old packet, we wouldn't even have checked.
     return false;
@@ -799,36 +799,35 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
 
   if (!incoming_ack.missing_packets.Empty() &&
       incoming_ack.missing_packets.Max() > incoming_ack.largest_observed) {
-    DLOG(ERROR) << ENDPOINT << "Peer sent missing packet: "
-                << incoming_ack.missing_packets.Max()
-                << " which is greater than largest observed: "
-                << incoming_ack.largest_observed;
+    LOG(WARNING) << ENDPOINT << "Peer sent missing packet: "
+                 << incoming_ack.missing_packets.Max()
+                 << " which is greater than largest observed: "
+                 << incoming_ack.largest_observed;
     return false;
   }
 
   if (!incoming_ack.missing_packets.Empty() &&
       incoming_ack.missing_packets.Min() <
           sent_packet_manager_.least_packet_awaited_by_peer()) {
-    DLOG(ERROR) << ENDPOINT << "Peer sent missing packet: "
-                << incoming_ack.missing_packets.Min()
-                << " which is smaller than least_packet_awaited_by_peer_: "
-                << sent_packet_manager_.least_packet_awaited_by_peer();
+    LOG(WARNING) << ENDPOINT << "Peer sent missing packet: "
+                 << incoming_ack.missing_packets.Min()
+                 << " which is smaller than least_packet_awaited_by_peer_: "
+                 << sent_packet_manager_.least_packet_awaited_by_peer();
     return false;
   }
 
-  if (!sent_entropy_manager_.IsValidEntropy(
-          incoming_ack.largest_observed,
-          incoming_ack.missing_packets,
-          incoming_ack.entropy_hash)) {
-    DLOG(ERROR) << ENDPOINT << "Peer sent invalid entropy.";
+  if (!sent_entropy_manager_.IsValidEntropy(incoming_ack.largest_observed,
+                                            incoming_ack.missing_packets,
+                                            incoming_ack.entropy_hash)) {
+    LOG(WARNING) << ENDPOINT << "Peer sent invalid entropy.";
     return false;
   }
 
   if (incoming_ack.latest_revived_packet != 0 &&
       !incoming_ack.missing_packets.Contains(
           incoming_ack.latest_revived_packet)) {
-    DLOG(ERROR) << ENDPOINT
-                << "Peer specified revived packet which was not missing.";
+    LOG(WARNING) << ENDPOINT
+                 << "Peer specified revived packet which was not missing.";
     return false;
   }
   return true;
@@ -1512,9 +1511,17 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
     return false;
   }
 
-  // If the send alarm is set, wait for it to fire.
-  if (FLAGS_quic_respect_send_alarm && send_alarm_->IsSet()) {
-    return false;
+  if (FLAGS_quic_respect_send_alarm2) {
+    // Allow acks to be sent immediately.
+    // TODO(ianswett): Remove retransmittable from
+    // SendAlgorithmInterface::TimeUntilSend.
+    if (retransmittable == NO_RETRANSMITTABLE_DATA) {
+      return true;
+    }
+    // If the send alarm is set, wait for it to fire.
+    if (send_alarm_->IsSet()) {
+      return false;
+    }
   }
 
   QuicTime now = clock_->Now();
@@ -1532,7 +1539,7 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
              << "ms";
     return false;
   }
-  if (!FLAGS_quic_respect_send_alarm) {
+  if (!FLAGS_quic_respect_send_alarm2) {
     send_alarm_->Cancel();
   }
   return true;
@@ -1721,19 +1728,18 @@ void QuicConnection::OnWriteError(int error_code) {
   CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
 }
 
-void QuicConnection::OnSerializedPacket(
-    const SerializedPacket& serialized_packet) {
-  if (serialized_packet.packet == nullptr) {
+void QuicConnection::OnSerializedPacket(SerializedPacket* serialized_packet) {
+  if (serialized_packet->packet == nullptr) {
     // We failed to serialize the packet, so close the connection.
     // CloseConnection does not send close packet, so no infinite loop here.
     CloseConnection(QUIC_ENCRYPTION_FAILURE, false);
     return;
   }
-  if (serialized_packet.is_fec_packet && fec_alarm_->IsSet()) {
+  if (serialized_packet->is_fec_packet && fec_alarm_->IsSet()) {
     // If an FEC packet is serialized with the FEC alarm set, cancel the alarm.
     fec_alarm_->Cancel();
   }
-  SendOrQueuePacket(QueuedPacket(serialized_packet));
+  SendOrQueuePacket(QueuedPacket(*serialized_packet));
 }
 
 void QuicConnection::OnResetFecGroup() {
@@ -2268,7 +2274,8 @@ QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
       connection_->ack_alarm_->IsSet() || connection_->stop_waiting_count_ > 1;
   if (send_ack == SEND_ACK || (send_ack == BUNDLE_PENDING_ACK && ack_pending)) {
     DVLOG(1) << "Bundling ack with outgoing packet.";
-    DCHECK(send_ack == SEND_ACK || connection_->ack_frame_updated());
+    DCHECK(send_ack == SEND_ACK || connection_->ack_frame_updated() ||
+           connection_->stop_waiting_count_ > 1);
     connection_->SendAck();
   }
 }

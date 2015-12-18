@@ -434,7 +434,9 @@ class NET_EXPORT_PRIVATE QuicConnection
                             IsHandshake handshake) override;
   void PopulateAckFrame(QuicAckFrame* ack) override;
   void PopulateStopWaitingFrame(QuicStopWaitingFrame* stop_waiting) override;
-  void OnSerializedPacket(const SerializedPacket& packet) override;
+
+  // QuicPacketCreator::DelegateInterface
+  void OnSerializedPacket(SerializedPacket* packet) override;
   void OnResetFecGroup() override;
 
   // QuicSentPacketManager::NetworkChangeVisitor
@@ -575,7 +577,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // as densely as possible into packets.  In addition, this bundler
   // can be configured to ensure that an ACK frame is included in the
   // first packet created, if there's new ack information to be sent.
-  class ScopedPacketBundler {
+  class NET_EXPORT_PRIVATE ScopedPacketBundler {
    public:
     // In addition to all outgoing frames being bundled when the
     // bundler is in scope, setting |include_ack| to true ensures that
