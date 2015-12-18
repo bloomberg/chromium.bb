@@ -4,8 +4,8 @@
 
 source_set("net") {
   sources = [
-    "variations_http_header_provider.cc",
-    "variations_http_header_provider.h",
+    "variations_http_headers.cc",
+    "variations_http_headers.h",
   ]
 
   public_deps = [

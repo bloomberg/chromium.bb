@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/variations/net/variations_http_header_provider.h"
+#include "components/variations/variations_http_header_provider.h"
 
 #include <set>
 #include <string>
@@ -14,60 +14,16 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/variations/proto/client_variations.pb.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/http/http_request_headers.h"
-#include "url/gurl.h"
 
 namespace variations {
 
-namespace {
-
-const char* kSuffixesToSetHeadersFor[] = {
-  ".android.com",
-  ".doubleclick.com",
-  ".doubleclick.net",
-  ".ggpht.com",
-  ".googleadservices.com",
-  ".googleapis.com",
-  ".googlesyndication.com",
-  ".googleusercontent.com",
-  ".googlevideo.com",
-  ".gstatic.com",
-  ".ytimg.com",
-};
-
-const char kChromeUMAEnabled[] = "X-Chrome-UMA-Enabled";
-const char kClientData[] = "X-Client-Data";
-
-}  // namespace
-
+// static
 VariationsHttpHeaderProvider* VariationsHttpHeaderProvider::GetInstance() {
   return base::Singleton<VariationsHttpHeaderProvider>::get();
 }
 
-void VariationsHttpHeaderProvider::AppendHeaders(
-    const GURL& url,
-    bool incognito,
-    bool uma_enabled,
-    net::HttpRequestHeaders* headers) {
-  // Note the criteria for attaching client experiment headers:
-  // 1. We only transmit to Google owned domains which can evaluate experiments.
-  //    1a. These include hosts which have a standard postfix such as:
-  //         *.doubleclick.net or *.googlesyndication.com or
-  //         exactly www.googleadservices.com or
-  //         international TLD domains *.google.<TLD> or *.youtube.<TLD>.
-  // 2. Only transmit for non-Incognito profiles.
-  // 3. For the X-Chrome-UMA-Enabled bit, only set it if UMA is in fact enabled
-  //    for this install of Chrome.
-  // 4. For the X-Client-Data header, only include non-empty variation IDs.
-  if (incognito || !ShouldAppendHeaders(url))
-    return;
-
-  if (uma_enabled)
-    headers->SetHeaderIfMissing(kChromeUMAEnabled, "1");
-
+std::string VariationsHttpHeaderProvider::GetClientDataHeader() {
   // Lazily initialize the header, if not already done, before attempting to
   // transmit it.
   InitVariationIDsCacheIfNeeded();
@@ -77,11 +33,7 @@ void VariationsHttpHeaderProvider::AppendHeaders(
     base::AutoLock scoped_lock(lock_);
     variation_ids_header_copy = variation_ids_header_;
   }
-
-  if (!variation_ids_header_copy.empty()) {
-    // Note that prior to M33 this header was named X-Chrome-Variations.
-    headers->SetHeaderIfMissing(kClientData, variation_ids_header_copy);
-  }
+  return variation_ids_header_copy;
 }
 
 bool VariationsHttpHeaderProvider::SetDefaultVariationIds(
@@ -98,7 +50,7 @@ bool VariationsHttpHeaderProvider::SetDefaultVariationIds(
     bool trigger_id =
         base::StartsWith(entry, "t", base::CompareCase::SENSITIVE);
     // Remove the "t" prefix if it's there.
-    base::StringPiece trimmed_entry = trigger_id ?  entry.substr(1) : entry;
+    base::StringPiece trimmed_entry = trigger_id ? entry.substr(1) : entry;
 
     int variation_id = 0;
     if (!base::StringToInt(trimmed_entry, &variation_id)) {
@@ -114,14 +66,6 @@ bool VariationsHttpHeaderProvider::SetDefaultVariationIds(
   return true;
 }
 
-std::set<std::string> VariationsHttpHeaderProvider::GetVariationHeaderNames()
-    const {
-  std::set<std::string> headers;
-  headers.insert(kChromeUMAEnabled);
-  headers.insert(kClientData);
-  return headers;
-}
-
 void VariationsHttpHeaderProvider::ResetForTesting() {
   base::AutoLock scoped_lock(lock_);
 
@@ -132,11 +76,9 @@ void VariationsHttpHeaderProvider::ResetForTesting() {
 }
 
 VariationsHttpHeaderProvider::VariationsHttpHeaderProvider()
-    : variation_ids_cache_initialized_(false) {
-}
+    : variation_ids_cache_initialized_(false) {}
 
-VariationsHttpHeaderProvider::~VariationsHttpHeaderProvider() {
-}
+VariationsHttpHeaderProvider::~VariationsHttpHeaderProvider() {}
 
 void VariationsHttpHeaderProvider::OnFieldTrialGroupFinalized(
     const std::string& trial_name,
@@ -158,11 +100,11 @@ void VariationsHttpHeaderProvider::OnFieldTrialGroupFinalized(
 }
 
 void VariationsHttpHeaderProvider::OnSyntheticTrialsChanged(
-    const std::vector<metrics::SyntheticTrialGroup>& groups) {
+    const std::vector<SyntheticTrialGroup>& groups) {
   base::AutoLock scoped_lock(lock_);
 
   synthetic_variation_ids_set_.clear();
-  for (const metrics::SyntheticTrialGroup& group : groups) {
+  for (const SyntheticTrialGroup& group : groups) {
     const VariationID id =
         GetGoogleVariationIDFromHashes(GOOGLE_WEB_PROPERTIES, group.id);
     if (id != EMPTY_ID)
@@ -188,15 +130,13 @@ void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
   for (base::FieldTrial::ActiveGroups::const_iterator it =
            initial_groups.begin();
        it != initial_groups.end(); ++it) {
-    const VariationID id =
-        GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, it->trial_name,
-                             it->group_name);
+    const VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES,
+                                                it->trial_name, it->group_name);
     if (id != EMPTY_ID)
       variation_ids_set_.insert(id);
 
-    const VariationID trigger_id =
-        GetGoogleVariationID(GOOGLE_WEB_PROPERTIES_TRIGGER, it->trial_name,
-                             it->group_name);
+    const VariationID trigger_id = GetGoogleVariationID(
+        GOOGLE_WEB_PROPERTIES_TRIGGER, it->trial_name, it->group_name);
     if (trigger_id != EMPTY_ID)
       variation_trigger_ids_set_.insert(trigger_id);
   }
@@ -204,10 +144,8 @@ void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Variations.HeaderConstructionTime",
-      (base::TimeTicks::Now() - before_time).InMicroseconds(),
-      0,
-      base::TimeDelta::FromSeconds(1).InMicroseconds(),
-      50);
+      (base::TimeTicks::Now() - before_time).InMicroseconds(), 0,
+      base::TimeDelta::FromSeconds(1).InMicroseconds(), 50);
 
   variation_ids_cache_initialized_ = true;
 }
@@ -263,29 +201,6 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
   // if IDs are added as the header is recreated. The receiving servers are OK
   // with such discrepancies.
   variation_ids_header_ = hashed;
-}
-
-// static
-bool VariationsHttpHeaderProvider::ShouldAppendHeaders(const GURL& url) {
-  if (google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
-                                     google_util::ALLOW_NON_STANDARD_PORTS)) {
-    return true;
-  }
-
-  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
-    return false;
-
-  // Some domains don't have international TLD extensions, so testing for them
-  // is very straight forward.
-  const std::string host = url.host();
-  for (size_t i = 0; i < arraysize(kSuffixesToSetHeadersFor); ++i) {
-    if (base::EndsWith(host, kSuffixesToSetHeadersFor[i],
-                       base::CompareCase::INSENSITIVE_ASCII))
-      return true;
-  }
-
-  return google_util::IsYoutubeDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
-                                         google_util::ALLOW_NON_STANDARD_PORTS);
 }
 
 }  // namespace variations

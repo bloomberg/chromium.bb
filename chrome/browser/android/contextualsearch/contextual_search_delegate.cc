@@ -22,7 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/variations/net/variations_http_header_provider.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
@@ -128,11 +128,10 @@ void ContextualSearchDelegate::ContinueSearchTermResolutionRequest() {
 
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+  variations::AppendVariationHeaders(
       search_term_fetcher_->GetOriginalURL(),
       false,  // Impossible to be incognito at this point.
-      false,
-      &headers);
+      false, &headers);
   search_term_fetcher_->SetExtraRequestHeaders(headers.ToString());
 
   SetDiscourseContextAndAddToHeader(*context_);

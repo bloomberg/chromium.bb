@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VARIATIONS_NET_VARIATIONS_HTTP_HEADER_PROVIDER_H_
-#define COMPONENTS_VARIATIONS_NET_VARIATIONS_HTTP_HEADER_PROVIDER_H_
+#ifndef COMPONENTS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
+#define COMPONENTS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
 
 #include <set>
 #include <string>
@@ -13,21 +13,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/synchronization/lock.h"
-#include "components/metrics/metrics_service.h"
+#include "components/variations/synthetic_trials.h"
 #include "components/variations/variations_associated_data.h"
 
-namespace content {
-class ResourceContext;
-}
-
-namespace net {
-class HttpRequestHeaders;
-}
-
-class GURL;
-
 namespace base {
-template <typename T> struct DefaultSingletonTraits;
+template <typename T>
+struct DefaultSingletonTraits;
 }
 
 namespace variations {
@@ -36,18 +27,13 @@ namespace variations {
 // transmitted in custom HTTP request headers.
 // This class is a thread-safe singleton.
 class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
-                                     public metrics::SyntheticTrialObserver {
+                                     public SyntheticTrialObserver {
  public:
   static VariationsHttpHeaderProvider* GetInstance();
 
-  // Adds Chrome experiment and metrics state as custom headers to |headers|.
-  // Some headers may not be set given the |incognito| mode or whether
-  // the user has |uma_enabled|.  Also, we never transmit headers to non-Google
-  // sites, which is checked based on the destination |url|.
-  void AppendHeaders(const GURL& url,
-                     bool incognito,
-                     bool uma_enabled,
-                     net::HttpRequestHeaders* headers);
+  // Returns the value of the client data header, computing and caching it if
+  // necessary.
+  std::string GetClientDataHeader();
 
   // Sets *additional* variation ids and trigger variation ids to be encoded in
   // the X-Client-Data request header.  This is intended for development use to
@@ -56,17 +42,12 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // with "t" it will be treated as a trigger experiment id.
   bool SetDefaultVariationIds(const std::string& variation_ids);
 
-  // Returns the HTTP header names which are added in this class.
-  std::set<std::string> GetVariationHeaderNames() const;
-
   // Resets any cached state for tests.
   void ResetForTesting();
 
  private:
   friend struct base::DefaultSingletonTraits<VariationsHttpHeaderProvider>;
 
-  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
-                           ShouldAppendHeaders);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            SetDefaultVariationIds_Valid);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
@@ -85,7 +66,7 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
 
   // metrics::SyntheticTrialObserver:
   void OnSyntheticTrialsChanged(
-      const std::vector<metrics::SyntheticTrialGroup>& groups) override;
+      const std::vector<SyntheticTrialGroup>& groups) override;
 
   // Prepares the variation IDs cache with initial values if not already done.
   // This method also registers the caller with the FieldTrialList to receive
@@ -96,10 +77,6 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // |variation_ids_header_| with it.  Assumes the the |lock_| is currently
   // held.
   void UpdateVariationIDsHeaderValue();
-
-  // Checks whether variation headers should be appended to requests to the
-  // specified |url|. Returns true for google.<TLD> and youtube.<TLD> URLs.
-  static bool ShouldAppendHeaders(const GURL& url);
 
   // Guards |variation_ids_cache_initialized_|, |variation_ids_set_| and
   // |variation_ids_header_|.
@@ -127,4 +104,4 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
 
 }  // namespace variations
 
-#endif  // COMPONENTS_VARIATIONS_NET_VARIATIONS_HTTP_HEADER_PROVIDER_H_
+#endif  // COMPONENTS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_

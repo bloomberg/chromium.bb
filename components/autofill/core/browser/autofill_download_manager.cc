@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
@@ -20,7 +21,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/compression/compression_utils.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/variations/net/variations_http_header_provider.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -205,7 +206,7 @@ bool AutofillDownloadManager::StartRequest(
   // Add Chrome experiment state and GZIP encoding to the request headers.
   net::HttpRequestHeaders headers;
   headers.SetHeaderIfMissing("content-encoding", "gzip");
-  variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+  variations::AppendVariationHeaders(
       fetcher->GetOriginalURL(), driver_->IsOffTheRecord(), false, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
   fetcher->Start();

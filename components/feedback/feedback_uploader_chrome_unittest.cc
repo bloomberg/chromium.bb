@@ -4,10 +4,12 @@
 
 #include "components/feedback/feedback_uploader_chrome.h"
 
+#include <string>
+
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
-#include "components/variations/net/variations_http_header_provider.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "content/public/test/test_browser_context.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"

@@ -14,7 +14,7 @@
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_switches.h"
 #include "components/feedback/feedback_uploader_delegate.h"
-#include "components/variations/net/variations_http_header_provider.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -57,7 +57,7 @@ void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
 
   // Tell feedback server about the variation state of this install.
   net::HttpRequestHeaders headers;
-  variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+  variations::AppendVariationHeaders(
       fetcher->GetOriginalURL(), context_->IsOffTheRecord(), false, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
 

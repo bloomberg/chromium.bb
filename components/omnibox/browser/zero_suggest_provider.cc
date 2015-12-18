@@ -30,7 +30,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
-#include "components/variations/net/variations_http_header_provider.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -326,9 +326,9 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
     fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
     // Add Chrome experiment state to the request headers.
     net::HttpRequestHeaders headers;
-    variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
-        fetcher_->GetOriginalURL(), client()->IsOffTheRecord(), false,
-        &headers);
+    variations::AppendVariationHeaders(fetcher_->GetOriginalURL(),
+                                       client()->IsOffTheRecord(), false,
+                                       &headers);
     fetcher_->SetExtraRequestHeaders(headers.ToString());
     fetcher_->Start();
     LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_SENT);

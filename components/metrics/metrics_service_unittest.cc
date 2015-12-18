@@ -315,10 +315,12 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   MetricsService service(GetMetricsStateManager(), &client, GetLocalState());
 
   // Add two synthetic trials and confirm that they show up in the list.
-  SyntheticTrialGroup trial1(HashName("TestTrial1"), HashName("Group1"));
+  variations::SyntheticTrialGroup trial1(HashName("TestTrial1"),
+                                         HashName("Group1"));
   service.RegisterSyntheticFieldTrial(trial1);
 
-  SyntheticTrialGroup trial2(HashName("TestTrial2"), HashName("Group2"));
+  variations::SyntheticTrialGroup trial2(HashName("TestTrial2"),
+                                         HashName("Group2"));
   service.RegisterSyntheticFieldTrial(trial2);
   // Ensure that time has advanced by at least a tick before proceeding.
   WaitUntilTimeChanges(base::TimeTicks::Now());
@@ -345,14 +347,16 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   WaitUntilTimeChanges(begin_log_time);
 
   // Change the group for the first trial after the log started.
-  SyntheticTrialGroup trial3(HashName("TestTrial1"), HashName("Group2"));
+  variations::SyntheticTrialGroup trial3(HashName("TestTrial1"),
+                                         HashName("Group2"));
   service.RegisterSyntheticFieldTrial(trial3);
   service.GetSyntheticFieldTrialsOlderThan(begin_log_time, &synthetic_trials);
   EXPECT_EQ(1U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
 
   // Add a new trial after the log started and confirm that it doesn't show up.
-  SyntheticTrialGroup trial4(HashName("TestTrial3"), HashName("Group3"));
+  variations::SyntheticTrialGroup trial4(HashName("TestTrial3"),
+                                         HashName("Group3"));
   service.RegisterSyntheticFieldTrial(trial4);
   service.GetSyntheticFieldTrialsOlderThan(begin_log_time, &synthetic_trials);
   EXPECT_EQ(1U, synthetic_trials.size());

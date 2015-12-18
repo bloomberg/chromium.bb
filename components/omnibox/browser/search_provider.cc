@@ -33,7 +33,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
-#include "components/variations/net/variations_http_header_provider.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "grit/components_strings.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -891,7 +891,7 @@ scoped_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+  variations::AppendVariationHeaders(
       fetcher->GetOriginalURL(), client()->IsOffTheRecord(), false, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
   fetcher->Start();

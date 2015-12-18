@@ -242,15 +242,6 @@ bool ShouldUploadLog() {
 
 }  // namespace
 
-
-SyntheticTrialGroup::SyntheticTrialGroup(uint32 trial, uint32 group) {
-  id.name = trial;
-  id.group = group;
-}
-
-SyntheticTrialGroup::~SyntheticTrialGroup() {
-}
-
 // static
 MetricsService::ShutdownCleanliness MetricsService::clean_shutdown_status_ =
     MetricsService::CLEANLY_SHUTDOWN;
@@ -1025,19 +1016,19 @@ bool MetricsService::UmaMetricsProperlyShutdown() {
 }
 
 void MetricsService::AddSyntheticTrialObserver(
-    SyntheticTrialObserver* observer) {
+    variations::SyntheticTrialObserver* observer) {
   synthetic_trial_observer_list_.AddObserver(observer);
   if (!synthetic_trial_groups_.empty())
     observer->OnSyntheticTrialsChanged(synthetic_trial_groups_);
 }
 
 void MetricsService::RemoveSyntheticTrialObserver(
-    SyntheticTrialObserver* observer) {
+    variations::SyntheticTrialObserver* observer) {
   synthetic_trial_observer_list_.RemoveObserver(observer);
 }
 
 void MetricsService::RegisterSyntheticFieldTrial(
-    const SyntheticTrialGroup& trial) {
+    const variations::SyntheticTrialGroup& trial) {
   for (size_t i = 0; i < synthetic_trial_groups_.size(); ++i) {
     if (synthetic_trial_groups_[i].id.name == trial.id.name) {
       if (synthetic_trial_groups_[i].id.group != trial.id.group) {
@@ -1049,7 +1040,7 @@ void MetricsService::RegisterSyntheticFieldTrial(
     }
   }
 
-  SyntheticTrialGroup trial_group = trial;
+  variations::SyntheticTrialGroup trial_group = trial;
   trial_group.start_time = base::TimeTicks::Now();
   synthetic_trial_groups_.push_back(trial_group);
   NotifySyntheticTrialObservers();
@@ -1072,7 +1063,8 @@ void MetricsService::CheckForClonedInstall(
 }
 
 void MetricsService::NotifySyntheticTrialObservers() {
-  FOR_EACH_OBSERVER(SyntheticTrialObserver, synthetic_trial_observer_list_,
+  FOR_EACH_OBSERVER(variations::SyntheticTrialObserver,
+                    synthetic_trial_observer_list_,
                     OnSyntheticTrialsChanged(synthetic_trial_groups_));
 }
 

@@ -20,7 +20,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/suggestions_store.h"
-#include "components/variations/net/variations_http_header_provider.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -272,8 +272,8 @@ scoped_ptr<net::URLFetcher> SuggestionsService::CreateSuggestionsRequest(
   request->SetRequestContext(url_request_context_);
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
-      request->GetOriginalURL(), false, false, &headers);
+  variations::AppendVariationHeaders(request->GetOriginalURL(), false, false,
+                                     &headers);
   request->SetExtraRequestHeaders(headers.ToString());
   return request;
 }

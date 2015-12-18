@@ -62,7 +62,7 @@ bool MetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameAndGroupHash(
   if (!metrics_service)
     return false;
 
-  SyntheticTrialGroup trial_group(trial_name_hash, group_name_hash);
+  variations::SyntheticTrialGroup trial_group(trial_name_hash, group_name_hash);
   metrics_service->RegisterSyntheticFieldTrial(trial_group);
   return true;
 }

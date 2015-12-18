@@ -37,7 +37,7 @@
         'search_engines',
         'toolbar',
         'url_formatter/url_formatter.gyp:url_formatter',
-        'variations_http_provider',
+        'variations_net',
       ],
       'export_dependent_settings': [
         'component_metrics_proto',

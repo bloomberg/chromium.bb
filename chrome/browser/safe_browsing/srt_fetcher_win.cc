@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/launch.h"
@@ -35,7 +36,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "components/component_updater/pref_names.h"
 #include "components/rappor/rappor_service.h"
-#include "components/variations/net/variations_http_header_provider.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -230,9 +231,8 @@ class SRTFetcher : public net::URLFetcherDelegate {
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(
         profile_->GetResourceContext());
     net::HttpRequestHeaders headers;
-    variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
-        url_fetcher_->GetOriginalURL(),
-        io_data->IsOffTheRecord(),
+    variations::AppendVariationHeaders(
+        url_fetcher_->GetOriginalURL(), io_data->IsOffTheRecord(),
         ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
         &headers);
     url_fetcher_->SetExtraRequestHeaders(headers.ToString());

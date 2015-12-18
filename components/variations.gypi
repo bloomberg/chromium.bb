@@ -50,10 +50,14 @@
         'variations/proto/variations_seed.proto',
         'variations/study_filtering.cc',
         'variations/study_filtering.h',
+        "variations/synthetic_trials.cc",
+        "variations/synthetic_trials.h",
         'variations/variations_associated_data.cc',
         'variations/variations_associated_data.h',
         'variations/variations_experiment_util.cc',
         'variations/variations_experiment_util.h',
+        'variations/variations_http_header_provider.cc',
+        'variations/variations_http_header_provider.h',
         'variations/variations_request_scheduler.cc',
         'variations/variations_request_scheduler.h',
         'variations/variations_request_scheduler_mobile.cc',
@@ -119,7 +123,7 @@
     },
     {
       # GN version: //components/variations/net:net
-      'target_name': 'variations_http_provider',
+      'target_name': 'variations_net',
       'type': 'static_library',
       'include_dirs': [
         '..',
@@ -136,8 +140,8 @@
         'components.gyp:metrics',
       ],
       'sources': [
-        'variations/net/variations_http_header_provider.cc',
-        'variations/net/variations_http_header_provider.h',
+        'variations/net/variations_http_headers.cc',
+        'variations/net/variations_http_headers.h',
       ],
     },
   ],

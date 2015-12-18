@@ -37,7 +37,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/variations/net/variations_http_header_provider.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -285,11 +285,9 @@ ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate()
 #endif
       {
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(content::ServiceWorkerContext::AddExcludedHeadersForFetchEvent,
-                 variations::VariationsHttpHeaderProvider::GetInstance()
-                     ->GetVariationHeaderNames()));
+                 variations::GetVariationHeaderNames()));
 }
 
 ChromeResourceDispatcherHostDelegate::~ChromeResourceDispatcherHostDelegate() {
@@ -371,12 +369,10 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     net::HttpRequestHeaders headers;
     headers.CopyFrom(request->extra_request_headers());
     bool is_off_the_record = io_data->IsOffTheRecord();
-    variations::VariationsHttpHeaderProvider::GetInstance()->
-        AppendHeaders(request->url(),
-                      is_off_the_record,
-                      !is_off_the_record &&
-                          io_data->GetMetricsEnabledStateOnIOThread(),
-                      &headers);
+    variations::AppendVariationHeaders(
+        request->url(), is_off_the_record,
+        !is_off_the_record && io_data->GetMetricsEnabledStateOnIOThread(),
+        &headers);
     request->SetExtraRequestHeaders(headers);
   }
 

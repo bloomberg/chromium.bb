@@ -96,7 +96,7 @@
         'signin_core_browser',
         'signin_core_common',
         'sync_driver',
-        'variations_http_provider',
+        'variations_net',
         'webdata_common',
       ],
       'sources': [
