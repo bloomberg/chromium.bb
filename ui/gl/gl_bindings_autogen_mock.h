@@ -47,6 +47,20 @@ static void GL_BINDING_CALL Mock_glBindFramebuffer(GLenum target,
                                                    GLuint framebuffer);
 static void GL_BINDING_CALL Mock_glBindFramebufferEXT(GLenum target,
                                                       GLuint framebuffer);
+static void GL_BINDING_CALL Mock_glBindImageTexture(GLuint index,
+                                                    GLuint texture,
+                                                    GLint level,
+                                                    GLboolean layered,
+                                                    GLint layer,
+                                                    GLenum access,
+                                                    GLint format);
+static void GL_BINDING_CALL Mock_glBindImageTextureEXT(GLuint index,
+                                                       GLuint texture,
+                                                       GLint level,
+                                                       GLboolean layered,
+                                                       GLint layer,
+                                                       GLenum access,
+                                                       GLint format);
 static void GL_BINDING_CALL Mock_glBindRenderbuffer(GLenum target,
                                                     GLuint renderbuffer);
 static void GL_BINDING_CALL Mock_glBindRenderbufferEXT(GLenum target,
@@ -708,6 +722,8 @@ static void* GL_BINDING_CALL Mock_glMapBufferRangeEXT(GLenum target,
 static void GL_BINDING_CALL Mock_glMatrixLoadIdentityEXT(GLenum matrixMode);
 static void GL_BINDING_CALL Mock_glMatrixLoadfEXT(GLenum matrixMode,
                                                   const GLfloat* m);
+static void GL_BINDING_CALL Mock_glMemoryBarrier(GLbitfield barriers);
+static void GL_BINDING_CALL Mock_glMemoryBarrierEXT(GLbitfield barriers);
 static void GL_BINDING_CALL Mock_glPathCommandsNV(GLuint path,
                                                   GLsizei numCommands,
                                                   const GLubyte* commands,

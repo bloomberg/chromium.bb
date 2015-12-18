@@ -138,6 +138,31 @@ MockGLInterface::Mock_glBindFramebufferEXT(GLenum target, GLuint framebuffer) {
   interface_->BindFramebufferEXT(target, framebuffer);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glBindImageTexture(GLuint index,
+                                                              GLuint texture,
+                                                              GLint level,
+                                                              GLboolean layered,
+                                                              GLint layer,
+                                                              GLenum access,
+                                                              GLint format) {
+  MakeFunctionUnique("glBindImageTexture");
+  interface_->BindImageTextureEXT(index, texture, level, layered, layer, access,
+                                  format);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glBindImageTextureEXT(GLuint index,
+                                            GLuint texture,
+                                            GLint level,
+                                            GLboolean layered,
+                                            GLint layer,
+                                            GLenum access,
+                                            GLint format) {
+  MakeFunctionUnique("glBindImageTextureEXT");
+  interface_->BindImageTextureEXT(index, texture, level, layered, layer, access,
+                                  format);
+}
+
 void GL_BINDING_CALL
 MockGLInterface::Mock_glBindRenderbuffer(GLenum target, GLuint renderbuffer) {
   MakeFunctionUnique("glBindRenderbuffer");
@@ -1883,6 +1908,18 @@ void GL_BINDING_CALL MockGLInterface::Mock_glMatrixLoadfEXT(GLenum matrixMode,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glMemoryBarrier(GLbitfield barriers) {
+  MakeFunctionUnique("glMemoryBarrier");
+  interface_->MemoryBarrierEXT(barriers);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glMemoryBarrierEXT(GLbitfield barriers) {
+  MakeFunctionUnique("glMemoryBarrierEXT");
+  interface_->MemoryBarrierEXT(barriers);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glPathCommandsNV(GLuint path,
                                        GLsizei numCommands,
                                        const GLubyte* commands,
@@ -2896,6 +2933,10 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glBindFramebuffer);
   if (strcmp(name, "glBindFramebufferEXT") == 0)
     return reinterpret_cast<void*>(Mock_glBindFramebufferEXT);
+  if (strcmp(name, "glBindImageTexture") == 0)
+    return reinterpret_cast<void*>(Mock_glBindImageTexture);
+  if (strcmp(name, "glBindImageTextureEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glBindImageTextureEXT);
   if (strcmp(name, "glBindRenderbuffer") == 0)
     return reinterpret_cast<void*>(Mock_glBindRenderbuffer);
   if (strcmp(name, "glBindRenderbufferEXT") == 0)
@@ -3371,6 +3412,10 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glMatrixLoadIdentityEXT);
   if (strcmp(name, "glMatrixLoadfEXT") == 0)
     return reinterpret_cast<void*>(Mock_glMatrixLoadfEXT);
+  if (strcmp(name, "glMemoryBarrier") == 0)
+    return reinterpret_cast<void*>(Mock_glMemoryBarrier);
+  if (strcmp(name, "glMemoryBarrierEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glMemoryBarrierEXT);
   if (strcmp(name, "glPathCommandsNV") == 0)
     return reinterpret_cast<void*>(Mock_glPathCommandsNV);
   if (strcmp(name, "glPathParameterfNV") == 0)

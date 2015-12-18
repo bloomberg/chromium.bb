@@ -31,6 +31,13 @@ void glBindFragDataLocationIndexedFn(GLuint program,
                                      GLuint index,
                                      const char* name) override;
 void glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) override;
+void glBindImageTextureEXTFn(GLuint index,
+                             GLuint texture,
+                             GLint level,
+                             GLboolean layered,
+                             GLint layer,
+                             GLenum access,
+                             GLint format) override;
 void glBindRenderbufferEXTFn(GLenum target, GLuint renderbuffer) override;
 void glBindSamplerFn(GLuint unit, GLuint sampler) override;
 void glBindTextureFn(GLenum target, GLuint texture) override;
@@ -503,6 +510,7 @@ void* glMapBufferRangeFn(GLenum target,
                          GLbitfield access) override;
 void glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) override;
 void glMatrixLoadIdentityEXTFn(GLenum matrixMode) override;
+void glMemoryBarrierEXTFn(GLbitfield barriers) override;
 void glPathCommandsNVFn(GLuint path,
                         GLsizei numCommands,
                         const GLubyte* commands,
