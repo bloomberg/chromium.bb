@@ -34,13 +34,10 @@
 #define SkiaUtils_h
 
 #include "platform/PlatformExport.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Image.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/effects/SkCornerPathEffect.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {

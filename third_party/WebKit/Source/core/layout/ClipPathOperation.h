@@ -101,14 +101,13 @@ public:
 
     const BasicShape* basicShape() const { return m_shape.get(); }
     bool isValid() const { return m_shape.get(); }
-    WindRule windRule() const { return m_shape->windRule(); }
     const Path& path(const FloatRect& boundingRect)
     {
         ASSERT(m_shape);
         m_path.clear();
         m_path = adoptPtr(new Path);
         m_shape->path(*m_path, boundingRect);
-        m_path->setWindRule(windRule());
+        m_path->setWindRule(m_shape->windRule());
         return *m_path;
     }
 

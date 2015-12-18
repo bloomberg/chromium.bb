@@ -34,8 +34,8 @@
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/DrawLooperBuilder.h"
-#include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/GraphicsContextState.h"
+#include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -60,6 +60,7 @@ namespace blink {
 class ImageBuffer;
 class KURL;
 class PaintController;
+class Path;
 
 class PLATFORM_EXPORT GraphicsContext {
     WTF_MAKE_NONCOPYABLE(GraphicsContext); USING_FAST_MALLOC(GraphicsContext);

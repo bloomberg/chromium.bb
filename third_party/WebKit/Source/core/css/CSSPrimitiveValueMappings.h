@@ -44,7 +44,6 @@
 #include "platform/fonts/FontSmoothingMode.h"
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/Path.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextRun.h"

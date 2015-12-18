@@ -37,8 +37,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
-class SkPath;
-
 namespace blink {
 
 class AffineTransform;
@@ -76,7 +74,8 @@ public:
     Path& operator=(const SkPath&);
     bool operator==(const Path&) const;
 
-    bool contains(const FloatPoint&, WindRule = RULE_NONZERO) const;
+    bool contains(const FloatPoint&) const;
+    bool contains(const FloatPoint&, WindRule) const;
     bool strokeContains(const FloatPoint&, const StrokeData&) const;
     FloatRect boundingRect() const;
     FloatRect strokeBoundingRect(const StrokeData&) const;

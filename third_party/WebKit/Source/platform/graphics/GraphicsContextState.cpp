@@ -5,6 +5,8 @@
 #include "config.h"
 #include "platform/graphics/GraphicsContextState.h"
 
+#include "platform/graphics/skia/SkiaUtils.h"
+
 namespace blink {
 
 static inline SkFilterQuality filterQualityForPaint(InterpolationQuality quality)

@@ -29,13 +29,11 @@
  */
 
 #include "config.h"
-
 #include "platform/graphics/skia/SkiaUtils.h"
 
-#include "SkColorPriv.h"
-#include "SkRegion.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/ImageBuffer.h"
+#include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/effects/SkCornerPathEffect.h"
 
 namespace blink {
 

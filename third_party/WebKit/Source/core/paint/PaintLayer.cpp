@@ -1996,7 +1996,7 @@ bool PaintLayer::hitTestClippedOutByClipPath(PaintLayer* rootLayer, const HitTes
     ASSERT(clipPathOperation);
     if (clipPathOperation->type() == ClipPathOperation::SHAPE) {
         ShapeClipPathOperation* clipPath = toShapeClipPathOperation(clipPathOperation);
-        if (!clipPath->path(FloatRect(rootRelativeBounds)).contains(FloatPoint(hitTestLocation.point()), clipPath->windRule()))
+        if (!clipPath->path(FloatRect(rootRelativeBounds)).contains(FloatPoint(hitTestLocation.point())))
             return true;
     } else {
         ASSERT(clipPathOperation->type() == ClipPathOperation::REFERENCE);

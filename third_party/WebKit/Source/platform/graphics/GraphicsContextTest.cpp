@@ -26,6 +26,7 @@
 #include "platform/graphics/GraphicsContext.h"
 
 #include "platform/graphics/BitmapImage.h"
+#include "platform/graphics/Path.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"

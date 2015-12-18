@@ -72,9 +72,14 @@ bool Path::operator==(const Path& other) const
     return m_path == other.m_path;
 }
 
+bool Path::contains(const FloatPoint& point) const
+{
+    return SkPathContainsPoint(m_path, point, m_path.getFillType());
+}
+
 bool Path::contains(const FloatPoint& point, WindRule rule) const
 {
-    return SkPathContainsPoint(m_path, point, static_cast<SkPath::FillType>(rule));
+    return SkPathContainsPoint(m_path, point, WebCoreWindRuleToSkFillType(rule));
 }
 
 // FIXME: this method ignores the CTM and may yield inaccurate results for large scales.

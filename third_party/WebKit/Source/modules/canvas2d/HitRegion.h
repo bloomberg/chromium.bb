@@ -33,7 +33,6 @@ public:
     const String& id() const { return m_id; }
     const Path& path() const { return m_path; }
     Element* control() const { return m_control.get(); }
-    WindRule fillRule() const { return m_fillRule; }
 
     DECLARE_TRACE();
 
