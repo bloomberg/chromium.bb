@@ -9114,24 +9114,61 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
     return error::kNoError;
   }
   typedef cmds::ReadPixels::Result Result;
-  uint32 pixels_size;
-  if (state_.bound_pixel_pack_buffer.get()) {
-    // TODO(zmo): Need to handle the case of reading into a PIXEL_PACK_BUFFER
-    // in ES3, including more pack parameters. For now, generate a GL error.
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
-                       "ReadPixels to a pixel pack buffer isn't implemented");
-    return error::kNoError;
+  uint32 pixels_size = 0;
+  if (c.pixels_shm_id == 0) {
+    PixelStoreParams params = state_.GetPackParams();
+    if (!GLES2Util::ComputeImageDataSizesES3(width, height, 1, format, type,
+        params, &pixels_size, nullptr, nullptr, nullptr)) {
+      return error::kOutOfBounds;
+    }
+  } else {
+    // When reading into client buffer, we actually set pack parameters to 0
+    // (except for alignment) before calling glReadPixels. This makes sure we
+    // only send back meaningful pixel data to the command buffer client side,
+    // and the client side will take the responsibility to take the pixels and
+    // write to the client buffer according to the full ES3 pack parameters.
+    if (!GLES2Util::ComputeImageDataSizes(width, height, 1, format, type,
+        state_.pack_alignment, &pixels_size, nullptr, nullptr)) {
+      return error::kOutOfBounds;
+    }
   }
-  if (!GLES2Util::ComputeImageDataSizes(
-      width, height, 1, format, type, state_.pack_alignment, &pixels_size,
-      NULL, NULL)) {
-    return error::kOutOfBounds;
+
+  void* pixels = nullptr;
+  Buffer* buffer = state_.bound_pixel_pack_buffer.get();
+  if (c.pixels_shm_id == 0) {
+    if (buffer) {
+      if (buffer->GetMappedRange()) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
+            "pixel pack buffer should not be mapped to client memory");
+        return error::kNoError;
+      }
+      uint32 size = 0;
+      if (!SafeAddUint32(pixels_size, c.pixels_shm_offset, &size)) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_VALUE, "glReadPixels", "size + offset overflow");
+        return error::kNoError;
+      }
+      if (static_cast<uint32>(buffer->size()) < size) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
+            "pixel pack buffer is not large enough");
+        return error::kNoError;
+      }
+      pixels = reinterpret_cast<void *>(c.pixels_shm_offset);
+    } else {
+      return error::kInvalidArguments;
+    }
+  } else {
+    if (buffer) {
+      return error::kInvalidArguments;
+    } else {
+      pixels = GetSharedMemoryAs<void*>(
+          c.pixels_shm_id, c.pixels_shm_offset, pixels_size);
+      if (!pixels) {
+        return error::kOutOfBounds;
+      }
+    }
   }
-  void* pixels = GetSharedMemoryAs<void*>(
-      c.pixels_shm_id, c.pixels_shm_offset, pixels_size);
-  if (!pixels) {
-    return error::kOutOfBounds;
-  }
+
   Result* result = NULL;
   if (c.result_shm_id != 0) {
     result = GetSharedMemoryAs<Result*>(
@@ -9267,6 +9304,13 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
   ScopedResolvedFrameBufferBinder binder(this, false, true);
 
   if (x < 0 || y < 0 || max_x > max_size.width() || max_y > max_size.height()) {
+    // TODO(yunchao): need to handle the out-of-bounds case for reading pixels
+    // into PIXEL_PACK buffer.
+    if (c.pixels_shm_id == 0) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
+          "read pixels out of bounds into PIXEL_PACK buffer");
+      return error::kNoError;
+    }
     // The user requested an out of range area. Get the results 1 line
     // at a time.
     uint32 temp_size;
@@ -9342,12 +9386,14 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
     }
     glReadPixels(x, y, width, height, format, type, pixels);
   }
-  GLenum error = LOCAL_PEEK_GL_ERROR("glReadPixels");
-  if (error == GL_NO_ERROR) {
-    if (result != NULL) {
-      *result = true;
+  if (c.pixels_shm_id != 0) {
+    GLenum error = LOCAL_PEEK_GL_ERROR("glReadPixels");
+    if (error == GL_NO_ERROR) {
+      if (result != NULL) {
+        *result = true;
+      }
+      FinishReadPixels(c, 0);
     }
-    FinishReadPixels(c, 0);
   }
 
   return error::kNoError;
