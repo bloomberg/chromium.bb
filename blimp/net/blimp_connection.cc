@@ -39,17 +39,14 @@ class BlimpMessageSender : public BlimpMessageProcessor {
 
   PacketWriter* writer_;
   ConnectionErrorObserver* error_observer_;
-  scoped_refptr<net::DrainableIOBuffer> buffer_;
+  scoped_refptr<net::IOBuffer> buffer_;
   net::CompletionCallback pending_process_msg_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpMessageSender);
 };
 
 BlimpMessageSender::BlimpMessageSender(PacketWriter* writer)
-    : writer_(writer),
-      buffer_(new net::DrainableIOBuffer(
-          new net::IOBuffer(kMaxPacketPayloadSizeBytes),
-          kMaxPacketPayloadSizeBytes)) {
+    : writer_(writer), buffer_(new net::IOBuffer(kMaxPacketPayloadSizeBytes)) {
   DCHECK(writer_);
 }
 
@@ -64,7 +61,6 @@ void BlimpMessageSender::ProcessMessage(
     return;
   }
 
-  buffer_->SetOffset(0);
   if (!message->SerializeToArray(buffer_->data(), message->ByteSize())) {
     DLOG(ERROR) << "Failed to serialize message.";
     callback.Run(net::ERR_INVALID_ARGUMENT);
@@ -72,9 +68,10 @@ void BlimpMessageSender::ProcessMessage(
   }
 
   pending_process_msg_callback_ = callback;
-  writer_->WritePacket(buffer_,
-                       base::Bind(&BlimpMessageSender::OnWritePacketComplete,
-                                  base::Unretained(this)));
+  writer_->WritePacket(
+      new net::DrainableIOBuffer(buffer_.get(), message->ByteSize()),
+      base::Bind(&BlimpMessageSender::OnWritePacketComplete,
+                 base::Unretained(this)));
 }
 
 void BlimpMessageSender::OnWritePacketComplete(int result) {
