@@ -197,6 +197,10 @@ void WebTestDelegateImpl::SetDeviceScaleFactor(float factor) {
   NOTIMPLEMENTED();
 }
 
+void WebTestDelegateImpl::EnableUseZoomForDSF() {
+  NOTIMPLEMENTED();
+}
+
 void WebTestDelegateImpl::SetDeviceColorProfile(const std::string& name) {
   NOTIMPLEMENTED();
 }

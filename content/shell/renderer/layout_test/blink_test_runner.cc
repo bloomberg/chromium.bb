@@ -520,6 +520,11 @@ void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
   Send(new ShellViewHostMsg_SetDeviceScaleFactor(routing_id(), factor));
 }
 
+void BlinkTestRunner::EnableUseZoomForDSF() {
+  base::CommandLine::ForCurrentProcess()->
+      AppendSwitch(switches::kEnableUseZoomForDSF);
+}
+
 void BlinkTestRunner::SetDeviceColorProfile(const std::string& name) {
   content::SetDeviceColorProfile(render_view(), name);
 }

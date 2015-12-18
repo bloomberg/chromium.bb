@@ -73,6 +73,7 @@ class WebTestDelegateImpl : public test_runner::WebTestDelegate {
   void SimulateWebNotificationClick(const std::string& title,
                                     int action_index) override;
   void SetDeviceScaleFactor(float factor) override;
+  void EnableUseZoomForDSF() override;
   void SetDeviceColorProfile(const std::string& name) override;
   void SetBluetoothMockDataSet(const std::string& data_set) override;
   void SetBluetoothManualChooser() override;

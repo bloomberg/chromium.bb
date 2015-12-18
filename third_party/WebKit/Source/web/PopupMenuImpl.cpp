@@ -289,9 +289,11 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     context.finishGroupIfNecessary();
     PagePopupClient::addString("],\n", data);
 
-    float zoom = zoomFactor();
     addProperty("anchorRectInScreen", anchorRectInScreen, data);
-    addProperty("zoomFactor", zoom, data);
+    float zoom = zoomFactor();
+    IntRect inScreen = m_chromeClient->viewportToScreen(IntRect(0, 0, 100, 0));
+    float scaleFactor = 100.f / inScreen.width();
+    addProperty("zoomFactor", zoom / scaleFactor, data);
     bool isRTL = !ownerStyle->isLeftToRightDirection();
     addProperty("isRTL", isRTL, data);
     addProperty("paddingStart", isRTL ? ownerElement.clientPaddingRight().toDouble() / zoom : ownerElement.clientPaddingLeft().toDouble() / zoom, data);

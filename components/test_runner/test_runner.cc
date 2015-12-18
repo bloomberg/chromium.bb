@@ -272,6 +272,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetWindowIsKey(bool value);
   std::string PathToLocalResource(const std::string& path);
   void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
+  void EnableUseZoomForDSF(v8::Local<v8::Function> callback);
   void SetColorProfile(const std::string& name,
                        v8::Local<v8::Function> callback);
   void SetPOSIXLocale(const std::string& locale);
@@ -545,6 +546,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::PathToLocalResource)
       .SetMethod("setBackingScaleFactor",
                  &TestRunnerBindings::SetBackingScaleFactor)
+      .SetMethod("enableUseZoomForDSF",
+                 &TestRunnerBindings::EnableUseZoomForDSF)
       .SetMethod("setColorProfile", &TestRunnerBindings::SetColorProfile)
       .SetMethod("setPOSIXLocale", &TestRunnerBindings::SetPOSIXLocale)
       .SetMethod("setMIDIAccessorResult",
@@ -1345,6 +1348,12 @@ void TestRunnerBindings::SetBackingScaleFactor(
     double value, v8::Local<v8::Function> callback) {
   if (runner_)
     runner_->SetBackingScaleFactor(value, callback);
+}
+
+void TestRunnerBindings::EnableUseZoomForDSF(
+    v8::Local<v8::Function> callback) {
+  if (runner_)
+    runner_->EnableUseZoomForDSF(callback);
 }
 
 void TestRunnerBindings::SetColorProfile(
@@ -2856,6 +2865,11 @@ std::string TestRunner::PathToLocalResource(const std::string& path) {
 void TestRunner::SetBackingScaleFactor(double value,
                                        v8::Local<v8::Function> callback) {
   delegate_->SetDeviceScaleFactor(value);
+  delegate_->PostTask(new InvokeCallbackTask(this, callback));
+}
+
+void TestRunner::EnableUseZoomForDSF(v8::Local<v8::Function> callback) {
+  delegate_->EnableUseZoomForDSF();
   delegate_->PostTask(new InvokeCallbackTask(this, callback));
 }
 

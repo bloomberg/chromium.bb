@@ -138,9 +138,9 @@ SuggestionPicker.prototype._measureMaxContentWidth = function() {
 SuggestionPicker.prototype._fixWindowSize = function() {
     var ListBorder = 2;
     var zoom = this._config.zoomFactor;
-    var desiredWindowWidth = this._measureMaxContentWidth() + ListBorder;
+    var desiredWindowWidth = (this._measureMaxContentWidth() + ListBorder) * zoom;
     if (typeof this._config.inputWidth === "number")
-        desiredWindowWidth = Math.max(this._config.inputWidth / zoom, desiredWindowWidth);
+        desiredWindowWidth = Math.max(this._config.inputWidth, desiredWindowWidth);
     var totalHeight = ListBorder;
     var maxHeight = 0;
     var entryCount = 0;
@@ -152,15 +152,14 @@ SuggestionPicker.prototype._fixWindowSize = function() {
         if (maxHeight === 0 && entryCount == SuggestionPicker.NumberOfVisibleEntries)
             maxHeight = totalHeight;
     }
-    var desiredWindowHeight = totalHeight;
-    if (maxHeight !== 0 && totalHeight > maxHeight) {
+    var desiredWindowHeight = totalHeight * zoom;
+    if (maxHeight !== 0 && totalHeight > maxHeight * zoom) {
         this._containerElement.style.maxHeight = (maxHeight - ListBorder) + "px";
-        desiredWindowWidth += getScrollbarWidth();
-        desiredWindowHeight = maxHeight;
+        desiredWindowWidth += getScrollbarWidth() * zoom;
+        desiredWindowHeight = maxHeight * zoom;
         this._containerElement.style.overflowY = "scroll";
     }
-
-    var windowRect = adjustWindowRect(desiredWindowWidth * zoom, desiredWindowHeight * zoom, desiredWindowWidth * zoom, 0);
+    var windowRect = adjustWindowRect(desiredWindowWidth, desiredWindowHeight, desiredWindowWidth, 0);
     this._containerElement.style.height = (windowRect.height / zoom - ListBorder) + "px";
     setWindowRect(windowRect);
 };

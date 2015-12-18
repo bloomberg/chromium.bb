@@ -519,6 +519,10 @@ class TestRunner : public WebTestRunner,
   // Used to set the device scale factor.
   void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
 
+  // Enable zoom-for-dsf option.
+  // TODO(oshima): Remove this once all platforms migrated.
+  void EnableUseZoomForDSF(v8::Local<v8::Function> callback);
+
   // Change the device color profile while running a layout test.
   void SetColorProfile(const std::string& name,
                        v8::Local<v8::Function> callback);

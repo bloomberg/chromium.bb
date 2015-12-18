@@ -211,24 +211,26 @@ ListPicker.prototype._handleKeyDown = function(event) {
 
 ListPicker.prototype._fixWindowSize = function() {
     this._selectElement.style.height = "";
-    var maxHeight = this._selectElement.offsetHeight;
-    var noScrollHeight = this._calculateScrollHeight() + ListPicker.ListboxSelectBorder * 2;
+    var zoom = this._config.zoomFactor;
+    var maxHeight = this._selectElement.offsetHeight * zoom;
+    var noScrollHeight = (this._calculateScrollHeight() + ListPicker.ListboxSelectBorder * 2) * zoom;
+    var scrollbarWidth = getScrollbarWidth() * zoom;
+    var elementOffsetWidth = this._selectElement.offsetWidth * zoom;
     var desiredWindowHeight = noScrollHeight;
-    var desiredWindowWidth = this._selectElement.offsetWidth;
+    var desiredWindowWidth = elementOffsetWidth;
     var expectingScrollbar = false;
     if (desiredWindowHeight > maxHeight) {
         desiredWindowHeight = maxHeight;
         // Setting overflow to auto does not increase width for the scrollbar
         // so we need to do it manually.
-        desiredWindowWidth += getScrollbarWidth();
+        desiredWindowWidth += scrollbarWidth;
         expectingScrollbar = true;
     }
-    var zoom = this._config.zoomFactor;
-    desiredWindowWidth = Math.max(this._config.anchorRectInScreen.width / zoom, desiredWindowWidth);
-    var windowRect = adjustWindowRect(desiredWindowWidth * zoom, desiredWindowHeight * zoom, this._selectElement.offsetWidth * zoom, 0);
+    desiredWindowWidth = Math.max(this._config.anchorRectInScreen.width, desiredWindowWidth);
+    var windowRect = adjustWindowRect(desiredWindowWidth, desiredWindowHeight, elementOffsetWidth, 0);
     // If the available screen space is smaller than maxHeight, we will get an unexpected scrollbar.
-    if (!expectingScrollbar && windowRect.height < noScrollHeight * zoom) {
-        desiredWindowWidth = windowRect.width + getScrollbarWidth() * zoom;
+    if (!expectingScrollbar && windowRect.height < noScrollHeight) {
+        desiredWindowWidth = windowRect.width + scrollbarWidth;
         windowRect = adjustWindowRect(desiredWindowWidth, windowRect.height, windowRect.width, windowRect.height);
     }
     this._selectElement.style.width = (windowRect.width / zoom) + "px";

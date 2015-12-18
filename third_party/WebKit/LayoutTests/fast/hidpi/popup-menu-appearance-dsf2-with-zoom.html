@@ -5,7 +5,9 @@
   window.enablePixelTesting = true;
   function startTest() {
     if (window.testRunner) {
-      testRunner.setBackingScaleFactor(2.0, function() {});
+      testRunner.enableUseZoomForDSF(function() {
+        testRunner.setBackingScaleFactor(2.0, function() {});
+      });
     }
   }
   window.matchMedia('screen and (min-resolution: 2dppx)').

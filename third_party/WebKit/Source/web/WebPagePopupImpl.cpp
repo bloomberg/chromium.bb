@@ -75,8 +75,7 @@ public:
 
     void setWindowRect(const IntRect& rect) override
     {
-        m_popup->m_windowRectInScreen = rect;
-        m_popup->widgetClient()->setWindowRect(m_popup->m_windowRectInScreen);
+        m_popup->setWindowRect(rect);
     }
 
 private:
@@ -93,13 +92,15 @@ private:
 
     IntRect windowRect() override
     {
-        return IntRect(m_popup->m_windowRectInScreen.x, m_popup->m_windowRectInScreen.y, m_popup->m_windowRectInScreen.width, m_popup->m_windowRectInScreen.height);
+        return m_popup->m_windowRectInScreen;
     }
 
     IntRect viewportToScreen(const IntRect& rect) const override
     {
-        IntRect rectInScreen(rect);
-        rectInScreen.move(m_popup->m_windowRectInScreen.x, m_popup->m_windowRectInScreen.y);
+        WebRect rectInScreen(rect);
+        m_popup->widgetClient()->convertViewportToWindow(&rectInScreen);
+        rectInScreen.x += m_popup->m_windowRectInScreen.x;
+        rectInScreen.y += m_popup->m_windowRectInScreen.y;
         return rectInScreen;
     }
 
@@ -271,7 +272,6 @@ bool WebPagePopupImpl::initializePage()
     m_popupClient->writeDocument(data.get());
     frame->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
     frame->setPageZoomFactor(m_popupClient->zoomFactor());
-
     return true;
 }
 
@@ -305,9 +305,10 @@ AXObject* WebPagePopupImpl::rootAXObject()
     return toAXObjectCacheImpl(cache)->getOrCreate(document->layoutView());
 }
 
-void WebPagePopupImpl::setWindowRect(const IntRect& rect)
+void WebPagePopupImpl::setWindowRect(const IntRect& rectInScreen)
 {
-    m_chromeClient->setWindowRect(rect);
+    m_windowRectInScreen = rectInScreen;
+    widgetClient()->setWindowRect(m_windowRectInScreen);
 }
 
 void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer)
@@ -342,7 +343,6 @@ void WebPagePopupImpl::setIsAcceleratedCompositingActive(bool enter)
         if (m_layerTreeView) {
             m_layerTreeView->setVisible(true);
             m_isAcceleratedCompositingActive = true;
-            m_layerTreeView->setDeviceScaleFactor(m_webView->deviceScaleFactor());
             m_page->layerTreeViewInitialized(*m_layerTreeView);
         } else {
             m_isAcceleratedCompositingActive = false;
@@ -381,14 +381,15 @@ void WebPagePopupImpl::paint(WebCanvas* canvas, const WebRect& rect)
         PageWidgetDelegate::paint(*m_page, canvas, rect, *m_page->deprecatedLocalMainFrame());
 }
 
-void WebPagePopupImpl::resize(const WebSize& newSize)
+void WebPagePopupImpl::resize(const WebSize& newSizeInViewport)
 {
-    m_windowRectInScreen = WebRect(m_windowRectInScreen.x, m_windowRectInScreen.y, newSize.width, newSize.height);
-    m_widgetClient->setWindowRect(m_windowRectInScreen);
+    WebRect newSize(0, 0, newSizeInViewport.width, newSizeInViewport.height);
+    widgetClient()->convertViewportToWindow(&newSize);
 
+    setWindowRect(WebRect(m_windowRectInScreen.x, m_windowRectInScreen.y, newSize.width, newSize.height));
     if (m_page) {
-        toLocalFrame(m_page->mainFrame())->view()->resize(newSize);
-        m_page->frameHost().visualViewport().setSize(newSize);
+        toLocalFrame(m_page->mainFrame())->view()->resize(newSizeInViewport);
+        m_page->frameHost().visualViewport().setSize(newSizeInViewport);
     }
 
     m_widgetClient->didInvalidateRect(WebRect(0, 0, newSize.width, newSize.height));
