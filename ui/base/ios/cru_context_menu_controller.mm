@@ -24,11 +24,11 @@ CGFloat GetScreenHeight() {
   switch ([[UIApplication sharedApplication] statusBarOrientation]) {
     case UIInterfaceOrientationLandscapeLeft:
     case UIInterfaceOrientationLandscapeRight:
-      return CGRectGetWidth([[UIScreen mainScreen] applicationFrame]);
+      return CGRectGetWidth([[UIScreen mainScreen] bounds]);
     case UIInterfaceOrientationPortraitUpsideDown:
     case UIInterfaceOrientationPortrait:
     case UIInterfaceOrientationUnknown:
-      return CGRectGetHeight([[UIScreen mainScreen] applicationFrame]);
+      return CGRectGetHeight([[UIScreen mainScreen] bounds]);
   }
 }
 
