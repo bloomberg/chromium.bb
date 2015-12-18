@@ -85,6 +85,10 @@ static inline const base::TimeDelta NoWaitTimeOut() {
   return base::TimeDelta::FromMicroseconds(0);
 }
 
+static inline const base::TimeDelta IdleTimerTimeOut() {
+  return base::TimeDelta::FromSeconds(1);
+}
+
 AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder,
     const base::Callback<bool(void)>& make_context_current)
@@ -182,18 +186,20 @@ void AndroidVideoDecodeAccelerator::DoIOTask() {
     return;
   }
 
-  QueueInput();
+  bool did_work = QueueInput();
   while (DequeueOutput())
-    ;
+    did_work = true;
+
+  ManageTimer(did_work);
 }
 
-void AndroidVideoDecodeAccelerator::QueueInput() {
+bool AndroidVideoDecodeAccelerator::QueueInput() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::QueueInput");
   if (bitstreams_notified_in_advance_.size() > kMaxBitstreamsNotifiedInAdvance)
-    return;
+    return false;
   if (pending_bitstream_buffers_.empty())
-    return;
+    return false;
 
   int input_buf_index = 0;
   media::MediaCodecStatus status =
@@ -201,7 +207,7 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
   if (status != media::MEDIA_CODEC_OK) {
     DCHECK(status == media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER ||
            status == media::MEDIA_CODEC_ERROR);
-    return;
+    return false;
   }
 
   base::Time queued_time = pending_bitstream_buffers_.front().second;
@@ -215,13 +221,13 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
 
   if (bitstream_buffer.id() == -1) {
     media_codec_->QueueEOS(input_buf_index);
-    return;
+    return true;
   }
 
   scoped_ptr<base::SharedMemory> shm(
       new base::SharedMemory(bitstream_buffer.handle(), true));
   RETURN_ON_FAILURE(this, shm->Map(bitstream_buffer.size()),
-                    "Failed to SharedMemory::Map()", UNREADABLE_INPUT);
+                    "Failed to SharedMemory::Map()", UNREADABLE_INPUT, false);
 
   const base::TimeDelta presentation_timestamp =
       bitstream_buffer.presentation_timestamp();
@@ -257,7 +263,8 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
            << " status:" << status;
 
   RETURN_ON_FAILURE(this, status == media::MEDIA_CODEC_OK,
-                    "Failed to QueueInputBuffer: " << status, PLATFORM_FAILURE);
+                    "Failed to QueueInputBuffer: " << status, PLATFORM_FAILURE,
+                    false);
 
   // We should call NotifyEndOfBitstreamBuffer(), when no more decoded output
   // will be returned from the bitstream buffer. However, MediaCodec API is
@@ -272,6 +279,8 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
                  weak_this_factory_.GetWeakPtr(),
                  bitstream_buffer.id()));
   bitstreams_notified_in_advance_.push_back(bitstream_buffer.id());
+
+  return true;
 }
 
 bool AndroidVideoDecodeAccelerator::DequeueOutput() {
@@ -526,10 +535,7 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   if (!media_codec_)
     return false;
 
-  io_timer_.Start(FROM_HERE,
-                  DecodePollDelay(),
-                  this,
-                  &AndroidVideoDecodeAccelerator::DoIOTask);
+  ManageTimer(true);
   return true;
 }
 
@@ -644,6 +650,26 @@ void AndroidVideoDecodeAccelerator::NotifyResetDone() {
 void AndroidVideoDecodeAccelerator::NotifyError(
     media::VideoDecodeAccelerator::Error error) {
   client_->NotifyError(error);
+}
+
+void AndroidVideoDecodeAccelerator::ManageTimer(bool did_work) {
+  bool should_be_running = true;
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (!did_work) {
+    // Make sure that we have done work recently enough, else stop the timer.
+    if (now - most_recent_work_ > IdleTimerTimeOut())
+      should_be_running = false;
+  } else {
+    most_recent_work_ = now;
+  }
+
+  if (should_be_running && !io_timer_.IsRunning()) {
+    io_timer_.Start(FROM_HERE, DecodePollDelay(), this,
+                    &AndroidVideoDecodeAccelerator::DoIOTask);
+  } else if (!should_be_running && io_timer_.IsRunning()) {
+    io_timer_.Stop();
+  }
 }
 
 // static

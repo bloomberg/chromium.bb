@@ -132,7 +132,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Feeds input data to |media_codec_|. This checks
   // |pending_bitstream_buffers_| and queues a buffer to |media_codec_|.
-  void QueueInput();
+  // Returns true if any input was processed.
+  bool QueueInput();
 
   // Dequeues output from |media_codec_| and feeds the decoded frame to the
   // client.  Returns a hint about whether calling again might produce
@@ -160,6 +161,11 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Notifies about decoding errors.
   void NotifyError(media::VideoDecodeAccelerator::Error error);
+
+  // Start or stop our work-polling timer based on whether we did any work, and
+  // how long it has been since we've done work.  Calling this with true will
+  // start the timer.  Calling it with false may stop the timer.
+  void ManageTimer(bool did_work);
 
   // Return true if and only if we should use deferred rendering.
   static bool UseDeferredRenderingStrategy();
@@ -233,6 +239,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Backing strategy that we'll use to connect PictureBuffers to frames.
   scoped_ptr<BackingStrategy> strategy_;
+
+  // Time at which we last did useful work on io_timer_.
+  base::TimeTicks most_recent_work_;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;
