@@ -169,6 +169,10 @@ public class NotificationUIManager {
         long persistentNotificationId =
                 intent.getLongExtra(NotificationConstants.EXTRA_PERSISTENT_NOTIFICATION_ID, -1);
         String origin = intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_ORIGIN);
+        String profileId =
+                intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_PROFILE_ID);
+        boolean incognito = intent.getBooleanExtra(
+                NotificationConstants.EXTRA_NOTIFICATION_INFO_PROFILE_INCOGNITO, false);
         String tag = intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_TAG);
 
         Log.i(TAG, "Dispatching notification event to native: " + persistentNotificationId);
@@ -176,14 +180,14 @@ public class NotificationUIManager {
         if (NotificationConstants.ACTION_CLICK_NOTIFICATION.equals(intent.getAction())) {
             int actionIndex = intent.getIntExtra(
                     NotificationConstants.EXTRA_NOTIFICATION_INFO_ACTION_INDEX, -1);
-            return sInstance.onNotificationClicked(persistentNotificationId, origin, tag,
-                                                   actionIndex);
+            return sInstance.onNotificationClicked(
+                    persistentNotificationId, origin, profileId, incognito, tag, actionIndex);
         } else if (NotificationConstants.ACTION_CLOSE_NOTIFICATION.equals(intent.getAction())) {
             // Notification deleteIntent is executed only "when the notification is explicitly
             // dismissed by the user, either with the 'Clear All' button or by swiping it away
             // individually" (though a third-party NotificationListenerService may also trigger it).
-            return sInstance.onNotificationClosed(persistentNotificationId, origin, tag,
-                                                  true /* byUser */);
+            return sInstance.onNotificationClosed(
+                    persistentNotificationId, origin, profileId, incognito, tag, true /* byUser */);
         }
 
         Log.e(TAG, "Unrecognized Notification action: " + intent.getAction());
@@ -265,7 +269,8 @@ public class NotificationUIManager {
      * @param actionIndex The zero-based index of the action button, or -1 if not applicable.
      */
     private PendingIntent makePendingIntent(String action, long persistentNotificationId,
-                                            String origin, @Nullable String tag, int actionIndex) {
+            String origin, String profileId, boolean incognito, @Nullable String tag,
+            int actionIndex) {
         Uri intentData = makeIntentData(persistentNotificationId, origin, actionIndex);
         Intent intent = new Intent(action, intentData);
         intent.setClass(mAppContext, NotificationService.Receiver.class);
@@ -273,6 +278,8 @@ public class NotificationUIManager {
         intent.putExtra(NotificationConstants.EXTRA_PERSISTENT_NOTIFICATION_ID,
                 persistentNotificationId);
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_ORIGIN, origin);
+        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_PROFILE_ID, profileId);
+        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_PROFILE_INCOGNITO, incognito);
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_TAG, tag);
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_ACTION_INDEX, actionIndex);
 
@@ -395,6 +402,8 @@ public class NotificationUIManager {
      *
      * @param persistentNotificationId The persistent id of the notification.
      * @param origin Full text of the origin, including the protocol, owning this notification.
+     * @param profileId Id of the profile that showed the notification.
+     * @param incognito if the session of the profile is an off the record one.
      * @param tag A string identifier for this notification. If the tag is not empty, the new
      *            notification will replace the previous notification with the same tag and origin,
      *            if present. If no matching previous notification is present, the new one will just
@@ -410,53 +419,56 @@ public class NotificationUIManager {
      * @see https://developer.android.com/reference/android/app/Notification.html
      */
     @CalledByNative
-    private void displayNotification(long persistentNotificationId, String origin, String tag,
-            String title, String body, Bitmap icon, int[] vibrationPattern, boolean silent,
-            String[] actionTitles) {
+    private void displayNotification(long persistentNotificationId, String origin, String profileId,
+            boolean incognito, String tag, String title, String body, Bitmap icon,
+            int[] vibrationPattern, boolean silent, String[] actionTitles) {
         Resources res = mAppContext.getResources();
-
         // Set up a pending intent for going to the settings screen for |origin|.
         Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
                 mAppContext, SingleWebsitePreferences.class.getName());
-        settingsIntent.setData(makeIntentData(persistentNotificationId, origin,
-                                              -1 /* actionIndex */));
+        settingsIntent.setData(
+                makeIntentData(persistentNotificationId, origin, -1 /* actionIndex */));
         settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
                 SingleWebsitePreferences.createFragmentArgsForSite(origin));
 
         PendingIntent pendingSettingsIntent = PendingIntent.getActivity(mAppContext,
                 PENDING_INTENT_REQUEST_CODE, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationBuilder notificationBuilder = createNotificationBuilder()
-                .setTitle(title)
-                .setBody(body)
-                .setLargeIcon(ensureNormalizedIcon(icon, origin))
-                .setSmallIcon(R.drawable.ic_chrome)
-                .setContentIntent(makePendingIntent(
-                        NotificationConstants.ACTION_CLICK_NOTIFICATION,
-                        persistentNotificationId, origin, tag, -1 /* actionIndex */))
-                .setDeleteIntent(makePendingIntent(
-                        NotificationConstants.ACTION_CLOSE_NOTIFICATION,
-                        persistentNotificationId, origin, tag, -1 /* actionIndex */))
-                .setTicker(createTickerText(title, body))
-                .setOrigin(UrlUtilities.formatUrlForSecurityDisplay(
-                        origin, false /* showScheme */));
+        PendingIntent clickIntent = makePendingIntent(
+                NotificationConstants.ACTION_CLICK_NOTIFICATION, persistentNotificationId, origin,
+                profileId, incognito, tag, -1 /* actionIndex */);
+        PendingIntent closeIntent = makePendingIntent(
+                NotificationConstants.ACTION_CLOSE_NOTIFICATION, persistentNotificationId, origin,
+                profileId, incognito, tag, -1 /* actionIndex */);
+
+        NotificationBuilder notificationBuilder =
+                createNotificationBuilder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .setLargeIcon(ensureNormalizedIcon(icon, origin))
+                        .setSmallIcon(R.drawable.ic_chrome)
+                        .setContentIntent(clickIntent)
+                        .setDeleteIntent(closeIntent)
+                        .setTicker(createTickerText(title, body))
+                        .setOrigin(UrlUtilities.formatUrlForSecurityDisplay(
+                                origin, false /* showScheme */));
 
         for (int actionIndex = 0; actionIndex < actionTitles.length; actionIndex++) {
-            notificationBuilder.addAction(
-                    0 /* actionIcon */, actionTitles[actionIndex],
+            notificationBuilder.addAction(0 /* actionIcon */, actionTitles[actionIndex],
                     makePendingIntent(NotificationConstants.ACTION_CLICK_NOTIFICATION,
-                                      persistentNotificationId, origin, tag, actionIndex));
+                                                  persistentNotificationId, origin, profileId,
+                                                  incognito, tag, actionIndex));
         }
         // Site settings button is always the last action button.
         if (actionTitles.length == 0) {
             notificationBuilder.addAction(R.drawable.settings_cog,
-                                          res.getString(R.string.page_info_site_settings_button),
-                                          pendingSettingsIntent);
+                    res.getString(R.string.page_info_site_settings_button), pendingSettingsIntent);
         } else {
-            // Hide site settings icon and use shorter text when website provided action buttons.
+            // Hide site settings icon and use shorter text when website provided
+            // action buttons.
             notificationBuilder.addAction(0 /* actionIcon */,
-                                          res.getString(R.string.notification_site_settings_button),
-                                          pendingSettingsIntent);
+                    res.getString(R.string.notification_site_settings_button),
+                    pendingSettingsIntent);
         }
 
         notificationBuilder.setDefaults(makeDefaults(vibrationPattern.length, silent));
@@ -582,14 +594,16 @@ public class NotificationUIManager {
      *
      * @param persistentNotificationId The persistent id of the notification.
      * @param origin The origin of the notification.
+     * @param profileId Id of the profile that showed the notification.
+     * @param incognito if the profile session was an off the record one.
      * @param tag The tag of the notification. May be NULL.
      * @return Whether the manager could handle the click event.
      */
     private boolean onNotificationClicked(long persistentNotificationId, String origin,
-                                          String tag, int actionIndex) {
+            String profileId, boolean incognito, String tag, int actionIndex) {
         mLastNotificationClickMs = System.currentTimeMillis();
         return nativeOnNotificationClicked(mNativeNotificationManager, persistentNotificationId,
-                                           origin, tag, actionIndex);
+                origin, profileId, incognito, tag, actionIndex);
     }
 
     /**
@@ -598,20 +612,24 @@ public class NotificationUIManager {
      *
      * @param persistentNotificationId The persistent id of the notification.
      * @param origin The origin of the notification.
+     * @param profileId Id of the profile that showed the notification.
+     * @param incognito if the profile session was an off the record one.
      * @param tag The tag of the notification. May be NULL.
      * @param byUser Whether the notification was closed by a user gesture.
      * @return Whether the manager could handle the close event.
      */
     private boolean onNotificationClosed(long persistentNotificationId, String origin,
-                                         String tag, boolean byUser) {
+            String profileId, boolean incognito, String tag, boolean byUser) {
         return nativeOnNotificationClosed(mNativeNotificationManager, persistentNotificationId,
-                                          origin, tag, byUser);
+                origin, profileId, incognito, tag, byUser);
     }
 
     private static native void nativeInitializeNotificationUIManager();
 
     private native boolean nativeOnNotificationClicked(long nativeNotificationUIManagerAndroid,
-            long persistentNotificationId, String origin, String tag, int actionIndex);
+            long persistentNotificationId, String origin, String profileId, boolean incognito,
+            String tag, int actionIndex);
     private native boolean nativeOnNotificationClosed(long nativeNotificationUIManagerAndroid,
-            long persistentNotificationId, String origin, String tag, boolean byUser);
+            long persistentNotificationId, String origin, String profileId, boolean incognito,
+            String tag, boolean byUser);
 }

@@ -35,6 +35,8 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
       const base::android::JavaParamRef<jobject>& java_object,
       jlong persistent_notification_id,
       const base::android::JavaParamRef<jstring>& java_origin,
+      const base::android::JavaParamRef<jstring>& java_profile_id,
+      jboolean incognito,
       const base::android::JavaParamRef<jstring>& java_tag,
       jint action_index);
 
@@ -44,6 +46,8 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
       const base::android::JavaParamRef<jobject>& java_object,
       jlong persistent_notification_id,
       const base::android::JavaParamRef<jstring>& java_origin,
+      const base::android::JavaParamRef<jstring>& java_profile_id,
+      jboolean incognito,
       const base::android::JavaParamRef<jstring>& java_tag,
       jboolean by_user);
 
