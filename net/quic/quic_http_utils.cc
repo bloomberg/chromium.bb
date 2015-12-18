@@ -16,8 +16,8 @@ SpdyPriority ConvertRequestPriorityToQuicPriority(
 NET_EXPORT_PRIVATE RequestPriority
 ConvertQuicPriorityToRequestPriority(SpdyPriority priority) {
   // Handle invalid values gracefully.
-  return (priority >= 5) ?
-      IDLE : static_cast<RequestPriority>(HIGHEST - priority);
+  return (priority >= 5) ? IDLE
+                         : static_cast<RequestPriority>(HIGHEST - priority);
 }
 
 scoped_ptr<base::Value> QuicRequestNetLogCallback(

@@ -20,7 +20,7 @@
 // We use a macro to ensure that no static initialisers are created. Use the
 // MakeQuicTag function in normal code.
 #define TAG(a, b, c, d) \
-    static_cast<QuicTag>((d << 24) + (c << 16) + (b << 8) + a)
+  static_cast<QuicTag>((d << 24) + (c << 16) + (b << 8) + a)
 
 namespace net {
 
@@ -187,12 +187,10 @@ const QuicTag kFIXD = TAG('F', 'I', 'X', 'D');   // Client hello
 // message because the server mightn't hold state for a rejected client hello
 // and therefore the client may have issues reassembling the rejection message
 // in the event that it sent two client hellos.
-const QuicTag kServerNonceTag =
-    TAG('S', 'N', 'O', 0);  // The server's nonce
+const QuicTag kServerNonceTag = TAG('S', 'N', 'O', 0);  // The server's nonce
 const QuicTag kSourceAddressTokenTag =
     TAG('S', 'T', 'K', 0);  // Source-address token
-const QuicTag kCertificateTag =
-    TAG('C', 'R', 'T', 255);  // Certificate chain
+const QuicTag kCertificateTag = TAG('C', 'R', 'T', 255);  // Certificate chain
 const QuicTag kCertificateSCTTag =
     TAG('C', 'S', 'C', 'T');  // Signed cert timestamp (RFC6962) of leaf cert.
 

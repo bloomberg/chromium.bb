@@ -26,8 +26,8 @@ const int kCubeScale = 40;  // 1024*1024^3 (first 1024 is from 0.100^3)
                             // round trip time.
 const int kCubeCongestionWindowScale = 410;
 // The cube factor for packets in bytes.
-const uint64 kCubeFactor = (UINT64_C(1) << kCubeScale) /
-                           kCubeCongestionWindowScale / kDefaultTCPMSS;
+const uint64 kCubeFactor =
+    (UINT64_C(1) << kCubeScale) / kCubeCongestionWindowScale / kDefaultTCPMSS;
 
 const uint32 kDefaultNumConnections = 2;
 const float kBeta = 0.7f;  // Default Cubic backoff factor.

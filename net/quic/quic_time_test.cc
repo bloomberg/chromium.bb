@@ -77,15 +77,14 @@ class QuicTimeTest : public ::testing::Test {
 
 TEST_F(QuicTimeTest, Initialized) {
   EXPECT_FALSE(QuicTime::Zero().IsInitialized());
-  EXPECT_TRUE(QuicTime::Zero().Add(
-      QuicTime::Delta::FromMicroseconds(1)).IsInitialized());
+  EXPECT_TRUE(QuicTime::Zero()
+                  .Add(QuicTime::Delta::FromMicroseconds(1))
+                  .IsInitialized());
 }
 
 TEST_F(QuicTimeTest, Add) {
-  QuicTime time_1 = QuicTime::Zero().Add(
-      QuicTime::Delta::FromMilliseconds(1));
-  QuicTime time_2 = QuicTime::Zero().Add(
-      QuicTime::Delta::FromMilliseconds(2));
+  QuicTime time_1 = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(1));
+  QuicTime time_2 = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(2));
 
   QuicTime::Delta diff = time_2.Subtract(time_1);
 
@@ -95,26 +94,21 @@ TEST_F(QuicTimeTest, Add) {
 }
 
 TEST_F(QuicTimeTest, Subtract) {
-  QuicTime time_1 = QuicTime::Zero().Add(
-      QuicTime::Delta::FromMilliseconds(1));
-  QuicTime time_2 = QuicTime::Zero().Add(
-      QuicTime::Delta::FromMilliseconds(2));
+  QuicTime time_1 = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(1));
+  QuicTime time_2 = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(2));
 
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(1), time_2.Subtract(time_1));
 }
 
 TEST_F(QuicTimeTest, SubtractDelta) {
-  QuicTime time = QuicTime::Zero().Add(
-      QuicTime::Delta::FromMilliseconds(2));
+  QuicTime time = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(2));
   EXPECT_EQ(QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(1)),
             time.Subtract(QuicTime::Delta::FromMilliseconds(1)));
 }
 
 TEST_F(QuicTimeTest, Max) {
-  QuicTime time_1 = QuicTime::Zero().Add(
-      QuicTime::Delta::FromMilliseconds(1));
-  QuicTime time_2 = QuicTime::Zero().Add(
-      QuicTime::Delta::FromMilliseconds(2));
+  QuicTime time_1 = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(1));
+  QuicTime time_2 = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(2));
 
   EXPECT_EQ(time_2, QuicTime::Max(time_1, time_2));
 }
@@ -138,7 +132,7 @@ TEST_F(QuicTimeTest, MockClock) {
 
 TEST_F(QuicTimeTest, LE) {
   const QuicTime zero = QuicTime::Zero();
-  const QuicTime one  = zero.Add(QuicTime::Delta::FromSeconds(1));
+  const QuicTime one = zero.Add(QuicTime::Delta::FromSeconds(1));
   EXPECT_TRUE(zero <= zero);
   EXPECT_TRUE(zero <= one);
   EXPECT_TRUE(one <= one);

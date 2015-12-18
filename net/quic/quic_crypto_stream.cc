@@ -78,21 +78,17 @@ void QuicCryptoStream::SendHandshakeMessage(
   WriteOrBufferData(string(data.data(), data.length()), false, listener);
 }
 
-bool QuicCryptoStream::ExportKeyingMaterial(
-    StringPiece label,
-    StringPiece context,
-    size_t result_len,
-    string* result) const {
+bool QuicCryptoStream::ExportKeyingMaterial(StringPiece label,
+                                            StringPiece context,
+                                            size_t result_len,
+                                            string* result) const {
   if (!handshake_confirmed()) {
     DLOG(ERROR) << "ExportKeyingMaterial was called before forward-secure"
                 << "encryption was established.";
     return false;
   }
   return CryptoUtils::ExportKeyingMaterial(
-      crypto_negotiated_params_.subkey_secret,
-      label,
-      context,
-      result_len,
+      crypto_negotiated_params_.subkey_secret, label, context, result_len,
       result);
 }
 

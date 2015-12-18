@@ -111,8 +111,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void SetHandshakeConfirmed() { handshake_confirmed_ = true; }
 
   // Processes the incoming ack.
-  void OnIncomingAck(const QuicAckFrame& ack_frame,
-                     QuicTime ack_receive_time);
+  void OnIncomingAck(const QuicAckFrame& ack_frame, QuicTime ack_receive_time);
 
   // Returns true if the non-FEC packet |packet_number| is unacked.
   bool IsUnacked(QuicPacketNumber packet_number) const;
@@ -244,14 +243,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   }
 
   // Used in Chromium, but not in the server.
-  size_t consecutive_rto_count() const {
-    return consecutive_rto_count_;
-  }
+  size_t consecutive_rto_count() const { return consecutive_rto_count_; }
 
   // Used in Chromium, but not in the server.
-  size_t consecutive_tlp_count() const {
-    return consecutive_tlp_count_;
-  }
+  size_t consecutive_tlp_count() const { return consecutive_tlp_count_; }
 
  private:
   friend class test::QuicConnectionPeer;

@@ -8,33 +8,27 @@ namespace net {
 namespace tools {
 namespace test {
 
-FakeTimeEpollServer::FakeTimeEpollServer(): now_in_usec_(0) {
-}
+FakeTimeEpollServer::FakeTimeEpollServer() : now_in_usec_(0) {}
 
-FakeTimeEpollServer::~FakeTimeEpollServer() {
-}
+FakeTimeEpollServer::~FakeTimeEpollServer() {}
 
 int64 FakeTimeEpollServer::NowInUsec() const {
   return now_in_usec_;
 }
 
-MockEpollServer::MockEpollServer() : until_in_usec_(-1) {
-}
+MockEpollServer::MockEpollServer() : until_in_usec_(-1) {}
 
-MockEpollServer::~MockEpollServer() {
-}
+MockEpollServer::~MockEpollServer() {}
 
 int MockEpollServer::epoll_wait_impl(int epfd,
                                      struct epoll_event* events,
                                      int max_events,
                                      int timeout_in_ms) {
   int num_events = 0;
-  while (!event_queue_.empty() &&
-         num_events < max_events &&
+  while (!event_queue_.empty() && num_events < max_events &&
          event_queue_.begin()->first <= NowInUsec() &&
          ((until_in_usec_ == -1) ||
-          (event_queue_.begin()->first < until_in_usec_))
-        ) {
+          (event_queue_.begin()->first < until_in_usec_))) {
     int64 event_time_in_usec = event_queue_.begin()->first;
     events[num_events] = event_queue_.begin()->second;
     if (event_time_in_usec > NowInUsec()) {
@@ -43,7 +37,7 @@ int MockEpollServer::epoll_wait_impl(int epfd,
     event_queue_.erase(event_queue_.begin());
     ++num_events;
   }
-  if (num_events == 0) {  // then we'd have waited 'till the timeout.
+  if (num_events == 0) {       // then we'd have waited 'till the timeout.
     if (until_in_usec_ < 0) {  // then we don't care what the final time is.
       if (timeout_in_ms > 0) {
         AdvanceBy(timeout_in_ms * 1000);

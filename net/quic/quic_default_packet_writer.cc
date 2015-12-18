@@ -13,8 +13,7 @@
 
 namespace net {
 
-QuicDefaultPacketWriter::QuicDefaultPacketWriter() : weak_factory_(this) {
-}
+QuicDefaultPacketWriter::QuicDefaultPacketWriter() : weak_factory_(this) {}
 
 QuicDefaultPacketWriter::QuicDefaultPacketWriter(Socket* socket)
     : socket_(socket), write_blocked_(false), weak_factory_(this) {}
@@ -30,8 +29,7 @@ WriteResult QuicDefaultPacketWriter::WritePacket(
       new StringIOBuffer(std::string(buffer, buf_len)));
   DCHECK(!IsWriteBlocked());
   base::TimeTicks now = base::TimeTicks::Now();
-  int rv = socket_->Write(buf.get(),
-                          buf_len,
+  int rv = socket_->Write(buf.get(), buf_len,
                           base::Bind(&QuicDefaultPacketWriter::OnWriteComplete,
                                      weak_factory_.GetWeakPtr()));
   WriteStatus status = WRITE_STATUS_OK;

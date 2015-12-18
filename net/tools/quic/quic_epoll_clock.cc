@@ -10,8 +10,7 @@ namespace net {
 namespace tools {
 
 QuicEpollClock::QuicEpollClock(EpollServer* epoll_server)
-    : epoll_server_(epoll_server) {
-}
+    : epoll_server_(epoll_server) {}
 
 QuicEpollClock::~QuicEpollClock() {}
 

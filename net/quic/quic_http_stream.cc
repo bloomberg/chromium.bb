@@ -60,8 +60,8 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                      const CompletionCallback& callback) {
   DCHECK(!stream_);
   if (!session_)
-    return was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED :
-        ERR_QUIC_HANDSHAKE_FAILED;
+    return was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED
+                                    : ERR_QUIC_HANDSHAKE_FAILED;
 
   stream_net_log.AddEvent(
       NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION,
@@ -73,8 +73,8 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   priority_ = priority;
 
   int rv = stream_request_.StartRequest(
-      session_, &stream_, base::Bind(&QuicHttpStream::OnStreamReady,
-                                     weak_factory_.GetWeakPtr()));
+      session_, &stream_,
+      base::Bind(&QuicHttpStream::OnStreamReady, weak_factory_.GetWeakPtr()));
   if (rv == ERR_IO_PENDING) {
     callback_ = callback;
   } else if (rv == OK) {
@@ -178,8 +178,9 @@ int QuicHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
   return ERR_IO_PENDING;
 }
 
-int QuicHttpStream::ReadResponseBody(
-    IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
+int QuicHttpStream::ReadResponseBody(IOBuffer* buf,
+                                     int buf_len,
+                                     const CompletionCallback& callback) {
   if (!stream_) {
     // If the stream is already closed, there is no body to read.
     return response_status_;
@@ -205,8 +206,8 @@ void QuicHttpStream::Close(bool not_reusable) {
     stream_->SetDelegate(nullptr);
     stream_->Reset(QUIC_STREAM_CANCELLED);
     ResetStream();
-    response_status_ = was_handshake_confirmed_ ?
-        ERR_CONNECTION_CLOSED : ERR_QUIC_HANDSHAKE_FAILED;
+    response_status_ = was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED
+                                                : ERR_QUIC_HANDSHAKE_FAILED;
   }
 }
 
@@ -327,8 +328,8 @@ void QuicHttpStream::OnDataAvailable() {
 
 void QuicHttpStream::OnClose(QuicErrorCode error) {
   if (error != QUIC_NO_ERROR) {
-    response_status_ = was_handshake_confirmed_ ?
-        ERR_QUIC_PROTOCOL_ERROR : ERR_QUIC_HANDSHAKE_FAILED;
+    response_status_ = was_handshake_confirmed_ ? ERR_QUIC_PROTOCOL_ERROR
+                                                : ERR_QUIC_HANDSHAKE_FAILED;
   } else if (!response_headers_received_) {
     response_status_ = ERR_ABORTED;
   }
@@ -342,8 +343,8 @@ void QuicHttpStream::OnClose(QuicErrorCode error) {
 
 void QuicHttpStream::OnError(int error) {
   ResetStream();
-  response_status_ = was_handshake_confirmed_ ?
-      error : ERR_QUIC_HANDSHAKE_FAILED;
+  response_status_ =
+      was_handshake_confirmed_ ? error : ERR_QUIC_HANDSHAKE_FAILED;
   if (!callback_.is_null())
     DoCallback(response_status_);
 }
@@ -448,8 +449,7 @@ int QuicHttpStream::DoSendHeadersComplete(int rv) {
   if (rv < 0)
     return rv;
 
-  next_state_ = request_body_stream_ ?
-      STATE_READ_REQUEST_BODY : STATE_OPEN;
+  next_state_ = request_body_stream_ ? STATE_READ_REQUEST_BODY : STATE_OPEN;
 
   return OK;
 }
@@ -457,8 +457,7 @@ int QuicHttpStream::DoSendHeadersComplete(int rv) {
 int QuicHttpStream::DoReadRequestBody() {
   next_state_ = STATE_READ_REQUEST_BODY_COMPLETE;
   return request_body_stream_->Read(
-      raw_request_body_buf_.get(),
-      raw_request_body_buf_->size(),
+      raw_request_body_buf_.get(), raw_request_body_buf_->size(),
       base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
 }
 
@@ -528,8 +527,8 @@ int QuicHttpStream::ProcessResponseHeaders(const SpdyHeaderBlock& headers) {
   response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
   response_info_->connection_info =
       HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3;
-  response_info_->vary_data
-      .Init(*request_info_, *response_info_->headers.get());
+  response_info_->vary_data.Init(*request_info_,
+                                 *response_info_->headers.get());
   response_info_->was_npn_negotiated = true;
   response_info_->npn_negotiated_protocol = "quic/1+spdy/3";
   response_info_->response_time = base::Time::Now();

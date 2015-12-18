@@ -146,9 +146,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   QuicConnection* connection() { return connection_.get(); }
   const QuicConnection* connection() const { return connection_.get(); }
   size_t num_active_requests() const { return dynamic_stream_map_.size(); }
-  const IPEndPoint& peer_address() const {
-    return connection_->peer_address();
-  }
+  const IPEndPoint& peer_address() const { return connection_->peer_address(); }
   QuicConnectionId connection_id() const {
     return connection_->connection_id();
   }
@@ -289,7 +287,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // When this data arrives (via stream frame w. FIN, or RST) this method
   // is called, and correctly updates the connection level flow controller.
   void UpdateFlowControlOnFinalReceivedByteOffset(
-      QuicStreamId id, QuicStreamOffset final_byte_offset);
+      QuicStreamId id,
+      QuicStreamOffset final_byte_offset);
 
   // Called in OnConfigNegotiated when we receive a new stream level flow
   // control window in a negotiated config. Closes the connection if invalid.

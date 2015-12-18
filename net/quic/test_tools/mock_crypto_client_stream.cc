@@ -23,11 +23,9 @@ MockCryptoClientStream::MockCryptoClientStream(
     const ProofVerifyDetails* proof_verify_details)
     : QuicCryptoClientStream(server_id, session, verify_context, crypto_config),
       handshake_mode_(handshake_mode),
-      proof_verify_details_(proof_verify_details) {
-}
+      proof_verify_details_(proof_verify_details) {}
 
-MockCryptoClientStream::~MockCryptoClientStream() {
-}
+MockCryptoClientStream::~MockCryptoClientStream() {}
 
 void MockCryptoClientStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
@@ -89,7 +87,7 @@ void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
 void MockCryptoClientStream::SetConfigNegotiated() {
   ASSERT_FALSE(session()->config()->negotiated());
   QuicTagVector cgst;
-  // TODO(rtenneti): Enable the following code after BBR code is checked in.
+// TODO(rtenneti): Enable the following code after BBR code is checked in.
 #if 0
   cgst.push_back(kTBBR);
 #endif

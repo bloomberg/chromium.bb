@@ -57,8 +57,7 @@ uint32 kWindowSecs = 60;
 
 class LocalStrikeRegisterClientTest : public ::testing::Test {
  protected:
-  LocalStrikeRegisterClientTest() {
-  }
+  LocalStrikeRegisterClientTest() {}
 
   void SetUp() override {
     strike_register_.reset(new LocalStrikeRegisterClient(
@@ -94,8 +93,7 @@ TEST_F(LocalStrikeRegisterClientTest, IncorrectNonceLength) {
     InsertStatus nonce_error = NONCE_UNKNOWN_FAILURE;
     string short_nonce = valid_nonce.substr(0, valid_nonce.length() - 1);
     strike_register_->VerifyNonceIsValidAndUnique(
-        short_nonce,
-        QuicWallTime::FromUNIXSeconds(kCurrentTimeExternalSecs),
+        short_nonce, QuicWallTime::FromUNIXSeconds(kCurrentTimeExternalSecs),
         new RecordResultCallback(&called, &is_valid, &nonce_error));
     EXPECT_TRUE(called);
     EXPECT_FALSE(is_valid);
@@ -110,8 +108,7 @@ TEST_F(LocalStrikeRegisterClientTest, IncorrectNonceLength) {
     string long_nonce(valid_nonce);
     long_nonce.append("a");
     strike_register_->VerifyNonceIsValidAndUnique(
-        long_nonce,
-        QuicWallTime::FromUNIXSeconds(kCurrentTimeExternalSecs),
+        long_nonce, QuicWallTime::FromUNIXSeconds(kCurrentTimeExternalSecs),
         new RecordResultCallback(&called, &is_valid, &nonce_error));
     EXPECT_TRUE(called);
     EXPECT_FALSE(is_valid);
@@ -124,8 +121,7 @@ TEST_F(LocalStrikeRegisterClientTest, IncorrectNonceLength) {
     bool is_valid = false;
     InsertStatus nonce_error = NONCE_UNKNOWN_FAILURE;
     strike_register_->VerifyNonceIsValidAndUnique(
-        valid_nonce,
-        QuicWallTime::FromUNIXSeconds(kCurrentTimeExternalSecs),
+        valid_nonce, QuicWallTime::FromUNIXSeconds(kCurrentTimeExternalSecs),
         new RecordResultCallback(&called, &is_valid, &nonce_error));
     EXPECT_TRUE(called);
     EXPECT_TRUE(is_valid);

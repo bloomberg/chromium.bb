@@ -53,9 +53,7 @@ class QuicRandomBoolSource {
  public:
   // random: Source of entropy. Not owned.
   explicit QuicRandomBoolSource(QuicRandom* random)
-      : random_(random),
-        bit_bucket_(0),
-        bit_mask_(0) {}
+      : random_(random), bit_bucket_(0), bit_mask_(0) {}
 
   ~QuicRandomBoolSource() {}
 
@@ -111,11 +109,11 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
   SetMaxPacketLength(kDefaultMaxPacketSize);
 }
 
-QuicPacketCreator::~QuicPacketCreator() {
-}
+QuicPacketCreator::~QuicPacketCreator() {}
 
 void QuicPacketCreator::OnBuiltFecProtectedPayload(
-    const QuicPacketHeader& header, StringPiece payload) {
+    const QuicPacketHeader& header,
+    StringPiece payload) {
   if (fec_group_.get() != nullptr) {
     DCHECK_NE(0u, header.fec_group);
     fec_group_->Update(encryption_level_, header, payload);
@@ -148,8 +146,8 @@ void QuicPacketCreator::SetMaxPacketLength(QuicByteCount length) {
 
 void QuicPacketCreator::set_max_packets_per_fec_group(
     size_t max_packets_per_fec_group) {
-  max_packets_per_fec_group_ = max(kLowestMaxPacketsPerFecGroup,
-                                   max_packets_per_fec_group);
+  max_packets_per_fec_group_ =
+      max(kLowestMaxPacketsPerFecGroup, max_packets_per_fec_group);
   DCHECK_LT(0u, max_packets_per_fec_group_);
 }
 
@@ -323,8 +321,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
       << QuicFramer::GetMinStreamFrameSize(id, offset, true, is_in_fec_group);
 
   if (iov_offset == iov.total_length) {
-    LOG_IF(DFATAL, !fin)
-        << "Creating a stream frame with no data or fin.";
+    LOG_IF(DFATAL, !fin) << "Creating a stream frame with no data or fin.";
     // Create a new packet for the fin, if necessary.
     *frame = QuicFrame(new QuicStreamFrame(id, true, offset, StringPiece()));
     return 0;
@@ -438,8 +435,7 @@ SerializedPacket QuicPacketCreator::SerializeAllFrames(const QuicFrames& frames,
                                                        char* buffer,
                                                        size_t buffer_len) {
   LOG_IF(DFATAL, !queued_frames_.empty()) << "Frames already queued.";
-  LOG_IF(DFATAL, frames.empty())
-      << "Attempt to serialize empty packet";
+  LOG_IF(DFATAL, frames.empty()) << "Attempt to serialize empty packet";
   for (const QuicFrame& frame : frames) {
     bool success = AddFrame(frame, false);
     DCHECK(success);
@@ -496,7 +492,7 @@ bool QuicPacketCreator::HasPendingRetransmittableFrames() const {
 size_t QuicPacketCreator::ExpansionOnNewFrame() const {
   // If packet is FEC protected, there's no expansion.
   if (fec_protect_) {
-      return 0;
+    return 0;
   }
   // If the last frame in the packet is a stream frame, then it will expand to
   // include the stream_length field when a new frame is added.
@@ -507,8 +503,8 @@ size_t QuicPacketCreator::ExpansionOnNewFrame() const {
 
 size_t QuicPacketCreator::BytesFree() const {
   DCHECK_GE(max_plaintext_size_, PacketSize());
-  return max_plaintext_size_ - min(max_plaintext_size_, PacketSize()
-                                   + ExpansionOnNewFrame());
+  return max_plaintext_size_ -
+         min(max_plaintext_size_, PacketSize() + ExpansionOnNewFrame());
 }
 
 size_t QuicPacketCreator::PacketSize() const {
@@ -547,8 +543,7 @@ SerializedPacket QuicPacketCreator::SerializePacket(
     char* encrypted_buffer,
     size_t encrypted_buffer_len) {
   DCHECK_LT(0u, encrypted_buffer_len);
-  LOG_IF(DFATAL, queued_frames_.empty())
-      << "Attempt to serialize empty packet";
+  LOG_IF(DFATAL, queued_frames_.empty()) << "Attempt to serialize empty packet";
   if (fec_group_.get() != nullptr) {
     DCHECK_GE(packet_number_ + 1, fec_group_->FecGroupNumber());
   }

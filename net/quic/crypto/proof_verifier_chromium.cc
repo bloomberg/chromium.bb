@@ -317,8 +317,7 @@ bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
 
   size_t size_bits;
   X509Certificate::PublicKeyType type;
-  X509Certificate::GetPublicKeyInfo(cert_->os_cert_handle(), &size_bits,
-                                    &type);
+  X509Certificate::GetPublicKeyInfo(cert_->os_cert_handle(), &size_bits, &type);
   if (type == X509Certificate::kPublicKeyTypeRSA) {
     crypto::SignatureVerifier::HashAlgorithm hash_alg =
         crypto::SignatureVerifier::SHA256;
@@ -347,17 +346,13 @@ bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
     //   SHA384, or ecdsa-with-SHA512.
     // See also RFC 5480, Appendix A.
     static const uint8 kECDSAWithSHA256AlgorithmID[] = {
-      0x30, 0x0a,
-        0x06, 0x08,
-          0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02,
+        0x30, 0x0a, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02,
     };
 
     if (!verifier.VerifyInit(
             kECDSAWithSHA256AlgorithmID, sizeof(kECDSAWithSHA256AlgorithmID),
-            reinterpret_cast<const uint8*>(signature.data()),
-            signature.size(),
-            reinterpret_cast<const uint8*>(spki.data()),
-            spki.size())) {
+            reinterpret_cast<const uint8*>(signature.data()), signature.size(),
+            reinterpret_cast<const uint8*>(spki.data()), spki.size())) {
       DLOG(WARNING) << "VerifyInit failed";
       return false;
     }

@@ -61,10 +61,10 @@ TEST(QuicProtocolTest, QuicDeprecatedErrorCodeCount) {
 }
 
 TEST(QuicProtocolTest, QuicVersionToQuicTag) {
-  // If you add a new version to the QuicVersion enum you will need to add a new
-  // case to QuicVersionToQuicTag, otherwise this test will fail.
+// If you add a new version to the QuicVersion enum you will need to add a new
+// case to QuicVersionToQuicTag, otherwise this test will fail.
 
-  // TODO(rtenneti): Enable checking of Log(ERROR) messages.
+// TODO(rtenneti): Enable checking of Log(ERROR) messages.
 #if 0
   // Any logs would indicate an unsupported version which we don't expect.
   ScopedMockLog log(kDoNotCaptureLogsYet);
@@ -86,7 +86,7 @@ TEST(QuicProtocolTest, QuicVersionToQuicTag) {
 }
 
 TEST(QuicProtocolTest, QuicVersionToQuicTagUnsupported) {
-  // TODO(rtenneti): Enable checking of Log(ERROR) messages.
+// TODO(rtenneti): Enable checking of Log(ERROR) messages.
 #if 0
   // TODO(rjshade): Change to DFATAL once we actually support multiple versions,
   // and QuicConnectionTest::SendVersionNegotiationPacket can be changed to use
@@ -100,10 +100,10 @@ TEST(QuicProtocolTest, QuicVersionToQuicTagUnsupported) {
 }
 
 TEST(QuicProtocolTest, QuicTagToQuicVersion) {
-  // If you add a new version to the QuicVersion enum you will need to add a new
-  // case to QuicTagToQuicVersion, otherwise this test will fail.
+// If you add a new version to the QuicVersion enum you will need to add a new
+// case to QuicTagToQuicVersion, otherwise this test will fail.
 
-  // TODO(rtenneti): Enable checking of Log(ERROR) messages.
+// TODO(rtenneti): Enable checking of Log(ERROR) messages.
 #if 0
   // Any logs would indicate an unsupported version which we don't expect.
   ScopedMockLog log(kDoNotCaptureLogsYet);
@@ -130,7 +130,7 @@ TEST(QuicProtocolTest, QuicTagToQuicVersion) {
 }
 
 TEST(QuicProtocolTest, QuicTagToQuicVersionUnsupported) {
-  // TODO(rtenneti): Enable checking of Log(ERROR) messages.
+// TODO(rtenneti): Enable checking of Log(ERROR) messages.
 #if 0
   ScopedMockLog log(kDoNotCaptureLogsYet);
 #ifndef NDEBUG

@@ -17,7 +17,7 @@ const float kBeta = 0.7f;  // Default Cubic backoff factor.
 const uint32 kNumConnections = 2;
 const float kNConnectionBeta = (kNumConnections - 1 + kBeta) / kNumConnections;
 const float kNConnectionAlpha = 3 * kNumConnections * kNumConnections *
-      (1 - kNConnectionBeta) / (1 + kNConnectionBeta);
+                                (1 - kNConnectionBeta) / (1 + kNConnectionBeta);
 
 class CubicTest : public ::testing::Test {
  protected:
@@ -66,8 +66,8 @@ TEST_F(CubicTest, AboveOrigin) {
   // Total time elapsed so far; add min_rtt (0.1s) here as well.
   float elapsed_time_s = 10.0f + 0.1f;
   // |expected_cwnd| is initial value of cwnd + K * t^3, where K = 0.4.
-  expected_cwnd = 11 + (elapsed_time_s * elapsed_time_s * elapsed_time_s * 410)
-      / 1024;
+  expected_cwnd =
+      11 + (elapsed_time_s * elapsed_time_s * elapsed_time_s * 410) / 1024;
   EXPECT_EQ(expected_cwnd, current_cwnd);
 }
 
@@ -102,7 +102,6 @@ TEST_F(CubicTest, CwndIncreaseStatsDuringConvexRegion) {
   }
 }
 
-
 TEST_F(CubicTest, LossEvents) {
   const QuicTime::Delta rtt_min = hundred_ms_;
   QuicPacketCount current_cwnd = 422;
@@ -135,7 +134,7 @@ TEST_F(CubicTest, BelowOrigin) {
   // First update after loss to initialize the epoch.
   current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
   // Cubic phase.
-  for (int i = 0; i < 40 ; ++i) {
+  for (int i = 0; i < 40; ++i) {
     clock_.AdvanceTime(hundred_ms_);
     current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
   }

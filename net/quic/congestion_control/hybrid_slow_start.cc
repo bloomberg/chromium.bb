@@ -86,23 +86,23 @@ bool HybridSlowStart::ShouldExitSlowStart(QuicTime::Delta latest_rtt,
   // We only need to check this once per round.
   if (rtt_sample_count_ == kHybridStartMinSamples) {
     // Divide min_rtt by 8 to get a rtt increase threshold for exiting.
-    int64 min_rtt_increase_threshold_us = min_rtt.ToMicroseconds() >>
-        kHybridStartDelayFactorExp;
+    int64 min_rtt_increase_threshold_us =
+        min_rtt.ToMicroseconds() >> kHybridStartDelayFactorExp;
     // Ensure the rtt threshold is never less than 2ms or more than 16ms.
-    min_rtt_increase_threshold_us = min(min_rtt_increase_threshold_us,
-                                        kHybridStartDelayMaxThresholdUs);
+    min_rtt_increase_threshold_us =
+        min(min_rtt_increase_threshold_us, kHybridStartDelayMaxThresholdUs);
     QuicTime::Delta min_rtt_increase_threshold =
         QuicTime::Delta::FromMicroseconds(max(min_rtt_increase_threshold_us,
                                               kHybridStartDelayMinThresholdUs));
 
     if (current_min_rtt_ > min_rtt.Add(min_rtt_increase_threshold)) {
-      hystart_found_= DELAY;
+      hystart_found_ = DELAY;
     }
   }
   // Exit from slow start if the cwnd is greater than 16 and
   // increasing delay is found.
   return congestion_window >= kHybridStartLowWindow &&
-      hystart_found_ != NOT_FOUND;
+         hystart_found_ != NOT_FOUND;
 }
 
 }  // namespace net

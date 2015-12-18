@@ -25,17 +25,16 @@ namespace tools {
 // static
 IPAddressNumber QuicSocketUtils::GetAddressFromMsghdr(struct msghdr* hdr) {
   if (hdr->msg_controllen > 0) {
-    for (cmsghdr* cmsg = CMSG_FIRSTHDR(hdr);
-         cmsg != nullptr;
+    for (cmsghdr* cmsg = CMSG_FIRSTHDR(hdr); cmsg != nullptr;
          cmsg = CMSG_NXTHDR(hdr, cmsg)) {
       const uint8* addr_data = nullptr;
       int len = 0;
       if (cmsg->cmsg_type == IPV6_PKTINFO) {
-        in6_pktinfo* info = reinterpret_cast<in6_pktinfo*>CMSG_DATA(cmsg);
+        in6_pktinfo* info = reinterpret_cast<in6_pktinfo*> CMSG_DATA(cmsg);
         addr_data = reinterpret_cast<const uint8*>(&info->ipi6_addr);
         len = sizeof(in6_addr);
       } else if (cmsg->cmsg_type == IP_PKTINFO) {
-        in_pktinfo* info = reinterpret_cast<in_pktinfo*>CMSG_DATA(cmsg);
+        in_pktinfo* info = reinterpret_cast<in_pktinfo*> CMSG_DATA(cmsg);
         addr_data = reinterpret_cast<const uint8*>(&info->ipi_addr);
         len = sizeof(in_addr);
       } else {
@@ -53,11 +52,10 @@ bool QuicSocketUtils::GetOverflowFromMsghdr(struct msghdr* hdr,
                                             QuicPacketCount* dropped_packets) {
   if (hdr->msg_controllen > 0) {
     struct cmsghdr* cmsg;
-    for (cmsg = CMSG_FIRSTHDR(hdr);
-         cmsg != nullptr;
+    for (cmsg = CMSG_FIRSTHDR(hdr); cmsg != nullptr;
          cmsg = CMSG_NXTHDR(hdr, cmsg)) {
       if (cmsg->cmsg_type == SO_RXQ_OVFL) {
-        *dropped_packets = *(reinterpret_cast<int*>CMSG_DATA(cmsg));
+        *dropped_packets = *(reinterpret_cast<int*> CMSG_DATA(cmsg));
         return true;
       }
     }
@@ -68,11 +66,11 @@ bool QuicSocketUtils::GetOverflowFromMsghdr(struct msghdr* hdr,
 // static
 int QuicSocketUtils::SetGetAddressInfo(int fd, int address_family) {
   int get_local_ip = 1;
-  int rc = setsockopt(fd, IPPROTO_IP, IP_PKTINFO,
-                      &get_local_ip, sizeof(get_local_ip));
+  int rc = setsockopt(fd, IPPROTO_IP, IP_PKTINFO, &get_local_ip,
+                      sizeof(get_local_ip));
   if (rc == 0 && address_family == AF_INET6) {
-    rc = setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO,
-                    &get_local_ip, sizeof(get_local_ip));
+    rc = setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO, &get_local_ip,
+                    sizeof(get_local_ip));
   }
   return rc;
 }
@@ -96,7 +94,9 @@ bool QuicSocketUtils::SetReceiveBufferSize(int fd, size_t size) {
 }
 
 // static
-int QuicSocketUtils::ReadPacket(int fd, char* buffer, size_t buf_len,
+int QuicSocketUtils::ReadPacket(int fd,
+                                char* buffer,
+                                size_t buf_len,
                                 QuicPacketCount* dropped_packets,
                                 IPAddressNumber* self_address,
                                 IPEndPoint* peer_address) {
@@ -183,8 +183,7 @@ WriteResult QuicSocketUtils::WritePacket(int fd,
   sockaddr_storage raw_address;
   socklen_t address_len = sizeof(raw_address);
   CHECK(peer_address.ToSockAddr(
-      reinterpret_cast<struct sockaddr*>(&raw_address),
-      &address_len));
+      reinterpret_cast<struct sockaddr*>(&raw_address), &address_len));
   iovec iov = {const_cast<char*>(buffer), buf_len};
 
   msghdr hdr;
@@ -215,8 +214,10 @@ WriteResult QuicSocketUtils::WritePacket(int fd,
   if (rc >= 0) {
     return WriteResult(WRITE_STATUS_OK, rc);
   }
-  return WriteResult((errno == EAGAIN || errno == EWOULDBLOCK) ?
-      WRITE_STATUS_BLOCKED : WRITE_STATUS_ERROR, errno);
+  return WriteResult((errno == EAGAIN || errno == EWOULDBLOCK)
+                         ? WRITE_STATUS_BLOCKED
+                         : WRITE_STATUS_ERROR,
+                     errno);
 }
 
 }  // namespace tools

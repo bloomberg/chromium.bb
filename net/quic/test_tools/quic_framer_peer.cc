@@ -21,7 +21,8 @@ QuicPacketNumber QuicFramerPeer::CalculatePacketNumberFromWire(
 
 // static
 void QuicFramerPeer::SetLastSerializedConnectionId(
-    QuicFramer* framer, QuicConnectionId connection_id) {
+    QuicFramer* framer,
+    QuicConnectionId connection_id) {
   framer->last_serialized_connection_id_ = connection_id;
 }
 
@@ -49,13 +50,11 @@ void QuicFramerPeer::SwapCrypters(QuicFramer* framer1, QuicFramer* framer2) {
   framer2->decrypter_level_ = framer1->decrypter_level_;
   framer1->decrypter_level_ = framer2_level;
   framer2_level = framer2->alternative_decrypter_level_;
-  framer2->alternative_decrypter_level_ =
-      framer1->alternative_decrypter_level_;
+  framer2->alternative_decrypter_level_ = framer1->alternative_decrypter_level_;
   framer1->alternative_decrypter_level_ = framer2_level;
 
   const bool framer2_latch = framer2->alternative_decrypter_latch_;
-  framer2->alternative_decrypter_latch_ =
-      framer1->alternative_decrypter_latch_;
+  framer2->alternative_decrypter_latch_ = framer1->alternative_decrypter_latch_;
   framer1->alternative_decrypter_latch_ = framer2_latch;
 }
 

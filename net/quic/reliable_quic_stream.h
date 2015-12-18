@@ -46,8 +46,7 @@ class QuicSession;
 
 class NET_EXPORT_PRIVATE ReliableQuicStream {
  public:
-  ReliableQuicStream(QuicStreamId id,
-                     QuicSession* session);
+  ReliableQuicStream(QuicStreamId id, QuicSession* session);
 
   virtual ~ReliableQuicStream();
 

@@ -14,9 +14,8 @@ namespace test {
 class HybridSlowStartTest : public ::testing::Test {
  protected:
   HybridSlowStartTest()
-     : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
-       rtt_(QuicTime::Delta::FromMilliseconds(60)) {
-  }
+      : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
+        rtt_(QuicTime::Delta::FromMilliseconds(60)) {}
   void SetUp() override { slow_start_.reset(new HybridSlowStart()); }
   const QuicTime::Delta one_ms_;
   const QuicTime::Delta rtt_;

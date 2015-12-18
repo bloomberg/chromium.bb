@@ -4,8 +4,8 @@
 
 #include "net/quic/crypto/crypto_handshake_message.h"
 
-#include "base/strings/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
@@ -19,9 +19,7 @@ using std::vector;
 
 namespace net {
 
-CryptoHandshakeMessage::CryptoHandshakeMessage()
-    : tag_(0),
-      minimum_size_(0) {}
+CryptoHandshakeMessage::CryptoHandshakeMessage() : tag_(0), minimum_size_(0) {}
 
 CryptoHandshakeMessage::CryptoHandshakeMessage(
     const CryptoHandshakeMessage& other)
@@ -177,8 +175,7 @@ QuicErrorCode CryptoHandshakeMessage::GetUint64(QuicTag tag,
 }
 
 size_t CryptoHandshakeMessage::size() const {
-  size_t ret = sizeof(QuicTag) +
-               sizeof(uint16) /* number of entries */ +
+  size_t ret = sizeof(QuicTag) + sizeof(uint16) /* number of entries */ +
                sizeof(uint16) /* padding */;
   ret += (sizeof(QuicTag) + sizeof(uint32) /* end offset */) *
          tag_value_map_.size();
@@ -206,8 +203,9 @@ string CryptoHandshakeMessage::DebugString() const {
   return DebugStringInternal(0);
 }
 
-QuicErrorCode CryptoHandshakeMessage::GetPOD(
-    QuicTag tag, void* out, size_t len) const {
+QuicErrorCode CryptoHandshakeMessage::GetPOD(QuicTag tag,
+                                             void* out,
+                                             size_t len) const {
   QuicTagValueMap::const_iterator it = tag_value_map_.find(tag);
   QuicErrorCode ret = QUIC_NO_ERROR;
 

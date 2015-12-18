@@ -72,10 +72,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
   void OnRttChanged(QuicTime::Delta rtt) const override;
 
-  void OnCryptoHandshakeMessageReceived(
-      const CryptoHandshakeMessage& message);
-  void OnCryptoHandshakeMessageSent(
-      const CryptoHandshakeMessage& message);
+  void OnCryptoHandshakeMessageReceived(const CryptoHandshakeMessage& message);
+  void OnCryptoHandshakeMessageSent(const CryptoHandshakeMessage& message);
   void UpdateReceivedFrameCounts(QuicStreamId stream_id,
                                  int num_frames_received,
                                  int num_duplicate_frames_received);

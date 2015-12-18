@@ -145,8 +145,7 @@ class QuicHeadersStream::SpdyFramerVisitor
     CloseConnection("SPDY PUSH_PROMISE frame received.");
   }
 
-  void OnContinuation(SpdyStreamId stream_id, bool end) override {
-  }
+  void OnContinuation(SpdyStreamId stream_id, bool end) override {}
 
   bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
     CloseConnection("Unknown frame type received.");
@@ -170,8 +169,8 @@ class QuicHeadersStream::SpdyFramerVisitor
  private:
   void CloseConnection(const string& details) {
     if (stream_->IsConnected()) {
-      stream_->CloseConnectionWithDetails(
-          QUIC_INVALID_HEADERS_STREAM_DATA, details);
+      stream_->CloseConnectionWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
+                                          details);
     }
   }
 

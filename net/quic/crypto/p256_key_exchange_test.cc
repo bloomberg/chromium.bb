@@ -41,4 +41,3 @@ TEST(P256KeyExchange, SharedKey) {
 
 }  // namespace test
 }  // namespace net
-

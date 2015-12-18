@@ -29,7 +29,7 @@ net::ProofSource* CreateProofSource(const base::FilePath& cert_path,
   return proof_source;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
   base::MessageLoopForIO message_loop;
 

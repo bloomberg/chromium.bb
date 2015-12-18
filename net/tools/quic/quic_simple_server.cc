@@ -61,7 +61,7 @@ class CustomPacketWriterFactory : public QuicDispatcher::PacketWriterFactory {
   QuicSimpleServerPacketWriter* shared_writer_;  // Not owned.
 };
 
-} // namespace
+}  // namespace
 
 QuicSimpleServer::QuicSimpleServer(ProofSource* proof_source,
                                    const QuicConfig& config,
@@ -107,8 +107,7 @@ void QuicSimpleServer::Initialize() {
       QuicCryptoServerConfig::ConfigOptions()));
 }
 
-QuicSimpleServer::~QuicSimpleServer() {
-}
+QuicSimpleServer::~QuicSimpleServer() {}
 
 int QuicSimpleServer::Listen(const IPEndPoint& address) {
   scoped_ptr<UDPServerSocket> socket(
@@ -151,9 +150,8 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
   CustomPacketWriterFactory* factory = new CustomPacketWriterFactory();
   dispatcher_.reset(new QuicDispatcher(config_, &crypto_config_,
                                        supported_versions_, factory, helper_));
-  QuicSimpleServerPacketWriter* writer = new QuicSimpleServerPacketWriter(
-      socket_.get(),
-      dispatcher_.get());
+  QuicSimpleServerPacketWriter* writer =
+      new QuicSimpleServerPacketWriter(socket_.get(), dispatcher_.get());
   factory->set_shared_writer(writer);
   dispatcher_->InitializeWithWriter(writer);
 
@@ -178,9 +176,7 @@ void QuicSimpleServer::StartReading() {
   read_pending_ = true;
 
   int result = socket_->RecvFrom(
-      read_buffer_.get(),
-      read_buffer_->size(),
-      &client_address_,
+      read_buffer_.get(), read_buffer_->size(), &client_address_,
       base::Bind(&QuicSimpleServer::OnReadComplete, base::Unretained(this)));
 
   if (result == ERR_IO_PENDING) {

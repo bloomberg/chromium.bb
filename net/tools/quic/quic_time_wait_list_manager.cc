@@ -32,8 +32,7 @@ class ConnectionIdCleanUpAlarm : public QuicAlarm::Delegate {
  public:
   explicit ConnectionIdCleanUpAlarm(
       QuicTimeWaitListManager* time_wait_list_manager)
-      : time_wait_list_manager_(time_wait_list_manager) {
-  }
+      : time_wait_list_manager_(time_wait_list_manager) {}
 
   QuicTime OnAlarm() override {
     time_wait_list_manager_->CleanUpOldConnectionIds();
@@ -62,8 +61,7 @@ class QuicTimeWaitListManager::QueuedPacket {
                QuicEncryptedPacket* packet)
       : server_address_(server_address),
         client_address_(client_address),
-        packet_(packet) {
-  }
+        packet_(packet) {}
 
   const IPEndPoint& server_address() const { return server_address_; }
   const IPEndPoint& client_address() const { return client_address_; }
@@ -95,8 +93,7 @@ QuicTimeWaitListManager::~QuicTimeWaitListManager() {
   connection_id_clean_up_alarm_->Cancel();
   STLDeleteElements(&pending_packets_queue_);
   for (ConnectionIdMap::iterator it = connection_id_map_.begin();
-       it != connection_id_map_.end();
-       ++it) {
+       it != connection_id_map_.end(); ++it) {
     STLDeleteElements(&it->second.termination_packets);
   }
 }
@@ -213,10 +210,8 @@ void QuicTimeWaitListManager::SendPublicReset(
   // TODO(satyamshekhar): generate a valid nonce for this connection_id.
   packet.nonce_proof = 1010101;
   packet.client_address = client_address;
-  QueuedPacket* queued_packet = new QueuedPacket(
-      server_address,
-      client_address,
-      BuildPublicReset(packet));
+  QueuedPacket* queued_packet = new QueuedPacket(server_address, client_address,
+                                                 BuildPublicReset(packet));
   // Takes ownership of the packet.
   SendOrQueuePacket(queued_packet);
 }
@@ -243,8 +238,7 @@ bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
     return false;
   }
   WriteResult result = writer_->WritePacket(
-      queued_packet->packet()->data(),
-      queued_packet->packet()->length(),
+      queued_packet->packet()->data(), queued_packet->packet()->length(),
       queued_packet->server_address().address(),
       queued_packet->client_address());
   if (result.status == WRITE_STATUS_BLOCKED) {

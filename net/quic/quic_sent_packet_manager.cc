@@ -53,7 +53,7 @@ bool HasCryptoHandshake(const TransmissionInfo& transmission_info) {
     return false;
   }
   return transmission_info.retransmittable_frames->HasCryptoHandshake() ==
-      IS_HANDSHAKE;
+         IS_HANDSHAKE;
 }
 
 }  // namespace
@@ -96,8 +96,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       handshake_confirmed_(false),
       use_general_loss_algorithm_(FLAGS_quic_general_loss_algorithm) {}
 
-QuicSentPacketManager::~QuicSentPacketManager() {
-}
+QuicSentPacketManager::~QuicSentPacketManager() {}
 
 void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasReceivedInitialRoundTripTimeUs() &&
@@ -118,8 +117,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     network_change_visitor_->OnRttChange();
   }
   // TODO(ianswett): BBR is currently a server only feature.
-  if (FLAGS_quic_allow_bbr &&
-      config.HasReceivedConnectionOptions() &&
+  if (FLAGS_quic_allow_bbr && config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kTBBR)) {
     if (FLAGS_quic_recent_min_rtt_window_s > 0) {
       rtt_stats_.set_recent_min_rtt_window(
@@ -225,11 +223,8 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
   unacked_packets_.RemoveObsoletePackets();
 
   sustained_bandwidth_recorder_.RecordEstimate(
-      send_algorithm_->InRecovery(),
-      send_algorithm_->InSlowStart(),
-      send_algorithm_->BandwidthEstimate(),
-      ack_receive_time,
-      clock_->WallNow(),
+      send_algorithm_->InRecovery(), send_algorithm_->InSlowStart(),
+      send_algorithm_->BandwidthEstimate(), ack_receive_time, clock_->WallNow(),
       rtt_stats_.smoothed_rtt());
 
   // Anytime we are making forward progress and have a new RTT estimate, reset
@@ -271,7 +266,8 @@ void QuicSentPacketManager::UpdatePacketInformationReceivedByPeer(
 }
 
 void QuicSentPacketManager::MaybeInvokeCongestionEvent(
-    bool rtt_updated, QuicByteCount bytes_in_flight) {
+    bool rtt_updated,
+    QuicByteCount bytes_in_flight) {
   if (!rtt_updated && packets_acked_.empty() && packets_lost_.empty()) {
     return;
   }
@@ -441,7 +437,7 @@ bool QuicSentPacketManager::HasPendingRetransmissions() const {
 }
 
 QuicSentPacketManager::PendingRetransmission
-    QuicSentPacketManager::NextPendingRetransmission() {
+QuicSentPacketManager::NextPendingRetransmission() {
   LOG_IF(DFATAL, pending_retransmissions_.empty())
       << "Unexpected call to PendingRetransmissions() with empty pending "
       << "retransmission list. Corrupted memory usage imminent.";
@@ -711,7 +707,7 @@ void QuicSentPacketManager::RetransmitRtoPackets() {
 }
 
 QuicSentPacketManager::RetransmissionTimeoutMode
-    QuicSentPacketManager::GetRetransmissionMode() const {
+QuicSentPacketManager::GetRetransmissionMode() const {
   DCHECK(unacked_packets_.HasInFlightPackets());
   if (!handshake_confirmed_ && unacked_packets_.HasPendingCryptoPackets()) {
     return HANDSHAKE_MODE;
@@ -774,9 +770,8 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
   }
 }
 
-bool QuicSentPacketManager::MaybeUpdateRTT(
-    const QuicAckFrame& ack_frame,
-    const QuicTime& ack_receive_time) {
+bool QuicSentPacketManager::MaybeUpdateRTT(const QuicAckFrame& ack_frame,
+                                           const QuicTime& ack_receive_time) {
   // We rely on delta_time_largest_observed to compute an RTT estimate, so we
   // only update rtt when the largest observed gets acked.
   // NOTE: If ack is a truncated ack, then the largest observed is in fact
@@ -797,8 +792,8 @@ bool QuicSentPacketManager::MaybeUpdateRTT(
 
   QuicTime::Delta send_delta =
       ack_receive_time.Subtract(transmission_info.sent_time);
-  rtt_stats_.UpdateRtt(
-      send_delta, ack_frame.delta_time_largest_observed, ack_receive_time);
+  rtt_stats_.UpdateRtt(send_delta, ack_frame.delta_time_largest_observed,
+                       ack_receive_time);
 
   if (network_change_visitor_ != nullptr) {
     network_change_visitor_->OnRttChange();
@@ -815,8 +810,8 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
   if (pending_timer_transmission_count_ > 0) {
     return QuicTime::Delta::Zero();
   }
-  return send_algorithm_->TimeUntilSend(
-      now, unacked_packets_.bytes_in_flight(), retransmittable);
+  return send_algorithm_->TimeUntilSend(now, unacked_packets_.bytes_in_flight(),
+                                        retransmittable);
 }
 
 // Uses a 25ms delayed ack timer. Also helps with better signaling
@@ -834,8 +829,8 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
 // any benefits, but if the delayed ack becomes a significant source
 // of (likely, tail) latency, then consider such a mechanism.
 const QuicTime::Delta QuicSentPacketManager::DelayedAckTime() const {
-  return QuicTime::Delta::FromMilliseconds(min(kMaxDelayedAckTimeMs,
-                                               kMinRetransmissionTimeMs / 2));
+  return QuicTime::Delta::FromMilliseconds(
+      min(kMaxDelayedAckTimeMs, kMinRetransmissionTimeMs / 2));
 }
 
 const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
@@ -899,7 +894,8 @@ const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
   }
   if (!unacked_packets_.HasMultipleInFlightPackets()) {
     return QuicTime::Delta::Max(
-        srtt.Multiply(2), srtt.Multiply(1.5).Add(
+        srtt.Multiply(2),
+        srtt.Multiply(1.5).Add(
             QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs / 2)));
   }
   return QuicTime::Delta::FromMilliseconds(
@@ -983,10 +979,9 @@ void QuicSentPacketManager::EnablePacing() {
   // Set up a pacing sender with a 1 millisecond alarm granularity, the same as
   // the default granularity of the Linux kernel's FQ qdisc.
   using_pacing_ = true;
-  send_algorithm_.reset(
-      new PacingSender(send_algorithm_.release(),
-                       QuicTime::Delta::FromMilliseconds(1),
-                       kInitialUnpacedBurst));
+  send_algorithm_.reset(new PacingSender(send_algorithm_.release(),
+                                         QuicTime::Delta::FromMilliseconds(1),
+                                         kInitialUnpacedBurst));
 }
 
 void QuicSentPacketManager::OnConnectionMigration(PeerAddressChangeType type) {

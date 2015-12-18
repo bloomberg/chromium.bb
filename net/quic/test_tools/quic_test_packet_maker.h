@@ -108,9 +108,8 @@ class QuicTestPacketMaker {
   SpdyHeaderBlock GetResponseHeaders(const std::string& status);
 
  private:
-  scoped_ptr<QuicEncryptedPacket> MakePacket(
-      const QuicPacketHeader& header,
-      const QuicFrame& frame);
+  scoped_ptr<QuicEncryptedPacket> MakePacket(const QuicPacketHeader& header,
+                                             const QuicFrame& frame);
 
   void InitializeHeader(QuicPacketNumber packet_number,
                         bool should_include_version);

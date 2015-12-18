@@ -88,8 +88,8 @@ namespace {
 
 class MockFakeTimeEpollServer : public FakeTimeEpollServer {
  public:
-  MOCK_METHOD2(RegisterAlarm, void(int64 timeout_in_us,
-                                   EpollAlarmCallbackInterface* alarm));
+  MOCK_METHOD2(RegisterAlarm,
+               void(int64 timeout_in_us, EpollAlarmCallbackInterface* alarm));
 };
 
 class QuicTimeWaitListManagerTest : public ::testing::Test {
@@ -161,7 +161,7 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
 };
 
 class ValidatePublicResetPacketPredicate
-    : public MatcherInterface<const std::tr1::tuple<const char*, int> > {
+    : public MatcherInterface<const std::tr1::tuple<const char*, int>> {
  public:
   explicit ValidatePublicResetPacketPredicate(QuicConnectionId connection_id,
                                               QuicPacketNumber number)
@@ -229,8 +229,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendConnectionClose) {
                   &termination_packets);
   const int kRandomSequenceNumber = 1;
   EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
-                                   server_address_.address(),
-                                   client_address_))
+                                   server_address_.address(), client_address_))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
 
   ProcessPacket(connection_id_, kRandomSequenceNumber);
@@ -260,11 +259,10 @@ TEST_F(QuicTimeWaitListManagerTest, SendPublicReset) {
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id_));
   AddConnectionId(connection_id_);
   const int kRandomSequenceNumber = 1;
-  EXPECT_CALL(writer_, WritePacket(_, _,
-                                   server_address_.address(),
-                                   client_address_))
-      .With(Args<0, 1>(PublicResetPacketEq(connection_id_,
-                                           kRandomSequenceNumber)))
+  EXPECT_CALL(writer_,
+              WritePacket(_, _, server_address_.address(), client_address_))
+      .With(Args<0, 1>(
+          PublicResetPacketEq(connection_id_, kRandomSequenceNumber)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
 
   ProcessPacket(connection_id_, kRandomSequenceNumber);
@@ -334,7 +332,7 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
   // After all the old connection_ids are cleaned up, check the next alarm
   // interval.
   int64 next_alarm_time = epoll_server_.ApproximateNowInUsec() +
-      time_wait_period.Subtract(offset).ToMicroseconds();
+                          time_wait_period.Subtract(offset).ToMicroseconds();
   EXPECT_CALL(epoll_server_, RegisterAlarm(next_alarm_time, _));
 
   for (size_t connection_id = 1; connection_id <= kConnectionIdCount;
@@ -349,7 +347,7 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
     EXPECT_EQ(connection_id > kOldConnectionIdCount,
               IsConnectionIdInTimeWait(connection_id))
         << "kOldConnectionIdCount: " << kOldConnectionIdCount
-        << " connection_id: " <<  connection_id;
+        << " connection_id: " << connection_id;
   }
   EXPECT_EQ(kConnectionIdCount - kOldConnectionIdCount,
             time_wait_list_manager_.num_connections());
@@ -388,8 +386,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   QuicPacketNumber other_packet_number = 23423;
   scoped_ptr<QuicEncryptedPacket> other_packet(
       ConstructEncryptedPacket(other_connection_id, other_packet_number));
-  EXPECT_CALL(writer_, WritePacket(_, _, _, _))
-      .Times(0);
+  EXPECT_CALL(writer_, WritePacket(_, _, _, _)).Times(0);
   EXPECT_CALL(visitor_, OnWriteBlocked(&time_wait_list_manager_));
   ProcessPacket(other_connection_id, other_packet_number);
   EXPECT_EQ(2u, time_wait_list_manager_.num_connections());
@@ -450,10 +447,8 @@ TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {
   EXPECT_TRUE(IsConnectionIdInTimeWait(connection_id_));
   EXPECT_EQ(1u, time_wait_list_manager_.num_connections());
 
-  EXPECT_CALL(writer_, WritePacket(_,
-                                   kConnectionCloseLength,
-                                   server_address_.address(),
-                                   client_address_))
+  EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
+                                   server_address_.address(), client_address_))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
 
   const int kRandomSequenceNumber = 1;
@@ -466,8 +461,8 @@ TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {
   // Now set the current time as time_wait_period + offset usecs.
   epoll_server_.set_now_in_usec(time_wait_period.Add(offset).ToMicroseconds());
   // After the connection_ids are cleaned up, check the next alarm interval.
-  int64 next_alarm_time = epoll_server_.ApproximateNowInUsec() +
-      time_wait_period.ToMicroseconds();
+  int64 next_alarm_time =
+      epoll_server_.ApproximateNowInUsec() + time_wait_period.ToMicroseconds();
 
   EXPECT_CALL(epoll_server_, RegisterAlarm(next_alarm_time, _));
   EXPECT_CALL(visitor_, OnConnectionRemovedFromTimeWaitList(connection_id_));

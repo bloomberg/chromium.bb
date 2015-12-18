@@ -27,14 +27,10 @@ namespace {
 // Set to the number of nacks needed for fast retransmit plus one for protection
 // against an ack loss
 const size_t kMaxPacketsAfterNewMissing = 4;
-
 }
 
 QuicReceivedPacketManager::EntropyTracker::EntropyTracker()
-    :  packets_entropy_hash_(0),
-       first_gap_(1),
-       largest_observed_(0) {
-}
+    : packets_entropy_hash_(0), first_gap_(1), largest_observed_(0) {}
 
 QuicReceivedPacketManager::EntropyTracker::~EntropyTracker() {}
 
@@ -115,7 +111,7 @@ void QuicReceivedPacketManager::EntropyTracker::SetCumulativeEntropyUpTo(
   // and since packet_number.
   packets_entropy_hash_ = entropy_hash;
   for (ReceivedEntropyHashes::const_iterator it = packets_entropy_.begin();
-           it != packets_entropy_.end(); ++it) {
+       it != packets_entropy_.end(); ++it) {
     packets_entropy_hash_ ^= it->first;
   }
 
@@ -124,7 +120,7 @@ void QuicReceivedPacketManager::EntropyTracker::SetCumulativeEntropyUpTo(
 }
 
 void QuicReceivedPacketManager::EntropyTracker::
-AdvanceFirstGapAndGarbageCollectEntropyMap() {
+    AdvanceFirstGapAndGarbageCollectEntropyMap() {
   while (!packets_entropy_.empty() && packets_entropy_.front().second) {
     ++first_gap_;
     packets_entropy_.pop_front();
@@ -169,8 +165,8 @@ void QuicReceivedPacketManager::RecordPacketReceived(
             ack_frame_.largest_observed - packet_number);
     int64 reordering_time_us =
         receipt_time.Subtract(time_largest_observed_).ToMicroseconds();
-    stats_->max_time_reordering_us = max(stats_->max_time_reordering_us,
-                                         reordering_time_us);
+    stats_->max_time_reordering_us =
+        max(stats_->max_time_reordering_us, reordering_time_us);
   }
   if (packet_number > ack_frame_.largest_observed) {
     ack_frame_.largest_observed = packet_number;
@@ -216,7 +212,8 @@ struct isTooLarge {
 }  // namespace
 
 void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
-    QuicAckFrame* ack_frame, QuicTime approximate_now) {
+    QuicAckFrame* ack_frame,
+    QuicTime approximate_now) {
   ack_frame_updated_ = false;
   *ack_frame = ack_frame_;
   ack_frame->entropy_hash = EntropyHash(ack_frame_.largest_observed);
@@ -229,9 +226,9 @@ void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
 
   // Ensure the delta is zero if approximate now is "in the past".
   ack_frame->delta_time_largest_observed =
-      approximate_now < time_largest_observed_ ?
-          QuicTime::Delta::Zero() :
-          approximate_now.Subtract(time_largest_observed_);
+      approximate_now < time_largest_observed_
+          ? QuicTime::Delta::Zero()
+          : approximate_now.Subtract(time_largest_observed_);
 
   // Clear all packet times if any are too far from largest observed.
   // It's expected this is extremely rare.

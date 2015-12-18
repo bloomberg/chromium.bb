@@ -30,8 +30,8 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
   }
 
   const uint8* keyp = reinterpret_cast<const uint8*>(key.data());
-  crypto::ScopedEC_KEY private_key(d2i_ECPrivateKey(nullptr, &keyp,
-                                                    key.size()));
+  crypto::ScopedEC_KEY private_key(
+      d2i_ECPrivateKey(nullptr, &keyp, key.size()));
   if (!private_key.get() || !EC_KEY_check_key(private_key.get())) {
     DVLOG(1) << "Private key is invalid.";
     return nullptr;
@@ -112,6 +112,8 @@ StringPiece P256KeyExchange::public_value() const {
                      sizeof(public_key_));
 }
 
-QuicTag P256KeyExchange::tag() const { return kP256; }
+QuicTag P256KeyExchange::tag() const {
+  return kP256;
+}
 
 }  // namespace net

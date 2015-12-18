@@ -219,9 +219,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
     connection_id_length_ = length;
   }
 
-  QuicByteCount max_packet_length() const {
-    return max_packet_length_;
-  }
+  QuicByteCount max_packet_length() const { return max_packet_length_; }
 
   bool has_ack() const { return has_ack_; }
 
@@ -249,7 +247,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
 
   // Returns current max number of packets covered by an FEC group.
   size_t max_packets_per_fec_group() const {
-      return max_packets_per_fec_group_;
+    return max_packets_per_fec_group_;
   }
 
   // Sets creator's max number of packets covered by an FEC group.

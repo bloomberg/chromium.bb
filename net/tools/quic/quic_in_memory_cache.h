@@ -21,7 +21,8 @@ using std::list;
 
 namespace base {
 
-template <typename Type> struct DefaultSingletonTraits;
+template <typename Type>
+struct DefaultSingletonTraits;
 
 }  // namespace base
 
@@ -55,7 +56,7 @@ class QuicInMemoryCache {
   enum SpecialResponseType {
     REGULAR_RESPONSE,  // Send the headers and body like a server should.
     CLOSE_CONNECTION,  // Close the connection (sending the close packet).
-    IGNORE_REQUEST,  // Do nothing, expect the client to time out.
+    IGNORE_REQUEST,    // Do nothing, expect the client to time out.
   };
 
   // Container for response header/body pairs.
@@ -72,13 +73,9 @@ class QuicInMemoryCache {
     void set_response_type(SpecialResponseType response_type) {
       response_type_ = response_type;
     }
-    void set_headers(const SpdyHeaderBlock& headers) {
-      headers_ = headers;
-    }
+    void set_headers(const SpdyHeaderBlock& headers) { headers_ = headers; }
     void set_trailers(const SpdyHeaderBlock& trailers) { trailers_ = trailers; }
-    void set_body(base::StringPiece body) {
-      body.CopyToString(&body_);
-    }
+    void set_body(base::StringPiece body) { body.CopyToString(&body_); }
 
    private:
     SpecialResponseType response_type_;

@@ -190,8 +190,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
     return GetSourcePortForNewSessionInner(destination, false);
   }
 
-  int GetSourcePortForNewSessionAndGoAway(
-      const HostPortPair& destination) {
+  int GetSourcePortForNewSessionAndGoAway(const HostPortPair& destination) {
     return GetSourcePortForNewSessionInner(destination, true);
   }
 
@@ -202,7 +201,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
     size_t socket_count = socket_factory_.udp_client_sockets().size();
 
     MockRead reads[] = {
-      MockRead(ASYNC, OK, 0)  // EOF
+        MockRead(ASYNC, OK, 0)  // EOF
     };
     DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
     socket_data.StopAfter(1);
@@ -228,8 +227,8 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
     }
 
     IPEndPoint endpoint;
-    socket_factory_.
-        udp_client_sockets()[socket_count]->GetLocalAddress(&endpoint);
+    socket_factory_.udp_client_sockets()[socket_count]->GetLocalAddress(
+        &endpoint);
     int port = endpoint.port();
     if (goaway_received) {
       QuicGoAwayFrame goaway(QUIC_NO_ERROR, 1, "");
@@ -321,7 +320,7 @@ TEST_P(QuicStreamFactoryTest, Create) {
   Initialize();
 
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
@@ -349,7 +348,7 @@ TEST_P(QuicStreamFactoryTest, Create) {
                              /*cert_verify_flags=*/0, host_port_pair_.host(),
                              "GET", net_log_, callback_.callback()));
   stream = request2.ReleaseStream();  // Will reset stream 5.
-  stream.reset();  // Will reset stream 7.
+  stream.reset();                     // Will reset stream 7.
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
@@ -359,7 +358,7 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
   Initialize();
 
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
@@ -386,7 +385,7 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
   Initialize();
 
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
@@ -486,7 +485,7 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
   Initialize();
 
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
@@ -494,10 +493,10 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
 
   HostPortPair server2("mail.google.com", kDefaultServerPort);
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(
-      kDefaultServerHostName, "192.168.0.1", "");
-  host_resolver_.rules()->AddIPLiteralRule(
-      "mail.google.com", "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(kDefaultServerHostName,
+                                           "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule("mail.google.com", "192.168.0.1",
+                                           "");
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
@@ -527,7 +526,7 @@ TEST_P(QuicStreamFactoryTest, NoPoolingIfDisabled) {
   Initialize();
 
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
   DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
@@ -538,10 +537,10 @@ TEST_P(QuicStreamFactoryTest, NoPoolingIfDisabled) {
 
   HostPortPair server2("mail.google.com", kDefaultServerPort);
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(
-      kDefaultServerHostName, "192.168.0.1", "");
-  host_resolver_.rules()->AddIPLiteralRule(
-      "mail.google.com", "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(kDefaultServerHostName,
+                                           "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule("mail.google.com", "192.168.0.1",
+                                           "");
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
@@ -572,7 +571,7 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   Initialize();
 
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
   DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
@@ -583,10 +582,10 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
 
   HostPortPair server2("mail.google.com", kDefaultServerPort);
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(
-      kDefaultServerHostName, "192.168.0.1", "");
-  host_resolver_.rules()->AddIPLiteralRule(
-      "mail.google.com", "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(kDefaultServerHostName,
+                                           "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule("mail.google.com", "192.168.0.1",
+                                           "");
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
@@ -629,7 +628,7 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
 TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   Initialize();
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
@@ -672,7 +671,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
   Initialize();
 
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
   DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
@@ -792,7 +791,7 @@ TEST_P(QuicAlternativeServiceCertificateValidationPooling, Invalid) {
 TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   Initialize();
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
@@ -841,7 +840,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
   Initialize();
 
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
   DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
@@ -893,7 +892,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
 TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
   Initialize();
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
   DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
@@ -951,7 +950,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
 TEST_P(QuicStreamFactoryTest, Goaway) {
   Initialize();
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_data.StopAfter(1);
@@ -1022,8 +1021,8 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
       MockRead(ASYNC, server_rst->data(), server_rst->length(), 1),
       MockRead(ASYNC, OK, 2)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads),
-                                      writes, arraysize(writes));
+  DeterministicSocketData socket_data(reads, arraysize(reads), writes,
+                                      arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(2);
 
@@ -1044,8 +1043,8 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
     }
     scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
     EXPECT_TRUE(stream);
-    EXPECT_EQ(OK, stream->InitializeStream(
-        &request_info, DEFAULT_PRIORITY, net_log_, CompletionCallback()));
+    EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                           net_log_, CompletionCallback()));
     streams.push_back(stream.release());
   }
 
@@ -1055,8 +1054,9 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
                                 "GET", net_log_, CompletionCallback()));
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream);
-  EXPECT_EQ(ERR_IO_PENDING, stream->InitializeStream(
-        &request_info, DEFAULT_PRIORITY, net_log_, callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->InitializeStream(&request_info, DEFAULT_PRIORITY, net_log_,
+                                     callback_.callback()));
 
   // Close the first stream.
   streams.front()->Close(false);
@@ -1122,7 +1122,7 @@ TEST_P(QuicStreamFactoryTest, ConnectErrorInCreate) {
 TEST_P(QuicStreamFactoryTest, CancelCreate) {
   Initialize();
   MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
+      MockRead(ASYNC, OK, 0)  // EOF
   };
   DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
@@ -1166,8 +1166,7 @@ TEST_P(QuicStreamFactoryTest, GoAwayDisablesConsistentEphemeralPort) {
   Initialize();
 
   // Get a session to the host using the port suggester.
-  int original_port =
-      GetSourcePortForNewSessionAndGoAway(host_port_pair_);
+  int original_port = GetSourcePortForNewSessionAndGoAway(host_port_pair_);
   // Verify that the port is different after the goaway.
   EXPECT_NE(original_port, GetSourcePortForNewSession(host_port_pair_));
   // Since the previous session did not goaway we should see the original port.
@@ -1177,19 +1176,19 @@ TEST_P(QuicStreamFactoryTest, GoAwayDisablesConsistentEphemeralPort) {
 TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   Initialize();
   MockRead reads[] = {
-    MockRead(ASYNC, 0, 0)  // EOF
+      MockRead(ASYNC, 0, 0)  // EOF
   };
   scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   DeterministicSocketData socket_data(reads, arraysize(reads),
-                                      writes.empty() ? nullptr  : &writes[0],
+                                      writes.empty() ? nullptr : &writes[0],
                                       writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
   MockRead reads2[] = {
-    MockRead(ASYNC, 0, 0)  // EOF
+      MockRead(ASYNC, 0, 0)  // EOF
   };
   DeterministicSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data2);
@@ -1204,8 +1203,7 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   HttpRequestInfo request_info;
-  EXPECT_EQ(OK, stream->InitializeStream(&request_info,
-                                         DEFAULT_PRIORITY,
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                          net_log_, CompletionCallback()));
 
   // Close the session and verify that stream saw the error.
@@ -1237,19 +1235,19 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   Initialize();
 
   MockRead reads[] = {
-    MockRead(ASYNC, 0, 0)  // EOF
+      MockRead(ASYNC, 0, 0)  // EOF
   };
   scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   DeterministicSocketData socket_data(reads, arraysize(reads),
-                                      writes.empty() ? nullptr  : &writes[0],
+                                      writes.empty() ? nullptr : &writes[0],
                                       writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
   MockRead reads2[] = {
-    MockRead(ASYNC, 0, 0)  // EOF
+      MockRead(ASYNC, 0, 0)  // EOF
   };
   DeterministicSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data2);
@@ -1264,8 +1262,7 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   HttpRequestInfo request_info;
-  EXPECT_EQ(OK, stream->InitializeStream(&request_info,
-                                         DEFAULT_PRIORITY,
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                          net_log_, CompletionCallback()));
 
   // Change the IP address and verify that stream saw the error.
@@ -1353,19 +1350,19 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
 TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   Initialize();
   MockRead reads[] = {
-    MockRead(ASYNC, 0, 0)  // EOF
+      MockRead(ASYNC, 0, 0)  // EOF
   };
   scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   DeterministicSocketData socket_data(reads, arraysize(reads),
-                                      writes.empty() ? nullptr  : &writes[0],
+                                      writes.empty() ? nullptr : &writes[0],
                                       writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
   MockRead reads2[] = {
-    MockRead(ASYNC, 0, 0)  // EOF
+      MockRead(ASYNC, 0, 0)  // EOF
   };
   DeterministicSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data2);
@@ -1380,8 +1377,7 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   HttpRequestInfo request_info;
-  EXPECT_EQ(OK, stream->InitializeStream(&request_info,
-                                         DEFAULT_PRIORITY,
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                          net_log_, CompletionCallback()));
 
   // Add a cert and verify that stream saw the event.
@@ -1412,19 +1408,19 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
 TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   Initialize();
   MockRead reads[] = {
-    MockRead(ASYNC, 0, 0)  // EOF
+      MockRead(ASYNC, 0, 0)  // EOF
   };
   scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   DeterministicSocketData socket_data(reads, arraysize(reads),
-                                      writes.empty() ? nullptr  : &writes[0],
+                                      writes.empty() ? nullptr : &writes[0],
                                       writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
   MockRead reads2[] = {
-    MockRead(ASYNC, 0, 0)  // EOF
+      MockRead(ASYNC, 0, 0)  // EOF
   };
   DeterministicSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data2);
@@ -1439,8 +1435,7 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   HttpRequestInfo request_info;
-  EXPECT_EQ(OK, stream->InitializeStream(&request_info,
-                                         DEFAULT_PRIORITY,
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                          net_log_, CompletionCallback()));
 
   // Change the CA cert and verify that stream saw the event.

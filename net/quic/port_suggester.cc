@@ -10,8 +10,7 @@
 namespace net {
 
 PortSuggester::PortSuggester(const HostPortPair& server, uint64 seed)
-    : call_count_(0),
-      previous_suggestion_(-1) {
+    : call_count_(0), previous_suggestion_(-1) {
   unsigned char hash_bytes[base::kSHA1Length];
   base::SHA1HashBytes(
       reinterpret_cast<const unsigned char*>(server.host().data()),
@@ -27,7 +26,7 @@ int PortSuggester::SuggestPort(int min, int max) {
   if (++call_count_ > 1) {
     // Evolve the seed.
     unsigned char hash_bytes[base::kSHA1Length];
-    base::SHA1HashBytes(reinterpret_cast<const unsigned char *>(&seed_),
+    base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(&seed_),
                         sizeof(seed_), hash_bytes);
     memcpy(&seed_, hash_bytes, sizeof(seed_));
   }

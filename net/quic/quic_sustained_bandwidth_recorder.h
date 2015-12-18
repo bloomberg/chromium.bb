@@ -34,9 +34,7 @@ class NET_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
                       QuicWallTime wall_time,
                       QuicTime::Delta srtt);
 
-  bool HasEstimate() const {
-    return has_estimate_;
-  }
+  bool HasEstimate() const { return has_estimate_; }
 
   QuicBandwidth BandwidthEstimate() const {
     DCHECK(has_estimate_);

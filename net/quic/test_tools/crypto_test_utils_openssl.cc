@@ -69,8 +69,8 @@ class TestChannelIDKey : public ChannelIDKey {
       return false;
     }
 
-    *out_signature = string(reinterpret_cast<char*>(signature.get()),
-                            kSignatureLength);
+    *out_signature =
+        string(reinterpret_cast<char*>(signature.get()), kSignatureLength);
 
     return true;
   }

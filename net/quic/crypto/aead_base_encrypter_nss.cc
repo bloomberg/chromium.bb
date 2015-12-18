@@ -142,7 +142,9 @@ bool AeadBaseEncrypter::EncryptPacket(QuicPacketNumber packet_number,
   return true;
 }
 
-size_t AeadBaseEncrypter::GetKeySize() const { return key_size_; }
+size_t AeadBaseEncrypter::GetKeySize() const {
+  return key_size_;
+}
 
 size_t AeadBaseEncrypter::GetNoncePrefixSize() const {
   return nonce_prefix_size_;

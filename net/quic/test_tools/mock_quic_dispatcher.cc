@@ -18,11 +18,9 @@ MockQuicDispatcher::MockQuicDispatcher(
                      crypto_config,
                      QuicSupportedVersions(),
                      packet_writer_factory,
-                     helper) {
-}
+                     helper) {}
 
-MockQuicDispatcher::~MockQuicDispatcher() {
-}
+MockQuicDispatcher::~MockQuicDispatcher() {}
 
 }  // namespace test
 }  // namespace net

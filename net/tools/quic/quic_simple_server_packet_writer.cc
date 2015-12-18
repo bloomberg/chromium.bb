@@ -21,11 +21,9 @@ QuicSimpleServerPacketWriter::QuicSimpleServerPacketWriter(
     : socket_(socket),
       blocked_writer_(blocked_writer),
       write_blocked_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
-QuicSimpleServerPacketWriter::~QuicSimpleServerPacketWriter() {
-}
+QuicSimpleServerPacketWriter::~QuicSimpleServerPacketWriter() {}
 
 WriteResult QuicSimpleServerPacketWriter::WritePacketWithCallback(
     const char* buffer,
@@ -75,12 +73,9 @@ WriteResult QuicSimpleServerPacketWriter::WritePacket(
   int rv;
   if (buf_len <= static_cast<size_t>(std::numeric_limits<int>::max())) {
     rv = socket_->SendTo(
-        buf.get(),
-        static_cast<int>(buf_len),
-        peer_address,
-        base::Bind(
-            &QuicSimpleServerPacketWriter::OnWriteComplete,
-            weak_factory_.GetWeakPtr()));
+        buf.get(), static_cast<int>(buf_len), peer_address,
+        base::Bind(&QuicSimpleServerPacketWriter::OnWriteComplete,
+                   weak_factory_.GetWeakPtr()));
   } else {
     rv = ERR_MSG_TOO_BIG;
   }

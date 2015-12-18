@@ -27,8 +27,7 @@ namespace net {
 class SendAlgorithmSimulator {
  public:
   struct Sender {
-    Sender(SendAlgorithmInterface* send_algorithm,
-           RttStats* rtt_stats);
+    Sender(SendAlgorithmInterface* send_algorithm, RttStats* rtt_stats);
     Sender(SendAlgorithmInterface* send_algorithm,
            RttStats* rtt_stats,
            QuicTime::Delta additional_rtt);
@@ -46,13 +45,12 @@ class SendAlgorithmSimulator {
     std::string DebugString() {
       return StringPrintf("observed goodput(bytes/s):%" PRId64
                           " loss rate:%f"
-                          " cwnd:%" PRIu64
-                          " max_cwnd:%" PRIu64 " min_cwnd:%" PRIu64
-                          " max_cwnd_drop:%" PRIu64,
+                          " cwnd:%" PRIu64 " max_cwnd:%" PRIu64
+                          " min_cwnd:%" PRIu64 " max_cwnd_drop:%" PRIu64,
                           last_transfer_bandwidth.ToBytesPerSecond(),
                           last_transfer_loss_rate,
-                          send_algorithm->GetCongestionWindow(),
-                          max_cwnd, min_cwnd, max_cwnd_drop);
+                          send_algorithm->GetCongestionWindow(), max_cwnd,
+                          min_cwnd, max_cwnd_drop);
     }
 
     SendAlgorithmInterface* send_algorithm;
@@ -123,9 +121,7 @@ class SendAlgorithmSimulator {
   ~SendAlgorithmSimulator();
 
   // For local ad-hoc testing.
-  void set_bandwidth(QuicBandwidth bandwidth) {
-    bandwidth_ = bandwidth;
-  }
+  void set_bandwidth(QuicBandwidth bandwidth) { bandwidth_ = bandwidth; }
 
   void set_forward_loss_rate(float loss_rate) {
     DCHECK_LT(loss_rate, 1.0f);
@@ -178,8 +174,7 @@ class SendAlgorithmSimulator {
   // A pending packet event, either a send or an ack.
   struct PacketEvent {
     PacketEvent(QuicTime::Delta time_delta, Transfer* transfer)
-        : time_delta(time_delta),
-          transfer(transfer) {}
+        : time_delta(time_delta), transfer(transfer) {}
 
     QuicTime::Delta time_delta;
     Transfer* transfer;
@@ -230,7 +225,7 @@ class SendAlgorithmSimulator {
   float loss_correlation_;   // Likelihood the subsequent packet is lost.
   QuicBandwidth bandwidth_;
   QuicTime::Delta rtt_;
-  size_t buffer_size_;       // In bytes.
+  size_t buffer_size_;  // In bytes.
   QuicTime::Delta delayed_ack_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SendAlgorithmSimulator);

@@ -24,8 +24,7 @@ QuicClientSession::QuicClientSession(const QuicConfig& config,
       crypto_config_(crypto_config),
       respect_goaway_(true) {}
 
-QuicClientSession::~QuicClientSession() {
-}
+QuicClientSession::~QuicClientSession() {}
 
 void QuicClientSession::Initialize() {
   crypto_stream_.reset(CreateQuicCryptoStream());

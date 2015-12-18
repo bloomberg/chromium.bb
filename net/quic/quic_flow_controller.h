@@ -139,7 +139,6 @@ class NET_EXPORT_PRIVATE QuicFlowController {
   // highest offset in a data frame, or a final value in a RST.
   QuicStreamOffset highest_received_byte_offset_;
 
-
   // The absolute offset in the incoming byte stream. The peer should never send
   // us bytes which are beyond this offset.
   QuicStreamOffset receive_window_offset_;

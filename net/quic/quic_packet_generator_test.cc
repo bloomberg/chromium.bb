@@ -35,8 +35,7 @@ namespace {
 const int64 kMinFecTimeoutMs = 5u;
 
 static const FecSendPolicy kFecSendPolicyList[] = {
-    FEC_ANY_TRIGGER,
-    FEC_ALARM_TRIGGER,
+    FEC_ANY_TRIGGER, FEC_ALARM_TRIGGER,
 };
 
 class MockDelegate : public QuicPacketGenerator::DelegateInterface {
@@ -235,8 +234,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
 
 class MockDebugDelegate : public QuicPacketCreator::DebugDelegate {
  public:
-  MOCK_METHOD1(OnFrameAddedToPacket,
-               void(const QuicFrame&));
+  MOCK_METHOD1(OnFrameAddedToPacket, void(const QuicFrame&));
 };
 
 // Run all end to end tests with all supported FEC send polocies.
@@ -699,11 +697,11 @@ TEST_P(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   generator_.SetMaxPacketLength(length, /*force=*/false);
   delegate_.SetCanWriteAnything();
   {
-     InSequence dummy;
-     EXPECT_CALL(delegate_, OnSerializedPacket(_))
-         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
-     EXPECT_CALL(delegate_, OnSerializedPacket(_))
-         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
+    InSequence dummy;
+    EXPECT_CALL(delegate_, OnSerializedPacket(_))
+        .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
+    EXPECT_CALL(delegate_, OnSerializedPacket(_))
+        .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
   }
   generator_.StartBatchOperations();
   // Queue enough data to prevent a stream frame with a non-zero offset from

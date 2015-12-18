@@ -27,8 +27,8 @@ struct QuicConnectionStats;
 // Records all received packets by a connection and tracks their entropy.
 // Also calculates the correct entropy for the framer when it truncates an ack
 // frame being serialized.
-class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
-    public QuicReceivedEntropyHashCalculatorInterface {
+class NET_EXPORT_PRIVATE QuicReceivedPacketManager
+    : public QuicReceivedEntropyHashCalculatorInterface {
  public:
   class NET_EXPORT_PRIVATE EntropyTracker {
    public:

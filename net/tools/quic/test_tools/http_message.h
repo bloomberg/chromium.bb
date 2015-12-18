@@ -18,12 +18,7 @@ namespace test {
 
 class HttpConstants {
  public:
-  enum Version {
-    HTTP_UNKNOWN = 0,
-    HTTP_0_9,
-    HTTP_1_0,
-    HTTP_1_1
-  };
+  enum Version { HTTP_UNKNOWN = 0, HTTP_0_9, HTTP_1_0, HTTP_1_1 };
 
   enum Method {
     UNKNOWN_METHOD = 0,

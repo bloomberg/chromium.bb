@@ -116,8 +116,7 @@ scoped_ptr<base::Value> NetLogQuicAckFrameCallback(
   dict->SetString(
       "delta_time_largest_observed_us",
       base::Int64ToString(frame->delta_time_largest_observed.ToMicroseconds()));
-  dict->SetInteger("entropy_hash",
-                   frame->entropy_hash);
+  dict->SetInteger("entropy_hash", frame->entropy_hash);
   dict->SetBoolean("truncated", frame->is_truncated);
 
   base::ListValue* missing = new base::ListValue();
@@ -268,8 +267,8 @@ void UpdatePublicResetAddressMismatchHistogram(
 // If |address| is an IPv4-mapped IPv6 address, returns ADDRESS_FAMILY_IPV4
 // instead of ADDRESS_FAMILY_IPV6. Othewise, behaves like GetAddressFamily().
 AddressFamily GetRealAddressFamily(const IPAddressNumber& address) {
-  return IsIPv4Mapped(address) ? ADDRESS_FAMILY_IPV4 :
-      GetAddressFamily(address);
+  return IsIPv4Mapped(address) ? ADDRESS_FAMILY_IPV4
+                               : GetAddressFamily(address);
 }
 
 }  // namespace
@@ -335,7 +334,6 @@ QuicConnectionLogger::~QuicConnectionLogger() {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Net.QuicSession.StreamFrameDuplicatedLongConnection",
           duplicate_stream_frame_per_thousand, 1, 1000, 75);
-
     }
   }
 
@@ -379,28 +377,24 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
     case RST_STREAM_FRAME:
       UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.RstStreamErrorCodeClient",
                                   frame.rst_stream_frame->error_code);
-      net_log_.AddEvent(
-          NetLog::TYPE_QUIC_SESSION_RST_STREAM_FRAME_SENT,
-          base::Bind(&NetLogQuicRstStreamFrameCallback,
-                     frame.rst_stream_frame));
+      net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_RST_STREAM_FRAME_SENT,
+                        base::Bind(&NetLogQuicRstStreamFrameCallback,
+                                   frame.rst_stream_frame));
       break;
     case CONNECTION_CLOSE_FRAME:
-      net_log_.AddEvent(
-          NetLog::TYPE_QUIC_SESSION_CONNECTION_CLOSE_FRAME_SENT,
-          base::Bind(&NetLogQuicConnectionCloseFrameCallback,
-                     frame.connection_close_frame));
+      net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_CONNECTION_CLOSE_FRAME_SENT,
+                        base::Bind(&NetLogQuicConnectionCloseFrameCallback,
+                                   frame.connection_close_frame));
       break;
     case GOAWAY_FRAME:
       net_log_.AddEvent(
           NetLog::TYPE_QUIC_SESSION_GOAWAY_FRAME_SENT,
-          base::Bind(&NetLogQuicGoAwayFrameCallback,
-                     frame.goaway_frame));
+          base::Bind(&NetLogQuicGoAwayFrameCallback, frame.goaway_frame));
       break;
     case WINDOW_UPDATE_FRAME:
-      net_log_.AddEvent(
-          NetLog::TYPE_QUIC_SESSION_WINDOW_UPDATE_FRAME_SENT,
-          base::Bind(&NetLogQuicWindowUpdateFrameCallback,
-                     frame.window_update_frame));
+      net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_WINDOW_UPDATE_FRAME_SENT,
+                        base::Bind(&NetLogQuicWindowUpdateFrameCallback,
+                                   frame.window_update_frame));
       break;
     case BLOCKED_FRAME:
       ++num_blocked_frames_sent_;
@@ -409,10 +403,9 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
           base::Bind(&NetLogQuicBlockedFrameCallback, frame.blocked_frame));
       break;
     case STOP_WAITING_FRAME:
-      net_log_.AddEvent(
-          NetLog::TYPE_QUIC_SESSION_STOP_WAITING_FRAME_SENT,
-          base::Bind(&NetLogQuicStopWaitingFrameCallback,
-                     frame.stop_waiting_frame));
+      net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_STOP_WAITING_FRAME_SENT,
+                        base::Bind(&NetLogQuicStopWaitingFrameCallback,
+                                   frame.stop_waiting_frame));
       break;
     case PING_FRAME:
       UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ConnectionFlowControlBlocked",
@@ -442,7 +435,7 @@ void QuicConnectionLogger::OnPacketSent(
         NetLog::TYPE_QUIC_SESSION_PACKET_SENT,
         base::Bind(&NetLogQuicPacketSentCallback, serialized_packet,
                    transmission_type, encrypted_length, sent_time));
-  }  else {
+  } else {
     net_log_.AddEvent(
         NetLog::TYPE_QUIC_SESSION_PACKET_RETRANSMITTED,
         base::Bind(&NetLogQuicPacketRetransmittedCallback,
@@ -472,10 +465,9 @@ void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,
 
   previous_received_packet_size_ = last_received_packet_size_;
   last_received_packet_size_ = packet.length();
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_PACKET_RECEIVED,
-      base::Bind(&NetLogQuicPacketCallback, &self_address, &peer_address,
-                 packet.length()));
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PACKET_RECEIVED,
+                    base::Bind(&NetLogQuicPacketCallback, &self_address,
+                               &peer_address, packet.length()));
 }
 
 void QuicConnectionLogger::OnUnauthenticatedHeader(
@@ -537,15 +529,13 @@ void QuicConnectionLogger::OnPacketHeader(const QuicPacketHeader& header) {
 }
 
 void QuicConnectionLogger::OnStreamFrame(const QuicStreamFrame& frame) {
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_STREAM_FRAME_RECEIVED,
-      base::Bind(&NetLogQuicStreamFrameCallback, &frame));
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_STREAM_FRAME_RECEIVED,
+                    base::Bind(&NetLogQuicStreamFrameCallback, &frame));
 }
 
 void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_ACK_FRAME_RECEIVED,
-      base::Bind(&NetLogQuicAckFrameCallback, &frame));
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_ACK_FRAME_RECEIVED,
+                    base::Bind(&NetLogQuicAckFrameCallback, &frame));
 
   const size_t kApproximateLargestSoloAckBytes = 100;
   if (last_received_packet_number_ < received_acks_.size() &&
@@ -593,17 +583,15 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
 
 void QuicConnectionLogger::OnStopWaitingFrame(
     const QuicStopWaitingFrame& frame) {
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_STOP_WAITING_FRAME_RECEIVED,
-      base::Bind(&NetLogQuicStopWaitingFrameCallback, &frame));
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_STOP_WAITING_FRAME_RECEIVED,
+                    base::Bind(&NetLogQuicStopWaitingFrameCallback, &frame));
 }
 
 void QuicConnectionLogger::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.RstStreamErrorCodeServer",
                               frame.error_code);
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_RST_STREAM_FRAME_RECEIVED,
-      base::Bind(&NetLogQuicRstStreamFrameCallback, &frame));
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_RST_STREAM_FRAME_RECEIVED,
+                    base::Bind(&NetLogQuicRstStreamFrameCallback, &frame));
 }
 
 void QuicConnectionLogger::OnConnectionCloseFrame(
@@ -615,22 +603,19 @@ void QuicConnectionLogger::OnConnectionCloseFrame(
 
 void QuicConnectionLogger::OnWindowUpdateFrame(
     const QuicWindowUpdateFrame& frame) {
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_WINDOW_UPDATE_FRAME_RECEIVED,
-      base::Bind(&NetLogQuicWindowUpdateFrameCallback, &frame));
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_WINDOW_UPDATE_FRAME_RECEIVED,
+                    base::Bind(&NetLogQuicWindowUpdateFrameCallback, &frame));
 }
 
 void QuicConnectionLogger::OnBlockedFrame(const QuicBlockedFrame& frame) {
   ++num_blocked_frames_received_;
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_BLOCKED_FRAME_RECEIVED,
-      base::Bind(&NetLogQuicBlockedFrameCallback, &frame));
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_BLOCKED_FRAME_RECEIVED,
+                    base::Bind(&NetLogQuicBlockedFrameCallback, &frame));
 }
 
 void QuicConnectionLogger::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_GOAWAY_FRAME_RECEIVED,
-      base::Bind(&NetLogQuicGoAwayFrameCallback, &frame));
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_GOAWAY_FRAME_RECEIVED,
+                    base::Bind(&NetLogQuicGoAwayFrameCallback, &frame));
 }
 
 void QuicConnectionLogger::OnPingFrame(const QuicPingFrame& frame) {
@@ -672,10 +657,10 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
     if (message.GetStringPiece(kCADR, &address) &&
         decoder.Decode(address.data(), address.size())) {
       local_address_from_shlo_ = IPEndPoint(decoder.ip(), decoder.port());
-      UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionTypeFromPeer",
-                                GetRealAddressFamily(
-                                    local_address_from_shlo_.address()),
-                                ADDRESS_FAMILY_LAST);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Net.QuicSession.ConnectionTypeFromPeer",
+          GetRealAddressFamily(local_address_from_shlo_.address()),
+          ADDRESS_FAMILY_LAST);
     }
   }
 }
@@ -726,8 +711,8 @@ base::HistogramBase* QuicConnectionLogger::GetPacketNumberHistogram(
     const char* statistic_name) const {
   string prefix("Net.QuicSession.PacketReceived_");
   return base::LinearHistogram::FactoryGet(
-      prefix + statistic_name + connection_description_,
-      1, received_packets_.size(), received_packets_.size() + 1,
+      prefix + statistic_name + connection_description_, 1,
+      received_packets_.size(), received_packets_.size() + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 
@@ -742,7 +727,7 @@ base::HistogramBase* QuicConnectionLogger::Get6PacketHistogram(
 }
 
 base::HistogramBase* QuicConnectionLogger::Get21CumulativeHistogram(
-  const char* which_21) const {
+    const char* which_21) const {
   // This histogram contains, for each sequence of 21 packets, the results from
   // 21 distinct questions about that sequence.  Conceptually the histogtram is
   // broken into 21 distinct ranges, and one sample is added into each of those
@@ -758,8 +743,8 @@ base::HistogramBase* QuicConnectionLogger::Get21CumulativeHistogram(
   // etc.
   string prefix("Net.QuicSession.21CumulativePacketsReceived_");
   return base::LinearHistogram::FactoryGet(
-      prefix + which_21 + connection_description_,
-      1, kBoundingSampleInCumulativeHistogram,
+      prefix + which_21 + connection_description_, 1,
+      kBoundingSampleInCumulativeHistogram,
       kBoundingSampleInCumulativeHistogram + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 }

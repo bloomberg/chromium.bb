@@ -13,9 +13,9 @@
 #include "base/basictypes.h"
 #include "base/containers/adapters.h"
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "net/quic/quic_write_blocked_list.h"
 
 using base::StringPiece;
@@ -69,7 +69,7 @@ uint128 QuicUtils::IncrementalHash(uint128 hash, const char* data, size_t len) {
   const uint128 kPrime(16777216, 315);
   const uint8* octets = reinterpret_cast<const uint8*>(data);
   for (size_t i = 0; i < len; ++i) {
-    hash  = hash ^ uint128(0, octets[i]);
+    hash = hash ^ uint128(0, octets[i]);
     hash = hash * kPrime;
   }
   return hash;
@@ -132,8 +132,8 @@ void QuicUtils::SerializeUint128Short(uint128 v, uint8* out) {
 }
 
 #define RETURN_STRING_LITERAL(x) \
-case x: \
-return #x;
+  case x:                        \
+    return #x;
 
 // static
 const char* QuicUtils::StreamErrorToString(QuicRstStreamErrorCode error) {
@@ -313,10 +313,10 @@ QuicTagVector QuicUtils::ParseQuicConnectionOptions(
 // static
 string QuicUtils::StringToHexASCIIDump(StringPiece in_buffer) {
   int offset = 0;
-  const int kBytesPerLine = 16;   // Max bytes dumped per line
+  const int kBytesPerLine = 16;  // Max bytes dumped per line
   const char* buf = in_buffer.data();
   int bytes_remaining = in_buffer.size();
-  string s;   // our output
+  string s;  // our output
   const char* p = buf;
   while (bytes_remaining > 0) {
     const int line_bytes = std::min(bytes_remaining, kBytesPerLine);
@@ -325,13 +325,14 @@ string QuicUtils::StringToHexASCIIDump(StringPiece in_buffer) {
       if (i < line_bytes) {
         base::StringAppendF(&s, "%02x", static_cast<unsigned char>(p[i]));
       } else {
-        s += "  ";    // two-space filler instead of two-space hex digits
+        s += "  ";  // two-space filler instead of two-space hex digits
       }
-      if (i % 2) s += ' ';
+      if (i % 2)
+        s += ' ';
     }
     s += ' ';
     for (int i = 0; i < line_bytes; ++i) {  // Do the ASCII dump
-      s+= (p[i] >  32 && p[i] < 127) ? p[i] : '.';
+      s += (p[i] > 32 && p[i] < 127) ? p[i] : '.';
     }
 
     bytes_remaining -= line_bytes;

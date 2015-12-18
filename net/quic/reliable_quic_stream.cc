@@ -48,8 +48,7 @@ ReliableQuicStream::PendingData::PendingData(
     QuicAckListenerInterface* ack_listener_in)
     : data(data_in), offset(0), ack_listener(ack_listener_in) {}
 
-ReliableQuicStream::PendingData::~PendingData() {
-}
+ReliableQuicStream::PendingData::~PendingData() {}
 
 ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
     : queued_data_bytes_(0),
@@ -80,8 +79,7 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
   SetFromConfig();
 }
 
-ReliableQuicStream::~ReliableQuicStream() {
-}
+ReliableQuicStream::~ReliableQuicStream() {}
 
 void ReliableQuicStream::SetFromConfig() {
   if (session_->config()->HasClientSentConnectionOption(kFSTR, perspective_)) {

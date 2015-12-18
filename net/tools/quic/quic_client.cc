@@ -169,10 +169,9 @@ bool QuicClient::CreateUDPSocket() {
   sockaddr_storage raw_addr;
   socklen_t raw_addr_len = sizeof(raw_addr);
   CHECK(client_address_.ToSockAddr(reinterpret_cast<sockaddr*>(&raw_addr),
-                           &raw_addr_len));
-  rc = bind(fd_,
-            reinterpret_cast<const sockaddr*>(&raw_addr),
-            sizeof(raw_addr));
+                                   &raw_addr_len));
+  rc =
+      bind(fd_, reinterpret_cast<const sockaddr*>(&raw_addr), sizeof(raw_addr));
   if (rc < 0) {
     LOG(ERROR) << "Bind failed: " << strerror(errno);
     return false;
@@ -319,12 +318,12 @@ void QuicClient::MaybeAddQuicDataToResend(QuicDataToResend* data_to_resend) {
   data_sent_before_handshake_.push_back(data_to_resend);
 }
 
-void QuicClient::SendRequestAndWaitForResponse(
-    const BalsaHeaders& headers,
-    StringPiece body,
-    bool fin) {
+void QuicClient::SendRequestAndWaitForResponse(const BalsaHeaders& headers,
+                                               StringPiece body,
+                                               bool fin) {
   SendRequest(headers, body, fin);
-  while (WaitForEvents()) {}
+  while (WaitForEvents()) {
+  }
 }
 
 void QuicClient::SendRequestsAndWaitForResponse(
@@ -334,7 +333,8 @@ void QuicClient::SendRequestsAndWaitForResponse(
     headers.SetRequestFirstlineFromStringPieces("GET", url_list[i], "HTTP/1.1");
     SendRequest(headers, "", true);
   }
-  while (WaitForEvents()) {}
+  while (WaitForEvents()) {
+  }
 }
 
 bool QuicClient::WaitForEvents() {
@@ -403,8 +403,8 @@ void QuicClient::OnClose(QuicSpdyStream* stream) {
                                                &headers);
 
   if (response_listener_.get() != nullptr) {
-    response_listener_->OnCompleteResponse(
-        stream->id(), headers, client_stream->data());
+    response_listener_->OnCompleteResponse(stream->id(), headers,
+                                           client_stream->data());
   }
 
   // Store response headers and body.

@@ -23,7 +23,7 @@ class TestDelegate : public QuicAlarm::Delegate {
   }
 
   bool fired() const { return fired_; }
-  void Clear() { fired_= false; }
+  void Clear() { fired_ = false; }
 
  private:
   bool fired_;
@@ -33,8 +33,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
  protected:
   QuicConnectionHelperTest()
       : runner_(new TestTaskRunner(&clock_)),
-        helper_(runner_.get(), &clock_, &random_generator_) {
-  }
+        helper_(runner_.get(), &clock_, &random_generator_) {}
 
   scoped_refptr<TestTaskRunner> runner_;
   QuicConnectionHelper helper_;
@@ -167,10 +166,9 @@ TEST_F(QuicConnectionHelperTest, CreateAlarmAndUpdate) {
                 QuicTime::Delta::FromMicroseconds(2));
 
   ASSERT_EQ(1u, runner_->GetPostedTasks().size());
-  EXPECT_EQ(
-      base::TimeDelta::FromMicroseconds(
-          new_delta.Subtract(delta).ToMicroseconds()),
-      runner_->GetPostedTasks()[0].delay);
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(
+                new_delta.Subtract(delta).ToMicroseconds()),
+            runner_->GetPostedTasks()[0].delay);
   runner_->RunNextTask();
   EXPECT_EQ(start.Add(new_delta), clock->Now());
   EXPECT_TRUE(delegate->fired());

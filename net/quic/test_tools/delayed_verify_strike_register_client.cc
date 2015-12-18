@@ -17,10 +17,12 @@ DelayedVerifyStrikeRegisterClient::DelayedVerifyStrikeRegisterClient(
     uint32 window_secs,
     const uint8 orbit[8],
     StrikeRegister::StartupType startup)
-    : LocalStrikeRegisterClient(max_entries, current_time_external,
-                                window_secs, orbit, startup),
-      delay_verifications_(false) {
-}
+    : LocalStrikeRegisterClient(max_entries,
+                                current_time_external,
+                                window_secs,
+                                orbit,
+                                startup),
+      delay_verifications_(false) {}
 
 DelayedVerifyStrikeRegisterClient::~DelayedVerifyStrikeRegisterClient() {}
 
@@ -43,9 +45,10 @@ void DelayedVerifyStrikeRegisterClient::RunPendingVerifications() {
   vector<VerifyArgs> pending;
   pending_verifications_.swap(pending);
   for (vector<VerifyArgs>::const_iterator it = pending.begin(),
-           end = pending.end(); it != end; ++it) {
-    LocalStrikeRegisterClient::VerifyNonceIsValidAndUnique(
-        it->nonce, it->now, it->cb);
+                                          end = pending.end();
+       it != end; ++it) {
+    LocalStrikeRegisterClient::VerifyNonceIsValidAndUnique(it->nonce, it->now,
+                                                           it->cb);
   }
 }
 

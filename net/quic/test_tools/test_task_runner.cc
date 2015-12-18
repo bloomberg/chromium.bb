@@ -12,20 +12,16 @@
 namespace net {
 namespace test {
 
-TestTaskRunner::TestTaskRunner(MockClock* clock)
-    : clock_(clock) {
-}
+TestTaskRunner::TestTaskRunner(MockClock* clock) : clock_(clock) {}
 
-TestTaskRunner::~TestTaskRunner() {
-}
+TestTaskRunner::~TestTaskRunner() {}
 
 bool TestTaskRunner::PostDelayedTask(const tracked_objects::Location& from_here,
                                      const base::Closure& task,
                                      base::TimeDelta delay) {
   EXPECT_GE(delay, base::TimeDelta());
-  tasks_.push_back(
-      PostedTask(from_here, task, clock_->NowInTicks(), delay,
-                 base::TestPendingTask::NESTABLE));
+  tasks_.push_back(PostedTask(from_here, task, clock_->NowInTicks(), delay,
+                              base::TestPendingTask::NESTABLE));
   return false;
 }
 
@@ -60,8 +56,8 @@ struct ShouldRunBeforeLessThan {
 }  // namespace
 
 std::vector<PostedTask>::iterator TestTaskRunner::FindNextTask() {
-  return std::min_element(
-      tasks_.begin(), tasks_.end(), ShouldRunBeforeLessThan());
+  return std::min_element(tasks_.begin(), tasks_.end(),
+                          ShouldRunBeforeLessThan());
 }
 
 }  // namespace test

@@ -24,9 +24,10 @@ class MockQuicDispatcher : public tools::QuicDispatcher {
 
   ~MockQuicDispatcher() override;
 
-  MOCK_METHOD3(ProcessPacket, void(const IPEndPoint& server_address,
-                                   const IPEndPoint& client_address,
-                                   const QuicEncryptedPacket& packet));
+  MOCK_METHOD3(ProcessPacket,
+               void(const IPEndPoint& server_address,
+                    const IPEndPoint& client_address,
+                    const QuicEncryptedPacket& packet));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockQuicDispatcher);

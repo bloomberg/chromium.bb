@@ -45,9 +45,7 @@ const bool kShouldNotProcessData = false;
 
 class TestStream : public ReliableQuicStream {
  public:
-  TestStream(QuicStreamId id,
-             QuicSession* session,
-             bool should_process_data)
+  TestStream(QuicStreamId id, QuicSession* session, bool should_process_data)
       : ReliableQuicStream(id, session),
         should_process_data_(should_process_data) {}
 
@@ -244,8 +242,8 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferData) {
                           PACKET_6BYTE_PACKET_NUMBER, 0u, NOT_IN_FEC_GROUP);
   connection_->SetMaxPacketLength(length);
 
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _)).WillOnce(
-      Return(QuicConsumedData(kDataLen - 1, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(kDataLen - 1, false)));
   stream_->WriteOrBufferData(kData1, false, nullptr);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
@@ -254,15 +252,15 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferData) {
 
   // Make sure we get the tail of the first write followed by the bytes_consumed
   InSequence s;
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _)).
-      WillOnce(Return(QuicConsumedData(1, false)));
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _)).
-      WillOnce(Return(QuicConsumedData(kDataLen - 2, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(1, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(kDataLen - 2, false)));
   stream_->OnCanWrite();
 
   // And finally the end of the bytes_consumed.
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _)).
-      WillOnce(Return(QuicConsumedData(2, true)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(2, true)));
   stream_->OnCanWrite();
 }
 
@@ -279,8 +277,8 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithFecProtectAlways) {
   connection_->SetMaxPacketLength(length);
 
   // Write first data onto stream, which will cause one session write.
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _)).WillOnce(
-      Return(QuicConsumedData(kDataLen - 1, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _))
+      .WillOnce(Return(QuicConsumedData(kDataLen - 1, false)));
   stream_->WriteOrBufferData(kData1, false, nullptr);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
@@ -289,15 +287,15 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithFecProtectAlways) {
 
   // Make sure we get the tail of the first write followed by the bytes_consumed
   InSequence s;
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _)).
-      WillOnce(Return(QuicConsumedData(1, false)));
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _)).
-      WillOnce(Return(QuicConsumedData(kDataLen - 2, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _))
+      .WillOnce(Return(QuicConsumedData(1, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _))
+      .WillOnce(Return(QuicConsumedData(kDataLen - 2, false)));
   stream_->OnCanWrite();
 
   // And finally the end of the bytes_consumed.
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _)).
-      WillOnce(Return(QuicConsumedData(2, true)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _))
+      .WillOnce(Return(QuicConsumedData(2, true)));
   stream_->OnCanWrite();
 }
 
@@ -314,8 +312,8 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithFecProtectOptional) {
   connection_->SetMaxPacketLength(length);
 
   // Write first data onto stream, which will cause one session write.
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _)).WillOnce(
-      Return(QuicConsumedData(kDataLen - 1, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _))
+      .WillOnce(Return(QuicConsumedData(kDataLen - 1, false)));
   stream_->WriteOrBufferData(kData1, false, nullptr);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
@@ -324,15 +322,15 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithFecProtectOptional) {
 
   // Make sure we get the tail of the first write followed by the bytes_consumed
   InSequence s;
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _)).
-      WillOnce(Return(QuicConsumedData(1, false)));
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _)).
-      WillOnce(Return(QuicConsumedData(kDataLen - 2, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _))
+      .WillOnce(Return(QuicConsumedData(1, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _))
+      .WillOnce(Return(QuicConsumedData(kDataLen - 2, false)));
   stream_->OnCanWrite();
 
   // And finally the end of the bytes_consumed.
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _)).
-      WillOnce(Return(QuicConsumedData(2, true)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _))
+      .WillOnce(Return(QuicConsumedData(2, true)));
   stream_->OnCanWrite();
 }
 

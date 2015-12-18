@@ -20,7 +20,7 @@ using std::pair;
 using std::set;
 using std::string;
 
-const uint8 kOrbit[8] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+const uint8 kOrbit[8] = {1, 2, 3, 4, 5, 6, 7, 8};
 
 // StrikeRegisterTests don't look at the random bytes so this function can
 // simply set the random bytes to 0.
@@ -88,7 +88,7 @@ TEST(StrikeRegisterTest, BadOrbit) {
                      100 /* window secs */, kOrbit,
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
-  static const uint8 kBadOrbit[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
+  static const uint8 kBadOrbit[8] = {0, 0, 0, 0, 1, 1, 1, 1};
   SetNonce(nonce, 1101, kBadOrbit);
   EXPECT_EQ(NONCE_INVALID_ORBIT_FAILURE, set.Insert(nonce, 1100));
 }
@@ -115,14 +115,12 @@ TEST(StrikeRegisterTest, RejectDuplicate) {
 
 TEST(StrikeRegisterTest, HorizonUpdating) {
   StrikeRegister::StartupType startup_types[] = {
-    StrikeRegister::DENY_REQUESTS_AT_STARTUP,
-    StrikeRegister::NO_STARTUP_PERIOD_NEEDED
-  };
+      StrikeRegister::DENY_REQUESTS_AT_STARTUP,
+      StrikeRegister::NO_STARTUP_PERIOD_NEEDED};
 
   for (size_t type_idx = 0; type_idx < arraysize(startup_types); ++type_idx) {
     StrikeRegister set(5 /* max size */, 500 /* current time */,
-                       100 /* window secs */, kOrbit,
-                       startup_types[type_idx]);
+                       100 /* window secs */, kOrbit, startup_types[type_idx]);
     uint8 nonce[6][32];
     for (unsigned i = 0; i < 5; i++) {
       SetNonce(nonce[i], 1101 + i, kOrbit);
@@ -175,12 +173,11 @@ TEST(StrikeRegisterTest, InsertMany) {
   uint8 nonce[32];
   SetNonce(nonce, 1101, kOrbit);
   for (unsigned i = 0; i < 100000; i++) {
-    SetNonce(nonce, 1101 + i/500, kOrbit);
+    SetNonce(nonce, 1101 + i / 500, kOrbit);
     memcpy(nonce + 12, &i, sizeof(i));
     EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1100));
   }
 }
-
 
 // For the following test we create a slow, but simple, version of a
 // StrikeRegister. The behaviour of this object is much easier to understand
@@ -192,8 +189,10 @@ TEST(StrikeRegisterTest, InsertMany) {
 // empirically test that their behaviours are identical.
 class SlowStrikeRegister {
  public:
-  SlowStrikeRegister(unsigned max_entries, uint32 current_time,
-                     uint32 window_secs, const uint8 orbit[8])
+  SlowStrikeRegister(unsigned max_entries,
+                     uint32 current_time,
+                     uint32 window_secs,
+                     const uint8 orbit[8])
       : max_entries_(max_entries),
         window_secs_(window_secs),
         creation_time_(current_time),
@@ -254,10 +253,8 @@ class SlowStrikeRegister {
  private:
   // TimeFromBytes returns a big-endian uint32 from |d|.
   static uint32 TimeFromBytes(const uint8 d[4]) {
-    return static_cast<uint32>(d[0]) << 24 |
-           static_cast<uint32>(d[1]) << 16 |
-           static_cast<uint32>(d[2]) << 8 |
-           static_cast<uint32>(d[3]);
+    return static_cast<uint32>(d[0]) << 24 | static_cast<uint32>(d[1]) << 16 |
+           static_cast<uint32>(d[2]) << 8 | static_cast<uint32>(d[3]);
   }
 
   uint32 ExternalTimeToInternal(uint32 external_time) const {
@@ -285,8 +282,7 @@ class SlowStrikeRegister {
   set<pair<uint32, string>> nonces_;
 };
 
-class StrikeRegisterStressTest : public ::testing::Test {
-};
+class StrikeRegisterStressTest : public ::testing::Test {};
 
 TEST_F(StrikeRegisterStressTest, InOrderInsertion) {
   // Fixed seed gives reproducibility for this test.

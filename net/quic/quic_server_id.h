@@ -18,12 +18,9 @@ namespace net {
 class NET_EXPORT_PRIVATE QuicServerId {
  public:
   QuicServerId();
-  QuicServerId(const HostPortPair& host_port_pair,
-               PrivacyMode privacy_mode);
+  QuicServerId(const HostPortPair& host_port_pair, PrivacyMode privacy_mode);
   QuicServerId(const std::string& host, uint16 port);
-  QuicServerId(const std::string& host,
-               uint16 port,
-               PrivacyMode privacy_mode);
+  QuicServerId(const std::string& host, uint16 port, PrivacyMode privacy_mode);
   ~QuicServerId();
 
   // Needed to be an element of std::set.

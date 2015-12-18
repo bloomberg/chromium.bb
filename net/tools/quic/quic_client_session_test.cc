@@ -80,7 +80,8 @@ class ToolsQuicClientSessionTest
   scoped_ptr<QuicClientSession> session_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests, ToolsQuicClientSessionTest,
+INSTANTIATE_TEST_CASE_P(Tests,
+                        ToolsQuicClientSessionTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(ToolsQuicClientSessionTest, CryptoConnect) {
@@ -197,8 +198,9 @@ TEST_P(ToolsQuicClientSessionTest, SetFecProtectionFromConfig) {
 
   // Verify that headers stream is always protected and data streams are
   // optionally protected.
-  EXPECT_EQ(FEC_PROTECT_ALWAYS, QuicSpdySessionPeer::GetHeadersStream(
-                                    session_.get())->fec_policy());
+  EXPECT_EQ(
+      FEC_PROTECT_ALWAYS,
+      QuicSpdySessionPeer::GetHeadersStream(session_.get())->fec_policy());
   QuicSpdyClientStream* stream =
       session_->CreateOutgoingDynamicStream(kDefaultPriority);
   ASSERT_TRUE(stream);

@@ -53,9 +53,7 @@ class NET_EXPORT_PRIVATE QuicDataWriter {
   // Fills the remaining buffer with null characters.
   void WritePadding();
 
-  size_t capacity() const {
-    return capacity_;
-  }
+  size_t capacity() const { return capacity_; }
 
  private:
   // Returns the location that the data should be written at, or nullptr if

@@ -20,7 +20,8 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   ~QuicConnectionStats();
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
-      std::ostream& os, const QuicConnectionStats& s);
+      std::ostream& os,
+      const QuicConnectionStats& s);
 
   QuicByteCount bytes_sent;  // Includes retransmissions, fec.
   QuicPacketCount packets_sent;
@@ -61,7 +62,7 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   size_t rto_count;  // Count of times the rto timer fired.
 
   int64 min_rtt_us;  // Minimum RTT in microseconds.
-  int64 srtt_us;  // Smoothed RTT in microseconds.
+  int64 srtt_us;     // Smoothed RTT in microseconds.
   QuicByteCount max_packet_size;
   QuicByteCount max_received_packet_size;
   QuicBandwidth estimated_bandwidth;

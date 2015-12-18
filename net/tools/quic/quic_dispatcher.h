@@ -175,15 +175,9 @@ class QuicDispatcher : public QuicServerSessionVisitor,
     return supported_versions_;
   }
 
-  const IPEndPoint& current_server_address() {
-    return current_server_address_;
-  }
-  const IPEndPoint& current_client_address() {
-    return current_client_address_;
-  }
-  const QuicEncryptedPacket& current_packet() {
-    return *current_packet_;
-  }
+  const IPEndPoint& current_server_address() { return current_server_address_; }
+  const IPEndPoint& current_client_address() { return current_client_address_; }
+  const QuicEncryptedPacket& current_packet() { return *current_packet_; }
 
   const QuicConfig& config() const { return config_; }
 
@@ -208,8 +202,8 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // An adapter that creates packet writers using the dispatcher's
   // PacketWriterFactory and shared writer. Essentially, it just curries the
   // writer argument away from QuicDispatcher::PacketWriterFactory.
-  class PacketWriterFactoryAdapter :
-    public QuicConnection::PacketWriterFactory {
+  class PacketWriterFactoryAdapter
+      : public QuicConnection::PacketWriterFactory {
    public:
     explicit PacketWriterFactoryAdapter(QuicDispatcher* dispatcher);
     ~PacketWriterFactoryAdapter() override;

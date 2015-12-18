@@ -80,7 +80,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
       int32 fake_blocked_socket_percentage) {
     DCHECK(clock_);
     base::AutoLock locked(config_mutex_);
-    fake_blocked_socket_percentage_  = fake_blocked_socket_percentage;
+    fake_blocked_socket_percentage_ = fake_blocked_socket_percentage;
   }
 
   // The percent of time a packet is simulated as being reordered.
@@ -95,7 +95,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   void set_fake_packet_delay(QuicTime::Delta fake_packet_delay) {
     DCHECK(clock_);
     base::AutoLock locked(config_mutex_);
-    fake_packet_delay_  = fake_packet_delay;
+    fake_packet_delay_ = fake_packet_delay;
   }
 
   // The maximum bandwidth and buffer size of the connection.  When these are
@@ -111,9 +111,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   }
 
   // Useful for reproducing very flaky issues.
-  void set_seed(uint64 seed) {
-    simple_random_.set_seed(seed);
-  }
+  void set_seed(uint64 seed) { simple_random_.set_seed(seed); }
 
  private:
   // Writes out the next packet to the contained writer and returns the time

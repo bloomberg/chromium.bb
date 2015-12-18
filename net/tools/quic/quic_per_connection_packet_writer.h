@@ -37,7 +37,7 @@ class QuicPerConnectionPacketWriter : public QuicPacketWriter {
 
  private:
   QuicPacketWriter* shared_writer_;  // Not owned.
-  QuicConnection* connection_;  // Not owned.
+  QuicConnection* connection_;       // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(QuicPerConnectionPacketWriter);
 };

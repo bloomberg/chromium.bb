@@ -17,8 +17,7 @@ PacingSender::PacingSender(SendAlgorithmInterface* sender,
       burst_tokens_(initial_packet_burst),
       last_delayed_packet_sent_time_(QuicTime::Zero()),
       ideal_next_packet_send_time_(QuicTime::Zero()),
-      was_last_send_delayed_(false) {
-}
+      was_last_send_delayed_(false) {}
 
 PacingSender::~PacingSender() {}
 
@@ -46,8 +45,8 @@ void PacingSender::OnCongestionEvent(bool rtt_updated,
                                      QuicByteCount bytes_in_flight,
                                      const CongestionVector& acked_packets,
                                      const CongestionVector& lost_packets) {
-  sender_->OnCongestionEvent(
-      rtt_updated, bytes_in_flight, acked_packets, lost_packets);
+  sender_->OnCongestionEvent(rtt_updated, bytes_in_flight, acked_packets,
+                             lost_packets);
 }
 
 bool PacingSender::OnPacketSent(
@@ -113,9 +112,9 @@ void PacingSender::OnRetransmissionTimeout(bool packets_retransmitted) {
 }
 
 QuicTime::Delta PacingSender::TimeUntilSend(
-      QuicTime now,
-      QuicByteCount bytes_in_flight,
-      HasRetransmittableData has_retransmittable_data) const {
+    QuicTime now,
+    QuicByteCount bytes_in_flight,
+    HasRetransmittableData has_retransmittable_data) const {
   QuicTime::Delta time_until_send =
       sender_->TimeUntilSend(now, bytes_in_flight, has_retransmittable_data);
   if (burst_tokens_ > 0 || bytes_in_flight == 0) {

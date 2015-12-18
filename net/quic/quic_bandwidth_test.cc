@@ -8,8 +8,7 @@
 namespace net {
 namespace test {
 
-class QuicBandwidthTest : public ::testing::Test {
-};
+class QuicBandwidthTest : public ::testing::Test {};
 
 TEST_F(QuicBandwidthTest, FromTo) {
   EXPECT_EQ(QuicBandwidth::FromKBitsPerSecond(1),
@@ -66,16 +65,15 @@ TEST_F(QuicBandwidthTest, Scale) {
             QuicBandwidth::FromKBytesPerSecond(1000).Scale(1.25f));
 }
 
-
 TEST_F(QuicBandwidthTest, BytesPerPeriod) {
-  EXPECT_EQ(2000u, QuicBandwidth::FromKBytesPerSecond(2000).ToBytesPerPeriod(
-      QuicTime::Delta::FromMilliseconds(1)));
-  EXPECT_EQ(2u, QuicBandwidth::FromKBytesPerSecond(2000).ToKBytesPerPeriod(
-      QuicTime::Delta::FromMilliseconds(1)));
+  EXPECT_EQ(2000u, QuicBandwidth::FromKBytesPerSecond(2000)
+                       .ToBytesPerPeriod(QuicTime::Delta::FromMilliseconds(1)));
+  EXPECT_EQ(2u, QuicBandwidth::FromKBytesPerSecond(2000)
+                    .ToKBytesPerPeriod(QuicTime::Delta::FromMilliseconds(1)));
   EXPECT_EQ(200000u, QuicBandwidth::FromKBytesPerSecond(2000).ToBytesPerPeriod(
-      QuicTime::Delta::FromMilliseconds(100)));
+                         QuicTime::Delta::FromMilliseconds(100)));
   EXPECT_EQ(200u, QuicBandwidth::FromKBytesPerSecond(2000).ToKBytesPerPeriod(
-      QuicTime::Delta::FromMilliseconds(100)));
+                      QuicTime::Delta::FromMilliseconds(100)));
 }
 
 TEST_F(QuicBandwidthTest, TransferTime) {

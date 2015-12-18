@@ -162,8 +162,8 @@ class QuicEndToEndTest : public PlatformTest {
     server_thread_.reset(new ServerThread(server, server_address_,
                                           strike_register_no_startup_period_));
     server_thread_->Initialize();
-    server_address_ = IPEndPoint(server_address_.address(),
-                                 server_thread_->GetPort());
+    server_address_ =
+        IPEndPoint(server_address_.address(), server_thread_->GetPort());
     server_thread_->Start();
     server_started_ = true;
   }
@@ -218,8 +218,7 @@ class QuicEndToEndTest : public PlatformTest {
                      const std::string& body) {
     ASSERT_TRUE(consumer.is_done());
     ASSERT_EQ(OK, consumer.error());
-    EXPECT_EQ(status_line,
-              consumer.response_info()->headers->GetStatusLine());
+    EXPECT_EQ(status_line, consumer.response_info()->headers->GetStatusLine());
     EXPECT_EQ(body, consumer.content());
   }
 
@@ -307,11 +306,10 @@ TEST_F(QuicEndToEndTest, MAYBE_UberTest) {
   std::vector<TestTransactionConsumer*> consumers;
   size_t num_requests = 100;
   for (size_t i = 0; i < num_requests; ++i) {
-      TestTransactionConsumer* consumer =
-          new TestTransactionConsumer(DEFAULT_PRIORITY,
-                                      transaction_factory_.get());
-      consumers.push_back(consumer);
-      consumer->Start(&request_, BoundNetLog());
+    TestTransactionConsumer* consumer = new TestTransactionConsumer(
+        DEFAULT_PRIORITY, transaction_factory_.get());
+    consumers.push_back(consumer);
+    consumer->Start(&request_, BoundNetLog());
   }
 
   // Will terminate when the last consumer completes.

@@ -19,8 +19,7 @@ QuicServerId::QuicServerId() : privacy_mode_(PRIVACY_MODE_DISABLED) {}
 
 QuicServerId::QuicServerId(const HostPortPair& host_port_pair,
                            PrivacyMode privacy_mode)
-    : host_port_pair_(host_port_pair),
-      privacy_mode_(privacy_mode) {}
+    : host_port_pair_(host_port_pair), privacy_mode_(privacy_mode) {}
 
 QuicServerId::QuicServerId(const string& host, uint16 port)
     : host_port_pair_(host, port), privacy_mode_(PRIVACY_MODE_DISABLED) {}
@@ -28,8 +27,7 @@ QuicServerId::QuicServerId(const string& host, uint16 port)
 QuicServerId::QuicServerId(const string& host,
                            uint16 port,
                            PrivacyMode privacy_mode)
-    : host_port_pair_(host, port),
-      privacy_mode_(privacy_mode) {}
+    : host_port_pair_(host, port), privacy_mode_(privacy_mode) {}
 
 QuicServerId::~QuicServerId() {}
 

@@ -156,8 +156,8 @@ TEST(QuicCryptoClientConfigTest, InchoateChlo) {
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 80, PRIVACY_MODE_DISABLED);
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state,
-                                 &params, &msg);
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &params,
+                                 &msg);
 
   QuicTag cver;
   EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kVER, &cver));
@@ -178,8 +178,8 @@ TEST(QuicCryptoClientConfigTest, InchoateChloSecure) {
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state,
-                                 &params, &msg);
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &params,
+                                 &msg);
 
   QuicTag pdmd;
   EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kPDMD, &pdmd));
@@ -218,8 +218,8 @@ TEST(QuicCryptoClientConfigTest, InchoateChloSecureNoEcdsa) {
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state,
-                                 &params, &msg);
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &params,
+                                 &msg);
 
   QuicTag pdmd;
   EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kPDMD, &pdmd));
@@ -235,16 +235,10 @@ TEST(QuicCryptoClientConfigTest, FillClientHello) {
   MockRandom rand;
   CryptoHandshakeMessage chlo;
   QuicServerId server_id("www.google.com", 80, PRIVACY_MODE_DISABLED);
-  config.FillClientHello(server_id,
-                         kConnectionId,
-                         QuicVersionMax(),
-                         &state,
-                         QuicWallTime::Zero(),
-                         &rand,
+  config.FillClientHello(server_id, kConnectionId, QuicVersionMax(), &state,
+                         QuicWallTime::Zero(), &rand,
                          nullptr,  // channel_id_key
-                         &params,
-                         &chlo,
-                         &error_details);
+                         &params, &chlo, &error_details);
 
   // Verify that certain QuicTags have been set correctly in the CHLO.
   QuicTag cver;

@@ -97,11 +97,9 @@ QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
     : task_runner_(task_runner),
       clock_(clock),
       random_generator_(random_generator),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
-QuicConnectionHelper::~QuicConnectionHelper() {
-}
+QuicConnectionHelper::~QuicConnectionHelper() {}
 
 const QuicClock* QuicConnectionHelper::GetClock() const {
   return clock_;

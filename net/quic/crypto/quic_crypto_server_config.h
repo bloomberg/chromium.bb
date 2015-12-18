@@ -159,10 +159,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // Generates a QuicServerConfigProtobuf protobuf suitable for
   // AddConfig and SetConfigs.
-  static QuicServerConfigProtobuf* GenerateConfig(
-      QuicRandom* rand,
-      const QuicClock* clock,
-      const ConfigOptions& options);
+  static QuicServerConfigProtobuf* GenerateConfig(QuicRandom* rand,
+                                                  const QuicClock* clock,
+                                                  const ConfigOptions& options);
 
   // AddConfig adds a QuicServerConfigProtobuf to the availible configurations.
   // It returns the SCFG message from the config if successful. The caller
@@ -175,10 +174,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // AddDefaultConfig calls DefaultConfig to create a config and then calls
   // AddConfig to add it. See the comment for |DefaultConfig| for details of
   // the arguments.
-  CryptoHandshakeMessage* AddDefaultConfig(
-      QuicRandom* rand,
-      const QuicClock* clock,
-      const ConfigOptions& options);
+  CryptoHandshakeMessage* AddDefaultConfig(QuicRandom* rand,
+                                           const QuicClock* clock,
+                                           const ConfigOptions& options);
 
   // SetConfigs takes a vector of config protobufs and the current time.
   // Configs are assumed to be uniquely identified by their server config ID.
@@ -423,7 +421,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     DISALLOW_COPY_AND_ASSIGN(Config);
   };
 
-  typedef std::map<ServerConfigID, scoped_refptr<Config> > ConfigMap;
+  typedef std::map<ServerConfigID, scoped_refptr<Config>> ConfigMap;
 
   // Get a ref to the config with a given server config id.
   scoped_refptr<Config> GetConfigWithScid(

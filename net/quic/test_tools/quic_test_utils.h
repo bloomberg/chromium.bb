@@ -160,17 +160,13 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
                                    const QuicFrames& frames,
                                    size_t packet_size);
 
-template<typename SaveType>
+template <typename SaveType>
 class ValueRestore {
  public:
-  ValueRestore(SaveType* name, SaveType value)
-      : name_(name),
-        value_(*name) {
+  ValueRestore(SaveType* name, SaveType value) : name_(name), value_(*name) {
     *name_ = value;
   }
-  ~ValueRestore() {
-    *name_ = value_;
-  }
+  ~ValueRestore() { *name_ = value_; }
 
  private:
   SaveType* name_;
@@ -214,8 +210,8 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   // The constructor sets this up to return true by default.
   MOCK_METHOD1(OnUnauthenticatedHeader, bool(const QuicPacketHeader& header));
   // The constructor sets this up to return true by default.
-  MOCK_METHOD1(OnUnauthenticatedPublicHeader, bool(
-      const QuicPacketPublicHeader& header));
+  MOCK_METHOD1(OnUnauthenticatedPublicHeader,
+               bool(const QuicPacketPublicHeader& header));
   MOCK_METHOD1(OnDecryptedPacket, void(EncryptionLevel level));
   MOCK_METHOD1(OnPacketHeader, bool(const QuicPacketHeader& header));
   MOCK_METHOD1(OnFecProtectedPayload, void(base::StringPiece payload));
@@ -355,24 +351,26 @@ class MockConnection : public QuicConnection {
   // will advance the time of the MockClock.
   void AdvanceTime(QuicTime::Delta delta);
 
-  MOCK_METHOD3(ProcessUdpPacket, void(const IPEndPoint& self_address,
-                                      const IPEndPoint& peer_address,
-                                      const QuicEncryptedPacket& packet));
+  MOCK_METHOD3(ProcessUdpPacket,
+               void(const IPEndPoint& self_address,
+                    const IPEndPoint& peer_address,
+                    const QuicEncryptedPacket& packet));
   MOCK_METHOD1(SendConnectionClose, void(QuicErrorCode error));
   MOCK_METHOD2(SendConnectionCloseWithDetails,
                void(QuicErrorCode error, const std::string& details));
   MOCK_METHOD2(SendConnectionClosePacket,
                void(QuicErrorCode error, const std::string& details));
-  MOCK_METHOD3(SendRstStream, void(QuicStreamId id,
-                                   QuicRstStreamErrorCode error,
-                                   QuicStreamOffset bytes_written));
+  MOCK_METHOD3(SendRstStream,
+               void(QuicStreamId id,
+                    QuicRstStreamErrorCode error,
+                    QuicStreamOffset bytes_written));
   MOCK_METHOD3(SendGoAway,
                void(QuicErrorCode error,
                     QuicStreamId last_good_stream_id,
                     const std::string& reason));
   MOCK_METHOD1(SendBlocked, void(QuicStreamId id));
-  MOCK_METHOD2(SendWindowUpdate, void(QuicStreamId id,
-                                      QuicStreamOffset byte_offset));
+  MOCK_METHOD2(SendWindowUpdate,
+               void(QuicStreamId id, QuicStreamOffset byte_offset));
   MOCK_METHOD0(OnCanWrite, void());
 
   MOCK_METHOD1(OnSendConnectionState, void(const CachedNetworkParameters&));
@@ -390,9 +388,7 @@ class MockConnection : public QuicConnection {
     QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
   }
 
-  bool OnProtocolVersionMismatch(QuicVersion version) override {
-    return false;
-  }
+  bool OnProtocolVersionMismatch(QuicVersion version) override { return false; }
 
   void ReallySendGoAway(QuicErrorCode error,
                         QuicStreamId last_good_stream_id,
@@ -446,13 +442,12 @@ class MockQuicSpdySession : public QuicSpdySession {
                     QuicRstStreamErrorCode error,
                     QuicStreamOffset bytes_written));
 
-  MOCK_METHOD2(OnStreamHeaders, void(QuicStreamId stream_id,
-                                     base::StringPiece headers_data));
+  MOCK_METHOD2(OnStreamHeaders,
+               void(QuicStreamId stream_id, base::StringPiece headers_data));
   MOCK_METHOD2(OnStreamHeadersPriority,
                void(QuicStreamId stream_id, SpdyPriority priority));
-  MOCK_METHOD3(OnStreamHeadersComplete, void(QuicStreamId stream_id,
-                                             bool fin,
-                                             size_t frame_len));
+  MOCK_METHOD3(OnStreamHeadersComplete,
+               void(QuicStreamId stream_id, bool fin, size_t frame_len));
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
   MOCK_METHOD5(WriteHeaders,
                size_t(QuicStreamId id,
@@ -552,15 +547,15 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   ~MockSendAlgorithm() override;
 
   MOCK_METHOD2(SetFromConfig,
-               void(const QuicConfig& config,
-                    Perspective perspective));
+               void(const QuicConfig& config, Perspective perspective));
   MOCK_METHOD1(SetNumEmulatedConnections, void(int num_connections));
   MOCK_METHOD1(SetMaxCongestionWindow,
                void(QuicByteCount max_congestion_window));
-  MOCK_METHOD4(OnCongestionEvent, void(bool rtt_updated,
-                                       QuicByteCount bytes_in_flight,
-                                       const CongestionVector& acked_packets,
-                                       const CongestionVector& lost_packets));
+  MOCK_METHOD4(OnCongestionEvent,
+               void(bool rtt_updated,
+                    QuicByteCount bytes_in_flight,
+                    const CongestionVector& acked_packets,
+                    const CongestionVector& lost_packets));
   MOCK_METHOD5(OnPacketSent,
                bool(QuicTime,
                     QuicByteCount,
@@ -613,8 +608,8 @@ class MockLossAlgorithm : public LossDetectionInterface {
   DISALLOW_COPY_AND_ASSIGN(MockLossAlgorithm);
 };
 
-class TestEntropyCalculator :
-      public QuicReceivedEntropyHashCalculatorInterface {
+class TestEntropyCalculator
+    : public QuicReceivedEntropyHashCalculatorInterface {
  public:
   TestEntropyCalculator();
   ~TestEntropyCalculator() override;
@@ -655,8 +650,8 @@ class MockAckListener : public QuicAckListenerInterface {
   DISALLOW_COPY_AND_ASSIGN(MockAckListener);
 };
 
-class MockNetworkChangeVisitor :
-      public QuicSentPacketManager::NetworkChangeVisitor {
+class MockNetworkChangeVisitor
+    : public QuicSentPacketManager::NetworkChangeVisitor {
  public:
   MockNetworkChangeVisitor();
   ~MockNetworkChangeVisitor() override;

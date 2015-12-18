@@ -112,7 +112,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   State next_state_;
 
   base::WeakPtr<QuicChromiumClientSession> session_;
-  int session_error_;  // Error code from the connection shutdown.
+  int session_error_;             // Error code from the connection shutdown.
   bool was_handshake_confirmed_;  // True if the crypto handshake succeeded.
   QuicChromiumClientSession::StreamRequest stream_request_;
   QuicReliableClientStream* stream_;  // Non-owning.

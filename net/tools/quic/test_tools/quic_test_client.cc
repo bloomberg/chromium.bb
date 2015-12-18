@@ -98,8 +98,7 @@ BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers) {
   }
   BalsaHeaders* headers = new BalsaHeaders;
   headers->CopyFrom(*const_headers);
-  if (!uri.starts_with("https://") &&
-      !uri.starts_with("http://")) {
+  if (!uri.starts_with("https://") && !uri.starts_with("http://")) {
     // If we have a relative URL, set some defaults.
     string full_uri = "https://www.google.com";
     full_uri.append(uri.as_string());
@@ -279,10 +278,8 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   if (!connected()) {
     GURL url(message.headers()->request_uri().as_string());
     if (!url.host().empty()) {
-      client_->set_server_id(
-          QuicServerId(url.host(),
-                       url.EffectiveIntPort(),
-                       PRIVACY_MODE_DISABLED));
+      client_->set_server_id(QuicServerId(url.host(), url.EffectiveIntPort(),
+                                          PRIVACY_MODE_DISABLED));
     }
   }
 
@@ -386,7 +383,9 @@ QuicErrorCode QuicTestClient::connection_error() {
   return client()->connection_error();
 }
 
-MockableQuicClient* QuicTestClient::client() { return client_.get(); }
+MockableQuicClient* QuicTestClient::client() {
+  return client_.get();
+}
 
 const string& QuicTestClient::cert_common_name() const {
   return reinterpret_cast<RecordingProofVerifier*>(client_->proof_verifier())
@@ -457,10 +456,10 @@ void QuicTestClient::WaitForResponseForMs(int timeout_ms) {
     epoll_server()->set_timeout_in_us(timeout_us);
   }
   const QuicClock* clock =
-      QuicConnectionPeer::GetHelper(client()->session()->connection())->
-          GetClock();
-  QuicTime end_waiting_time = clock->Now().Add(
-      QuicTime::Delta::FromMicroseconds(timeout_us));
+      QuicConnectionPeer::GetHelper(client()->session()->connection())
+          ->GetClock();
+  QuicTime end_waiting_time =
+      clock->Now().Add(QuicTime::Delta::FromMicroseconds(timeout_us));
   while (stream_ != nullptr &&
          !client_->session()->IsClosedStream(stream_->id()) &&
          (timeout_us < 0 || clock->Now() < end_waiting_time)) {
@@ -478,10 +477,10 @@ void QuicTestClient::WaitForInitialResponseForMs(int timeout_ms) {
     epoll_server()->set_timeout_in_us(timeout_us);
   }
   const QuicClock* clock =
-      QuicConnectionPeer::GetHelper(client()->session()->connection())->
-          GetClock();
-  QuicTime end_waiting_time = clock->Now().Add(
-      QuicTime::Delta::FromMicroseconds(timeout_us));
+      QuicConnectionPeer::GetHelper(client()->session()->connection())
+          ->GetClock();
+  QuicTime end_waiting_time =
+      clock->Now().Add(QuicTime::Delta::FromMicroseconds(timeout_us));
   while (stream_ != nullptr &&
          !client_->session()->IsClosedStream(stream_->id()) &&
          stream_->stream_bytes_read() == 0 &&
@@ -493,7 +492,7 @@ void QuicTestClient::WaitForInitialResponseForMs(int timeout_ms) {
   }
 }
 
-ssize_t QuicTestClient::Send(const void *buffer, size_t size) {
+ssize_t QuicTestClient::Send(const void* buffer, size_t size) {
   return SendData(string(static_cast<const char*>(buffer), size), false);
 }
 
@@ -564,7 +563,7 @@ void QuicTestClient::UseConnectionId(QuicConnectionId connection_id) {
   client_->UseConnectionId(connection_id);
 }
 
-ssize_t QuicTestClient::SendAndWaitForResponse(const void *buffer,
+ssize_t QuicTestClient::SendAndWaitForResponse(const void* buffer,
                                                size_t size) {
   LOG(DFATAL) << "Not implemented";
   return 0;

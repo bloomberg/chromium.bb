@@ -22,7 +22,7 @@ class DefaultRandom : public QuicRandom {
   void Reseed(const void* additional_entropy, size_t entropy_len) override;
 
  private:
-  DefaultRandom() {};
+  DefaultRandom() {}
   ~DefaultRandom() override {}
 
   friend struct base::DefaultSingletonTraits<DefaultRandom>;
@@ -50,6 +50,8 @@ void DefaultRandom::Reseed(const void* additional_entropy, size_t entropy_len) {
 }  // namespace
 
 // static
-QuicRandom* QuicRandom::GetInstance() { return DefaultRandom::GetInstance(); }
+QuicRandom* QuicRandom::GetInstance() {
+  return DefaultRandom::GetInstance();
+}
 
 }  // namespace net

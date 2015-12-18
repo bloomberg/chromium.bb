@@ -397,8 +397,8 @@ bool QuicUnackedPacketMap::HasPendingCryptoPackets() const {
 }
 
 bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {
-  for (UnackedPacketMap::const_reverse_iterator it =
-           unacked_packets_.rbegin(); it != unacked_packets_.rend(); ++it) {
+  for (UnackedPacketMap::const_reverse_iterator it = unacked_packets_.rbegin();
+       it != unacked_packets_.rend(); ++it) {
     if (it->in_flight && it->retransmittable_frames) {
       return true;
     }

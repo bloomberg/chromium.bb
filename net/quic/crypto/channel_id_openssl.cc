@@ -29,8 +29,7 @@ bool ChannelIDVerifier::VerifyRaw(StringPiece key,
                                   StringPiece signed_data,
                                   StringPiece signature,
                                   bool is_channel_id_signature) {
-  if (key.size() != 32 * 2 ||
-      signature.size() != 32 * 2) {
+  if (key.size() != 32 * 2 || signature.size() != 32 * 2) {
     return false;
   }
 
@@ -49,9 +48,9 @@ bool ChannelIDVerifier::VerifyRaw(StringPiece key,
   const uint8* signature_bytes =
       reinterpret_cast<const uint8*>(signature.data());
 
-  if (BN_bin2bn(key_bytes       +  0, 32, x.get()) == nullptr ||
-      BN_bin2bn(key_bytes       + 32, 32, y.get()) == nullptr ||
-      BN_bin2bn(signature_bytes +  0, 32, sig.r) == nullptr ||
+  if (BN_bin2bn(key_bytes + 0, 32, x.get()) == nullptr ||
+      BN_bin2bn(key_bytes + 32, 32, y.get()) == nullptr ||
+      BN_bin2bn(signature_bytes + 0, 32, sig.r) == nullptr ||
       BN_bin2bn(signature_bytes + 32, 32, sig.s) == nullptr) {
     return false;
   }

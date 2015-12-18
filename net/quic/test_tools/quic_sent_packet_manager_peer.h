@@ -19,8 +19,8 @@ class QuicSentPacketManagerPeer {
   static size_t GetMaxTailLossProbes(
       QuicSentPacketManager* sent_packet_manager);
 
-  static void SetMaxTailLossProbes(
-      QuicSentPacketManager* sent_packet_manager, size_t max_tail_loss_probes);
+  static void SetMaxTailLossProbes(QuicSentPacketManager* sent_packet_manager,
+                                   size_t max_tail_loss_probes);
 
   static bool GetEnableHalfRttTailLossProbe(
       QuicSentPacketManager* sent_packet_manager);

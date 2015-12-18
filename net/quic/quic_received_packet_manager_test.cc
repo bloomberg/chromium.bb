@@ -232,7 +232,8 @@ TEST_F(QuicReceivedPacketManagerTest, ReceivedPacketEntropyHash) {
       hash ^= entropies[index].second;
       ++index;
     }
-    if (i < 3) continue;
+    if (i < 3)
+      continue;
     EXPECT_EQ(hash, received_manager_.EntropyHash(i));
   }
   // Reorder by 5 when 2 is received after 7.
@@ -274,12 +275,12 @@ TEST_F(QuicReceivedPacketManagerTest, SetCumulativeEntropyUpTo) {
   for (size_t i = 0; i < 4; ++i) {
     entropy_hash ^= entropies[i].second;
   }
-  QuicReceivedPacketManagerPeer::SetCumulativeEntropyUpTo(
-      &received_manager_, 5, 100);
+  QuicReceivedPacketManagerPeer::SetCumulativeEntropyUpTo(&received_manager_, 5,
+                                                          100);
   EXPECT_EQ(entropy_hash, received_manager_.EntropyHash(7));
 
-  QuicReceivedPacketManagerPeer::SetCumulativeEntropyUpTo(
-      &received_manager_, 1, 50);
+  QuicReceivedPacketManagerPeer::SetCumulativeEntropyUpTo(&received_manager_, 1,
+                                                          50);
   EXPECT_EQ(entropy_hash, received_manager_.EntropyHash(7));
 
   // No reordering.

@@ -13,13 +13,11 @@ using std::string;
 
 namespace net {
 
-MockCryptoClientStreamFactory::~MockCryptoClientStreamFactory() {
-}
+MockCryptoClientStreamFactory::~MockCryptoClientStreamFactory() {}
 
 MockCryptoClientStreamFactory::MockCryptoClientStreamFactory()
     : handshake_mode_(MockCryptoClientStream::CONFIRM_HANDSHAKE),
-      last_stream_(nullptr) {
-}
+      last_stream_(nullptr) {}
 
 QuicCryptoClientStream*
 MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(

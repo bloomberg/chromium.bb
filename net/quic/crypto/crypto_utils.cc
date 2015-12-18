@@ -58,8 +58,8 @@ bool CryptoUtils::IsValidSNI(StringPiece sni) {
   url::CanonHostInfo host_info;
   string canonicalized_host(CanonicalizeHost(sni.as_string(), &host_info));
   return !host_info.IsIPAddress() &&
-      IsCanonicalizedHostCompliant(canonicalized_host) &&
-      sni.find_last_of('.') != string::npos;
+         IsCanonicalizedHostCompliant(canonicalized_host) &&
+         sni.find_last_of('.') != string::npos;
 }
 
 // static
@@ -150,12 +150,8 @@ bool CryptoUtils::ExportKeyingMaterial(StringPiece subkey_secret,
   info.append(reinterpret_cast<char*>(&context_length), sizeof(context_length));
   info.append(context.data(), context.length());
 
-  crypto::HKDF hkdf(subkey_secret,
-                    StringPiece() /* no salt */,
-                    info,
-                    result_len,
-                    0 /* no fixed IV */,
-                    0 /* no subkey secret */);
+  crypto::HKDF hkdf(subkey_secret, StringPiece() /* no salt */, info,
+                    result_len, 0 /* no fixed IV */, 0 /* no subkey secret */);
   hkdf.client_write_key().CopyToString(result);
   return true;
 }

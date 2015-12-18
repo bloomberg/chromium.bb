@@ -13,8 +13,7 @@ namespace net {
 // Base class for all client-specific QuicSession subclasses.
 class NET_EXPORT_PRIVATE QuicClientSessionBase : public QuicSpdySession {
  public:
-  QuicClientSessionBase(QuicConnection* connection,
-                        const QuicConfig& config);
+  QuicClientSessionBase(QuicConnection* connection, const QuicConfig& config);
 
   ~QuicClientSessionBase() override;
 

@@ -19,15 +19,12 @@ const uint16 kIPv6 = 10;
 
 }  // namespace
 
-QuicSocketAddressCoder::QuicSocketAddressCoder() {
-}
+QuicSocketAddressCoder::QuicSocketAddressCoder() {}
 
 QuicSocketAddressCoder::QuicSocketAddressCoder(const IPEndPoint& address)
-    : address_(address) {
-}
+    : address_(address) {}
 
-QuicSocketAddressCoder::~QuicSocketAddressCoder() {
-}
+QuicSocketAddressCoder::~QuicSocketAddressCoder() {}
 
 string QuicSocketAddressCoder::Encode() const {
   string serialized;

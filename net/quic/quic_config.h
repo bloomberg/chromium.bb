@@ -63,9 +63,7 @@ class NET_EXPORT_PRIVATE QuicNegotiableValue : public QuicConfigValue {
   QuicNegotiableValue(QuicTag tag, QuicConfigPresence presence);
   ~QuicNegotiableValue() override;
 
-  bool negotiated() const {
-    return negotiated_;
-  }
+  bool negotiated() const { return negotiated_; }
 
  protected:
   void set_negotiated(bool negotiated) { negotiated_ = negotiated; }

@@ -10,8 +10,7 @@ namespace net {
 namespace tools {
 
 QuicDefaultPacketWriter::QuicDefaultPacketWriter(int fd)
-    : fd_(fd),
-      write_blocked_(false) {}
+    : fd_(fd), write_blocked_(false) {}
 
 QuicDefaultPacketWriter::~QuicDefaultPacketWriter() {}
 
@@ -21,8 +20,8 @@ WriteResult QuicDefaultPacketWriter::WritePacket(
     const IPAddressNumber& self_address,
     const IPEndPoint& peer_address) {
   DCHECK(!IsWriteBlocked());
-  WriteResult result = QuicSocketUtils::WritePacket(
-      fd_, buffer, buf_len, self_address, peer_address);
+  WriteResult result = QuicSocketUtils::WritePacket(fd_, buffer, buf_len,
+                                                    self_address, peer_address);
   if (result.status == WRITE_STATUS_BLOCKED) {
     write_blocked_ = true;
   }

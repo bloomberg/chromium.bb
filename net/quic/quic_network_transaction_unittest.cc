@@ -80,9 +80,7 @@ class MockQuicData {
  public:
   MockQuicData() : packet_number_(0) {}
 
-  ~MockQuicData() {
-    STLDeleteElements(&packets_);
-  }
+  ~MockQuicData() { STLDeleteElements(&packets_); }
 
   void AddSynchronousRead(scoped_ptr<QuicEncryptedPacket> packet) {
     reads_.push_back(MockRead(SYNCHRONOUS, packet->data(), packet->length(),
@@ -107,8 +105,8 @@ class MockQuicData {
   }
 
   void AddSocketDataToFactory(MockClientSocketFactory* factory) {
-    MockRead* reads = reads_.empty() ? nullptr  : &reads_[0];
-    MockWrite* writes = writes_.empty() ? nullptr  : &writes_[0];
+    MockRead* reads = reads_.empty() ? nullptr : &reads_[0];
+    MockWrite* writes = writes_.empty() ? nullptr : &writes_[0];
     socket_data_.reset(
         new SequencedSocketData(reads, reads_.size(), writes, writes_.size()));
     factory->AddSocketDataProvider(socket_data_.get());
@@ -301,9 +299,7 @@ class QuicNetworkTransactionTest
         packet_number, stream_id, should_include_version, fin, headers);
   }
 
-  void CreateSession() {
-    CreateSessionWithFactory(&socket_factory_, false);
-  }
+  void CreateSession() { CreateSessionWithFactory(&socket_factory_, false); }
 
   void CreateSessionWithNextProtos() {
     CreateSessionWithFactory(&socket_factory_, true);
@@ -484,7 +480,8 @@ class QuicNetworkTransactionTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Version, QuicNetworkTransactionTest,
+INSTANTIATE_TEST_CASE_P(Version,
+                        QuicNetworkTransactionTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicNetworkTransactionTest, ForceQuic) {
@@ -495,9 +492,8 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "https", "/")));
-  mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
-                                     GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
       ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
@@ -563,9 +559,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "http", "/")));
-  mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
-                                     GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
       ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
@@ -1005,8 +1000,8 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
@@ -1014,9 +1009,8 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "https", "/")));
-  mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
-                                     GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
       ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
@@ -1127,17 +1121,16 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolProbabilityForQuic) {
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "https", "/")));
-  mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
-                                     GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
       ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
@@ -1164,8 +1157,8 @@ TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolProbabilityForQuic) {
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
   socket_factory_.AddSocketDataProvider(&http_data);
@@ -1181,15 +1174,14 @@ TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolProbabilityForQuic) {
 TEST_P(QuicNetworkTransactionTest,
        DontUseAlternateProtocolWithBadProbabilityForQuic) {
   MockRead http_reads[] = {
-    MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead("Alternate-Protocol: 443:quic,p=2\r\n\r\n"),
-    MockRead("hello world"),
-    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
-    MockRead(ASYNC, OK)
-  };
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Alternate-Protocol: 443:quic,p=2\r\n\r\n"),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
   socket_factory_.AddSocketDataProvider(&http_data);
@@ -1209,17 +1201,16 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "https", "/")));
-  mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
-                                     GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
       ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
@@ -1381,9 +1372,8 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "https", "/")));
-  mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
-                                     GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
       ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
@@ -1406,9 +1396,8 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "https", "/")));
-  mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
-                                     GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
       ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
@@ -1424,12 +1413,8 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.com", 443));
   AddressList address;
-  host_resolver_.Resolve(info,
-                         DEFAULT_PRIORITY,
-                         &address,
-                         CompletionCallback(),
-                         nullptr,
-                         net_log_.bound());
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         nullptr, net_log_.bound());
 
   CreateSessionWithNextProtos();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
@@ -1462,12 +1447,8 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.com", 443));
   AddressList address;
-  host_resolver_.Resolve(info,
-                         DEFAULT_PRIORITY,
-                         &address,
-                         CompletionCallback(),
-                         nullptr,
-                         net_log_.bound());
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         nullptr, net_log_.bound());
 
   request_.url = GURL("http://mail.example.com/");
   CreateSessionWithNextProtos();
@@ -1480,9 +1461,8 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "https", "/")));
-  mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
-                                     GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
       ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
@@ -1503,8 +1483,8 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.com", 443));
   AddressList address;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                         CompletionCallback(), nullptr, net_log_.bound());
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         nullptr, net_log_.bound());
 
   CreateSessionWithNextProtos();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -1635,20 +1615,18 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
       MockRead(ASYNC, ERR_IO_PENDING),  // No more data to read
       MockRead(ASYNC, OK),              // EOF
   };
-  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
   // Main job which will succeed even though the alternate job fails.
   MockRead http_reads[] = {
-    MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-    MockRead("hello from http"),
-    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
-    MockRead(ASYNC, OK)
-  };
+      MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello from http"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
@@ -1661,22 +1639,20 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
 TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
   // Alternate-protocol job
   MockRead quic_reads[] = {
-    MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
+      MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
   };
-  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
   // Main job which will succeed even though the alternate job fails.
   MockRead http_reads[] = {
-    MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-    MockRead("hello from http"),
-    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
-    MockRead(ASYNC, OK)
-  };
+      MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello from http"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
@@ -1690,19 +1666,19 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
 TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
   // Alternate-protocol job will fail when the session attempts to read.
   MockRead quic_reads[] = {
-    MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
+      MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
   };
-  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
   // Main job will also fail.
   MockRead http_reads[] = {
-    MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
+      MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
   };
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   http_data.set_connect_data(MockConnect(ASYNC, ERR_SOCKET_NOT_CONNECTED));
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
@@ -1722,10 +1698,10 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
 TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
   // Alternate-protocol job
   MockRead quic_reads[] = {
-    MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
+      MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
   };
-  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
   AddHangingNonAlternateProtocolSocketData();
@@ -1737,14 +1713,12 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
 
   // Final job that will proceed when the QUIC job fails.
   MockRead http_reads[] = {
-    MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-    MockRead("hello from http"),
-    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
-    MockRead(ASYNC, OK)
-  };
+      MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello from http"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
@@ -1765,20 +1739,18 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {
   MockRead quic_reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING),
   };
-  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
   // Main job that will proceed when the QUIC job fails.
   MockRead http_reads[] = {
-    MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-    MockRead("hello from http"),
-    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
-    MockRead(ASYNC, OK)
-  };
+      MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello from http"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   CreateSessionWithNextProtos();
@@ -1791,20 +1763,18 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {
 TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolOnConnectFailure) {
   // Alternate-protocol job will fail before creating a QUIC session.
   StaticSocketDataProvider quic_data(nullptr, 0, nullptr, 0);
-  quic_data.set_connect_data(MockConnect(SYNCHRONOUS,
-                                         ERR_INTERNET_DISCONNECTED));
+  quic_data.set_connect_data(
+      MockConnect(SYNCHRONOUS, ERR_INTERNET_DISCONNECTED));
   socket_factory_.AddSocketDataProvider(&quic_data);
 
   // Main job which will succeed even though the alternate job fails.
   MockRead http_reads[] = {
-    MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-    MockRead("hello from http"),
-    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
-    MockRead(ASYNC, OK)
-  };
+      MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello from http"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
@@ -1831,8 +1801,8 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     nullptr, 0);
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
@@ -1844,12 +1814,8 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.com", 443));
   AddressList address;
-  host_resolver_.Resolve(info,
-                         DEFAULT_PRIORITY,
-                         &address,
-                         CompletionCallback(),
-                         nullptr,
-                         net_log_.bound());
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         nullptr, net_log_.bound());
 
   CreateSessionWithNextProtos();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);

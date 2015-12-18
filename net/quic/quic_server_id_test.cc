@@ -42,7 +42,7 @@ TEST(QuicServerIdTest, LessThan) {
   // Test combinations of host, port, and privacy being same on left and
   // right side of less than.
   EXPECT_FALSE(a_10_https < a_10_https);
-  EXPECT_TRUE(a_10_https  < a_10_https_private);
+  EXPECT_TRUE(a_10_https < a_10_https_private);
   EXPECT_FALSE(a_10_https_private < a_10_https);
   EXPECT_FALSE(a_10_https_private < a_10_https_private);
 

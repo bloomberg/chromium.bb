@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-#include <string>
 #include <sys/epoll.h>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -329,8 +329,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   void set_server_initial_stream_flow_control_receive_window(uint32 window) {
     CHECK(server_thread_.get() == nullptr);
-    DVLOG(1) << "Setting server initial stream flow control window: "
-             << window;
+    DVLOG(1) << "Setting server initial stream flow control window: " << window;
     server_config_.SetInitialStreamFlowControlWindowToSend(window);
   }
 
@@ -341,8 +340,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_config_.SetInitialSessionFlowControlWindowToSend(window);
   }
 
-  const QuicSentPacketManager *
-  GetSentPacketManagerFromFirstServerSession() const {
+  const QuicSentPacketManager* GetSentPacketManagerFromFirstServerSession()
+      const {
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
     QuicSession* session = dispatcher->session_map().begin()->second;
@@ -411,8 +410,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
       server_thread_->server()->SetChloMultiplier(chlo_multiplier_);
     }
     server_thread_->Initialize();
-    server_address_ = IPEndPoint(server_address_.address(),
-                                 server_thread_->GetPort());
+    server_address_ =
+        IPEndPoint(server_address_.address(), server_thread_->GetPort());
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
     TestWriterFactory* packet_writer_factory = new TestWriterFactory();
@@ -1001,10 +1000,10 @@ TEST_P(EndToEndTest, CorrectlyConfiguredFec) {
   server_thread_->Resume();
 
   // Verify that client's FEC configuration is correct.
-  EXPECT_EQ(expected_policy, QuicSpdySessionPeer::GetHeadersStream(
-                                 client_->client()->session())->fec_policy());
   EXPECT_EQ(expected_policy,
-            client_->GetOrCreateStream()->fec_policy());
+            QuicSpdySessionPeer::GetHeadersStream(client_->client()->session())
+                ->fec_policy());
+  EXPECT_EQ(expected_policy, client_->GetOrCreateStream()->fec_policy());
 }
 
 TEST_P(EndToEndTest, LargePostSmallBandwidthLargeBuffer) {
@@ -1131,8 +1130,8 @@ TEST_P(EndToEndTest, DISABLED_MultipleTermination) {
 
   // By default the stream protects itself from writes after terminte is set.
   // Override this to test the server handling buggy clients.
-  ReliableQuicStreamPeer::SetWriteSideClosed(
-      false, client_->GetOrCreateStream());
+  ReliableQuicStreamPeer::SetWriteSideClosed(false,
+                                             client_->GetOrCreateStream());
 
   EXPECT_DFATAL(client_->SendData("eep", true), "Fin already buffered");
 }
@@ -1205,7 +1204,7 @@ TEST_P(EndToEndTest, NegotiateCongestionControl) {
   EXPECT_EQ(expected_congestion_control_type,
             QuicSentPacketManagerPeer::GetSendAlgorithm(
                 *GetSentPacketManagerFromFirstServerSession())
-            ->GetCongestionControlType());
+                ->GetCongestionControlType());
 }
 
 TEST_P(EndToEndTest, LimitMaxOpenStreams) {
@@ -1249,8 +1248,8 @@ TEST_P(EndToEndTest, ClientSuggestsRTT) {
 TEST_P(EndToEndTest, MaxInitialRTT) {
   // Client tries to suggest twice the server's max initial rtt and the server
   // uses the max.
-  client_config_.SetInitialRoundTripTimeUsToSend(
-      2 * kMaxInitialRoundTripTimeUs);
+  client_config_.SetInitialRoundTripTimeUsToSend(2 *
+                                                 kMaxInitialRoundTripTimeUs);
 
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
@@ -1638,7 +1637,7 @@ TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
   QuicFlowController* server_connection_flow_controller =
       session->flow_controller();
   EXPECT_EQ(kSessionIFCW, QuicFlowControllerPeer::ReceiveWindowSize(
-      server_connection_flow_controller));
+                              server_connection_flow_controller));
   server_thread_->Resume();
 }
 
@@ -1690,8 +1689,8 @@ TEST_P(EndToEndTest, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   QuicSession* session = dispatcher->session_map().begin()->second;
-  EXPECT_EQ(0u, QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(
-      session).size());
+  EXPECT_EQ(0u, QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(session)
+                    .size());
   server_thread_->Resume();
 }
 
@@ -1904,21 +1903,9 @@ TEST_P(EndToEndTest, BadPacketHeaderFlags) {
       // invalid public flags
       0xFF,
       // connection_id
-      0x10,
-      0x32,
-      0x54,
-      0x76,
-      0x98,
-      0xBA,
-      0xDC,
-      0xFE,
+      0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
       // packet sequence number
-      0xBC,
-      0x9A,
-      0x78,
-      0x56,
-      0x34,
-      0x12,
+      0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
       // private flags
       0x00,
   };

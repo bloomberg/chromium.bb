@@ -78,9 +78,7 @@ class QuicServer : public EpollCallbackInterface {
   virtual QuicDispatcher* CreateQuicDispatcher();
 
   const QuicConfig& config() const { return config_; }
-  const QuicCryptoServerConfig& crypto_config() const {
-    return crypto_config_;
-  }
+  const QuicCryptoServerConfig& crypto_config() const { return crypto_config_; }
   const QuicVersionVector& supported_versions() const {
     return supported_versions_;
   }

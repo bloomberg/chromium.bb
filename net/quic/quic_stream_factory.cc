@@ -798,9 +798,8 @@ void QuicStreamFactory::CreateAuxilaryJob(const QuicServerId server_id,
                                     aux_job->GetWeakPtr()));
 }
 
-bool QuicStreamFactory::OnResolution(
-    const QuicServerId& server_id,
-    const AddressList& address_list) {
+bool QuicStreamFactory::OnResolution(const QuicServerId& server_id,
+                                     const AddressList& address_list) {
   DCHECK(!HasActiveSession(server_id));
   if (disable_connection_pooling_) {
     return false;
@@ -1166,8 +1165,7 @@ void QuicStreamFactory::OnCACertChanged(const X509Certificate* cert) {
   CloseAllSessions(ERR_CERT_DATABASE_CHANGED);
 }
 
-bool QuicStreamFactory::HasActiveSession(
-    const QuicServerId& server_id) const {
+bool QuicStreamFactory::HasActiveSession(const QuicServerId& server_id) const {
   // TODO(rtenneti): crbug.com/498823 - delete active_sessions_.empty() check.
   if (active_sessions_.empty())
     return false;
@@ -1186,8 +1184,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
                                      const BoundNetLog& net_log,
                                      QuicChromiumClientSession** session) {
   bool enable_port_selection = enable_port_selection_;
-  if (enable_port_selection &&
-      ContainsKey(gone_away_aliases_, server_id)) {
+  if (enable_port_selection && ContainsKey(gone_away_aliases_, server_id)) {
     // Disable port selection when the server is going away.
     // There is no point in trying to return to the same server, if
     // that server is no longer handling requests.
@@ -1199,13 +1196,13 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
   IPEndPoint addr = *address_list.begin();
   scoped_refptr<PortSuggester> port_suggester =
       new PortSuggester(server_id.host_port_pair(), port_seed_);
-  DatagramSocket::BindType bind_type = enable_port_selection ?
-      DatagramSocket::RANDOM_BIND :  // Use our callback.
-      DatagramSocket::DEFAULT_BIND;  // Use OS to randomize.
+  DatagramSocket::BindType bind_type =
+      enable_port_selection ? DatagramSocket::RANDOM_BIND
+                            :            // Use our callback.
+          DatagramSocket::DEFAULT_BIND;  // Use OS to randomize.
   scoped_ptr<DatagramClientSocket> socket(
       client_socket_factory_->CreateDatagramClientSocket(
-          bind_type,
-          base::Bind(&PortSuggester::SuggestPort, port_suggester),
+          bind_type, base::Bind(&PortSuggester::SuggestPort, port_suggester),
           net_log.net_log(), net_log.source()));
 
   if (enable_non_blocking_io_ &&
@@ -1307,9 +1304,8 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
   all_sessions_[*session] = server_id;  // owning pointer
 
   (*session)->Initialize();
-  bool closed_during_initialize =
-      !ContainsKey(all_sessions_, *session) ||
-      !(*session)->connection()->connected();
+  bool closed_during_initialize = !ContainsKey(all_sessions_, *session) ||
+                                  !(*session)->connection()->connected();
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ClosedDuringInitializeSession",
                         closed_during_initialize);
   if (closed_during_initialize) {

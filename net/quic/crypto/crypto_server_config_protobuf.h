@@ -26,15 +26,9 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
   // private key is specific to the algorithm in question.
   class NET_EXPORT_PRIVATE PrivateKey {
    public:
-    QuicTag tag() const {
-      return tag_;
-    }
-    void set_tag(QuicTag tag) {
-      tag_ = tag;
-    }
-    std::string private_key() const {
-      return private_key_;
-    }
+    QuicTag tag() const { return tag_; }
+    void set_tag(QuicTag tag) { tag_ = tag; }
+    std::string private_key() const { return private_key_; }
     void set_private_key(const std::string& key) { private_key_ = key; }
 
    private:
@@ -45,55 +39,35 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
   QuicServerConfigProtobuf();
   ~QuicServerConfigProtobuf();
 
-  size_t key_size() const {
-    return keys_.size();
-  }
+  size_t key_size() const { return keys_.size(); }
 
   const PrivateKey& key(size_t i) const {
     DCHECK_GT(keys_.size(), i);
     return *keys_[i];
   }
 
-  std::string config() const {
-    return config_;
-  }
+  std::string config() const { return config_; }
 
-  void set_config(base::StringPiece config) {
-    config.CopyToString(&config_);
-  }
+  void set_config(base::StringPiece config) { config.CopyToString(&config_); }
 
   QuicServerConfigProtobuf::PrivateKey* add_key() {
     keys_.push_back(new PrivateKey);
     return keys_.back();
   }
 
-  void clear_key() {
-    STLDeleteElements(&keys_);
-  }
+  void clear_key() { STLDeleteElements(&keys_); }
 
-  bool has_primary_time() const {
-    return primary_time_ > 0;
-  }
+  bool has_primary_time() const { return primary_time_ > 0; }
 
-  int64 primary_time() const {
-    return primary_time_;
-  }
+  int64 primary_time() const { return primary_time_; }
 
-  void set_primary_time(int64 primary_time) {
-    primary_time_ = primary_time;
-  }
+  void set_primary_time(int64 primary_time) { primary_time_ = primary_time; }
 
-  bool has_priority() const {
-    return priority_ > 0;
-  }
+  bool has_priority() const { return priority_ > 0; }
 
-  uint64 priority() const {
-    return priority_;
-  }
+  uint64 priority() const { return priority_; }
 
-  void set_priority(int64 priority) {
-    priority_ = priority;
-  }
+  void set_priority(int64 priority) { priority_ = priority; }
 
   bool has_source_address_token_secret_override() const {
     return !source_address_token_secret_override_.empty();

@@ -44,7 +44,7 @@ class QuicSimplePerConnectionPacketWriter : public QuicPacketWriter {
   void OnWriteComplete(WriteResult result);
 
   QuicSimpleServerPacketWriter* shared_writer_;  // Not owned.
-  QuicConnection* connection_;  // Not owned.
+  QuicConnection* connection_;                   // Not owned.
 
   base::WeakPtrFactory<QuicSimplePerConnectionPacketWriter> weak_factory_;
 

@@ -21,8 +21,7 @@ namespace {
 
 class QuicEpollAlarm : public QuicAlarm {
  public:
-  QuicEpollAlarm(EpollServer* epoll_server,
-                 QuicAlarm::Delegate* delegate)
+  QuicEpollAlarm(EpollServer* epoll_server, QuicAlarm::Delegate* delegate)
       : QuicAlarm(delegate),
         epoll_server_(epoll_server),
         epoll_alarm_impl_(this) {}
@@ -65,11 +64,9 @@ class QuicEpollAlarm : public QuicAlarm {
 QuicEpollConnectionHelper::QuicEpollConnectionHelper(EpollServer* epoll_server)
     : epoll_server_(epoll_server),
       clock_(epoll_server),
-      random_generator_(QuicRandom::GetInstance()) {
-}
+      random_generator_(QuicRandom::GetInstance()) {}
 
-QuicEpollConnectionHelper::~QuicEpollConnectionHelper() {
-}
+QuicEpollConnectionHelper::~QuicEpollConnectionHelper() {}
 
 const QuicClock* QuicEpollConnectionHelper::GetClock() const {
   return &clock_;

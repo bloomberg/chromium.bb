@@ -25,11 +25,9 @@ QuicTestPacketMaker::QuicTestPacketMaker(QuicVersion version,
       clock_(clock),
       host_(host),
       spdy_request_framer_(HTTP2),
-      spdy_response_framer_(HTTP2) {
-}
+      spdy_response_framer_(HTTP2) {}
 
-QuicTestPacketMaker::~QuicTestPacketMaker() {
-}
+QuicTestPacketMaker::~QuicTestPacketMaker() {}
 
 void QuicTestPacketMaker::set_hostname(const std::string& host) {
   host_.assign(host);

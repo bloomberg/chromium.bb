@@ -222,9 +222,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void OnCertAdded(const X509Certificate* cert) override;
   void OnCACertChanged(const X509Certificate* cert) override;
 
-  bool require_confirmation() const {
-    return require_confirmation_;
-  }
+  bool require_confirmation() const { return require_confirmation_; }
 
   void set_require_confirmation(bool require_confirmation);
 

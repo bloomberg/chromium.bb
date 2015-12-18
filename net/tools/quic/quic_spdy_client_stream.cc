@@ -28,8 +28,7 @@ QuicSpdyClientStream::QuicSpdyClientStream(QuicStreamId id,
       header_bytes_written_(0),
       allow_bidirectional_data_(false) {}
 
-QuicSpdyClientStream::~QuicSpdyClientStream() {
-}
+QuicSpdyClientStream::~QuicSpdyClientStream() {}
 
 void QuicSpdyClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
   if (!allow_bidirectional_data_ && !write_side_closed()) {
@@ -117,8 +116,7 @@ size_t QuicSpdyClientStream::SendRequest(const SpdyHeaderBlock& headers,
                                          bool fin) {
   bool send_fin_with_headers = fin && body.empty();
   size_t bytes_sent = body.size();
-  header_bytes_written_ =
-      WriteHeaders(headers, send_fin_with_headers, nullptr);
+  header_bytes_written_ = WriteHeaders(headers, send_fin_with_headers, nullptr);
   bytes_sent += header_bytes_written_;
 
   if (!body.empty()) {

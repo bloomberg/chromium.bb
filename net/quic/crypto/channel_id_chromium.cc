@@ -18,8 +18,7 @@ namespace net {
 
 ChannelIDKeyChromium::ChannelIDKeyChromium(
     scoped_ptr<crypto::ECPrivateKey> ec_private_key)
-    : ec_private_key_(ec_private_key.Pass()) {
-}
+    : ec_private_key_(std::move(ec_private_key)) {}
 
 ChannelIDKeyChromium::~ChannelIDKeyChromium() {}
 
@@ -103,13 +102,11 @@ class ChannelIDSourceChromium::Job {
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
-ChannelIDSourceChromium::Job::Job(
-    ChannelIDSourceChromium* channel_id_source,
-    ChannelIDService* channel_id_service)
+ChannelIDSourceChromium::Job::Job(ChannelIDSourceChromium* channel_id_source,
+                                  ChannelIDService* channel_id_service)
     : channel_id_source_(channel_id_source),
       channel_id_service_(channel_id_service),
-      next_state_(STATE_NONE) {
-}
+      next_state_(STATE_NONE) {}
 
 QuicAsyncStatus ChannelIDSourceChromium::Job::GetChannelIDKey(
     const std::string& hostname,
@@ -204,8 +201,7 @@ int ChannelIDSourceChromium::Job::DoGetChannelIDKeyComplete(int result) {
 
 ChannelIDSourceChromium::ChannelIDSourceChromium(
     ChannelIDService* channel_id_service)
-    : channel_id_service_(channel_id_service) {
-}
+    : channel_id_service_(channel_id_service) {}
 
 ChannelIDSourceChromium::~ChannelIDSourceChromium() {
   STLDeleteElements(&active_jobs_);
@@ -216,8 +212,8 @@ QuicAsyncStatus ChannelIDSourceChromium::GetChannelIDKey(
     scoped_ptr<ChannelIDKey>* channel_id_key,
     ChannelIDSourceCallback* callback) {
   scoped_ptr<Job> job(new Job(this, channel_id_service_));
-  QuicAsyncStatus status = job->GetChannelIDKey(hostname, channel_id_key,
-                                                callback);
+  QuicAsyncStatus status =
+      job->GetChannelIDKey(hostname, channel_id_key, callback);
   if (status == QUIC_PENDING) {
     active_jobs_.insert(job.release());
   }

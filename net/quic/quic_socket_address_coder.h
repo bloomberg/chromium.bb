@@ -26,13 +26,9 @@ class NET_EXPORT_PRIVATE QuicSocketAddressCoder {
 
   bool Decode(const char* data, size_t length);
 
-  IPAddressNumber ip() const {
-    return address_.address();
-  }
+  IPAddressNumber ip() const { return address_.address(); }
 
-  uint16 port() const {
-    return address_.port();
-  }
+  uint16 port() const { return address_.port(); }
 
  private:
   IPEndPoint address_;

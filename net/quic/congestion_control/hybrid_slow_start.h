@@ -54,9 +54,7 @@ class NET_EXPORT_PRIVATE HybridSlowStart {
   void StartReceiveRound(QuicPacketNumber last_sent);
 
   // Whether slow start has started.
-  bool started() const {
-    return started_;
-  }
+  bool started() const { return started_; }
 
  private:
   // Whether a condition for exiting slow start has been found.

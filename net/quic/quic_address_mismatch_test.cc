@@ -34,8 +34,7 @@ TEST(QuicAddressMismatchTest, GetAddressMismatch) {
   EXPECT_EQ(-1, GetAddressMismatch(IPEndPoint(ip4_1, 443), IPEndPoint()));
 
   EXPECT_EQ(QUIC_ADDRESS_AND_PORT_MATCH_V4_V4,
-            GetAddressMismatch(IPEndPoint(ip4_1, 443),
-                               IPEndPoint(ip4_1, 443)));
+            GetAddressMismatch(IPEndPoint(ip4_1, 443), IPEndPoint(ip4_1, 443)));
   EXPECT_EQ(QUIC_ADDRESS_AND_PORT_MATCH_V4_V4,
             GetAddressMismatch(IPEndPoint(ip4_1, 443),
                                IPEndPoint(ip4_mapped_1, 443)));
@@ -43,25 +42,21 @@ TEST(QuicAddressMismatchTest, GetAddressMismatch) {
             GetAddressMismatch(IPEndPoint(ip4_mapped_1, 443),
                                IPEndPoint(ip4_mapped_1, 443)));
   EXPECT_EQ(QUIC_ADDRESS_AND_PORT_MATCH_V6_V6,
-            GetAddressMismatch(IPEndPoint(ip6_1, 443),
-                               IPEndPoint(ip6_1, 443)));
+            GetAddressMismatch(IPEndPoint(ip6_1, 443), IPEndPoint(ip6_1, 443)));
 
   EXPECT_EQ(QUIC_PORT_MISMATCH_V4_V4,
-            GetAddressMismatch(IPEndPoint(ip4_1, 80),
-                               IPEndPoint(ip4_1, 443)));
-  EXPECT_EQ(QUIC_PORT_MISMATCH_V4_V4,
-            GetAddressMismatch(IPEndPoint(ip4_1, 80),
-                               IPEndPoint(ip4_mapped_1, 443)));
+            GetAddressMismatch(IPEndPoint(ip4_1, 80), IPEndPoint(ip4_1, 443)));
+  EXPECT_EQ(
+      QUIC_PORT_MISMATCH_V4_V4,
+      GetAddressMismatch(IPEndPoint(ip4_1, 80), IPEndPoint(ip4_mapped_1, 443)));
   EXPECT_EQ(QUIC_PORT_MISMATCH_V4_V4,
             GetAddressMismatch(IPEndPoint(ip4_mapped_1, 80),
                                IPEndPoint(ip4_mapped_1, 443)));
   EXPECT_EQ(QUIC_PORT_MISMATCH_V6_V6,
-            GetAddressMismatch(IPEndPoint(ip6_1, 80),
-                               IPEndPoint(ip6_1, 443)));
+            GetAddressMismatch(IPEndPoint(ip6_1, 80), IPEndPoint(ip6_1, 443)));
 
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V4_V4,
-            GetAddressMismatch(IPEndPoint(ip4_1, 443),
-                               IPEndPoint(ip4_2, 443)));
+            GetAddressMismatch(IPEndPoint(ip4_1, 443), IPEndPoint(ip4_2, 443)));
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V4_V4,
             GetAddressMismatch(IPEndPoint(ip4_1, 443),
                                IPEndPoint(ip4_mapped_2, 443)));
@@ -69,44 +64,37 @@ TEST(QuicAddressMismatchTest, GetAddressMismatch) {
             GetAddressMismatch(IPEndPoint(ip4_mapped_1, 443),
                                IPEndPoint(ip4_mapped_2, 443)));
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V4_V4,
-            GetAddressMismatch(IPEndPoint(ip4_1, 80),
-                               IPEndPoint(ip4_2, 443)));
-  EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V4_V4,
-            GetAddressMismatch(IPEndPoint(ip4_1, 80),
-                               IPEndPoint(ip4_mapped_2, 443)));
+            GetAddressMismatch(IPEndPoint(ip4_1, 80), IPEndPoint(ip4_2, 443)));
+  EXPECT_EQ(
+      QUIC_ADDRESS_MISMATCH_V4_V4,
+      GetAddressMismatch(IPEndPoint(ip4_1, 80), IPEndPoint(ip4_mapped_2, 443)));
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V4_V4,
             GetAddressMismatch(IPEndPoint(ip4_mapped_1, 80),
                                IPEndPoint(ip4_mapped_2, 443)));
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V6_V6,
-            GetAddressMismatch(IPEndPoint(ip6_1, 443),
-                               IPEndPoint(ip6_2, 443)));
+            GetAddressMismatch(IPEndPoint(ip6_1, 443), IPEndPoint(ip6_2, 443)));
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V6_V6,
-            GetAddressMismatch(IPEndPoint(ip6_1, 80),
-                               IPEndPoint(ip6_2, 443)));
+            GetAddressMismatch(IPEndPoint(ip6_1, 80), IPEndPoint(ip6_2, 443)));
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V4_V6,
-            GetAddressMismatch(IPEndPoint(ip4_1, 443),
-                               IPEndPoint(ip6_1, 443)));
+            GetAddressMismatch(IPEndPoint(ip4_1, 443), IPEndPoint(ip6_1, 443)));
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V4_V6,
             GetAddressMismatch(IPEndPoint(ip4_mapped_1, 443),
                                IPEndPoint(ip6_1, 443)));
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V4_V6,
-            GetAddressMismatch(IPEndPoint(ip4_1, 80),
-                               IPEndPoint(ip6_1, 443)));
-  EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V4_V6,
-            GetAddressMismatch(IPEndPoint(ip4_mapped_1, 80),
-                               IPEndPoint(ip6_1, 443)));
+            GetAddressMismatch(IPEndPoint(ip4_1, 80), IPEndPoint(ip6_1, 443)));
+  EXPECT_EQ(
+      QUIC_ADDRESS_MISMATCH_V4_V6,
+      GetAddressMismatch(IPEndPoint(ip4_mapped_1, 80), IPEndPoint(ip6_1, 443)));
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V6_V4,
-            GetAddressMismatch(IPEndPoint(ip6_1, 443),
-                               IPEndPoint(ip4_1, 443)));
+            GetAddressMismatch(IPEndPoint(ip6_1, 443), IPEndPoint(ip4_1, 443)));
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V6_V4,
             GetAddressMismatch(IPEndPoint(ip6_1, 443),
                                IPEndPoint(ip4_mapped_1, 443)));
   EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V6_V4,
-            GetAddressMismatch(IPEndPoint(ip6_1, 80),
-                               IPEndPoint(ip4_1, 443)));
-  EXPECT_EQ(QUIC_ADDRESS_MISMATCH_V6_V4,
-            GetAddressMismatch(IPEndPoint(ip6_1, 80),
-                               IPEndPoint(ip4_mapped_1, 443)));
+            GetAddressMismatch(IPEndPoint(ip6_1, 80), IPEndPoint(ip4_1, 443)));
+  EXPECT_EQ(
+      QUIC_ADDRESS_MISMATCH_V6_V4,
+      GetAddressMismatch(IPEndPoint(ip6_1, 80), IPEndPoint(ip4_mapped_1, 443)));
 }
 
 }  // namespace test

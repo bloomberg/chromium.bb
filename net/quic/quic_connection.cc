@@ -79,9 +79,7 @@ bool Near(QuicPacketNumber a, QuicPacketNumber b) {
 // An alarm that is scheduled to send an ack if a timeout occurs.
 class AckAlarm : public QuicAlarm::Delegate {
  public:
-  explicit AckAlarm(QuicConnection* connection)
-      : connection_(connection) {
-  }
+  explicit AckAlarm(QuicConnection* connection) : connection_(connection) {}
 
   QuicTime OnAlarm() override {
     DCHECK(connection_->ack_frame_updated());
@@ -101,8 +99,7 @@ class AckAlarm : public QuicAlarm::Delegate {
 class RetransmissionAlarm : public QuicAlarm::Delegate {
  public:
   explicit RetransmissionAlarm(QuicConnection* connection)
-      : connection_(connection) {
-  }
+      : connection_(connection) {}
 
   QuicTime OnAlarm() override {
     connection_->OnRetransmissionTimeout();
@@ -119,9 +116,7 @@ class RetransmissionAlarm : public QuicAlarm::Delegate {
 // before sending packets and fires when the packet may be sent.
 class SendAlarm : public QuicAlarm::Delegate {
  public:
-  explicit SendAlarm(QuicConnection* connection)
-      : connection_(connection) {
-  }
+  explicit SendAlarm(QuicConnection* connection) : connection_(connection) {}
 
   QuicTime OnAlarm() override {
     connection_->WriteIfNotBlocked();
@@ -137,9 +132,7 @@ class SendAlarm : public QuicAlarm::Delegate {
 
 class TimeoutAlarm : public QuicAlarm::Delegate {
  public:
-  explicit TimeoutAlarm(QuicConnection* connection)
-      : connection_(connection) {
-  }
+  explicit TimeoutAlarm(QuicConnection* connection) : connection_(connection) {}
 
   QuicTime OnAlarm() override {
     connection_->CheckForTimeout();
@@ -155,9 +148,7 @@ class TimeoutAlarm : public QuicAlarm::Delegate {
 
 class PingAlarm : public QuicAlarm::Delegate {
  public:
-  explicit PingAlarm(QuicConnection* connection)
-      : connection_(connection) {
-  }
+  explicit PingAlarm(QuicConnection* connection) : connection_(connection) {}
 
   QuicTime OnAlarm() override {
     connection_->SendPing();
@@ -332,8 +323,8 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       largest_received_packet_size_(0),
       goaway_sent_(false),
       goaway_received_(false) {
-  DVLOG(1) << ENDPOINT << "Created connection with connection_id: "
-           << connection_id;
+  DVLOG(1) << ENDPOINT
+           << "Created connection with connection_id: " << connection_id;
   framer_.set_visitor(this);
   framer_.set_received_entropy_calculator(&received_packet_manager_);
   last_stop_waiting_frame_.least_unacked = 0;
@@ -589,8 +580,7 @@ void QuicConnection::OnVersionNegotiationPacket(
   RetransmitUnackedPackets(ALL_UNACKED_RETRANSMISSION);
 }
 
-void QuicConnection::OnRevivedPacket() {
-}
+void QuicConnection::OnRevivedPacket() {}
 
 bool QuicConnection::OnUnauthenticatedPublicHeader(
     const QuicPacketPublicHeader& header) {
@@ -1038,7 +1028,7 @@ void QuicConnection::MaybeCloseIfTooManyOutstandingPackets() {
   // This occurs if we don't discard old packets we've sent fast enough.
   // It's possible largest observed is less than least unacked.
   if (sent_packet_manager_.largest_observed() >
-          (sent_packet_manager_.GetLeastUnacked() + kMaxTrackedPackets)) {
+      (sent_packet_manager_.GetLeastUnacked() + kMaxTrackedPackets)) {
     SendConnectionCloseWithDetails(
         QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS,
         StringPrintf("More than %" PRIu64 " outstanding.", kMaxTrackedPackets));
@@ -1091,9 +1081,9 @@ void QuicConnection::SendVersionNegotiationPacket() {
   scoped_ptr<QuicEncryptedPacket> version_packet(
       packet_generator_.SerializeVersionNegotiationPacket(
           framer_.supported_versions()));
-  WriteResult result = writer_->WritePacket(
-      version_packet->data(), version_packet->length(),
-      self_address().address(), peer_address());
+  WriteResult result =
+      writer_->WritePacket(version_packet->data(), version_packet->length(),
+                           self_address().address(), peer_address());
 
   if (result.status == WRITE_STATUS_ERROR) {
     OnWriteError(result.error_code);
@@ -1261,8 +1251,8 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   SetPingAlarm();
 }
 
-void QuicConnection::CheckForAddressMigration(
-    const IPEndPoint& self_address, const IPEndPoint& peer_address) {
+void QuicConnection::CheckForAddressMigration(const IPEndPoint& self_address,
+                                              const IPEndPoint& peer_address) {
   peer_ip_changed_ = false;
   peer_port_changed_ = false;
   self_ip_changed_ = false;
@@ -1312,15 +1302,14 @@ void QuicConnection::OnCanWrite() {
     return;
   }
 
-  { // Limit the scope of the bundler. ACK inclusion happens elsewhere.
+  {  // Limit the scope of the bundler. ACK inclusion happens elsewhere.
     ScopedPacketBundler bundler(this, NO_ACK);
     visitor_->OnCanWrite();
   }
 
   // After the visitor writes, it may have caused the socket to become write
   // blocked or the congestion manager to prohibit sending, so check again.
-  if (visitor_->WillingAndAbleToWrite() &&
-      !resume_writes_alarm_->IsSet() &&
+  if (visitor_->WillingAndAbleToWrite() && !resume_writes_alarm_->IsSet() &&
       CanWrite(HAS_RETRANSMITTABLE_DATA)) {
     // We're not write blocked, but some stream didn't write out all of its
     // bytes. Register for 'immediate' resumption so we'll keep writing after
@@ -1525,8 +1514,8 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
   }
 
   QuicTime now = clock_->Now();
-  QuicTime::Delta delay = sent_packet_manager_.TimeUntilSend(
-      now, retransmittable);
+  QuicTime::Delta delay =
+      sent_packet_manager_.TimeUntilSend(now, retransmittable);
   if (delay.IsInfinite()) {
     send_alarm_->Cancel();
     return false;
@@ -1616,10 +1605,9 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   // min_rtt_, especially in cases where the thread blocks or gets swapped out
   // during the WritePacket below.
   QuicTime packet_send_time = clock_->Now();
-  WriteResult result = writer_->WritePacket(encrypted->data(),
-                                            encrypted->length(),
-                                            self_address().address(),
-                                            peer_address());
+  WriteResult result =
+      writer_->WritePacket(encrypted->data(), encrypted->length(),
+                           self_address().address(), peer_address());
   if (result.error_code == ERR_IO_PENDING) {
     DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
   }
@@ -1692,8 +1680,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
 
 bool QuicConnection::ShouldDiscardPacket(const QueuedPacket& packet) {
   if (!connected_) {
-    DVLOG(1) << ENDPOINT
-             << "Not sending packet as connection is disconnected.";
+    DVLOG(1) << ENDPOINT << "Not sending packet as connection is disconnected.";
     return true;
   }
 
@@ -1722,8 +1709,8 @@ bool QuicConnection::ShouldDiscardPacket(const QueuedPacket& packet) {
 }
 
 void QuicConnection::OnWriteError(int error_code) {
-  DVLOG(1) << ENDPOINT << "Write failed with error: " << error_code
-           << " (" << ErrorToString(error_code) << ")";
+  DVLOG(1) << ENDPOINT << "Write failed with error: " << error_code << " ("
+           << ErrorToString(error_code) << ")";
   // We can't send an error as the socket is presumably borked.
   CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
 }
@@ -2015,9 +2002,9 @@ void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,
 
 void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
                                                const string& details) {
-  DVLOG(1) << ENDPOINT << "Force closing " << connection_id()
-           << " with error " << QuicUtils::ErrorToString(error)
-           << " (" << error << ") " << details;
+  DVLOG(1) << ENDPOINT << "Force closing " << connection_id() << " with error "
+           << QuicUtils::ErrorToString(error) << " (" << error << ") "
+           << details;
   // Don't send explicit connection close packets for timeouts.
   // This is particularly important on mobile, where connections are short.
   if (silent_close_enabled_ &&
@@ -2065,8 +2052,7 @@ void QuicConnection::SendGoAway(QuicErrorCode error,
   goaway_sent_ = true;
 
   DVLOG(1) << ENDPOINT << "Going away with error "
-           << QuicUtils::ErrorToString(error)
-           << " (" << error << ")";
+           << QuicUtils::ErrorToString(error) << " (" << error << ")";
 
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
@@ -2104,8 +2090,8 @@ void QuicConnection::SetMaxPacketLength(QuicByteCount length) {
 }
 
 bool QuicConnection::HasQueuedData() const {
-  return pending_version_negotiation_packet_ ||
-      !queued_packets_.empty() || packet_generator_.HasQueuedFrames();
+  return pending_version_negotiation_packet_ || !queued_packets_.empty() ||
+         packet_generator_.HasQueuedFrames();
 }
 
 void QuicConnection::EnableSavingCryptoPackets() {
@@ -2119,8 +2105,8 @@ bool QuicConnection::CanWriteStreamData() {
     return false;
   }
 
-  IsHandshake pending_handshake = visitor_->HasPendingHandshake() ?
-      IS_HANDSHAKE : NOT_HANDSHAKE;
+  IsHandshake pending_handshake =
+      visitor_->HasPendingHandshake() ? IS_HANDSHAKE : NOT_HANDSHAKE;
   // Sending queued packets may have caused the socket to become write blocked,
   // or the congestion manager to prohibit sending.  If we've sent everything
   // we had queued and we're still not blocked, let the visitor know it can
@@ -2176,12 +2162,13 @@ void QuicConnection::CheckForTimeout() {
   if (!overall_connection_timeout_.IsInfinite()) {
     QuicTime::Delta connected_duration =
         now.Subtract(stats_.connection_creation_time);
-    DVLOG(1) << ENDPOINT << "connection time: "
-             << connected_duration.ToMicroseconds() << " overall timeout: "
+    DVLOG(1) << ENDPOINT
+             << "connection time: " << connected_duration.ToMicroseconds()
+             << " overall timeout: "
              << overall_connection_timeout_.ToMicroseconds();
     if (connected_duration >= overall_connection_timeout_) {
-      DVLOG(1) << ENDPOINT <<
-          "Connection timedout due to overall connection timeout.";
+      DVLOG(1) << ENDPOINT
+               << "Connection timedout due to overall connection timeout.";
       SendConnectionClose(QUIC_CONNECTION_OVERALL_TIMED_OUT);
       return;
     }
@@ -2191,14 +2178,14 @@ void QuicConnection::CheckForTimeout() {
 }
 
 void QuicConnection::SetTimeoutAlarm() {
-  QuicTime time_of_last_packet = max(time_of_last_received_packet_,
-                                     time_of_last_sent_new_packet_);
+  QuicTime time_of_last_packet =
+      max(time_of_last_received_packet_, time_of_last_sent_new_packet_);
 
   QuicTime deadline = time_of_last_packet.Add(idle_network_timeout_);
   if (!overall_connection_timeout_.IsInfinite()) {
-    deadline = min(deadline,
-                   stats_.connection_creation_time.Add(
-                       overall_connection_timeout_));
+    deadline =
+        min(deadline,
+            stats_.connection_creation_time.Add(overall_connection_timeout_));
   }
 
   timeout_alarm_->Cancel();

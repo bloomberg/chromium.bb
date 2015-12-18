@@ -27,8 +27,8 @@ const int kCubeScale = 40;  // 1024*1024^3 (first 1024 is from 0.100^3)
                             // where 0.100 is 100 ms which is the scaling
                             // round trip time.
 const int kCubeCongestionWindowScale = 410;
-const uint64 kCubeFactor = (UINT64_C(1) << kCubeScale) /
-    kCubeCongestionWindowScale;
+const uint64 kCubeFactor =
+    (UINT64_C(1) << kCubeScale) / kCubeCongestionWindowScale;
 
 const uint32 kDefaultNumConnections = 2;
 const float kBeta = 0.7f;  // Default Cubic backoff factor.
@@ -128,7 +128,7 @@ QuicPacketCount Cubic::CongestionWindowAfterAck(
 
   if (!epoch_.IsInitialized()) {
     // First ACK after a loss event.
-    epoch_ = current_time;  // Start of epoch.
+    epoch_ = current_time;     // Start of epoch.
     acked_packets_count_ = 1;  // Reset count.
     // Reset estimated_tcp_congestion_window_ to be in sync with cubic.
     estimated_tcp_congestion_window_ = current_congestion_window;
@@ -162,8 +162,8 @@ QuicPacketCount Cubic::CongestionWindowAfterAck(
       kNumMicrosPerSecond;
 
   int64 offset = time_to_origin_point_ - elapsed_time;
-  QuicPacketCount delta_congestion_window = (kCubeCongestionWindowScale
-      * offset * offset * offset) >> kCubeScale;
+  QuicPacketCount delta_congestion_window =
+      (kCubeCongestionWindowScale * offset * offset * offset) >> kCubeScale;
 
   QuicPacketCount target_congestion_window =
       origin_point_congestion_window_ - delta_congestion_window;

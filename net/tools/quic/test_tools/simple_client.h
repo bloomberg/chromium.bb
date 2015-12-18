@@ -25,14 +25,14 @@ class SimpleClient {
   // server, possibly with multiple send operations.  Returns 'size' on success
   // and -1 on error.  Callers should assume that any return value other than
   // 'size' indicates failure.
-  virtual ssize_t Send(const void *buffer, size_t size) = 0;
+  virtual ssize_t Send(const void* buffer, size_t size) = 0;
 
   // Serialize and send an HTTP request.
   virtual ssize_t SendMessage(const HTTPMessage& message) = 0;
 
   // Clears any outstanding state, sends 'size' bytes from 'buffer' and waits
   // for a response or an error.
-  virtual ssize_t SendAndWaitForResponse(const void *buffer, size_t size) = 0;
+  virtual ssize_t SendAndWaitForResponse(const void* buffer, size_t size) = 0;
 
   // Clears any outstanding state and sends a simple GET of 'uri' to the
   // server.

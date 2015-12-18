@@ -17,7 +17,8 @@ namespace {
 
 // Clear OpenSSL error stack.
 void ClearOpenSslErrors() {
-  while (ERR_get_error()) {}
+  while (ERR_get_error()) {
+  }
 }
 
 // In debug builds only, log OpenSSL error stack. Then clear OpenSSL error
@@ -58,8 +59,8 @@ bool AeadBaseDecrypter::SetKey(StringPiece key) {
   memcpy(key_, key.data(), key.size());
 
   EVP_AEAD_CTX_cleanup(ctx_.get());
-  if (!EVP_AEAD_CTX_init(ctx_.get(), aead_alg_, key_, key_size_,
-                         auth_tag_size_, nullptr)) {
+  if (!EVP_AEAD_CTX_init(ctx_.get(), aead_alg_, key_, key_size_, auth_tag_size_,
+                         nullptr)) {
     DLogOpenSslErrors();
     return false;
   }

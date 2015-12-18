@@ -43,9 +43,7 @@ class OneShotVisitor : public CryptoFramerVisitorInterface {
 }  // namespace
 
 CryptoFramer::CryptoFramer()
-    : visitor_(nullptr),
-      num_entries_(0),
-      values_len_(0) {
+    : visitor_(nullptr), num_entries_(0), values_len_(0) {
   Clear();
 }
 
@@ -220,7 +218,7 @@ QuicErrorCode CryptoFramer::Process(StringPiece input) {
       values_len_ = 0;
     case STATE_READING_TAGS_AND_LENGTHS: {
       if (reader.BytesRemaining() <
-              num_entries_ * (kQuicTagSize + kCryptoEndOffsetSize)) {
+          num_entries_ * (kQuicTagSize + kCryptoEndOffsetSize)) {
         break;
       }
 
@@ -228,8 +226,8 @@ QuicErrorCode CryptoFramer::Process(StringPiece input) {
       for (unsigned i = 0; i < num_entries_; ++i) {
         QuicTag tag;
         reader.ReadUInt32(&tag);
-        if (i > 0 && tag <= tags_and_lengths_[i-1].first) {
-          if (tag == tags_and_lengths_[i-1].first) {
+        if (i > 0 && tag <= tags_and_lengths_[i - 1].first) {
+          if (tag == tags_and_lengths_[i - 1].first) {
             return QUIC_CRYPTO_DUPLICATE_TAG;
           }
           return QUIC_CRYPTO_TAGS_OUT_OF_ORDER;

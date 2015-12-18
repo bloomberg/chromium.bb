@@ -51,9 +51,7 @@ const SpdyPriority kHighestPriority = kV3HighestPriority;
 
 class TestCryptoStream : public QuicCryptoStream {
  public:
-  explicit TestCryptoStream(QuicSession* session)
-      : QuicCryptoStream(session) {
-  }
+  explicit TestCryptoStream(QuicSession* session) : QuicCryptoStream(session) {}
 
   void OnHandshakeMessage(const CryptoHandshakeMessage& /*message*/) override {
     encryption_established_ = true;
@@ -65,8 +63,8 @@ class TestCryptoStream : public QuicCryptoStream {
     session()->config()->SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
     session()->config()->ToHandshakeMessage(&msg);
-    const QuicErrorCode error = session()->config()->ProcessPeerHello(
-        msg, CLIENT, &error_details);
+    const QuicErrorCode error =
+        session()->config()->ProcessPeerHello(msg, CLIENT, &error_details);
     EXPECT_EQ(QUIC_NO_ERROR, error);
     session()->OnConfigNegotiated();
     session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
@@ -103,9 +101,7 @@ class TestStream : public QuicSpdyStream {
 class StreamBlocker {
  public:
   StreamBlocker(QuicSession* session, QuicStreamId stream_id)
-      : session_(session),
-        stream_id_(stream_id) {
-  }
+      : session_(session), stream_id_(stream_id) {}
 
   void MarkConnectionLevelWriteBlocked() {
     session_->MarkConnectionLevelWriteBlocked(stream_id_, kDefaultPriority);
@@ -523,8 +519,8 @@ TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
   session_.MarkConnectionLevelWriteBlocked(stream6->id(), kDefaultPriority);
   session_.MarkConnectionLevelWriteBlocked(stream4->id(), kDefaultPriority);
 
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillRepeatedly(
-      Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _))
+      .WillRepeatedly(Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(*send_algorithm, GetCongestionWindow())
       .WillRepeatedly(Return(kMaxPacketSize * 10));
   EXPECT_CALL(*stream2, OnCanWrite())
@@ -539,11 +535,10 @@ TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
 
   // Expect that we only send one packet, the writes from different streams
   // should be bundled together.
-  MockPacketWriter* writer =
-      static_cast<MockPacketWriter*>(
-          QuicConnectionPeer::GetWriter(session_.connection()));
-  EXPECT_CALL(*writer, WritePacket(_, _, _, _)).WillOnce(
-                  Return(WriteResult(WRITE_STATUS_OK, 0)));
+  MockPacketWriter* writer = static_cast<MockPacketWriter*>(
+      QuicConnectionPeer::GetWriter(session_.connection()));
+  EXPECT_CALL(*writer, WritePacket(_, _, _, _))
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
   EXPECT_CALL(*send_algorithm, OnPacketSent(_, _, _, _, _));
   session_.OnCanWrite();
   EXPECT_FALSE(session_.WillingAndAbleToWrite());
@@ -565,29 +560,29 @@ TEST_P(QuicSessionTestServer, OnCanWriteCongestionControlBlocks) {
   session_.MarkConnectionLevelWriteBlocked(stream4->id(), kDefaultPriority);
 
   StreamBlocker stream2_blocker(&session_, stream2->id());
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillOnce(Return(
-      QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _))
+      .WillOnce(Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(*stream2, OnCanWrite());
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillOnce(Return(
-      QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _))
+      .WillOnce(Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(*stream6, OnCanWrite());
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillOnce(Return(
-      QuicTime::Delta::Infinite()));
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _))
+      .WillOnce(Return(QuicTime::Delta::Infinite()));
   // stream4->OnCanWrite is not called.
 
   session_.OnCanWrite();
   EXPECT_TRUE(session_.WillingAndAbleToWrite());
 
   // Still congestion-control blocked.
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillOnce(Return(
-      QuicTime::Delta::Infinite()));
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _))
+      .WillOnce(Return(QuicTime::Delta::Infinite()));
   session_.OnCanWrite();
   EXPECT_TRUE(session_.WillingAndAbleToWrite());
 
   // stream4->OnCanWrite is called once the connection stops being
   // congestion-control blocked.
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillOnce(Return(
-      QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _))
+      .WillOnce(Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(*stream4, OnCanWrite());
   session_.OnCanWrite();
   EXPECT_FALSE(session_.WillingAndAbleToWrite());
@@ -859,8 +854,8 @@ TEST_P(QuicSessionTestServer,
     EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
     EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
     headers["header"] = base::Uint64ToString(base::RandUint64()) +
-        base::Uint64ToString(base::RandUint64()) +
-        base::Uint64ToString(base::RandUint64());
+                        base::Uint64ToString(base::RandUint64()) +
+                        base::Uint64ToString(base::RandUint64());
     headers_stream->WriteHeaders(stream_id, headers, true, 0, nullptr);
     stream_id += 2;
   }

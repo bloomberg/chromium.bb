@@ -83,7 +83,7 @@ TEST_F(QuicCryptoClientStreamTest, MessageAfterHandshake) {
   CompleteCryptoHandshake();
 
   EXPECT_CALL(*connection_, SendConnectionClose(
-      QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE));
+                                QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE));
   message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
   stream()->OnStreamFrame(QuicStreamFrame(kCryptoStreamId, /*fin=*/false,
@@ -97,8 +97,9 @@ TEST_F(QuicCryptoClientStreamTest, BadMessageType) {
   message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
 
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-        QUIC_INVALID_CRYPTO_MESSAGE_TYPE, "Expected REJ"));
+  EXPECT_CALL(*connection_,
+              SendConnectionCloseWithDetails(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
+                                             "Expected REJ"));
   stream()->OnStreamFrame(QuicStreamFrame(kCryptoStreamId, /*fin=*/false,
                                           /*offset=*/0,
                                           message_data_->AsStringPiece()));
@@ -110,8 +111,7 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
   const QuicConfig* config = session_->config();
   EXPECT_EQ(kMaximumIdleTimeoutSecs,
             config->IdleConnectionStateLifetime().ToSeconds());
-  EXPECT_EQ(kDefaultMaxStreamsPerConnection,
-            config->MaxStreamsPerConnection());
+  EXPECT_EQ(kDefaultMaxStreamsPerConnection, config->MaxStreamsPerConnection());
 
   const QuicCryptoNegotiatedParameters& crypto_params(
       stream()->crypto_negotiated_params());
@@ -169,24 +169,21 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdate) {
 
   // Initialize using {...} syntax to avoid trailing \0 if converting from
   // string.
-  unsigned char stk[] = { 'x', 's', 't', 'k' };
+  unsigned char stk[] = {'x', 's', 't', 'k'};
 
   // Minimum SCFG that passes config validation checks.
-  unsigned char scfg[] = {
-    // SCFG
-    0x53, 0x43, 0x46, 0x47,
-    // num entries
-    0x01, 0x00,
-    // padding
-    0x00, 0x00,
-    // EXPY
-    0x45, 0x58, 0x50, 0x59,
-    // EXPY end offset
-    0x08, 0x00, 0x00, 0x00,
-    // Value
-    '1',  '2',  '3',  '4',
-    '5',  '6',  '7',  '8'
-  };
+  unsigned char scfg[] = {// SCFG
+                          0x53, 0x43, 0x46, 0x47,
+                          // num entries
+                          0x01, 0x00,
+                          // padding
+                          0x00, 0x00,
+                          // EXPY
+                          0x45, 0x58, 0x50, 0x59,
+                          // EXPY end offset
+                          0x08, 0x00, 0x00, 0x00,
+                          // Value
+                          '1', '2', '3', '4', '5', '6', '7', '8'};
 
   CryptoHandshakeMessage server_config_update;
   server_config_update.set_tag(kSCUP);
@@ -209,7 +206,7 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdate) {
 
 TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateBeforeHandshake) {
   EXPECT_CALL(*connection_, SendConnectionClose(
-      QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE));
+                                QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE));
   CryptoHandshakeMessage server_config_update;
   server_config_update.set_tag(kSCUP);
   scoped_ptr<QuicData> data(

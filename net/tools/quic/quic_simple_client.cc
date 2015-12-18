@@ -65,8 +65,8 @@ QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
 
 QuicSimpleClient::~QuicSimpleClient() {
   if (connected()) {
-    session()->connection()->SendConnectionClosePacket(
-        QUIC_PEER_GOING_AWAY, "");
+    session()->connection()->SendConnectionClosePacket(QUIC_PEER_GOING_AWAY,
+                                                       "");
   }
   STLDeleteElements(&data_to_resend_on_connect_);
   STLDeleteElements(&data_sent_before_handshake_);
@@ -98,10 +98,8 @@ QuicSimpleClient::QuicDataToResend::~QuicDataToResend() {
 
 bool QuicSimpleClient::CreateUDPSocket() {
   scoped_ptr<UDPClientSocket> socket(
-      new UDPClientSocket(DatagramSocket::DEFAULT_BIND,
-                          RandIntCallback(),
-                          &net_log_,
-                          NetLog::Source()));
+      new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
+                          &net_log_, NetLog::Source()));
 
   int address_family = server_address_.GetSockAddrFamily();
   if (bind_to_address_.size() != 0) {
@@ -286,7 +284,8 @@ void QuicSimpleClient::SendRequestAndWaitForResponse(
     StringPiece body,
     bool fin) {
   SendRequest(request, body, fin);
-  while (WaitForEvents()) {}
+  while (WaitForEvents()) {
+  }
 }
 
 void QuicSimpleClient::SendRequestsAndWaitForResponse(
@@ -298,7 +297,8 @@ void QuicSimpleClient::SendRequestsAndWaitForResponse(
     SendRequest(request, "", true);
   }
 
-  while (WaitForEvents()) {}
+  while (WaitForEvents()) {
+  }
 }
 
 bool QuicSimpleClient::WaitForEvents() {
@@ -345,8 +345,8 @@ void QuicSimpleClient::OnClose(QuicSpdyStream* stream) {
   HttpResponseInfo response;
   SpdyHeadersToHttpResponse(client_stream->headers(), net::HTTP2, &response);
   if (response_listener_.get() != nullptr) {
-    response_listener_->OnCompleteResponse(
-        stream->id(), *response.headers, client_stream->data());
+    response_listener_->OnCompleteResponse(stream->id(), *response.headers,
+                                           client_stream->data());
   }
 
   // Store response headers and body.

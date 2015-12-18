@@ -118,8 +118,7 @@ class QuicClient : public QuicClientBase,
 
   // Sends a request simple GET for each URL in |args|, and then waits for
   // each to complete.
-  void SendRequestsAndWaitForResponse(
-      const std::vector<std::string>& url_list);
+  void SendRequestsAndWaitForResponse(const std::vector<std::string>& url_list);
 
   // Migrate to a new socket during an active connection.
   bool MigrateSocket(const IPAddressNumber& new_host);

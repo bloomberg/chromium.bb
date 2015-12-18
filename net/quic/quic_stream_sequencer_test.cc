@@ -407,9 +407,7 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
     }
   }
 
-  QuicSequencerRandomTest() {
-    CreateFrames();
-  }
+  QuicSequencerRandomTest() { CreateFrames(); }
 
   int OneToN(int n) { return base::RandInt(1, n); }
 

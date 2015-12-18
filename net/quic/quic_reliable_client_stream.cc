@@ -124,7 +124,7 @@ int QuicReliableClientStream::Read(IOBuffer* buf, int buf_len) {
 }
 
 bool QuicReliableClientStream::CanWrite(const CompletionCallback& callback) {
-  bool can_write =  session()->connection()->CanWrite(HAS_RETRANSMITTABLE_DATA);
+  bool can_write = session()->connection()->CanWrite(HAS_RETRANSMITTABLE_DATA);
   if (!can_write) {
     session()->MarkConnectionLevelWriteBlocked(id(), Priority());
     DCHECK(callback_.is_null());

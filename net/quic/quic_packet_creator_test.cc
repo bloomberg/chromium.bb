@@ -169,8 +169,8 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
   // Returns the number of bytes of overhead that will be added to a packet
   // of maximum length.
   size_t GetEncryptionOverhead() {
-    return creator_.max_packet_length() - client_framer_.GetMaxPlaintextSize(
-        creator_.max_packet_length());
+    return creator_.max_packet_length() -
+           client_framer_.GetMaxPlaintextSize(creator_.max_packet_length());
   }
 
   // Returns the number of bytes consumed by the non-data fields of a stream
@@ -383,8 +383,8 @@ TEST_P(QuicPacketCreatorTest, ChangeSequenceNumberLengthMidPacket) {
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
     EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
-    EXPECT_CALL(framer_visitor_, OnPacketHeader(_)).WillOnce(
-        DoAll(SaveArg<0>(&header), Return(true)));
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_))
+        .WillOnce(DoAll(SaveArg<0>(&header), Return(true)));
     EXPECT_CALL(framer_visitor_, OnAckFrame(_));
     EXPECT_CALL(framer_visitor_, OnStopWaitingFrame(_));
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -414,8 +414,8 @@ TEST_P(QuicPacketCreatorTest, ChangeSequenceNumberLengthMidPacket) {
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
     EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
-    EXPECT_CALL(framer_visitor_, OnPacketHeader(_)).WillOnce(
-        DoAll(SaveArg<0>(&header), Return(true)));
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_))
+        .WillOnce(DoAll(SaveArg<0>(&header), Return(true)));
     EXPECT_CALL(framer_visitor_, OnStopWaitingFrame(_));
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
   }
@@ -614,8 +614,9 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithPadding) {
 }
 
 TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
-  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP)
-      + GetEncryptionOverhead() + GetStreamFrameOverhead(NOT_IN_FEC_GROUP);
+  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP) +
+                          GetEncryptionOverhead() +
+                          GetStreamFrameOverhead(NOT_IN_FEC_GROUP);
   size_t capacity = kDefaultMaxPacketSize - overhead;
   for (int delta = -5; delta <= 0; ++delta) {
     string data(capacity + delta, 'A');
@@ -791,14 +792,14 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataWithFecProtect) {
 }
 
 TEST_P(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
-  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP)
-                          + GetEncryptionOverhead();
+  const size_t overhead =
+      GetPacketHeaderOverhead(NOT_IN_FEC_GROUP) + GetEncryptionOverhead();
   for (size_t i = overhead; i < overhead + 100; ++i) {
     creator_.SetMaxPacketLength(i);
-    const bool should_have_room = i > overhead + GetStreamFrameOverhead(
-        NOT_IN_FEC_GROUP);
-    ASSERT_EQ(should_have_room, creator_.HasRoomForStreamFrame(
-                                    kClientDataStreamId1, kOffset));
+    const bool should_have_room =
+        i > overhead + GetStreamFrameOverhead(NOT_IN_FEC_GROUP);
+    ASSERT_EQ(should_have_room,
+              creator_.HasRoomForStreamFrame(kClientDataStreamId1, kOffset));
     if (should_have_room) {
       QuicFrame frame;
       QuicIOVector io_vector(MakeIOVector("testdata"));
@@ -900,8 +901,9 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumptionWithFec) {
 
 TEST_P(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
   // Compute the total overhead for a single frame in packet.
-  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP)
-      + GetEncryptionOverhead() + GetStreamFrameOverhead(NOT_IN_FEC_GROUP);
+  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP) +
+                          GetEncryptionOverhead() +
+                          GetStreamFrameOverhead(NOT_IN_FEC_GROUP);
   ASSERT_GT(kMaxPacketSize, overhead);
   size_t capacity = kDefaultMaxPacketSize - overhead;
   // Now, test various sizes around this size.
@@ -936,8 +938,9 @@ TEST_P(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
 
 TEST_P(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
   // Compute the total overhead for a single frame in packet.
-  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP)
-      + GetEncryptionOverhead() + GetStreamFrameOverhead(NOT_IN_FEC_GROUP);
+  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP) +
+                          GetEncryptionOverhead() +
+                          GetStreamFrameOverhead(NOT_IN_FEC_GROUP);
   ASSERT_GT(kDefaultMaxPacketSize, overhead);
   size_t capacity = kDefaultMaxPacketSize - overhead;
   // Now, test various sizes around this size.
@@ -1055,8 +1058,8 @@ TEST_P(QuicPacketCreatorTest, SerializeFrame) {
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
     EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
-    EXPECT_CALL(framer_visitor_, OnPacketHeader(_)).WillOnce(
-        DoAll(SaveArg<0>(&header), Return(true)));
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_))
+        .WillOnce(DoAll(SaveArg<0>(&header), Return(true)));
     EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
   }
@@ -1234,7 +1237,6 @@ TEST_P(QuicPacketCreatorTest, SerializeTruncatedAckFrameWithSmallPacketSize) {
   ClearSerializedPacket(&serialized_packet_);
 }
 
-
 TEST_P(QuicPacketCreatorTest, EntropyFlag) {
   frames_.push_back(
       QuicFrame(new QuicStreamFrame(0u, false, 0u, StringPiece())));
@@ -1246,8 +1248,8 @@ TEST_P(QuicPacketCreatorTest, EntropyFlag) {
       bool expected_rand_bool =
           (mock_random_.RandUint64() & (UINT64_C(1) << j)) != 0;
       bool observed_rand_bool =
-          (serialized.entropy_hash & (1 << ((j+1) % 8))) != 0;
-      uint8 rest_of_hash = serialized.entropy_hash & ~(1 << ((j+1) % 8));
+          (serialized.entropy_hash & (1 << ((j + 1) % 8))) != 0;
+      uint8 rest_of_hash = serialized.entropy_hash & ~(1 << ((j + 1) % 8));
       EXPECT_EQ(expected_rand_bool, observed_rand_bool);
       EXPECT_EQ(0, rest_of_hash);
       delete serialized.packet;

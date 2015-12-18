@@ -26,16 +26,13 @@ namespace {
 class MockQuicCryptoStream : public QuicCryptoStream {
  public:
   explicit MockQuicCryptoStream(QuicSession* session)
-      : QuicCryptoStream(session) {
-  }
+      : QuicCryptoStream(session) {}
 
   void OnHandshakeMessage(const CryptoHandshakeMessage& message) override {
     messages_.push_back(message);
   }
 
-  vector<CryptoHandshakeMessage>* messages() {
-    return &messages_;
-  }
+  vector<CryptoHandshakeMessage>* messages() { return &messages_; }
 
  private:
   vector<CryptoHandshakeMessage> messages_;
@@ -97,8 +94,7 @@ TEST_F(QuicCryptoStreamTest, ProcessBadData) {
   EXPECT_EQ(1, bad[kFirstTagIndex]);
   bad[kFirstTagIndex] = 0x7F;  // out of order tag
 
-  EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_CRYPTO_TAGS_OUT_OF_ORDER));
+  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_CRYPTO_TAGS_OUT_OF_ORDER));
   stream_.OnStreamFrame(
       QuicStreamFrame(kCryptoStreamId, /*fin=*/false, /*offset=*/0, bad));
 }

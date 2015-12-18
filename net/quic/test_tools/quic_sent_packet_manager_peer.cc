@@ -53,8 +53,7 @@ void QuicSentPacketManagerPeer::SetPerspective(
 }
 
 // static
-const SendAlgorithmInterface*
-    QuicSentPacketManagerPeer::GetSendAlgorithm(
+const SendAlgorithmInterface* QuicSentPacketManagerPeer::GetSendAlgorithm(
     const QuicSentPacketManager& sent_packet_manager) {
   return sent_packet_manager.send_algorithm_.get();
 }
@@ -166,8 +165,8 @@ QuicByteCount QuicSentPacketManagerPeer::GetBytesInFlight(
 
 // static
 QuicSentPacketManager::NetworkChangeVisitor*
-    QuicSentPacketManagerPeer::GetNetworkChangeVisitor(
-        const QuicSentPacketManager* sent_packet_manager) {
+QuicSentPacketManagerPeer::GetNetworkChangeVisitor(
+    const QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->network_change_visitor_;
 }
 

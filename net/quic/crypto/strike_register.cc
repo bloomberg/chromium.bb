@@ -98,8 +98,9 @@ StrikeRegister::StrikeRegister(unsigned max_entries,
       internal_epoch_(current_time > kCreationTimeFromInternalEpoch
                           ? current_time - kCreationTimeFromInternalEpoch
                           : 0),
-      horizon_(GetInitialHorizon(
-          ExternalTimeToInternal(current_time), window_secs, startup)) {
+      horizon_(GetInitialHorizon(ExternalTimeToInternal(current_time),
+                                 window_secs,
+                                 startup)) {
   memcpy(orbit_, orbit, sizeof(orbit_));
 
   ValidateStrikeRegisterConfig(max_entries);
@@ -109,7 +110,9 @@ StrikeRegister::StrikeRegister(unsigned max_entries,
   Reset();
 }
 
-StrikeRegister::~StrikeRegister() { delete[] internal_nodes_; }
+StrikeRegister::~StrikeRegister() {
+  delete[] internal_nodes_;
+}
 
 void StrikeRegister::Reset() {
   // Thread a free list through all of the internal nodes.
@@ -133,8 +136,7 @@ void StrikeRegister::Reset() {
 InsertStatus StrikeRegister::Insert(const uint8 nonce[32],
                                     uint32 current_time_external) {
   // Make space for the insertion if the strike register is full.
-  while (external_node_free_head_ == kNil ||
-         internal_node_free_head_ == kNil) {
+  while (external_node_free_head_ == kNil || internal_node_free_head_ == kNil) {
     DropOldestNode();
   }
 
@@ -274,8 +276,8 @@ const uint8* StrikeRegister::orbit() const {
 uint32 StrikeRegister::GetCurrentValidWindowSecs(
     uint32 current_time_external) const {
   uint32 current_time = ExternalTimeToInternal(current_time_external);
-  pair<uint32, uint32> valid_range = StrikeRegister::GetValidRange(
-      current_time);
+  pair<uint32, uint32> valid_range =
+      StrikeRegister::GetValidRange(current_time);
   if (valid_range.second >= valid_range.first) {
     return valid_range.second - current_time + 1;
   } else {
@@ -314,10 +316,8 @@ void StrikeRegister::Validate() {
 
 // static
 uint32 StrikeRegister::TimeFromBytes(const uint8 d[4]) {
-  return static_cast<uint32>(d[0]) << 24 |
-         static_cast<uint32>(d[1]) << 16 |
-         static_cast<uint32>(d[2]) << 8 |
-         static_cast<uint32>(d[3]);
+  return static_cast<uint32>(d[0]) << 24 | static_cast<uint32>(d[1]) << 16 |
+         static_cast<uint32>(d[2]) << 8 | static_cast<uint32>(d[3]);
 }
 
 pair<uint32, uint32> StrikeRegister::GetValidRange(
@@ -498,8 +498,8 @@ void StrikeRegister::ValidateTree(uint32 internal_node,
         unsigned byte = pair.first / 8;
         DCHECK_LE(byte, 0xffu);
         unsigned bit_new = pair.first % 8;
-        static const uint8 kMasks[8] =
-            {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01};
+        static const uint8 kMasks[8] = {0x80, 0x40, 0x20, 0x10,
+                                        0x08, 0x04, 0x02, 0x01};
         CHECK_EQ((bytes[byte] & kMasks[bit_new]) != 0, pair.second);
       }
     } else {

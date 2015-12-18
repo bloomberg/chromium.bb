@@ -30,11 +30,9 @@ void QuicServerInfo::State::Clear() {
 }
 
 QuicServerInfo::QuicServerInfo(const QuicServerId& server_id)
-    : server_id_(server_id) {
-}
+    : server_id_(server_id) {}
 
-QuicServerInfo::~QuicServerInfo() {
-}
+QuicServerInfo::~QuicServerInfo() {}
 
 const QuicServerInfo::State& QuicServerInfo::state() const {
   return state_;
@@ -133,7 +131,7 @@ string QuicServerInfo::SerializeInner() const {
     }
   }
 
-  return string(reinterpret_cast<const char *>(p.data()), p.size());
+  return string(reinterpret_cast<const char*>(p.data()), p.size());
 }
 
 QuicServerInfoFactory::~QuicServerInfoFactory() {}

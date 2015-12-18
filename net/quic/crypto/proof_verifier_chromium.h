@@ -31,7 +31,6 @@ class TransportSecurityState;
 class NET_EXPORT_PRIVATE ProofVerifyDetailsChromium
     : public ProofVerifyDetails {
  public:
-
   // ProofVerifyDetails implementation
   ProofVerifyDetails* Clone() const override;
 

@@ -133,7 +133,7 @@ static bool DecodeHexString(const base::StringPiece& hex, std::string* bytes) {
   return true;
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   base::CommandLine::Init(argc, argv);
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
   const base::CommandLine::StringVector& urls = line->GetArgs();
@@ -241,8 +241,8 @@ int main(int argc, char *argv[]) {
     net::AddressList addresses;
     int rv = net::tools::SynchronousHostResolver::Resolve(host, &addresses);
     if (rv != net::OK) {
-      LOG(ERROR) << "Unable to resolve '" << host << "' : "
-                 << net::ErrorToShortString(rv);
+      LOG(ERROR) << "Unable to resolve '" << host
+                 << "' : " << net::ErrorToShortString(rv);
       return 1;
     }
     ip_addr = addresses[0].address();

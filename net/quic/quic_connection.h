@@ -171,8 +171,7 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
 
   // Called when a packet is received with a connection id that does not
   // match the ID of this connection.
-  virtual void OnIncorrectConnectionId(
-      QuicConnectionId connection_id) {}
+  virtual void OnIncorrectConnectionId(QuicConnectionId connection_id) {}
 
   // Called when an undecryptable packet has been received.
   virtual void OnUndecryptablePacket() {}
@@ -206,8 +205,7 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) {}
 
   // Called when a ConnectionCloseFrame has been parsed.
-  virtual void OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame& frame) {}
+  virtual void OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) {}
 
   // Called when a WindowUpdate has been parsed.
   virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {}
@@ -340,8 +338,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual void SendBlocked(QuicStreamId id);
 
   // Send a WINDOW_UPDATE frame to the peer.
-  virtual void SendWindowUpdate(QuicStreamId id,
-                                QuicStreamOffset byte_offset);
+  virtual void SendWindowUpdate(QuicStreamId id, QuicStreamOffset byte_offset);
 
   // Sends the connection close packet without affecting the state of the
   // connection.  This should only be called if the session is actively being
@@ -816,7 +813,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // decrypted.
   bool last_packet_decrypted_;
   bool last_packet_revived_;  // True if the last packet was revived from FEC.
-  QuicByteCount last_size_;  // Size of the last received packet.
+  QuicByteCount last_size_;   // Size of the last received packet.
   EncryptionLevel last_decrypted_packet_level_;
   QuicPacketHeader last_header_;
   QuicStopWaitingFrame last_stop_waiting_frame_;

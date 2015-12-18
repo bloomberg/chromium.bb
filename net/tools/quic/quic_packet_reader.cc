@@ -54,8 +54,7 @@ void QuicPacketReader::Initialize() {
   }
 }
 
-QuicPacketReader::~QuicPacketReader() {
-}
+QuicPacketReader::~QuicPacketReader() {}
 
 bool QuicPacketReader::ReadAndDispatchPackets(
     int fd,

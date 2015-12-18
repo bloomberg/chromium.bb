@@ -53,12 +53,9 @@ class QuicAlarmTest : public ::testing::Test {
         alarm_(delegate_),
         deadline_(QuicTime::Zero().Add(QuicTime::Delta::FromSeconds(7))),
         deadline2_(QuicTime::Zero().Add(QuicTime::Delta::FromSeconds(14))),
-        new_deadline_(QuicTime::Zero()) {
-  }
+        new_deadline_(QuicTime::Zero()) {}
 
-  void ResetAlarm() {
-    alarm_.Set(new_deadline_);
-  }
+  void ResetAlarm() { alarm_.Set(new_deadline_); }
 
   MockDelegate* delegate_;  // not owned
   TestAlarm alarm_;
@@ -129,9 +126,9 @@ TEST_F(QuicAlarmTest, FireAndResetViaReturn) {
 TEST_F(QuicAlarmTest, FireAndResetViaSet) {
   alarm_.Set(deadline_);
   new_deadline_ = deadline2_;
-  EXPECT_CALL(*delegate_, OnAlarm()).WillOnce(DoAll(
-      Invoke(this, &QuicAlarmTest::ResetAlarm),
-      Return(QuicTime::Zero())));
+  EXPECT_CALL(*delegate_, OnAlarm())
+      .WillOnce(DoAll(Invoke(this, &QuicAlarmTest::ResetAlarm),
+                      Return(QuicTime::Zero())));
   alarm_.FireAlarm();
   EXPECT_TRUE(alarm_.IsSet());
   EXPECT_TRUE(alarm_.scheduled());

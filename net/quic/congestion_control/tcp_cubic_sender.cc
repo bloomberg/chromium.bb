@@ -24,7 +24,7 @@ namespace {
 // fast retransmission.  The cwnd after a timeout is still 1.
 const QuicPacketCount kDefaultMinimumCongestionWindow = 2;
 const QuicByteCount kMaxBurstBytes = 3 * kDefaultTCPMSS;
-const float kRenoBeta = 0.7f;  // Reno backoff factor.
+const float kRenoBeta = 0.7f;             // Reno backoff factor.
 const uint32 kDefaultNumConnections = 2;  // N-connection emulation.
 }  // namespace
 
@@ -128,11 +128,10 @@ float TcpCubicSender::RenoBeta() const {
   return (num_connections_ - 1 + kRenoBeta) / num_connections_;
 }
 
-void TcpCubicSender::OnCongestionEvent(
-    bool rtt_updated,
-    QuicByteCount bytes_in_flight,
-    const CongestionVector& acked_packets,
-    const CongestionVector& lost_packets) {
+void TcpCubicSender::OnCongestionEvent(bool rtt_updated,
+                                       QuicByteCount bytes_in_flight,
+                                       const CongestionVector& acked_packets,
+                                       const CongestionVector& lost_packets) {
   if (rtt_updated && InSlowStart() &&
       hybrid_slow_start_.ShouldExitSlowStart(rtt_stats_->latest_rtt(),
                                              rtt_stats_->min_rtt(),
@@ -298,8 +297,8 @@ bool TcpCubicSender::IsCwndLimited(QuicByteCount bytes_in_flight) const {
   }
   const QuicByteCount available_bytes =
       congestion_window_bytes - bytes_in_flight;
-  const bool slow_start_limited = InSlowStart() &&
-      bytes_in_flight >  congestion_window_bytes / 2;
+  const bool slow_start_limited =
+      InSlowStart() && bytes_in_flight > congestion_window_bytes / 2;
   return slow_start_limited || available_bytes <= kMaxBurstBytes;
 }
 

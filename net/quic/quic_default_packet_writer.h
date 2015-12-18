@@ -35,14 +35,10 @@ class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
   QuicByteCount GetMaxPacketSize(const IPEndPoint& peer_address) const override;
 
   void OnWriteComplete(int rv);
-  void SetConnection(QuicConnection* connection) {
-    connection_ = connection;
-  }
+  void SetConnection(QuicConnection* connection) { connection_ = connection; }
 
  protected:
-  void set_write_blocked(bool is_blocked) {
-    write_blocked_ = is_blocked;
-  }
+  void set_write_blocked(bool is_blocked) { write_blocked_ = is_blocked; }
 
  private:
   Socket* socket_;

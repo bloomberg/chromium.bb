@@ -197,5 +197,4 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
 
 }  // namespace net
 
-
 #endif  // NET_QUIC_QUIC_WRITE_BLOCKED_LIST_H_

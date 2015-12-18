@@ -17,7 +17,7 @@ namespace net {
 
 class ChannelIDService;
 
-class NET_EXPORT_PRIVATE ChannelIDKeyChromium: public ChannelIDKey {
+class NET_EXPORT_PRIVATE ChannelIDKeyChromium : public ChannelIDKey {
  public:
   explicit ChannelIDKeyChromium(
       scoped_ptr<crypto::ECPrivateKey> ec_private_key);
@@ -35,8 +35,7 @@ class NET_EXPORT_PRIVATE ChannelIDKeyChromium: public ChannelIDKey {
 // ChannelIDSourceChromium implements the QUIC ChannelIDSource interface.
 class ChannelIDSourceChromium : public ChannelIDSource {
  public:
-  explicit ChannelIDSourceChromium(
-      ChannelIDService* channel_id_service);
+  explicit ChannelIDSourceChromium(ChannelIDService* channel_id_service);
   ~ChannelIDSourceChromium() override;
 
   // ChannelIDSource interface

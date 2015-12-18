@@ -6,11 +6,9 @@
 
 namespace net {
 
-MockClock::MockClock() : now_(QuicTime::Zero()) {
-}
+MockClock::MockClock() : now_(QuicTime::Zero()) {}
 
-MockClock::~MockClock() {
-}
+MockClock::~MockClock() {}
 
 void MockClock::AdvanceTime(QuicTime::Delta delta) {
   now_ = now_.Add(delta);
@@ -32,7 +30,7 @@ QuicWallTime MockClock::WallNow() const {
 base::TimeTicks MockClock::NowInTicks() const {
   base::TimeTicks ticks;
   return ticks + base::TimeDelta::FromMicroseconds(
-      now_.Subtract(QuicTime::Zero()).ToMicroseconds());
+                     now_.Subtract(QuicTime::Zero()).ToMicroseconds());
 }
 
 }  // namespace net

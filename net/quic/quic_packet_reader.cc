@@ -32,8 +32,7 @@ QuicPacketReader::QuicPacketReader(DatagramClientSocket* socket,
       net_log_(net_log),
       weak_factory_(this) {}
 
-QuicPacketReader::~QuicPacketReader() {
-}
+QuicPacketReader::~QuicPacketReader() {}
 
 void QuicPacketReader::StartReading() {
   if (read_pending_)

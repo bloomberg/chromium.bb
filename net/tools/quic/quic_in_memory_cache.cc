@@ -120,9 +120,7 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
   VLOG(1) << "Attempting to initialize QuicInMemoryCache from directory: "
           << cache_directory;
   FilePath directory(FilePath::FromUTF8Unsafe(cache_directory));
-  base::FileEnumerator file_list(directory,
-                                 true,
-                                 base::FileEnumerator::FILES);
+  base::FileEnumerator file_list(directory, true, base::FileEnumerator::FILES);
 
   for (FilePath file_iter = file_list.Next(); !file_iter.empty();
        file_iter = file_list.Next()) {
@@ -141,8 +139,8 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
     string file_contents;
     base::ReadFileToString(file_iter, &file_contents);
     int file_len = static_cast<int>(file_contents.length());
-    int headers_end = HttpUtil::LocateEndOfHeaders(file_contents.data(),
-                                                   file_len);
+    int headers_end =
+        HttpUtil::LocateEndOfHeaders(file_contents.data(), file_len);
     if (headers_end < 1) {
       LOG(DFATAL) << "Headers invalid or empty, ignoring: " << file;
       continue;

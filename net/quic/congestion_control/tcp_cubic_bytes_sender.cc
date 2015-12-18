@@ -54,8 +54,7 @@ TcpCubicBytesSender::TcpCubicBytesSender(
       initial_max_tcp_congestion_window_(max_congestion_window *
                                          kDefaultTCPMSS) {}
 
-TcpCubicBytesSender::~TcpCubicBytesSender() {
-}
+TcpCubicBytesSender::~TcpCubicBytesSender() {}
 
 void TcpCubicBytesSender::SetFromConfig(const QuicConfig& config,
                                         Perspective perspective) {

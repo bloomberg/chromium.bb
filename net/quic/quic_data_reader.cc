@@ -12,10 +12,7 @@ using base::StringPiece;
 namespace net {
 
 QuicDataReader::QuicDataReader(const char* data, const size_t len)
-    : data_(data),
-      len_(len),
-      pos_(0) {
-}
+    : data_(data), len_(len), pos_(0) {}
 
 bool QuicDataReader::ReadUInt16(uint16* result) {
   return ReadBytes(result, sizeof(*result));

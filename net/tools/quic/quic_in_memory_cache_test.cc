@@ -33,9 +33,7 @@ typedef QuicInMemoryCache::ServerPushInfo ServerPushInfo;
 
 class QuicInMemoryCacheTest : public ::testing::Test {
  protected:
-  QuicInMemoryCacheTest() {
-    QuicInMemoryCachePeer::ResetForTests();
-  }
+  QuicInMemoryCacheTest() { QuicInMemoryCachePeer::ResetForTests(); }
 
   ~QuicInMemoryCacheTest() override { QuicInMemoryCachePeer::ResetForTests(); }
 
@@ -47,8 +45,8 @@ class QuicInMemoryCacheTest : public ::testing::Test {
   string CacheDirectory() {
     base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
-    path = path.AppendASCII("net").AppendASCII("data")
-        .AppendASCII("quic_in_memory_cache_data");
+    path = path.AppendASCII("net").AppendASCII("data").AppendASCII(
+        "quic_in_memory_cache_data");
     // The file path is known to be an ascii string.
     return path.MaybeAsASCII();
   }

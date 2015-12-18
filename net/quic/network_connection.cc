@@ -10,8 +10,7 @@ namespace net {
 
 NetworkConnection::NetworkConnection()
     : connection_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
-      connection_description_(nullptr) {
-}
+      connection_description_(nullptr) {}
 
 const char* NetworkConnection::GetDescription() {
   NetworkChangeNotifier::ConnectionType type =

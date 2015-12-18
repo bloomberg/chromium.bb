@@ -18,10 +18,8 @@ namespace test {
 namespace {
 
 const char* const test_data[] = {
-  "test string 1, a medium size one.",
-  "test string2",
-  "test string      3, a looooooooooooong loooooooooooooooong string"
-};
+    "test string 1, a medium size one.", "test string2",
+    "test string      3, a looooooooooooong loooooooooooooooong string"};
 
 TEST(IOVectorTest, CopyConstructor) {
   IOVector iov1;
@@ -88,11 +86,9 @@ TEST(IOVectorTest, Append) {
 
 TEST(IOVectorTest, AppendIovec) {
   IOVector iov;
-  const struct iovec test_iov[] = {
-    {const_cast<char*>("foo"), 3},
-    {const_cast<char*>("bar"), 3},
-    {const_cast<char*>("buzzzz"), 6}
-  };
+  const struct iovec test_iov[] = {{const_cast<char*>("foo"), 3},
+                                   {const_cast<char*>("bar"), 3},
+                                   {const_cast<char*>("buzzzz"), 6}};
   iov.AppendIovec(test_iov, arraysize(test_iov));
   for (size_t i = 0; i < arraysize(test_iov); ++i) {
     EXPECT_EQ(test_iov[i].iov_base, iov.iovec()[i].iov_base);
@@ -199,9 +195,8 @@ TEST(IOVectorTest, ConsumeTooMuch) {
   }
 
   int consumed = 0;
-  EXPECT_DFATAL(
-      {consumed = iov.Consume(length + 1);},
-      "Attempting to consume 1 non-existent bytes.");
+  EXPECT_DFATAL({ consumed = iov.Consume(length + 1); },
+                "Attempting to consume 1 non-existent bytes.");
   ASSERT_EQ(length, consumed);
   const struct iovec* iov2 = iov.iovec();
   ASSERT_EQ(0u, iov.Size());

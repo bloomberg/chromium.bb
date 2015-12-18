@@ -28,7 +28,7 @@ class QuicSimpleServerPacketWriter : public QuicPacketWriter {
   typedef base::Callback<void(WriteResult)> WriteCallback;
 
   QuicSimpleServerPacketWriter(UDPServerSocket* socket,
-                         QuicBlockedWriterInterface* blocked_writer);
+                               QuicBlockedWriterInterface* blocked_writer);
   ~QuicSimpleServerPacketWriter() override;
 
   // Use this method to write packets rather than WritePacket:

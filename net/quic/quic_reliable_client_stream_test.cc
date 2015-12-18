@@ -104,7 +104,8 @@ class QuicReliableClientStreamTest
   SpdyHeaderBlock headers_;
 };
 
-INSTANTIATE_TEST_CASE_P(Version, QuicReliableClientStreamTest,
+INSTANTIATE_TEST_CASE_P(Version,
+                        QuicReliableClientStreamTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicReliableClientStreamTest, OnFinRead) {
@@ -206,8 +207,8 @@ TEST_P(QuicReliableClientStreamTest, WriteStreamData) {
   const size_t kDataLen = arraysize(kData1);
 
   // All data written.
-  EXPECT_CALL(session_, WritevData(stream_->id(), _,  _, _, _, _)).WillOnce(
-      Return(QuicConsumedData(kDataLen, true)));
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(kDataLen, true)));
   TestCompletionCallback callback;
   EXPECT_EQ(OK, stream_->WriteStreamData(base::StringPiece(kData1, kDataLen),
                                          true, callback.callback()));
@@ -221,17 +222,17 @@ TEST_P(QuicReliableClientStreamTest, WriteStreamDataAsync) {
   const size_t kDataLen = arraysize(kData1);
 
   // No data written.
-  EXPECT_CALL(session_, WritevData(stream_->id(),  _, _, _, _, _)).WillOnce(
-      Return(QuicConsumedData(0, false)));
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(0, false)));
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
-            stream_->WriteStreamData(base::StringPiece(kData1, kDataLen),
-                                     true, callback.callback()));
+            stream_->WriteStreamData(base::StringPiece(kData1, kDataLen), true,
+                                     callback.callback()));
   ASSERT_FALSE(callback.have_result());
 
   // All data written.
-  EXPECT_CALL(session_, WritevData(stream_->id(),  _, _, _, _, _)).WillOnce(
-      Return(QuicConsumedData(kDataLen, true)));
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(kDataLen, true)));
   stream_->OnCanWrite();
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());

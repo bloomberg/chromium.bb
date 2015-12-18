@@ -82,6 +82,8 @@ StringPiece Curve25519KeyExchange::public_value() const {
                      sizeof(public_key_));
 }
 
-QuicTag Curve25519KeyExchange::tag() const { return kC255; }
+QuicTag Curve25519KeyExchange::tag() const {
+  return kC255;
+}
 
 }  // namespace net

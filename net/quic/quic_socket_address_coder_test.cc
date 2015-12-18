@@ -26,10 +26,12 @@ TEST(QuicSocketAddressCoderTest, EncodeIPv6) {
   ASSERT_TRUE(ParseIPLiteralToNumber("2001:700:300:1800::f", &ip));
   QuicSocketAddressCoder coder(IPEndPoint(ip, 0x5678));
   string serialized = coder.Encode();
-  string expected("\x0a\x00"
-                  "\x20\x01\x07\x00\x03\x00\x18\x00"
-                  "\x00\x00\x00\x00\x00\x00\x00\x0f"
-                  "\x78\x56", 20);
+  string expected(
+      "\x0a\x00"
+      "\x20\x01\x07\x00\x03\x00\x18\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x0f"
+      "\x78\x56",
+      20);
   EXPECT_EQ(expected, serialized);
 }
 
@@ -44,24 +46,30 @@ TEST(QuicSocketAddressCoderTest, DecodeIPv4) {
 }
 
 TEST(QuicSocketAddressCoderTest, DecodeIPv6) {
-  string serialized("\x0a\x00"
-                    "\x20\x01\x07\x00\x03\x00\x18\x00"
-                    "\x00\x00\x00\x00\x00\x00\x00\x0f"
-                    "\x78\x56", 20);
+  string serialized(
+      "\x0a\x00"
+      "\x20\x01\x07\x00\x03\x00\x18\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x0f"
+      "\x78\x56",
+      20);
   QuicSocketAddressCoder coder;
   ASSERT_TRUE(coder.Decode(serialized.data(), serialized.length()));
   EXPECT_EQ(AF_INET6, ConvertAddressFamily(GetAddressFamily(coder.ip())));
-  string expected_addr("\x20\x01\x07\x00\x03\x00\x18\x00"
-                       "\x00\x00\x00\x00\x00\x00\x00\x0f", 16);
+  string expected_addr(
+      "\x20\x01\x07\x00\x03\x00\x18\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x0f",
+      16);
   EXPECT_EQ(expected_addr, IPAddressToPackedString(coder.ip()));
   EXPECT_EQ(0x5678, coder.port());
 }
 
 TEST(QuicSocketAddressCoderTest, DecodeBad) {
-  string serialized("\x0a\x00"
-                    "\x20\x01\x07\x00\x03\x00\x18\x00"
-                    "\x00\x00\x00\x00\x00\x00\x00\x0f"
-                    "\x78\x56", 20);
+  string serialized(
+      "\x0a\x00"
+      "\x20\x01\x07\x00\x03\x00\x18\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x0f"
+      "\x78\x56",
+      20);
   QuicSocketAddressCoder coder;
   EXPECT_TRUE(coder.Decode(serialized.data(), serialized.length()));
   // Append junk.
@@ -93,12 +101,12 @@ TEST(QuicSocketAddressCoderTest, EncodeAndDecode) {
     const char* ip_literal;
     uint16 port;
   } test_case[] = {
-    { "93.184.216.119", 0x1234 },
-    { "199.204.44.194", 80 },
-    { "149.20.4.69", 443 },
-    { "127.0.0.1", 8080 },
-    { "2001:700:300:1800::", 0x5678 },
-    { "::1", 65534 },
+      {"93.184.216.119", 0x1234},
+      {"199.204.44.194", 80},
+      {"149.20.4.69", 443},
+      {"127.0.0.1", 8080},
+      {"2001:700:300:1800::", 0x5678},
+      {"::1", 65534},
   };
 
   for (size_t i = 0; i < arraysize(test_case); i++) {

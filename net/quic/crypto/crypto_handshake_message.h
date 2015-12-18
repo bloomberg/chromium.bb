@@ -37,14 +37,16 @@ class NET_EXPORT_PRIVATE CryptoHandshakeMessage {
 
   // SetValue sets an element with the given tag to the raw, memory contents of
   // |v|.
-  template<class T> void SetValue(QuicTag tag, const T& v) {
+  template <class T>
+  void SetValue(QuicTag tag, const T& v) {
     tag_value_map_[tag] =
         std::string(reinterpret_cast<const char*>(&v), sizeof(v));
   }
 
   // SetVector sets an element with the given tag to the raw contents of an
   // array of elements in |v|.
-  template<class T> void SetVector(QuicTag tag, const std::vector<T>& v) {
+  template <class T>
+  void SetVector(QuicTag tag, const std::vector<T>& v) {
     if (v.empty()) {
       tag_value_map_[tag] = std::string();
     } else {
@@ -74,7 +76,8 @@ class NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   // |out_tags| and |out_len| to point to the array of tags and returns true.
   // The array points into the CryptoHandshakeMessage and is valid only for as
   // long as the CryptoHandshakeMessage exists and is not modified.
-  QuicErrorCode GetTaglist(QuicTag tag, const QuicTag** out_tags,
+  QuicErrorCode GetTaglist(QuicTag tag,
+                           const QuicTag** out_tags,
                            size_t* out_len) const;
 
   bool GetStringPiece(QuicTag tag, base::StringPiece* out) const;

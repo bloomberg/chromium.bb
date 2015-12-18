@@ -82,8 +82,7 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
       : crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance(),
                        CryptoTestUtils::ProofSourceForTesting()) {
-    config_.SetMaxStreamsPerConnection(kMaxStreamsForTest,
-                                       kMaxStreamsForTest);
+    config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
     config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
     config_.SetInitialSessionFlowControlWindowToSend(
@@ -115,19 +114,20 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
 MATCHER_P(EqualsProto, network_params, "") {
   CachedNetworkParameters reference(network_params);
   return (arg->bandwidth_estimate_bytes_per_second() ==
-          reference.bandwidth_estimate_bytes_per_second() &&
+              reference.bandwidth_estimate_bytes_per_second() &&
           arg->bandwidth_estimate_bytes_per_second() ==
-          reference.bandwidth_estimate_bytes_per_second() &&
+              reference.bandwidth_estimate_bytes_per_second() &&
           arg->max_bandwidth_estimate_bytes_per_second() ==
-          reference.max_bandwidth_estimate_bytes_per_second() &&
+              reference.max_bandwidth_estimate_bytes_per_second() &&
           arg->max_bandwidth_timestamp_seconds() ==
-          reference.max_bandwidth_timestamp_seconds() &&
+              reference.max_bandwidth_timestamp_seconds() &&
           arg->min_rtt_ms() == reference.min_rtt_ms() &&
           arg->previous_connection_state() ==
-          reference.previous_connection_state());
+              reference.previous_connection_state());
 }
 
-INSTANTIATE_TEST_CASE_P(Tests, QuicServerSessionTest,
+INSTANTIATE_TEST_CASE_P(Tests,
+                        QuicServerSessionTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
@@ -303,8 +303,9 @@ TEST_P(QuicServerSessionTest, SetFecProtectionFromConfig) {
 
   // Verify that headers stream is always protected and data streams are
   // optionally protected.
-  EXPECT_EQ(FEC_PROTECT_ALWAYS, QuicSpdySessionPeer::GetHeadersStream(
-                                    session_.get())->fec_policy());
+  EXPECT_EQ(
+      FEC_PROTECT_ALWAYS,
+      QuicSpdySessionPeer::GetHeadersStream(session_.get())->fec_policy());
   ReliableQuicStream* stream = QuicServerSessionPeer::GetOrCreateDynamicStream(
       session_.get(), kClientDataStreamId1);
   ASSERT_TRUE(stream);
@@ -314,7 +315,8 @@ TEST_P(QuicServerSessionTest, SetFecProtectionFromConfig) {
 class MockQuicCryptoServerStream : public QuicCryptoServerStream {
  public:
   explicit MockQuicCryptoServerStream(
-      const QuicCryptoServerConfig* crypto_config, QuicSession* session)
+      const QuicCryptoServerConfig* crypto_config,
+      QuicSession* session)
       : QuicCryptoServerStream(crypto_config, session) {}
   ~MockQuicCryptoServerStream() override {}
 
@@ -361,8 +363,9 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
   // Seed an rtt measurement equal to the initial default rtt.
   RttStats* rtt_stats =
       QuicSentPacketManagerPeer::GetRttStats(sent_packet_manager);
-  rtt_stats->UpdateRtt(QuicTime::Delta::FromMicroseconds(
-      rtt_stats->initial_rtt_us()), QuicTime::Delta::Zero(), QuicTime::Zero());
+  rtt_stats->UpdateRtt(
+      QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us()),
+      QuicTime::Delta::Zero(), QuicTime::Zero());
   QuicSustainedBandwidthRecorderPeer::SetBandwidthEstimate(
       &bandwidth_recorder, bandwidth_estimate_kbytes_per_second);
   QuicSustainedBandwidthRecorderPeer::SetMaxBandwidthEstimate(
@@ -444,9 +447,8 @@ TEST_P(QuicServerSessionTest, BandwidthResumptionExperiment) {
   connection_->AdvanceTime(
       QuicTime::Delta::FromSeconds(kNumSecondsPerHour + 1));
 
-  QuicCryptoServerStream* crypto_stream =
-      static_cast<QuicCryptoServerStream*>(
-          QuicSessionPeer::GetCryptoStream(session_.get()));
+  QuicCryptoServerStream* crypto_stream = static_cast<QuicCryptoServerStream*>(
+      QuicSessionPeer::GetCryptoStream(session_.get()));
 
   // No effect if no CachedNetworkParameters provided.
   EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(0);

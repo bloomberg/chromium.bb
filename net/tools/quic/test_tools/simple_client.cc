@@ -27,9 +27,13 @@ int SimpleClient::HalfClose() {
   return 0;
 }
 
-int SimpleClient::response_header_size() const { return 0; }
+int SimpleClient::response_header_size() const {
+  return 0;
+}
 
-int64 SimpleClient::response_body_size() const { return 0; }
+int64 SimpleClient::response_body_size() const {
+  return 0;
+}
 
 }  // namespace net
 }  // namespace tools

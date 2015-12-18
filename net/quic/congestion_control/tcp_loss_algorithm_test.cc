@@ -26,13 +26,10 @@ class TcpLossAlgorithmTest : public ::testing::Test {
  protected:
   TcpLossAlgorithmTest() {
     rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(100),
-                         QuicTime::Delta::Zero(),
-                         clock_.Now());
+                         QuicTime::Delta::Zero(), clock_.Now());
   }
 
-  ~TcpLossAlgorithmTest() override {
-    STLDeleteElements(&packets_);
-  }
+  ~TcpLossAlgorithmTest() override { STLDeleteElements(&packets_); }
 
   void SendDataPacket(QuicPacketNumber packet_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));

@@ -30,9 +30,7 @@ class DelayedVerifyStrikeRegisterClient : public LocalStrikeRegisterClient {
                                    ResultCallback* cb) override;
 
   // Start queueing verifications instead of executing them immediately.
-  void StartDelayingVerification() {
-    delay_verifications_ = true;
-  }
+  void StartDelayingVerification() { delay_verifications_ = true; }
   // Number of verifications that are queued.
   int PendingVerifications() const;
   // Run all pending verifications.
@@ -43,10 +41,7 @@ class DelayedVerifyStrikeRegisterClient : public LocalStrikeRegisterClient {
     VerifyArgs(base::StringPiece in_nonce,
                QuicWallTime in_now,
                ResultCallback* in_cb)
-        : nonce(in_nonce.as_string()),
-          now(in_now),
-          cb(in_cb) {
-    }
+        : nonce(in_nonce.as_string()), now(in_now), cb(in_cb) {}
 
     std::string nonce;
     QuicWallTime now;

@@ -253,8 +253,8 @@ void QuicSession::OnCanWrite() {
     return;
   }
 
-  QuicConnection::ScopedPacketBundler ack_bundler(
-      connection_.get(), QuicConnection::NO_ACK);
+  QuicConnection::ScopedPacketBundler ack_bundler(connection_.get(),
+                                                  QuicConnection::NO_ACK);
   for (size_t i = 0; i < num_writes; ++i) {
     if (!(write_blocked_streams_.HasWriteBlockedCryptoOrHeadersStream() ||
           write_blocked_streams_.HasWriteBlockedDataStreams())) {
@@ -341,8 +341,7 @@ void QuicSession::CloseStream(QuicStreamId stream_id) {
   CloseStreamInner(stream_id, false);
 }
 
-void QuicSession::CloseStreamInner(QuicStreamId stream_id,
-                                   bool locally_reset) {
+void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
   DVLOG(1) << ENDPOINT << "Closing stream " << stream_id;
 
   StreamMap::iterator it = dynamic_stream_map_.find(stream_id);
@@ -390,7 +389,8 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
 }
 
 void QuicSession::UpdateFlowControlOnFinalReceivedByteOffset(
-    QuicStreamId stream_id, QuicStreamOffset final_byte_offset) {
+    QuicStreamId stream_id,
+    QuicStreamOffset final_byte_offset) {
   map<QuicStreamId, QuicStreamOffset>::iterator it =
       locally_closed_streams_highest_offset_.find(stream_id);
   if (it == locally_closed_streams_highest_offset_.end()) {
@@ -435,9 +435,8 @@ void QuicSession::OnConfigNegotiated() {
     // when FIN/RSTs for old streams are lost or arrive out of order.
     // Use a minimum number of additional streams, or a percentage increase,
     // whichever is larger.
-    max_streams =
-        max(max_streams + kMaxStreamsMinimumIncrement,
-            static_cast<uint32>(max_streams * kMaxStreamsMultiplier));
+    max_streams = max(max_streams + kMaxStreamsMinimumIncrement,
+                      static_cast<uint32>(max_streams * kMaxStreamsMultiplier));
 
     if (config_.HasReceivedConnectionOptions()) {
       if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kAFCW)) {
@@ -565,8 +564,8 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
       break;
 
     case HANDSHAKE_CONFIRMED:
-      LOG_IF(DFATAL, !config_.negotiated()) << ENDPOINT
-          << "Handshake confirmed without parameter negotiation.";
+      LOG_IF(DFATAL, !config_.negotiated())
+          << ENDPOINT << "Handshake confirmed without parameter negotiation.";
       // Discard originally encrypted packets, since they can't be decrypted by
       // the peer.
       connection_->NeuterUnencryptedPackets();
@@ -673,8 +672,7 @@ ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
       CloseConnection(QUIC_TOO_MANY_AVAILABLE_STREAMS);
       return nullptr;
     }
-    for (QuicStreamId id = largest_peer_created_stream_id_ + 2;
-         id < stream_id;
+    for (QuicStreamId id = largest_peer_created_stream_id_ + 2; id < stream_id;
          id += 2) {
       available_streams_.insert(id);
     }

@@ -14,11 +14,9 @@ using std::numeric_limits;
 namespace net {
 
 QuicDataWriter::QuicDataWriter(size_t size, char* buffer)
-    : buffer_(buffer), capacity_(size), length_(0) {
-}
+    : buffer_(buffer), capacity_(size), length_(0) {}
 
-QuicDataWriter::~QuicDataWriter() {
-}
+QuicDataWriter::~QuicDataWriter() {}
 
 char* QuicDataWriter::data() {
   return buffer_;
@@ -143,6 +141,5 @@ void QuicDataWriter::WritePadding() {
   memset(buffer_ + length_, 0x00, capacity_ - length_);
   length_ = capacity_;
 }
-
 
 }  // namespace net
