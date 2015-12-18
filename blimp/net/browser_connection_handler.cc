@@ -11,6 +11,7 @@
 #include "blimp/net/blimp_message_multiplexer.h"
 #include "blimp/net/blimp_message_output_buffer.h"
 #include "blimp/net/blimp_message_processor.h"
+#include "net/base/net_errors.h"
 
 namespace blimp {
 namespace {
@@ -41,6 +42,7 @@ void BrowserConnectionHandler::HandleConnection(
   // replace an existing one.
   DropCurrentConnection();
   connection_ = std::move(connection);
+  connection_->SetConnectionErrorObserver(this);
 
   // Connect the incoming & outgoing message streams.
   connection_->SetIncomingMessageProcessor(demultiplexer_.get());
@@ -51,13 +53,15 @@ void BrowserConnectionHandler::HandleConnection(
 void BrowserConnectionHandler::DropCurrentConnection() {
   if (!connection_)
     return;
+
+  connection_->SetConnectionErrorObserver(nullptr);
   connection_->SetIncomingMessageProcessor(nullptr);
   output_buffer_->SetOutputProcessor(nullptr);
   connection_.reset();
 }
 
 void BrowserConnectionHandler::OnConnectionError(int error) {
-  LOG(WARNING) << "Connection error " << error;
+  LOG(WARNING) << "Connection error " << net::ErrorToString(error);
   DropCurrentConnection();
 }
 

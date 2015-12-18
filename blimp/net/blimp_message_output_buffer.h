@@ -23,7 +23,7 @@ class BlimpConnection;
 // Messages are retained for redelivery until they are acknowledged by the
 // receiving end (via BlimpMessageCheckpointObserver).
 // Messages can be paired with callbacks that are invoked on successful
-// message acknowledgement.
+// message acknowledgment.
 // (Redelivery will be used in a future CL to implement Fast Recovery
 // of dropped connections.)
 class BLIMP_NET_EXPORT BlimpMessageOutputBuffer
@@ -86,7 +86,7 @@ class BLIMP_NET_EXPORT BlimpMessageOutputBuffer
   // List of unsent messages.
   MessageBuffer write_buffer_;
 
-  // List of messages that are sent and awaiting acknoweldgement.
+  // List of messages that are sent and awaiting acknowledgment.
   // The messages in |ack_buffer_| are contiguous with the messages in
   // |write_buffer_|.
   MessageBuffer ack_buffer_;

@@ -113,7 +113,7 @@ void BlimpConnection::SetIncomingMessageProcessor(
   message_pump_->SetMessageProcessor(processor);
 }
 
-BlimpMessageProcessor* BlimpConnection::GetOutgoingMessageProcessor() const {
+BlimpMessageProcessor* BlimpConnection::GetOutgoingMessageProcessor() {
   return outgoing_msg_processor_.get();
 }
 

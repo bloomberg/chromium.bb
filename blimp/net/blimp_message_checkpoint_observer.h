@@ -9,7 +9,7 @@
 
 namespace blimp {
 
-// Allows objects to subscribe to message acknowledgement checkpoints.
+// Allows objects to subscribe to message acknowledgment checkpoints.
 class BlimpMessageCheckpointObserver {
  public:
   virtual ~BlimpMessageCheckpointObserver() {}

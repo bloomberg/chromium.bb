@@ -35,7 +35,7 @@ class BLIMP_NET_EXPORT BlimpConnection {
   virtual void SetIncomingMessageProcessor(BlimpMessageProcessor* processor);
 
   // Gets a processor for BrowserSession->BlimpConnection message routing.
-  virtual BlimpMessageProcessor* GetOutgoingMessageProcessor() const;
+  virtual BlimpMessageProcessor* GetOutgoingMessageProcessor();
 
  protected:
   BlimpConnection();
