@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "components/wallpaper/wallpaper_resizer.h"
 #include "components/wallpaper/wallpaper_resizer_observer.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
@@ -55,21 +55,24 @@ namespace wallpaper {
 class WallpaperResizerTest : public testing::Test,
                              public WallpaperResizerObserver {
  public:
-  WallpaperResizerTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
+  WallpaperResizerTest() : worker_pool_owner_(1, "WallpaperResizerTest") {}
   ~WallpaperResizerTest() override {}
 
   gfx::ImageSkia Resize(const gfx::ImageSkia& image,
                         const gfx::Size& target_size,
                         WallpaperLayout layout) {
     scoped_ptr<WallpaperResizer> resizer;
-    resizer.reset(new WallpaperResizer(
-        image, target_size, layout, content::BrowserThread::GetBlockingPool()));
+    resizer.reset(
+        new WallpaperResizer(image, target_size, layout, worker_pool()));
     resizer->AddObserver(this);
     resizer->StartResize();
     WaitForResize();
     resizer->RemoveObserver(this);
     return resizer->image();
+  }
+
+  base::SequencedWorkerPool* worker_pool() {
+    return worker_pool_owner_.pool().get();
   }
 
   void WaitForResize() { message_loop_.Run(); }
@@ -78,7 +81,7 @@ class WallpaperResizerTest : public testing::Test,
 
  private:
   base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  base::SequencedWorkerPoolOwner worker_pool_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperResizerTest);
 };
@@ -139,7 +142,7 @@ TEST_F(WallpaperResizerTest, ImageId) {
   // Create a WallpaperResizer and check that it reports an original image ID
   // both pre- and post-resize that matches the ID returned by GetImageId().
   WallpaperResizer resizer(image, gfx::Size(10, 20), WALLPAPER_LAYOUT_STRETCH,
-                           content::BrowserThread::GetBlockingPool());
+                           worker_pool());
   EXPECT_EQ(WallpaperResizer::GetImageId(image), resizer.original_image_id());
   resizer.AddObserver(this);
   resizer.StartResize();

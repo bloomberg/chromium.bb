@@ -213,6 +213,7 @@ class WallpaperManager::PendingWallpaper :
           FROM_HERE,
           base::Bind(&WallpaperManager::GetCustomWallpaperInternal, account_id_,
                      info_, wallpaper_path_, true /* update wallpaper */,
+                     base::ThreadTaskRunnerHandle::Get(),
                      base::Passed(on_finish_.Pass()),
                      manager->weak_factory_.GetWeakPtr()));
     } else if (!info_.location.empty()) {
@@ -723,11 +724,21 @@ void WallpaperManager::SetWallpaperFromImageSkia(
   }
 }
 
+void WallpaperManager::UpdateWallpaper(bool clear_cache) {
+  // For GAIA login flow, the last_selected_user_ may not be set before user
+  // login. If UpdateWallpaper is called at GAIA login screen, no wallpaper will
+  // be set. It could result a black screen on external monitors.
+  // See http://crbug.com/265689 for detail.
+  if (last_selected_user_.empty())
+    SetDefaultWallpaperNow(chromeos::login::SignInAccountId());
+  WallpaperManagerBase::UpdateWallpaper(clear_cache);
+}
 
 // WallpaperManager, private: --------------------------------------------------
 
 WallpaperManager::WallpaperManager()
     : pending_inactive_(NULL), weak_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   wallpaper::WallpaperManagerBase::SetPathIds(
       chrome::DIR_USER_DATA, chrome::DIR_CHROMEOS_WALLPAPERS,
       chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS);
@@ -778,6 +789,43 @@ void WallpaperManager::RemovePendingWallpaperFromList(
 
   if (loading_.empty())
     FOR_EACH_OBSERVER(Observer, observers_, OnPendingListEmptyForTesting());
+}
+
+void WallpaperManager::SetPolicyControlledWallpaper(
+    const AccountId& account_id,
+    const user_manager::UserImage& user_image) {
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  if (!user) {
+    NOTREACHED() << "Unknown user.";
+    return;
+  }
+
+  if (user->username_hash().empty()) {
+    cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
+        account_id.GetUserEmail(),
+        base::Bind(&WallpaperManager::SetCustomWallpaperOnSanitizedUsername,
+                   weak_factory_.GetWeakPtr(), account_id, user_image.image(),
+                   true /* update wallpaper */));
+  } else {
+    SetCustomWallpaper(
+        account_id, user->username_hash(), "policy-controlled.jpeg",
+        wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED, user_manager::User::POLICY,
+        user_image.image(), true /* update wallpaper */);
+  }
+}
+
+void WallpaperManager::SetCustomWallpaperOnSanitizedUsername(
+    const AccountId& account_id,
+    const gfx::ImageSkia& image,
+    bool update_wallpaper,
+    bool cryptohome_success,
+    const std::string& user_id_hash) {
+  if (!cryptohome_success)
+    return;
+  SetCustomWallpaper(account_id, user_id_hash, "policy-controlled.jpeg",
+                     wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+                     user_manager::User::POLICY, image, update_wallpaper);
 }
 
 void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
@@ -967,6 +1015,23 @@ size_t WallpaperManager::GetPendingListSizeForTesting() const {
 
 void WallpaperManager::UserChangedChildStatus(user_manager::User* user) {
   SetUserWallpaperNow(user->GetAccountId());
+}
+
+void WallpaperManager::SetDefaultWallpaperPathsFromCommandLine(
+    base::CommandLine* command_line) {
+  default_small_wallpaper_file_ = command_line->GetSwitchValuePath(
+      chromeos::switches::kDefaultWallpaperSmall);
+  default_large_wallpaper_file_ = command_line->GetSwitchValuePath(
+      chromeos::switches::kDefaultWallpaperLarge);
+  guest_small_wallpaper_file_ = command_line->GetSwitchValuePath(
+      chromeos::switches::kGuestWallpaperSmall);
+  guest_large_wallpaper_file_ = command_line->GetSwitchValuePath(
+      chromeos::switches::kGuestWallpaperLarge);
+  child_small_wallpaper_file_ = command_line->GetSwitchValuePath(
+      chromeos::switches::kChildWallpaperSmall);
+  child_large_wallpaper_file_ = command_line->GetSwitchValuePath(
+      chromeos::switches::kChildWallpaperLarge);
+  default_wallpaper_image_.reset();
 }
 
 void WallpaperManager::OnDefaultWallpaperDecoded(

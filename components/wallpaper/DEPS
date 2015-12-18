@@ -6,13 +6,11 @@ include_rules = [
 
 specific_include_rules = {
   "wallpaper_resizer_unittest\.cc": [
-    "+content/public/test",
     "+testing/gtest/include/gtest",
   ],
   "wallpaper_manager_base\.*": [
     "+chromeos",
     "+components/signin/core/account_id/account_id.h",
     "+components/user_manager",
-    "+content/public/browser",
   ],
 }

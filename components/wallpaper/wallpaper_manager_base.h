@@ -15,7 +15,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -23,9 +25,6 @@
 #include "components/user_manager/user_image/user_image.h"
 #include "components/wallpaper/wallpaper_export.h"
 #include "components/wallpaper/wallpaper_layout.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/gfx/image/image_skia.h"
 
 class PrefRegistrySimple;
@@ -117,10 +116,8 @@ WALLPAPER_EXPORT extern const char kUserWallpapers[];
 // A dictionary pref that maps usernames to wallpaper properties.
 WALLPAPER_EXPORT extern const char kUserWallpapersProperties[];
 
-// This singleton class maintains wallpapers for users who have logged into this
-// Chrome OS device.
-class WALLPAPER_EXPORT WallpaperManagerBase
-    : public content::NotificationObserver {
+// This singleton class maintains wallpapers for users.
+class WALLPAPER_EXPORT WallpaperManagerBase {
  public:
   enum WallpaperResolution {
     WALLPAPER_RESOLUTION_LARGE,
@@ -231,7 +228,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
                                                const std::string& file);
 
   WallpaperManagerBase();
-  ~WallpaperManagerBase() override;
+  virtual ~WallpaperManagerBase();
 
   // Returns the appropriate wallpaper resolution for all root windows.
   virtual WallpaperResolution GetAppropriateResolution() = 0;
@@ -253,21 +250,8 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // empty wallpaper.
   virtual void InitializeWallpaper() = 0;
 
-  // NotificationObserver overrides:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override = 0;
-
   // Removes all |account_id| related wallpaper info and saved wallpapers.
   virtual void RemoveUserWallpaperInfo(const AccountId& account_id) = 0;
-
-  // Calls SetCustomWallpaper() with |user_id_hash| received from cryptohome.
-  virtual void SetCustomWallpaperOnSanitizedUsername(
-      const AccountId& account_id,
-      const gfx::ImageSkia& image,
-      bool update_wallpaper,
-      bool cryptohome_success,
-      const std::string& user_id_hash);
 
   // Saves custom wallpaper to file, post task to generate thumbnail and updates
   // local state preferences. If |update_wallpaper| is false, don't change
@@ -379,6 +363,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   static void MoveCustomWallpapersOnWorker(
       const AccountId& account_id,
       const std::string& user_id_hash,
+      const scoped_refptr<base::SingleThreadTaskRunner>& reply_task_runner,
       base::WeakPtr<WallpaperManagerBase> weak_ptr);
 
   // Gets |account_id|'s custom wallpaper at |wallpaper_path|. Falls back on
@@ -389,6 +374,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
       const WallpaperInfo& info,
       const base::FilePath& wallpaper_path,
       bool update_wallpaper,
+      const scoped_refptr<base::SingleThreadTaskRunner>& reply_task_runner,
       MovableOnDestroyCallbackHolder on_finish,
       base::WeakPtr<WallpaperManagerBase> weak_ptr);
 
@@ -405,12 +391,6 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // settings in local state.
   virtual void InitInitialUserWallpaper(const AccountId& account_id,
                                         bool is_persistent);
-
-  // Set wallpaper to |user_image| controlled by policy.  (Takes a UserImage
-  // because that's the callback interface provided by UserImageLoader.)
-  virtual void SetPolicyControlledWallpaper(
-      const AccountId& account_id,
-      const user_manager::UserImage& user_image);
 
   // Gets encoded wallpaper from cache. Returns true if success.
   virtual bool GetWallpaperFromCache(const AccountId& account_id,
@@ -542,7 +522,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // Init |*default_*_wallpaper_file_| from given command line and
   // clear |default_wallpaper_image_|.
   virtual void SetDefaultWallpaperPathsFromCommandLine(
-      base::CommandLine* command_line);
+      base::CommandLine* command_line) = 0;
 
   // Sets wallpaper to decoded default.
   virtual void OnDefaultWallpaperDecoded(
@@ -568,6 +548,8 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // The number of loaded wallpapers.
   int loaded_wallpapers_for_test_;
 
+  base::ThreadChecker thread_checker_;
+
   // Sequence token associated with wallpaper operations.
   base::SequencedWorkerPool::SequenceToken sequence_token_;
 
@@ -587,8 +569,6 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   AccountId last_selected_user_ = EmptyAccountId();
 
   bool should_cache_wallpaper_;
-
-  content::NotificationRegistrar registrar_;
 
   base::ObserverList<Observer> observers_;
 

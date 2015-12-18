@@ -26,14 +26,14 @@
 #include "components/wallpaper/wallpaper_manager_base.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 
-class WallpaperManager :
-    public wallpaper::WallpaperManagerBase,
-    public user_manager::UserManager::UserSessionStateObserver {
+class WallpaperManager
+    : public wallpaper::WallpaperManagerBase,
+      public content::NotificationObserver,
+      public user_manager::UserManager::UserSessionStateObserver {
  public:
   class PendingWallpaper;
 
@@ -118,6 +118,10 @@ class WallpaperManager :
                                  wallpaper::WallpaperLayout layout,
                                  bool update_wallpaper) override;
 
+  // Updates current wallpaper. It may switch the size of wallpaper based on the
+  // current display's resolution. (asynchronously with zero delay)
+  void UpdateWallpaper(bool clear_cache) override;
+
   // Returns queue size.
   size_t GetPendingListSizeForTesting() const override;
 
@@ -139,6 +143,18 @@ class WallpaperManager :
 
   // This is called by PendingWallpaper when load is finished.
   void RemovePendingWallpaperFromList(PendingWallpaper* pending);
+
+  // Set wallpaper to |user_image| controlled by policy.  (Takes a UserImage
+  // because that's the callback interface provided by UserImageLoader.)
+  void SetPolicyControlledWallpaper(const AccountId& account_id,
+                                    const user_manager::UserImage& user_image);
+
+  // Calls SetCustomWallpaper() with |user_id_hash| received from cryptohome.
+  void SetCustomWallpaperOnSanitizedUsername(const AccountId& account_id,
+                                             const gfx::ImageSkia& image,
+                                             bool update_wallpaper,
+                                             bool cryptohome_success,
+                                             const std::string& user_id_hash);
 
   // WallpaperManagerBase overrides:
   void InitializeRegisteredDeviceWallpaper() override;
@@ -164,6 +180,8 @@ class WallpaperManager :
       scoped_ptr<bool> success,
       scoped_ptr<gfx::ImageSkia> small_wallpaper_image,
       scoped_ptr<gfx::ImageSkia> large_wallpaper_image) override;
+  void SetDefaultWallpaperPathsFromCommandLine(
+      base::CommandLine* command_line) override;
   void OnDefaultWallpaperDecoded(
       const base::FilePath& path,
       const wallpaper::WallpaperLayout layout,
@@ -196,6 +214,8 @@ class WallpaperManager :
   // All pending will be finally deleted on destroy.
   typedef std::vector<scoped_refptr<PendingWallpaper> > PendingList;
   PendingList loading_;
+
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<WallpaperManager> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(WallpaperManager);
