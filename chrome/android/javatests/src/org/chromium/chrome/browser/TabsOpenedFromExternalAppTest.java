@@ -460,7 +460,9 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
 
     /**
      * Catches regressions for https://crbug.com/495877.
+     * Flakiness reported in https://crbug.com/571030
      */
+    @FlakyTest
     @MediumTest
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
     public void testBackgroundSvelteTabIsSelectedAfterClosingExternalTab() throws Exception {
