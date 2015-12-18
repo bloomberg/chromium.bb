@@ -29,7 +29,7 @@ const char* PushRegistrationStatusToString(PushRegistrationStatus status) {
       return "Registration failed - push service error";
 
     case PUSH_REGISTRATION_STATUS_NO_SENDER_ID:
-      return "Registration failed - no sender id provided";
+      return "Registration failed - gcm_sender_id not found in manifest";
 
     case PUSH_REGISTRATION_STATUS_STORAGE_ERROR:
       return "Registration failed - storage error";
@@ -47,6 +47,9 @@ const char* PushRegistrationStatusToString(PushRegistrationStatus status) {
 
     case PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE:
       return "Registration failed - could not retrieve the public key";
+
+    case PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING:
+      return "Registration failed - manifest empty or missing";
   }
   NOTREACHED();
   return "";

@@ -31,7 +31,8 @@ async_test(function(test) {
 
                 assert_equals(event.data.command, 'subscribe');
                 assert_false(event.data.success, 'subscribe is not expected to succeed.');
-                assert_regexp_match(event.data.errorMessage, /no sender id provided/);
+                assert_regexp_match(event.data.errorMessage,
+                                    /gcm_sender_id not found in manifest/);
 
                 test.done();
             });
