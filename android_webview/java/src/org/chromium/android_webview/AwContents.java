@@ -925,28 +925,28 @@ public class AwContents implements SmartClipProvider,
         }
     }
     private static WindowAndroidWrapper sCachedWindowAndroid;
-    private static WeakHashMap<Activity, WindowAndroidWrapper> sActivityWindowMap;
+    private static WeakHashMap<Context, WindowAndroidWrapper> sActivityContextWindowMap;
 
     // getWindowAndroid is only called on UI thread, so there are no threading issues with lazy
     // initialization.
     @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     private static WindowAndroidWrapper getWindowAndroid(Context context) {
         // TODO(boliu): WebView does not currently initialize ApplicationStatus, crbug.com/470582.
-        Activity activity = ContentViewCore.activityFromContext(context);
-        if (activity == null) {
+        boolean contextWrapsActivity = activityFromContext(context) != null;
+        if (!contextWrapsActivity) {
             if (sCachedWindowAndroid == null) {
                 sCachedWindowAndroid = new WindowAndroidWrapper(new WindowAndroid(context));
             }
             return sCachedWindowAndroid;
         }
 
-        if (sActivityWindowMap == null) sActivityWindowMap = new WeakHashMap<>();
-        WindowAndroidWrapper activityWindowAndroid = sActivityWindowMap.get(activity);
+        if (sActivityContextWindowMap == null) sActivityContextWindowMap = new WeakHashMap<>();
+        WindowAndroidWrapper activityWindowAndroid = sActivityContextWindowMap.get(context);
         if (activityWindowAndroid == null) {
             final boolean listenToActivityState = false;
             activityWindowAndroid = new WindowAndroidWrapper(
-                    new ActivityWindowAndroid(activity, listenToActivityState));
-            sActivityWindowMap.put(activity, activityWindowAndroid);
+                    new ActivityWindowAndroid(context, listenToActivityState));
+            sActivityContextWindowMap.put(context, activityWindowAndroid);
         }
         return activityWindowAndroid;
     }
@@ -1208,7 +1208,7 @@ public class AwContents implements SmartClipProvider,
     }
 
     public static Activity activityFromContext(Context context) {
-        return ContentViewCore.activityFromContext(context);
+        return WindowAndroid.activityFromContext(context);
     }
     /**
      * Disables contents of JS-to-Java bridge objects to be inspectable using
@@ -2256,7 +2256,7 @@ public class AwContents implements SmartClipProvider,
             intent.putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true);
         }
 
-        if (ContentViewCore.activityFromContext(mContext) == null) {
+        if (WindowAndroid.activityFromContext(mContext) == null) {
             mContext.startActivity(intent);
             return;
         }

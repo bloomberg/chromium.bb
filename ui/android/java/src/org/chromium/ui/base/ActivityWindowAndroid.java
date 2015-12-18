@@ -7,6 +7,7 @@ package org.chromium.ui.base;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.content.SharedPreferences;
@@ -52,8 +53,8 @@ public class ActivityWindowAndroid
      * indicate their activity state listening preference.
      * @param activity The activity associated with the WindowAndroid.
      */
-    public ActivityWindowAndroid(Activity activity) {
-        this(activity, true);
+    public ActivityWindowAndroid(Context context) {
+        this(context, true);
     }
 
     /**
@@ -61,8 +62,12 @@ public class ActivityWindowAndroid
      * @param activity The activity associated with the WindowAndroid.
      * @param listenToActivityState Whether to listen to activity state changes.
      */
-    public ActivityWindowAndroid(Activity activity, boolean listenToActivityState) {
-        super(activity);
+    public ActivityWindowAndroid(Context context, boolean listenToActivityState) {
+        super(context);
+        Activity activity = activityFromContext(context);
+        if (activity == null) {
+            throw new IllegalArgumentException("Context is not and does not wrap an Activity");
+        }
         mHandler = new Handler();
         mOutstandingPermissionRequests = new SparseArray<PermissionCallback>();
         if (listenToActivityState) {
@@ -207,7 +212,7 @@ public class ActivityWindowAndroid
 
     @Override
     public WeakReference<Activity> getActivity() {
-        return new WeakReference<Activity>((Activity) getContext().get());
+        return new WeakReference<Activity>(activityFromContext(getContext().get()));
     }
 
     @Override

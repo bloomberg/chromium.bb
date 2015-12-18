@@ -12,7 +12,6 @@ import android.app.assist.AssistStructure.ViewNode;
 import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -431,22 +430,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      */
     public interface SmartClipDataListener {
         public void onSmartClipDataExtracted(String text, String html, Rect clipRect);
-    }
-
-    /**
-     * Cast from Context to Activity taking ContextWrapper into account.
-     */
-    public static Activity activityFromContext(Context context) {
-        // Only retrieve the base context if the supplied context is a ContextWrapper but not
-        // an Activity, given that Activity is already a subclass of ContextWrapper.
-        if (context instanceof Activity) {
-            return ((Activity) context);
-        } else if (context instanceof ContextWrapper) {
-            context = ((ContextWrapper) context).getBaseContext();
-            return activityFromContext(context);
-        } else {
-            return null;
-        }
     }
 
     private final Context mContext;
