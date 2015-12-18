@@ -133,25 +133,34 @@ void MinidumpGenerator::GatherSystemInformation() {
                                   vers_path,
                                   kCFURLPOSIXPathStyle,
                                   false);
-  CFDataRef data;
-  SInt32 error;
-  CFURLCreateDataAndPropertiesFromResource(NULL, sys_vers, &data, NULL, NULL,
-                                           &error);
-
-  if (!data) {
-    CFRelease(sys_vers);
+  CFReadStreamRef read_stream = CFReadStreamCreateWithFile(NULL, sys_vers);
+  CFRelease(sys_vers);
+  if (!read_stream) {
     return;
   }
-
+  if (!CFReadStreamOpen(read_stream)) {
+    CFRelease(read_stream);
+    return;
+  }
+  CFDataRef data = NULL;
+  CFIndex num_bytes_read = 0;
+  const UInt8 *data_bytes =
+    CFReadStreamGetBuffer(read_stream, 0, &num_bytes_read);
+  if (data_bytes) {
+    data = CFDataCreate(NULL, data_bytes, num_bytes_read);
+  }
+  CFReadStreamClose(read_stream);
+  CFRelease(read_stream);
+  if (!data) {
+    return;
+  }
   CFDictionaryRef list = static_cast<CFDictionaryRef>
     (CFPropertyListCreateFromXMLData(NULL, data, kCFPropertyListImmutable,
                                      NULL));
+  CFRelease(data);
   if (!list) {
-    CFRelease(sys_vers);
-    CFRelease(data);
     return;
   }
-
   CFStringRef build_version = static_cast<CFStringRef>
     (CFDictionaryGetValue(list, CFSTR("ProductBuildVersion")));
   CFStringRef product_version = static_cast<CFStringRef>
@@ -160,8 +169,6 @@ void MinidumpGenerator::GatherSystemInformation() {
   string product_str = ConvertToString(product_version);
 
   CFRelease(list);
-  CFRelease(sys_vers);
-  CFRelease(data);
 
   strlcpy(build_string_, build_str.c_str(), sizeof(build_string_));
 
