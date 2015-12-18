@@ -6,7 +6,6 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -17,9 +16,9 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/web_history_service.h"
+#include "components/history/core/test/fake_web_history_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
@@ -236,139 +235,15 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PeriodChanged) {
   EXPECT_EQ(9u, GetLocalResult());
 }
 
-class FakeWebHistoryService : public history::WebHistoryService {
- public:
-
-  class Request : public history::WebHistoryService::Request {
-   public:
-    Request(FakeWebHistoryService* service,
-            bool emulate_success,
-            int emulate_response_code,
-            const CompletionCallback& callback,
-            base::Time begin,
-            base::Time end)
-        : service_(service),
-          emulate_success_(emulate_success),
-          emulate_response_code_(emulate_response_code),
-          callback_(callback),
-          begin_(begin),
-          end_(end),
-          is_pending_(false) {
-    }
-
-    bool IsPending() override {
-      return is_pending_;
-    }
-
-    int GetResponseCode() override {
-      return emulate_response_code_;
-    }
-
-    const std::string& GetResponseBody() override {
-      // It is currently not important to mimic the exact format of visits,
-      // just to get the correct number.
-      response_body_ = "{ \"event\": [";
-      for (int i = 0;
-           i < service_->GetNumberOfVisitsBetween(begin_, end_); ++i) {
-        response_body_ += i ? ", {}" : "{}";
-      }
-      response_body_ += "] }";
-      return response_body_;
-    }
-
-    void SetPostData(const std::string& post_data) override {};
-
-    void Start() override {
-      is_pending_ = true;
-      callback_.Run(this, emulate_success_);
-    }
-
-   private:
-    FakeWebHistoryService* service_;
-    bool emulate_success_;
-    int emulate_response_code_;
-    const CompletionCallback& callback_;
-    base::Time begin_;
-    base::Time end_;
-    bool is_pending_;
-    std::string response_body_;
-
-    DISALLOW_COPY_AND_ASSIGN(Request);
-  };
-
-  explicit FakeWebHistoryService(Profile* profile)
-      : history::WebHistoryService(
-            ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-            SigninManagerFactory::GetForProfile(profile),
-            profile->GetRequestContext()) {
-  }
-
-  void SetRequestOptions(bool emulate_success, int emulate_response_code) {
-    emulate_success_ = emulate_success;
-    emulate_response_code_ = emulate_response_code;
-  }
-
-  void AddSyncedVisit(std::string url, base::Time timestamp) {
-    visits_.push_back(make_pair(url, timestamp));
-  }
-
-  void ClearSyncedVisits() {
-    visits_.clear();
-  }
-
-  int GetNumberOfVisitsBetween(const base::Time& begin, const base::Time& end) {
-    int result = 0;
-    for (const Visit& visit : visits_) {
-      if (visit.second >= begin && visit.second < end)
-        ++result;
-    }
-    return result;
-  }
-
- private:
-  base::Time GetTimeForKeyInQuery(
-      const GURL& url, const std::string& key) {
-    std::string value;
-    if (!net::GetValueForKeyInQuery(url, key, &value))
-      return base::Time();
-
-    int64 us;
-    if (!base::StringToInt64(value, &us))
-      return base::Time();
-    return base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(us);
-  }
-
-  Request* CreateRequest(const GURL& url,
-                         const CompletionCallback& callback) override {
-    // Find the time range endpoints in the URL.
-    base::Time begin = GetTimeForKeyInQuery(url, "min");
-    base::Time end = GetTimeForKeyInQuery(url, "max");
-
-    if (end.is_null())
-      end = base::Time::Max();
-
-    return new Request(
-        this, emulate_success_, emulate_response_code_, callback, begin, end);
-  }
-
-  // Parameters for the fake request.
-  bool emulate_success_;
-  int emulate_response_code_;
-
-  // Fake visits storage.
-  typedef std::pair<std::string, base::Time> Visit;
-  std::vector<Visit> visits_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeWebHistoryService);
-};
-
 // Test the behavior for a profile that syncs history.
 IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
   // WebHistoryService makes network requests, so we need to use a fake one
   // for testing.
-  // TODO(msramek): Move this to a separate file, next to WebHistoryService.
-  scoped_ptr<FakeWebHistoryService> service(
-      new FakeWebHistoryService(browser()->profile()));
+  scoped_ptr<history::FakeWebHistoryService> service(
+      new history::FakeWebHistoryService(
+          ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile()),
+          SigninManagerFactory::GetForProfile(browser()->profile()),
+          browser()->profile()->GetRequestContext()));
 
   HistoryCounter counter;
   counter.SetWebHistoryServiceForTesting(service.get());
@@ -377,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
                           base::Unretained(this)));
 
   // No entries locally and no entries in Sync.
-  service->SetRequestOptions(true /* success */, net::HTTP_OK);
+  service->SetupFakeResponse(true /* success */, net::HTTP_OK);
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(0u, GetLocalResult());
@@ -390,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
       "www.google.com", GetCurrentTime() - base::TimeDelta::FromHours(2));
   service->AddSyncedVisit(
       "www.chrome.com", GetCurrentTime() - base::TimeDelta::FromHours(2));
-  service->SetRequestOptions(true /* success */, net::HTTP_OK);
+  service->SetupFakeResponse(true /* success */, net::HTTP_OK);
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(0u, GetLocalResult());
@@ -398,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
 
   // No entries locally, but some entries in Sync.
   service->AddSyncedVisit("www.google.com", GetCurrentTime());
-  service->SetRequestOptions(true /* success */, net::HTTP_OK);
+  service->SetupFakeResponse(true /* success */, net::HTTP_OK);
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(0u, GetLocalResult());
@@ -406,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
 
   // To err on the safe side, if the server request fails, we assume that there
   // might be some items on the server.
-  service->SetRequestOptions(true /* success */,
+  service->SetupFakeResponse(true /* success */,
                              net::HTTP_INTERNAL_SERVER_ERROR);
   counter.Restart();
   WaitForCounting();
@@ -414,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
   EXPECT_TRUE(HasSyncedVisits());
 
   // Same when the entire query fails.
-  service->SetRequestOptions(false /* success */,
+  service->SetupFakeResponse(false /* success */,
                              net::HTTP_INTERNAL_SERVER_ERROR);
   counter.Restart();
   WaitForCounting();
@@ -424,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
   // Nonzero local count, nonempty sync.
   AddVisit("https://www.google.com");
   AddVisit("https://www.chrome.com");
-  service->SetRequestOptions(true /* success */, net::HTTP_OK);
+  service->SetupFakeResponse(true /* success */, net::HTTP_OK);
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(2u, GetLocalResult());
@@ -432,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
 
   // Nonzero local count, empty sync.
   service->ClearSyncedVisits();
-  service->SetRequestOptions(true /* success */, net::HTTP_OK);
+  service->SetupFakeResponse(true /* success */, net::HTTP_OK);
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(2u, GetLocalResult());
@@ -450,8 +325,11 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, DISABLED_RestartOnSyncChange) {
   Profile* profile = GetProfile(kFirstProfileIndex);
 
   // Set up the fake web history service and the counter.
-  scoped_ptr<FakeWebHistoryService> web_history_service(
-      new FakeWebHistoryService(profile));
+  scoped_ptr<history::FakeWebHistoryService> web_history_service(
+      new history::FakeWebHistoryService(
+          ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile()),
+          SigninManagerFactory::GetForProfile(browser()->profile()),
+          browser()->profile()->GetRequestContext()));
   HistoryCounter counter;
   counter.SetWebHistoryServiceForTesting(web_history_service.get());
   counter.Init(profile,

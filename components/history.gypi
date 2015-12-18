@@ -167,6 +167,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
         '../sql/sql.gyp:test_support_sql',
@@ -180,6 +181,8 @@
         # Note: sources list duplicated in GN build.
         'history/core/test/database_test_utils.cc',
         'history/core/test/database_test_utils.h',
+        'history/core/test/fake_web_history_service.cc',
+        'history/core/test/fake_web_history_service.h',
         'history/core/test/history_backend_db_base_test.cc',
         'history/core/test/history_backend_db_base_test.h',
         'history/core/test/history_client_fake_bookmarks.cc',

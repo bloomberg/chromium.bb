@@ -7,6 +7,8 @@ static_library("test") {
   sources = [
     "database_test_utils.cc",
     "database_test_utils.h",
+    "fake_web_history_service.cc",
+    "fake_web_history_service.h",
     "history_backend_db_base_test.cc",
     "history_backend_db_base_test.h",
     "history_client_fake_bookmarks.cc",
@@ -26,6 +28,7 @@ static_library("test") {
   deps = [
     "//base",
     "//components/history/core/browser",
+    "//net",
     "//sql",
     "//sql:test_support",
     "//testing/gtest",
