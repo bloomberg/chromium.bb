@@ -16,6 +16,7 @@
       "build/get_landmines.py",
       "build/gyp_chromium",
       "build/linux/sysroot_ld_path.sh",
+      "build/util/lib/common/unittest_util.py",
       "infra/.*",
       "DEPS",
       "testing/buildbot/.*",
