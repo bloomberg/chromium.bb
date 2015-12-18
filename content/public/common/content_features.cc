@@ -4,12 +4,18 @@
 
 #include "content/public/common/content_features.h"
 
-namespace content {
+namespace features {
+
+// All features in alphabetical order.
+
+// The Experimental Framework for controlling access to API experiments.
+const base::Feature kExperimentalFramework{"ExperimentalFramework",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
-const base::Feature kSeccompSandboxAndroidFeature = {
-  "SeccompSandboxAndroid", base::FEATURE_DISABLED_BY_DEFAULT
-};
+// FeatureList definition for the Seccomp field trial.
+const base::Feature kSeccompSandboxAndroid{"SeccompSandboxAndroid",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-}  // namespace content
+}  // namespace features

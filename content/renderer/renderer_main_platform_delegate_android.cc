@@ -108,7 +108,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   }
 
   // Seccomp has been detected, check if the field trial experiment should run.
-  if (base::FeatureList::IsEnabled(kSeccompSandboxAndroidFeature)) {
+  if (base::FeatureList::IsEnabled(features::kSeccompSandboxAndroid)) {
     status_uma.set_status(RecordSeccompStatus::FEATURE_ENABLED);
 
     sandbox::SandboxBPF sandbox(new SandboxBPFBasePolicyAndroid());

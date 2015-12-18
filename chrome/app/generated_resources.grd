@@ -5878,6 +5878,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION" desc="Description for the flag to enable experimental Web Platform features.">
         Enables experimental Web Platform features that are in development.
       </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_FRAMEWORK_NAME" desc="Name for the flag to enable the Experimental Framework.">
+        Experimental Framework.
+      </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_FRAMEWORK_DESCRIPTION" desc="Description for the flag to enable the Experimental Framework.">
+        Enables the Experimental Framework for controlling access to API experiments.
+      </message>
       <message name="IDS_FLAGS_WEB_BLUETOOTH_NAME" desc="Name for the flag to enable Web Bluetooth.">
         Web Bluetooth
       </message>

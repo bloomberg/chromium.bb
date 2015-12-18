@@ -1649,7 +1649,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_SECCOMP_FILTER_SANDBOX_ANDROID_NAME,
      IDS_FLAGS_SECCOMP_FILTER_SANDBOX_ANDROID_DESCRIPTION,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(content::kSeccompSandboxAndroidFeature)},
+     FEATURE_VALUE_TYPE(features::kSeccompSandboxAndroid)},
 #endif
     {"enable-touch-hover",
      IDS_FLAGS_TOUCH_HOVER_NAME,
@@ -2075,6 +2075,11 @@ const FeatureEntry kFeatureEntries[] = {
       ENABLE_DISABLE_VALUE_TYPE(switches::kEnableInputImeAPI,
                                 switches::kDisableInputImeAPI)},
 #endif // defined(OS_WIN) || defined(OS_LINUX)
+    {"enable-experimental-framework",
+     IDS_FLAGS_EXPERIMENTAL_FRAMEWORK_NAME,
+     IDS_FLAGS_EXPERIMENTAL_FRAMEWORK_DESCRIPTION,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kExperimentalFramework)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
