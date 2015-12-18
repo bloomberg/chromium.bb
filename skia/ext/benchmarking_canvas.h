@@ -34,9 +34,7 @@ public:
 protected:
   // SkCanvas overrides
   void willSave() override;
-  SaveLayerStrategy willSaveLayer(const SkRect*,
-                                  const SkPaint*,
-                                  SaveFlags) override;
+  SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec&) override;
   void willRestore() override;
 
   void didConcat(const SkMatrix&) override;

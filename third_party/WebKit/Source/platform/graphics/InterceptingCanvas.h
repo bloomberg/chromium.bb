@@ -100,7 +100,7 @@ protected:
     void didSetMatrix(const SkMatrix&) override = 0;
     void didConcat(const SkMatrix&) override = 0;
     void willSave() override = 0;
-    SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint*, SaveFlags) override = 0;
+    SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec&) override = 0;
     void willRestore() override = 0;
 
     unsigned callNestingDepth() const { return m_callNestingDepth; }
@@ -275,10 +275,10 @@ protected:
         this->SkCanvas::willSave();
     }
 
-    SkCanvas::SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint* paint, SaveFlags flags) override
+    SkCanvas::SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override
     {
         Interceptor interceptor(this);
-        return this->SkCanvas::willSaveLayer(bounds, paint, flags);
+        return this->SkCanvas::getSaveLayerStrategy(rec);
     }
 
     void willRestore() override

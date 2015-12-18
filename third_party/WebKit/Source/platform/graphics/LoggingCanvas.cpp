@@ -465,15 +465,13 @@ String regionOpName(SkRegion::Op op)
     };
 }
 
-String saveFlagsToString(SkCanvas::SaveFlags flags)
+String saveLayerFlagsToString(SkCanvas::SaveLayerFlags flags)
 {
     String flagsString = "";
-    if (flags & SkCanvas::kHasAlphaLayer_SaveFlag)
-        flagsString.append("kHasAlphaLayer_SaveFlag ");
-    if (flags & SkCanvas::kFullColorLayer_SaveFlag)
-        flagsString.append("kFullColorLayer_SaveFlag ");
-    if (flags & SkCanvas::kClipToLayer_SaveFlag)
-        flagsString.append("kClipToLayer_SaveFlag ");
+    if (flags & SkCanvas::kIsOpaque_SaveLayerFlag)
+        flagsString.append("kIsOpaque_SaveLayerFlag ");
+    if (flags & SkCanvas::kPreserveLCDText_SaveLayerFlag)
+        flagsString.append("kPreserveLCDText_SaveLayerFlag ");
     return flagsString;
 }
 
@@ -824,16 +822,16 @@ void LoggingCanvas::willSave()
     this->SkCanvas::willSave();
 }
 
-SkCanvas::SaveLayerStrategy LoggingCanvas::willSaveLayer(const SkRect* bounds, const SkPaint* paint, SaveFlags flags)
+SkCanvas::SaveLayerStrategy LoggingCanvas::getSaveLayerStrategy(const SaveLayerRec& rec)
 {
     AutoLogger logger(this);
     RefPtr<JSONObject> params = logger.logItemWithParams("saveLayer");
-    if (bounds)
-        params->setObject("bounds", objectForSkRect(*bounds));
-    if (paint)
-        params->setObject("paint", objectForSkPaint(*paint));
-    params->setString("saveFlags", saveFlagsToString(flags));
-    return this->SkCanvas::willSaveLayer(bounds, paint, flags);
+    if (rec.fBounds)
+        params->setObject("bounds", objectForSkRect(*rec.fBounds));
+    if (rec.fPaint)
+        params->setObject("paint", objectForSkPaint(*rec.fPaint));
+    params->setString("saveFlags", saveLayerFlagsToString(rec.fSaveLayerFlags));
+    return this->SkCanvas::getSaveLayerStrategy(rec);
 }
 
 void LoggingCanvas::willRestore()

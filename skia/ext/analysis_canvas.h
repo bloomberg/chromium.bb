@@ -73,9 +73,7 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkPicture::AbortCallback {
 
  protected:
   void willSave() override;
-  SaveLayerStrategy willSaveLayer(const SkRect*,
-                                  const SkPaint*,
-                                  SaveFlags) override;
+  SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec&) override;
   void willRestore() override;
 
   void onClipRect(const SkRect& rect,

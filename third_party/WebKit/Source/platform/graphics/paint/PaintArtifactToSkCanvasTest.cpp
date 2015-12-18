@@ -54,9 +54,9 @@ private:
         onDrawRect(rect, paint, this);
     }
 
-    SaveLayerStrategy willSaveLayer(const SkRect* rect, const SkPaint* paint, SaveFlags saveFlags) override
+    SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override
     {
-        willSaveLayer(paint->getAlpha(), this);
+        willSaveLayer(rec.fPaint->getAlpha(), this);
         return SaveLayerStrategy::kFullLayer_SaveLayerStrategy;
     }
 };

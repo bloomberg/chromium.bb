@@ -544,16 +544,15 @@ void BenchmarkingCanvas::willSave() {
   INHERITED::willSave();
 }
 
-SkCanvas::SaveLayerStrategy BenchmarkingCanvas::willSaveLayer(const SkRect* rect,
-                                                              const SkPaint* paint,
-                                                              SaveFlags flags) {
-  AutoOp op(this, "SaveLayer", paint);
-  if (rect)
-    op.addParam("bounds", AsValue(*rect));
-  if (flags)
-    op.addParam("flags", AsValue(flags));
+SkCanvas::SaveLayerStrategy BenchmarkingCanvas::getSaveLayerStrategy(
+    const SaveLayerRec& rec) {
+  AutoOp op(this, "SaveLayer", rec.fPaint);
+  if (rec.fBounds)
+    op.addParam("bounds", AsValue(*rec.fBounds));
+  if (rec.fSaveLayerFlags)
+    op.addParam("flags", AsValue(rec.fSaveLayerFlags));
 
-  return INHERITED::willSaveLayer(rect, op.paint(), flags);
+  return INHERITED::getSaveLayerStrategy(rec);
 }
 
 void BenchmarkingCanvas::willRestore() {

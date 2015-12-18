@@ -69,7 +69,7 @@ public:
     void didSetMatrix(const SkMatrix&) override;
     void didConcat(const SkMatrix&) override;
     void willSave() override;
-    SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint*, SaveFlags) override;
+    SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec&) override;
     void willRestore() override;
 
 private:

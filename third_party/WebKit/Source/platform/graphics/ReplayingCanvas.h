@@ -49,7 +49,7 @@ public:
     ReplayingCanvas(SkBitmap, unsigned fromStep, unsigned toStep);
 
     bool abort() override;
-    SkCanvas::SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint*, SaveFlags) override;
+    SkCanvas::SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec&) override;
     void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override;
 
 private:

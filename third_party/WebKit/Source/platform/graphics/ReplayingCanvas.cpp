@@ -60,14 +60,14 @@ bool ReplayingCanvas::abort()
     return m_abortDrawing;
 }
 
-SkCanvas::SaveLayerStrategy ReplayingCanvas::willSaveLayer(const SkRect* bounds, const SkPaint* paint, SaveFlags flags)
+SkCanvas::SaveLayerStrategy ReplayingCanvas::getSaveLayerStrategy(const SaveLayerRec& rec)
 {
     // We're about to create a layer and we have not cleared the device yet.
     // Let's clear now, so it has effect on all layers.
     if (callCount() <= m_fromStep)
         this->SkCanvas::clear(SkColorSetARGB(255, 255, 255, 255)); // FIXME: fill with nine patch instead.
 
-    return this->InterceptingCanvas<ReplayingCanvas>::willSaveLayer(bounds, paint, flags);
+    return this->InterceptingCanvas<ReplayingCanvas>::getSaveLayerStrategy(rec);
 }
 
 void ReplayingCanvas::onDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint)
