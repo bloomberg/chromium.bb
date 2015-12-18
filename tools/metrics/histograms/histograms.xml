@@ -77217,9 +77217,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="49321" label="TLS_PSK_WITH_AES_256_CCM_8"/>
   <int value="49322" label="TLS_PSK_DHE_WITH_AES_128_CCM_8"/>
   <int value="49323" label="TLS_PSK_DHE_WITH_AES_256_CCM_8"/>
-  <int value="52243" label="TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"/>
-  <int value="52244" label="TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305"/>
-  <int value="52245" label="TLS_DHE_RSA_WITH_CHACHA20_POLY1305"/>
+  <int value="52243"
+      label="TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305 (non-standard)"/>
+  <int value="52244"
+      label="TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305 (non-standard)"/>
+  <int value="52245" label="TLS_DHE_RSA_WITH_CHACHA20_POLY1305 (non-standard)"/>
+  <int value="52392" label="TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"/>
+  <int value="52393" label="TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"/>
 </enum>
 
 <enum name="SSLErrorCauses" type="int">

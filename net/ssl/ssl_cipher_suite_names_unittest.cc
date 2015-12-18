@@ -27,8 +27,15 @@ TEST(CipherSuiteNamesTest, Basic) {
   EXPECT_TRUE(is_aead);
   EXPECT_EQ(NULL, mac);
 
-  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, 0xcc15);
-  EXPECT_STREQ("DHE_RSA", key_exchange);
+  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, 0xcca9);
+  EXPECT_STREQ("ECDHE_ECDSA", key_exchange);
+  EXPECT_STREQ("CHACHA20_POLY1305", cipher);
+  EXPECT_TRUE(is_aead);
+  EXPECT_EQ(NULL, mac);
+
+  // Non-standard variant.
+  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, 0xcc14);
+  EXPECT_STREQ("ECDHE_ECDSA", key_exchange);
   EXPECT_STREQ("CHACHA20_POLY1305", cipher);
   EXPECT_TRUE(is_aead);
   EXPECT_EQ(NULL, mac);
@@ -90,6 +97,10 @@ TEST(CipherSuiteNamesTest, SecureCipherSuites) {
       0xcc13 /* ECDHE_RSA_WITH_CHACHA20_POLY1305 (non-standard) */));
   EXPECT_TRUE(IsSecureTLSCipherSuite(
       0xcc14 /* ECDHE_ECDSA_WITH_CHACHA20_POLY1305 (non-standard) */));
+  EXPECT_TRUE(IsSecureTLSCipherSuite(
+      0xcca8 /* ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 */));
+  EXPECT_TRUE(IsSecureTLSCipherSuite(
+      0xcca9 /* ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 */));
 }
 
 TEST(CipherSuiteNamesTest, HTTP2CipherSuites) {
@@ -121,6 +132,10 @@ TEST(CipherSuiteNamesTest, HTTP2CipherSuites) {
       0xcc13 /* ECDHE_RSA_WITH_CHACHA20_POLY1305 (non-standard) */));
   EXPECT_TRUE(IsTLSCipherSuiteAllowedByHTTP2(
       0xcc14 /* ECDHE_ECDSA_WITH_CHACHA20_POLY1305 (non-standard) */));
+  EXPECT_TRUE(IsTLSCipherSuiteAllowedByHTTP2(
+      0xcca8 /* ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 */));
+  EXPECT_TRUE(IsTLSCipherSuiteAllowedByHTTP2(
+      0xcca9 /* ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 */));
 }
 
 }  // anonymous namespace
