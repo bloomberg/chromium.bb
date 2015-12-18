@@ -1350,7 +1350,7 @@ crbug.com/569919 compositing/color-matching/image-color-matching.html [ Failure 
 crbug.com/569919 fast/canvas/canvas-toBlob-jpeg-maximum-quality.html [ Failure ]
 crbug.com/569919 fast/canvas/canvas-toBlob-jpeg-medium-quality.html [ Failure ]
 crbug.com/569919 fast/canvas/canvas-toBlob-webp-maximum-quality.html [ Failure ]
-crbug.com/569919 fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ Failure ]
+crbug.com/569919 fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ NeedsRebaseline ]
 
 crbug.com/570002 fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
 crbug.com/570002 [ XP Linux ] virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
