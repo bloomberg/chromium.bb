@@ -4,6 +4,8 @@
 
 #include "extensions/browser/value_store/value_store.h"
 
+#include <utility>
+
 #include "base/logging.h"
 
 // Implementation of Status.
@@ -34,7 +36,7 @@ void ValueStore::Status::Merge(const Status& status) {
 ValueStore::ReadResultType::ReadResultType(
     scoped_ptr<base::DictionaryValue> settings,
     const Status& status)
-    : settings_(settings.Pass()), status_(status) {
+    : settings_(std::move(settings)), status_(status) {
   CHECK(settings_);
 }
 
@@ -48,7 +50,7 @@ ValueStore::ReadResultType::~ReadResultType() {}
 ValueStore::WriteResultType::WriteResultType(
     scoped_ptr<ValueStoreChangeList> changes,
     const Status& status)
-    : changes_(changes.Pass()), status_(status) {
+    : changes_(std::move(changes)), status_(status) {
   CHECK(changes_);
 }
 

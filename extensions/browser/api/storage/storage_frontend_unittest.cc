@@ -60,8 +60,8 @@ class ExtensionSettingsFrontendTest : public ExtensionsTest {
  protected:
   void ResetFrontend() {
     storage_factory_->Reset(new LeveldbSettingsStorageFactory());
-    frontend_ = StorageFrontend::CreateForTesting(storage_factory_,
-                                                  browser_context()).Pass();
+    frontend_ =
+        StorageFrontend::CreateForTesting(storage_factory_, browser_context());
   }
 
   base::ScopedTempDir temp_dir_;

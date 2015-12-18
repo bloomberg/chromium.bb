@@ -61,7 +61,7 @@ scoped_ptr<UsbPrinterManifestData> UsbPrinterManifestData::FromValue(
     }
     result->filters_.push_back(output);
   }
-  return result.Pass();
+  return result;
 }
 
 bool UsbPrinterManifestData::SupportsDevice(

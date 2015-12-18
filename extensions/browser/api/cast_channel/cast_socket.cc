@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -192,12 +193,12 @@ scoped_ptr<net::SSLClientSocket> CastSocketImpl::CreateSslSocket(
   context.transport_security_state = transport_security_state_.get();
 
   scoped_ptr<net::ClientSocketHandle> connection(new net::ClientSocketHandle);
-  connection->SetSocket(socket.Pass());
+  connection->SetSocket(std::move(socket));
   net::HostPortPair host_and_port = net::HostPortPair::FromIPEndPoint(
       ip_endpoint_);
 
   return net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-      connection.Pass(), host_and_port, ssl_config, context);
+      std::move(connection), host_and_port, ssl_config, context);
 }
 
 scoped_refptr<net::X509Certificate> CastSocketImpl::ExtractPeerCert() {
@@ -240,7 +241,7 @@ bool CastSocketImpl::VerifyChallengeReply() {
 
 void CastSocketImpl::SetTransportForTesting(
     scoped_ptr<CastTransport> transport) {
-  transport_ = transport.Pass();
+  transport_ = std::move(transport);
 }
 
 void CastSocketImpl::Connect(scoped_ptr<CastTransport::Delegate> delegate,
@@ -249,7 +250,7 @@ void CastSocketImpl::Connect(scoped_ptr<CastTransport::Delegate> delegate,
   VLOG_WITH_CONNECTION(1) << "Connect readyState = " << ready_state_;
   DCHECK_EQ(proto::CONN_STATE_START_CONNECT, connect_state_);
 
-  delegate_ = delegate.Pass();
+  delegate_ = std::move(delegate);
 
   if (ready_state_ != READY_STATE_NONE) {
     logger_->LogSocketEventWithDetails(
@@ -394,7 +395,7 @@ int CastSocketImpl::DoSslConnect() {
   DCHECK(connect_loop_callback_.IsCancelled());
   VLOG_WITH_CONNECTION(1) << "DoSslConnect";
   SetConnectState(proto::CONN_STATE_SSL_CONNECT_COMPLETE);
-  socket_ = CreateSslSocket(tcp_socket_.Pass());
+  socket_ = CreateSslSocket(std::move(tcp_socket_));
 
   int rv = socket_->Connect(
       base::Bind(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
@@ -546,7 +547,7 @@ void CastSocketImpl::DoConnectCallback() {
 
   if (error_state_ == CHANNEL_ERROR_NONE) {
     SetReadyState(READY_STATE_OPEN);
-    transport_->SetReadDelegate(delegate_.Pass());
+    transport_->SetReadDelegate(std::move(delegate_));
   } else {
     CloseInternal();
   }

@@ -4,6 +4,8 @@
 
 #include "extensions/common/permissions/permissions_data.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
@@ -132,14 +134,14 @@ void PermissionsData::SetPermissions(
     scoped_ptr<const PermissionSet> active,
     scoped_ptr<const PermissionSet> withheld) const {
   AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
-  active_permissions_unsafe_ = active.Pass();
-  withheld_permissions_unsafe_ = withheld.Pass();
+  active_permissions_unsafe_ = std::move(active);
+  withheld_permissions_unsafe_ = std::move(withheld);
 }
 
 void PermissionsData::SetActivePermissions(
     scoped_ptr<const PermissionSet> active) const {
   AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
-  active_permissions_unsafe_ = active.Pass();
+  active_permissions_unsafe_ = std::move(active);
 }
 
 void PermissionsData::UpdateTabSpecificPermissions(
@@ -154,7 +156,7 @@ void PermissionsData::UpdateTabSpecificPermissions(
           ? static_cast<const PermissionSet&>(PermissionSet())
           : *iter->second,
       permissions);
-  tab_specific_permissions_[tab_id] = new_permissions.Pass();
+  tab_specific_permissions_[tab_id] = std::move(new_permissions);
 }
 
 void PermissionsData::ClearTabSpecificPermissions(int tab_id) const {

@@ -5,6 +5,7 @@
 #include "extensions/browser/extension_throttle_entry.h"
 
 #include <cmath>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -55,7 +56,7 @@ scoped_ptr<base::Value> NetLogRejectedRequestCallback(
   dict->SetInteger("num_failures", num_failures);
   dict->SetInteger("release_after_ms",
                    static_cast<int>(release_after.InMilliseconds()));
-  return dict.Pass();
+  return std::move(dict);
 }
 
 ExtensionThrottleEntry::ExtensionThrottleEntry(

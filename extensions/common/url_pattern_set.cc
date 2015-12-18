@@ -231,7 +231,7 @@ scoped_ptr<base::ListValue> URLPatternSet::ToValue() const {
   for (URLPatternSet::const_iterator i = patterns_.begin();
        i != patterns_.end(); ++i)
     value->AppendIfNotPresent(new base::StringValue(i->GetAsString()));
-  return value.Pass();
+  return value;
 }
 
 bool URLPatternSet::Populate(const std::vector<std::string>& patterns,
@@ -266,7 +266,7 @@ scoped_ptr<std::vector<std::string> > URLPatternSet::ToStringVector() const {
        ++i) {
     value->push_back(i->GetAsString());
   }
-  return value.Pass();
+  return value;
 }
 
 bool URLPatternSet::Populate(const base::ListValue& value,

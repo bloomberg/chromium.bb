@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/device_permissions_prompt.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/i18n/message_formatter.h"
 #include "base/scoped_observer.h"
@@ -252,7 +254,7 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
           base::Bind(&HidDevicePermissionsPrompt::AddCheckedDevice, this,
                      base::Passed(&device_info)));
 #else
-      AddCheckedDevice(device_info.Pass(), true);
+      AddCheckedDevice(std::move(device_info), true);
 #endif  // defined(OS_CHROMEOS)
     }
   }
@@ -343,7 +345,7 @@ void DevicePermissionsPrompt::Prompt::AddCheckedDevice(
     scoped_ptr<DeviceInfo> device,
     bool allowed) {
   if (allowed) {
-    devices_.push_back(device.Pass());
+    devices_.push_back(std::move(device));
     if (observer_) {
       observer_->OnDevicesChanged();
     }

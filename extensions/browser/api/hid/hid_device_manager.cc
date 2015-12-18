@@ -5,6 +5,7 @@
 #include "extensions/browser/api/hid/hid_device_manager.h"
 
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
@@ -141,7 +142,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevicesFromList(
     PopulateHidDeviceInfo(&device_info, device);
     device_list->Append(device_info.ToValue().release());
   }
-  return device_list.Pass();
+  return device_list;
 }
 
 scoped_refptr<HidDeviceInfo> HidDeviceManager::GetDeviceInfo(int resource_id) {
@@ -224,7 +225,7 @@ void HidDeviceManager::OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) {
       scoped_ptr<base::ListValue> args(
           hid::OnDeviceAdded::Create(api_device_info));
       DispatchEvent(events::HID_ON_DEVICE_ADDED, hid::OnDeviceAdded::kEventName,
-                    args.Pass(), device_info);
+                    std::move(args), device_info);
     }
   }
 }
@@ -244,7 +245,8 @@ void HidDeviceManager::OnDeviceRemoved(
     DCHECK(enumeration_ready_);
     scoped_ptr<base::ListValue> args(hid::OnDeviceRemoved::Create(resource_id));
     DispatchEvent(events::HID_ON_DEVICE_REMOVED,
-                  hid::OnDeviceRemoved::kEventName, args.Pass(), device_info);
+                  hid::OnDeviceRemoved::kEventName, std::move(args),
+                  device_info);
   }
 }
 
@@ -300,7 +302,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::CreateApiDeviceList(
     }
   }
 
-  return api_devices.Pass();
+  return api_devices;
 }
 
 void HidDeviceManager::OnEnumerationComplete(
@@ -315,7 +317,7 @@ void HidDeviceManager::OnEnumerationComplete(
   for (const auto& params : pending_enumerations_) {
     scoped_ptr<base::ListValue> devices =
         CreateApiDeviceList(params->extension, params->filters);
-    params->callback.Run(devices.Pass());
+    params->callback.Run(std::move(devices));
   }
   pending_enumerations_.clear();
 }
@@ -325,10 +327,10 @@ void HidDeviceManager::DispatchEvent(events::HistogramValue histogram_value,
                                      scoped_ptr<base::ListValue> event_args,
                                      scoped_refptr<HidDeviceInfo> device_info) {
   scoped_ptr<Event> event(
-      new Event(histogram_value, event_name, event_args.Pass()));
+      new Event(histogram_value, event_name, std::move(event_args)));
   event->will_dispatch_callback = base::Bind(
       &WillDispatchDeviceEvent, weak_factory_.GetWeakPtr(), device_info);
-  event_router_->BroadcastEvent(event.Pass());
+  event_router_->BroadcastEvent(std::move(event));
 }
 
 }  // namespace extensions

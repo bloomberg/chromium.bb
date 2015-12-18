@@ -167,7 +167,7 @@ scoped_ptr<DeclarativeManifestData> DeclarativeManifestData::FromValue(
 
     result->event_rules_map_[event].push_back(rule);
   }
-  return result.Pass();
+  return result;
 }
 
 std::vector<linked_ptr<DeclarativeManifestData::Rule>>&

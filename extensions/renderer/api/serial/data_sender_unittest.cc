@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <queue>
+#include <utility>
 
 #include "device/serial/data_sink_receiver.h"
 #include "device/serial/data_stream.mojom.h"
@@ -39,7 +40,7 @@ class DataSenderTest : public ApiTestBase {
   void CreateDataSink(
       mojo::InterfaceRequest<device::serial::DataSink> request) {
     receiver_ = new device::DataSinkReceiver(
-        request.Pass(),
+        std::move(request),
         base::Bind(&DataSenderTest::ReadyToReceive, base::Unretained(this)),
         base::Bind(&DataSenderTest::OnCancel, base::Unretained(this)),
         base::Bind(base::DoNothing));
@@ -48,7 +49,7 @@ class DataSenderTest : public ApiTestBase {
   void ReadyToReceive(scoped_ptr<device::ReadOnlyBuffer> buffer) {
     std::string data(buffer->GetData(), buffer->GetSize());
     if (expected_data_.empty()) {
-      buffer_ = buffer.Pass();
+      buffer_ = std::move(buffer);
       return;
     }
 

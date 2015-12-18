@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,9 +54,9 @@ class FakeSerialDeviceEnumerator : public device::SerialDeviceEnumerator {
     device0->path = "/dev/fakeserialmojo";
     device::serial::DeviceInfoPtr device1(device::serial::DeviceInfo::New());
     device1->path = "\\\\COM800\\";
-    devices.push_back(device0.Pass());
-    devices.push_back(device1.Pass());
-    return devices.Pass();
+    devices.push_back(std::move(device0));
+    devices.push_back(std::move(device1));
+    return devices;
   }
 };
 
@@ -138,8 +139,8 @@ void CreateTestSerialServiceOnFileThread(
           content::BrowserThread::IO));
   scoped_ptr<device::SerialDeviceEnumerator> device_enumerator(
       new FakeSerialDeviceEnumerator);
-  new device::SerialServiceImpl(connection_factory, device_enumerator.Pass(),
-                                request.Pass());
+  new device::SerialServiceImpl(
+      connection_factory, std::move(device_enumerator), std::move(request));
 }
 
 void CreateTestSerialService(

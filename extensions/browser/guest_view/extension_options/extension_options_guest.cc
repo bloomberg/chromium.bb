@@ -4,6 +4,8 @@
 
 #include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "components/guest_view/browser/guest_view_event.h"
@@ -126,7 +128,7 @@ void ExtensionOptionsGuest::DidInitialize(
 void ExtensionOptionsGuest::GuestViewDidStopLoading() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   DispatchEventToView(new GuestViewEvent(
-      extension_options_internal::OnLoad::kEventName, args.Pass()));
+      extension_options_internal::OnLoad::kEventName, std::move(args)));
 }
 
 const char* ExtensionOptionsGuest::GetAPINamespace() const {

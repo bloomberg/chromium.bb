@@ -4,6 +4,8 @@
 
 #include "extensions/common/features/json_feature_provider_source.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -29,7 +31,7 @@ void JSONFeatureProviderSource::LoadJSON(int resource_id) {
   scoped_ptr<base::DictionaryValue> value_as_dict;
   if (value) {
     CHECK(value->IsType(base::Value::TYPE_DICTIONARY)) << name_;
-    value_as_dict = base::DictionaryValue::From(value.Pass());
+    value_as_dict = base::DictionaryValue::From(std::move(value));
   } else {
     // There was some error loading the features file.
     // http://crbug.com/176381

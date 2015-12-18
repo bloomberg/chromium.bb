@@ -13,6 +13,7 @@
 #include <limits>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -452,7 +453,7 @@ DeclarativeRule<ConditionT, ActionT>::Create(
   scoped_ptr<ConditionSet> conditions = ConditionSet::Create(
       extension, url_matcher_condition_factory, rule->conditions, error);
   if (!error->empty())
-    return error_result.Pass();
+    return std::move(error_result);
   CHECK(conditions.get());
 
   bool bad_message = false;
@@ -464,16 +465,16 @@ DeclarativeRule<ConditionT, ActionT>::Create(
     // should be killed in case it is true.
     *error = "An action of a rule set had an invalid "
         "structure that should have been caught by the JSON validator.";
-    return error_result.Pass();
+    return std::move(error_result);
   }
   if (!error->empty() || bad_message)
-    return error_result.Pass();
+    return std::move(error_result);
   CHECK(actions.get());
 
   if (!check_consistency.is_null() &&
       !check_consistency.Run(conditions.get(), actions.get(), error)) {
     DCHECK(!error->empty());
-    return error_result.Pass();
+    return std::move(error_result);
   }
 
   CHECK(rule->priority.get());
@@ -483,7 +484,7 @@ DeclarativeRule<ConditionT, ActionT>::Create(
   Tags tags = rule->tags ? *rule->tags : Tags();
   return scoped_ptr<DeclarativeRule>(
       new DeclarativeRule(rule_id, tags, extension_installation_time,
-                          conditions.Pass(), actions.Pass(), priority));
+                          std::move(conditions), std::move(actions), priority));
 }
 
 template<typename ConditionT, typename ActionT>

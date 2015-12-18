@@ -43,7 +43,7 @@ scoped_ptr<base::Value> RulesToValue(
   scoped_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < rules.size(); ++i)
     list->Append(rules[i]->ToValue().release());
-  return list.Pass();
+  return std::move(list);
 }
 
 std::vector<linked_ptr<api::events::Rule>> RulesFromValue(
@@ -313,7 +313,7 @@ void RulesRegistry::ReportInternalError(const std::string& extension_id,
   scoped_ptr<ExtensionError> error_instance(new InternalError(
       extension_id, base::ASCIIToUTF16(error), logging::LOG_ERROR));
   ExtensionsBrowserClient::Get()->ReportError(browser_context_,
-                                              error_instance.Pass());
+                                              std::move(error_instance));
 }
 
 RulesRegistry::~RulesRegistry() {

@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/wake_event_page.h"
 
+#include <utility>
+
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -160,7 +162,7 @@ void WakeEventPage::MakeRequest(const std::string& extension_id,
     scoped_ptr<RequestData> request_data(
         new RequestData(content::WorkerThread::GetCurrentId(), on_response));
     base::AutoLock lock(requests_lock_);
-    requests_.set(request_id, request_data.Pass());
+    requests_.set(request_id, std::move(request_data));
   }
   message_filter_->Send(
       new ExtensionHostMsg_WakeEventPage(request_id, extension_id));

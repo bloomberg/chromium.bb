@@ -4,6 +4,8 @@
 
 #include "extensions/browser/value_store/leveldb_value_store.h"
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -167,7 +169,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(
       settings->SetWithoutPathExpansion(*it, setting.release());
   }
 
-  return MakeReadResult(settings.Pass(), status);
+  return MakeReadResult(std::move(settings), status);
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get() {
@@ -196,12 +198,12 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
           Delete(key).ok() ? RESTORE_REPAIR_SUCCESS : RESTORE_DELETE_FAILURE,
           kInvalidJson));
     }
-    settings->SetWithoutPathExpansion(key, value.Pass());
+    settings->SetWithoutPathExpansion(key, std::move(value));
   }
 
   if (it->status().IsNotFound()) {
     NOTREACHED() << "IsNotFound() but iterating over all keys?!";
-    return MakeReadResult(settings.Pass(), status);
+    return MakeReadResult(std::move(settings), status);
   }
 
   if (!it->status().ok()) {
@@ -209,7 +211,7 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
     return MakeReadResult(status);
   }
 
-  return MakeReadResult(settings.Pass(), status);
+  return MakeReadResult(std::move(settings), status);
 }
 
 ValueStore::WriteResult LeveldbValueStore::Set(
@@ -227,7 +229,7 @@ ValueStore::WriteResult LeveldbValueStore::Set(
     return MakeWriteResult(status);
 
   status.Merge(WriteToDb(&batch));
-  return status.ok() ? MakeWriteResult(changes.Pass(), status)
+  return status.ok() ? MakeWriteResult(std::move(changes), status)
                      : MakeWriteResult(status);
 }
 
@@ -251,7 +253,7 @@ ValueStore::WriteResult LeveldbValueStore::Set(
   }
 
   status.Merge(WriteToDb(&batch));
-  return status.ok() ? MakeWriteResult(changes.Pass(), status)
+  return status.ok() ? MakeWriteResult(std::move(changes), status)
                      : MakeWriteResult(status);
 }
 
@@ -289,7 +291,7 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
     status.Merge(ToValueStoreError(ldb_status));
     return MakeWriteResult(status);
   }
-  return MakeWriteResult(changes.Pass(), status);
+  return MakeWriteResult(std::move(changes), status);
 }
 
 ValueStore::WriteResult LeveldbValueStore::Clear() {
@@ -310,7 +312,7 @@ ValueStore::WriteResult LeveldbValueStore::Clear() {
   }
 
   DeleteDbFile();
-  return MakeWriteResult(changes.Pass(), read_result->status());
+  return MakeWriteResult(std::move(changes), read_result->status());
 }
 
 bool LeveldbValueStore::WriteToDbForTest(leveldb::WriteBatch* batch) {
@@ -487,7 +489,7 @@ ValueStore::Status LeveldbValueStore::ReadFromDb(
   if (!value)
     return Status(CORRUPTION, FixCorruption(&key), kInvalidJson);
 
-  *setting = value.Pass();
+  *setting = std::move(value);
   return Status();
 }
 

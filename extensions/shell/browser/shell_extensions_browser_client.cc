@@ -4,6 +4,8 @@
 
 #include "extensions/shell/browser/shell_extensions_browser_client.h"
 
+#include <utility>
+
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -213,8 +215,9 @@ void ShellExtensionsBrowserClient::BroadcastEventToRenderers(
     return;
   }
 
-  scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  scoped_ptr<Event> event(
+      new Event(histogram_value, event_name, std::move(args)));
+  EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 
 net::NetLog* ShellExtensionsBrowserClient::GetNetLog() {

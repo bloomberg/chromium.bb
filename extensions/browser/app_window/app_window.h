@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -361,7 +362,7 @@ class AppWindow : public content::WebContentsDelegate,
   bool is_ime_window() const { return is_ime_window_; }
 
   void SetAppWindowContentsForTesting(scoped_ptr<AppWindowContents> contents) {
-    app_window_contents_ = contents.Pass();
+    app_window_contents_ = std::move(contents);
   }
 
  protected:

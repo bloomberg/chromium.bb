@@ -549,11 +549,10 @@ bool HeaderMatcher::HeaderMatchTest::Matches(const std::string& name,
 //
 
 WebRequestConditionAttributeRequestHeaders::
-WebRequestConditionAttributeRequestHeaders(
-    scoped_ptr<const HeaderMatcher> header_matcher,
-    bool positive)
-    : header_matcher_(header_matcher.Pass()),
-      positive_(positive) {}
+    WebRequestConditionAttributeRequestHeaders(
+        scoped_ptr<const HeaderMatcher> header_matcher,
+        bool positive)
+    : header_matcher_(std::move(header_matcher)), positive_(positive) {}
 
 WebRequestConditionAttributeRequestHeaders::
 ~WebRequestConditionAttributeRequestHeaders() {}
@@ -574,7 +573,7 @@ scoped_ptr<const HeaderMatcher> PrepareHeaderMatcher(
       HeaderMatcher::Create(value_as_list));
   if (header_matcher.get() == NULL)
     *error = ErrorUtils::FormatErrorMessage(kInvalidValue, name);
-  return header_matcher.Pass();
+  return header_matcher;
 }
 
 }  // namespace
@@ -596,7 +595,7 @@ WebRequestConditionAttributeRequestHeaders::Create(
 
   return scoped_refptr<const WebRequestConditionAttribute>(
       new WebRequestConditionAttributeRequestHeaders(
-          header_matcher.Pass(), name == keys::kRequestHeadersKey));
+          std::move(header_matcher), name == keys::kRequestHeadersKey));
 }
 
 int WebRequestConditionAttributeRequestHeaders::GetStages() const {
@@ -644,11 +643,10 @@ bool WebRequestConditionAttributeRequestHeaders::Equals(
 //
 
 WebRequestConditionAttributeResponseHeaders::
-WebRequestConditionAttributeResponseHeaders(
-    scoped_ptr<const HeaderMatcher> header_matcher,
-    bool positive)
-    : header_matcher_(header_matcher.Pass()),
-      positive_(positive) {}
+    WebRequestConditionAttributeResponseHeaders(
+        scoped_ptr<const HeaderMatcher> header_matcher,
+        bool positive)
+    : header_matcher_(std::move(header_matcher)), positive_(positive) {}
 
 WebRequestConditionAttributeResponseHeaders::
 ~WebRequestConditionAttributeResponseHeaders() {}
@@ -670,7 +668,7 @@ WebRequestConditionAttributeResponseHeaders::Create(
 
   return scoped_refptr<const WebRequestConditionAttribute>(
       new WebRequestConditionAttributeResponseHeaders(
-          header_matcher.Pass(), name == keys::kResponseHeadersKey));
+          std::move(header_matcher), name == keys::kResponseHeadersKey));
 }
 
 int WebRequestConditionAttributeResponseHeaders::GetStages() const {

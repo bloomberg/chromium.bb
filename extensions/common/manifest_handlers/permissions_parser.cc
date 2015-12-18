@@ -4,6 +4,8 @@
 
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,7 +42,7 @@ struct ManifestPermissions : public Extension::ManifestData {
 
 ManifestPermissions::ManifestPermissions(
     scoped_ptr<const PermissionSet> permissions)
-    : permissions(permissions.Pass()) {}
+    : permissions(std::move(permissions)) {}
 
 ManifestPermissions::~ManifestPermissions() {
 }
@@ -272,7 +274,8 @@ void PermissionsParser::Finalize(Extension* extension) {
                         initial_required_permissions_->host_permissions,
                         initial_required_permissions_->scriptable_hosts));
   extension->SetManifestData(
-      keys::kPermissions, new ManifestPermissions(required_permissions.Pass()));
+      keys::kPermissions,
+      new ManifestPermissions(std::move(required_permissions)));
 
   scoped_ptr<const PermissionSet> optional_permissions(new PermissionSet(
       initial_optional_permissions_->api_permissions,
@@ -280,7 +283,7 @@ void PermissionsParser::Finalize(Extension* extension) {
       initial_optional_permissions_->host_permissions, URLPatternSet()));
   extension->SetManifestData(
       keys::kOptionalPermissions,
-      new ManifestPermissions(optional_permissions.Pass()));
+      new ManifestPermissions(std::move(optional_permissions)));
 }
 
 // static

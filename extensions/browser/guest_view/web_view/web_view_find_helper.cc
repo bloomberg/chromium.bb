@@ -41,7 +41,7 @@ void WebViewFindHelper::DispatchFindUpdateEvent(bool canceled,
   args->SetBoolean(webview::kFindFinalUpdate, final_update);
   DCHECK(webview_guest_);
   webview_guest_->DispatchEventToView(
-      new GuestViewEvent(webview::kEventFindReply, args.Pass()));
+      new GuestViewEvent(webview::kEventFindReply, std::move(args)));
 }
 
 void WebViewFindHelper::EndFindSession(int session_request_id, bool canceled) {

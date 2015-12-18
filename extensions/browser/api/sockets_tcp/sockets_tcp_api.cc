@@ -91,7 +91,7 @@ TCPSocketAsyncApiFunction::~TCPSocketAsyncApiFunction() {}
 scoped_ptr<SocketResourceManagerInterface>
 TCPSocketAsyncApiFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-             new SocketResourceManager<ResumableTCPSocket>()).Pass();
+      new SocketResourceManager<ResumableTCPSocket>());
 }
 
 ResumableTCPSocket* TCPSocketAsyncApiFunction::GetTcpSocket(int socket_id) {
@@ -104,7 +104,7 @@ TCPSocketExtensionWithDnsLookupFunction::
 scoped_ptr<SocketResourceManagerInterface>
 TCPSocketExtensionWithDnsLookupFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-             new SocketResourceManager<ResumableTCPSocket>()).Pass();
+      new SocketResourceManager<ResumableTCPSocket>());
 }
 
 ResumableTCPSocket* TCPSocketExtensionWithDnsLookupFunction::GetTcpSocket(

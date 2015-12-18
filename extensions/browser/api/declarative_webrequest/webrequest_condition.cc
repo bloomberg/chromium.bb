@@ -198,7 +198,7 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
     return scoped_ptr<WebRequestCondition>();
   }
 
-  return result.Pass();
+  return result;
 }
 
 }  // namespace extensions

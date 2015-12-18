@@ -4,6 +4,8 @@
 
 #include "extensions/common/extension.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -128,7 +130,7 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
     return NULL;
   }
 
-  scoped_refptr<Extension> extension = new Extension(path, manifest.Pass());
+  scoped_refptr<Extension> extension = new Extension(path, std::move(manifest));
   extension->install_warnings_.swap(install_warnings);
 
   if (!extension->InitFromValue(flags, &error)) {

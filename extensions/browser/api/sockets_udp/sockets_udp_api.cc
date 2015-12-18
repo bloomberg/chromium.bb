@@ -25,7 +25,7 @@ UDPSocketAsyncApiFunction::~UDPSocketAsyncApiFunction() {}
 scoped_ptr<SocketResourceManagerInterface>
 UDPSocketAsyncApiFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-             new SocketResourceManager<ResumableUDPSocket>()).Pass();
+      new SocketResourceManager<ResumableUDPSocket>());
 }
 
 ResumableUDPSocket* UDPSocketAsyncApiFunction::GetUdpSocket(int socket_id) {
@@ -38,7 +38,7 @@ UDPSocketExtensionWithDnsLookupFunction::
 scoped_ptr<SocketResourceManagerInterface>
 UDPSocketExtensionWithDnsLookupFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-             new SocketResourceManager<ResumableUDPSocket>()).Pass();
+      new SocketResourceManager<ResumableUDPSocket>());
 }
 
 ResumableUDPSocket* UDPSocketExtensionWithDnsLookupFunction::GetUdpSocket(

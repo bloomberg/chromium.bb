@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/guest_view/web_view/web_view_internal_api.h"
 
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -300,7 +302,7 @@ bool WebViewInternalExecuteCodeFunction::Init() {
   if (!InjectDetails::Populate(*details_value, details.get()))
     return false;
 
-  details_ = details.Pass();
+  details_ = std::move(details);
 
   if (extension()) {
     set_host_id(HostID(HostID::EXTENSIONS, extension()->id()));

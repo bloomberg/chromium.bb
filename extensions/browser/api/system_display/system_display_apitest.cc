@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/debug/leak_annotations.h"
 #include "base/strings/string_number_conversions.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
@@ -89,7 +91,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
   }
 
   scoped_ptr<base::DictionaryValue> GetSetInfoValue() {
-    return set_info_value_.Pass();
+    return std::move(set_info_value_);
   }
 
   std::string GetSetInfoDisplayId() const { return set_info_display_id_; }

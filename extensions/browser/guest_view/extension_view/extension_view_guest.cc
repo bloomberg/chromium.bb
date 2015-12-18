@@ -4,6 +4,8 @@
 
 #include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
 
+#include <utility>
+
 #include "components/crx_file/id_util.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "content/public/browser/render_process_host.h"
@@ -127,7 +129,7 @@ void ExtensionViewGuest::DidCommitProvisionalLoadForFrame(
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guest_view::kUrl, url_.spec());
   DispatchEventToView(
-      new GuestViewEvent(extensionview::kEventLoadCommit, args.Pass()));
+      new GuestViewEvent(extensionview::kEventLoadCommit, std::move(args)));
 }
 
 void ExtensionViewGuest::DidNavigateMainFrame(

@@ -529,14 +529,14 @@ void PrinterProviderAPIImpl::DispatchGetPrintersRequested(
   scoped_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_GET_PRINTERS_REQUESTED,
                 api::printer_provider::OnGetPrintersRequested::kEventName,
-                internal_args.Pass()));
+                std::move(internal_args)));
   // This callback is called synchronously during |BroadcastEvent|, so
   // Unretained is safe.
   event->will_dispatch_callback =
       base::Bind(&PrinterProviderAPIImpl::WillRequestPrinters,
                  base::Unretained(this), request_id);
 
-  event_router->BroadcastEvent(event.Pass());
+  event_router->BroadcastEvent(std::move(event));
 }
 
 void PrinterProviderAPIImpl::DispatchGetCapabilityRequested(
@@ -568,9 +568,9 @@ void PrinterProviderAPIImpl::DispatchGetCapabilityRequested(
   scoped_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_GET_CAPABILITY_REQUESTED,
                 api::printer_provider::OnGetCapabilityRequested::kEventName,
-                internal_args.Pass()));
+                std::move(internal_args)));
 
-  event_router->DispatchEventToExtension(extension_id, event.Pass());
+  event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void PrinterProviderAPIImpl::DispatchPrintRequested(
@@ -615,8 +615,8 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(
   scoped_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_PRINT_REQUESTED,
                 api::printer_provider::OnPrintRequested::kEventName,
-                internal_args.Pass()));
-  event_router->DispatchEventToExtension(extension_id, event.Pass());
+                std::move(internal_args)));
+  event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 const PrinterProviderPrintJob* PrinterProviderAPIImpl::GetPrintJob(
@@ -653,8 +653,8 @@ void PrinterProviderAPIImpl::DispatchGetUsbPrinterInfoRequested(
   scoped_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_GET_USB_PRINTER_INFO_REQUESTED,
                 api::printer_provider::OnGetUsbPrinterInfoRequested::kEventName,
-                internal_args.Pass()));
-  event_router->DispatchEventToExtension(extension_id, event.Pass());
+                std::move(internal_args)));
+  event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void PrinterProviderAPIImpl::OnGetPrintersResult(
@@ -668,7 +668,7 @@ void PrinterProviderAPIImpl::OnGetPrintersResult(
   for (size_t i = 0; i < result.size(); ++i) {
     scoped_ptr<base::DictionaryValue> printer(result[i]->ToValue());
     UpdatePrinterWithExtensionInfo(printer.get(), extension);
-    printer_list.Append(printer.Pass());
+    printer_list.Append(std::move(printer));
   }
 
   pending_get_printers_requests_.CompleteForExtension(extension->id(),

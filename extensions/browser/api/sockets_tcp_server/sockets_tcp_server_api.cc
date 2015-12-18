@@ -66,7 +66,7 @@ TCPServerSocketAsyncApiFunction::~TCPServerSocketAsyncApiFunction() {}
 scoped_ptr<SocketResourceManagerInterface>
 TCPServerSocketAsyncApiFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-             new SocketResourceManager<ResumableTCPServerSocket>()).Pass();
+      new SocketResourceManager<ResumableTCPServerSocket>());
 }
 
 ResumableTCPServerSocket* TCPServerSocketAsyncApiFunction::GetTcpSocket(

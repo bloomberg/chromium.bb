@@ -5,6 +5,7 @@
 #include "extensions/browser/api/storage/storage_api.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -166,7 +167,7 @@ ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunWithStorage(
           static_cast<base::DictionaryValue*>(input);
       ValueStore::ReadResult result = storage->Get(GetKeys(*as_dict));
       if (!result->status().ok()) {
-        return UseReadResult(result.Pass());
+        return UseReadResult(std::move(result));
       }
 
       base::DictionaryValue* with_default_values = as_dict->DeepCopy();

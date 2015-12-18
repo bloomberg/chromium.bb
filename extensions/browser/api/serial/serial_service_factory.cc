@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/serial/serial_service_factory.h"
 
+#include <utility>
+
 #include "content/public/browser/browser_thread.h"
 #include "device/serial/serial_service_impl.h"
 
@@ -17,7 +19,7 @@ const base::Callback<void(
 void BindToSerialServiceRequest(
     mojo::InterfaceRequest<device::serial::SerialService> request) {
   if (g_serial_service_test_factory) {
-    g_serial_service_test_factory->Run(request.Pass());
+    g_serial_service_test_factory->Run(std::move(request));
     return;
   }
   device::SerialServiceImpl::CreateOnMessageLoop(
@@ -27,7 +29,7 @@ void BindToSerialServiceRequest(
           content::BrowserThread::IO),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::UI),
-      request.Pass());
+      std::move(request));
 }
 
 void SetSerialServiceFactoryForTest(const base::Callback<

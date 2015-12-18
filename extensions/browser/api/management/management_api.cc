@@ -5,6 +5,7 @@
 #include "extensions/browser/api/management/management_api.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -243,7 +244,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
         GetAvailableLaunchTypes(extension, delegate)));
   }
 
-  return info.Pass();
+  return info;
 }
 
 void AddExtensionInfo(const ExtensionSet& extensions,
@@ -873,7 +874,7 @@ void ManagementEventRouter::BroadcastEvent(
 
   EventRouter::Get(browser_context_)
       ->BroadcastEvent(scoped_ptr<Event>(
-          new Event(histogram_value, event_name, args.Pass())));
+          new Event(histogram_value, event_name, std::move(args))));
 }
 
 ManagementAPI::ManagementAPI(content::BrowserContext* context)

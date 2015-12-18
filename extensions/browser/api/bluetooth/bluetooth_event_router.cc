@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -194,7 +195,7 @@ void BluetoothEventRouter::SetDiscoveryFilter(
   }
 
   // extension is already running discovery, update it's discovery filter
-  iter->second->SetDiscoveryFilter(discovery_filter.Pass(), callback,
+  iter->second->SetDiscoveryFilter(std::move(discovery_filter), callback,
                                    error_callback);
 }
 
@@ -381,8 +382,8 @@ void BluetoothEventRouter::DispatchAdapterStateEvent() {
       bluetooth::OnAdapterStateChanged::Create(state);
   scoped_ptr<Event> event(
       new Event(events::BLUETOOTH_ON_ADAPTER_STATE_CHANGED,
-                bluetooth::OnAdapterStateChanged::kEventName, args.Pass()));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+                bluetooth::OnAdapterStateChanged::kEventName, std::move(args)));
+  EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 
 void BluetoothEventRouter::DispatchDeviceEvent(
@@ -395,8 +396,9 @@ void BluetoothEventRouter::DispatchDeviceEvent(
 
   scoped_ptr<base::ListValue> args =
       bluetooth::OnDeviceAdded::Create(extension_device);
-  scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  scoped_ptr<Event> event(
+      new Event(histogram_value, event_name, std::move(args)));
+  EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 
 void BluetoothEventRouter::CleanUpForExtension(

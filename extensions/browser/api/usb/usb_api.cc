@@ -5,6 +5,7 @@
 #include "extensions/browser/api/usb/usb_api.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/barrier_closure.h"
@@ -463,12 +464,12 @@ void UsbTransferFunction::OnCompleted(UsbTransferStatus status,
                                    data->data(), length));
 
   if (status == device::USB_TRANSFER_COMPLETED) {
-    Respond(OneArgument(transfer_info.Pass()));
+    Respond(OneArgument(std::move(transfer_info)));
   } else {
     scoped_ptr<base::ListValue> error_args(new base::ListValue());
-    error_args->Append(transfer_info.Pass());
+    error_args->Append(std::move(transfer_info));
     // Returning arguments with an error is wrong but we're stuck with it.
-    Respond(ErrorWithArguments(error_args.Pass(),
+    Respond(ErrorWithArguments(std::move(error_args),
                                ConvertTransferStatusToApi(status)));
   }
 }
@@ -536,7 +537,7 @@ void UsbFindDevicesFunction::OnDeviceOpened(
 }
 
 void UsbFindDevicesFunction::OpenComplete() {
-  Respond(OneArgument(result_.Pass()));
+  Respond(OneArgument(std::move(result_)));
 }
 
 UsbGetDevicesFunction::UsbGetDevicesFunction() {
@@ -588,7 +589,7 @@ void UsbGetDevicesFunction::OnGetDevicesComplete(
     }
   }
 
-  Respond(OneArgument(result.Pass()));
+  Respond(OneArgument(std::move(result)));
 }
 
 UsbGetUserSelectedDevicesFunction::UsbGetUserSelectedDevicesFunction() {
@@ -642,7 +643,7 @@ void UsbGetUserSelectedDevicesFunction::OnDevicesChosen(
     result->Append(api_device.ToValue());
   }
 
-  Respond(OneArgument(result.Pass()));
+  Respond(OneArgument(std::move(result)));
 }
 
 UsbGetConfigurationsFunction::UsbGetConfigurationsFunction() {}
@@ -687,7 +688,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationsFunction::Run() {
     }
     configs->Append(api_config.ToValue());
   }
-  return RespondNow(OneArgument(configs.Pass()));
+  return RespondNow(OneArgument(std::move(configs)));
 }
 
 UsbRequestAccessFunction::UsbRequestAccessFunction() {
@@ -845,7 +846,7 @@ ExtensionFunction::ResponseAction UsbListInterfacesFunction::Run() {
       result->Append(config.interfaces[i]->ToValue());
     }
 
-    return RespondNow(OneArgument(result.Pass()));
+    return RespondNow(OneArgument(std::move(result)));
   } else {
     return RespondNow(Error(kErrorNotConfigured));
   }
@@ -1210,7 +1211,7 @@ void UsbResetDeviceFunction::OnComplete(bool success) {
     scoped_ptr<base::ListValue> error_args(new base::ListValue());
     error_args->AppendBoolean(false);
     // Returning arguments with an error is wrong but we're stuck with it.
-    Respond(ErrorWithArguments(error_args.Pass(), kErrorResetDevice));
+    Respond(ErrorWithArguments(std::move(error_args), kErrorResetDevice));
   }
 }
 

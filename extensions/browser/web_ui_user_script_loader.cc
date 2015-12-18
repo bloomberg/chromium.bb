@@ -4,6 +4,8 @@
 
 #include "extensions/browser/web_ui_user_script_loader.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_context.h"
@@ -116,7 +118,7 @@ void WebUIUserScriptLoader::CreateWebUIURLFetchers(
           browser_context, render_process_id, render_view_id, file.url(),
           base::Bind(&WebUIUserScriptLoader::OnSingleWebUIURLFetchComplete,
                      base::Unretained(this), &file)));
-      fetchers_.push_back(fetcher.Pass());
+      fetchers_.push_back(std::move(fetcher));
     }
   }
 }

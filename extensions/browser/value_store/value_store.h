@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -92,7 +93,7 @@ class ValueStore {
     // Must only be called if there is no error.
     base::DictionaryValue& settings() { return *settings_; }
     scoped_ptr<base::DictionaryValue> PassSettings() {
-      return settings_.Pass();
+      return std::move(settings_);
     }
 
     const Status& status() const { return status_; }
@@ -117,7 +118,9 @@ class ValueStore {
     // Won't be present if the NO_GENERATE_CHANGES WriteOptions was given.
     // Only call if no error.
     ValueStoreChangeList& changes() { return *changes_; }
-    scoped_ptr<ValueStoreChangeList> PassChanges() { return changes_.Pass(); }
+    scoped_ptr<ValueStoreChangeList> PassChanges() {
+      return std::move(changes_);
+    }
 
     const Status& status() const { return status_; }
 
@@ -147,7 +150,7 @@ class ValueStore {
   // Helpers for making a Read/WriteResult.
   template <typename T>
   static ReadResult MakeReadResult(scoped_ptr<T> arg, const Status& status) {
-    return ReadResult(new ReadResultType(arg.Pass(), status));
+    return ReadResult(new ReadResultType(std::move(arg), status));
   }
   static ReadResult MakeReadResult(const Status& status) {
     return ReadResult(new ReadResultType(status));
@@ -155,7 +158,7 @@ class ValueStore {
 
   template <typename T>
   static WriteResult MakeWriteResult(scoped_ptr<T> arg, const Status& status) {
-    return WriteResult(new WriteResultType(arg.Pass(), status));
+    return WriteResult(new WriteResultType(std::move(arg), status));
   }
   static WriteResult MakeWriteResult(const Status& status) {
     return WriteResult(new WriteResultType(status));

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/value_store/value_store_frontend.h"
+
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "content/public/test/test_browser_thread.h"
-#include "extensions/browser/value_store/value_store_frontend.h"
 #include "extensions/common/extension_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,7 +58,7 @@ class ValueStoreFrontendTest : public testing::Test {
  protected:
   void GetAndWait(scoped_ptr<base::Value>* output,
                   scoped_ptr<base::Value> result) {
-    *output = result.Pass();
+    *output = std::move(result);
     base::MessageLoop::current()->QuitWhenIdle();
   }
 

@@ -152,7 +152,7 @@ void GuestViewInternalCustomBindings::AttachGuest(
     scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
     scoped_ptr<base::Value> params_as_value(
         converter->FromV8Value(args[2], context()->v8_context()));
-    params = base::DictionaryValue::From(params_as_value.Pass());
+    params = base::DictionaryValue::From(std::move(params_as_value));
     CHECK(params);
   }
 
@@ -162,7 +162,7 @@ void GuestViewInternalCustomBindings::AttachGuest(
 
   linked_ptr<guest_view::GuestViewRequest> request(
       new guest_view::GuestViewAttachRequest(
-          guest_view_container, guest_instance_id, params.Pass(),
+          guest_view_container, guest_instance_id, std::move(params),
           args.Length() == 4 ? args[3].As<v8::Function>()
                              : v8::Local<v8::Function>(),
           args.GetIsolate()));
@@ -226,7 +226,7 @@ void GuestViewInternalCustomBindings::AttachIframeGuest(
     scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
     scoped_ptr<base::Value> params_as_value(
         converter->FromV8Value(args[2], context()->v8_context()));
-    params = base::DictionaryValue::From(params_as_value.Pass());
+    params = base::DictionaryValue::From(std::move(params_as_value));
     CHECK(params);
   }
 
@@ -261,9 +261,9 @@ void GuestViewInternalCustomBindings::AttachIframeGuest(
   linked_ptr<guest_view::GuestViewRequest> request(
       new guest_view::GuestViewAttachIframeRequest(
           guest_view_container, render_frame->GetRoutingID(), guest_instance_id,
-          params.Pass(), args.Length() == (num_required_params + 1)
-                             ? args[num_required_params].As<v8::Function>()
-                             : v8::Local<v8::Function>(),
+          std::move(params), args.Length() == (num_required_params + 1)
+                                 ? args[num_required_params].As<v8::Function>()
+                                 : v8::Local<v8::Function>(),
           args.GetIsolate()));
   guest_view_container->IssueRequest(request);
 

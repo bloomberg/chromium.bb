@@ -4,6 +4,8 @@
 
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 
+#include <utility>
+
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/common/guest_view_constants.h"
@@ -55,9 +57,10 @@ void ExtensionsGuestViewManagerDelegate::DispatchEvent(
                                               << " must have a histogram value";
 
   content::WebContents* owner = guest->owner_web_contents();
-  EventRouter::DispatchEventToSender(
-      owner, guest->browser_context(), guest->owner_host(), histogram_value,
-      event_name, event_args.Pass(), EventRouter::USER_GESTURE_UNKNOWN, info);
+  EventRouter::DispatchEventToSender(owner, guest->browser_context(),
+                                     guest->owner_host(), histogram_value,
+                                     event_name, std::move(event_args),
+                                     EventRouter::USER_GESTURE_UNKNOWN, info);
 }
 
 bool ExtensionsGuestViewManagerDelegate::IsGuestAvailableToContext(

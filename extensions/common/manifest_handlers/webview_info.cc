@@ -4,6 +4,8 @@
 
 #include "extensions/common/manifest_handlers/webview_info.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
@@ -83,7 +85,7 @@ bool WebviewInfo::IsResourceWebviewAccessible(
 }
 
 void WebviewInfo::AddPartitionItem(scoped_ptr<PartitionItem> item) {
-  partition_items_.push_back(item.Pass());
+  partition_items_.push_back(std::move(item));
 }
 
 WebviewHandler::WebviewHandler() {
@@ -159,7 +161,7 @@ bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
                                                    relative_path).spec());
       partition_item->AddPattern(pattern);
     }
-    info->AddPartitionItem(partition_item.Pass());
+    info->AddPartitionItem(std::move(partition_item));
   }
 
   extension->SetManifestData(keys::kWebviewAccessibleResources, info.release());

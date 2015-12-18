@@ -4,6 +4,8 @@
 
 #include "extensions/browser/value_store/value_store_frontend.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -82,7 +84,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   void RunCallback(const ValueStoreFrontend::ReadCallback& callback,
                    scoped_ptr<base::Value> value) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    callback.Run(value.Pass());
+    callback.Run(std::move(value));
   }
 
   // The actual ValueStore that handles persisting the data to disk. Used

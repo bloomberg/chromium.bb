@@ -4,6 +4,8 @@
 
 #include "extensions/shell/browser/shell_browser_context.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,19 +49,14 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
       content::URLRequestInterceptorScopedVector request_interceptors,
       InfoMap* extension_info_map) {
   DCHECK(!url_request_context_getter());
-  set_url_request_context_getter(
-      new ShellURLRequestContextGetter(
-          this,
-          IgnoreCertificateErrors(),
-          GetPath(),
-          content::BrowserThread::UnsafeGetMessageLoopForThread(
-              content::BrowserThread::IO),
-          content::BrowserThread::UnsafeGetMessageLoopForThread(
-              content::BrowserThread::FILE),
-          protocol_handlers,
-          request_interceptors.Pass(),
-          nullptr /* net_log */,
-          extension_info_map));
+  set_url_request_context_getter(new ShellURLRequestContextGetter(
+      this, IgnoreCertificateErrors(), GetPath(),
+      content::BrowserThread::UnsafeGetMessageLoopForThread(
+          content::BrowserThread::IO),
+      content::BrowserThread::UnsafeGetMessageLoopForThread(
+          content::BrowserThread::FILE),
+      protocol_handlers, std::move(request_interceptors), nullptr /* net_log */,
+      extension_info_map));
   resource_context_->set_url_request_context_getter(
       url_request_context_getter());
   content::BrowserThread::PostTask(

@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/sockets_tcp/tcp_socket_event_dispatcher.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "extensions/browser/event_router.h"
@@ -133,8 +135,8 @@ void TCPSocketEventDispatcher::ReadCallback(
         sockets_tcp::OnReceive::Create(receive_info);
     scoped_ptr<Event> event(new Event(events::SOCKETS_TCP_ON_RECEIVE,
                                       sockets_tcp::OnReceive::kEventName,
-                                      args.Pass()));
-    PostEvent(params, event.Pass());
+                                      std::move(args)));
+    PostEvent(params, std::move(event));
 
     // Post a task to delay the read until the socket is available, as
     // calling StartReceive at this point would error with ERR_IO_PENDING.
@@ -155,8 +157,8 @@ void TCPSocketEventDispatcher::ReadCallback(
         sockets_tcp::OnReceiveError::Create(receive_error_info);
     scoped_ptr<Event> event(new Event(events::SOCKETS_TCP_ON_RECEIVE_ERROR,
                                       sockets_tcp::OnReceiveError::kEventName,
-                                      args.Pass()));
-    PostEvent(params, event.Pass());
+                                      std::move(args)));
+    PostEvent(params, std::move(event));
 
     // Since we got an error, the socket is now "paused" until the application
     // "resumes" it.
@@ -173,12 +175,10 @@ void TCPSocketEventDispatcher::PostEvent(const ReadParams& params,
                                          scoped_ptr<Event> event) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&DispatchEvent,
-                                     params.browser_context_id,
-                                     params.extension_id,
-                                     base::Passed(event.Pass())));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DispatchEvent, params.browser_context_id, params.extension_id,
+                 base::Passed(std::move(event))));
 }
 
 // static
@@ -194,7 +194,7 @@ void TCPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
 
   EventRouter* event_router = EventRouter::Get(context);
   if (event_router)
-    event_router->DispatchEventToExtension(extension_id, event.Pass());
+    event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 }  // namespace api

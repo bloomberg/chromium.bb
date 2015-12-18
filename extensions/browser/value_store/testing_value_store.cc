@@ -4,6 +4,8 @@
 
 #include "extensions/browser/value_store/testing_value_store.h"
 
+#include <utility>
+
 #include "base/logging.h"
 
 namespace {
@@ -94,7 +96,7 @@ ValueStore::WriteResult TestingValueStore::Set(
       storage_.SetWithoutPathExpansion(it.key(), it.value().DeepCopy());
     }
   }
-  return MakeWriteResult(changes.Pass(), status_);
+  return MakeWriteResult(std::move(changes), status_);
 }
 
 ValueStore::WriteResult TestingValueStore::Remove(const std::string& key) {
@@ -115,7 +117,7 @@ ValueStore::WriteResult TestingValueStore::Remove(
       changes->push_back(ValueStoreChange(*it, old_value.release(), NULL));
     }
   }
-  return MakeWriteResult(changes.Pass(), status_);
+  return MakeWriteResult(std::move(changes), status_);
 }
 
 ValueStore::WriteResult TestingValueStore::Clear() {

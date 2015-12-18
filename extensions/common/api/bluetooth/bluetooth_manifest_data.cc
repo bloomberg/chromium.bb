@@ -4,6 +4,8 @@
 
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
 
+#include <utility>
+
 #include "extensions/common/api/bluetooth/bluetooth_manifest_permission.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -11,7 +13,7 @@ namespace extensions {
 
 BluetoothManifestData::BluetoothManifestData(
     scoped_ptr<BluetoothManifestPermission> permission)
-    : permission_(permission.Pass()) {
+    : permission_(std::move(permission)) {
   DCHECK(permission_);
 }
 
@@ -63,7 +65,7 @@ scoped_ptr<BluetoothManifestData> BluetoothManifestData::FromValue(
     return scoped_ptr<BluetoothManifestData>();
 
   return scoped_ptr<BluetoothManifestData>(
-             new BluetoothManifestData(permission.Pass())).Pass();
+      new BluetoothManifestData(std::move(permission)));
 }
 
 BluetoothPermissionRequest::BluetoothPermissionRequest(

@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/api/bluetooth/bluetooth_event_router.h"
+
 #include <string>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,7 +16,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
-#include "extensions/browser/api/bluetooth/bluetooth_event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/api/bluetooth.h"
@@ -108,7 +110,7 @@ TEST_F(BluetoothEventRouterTest, SetDiscoveryFilter) {
       device::BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
   df.CopyFrom(*discovery_filter);
 
-  router_->SetDiscoveryFilter(discovery_filter.Pass(), mock_adapter_,
+  router_->SetDiscoveryFilter(std::move(discovery_filter), mock_adapter_,
                               kTestExtensionId, base::Bind(&base::DoNothing),
                               base::Bind(&base::DoNothing));
 

@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/alarms/alarm_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -44,9 +46,9 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
     scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(alarm.js_alarm->ToValue().release());
     scoped_ptr<Event> event(new Event(
-        events::ALARMS_ON_ALARM, alarms::OnAlarm::kEventName, args.Pass()));
+        events::ALARMS_ON_ALARM, alarms::OnAlarm::kEventName, std::move(args)));
     EventRouter::Get(browser_context_)
-        ->DispatchEventToExtension(extension_id, event.Pass());
+        ->DispatchEventToExtension(extension_id, std::move(event));
   }
 
  private:
@@ -78,13 +80,12 @@ std::vector<Alarm> AlarmsFromValue(const base::ListValue* list) {
 scoped_ptr<base::ListValue> AlarmsToValue(const std::vector<Alarm>& alarms) {
   scoped_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < alarms.size(); ++i) {
-    scoped_ptr<base::DictionaryValue> alarm =
-        alarms[i].js_alarm->ToValue().Pass();
+    scoped_ptr<base::DictionaryValue> alarm = alarms[i].js_alarm->ToValue();
     alarm->Set(kAlarmGranularity,
                base::CreateTimeDeltaValue(alarms[i].granularity));
     list->Append(alarm.release());
   }
-  return list.Pass();
+  return list;
 }
 
 }  // namespace
@@ -293,7 +294,8 @@ void AlarmManager::WriteToStorage(const std::string& extension_id) {
     alarms.reset(AlarmsToValue(list->second).release());
   else
     alarms.reset(AlarmsToValue(std::vector<Alarm>()).release());
-  storage->SetExtensionValue(extension_id, kRegisteredAlarms, alarms.Pass());
+  storage->SetExtensionValue(extension_id, kRegisteredAlarms,
+                             std::move(alarms));
 }
 
 void AlarmManager::ReadFromStorage(const std::string& extension_id,

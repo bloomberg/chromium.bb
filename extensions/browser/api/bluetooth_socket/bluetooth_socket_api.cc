@@ -5,6 +5,7 @@
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_api.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -306,9 +307,7 @@ void BluetoothSocketListenFunction::OnGetAdapter(
     name.reset(new std::string(*socket->name()));
 
   CreateService(
-      adapter,
-      bluetooth_uuid,
-      name.Pass(),
+      adapter, bluetooth_uuid, std::move(name),
       base::Bind(&BluetoothSocketListenFunction::OnCreateService, this),
       base::Bind(&BluetoothSocketListenFunction::OnCreateServiceError, this));
 }
@@ -371,7 +370,7 @@ void BluetoothSocketListenUsingRfcommFunction::CreateService(
     const device::BluetoothAdapter::CreateServiceErrorCallback&
         error_callback) {
   device::BluetoothAdapter::ServiceOptions service_options;
-  service_options.name = name.Pass();
+  service_options.name = std::move(name);
 
   ListenOptions* options = params_->options.get();
   if (options) {
@@ -414,7 +413,7 @@ void BluetoothSocketListenUsingL2capFunction::CreateService(
     const device::BluetoothAdapter::CreateServiceErrorCallback&
         error_callback) {
   device::BluetoothAdapter::ServiceOptions service_options;
-  service_options.name = name.Pass();
+  service_options.name = std::move(name);
 
   ListenOptions* options = params_->options.get();
   if (options) {

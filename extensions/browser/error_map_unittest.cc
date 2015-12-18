@@ -4,6 +4,8 @@
 
 #include "extensions/browser/error_map.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -150,7 +152,7 @@ TEST_F(ErrorMapUnitTest, DuplicateErrorsAreReplaced) {
   scoped_ptr<ExtensionError> runtime_error2 =
       CreateNewRuntimeError(kId, base::UintToString(1u));
   const ExtensionError* weak_error = runtime_error2.get();
-  ASSERT_TRUE(errors_.AddError(runtime_error2.Pass()));
+  ASSERT_TRUE(errors_.AddError(std::move(runtime_error2)));
 
   // We should only have three errors stored, since two of the four reported
   // were identical, and the older should have been replaced.

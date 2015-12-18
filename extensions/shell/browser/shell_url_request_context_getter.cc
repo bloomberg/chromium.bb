@@ -4,6 +4,8 @@
 
 #include "extensions/shell/browser/shell_url_request_context_getter.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/info_map.h"
@@ -26,11 +28,10 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
                                             io_loop,
                                             file_loop,
                                             protocol_handlers,
-                                            request_interceptors.Pass(),
+                                            std::move(request_interceptors),
                                             net_log),
       browser_context_(browser_context),
-      extension_info_map_(extension_info_map) {
-}
+      extension_info_map_(extension_info_map) {}
 
 ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
 }

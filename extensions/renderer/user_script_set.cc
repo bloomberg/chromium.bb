@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/user_script_set.h"
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
@@ -146,7 +148,7 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
       continue;
     }
 
-    scripts_.push_back(script.Pass());
+    scripts_.push_back(std::move(script));
   }
 
   FOR_EACH_OBSERVER(Observer,
@@ -189,20 +191,20 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   if (host_id.type() == HostID::EXTENSIONS) {
     injection_host = ExtensionInjectionHost::Create(host_id.id());
     if (!injection_host)
-      return injection.Pass();
+      return injection;
   } else {
     DCHECK_EQ(host_id.type(), HostID::WEBUI);
     injection_host.reset(new WebUIInjectionHost(host_id));
   }
 
   if (web_frame->parent() && !script->match_all_frames())
-    return injection.Pass();  // Only match subframes if the script declared it.
+    return injection;  // Only match subframes if the script declared it.
 
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       web_frame, document_url, script->match_about_blank());
 
   if (!script->MatchesURL(effective_document_url))
-    return injection.Pass();
+    return injection;
 
   scoped_ptr<ScriptInjector> injector(new UserScriptInjector(script,
                                                              this,
@@ -213,7 +215,7 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
           web_frame,
           tab_id) ==
       PermissionsData::ACCESS_DENIED) {
-    return injection.Pass();
+    return injection;
   }
 
   bool inject_css = !script->css_scripts().empty() &&
@@ -221,13 +223,11 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   bool inject_js =
       !script->js_scripts().empty() && script->run_location() == run_location;
   if (inject_css || inject_js) {
-    injection.reset(new ScriptInjection(
-        injector.Pass(),
-        render_frame,
-        injection_host.Pass(),
-        run_location));
+    injection.reset(new ScriptInjection(std::move(injector), render_frame,
+                                        std::move(injection_host),
+                                        run_location));
   }
-  return injection.Pass();
+  return injection;
 }
 
 }  // namespace extensions

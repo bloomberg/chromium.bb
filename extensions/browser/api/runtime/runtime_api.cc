@@ -116,9 +116,9 @@ void DispatchOnStartupEventImpl(BrowserContext* browser_context,
   scoped_ptr<base::ListValue> event_args(new base::ListValue());
   scoped_ptr<Event> event(new Event(events::RUNTIME_ON_STARTUP,
                                     runtime::OnStartup::kEventName,
-                                    event_args.Pass()));
+                                    std::move(event_args)));
   EventRouter::Get(browser_context)
-      ->DispatchEventToExtension(extension_id, event.Pass());
+      ->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void SetUninstallURL(ExtensionPrefs* prefs,
@@ -361,8 +361,8 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   DCHECK(event_router);
   scoped_ptr<Event> event(new Event(events::RUNTIME_ON_INSTALLED,
                                     runtime::OnInstalled::kEventName,
-                                    event_args.Pass()));
-  event_router->DispatchEventWithLazyListener(extension_id, event.Pass());
+                                    std::move(event_args)));
+  event_router->DispatchEventWithLazyListener(extension_id, std::move(event));
 
   if (old_version.IsValid()) {
     const Extension* extension =
@@ -382,9 +382,9 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
         sm_info->SetString(kInstallId, extension_id);
         scoped_ptr<Event> sm_event(new Event(events::RUNTIME_ON_INSTALLED,
                                              runtime::OnInstalled::kEventName,
-                                             sm_event_args.Pass()));
+                                             std::move(sm_event_args)));
         event_router->DispatchEventWithLazyListener((*i)->id(),
-                                                    sm_event.Pass());
+                                                    std::move(sm_event));
       }
     }
   }
@@ -405,8 +405,8 @@ void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
   DCHECK(event_router);
   scoped_ptr<Event> event(new Event(events::RUNTIME_ON_UPDATE_AVAILABLE,
                                     runtime::OnUpdateAvailable::kEventName,
-                                    args.Pass()));
-  event_router->DispatchEventToExtension(extension_id, event.Pass());
+                                    std::move(args)));
+  event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 // static
@@ -419,10 +419,10 @@ void RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
   scoped_ptr<base::ListValue> args(new base::ListValue);
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
-  scoped_ptr<Event> event(
-      new Event(events::RUNTIME_ON_BROWSER_UPDATE_AVAILABLE,
-                runtime::OnBrowserUpdateAvailable::kEventName, args.Pass()));
-  event_router->BroadcastEvent(event.Pass());
+  scoped_ptr<Event> event(new Event(
+      events::RUNTIME_ON_BROWSER_UPDATE_AVAILABLE,
+      runtime::OnBrowserUpdateAvailable::kEventName, std::move(args)));
+  event_router->BroadcastEvent(std::move(event));
 }
 
 // static
@@ -440,7 +440,7 @@ void RuntimeEventRouter::DispatchOnRestartRequiredEvent(
                 api::runtime::OnRestartRequired::Create(reason)));
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
-  event_router->DispatchEventToExtension(app_id, event.Pass());
+  event_router->DispatchEventToExtension(app_id, std::move(event));
 }
 
 // static

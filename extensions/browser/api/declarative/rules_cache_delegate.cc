@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/declarative/rules_cache_delegate.h"
 
+#include <utility>
+
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -107,7 +109,7 @@ void RulesCacheDelegate::WriteToStorage(const std::string& extension_id,
 
   StateStore* store = ExtensionSystem::Get(browser_context_)->rules_store();
   if (store)
-    store->SetExtensionValue(extension_id, storage_key_, value.Pass());
+    store->SetExtensionValue(extension_id, storage_key_, std::move(value));
 }
 
 void RulesCacheDelegate::CheckIfReady() {

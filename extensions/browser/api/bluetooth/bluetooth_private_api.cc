@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/bluetooth/bluetooth_private_api.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
@@ -444,7 +446,7 @@ bool BluetoothPrivateSetDiscoveryFilterFunction::DoWork(
   BluetoothAPI::Get(browser_context())
       ->event_router()
       ->SetDiscoveryFilter(
-          discovery_filter.Pass(), adapter.get(), GetExtensionId(),
+          std::move(discovery_filter), adapter.get(), GetExtensionId(),
           base::Bind(
               &BluetoothPrivateSetDiscoveryFilterFunction::OnSuccessCallback,
               this),

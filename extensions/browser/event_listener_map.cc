@@ -4,6 +4,8 @@
 
 #include "extensions/browser/event_listener_map.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
@@ -22,8 +24,8 @@ scoped_ptr<EventListener> EventListener::ForExtension(
     const std::string& extension_id,
     content::RenderProcessHost* process,
     scoped_ptr<base::DictionaryValue> filter) {
-  return make_scoped_ptr(new EventListener(
-      event_name, extension_id, GURL(), process, filter.Pass()));
+  return make_scoped_ptr(new EventListener(event_name, extension_id, GURL(),
+                                           process, std::move(filter)));
 }
 
 // static
@@ -32,8 +34,8 @@ scoped_ptr<EventListener> EventListener::ForURL(
     const GURL& listener_url,
     content::RenderProcessHost* process,
     scoped_ptr<base::DictionaryValue> filter) {
-  return make_scoped_ptr(
-      new EventListener(event_name, "", listener_url, process, filter.Pass()));
+  return make_scoped_ptr(new EventListener(event_name, "", listener_url,
+                                           process, std::move(filter)));
 }
 
 EventListener::~EventListener() {}
@@ -53,8 +55,9 @@ scoped_ptr<EventListener> EventListener::Copy() const {
   scoped_ptr<DictionaryValue> filter_copy;
   if (filter_)
     filter_copy.reset(filter_->DeepCopy());
-  return scoped_ptr<EventListener>(new EventListener(
-      event_name_, extension_id_, listener_url_, process_, filter_copy.Pass()));
+  return scoped_ptr<EventListener>(new EventListener(event_name_, extension_id_,
+                                                     listener_url_, process_,
+                                                     std::move(filter_copy)));
 }
 
 bool EventListener::IsLazy() const {
@@ -78,9 +81,8 @@ EventListener::EventListener(const std::string& event_name,
       extension_id_(extension_id),
       listener_url_(listener_url),
       process_(process),
-      filter_(filter.Pass()),
-      matcher_id_(-1) {
-}
+      filter_(std::move(filter)),
+      matcher_id_(-1) {}
 
 EventListenerMap::EventListenerMap(Delegate* delegate)
     : delegate_(delegate) {
@@ -93,8 +95,8 @@ bool EventListenerMap::AddListener(scoped_ptr<EventListener> listener) {
     return false;
   if (listener->filter()) {
     scoped_ptr<EventMatcher> matcher(ParseEventMatcher(listener->filter()));
-    MatcherID id =
-        event_filter_.AddEventMatcher(listener->event_name(), matcher.Pass());
+    MatcherID id = event_filter_.AddEventMatcher(listener->event_name(),
+                                                 std::move(matcher));
     listener->set_matcher_id(id);
     listeners_by_matcher_id_[id] = listener.get();
     filtered_events_.insert(listener->event_name());

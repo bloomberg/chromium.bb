@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -83,7 +85,7 @@ scoped_ptr<base::Value> RawDataPresenter::Result() {
   if (!success_)
     return nullptr;
 
-  return list_.Pass();
+  return std::move(list_);
 }
 
 void RawDataPresenter::FeedNextBytes(const char* bytes, size_t size) {
@@ -138,7 +140,7 @@ scoped_ptr<base::Value> ParsedDataPresenter::Result() {
   if (!success_)
     return nullptr;
 
-  return dictionary_.Pass();
+  return std::move(dictionary_);
 }
 
 // static

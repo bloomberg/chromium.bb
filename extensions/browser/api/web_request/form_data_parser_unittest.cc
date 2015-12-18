@@ -19,7 +19,7 @@ scoped_ptr<FormDataParser> InitParser(const std::string& content_type_header) {
       FormDataParser::CreateFromContentTypeHeader(&content_type_header));
   if (parser.get() == NULL)
     return scoped_ptr<FormDataParser>();
-  return parser.Pass();
+  return parser;
 }
 
 // Attempts to run the parser corresponding to the |content_type_header|

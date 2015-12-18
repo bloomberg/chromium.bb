@@ -138,10 +138,10 @@ void IdleTest::SetUp() {
 
   idle_provider_ = new TestIdleProvider();
   idle_manager_->SetIdleTimeProviderForTest(
-      scoped_ptr<IdleManager::IdleTimeProvider>(idle_provider_).Pass());
+      scoped_ptr<IdleManager::IdleTimeProvider>(idle_provider_));
   event_delegate_ = new testing::StrictMock<MockEventDelegate>();
   idle_manager_->SetEventDelegateForTest(
-      scoped_ptr<IdleManager::EventDelegate>(event_delegate_).Pass());
+      scoped_ptr<IdleManager::EventDelegate>(event_delegate_));
   idle_manager_->Init();
 }
 

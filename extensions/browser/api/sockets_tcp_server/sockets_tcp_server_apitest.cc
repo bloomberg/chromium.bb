@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
@@ -62,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPCreateGood) {
           socket_create_function.get(), "[]", browser_context()));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   scoped_ptr<base::DictionaryValue> value =
-      base::DictionaryValue::From(result.Pass());
+      base::DictionaryValue::From(std::move(result));
   int socketId = -1;
   EXPECT_TRUE(value->GetInteger("socketId", &socketId));
   ASSERT_TRUE(socketId > 0);

@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/programmatic_script_injector.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/values.h"
@@ -118,7 +119,7 @@ void ProgrammaticScriptInjector::OnInjectionComplete(
     content::RenderFrame* render_frame) {
   DCHECK(results_.empty());
   if (execution_result)
-    results_.Append(execution_result.Pass());
+    results_.Append(std::move(execution_result));
   Finish(std::string(), render_frame);
 }
 

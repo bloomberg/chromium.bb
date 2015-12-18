@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/usb/usb_event_router.h"
 
+#include <utility>
+
 #include "device/core/device_client.h"
 #include "device/usb/usb_device.h"
 #include "extensions/browser/api/device_permissions_manager.h"
@@ -117,7 +119,7 @@ void UsbEventRouter::DispatchEvent(const std::string& event_name,
 
     event->will_dispatch_callback =
         base::Bind(&WillDispatchDeviceEvent, device);
-    event_router->BroadcastEvent(event.Pass());
+    event_router->BroadcastEvent(std::move(event));
   }
 }
 

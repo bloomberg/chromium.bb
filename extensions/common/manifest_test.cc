@@ -4,6 +4,8 @@
 
 #include "extensions/common/manifest_test.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -68,7 +70,7 @@ ManifestTest::ManifestData::ManifestData(base::DictionaryValue* manifest,
 
 ManifestTest::ManifestData::ManifestData(
     scoped_ptr<base::DictionaryValue> manifest)
-    : manifest_(manifest.get()), manifest_holder_(manifest.Pass()) {
+    : manifest_(manifest.get()), manifest_holder_(std::move(manifest)) {
   CHECK(manifest_) << "Manifest NULL";
 }
 
@@ -77,7 +79,7 @@ ManifestTest::ManifestData::ManifestData(
     const char* name)
     : name_(name),
       manifest_(manifest.get()),
-      manifest_holder_(manifest.Pass()) {
+      manifest_holder_(std::move(manifest)) {
   CHECK(manifest_) << "Manifest NULL";
 }
 

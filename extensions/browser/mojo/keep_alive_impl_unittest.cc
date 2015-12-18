@@ -54,7 +54,8 @@ class KeepAliveTest : public ExtensionsTest {
   }
 
   void CreateKeepAlive(mojo::InterfaceRequest<KeepAlive> request) {
-    KeepAliveImpl::Create(browser_context(), extension_.get(), request.Pass());
+    KeepAliveImpl::Create(browser_context(), extension_.get(),
+                          std::move(request));
   }
 
   const Extension* extension() { return extension_.get(); }

@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/device_permissions_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
@@ -334,7 +336,7 @@ scoped_ptr<base::Value> DevicePermissionEntry::ToValue() const {
         kDeviceLastUsed, base::Int64ToString(last_used_.ToInternalValue()));
   }
 
-  return entry_dict.Pass();
+  return std::move(entry_dict);
 }
 
 base::string16 DevicePermissionEntry::GetPermissionMessageString() const {

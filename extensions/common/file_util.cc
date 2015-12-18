@@ -268,7 +268,7 @@ scoped_ptr<base::DictionaryValue> LoadManifest(
     return NULL;
   }
 
-  return base::DictionaryValue::From(root.Pass());
+  return base::DictionaryValue::From(std::move(root));
 }
 
 bool ValidateExtension(const Extension* extension,

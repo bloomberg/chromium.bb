@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
 #include "extensions/common/event_filter.h"
+
+#include <string>
+#include <utility>
 
 #include "components/url_matcher/url_matcher_factory.h"
 #include "ipc/ipc_message.h"
@@ -19,8 +20,7 @@ EventFilter::EventMatcherEntry::EventMatcherEntry(
     scoped_ptr<EventMatcher> event_matcher,
     URLMatcher* url_matcher,
     const URLMatcherConditionSet::Vector& condition_sets)
-    : event_matcher_(event_matcher.Pass()),
-      url_matcher_(url_matcher) {
+    : event_matcher_(std::move(event_matcher)), url_matcher_(url_matcher) {
   for (URLMatcherConditionSet::Vector::const_iterator it =
        condition_sets.begin(); it != condition_sets.end(); it++)
     condition_set_ids_.push_back((*it)->id());
@@ -68,7 +68,7 @@ EventFilter::AddEventMatcher(const std::string& event_name,
   }
   id_to_event_name_[id] = event_name;
   event_matchers_[event_name][id] = linked_ptr<EventMatcherEntry>(
-      new EventMatcherEntry(matcher.Pass(), &url_matcher_, condition_sets));
+      new EventMatcherEntry(std::move(matcher), &url_matcher_, condition_sets));
   return id;
 }
 

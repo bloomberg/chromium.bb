@@ -21,7 +21,7 @@ ExtensionRegistry* ExtensionRegistry::Get(content::BrowserContext* context) {
 
 scoped_ptr<ExtensionSet> ExtensionRegistry::GenerateInstalledExtensionsSet()
     const {
-  return GenerateInstalledExtensionsSet(EVERYTHING).Pass();
+  return GenerateInstalledExtensionsSet(EVERYTHING);
 }
 
 scoped_ptr<ExtensionSet> ExtensionRegistry::GenerateInstalledExtensionsSet(
@@ -37,7 +37,7 @@ scoped_ptr<ExtensionSet> ExtensionRegistry::GenerateInstalledExtensionsSet(
     installed_extensions->InsertAll(blacklisted_extensions_);
   if (include_mask & IncludeFlag::BLOCKED)
     installed_extensions->InsertAll(blocked_extensions_);
-  return installed_extensions.Pass();
+  return installed_extensions;
 }
 
 void ExtensionRegistry::AddObserver(ExtensionRegistryObserver* observer) {

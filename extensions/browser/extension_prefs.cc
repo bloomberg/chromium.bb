@@ -5,6 +5,7 @@
 #include "extensions/browser/extension_prefs.h"
 
 #include <iterator>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
@@ -349,7 +350,7 @@ ExtensionPrefs* ExtensionPrefs::Create(
     const std::vector<ExtensionPrefsObserver*>& early_observers,
     scoped_ptr<TimeProvider> time_provider) {
   return new ExtensionPrefs(browser_context, pref_service, root_dir,
-                            extension_pref_value_map, time_provider.Pass(),
+                            extension_pref_value_map, std::move(time_provider),
                             extensions_disabled, early_observers);
 }
 
@@ -1347,7 +1348,7 @@ ExtensionPrefs::GetInstalledExtensionsInfo() const {
       extensions_info->push_back(linked_ptr<ExtensionInfo>(info.release()));
   }
 
-  return extensions_info.Pass();
+  return extensions_info;
 }
 
 scoped_ptr<ExtensionPrefs::ExtensionsInfo>
@@ -1370,7 +1371,7 @@ ExtensionPrefs::GetUninstalledExtensionsInfo() const {
       extensions_info->push_back(linked_ptr<ExtensionInfo>(info.release()));
   }
 
-  return extensions_info.Pass();
+  return extensions_info;
 }
 
 void ExtensionPrefs::SetDelayedInstallInfo(
@@ -1500,7 +1501,7 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo> ExtensionPrefs::
       extensions_info->push_back(linked_ptr<ExtensionInfo>(info.release()));
   }
 
-  return extensions_info.Pass();
+  return extensions_info;
 }
 
 bool ExtensionPrefs::WasAppDraggedByUser(
@@ -1831,7 +1832,7 @@ ExtensionPrefs::ExtensionPrefs(
       prefs_(prefs),
       install_directory_(root_dir),
       extension_pref_value_map_(extension_pref_value_map),
-      time_provider_(time_provider.Pass()),
+      time_provider_(std::move(time_provider)),
       extensions_disabled_(extensions_disabled) {
   MakePathsRelative();
 

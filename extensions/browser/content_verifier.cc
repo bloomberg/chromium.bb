@@ -5,6 +5,7 @@
 #include "extensions/browser/content_verifier.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
@@ -165,7 +166,7 @@ void ContentVerifier::OnExtensionLoaded(
 
     scoped_ptr<ContentVerifierIOData::ExtensionData> data(
         new ContentVerifierIOData::ExtensionData(
-            image_paths.Pass(),
+            std::move(image_paths),
             extension->version() ? *extension->version() : base::Version()));
     content::BrowserThread::PostTask(content::BrowserThread::IO,
                                      FROM_HERE,

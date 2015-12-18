@@ -5,6 +5,7 @@
 #include "extensions/browser/api/web_request/web_request_api.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -379,9 +380,9 @@ void SendOnMessageEventOnUI(
   }
 
   scoped_ptr<Event> event(new Event(
-      histogram_value, event_name, event_args.Pass(), browser_context, GURL(),
-      EventRouter::USER_GESTURE_UNKNOWN, event_filtering_info));
-  event_router->DispatchEventToExtension(extension_id, event.Pass());
+      histogram_value, event_name, std::move(event_args), browser_context,
+      GURL(), EventRouter::USER_GESTURE_UNKNOWN, event_filtering_info));
+  event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void RemoveEventListenerOnIOThread(
@@ -1254,7 +1255,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     EventRouter::DispatchEventToSender(
         listener->ipc_sender.get(), browser_context, listener->extension_id,
         listener->histogram_value, listener->sub_event_name,
-        args_filtered.Pass(), EventRouter::USER_GESTURE_UNKNOWN,
+        std::move(args_filtered), EventRouter::USER_GESTURE_UNKNOWN,
         EventFilteringInfo());
     if (listener->extra_info_spec &
         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {
@@ -1775,7 +1776,7 @@ scoped_ptr<base::DictionaryValue> SummarizeResponseDelta(
         SummarizeCookieModifications(delta.response_cookie_modifications));
   }
 
-  return details.Pass();
+  return details;
 }
 
 }  // namespace
@@ -1803,7 +1804,7 @@ void ExtensionWebRequestEventRouter::LogExtensionActivity(
     if (web_request_event_router_delegate_) {
       web_request_event_router_delegate_->LogExtensionActivity(
           reinterpret_cast<content::BrowserContext*>(browser_context_id),
-          is_incognito, extension_id, url, api_call, details.Pass());
+          is_incognito, extension_id, url, api_call, std::move(details));
     }
   }
 }
@@ -2334,11 +2335,8 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
     if (value->HasKey("cancel")) {
       // Don't allow cancel mixed with other keys.
       if (value->size() != 1) {
-        RespondWithError(event_name,
-                         sub_event_name,
-                         request_id,
-                         response.Pass(),
-                         keys::kInvalidBlockingResponse);
+        RespondWithError(event_name, sub_event_name, request_id,
+                         std::move(response), keys::kInvalidBlockingResponse);
         return false;
       }
 
@@ -2353,10 +2351,8 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
                                                    &new_url_str));
       response->new_url = GURL(new_url_str);
       if (!response->new_url.is_valid()) {
-        RespondWithError(event_name,
-                         sub_event_name,
-                         request_id,
-                         response.Pass(),
+        RespondWithError(event_name, sub_event_name, request_id,
+                         std::move(response),
                          ErrorUtils::FormatErrorMessage(
                              keys::kInvalidRedirectUrl, new_url_str));
         return false;
@@ -2368,10 +2364,8 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
     if (has_request_headers || has_response_headers) {
       if (has_request_headers && has_response_headers) {
         // Allow only one of the keys, not both.
-        RespondWithError(event_name,
-                         sub_event_name,
-                         request_id,
-                         response.Pass(),
+        RespondWithError(event_name, sub_event_name, request_id,
+                         std::move(response),
                          keys::kInvalidHeaderKeyCombination);
         return false;
       }
@@ -2398,29 +2392,21 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
         if (!FromHeaderDictionary(header_value, &name, &value)) {
           std::string serialized_header;
           base::JSONWriter::Write(*header_value, &serialized_header);
-          RespondWithError(event_name,
-                           sub_event_name,
-                           request_id,
-                           response.Pass(),
+          RespondWithError(event_name, sub_event_name, request_id,
+                           std::move(response),
                            ErrorUtils::FormatErrorMessage(keys::kInvalidHeader,
                                                           serialized_header));
           return false;
         }
         if (!net::HttpUtil::IsValidHeaderName(name)) {
-          RespondWithError(event_name,
-                           sub_event_name,
-                           request_id,
-                           response.Pass(),
-                           keys::kInvalidHeaderName);
+          RespondWithError(event_name, sub_event_name, request_id,
+                           std::move(response), keys::kInvalidHeaderName);
           return false;
         }
         if (!net::HttpUtil::IsValidHeaderValue(value)) {
-          RespondWithError(event_name,
-                           sub_event_name,
-                           request_id,
-                           response.Pass(),
-                           ErrorUtils::FormatErrorMessage(
-                               keys::kInvalidHeaderValue, name));
+          RespondWithError(
+              event_name, sub_event_name, request_id, std::move(response),
+              ErrorUtils::FormatErrorMessage(keys::kInvalidHeaderValue, name));
           return false;
         }
         if (has_request_headers)

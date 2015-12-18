@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/app_current_window_internal/app_current_window_internal_api.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_client.h"
@@ -347,7 +349,7 @@ bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
     region.reset(NULL);
   }
 
-  window->UpdateShape(region.Pass());
+  window->UpdateShape(std::move(region));
 
   return true;
 }

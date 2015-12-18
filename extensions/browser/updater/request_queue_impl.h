@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_UPDATER_REQUEST_QUEUE_IMPL_H_
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -41,14 +42,13 @@ int RequestQueue<T>::active_request_failure_count() {
 template <typename T>
 scoped_ptr<T> RequestQueue<T>::reset_active_request() {
   active_backoff_entry_.reset();
-  return active_request_.Pass();
+  return std::move(active_request_);
 }
 
 template <typename T>
 void RequestQueue<T>::ScheduleRequest(scoped_ptr<T> request) {
-  PushImpl(
-      request.Pass(),
-      scoped_ptr<net::BackoffEntry>(new net::BackoffEntry(backoff_policy_)));
+  PushImpl(std::move(request), scoped_ptr<net::BackoffEntry>(
+                                   new net::BackoffEntry(backoff_policy_)));
   StartNextRequest();
 }
 
@@ -124,7 +124,7 @@ void RequestQueue<T>::RetryRequest(const base::TimeDelta& min_backoff_delay) {
     active_backoff_entry_->SetCustomReleaseTime(base::TimeTicks::Now() +
                                                 min_backoff_delay);
   }
-  PushImpl(active_request_.Pass(), active_backoff_entry_.Pass());
+  PushImpl(std::move(active_request_), std::move(active_backoff_entry_));
 }
 
 template <typename T>

@@ -92,7 +92,7 @@ scoped_ptr<FeatureProvider> TestExtensionsClient::CreateFeatureProvider(
   } else {
     NOTREACHED();
   }
-  return provider.Pass();
+  return provider;
 }
 
 scoped_ptr<JSONFeatureProviderSource>
@@ -112,7 +112,7 @@ TestExtensionsClient::CreateFeatureProviderSource(
     NOTREACHED();
     source.reset();
   }
-  return source.Pass();
+  return source;
 }
 
 void TestExtensionsClient::FilterHostPermissions(

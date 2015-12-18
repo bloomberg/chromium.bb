@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
 #include "extensions/renderer/module_system.h"
+
+#include <utility>
+
+#include "base/memory/scoped_ptr.h"
 #include "extensions/renderer/module_system_test.h"
 #include "gin/modules/module_registry.h"
 
@@ -53,7 +56,7 @@ TEST_F(ModuleSystemTest, TestExceptionHandling) {
   TestExceptionHandler* handler = new TestExceptionHandler;
   scoped_ptr<ModuleSystem::ExceptionHandler> scoped_handler(handler);
   ASSERT_FALSE(handler->handled_exception());
-  env()->module_system()->SetExceptionHandlerForTest(scoped_handler.Pass());
+  env()->module_system()->SetExceptionHandlerForTest(std::move(scoped_handler));
 
   env()->RegisterModule("test", "throw 'hi';");
   env()->module_system()->Require("test");

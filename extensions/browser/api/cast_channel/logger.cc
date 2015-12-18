@@ -5,6 +5,7 @@
 #include "extensions/browser/api/cast_channel/logger.h"
 
 #include <string>
+#include <utility>
 
 #include "base/strings/string_util.h"
 #include "base/time/clock.h"
@@ -99,7 +100,7 @@ scoped_ptr<char[]> Compress(const std::string& input, size_t* length) {
   if (success)
     *length = out_size - stream.avail_out;
 
-  return out.Pass();
+  return out;
 }
 
 // Propagate any error fields set in |event| to |last_errors|.  If any error
@@ -126,7 +127,7 @@ Logger::AggregatedSocketEventLog::~AggregatedSocketEventLog() {
 }
 
 Logger::Logger(scoped_ptr<base::Clock> clock, base::Time unix_epoch_time)
-    : clock_(clock.Pass()), unix_epoch_time_(unix_epoch_time) {
+    : clock_(std::move(clock)), unix_epoch_time_(unix_epoch_time) {
   DCHECK(clock_);
 
   // Logger may not be necessarily be created on the IO thread, but logging

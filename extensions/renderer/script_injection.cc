@@ -5,6 +5,7 @@
 #include "extensions/renderer/script_injection.h"
 
 #include <map>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
@@ -113,14 +114,13 @@ void ScriptInjection::RemoveIsolatedWorld(const std::string& host_id) {
   g_isolated_worlds.Get().erase(host_id);
 }
 
-ScriptInjection::ScriptInjection(
-    scoped_ptr<ScriptInjector> injector,
-    content::RenderFrame* render_frame,
-    scoped_ptr<const InjectionHost> injection_host,
-    UserScript::RunLocation run_location)
-    : injector_(injector.Pass()),
+ScriptInjection::ScriptInjection(scoped_ptr<ScriptInjector> injector,
+                                 content::RenderFrame* render_frame,
+                                 scoped_ptr<const InjectionHost> injection_host,
+                                 UserScript::RunLocation run_location)
+    : injector_(std::move(injector)),
       render_frame_(render_frame),
-      injection_host_(injection_host.Pass()),
+      injection_host_(std::move(injection_host)),
       run_location_(run_location),
       request_id_(kInvalidRequestId),
       complete_(false),
@@ -226,7 +226,7 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
   injector_->GetRunInfo(scripts_run_info, run_location_);
 
   if (complete_) {
-    injector_->OnInjectionComplete(execution_result_.Pass(), run_location_,
+    injector_->OnInjectionComplete(std::move(execution_result_), run_location_,
                                    render_frame_);
   } else {
     ++scripts_run_info->num_blocking_js;
@@ -302,7 +302,7 @@ void ScriptInjection::OnJsInjectionCompleted(
   // If |async_completion_callback_| is set, it means the script finished
   // asynchronously, and we should run it.
   if (!async_completion_callback_.is_null()) {
-    injector_->OnInjectionComplete(execution_result_.Pass(), run_location_,
+    injector_->OnInjectionComplete(std::move(execution_result_), run_location_,
                                    render_frame_);
     // Warning: this object can be destroyed after this line!
     async_completion_callback_.Run(this);

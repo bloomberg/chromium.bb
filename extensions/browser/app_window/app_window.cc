@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_helpers.h"
@@ -574,7 +575,7 @@ void AppWindow::SetAppIconUrl(const GURL& url) {
 }
 
 void AppWindow::UpdateShape(scoped_ptr<SkRegion> region) {
-  native_app_window_->UpdateShape(region.Pass());
+  native_app_window_->UpdateShape(std::move(region));
 }
 
 void AppWindow::UpdateDraggableRegions(

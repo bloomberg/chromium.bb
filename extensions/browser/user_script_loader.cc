@@ -6,6 +6,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/version.h"
 #include "content/public/browser/browser_context.h"
@@ -262,7 +263,7 @@ void UserScriptLoader::StartLoad() {
   for (const UserScript& script : changed_scripts)
     changed_hosts_.insert(script.host_id());
 
-  LoadScripts(user_scripts_.Pass(), changed_hosts_, added_script_ids,
+  LoadScripts(std::move(user_scripts_), changed_hosts_, added_script_ids,
               base::Bind(&UserScriptLoader::OnScriptsLoaded,
                          weak_factory_.GetWeakPtr()));
 

@@ -414,8 +414,7 @@ void ScriptInjectionManager::HandleExecuteCode(
   scoped_ptr<ScriptInjection> injection(new ScriptInjection(
       scoped_ptr<ScriptInjector>(
           new ProgrammaticScriptInjector(params, render_frame)),
-      render_frame,
-      injection_host.Pass(),
+      render_frame, std::move(injection_host),
       static_cast<UserScript::RunLocation>(params.run_at)));
 
   FrameStatusMap::const_iterator iter = frame_statuses_.find(render_frame);
@@ -423,7 +422,7 @@ void ScriptInjectionManager::HandleExecuteCode(
       iter == frame_statuses_.end() ? UserScript::UNDEFINED : iter->second;
 
   ScriptsRunInfo scripts_run_info(render_frame, run_location);
-  TryToInject(injection.Pass(), run_location, &scripts_run_info);
+  TryToInject(std::move(injection), run_location, &scripts_run_info);
 }
 
 void ScriptInjectionManager::HandleExecuteDeclarativeScript(
@@ -442,8 +441,7 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
   if (injection.get()) {
     ScriptsRunInfo scripts_run_info(render_frame, UserScript::BROWSER_DRIVEN);
     // TODO(markdittmer): Use return value of TryToInject for error handling.
-    TryToInject(injection.Pass(),
-                UserScript::BROWSER_DRIVEN,
+    TryToInject(std::move(injection), UserScript::BROWSER_DRIVEN,
                 &scripts_run_info);
 
     scripts_run_info.LogRun();

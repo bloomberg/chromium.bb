@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -293,7 +294,7 @@ bool SimpleFeature::HasDependencies() const {
 }
 
 void SimpleFeature::AddFilter(scoped_ptr<SimpleFeatureFilter> filter) {
-  filters_.push_back(filter.Pass());
+  filters_.push_back(std::move(filter));
 }
 
 std::string SimpleFeature::Parse(const base::DictionaryValue* dictionary) {

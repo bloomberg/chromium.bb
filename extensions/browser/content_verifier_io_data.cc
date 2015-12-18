@@ -4,6 +4,8 @@
 
 #include "extensions/browser/content_verifier_io_data.h"
 
+#include <utility>
+
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {
@@ -11,7 +13,7 @@ namespace extensions {
 ContentVerifierIOData::ExtensionData::ExtensionData(
     scoped_ptr<std::set<base::FilePath>> browser_image_paths,
     const base::Version& version) {
-  this->browser_image_paths = browser_image_paths.Pass();
+  this->browser_image_paths = std::move(browser_image_paths);
   this->version = version;
 }
 

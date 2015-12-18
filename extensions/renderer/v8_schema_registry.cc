@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/v8_schema_registry.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
@@ -22,7 +24,7 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
   SchemaRegistryNativeHandler(V8SchemaRegistry* registry,
                               scoped_ptr<ScriptContext> context)
       : ObjectBackedNativeHandler(context.get()),
-        context_(context.Pass()),
+        context_(std::move(context)),
         registry_(registry) {
     RouteFunction("GetSchema",
                   base::Bind(&SchemaRegistryNativeHandler::GetSchema,
@@ -58,7 +60,7 @@ scoped_ptr<NativeHandler> V8SchemaRegistry::AsNativeHandler() {
                         NULL,  // no effective extension
                         Feature::UNSPECIFIED_CONTEXT));
   return scoped_ptr<NativeHandler>(
-      new SchemaRegistryNativeHandler(this, context.Pass()));
+      new SchemaRegistryNativeHandler(this, std::move(context)));
 }
 
 v8::Local<v8::Array> V8SchemaRegistry::GetSchemas(

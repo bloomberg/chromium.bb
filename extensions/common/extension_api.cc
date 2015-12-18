@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/json/json_reader.h"
@@ -60,7 +61,7 @@ scoped_ptr<base::ListValue> LoadSchemaList(const std::string& name,
 
   CHECK(result.get()) << error_message << " for schema " << schema;
   CHECK(result->IsType(base::Value::TYPE_LIST)) << " for schema " << schema;
-  return base::ListValue::From(result.Pass());
+  return base::ListValue::From(std::move(result));
 }
 
 const base::DictionaryValue* FindListItem(const base::ListValue* list,

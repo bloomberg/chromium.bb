@@ -4,6 +4,8 @@
 
 #include "extensions/browser/app_window/app_window_geometry_cache.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -132,7 +134,7 @@ void AppWindowGeometryCache::SyncToStorage() {
           OnGeometryCacheChanged(extension_id, it->first, bounds));
     }
 
-    prefs_->SetGeometryCache(extension_id, dict.Pass());
+    prefs_->SetGeometryCache(extension_id, std::move(dict));
   }
 }
 

@@ -4,6 +4,8 @@
 
 #include "extensions/browser/extension_function.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
@@ -43,7 +45,7 @@ class ArgumentListResponseValue
           << "The best way to fix this problem is to exclusively use " << title_
           << "(). SetResult() and |result_| are deprecated.";
     } else {
-      function->SetResultList(result.Pass());
+      function->SetResultList(std::move(result));
     }
     // It would be nice to DCHECK(error.empty()) but some legacy extension
     // function implementations... I'm looking at chrome.input.ime... do this
@@ -69,7 +71,7 @@ class ErrorWithArgumentsResponseValue : public ArgumentListResponseValue {
       : ArgumentListResponseValue(function_name,
                                   title,
                                   function,
-                                  result.Pass()) {
+                                  std::move(result)) {
     function->SetError(error);
   }
 
@@ -108,7 +110,7 @@ class RespondNowAction : public ExtensionFunction::ResponseActionObject {
   typedef base::Callback<void(bool)> SendResponseCallback;
   RespondNowAction(ExtensionFunction::ResponseValue result,
                    const SendResponseCallback& send_response)
-      : result_(result.Pass()), send_response_(send_response) {}
+      : result_(std::move(result)), send_response_(send_response) {}
   ~RespondNowAction() override {}
 
   void Execute() override { send_response_.Run(result_->Apply()); }
@@ -261,11 +263,11 @@ void ExtensionFunction::SetResult(base::Value* result) {
 
 void ExtensionFunction::SetResult(scoped_ptr<base::Value> result) {
   results_.reset(new base::ListValue());
-  results_->Append(result.Pass());
+  results_->Append(std::move(result));
 }
 
 void ExtensionFunction::SetResultList(scoped_ptr<base::ListValue> results) {
-  results_ = results.Pass();
+  results_ = std::move(results);
 }
 
 const base::ListValue* ExtensionFunction::GetResultList() const {
@@ -293,8 +295,8 @@ ExtensionFunction::ResponseValue ExtensionFunction::OneArgument(
     base::Value* arg) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(arg);
-  return ResponseValue(
-      new ArgumentListResponseValue(name(), "OneArgument", this, args.Pass()));
+  return ResponseValue(new ArgumentListResponseValue(name(), "OneArgument",
+                                                     this, std::move(args)));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::OneArgument(
@@ -308,14 +310,14 @@ ExtensionFunction::ResponseValue ExtensionFunction::TwoArguments(
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(arg1);
   args->Append(arg2);
-  return ResponseValue(
-      new ArgumentListResponseValue(name(), "TwoArguments", this, args.Pass()));
+  return ResponseValue(new ArgumentListResponseValue(name(), "TwoArguments",
+                                                     this, std::move(args)));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::ArgumentList(
     scoped_ptr<base::ListValue> args) {
-  return ResponseValue(
-      new ArgumentListResponseValue(name(), "ArgumentList", this, args.Pass()));
+  return ResponseValue(new ArgumentListResponseValue(name(), "ArgumentList",
+                                                     this, std::move(args)));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::Error(
@@ -351,7 +353,7 @@ ExtensionFunction::ResponseValue ExtensionFunction::ErrorWithArguments(
     scoped_ptr<base::ListValue> args,
     const std::string& error) {
   return ResponseValue(new ErrorWithArgumentsResponseValue(
-      name(), "ErrorWithArguments", this, args.Pass(), error));
+      name(), "ErrorWithArguments", this, std::move(args), error));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::BadMessage() {
@@ -361,7 +363,7 @@ ExtensionFunction::ResponseValue ExtensionFunction::BadMessage() {
 ExtensionFunction::ResponseAction ExtensionFunction::RespondNow(
     ResponseValue result) {
   return ResponseAction(new RespondNowAction(
-      result.Pass(), base::Bind(&ExtensionFunction::SendResponse, this)));
+      std::move(result), base::Bind(&ExtensionFunction::SendResponse, this)));
 }
 
 ExtensionFunction::ResponseAction ExtensionFunction::RespondLater() {
@@ -536,7 +538,8 @@ SyncExtensionFunction::~SyncExtensionFunction() {
 }
 
 ExtensionFunction::ResponseAction SyncExtensionFunction::Run() {
-  return RespondNow(RunSync() ? ArgumentList(results_.Pass()) : Error(error_));
+  return RespondNow(RunSync() ? ArgumentList(std::move(results_))
+                              : Error(error_));
 }
 
 // static
@@ -551,7 +554,8 @@ SyncIOThreadExtensionFunction::~SyncIOThreadExtensionFunction() {
 }
 
 ExtensionFunction::ResponseAction SyncIOThreadExtensionFunction::Run() {
-  return RespondNow(RunSync() ? ArgumentList(results_.Pass()) : Error(error_));
+  return RespondNow(RunSync() ? ArgumentList(std::move(results_))
+                              : Error(error_));
 }
 
 // static

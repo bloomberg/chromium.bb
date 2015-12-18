@@ -193,7 +193,7 @@ scoped_ptr<SocketsManifestPermission> SocketsManifestPermission::FromValue(
       return scoped_ptr<SocketsManifestPermission>();
     }
   }
-  return result.Pass();
+  return result;
 }
 
 bool SocketsManifestPermission::CheckRequest(
@@ -264,7 +264,7 @@ scoped_ptr<base::Value> SocketsManifestPermission::ToValue() const {
     sockets.tcp_server.reset(NULL);
   }
 
-  return scoped_ptr<base::Value>(sockets.ToValue().release()).Pass();
+  return scoped_ptr<base::Value>(sockets.ToValue().release());
 }
 
 ManifestPermission* SocketsManifestPermission::Diff(

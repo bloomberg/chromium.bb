@@ -4,6 +4,8 @@
 
 #include "extensions/shell/browser/shell_content_browser_client.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -126,7 +128,7 @@ net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
                                          extension_info_map)
               .release());
   return browser_main_parts_->browser_context()->CreateRequestContext(
-      protocol_handlers, request_interceptors.Pass(), extension_info_map);
+      protocol_handlers, std::move(request_interceptors), extension_info_map);
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {

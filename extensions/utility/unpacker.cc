@@ -5,6 +5,7 @@
 #include "extensions/utility/unpacker.h"
 
 #include <set>
+#include <utility>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -132,7 +133,7 @@ scoped_ptr<base::DictionaryValue> Unpacker::ReadManifest() {
     return NULL;
   }
 
-  return base::DictionaryValue::From(root.Pass());
+  return base::DictionaryValue::From(std::move(root));
 }
 
 bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {

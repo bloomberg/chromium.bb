@@ -4,6 +4,8 @@
 
 #include "extensions/browser/mojo/keep_alive_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
@@ -14,7 +16,7 @@ namespace extensions {
 void KeepAliveImpl::Create(content::BrowserContext* context,
                            const Extension* extension,
                            mojo::InterfaceRequest<KeepAlive> request) {
-  new KeepAliveImpl(context, extension, request.Pass());
+  new KeepAliveImpl(context, extension, std::move(request));
 }
 
 KeepAliveImpl::KeepAliveImpl(content::BrowserContext* context,
@@ -23,7 +25,7 @@ KeepAliveImpl::KeepAliveImpl(content::BrowserContext* context,
     : context_(context),
       extension_(extension),
       extension_registry_observer_(this),
-      binding_(this, request.Pass()) {
+      binding_(this, std::move(request)) {
   ProcessManager::Get(context_)->IncrementLazyKeepaliveCount(extension_);
   binding_.set_connection_error_handler(
       base::Bind(&KeepAliveImpl::OnDisconnected, base::Unretained(this)));

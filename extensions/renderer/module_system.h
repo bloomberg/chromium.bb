@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -141,7 +142,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   // Passes exceptions to |handler| rather than console::Fatal.
   void SetExceptionHandlerForTest(scoped_ptr<ExceptionHandler> handler) {
-    exception_handler_ = handler.Pass();
+    exception_handler_ = std::move(handler);
   }
 
  protected:

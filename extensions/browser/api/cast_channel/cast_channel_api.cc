@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -125,7 +126,7 @@ void CastChannelAPI::SendEvent(const std::string& extension_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   EventRouter* event_router = EventRouter::Get(GetBrowserContext());
   if (event_router) {
-    event_router->DispatchEventToExtension(extension_id, event.Pass());
+    event_router->DispatchEventToExtension(extension_id, std::move(event));
   }
 }
 
@@ -139,11 +140,11 @@ CastChannelAPI::GetFactoryInstance() {
 }
 
 void CastChannelAPI::SetSocketForTest(scoped_ptr<CastSocket> socket_for_test) {
-  socket_for_test_ = socket_for_test.Pass();
+  socket_for_test_ = std::move(socket_for_test);
 }
 
 scoped_ptr<CastSocket> CastChannelAPI::GetSocketForTest() {
-  return socket_for_test_.Pass();
+  return std::move(socket_for_test_);
 }
 
 content::BrowserContext* CastChannelAPI::GetBrowserContext() const {
@@ -151,11 +152,11 @@ content::BrowserContext* CastChannelAPI::GetBrowserContext() const {
 }
 
 void CastChannelAPI::SetPingTimeoutTimerForTest(scoped_ptr<base::Timer> timer) {
-  injected_timeout_timer_ = timer.Pass();
+  injected_timeout_timer_ = std::move(timer);
 }
 
 scoped_ptr<base::Timer> CastChannelAPI::GetInjectedTimeoutTimerForTest() {
-  return injected_timeout_timer_.Pass();
+  return std::move(injected_timeout_timer_);
 }
 
 CastChannelAPI::~CastChannelAPI() {}
@@ -325,20 +326,20 @@ void CastChannelOpenFunction::AsyncWorkStart() {
     // Wrap read delegate in a KeepAliveDelegate for timeout handling.
     api::cast_channel::KeepAliveDelegate* keep_alive =
         new api::cast_channel::KeepAliveDelegate(
-            socket, api_->GetLogger(), delegate.Pass(), ping_interval_,
+            socket, api_->GetLogger(), std::move(delegate), ping_interval_,
             liveness_timeout_);
     scoped_ptr<base::Timer> injected_timer =
         api_->GetInjectedTimeoutTimerForTest();
     if (injected_timer) {
       keep_alive->SetTimersForTest(
           make_scoped_ptr(new base::Timer(false, false)),
-          injected_timer.Pass());
+          std::move(injected_timer));
     }
     delegate.reset(keep_alive);
   }
 
   api_->GetLogger()->LogNewSocketEvent(*socket);
-  socket->Connect(delegate.Pass(),
+  socket->Connect(std::move(delegate),
                   base::Bind(&CastChannelOpenFunction::OnOpen, this));
 }
 
@@ -474,7 +475,7 @@ void CastChannelGetLogsFunction::AsyncWorkStart() {
   size_t length = 0;
   scoped_ptr<char[]> out = api_->GetLogger()->GetLogs(&length);
   if (out.get()) {
-    SetResult(new base::BinaryValue(out.Pass(), length));
+    SetResult(new base::BinaryValue(std::move(out), length));
   } else {
     SetError("Unable to get logs.");
   }
@@ -510,11 +511,11 @@ void CastChannelOpenFunction::CastMessageHandler::OnError(
   scoped_ptr<base::ListValue> results =
       OnError::Create(channel_info, error_info);
   scoped_ptr<Event> event(new Event(events::CAST_CHANNEL_ON_ERROR,
-                                    OnError::kEventName, results.Pass()));
+                                    OnError::kEventName, std::move(results)));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(ui_dispatch_cb_, socket_->owner_extension_id(),
-                 base::Passed(event.Pass())));
+                 base::Passed(std::move(event))));
 }
 
 void CastChannelOpenFunction::CastMessageHandler::OnMessage(
@@ -531,11 +532,11 @@ void CastChannelOpenFunction::CastMessageHandler::OnMessage(
   scoped_ptr<base::ListValue> results =
       OnMessage::Create(channel_info, message_info);
   scoped_ptr<Event> event(new Event(events::CAST_CHANNEL_ON_MESSAGE,
-                                    OnMessage::kEventName, results.Pass()));
+                                    OnMessage::kEventName, std::move(results)));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(ui_dispatch_cb_, socket_->owner_extension_id(),
-                 base::Passed(event.Pass())));
+                 base::Passed(std::move(event))));
 }
 
 void CastChannelOpenFunction::CastMessageHandler::Start() {

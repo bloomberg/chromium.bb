@@ -115,7 +115,7 @@ scoped_ptr<FeatureProvider> ShellExtensionsClient::CreateFeatureProvider(
   } else {
     NOTREACHED();
   }
-  return provider.Pass();
+  return provider;
 }
 
 scoped_ptr<JSONFeatureProviderSource>
@@ -136,7 +136,7 @@ ShellExtensionsClient::CreateFeatureProviderSource(
     NOTREACHED();
     source.reset();
   }
-  return source.Pass();
+  return source;
 }
 
 void ShellExtensionsClient::FilterHostPermissions(

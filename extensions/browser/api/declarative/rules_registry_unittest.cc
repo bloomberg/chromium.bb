@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative/rules_registry.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
@@ -133,7 +134,7 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
       "  \"version\": \"1\""
       "}");
   scoped_refptr<Extension> extension = ExtensionBuilder()
-                                           .SetManifest(manifest.Pass())
+                                           .SetManifest(std::move(manifest))
                                            .SetID(kExtensionId)
                                            .Build();
   registry->OnExtensionUninstalled(extension.get());
@@ -218,7 +219,7 @@ TEST(RulesRegistryTest, TwoRulesInManifest) {
       "  ]"
       "}");
   scoped_refptr<Extension> extension = ExtensionBuilder()
-                                           .SetManifest(manifest.Pass())
+                                           .SetManifest(std::move(manifest))
                                            .SetID(kExtensionId)
                                            .Build();
 
@@ -285,7 +286,7 @@ TEST(RulesRegistryTest, DeleteRuleInManifest) {
       "  }]"
       "}");
   scoped_refptr<Extension> extension = ExtensionBuilder()
-                                           .SetManifest(manifest.Pass())
+                                           .SetManifest(std::move(manifest))
                                            .SetID(kExtensionId)
                                            .Build();
 

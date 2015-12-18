@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "extensions/browser/api/display_source/display_source_api.h"
+
+#include <utility>
+
 #include "extensions/browser/api/display_source/display_source_connection_delegate_factory.h"
 #include "extensions/common/api/display_source.h"
 
@@ -43,7 +46,7 @@ void DisplaySourceGetAvailableSinksFunction::OnGetSinksCompleted(
     const DisplaySourceSinkInfoList& sinks) {
   scoped_ptr<base::ListValue> result =
       api::display_source::GetAvailableSinks::Results::Create(sinks);
-  Respond(ArgumentList(result.Pass()));
+  Respond(ArgumentList(std::move(result)));
 }
 
 void DisplaySourceGetAvailableSinksFunction::OnGetSinksFailed(
@@ -86,7 +89,7 @@ void DisplaySourceRequestAuthenticationFunction::OnRequestAuthCompleted(
     const DisplaySourceAuthInfo& auth_info) {
   scoped_ptr<base::ListValue> result =
       api::display_source::RequestAuthentication::Results::Create(auth_info);
-  Respond(ArgumentList(result.Pass()));
+  Respond(ArgumentList(std::move(result)));
 }
 
 void DisplaySourceRequestAuthenticationFunction::OnRequestAuthFailed(

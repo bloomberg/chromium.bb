@@ -4,6 +4,8 @@
 
 #include "extensions/browser/guest_view/web_view/web_view_apitest.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -69,7 +71,7 @@ static scoped_ptr<net::test_server::HttpResponse> UserAgentResponseHandler(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target.spec());
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 class WebContentsHiddenObserver : public content::WebContentsObserver {
@@ -109,7 +111,7 @@ scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target.spec());
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // Handles |request| by serving an empty response.

@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 
+#include <utility>
+
 #include "base/strings/string_util.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
@@ -49,16 +51,15 @@ mojo::Map<mojo::String, mojo::String> CreateResponseHeadersMap(
 void MimeHandlerServiceImpl::Create(
     base::WeakPtr<StreamContainer> stream_container,
     mojo::InterfaceRequest<mime_handler::MimeHandlerService> request) {
-  new MimeHandlerServiceImpl(stream_container, request.Pass());
+  new MimeHandlerServiceImpl(stream_container, std::move(request));
 }
 
 MimeHandlerServiceImpl::MimeHandlerServiceImpl(
     base::WeakPtr<StreamContainer> stream_container,
     mojo::InterfaceRequest<mime_handler::MimeHandlerService> request)
     : stream_(stream_container),
-      binding_(this, request.Pass()),
-      weak_factory_(this) {
-}
+      binding_(this, std::move(request)),
+      weak_factory_(this) {}
 
 MimeHandlerServiceImpl::~MimeHandlerServiceImpl() {
 }
@@ -118,7 +119,7 @@ extensions::mime_handler::StreamInfoPtr TypeConverter<
   result->stream_url = info->handle->GetURL().spec();
   result->response_headers =
       extensions::CreateResponseHeadersMap(info->response_headers.get());
-  return result.Pass();
+  return result;
 }
 
 }  // namespace mojo

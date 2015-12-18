@@ -4,6 +4,8 @@
 
 #include "extensions/common/file_util.h"
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -49,8 +51,8 @@ scoped_refptr<Extension> LoadExtensionManifest(
     return NULL;
   CHECK_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   return LoadExtensionManifest(
-      *base::DictionaryValue::From(result.Pass()).get(), manifest_dir, location,
-      extra_flags, error);
+      *base::DictionaryValue::From(std::move(result)).get(), manifest_dir,
+      location, extra_flags, error);
 }
 
 }  // namespace

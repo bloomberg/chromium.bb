@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/api_test_base.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/run_loop.h"
@@ -89,7 +90,7 @@ mojo::Handle TestServiceProvider::ConnectToService(
            base::Callback<void(mojo::ScopedMessagePipeHandle)> >::iterator it =
       service_factories_.find(service_name);
   if (it != service_factories_.end())
-    it->second.Run(pipe.handle0.Pass());
+    it->second.Run(std::move(pipe.handle0));
   return pipe.handle1.release();
 }
 

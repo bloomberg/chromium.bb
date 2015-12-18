@@ -401,7 +401,7 @@ scoped_ptr<base::DictionaryValue> GetDictionaryFromArray(
       dictionary->SetString(*name, *value);
     }
   }
-  return dictionary.Pass();
+  return dictionary;
 }
 
 // Returns whether the response headers from |url_request| satisfy the match

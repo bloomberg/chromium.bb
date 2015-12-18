@@ -4,6 +4,8 @@
 
 #include "extensions/common/api/sockets/sockets_manifest_data.h"
 
+#include <utility>
+
 #include "extensions/common/api/sockets/sockets_manifest_permission.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -11,7 +13,7 @@ namespace extensions {
 
 SocketsManifestData::SocketsManifestData(
     scoped_ptr<SocketsManifestPermission> permission)
-    : permission_(permission.Pass()) {
+    : permission_(std::move(permission)) {
   DCHECK(permission_);
 }
 
@@ -44,7 +46,7 @@ scoped_ptr<SocketsManifestData> SocketsManifestData::FromValue(
     return scoped_ptr<SocketsManifestData>();
 
   return scoped_ptr<SocketsManifestData>(
-             new SocketsManifestData(permission.Pass())).Pass();
+      new SocketsManifestData(std::move(permission)));
 }
 
 }  // namespace extensions

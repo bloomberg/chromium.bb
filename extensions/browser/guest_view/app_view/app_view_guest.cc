@@ -4,6 +4,8 @@
 
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/render_process_host.h"
@@ -270,7 +272,7 @@ void AppViewGuest::LaunchAppAndFireEvent(
   embed_request->SetString(appview::kEmbedderID, owner_host());
   embed_request->Set(appview::kData, data.release());
   AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
-      browser_context(), embed_request.Pass(), extension_host->extension());
+      browser_context(), std::move(embed_request), extension_host->extension());
 }
 
 void AppViewGuest::SetAppDelegateForTest(AppDelegate* delegate) {

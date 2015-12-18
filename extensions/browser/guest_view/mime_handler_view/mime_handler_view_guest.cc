@@ -4,6 +4,8 @@
 
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,7 +41,7 @@ StreamContainer::StreamContainer(scoped_ptr<content::StreamInfo> stream,
                                  bool embedded,
                                  const GURL& handler_url,
                                  const std::string& extension_id)
-    : stream_(stream.Pass()),
+    : stream_(std::move(stream)),
       embedded_(embedded),
       tab_id_(tab_id),
       handler_url_(handler_url),

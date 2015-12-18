@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/sockets_udp/udp_socket_event_dispatcher.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "extensions/browser/api/socket/udp_socket.h"
 #include "extensions/browser/event_router.h"
@@ -118,8 +120,8 @@ void UDPSocketEventDispatcher::ReceiveCallback(
         sockets_udp::OnReceive::Create(receive_info);
     scoped_ptr<Event> event(new Event(events::SOCKETS_UDP_ON_RECEIVE,
                                       sockets_udp::OnReceive::kEventName,
-                                      args.Pass()));
-    PostEvent(params, event.Pass());
+                                      std::move(args)));
+    PostEvent(params, std::move(event));
 
     // Post a task to delay the read until the socket is available, as
     // calling StartReceive at this point would error with ERR_IO_PENDING.
@@ -140,8 +142,8 @@ void UDPSocketEventDispatcher::ReceiveCallback(
         sockets_udp::OnReceiveError::Create(receive_error_info);
     scoped_ptr<Event> event(new Event(events::SOCKETS_UDP_ON_RECEIVE_ERROR,
                                       sockets_udp::OnReceiveError::kEventName,
-                                      args.Pass()));
-    PostEvent(params, event.Pass());
+                                      std::move(args)));
+    PostEvent(params, std::move(event));
 
     // Since we got an error, the socket is now "paused" until the application
     // "resumes" it.
@@ -158,12 +160,10 @@ void UDPSocketEventDispatcher::PostEvent(const ReceiveParams& params,
                                          scoped_ptr<Event> event) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&DispatchEvent,
-                                     params.browser_context_id,
-                                     params.extension_id,
-                                     base::Passed(event.Pass())));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DispatchEvent, params.browser_context_id, params.extension_id,
+                 base::Passed(std::move(event))));
 }
 
 /*static*/
@@ -178,7 +178,7 @@ void UDPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
     return;
   EventRouter* router = EventRouter::Get(context);
   if (router)
-    router->DispatchEventToExtension(extension_id, event.Pass());
+    router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 }  // namespace api

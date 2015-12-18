@@ -77,7 +77,7 @@ void NotifyEventDispatched(void* browser_context_id,
   ApiActivityMonitor* monitor =
       ExtensionsBrowserClient::Get()->GetApiActivityMonitor(context);
   if (monitor)
-    monitor->OnApiEventDispatched(extension_id, event_name, args.Pass());
+    monitor->OnApiEventDispatched(extension_id, event_name, std::move(args));
 }
 
 // A global identifier used to distinguish extension events.
@@ -480,7 +480,7 @@ void EventRouter::DispatchEventWithLazyListener(const std::string& extension_id,
   bool has_listener = ExtensionHasEventListener(extension_id, event_name);
   if (!has_listener)
     AddLazyEventListener(event_name, extension_id);
-  DispatchEventToExtension(extension_id, event.Pass());
+  DispatchEventToExtension(extension_id, std::move(event));
   if (!has_listener)
     RemoveLazyEventListener(event_name, extension_id);
 }
@@ -850,7 +850,7 @@ void EventRouter::OnExtensionUnloaded(content::BrowserContext* browser_context,
 Event::Event(events::HistogramValue histogram_value,
              const std::string& event_name,
              scoped_ptr<base::ListValue> event_args)
-    : Event(histogram_value, event_name, event_args.Pass(), nullptr) {}
+    : Event(histogram_value, event_name, std::move(event_args), nullptr) {}
 
 Event::Event(events::HistogramValue histogram_value,
              const std::string& event_name,
@@ -858,7 +858,7 @@ Event::Event(events::HistogramValue histogram_value,
              BrowserContext* restrict_to_browser_context)
     : Event(histogram_value,
             event_name,
-            event_args.Pass(),
+            std::move(event_args),
             restrict_to_browser_context,
             GURL(),
             EventRouter::USER_GESTURE_UNKNOWN,
@@ -873,7 +873,7 @@ Event::Event(events::HistogramValue histogram_value,
              const EventFilteringInfo& filter_info)
     : histogram_value(histogram_value),
       event_name(event_name),
-      event_args(event_args_tmp.Pass()),
+      event_args(std::move(event_args_tmp)),
       restrict_to_browser_context(restrict_to_browser_context),
       event_url(event_url),
       user_gesture(user_gesture),

@@ -73,7 +73,7 @@ scoped_refptr<const BaseClass> CreateFoo(const std::string& /*instance_type*/,
 scoped_ptr<base::DictionaryValue> CreateDictWithParameter(int parameter) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetInteger("parameter", parameter);
-  return dict.Pass();
+  return dict;
 }
 
 }  // namespace

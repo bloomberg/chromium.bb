@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/thread_task_runner_handle.h"
 #include "device/serial/serial_device_enumerator.h"
 #include "device/serial/serial_service_impl.h"
@@ -38,7 +40,7 @@ class FakeSerialDeviceEnumerator : public device::SerialDeviceEnumerator {
     result[2] = device::serial::DeviceInfo::New();
     result[2]->path = "";
     result[2]->display_name = "";
-    return result.Pass();
+    return result;
   }
 };
 
@@ -166,7 +168,7 @@ class GetControlSignalsTestIoHandler : public TestIoHandlerBase {
     signals->ri = num_calls() & 4;
     signals->dsr = num_calls() & 8;
     record_call();
-    return signals.Pass();
+    return signals;
   }
 
  private:
@@ -442,7 +444,7 @@ class SerialApiTest : public ApiTestBase {
             base::ThreadTaskRunnerHandle::Get()),
         scoped_ptr<device::SerialDeviceEnumerator>(
             new FakeSerialDeviceEnumerator),
-        request.Pass());
+        std::move(request));
   }
 
   DISALLOW_COPY_AND_ASSIGN(SerialApiTest);

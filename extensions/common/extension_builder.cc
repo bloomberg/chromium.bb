@@ -57,7 +57,7 @@ ExtensionBuilder& ExtensionBuilder::SetLocation(Manifest::Location location) {
 
 ExtensionBuilder& ExtensionBuilder::SetManifest(
     scoped_ptr<base::DictionaryValue> manifest) {
-  manifest_ = manifest.Pass();
+  manifest_ = std::move(manifest);
   return *this;
 }
 

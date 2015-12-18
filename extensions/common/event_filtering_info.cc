@@ -4,6 +4,8 @@
 
 #include "extensions/common/event_filtering_info.h"
 
+#include <utility>
+
 #include "base/json/json_writer.h"
 #include "base/values.h"
 
@@ -59,7 +61,7 @@ scoped_ptr<base::Value> EventFilteringInfo::AsValue() const {
   if (has_window_exposed_by_default_)
     result->SetBoolean("windowExposedByDefault", window_exposed_by_default_);
 
-  return result.Pass();
+  return std::move(result);
 }
 
 bool EventFilteringInfo::IsEmpty() const {

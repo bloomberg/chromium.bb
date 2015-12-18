@@ -76,7 +76,7 @@ class CastChannelLoggerTest : public testing::Test {
     if (!log->ParseFromString(uncompressed))
       return scoped_ptr<Log>();
 
-    return log.Pass();
+    return log;
   }
 
  protected:

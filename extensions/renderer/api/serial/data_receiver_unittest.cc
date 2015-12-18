@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <queue>
+#include <utility>
 
 #include "device/serial/data_source_sender.h"
 #include "device/serial/data_stream.mojom.h"
@@ -35,7 +36,7 @@ class DataReceiverFactory : public gin::Wrappable<DataReceiverFactory> {
     mojo::InterfacePtr<device::serial::DataSourceClient> client;
     mojo::InterfaceRequest<device::serial::DataSourceClient> client_request =
         mojo::GetProxy(&client);
-    callback_.Run(mojo::GetProxy(&sink), client.Pass());
+    callback_.Run(mojo::GetProxy(&sink), std::move(client));
 
     gin::Dictionary result = gin::Dictionary::CreateEmpty(isolate_);
     result.Set("source", sink.PassInterface().PassHandle().release());
@@ -89,7 +90,7 @@ class DataReceiverTest : public ApiTestBase {
       mojo::InterfaceRequest<device::serial::DataSource> request,
       mojo::InterfacePtr<device::serial::DataSourceClient> client) {
     sender_ = new device::DataSourceSender(
-        request.Pass(), client.Pass(),
+        std::move(request), std::move(client),
         base::Bind(&DataReceiverTest::ReadyToSend, base::Unretained(this)),
         base::Bind(base::DoNothing));
   }

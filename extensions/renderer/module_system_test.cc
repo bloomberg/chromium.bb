@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -140,7 +141,7 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(v8::Isolate* isolate)
   {
     scoped_ptr<ModuleSystem> module_system(
         new ModuleSystem(context_.get(), source_map_.get()));
-    context_->set_module_system(module_system.Pass());
+    context_->set_module_system(std::move(module_system));
   }
   ModuleSystem* module_system = context_->module_system();
   module_system->RegisterNativeHandler(

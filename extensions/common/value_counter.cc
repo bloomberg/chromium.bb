@@ -5,6 +5,7 @@
 #include "extensions/common/value_counter.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/values.h"
 
@@ -12,7 +13,7 @@ namespace extensions {
 
 struct ValueCounter::Entry {
   explicit Entry(scoped_ptr<base::Value> value)
-      : value(value.Pass()), count(1) {}
+      : value(std::move(value)), count(1) {}
 
   scoped_ptr<base::Value> value;
   int count;

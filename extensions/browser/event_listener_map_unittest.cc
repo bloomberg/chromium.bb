@@ -54,7 +54,7 @@ class EventListenerMapTest : public testing::Test {
 
     filter_list->Append(filter_dict.release());
     filter->Set("url", filter_list.release());
-    return filter.Pass();
+    return filter;
   }
 
   scoped_ptr<Event> CreateNamedEvent(const std::string& event_name) {
@@ -68,7 +68,7 @@ class EventListenerMapTest : public testing::Test {
     scoped_ptr<Event> result(new Event(
         events::FOR_TEST, event_name, make_scoped_ptr(new ListValue()), NULL,
         GURL(), EventRouter::USER_GESTURE_UNKNOWN, info));
-    return result.Pass();
+    return result;
   }
 
  protected:

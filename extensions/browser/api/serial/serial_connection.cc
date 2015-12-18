@@ -395,7 +395,7 @@ TypeConverter<device::serial::HostControlSignalsPtr,
     output->has_rts = true;
     output->rts = *input.rts;
   }
-  return output.Pass();
+  return output;
 }
 
 // static
@@ -414,7 +414,7 @@ TypeConverter<device::serial::ConnectionOptionsPtr,
     output->has_cts_flow_control = true;
     output->cts_flow_control = *input.cts_flow_control;
   }
-  return output.Pass();
+  return output;
 }
 
 }  // namespace mojo

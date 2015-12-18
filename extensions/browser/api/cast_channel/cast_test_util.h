@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TEST_UTIL_H_
 
 #include <string>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
@@ -70,7 +71,7 @@ class MockCastSocket : public CastSocket {
   // ptr.
   void Connect(scoped_ptr<CastTransport::Delegate> delegate,
                base::Callback<void(ChannelError)> callback) override {
-    delegate_ = delegate.Pass();
+    delegate_ = std::move(delegate);
     ConnectRawPtr(delegate_.get(), callback);
   }
 

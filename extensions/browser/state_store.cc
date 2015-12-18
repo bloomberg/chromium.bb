@@ -4,6 +4,8 @@
 
 #include "extensions/browser/state_store.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/browser_context.h"
@@ -88,7 +90,7 @@ StateStore::StateStore(content::BrowserContext* context,
 
 StateStore::StateStore(content::BrowserContext* context,
                        scoped_ptr<ValueStore> value_store)
-    : store_(value_store.Pass()),
+    : store_(std::move(value_store)),
       task_queue_(new DelayedTaskQueue()),
       extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(context));

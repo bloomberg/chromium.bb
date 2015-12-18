@@ -28,7 +28,7 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
           .Set("extension_types", std::move(ListBuilder().Append("extension")))
           .Build());
   simple_feature->Parse(rule.get());
-  features->push_back(simple_feature.Pass());
+  features->push_back(std::move(simple_feature));
 
   // Rule: "legacy_packaged_app", whitelist "bar".
   simple_feature.reset(new SimpleFeature);
@@ -38,9 +38,9 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
                   std::move(ListBuilder().Append("legacy_packaged_app")))
              .Build();
   simple_feature->Parse(rule.get());
-  features->push_back(simple_feature.Pass());
+  features->push_back(std::move(simple_feature));
 
-  scoped_ptr<ComplexFeature> feature(new ComplexFeature(features.Pass()));
+  scoped_ptr<ComplexFeature> feature(new ComplexFeature(std::move(features)));
 
   // Test match 1st rule.
   EXPECT_EQ(
@@ -90,7 +90,7 @@ TEST(ComplexFeatureTest, Dependencies) {
                                    "manifest:content_security_policy")))
           .Build();
   simple_feature->Parse(rule.get());
-  features->push_back(simple_feature.Pass());
+  features->push_back(std::move(simple_feature));
 
   // Rule which depends on an platform-app-only feature (serial).
   simple_feature.reset(new SimpleFeature);
@@ -99,9 +99,9 @@ TEST(ComplexFeatureTest, Dependencies) {
                   std::move(ListBuilder().Append("permission:serial")))
              .Build();
   simple_feature->Parse(rule.get());
-  features->push_back(simple_feature.Pass());
+  features->push_back(std::move(simple_feature));
 
-  scoped_ptr<ComplexFeature> feature(new ComplexFeature(features.Pass()));
+  scoped_ptr<ComplexFeature> feature(new ComplexFeature(std::move(features)));
 
   // Available to extensions because of the content_security_policy rule.
   EXPECT_EQ(

@@ -133,13 +133,13 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
 
   WriteResult result = HandleResult(delegate_->Set(options, key, value));
   if (!result->status().ok())
-    return result.Pass();
+    return result;
 
   if (usage_calculated_) {
     used_total_ = new_used_total;
     used_per_setting_.swap(new_used_per_setting);
   }
-  return result.Pass();
+  return result;
 }
 
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
@@ -166,14 +166,14 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
 
   WriteResult result = HandleResult(delegate_->Set(options, values));
   if (!result->status().ok())
-    return result.Pass();
+    return result;
 
   if (usage_calculated_) {
     used_total_ = new_used_total;
     used_per_setting_ = new_used_per_setting;
   }
 
-  return result.Pass();
+  return result;
 }
 
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
@@ -181,34 +181,34 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
   LazyCalculateUsage();
   WriteResult result = HandleResult(delegate_->Remove(key));
   if (!result->status().ok())
-    return result.Pass();
+    return result;
   Free(key);
 
-  return result.Pass();
+  return result;
 }
 
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
     const std::vector<std::string>& keys) {
   WriteResult result = HandleResult(delegate_->Remove(keys));
   if (!result->status().ok())
-    return result.Pass();
+    return result;
 
   for (const std::string& key : keys)
     Free(key);
 
-  return result.Pass();
+  return result;
 }
 
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Clear() {
   LazyCalculateUsage();
   WriteResult result = HandleResult(delegate_->Clear());
   if (!result->status().ok())
-    return result.Pass();
+    return result;
 
   used_per_setting_.clear();
   used_total_ = 0u;
 
-  return result.Pass();
+  return result;
 }
 
 template <class T>

@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/bluetooth/bluetooth_api_pairing_delegate.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
@@ -103,8 +105,8 @@ void BluetoothApiPairingDelegate::DispatchPairingEvent(
       bt_private::OnPairing::Create(pairing_event);
   scoped_ptr<Event> event(new Event(events::BLUETOOTH_PRIVATE_ON_PAIRING,
                                     bt_private::OnPairing::kEventName,
-                                    args.Pass()));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+                                    std::move(args)));
+  EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 
 }  // namespace extensions

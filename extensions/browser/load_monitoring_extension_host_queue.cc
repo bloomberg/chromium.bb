@@ -5,6 +5,7 @@
 #include "extensions/browser/load_monitoring_extension_host_queue.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -21,7 +22,7 @@ LoadMonitoringExtensionHostQueue::LoadMonitoringExtensionHostQueue(
     scoped_ptr<ExtensionHostQueue> delegate,
     base::TimeDelta monitor_time,
     const FinishedCallback& finished_callback)
-    : delegate_(delegate.Pass()),
+    : delegate_(std::move(delegate)),
       monitor_time_(monitor_time),
       finished_callback_(finished_callback),
       started_(false),
@@ -29,15 +30,13 @@ LoadMonitoringExtensionHostQueue::LoadMonitoringExtensionHostQueue(
       num_loaded_(0u),
       max_awaiting_loading_(0u),
       max_active_loading_(0u),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 LoadMonitoringExtensionHostQueue::LoadMonitoringExtensionHostQueue(
     scoped_ptr<ExtensionHostQueue> delegate)
-    : LoadMonitoringExtensionHostQueue(delegate.Pass(),
+    : LoadMonitoringExtensionHostQueue(std::move(delegate),
                                        base::TimeDelta::FromMinutes(1),
-                                       FinishedCallback()) {
-}
+                                       FinishedCallback()) {}
 
 LoadMonitoringExtensionHostQueue::~LoadMonitoringExtensionHostQueue() {
 }

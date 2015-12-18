@@ -5,6 +5,7 @@
 #include "extensions/renderer/worker_script_context_set.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "extensions/renderer/script_context.h"
 
@@ -45,7 +46,7 @@ void WorkerScriptContextSet::Insert(scoped_ptr<ScriptContext> context) {
   }
   CHECK(FindContext(contexts, context->v8_context()) == contexts->end())
       << "Worker for " << context->url() << " is already in this set";
-  contexts->push_back(context.Pass());
+  contexts->push_back(std::move(context));
 }
 
 void WorkerScriptContextSet::Remove(v8::Local<v8::Context> v8_context,

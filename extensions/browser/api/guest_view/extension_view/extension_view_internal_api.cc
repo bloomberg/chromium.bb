@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/guest_view/extension_view/extension_view_internal_api.h"
 
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/crx_file/id_util.h"
@@ -78,7 +80,7 @@ bool ExtensionViewInternalParseSrcFunction::RunAsync() {
   scoped_ptr<base::ListValue> result_list(new base::ListValue());
   result_list->AppendBoolean(is_src_valid);
   result_list->AppendString(url.host());
-  SetResultList(result_list.Pass());
+  SetResultList(std::move(result_list));
   SendResponse(true);
   return true;
 }

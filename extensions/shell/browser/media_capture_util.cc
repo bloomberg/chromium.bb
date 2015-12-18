@@ -5,6 +5,7 @@
 #include "extensions/shell/browser/media_capture_util.h"
 
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/logging.h"
@@ -64,10 +65,9 @@ void GrantMediaStreamRequest(content::WebContents* web_contents,
 
   // TODO(jamescook): Should we show a recording icon somewhere? If so, where?
   scoped_ptr<MediaStreamUI> ui;
-  callback.Run(devices,
-               devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE
-                               : content::MEDIA_DEVICE_OK,
-               ui.Pass());
+  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE
+                                        : content::MEDIA_DEVICE_OK,
+               std::move(ui));
 }
 
 void VerifyMediaAccessPermission(content::MediaStreamType type,

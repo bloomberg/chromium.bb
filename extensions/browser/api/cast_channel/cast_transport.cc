@@ -5,6 +5,7 @@
 #include "extensions/browser/api/cast_channel/cast_transport.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/format_macros.h"
@@ -143,7 +144,7 @@ proto::ErrorState CastTransportImpl::ErrorStateToProto(ChannelError state) {
 void CastTransportImpl::SetReadDelegate(scoped_ptr<Delegate> delegate) {
   DCHECK(CalledOnValidThread());
   DCHECK(delegate);
-  delegate_ = delegate.Pass();
+  delegate_ = std::move(delegate);
   if (started_) {
     delegate_->Start();
   }

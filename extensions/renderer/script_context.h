@@ -6,6 +6,7 @@
 #define EXTENSIONS_RENDERER_SCRIPT_CONTEXT_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -89,7 +90,7 @@ class ScriptContext : public RequestSender::Source {
   }
 
   void set_module_system(scoped_ptr<ModuleSystem> module_system) {
-    module_system_ = module_system.Pass();
+    module_system_ = std::move(module_system);
   }
 
   ModuleSystem* module_system() { return module_system_.get(); }

@@ -62,7 +62,7 @@ struct RecordingCondition {
     scoped_ptr<RecordingCondition> result(new RecordingCondition());
     result->factory = url_matcher_condition_factory;
     result->value.reset(condition.DeepCopy());
-    return result.Pass();
+    return result;
   }
 };
 typedef DeclarativeConditionSet<RecordingCondition> RecordingConditionSet;
@@ -139,7 +139,7 @@ struct FulfillableCondition {
     const base::DictionaryValue* dict;
     if (!condition.GetAsDictionary(&dict)) {
       *error = "Expected dict";
-      return result.Pass();
+      return result;
     }
     if (!dict->GetInteger("url_id", &result->condition_set_id))
       result->condition_set_id = -1;
@@ -150,7 +150,7 @@ struct FulfillableCondition {
           result->condition_set_id,
           URLMatcherConditionSet::Conditions());
     }
-    return result.Pass();
+    return result;
   }
 };
 

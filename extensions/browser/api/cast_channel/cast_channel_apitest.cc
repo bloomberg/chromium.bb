@@ -99,8 +99,7 @@ class CastChannelAPITest : public ExtensionApiTest {
     net::IPEndPoint ip_endpoint(ip_number, 8009);
     mock_cast_socket_ = new MockCastSocket;
     // Transfers ownership of the socket.
-    api->SetSocketForTest(
-        make_scoped_ptr<CastSocket>(mock_cast_socket_).Pass());
+    api->SetSocketForTest(make_scoped_ptr<CastSocket>(mock_cast_socket_));
     ON_CALL(*mock_cast_socket_, set_id(_))
         .WillByDefault(SaveArg<0>(&channel_id_));
     ON_CALL(*mock_cast_socket_, id())

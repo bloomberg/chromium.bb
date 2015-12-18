@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
+
 #include <string>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
-#include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "extensions/common/api/cast_channel/logging.pb.h"
@@ -86,7 +88,7 @@ KeepAliveDelegate::KeepAliveDelegate(
     : started_(false),
       socket_(socket),
       logger_(logger),
-      inner_delegate_(inner_delegate.Pass()),
+      inner_delegate_(std::move(inner_delegate)),
       liveness_timeout_(liveness_timeout),
       ping_interval_(ping_interval) {
   DCHECK(ping_interval_ < liveness_timeout_);
@@ -102,8 +104,8 @@ KeepAliveDelegate::~KeepAliveDelegate() {
 void KeepAliveDelegate::SetTimersForTest(
     scoped_ptr<base::Timer> injected_ping_timer,
     scoped_ptr<base::Timer> injected_liveness_timer) {
-  ping_timer_ = injected_ping_timer.Pass();
-  liveness_timer_ = injected_liveness_timer.Pass();
+  ping_timer_ = std::move(injected_ping_timer);
+  liveness_timer_ = std::move(injected_liveness_timer);
 }
 
 void KeepAliveDelegate::Start() {

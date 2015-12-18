@@ -75,7 +75,7 @@ bool SocketAsyncApiFunction::Respond() { return error_.empty(); }
 scoped_ptr<SocketResourceManagerInterface>
 SocketAsyncApiFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-             new SocketResourceManager<Socket>()).Pass();
+      new SocketResourceManager<Socket>());
 }
 
 int SocketAsyncApiFunction::AddSocket(Socket* socket) {

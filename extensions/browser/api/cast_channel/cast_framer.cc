@@ -157,7 +157,7 @@ scoped_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
         }
         *message_length = body_size_;
         Reset();
-        return parsed_message.Pass();
+        return parsed_message;
       }
       break;
     default:

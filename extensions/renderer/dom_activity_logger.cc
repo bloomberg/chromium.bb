@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/dom_activity_logger.h"
 
+#include <utility>
+
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/dom_action_types.h"
@@ -85,8 +87,8 @@ void DOMActivityLogger::logSetter(const WebString& api_name,
   AppendV8Value(api_name_utf8, new_value, args.get());
   if (!old_value.IsEmpty())
     AppendV8Value(api_name_utf8, old_value, args.get());
-  SendDomActionMessage(
-      api_name_utf8, url, title, DomActionType::SETTER, args.Pass());
+  SendDomActionMessage(api_name_utf8, url, title, DomActionType::SETTER,
+                       std::move(args));
 }
 
 void DOMActivityLogger::logMethod(const WebString& api_name,
@@ -98,8 +100,8 @@ void DOMActivityLogger::logMethod(const WebString& api_name,
   std::string api_name_utf8 = api_name.utf8();
   for (int i = 0; i < argc; ++i)
     AppendV8Value(api_name_utf8, argv[i], args.get());
-  SendDomActionMessage(
-      api_name_utf8, url, title, DomActionType::METHOD, args.Pass());
+  SendDomActionMessage(api_name_utf8, url, title, DomActionType::METHOD,
+                       std::move(args));
 }
 
 void DOMActivityLogger::logEvent(const WebString& event_name,
@@ -111,8 +113,8 @@ void DOMActivityLogger::logEvent(const WebString& event_name,
   std::string event_name_utf8 = event_name.utf8();
   for (int i = 0; i < argc; ++i)
     args->Append(new base::StringValue(argv[i]));
-  SendDomActionMessage(
-      event_name_utf8, url, title, DomActionType::METHOD, args.Pass());
+  SendDomActionMessage(event_name_utf8, url, title, DomActionType::METHOD,
+                       std::move(args));
 }
 
 void DOMActivityLogger::SendDomActionMessage(const std::string& api_call,

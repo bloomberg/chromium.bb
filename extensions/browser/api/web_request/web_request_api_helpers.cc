@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -240,7 +241,7 @@ scoped_ptr<base::Value> NetLogModificationCallback(
     deleted_headers->Append(new base::StringValue(*key));
   }
   dict->Set("deleted_headers", deleted_headers);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 bool InDecreasingExtensionInstallationTimeOrder(

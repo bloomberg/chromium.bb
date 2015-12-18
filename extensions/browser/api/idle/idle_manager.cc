@@ -51,10 +51,10 @@ void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
   args->Append(IdleManager::CreateIdleValue(new_state));
   scoped_ptr<Event> event(new Event(events::IDLE_ON_STATE_CHANGED,
                                     idle::OnStateChanged::kEventName,
-                                    args.Pass()));
+                                    std::move(args)));
   event->restrict_to_browser_context = context_;
   EventRouter::Get(context_)
-      ->DispatchEventToExtension(extension_id, event.Pass());
+      ->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void DefaultEventDelegate::RegisterObserver(EventRouter::Observer* observer) {
@@ -197,13 +197,13 @@ base::StringValue* IdleManager::CreateIdleValue(ui::IdleState idle_state) {
 void IdleManager::SetEventDelegateForTest(
     scoped_ptr<EventDelegate> event_delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  event_delegate_ = event_delegate.Pass();
+  event_delegate_ = std::move(event_delegate);
 }
 
 void IdleManager::SetIdleTimeProviderForTest(
     scoped_ptr<IdleTimeProvider> idle_time_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  idle_time_provider_ = idle_time_provider.Pass();
+  idle_time_provider_ = std::move(idle_time_provider);
 }
 
 IdleMonitor* IdleManager::GetMonitor(const std::string& extension_id) {

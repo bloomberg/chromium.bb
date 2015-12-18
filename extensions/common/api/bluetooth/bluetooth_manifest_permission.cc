@@ -88,7 +88,7 @@ scoped_ptr<BluetoothManifestPermission> BluetoothManifestPermission::FromValue(
   if (bluetooth->peripheral) {
     result->peripheral_ = *(bluetooth->peripheral);
   }
-  return result.Pass();
+  return result;
 }
 
 bool BluetoothManifestPermission::CheckRequest(
@@ -154,7 +154,7 @@ scoped_ptr<base::Value> BluetoothManifestPermission::ToValue() const {
   api::extensions_manifest_types::Bluetooth bluetooth;
   bluetooth.uuids.reset(new std::vector<std::string>(uuids_.begin(),
                                                      uuids_.end()));
-  return bluetooth.ToValue().Pass();
+  return bluetooth.ToValue();
 }
 
 ManifestPermission* BluetoothManifestPermission::Diff(

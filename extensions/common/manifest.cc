@@ -4,6 +4,8 @@
 
 #include "extensions/common/manifest.h"
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -109,9 +111,7 @@ Manifest::Location Manifest::GetHigherPriorityLocation(
 }
 
 Manifest::Manifest(Location location, scoped_ptr<base::DictionaryValue> value)
-    : location_(location),
-      value_(value.Pass()),
-      type_(TYPE_UNKNOWN) {
+    : location_(location), value_(std::move(value)), type_(TYPE_UNKNOWN) {
   if (value_->HasKey(keys::kTheme)) {
     type_ = TYPE_THEME;
   } else if (value_->HasKey(keys::kExport)) {

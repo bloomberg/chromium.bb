@@ -268,7 +268,7 @@ void ExtensionDownloader::StartBlacklistUpdate(
   DCHECK(blacklist_fetch->base_url().SchemeIsCryptographic());
   blacklist_fetch->AddExtension(kBlacklistAppID, version, &ping_data,
                                 std::string(), kDefaultInstallSource);
-  StartUpdateCheck(blacklist_fetch.Pass());
+  StartUpdateCheck(std::move(blacklist_fetch));
 }
 
 void ExtensionDownloader::SetWebstoreIdentityProvider(
@@ -429,7 +429,7 @@ void ExtensionDownloader::StartUpdateCheck(
         "Extensions.UpdateCheckUrlLength",
         fetch_data->full_url().possibly_invalid_spec().length());
 
-    manifests_queue_.ScheduleRequest(fetch_data.Pass());
+    manifests_queue_.ScheduleRequest(std::move(fetch_data));
   }
 }
 
@@ -570,7 +570,7 @@ void ExtensionDownloader::HandleManifestResults(
     scoped_ptr<ExtensionFetch> fetch(
         new ExtensionFetch(update->extension_id, crx_url, update->package_hash,
                            update->version, fetch_data->request_ids()));
-    FetchUpdatedExtension(fetch.Pass());
+    FetchUpdatedExtension(std::move(fetch));
   }
 
   // If the manifest response included a <daystart> element, we want to save
@@ -686,9 +686,10 @@ void ExtensionDownloader::FetchUpdatedExtension(
       // Now get .crx file path and mark extension as used.
       extension_cache_->GetExtension(fetch_data->id, fetch_data->package_hash,
                                      &crx_path, &version);
-      NotifyDelegateDownloadFinished(fetch_data.Pass(), true, crx_path, false);
+      NotifyDelegateDownloadFinished(std::move(fetch_data), true, crx_path,
+                                     false);
     } else {
-      extensions_queue_.ScheduleRequest(fetch_data.Pass());
+      extensions_queue_.ScheduleRequest(std::move(fetch_data));
     }
   }
 }
@@ -721,7 +722,7 @@ void ExtensionDownloader::CacheInstallDone(
   ping_results_.erase(fetch_data->id);
   if (should_download) {
     // Resume download from cached manifest data.
-    extensions_queue_.ScheduleRequest(fetch_data.Pass());
+    extensions_queue_.ScheduleRequest(std::move(fetch_data));
   }
 }
 
@@ -797,7 +798,8 @@ void ExtensionDownloader::OnCRXFetchComplete(
                      weak_ptr_factory_.GetWeakPtr(), base::Passed(&fetch_data),
                      false));
     } else {
-      NotifyDelegateDownloadFinished(fetch_data.Pass(), false, crx_path, true);
+      NotifyDelegateDownloadFinished(std::move(fetch_data), false, crx_path,
+                                     true);
     }
   } else if (IterateFetchCredentialsAfterFailure(
                  &active_request, status, response_code)) {

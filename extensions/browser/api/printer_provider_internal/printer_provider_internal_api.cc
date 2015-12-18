@@ -5,6 +5,7 @@
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -238,7 +239,7 @@ void PrinterProviderInternalGetPrintDataFunction::OnBlob(
   extensions::BlobHolder* holder =
       extensions::BlobHolder::FromRenderProcessHost(
           render_frame_host()->GetProcess());
-  holder->HoldBlobReference(blob.Pass());
+  holder->HoldBlobReference(std::move(blob));
 
   results_ = internal_api::GetPrintData::Results::Create(info);
   SetTransferredBlobUUIDs(uuids);

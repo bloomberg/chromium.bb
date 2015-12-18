@@ -30,6 +30,7 @@
 #define EXTENSIONS_COMMON_VALUE_BUILDER_H_
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -57,7 +58,7 @@ class DictionaryBuilder {
   DictionaryBuilder& Pass() { return *this; }
 
   // Can only be called once, after which it's invalid to use the builder.
-  scoped_ptr<base::DictionaryValue> Build() { return dict_.Pass(); }
+  scoped_ptr<base::DictionaryValue> Build() { return std::move(dict_); }
 
   // Immediately serializes the current state to JSON. Can be called as many
   // times as you like.

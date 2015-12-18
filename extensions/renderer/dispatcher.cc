@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/dispatcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -262,7 +264,7 @@ void Dispatcher::DidCreateScriptContext(
   {
     scoped_ptr<ModuleSystem> module_system(
         new ModuleSystem(context, &source_map_));
-    context->set_module_system(module_system.Pass());
+    context->set_module_system(std::move(module_system));
   }
   ModuleSystem* module_system = context->module_system();
 
@@ -1170,7 +1172,8 @@ void Dispatcher::OnUpdatePermissions(
         active->effective_hosts());
   }
 
-  extension->permissions_data()->SetPermissions(active.Pass(), withheld.Pass());
+  extension->permissions_data()->SetPermissions(std::move(active),
+                                                std::move(withheld));
   UpdateBindings(extension->id());
 }
 

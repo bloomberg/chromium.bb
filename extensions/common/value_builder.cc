@@ -4,6 +4,8 @@
 
 #include "extensions/common/value_builder.h"
 
+#include <utility>
+
 #include "base/json/json_writer.h"
 #include "base/values.h"
 
@@ -51,19 +53,19 @@ DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           DictionaryBuilder& in_value) {
-  dict_->SetWithoutPathExpansion(path, in_value.Build().Pass());
+  dict_->SetWithoutPathExpansion(path, in_value.Build());
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           ListBuilder in_value) {
-  dict_->SetWithoutPathExpansion(path, in_value.Build().Pass());
+  dict_->SetWithoutPathExpansion(path, in_value.Build());
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           scoped_ptr<base::Value> in_value) {
-  dict_->SetWithoutPathExpansion(path, in_value.Pass());
+  dict_->SetWithoutPathExpansion(path, std::move(in_value));
   return *this;
 }
 

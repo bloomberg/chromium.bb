@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
+
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
-#include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,7 +45,7 @@ class MimeHandlerServiceImplTest : public testing::Test {
     stream_info->mime_type = "test/unit";
     stream_info->original_url = GURL("test://extensions_unittests");
     stream_container_.reset(
-        new StreamContainer(stream_info.Pass(), 1, true, GURL(), ""));
+        new StreamContainer(std::move(stream_info), 1, true, GURL(), ""));
     service_.reset(new MimeHandlerServiceImpl(stream_container_->GetWeakPtr(),
                                               mojo::GetProxy(&service_ptr_)));
   }
@@ -53,7 +56,7 @@ class MimeHandlerServiceImplTest : public testing::Test {
 
   void AbortCallback() { abort_called_ = true; }
   void GetStreamInfoCallback(mime_handler::StreamInfoPtr stream_info) {
-    stream_info_ = stream_info.Pass();
+    stream_info_ = std::move(stream_info);
   }
 
   base::MessageLoop message_loop_;
