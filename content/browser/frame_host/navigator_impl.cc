@@ -72,13 +72,6 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
   return FrameMsg_Navigate_Type::NORMAL;
 }
 
-RenderFrameHostManager* GetRenderManager(RenderFrameHostImpl* rfh) {
-  if (SiteIsolationPolicy::AreCrossProcessFramesPossible())
-    return rfh->frame_tree_node()->render_manager();
-
-  return rfh->frame_tree_node()->frame_tree()->root()->render_manager();
-}
-
 }  // namespace
 
 struct NavigatorImpl::NavigationMetricsData {
@@ -562,12 +555,16 @@ void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                                    WindowOpenDisposition disposition,
                                    bool should_replace_current_entry,
                                    bool user_gesture) {
-  SiteInstance* current_site_instance =
-      GetRenderManager(render_frame_host)->current_frame_host()->
-          GetSiteInstance();
+  // This call only makes sense for subframes if OOPIFs are possible.
+  DCHECK(!render_frame_host->GetParent() ||
+         SiteIsolationPolicy::AreCrossProcessFramesPossible());
+
   // If this came from a swapped out RenderFrameHost, we only allow the request
   // if we are still in the same BrowsingInstance.
   // TODO(creis): Move this to RenderFrameProxyHost::OpenURL.
+  SiteInstance* current_site_instance = render_frame_host->frame_tree_node()
+                                            ->current_frame_host()
+                                            ->GetSiteInstance();
   if (render_frame_host->is_swapped_out() &&
       !render_frame_host->GetSiteInstance()->IsRelatedSiteInstance(
           current_site_instance)) {
@@ -638,6 +635,10 @@ void NavigatorImpl::RequestTransferURL(
     ui::PageTransition page_transition,
     const GlobalRequestID& transferred_global_request_id,
     bool should_replace_current_entry) {
+  // This call only makes sense for subframes if OOPIFs are possible.
+  DCHECK(!render_frame_host->GetParent() ||
+         SiteIsolationPolicy::AreCrossProcessFramesPossible());
+
   // Allow the delegate to cancel the transfer.
   if (!delegate_->ShouldTransferNavigation())
     return;
