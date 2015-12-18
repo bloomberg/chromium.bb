@@ -1,0 +1,13 @@
+{
+  "name": "window/panel.browsinginstance",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Tests that panel is in the same BrowsingInstance as the background page.",
+  "background": {
+    "page": "background.html"
+  },
+  "permissions": ["tabs"],
+  "externally_connectable": {
+    "matches": ["*://foo.com/*"]
+  }
+}
