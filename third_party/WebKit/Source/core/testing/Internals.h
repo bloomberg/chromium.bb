@@ -69,6 +69,7 @@ class SerializedScriptValue;
 class ShadowRoot;
 class TypeConversions;
 class UnionTypesTest;
+class ScrollState;
 template <typename NodeType> class StaticNodeTypeList;
 typedef StaticNodeTypeList<Node> StaticNodeList;
 

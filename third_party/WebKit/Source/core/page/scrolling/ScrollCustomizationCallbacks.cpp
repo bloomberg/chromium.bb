@@ -6,7 +6,6 @@
 #include "core/page/scrolling/ScrollCustomizationCallbacks.h"
 
 #include "core/page/scrolling/ScrollStateCallback.h"
-#include "wtf/Deque.h"
 
 namespace blink {
 

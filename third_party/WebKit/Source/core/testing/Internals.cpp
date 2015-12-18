@@ -46,6 +46,7 @@
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/DOMPoint.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
@@ -145,6 +146,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
+#include <deque>
 #include <v8.h>
 
 namespace blink {
@@ -2413,9 +2415,9 @@ unsigned Internals::canvasFontCacheMaxFonts()
 void Internals::setScrollChain(
     ScrollState* scrollState, const WillBeHeapVector<RefPtrWillBeMember<Element>>& elements, ExceptionState&)
 {
-    WillBeHeapDeque<RefPtrWillBeMember<Element>> scrollChain;
+    std::deque<int> scrollChain;
     for (size_t i = 0; i < elements.size(); ++i)
-        scrollChain.append(elements[i]);
+        scrollChain.push_back(DOMNodeIds::idForNode(elements[i].get()));
     scrollState->setScrollChain(scrollChain);
 }
 

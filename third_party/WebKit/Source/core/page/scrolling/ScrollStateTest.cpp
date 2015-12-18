@@ -22,8 +22,7 @@ TEST_F(ScrollStateTest, ConsumeDeltaNative)
     const float deltaXToConsume = 1.2;
     const float deltaYToConsume = 2.3;
 
-    RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(deltaX, deltaY, 0, 0, 0,
-        false, false);
+    RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(deltaX, deltaY, 0, 0, 0, false, false);
     EXPECT_FLOAT_EQ(deltaX, scrollState->deltaX());
     EXPECT_FLOAT_EQ(deltaY, scrollState->deltaY());
     EXPECT_FALSE(scrollState->deltaConsumedForScrollSequence());

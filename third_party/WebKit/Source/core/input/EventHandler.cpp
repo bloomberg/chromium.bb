@@ -33,6 +33,7 @@
 #include "core/InputTypeNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/dom/TouchList.h"
 #include "core/dom/shadow/ComposedTreeTraversal.h"
@@ -280,7 +281,7 @@ static inline bool shouldRefetchEventTarget(const MouseEventWithHitTestResults& 
 }
 
 void recomputeScrollChain(const LocalFrame& frame, const Node& startNode,
-    WillBeHeapDeque<RefPtrWillBeMember<Element>>& scrollChain)
+    std::deque<int>& scrollChain)
 {
     scrollChain.clear();
 
@@ -295,7 +296,7 @@ void recomputeScrollChain(const LocalFrame& frame, const Node& startNode,
             Element* curElement = toElement(curNode);
             if (curElement == frame.document()->scrollingElement())
                 break;
-            scrollChain.prepend(curElement);
+            scrollChain.push_front(DOMNodeIds::idForNode(curElement));
         }
         curBox = curBox->containingBlock();
     }
@@ -305,7 +306,7 @@ void recomputeScrollChain(const LocalFrame& frame, const Node& startNode,
     // the body, some elements may use the documentElement as their
     // containingBlock, so we ensure the scrollingElement is added
     // here.
-    scrollChain.prepend(frame.document()->scrollingElement());
+    scrollChain.push_front(DOMNodeIds::idForNode(frame.document()->scrollingElement()));
 }
 
 EventHandler::EventHandler(LocalFrame* frame)
@@ -363,7 +364,6 @@ DEFINE_TRACE(EventHandler)
     visitor->trace(m_scrollGestureHandlingNode);
     visitor->trace(m_previousGestureScrolledNode);
     visitor->trace(m_lastDeferredTapElement);
-    visitor->trace(m_currentScrollChain);
     visitor->trace(m_selectionController);
 #endif
 }
@@ -688,9 +688,10 @@ void EventHandler::customizedScroll(const Node& startNode, ScrollState& scrollSt
     if (scrollState.deltaX() || scrollState.deltaY())
         m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
-    if (m_currentScrollChain.isEmpty())
+    if (m_currentScrollChain.empty())
         recomputeScrollChain(*m_frame, startNode, m_currentScrollChain);
     scrollState.setScrollChain(m_currentScrollChain);
+
     scrollState.distributeToScrollChainDescendant();
 }
 
@@ -2476,7 +2477,7 @@ void EventHandler::resetOverscroll(bool didScrollX, bool didScrollY)
         m_accumulatedRootOverscroll.setHeight(0);
 }
 
-static inline FloatSize adjustOverscoll(FloatSize unusedDelta)
+static inline FloatSize adjustOverscroll(FloatSize unusedDelta)
 {
     if (std::abs(unusedDelta.width()) < minimumOverscrollDelta)
         unusedDelta.setWidth(0);
@@ -2489,7 +2490,7 @@ static inline FloatSize adjustOverscoll(FloatSize unusedDelta)
 void EventHandler::handleOverscroll(const ScrollResult& scrollResult, const FloatPoint& position, const FloatSize& velocity)
 {
     FloatSize unusedDelta(scrollResult.unusedScrollDeltaX, scrollResult.unusedScrollDeltaY);
-    unusedDelta = adjustOverscoll(unusedDelta);
+    unusedDelta = adjustOverscroll(unusedDelta);
     resetOverscroll(scrollResult.didScrollX, scrollResult.didScrollY);
     if (unusedDelta != FloatSize()) {
         m_accumulatedRootOverscroll += unusedDelta;

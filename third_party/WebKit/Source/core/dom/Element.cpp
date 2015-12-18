@@ -547,12 +547,11 @@ void Element::callDistributeScroll(ScrollState& scrollState)
         nativeDistributeScroll(scrollState);
         return;
     }
-
-    if (callback->nativeScrollBehavior() != NativeScrollBehavior::PerformAfterNativeScroll)
+    if (callback->nativeScrollBehavior() != WebNativeScrollBehavior::PerformAfterNativeScroll)
         callback->handleEvent(&scrollState);
-    if (callback->nativeScrollBehavior() != NativeScrollBehavior::DisableNativeScroll)
+    if (callback->nativeScrollBehavior() != WebNativeScrollBehavior::DisableNativeScroll)
         nativeDistributeScroll(scrollState);
-    if (callback->nativeScrollBehavior() == NativeScrollBehavior::PerformAfterNativeScroll)
+    if (callback->nativeScrollBehavior() == WebNativeScrollBehavior::PerformAfterNativeScroll)
         callback->handleEvent(&scrollState);
 };
 
@@ -614,12 +613,11 @@ void Element::callApplyScroll(ScrollState& scrollState)
         nativeApplyScroll(scrollState);
         return;
     }
-
-    if (callback->nativeScrollBehavior() != NativeScrollBehavior::PerformAfterNativeScroll)
+    if (callback->nativeScrollBehavior() != WebNativeScrollBehavior::PerformAfterNativeScroll)
         callback->handleEvent(&scrollState);
-    if (callback->nativeScrollBehavior() != NativeScrollBehavior::DisableNativeScroll)
+    if (callback->nativeScrollBehavior() != WebNativeScrollBehavior::DisableNativeScroll)
         nativeApplyScroll(scrollState);
-    if (callback->nativeScrollBehavior() == NativeScrollBehavior::PerformAfterNativeScroll)
+    if (callback->nativeScrollBehavior() == WebNativeScrollBehavior::PerformAfterNativeScroll)
         callback->handleEvent(&scrollState);
 };
 

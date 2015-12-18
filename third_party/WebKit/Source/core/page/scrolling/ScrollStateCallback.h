@@ -6,21 +6,16 @@
 #define ScrollStateCallback_h
 
 #include "platform/heap/Handle.h"
+#include "public/platform/WebNativeScrollBehavior.h"
 
 namespace blink {
 
 class ScrollState;
 
-enum class NativeScrollBehavior {
-    DisableNativeScroll,
-    PerformBeforeNativeScroll,
-    PerformAfterNativeScroll,
-};
-
 class ScrollStateCallback : public GarbageCollectedFinalized<ScrollStateCallback> {
 public:
     ScrollStateCallback()
-        : m_nativeScrollBehavior(NativeScrollBehavior::DisableNativeScroll)
+        : m_nativeScrollBehavior(WebNativeScrollBehavior::DisableNativeScroll)
     {
     }
 
@@ -31,20 +26,21 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() {}
     virtual void handleEvent(ScrollState*) = 0;
 
-    void setNativeScrollBehavior(NativeScrollBehavior nativeScrollBehavior)
+    void setNativeScrollBehavior(WebNativeScrollBehavior nativeScrollBehavior)
     {
+        ASSERT(static_cast<int>(nativeScrollBehavior) < 3);
         m_nativeScrollBehavior = nativeScrollBehavior;
     }
 
-    NativeScrollBehavior nativeScrollBehavior()
+    WebNativeScrollBehavior nativeScrollBehavior()
     {
         return m_nativeScrollBehavior;
     }
 
-    static NativeScrollBehavior toNativeScrollBehavior(String nativeScrollBehavior);
+    static WebNativeScrollBehavior toNativeScrollBehavior(String nativeScrollBehavior);
 
 protected:
-    NativeScrollBehavior m_nativeScrollBehavior;
+    WebNativeScrollBehavior m_nativeScrollBehavior;
 };
 
 } // namespace blink
