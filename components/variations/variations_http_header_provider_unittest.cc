@@ -123,4 +123,16 @@ TEST_F(VariationsHttpHeaderProviderTest, OnFieldTrialGroupFinalized) {
   EXPECT_TRUE(trigger_ids.find(456) != trigger_ids.end());
 }
 
+TEST_F(VariationsHttpHeaderProviderTest, GetVariationsString) {
+  base::MessageLoop loop;
+  base::FieldTrialList field_trial_list(nullptr);
+
+  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 123);
+  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 124);
+
+  VariationsHttpHeaderProvider provider;
+  provider.SetDefaultVariationIds("100,200");
+  EXPECT_EQ(" 100 123 124 200 ", provider.GetVariationsString());
+}
+
 }  // namespace variations

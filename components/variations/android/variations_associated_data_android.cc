@@ -8,6 +8,7 @@
 
 #include "base/android/jni_string.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "jni/VariationsAssociatedData_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -27,6 +28,14 @@ ScopedJavaLocalRef<jstring> GetVariationParamValue(
   std::string param_value =
       variations::GetVariationParamValue(trial_name, param_name);
   return ConvertUTF8ToJavaString(env, param_value);
+}
+
+ScopedJavaLocalRef<jstring> GetFeedbackVariations(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
+  const std::string values =
+      VariationsHttpHeaderProvider::GetInstance()->GetVariationsString();
+  return ConvertUTF8ToJavaString(env, values);
 }
 
 bool RegisterVariationsAssociatedData(JNIEnv* env) {

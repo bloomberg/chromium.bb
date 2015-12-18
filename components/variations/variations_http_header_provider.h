@@ -35,6 +35,12 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // necessary.
   std::string GetClientDataHeader();
 
+  // Returns a space-separated string containing the list of current active
+  // variations (as would be reported in the |variation_id| repeated field of
+  // the ClientVariations proto). The returned string is guaranteed to have a
+  // a leading and trailing space, e.g. " 123 234 345 ".
+  std::string GetVariationsString();
+
   // Sets *additional* variation ids and trigger variation ids to be encoded in
   // the X-Client-Data request header.  This is intended for development use to
   // force a server side experiment id.  |variation_ids| should be a
@@ -54,6 +60,8 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
                            SetDefaultVariationIds_Invalid);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            OnFieldTrialGroupFinalized);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           GetVariationsString);
 
   VariationsHttpHeaderProvider();
   ~VariationsHttpHeaderProvider() override;
@@ -77,6 +85,10 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // |variation_ids_header_| with it.  Assumes the the |lock_| is currently
   // held.
   void UpdateVariationIDsHeaderValue();
+
+  // Returns the currently active set of variation ids, which includes any
+  // default values, synthetic variations and actual field trial variations.
+  std::set<VariationID> GetAllVariationIds();
 
   // Guards |variation_ids_cache_initialized_|, |variation_ids_set_| and
   // |variation_ids_header_|.

@@ -6,6 +6,8 @@ package org.chromium.components.variations;
 
 import org.chromium.base.annotations.JNINamespace;
 
+import java.util.HashMap;
+
 /**
  * Wrapper for variations.
  */
@@ -25,5 +27,12 @@ public final class VariationsAssociatedData {
         return nativeGetVariationParamValue(trialName, paramName);
     }
 
+    public static HashMap<String, String> getFeedbackMap() {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("Chrome Variations", nativeGetFeedbackVariations());
+        return map;
+    }
+
     private static native String nativeGetVariationParamValue(String trialName, String paramName);
+    private static native String nativeGetFeedbackVariations();
 }
