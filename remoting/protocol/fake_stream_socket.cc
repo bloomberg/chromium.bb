@@ -169,11 +169,23 @@ FakeStreamSocket* FakeStreamChannelFactory::GetFakeChannel(
   return channels_[name].get();
 }
 
+void FakeStreamChannelFactory::PairWith(
+    FakeStreamChannelFactory* peer_factory) {
+  peer_factory_ = peer_factory->weak_factory_.GetWeakPtr();
+  peer_factory->peer_factory_ = weak_factory_.GetWeakPtr();
+}
+
 void FakeStreamChannelFactory::CreateChannel(
     const std::string& name,
     const ChannelCreatedCallback& callback) {
   scoped_ptr<FakeStreamSocket> channel(new FakeStreamSocket());
   channels_[name] = channel->GetWeakPtr();
+
+  if (peer_factory_) {
+    FakeStreamSocket* peer_channel = peer_factory_->GetFakeChannel(name);
+    if (peer_channel)
+      channel->PairWith(peer_channel);
+  }
 
   if (fail_create_)
     channel.reset();

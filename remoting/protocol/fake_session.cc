@@ -32,13 +32,30 @@ FakeStreamChannelFactory* FakeTransport::GetMultiplexedChannelFactory() {
 }
 
 FakeSession::FakeSession()
-    : event_handler_(nullptr),
-      config_(SessionConfig::ForTest()),
-      jid_(kTestJid),
-      error_(OK),
-      closed_(false) {}
+    : config_(SessionConfig::ForTest()), jid_(kTestJid), weak_factory_(this) {}
 
 FakeSession::~FakeSession() {}
+
+void FakeSession::SimulateConnection(FakeSession* peer) {
+  peer_ = peer->weak_factory_.GetWeakPtr();
+  peer->peer_ = weak_factory_.GetWeakPtr();
+
+  transport_.GetStreamChannelFactory()->PairWith(
+      peer->transport_.GetStreamChannelFactory());
+  transport_.GetMultiplexedChannelFactory()->PairWith(
+      peer->transport_.GetMultiplexedChannelFactory());
+
+  event_handler_->OnSessionStateChange(CONNECTING);
+  peer->event_handler_->OnSessionStateChange(ACCEPTING);
+  peer->event_handler_->OnSessionStateChange(ACCEPTED);
+  event_handler_->OnSessionStateChange(ACCEPTED);
+  event_handler_->OnSessionStateChange(AUTHENTICATING);
+  peer->event_handler_->OnSessionStateChange(AUTHENTICATING);
+  event_handler_->OnSessionStateChange(AUTHENTICATED);
+  peer->event_handler_->OnSessionStateChange(AUTHENTICATED);
+  event_handler_->OnSessionStateChange(CONNECTED);
+  peer->event_handler_->OnSessionStateChange(CONNECTED);
+}
 
 void FakeSession::SetEventHandler(EventHandler* event_handler) {
   event_handler_ = event_handler;
@@ -63,6 +80,14 @@ FakeTransport* FakeSession::GetTransport() {
 void FakeSession::Close(ErrorCode error) {
   closed_ = true;
   error_ = error;
+  event_handler_->OnSessionStateChange(CLOSED);
+
+  FakeSession* peer = peer_.get();
+  if (peer) {
+    peer->peer_.reset();
+    peer_.reset();
+    peer->Close(error);
+  }
 }
 
 }  // namespace protocol

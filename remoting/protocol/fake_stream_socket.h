@@ -114,6 +114,10 @@ class FakeStreamChannelFactory : public StreamChannelFactory {
 
   FakeStreamSocket* GetFakeChannel(const std::string& name);
 
+  // Pairs the socket with |peer_socket|. Deleting either of the paired sockets
+  // unpairs them.
+  void PairWith(FakeStreamChannelFactory* peer_factory);
+
   // ChannelFactory interface.
   void CreateChannel(const std::string& name,
                      const ChannelCreatedCallback& callback) override;
@@ -130,6 +134,7 @@ class FakeStreamChannelFactory : public StreamChannelFactory {
 
   bool fail_create_;
 
+  base::WeakPtr<FakeStreamChannelFactory> peer_factory_;
   base::WeakPtrFactory<FakeStreamChannelFactory> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeStreamChannelFactory);

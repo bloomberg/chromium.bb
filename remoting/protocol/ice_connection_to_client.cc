@@ -47,7 +47,10 @@ IceConnectionToClient::IceConnectionToClient(
     scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner)
     : event_handler_(nullptr),
       session_(session.Pass()),
-      video_encode_task_runner_(video_encode_task_runner) {
+      video_encode_task_runner_(video_encode_task_runner),
+      control_dispatcher_(new HostControlDispatcher()),
+      event_dispatcher_(new HostEventDispatcher()),
+      video_dispatcher_(new HostVideoDispatcher()) {
   session_->SetEventHandler(this);
 }
 
@@ -139,18 +142,15 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
       break;
     case Session::AUTHENTICATED:
       // Initialize channels.
-      control_dispatcher_.reset(new HostControlDispatcher());
       control_dispatcher_->Init(session_.get(),
                                 session_->config().control_config(), this);
 
-      event_dispatcher_.reset(new HostEventDispatcher());
       event_dispatcher_->Init(session_.get(), session_->config().event_config(),
                               this);
       event_dispatcher_->set_on_input_event_callback(
           base::Bind(&IceConnectionToClient::OnInputEventReceived,
                      base::Unretained(this)));
 
-      video_dispatcher_.reset(new HostVideoDispatcher());
       video_dispatcher_->Init(session_.get(), session_->config().video_config(),
                               this);
 

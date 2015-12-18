@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/protocol/fake_stream_socket.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/transport.h"
@@ -42,10 +43,10 @@ class FakeSession : public Session {
   FakeSession();
   ~FakeSession() override;
 
+  void SimulateConnection(FakeSession* peer);
+
   EventHandler* event_handler() { return event_handler_; }
-
   void set_error(ErrorCode error) { error_ = error; }
-
   bool is_closed() const { return closed_; }
 
   // Session interface.
@@ -56,16 +57,20 @@ class FakeSession : public Session {
   FakeTransport* GetTransport() override;
   void Close(ErrorCode error) override;
 
- public:
-  EventHandler* event_handler_;
+ private:
+  EventHandler* event_handler_ = nullptr;
   scoped_ptr<SessionConfig> config_;
 
   std::string jid_;
 
   FakeTransport transport_;
 
-  ErrorCode error_;
-  bool closed_;
+  ErrorCode error_ = OK;
+  bool closed_ = false;
+
+  base::WeakPtr<FakeSession> peer_;
+
+  base::WeakPtrFactory<FakeSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSession);
 };
