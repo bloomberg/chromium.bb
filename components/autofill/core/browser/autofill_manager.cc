@@ -95,36 +95,6 @@ bool SectionIsAutofilled(const FormStructure& form_structure,
   return false;
 }
 
-// Uses the existing personal data in |profiles| and |credit_cards| to determine
-// possible field types for the |submitted_form|.  This is potentially
-// expensive -- on the order of 50ms even for a small set of |stored_data|.
-// Hence, it should not run on the UI thread -- to avoid locking up the UI --
-// nor on the IO thread -- to avoid blocking IPC calls.
-void DeterminePossibleFieldTypesForUpload(
-    const std::vector<AutofillProfile>& profiles,
-    const std::vector<CreditCard>& credit_cards,
-    const std::string& app_locale,
-    FormStructure* submitted_form) {
-  // For each field in the |submitted_form|, extract the value.  Then for each
-  // profile or credit card, identify any stored types that match the value.
-  for (size_t i = 0; i < submitted_form->field_count(); ++i) {
-    AutofillField* field = submitted_form->field(i);
-    ServerFieldTypeSet matching_types;
-
-    base::string16 value;
-    base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
-    for (const AutofillProfile& profile : profiles)
-      profile.GetMatchingTypes(value, app_locale, &matching_types);
-    for (const CreditCard& card : credit_cards)
-      card.GetMatchingTypes(value, app_locale, &matching_types);
-
-    if (matching_types.empty())
-      matching_types.insert(UNKNOWN_TYPE);
-
-    field->set_possible_types(matching_types);
-  }
-}
-
 }  // namespace
 
 AutofillManager::AutofillManager(
@@ -333,8 +303,8 @@ void AutofillManager::StartUploadProcess(
         forms_loaded_timestamps_[raw_form->ToFormData()];
     driver_->GetBlockingPool()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&DeterminePossibleFieldTypesForUpload, copied_profiles,
-                   copied_credit_cards, app_locale_, raw_form),
+        base::Bind(&AutofillManager::DeterminePossibleFieldTypesForUpload,
+                   copied_profiles, copied_credit_cards, app_locale_, raw_form),
         base::Bind(&AutofillManager::UploadFormDataAsyncCallback,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Owned(form_structure.release()), loaded_timestamp,
@@ -1664,6 +1634,33 @@ void AutofillManager::UpdateInitialInteractionTimestamp(
   if (initial_interaction_timestamp_.is_null() ||
       interaction_timestamp < initial_interaction_timestamp_) {
     initial_interaction_timestamp_ = interaction_timestamp;
+  }
+}
+
+// static
+void AutofillManager::DeterminePossibleFieldTypesForUpload(
+    const std::vector<AutofillProfile>& profiles,
+    const std::vector<CreditCard>& credit_cards,
+    const std::string& app_locale,
+    FormStructure* submitted_form) {
+  // For each field in the |submitted_form|, extract the value.  Then for each
+  // profile or credit card, identify any stored types that match the value.
+  for (size_t i = 0; i < submitted_form->field_count(); ++i) {
+    AutofillField* field = submitted_form->field(i);
+    ServerFieldTypeSet matching_types;
+
+    base::string16 value;
+    base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
+
+    for (const AutofillProfile& profile : profiles)
+      profile.GetMatchingTypes(value, app_locale, &matching_types);
+    for (const CreditCard& card : credit_cards)
+      card.GetMatchingTypes(value, app_locale, &matching_types);
+
+    if (matching_types.empty())
+      matching_types.insert(UNKNOWN_TYPE);
+
+    field->set_possible_types(matching_types);
   }
 }
 

@@ -3068,7 +3068,121 @@ TEST_F(AutofillManagerTest, InvalidCreditCardNumberIsNotSaved) {
   FormSubmitted(form);
 }
 
+// Tests that DeterminePossibleFieldTypesForUpload makes accurate matches.
 TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
+  // Set up the test profiles.
+  std::vector<AutofillProfile> profiles;
+  AutofillProfile profile;
+  test::SetProfileInfo(&profile, "Elvis", "Aaron", "Presley",
+                       "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
+                       "Apt. 10", "Memphis", "Tennessee", "38116", "US",
+                       "12345678901");
+  profile.set_guid("00000000-0000-0000-0000-000000000001");
+  profiles.push_back(profile);
+  test::SetProfileInfo(&profile, "Charles", "", "Holley", "buddy@gmail.com",
+                       "Decca", "123 Apple St.", "unit 6", "Lubbock", "Texas",
+                       "79401", "US", "23456789012");
+  profile.set_guid("00000000-0000-0000-0000-000000000002");
+  profiles.push_back(profile);
+
+  // Set up the test credit cards.
+  std::vector<CreditCard> credit_cards;
+  CreditCard credit_card;
+  test::SetCreditCardInfo(&credit_card, "Elvis Presley", "4234-5678-9012-3456",
+                          "04", "2012");
+  credit_card.set_guid("00000000-0000-0000-0000-000000000003");
+  credit_cards.push_back(credit_card);
+
+  typedef struct {
+    std::string input_value;     // The value to input in the field.
+    ServerFieldType field_type;  // The expected field type to be determined.
+  } TestCase;
+
+  TestCase test_cases[] = {
+                           // Profile fields matches.
+                           {"Elvis", NAME_FIRST},
+                           {"Aaron", NAME_MIDDLE},
+                           {"A", NAME_MIDDLE_INITIAL},
+                           {"Presley", NAME_LAST},
+                           {"Elvis Aaron Presley", NAME_FULL},
+                           {"theking@gmail.com", EMAIL_ADDRESS},
+                           {"RCA", COMPANY_NAME},
+                           {"3734 Elvis Presley Blvd.", ADDRESS_HOME_LINE1},
+                           {"Apt. 10", ADDRESS_HOME_LINE2},
+                           {"Memphis", ADDRESS_HOME_CITY},
+                           {"Tennessee", ADDRESS_HOME_STATE},
+                           {"38116", ADDRESS_HOME_ZIP},
+                           {"USA", ADDRESS_HOME_COUNTRY},
+                           {"United States", ADDRESS_HOME_COUNTRY},
+                           {"+1 (234) 567-8901", PHONE_HOME_WHOLE_NUMBER},
+                           {"2345678901", PHONE_HOME_CITY_AND_NUMBER},
+                           {"1", PHONE_HOME_COUNTRY_CODE},
+                           {"234", PHONE_HOME_CITY_CODE},
+                           {"5678901", PHONE_HOME_NUMBER},
+                           {"567", PHONE_HOME_NUMBER},
+                           {"8901", PHONE_HOME_NUMBER},
+
+                           // Make sure matches for a second profile work.
+                           {"Charles Holley", NAME_FULL},
+
+                           // Credit card fields matches.
+                           {"Elvis Presley", CREDIT_CARD_NAME},
+                           {"4234-5678-9012-3456", CREDIT_CARD_NUMBER},
+                           {"04", CREDIT_CARD_EXP_MONTH},
+                           {"April", CREDIT_CARD_EXP_MONTH},
+                           {"2012", CREDIT_CARD_EXP_4_DIGIT_YEAR},
+                           {"12", CREDIT_CARD_EXP_2_DIGIT_YEAR},
+                           {"04/2012", CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
+
+                           // Make sure whitespaces are trimmed properly.
+                           {"", EMPTY_TYPE},
+                           {" ", EMPTY_TYPE},
+                           {" Elvis", NAME_FIRST},
+                           {"Elvis ", NAME_FIRST},
+
+                           // Make sure fields that differ by case do no match.
+                           {"elvis ", UNKNOWN_TYPE},
+                           {"3734 Elvis Presley BLVD ", UNKNOWN_TYPE},
+
+                           // Make sure unsupported variants do not match.
+                           {"Elvis Aaron", UNKNOWN_TYPE},
+                           {"Mr. Presley", UNKNOWN_TYPE},
+                           {"3734 Elvis Presley", UNKNOWN_TYPE},
+                           {"TN", UNKNOWN_TYPE},
+                           {"38116-1023", UNKNOWN_TYPE},
+                           {"5", UNKNOWN_TYPE},
+                           {"56", UNKNOWN_TYPE},
+                           {"901", UNKNOWN_TYPE}};
+
+  for (TestCase test_case : test_cases) {
+    FormData form;
+    form.name = ASCIIToUTF16("MyForm");
+    form.origin = GURL("http://myform.com/form.html");
+    form.action = GURL("http://myform.com/submit.html");
+
+    FormFieldData field;
+    ServerFieldTypeSet types;
+    test::CreateTestFormField("", "1", "", "text", &field);
+    field.value = ASCIIToUTF16(test_case.input_value);
+    types.clear();
+    types.insert(test_case.field_type);
+    form.fields.push_back(field);
+
+    FormStructure form_structure(form);
+
+    AutofillManager::DeterminePossibleFieldTypesForUpload(
+        profiles, credit_cards, "en-us", &form_structure);
+
+    ASSERT_EQ(1U, form_structure.field_count());
+    ServerFieldTypeSet possible_types =
+        form_structure.field(0)->possible_types();
+    EXPECT_NE(possible_types.end(), possible_types.find(test_case.field_type));
+  }
+}
+
+// Tests that DeterminePossibleFieldTypesForUpload is called when a form is
+// submitted.
+TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload_IsTriggered) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
   form.origin = GURL("http://myform.com/form.html");
@@ -3080,6 +3194,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   // These fields should all match.
   FormFieldData field;
   ServerFieldTypeSet types;
+
   test::CreateTestFormField("", "1", "", "text", &field);
   expected_values.push_back(ASCIIToUTF16("Elvis"));
   types.clear();
@@ -3098,282 +3213,6 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   expected_values.push_back(ASCIIToUTF16("A"));
   types.clear();
   types.insert(NAME_MIDDLE_INITIAL);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "4", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("Presley"));
-  types.clear();
-  types.insert(NAME_LAST);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "5", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("Elvis Presley"));
-  types.clear();
-  types.insert(CREDIT_CARD_NAME);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "6", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("Elvis Aaron Presley"));
-  types.clear();
-  types.insert(NAME_FULL);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "7", "", "email", &field);
-  expected_values.push_back(ASCIIToUTF16("theking@gmail.com"));
-  types.clear();
-  types.insert(EMAIL_ADDRESS);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "8", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("RCA"));
-  types.clear();
-  types.insert(COMPANY_NAME);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "9", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("3734 Elvis Presley Blvd."));
-  types.clear();
-  types.insert(ADDRESS_HOME_LINE1);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "10", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("Apt. 10"));
-  types.clear();
-  types.insert(ADDRESS_HOME_LINE2);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "11", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("Memphis"));
-  types.clear();
-  types.insert(ADDRESS_HOME_CITY);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "12", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("Tennessee"));
-  types.clear();
-  types.insert(ADDRESS_HOME_STATE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "13", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("38116"));
-  types.clear();
-  types.insert(ADDRESS_HOME_ZIP);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "14", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("USA"));
-  types.clear();
-  types.insert(ADDRESS_HOME_COUNTRY);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "15", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("United States"));
-  types.clear();
-  types.insert(ADDRESS_HOME_COUNTRY);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "16", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("+1 (234) 567-8901"));
-  types.clear();
-  types.insert(PHONE_HOME_WHOLE_NUMBER);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "17", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("2345678901"));
-  types.clear();
-  types.insert(PHONE_HOME_CITY_AND_NUMBER);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "18", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("1"));
-  types.clear();
-  types.insert(PHONE_HOME_COUNTRY_CODE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "19", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("234"));
-  types.clear();
-  types.insert(PHONE_HOME_CITY_CODE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "20", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("5678901"));
-  types.clear();
-  types.insert(PHONE_HOME_NUMBER);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "21", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("567"));
-  types.clear();
-  types.insert(PHONE_HOME_NUMBER);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "22", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("8901"));
-  types.clear();
-  types.insert(PHONE_HOME_NUMBER);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "23", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("4234-5678-9012-3456"));
-  types.clear();
-  types.insert(CREDIT_CARD_NUMBER);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "24", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("04"));
-  types.clear();
-  types.insert(CREDIT_CARD_EXP_MONTH);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "25", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("April"));
-  types.clear();
-  types.insert(CREDIT_CARD_EXP_MONTH);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "26", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("2012"));
-  types.clear();
-  types.insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "27", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("12"));
-  types.clear();
-  types.insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "28", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("04/2012"));
-  types.clear();
-  types.insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  // Make sure that we trim whitespace properly.
-  test::CreateTestFormField("", "29", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16(""));
-  types.clear();
-  types.insert(EMPTY_TYPE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "30", " ", "text", &field);
-  expected_values.push_back(ASCIIToUTF16(" "));
-  types.clear();
-  types.insert(EMPTY_TYPE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "31", " ", "text", &field);
-  expected_values.push_back(ASCIIToUTF16(" Elvis"));
-  types.clear();
-  types.insert(NAME_FIRST);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "32", " ", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("Elvis "));
-  types.clear();
-  types.insert(NAME_FIRST);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  // These fields should not match, as they differ by case.
-  test::CreateTestFormField("", "33", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("elvis"));
-  types.clear();
-  types.insert(UNKNOWN_TYPE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "34", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("3734 Elvis Presley BLVD"));
-  types.clear();
-  types.insert(UNKNOWN_TYPE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  // These fields should not match, as they are unsupported variants.
-  test::CreateTestFormField("", "35", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("Elvis Aaron"));
-  types.clear();
-  types.insert(UNKNOWN_TYPE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "36", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("Mr. Presley"));
-  types.clear();
-  types.insert(UNKNOWN_TYPE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "37", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("3734 Elvis Presley"));
-  types.clear();
-  types.insert(UNKNOWN_TYPE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "38", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("TN"));
-  types.clear();
-  types.insert(UNKNOWN_TYPE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "39", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("38116-1023"));
-  types.clear();
-  types.insert(UNKNOWN_TYPE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "20", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("5"));
-  types.clear();
-  types.insert(UNKNOWN_TYPE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "20", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("56"));
-  types.clear();
-  types.insert(UNKNOWN_TYPE);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
-
-  test::CreateTestFormField("", "20", "", "text", &field);
-  expected_values.push_back(ASCIIToUTF16("901"));
-  types.clear();
-  types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 

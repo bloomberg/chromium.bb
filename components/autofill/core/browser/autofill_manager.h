@@ -407,6 +407,17 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void UpdateInitialInteractionTimestamp(
       const base::TimeTicks& interaction_timestamp);
 
+  // Uses the existing personal data in |profiles| and |credit_cards| to
+  // determine possible field types for the |submitted_form|.  This is
+  // potentially expensive -- on the order of 50ms even for a small set of
+  // |stored_data|. Hence, it should not run on the UI thread -- to avoid
+  // locking up the UI -- nor on the IO thread -- to avoid blocking IPC calls.
+  static void DeterminePossibleFieldTypesForUpload(
+      const std::vector<AutofillProfile>& profiles,
+      const std::vector<CreditCard>& credit_cards,
+      const std::string& app_locale,
+      FormStructure* submitted_form);
+
 #ifdef ENABLE_FORM_DEBUG_DUMP
   // Dumps the cached forms to a file on disk.
   void DumpAutofillData(bool imported_cc) const;
