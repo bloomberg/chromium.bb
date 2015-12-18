@@ -188,17 +188,15 @@ void PerformanceBase::setFrameTimingBufferSize(unsigned size)
 
 static bool passesTimingAllowCheck(const ResourceResponse& response, const SecurityOrigin& initiatorSecurityOrigin, const AtomicString& originalTimingAllowOrigin)
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(AtomicString, timingAllowOrigin, new AtomicString("timing-allow-origin"));
-
     RefPtr<SecurityOrigin> resourceOrigin = SecurityOrigin::create(response.url());
     if (resourceOrigin->isSameSchemeHostPort(&initiatorSecurityOrigin))
         return true;
 
-    const AtomicString& timingAllowOriginString = originalTimingAllowOrigin.isEmpty() ? response.httpHeaderField(timingAllowOrigin) : originalTimingAllowOrigin;
+    const AtomicString& timingAllowOriginString = originalTimingAllowOrigin.isEmpty() ? response.httpHeaderField("timing-allow-origin") : originalTimingAllowOrigin;
     if (timingAllowOriginString.isEmpty() || equalIgnoringCase(timingAllowOriginString, "null"))
         return false;
 
-    if (timingAllowOriginString == starAtom)
+    if (timingAllowOriginString == "*")
         return true;
 
     const String& securityOrigin = initiatorSecurityOrigin.toString();
@@ -214,11 +212,11 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, const Secur
 
 static bool allowsTimingRedirect(const Vector<ResourceResponse>& redirectChain, const ResourceResponse& finalResponse, const SecurityOrigin& initiatorSecurityOrigin)
 {
-    if (!passesTimingAllowCheck(finalResponse, initiatorSecurityOrigin, emptyAtom))
+    if (!passesTimingAllowCheck(finalResponse, initiatorSecurityOrigin, AtomicString()))
         return false;
 
     for (const ResourceResponse& response : redirectChain) {
-        if (!passesTimingAllowCheck(response, initiatorSecurityOrigin, emptyAtom))
+        if (!passesTimingAllowCheck(response, initiatorSecurityOrigin, AtomicString()))
             return false;
     }
 
