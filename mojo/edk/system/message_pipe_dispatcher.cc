@@ -436,8 +436,13 @@ void MessagePipeDispatcher::CancelAllAwakablesNoLock() {
 
 void MessagePipeDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
+  // This early circuit fixes leak in unit tests. There's nothing to do in the
+  // posted task.
+  if (!transferable_ && non_transferable_state_ == CLOSED)
+    return;
+
   // We take a manual refcount because at shutdown, the task below might not get
-  // a chance to execute. If that happens, the RawChannel's will still call our
+  // a chance to execute. If that happens, the RawChannel will still call our
   // OnError method because it always runs (since it watches thread
   // destruction). So to avoid UAF, manually add a reference and only release it
   // if the task runs.
