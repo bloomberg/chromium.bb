@@ -9,21 +9,18 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/chrome/test/testing_application_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class IOSChromeMetricsServiceAccessorTest : public testing::Test {
  public:
-  IOSChromeMetricsServiceAccessorTest() {
-    prefs_.registry()->RegisterBooleanPref(
-        metrics::prefs::kMetricsReportingEnabled, false);
-    TestingApplicationContext::GetGlobal()->SetLocalState(&prefs_);
-  }
+  IOSChromeMetricsServiceAccessorTest() {}
 
-  PrefService* GetLocalState() { return &prefs_; }
+  PrefService* GetLocalState() { return local_state_.Get(); }
 
  private:
-  TestingPrefServiceSimple prefs_;
+  IOSChromeScopedTestingLocalState local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeMetricsServiceAccessorTest);
 };

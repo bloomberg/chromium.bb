@@ -20,6 +20,7 @@ TestingApplicationContext::TestingApplicationContext()
 
 TestingApplicationContext::~TestingApplicationContext() {
   DCHECK_EQ(this, GetApplicationContext());
+  DCHECK(!local_state_);
   SetApplicationContext(nullptr);
 }
 
@@ -30,6 +31,17 @@ TestingApplicationContext* TestingApplicationContext::GetGlobal() {
 
 void TestingApplicationContext::SetLocalState(PrefService* local_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (!local_state) {
+    // The local state is owned outside of TestingApplicationContext, but
+    // some of the members of TestingApplicationContext hold references to it.
+    // Given our test infrastructure which tears down individual tests before
+    // freeing the TestingApplicationContext, there's no good way to make the
+    // local state outlive these dependencies. As a workaround, whenever
+    // local state is cleared (assumedly as part of exiting the test) any
+    // components owned by TestingApplicationContext that depends on the local
+    // state are also freed.
+    network_time_tracker_.reset();
+  }
   local_state_ = local_state;
 }
 
