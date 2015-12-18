@@ -5081,7 +5081,6 @@
           # GCC_INLINES_ARE_PRIVATE_EXTERN maps to -fvisibility-inlines-hidden
           'GCC_INLINES_ARE_PRIVATE_EXTERN': 'YES',
           'GCC_OBJC_CALL_CXX_CDTORS': 'YES',        # -fobjc-call-cxx-cdtors
-          'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',      # -fvisibility=hidden
           'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
           'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',    # -Werror
           'GCC_VERSION': '4.2',
@@ -5143,15 +5142,34 @@
                 '-fcolor-diagnostics',
               ],
             }],
-            ['OS=="ios" and target_subarch!="arm32" and \
-              "<(GENERATOR)"=="xcode"', {
-              'OTHER_CFLAGS': [
-                # TODO(ios): when building Chrome for iOS on 64-bit platform
-                # with Xcode, the -Wshorted-64-to-32 warning is automatically
-                # enabled. This cause failures when compiling protobuf code,
-                # so disable the warning. http://crbug.com/359107
-                '-Wno-shorten-64-to-32',
+            ['OS=="ios"', {
+              'configurations': {
+                'Debug': {
+                  # XCTests inject a dynamic library into the application. If
+                  # fvisibility is set to hidden, then some symbols needed by
+                  # XCTests are not available. Disable this setting for
+                  # Debug configuration.
+                  'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
+                },
+                'Release': {
+                  'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',    # -fvisibility=hidden
+                },
+              },
+              'conditions': [
+                ['target_subarch!="arm32" and "<(GENERATOR)"=="xcode"', {
+                  'OTHER_CFLAGS': [
+                    # TODO(ios): when building Chrome for iOS on 64-bit
+                    # platform with Xcode, the -Wshorted-64-to-32 warning is
+                    # automatically enabled. This causes failures when
+                    # compiling protobuf code, so disable the warning.
+                    # http://crbug.com/359107
+                    '-Wno-shorten-64-to-32',
+                  ],
+                }],
               ],
+            }],
+            ['OS=="mac"', {
+              'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',    # -fvisibility=hidden
             }],
           ],
         },
