@@ -469,10 +469,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                          const mojo::String& name,
                                          const mojo::String& data);
   void OnOpenWindow(int request_id, GURL url);
-  void DidOpenWindow(int request_id,
-                     int render_process_id,
-                     int render_frame_id);
   void OnOpenWindowFinished(int request_id,
+                            ServiceWorkerStatusCode status,
                             const std::string& client_uuid,
                             const ServiceWorkerClientInfo& client_info);
 
@@ -489,10 +487,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnNavigateClient(int request_id,
                         const std::string& client_uuid,
                         const GURL& url);
-  void DidNavigateClient(int request_id,
-                         int render_process_id,
-                         int render_frame_id);
   void OnNavigateClientFinished(int request_id,
+                                ServiceWorkerStatusCode status,
                                 const std::string& client_uuid,
                                 const ServiceWorkerClientInfo& client);
   void OnSkipWaiting(int request_id);

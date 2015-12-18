@@ -1340,6 +1340,8 @@
       'browser/service_worker/foreign_fetch_request_handler.h',
       'browser/service_worker/service_worker_cache_writer.cc',
       'browser/service_worker/service_worker_cache_writer.h',
+      'browser/service_worker/service_worker_client_navigation_utils.cc',
+      'browser/service_worker/service_worker_client_navigation_utils.h',
       'browser/service_worker/service_worker_context_core.cc',
       'browser/service_worker/service_worker_context_core.h',
       'browser/service_worker/service_worker_context_observer.h',
