@@ -1692,8 +1692,6 @@
       'browser/ui/search/instant_controller.h',
       'browser/ui/search/search_delegate.cc',
       'browser/ui/search/search_delegate.h',
-      'browser/ui/search/search_ui.cc',
-      'browser/ui/search/search_ui.h',
       'browser/ui/search_engines/search_engine_tab_helper_delegate.cc',
       'browser/ui/search_engines/search_engine_tab_helper_delegate.h',
       'browser/ui/settings_window_manager.cc',

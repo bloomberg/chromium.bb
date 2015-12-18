@@ -10,7 +10,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/ui/search/search_ui.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/theme_provider.h"
@@ -54,8 +53,10 @@
   NSRectFill(dirtyRect);
 
   // Overlay with a lighter background color.
-  NSColor* toolbarColor = skia::SkColorToCalibratedNSColor(
-      chrome::GetDetachedBookmarkBarBackgroundColor(profile));
+  const ui::ThemeProvider& tp =
+      ThemeService::GetThemeProviderForProfile(profile);
+  NSColor* toolbarColor =
+      tp.GetNSColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND);
   CGFloat alpha = morph * [toolbarColor alphaComponent];
   [[toolbarColor colorWithAlphaComponent:alpha] set];
   NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
@@ -75,8 +76,8 @@
   NSRect strokeRect = [self bounds];
   strokeRect.size.height = [self cr_lineWidth];
   if (NSIntersectsRect(strokeRect, dirtyRect)) {
-    NSColor* strokeColor = skia::SkColorToCalibratedNSColor(
-        chrome::GetDetachedBookmarkBarSeparatorColor(profile));
+    NSColor* strokeColor =
+        tp.GetNSColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
     strokeColor = [[self strokeColor] blendedColorWithFraction:morph
                                                        ofColor:strokeColor];
     strokeColor = [strokeColor colorWithAlphaComponent:0.5];

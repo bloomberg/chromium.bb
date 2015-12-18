@@ -453,9 +453,19 @@ gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {
 
 SkColor ThemeService::GetColor(int id, bool otr) const {
   DCHECK(CalledOnValidThread());
-  // Custom themes always use the original (non-incognito) color.
+
+  // For legacy reasons, |theme_supplier_| requires the incognito variants
+  // of color IDs.
+  int theme_supplier_id = id;
+  if (otr) {
+    if (id == Properties::COLOR_FRAME)
+      theme_supplier_id = Properties::COLOR_FRAME_INCOGNITO;
+    else if (id == Properties::COLOR_FRAME_INACTIVE)
+      theme_supplier_id = Properties::COLOR_FRAME_INCOGNITO_INACTIVE;
+  }
+
   SkColor color;
-  if (theme_supplier_ && theme_supplier_->GetColor(id, &color))
+  if (theme_supplier_ && theme_supplier_->GetColor(theme_supplier_id, &color))
     return color;
 
   // For backward compat with older themes, some newer colors are generated from
@@ -468,6 +478,16 @@ SkColor ThemeService::GetColor(int id, bool otr) const {
       // The active color is overridden in Gtk2UI.
       return SkColorSetA(GetColor(Properties::COLOR_TOOLBAR_BUTTON_ICON, otr),
                          0x33);
+    case Properties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
+      if (UsingDefaultTheme())
+        break;
+      return GetColor(ThemeProperties::COLOR_TOOLBAR, otr);
+    case Properties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
+      if (UsingDefaultTheme())
+        break;
+      // Use 50% of bookmark text color as separator color.
+      return SkColorSetA(GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, otr),
+                         128);
     case Properties::COLOR_NTP_SECTION_HEADER_TEXT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT, otr), 0.30);
     case Properties::COLOR_NTP_SECTION_HEADER_TEXT_HOVER:

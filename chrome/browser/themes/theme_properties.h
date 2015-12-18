@@ -26,6 +26,9 @@ class ThemeProperties {
   enum OverwritableByUserThemeProperty {
     COLOR_FRAME,
     COLOR_FRAME_INACTIVE,
+    // Instead of using the INCOGNITO variants directly, most code should
+    // use the original color ID in an incognito-aware context (such as
+    // GetDefaultColor).
     COLOR_FRAME_INCOGNITO,
     COLOR_FRAME_INCOGNITO_INACTIVE,
     COLOR_TOOLBAR,
@@ -85,6 +88,10 @@ class ThemeProperties {
     COLOR_TOOLBAR_BUTTON_ICON,
     // The color of a disabled toolbar button's icon.
     COLOR_TOOLBAR_BUTTON_ICON_INACTIVE,
+
+    // Colors used for the detached (NTP) bookmark bar.
+    COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
+    COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR,
 
     // The throbber colors for tabs or anything on a toolbar (currently, only
     // the download shelf). If you're adding a throbber elsewhere, such as in
@@ -152,10 +159,6 @@ class ThemeProperties {
 
   // Returns the default color for the given color |id| COLOR_* enum value.
   // Returns gfx::kPlaceholderColor if |id| is invalid.
-  static SkColor GetDefaultColor(int id);
-
-  // As above, but takes incognito status into account.
-  // TODO(estade): remove the above in favor of this one.
   static SkColor GetDefaultColor(int id, bool otr);
 
  private:

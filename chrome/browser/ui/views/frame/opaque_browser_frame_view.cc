@@ -743,9 +743,11 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   const bool normal_mode = browser_view()->IsTabStripVisible();
   const bool md = ui::MaterialDesignController::IsModeMaterial();
   const ui::ThemeProvider* tp = GetThemeProvider();
-  const SkColor toolbar_color = normal_mode ?
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR) :
-      ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_TOOLBAR);
+  const SkColor toolbar_color =
+      normal_mode
+          ? tp->GetColor(ThemeProperties::COLOR_TOOLBAR)
+          : ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_TOOLBAR,
+                                             browser_view()->IsOffTheRecord());
 
   const gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
   int img_y_offset = 0;

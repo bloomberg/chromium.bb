@@ -455,9 +455,11 @@ void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   int y = client_bounds.y();
   const bool normal_mode = browser_view()->IsTabStripVisible();
   const ui::ThemeProvider* tp = GetThemeProvider();
-  const SkColor toolbar_color = normal_mode ?
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR) :
-      ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_TOOLBAR);
+  const SkColor toolbar_color =
+      normal_mode
+          ? tp->GetColor(ThemeProperties::COLOR_TOOLBAR)
+          : ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_TOOLBAR,
+                                             browser_view()->IsOffTheRecord());
 
   const gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
   if (!normal_mode) {

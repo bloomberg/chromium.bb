@@ -1114,8 +1114,8 @@ void BrowserThemePack::GenerateMissingColors(
   if (it != colors->end()) {
     frame = it->second;
   } else {
-    frame = ThemeProperties::GetDefaultColor(
-        ThemeProperties::COLOR_FRAME);
+    frame =
+        ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_FRAME, false);
   }
 
   if (!colors->count(ThemeProperties::COLOR_FRAME)) {

@@ -48,6 +48,8 @@ const SkColor kDefaultColorToolbar[] = {
 const SkColor kDefaultColorToolbarIncognito[] = {
     SkColorSetRGB(223, 223, 223), SkColorSetRGB(0x50, 0x50, 0x50)};
 #endif  // OS_MACOSX
+const SkColor kDefaultDetachedBookmarkBarBackground[] = {
+    SK_ColorWHITE, SkColorSetRGB(0xF1, 0xF1, 0xF1)};
 
 const SkColor kDefaultColorTabText = SK_ColorBLACK;
 
@@ -241,30 +243,26 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id) {
 }
 
 // static
-SkColor ThemeProperties::GetDefaultColor(int id) {
-  return GetDefaultColor(id, false);
-}
-
 SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
   int mode = ui::MaterialDesignController::IsModeMaterial();
   switch (id) {
     // Properties stored in theme pack.
     case COLOR_FRAME:
+      if (otr)
+        return kDefaultColorFrameIncognito[mode];
 #if defined(OS_CHROMEOS)
       return kDefaultColorFrame[mode];
 #else
       return kDefaultColorFrame;
 #endif  // OS_CHROMEOS
     case COLOR_FRAME_INACTIVE:
+      if (otr)
+        return kDefaultColorFrameIncognitoInactive[mode];
 #if defined(OS_CHROMEOS)
       return kDefaultColorFrameInactive[mode];
 #else
       return kDefaultColorFrameInactive;
 #endif  // OS_CHROMEOS
-    case COLOR_FRAME_INCOGNITO:
-      return kDefaultColorFrameIncognito[mode];
-    case COLOR_FRAME_INCOGNITO_INACTIVE:
-      return kDefaultColorFrameIncognitoInactive[mode];
 #if defined(OS_MACOSX)
     case COLOR_TOOLBAR:
       return kDefaultColorToolbar;
@@ -308,7 +306,10 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
     case COLOR_CONTROL_BACKGROUND:
       return kDefaultColorControlBackground;
     case COLOR_TOOLBAR_SEPARATOR:
+    case COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
       return kDefaultColorToolbarSeparator[mode];
+    case COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
+      return kDefaultDetachedBookmarkBarBackground[mode];
 #if defined(OS_MACOSX)
     case COLOR_TOOLBAR_BUTTON_STROKE:
       return kDefaultColorToolbarButtonStroke;
@@ -321,6 +322,11 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
     case COLOR_TOOLBAR_STROKE_INACTIVE:
       return kDefaultColorToolbarStrokeInactive;
 #endif
+    case COLOR_FRAME_INCOGNITO:
+    case COLOR_FRAME_INCOGNITO_INACTIVE:
+      NOTREACHED() << "These values should be queried via their respective "
+                      "non-incognito equivalents and an appropriate |otr| "
+                      "value.";
     default:
       return gfx::kPlaceholderColor;
   }

@@ -38,6 +38,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
@@ -50,7 +51,6 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
-#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -214,11 +214,14 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
                               BookmarkBarView* view,
                               Profile* profile) {
   // Paint background for detached state; if animating, this is fade in/out.
-  canvas->DrawColor(chrome::GetDetachedBookmarkBarBackgroundColor(profile));
+  const ui::ThemeProvider& tp =
+      ThemeService::GetThemeProviderForProfile(profile);
+  canvas->DrawColor(
+      tp.GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND));
   // Draw the separators above and below bookmark bar;
   // if animating, these are fading in/out.
   SkColor separator_color =
-      chrome::GetDetachedBookmarkBarSeparatorColor(profile);
+      tp.GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
     BrowserView::Paint1pxHorizontalLine(

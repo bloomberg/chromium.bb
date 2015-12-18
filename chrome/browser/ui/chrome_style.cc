@@ -20,7 +20,7 @@ int GetCloseButtonSize() {
 
 SkColor GetBackgroundColor() {
   return ThemeProperties::GetDefaultColor(
-      ThemeProperties::COLOR_CONTROL_BACKGROUND);
+      ThemeProperties::COLOR_CONTROL_BACKGROUND, false);
 }
 
 SkColor GetLinkColor() {
