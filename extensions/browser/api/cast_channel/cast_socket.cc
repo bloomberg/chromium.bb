@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"

@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"

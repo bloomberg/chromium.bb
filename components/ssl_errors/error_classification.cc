@@ -15,6 +15,7 @@
 #include "components/ssl_errors/error_info.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/net_util.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"

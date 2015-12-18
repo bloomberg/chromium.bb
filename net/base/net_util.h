@@ -7,22 +7,21 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <ws2tcpip.h>
-#elif defined(OS_POSIX)
-#include <sys/types.h>
+#if defined(OS_POSIX)
 #include <sys/socket.h>
+#include <sys/types.h>
+#elif defined(OS_WIN)
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #endif
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "base/strings/utf_offset_string_conversions.h"
-#include "net/base/escape.h"
-#include "net/base/network_change_notifier.h"
+#include "base/strings/string_piece.h"
+#include "net/base/net_export.h"
 
 class GURL;
 
@@ -32,7 +31,6 @@ class Time;
 
 namespace url {
 struct CanonHostInfo;
-struct Parsed;
 }
 
 namespace net {

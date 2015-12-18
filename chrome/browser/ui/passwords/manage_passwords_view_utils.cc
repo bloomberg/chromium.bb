@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 
+#include <algorithm>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
