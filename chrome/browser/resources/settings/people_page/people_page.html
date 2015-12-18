@@ -14,8 +14,8 @@
 </if>
 
 <dom-module id="settings-people-page">
-  <link rel="import" type="css"
-      href="chrome://md-settings/settings_shared.css">
+  <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
+  <link rel="import" type="css" href="people_page.css">
   <template>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="people">
@@ -23,9 +23,7 @@
         <div class="settings-box">
           <div class="split">
             <span class="start">
-              <!-- TODO(tommycli): Investigate ChromeOS user pictures.
-                                   To be done by January 2015. -->
-              <img src="[[syncStatus.iconURL]]">
+              <img id="account-picture" src="[[syncStatus.iconURL]]">
               [[syncStatus.name]]
             </span>
             <span>

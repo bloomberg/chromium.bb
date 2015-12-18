@@ -55,7 +55,11 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/user_manager/user_manager.h"
 #else
 #include "components/signin/core/browser/signin_manager.h"
 #endif
@@ -147,6 +151,49 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
     }
   }
   return true;
+}
+
+// Retrieves the
+void GetAccountNameAndIcon(const Profile& profile,
+                           std::string* name,
+                           std::string* icon_url) {
+  DCHECK(name);
+  DCHECK(icon_url);
+
+#if defined(OS_CHROMEOS)
+  *name = profile.GetProfileUserName();
+  if (name->empty()) {
+    const user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(&profile);
+    if (user && (user->GetType() != user_manager::USER_TYPE_GUEST))
+      *name = user->email();
+  }
+  if (!name->empty())
+    *name = gaia::SanitizeEmail(gaia::CanonicalizeEmail(*name));
+
+  // Get image as data URL instead of using chrome://userimage source to avoid
+  // issues with caching.
+  const AccountId account_id(AccountId::FromUserEmail(*name));
+  base::RefCountedMemory* image =
+      chromeos::options::UserImageSource::GetUserImage(account_id);
+  *icon_url = webui::GetPngDataUrl(image->front(), image->size());
+#else   // !defined(OS_CHROMEOS)
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileAttributesEntry* entry = nullptr;
+  if (cache.GetProfileAttributesWithPath(profile.GetPath(), &entry)) {
+    *name = base::UTF16ToUTF8(entry->GetName());
+
+    if (entry->IsUsingGAIAPicture() && entry->GetGAIAPicture()) {
+      gfx::Image icon =
+          profiles::GetAvatarIconForWebUI(entry->GetAvatarIcon(), true);
+      *icon_url = webui::GetBitmapDataUrl(icon.AsBitmap());
+    } else {
+      *icon_url =
+          profiles::GetDefaultAvatarIconUrl(entry->GetAvatarIconIndex());
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
 }
 
 }  // namespace
@@ -768,22 +815,11 @@ scoped_ptr<base::DictionaryValue> PeopleHandler::GetSyncStateDictionary() {
   sync_status->SetBoolean("hasUnrecoverableError",
                           service && service->HasUnrecoverableError());
 
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  ProfileAttributesEntry* entry = nullptr;
-  if (cache.GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
-    sync_status->SetString("name", entry->GetName());
-
-    if (entry->IsUsingGAIAPicture() && entry->GetGAIAPicture()) {
-      gfx::Image icon =
-          profiles::GetAvatarIconForWebUI(entry->GetAvatarIcon(), true);
-      sync_status->SetString("iconURL",
-                             webui::GetBitmapDataUrl(icon.AsBitmap()));
-    } else {
-      sync_status->SetString("iconURL", profiles::GetDefaultAvatarIconUrl(
-                                            entry->GetAvatarIconIndex()));
-    }
-  }
+  std::string name;
+  std::string icon_url;
+  GetAccountNameAndIcon(*profile_, &name, &icon_url);
+  sync_status->SetString("name", name);
+  sync_status->SetString("iconURL", icon_url);
 
   return sync_status.Pass();
 }

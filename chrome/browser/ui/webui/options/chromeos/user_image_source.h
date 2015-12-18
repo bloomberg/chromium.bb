@@ -38,9 +38,9 @@ class UserImageSource : public content::URLDataSource {
   std::string GetMimeType(const std::string& path) const override;
 
   // Returns PNG encoded image for user with specified |account_id|. If there's
-  // no user with such an id, returns the first default image.
-  static base::RefCountedMemory* GetUserImage(const AccountId& account_id,
-                                              ui::ScaleFactor scale_factor);
+  // no user with such an id, returns the first default image. Always returns
+  // the 100%-scale asset.
+  static base::RefCountedMemory* GetUserImage(const AccountId& account_id);
 
  private:
   ~UserImageSource() override;

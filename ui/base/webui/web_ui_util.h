@@ -21,6 +21,10 @@ namespace webui {
 // so that it can be used in WebUI.
 UI_BASE_EXPORT std::string GetBitmapDataUrl(const SkBitmap& bitmap);
 
+// Convenience routine to convert an in-memory PNG to a data url for WebUI use.
+UI_BASE_EXPORT std::string GetPngDataUrl(const unsigned char* data,
+                                         size_t size);
+
 // Extracts a disposition from click event arguments. |args| should contain
 // an integer button and booleans alt key, ctrl key, meta key, and shift key
 // (in that order), starting at |start_index|.
