@@ -1340,3 +1340,5 @@ crbug.com/570002 [ XP ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html 
 crbug.com/570002 [ XP ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
 
 crbug.com/570893 [ Win10 Mac10.8 ] css3/flexbox/repaint.html [ Pass Failure ]
+
+crbug.com/570899 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled.html [ Failure ]
