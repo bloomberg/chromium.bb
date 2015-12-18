@@ -65,17 +65,17 @@ namespace internal {
 // |Sig| is a non-const reference.
 // Implementation note: This non-specialized case handles zero-arity case only.
 // Non-zero-arity cases should be handled by the specialization below.
-template <typename Sig>
-struct HasNonConstReferenceParam : false_type {};
+template <typename List>
+struct HasNonConstReferenceItem : false_type {};
 
 // Implementation note: Select true_type if the first parameter is a non-const
 // reference.  Otherwise, skip the first parameter and check rest of parameters
 // recursively.
-template <typename R, typename T, typename... Args>
-struct HasNonConstReferenceParam<R(T, Args...)>
+template <typename T, typename... Args>
+struct HasNonConstReferenceItem<TypeList<T, Args...>>
     : std::conditional<is_non_const_reference<T>::value,
                        true_type,
-                       HasNonConstReferenceParam<R(Args...)>>::type {};
+                       HasNonConstReferenceItem<TypeList<Args...>>>::type {};
 
 // HasRefCountedTypeAsRawPtr selects true_type when any of the |Args| is a raw
 // pointer to a RefCounted type.

@@ -527,6 +527,31 @@ struct DropTypeListItemImpl<0, TypeList<>> {
 template <size_t n, typename List>
 using DropTypeListItem = typename DropTypeListItemImpl<n, List>::Type;
 
+// Used for TakeTypeListItem implementation.
+template <size_t n, typename List, typename... Accum>
+struct TakeTypeListItemImpl;
+
+// Do not use enable_if and SFINAE here to avoid MSVC2013 compile failure.
+template <size_t n, typename T, typename... List, typename... Accum>
+struct TakeTypeListItemImpl<n, TypeList<T, List...>, Accum...>
+    : TakeTypeListItemImpl<n - 1, TypeList<List...>, Accum..., T> {};
+
+template <typename T, typename... List, typename... Accum>
+struct TakeTypeListItemImpl<0, TypeList<T, List...>, Accum...> {
+  using Type = TypeList<Accum...>;
+};
+
+template <typename... Accum>
+struct TakeTypeListItemImpl<0, TypeList<>, Accum...> {
+  using Type = TypeList<Accum...>;
+};
+
+// A type-level function that takes first |n| list item from given TypeList.
+// E.g. TakeTypeListItem<3, TypeList<A, B, C, D>> is evaluated to
+// TypeList<A, B, C>.
+template <size_t n, typename List>
+using TakeTypeListItem = typename TakeTypeListItemImpl<n, List>::Type;
+
 // Used for ConcatTypeLists implementation.
 template <typename List1, typename List2>
 struct ConcatTypeListsImpl;
@@ -553,6 +578,20 @@ struct MakeFunctionTypeImpl<R, TypeList<Args...>> {
 // return type and has TypeLists items as its arguments.
 template <typename R, typename ArgList>
 using MakeFunctionType = typename MakeFunctionTypeImpl<R, ArgList>::Type;
+
+// Used for ExtractArgs.
+template <typename Signature>
+struct ExtractArgsImpl;
+
+template <typename R, typename... Args>
+struct ExtractArgsImpl<R(Args...)> {
+  using Type = TypeList<Args...>;
+};
+
+// A type-level function that extracts function arguments into a TypeList.
+// E.g. ExtractArgs<R(A, B, C)> is evaluated to TypeList<A, B, C>.
+template <typename Signature>
+using ExtractArgs = typename ExtractArgsImpl<Signature>::Type;
 
 }  // namespace internal
 

@@ -162,9 +162,10 @@ T PolymorphicIdentity(T t) {
   return t;
 }
 
-template <typename T>
-void VoidPolymorphic1(T t) {
-}
+template <typename... Ts>
+struct VoidPolymorphic {
+  static void Run(Ts... t) {}
+};
 
 int Identity(int n) {
   return n;
@@ -499,17 +500,20 @@ TEST_F(BindTest, ArgumentBinding) {
 //   - Unbound sized array.
 //   - Unbound array-of-arrays.
 TEST_F(BindTest, UnboundArgumentTypeSupport) {
-  Callback<void(int)> unbound_value_cb = Bind(&VoidPolymorphic1<int>);
-  Callback<void(int*)> unbound_pointer_cb = Bind(&VoidPolymorphic1<int*>);
-  Callback<void(int&)> unbound_ref_cb = Bind(&VoidPolymorphic1<int&>);
+  Callback<void(int)> unbound_value_cb = Bind(&VoidPolymorphic<int>::Run);
+  Callback<void(int*)> unbound_pointer_cb = Bind(&VoidPolymorphic<int*>::Run);
+  Callback<void(int&)> unbound_ref_cb = Bind(&VoidPolymorphic<int&>::Run);
   Callback<void(const int&)> unbound_const_ref_cb =
-      Bind(&VoidPolymorphic1<const int&>);
+      Bind(&VoidPolymorphic<const int&>::Run);
   Callback<void(int[])> unbound_unsized_array_cb =
-      Bind(&VoidPolymorphic1<int[]>);
+      Bind(&VoidPolymorphic<int[]>::Run);
   Callback<void(int[2])> unbound_sized_array_cb =
-      Bind(&VoidPolymorphic1<int[2]>);
+      Bind(&VoidPolymorphic<int[2]>::Run);
   Callback<void(int[][2])> unbound_array_of_arrays_cb =
-      Bind(&VoidPolymorphic1<int[][2]>);
+      Bind(&VoidPolymorphic<int[][2]>::Run);
+
+  Callback<void(int&)> unbound_ref_with_bound_arg =
+      Bind(&VoidPolymorphic<int, int&>::Run, 1);
 }
 
 // Function with unbound reference parameter.
@@ -810,14 +814,14 @@ TEST_F(BindTest, ArgumentCopies) {
   CopyCounter counter(&copies, &assigns);
 
   Callback<void(void)> copy_cb =
-      Bind(&VoidPolymorphic1<CopyCounter>, counter);
+      Bind(&VoidPolymorphic<CopyCounter>::Run, counter);
   EXPECT_GE(1, copies);
   EXPECT_EQ(0, assigns);
 
   copies = 0;
   assigns = 0;
   Callback<void(CopyCounter)> forward_cb =
-      Bind(&VoidPolymorphic1<CopyCounter>);
+      Bind(&VoidPolymorphic<CopyCounter>::Run);
   forward_cb.Run(counter);
   EXPECT_GE(1, copies);
   EXPECT_EQ(0, assigns);
@@ -826,7 +830,7 @@ TEST_F(BindTest, ArgumentCopies) {
   assigns = 0;
   DerivedCopyCounter derived(&copies, &assigns);
   Callback<void(CopyCounter)> coerce_cb =
-      Bind(&VoidPolymorphic1<CopyCounter>);
+      Bind(&VoidPolymorphic<CopyCounter>::Run);
   coerce_cb.Run(CopyCounter(derived));
   EXPECT_GE(2, copies);
   EXPECT_EQ(0, assigns);

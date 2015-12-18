@@ -47,22 +47,6 @@
 
 namespace base {
 
-template <typename Functor>
-base::Callback<
-    typename internal::BindState<
-        typename internal::FunctorTraits<Functor>::RunnableType,
-        typename internal::FunctorTraits<Functor>::RunType>::UnboundRunType>
-Bind(Functor functor) {
-  // Typedefs for how to store and run the functor.
-  typedef typename internal::FunctorTraits<Functor>::RunnableType RunnableType;
-  typedef typename internal::FunctorTraits<Functor>::RunType RunType;
-
-  typedef internal::BindState<RunnableType, RunType> BindState;
-
-  return Callback<typename BindState::UnboundRunType>(
-      new BindState(internal::MakeRunnable(functor)));
-}
-
 template <typename Functor, typename... Args>
 base::Callback<
     typename internal::BindState<
@@ -80,12 +64,16 @@ Bind(Functor functor, const Args&... args) {
   // functor is going to interpret the argument as.
   typedef typename RunnableType::RunType BoundRunType;
 
+  using BoundArgs =
+      internal::TakeTypeListItem<sizeof...(Args),
+                                 internal::ExtractArgs<BoundRunType>>;
+
   // Do not allow binding a non-const reference parameter. Non-const reference
   // parameters are disallowed by the Google style guide.  Also, binding a
   // non-const reference parameter can make for subtle bugs because the
   // invoked function will receive a reference to the stored copy of the
   // argument and not the original.
-  static_assert(!internal::HasNonConstReferenceParam<BoundRunType>::value,
+  static_assert(!internal::HasNonConstReferenceItem<BoundArgs>::value,
                 "do not bind functions with nonconst ref");
 
   const bool is_method = internal::HasIsMethodTag<RunnableType>::value;
