@@ -489,13 +489,6 @@ crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/plugin-in-i
 crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 
-# https://codereview.chromium.org/1538713004/
-crbug.com/571039 css3/images/cross-fade-background-size.html [ NeedsRebaseline ]
-crbug.com/571039 css3/images/cross-fade-tiled.html [ NeedsRebaseline ]
-crbug.com/571039 fast/borders/border-image-scaled-gradient.html [ NeedsRebaseline ]
-crbug.com/571039 fast/gradients/border-image-gradient-sides-and-corners.html [ NeedsRebaseline ]
-crbug.com/571039 svg/custom/pattern-scaled-pattern-space.svg [ NeedsRebaseline ]
-
 crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
