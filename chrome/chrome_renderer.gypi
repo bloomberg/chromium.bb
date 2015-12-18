@@ -178,6 +178,8 @@
       'renderer/plugins/chrome_plugin_placeholder.h',
       'renderer/plugins/plugin_preroller.cc',
       'renderer/plugins/plugin_preroller.h',
+      'renderer/plugins/power_saver_info.cc',
+      'renderer/plugins/power_saver_info.h',
     ],
     # For safe_browsing==1 or safe_browsing==2.
     'chrome_renderer_basic_safe_browsing_sources': [

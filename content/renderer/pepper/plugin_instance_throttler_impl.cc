@@ -139,18 +139,17 @@ void PluginInstanceThrottlerImpl::Initialize(
 
   // |frame| may be nullptr in tests.
   if (frame) {
-    bool cross_origin_main_content = false;
     float zoom_factor = GetWebPlugin()->container()->pageZoomFactor();
-    if (!frame->ShouldThrottleContent(
-            frame->GetWebFrame()->top()->securityOrigin(), content_origin,
-            roundf(unobscured_size.width() / zoom_factor),
-            roundf(unobscured_size.height() / zoom_factor),
-            &cross_origin_main_content)) {
+    auto status = frame->GetPeripheralContentStatus(
+        frame->GetWebFrame()->top()->securityOrigin(), content_origin,
+        gfx::Size(roundf(unobscured_size.width() / zoom_factor),
+                  roundf(unobscured_size.height() / zoom_factor)));
+    if (status != RenderFrame::CONTENT_STATUS_PERIPHERAL) {
       DCHECK_NE(THROTTLER_STATE_MARKED_ESSENTIAL, state_);
       state_ = THROTTLER_STATE_MARKED_ESSENTIAL;
       FOR_EACH_OBSERVER(Observer, observer_list_, OnPeripheralStateChange());
 
-      if (cross_origin_main_content)
+      if (status == RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG)
         frame->WhitelistContentOrigin(content_origin);
 
       return;
