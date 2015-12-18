@@ -1,7 +1,6 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 3.0.0-pre (201?-??-??)
-
 ** New features
 ** Bug fixes
 ** Other changes
@@ -11,6 +10,38 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   - typeform is included in output.
 
 ** Braille table improvements
+
+* Noteworthy changes in release 2.6.5 (2015-12-1)
+This minor release introduces new tables (Mongolian and Norwegian 8
+dot) and new features to the tracing tool. But the most exiting news
+about this release is probably the fact that 12 developers have
+contributed to it, showing how widely used liblouis is and how
+actively the development progresses.
+
+** New features
+- A DEF file is now generated automatically for the windows builds.
+  Thanks to Christian Egli
+- lou_trace supports backtranslation now. Thanks to Bert Frees
+
+** Bug fixes
+- Fix a bug in the findtable code. Thanks to Michael Katzmann for the
+  report.
+- Fix some compile time warnings on Windows, thanks to Bue
+  Vester-Andersen.
+- Fixes to the logging code by Arend Arends.
+
+** Other changes
+- Add test data for EUB symbols, thanks to Paul Wood
+- Clean up dead code i.e. remove support for (undocumented) nobreak
+  opcode. Thanks to Bue Vester-Andersen.
+
+** Braille table improvements
+- New Mongolian table thanks to Tsengel Maidar and Sreeja Param.
+- Improvements to the Chinese braille table thanks to Coscell Kao.
+- Massive improvements to Norwegian, thanks to Lars Bjørndal, Ammar
+  Usama and Jostein Austvik Jacobsen. They added a 8 dot table and
+  lots of test data.
+- Improvements to Hungarian, thanks to Attila Hammer
 
 * Noteworthy changes in release 2.6.4 (2015-08-31)
 This is a minor release in terms of features. But in terms of test
@@ -23,7 +54,7 @@ against this corpus ensuring the change doesn't break anything.
 - YAML based harness tests. Harness tests can now be written in simple
   YAML notation and they are integrated with the normal `make check`
   command. They can be used for both ucs2 and ucs4 and no Python is
-  required.
+  required. Thanks to Christian Egli.
 
 ** Bug fixes
 - Use a separate gnulib instance for the library and the tools. Use

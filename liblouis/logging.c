@@ -48,7 +48,7 @@ void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int 
     formatString = "0x%04X ";
   else
     formatString = "0x%08X ";
-  for (i = 0; i < strlen(msg); i++)
+  for (i = 0; i < (int) strlen(msg); i++)
     logMsg[i] = msg[i];
   p += strlen(msg);
   for (i = 0; i < wlen; i++)
@@ -101,7 +101,12 @@ void logMessage(logLevels level, const char *format, ...)
   if (logCallbackFunction != NULL)
     {
 #ifdef _WIN32
-      float f = 2.3; // Needed to force VC++ runtime floating point support
+      double f = 2.3; // Needed to force VC++ runtime floating point support
+#endif
+#ifdef _MSC_VER
+	#if _MSC_VER < 1500
+		#define vsnprintf _vsnprintf
+	#endif
 #endif
       char *s;
       size_t len;
@@ -122,7 +127,7 @@ void logMessage(logLevels level, const char *format, ...)
 
 
 static FILE *logFile = NULL;
-static char initialLogFileName[256];
+static char initialLogFileName[256] = "";
 
 void EXPORT_CALL
 lou_logFile (const char *fileName)

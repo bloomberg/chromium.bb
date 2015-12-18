@@ -6,7 +6,7 @@
 
 SRCDIR = ..\liblouis
 CC = cl.exe
-CFLAGS =  /nologo /O2 /W1 /c
+CFLAGS =  /nologo /O2 /W3 /c -D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS
 CFLAGS = $(CFLAGS) /Iinclude
 HEADERS = $(SRCDIR)\louis.h include\liblouis.h include\config.h
 DLLFLAGS = /dll /nologo /DEF:liblouis.def /OUT:liblouis.dll

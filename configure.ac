@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.68)
-AC_INIT([Liblouis], [2.6.4], [liblouis-liblouisxml@freelists.org], [liblouis], [http://www.liblouis.org])
+AC_INIT([Liblouis], [2.6.5], [liblouis-liblouisxml@freelists.org], [liblouis], [http://www.liblouis.org])
 AC_CONFIG_SRCDIR([liblouis/lou_backTranslateString.c])
 AM_CONFIG_HEADER(liblouis/config.h)
 
@@ -51,7 +51,7 @@ AH_BOTTOM([
 ])
 
 # increment if the interface has additions, changes, removals.
-LIBLOUIS_CURRENT=9
+LIBLOUIS_CURRENT=10
 
 # increment any time the source changes; set to 0 if you increment
 # CURRENT
@@ -65,6 +65,10 @@ LIBLOUIS_AGE=0
 AC_SUBST(LIBLOUIS_CURRENT)
 AC_SUBST(LIBLOUIS_REVISION)
 AC_SUBST(LIBLOUIS_AGE)
+
+# needed to build the liblouis.def
+DLL_VERSION=`expr ${LIBLOUIS_CURRENT} - ${LIBLOUIS_AGE}`
+AC_SUBST(DLL_VERSION)
 
 AC_ISC_POSIX
 AC_HEADER_STDC

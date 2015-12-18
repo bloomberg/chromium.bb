@@ -105,6 +105,7 @@ Fifth Floor, Boston, MA 02110-1301, USA.
 * Testing Translation Tables interactively::
 * Automated Testing of Translation Tables::
 * Programming with liblouis::
+* Concept Index::
 * Opcode Index::
 * Function Index::
 * Program Index::
@@ -372,14 +373,19 @@ Full 32-bit value.
 @end table
 
 The dots operand is a braille dot pattern. The real braille dots, 1
-through 8, must be specified with their standard numbers. liblouis
-recognizes "virtual dots," which are used for special purposes, such
-as distinguishing accent marks. There are seven virtual dots. They are
-specified by the number 9 and the letters @samp{a} through @samp{f}.
+through 8, must be specified with their standard numbers.
+
+@cindex virtual dots
+@anchor{virtual dots}
+liblouis recognizes @emph{virtual dots}, which are used for special
+purposes, such as distinguishing accent marks. There are seven virtual
+dots. They are specified by the number 9 and the letters @samp{a}
+through @samp{f}.
+
 For a multi-cell dot pattern, the cell specifications must be
 separated from one another by a dash (@samp{-}). For example, the
 contraction for the English word @samp{lord} (the letter @samp{l}
-preceded by dot 5) would be specified as 5-123. A space may be
+preceded by dot 5) would be specified as @samp{5-123}. A space may be
 specified with the special dot number 0.
 
 An opcode which is helpful in writing translation tables is
@@ -942,7 +948,7 @@ may require more than one cell. The first operand must be a character
 with a decimal representation from 0 to 255 inclusive. The second
 operand may specify as many cells as necessary. The opcode is somewhat
 of a misnomer, since any dots, not just dots 1 through 6, can be
-specified. This even includes virtual dots.
+specified. This even includes virtual dots (@pxref{virtual dots}).
 
 @opcode{nocont, characters}
 Like @code{compbrl}, except that the string is uncontracted.
@@ -1740,11 +1746,27 @@ translation table and an input string.
 lou_trace [OPTIONS] TABLE[,TABLE,...]
 @end example
 
-@command{lou_trace} accepts all the standard options (@pxref{common
-options}). Once started you can type an input string followed by
-@kbd{@key{RET}}. @command{lou_trace} will print the braille
-translation followed by list of rules that were applied to produce the
-translation. A possible invocation is listed in the following example:
+Aside from the standard options (@pxref{common options})
+@command{lou_trace} also accepts the following options:
+
+@table @option
+
+@item --forward
+@itemx -f
+Trace a forward translation.
+
+@item --backward
+@itemx -b
+Trace a backward translation.
+
+@end table
+
+If no options are given forward translation is assumed.
+
+Once started you can type an input string followed by @kbd{@key{RET}}.
+@command{lou_trace} will print the braille translation followed by
+list of rules that were applied to produce the translation. A possible
+invocation is listed in the following example:
 
 @example
 $ lou_trace tables/en-us-g2.ctb 
@@ -2371,14 +2393,14 @@ and perhaps notable changes.
 
 @example
 int lou_translateString (
-    const char * tableList, 
-    const widechar * inbuf, 
-    int *inlen, 
-    widechar *outbuf, 
-    int *outlen, 
-    char *typeform, 
-    char *spacing, 
-    int mode);
+  const char *tableList,
+  const widechar *inbuf,
+  int *inlen,
+  widechar *outbuf,
+  int *outlen,
+  char *typeform,
+  char *spacing,
+  int mode);
 @end example
 
 This function takes a string of 16-bit Unicode characters in
@@ -2462,17 +2484,17 @@ complete translation could not be done.
 
 @example
 int lou_translate (
-    const char * tableList, 
-    const widechar * const inbuf, 
-    int *inlen, 
-    widechar * outbuf, 
-    int *outlen, 
-    char *typeform, 
-    char *spacing, 
-    int *outputPos, 
-    int *inputPos, 
-    int *cursorPos, 
-    int mode);
+  const char *tableList,
+  const widechar *inbuf,
+  int *inlen,
+  widechar *outbuf,
+  int *outlen,
+  char *typeform,
+  char *spacing,
+  int *outputPos,
+  int *inputPos,
+  int *cursorPos,
+  int mode);
 @end example
 
 This function adds the parameters @code{outputPos}, @code{inputPos} and
@@ -2525,14 +2547,14 @@ failure (return value of 0).
 
 @example
 int lou_backTranslateString (
-    const char * tableList, 
-    const widechar * inbuf, 
-    int *inlen, 
-    widechar *outbuf, 
-    int *outlen, 
-    char *typeform, 
-    char *spacing, 
-    int mode);
+  const char *tableList,
+  const widechar *inbuf,
+  int *inlen,
+  widechar *outbuf,
+  int *outlen,
+  char *typeform,
+  char *spacing,
+  int mode);
 @end example
 
 This is exactly the opposite of @code{lou_translateString}.
@@ -2551,17 +2573,17 @@ should be done.
 
 @example
 int lou_backTranslate (
-    const char * tableList, 
-    const widechar * inbufx, 
-    int *inlen, 
-    widechar * outbuf, 
-    int *outlen, 
-    char *typeform, 
-    char *spacing, 
-    int *outputPos, 
-    int *inputPos, 
-    int *cursorPos, 
-    int mode);
+  const char *tableList,
+  const widechar *inbuf,
+  int *inlen,
+  widechar *outbuf,
+  int *outlen,
+  char *typeform,
+  char *spacing,
+  int *outputPos,
+  int *inputPos,
+  int *cursorPos,
+  int mode);
 @end example
 
 This function is exactly the inverse of @code{lou_translate}.
@@ -2572,11 +2594,11 @@ This function is exactly the inverse of @code{lou_translate}.
 
 @example
 int lou_hyphenate (
-    const char *tableList, 
-    const widechar *inbuf, 
-    int inlen, 
-    char *hyphens, 
-    int mode);
+  const char *tableList,
+  const widechar *inbuf,
+  int inlen,
+  char *hyphens,
+  int mode);
 @end example
 
 This function looks at the characters in @code{inbuf} and if it finds
@@ -2621,8 +2643,12 @@ will be produced if it is invalid. The function returns 1 on success and
 @findex lou_dotsToChar
 
 @example
-int lou_dotsToChar (const char *tableList, const widechar *inbuf, widechar 
-	*outbuf, int length, int)
+int lou_dotsToChar (
+  const char *tableList,
+  const widechar *inbuf,
+  widechar *outbuf,
+  int length,
+  int mode)
 @end example
 
 This function takes a widechar string in @code{inbuf} consisting of dot 
@@ -2638,8 +2664,12 @@ and 0 on failure.
 @findex lou_charToDots
 
 @example
-int lou_charToDots (const char *tableList, const widechar *inbuf, widechar 
-	*outbuf, int length, int mode)
+int lou_charToDots (
+  const char *tableList,
+  const widechar *inbuf,
+  widechar *outbuf,
+  int length,
+  int mode)
 @end example
 
 This function is the inverse of @code{lou_dotsToChar}. It takes a
@@ -2656,8 +2686,12 @@ success and 0 on failure.
 @findex lou_registerLogCallback
 
 @example
-typedef void (*logcallback)(int level, const char *message);
-void lou_registerLogCallback(logcallback callback);
+typedef void (*logcallback) (
+  int level,
+  const char *message);
+  
+void lou_registerLogCallback (
+  logcallback callback);
 @end example
 
 This function can be used to register a custom logging callback. The
@@ -2674,15 +2708,16 @@ callback. Passing @code{NULL} resets to the default callback.
 @example
 typedef enum
 @{
-  LOG_ALL = -2147483648,
+  LOG_ALL = 0,
   LOG_DEBUG = 10000,
   LOG_INFO = 20000,
   LOG_WARN = 30000,
   LOG_ERROR = 40000,
   LOG_FATAL = 50000,
-  LOG_OFF = 2147483647
+  LOG_OFF = 6000
 @} logLevels;
-void lou_setLogLevel(logLevels level);
+void lou_setLogLevel (
+  logLevels level);
 @end example
 
 This function can be used to influence the amount of logging, from
@@ -2698,7 +2733,8 @@ default level is @code{LOG_INFO}.
 @findex lou_logFile
 
 @example
-void lou_logFile (char *fileName);
+void lou_logFile (
+  char *fileName);
 @end example
 
 This function is used when it is not convenient either to let messages
@@ -2712,7 +2748,9 @@ the file must be given.
 @findex lou_logPrint
 
 @example
-void lou_logPrint (char *format, ...);
+void lou_logPrint (
+  char *format,
+  ...);
 @end example
 
 This function is called like @code{fprint}. It can be used by other
@@ -2738,7 +2776,8 @@ log file, so that it can be read by the rest of the program.
 @findex lou_setDataPath
 
 @example
-char * lou_setDataPath (char *path);
+char *lou_setDataPath (
+  char *path);
 @end example
 
 This function is used to tell liblouis and liblouisutdml where tables 
@@ -2752,7 +2791,7 @@ located. The function returns a pointer to the @code{path}.
 @findex lou_getDataPath
 
 @example
-char * lou_getDataPath ();
+char *lou_getDataPath ();
 @end example
 
 This function returns a pointer to the path set by 
@@ -2763,7 +2802,8 @@ This function returns a pointer to the path set by
 @findex lou_getTable
 
 @example
-void *lou_getTable (char *tablelist);
+void *lou_getTable (
+  char *tablelist);
 @end example
 
 @code{tablelist} is a list of names of table files separated by
@@ -2780,7 +2820,9 @@ pointer being returned.
 @findex lou_readCharFromFile
 
 @example
-int lou_readCharFromFile (const char *fileName, int *mode);
+int lou_readCharFromFile (
+  const char *fileName,
+  int *mode);
 @end example
 
 This function is provided for situations where it is necessary to read
@@ -2814,6 +2856,10 @@ There are Python bindings for @code{lou_translateString},
 instructions see the the @file{README} file in the @file{python}
 directory. Usage information is included in the Python module itself.
 
+
+@node Concept Index
+@unnumbered Concept Index
+@printindex cp
 
 @node Opcode Index
 @unnumbered Opcode Index

@@ -207,53 +207,63 @@ XFAIL_TESTS =					\
 	en_gb_g1_italics			\
 	squash_space
 
-dist_yaml_TESTS =				\
+# en-ueb-symbols_harness.yaml defines the desired behaviour.
+# Apparently the tables aren't quite there yet.
+XFAIL_TESTS += en-ueb-symbols_harness.yaml
+
+dist_yaml_TESTS =					\
 	yaml/ar-ar-g1_harness.yaml			\
-	yaml/ar-fa_harness.yaml			\
+	yaml/ar-fa_harness.yaml				\
 	yaml/chr-us-g1_harness.yaml			\
-	yaml/da-dk-g16-dictionary_harness.yaml	\
-	yaml/da-dk-g18-dictionary_harness.yaml	\
-	yaml/da-dk-g26-dictionary_harness.yaml	\
-	yaml/da-dk-g28-dictionary_harness.yaml	\
+	yaml/da-dk-g16-dictionary_harness.yaml		\
+	yaml/da-dk-g18-dictionary_harness.yaml		\
+	yaml/da-dk-g26-dictionary_harness.yaml		\
+	yaml/da-dk-g28-dictionary_harness.yaml		\
 	yaml/en-GB-g2_backward.yaml			\
 	yaml/en-GB-g2_harness.yaml			\
 	yaml/en-gb-g1_harness.yaml			\
 	yaml/en-ueb-g1_harness.yaml			\
-	yaml/en-ueb-g2-dictionary_harness.yaml	\
-	yaml/en-us-g2-dictionary_harness.yaml	\
-	yaml/en-us-g2-end-emphasis_harness.yaml	\
-	yaml/eo-g1_harness.yaml			\
+	yaml/en-ueb-g2-dictionary_harness.yaml		\
+	yaml/en-ueb-symbols_harness.yaml		\
+	yaml/en-us-g2-dictionary_harness.yaml		\
+	yaml/en-us-g2-end-emphasis_harness.yaml		\
+	yaml/eo-g1_harness.yaml				\
 	yaml/ethio-g1_harness.yaml			\
-	yaml/example_test.yaml			\
+	yaml/example_test.yaml				\
 	yaml/fi_harness.yaml				\
-	yaml/foo.yaml				\
+	yaml/foo.yaml					\
 	yaml/fr-bfu-g2_harness.yaml			\
-	yaml/ga-g1_harness.yaml			\
-	yaml/ga-g2_harness.yaml			\
+	yaml/ga-g1_harness.yaml				\
+	yaml/ga-g2_harness.yaml				\
 	yaml/hr-8dots_harness.yaml			\
-	yaml/hu-hu-comp8_backward.yaml		\
-	yaml/hu-hu-comp8_harness.yaml		\
+	yaml/hu-hu-comp8_backward.yaml			\
+	yaml/hu-hu-comp8_harness.yaml			\
 	yaml/hu-hu-g1_backward.yaml			\
 	yaml/hu-hu-g1_harness.yaml			\
 	yaml/iu-ca-g1_harness.yaml			\
 	yaml/ko-2006-g2_harness.yaml			\
-	yaml/ko-g2_harness.yaml			\
-	yaml/letterDefTest_harness.yaml		\
+	yaml/ko-g2_harness.yaml				\
+	yaml/letterDefTest_harness.yaml			\
+	yaml/mn-MN_harness.yaml				\
 	yaml/nl-BE-g0_harness.yaml			\
 	yaml/nl-BE-g1_harness.yaml			\
 	yaml/nl-NL-g0_harness.yaml			\
+	yaml/yno_harness.yaml				\
+	yaml/no_g1_harness.yaml				\
+	yaml/no_g2_harness.yaml				\
+	yaml/no_8dot_harness.yaml			\
 	yaml/nocross_harness.yaml			\
-	yaml/pl-pl-comp8_harness.yaml		\
-	yaml/sr-g1_harness.yaml			\
+	yaml/pl-pl-comp8_harness.yaml			\
+	yaml/sr-g1_harness.yaml				\
 	yaml/ta-ta-g1_harness.yaml			\
-	yaml/en-ueb-g1_harness.txt.bak.yaml			\
+	yaml/en-ueb-g1_harness.txt.bak.yaml		\
 	yaml/en-ueb-g2-dictionary_harness.txt.bak.yaml	\
 	yaml/en-us-g2-dictionary_harness.txt.bak.yaml	\
 	yaml/en-us-g2-end-emphasis_harness.txt.bak.yaml	\
-	yaml/ethio-g1_harness.txt.bak.yaml			\
-	yaml/ko-2006-g2_harness.txt.bak.yaml			\
+	yaml/ethio-g1_harness.txt.bak.yaml		\
+	yaml/ko-2006-g2_harness.txt.bak.yaml		\
 	yaml/ko-g2_harness.txt.bak.yaml			\
-	yaml/nl-BE-g1_harness.txt.bak.yaml			\
+	yaml/nl-BE-g1_harness.txt.bak.yaml		\
 	yaml/ta-ta-g1_harness.txt.bak.yaml
 
 TEST_EXTENSIONS = .yaml

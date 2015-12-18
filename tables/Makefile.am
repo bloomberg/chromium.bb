@@ -183,6 +183,7 @@ table_files = \
 	marburg_unicode_defs.cti \
 	ml-in-g1.utb \
 	mn-in-g1.utb \
+	mn-MN.utb \
 	mr-in-g1.utb \
 	mt.ctb \
 	mun.ctb \
@@ -198,6 +199,8 @@ table_files = \
 	nl-NL-g0.utb \
 	nl-NL-old-g0.utb \
 	nl-old-g0.utb \
+	no-no-8dot.utb \
+	no-no-chardefs6.uti \
 	no-no.ctb \
 	no-no.dis \
 	no-no-g0.utb \
@@ -206,6 +209,7 @@ table_files = \
 	no-no-g3.ctb \
 	no-no-generic.ctb \
 	no-no-generic.dis \
+	no-no-latinLetterDef6Dots_diacritics.uti \
 	np-in-g1.utb \
 	or-in-g1.utb \
 	oriya.cti \

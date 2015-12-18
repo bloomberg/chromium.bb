@@ -128,6 +128,7 @@ TAGS
 /tests/capitalization
 /tests/capitalized_with_sentance
 /tests/capitalized_word
+/tests/check_yaml
 /tests/en_gb_g1_italics
 /tests/getTable
 /tests/hash_collision
@@ -195,18 +196,9 @@ TAGS
 /tools/gnulib/sys/
 /tools/gnulib/unistd.h
 /tools/gnulib/warn-on-use.h
-/tests/check_yaml
 
 # stuff used with /tools/lou_compare
 input.txt
 pass.txt
 fail.txt
 output.txt
-
-# stuff for local development
-local/
-local
-
-/gnulib/m4/absolute-header.m4
-/gnulib/m4/ld-output-def.m4
-
