@@ -41,6 +41,7 @@
 // guaranteed to exist in separate address spaces, including being separate from
 // the main system heap. If the contained objects are all freed, physical memory
 // is returned to the system but the address space remains reserved.
+// See PartitionAlloc.md for other security properties PartitionAlloc provides.
 //
 // THE ONLY LEGITIMATE WAY TO OBTAIN A PartitionRoot IS THROUGH THE
 // SizeSpecificPartitionAllocator / PartitionAllocatorGeneric classes. To
@@ -65,7 +66,7 @@
 //
 // The allocators are designed to be extremely fast, thanks to the following
 // properties and design:
-// - Just a single (reasonably predicatable) branch in the hot / fast path for
+// - Just two single (reasonably predicatable) branches in the hot / fast path for
 // both allocating and (significantly) freeing.
 // - A minimal number of operations in the hot / fast path, with the slow paths
 // in separate functions, leading to the possibility of inlining.
@@ -76,18 +77,6 @@
 // - The freelist for a given bucket is split across a number of partition
 // pages, enabling various simple tricks to try and minimize fragmentation.
 // - Fine-grained bucket sizes leading to less waste and better packing.
-//
-// The following security properties are provided at this time:
-// - Linear overflows cannot corrupt into the partition.
-// - Linear overflows cannot corrupt out of the partition.
-// - Freed pages will only be re-used within the partition.
-//   (exception: large allocations > ~1MB)
-// - Freed pages will only hold same-sized objects when re-used.
-// - Dereference of freelist pointer should fault.
-// - Out-of-line main metadata: linear over or underflow cannot corrupt it.
-// - Partial pointer overwrite of freelist pointer should fault.
-// - Rudimentary double-free detection.
-// - Large allocations (> ~1MB) are guard-paged at the beginning and end.
 //
 // The following security properties could be investigated in the future:
 // - Per-object bucketing (instead of per-size) is mostly available at the API,
