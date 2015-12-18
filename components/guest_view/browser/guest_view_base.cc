@@ -415,6 +415,8 @@ void GuestViewBase::DidDetach() {
   owner_web_contents()->Send(new GuestViewMsg_GuestDetached(
       element_instance_id_));
   element_instance_id_ = kInstanceIDNone;
+  if (!CanRunInDetachedState())
+    Destroy();
 }
 
 bool GuestViewBase::HandleFindForEmbedder(
