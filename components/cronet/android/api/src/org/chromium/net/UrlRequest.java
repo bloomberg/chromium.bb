@@ -42,8 +42,8 @@ public interface UrlRequest {
                 new ArrayList<Pair<String, String>>();
         // Disable the cache for just this request.
         boolean mDisableCache;
-        // Priority of request.
-        int mPriority = REQUEST_PRIORITY_MEDIUM;
+        // Priority of request. Default is medium.
+        @RequestPriority int mPriority = REQUEST_PRIORITY_MEDIUM;
         // If request is an upload, this provides the request body data.
         UploadDataProvider mUploadDataProvider;
         // Executor to call upload data provider back on.
@@ -148,7 +148,8 @@ public interface UrlRequest {
          */
         public static final int REQUEST_PRIORITY_LOW = 2;
         /**
-         * Medium request priority. Passed to {@link #setPriority}.
+         * Medium request priority. Passed to {@link #setPriority}. This is the
+         * default priority given to the request.
          */
         public static final int REQUEST_PRIORITY_MEDIUM = 3;
         /**
@@ -159,7 +160,8 @@ public interface UrlRequest {
         /**
          * Sets priority of the request which should be one of the
          * {@link #REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*} values.
-         * Defaults to {@link #REQUEST_PRIORITY_MEDIUM}
+         * The request is given {@link #REQUEST_PRIORITY_MEDIUM} priority if {@link
+         * #setPriority} is not called.
          *
          * @param priority priority of the request which should be one of the
          *         {@link #REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*} values.

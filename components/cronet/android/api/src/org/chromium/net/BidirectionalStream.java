@@ -4,6 +4,10 @@
 
 package org.chromium.net;
 
+import android.support.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -40,6 +44,8 @@ public abstract class BidirectionalStream {
 
         // HTTP method for the request. Default to POST.
         private String mHttpMethod = "POST";
+        // Priority of the stream. Default is medium.
+        @StreamPriority private int mPriority = STREAM_PRIORITY_MEDIUM;
 
         /**
          * Creates a builder for {@link BidirectionalStream} objects. All callbacks for
@@ -107,6 +113,52 @@ public abstract class BidirectionalStream {
             return this;
         }
 
+        /** @deprecated not really deprecated but hidden. */
+        @IntDef({
+                STREAM_PRIORITY_IDLE, STREAM_PRIORITY_LOWEST, STREAM_PRIORITY_LOW,
+                STREAM_PRIORITY_MEDIUM, STREAM_PRIORITY_HIGHEST,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        @SuppressWarnings("DepAnn")
+        public @interface StreamPriority {}
+
+        /**
+         * Lowest stream priority. Passed to {@link #setPriority}.
+         */
+        public static final int STREAM_PRIORITY_IDLE = 0;
+        /**
+         * Very low stream priority. Passed to {@link #setPriority}.
+         */
+        public static final int STREAM_PRIORITY_LOWEST = 1;
+        /**
+         * Low stream priority. Passed to {@link #setPriority}.
+         */
+        public static final int STREAM_PRIORITY_LOW = 2;
+        /**
+         * Medium stream priority. Passed to {@link #setPriority}. This is the
+         * default priority given to the stream.
+         */
+        public static final int STREAM_PRIORITY_MEDIUM = 3;
+        /**
+         * Highest stream priority. Passed to {@link #setPriority}.
+         */
+        public static final int STREAM_PRIORITY_HIGHEST = 4;
+
+        /**
+         * Sets priority of the stream which should be one of the
+         * {@link #STREAM_PRIORITY_IDLE STREAM_PRIORITY_*} values.
+         * The stream is given {@link #STREAM_PRIORITY_MEDIUM} priority if {@link
+         * #setPriority} is not called.
+         *
+         * @param priority priority of the stream which should be one of the
+         *         {@link #STREAM_PRIORITY_IDLE STREAM_PRIORITY_*} values.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder setPriority(@StreamPriority int priority) {
+            mPriority = priority;
+            return this;
+        }
+
         /**
          * Creates a {@link BidirectionalStream} using configuration from this
          * {@link Builder}. The returned {@code BidirectionalStream} can then be started
@@ -117,7 +169,7 @@ public abstract class BidirectionalStream {
          */
         public BidirectionalStream build() {
             return mCronetEngine.createBidirectionalStream(
-                    mUrl, mCallback, mExecutor, mHttpMethod, mRequestHeaders);
+                    mUrl, mCallback, mExecutor, mHttpMethod, mRequestHeaders, mPriority);
         }
     }
 

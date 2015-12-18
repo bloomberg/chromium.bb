@@ -587,8 +587,8 @@ public abstract class CronetEngine {
      * @deprecated Use {@link UrlRequest.Builder#build}.
      */
     @Deprecated
-    public abstract UrlRequest createRequest(
-            String url, UrlRequest.Callback callback, Executor executor, int priority);
+    public abstract UrlRequest createRequest(String url, UrlRequest.Callback callback,
+            Executor executor, @UrlRequest.Builder.RequestPriority int priority);
 
     /**
      * Creates a {@link BidirectionalStream} object. {@code callback} methods will
@@ -601,11 +601,15 @@ public abstract class CronetEngine {
      * @param executor the {@link Executor} on which all callbacks will be called
      * @param httpMethod the HTTP method to use for the stream
      * @param requestHeaders the list of request headers
+     * @param priority priority of the stream which should be one of the
+     *         {@link BidirectionalStream.Builder#STREAM_PRIORITY_IDLE STREAM_PRIORITY_*}
+     *         values.
      * @return a new stream.
      */
     abstract BidirectionalStream createBidirectionalStream(String url,
             BidirectionalStream.Callback callback, Executor executor, String httpMethod,
-            List<Map.Entry<String, String>> requestHeaders);
+            List<Map.Entry<String, String>> requestHeaders,
+            @BidirectionalStream.Builder.StreamPriority int priority);
 
     /**
      * @return {@code true} if the engine is enabled.

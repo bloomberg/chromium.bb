@@ -128,8 +128,8 @@ class CronetUrlRequestContext extends CronetEngine {
     }
 
     @Override
-    public UrlRequest createRequest(
-            String url, UrlRequest.Callback callback, Executor executor, int priority) {
+    public UrlRequest createRequest(String url, UrlRequest.Callback callback, Executor executor,
+            @UrlRequest.Builder.RequestPriority int priority) {
         synchronized (mLock) {
             checkHaveAdapter();
             return new CronetUrlRequest(
@@ -139,7 +139,8 @@ class CronetUrlRequestContext extends CronetEngine {
 
     @Override
     BidirectionalStream createBidirectionalStream(String url, BidirectionalStream.Callback callback,
-            Executor executor, String httpMethod, List<Map.Entry<String, String>> requestHeaders) {
+            Executor executor, String httpMethod, List<Map.Entry<String, String>> requestHeaders,
+            @BidirectionalStream.Builder.StreamPriority int priority) {
         throw new UnsupportedOperationException();
     }
 
