@@ -81,8 +81,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
     self.Fail('conformance2/extensions/promoted-extensions-in-shaders.html',
         bug=295792)
-    self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
-        bug=483282)
     self.Fail('conformance2/samplers/sampler-drawing-test.html', bug=483282)
     self.Skip('conformance2/textures/webgl_canvas/*', bug=483282)
 
@@ -111,6 +109,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Fail('conformance2/glsl3/const-array-init.html',
         ['win'], bug=1198) # angle bug ID
+    self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
+        ['win', 'release'], bug=483282)
+    self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
+        ['win', 'debug'], bug=1266) # angle bug ID
 
     # Windows 8 only.
     self.Fail('conformance2/textures/image_data/tex-image-and-sub-image-2d' +
@@ -213,9 +215,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=564020)
     self.Fail('conformance2/renderbuffers/framebuffer-test.html',
         ['mac'], bug=483282)
-
     self.Fail('conformance2/textures/misc/compressed-tex-image.html',
         ['mac'], bug=565438)
+    self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
+        ['mac'], bug=483282)
 
     # Mac 10.9 only.
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
@@ -230,6 +233,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
         ['linux'], bug=564020)
+    self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
+        ['linux'], bug=483282)
 
     # Linux NVIDIA only.
     self.Fail('conformance2/renderbuffers/invalidate-framebuffer.html',

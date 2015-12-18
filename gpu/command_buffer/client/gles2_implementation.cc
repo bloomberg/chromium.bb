@@ -3541,10 +3541,10 @@ void GLES2Implementation::ReadPixels(
   }
 
   if (bound_pixel_pack_buffer_) {
-    // TODO(zmo): Need to handle the case of reading into a PIXEL_PACK_BUFFER
-    // in ES3. For now, generate a GL error.
-    SetGLError(GL_INVALID_OPERATION, "glReadPixels",
-               "ReadPixels to a pixel pack buffer isn't implemented");
+    GLuint offset = ToGLuint(pixels);
+    helper_->ReadPixels(
+        xoffset, yoffset, width, height, format, type, 0, offset, 0, 0, false);
+    CheckGLError();
     return;
   }
 

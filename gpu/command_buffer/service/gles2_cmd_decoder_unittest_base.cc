@@ -831,6 +831,17 @@ void GLES2DecoderTestBase::DoBindBuffer(
   EXPECT_CALL(*gl_, BindBuffer(target, service_id))
       .Times(1)
       .RetiresOnSaturation();
+  if (target == GL_PIXEL_PACK_BUFFER) {
+    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ROW_LENGTH, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_SKIP_PIXELS, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_SKIP_ROWS, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
   cmds::BindBuffer cmd;
   cmd.Init(target, client_id);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
