@@ -93,6 +93,22 @@ namespace content {
 
 namespace {
 
+std::string GetInputMessageTypes(MockRenderProcessHost* process) {
+  std::string result;
+  for (size_t i = 0; i < process->sink().message_count(); ++i) {
+    const IPC::Message* message = process->sink().GetMessageAt(i);
+    EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
+    InputMsg_HandleInputEvent::Param params;
+    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
+    const blink::WebInputEvent* event = base::get<0>(params);
+    if (i != 0)
+      result += " ";
+    result += WebInputEventTraits::GetName(event->type);
+  }
+  process->sink().ClearMessages();
+  return result;
+}
+
 id MockGestureEvent(NSEventType type, double magnification) {
   id event = [OCMockObject mockForClass:[NSEvent class]];
   NSPoint locationInWindow = NSMakePoint(0, 0);
@@ -329,6 +345,52 @@ TEST_F(RenderWidgetHostViewMacTest, AcceleratorDestroy) {
       cocoa_test_event_utils::KeyEventWithKeyCode(
           53, 27, NSKeyDown, NSCommandKeyMask)];
   observer.Wait();
+}
+
+// Test that NSEvent of private use character won't generate keypress event
+// http://crbug.com/459089
+TEST_F(RenderWidgetHostViewMacTest, FilterNonPrintableCharacter) {
+  TestBrowserContext browser_context;
+  MockRenderProcessHost* process_host =
+      new MockRenderProcessHost(&browser_context);
+  process_host->Init();
+  MockRenderWidgetHostDelegate delegate;
+  int32 routing_id = process_host->GetNextRoutingID();
+  MockRenderWidgetHostImpl* host =
+      new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+
+  // Simulate ctrl+F12, will produce a private use character but shouldn't
+  // fire keypress event
+  process_host->sink().ClearMessages();
+  EXPECT_EQ(0U, process_host->sink().message_count());
+  [view->cocoa_view() keyEvent:
+      cocoa_test_event_utils::KeyEventWithKeyCode(
+          0x7B, 0xF70F, NSKeyDown, NSControlKeyMask)];
+  EXPECT_EQ(1U, process_host->sink().message_count());
+  EXPECT_EQ("RawKeyDown", GetInputMessageTypes(process_host));
+
+  // Simulate ctrl+delete, will produce a private use character but shouldn't
+  // fire keypress event
+  process_host->sink().ClearMessages();
+  EXPECT_EQ(0U, process_host->sink().message_count());
+  [view->cocoa_view() keyEvent:
+      cocoa_test_event_utils::KeyEventWithKeyCode(
+          0x2E, 0xF728, NSKeyDown, NSControlKeyMask)];
+  EXPECT_EQ(1U, process_host->sink().message_count());
+  EXPECT_EQ("RawKeyDown", GetInputMessageTypes(process_host));
+
+  // Simulate a printable char, should generate keypress event
+  process_host->sink().ClearMessages();
+  EXPECT_EQ(0U, process_host->sink().message_count());
+  [view->cocoa_view() keyEvent:
+      cocoa_test_event_utils::KeyEventWithKeyCode(
+          0x58, 'x', NSKeyDown, NSControlKeyMask)];
+  EXPECT_EQ(2U, process_host->sink().message_count());
+  EXPECT_EQ("RawKeyDown Char", GetInputMessageTypes(process_host));
+
+  // Clean up.
+  host->Shutdown();
 }
 
 TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
