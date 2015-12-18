@@ -913,6 +913,7 @@ MockClientSocketFactory::CreateDatagramClientSocket(
       new MockUDPClientSocket(data_provider, net_log));
   if (bind_type == DatagramSocket::RANDOM_BIND)
     socket->set_source_port(static_cast<uint16>(rand_int_cb.Run(1025, 65535)));
+  udp_client_socket_ports_.push_back(socket->source_port());
   return socket.Pass();
 }
 
@@ -1418,105 +1419,6 @@ int DeterministicSocketHelper::Read(
 
   was_used_to_convey_data_ = true;
   return CompleteRead();
-}
-
-DeterministicMockUDPClientSocket::DeterministicMockUDPClientSocket(
-    net::NetLog* net_log,
-    DeterministicSocketData* data)
-    : connected_(false),
-      helper_(net_log, data),
-      source_port_(123) {
-}
-
-DeterministicMockUDPClientSocket::~DeterministicMockUDPClientSocket() {}
-
-bool DeterministicMockUDPClientSocket::WritePending() const {
-  return helper_.write_pending();
-}
-
-bool DeterministicMockUDPClientSocket::ReadPending() const {
-  return helper_.read_pending();
-}
-
-void DeterministicMockUDPClientSocket::CompleteWrite() {
-  helper_.CompleteWrite();
-}
-
-int DeterministicMockUDPClientSocket::CompleteRead() {
-  return helper_.CompleteRead();
-}
-
-int DeterministicMockUDPClientSocket::BindToNetwork(
-    NetworkChangeNotifier::NetworkHandle network) {
-  return ERR_NOT_IMPLEMENTED;
-}
-
-int DeterministicMockUDPClientSocket::BindToDefaultNetwork() {
-  return ERR_NOT_IMPLEMENTED;
-}
-
-NetworkChangeNotifier::NetworkHandle
-DeterministicMockUDPClientSocket::GetBoundNetwork() {
-  return NetworkChangeNotifier::kInvalidNetworkHandle;
-}
-
-int DeterministicMockUDPClientSocket::Connect(const IPEndPoint& address) {
-  if (connected_)
-    return OK;
-  connected_ = true;
-  peer_address_ = address;
-  return helper_.data()->connect_data().result;
-};
-
-int DeterministicMockUDPClientSocket::Write(
-    IOBuffer* buf,
-    int buf_len,
-    const CompletionCallback& callback) {
-  if (!connected_)
-    return ERR_UNEXPECTED;
-
-  return helper_.Write(buf, buf_len, callback);
-}
-
-int DeterministicMockUDPClientSocket::Read(
-    IOBuffer* buf,
-    int buf_len,
-    const CompletionCallback& callback) {
-  if (!connected_)
-    return ERR_UNEXPECTED;
-
-  return helper_.Read(buf, buf_len, callback);
-}
-
-int DeterministicMockUDPClientSocket::SetReceiveBufferSize(int32 size) {
-  return OK;
-}
-
-int DeterministicMockUDPClientSocket::SetSendBufferSize(int32 size) {
-  return OK;
-}
-
-void DeterministicMockUDPClientSocket::Close() {
-  connected_ = false;
-}
-
-int DeterministicMockUDPClientSocket::GetPeerAddress(
-    IPEndPoint* address) const {
-  *address = peer_address_;
-  return OK;
-}
-
-int DeterministicMockUDPClientSocket::GetLocalAddress(
-    IPEndPoint* address) const {
-  IPAddressNumber ip;
-  bool rv = ParseIPLiteralToNumber("192.0.2.33", &ip);
-  CHECK(rv);
-  *address = IPEndPoint(ip, source_port_);
-  return OK;
-}
-
-const BoundNetLog& DeterministicMockUDPClientSocket::NetLog() const {
-  return helper_.net_log();
 }
 
 DeterministicMockTCPClientSocket::DeterministicMockTCPClientSocket(
@@ -2149,14 +2051,8 @@ DeterministicMockClientSocketFactory::CreateDatagramClientSocket(
     const RandIntCallback& rand_int_cb,
     NetLog* net_log,
     const NetLog::Source& source) {
-  DeterministicSocketData* data_provider = mock_data().GetNext();
-  scoped_ptr<DeterministicMockUDPClientSocket> socket(
-      new DeterministicMockUDPClientSocket(net_log, data_provider));
-  data_provider->set_delegate(socket->AsWeakPtr());
-  udp_client_sockets().push_back(socket.get());
-  if (bind_type == DatagramSocket::RANDOM_BIND)
-    socket->set_source_port(static_cast<uint16>(rand_int_cb.Run(1025, 65535)));
-  return socket.Pass();
+  NOTREACHED();
+  return nullptr;
 }
 
 scoped_ptr<StreamSocket>

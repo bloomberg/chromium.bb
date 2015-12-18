@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/network_quality_estimator.h"
@@ -1326,45 +1327,43 @@ TEST_P(QuicNetworkTransactionTest, HungAlternateProtocol) {
       MockRead(SYNCHRONOUS, 4, kQuicAlternateProtocolHeader),
       MockRead(SYNCHRONOUS, 5, "hello world"), MockRead(SYNCHRONOUS, OK, 6)};
 
-  DeterministicMockClientSocketFactory socket_factory;
+  MockClientSocketFactory socket_factory;
 
-  DeterministicSocketData http_data(http_reads, arraysize(http_reads),
-                                    http_writes, arraysize(http_writes));
+  SequencedSocketData http_data(http_reads, arraysize(http_reads), http_writes,
+                                arraysize(http_writes));
   socket_factory.AddSocketDataProvider(&http_data);
   socket_factory.AddSSLSocketDataProvider(&ssl_data_);
 
   // The QUIC transaction will not be allowed to complete.
-  MockWrite quic_writes[] = {MockWrite(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  MockWrite quic_writes[] = {MockWrite(SYNCHRONOUS, ERR_IO_PENDING, 1)};
   MockRead quic_reads[] = {
-      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 1),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0),
   };
-  DeterministicSocketData quic_data(quic_reads, arraysize(quic_reads),
-                                    quic_writes, arraysize(quic_writes));
+  SequencedSocketData quic_data(quic_reads, arraysize(quic_reads), quic_writes,
+                                arraysize(quic_writes));
   socket_factory.AddSocketDataProvider(&quic_data);
 
   // The HTTP transaction will complete.
-  DeterministicSocketData http_data2(http_reads, arraysize(http_reads),
-                                     http_writes, arraysize(http_writes));
+  SequencedSocketData http_data2(http_reads, arraysize(http_reads), http_writes,
+                                 arraysize(http_writes));
   socket_factory.AddSocketDataProvider(&http_data2);
   socket_factory.AddSSLSocketDataProvider(&ssl_data_);
 
   CreateSessionWithFactory(&socket_factory, true);
 
   // Run the first request.
-  http_data.StopAfter(arraysize(http_reads) + arraysize(http_writes));
   SendRequestAndExpectHttpResponse("hello world");
   ASSERT_TRUE(http_data.AllReadDataConsumed());
   ASSERT_TRUE(http_data.AllWriteDataConsumed());
 
   // Now run the second request in which the QUIC socket hangs,
   // and verify the the transaction continues over HTTP.
-  http_data2.StopAfter(arraysize(http_reads) + arraysize(http_writes));
   SendRequestAndExpectHttpResponse("hello world");
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(http_data2.AllReadDataConsumed());
   ASSERT_TRUE(http_data2.AllWriteDataConsumed());
-  ASSERT_TRUE(!quic_data.AllReadDataConsumed());
-  ASSERT_TRUE(!quic_data.AllWriteDataConsumed());
+  ASSERT_TRUE(quic_data.AllReadDataConsumed());
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {

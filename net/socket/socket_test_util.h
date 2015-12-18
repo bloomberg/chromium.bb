@@ -665,9 +665,16 @@ class MockClientSocketFactory : public ClientSocketFactory {
       const SSLClientSocketContext& context) override;
   void ClearSSLSessionCache() override;
 
+  const std::vector<uint16>& udp_client_socket_ports() const {
+    return udp_client_socket_ports_;
+  }
+
  private:
   SocketDataProviderArray<SocketDataProvider> mock_data_;
   SocketDataProviderArray<SSLSocketDataProvider> mock_ssl_data_;
+  std::vector<uint16> udp_client_socket_ports_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockClientSocketFactory);
 };
 
 class MockClientSocket : public SSLClientSocket {
@@ -845,55 +852,6 @@ class DeterministicSocketHelper {
   BoundNetLog net_log_;
 };
 
-// Mock UDP socket to be used in conjunction with DeterministicSocketData.
-class DeterministicMockUDPClientSocket
-    : public DatagramClientSocket,
-      public DeterministicSocketData::Delegate,
-      public base::SupportsWeakPtr<DeterministicMockUDPClientSocket> {
- public:
-  DeterministicMockUDPClientSocket(net::NetLog* net_log,
-                                   DeterministicSocketData* data);
-  ~DeterministicMockUDPClientSocket() override;
-
-  // DeterministicSocketData::Delegate:
-  bool WritePending() const override;
-  bool ReadPending() const override;
-  void CompleteWrite() override;
-  int CompleteRead() override;
-
-  // Socket implementation.
-  int Read(IOBuffer* buf,
-           int buf_len,
-           const CompletionCallback& callback) override;
-  int Write(IOBuffer* buf,
-            int buf_len,
-            const CompletionCallback& callback) override;
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
-
-  // DatagramSocket implementation.
-  void Close() override;
-  int GetPeerAddress(IPEndPoint* address) const override;
-  int GetLocalAddress(IPEndPoint* address) const override;
-  const BoundNetLog& NetLog() const override;
-
-  // DatagramClientSocket implementation.
-  int BindToNetwork(NetworkChangeNotifier::NetworkHandle network) override;
-  int BindToDefaultNetwork() override;
-  NetworkChangeNotifier::NetworkHandle GetBoundNetwork() override;
-  int Connect(const IPEndPoint& address) override;
-
-  void set_source_port(uint16 port) { source_port_ = port; }
-
- private:
-  bool connected_;
-  IPEndPoint peer_address_;
-  DeterministicSocketHelper helper_;
-  uint16 source_port_;  // Ephemeral source port.
-
-  DISALLOW_COPY_AND_ASSIGN(DeterministicMockUDPClientSocket);
-};
-
 // Mock TCP socket to be used in conjunction with DeterministicSocketData.
 class DeterministicMockTCPClientSocket
     : public MockClientSocket,
@@ -1020,6 +978,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   void OnDataProviderDestroyed() override;
 
   void set_source_port(uint16 port) { source_port_ = port;}
+  uint16 source_port() const { return source_port_; }
 
  private:
   int CompleteRead();
@@ -1224,9 +1183,6 @@ class DeterministicMockClientSocketFactory : public ClientSocketFactory {
   std::vector<DeterministicMockTCPClientSocket*>& tcp_client_sockets() {
     return tcp_client_sockets_;
   }
-  std::vector<DeterministicMockUDPClientSocket*>& udp_client_sockets() {
-    return udp_client_sockets_;
-  }
 
   // ClientSocketFactory
   scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
@@ -1251,7 +1207,6 @@ class DeterministicMockClientSocketFactory : public ClientSocketFactory {
 
   // Store pointers to handed out sockets in case the test wants to get them.
   std::vector<DeterministicMockTCPClientSocket*> tcp_client_sockets_;
-  std::vector<DeterministicMockUDPClientSocket*> udp_client_sockets_;
   std::vector<MockSSLClientSocket*> ssl_client_sockets_;
 
   DISALLOW_COPY_AND_ASSIGN(DeterministicMockClientSocketFactory);
