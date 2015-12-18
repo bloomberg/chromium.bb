@@ -51,7 +51,7 @@ class NetworkMetric(Metric):
         self._network_snd = snd - self._network_snd
       if self._network_rcv is not None:
         self._network_rcv = rcv - self._network_rcv
-    else: # If end data cannot be found, report none.
+    else:  # If end data cannot be found, report none.
       self._network_snd = None
       self._network_rcv = None
 

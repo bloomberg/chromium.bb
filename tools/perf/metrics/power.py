@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 import logging
 import time
 
@@ -15,6 +16,7 @@ FUELGAUGE_POWER_LABEL = 'fuel_gauge_energy_consumption_mwh'
 APP_POWER_LABEL = 'application_energy_consumption_mwh'
 TOTAL_POWER_LABEL = 'energy_consumption_mwh'
 
+
 class PowerMetric(Metric):
   """A metric for measuring power usage."""
 
@@ -25,9 +27,9 @@ class PowerMetric(Metric):
     """PowerMetric Constructor.
 
     Args:
-        platform: platform object to use.
-        quiescent_measurement_time_s: time to measure quiescent power,
-            in seconds. 0 means don't measure quiescent power."""
+      platform: platform object to use.
+      quiescent_measurement_time_s: time to measure quiescent power,
+          in seconds. 0 means don't measure quiescent power."""
     super(PowerMetric, self).__init__()
     self._browser = None
     self._platform = platform
@@ -43,15 +45,15 @@ class PowerMetric(Metric):
       return
     self._running = False
     self._results = self._platform.StopMonitoringPower()
-    if self._results: # StopMonitoringPower() can return None.
+    if self._results:  # StopMonitoringPower() can return None.
       self._results['cpu_stats'] = (
           _SubtractCpuStats(self._browser.cpu_stats, self._starting_cpu_stats))
 
   def _MeasureQuiescentPower(self, measurement_time_s):
     """Measure quiescent power draw for the system."""
-    if not self._platform.CanMonitorPower() or \
-        self._platform.CanMeasurePerApplicationPower() or \
-        not measurement_time_s:
+    if (not self._platform.CanMonitorPower() or
+        self._platform.CanMeasurePerApplicationPower() or
+        not measurement_time_s):
       return
 
     # Only perform quiescent measurement once per run.
@@ -77,7 +79,8 @@ class PowerMetric(Metric):
     self._results = None
     self._StopInternal()
 
-    # This line invokes top a few times, call before starting power measurement.
+    # This line invokes top a few times, call before starting power
+    # measurement.
     self._starting_cpu_stats = self._browser.cpu_stats
     self._platform.StartMonitoringPower(self._browser)
 
@@ -110,7 +113,8 @@ class PowerMetric(Metric):
 
     application_energy_consumption_mwh = self._results.get(APP_POWER_LABEL)
     total_energy_consumption_mwh = self._results.get(TOTAL_POWER_LABEL)
-    fuel_gauge_energy_consumption_mwh = self._results.get(FUELGAUGE_POWER_LABEL)
+    fuel_gauge_energy_consumption_mwh = self._results.get(
+        FUELGAUGE_POWER_LABEL)
     monsoon_energy_consumption_mwh = self._results.get(MONSOON_POWER_LABEL)
 
     if (PowerMetric._quiescent_power_draw_mwh and
@@ -158,7 +162,8 @@ class PowerMetric(Metric):
 
     # Add temperature measurements.
     platform_info_utilization = self._results.get('platform_info', {})
-    board_temperature_c = platform_info_utilization.get('average_temperature_c')
+    board_temperature_c = platform_info_utilization.get(
+        'average_temperature_c')
     if board_temperature_c is not None:
       results.AddValue(scalar.ScalarValue(
           results.current_page, 'board_temperature', 'celsius',
@@ -184,6 +189,7 @@ class PowerMetric(Metric):
 
     self._results = None
 
+
 def _SubtractCpuStats(cpu_stats, start_cpu_stats):
   """Computes number of idle wakeups that occurred over measurement period.
 
@@ -202,14 +208,14 @@ def _SubtractCpuStats(cpu_stats, start_cpu_stats):
     if (not cpu_stats[process_type]) or (not start_cpu_stats[process_type]):
       continue
     # Skip if IdleWakeupCount is not present.
-    if (('IdleWakeupCount' not in cpu_stats[process_type]) or
-        ('IdleWakeupCount' not in start_cpu_stats[process_type])):
+    if ('IdleWakeupCount' not in cpu_stats[process_type] or
+        'IdleWakeupCount' not in start_cpu_stats[process_type]):
       continue
 
     assert isinstance(cpu_stats[process_type]['IdleWakeupCount'],
-        process_statistic_timeline_data.IdleWakeupTimelineData)
+                      process_statistic_timeline_data.IdleWakeupTimelineData)
     idle_wakeup_delta = (cpu_stats[process_type]['IdleWakeupCount'] -
-                        start_cpu_stats[process_type]['IdleWakeupCount'])
+                         start_cpu_stats[process_type]['IdleWakeupCount'])
     cpu_delta[process_type] = idle_wakeup_delta.total_sum()
     total = total + cpu_delta[process_type]
   cpu_delta['Total'] = total

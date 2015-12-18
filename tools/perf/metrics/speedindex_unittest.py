@@ -14,12 +14,14 @@ from metrics import speedindex
 
 
 class FakeImageUtil(object):
+
   # pylint: disable=unused-argument
   def GetColorHistogram(self, image, ignore_color=None, tolerance=None):
     return image.ColorHistogram()
 
 
 class FakeVideo(object):
+
   def __init__(self, frames):
     self._frames = frames
 
@@ -27,7 +29,9 @@ class FakeVideo(object):
     for frame in self._frames:
       yield frame
 
+
 class FakeBitmap(object):
+
   def __init__(self, r, g, b):
     self._histogram = color_histogram.ColorHistogram(r, g, b, rgba_color.WHITE)
 
@@ -37,6 +41,7 @@ class FakeBitmap(object):
 
 
 class FakeTab(object):
+
   def __init__(self, video_capture_result=None):
     self._javascript_result = None
     self._video_capture_result = FakeVideo(video_capture_result)
@@ -67,12 +72,12 @@ class SpeedIndexImplTest(unittest.TestCase):
 
   def testVideoCompleteness(self):
     frames = [
-        (0.0, FakeBitmap([ 0, 0, 0,10], [ 0, 0, 0,10], [ 0, 0, 0,10])),
+        (0.0, FakeBitmap([0, 0, 0, 10], [0, 0, 0, 10], [0, 0, 0, 10])),
         (0.1, FakeBitmap([10, 0, 0, 0], [10, 0, 0, 0], [10, 0, 0, 0])),
-        (0.2, FakeBitmap([ 0, 0, 2, 8], [ 0, 0, 4, 6], [ 0, 0, 1, 9])),
-        (0.3, FakeBitmap([ 0, 3, 2, 5], [ 2, 1, 0, 7], [ 0, 3, 0, 7])),
-        (0.4, FakeBitmap([ 0, 0, 1, 0], [ 0, 0, 1, 0], [ 0, 0, 1, 0])),
-        (0.5, FakeBitmap([ 0, 4, 6, 0], [ 0, 4, 6, 0], [ 0, 4, 6, 0])),
+        (0.2, FakeBitmap([0, 0, 2, 8], [0, 0, 4, 6], [0, 0, 1, 9])),
+        (0.3, FakeBitmap([0, 3, 2, 5], [2, 1, 0, 7], [0, 3, 0, 7])),
+        (0.4, FakeBitmap([0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0])),
+        (0.5, FakeBitmap([0, 4, 6, 0], [0, 4, 6, 0], [0, 4, 6, 0])),
     ]
     max_distance = 42.
 

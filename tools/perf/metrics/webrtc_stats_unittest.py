@@ -88,6 +88,7 @@ SAMPLE_JSON = '''
 
 
 class FakeResults(object):
+
   def __init__(self, current_page):
     self._received_values = []
     self._current_page = current_page
@@ -150,7 +151,7 @@ class WebRtcStatsUnittest(unittest.TestCase):
                      'the JSON above, unlike peer connection 0 which does.')
     self.assertIn('peer_connection_0_video_goog_rtt', all_names)
     self.assertIn('peer_connection_1_video_goog_rtt', all_names)
-    # The audio_audio is intentional since the code distinguishes audio repots
+    # The audio_audio is intentional since the code distinguishes audio reports
     # from video reports (even though audio_input_level is quite obvious).
     self.assertNotIn('peer_connection_0_audio_audio_input_level', all_names,
                      'Input level is in the JSON for both connections but '
@@ -160,4 +161,3 @@ class WebRtcStatsUnittest(unittest.TestCase):
   def testReturnsIfJsonIsEmpty(self):
     results = self._RunMetricOnJson('[]')
     self.assertFalse(results.received_values)
-

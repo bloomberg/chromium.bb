@@ -16,6 +16,7 @@ def _GetInteractionRecord(start, end):
 
 
 class LoadTimesTimelineMetric(unittest.TestCase):
+
   def GetResults(self, metric, model, renderer_thread, interaction_records):
     results = test_page_test_results.TestPageTestResults(self)
     metric.AddResults(model, renderer_thread, interaction_records, results)
@@ -34,14 +35,14 @@ class LoadTimesTimelineMetric(unittest.TestCase):
 
     metric = timeline.LoadTimesTimelineMetric()
     results = self.GetResults(
-      metric, model=model, renderer_thread=renderer_main,
-      interaction_records=[_GetInteractionRecord(0, float('inf'))])
+        metric, model=model, renderer_thread=renderer_main,
+        interaction_records=[_GetInteractionRecord(0, float('inf'))])
     results.AssertHasPageSpecificScalarValue(
-      'CrRendererMain|x_y', 'ms', 10)
+        'CrRendererMain|x_y', 'ms', 10)
     results.AssertHasPageSpecificScalarValue(
-      'CrRendererMain|x_y_max', 'ms', 10)
+        'CrRendererMain|x_y_max', 'ms', 10)
     results.AssertHasPageSpecificScalarValue(
-      'CrRendererMain|x_y_avg', 'ms', 10)
+        'CrRendererMain|x_y_avg', 'ms', 10)
 
   def testTimelineBetweenRange(self):
     model = model_module.TimelineModel()
@@ -59,15 +60,14 @@ class LoadTimesTimelineMetric(unittest.TestCase):
 
     metric = timeline.LoadTimesTimelineMetric()
     results = self.GetResults(
-      metric, model=model, renderer_thread=renderer_main,
-      interaction_records=[_GetInteractionRecord(10, 20)])
+        metric, model=model, renderer_thread=renderer_main,
+        interaction_records=[_GetInteractionRecord(10, 20)])
     results.AssertHasPageSpecificScalarValue(
-      'CrRendererMain|x_y', 'ms', 10)
+        'CrRendererMain|x_y', 'ms', 10)
     results.AssertHasPageSpecificScalarValue(
-      'CrRendererMain|x_y_max', 'ms', 10)
+        'CrRendererMain|x_y_max', 'ms', 10)
     results.AssertHasPageSpecificScalarValue(
-      'CrRendererMain|x_y_avg', 'ms', 10)
-
+        'CrRendererMain|x_y_avg', 'ms', 10)
 
   def testCounterSanitizing(self):
     model = model_module.TimelineModel()
@@ -82,19 +82,20 @@ class LoadTimesTimelineMetric(unittest.TestCase):
 
     metric = timeline.LoadTimesTimelineMetric()
     results = self.GetResults(
-      metric, model=model, renderer_thread=renderer_main,
-      interaction_records=[_GetInteractionRecord(0, float('inf'))])
+        metric, model=model, renderer_thread=renderer_main,
+        interaction_records=[_GetInteractionRecord(0, float('inf'))])
     results.AssertHasPageSpecificScalarValue(
-      'cat_x_y', 'count', 3)
+        'cat_x_y', 'count', 3)
     results.AssertHasPageSpecificScalarValue(
-      'cat_x_y_avg', 'count', 1.5)
+        'cat_x_y_avg', 'count', 1.5)
 
 
 class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
+
   def GetResults(self, metric, model, renderer_thread, interaction_record):
     results = test_page_test_results.TestPageTestResults(self)
     metric.AddResults(model, renderer_thread, interaction_record,
-                                results)
+                      results)
     return results
 
   def testResults(self):
@@ -105,7 +106,7 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     metric = timeline.ThreadTimesTimelineMetric()
     metric.details_to_report = timeline.ReportMainThreadOnly
     results = self.GetResults(metric, model, renderer_main.parent,
-                              [_GetInteractionRecord(1,2)])
+                              [_GetInteractionRecord(1, 2)])
 
     # Test that all result thread categories exist
     for name in timeline.TimelineThreadCategories.values():
@@ -146,25 +147,27 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     main_thread = "renderer_main"
     cc_thread = 'renderer_compositor'
     assert_results = [
-      (timeline.ThreadMeanFrameTimeResultName(cc_thread), 'ms', 10.0),
-      (timeline.ThreadTasksResultName(main_thread, 'frame'), 'tasks', 0.5),
-      (timeline.ThreadTasksResultName(main_thread, 'second'), 'tasks', 50.0),
-      (timeline.ThreadTasksResultName(cc_thread, 'frame'), 'tasks', 1.0),
-      (timeline.ThreadTasksResultName(cc_thread, 'second'), 'tasks', 100.0),
-      (timeline.ThreadCpuTimeResultName(main_thread, 'frame'), 'ms', 9.75),
-      (timeline.ThreadCpuTimeResultName(main_thread, 'second'), '%', 97.5),
-      (timeline.ThreadCpuTimeResultName(cc_thread, 'frame'), 'ms', 1.0),
-      (timeline.ThreadCpuTimeResultName(cc_thread, 'second'), '%', 10.0),
-      (timeline.ThreadDetailResultName(main_thread, 'frame', 'cat1'),
-       'ms', 9.5),
-      (timeline.ThreadDetailResultName(main_thread, 'second', 'cat1'),
-       '%', 95.0),
-      (timeline.ThreadDetailResultName(main_thread, 'frame', 'cat2'),
-       'ms', 0.5),
-      (timeline.ThreadDetailResultName(main_thread, 'second', 'cat2'),
-       '%', 5.0),
-      (timeline.ThreadDetailResultName(main_thread, 'frame', 'idle'), 'ms', 0),
-      (timeline.ThreadDetailResultName(main_thread, 'second', 'idle'), '%', 0)
+        (timeline.ThreadMeanFrameTimeResultName(cc_thread), 'ms', 10.0),
+        (timeline.ThreadTasksResultName(main_thread, 'frame'), 'tasks', 0.5),
+        (timeline.ThreadTasksResultName(main_thread, 'second'), 'tasks', 50.0),
+        (timeline.ThreadTasksResultName(cc_thread, 'frame'), 'tasks', 1.0),
+        (timeline.ThreadTasksResultName(cc_thread, 'second'), 'tasks', 100.0),
+        (timeline.ThreadCpuTimeResultName(main_thread, 'frame'), 'ms', 9.75),
+        (timeline.ThreadCpuTimeResultName(main_thread, 'second'), '%', 97.5),
+        (timeline.ThreadCpuTimeResultName(cc_thread, 'frame'), 'ms', 1.0),
+        (timeline.ThreadCpuTimeResultName(cc_thread, 'second'), '%', 10.0),
+        (timeline.ThreadDetailResultName(main_thread, 'frame', 'cat1'),
+         'ms', 9.5),
+        (timeline.ThreadDetailResultName(main_thread, 'second', 'cat1'),
+         '%', 95.0),
+        (timeline.ThreadDetailResultName(main_thread, 'frame', 'cat2'),
+         'ms', 0.5),
+        (timeline.ThreadDetailResultName(main_thread, 'second', 'cat2'),
+         '%', 5.0),
+        (timeline.ThreadDetailResultName(
+         main_thread, 'frame', 'idle'), 'ms', 0),
+        (timeline.ThreadDetailResultName(
+         main_thread, 'second', 'idle'), '%', 0)
     ]
     for name, unit, value in assert_results:
       results.AssertHasPageSpecificScalarValue(name, unit, value)
@@ -198,8 +201,10 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
 
     # Test a couple specific results.
     assert_results = [
-      (timeline.ThreadCpuTimeResultName('renderer_main', 'frame') , 'ms', 9.0),
-      (timeline.ThreadCpuTimeResultName('renderer_main', 'second') , '%', 45.0),
+        (timeline.ThreadCpuTimeResultName(
+         'renderer_main', 'frame'), 'ms', 9.0),
+        (timeline.ThreadCpuTimeResultName(
+         'renderer_main', 'second'), '%', 45.0),
     ]
     for name, unit, value in assert_results:
       results.AssertHasPageSpecificScalarValue(name, unit, value)

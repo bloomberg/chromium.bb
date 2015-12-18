@@ -51,6 +51,7 @@ _HISTOGRAMS = [
     },
 ]
 
+
 class MemoryMetric(Metric):
   """MemoryMetric gathers memory statistics from the browser object.
 

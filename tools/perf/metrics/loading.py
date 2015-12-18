@@ -8,6 +8,7 @@ from metrics import Metric
 
 
 class LoadingMetric(Metric):
+
   """A metric for page loading time based entirely on window.performance"""
 
   def Start(self, page, tab):
@@ -21,13 +22,13 @@ class LoadingMetric(Metric):
 
     # NavigationStart relative markers in milliseconds.
     load_start = (
-      float(load_timings['loadEventStart']) - load_timings['navigationStart'])
+        float(load_timings['loadEventStart']) - load_timings['navigationStart'])
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'load_start', 'ms', load_start))
 
     dom_content_loaded_start = (
-      float(load_timings['domContentLoadedEventStart']) -
-      load_timings['navigationStart'])
+        float(load_timings['domContentLoadedEventStart']) -
+        load_timings['navigationStart'])
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'dom_content_loaded_start', 'ms',
         dom_content_loaded_start))

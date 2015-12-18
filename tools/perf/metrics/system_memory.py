@@ -57,7 +57,8 @@ class SystemMemoryMetric(Metric):
     if not memory_stats['Browser']:
       return
     exclude_metrics = exclude_metrics or {}
-    memory.AddResultsForProcesses(results, memory_stats,
+    memory.AddResultsForProcesses(
+        results, memory_stats,
         metric_trace_name=trace_name, chart_trace_name='delta',
         exclude_metrics=exclude_metrics)
 
@@ -107,7 +108,7 @@ def _SubtractMemoryStats(end_memory_stats, start_memory_stats):
     # If a process has end stats without start stats then report the end stats.
     # For example, a GPU process that started just after media playback.
     if (process_type not in start_memory_stats or
-        not start_memory_stats[process_type]):
+       not start_memory_stats[process_type]):
       memory_stats[process_type] = end_process_memory
       continue
 

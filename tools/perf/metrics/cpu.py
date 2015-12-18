@@ -10,7 +10,7 @@ from metrics import Metric
 
 
 class CpuMetric(Metric):
-  """Calulates CPU load over a span of time."""
+  """Calculates CPU load over a span of time."""
 
   def __init__(self, browser):
     super(CpuMetric, self).__init__()
@@ -89,10 +89,9 @@ def _SubtractCpuStats(cpu_stats, start_cpu_stats):
     # Linux kernel starts with a value close to an overflow, so correction is
     # necessary.
     if total_time < 0:
-      total_time += 2**32
+      total_time += 2 ** 32
     # Assert that the arguments were given in the correct order.
-    assert total_time > 0 and total_time < 2**31, (
+    assert total_time > 0 and total_time < 2 ** 31, (
         'Expected total_time > 0, was: %d' % total_time)
     cpu_usage[process_type] = float(cpu_process_time) / total_time
   return cpu_usage
-

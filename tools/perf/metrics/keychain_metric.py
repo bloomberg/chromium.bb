@@ -32,20 +32,20 @@ class KeychainMetric(Metric):
       - The ACLs are correctly configured on the relevant keychain items.
     """
     warning_suffix = ('which will cause some Telemetry tests to stall when run'
-        ' on a headless machine (e.g. perf bot).')
+                      ' on a headless machine (e.g. perf bot).')
     if keychain_helper.IsKeychainLocked():
       logging.warning('The default keychain is locked, %s', warning_suffix)
 
     if keychain_helper.DoesKeychainHaveTimeout():
       logging.warning('The default keychain is configured to automatically'
-          ' lock itself have a period of time, %s', warning_suffix)
+                      ' lock itself have a period of time, %s', warning_suffix)
 
     chrome_acl_configured = (keychain_helper.
-        IsKeychainConfiguredForBotsWithChrome())
+                             IsKeychainConfiguredForBotsWithChrome())
     chromium_acl_configured = (keychain_helper.
-        IsKeychainConfiguredForBotsWithChromium())
+                               IsKeychainConfiguredForBotsWithChromium())
     acl_warning = ('A commonly used %s key stored in the default keychain does'
-        ' not give decryption access to all applications, %s')
+                   ' not give decryption access to all applications, %s')
     if not chrome_acl_configured:
       logging.warning(acl_warning, 'Chrome', warning_suffix)
     if not chromium_acl_configured:

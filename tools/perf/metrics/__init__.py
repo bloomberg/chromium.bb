@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+
 class Metric(object):
   """Base class for all the metrics that are used by telemetry measurements.
 
   The Metric class represents a way of measuring something. Metrics are
   helper classes used by PageTests. Each PageTest may use
-  multiple metrics; each metric should be focussed on collecting data
+  multiple metrics; each metric should be focused on collecting data
   about one thing.
   """
 

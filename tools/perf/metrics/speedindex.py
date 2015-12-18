@@ -20,6 +20,7 @@ class SpeedIndexMetric(Metric):
   This speed index metric is based on WebPageTest.org (WPT).
   For more info see: http://goo.gl/e7AH5l
   """
+
   def __init__(self):
     super(SpeedIndexMetric, self).__init__()
     self._impl = None
@@ -129,7 +130,7 @@ class SpeedIndexImpl(object):
     speed_index = 0.0
     prev_time = time_completeness_list[0][0]
     for time, completeness in time_completeness_list:
-      # Add the incemental value for the interval just before this event.
+      # Add the incremental value for the interval just before this event.
       elapsed_time = time - prev_time
       incompleteness = (1.0 - prev_completeness)
       speed_index += elapsed_time * incompleteness
@@ -164,9 +165,11 @@ class VideoSpeedIndexImpl(SpeedIndexImpl):
     # video capture at 4mbps. We should keep this as low as possible with
     # supported video compression settings.
     video_capture = tab.StopVideoCapture()
-    histograms = [(time, self._image_util_module.GetColorHistogram(
-                       image, ignore_color=rgba_color.WHITE, tolerance=8))
-                  for time, image in video_capture.GetVideoFrameIter()]
+    histograms = [
+        (time, self._image_util_module.GetColorHistogram(
+            image, ignore_color=rgba_color.WHITE, tolerance=8))
+        for time, image in video_capture.GetVideoFrameIter()
+    ]
 
     start_histogram = histograms[0][1]
     final_histogram = histograms[-1][1]

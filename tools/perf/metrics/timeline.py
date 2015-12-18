@@ -9,6 +9,7 @@ from telemetry.web_perf.metrics import timeline_based_metric
 
 
 class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
+
   def __init__(self):
     super(LoadTimesTimelineMetric, self).__init__()
     self.report_main_thread_only = True
@@ -16,8 +17,8 @@ class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
   def AddResults(self, model, renderer_thread, interaction_records, results):
     assert model
     assert len(interaction_records) == 1, (
-      'LoadTimesTimelineMetric cannot compute metrics for more than 1 time '
-      'range.')
+        'LoadTimesTimelineMetric cannot compute metrics for more than 1 time '
+        'range.')
     interaction_record = interaction_records[0]
     if self.report_main_thread_only:
       thread_filter = 'CrRendererMain'
@@ -32,7 +33,7 @@ class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
       if thread_filter and not thread.name in thread_filter:
         continue
 
-      thread_name = thread.name.replace('/','_')
+      thread_name = thread.name.replace('/', '_')
       for e in thread.IterAllSlicesInRange(interaction_record.start,
                                            interaction_record.end):
         events_by_name[e.name].append(e)
@@ -42,7 +43,8 @@ class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
         total = sum(times)
         biggest_jank = max(times)
 
-        # Results objects cannot contain the '.' character, so remove that here.
+        # Results objects cannot contain the '.' character, so remove that
+        # here.
         sanitized_event_name = event_name.replace('.', '_')
 
         full_name = thread_name + '|' + sanitized_event_name
@@ -65,24 +67,24 @@ class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
           results.current_page, sanitized_counter_name + '_avg', 'count',
           total / float(len(counter.totals))))
 
-# We want to generate a consistant picture of our thread usage, despite
+# We want to generate a consistent picture of our thread usage, despite
 # having several process configurations (in-proc-gpu/single-proc).
 # Since we can't isolate renderer threads in single-process mode, we
 # always sum renderer-process threads' times. We also sum all io-threads
 # for simplicity.
-TimelineThreadCategories =  {
-  "Chrome_InProcGpuThread": "GPU",
-  "CrGpuMain"             : "GPU",
-  "AsyncTransferThread"   : "GPU_transfer",
-  "CrBrowserMain"         : "browser",
-  "Browser Compositor"    : "browser",
-  "CrRendererMain"        : "renderer_main",
-  "Compositor"            : "renderer_compositor",
-  "IOThread"              : "IO",
-  "CompositorTileWorker"  : "raster",
-  "DummyThreadName1"      : "other",
-  "DummyThreadName2"      : "total_fast_path",
-  "DummyThreadName3"      : "total_all"
+TimelineThreadCategories = {
+    "Chrome_InProcGpuThread": "GPU",
+    "CrGpuMain": "GPU",
+    "AsyncTransferThread": "GPU_transfer",
+    "CrBrowserMain": "browser",
+    "Browser Compositor": "browser",
+    "CrRendererMain": "renderer_main",
+    "Compositor": "renderer_compositor",
+    "IOThread": "IO",
+    "CompositorTileWorker": "raster",
+    "DummyThreadName1": "other",
+    "DummyThreadName2": "total_fast_path",
+    "DummyThreadName3": "total_all"
 }
 
 _MatchBySubString = ["IOThread", "CompositorTileWorker"]
@@ -103,22 +105,26 @@ FrameTraceThreadName = "renderer_compositor"
 
 IntervalNames = ["frame", "second"]
 
+
 def Rate(numerator, denominator):
   return DivideIfPossibleOrZero(numerator, denominator)
 
+
 def ClockOverheadForEvent(event):
   if (event.category == OverheadTraceCategory and
-      event.name == OverheadTraceName):
+     event.name == OverheadTraceName):
     return event.duration
   else:
     return 0
 
+
 def CpuOverheadForEvent(event):
   if (event.category == OverheadTraceCategory and
-      event.thread_duration):
+     event.thread_duration):
     return event.thread_duration
   else:
     return 0
+
 
 def ThreadCategoryName(thread_name):
   thread_category = "other"
@@ -129,18 +135,22 @@ def ThreadCategoryName(thread_name):
     thread_category = TimelineThreadCategories[thread_name]
   return thread_category
 
+
 def ThreadCpuTimeResultName(thread_category, interval_name):
   # This isn't a good name, but I don't want to change it and lose continuity.
   return "thread_" + thread_category + "_cpu_time_per_" + interval_name
 
+
 def ThreadTasksResultName(thread_category, interval_name):
   return "tasks_per_" + interval_name + "_" + thread_category
+
 
 def ThreadMeanFrameTimeResultName(thread_category):
   return "mean_frame_time_" + thread_category
 
+
 def ThreadDetailResultName(thread_category, interval_name, detail):
-  detail_sanitized = detail.replace('.','_')
+  detail_sanitized = detail.replace('.', '_')
   interval_sanitized = ""
   # Special-case per-frame detail names to preserve continuity.
   if interval_name == "frame":
@@ -150,10 +160,12 @@ def ThreadDetailResultName(thread_category, interval_name, detail):
   return (
       "thread_" + thread_category + interval_sanitized + "|" + detail_sanitized)
 
+
 def ThreadCpuTimeUnits(interval_name):
   if interval_name == "second":
     return "%"
   return "ms"
+
 
 def ThreadCpuTimeValue(ms_cpu_time_per_interval, interval_name):
   # When measuring seconds of CPU time per second of system time, report a %.
@@ -163,6 +175,7 @@ def ThreadCpuTimeValue(ms_cpu_time_per_interval, interval_name):
 
 
 class ResultsForThread(object):
+
   def __init__(self, model, record_ranges, name):
     self.model = model
     self.toplevel_slices = []
@@ -186,7 +199,7 @@ class ResultsForThread(object):
       # Only report thread-duration if we have it for all events.
       #
       # A thread_duration of 0 is valid, so this only returns 0 if it is None.
-      if x.thread_duration == None:
+      if x.thread_duration is None:
         if not x.duration:
           continue
         else:
@@ -254,6 +267,7 @@ class ResultsForThread(object):
 
 
 class ThreadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
+
   def __init__(self):
     super(ThreadTimesTimelineMetric, self).__init__()
     # Minimal traces, for minimum noise in CPU-time measurements.
@@ -261,7 +275,7 @@ class ThreadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
     self.details_to_report = NoThreads
 
   def AddResults(self, model, _, interaction_records, results):
-    # Set up each thread category for consistant results.
+    # Set up each thread category for consistent results.
     thread_category_results = {}
     for name in TimelineThreadCategories.values():
       thread_category_results[name] = ResultsForThread(
@@ -302,7 +316,7 @@ class ThreadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
               num_intervals, interval_name, results)
 
     # Report mean frame time for the frame rate thread. We could report other
-    # frame rates (eg. renderer_main) but this might get confusing.
+    # frame rates (e.g. renderer_main) but this might get confusing.
     mean_frame_time = Rate(frame_rate_thread.all_action_time, num_frames)
     results.AddValue(scalar.ScalarValue(
         results.current_page,
