@@ -102,6 +102,7 @@ FrameTreeNode::FrameTreeNode(
 }
 
 FrameTreeNode::~FrameTreeNode() {
+  children_.clear();
   frame_tree_->FrameRemoved(this);
   FOR_EACH_OBSERVER(Observer, observers_, OnFrameTreeNodeDestroyed(this));
 
@@ -123,9 +124,9 @@ bool FrameTreeNode::IsMainFrame() const {
   return frame_tree_->root() == this;
 }
 
-void FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child,
-                             int process_id,
-                             int frame_routing_id) {
+FrameTreeNode* FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child,
+                                       int process_id,
+                                       int frame_routing_id) {
   // Child frame must always be created in the same process as the parent.
   CHECK_EQ(process_id, render_manager_.current_host()->GetProcess()->GetID());
   child->set_parent(this);
@@ -147,6 +148,7 @@ void FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child,
     render_manager_.CreateProxiesForChildFrame(child.get());
 
   children_.push_back(child.Pass());
+  return children_.back().get();
 }
 
 void FrameTreeNode::RemoveChild(FrameTreeNode* child) {

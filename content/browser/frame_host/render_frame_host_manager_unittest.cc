@@ -2487,6 +2487,7 @@ TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
 // set separately in a second pass, since their opener routing IDs won't be
 // available during the first pass of CreateOpenerProxies.
 TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
+  contents()->NavigateAndCommit(GURL("http://tab1.com"));
   FrameTree* tree1 = contents()->GetFrameTree();
   FrameTreeNode* root1 = tree1->root();
   int process_id = root1->current_frame_host()->GetProcess()->GetID();
@@ -2499,6 +2500,7 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
 
   scoped_ptr<TestWebContents> tab2(
       TestWebContents::Create(browser_context(), nullptr));
+  tab2->NavigateAndCommit(GURL("http://tab2.com"));
   FrameTree* tree2 = tab2->GetFrameTree();
   FrameTreeNode* root2 = tree2->root();
   process_id = root2->current_frame_host()->GetProcess()->GetID();
@@ -2516,6 +2518,7 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
 
   scoped_ptr<TestWebContents> tab4(
       TestWebContents::Create(browser_context(), nullptr));
+  tab4->NavigateAndCommit(GURL("http://tab4.com"));
   FrameTree* tree4 = tab4->GetFrameTree();
   FrameTreeNode* root4 = tree4->root();
   process_id = root4->current_frame_host()->GetProcess()->GetID();

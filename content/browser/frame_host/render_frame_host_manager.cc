@@ -2149,6 +2149,9 @@ void RenderFrameHostManager::CommitPending() {
 
   bool is_main_frame = frame_tree_node_->IsMainFrame();
 
+  // While the old frame is still current, remove its children from the tree.
+  frame_tree_node_->ResetForNewProcess();
+
   // Swap in the pending or speculative frame and make it active. Also ensure
   // the FrameTree stays in sync.
   scoped_ptr<RenderFrameHostImpl> old_render_frame_host;
@@ -2162,9 +2165,6 @@ void RenderFrameHostManager::CommitPending() {
     old_render_frame_host =
         SetRenderFrameHost(speculative_render_frame_host_.Pass());
   }
-
-  // Remove the children of the old frame from the tree.
-  frame_tree_node_->ResetForNewProcess();
 
   // The process will no longer try to exit, so we can decrement the count.
   render_frame_host_->GetProcess()->RemovePendingView();

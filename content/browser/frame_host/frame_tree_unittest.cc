@@ -123,6 +123,8 @@ class FrameTreeTest : public RenderViewHostImplTestHarness {
 //  - Add a series of nodes and verify tree structure.
 //  - Remove a series of nodes and verify tree structure.
 TEST_F(FrameTreeTest, Shape) {
+  main_test_rfh()->InitializeRenderFrameIfNeeded();
+
   // Use the FrameTree of the WebContents so that it has all the delegates it
   // needs.  We may want to consider a test version of this.
   FrameTree* frame_tree = contents()->GetFrameTree();
@@ -135,8 +137,8 @@ TEST_F(FrameTreeTest, Shape) {
   // Do not navigate each frame separately, since that will clutter the test
   // itself. Instead, leave them in "not live" state, which is indicated by the
   // * after the frame id, since this test cares about the shape, not the
-  // frame liveliness.
-  EXPECT_EQ("2*: []", GetTreeState(frame_tree));
+  // frame liveness.
+  EXPECT_EQ("2: []", GetTreeState(frame_tree));
 
   // Simulate attaching a series of frames to build the frame tree.
   frame_tree->AddFrame(root, process_id, 14, blink::WebTreeScopeType::Document,
@@ -163,9 +165,9 @@ TEST_F(FrameTreeTest, Shape) {
                        blink::WebFrameOwnerProperties());
 
   EXPECT_EQ(
-      "2*: [14*: [244*: [], 245*: []], "
-      "15*: [255* 'no children node': []], "
-      "16*: []]",
+      "2: [14: [244: [], 245: []], "
+      "15: [255 'no children node': []], "
+      "16: []]",
       GetTreeState(frame_tree));
 
   FrameTreeNode* child_16 = root->child_at(2);
@@ -210,38 +212,38 @@ TEST_F(FrameTreeTest, Shape) {
 
   // Now that's it's fully built, verify the tree structure is as expected.
   EXPECT_EQ(
-      "2*: [14*: [244*: [], 245*: []], "
-      "15*: [255* 'no children node': []], "
-      "16*: [264*: [], 265*: [], 266*: [], "
-      "267* 'node with deep subtree': "
-      "[365*: [455*: [555*: [655*: []]]]], 268*: []]]",
+      "2: [14: [244: [], 245: []], "
+      "15: [255 'no children node': []], "
+      "16: [264: [], 265: [], 266: [], "
+      "267 'node with deep subtree': "
+      "[365: [455: [555: [655: []]]]], 268: []]]",
       GetTreeState(frame_tree));
 
   FrameTreeNode* child_555 = child_267->child_at(0)->child_at(0)->child_at(0);
   frame_tree->RemoveFrame(child_555);
   EXPECT_EQ(
-      "2*: [14*: [244*: [], 245*: []], "
-      "15*: [255* 'no children node': []], "
-      "16*: [264*: [], 265*: [], 266*: [], "
-      "267* 'node with deep subtree': "
-      "[365*: [455*: []]], 268*: []]]",
+      "2: [14: [244: [], 245: []], "
+      "15: [255 'no children node': []], "
+      "16: [264: [], 265: [], 266: [], "
+      "267 'node with deep subtree': "
+      "[365: [455: []]], 268: []]]",
       GetTreeState(frame_tree));
 
   frame_tree->RemoveFrame(child_16->child_at(1));
   EXPECT_EQ(
-      "2*: [14*: [244*: [], 245*: []], "
-      "15*: [255* 'no children node': []], "
-      "16*: [264*: [], 266*: [], "
-      "267* 'node with deep subtree': "
-      "[365*: [455*: []]], 268*: []]]",
+      "2: [14: [244: [], 245: []], "
+      "15: [255 'no children node': []], "
+      "16: [264: [], 266: [], "
+      "267 'node with deep subtree': "
+      "[365: [455: []]], 268: []]]",
       GetTreeState(frame_tree));
 
   frame_tree->RemoveFrame(root->child_at(1));
   EXPECT_EQ(
-      "2*: [14*: [244*: [], 245*: []], "
-      "16*: [264*: [], 266*: [], "
-      "267* 'node with deep subtree': "
-      "[365*: [455*: []]], 268*: []]]",
+      "2: [14: [244: [], 245: []], "
+      "16: [264: [], 266: [], "
+      "267 'node with deep subtree': "
+      "[365: [455: []]], 268: []]]",
       GetTreeState(frame_tree));
 }
 

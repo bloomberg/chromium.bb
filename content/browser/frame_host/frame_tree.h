@@ -73,19 +73,20 @@ class CONTENT_EXPORT FrameTree {
   // it safe to remove children during the callback.
   void ForEach(const base::Callback<bool(FrameTreeNode*)>& on_node) const;
 
-  // Frame tree manipulation routines.
-  // |process_id| is required to disambiguate |new_routing_id|, and it must
-  // match the process of the |parent| node.  Otherwise this method returns
-  // nullptr.  Passing MSG_ROUTING_NONE for |new_routing_id| will allocate a new
-  // routing ID for the new frame.
-  RenderFrameHostImpl* AddFrame(
-      FrameTreeNode* parent,
-      int process_id,
-      int new_routing_id,
-      blink::WebTreeScopeType scope,
-      const std::string& frame_name,
-      blink::WebSandboxFlags sandbox_flags,
-      const blink::WebFrameOwnerProperties& frame_owner_properties);
+  // Adds a new child frame to the frame tree. |process_id| is required to
+  // disambiguate |new_routing_id|, and it must match the process of the
+  // |parent| node. Otherwise no child is added and this method returns false.
+  bool AddFrame(FrameTreeNode* parent,
+                int process_id,
+                int new_routing_id,
+                blink::WebTreeScopeType scope,
+                const std::string& frame_name,
+                blink::WebSandboxFlags sandbox_flags,
+                const blink::WebFrameOwnerProperties& frame_owner_properties);
+
+  // Removes a frame from the frame tree. |child|, its children, and objects
+  // owned by their RenderFrameHostManagers are immediately deleted. The root
+  // node cannot be removed this way.
   void RemoveFrame(FrameTreeNode* child);
 
   // This method walks the entire frame tree and creates a RenderFrameProxyHost

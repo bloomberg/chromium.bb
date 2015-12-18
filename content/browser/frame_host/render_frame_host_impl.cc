@@ -799,18 +799,13 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   // RenderFrame corresponding to this host sent an IPC message to create a
   // frame and it is delivered after this host is swapped out.
   // Ignore such messages, as we know this RenderFrameHost is going away.
-  if (rfh_state_ != RenderFrameHostImpl::STATE_DEFAULT)
+  if (rfh_state_ != RenderFrameHostImpl::STATE_DEFAULT ||
+      frame_tree_node_->current_frame_host() != this)
     return;
 
-  RenderFrameHostImpl* new_frame = frame_tree_->AddFrame(
-      frame_tree_node_, GetProcess()->GetID(), new_routing_id, scope,
-      frame_name, sandbox_flags, frame_owner_properties);
-  if (!new_frame)
-    return;
-
-  // We know that the RenderFrame has been created in this case, immediately
-  // after the CreateChildFrame IPC was sent.
-  new_frame->SetRenderFrameCreated(true);
+  frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
+                        scope, frame_name, sandbox_flags,
+                        frame_owner_properties);
 }
 
 void RenderFrameHostImpl::OnDetach() {

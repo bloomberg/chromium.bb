@@ -194,7 +194,7 @@ void FrameTree::ForEach(
   }
 }
 
-RenderFrameHostImpl* FrameTree::AddFrame(
+bool FrameTree::AddFrame(
     FrameTreeNode* parent,
     int process_id,
     int new_routing_id,
@@ -202,23 +202,28 @@ RenderFrameHostImpl* FrameTree::AddFrame(
     const std::string& frame_name,
     blink::WebSandboxFlags sandbox_flags,
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
+  CHECK_NE(new_routing_id, MSG_ROUTING_NONE);
+
   // A child frame always starts with an initial empty document, which means
   // it is in the same SiteInstance as the parent frame. Ensure that the process
   // which requested a child frame to be added is the same as the process of the
   // parent node.
-  // We return nullptr if this is not the case, which can happen in a race if an
-  // old RFH sends a CreateChildFrame message as we're swapping to a new RFH.
   if (parent->current_frame_host()->GetProcess()->GetID() != process_id)
-    return nullptr;
+    return false;
 
-  scoped_ptr<FrameTreeNode> node(new FrameTreeNode(
-      this, parent->navigator(), render_frame_delegate_, render_view_delegate_,
-      render_widget_delegate_, manager_delegate_, scope, frame_name,
-      sandbox_flags, frame_owner_properties));
-  FrameTreeNode* node_ptr = node.get();
   // AddChild is what creates the RenderFrameHost.
-  parent->AddChild(node.Pass(), process_id, new_routing_id);
-  return node_ptr->current_frame_host();
+  FrameTreeNode* added_node = parent->AddChild(
+      make_scoped_ptr(new FrameTreeNode(
+          this, parent->navigator(), render_frame_delegate_,
+          render_view_delegate_, render_widget_delegate_, manager_delegate_,
+          scope, frame_name, sandbox_flags, frame_owner_properties)),
+      process_id, new_routing_id);
+
+  // Now that the new node is part of the FrameTree and has a RenderFrameHost,
+  // we can announce the creation of the initial RenderFrame which already
+  // exists in the renderer process.
+  added_node->current_frame_host()->SetRenderFrameCreated(true);
+  return true;
 }
 
 void FrameTree::RemoveFrame(FrameTreeNode* child) {
