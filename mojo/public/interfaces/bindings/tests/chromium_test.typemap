@@ -9,6 +9,12 @@
       "headers": [
         "mojo/public/cpp/bindings/tests/pickled_struct_chromium.h"
       ]
+    },
+    "mojo.test.Rect": {
+      "typename": "mojo::test::RectChromium",
+      "headers": [
+        "mojo/public/cpp/bindings/tests/rect_chromium.h"
+      ]
     }
   }
 }

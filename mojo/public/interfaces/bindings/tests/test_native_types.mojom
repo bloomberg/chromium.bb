@@ -4,6 +4,8 @@
 
 module mojo.test;
 
+import "mojo/public/interfaces/bindings/tests/rect.mojom";
+
 // Used to verify that structs can be declared with no body in mojom.
 
 [native=True]
@@ -12,3 +14,12 @@ struct PickledStruct;
 interface PicklePasser {
   PassPickle(PickledStruct pickle) => (PickledStruct passed);
 };
+
+// Used to verify support for native serialization of mojom-defined structs.
+// This is tested with a typemap applied to the Rect type from rect.mojom.
+
+interface RectService {
+  AddRect(Rect r);
+  GetLargestRect() => (Rect largest);
+};
+

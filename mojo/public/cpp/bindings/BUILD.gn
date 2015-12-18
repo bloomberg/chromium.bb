@@ -80,6 +80,7 @@ source_set("bindings") {
     "string.h",
     "strong_binding.h",
     "struct_ptr.h",
+    "struct_traits.h",
     "type_converter.h",
   ]
 

@@ -1,0 +1,87 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_TESTS_RECT_CHROMIUM_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_TESTS_RECT_CHROMIUM_H_
+
+#include "mojo/public/interfaces/bindings/tests/rect.mojom.h"
+
+namespace mojo {
+namespace test {
+
+// An implementation of a hypothetical Rect type specifically for consumers in
+// in Chromium.
+class RectChromium {
+ public:
+  RectChromium() {}
+  RectChromium(const RectChromium& other)
+      : x_(other.x_),
+        y_(other.y_),
+        width_(other.width_),
+        height_(other.height_) {}
+  RectChromium(int x, int y, int width, int height) :
+      x_(x), y_(y), width_(width), height_(height) {
+    DCHECK_GE(width_, 0);
+    DCHECK_GE(height_, 0);
+  }
+  ~RectChromium() {}
+
+  RectChromium& operator=(const RectChromium& other) {
+    x_ = other.x_;
+    y_ = other.y_;
+    width_ = other.width_;
+    height_ = other.height_;
+    return *this;
+  }
+
+  int x() const { return x_; }
+  void set_x(int x) { x_ = x; }
+
+  int y() const { return y_; }
+  void set_y(int y) { y_ = y; }
+
+  int width() const { return width_; }
+  void set_width(int width) {
+    DCHECK_GE(width, 0);
+    width_ = width;
+  }
+
+  int height() const { return height_; }
+  void set_height(int height) {
+    DCHECK_GE(height, 0);
+    height_ = height;
+  }
+
+  int GetArea() const { return width_ * height_; }
+
+ private:
+  int x_ = 0;
+  int y_ = 0;
+  int width_ = 0;
+  int height_ = 0;
+};
+
+}  // namespace test
+
+template <>
+struct StructTraits<test::Rect, test::RectChromium> {
+  static int x(const test::RectChromium& r) { return r.x(); }
+  static int y(const test::RectChromium& r) { return r.y(); }
+  static int width(const test::RectChromium& r) { return r.width(); }
+  static int height(const test::RectChromium& r) { return r.height(); }
+
+  static bool Read(test::Rect::Reader r, test::RectChromium* out) {
+    if (r.width() < 0 || r.height() < 0)
+      return false;
+    out->set_x(r.x());
+    out->set_y(r.y());
+    out->set_width(r.width());
+    out->set_height(r.height());
+    return true;
+  }
+};
+
+}  // namespace mojo
+
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_TESTS_RECT_CHROMIUM_H_

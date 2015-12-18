@@ -4,3 +4,80 @@ void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buffer,
 bool Deserialize_(internal::{{struct.name}}_Data* input,
                   {{struct.name}}Ptr* output,
                   mojo::internal::SerializationContext* context);
+
+{%- if not variant %}
+
+{# NOTE: Generated Reader instances are intentionally cheap to copy and devoid
+   of heap allocations. They should stay this way. #}
+class {{struct.name}}_Reader {
+ public:
+  {{struct.name}}_Reader(internal::{{struct.name}}_Data* data,
+                         mojo::internal::SerializationContext* context);
+
+{%-   for pf in struct.packed.packed_fields_in_ordinal_order %}
+{%-     set kind = pf.field.kind -%}
+{%-     set name = pf.field.name -%}
+{%-     if kind|is_struct_kind %}
+  {{kind|get_name_for_kind}}::Reader {{name}}() const;
+{%-     elif kind|is_union_kind %}
+  // TODO(rockot): Support reading unions. ({{name}}() omitted)
+{%-     elif kind|is_object_kind %}
+  // TODO(rockot): Support reading other object kinds. ({{name}}() omitted)
+{%-     elif kind|is_any_handle_kind %}
+  // TODO(rockot): Support reading handles. ({{name}}() omitted)
+{%-     elif kind|is_interface_kind %}
+  // TODO(rockot): Support reading interfaces. ({{name}}() omitted)
+{%-     elif kind|is_interface_request_kind %}
+  // TODO(rockot): Support reading interface requests. ({{name}}() omitted)
+{%-     elif kind|is_associated_kind %}
+  // TODO(rockot): Support reading associated kinds. ({{name}}() omitted)
+{%-     elif kind|is_enum_kind %}
+  {{kind|cpp_result_type}} {{name}}() const {
+    return static_cast<{{kind|cpp_result_type}}>(data_->{{name}});
+  }
+{%-     else %}
+  {{kind|cpp_result_type}} {{name}}() const { return data_->{{name}}; }
+{%-     endif %}
+{%-   endfor %}
+
+ private:
+  internal::{{struct.name}}_Data* data_;
+  mojo::internal::SerializationContext* context_;
+};
+
+template <typename NativeType>
+struct {{struct.name}}_SerializerTraits_ {
+  static size_t GetSize(const NativeType& input) {
+    size_t size = sizeof(internal::{{struct.name}}_Data);
+{%- for pf in struct.packed.packed_fields_in_ordinal_order %}
+{%-   if pf.field.kind|is_object_kind %}
+    NOTREACHED() << "Mojom struct traits only support POD fields at this time. "
+        << "Cannot determine the size of field {{pf.field.name}}";
+{%-   endif %}
+{%- endfor %}
+    return size;
+  }
+
+  static void Serialize(const NativeType& input,
+                        mojo::internal::Buffer* buffer,
+                        internal::{{struct.name}}_Data** output) {
+    internal::{{struct.name}}_Data* result =
+        internal::{{struct.name}}_Data::New(buffer);
+{%- for pf in struct.packed.packed_fields_in_ordinal_order %}
+{%-   set name = pf.field.name -%}
+{%-   set kind = pf.field.kind %}
+    result->{{name}} = mojo::StructTraits<{{struct.name}}, NativeType>
+        ::{{name}}(input);
+{%- endfor %}
+    *output = result;
+  }
+
+  static bool Deserialize(internal::{{struct.name}}_Data* input,
+                          NativeType* output,
+                          mojo::internal::SerializationContext* context) {
+    return mojo::StructTraits<{{struct.name}}, NativeType>::Read(
+        {{struct.name}}_Reader(input, context), output);
+  }
+};
+
+{%- endif %}  {# not variant #}

@@ -1,7 +1,11 @@
 {% from "enum_macros.tmpl" import enum_decl -%}
+
+class {{struct.name}}_Reader;
+
 class {{struct.name}} {
  public:
   using Data_ = internal::{{struct.name}}_Data;
+  using Reader = {{struct.name}}_Reader;
 
 {#--- Enums #}
 {%- for enum in struct.enums -%}

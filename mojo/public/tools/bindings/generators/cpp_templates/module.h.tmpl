@@ -31,6 +31,7 @@
 #include "mojo/public/cpp/bindings/no_interface.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 #include "{{variant_path}}-internal.h"
 {%- for import in imports %}
 #include "{{import.module.path}}.h"
@@ -73,6 +74,7 @@ using {{interface.name}}AssociatedPtr = mojo::AssociatedInterfacePtr<{{interface
 {#--- Struct Forward Declarations -#}
 {%  for struct in structs %}
 class {{struct.name}};
+class {{struct.name}}_Reader;
 {%    if struct|should_inline %}
 using {{struct.name}}Ptr = mojo::InlinedStructPtr<{{struct.name}}>;
 {%    else %}

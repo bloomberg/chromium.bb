@@ -14,13 +14,19 @@
 {%- macro get_serialized_size(struct, input_field_pattern) -%}
   size_t size = sizeof(internal::{{struct.name}}_Data);
 {%-   for pf in struct.packed.packed_fields_in_ordinal_order if pf.field.kind|is_object_kind %}
-{%-     if pf.field.kind|is_native_only_kind %}
+{%-     set name = pf.field.name -%}
+{%-     set kind = pf.field.kind -%}
+{%-     if kind|is_native_only_kind %}
   size += mojo::internal::GetSerializedSizeNative_(
-      {{input_field_pattern|format(pf.field.name)}});
-{%-     elif pf.field.kind|is_union_kind %}
-  size += GetSerializedSize_({{input_field_pattern|format(pf.field.name)}}, true);
+      {{input_field_pattern|format(name)}});
+{%-     elif kind|is_typemapped_kind %}
+  size +=
+      {{kind|get_name_for_kind}}_SerializerTraits_<{{kind|cpp_wrapper_type}}>
+          ::GetSize({{input_field_pattern|format(name)}});
+{%-     elif kind|is_union_kind %}
+  size += GetSerializedSize_({{input_field_pattern|format(name)}}, true);
 {%-     else %}
-  size += GetSerializedSize_({{input_field_pattern|format(pf.field.name)}});
+  size += GetSerializedSize_({{input_field_pattern|format(name)}});
 {%-     endif %}
 {%-   endfor %}
 {%- endmacro -%}
@@ -60,6 +66,9 @@
 {%-     elif kind|is_native_only_kind %}
   mojo::internal::SerializeNative_(
       {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr);
+{%-     elif kind|is_typemapped_kind %}
+  {{kind|get_name_for_kind}}_SerializerTraits_<{{kind|cpp_wrapper_type}}>
+      ::Serialize({{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr);
 {%-     elif kind|is_union_kind %}
   internal::{{kind.name}}_Data* {{name}}_ptr = &{{output}}->{{name}};
   SerializeUnion_(std::move({{input_field}}), {{buffer}}, &{{name}}_ptr, true);
@@ -141,6 +150,12 @@
 {%-     if kind|is_native_only_kind %}
     if (!DeserializeNative_(
             {{input}}->{{name}}.ptr, &{{output_field}}, {{context}})) {
+      {{success}} = false;
+    }
+{%-     elif kind|is_typemapped_kind %}
+    if (!{{kind|get_name_for_kind}}_SerializerTraits_<{{kind|cpp_wrapper_type}}>
+            ::Deserialize(
+                {{input}}->{{name}}.ptr, &{{output_field}}, {{context}})) {
       {{success}} = false;
     }
 {%-     elif kind|is_object_kind %}

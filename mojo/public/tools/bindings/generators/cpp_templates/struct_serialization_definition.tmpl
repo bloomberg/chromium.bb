@@ -29,3 +29,22 @@ bool Deserialize_(internal::{{struct.name}}_Data* input,
   }
   return success;
 }
+
+{%- if not variant %}
+
+{{struct.name}}_Reader::{{struct.name}}_Reader(
+    internal::{{struct.name}}_Data*  data,
+    mojo::internal::SerializationContext* context)
+    : data_(data), context_(context) { }
+
+{%- for pf in struct.packed.packed_fields_in_ordinal_order %}
+{%-   set name = pf.field.name -%}
+{%-   set kind = pf.field.kind -%}
+{%-   if kind|is_struct_kind %}
+{{kind|get_name_for_kind}}_Reader {{struct.name}}_Reader::{{name}}() const {
+  return {{kind|get_name_for_kind}}_Reader(data_->{{name}}.ptr, context_);
+}
+{%-   endif %}
+{%- endfor %}
+
+{%- endif %}

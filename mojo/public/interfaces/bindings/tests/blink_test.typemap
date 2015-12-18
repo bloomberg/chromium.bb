@@ -9,6 +9,12 @@
       "headers": [
         "mojo/public/cpp/bindings/tests/pickled_struct_blink.h"
       ]
+    },
+    "mojo.test.Rect": {
+      "typename": "mojo::test::RectBlink",
+      "headers": [
+        "mojo/public/cpp/bindings/tests/rect_blink.h"
+      ]
     }
   }
 }
