@@ -1052,8 +1052,8 @@ TEST_F(AutofillManagerTest,
   // attribute.
   GetAutofillSuggestions(form, form.fields[0]);
   external_delegate_->CheckSuggestions(kDefaultPageID,
-                                       Suggestion("Elvis", "", "", 1),
-                                       Suggestion("Charles", "", "", 2));
+                                       Suggestion("Charles", "", "", 1),
+                                       Suggestion("Elvis", "", "", 2));
 
   // Check that there are no suggestions for the field without the autocomplete
   // attribute.
@@ -1082,13 +1082,13 @@ TEST_F(AutofillManagerTest,
 
   GetAutofillSuggestions(form, form.fields[0]);
   external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Elvis", "Elvis Aaron Presley", "", 1),
-      Suggestion("Charles", "Charles Hardin Holley", "", 2));
+      kDefaultPageID, Suggestion("Charles", "Charles Hardin Holley", "", 1),
+      Suggestion("Elvis", "Elvis Aaron Presley", "", 2));
 
   GetAutofillSuggestions(form, form.fields[1]);
   external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Presley", "Elvis Aaron Presley", "", 1),
-      Suggestion("Holley", "Charles Hardin Holley", "", 2));
+      kDefaultPageID, Suggestion("Holley", "Charles Hardin Holley", "", 1),
+      Suggestion("Presley", "Elvis Aaron Presley", "", 2));
 }
 
 // Test that we return all address profile suggestions when all form fields are
@@ -1107,9 +1107,8 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsEmptyValue) {
   // labels include full first relevant field, which in this case is the
   // address line 1.
   external_delegate_->CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1),
-      Suggestion("Charles", "123 Apple St.", "", 2));
+      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
+      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 }
 
 // Test that we return only matching address profile suggestions when the
@@ -1178,9 +1177,8 @@ TEST_F(AutofillManagerTest,
   // Test that we sent the right values to the external delegate. No labels,
   // with duplicate values "Grimes" merged.
   external_delegate_->CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Grimes", "" /* no label */, "", 1),
-      Suggestion("Googler", "" /* no label */, "", 3));
+      kDefaultPageID, Suggestion("Googler", "" /* no label */, "", 1),
+      Suggestion("Grimes", "" /* no label */, "", 2));
 }
 
 // Tests that we return address profile suggestions values when the section
@@ -1251,9 +1249,8 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsWithDuplicates) {
 
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1),
-      Suggestion("Charles", "123 Apple St.", "", 2));
+      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
+      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 }
 
 // Test that we return no suggestions when autofill is disabled.
@@ -1429,9 +1426,8 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
 
   // Test that we sent the right address suggestions to the external delegate.
   external_delegate_->CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1),
-      Suggestion("Charles", "123 Apple St.", "", 2));
+      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
+      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 
   const int kPageID2 = 2;
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
@@ -1467,9 +1463,8 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
 
   // Test that we sent the right suggestions to the external delegate.
   external_delegate_->CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1),
-      Suggestion("Charles", "123 Apple St.", "", 2));
+      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
+      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   const int kPageID2 = 2;
@@ -1503,10 +1498,9 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Elvis", "", "", 1),
-      Suggestion("Charles", "", "", 2));
+  external_delegate_->CheckSuggestions(kDefaultPageID,
+                                       Suggestion("Charles", "", "", 1),
+                                       Suggestion("Elvis", "", "", 2));
 }
 
 // Test that nothing breaks when there are autocomplete suggestions but no
@@ -1586,9 +1580,9 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
   // labels include the most private field of those that would be filled.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("12345678901", "3734 Elvis Presley Blvd.", "", 1),
+      Suggestion("18007724743", "Natty Bumppo", "", 1),  // 1800PRAIRIE
       Suggestion("23456789012", "123 Apple St.", "", 2),
-      Suggestion("18007724743", "Natty Bumppo", "", 3));  // 1800PRAIRIE
+      Suggestion("12345678901", "3734 Elvis Presley Blvd.", "", 3));
 }
 
 TEST_F(AutofillManagerTest, GetProfileSuggestionsForPhonePrefixOrSuffix) {
@@ -2689,9 +2683,8 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_NoneWhenAutofillPresent) {
   // labels include full first relevant field, which in this case is the
   // address line 1.
   external_delegate_->CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1),
-      Suggestion("Charles", "123 Apple St.", "", 2));
+      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
+      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 }
 
 // Test that we query for Autocomplete suggestions when there are no Autofill
@@ -3958,9 +3951,8 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   GetAutofillSuggestions(form, field);
 
   external_delegate_->CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("theking@gmail.com", "3734 Elvis Presley Blvd.", "", 1),
-      Suggestion("buddy@gmail.com", "123 Apple St.", "", 2));
+      kDefaultPageID, Suggestion("buddy@gmail.com", "123 Apple St.", "", 1),
+      Suggestion("theking@gmail.com", "3734 Elvis Presley Blvd.", "", 2));
 }
 
 // Verify that typing "apple" will match "123 Apple St." when substring matching
@@ -4096,9 +4088,9 @@ TEST_F(AutofillManagerTest,
 
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("Shawn Smith", "1234 Smith Blvd., Robin Adam Smith Grimes", "",
+      Suggestion("Shawn Smith", "1234 Smith Blvd., Carl Shawn Smith Grimes", "",
                  1),
-      Suggestion("Adam Smith", "1234 Smith Blvd., Carl Shawn Smith Grimes", "",
+      Suggestion("Adam Smith", "1234 Smith Blvd., Robin Adam Smith Grimes", "",
                  2));
 }
 

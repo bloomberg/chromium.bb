@@ -8,7 +8,6 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
-#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
@@ -201,18 +200,9 @@ bool RankByMfu(const AutofillDataModel* a, const AutofillDataModel* b) {
   return a->use_date() > b->use_date();
 }
 
-// Returns whether sorting autofill profile suggestions by frecency is enabled.
-bool IsAutofillProfileSortingByFrecencyEnabled() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kFrecencyFieldTrialName);
-  return base::StartsWith(group_name, kFrecencyFieldTrialStateEnabled,
-                          base::CompareCase::SENSITIVE);
-}
-
 }  // namespace
 
 const char kFrecencyFieldTrialName[] = "AutofillProfileOrderByFrecency";
-const char kFrecencyFieldTrialStateEnabled[] = "Enabled";
 const char kFrecencyFieldTrialLimitParam[] = "limit";
 
 PersonalDataManager::PersonalDataManager(const std::string& app_locale)
@@ -803,16 +793,13 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
 
   std::vector<AutofillProfile*> profiles = GetProfiles(true);
 
-  if (IsAutofillProfileSortingByFrecencyEnabled()) {
-    base::Time comparison_time = base::Time::Now();
-    std::sort(profiles.begin(), profiles.end(),
-              [comparison_time](const AutofillDataModel* a,
-                                const AutofillDataModel* b) {
-                return a->CompareFrecency(b, comparison_time);
-              });
-  } else {
-    std::sort(profiles.begin(), profiles.end(), RankByMfu);
-  }
+  // Rank the suggestions by frecency (see AutofillDataModel for details).
+  base::Time comparison_time = base::Time::Now();
+  std::sort(profiles.begin(), profiles.end(),
+            [comparison_time](const AutofillDataModel* a,
+                              const AutofillDataModel* b) {
+              return a->CompareFrecency(b, comparison_time);
+            });
 
   std::vector<Suggestion> suggestions;
   // Match based on a prefix search.
