@@ -1,5 +1,5 @@
 /*
- * DRM based mode setting test program
+ * DRM based vblank test program
  * Copyright 2008 Tungsten Graphics
  *   Jakob Bornecrantz <jakob@tungstengraphics.com>
  * Copyright 2008 Intel Corporation
@@ -24,19 +24,6 @@
  * IN THE SOFTWARE.
  */
 
-/*
- * This fairly simple test program dumps output in a similar format to the
- * "xrandr" tool everyone knows & loves.  It's necessarily slightly different
- * since the kernel separates outputs into encoder and connector structures,
- * each with their own unique ID.  The program also allows test testing of the
- * memory management and mode setting APIs by allowing the user to specify a
- * connector and mode to use for mode setting.  If all works as expected, a
- * blue background should be painted on the monitor attached to the specified
- * connector after the selected mode is set.
- *
- * TODO: use cairo to write the mode info on the selected output once
- *       the mode has been programmed, along with possible test patterns.
- */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
