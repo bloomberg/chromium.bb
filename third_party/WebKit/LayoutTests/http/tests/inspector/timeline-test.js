@@ -80,7 +80,7 @@ InspectorTest.startTimeline = function(callback)
         callback();
     }
     panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this)
-    panel._enableJSSamplingSetting.set(false);
+    panel._captureJSProfileSetting.set(false);
     panel._toggleRecording();
 };
 
