@@ -13,6 +13,7 @@
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -456,98 +457,64 @@ UIColor* InterpolateFromColorToColor(UIColor* firstColor,
 }
 
 void ApplyVisualConstraints(NSArray* constraints,
-                            NSDictionary* subviewsDictionary,
-                            UIView* parentView) {
+                            NSDictionary* subviewsDictionary) {
   ApplyVisualConstraintsWithMetricsAndOptions(constraints, subviewsDictionary,
-                                              nil, 0, parentView);
+                                              nil, 0);
 }
 
 void ApplyVisualConstraintsWithOptions(NSArray* constraints,
                                        NSDictionary* subviewsDictionary,
-                                       NSLayoutFormatOptions options,
-                                       UIView* parentView) {
+                                       NSLayoutFormatOptions options) {
   ApplyVisualConstraintsWithMetricsAndOptions(constraints, subviewsDictionary,
-                                              nil, options, parentView);
+                                              nil, options);
 }
 
 void ApplyVisualConstraintsWithMetrics(NSArray* constraints,
                                        NSDictionary* subviewsDictionary,
-                                       NSDictionary* metrics,
-                                       UIView* parentView) {
+                                       NSDictionary* metrics) {
   ApplyVisualConstraintsWithMetricsAndOptions(constraints, subviewsDictionary,
-                                              metrics, 0, parentView);
+                                              metrics, 0);
 }
 
 void ApplyVisualConstraintsWithMetricsAndOptions(
     NSArray* constraints,
     NSDictionary* subviewsDictionary,
     NSDictionary* metrics,
-    NSLayoutFormatOptions options,
-    UIView* parentView) {
+    NSLayoutFormatOptions options) {
+  base::scoped_nsobject<NSMutableArray> layoutConstraints(
+      [[NSMutableArray arrayWithCapacity:constraints.count * 3] retain]);
   for (NSString* constraint in constraints) {
     DCHECK([constraint isKindOfClass:[NSString class]]);
-    [parentView
-        addConstraints:[NSLayoutConstraint
-                           constraintsWithVisualFormat:constraint
-                                               options:options
-                                               metrics:metrics
-                                                 views:subviewsDictionary]];
+    [layoutConstraints addObjectsFromArray:
+                           [NSLayoutConstraint
+                               constraintsWithVisualFormat:constraint
+                                                   options:options
+                                                   metrics:metrics
+                                                     views:subviewsDictionary]];
   }
+  [NSLayoutConstraint activateConstraints:layoutConstraints];
 }
 
-void AddSameCenterXConstraint(UIView* parentView, UIView* subview) {
-  DCHECK_EQ(parentView, [subview superview]);
-  [parentView addConstraint:[NSLayoutConstraint
-                                constraintWithItem:subview
-                                         attribute:NSLayoutAttributeCenterX
-                                         relatedBy:NSLayoutRelationEqual
-                                            toItem:parentView
-                                         attribute:NSLayoutAttributeCenterX
-                                        multiplier:1
-                                          constant:0]];
+void AddSameCenterXConstraint(UIView* view1, UIView* view2) {
+  [NSLayoutConstraint constraintWithItem:view1
+                               attribute:NSLayoutAttributeCenterX
+                               relatedBy:NSLayoutRelationEqual
+                                  toItem:view2
+                               attribute:NSLayoutAttributeCenterX
+                              multiplier:1
+                                constant:0]
+      .active = YES;
 }
 
-void AddSameCenterXConstraint(UIView *parentView, UIView *subview1,
-                              UIView *subview2) {
-  DCHECK_EQ(parentView, [subview1 superview]);
-  DCHECK_EQ(parentView, [subview2 superview]);
-  DCHECK_NE(subview1, subview2);
-  [parentView addConstraint:[NSLayoutConstraint
-                                constraintWithItem:subview1
-                                         attribute:NSLayoutAttributeCenterX
-                                         relatedBy:NSLayoutRelationEqual
-                                            toItem:subview2
-                                         attribute:NSLayoutAttributeCenterX
-                                        multiplier:1
-                                          constant:0]];
-}
-
-void AddSameCenterYConstraint(UIView* parentView, UIView* subview) {
-  DCHECK_EQ(parentView, [subview superview]);
-  [parentView addConstraint:[NSLayoutConstraint
-                                constraintWithItem:subview
-                                         attribute:NSLayoutAttributeCenterY
-                                         relatedBy:NSLayoutRelationEqual
-                                            toItem:parentView
-                                         attribute:NSLayoutAttributeCenterY
-                                        multiplier:1
-                                          constant:0]];
-}
-
-void AddSameCenterYConstraint(UIView* parentView,
-                              UIView* subview1,
-                              UIView* subview2) {
-  DCHECK_EQ(parentView, [subview1 superview]);
-  DCHECK_EQ(parentView, [subview2 superview]);
-  DCHECK_NE(subview1, subview2);
-  [parentView addConstraint:[NSLayoutConstraint
-                                constraintWithItem:subview1
-                                         attribute:NSLayoutAttributeCenterY
-                                         relatedBy:NSLayoutRelationEqual
-                                            toItem:subview2
-                                         attribute:NSLayoutAttributeCenterY
-                                        multiplier:1
-                                          constant:0]];
+void AddSameCenterYConstraint(UIView* view1, UIView* view2) {
+  [NSLayoutConstraint constraintWithItem:view1
+                               attribute:NSLayoutAttributeCenterY
+                               relatedBy:NSLayoutRelationEqual
+                                  toItem:view2
+                               attribute:NSLayoutAttributeCenterY
+                              multiplier:1
+                                constant:0]
+      .active = YES;
 }
 
 bool IsCompact(id<UITraitEnvironment> environment) {

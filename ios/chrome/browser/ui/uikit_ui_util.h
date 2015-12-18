@@ -169,57 +169,35 @@ UIColor* InterpolateFromColorToColor(UIColor* firstColor,
                                      UIColor* secondColor,
                                      CGFloat fraction);
 
-// Applies all |constraints| to all views in |subviewsDictionary| in the
-// superview |parentView|.
+// Applies all |constraints| to views in |subviewsDictionary|.
 void ApplyVisualConstraints(NSArray* constraints,
-                            NSDictionary* subviewsDictionary,
-                            UIView* parentView);
+                            NSDictionary* subviewsDictionary);
 
-// Applies all |constraints| with |options| to all views in |subviewsDictionary|
-// in the superview |parentView|.
+// Applies all |constraints| with |options| to views in |subviewsDictionary|.
 void ApplyVisualConstraintsWithOptions(NSArray* constraints,
                                        NSDictionary* subviewsDictionary,
-                                       NSLayoutFormatOptions options,
-                                       UIView* parentView);
+                                       NSLayoutFormatOptions options);
 
-// Applies all |constraints| with |metrics| to all views in |subviewsDictionary|
-// in the superview |parentView|
+// Applies all |constraints| with |metrics| to views in |subviewsDictionary|.
 void ApplyVisualConstraintsWithMetrics(NSArray* constraints,
                                        NSDictionary* subviewsDictionary,
-                                       NSDictionary* metrics,
-                                       UIView* parentView);
+                                       NSDictionary* metrics);
 
-// Applies all |constraints| with |metrics| and |options| to all views in
-// |subviewsDictionary| in the superview |parentView|
+// Applies all |constraints| with |metrics| and |options| to views in
+// |subviewsDictionary|.
 void ApplyVisualConstraintsWithMetricsAndOptions(
     NSArray* constraints,
     NSDictionary* subviewsDictionary,
     NSDictionary* metrics,
-    NSLayoutFormatOptions options,
-    UIView* parentView);
+    NSLayoutFormatOptions options);
 
-// Adds a constraint that |subview| is center aligned horizontally in
-// |parentView|.
-// |subview| must be a subview of |parentView|.
-void AddSameCenterXConstraint(UIView* parentView, UIView* subview);
+// Adds a constraint that |view1| and |view2| are center-aligned horizontally.
+// |view1| and |view2| must be in the same view hierarchy.
+void AddSameCenterXConstraint(UIView* view1, UIView* view2);
 
-// Adds a constraint that |subview1| and |subview2| are center aligned
-// horizontally on |parentView|.
-// |subview1| and |subview2| must be subview of |parentView|.
-void AddSameCenterXConstraint(UIView *parentView, UIView *subview1,
-                              UIView *subview2);
-
-// Adds a constraint that |subview| is center aligned vertically in
-// |parentView|.
-// |subview| must be a subview of |parentView|.
-void AddSameCenterYConstraint(UIView* parentView, UIView* subview);
-
-// Adds a constraint that |subview1| and |subview2| are center aligned
-// vertically on |parentView|.
-// |subview1| and |subview2| must be subview of |parentView|.
-void AddSameCenterYConstraint(UIView* parentView,
-                              UIView* subview1,
-                              UIView* subview2);
+// Adds a constraint that |view1| and |view2| are center-aligned vertically.
+// |view1| and |view2| must be in the same view hierarchy.
+void AddSameCenterYConstraint(UIView* view1, UIView* view2);
 
 // Whether the |environment| has a compact horizontal size class.
 bool IsCompact(id<UITraitEnvironment> environment);
