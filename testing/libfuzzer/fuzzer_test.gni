@@ -72,7 +72,11 @@ template("fuzzer_test") {
   }
 
   test(target_name) {
-    forward_variables_from(invoker, [ "sources" ])
+    forward_variables_from(invoker,
+                           [
+                             "sources",
+                             "include_dirs",
+                           ])
     deps = test_deps
     data = test_data
 
