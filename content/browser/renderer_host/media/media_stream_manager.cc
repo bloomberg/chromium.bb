@@ -379,9 +379,6 @@ MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
       video_capture_thread_("VideoCaptureThread"),
 #endif
       monitoring_started_(false),
-#if defined(OS_CHROMEOS)
-      has_checked_keyboard_mic_(false),
-#endif
       use_fake_ui_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeUIForMediaStream)) {
   DCHECK(audio_manager_);
@@ -1192,10 +1189,6 @@ void MediaStreamManager::SetupRequest(const std::string& label) {
                           MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE);
     return;
   }
-
-#if defined(OS_CHROMEOS)
-  EnsureKeyboardMicChecked();
-#endif
 
   if (!is_web_contents_capture && !is_screen_capture) {
     if (EnumerationRequired(&audio_enumeration_cache_, audio_type) ||
@@ -2030,38 +2023,6 @@ void MediaStreamManager::OnMediaStreamUIWindowId(MediaStreamType video_type,
     }
   }
 }
-
-#if defined(OS_CHROMEOS)
-void MediaStreamManager::EnsureKeyboardMicChecked() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!has_checked_keyboard_mic_) {
-    has_checked_keyboard_mic_ = true;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&MediaStreamManager::CheckKeyboardMicOnUIThread,
-                   base::Unretained(this)));
-  }
-}
-
-void MediaStreamManager::CheckKeyboardMicOnUIThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // We will post this on the device thread before the media media access
-  // request is posted on the UI thread, so setting the keyboard mic info will
-  // be done before any stream is created.
-  if (chromeos::CrasAudioHandler::Get()->HasKeyboardMic()) {
-    device_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaStreamManager::SetKeyboardMicOnDeviceThread,
-                   base::Unretained(this)));
-  }
-}
-
-void MediaStreamManager::SetKeyboardMicOnDeviceThread() {
-  DCHECK(device_task_runner_->BelongsToCurrentThread());
-  audio_manager_->SetHasKeyboardMic();
-}
-#endif
 
 void MediaStreamManager::DoNativeLogCallbackRegistration(
     int renderer_host_id,

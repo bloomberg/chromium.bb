@@ -104,6 +104,4 @@ scoped_ptr<AudioLog> MockAudioManager::CreateAudioLog(
   return scoped_ptr<AudioLog>();
 }
 
-void MockAudioManager::SetHasKeyboardMic() {}
-
 }  // namespace media.

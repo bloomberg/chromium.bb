@@ -78,7 +78,6 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
       const std::string& input_device_id) override;
   scoped_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
-  void SetHasKeyboardMic() override;
 
   // AudioManagerBase:
 

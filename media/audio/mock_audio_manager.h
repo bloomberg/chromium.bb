@@ -66,8 +66,6 @@ class MockAudioManager : public media::AudioManager {
   scoped_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
 
-  void SetHasKeyboardMic() override;
-
  protected:
   ~MockAudioManager() override;
 
