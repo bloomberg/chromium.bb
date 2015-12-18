@@ -10,10 +10,16 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
+
+namespace base {
+class TickClock;
+}
 
 namespace re2 {
 class RE2;
@@ -30,8 +36,9 @@ namespace android {
 // given URL or package. DataUseMatcher is not thread safe.
 class DataUseMatcher {
  public:
-  explicit DataUseMatcher(
-      const base::WeakPtr<DataUseTabModel>& data_use_tab_model);
+  DataUseMatcher(
+      const base::WeakPtr<DataUseTabModel>& data_use_tab_model,
+      const base::TimeDelta& default_matching_rule_expiration_duration);
 
   ~DataUseMatcher();
 
@@ -39,9 +46,9 @@ class DataUseMatcher {
   // case-insensitive regular expressions. If the url of the data use request
   // matches any of the regular expression, the observation is passed to the
   // Java listener. All vectors must be non-null and are owned by the caller.
-  void RegisterURLRegexes(const std::vector<std::string>* app_package_name,
-                          const std::vector<std::string>* domain_path_regex,
-                          const std::vector<std::string>* label);
+  void RegisterURLRegexes(const std::vector<std::string>* app_package_names,
+                          const std::vector<std::string>* domain_path_regexes,
+                          const std::vector<std::string>* labels);
 
   // Returns true if the |url| matches the registered regular expressions.
   // |label| must not be null. If a match is found, the |label| is set to the
@@ -55,17 +62,27 @@ class DataUseMatcher {
                              std::string* label) const WARN_UNUSED_RESULT;
 
  private:
+  friend class DataUseMatcherTest;
+  FRIEND_TEST_ALL_PREFIXES(DataUseMatcherTest,
+                           EncodeExpirationTimeInPackageName);
+  FRIEND_TEST_ALL_PREFIXES(DataUseMatcherTest,
+                           EncodeJavaExpirationTimeInPackageName);
+  FRIEND_TEST_ALL_PREFIXES(DataUseMatcherTest, MatchesIgnoresExpiredRules);
+  FRIEND_TEST_ALL_PREFIXES(DataUseMatcherTest, ParsePackageField);
+
   // Stores the matching rules.
   class MatchingRule {
    public:
     MatchingRule(const std::string& app_package_name,
                  scoped_ptr<re2::RE2> pattern,
-                 const std::string& label);
+                 const std::string& label,
+                 const base::TimeTicks& expiration);
     ~MatchingRule();
 
     const re2::RE2* pattern() const;
     const std::string& app_package_name() const;
     const std::string& label() const;
+    const base::TimeTicks& expiration() const;
 
    private:
     // Package name of the app that should be matched.
@@ -77,8 +94,22 @@ class DataUseMatcher {
     // Opaque label that uniquely identifies this matching rule.
     const std::string label_;
 
+    // Expiration time of this matching rule.
+    const base::TimeTicks expiration_;
+
     DISALLOW_COPY_AND_ASSIGN(MatchingRule);
   };
+
+  // Parses the app package name and expiration time of the matching rule
+  // encoded in the format "app_package_name|milliseconds_since_epoch" in
+  // |app_package_name|. |new_app_package_name| and |expiration| should not be
+  // null. Parsed expiration time is set in |expiration| and app package name
+  // is set in |new_app_package_name|. If |app_package_name| is not in the
+  // expected format, |expiration| will be set to default expiration duration
+  // from now, and |new_app_package_name| will be set to the |app_package_name|.
+  void ParsePackageField(const std::string& app_package_name,
+                         std::string* new_app_package_name,
+                         base::TimeTicks* expiration) const;
 
   base::ThreadChecker thread_checker_;
 
@@ -87,6 +118,13 @@ class DataUseMatcher {
   // |data_use_tab_model_| is notified if a label is removed from the set of
   // matching labels.
   base::WeakPtr<DataUseTabModel> data_use_tab_model_;
+
+  // Default expiration duration of a matching rule, if expiration is not
+  // specified in the rule.
+  const base::TimeDelta default_matching_rule_expiration_duration_;
+
+  // TickClock used for obtaining the current time.
+  scoped_ptr<base::TickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseMatcher);
 };

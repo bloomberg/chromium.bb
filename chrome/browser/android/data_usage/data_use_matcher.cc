@@ -5,6 +5,9 @@
 #include "chrome/browser/android/data_usage/data_use_matcher.h"
 
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
 
@@ -13,18 +16,22 @@ namespace chrome {
 namespace android {
 
 DataUseMatcher::DataUseMatcher(
-    const base::WeakPtr<DataUseTabModel>& data_use_tab_model)
-    : data_use_tab_model_(data_use_tab_model) {}
+    const base::WeakPtr<DataUseTabModel>& data_use_tab_model,
+    const base::TimeDelta& default_matching_rule_expiration_duration)
+    : data_use_tab_model_(data_use_tab_model),
+      default_matching_rule_expiration_duration_(
+          default_matching_rule_expiration_duration),
+      tick_clock_(new base::DefaultTickClock()) {}
 
 DataUseMatcher::~DataUseMatcher() {}
 
 void DataUseMatcher::RegisterURLRegexes(
-    const std::vector<std::string>* app_package_name,
-    const std::vector<std::string>* domain_path_regex,
-    const std::vector<std::string>* label) {
+    const std::vector<std::string>* app_package_names,
+    const std::vector<std::string>* domain_path_regexes,
+    const std::vector<std::string>* labels) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(app_package_name->size(), domain_path_regex->size());
-  DCHECK_EQ(app_package_name->size(), label->size());
+  DCHECK_EQ(app_package_names->size(), domain_path_regexes->size());
+  DCHECK_EQ(app_package_names->size(), labels->size());
 
   base::hash_set<std::string> removed_matching_rule_labels;
 
@@ -35,18 +42,25 @@ void DataUseMatcher::RegisterURLRegexes(
   re2::RE2::Options options(re2::RE2::DefaultOptions);
   options.set_case_sensitive(false);
 
-  for (size_t i = 0; i < domain_path_regex->size(); ++i) {
-    const std::string& url_regex = domain_path_regex->at(i);
-    if (url_regex.empty() && app_package_name->at(i).empty())
+  for (size_t i = 0; i < domain_path_regexes->size(); ++i) {
+    const std::string& url_regex = domain_path_regexes->at(i);
+    std::string app_package_name;
+    base::TimeTicks expiration;
+    const base::TimeTicks now_ticks = tick_clock_->NowTicks();
+
+    ParsePackageField(app_package_names->at(i), &app_package_name, &expiration);
+    if (url_regex.empty() && app_package_name.empty())
       continue;
     scoped_ptr<re2::RE2> pattern(new re2::RE2(url_regex, options));
     if (!pattern->ok())
       continue;
-    DCHECK(!label->at(i).empty());
+    if (expiration <= now_ticks)
+      continue;  // skip expired matching rules.
+    DCHECK(!labels->at(i).empty());
     matching_rules_.push_back(make_scoped_ptr(new MatchingRule(
-        app_package_name->at(i), pattern.Pass(), label->at(i))));
+        app_package_name, pattern.Pass(), labels->at(i), expiration)));
 
-    removed_matching_rule_labels.erase(label->at(i));
+    removed_matching_rule_labels.erase(labels->at(i));
   }
 
   for (const std::string& label : removed_matching_rule_labels) {
@@ -56,6 +70,7 @@ void DataUseMatcher::RegisterURLRegexes(
 }
 
 bool DataUseMatcher::MatchesURL(const GURL& url, std::string* label) const {
+  const base::TimeTicks now_ticks = tick_clock_->NowTicks();
   DCHECK(thread_checker_.CalledOnValidThread());
   *label = "";
 
@@ -63,6 +78,8 @@ bool DataUseMatcher::MatchesURL(const GURL& url, std::string* label) const {
     return false;
 
   for (const auto& matching_rule : matching_rules_) {
+    if (matching_rule->expiration() <= now_ticks)
+      continue;  // skip expired matching rules.
     if (re2::RE2::FullMatch(url.spec(), *(matching_rule->pattern()))) {
       *label = matching_rule->label();
       return true;
@@ -74,6 +91,7 @@ bool DataUseMatcher::MatchesURL(const GURL& url, std::string* label) const {
 
 bool DataUseMatcher::MatchesAppPackageName(const std::string& app_package_name,
                                            std::string* label) const {
+  const base::TimeTicks now_ticks = tick_clock_->NowTicks();
   DCHECK(thread_checker_.CalledOnValidThread());
   *label = "";
 
@@ -81,6 +99,8 @@ bool DataUseMatcher::MatchesAppPackageName(const std::string& app_package_name,
     return false;
 
   for (const auto& matching_rule : matching_rules_) {
+    if (matching_rule->expiration() <= now_ticks)
+      continue;  // skip expired matching rules.
     if (app_package_name == matching_rule->app_package_name()) {
       *label = matching_rule->label();
       return true;
@@ -90,12 +110,34 @@ bool DataUseMatcher::MatchesAppPackageName(const std::string& app_package_name,
   return false;
 }
 
+void DataUseMatcher::ParsePackageField(const std::string& app_package_name,
+                                       std::string* new_app_package_name,
+                                       base::TimeTicks* expiration) const {
+  const char separator = '|';
+  size_t index = app_package_name.find_last_of(separator);
+  uint64_t
+      expiration_milliseconds;  // expiration time as milliSeconds since epoch.
+  if (index != std::string::npos &&
+      base::StringToUint64(app_package_name.substr(index + 1),
+                           &expiration_milliseconds)) {
+    *new_app_package_name = app_package_name.substr(0, index);
+    *expiration = base::TimeTicks::UnixEpoch() +
+                  base::TimeDelta::FromMilliseconds(expiration_milliseconds);
+    return;
+  }
+  *expiration =
+      tick_clock_->NowTicks() + default_matching_rule_expiration_duration_;
+  *new_app_package_name = app_package_name;
+}
+
 DataUseMatcher::MatchingRule::MatchingRule(const std::string& app_package_name,
                                            scoped_ptr<re2::RE2> pattern,
-                                           const std::string& label)
+                                           const std::string& label,
+                                           const base::TimeTicks& expiration)
     : app_package_name_(app_package_name),
       pattern_(pattern.Pass()),
-      label_(label) {}
+      label_(label),
+      expiration_(expiration) {}
 
 DataUseMatcher::MatchingRule::~MatchingRule() {}
 
@@ -109,6 +151,10 @@ const std::string& DataUseMatcher::MatchingRule::app_package_name() const {
 
 const std::string& DataUseMatcher::MatchingRule::label() const {
   return label_;
+}
+
+const base::TimeTicks& DataUseMatcher::MatchingRule::expiration() const {
+  return expiration_;
 }
 
 }  // namespace android

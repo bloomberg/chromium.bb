@@ -33,6 +33,11 @@ const uint32_t kDefaultClosedTabExpirationDurationSeconds = 30;  // 30 seconds.
 const uint32_t kDefaultOpenTabExpirationDurationSeconds =
     60 * 60 * 24 * 5;  // 5 days.
 
+// Default expiration duration in seconds of a matching rule, used when
+// expiration time is not specified.
+const uint32_t kDefaultMatchingRuleExpirationDurationSeconds =
+    60 * 60 * 24;  // 24 hours.
+
 const char kUMAExpiredInactiveTabEntryRemovalDurationHistogram[] =
     "DataUse.TabModel.ExpiredInactiveTabEntryRemovalDuration";
 const char kUMAExpiredActiveTabEntryRemovalDurationHistogram[] =
@@ -100,6 +105,20 @@ base::TimeDelta GetOpenTabExpirationDuration() {
   return base::TimeDelta::FromSeconds(kDefaultOpenTabExpirationDurationSeconds);
 }
 
+base::TimeDelta GetDefaultMatchingRuleExpirationDuration() {
+  uint32_t duration_seconds = kDefaultMatchingRuleExpirationDurationSeconds;
+  std::string variation_value = variations::GetVariationParamValue(
+      chrome::android::ExternalDataUseObserver::
+          kExternalDataUseObserverFieldTrial,
+      "default_matching_rule_expiration_duration_seconds");
+  if (!variation_value.empty() &&
+      base::StringToUint(variation_value, &duration_seconds)) {
+    return base::TimeDelta::FromSeconds(duration_seconds);
+  }
+  return base::TimeDelta::FromSeconds(
+      kDefaultMatchingRuleExpirationDurationSeconds);
+}
+
 }  // namespace
 
 namespace chrome {
@@ -116,7 +135,8 @@ DataUseTabModel::DataUseTabModel(
       ui_task_runner_(ui_task_runner),
       weak_factory_(this) {
   DCHECK(ui_task_runner_);
-  data_use_matcher_.reset(new DataUseMatcher(weak_factory_.GetWeakPtr()));
+  data_use_matcher_.reset(new DataUseMatcher(
+      weak_factory_.GetWeakPtr(), GetDefaultMatchingRuleExpirationDuration()));
 }
 
 DataUseTabModel::~DataUseTabModel() {

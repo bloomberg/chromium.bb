@@ -8,8 +8,41 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+namespace {
+
+const char kRegexFoo[] = "http://foo.com/";
+const char kLabelFoo[] = "label_foo";
+const char kAppFoo[] = "com.example.foo";
+
+const uint32_t kDefaultMatchingRuleExpirationDurationSeconds =
+    60 * 60 * 24;  // 24 hours.
+
+class NowTestTickClock : public base::TickClock {
+ public:
+  NowTestTickClock() {}
+
+  ~NowTestTickClock() override {}
+
+  base::TimeTicks NowTicks() override { return now_ticks_; }
+
+  void set_now_ticks(const base::TimeTicks& now_ticks) {
+    now_ticks_ = now_ticks;
+  }
+
+ private:
+  base::TimeTicks now_ticks_;
+
+  DISALLOW_COPY_AND_ASSIGN(NowTestTickClock);
+};
+
+}  // namespace
 
 namespace chrome {
 
@@ -17,7 +50,10 @@ namespace android {
 
 class DataUseMatcherTest : public testing::Test {
  public:
-  DataUseMatcherTest() : data_use_matcher_(base::WeakPtr<DataUseTabModel>()) {}
+  DataUseMatcherTest()
+      : data_use_matcher_(base::WeakPtr<DataUseTabModel>(),
+                          base::TimeDelta::FromSeconds(
+                              kDefaultMatchingRuleExpirationDurationSeconds)) {}
 
   DataUseMatcher* data_use_matcher() { return &data_use_matcher_; }
 
@@ -26,6 +62,13 @@ class DataUseMatcherTest : public testing::Test {
                           const std::vector<std::string>& label) {
     data_use_matcher_.RegisterURLRegexes(&app_package_name, &domain_path_regex,
                                          &label);
+  }
+
+  // Returns true if the matching rule at |index| is expired.
+  bool IsExpired(size_t index) {
+    DCHECK_LT(index, data_use_matcher_.matching_rules_.size());
+    return data_use_matcher_.matching_rules_[index]->expiration() <
+           data_use_matcher_.tick_clock_->NowTicks();
   }
 
  private:
@@ -237,7 +280,6 @@ TEST_F(DataUseMatcherTest, MultipleAppPackageName) {
   url_regexes.push_back("");
 
   std::vector<std::string> labels;
-  const char kLabelFoo[] = "label_foo";
   const char kLabelBar[] = "label_bar";
   const char kLabelBaz[] = "label_baz";
   labels.push_back(kLabelFoo);
@@ -245,7 +287,6 @@ TEST_F(DataUseMatcherTest, MultipleAppPackageName) {
   labels.push_back(kLabelBaz);
 
   std::vector<std::string> app_package_names;
-  const char kAppFoo[] = "com.example.foo";
   const char kAppBar[] = "com.example.bar";
   const char kAppBaz[] = "com.example.baz";
   app_package_names.push_back(kAppFoo);
@@ -280,6 +321,146 @@ TEST_F(DataUseMatcherTest, MultipleAppPackageName) {
   EXPECT_FALSE(data_use_matcher()->MatchesURL(GURL(""), &got_label));
   EXPECT_FALSE(
       data_use_matcher()->MatchesURL(GURL("http://www.baz.com"), &got_label));
+}
+
+TEST_F(DataUseMatcherTest, ParsePackageField) {
+  const struct {
+    std::string app_package_name;
+    std::string expected_app_package_name;
+    base::TimeDelta expected_expiration_duration;
+  } tests[] = {
+      {"", "", base::TimeDelta::FromSeconds(
+                   kDefaultMatchingRuleExpirationDurationSeconds)},
+      {"|", "|", base::TimeDelta::FromSeconds(
+                     kDefaultMatchingRuleExpirationDurationSeconds)},
+      {"|foo", "|foo", base::TimeDelta::FromSeconds(
+                           kDefaultMatchingRuleExpirationDurationSeconds)},
+      {"com.example.foo", "com.example.foo",
+       base::TimeDelta::FromSeconds(
+           kDefaultMatchingRuleExpirationDurationSeconds)},
+      {"com.example.foo|", "com.example.foo|",
+       base::TimeDelta::FromSeconds(
+           kDefaultMatchingRuleExpirationDurationSeconds)},
+      {"com.example.foo|foo", "com.example.foo|foo",
+       base::TimeDelta::FromSeconds(
+           kDefaultMatchingRuleExpirationDurationSeconds)},
+      {"|0", "", base::TimeDelta::FromMilliseconds(0)},
+      {"|100", "", base::TimeDelta::FromMilliseconds(100)},
+      {"com.example.foo|0", "com.example.foo",
+       base::TimeDelta::FromMilliseconds(0)},
+      {"com.example.foo|10000", "com.example.foo",
+       base::TimeDelta::FromMilliseconds(10000)},
+  };
+  NowTestTickClock* tick_clock = new NowTestTickClock();
+  // Set current time to to Epoch.
+  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch());
+
+  // |tick_clock| will be owned by |data_use_matcher_|.
+  data_use_matcher()->tick_clock_.reset(tick_clock);
+
+  for (const auto& test : tests) {
+    std::string new_app_package_name;
+    base::TimeTicks expiration;
+    data_use_matcher()->ParsePackageField(test.app_package_name,
+                                          &new_app_package_name, &expiration);
+    DCHECK_EQ(test.expected_app_package_name, new_app_package_name)
+        << test.app_package_name;
+    DCHECK_EQ(base::TimeTicks::UnixEpoch() + test.expected_expiration_duration,
+              expiration)
+        << test.app_package_name;
+  }
+}
+
+// Tests if the expiration time encoded as milliseconds since epoch is parsed
+// correctly.
+TEST_F(DataUseMatcherTest, EncodeExpirationTimeInPackageName) {
+  NowTestTickClock* tick_clock = new NowTestTickClock();
+
+  // |tick_clock| will be owned by |data_use_matcher_|.
+  data_use_matcher()->tick_clock_.reset(tick_clock);
+
+  std::vector<std::string> url_regexes, labels, app_package_names;
+  url_regexes.push_back(kRegexFoo);
+  labels.push_back(kLabelFoo);
+
+  // Set current time to to Epoch.
+  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch());
+
+  app_package_names.push_back(base::StringPrintf("%s|%d", kAppFoo, 10000));
+  RegisterURLRegexes(app_package_names, url_regexes, labels);
+  EXPECT_FALSE(IsExpired(0));
+  // Fast forward 10 seconds, and matching rule expires.
+  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch() +
+                            base::TimeDelta::FromMilliseconds(10000 + 1));
+  EXPECT_TRUE(IsExpired(0));
+
+  // Empty app package name.
+  app_package_names.clear();
+  app_package_names.push_back(base::StringPrintf("|%d", 20000));
+  RegisterURLRegexes(app_package_names, url_regexes, labels);
+  EXPECT_FALSE(IsExpired(0));
+  // Fast forward 20 seconds, and matching rule expires.
+  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch() +
+                            base::TimeDelta::FromMilliseconds(20000 + 1));
+  EXPECT_TRUE(IsExpired(0));
+}
+
+// Tests if the expiration time encoded in Java format is parsed correctly.
+TEST_F(DataUseMatcherTest, EncodeJavaExpirationTimeInPackageName) {
+  std::vector<std::string> url_regexes, labels, app_package_names;
+  url_regexes.push_back(kRegexFoo);
+  labels.push_back(kLabelFoo);
+
+  base::TimeTicks start_ticks = base::TimeTicks::Now();
+  base::Time expiration_time =
+      base::Time::Now() + base::TimeDelta::FromMilliseconds(10000);
+
+  app_package_names.push_back(base::StringPrintf(
+      "%s|%lld", kAppFoo,
+      static_cast<long long int>(expiration_time.ToJavaTime())));
+  RegisterURLRegexes(app_package_names, url_regexes, labels);
+  EXPECT_FALSE(IsExpired(0));
+
+  // Check if expiration duration is close to 10 seconds.
+  EXPECT_GE(base::TimeDelta::FromMilliseconds(10001),
+            data_use_matcher()->matching_rules_[0]->expiration() -
+                data_use_matcher()->tick_clock_->NowTicks());
+  EXPECT_LE(base::TimeDelta::FromMilliseconds(9999),
+            data_use_matcher()->matching_rules_[0]->expiration() - start_ticks);
+}
+
+// Tests that expired matching rules are ignored by MatchesURL and
+// MatchesAppPackageName.
+TEST_F(DataUseMatcherTest, MatchesIgnoresExpiredRules) {
+  std::vector<std::string> url_regexes, labels, app_package_names;
+  std::string got_label;
+  NowTestTickClock* tick_clock = new NowTestTickClock();
+
+  // |tick_clock| will be owned by |data_use_matcher_|.
+  data_use_matcher()->tick_clock_.reset(tick_clock);
+  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch());
+
+  url_regexes.push_back(kRegexFoo);
+  labels.push_back(kLabelFoo);
+  app_package_names.push_back(base::StringPrintf("%s|%d", kAppFoo, 10000));
+  RegisterURLRegexes(app_package_names, url_regexes, labels);
+
+  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch() +
+                            base::TimeDelta::FromMilliseconds(1));
+
+  EXPECT_FALSE(IsExpired(0));
+  EXPECT_TRUE(data_use_matcher()->MatchesURL(GURL(kRegexFoo), &got_label));
+  EXPECT_EQ(kLabelFoo, got_label);
+  EXPECT_TRUE(data_use_matcher()->MatchesAppPackageName(kAppFoo, &got_label));
+  EXPECT_EQ(kLabelFoo, got_label);
+
+  // Advance time to make it expired.
+  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch() +
+                            base::TimeDelta::FromMilliseconds(10001));
+
+  EXPECT_TRUE(IsExpired(0));
+  EXPECT_FALSE(data_use_matcher()->MatchesURL(GURL(kRegexFoo), &got_label));
+  EXPECT_FALSE(data_use_matcher()->MatchesAppPackageName(kAppFoo, &got_label));
 }
 
 }  // namespace android
