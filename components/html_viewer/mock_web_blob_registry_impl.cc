@@ -52,12 +52,12 @@ void MockWebBlobRegistryImpl::removeBlobDataRef(const WebString& uuid) {
 
 void MockWebBlobRegistryImpl::registerPublicBlobURL(const WebURL& url,
                                                     const WebString& uuid) {
-  public_url_to_uuid_[url.spec()] = uuid;
+  public_url_to_uuid_[url.string().utf8()] = uuid;
   addBlobDataRef(uuid);
 }
 
 void MockWebBlobRegistryImpl::revokePublicBlobURL(const WebURL& url) {
-  auto it = public_url_to_uuid_.find(url.spec());
+  auto it = public_url_to_uuid_.find(url.string().utf8());
   if (it != public_url_to_uuid_.end()) {
     removeBlobDataRef(it->second);
     public_url_to_uuid_.erase(it);
@@ -98,7 +98,7 @@ void MockWebBlobRegistryImpl::unregisterStreamURL(const WebURL& url) {
 
 bool MockWebBlobRegistryImpl::GetUUIDForURL(const blink::WebURL& url,
                                             blink::WebString* uuid) const {
-  auto it = public_url_to_uuid_.find(url.spec());
+  auto it = public_url_to_uuid_.find(url.string().utf8());
   if (it != public_url_to_uuid_.end()) {
     *uuid = it->second;
     return true;

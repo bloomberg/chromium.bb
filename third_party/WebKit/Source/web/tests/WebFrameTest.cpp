@@ -3351,7 +3351,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadWhileProvisional)
 
     WebDataSource* dataSource = webViewHelper.webView()->mainFrame()->dataSource();
     ASSERT_TRUE(dataSource);
-    EXPECT_EQ(toKURL(m_baseURL + "fixed_layout.html"), toKURL(dataSource->request().url().spec()));
+    EXPECT_EQ(toKURL(m_baseURL + "fixed_layout.html"), KURL(dataSource->request().url()));
 }
 
 TEST_P(ParameterizedWebFrameTest, AppendRedirects)
@@ -3369,8 +3369,8 @@ TEST_P(ParameterizedWebFrameTest, AppendRedirects)
     WebVector<WebURL> redirects;
     dataSource->redirectChain(redirects);
     ASSERT_EQ(2U, redirects.size());
-    EXPECT_EQ(toKURL(firstURL), toKURL(redirects[0].spec().data()));
-    EXPECT_EQ(toKURL(secondURL), toKURL(redirects[1].spec().data()));
+    EXPECT_EQ(toKURL(firstURL), KURL(redirects[0]));
+    EXPECT_EQ(toKURL(secondURL), KURL(redirects[1]));
 }
 
 TEST_P(ParameterizedWebFrameTest, IframeRedirect)
@@ -3390,8 +3390,8 @@ TEST_P(ParameterizedWebFrameTest, IframeRedirect)
     WebVector<WebURL> redirects;
     iframeDataSource->redirectChain(redirects);
     ASSERT_EQ(2U, redirects.size());
-    EXPECT_EQ(toKURL("about:blank"), toKURL(redirects[0].spec().data()));
-    EXPECT_EQ(toKURL("http://internal.test/visible_iframe.html"), toKURL(redirects[1].spec().data()));
+    EXPECT_EQ(toKURL("about:blank"), KURL(redirects[0]));
+    EXPECT_EQ(toKURL("http://internal.test/visible_iframe.html"), KURL(redirects[1]));
 }
 
 TEST_P(ParameterizedWebFrameTest, ClearFocusedNodeTest)

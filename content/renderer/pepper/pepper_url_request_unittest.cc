@@ -79,12 +79,12 @@ class URLRequestInfoTest : public RenderViewTest {
     return web_request.downloadToFile();
   }
 
-  WebCString GetURL() {
+  std::string GetURL() {
     WebURLRequest web_request;
     URLRequestInfoData data = info_->GetData();
     if (!CreateWebURLRequest(pp_instance_, &data, GetMainFrame(), &web_request))
       return WebCString();
-    return web_request.url().spec();
+    return web_request.url().string().utf8();
   }
 
   WebString GetMethod() {

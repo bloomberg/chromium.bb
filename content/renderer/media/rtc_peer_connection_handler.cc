@@ -200,7 +200,7 @@ void GetNativeRtcConfiguration(
         base::UTF16ToUTF8(base::StringPiece16(webkit_server.username()));
     server.password =
         base::UTF16ToUTF8(base::StringPiece16(webkit_server.credential()));
-    server.uri = webkit_server.uri().spec();
+    server.uri = webkit_server.uri().string().utf8();
     webrtc_config->servers.push_back(server);
   }
 

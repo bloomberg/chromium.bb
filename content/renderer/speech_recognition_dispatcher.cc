@@ -97,7 +97,8 @@ void SpeechRecognitionDispatcher::start(
   for (size_t i = 0; i < params.grammars().size(); ++i) {
     const WebSpeechGrammar& grammar = params.grammars()[i];
     msg_params.grammars.push_back(
-        SpeechRecognitionGrammar(grammar.src().spec(), grammar.weight()));
+        SpeechRecognitionGrammar(grammar.src().string().utf8(),
+                                 grammar.weight()));
   }
   msg_params.language =
       base::UTF16ToUTF8(base::StringPiece16(params.language()));

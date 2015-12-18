@@ -21,9 +21,10 @@ bool WebContentSettings::allowImage(bool enabled_per_settings,
                                 const blink::WebURL& image_url) {
   bool allowed = enabled_per_settings && images_allowed_;
   if (dump_callbacks_ && delegate_) {
-    delegate_->PrintMessage(std::string("PERMISSION CLIENT: allowImage(") +
-                            NormalizeLayoutTestURL(image_url.spec()) + "): " +
-                            (allowed ? "true" : "false") + "\n");
+      delegate_->PrintMessage(
+              std::string("PERMISSION CLIENT: allowImage(") +
+              NormalizeLayoutTestURL(image_url.string().utf8()) + "): " +
+              (allowed ? "true" : "false") + "\n");
   }
   return allowed;
 }
@@ -31,9 +32,10 @@ bool WebContentSettings::allowImage(bool enabled_per_settings,
 bool WebContentSettings::allowMedia(const blink::WebURL& image_url) {
   bool allowed = media_allowed_;
   if (dump_callbacks_ && delegate_)
-    delegate_->PrintMessage(std::string("PERMISSION CLIENT: allowMedia(") +
-                            NormalizeLayoutTestURL(image_url.spec()) + "): " +
-                            (allowed ? "true" : "false") + "\n");
+      delegate_->PrintMessage(
+              std::string("PERMISSION CLIENT: allowMedia(") +
+              NormalizeLayoutTestURL(image_url.string().utf8()) + "): " +
+              (allowed ? "true" : "false") + "\n");
   return allowed;
 }
 
@@ -43,7 +45,7 @@ bool WebContentSettings::allowScriptFromSource(bool enabled_per_settings,
   if (dump_callbacks_ && delegate_) {
     delegate_->PrintMessage(
         std::string("PERMISSION CLIENT: allowScriptFromSource(") +
-        NormalizeLayoutTestURL(scriptURL.spec()) + "): " +
+        NormalizeLayoutTestURL(scriptURL.string().utf8()) + "): " +
         (allowed ? "true" : "false") + "\n");
   }
   return allowed;

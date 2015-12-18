@@ -172,7 +172,7 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
     FeatureMap hashed_features;
     ClientPhishingRequest verdict;
     verdict.set_model_version(scorer_->model_version());
-    verdict.set_url(main_frame->document().url().spec());
+    verdict.set_url(main_frame->document().url().string().utf8());
     for (base::hash_map<std::string, double>::const_iterator it =
              features_->features().begin();
          it != features_->features().end(); ++it) {

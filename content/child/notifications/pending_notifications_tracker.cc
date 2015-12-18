@@ -102,7 +102,7 @@ int PendingNotificationsTracker::FetchNotificationResources(
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&NotificationImageLoader::StartOnMainThread, image_loader,
-                 notification_id, GURL(notification_data.icon.spec())));
+                 notification_id, GURL(notification_data.icon)));
 
   return notification_id;
 }

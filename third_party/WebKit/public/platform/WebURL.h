@@ -69,13 +69,6 @@ public:
         return *this;
     }
 
-    // FIXME: Remove this API.
-    WebCString spec() const
-    {
-        std::string spec = m_string.utf8();
-        return WebCString(spec.data(), spec.length());
-    }
-
     const WebString& string() const
     {
         return m_string;

@@ -402,7 +402,7 @@ void PeerConnectionTracker::RegisterPeerConnection(
       "rtcpMuxPolicy: " + SerializeRtcpMuxPolicy(config.rtcp_mux_policy) + " }";
 
   info.constraints = SerializeMediaConstraints(constraints);
-  info.url = frame->document().url().spec();
+  info.url = frame->document().url().string().utf8();
   RenderThreadImpl::current()->Send(
       new PeerConnectionTrackerHost_AddPeerConnection(info));
 

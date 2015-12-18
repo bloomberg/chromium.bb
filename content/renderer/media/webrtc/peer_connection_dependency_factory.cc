@@ -458,7 +458,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   }
 
   const GURL& requesting_origin =
-      GURL(web_frame->document().url().spec()).GetOrigin();
+      GURL(web_frame->document().url()).GetOrigin();
 
   scoped_ptr<rtc::NetworkManager> network_manager;
   if (port_config.enable_multiple_routes) {

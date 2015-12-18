@@ -28,11 +28,10 @@ PrerendererClient::~PrerendererClient() {
 void PrerendererClient::willAddPrerender(
     blink::WebPrerender* prerender) {
   DVLOG(3) << "PrerendererClient::willAddPrerender url = "
-           << prerender->url().spec().data();
+           << prerender->url().string().utf8();
   prerender->setExtraData(new PrerenderExtraData(++s_last_prerender_id,
                                                  routing_id(),
                                                  render_view()->GetSize()));
 }
 
 }  // namespace prerender
-

@@ -137,7 +137,7 @@ AXContentTreeData BlinkAXTreeSource::GetTreeData() const {
   const blink::WebAXObject& root = GetRoot();
 
   tree_data.title = document.title().utf8();
-  tree_data.url = document.url().spec();
+  tree_data.url = document.url().string().utf8();
   tree_data.mimetype = document.isXHTMLDocument() ? "text/xhtml" : "text/html";
   tree_data.loaded = root.isLoaded();
   tree_data.loading_progress = root.estimatedLoadingProgress();
@@ -383,7 +383,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   }
 
   if (!src.url().isEmpty())
-    dst->AddStringAttribute(ui::AX_ATTR_URL, src.url().spec());
+    dst->AddStringAttribute(ui::AX_ATTR_URL, src.url().string().utf8());
 
   if (dst->role == ui::AX_ROLE_HEADING)
     dst->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL, src.headingLevel());

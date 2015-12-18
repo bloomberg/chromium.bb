@@ -110,7 +110,7 @@ void WebMediaPlayerMS::load(LoadType load_type,
 
   SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
-  media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
+  media_log_->AddEvent(media_log_->CreateLoadEvent(url.string().utf8()));
 
   video_frame_provider_ = renderer_factory_->GetVideoFrameProvider(
       url,

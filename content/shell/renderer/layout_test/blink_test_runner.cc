@@ -442,7 +442,7 @@ std::string BlinkTestRunner::makeURLErrorDescription(const WebURLError& error) {
   }
 
   return base::StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
-      domain.c_str(), code, error.unreachableURL.spec().data());
+      domain.c_str(), code, error.unreachableURL.string().utf8().data());
 }
 
 void BlinkTestRunner::UseUnfortunateSynchronousResizeMode(bool enable) {
@@ -614,7 +614,7 @@ std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {
     result = result.substr(0, strlen("file:///")) +
              result.substr(strlen("file:////"));
   }
-  return RewriteLayoutTestsURL(result).spec();
+  return RewriteLayoutTestsURL(result).string().utf8();
 }
 
 void BlinkTestRunner::SetLocale(const std::string& locale) {

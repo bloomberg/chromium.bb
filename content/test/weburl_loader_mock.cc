@@ -111,7 +111,7 @@ void WebURLLoaderMock::loadSynchronously(const blink::WebURLRequest& request,
   }
   DCHECK(static_cast<const GURL&>(request.url()).SchemeIs("data"))
       << "loadSynchronously shouldn't be falling back: "
-      << request.url().spec().data();
+      << request.url().string().utf8();
   using_default_loader_ = true;
   default_loader_->loadSynchronously(request, response, error, data);
 }
@@ -125,7 +125,7 @@ void WebURLLoaderMock::loadAsynchronously(const blink::WebURLRequest& request,
   }
   DCHECK(static_cast<const GURL&>(request.url()).SchemeIs("data"))
       << "loadAsynchronously shouldn't be falling back: "
-      << request.url().spec().data();
+      << request.url().string().utf8();
   using_default_loader_ = true;
   default_loader_->loadAsynchronously(request, client);
 }

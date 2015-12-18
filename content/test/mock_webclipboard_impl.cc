@@ -149,7 +149,7 @@ void MockWebClipboardImpl::writeURL(const blink::WebURL& url,
   clear();
 
   m_htmlText = WebString::fromUTF8(URLToMarkup(url, title));
-  m_plainText = url.spec().utf16();
+  m_plainText = url.string();
   ++m_sequenceNumber;
 }
 
