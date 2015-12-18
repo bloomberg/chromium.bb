@@ -12,6 +12,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "chromeos/chromeos_switches.h"
@@ -193,7 +194,8 @@ bool ArcBridgeServiceImpl::RequestAppIcon(const std::string& package,
 bool ArcBridgeServiceImpl::RequestProcessList() {
   DCHECK(CalledOnValidThread());
   if (state() != State::READY) {
-    LOG(ERROR) << "Called RequestProcessList when the service is not ready";
+    LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+        << "Called RequestProcessList when the service is not ready";
     return false;
   }
   instance_ptr_->RequestProcessList();
