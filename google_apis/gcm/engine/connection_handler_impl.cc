@@ -339,6 +339,8 @@ void ConnectionHandlerImpl::OnGotMessageSize() {
   }
 
   int prev_byte_count = input_stream_->UnreadByteCount();
+  int result = net::OK;
+  bool incomplete_size_packet = false;
   {
     CodedInputStream coded_input_stream(input_stream_.get());
     if (!coded_input_stream.ReadVarint32(&message_size_)) {
@@ -346,16 +348,23 @@ void ConnectionHandlerImpl::OnGotMessageSize() {
       if (prev_byte_count >= kSizePacketLenMax) {
         // Already had enough bytes, something else went wrong.
         LOG(ERROR) << "Failed to process message size";
-        connection_callback_.Run(net::ERR_FILE_TOO_BIG);
-        return;
+        result = net::ERR_FILE_TOO_BIG;
+      } else {
+        // Back up by the amount read.
+        int bytes_read = prev_byte_count - input_stream_->UnreadByteCount();
+        input_stream_->BackUp(bytes_read);
+        size_packet_so_far_ = bytes_read;
+        incomplete_size_packet = true;
       }
-      // Back up by the amount read.
-      int bytes_read = prev_byte_count - input_stream_->UnreadByteCount();
-      input_stream_->BackUp(bytes_read);
-      size_packet_so_far_ = bytes_read;
-      WaitForData(MCS_SIZE);
-      return;
     }
+  }
+
+  if (result != net::OK) {
+    connection_callback_.Run(result);
+    return;
+  } else if (incomplete_size_packet) {
+    WaitForData(MCS_SIZE);
+    return;
   }
 
   DVLOG(1) << "Proto size: " << message_size_;
@@ -398,14 +407,13 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
      return;
   }
 
+  int result = net::OK;
   if (message_size_ < kDefaultDataPacketLimit) {
     CodedInputStream coded_input_stream(input_stream_.get());
     if (!protobuf->ParsePartialFromCodedStream(&coded_input_stream)) {
       LOG(ERROR) << "Unable to parse GCM message of type "
                  << static_cast<unsigned int>(message_tag_);
-      // Reset the connection.
-      connection_callback_.Run(net::ERR_FAILED);
-      return;
+      result = net::ERR_FAILED;
     }
   } else {
     // Copy any data in the input stream onto the end of the buffer.
@@ -424,9 +432,7 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
       if (!protobuf->ParsePartialFromCodedStream(&coded_input_stream)) {
         LOG(ERROR) << "Unable to parse GCM message of type "
                    << static_cast<unsigned int>(message_tag_);
-        // Reset the connection.
-        connection_callback_.Run(net::ERR_FAILED);
-        return;
+        result = net::ERR_FAILED;
       }
     } else {
       // Continue reading data.
@@ -442,6 +448,12 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
       WaitForData(MCS_PROTO_BYTES);
       return;
     }
+  }
+
+  if (result != net::OK) {
+    // Reset the connection.
+    connection_callback_.Run(result);
+    return;
   }
 
   input_stream_->RebuildBuffer();
