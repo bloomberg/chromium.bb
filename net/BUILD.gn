@@ -1582,11 +1582,12 @@ test("net_unittests") {
     #        'test_data_files': [
     #          'data/certificate_policies_unittest/',
     #          'data/name_constraints_unittest/',
+    #          'data/parse_certificate_unittest/',
     #          'data/ssl/certificates/',
     #          'data/test.html',
     #          'data/url_request_unittest/',
+    #          'data/verify_certificate_chain_unittest/',
     #          'data/verify_name_match_unittest/names/',
-    #          'data/parse_certificate_unittest/',
     #        ],
     #        'test_data_prefix': 'net',
     #      },
