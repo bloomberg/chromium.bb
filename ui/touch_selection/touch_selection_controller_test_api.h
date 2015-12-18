@@ -19,6 +19,8 @@ class TouchSelectionControllerTestApi {
 
   bool GetStartVisible() const;
   bool GetEndVisible() const;
+  TouchHandleOrientation GetStartHandleOrientation() const;
+  TouchHandleOrientation GetEndHandleOrientation() const;
 
   bool temporarily_hidden() const { return controller_->temporarily_hidden_; }
 

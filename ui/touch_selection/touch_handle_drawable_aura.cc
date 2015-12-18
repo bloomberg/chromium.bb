@@ -117,6 +117,9 @@ void TouchHandleDrawableAura::SetOrientation(TouchHandleOrientation orientation,
       gfx::RectF(-kSelectionHandlePadding,
                  kSelectionHandleVerticalVisualOffset - kSelectionHandlePadding,
                  window_width, window_height);
+  gfx::Rect paint_bounds(relative_bounds_.x(), relative_bounds_.y(),
+                         relative_bounds_.width(), relative_bounds_.height());
+  window_->SchedulePaintInRect(paint_bounds);
   UpdateBounds();
 }
 

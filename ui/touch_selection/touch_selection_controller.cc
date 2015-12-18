@@ -89,6 +89,16 @@ void TouchSelectionController::OnSelectionBoundsChanged(
     client_->OnSelectionEvent(SELECTION_DISSOLVED);
   }
 
+  // Swap the Handles when the start and end selection points cross each other.
+  if (active_status_ == SELECTION_ACTIVE) {
+    if ((start_selection_handle_->IsActive() &&
+         end_.edge_bottom() == start.edge_bottom()) ||
+        (end_selection_handle_->IsActive() &&
+         end.edge_bottom() == start_.edge_bottom())) {
+      start_selection_handle_.swap(end_selection_handle_);
+    }
+  }
+
   start_ = start;
   end_ = end;
   start_orientation_ = ToTouchHandleOrientation(start_.type());

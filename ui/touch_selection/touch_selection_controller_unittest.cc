@@ -1321,4 +1321,122 @@ TEST_F(TouchSelectionControllerTest, RectBetweenBounds) {
   EXPECT_EQ(gfx::RectF(), controller().GetRectBetweenBounds());
 }
 
+TEST_F(TouchSelectionControllerTest, SelectionNoOrientationChangeWhenSwapped) {
+  TouchSelectionControllerTestApi test_controller(&controller());
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  OnLongPressEvent();
+
+  float line_height = 10.f;
+  gfx::RectF start_rect(50, line_height, 0, line_height);
+  gfx::RectF end_rect(100, line_height, 0, line_height);
+  bool visible = true;
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(),
+              ElementsAre(SELECTION_ESTABLISHED, SELECTION_HANDLES_SHOWN));
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventStart());
+  EXPECT_EQ(test_controller.GetStartHandleOrientation(),
+            TouchHandleOrientation::LEFT);
+  EXPECT_EQ(test_controller.GetEndHandleOrientation(),
+            TouchHandleOrientation::RIGHT);
+
+  SetDraggingEnabled(true);
+
+  // Simulate moving the base, not triggering a swap of points.
+  MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time,
+                        start_rect.x(), start_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STARTED));
+
+  gfx::RectF offset_rect = end_rect;
+  offset_rect.Offset(gfx::Vector2dF(-10, 0));
+  ChangeSelection(offset_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLES_MOVED));
+  EXPECT_EQ(test_controller.GetStartHandleOrientation(),
+            TouchHandleOrientation::LEFT);
+  EXPECT_EQ(test_controller.GetEndHandleOrientation(),
+            TouchHandleOrientation::RIGHT);
+
+  event_time += base::TimeDelta::FromMilliseconds(2 * kDefaultTapTimeoutMs);
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time,
+                          offset_rect.x(), offset_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STOPPED));
+  EXPECT_EQ(test_controller.GetStartHandleOrientation(),
+            TouchHandleOrientation::LEFT);
+  EXPECT_EQ(test_controller.GetEndHandleOrientation(),
+            TouchHandleOrientation::RIGHT);
+
+  // Simulate moving the base, triggering a swap of points.
+  event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time,
+                          offset_rect.x(), offset_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STARTED));
+
+  offset_rect.Offset(gfx::Vector2dF(20, 0));
+  ChangeSelection(end_rect, visible, offset_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLES_MOVED));
+  EXPECT_EQ(test_controller.GetStartHandleOrientation(),
+            TouchHandleOrientation::LEFT);
+  EXPECT_EQ(test_controller.GetEndHandleOrientation(),
+            TouchHandleOrientation::LEFT);
+
+  event_time += base::TimeDelta::FromMilliseconds(2 * kDefaultTapTimeoutMs);
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time,
+                          offset_rect.x(), offset_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STOPPED));
+  EXPECT_EQ(test_controller.GetStartHandleOrientation(),
+            TouchHandleOrientation::LEFT);
+  EXPECT_EQ(test_controller.GetEndHandleOrientation(),
+            TouchHandleOrientation::RIGHT);
+
+  // Simulate moving the anchor, not triggering a swap of points.
+  event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time,
+                          offset_rect.x(), offset_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STARTED));
+
+  offset_rect.Offset(gfx::Vector2dF(-5, 0));
+  ChangeSelection(end_rect, visible, offset_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLES_MOVED));
+  EXPECT_EQ(test_controller.GetStartHandleOrientation(),
+            TouchHandleOrientation::LEFT);
+  EXPECT_EQ(test_controller.GetEndHandleOrientation(),
+            TouchHandleOrientation::RIGHT);
+
+  event_time += base::TimeDelta::FromMilliseconds(2 * kDefaultTapTimeoutMs);
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time,
+                          offset_rect.x(), offset_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STOPPED));
+  EXPECT_EQ(test_controller.GetStartHandleOrientation(),
+            TouchHandleOrientation::LEFT);
+  EXPECT_EQ(test_controller.GetEndHandleOrientation(),
+            TouchHandleOrientation::RIGHT);
+
+  // Simulate moving the anchor, triggering a swap of points.
+  event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time,
+                          offset_rect.x(), offset_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STARTED));
+
+  offset_rect.Offset(gfx::Vector2dF(-15, 0));
+  ChangeSelection(offset_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLES_MOVED));
+  EXPECT_EQ(test_controller.GetStartHandleOrientation(),
+            TouchHandleOrientation::RIGHT);
+  EXPECT_EQ(test_controller.GetEndHandleOrientation(),
+            TouchHandleOrientation::RIGHT);
+
+  event_time += base::TimeDelta::FromMilliseconds(2 * kDefaultTapTimeoutMs);
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time,
+                          offset_rect.x(), offset_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STOPPED));
+  EXPECT_EQ(test_controller.GetStartHandleOrientation(),
+            TouchHandleOrientation::LEFT);
+  EXPECT_EQ(test_controller.GetEndHandleOrientation(),
+            TouchHandleOrientation::RIGHT);
+}
+
 }  // namespace ui
