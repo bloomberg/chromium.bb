@@ -1,4 +1,8 @@
-"""Tests for gce."""
+# Copyright 2015 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Tests the gce module."""
 
 from __future__ import print_function
 
@@ -13,7 +17,7 @@ from oauth2client.client import GoogleCredentials
 
 
 class GceTest(cros_test_lib.MockTempDirTestCase):
-  """Unit tests for gce."""
+  """Unit tests for the gce module."""
 
   _PROJECT = 'foo-project'
   _ZONE = 'foo-zone'
@@ -23,7 +27,10 @@ class GceTest(cros_test_lib.MockTempDirTestCase):
     osutils.Touch(self.json_key_file)
     for cmd in ('from_stream', 'create_scoped'):
       self.PatchObject(GoogleCredentials, cmd, autospec=True)
+    self.PatchObject(gce.GceContext, 'GetZoneRegion', autospec=True,
+                     return_value=self._ZONE)
 
+  @cros_test_lib.NetworkTest()
   def testGetImage(self):
     """Tests that GetImage returns the correct image."""
     good_http = HttpMockSequence([
@@ -38,6 +45,7 @@ class GceTest(cros_test_lib.MockTempDirTestCase):
     self.assertDictEqual(gce_context.GetImage('foo-image'),
                          dict(name='foo-image'))
 
+  @cros_test_lib.NetworkTest()
   def testGetImageRaisesIfImageNotFound(self):
     """Tests that GetImage raies exception when image is not found."""
     bad_http = HttpMockSequence([
@@ -52,6 +60,7 @@ class GceTest(cros_test_lib.MockTempDirTestCase):
     with self.assertRaises(gce.ResourceNotFoundError):
       gce_context.GetImage('not-exising-image')
 
+  @cros_test_lib.NetworkTest()
   def testRetryOnServerErrorHttpRequest(self):
     """Tests that 500 erros are retried."""
 
@@ -80,13 +89,13 @@ class GceTest(cros_test_lib.MockTempDirTestCase):
                          dict(name='foo-image'))
 
   def _MockOutBuildRetriableRequest(self, mock_http):
-    """Returns a mock closure of _BuildRetriableRequest."""
-    # Replace the transport with mock_http.
-    return (lambda self, num_retries, _http, _thread_safe, _credentials, *args,
-            **kwargs:
-            gce.RetryOnServerErrorHttpRequest(num_retries, mock_http, *args,
-                                              **kwargs))
+    """Returns a mock closure of _BuildRetriableRequest.
 
-
-if __name__ == '__main__':
-  cros_test_lib.main()
+    Fake a GceContext._BuildRetriableRequest() that always uses |mock_http| as
+    transport.
+    """
+    def _BuildRetriableRequest(_self, num_retries, _http, _thread_safe,
+                               _credentials, *args, **kwargs):
+      return gce.RetryOnServerErrorHttpRequest(num_retries, mock_http, *args,
+                                               **kwargs)
+    return _BuildRetriableRequest

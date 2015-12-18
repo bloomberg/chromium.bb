@@ -104,6 +104,7 @@ SLOW_TESTS = {
     'buildbot/repository_unittest': SKIP,
     'buildbot/remote_try_unittest': SKIP,
     'lib/cros_build_lib_unittest': SKIP,
+    'lib/gce_unittest': SKIP,
     'lib/gerrit_unittest': SKIP,
     'lib/patch_unittest': SKIP,
 
