@@ -108,10 +108,25 @@ void HttpServerPropertiesImpl::InitializeSupportsQuic(
 
 void HttpServerPropertiesImpl::InitializeServerNetworkStats(
     ServerNetworkStatsMap* server_network_stats_map) {
+  // Add the entries from persisted data.
+  ServerNetworkStatsMap new_server_network_stats_map(
+      ServerNetworkStatsMap::NO_AUTO_EVICT);
   for (ServerNetworkStatsMap::reverse_iterator it =
            server_network_stats_map->rbegin();
        it != server_network_stats_map->rend(); ++it) {
-    server_network_stats_map_.Put(it->first, it->second);
+    new_server_network_stats_map.Put(it->first, it->second);
+  }
+
+  server_network_stats_map_.Swap(new_server_network_stats_map);
+
+  // Add the entries from the memory cache.
+  for (ServerNetworkStatsMap::reverse_iterator it =
+           new_server_network_stats_map.rbegin();
+       it != new_server_network_stats_map.rend(); ++it) {
+    if (server_network_stats_map_.Get(it->first) ==
+        server_network_stats_map_.end()) {
+      server_network_stats_map_.Put(it->first, it->second);
+    }
   }
 }
 

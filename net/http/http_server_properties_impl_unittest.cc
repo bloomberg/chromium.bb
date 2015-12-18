@@ -1165,22 +1165,67 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, Initialize) {
   HostPortPair google_server("www.google.com", 443);
 
   // Check by initializing empty ServerNetworkStats.
-  ServerNetworkStatsMap server_network_stats_map(
+  ServerNetworkStatsMap init_server_network_stats_map(
       ServerNetworkStatsMap::NO_AUTO_EVICT);
-  impl_.InitializeServerNetworkStats(&server_network_stats_map);
+  impl_.InitializeServerNetworkStats(&init_server_network_stats_map);
   const ServerNetworkStats* stats = impl_.GetServerNetworkStats(google_server);
   EXPECT_EQ(NULL, stats);
 
   // Check by initializing with www.google.com:443.
-  ServerNetworkStats stats1;
-  stats1.srtt = base::TimeDelta::FromMicroseconds(10);
-  stats1.bandwidth_estimate = QuicBandwidth::FromBitsPerSecond(100);
-  server_network_stats_map.Put(google_server, stats1);
+  ServerNetworkStats stats_google;
+  stats_google.srtt = base::TimeDelta::FromMicroseconds(10);
+  stats_google.bandwidth_estimate = QuicBandwidth::FromBitsPerSecond(100);
+  init_server_network_stats_map.Put(google_server, stats_google);
+  impl_.InitializeServerNetworkStats(&init_server_network_stats_map);
+
+  // Verify data for www.google.com:443.
+  ASSERT_EQ(1u, impl_.server_network_stats_map().size());
+  EXPECT_EQ(stats_google, *(impl_.GetServerNetworkStats(google_server)));
+
+  // Test recency order and overwriting of data.
+  //
+  // |docs_server| has a ServerNetworkStats, which will be overwritten by
+  // InitializeServerNetworkStats(), because |server_network_stats_map| has an
+  // entry for |docs_server|.
+  HostPortPair docs_server("docs.google.com", 443);
+  ServerNetworkStats stats_docs;
+  stats_docs.srtt = base::TimeDelta::FromMicroseconds(20);
+  stats_docs.bandwidth_estimate = QuicBandwidth::FromBitsPerSecond(200);
+  // Recency order will be |docs_server| and |google_server|.
+  impl_.SetServerNetworkStats(docs_server, stats_docs);
+
+  // Prepare |server_network_stats_map| to be loaded by
+  // InitializeServerNetworkStats().
+  ServerNetworkStatsMap server_network_stats_map(
+      ServerNetworkStatsMap::NO_AUTO_EVICT);
+
+  // Change the values for |docs_server|.
+  ServerNetworkStats new_stats_docs;
+  new_stats_docs.srtt = base::TimeDelta::FromMicroseconds(25);
+  new_stats_docs.bandwidth_estimate = QuicBandwidth::FromBitsPerSecond(250);
+  server_network_stats_map.Put(docs_server, new_stats_docs);
+  // Add data for mail.google.com:443.
+  HostPortPair mail_server("mail.google.com", 443);
+  ServerNetworkStats stats_mail;
+  stats_mail.srtt = base::TimeDelta::FromMicroseconds(30);
+  stats_mail.bandwidth_estimate = QuicBandwidth::FromBitsPerSecond(300);
+  server_network_stats_map.Put(mail_server, stats_mail);
+
+  // Recency order will be |docs_server|, |google_server| and |mail_server|.
   impl_.InitializeServerNetworkStats(&server_network_stats_map);
 
-  const ServerNetworkStats* stats2 = impl_.GetServerNetworkStats(google_server);
-  EXPECT_EQ(10, stats2->srtt.ToInternalValue());
-  EXPECT_EQ(100, stats2->bandwidth_estimate.ToBitsPerSecond());
+  const ServerNetworkStatsMap& map = impl_.server_network_stats_map();
+  ASSERT_EQ(3u, map.size());
+  ServerNetworkStatsMap::const_iterator map_it = map.begin();
+
+  EXPECT_TRUE(map_it->first.Equals(docs_server));
+  EXPECT_EQ(new_stats_docs, map_it->second);
+  ++map_it;
+  EXPECT_TRUE(map_it->first.Equals(google_server));
+  EXPECT_EQ(stats_google, map_it->second);
+  ++map_it;
+  EXPECT_TRUE(map_it->first.Equals(mail_server));
+  EXPECT_EQ(stats_mail, map_it->second);
 }
 
 TEST_F(ServerNetworkStatsServerPropertiesTest, SetServerNetworkStats) {
