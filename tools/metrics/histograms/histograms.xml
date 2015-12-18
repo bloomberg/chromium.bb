@@ -22273,6 +22273,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.AlternativeServiceServers.MoreOrEqualCacheEntries">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The difference between the size of alternative service mappings in cache and
+    preferences. This tracks zero or negative values (when the difference
+    between preferences size is less than or equal to memory cache size).
+    Positive values are tracked by
+    Net.AlternativeServiceServers.MorePrefsEntries.
+  </summary>
+</histogram>
+
+<histogram name="Net.AlternativeServiceServers.MorePrefsEntries">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The difference between the size of alternative service mappings in
+    preferences and cache. This tracks positive values (when the difference
+    between preferences size is greater than memory cache size). Non positive
+    values are tracked by Net.AlternativeServiceServers.MoreOrEqualCacheEntries.
+  </summary>
+</histogram>
+
 <histogram name="Net.AsyncResourceHandler_PendingDataCount">
   <obsolete>
     Deprecated 03/2015.

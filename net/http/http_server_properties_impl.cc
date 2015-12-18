@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -70,6 +71,16 @@ void HttpServerPropertiesImpl::InitializeSpdyServers(
 
 void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
     AlternativeServiceMap* alternative_service_map) {
+  int32 size_diff =
+      alternative_service_map->size() - alternative_service_map_.size();
+  if (size_diff > 0) {
+    UMA_HISTOGRAM_COUNTS("Net.AlternativeServiceServers.MorePrefsEntries",
+                         size_diff);
+  } else {
+    UMA_HISTOGRAM_COUNTS(
+        "Net.AlternativeServiceServers.MoreOrEqualCacheEntries", -size_diff);
+  }
+
   AlternativeServiceMap new_alternative_service_map(
       AlternativeServiceMap::NO_AUTO_EVICT);
   // Add the entries from persisted data.
