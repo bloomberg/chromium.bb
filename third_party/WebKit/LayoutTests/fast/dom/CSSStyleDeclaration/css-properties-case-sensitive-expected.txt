@@ -1,4 +1,4 @@
-CONSOLE WARNING: 'getComputedStyle(e).cssXx' (except .cssFloat) is deprecated and will be removed in M50, around April 2016. Please use 'getComputedStyle(e).xx' instead.
+CONSOLE WARNING: 'getComputedStyle(e).cssXx' (except .cssFloat) is deprecated and will be removed in M50, around April 2016. Please use 'getComputedStyle(e).xx' instead. See https://www.chromestatus.com/features/5006796888473600 for more details.
 This test checks that access to the CSS float property via JavaScript properties on DOM elements is case sensitive. The use of .CssFloat is deprecated and will be removed in M50.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
