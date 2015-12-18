@@ -4,6 +4,8 @@
 
 #include "cc/input/scroll_state.h"
 
+#include <utility>
+
 #include "cc/layers/layer_impl.h"
 
 namespace cc {
@@ -24,7 +26,7 @@ ScrollState::ScrollState(double delta_x,
                                 is_direct_manipulation)) {}
 
 ScrollState::ScrollState(scoped_ptr<ScrollStateData> data) {
-  data_ = data.Pass();
+  data_ = std::move(data);
 }
 
 ScrollState::~ScrollState() {}

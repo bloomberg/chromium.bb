@@ -4,6 +4,8 @@
 
 #include "cc/layers/layer_impl.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -142,7 +144,7 @@ scoped_ptr<LayerImpl> LayerImpl::RemoveChild(LayerImpl* child) {
        it != children_.end();
        ++it) {
     if (it->get() == child) {
-      scoped_ptr<LayerImpl> ret = it->Pass();
+      scoped_ptr<LayerImpl> ret = std::move(*it);
       children_.erase(it);
       layer_tree_impl()->set_needs_update_draw_properties();
       return ret;

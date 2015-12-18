@@ -42,7 +42,7 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   MockScrollbar* scrollbar = new MockScrollbar();
   scoped_refptr<PaintedScrollbarLayer> scrollbar_layer =
       PaintedScrollbarLayer::Create(layer_settings_,
-                                    scoped_ptr<Scrollbar>(scrollbar).Pass(), 1);
+                                    scoped_ptr<Scrollbar>(scrollbar), 1);
 
   scrollbar_layer->SetIsDrawable(true);
   scrollbar_layer->SetBounds(gfx::Size(100, 100));

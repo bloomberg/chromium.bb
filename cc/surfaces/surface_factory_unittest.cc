@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/surfaces/surface_factory.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
@@ -9,7 +13,6 @@
 #include "cc/output/delegated_frame_data.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/scheduler_test_common.h"
@@ -540,11 +543,11 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
   {
     scoped_ptr<RenderPass> render_pass(RenderPass::Create());
     scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
-    frame_data->render_pass_list.push_back(render_pass.Pass());
+    frame_data->render_pass_list.push_back(std::move(render_pass));
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
     frame->metadata.referenced_surfaces.push_back(surface_id_);
-    frame->delegated_frame_data = frame_data.Pass();
-    factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+    frame->delegated_frame_data = std::move(frame_data);
+    factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                     SurfaceFactory::DrawCallback());
   }
   void* source1 = &source1;
@@ -556,7 +559,7 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
       base::Bind(&CopyRequestTestCallback, &called1));
   request->set_source(source1);
 
-  factory_->RequestCopyOfSurface(surface_id_, request.Pass());
+  factory_->RequestCopyOfSurface(surface_id_, std::move(request));
   EXPECT_FALSE(called1);
 
   bool called2 = false;
@@ -564,7 +567,7 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
       base::Bind(&CopyRequestTestCallback, &called2));
   request->set_source(source2);
 
-  factory_->RequestCopyOfSurface(surface_id_, request.Pass());
+  factory_->RequestCopyOfSurface(surface_id_, std::move(request));
   // Callbacks have different sources so neither should be called.
   EXPECT_FALSE(called1);
   EXPECT_FALSE(called2);
@@ -574,7 +577,7 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
       base::Bind(&CopyRequestTestCallback, &called3));
   request->set_source(source1);
 
-  factory_->RequestCopyOfSurface(surface_id_, request.Pass());
+  factory_->RequestCopyOfSurface(surface_id_, std::move(request));
   // Two callbacks are from source1, so the first should be called.
   EXPECT_TRUE(called1);
   EXPECT_FALSE(called2);

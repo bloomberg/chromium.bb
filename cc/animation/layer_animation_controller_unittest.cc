@@ -1655,9 +1655,8 @@ TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
 
   const int id = 1;
   controller->AddAnimation(CreateAnimation(
-      scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.5f, 1.f))
-          .Pass(),
-      id, Animation::OPACITY));
+      scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.5f, 1.f)), id,
+      Animation::OPACITY));
 
   // Without an observer, the animation shouldn't progress to the STARTING
   // state.

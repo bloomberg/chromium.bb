@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -606,7 +607,7 @@ OneCopyTileTaskWorkerPool::AcquireStagingBuffer(const Resource* resource,
           return buffer->content_id == previous_content_id;
         });
     if (it != free_buffers_.end()) {
-      staging_buffer = it->Pass();
+      staging_buffer = std::move(*it);
       free_buffers_.erase(it);
       MarkStagingBufferAsBusy(staging_buffer.get());
     }
@@ -621,7 +622,7 @@ OneCopyTileTaskWorkerPool::AcquireStagingBuffer(const Resource* resource,
                               buffer->format == resource->format();
                      });
     if (it != free_buffers_.end()) {
-      staging_buffer = it->Pass();
+      staging_buffer = std::move(*it);
       free_buffers_.erase(it);
       MarkStagingBufferAsBusy(staging_buffer.get());
     }

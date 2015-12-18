@@ -5,6 +5,8 @@
 #ifndef CC_TEST_LAYER_TEST_COMMON_H_
 #define CC_TEST_LAYER_TEST_COMMON_H_
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/quads/render_pass.h"
@@ -75,7 +77,7 @@ class LayerTestCommon {
       scoped_ptr<T> layer =
           T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
       T* ptr = layer.get();
-      origin->SetReplicaLayer(layer.Pass());
+      origin->SetReplicaLayer(std::move(layer));
       return ptr;
     }
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "cc/base/region.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/gl_renderer.h"
@@ -694,7 +696,7 @@ TEST_F(SandwichTest, DamageRectNonEmpty) {
   damage_rect_ = kOverlayRect;
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
@@ -1396,7 +1398,7 @@ TEST_F(UnderlayTest, DamageSubtractedForConsecutiveIdenticalUnderlays) {
                                pass->shared_quad_state_list.back(), pass.get());
 
     RenderPassList pass_list;
-    pass_list.push_back(pass.Pass());
+    pass_list.push_back(std::move(pass));
     OverlayCandidateList candidate_list;
     overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
                                            &candidate_list, nullptr,
@@ -1422,7 +1424,7 @@ TEST_F(UnderlayTest, DamageNotSubtractedForNonIdenticalConsecutiveUnderlays) {
     damage_rect_ = overlay_rects[i];
 
     RenderPassList pass_list;
-    pass_list.push_back(pass.Pass());
+    pass_list.push_back(std::move(pass));
     OverlayCandidateList candidate_list;
     overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
                                            &candidate_list, nullptr,
@@ -1445,7 +1447,7 @@ TEST_F(UnderlayTest, DamageNotSubtractedWhenQuadsAboveOverlap) {
     damage_rect_ = kOverlayRect;
 
     RenderPassList pass_list;
-    pass_list.push_back(pass.Pass());
+    pass_list.push_back(std::move(pass));
     OverlayCandidateList candidate_list;
     overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
                                            &candidate_list, nullptr,
@@ -1469,7 +1471,7 @@ TEST_F(UnderlayTest, DamageSubtractedWhenQuadsAboveDontOverlap) {
     damage_rect_ = kOverlayBottomRightRect;
 
     RenderPassList pass_list;
-    pass_list.push_back(pass.Pass());
+    pass_list.push_back(std::move(pass));
     OverlayCandidateList candidate_list;
     overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
                                            &candidate_list, nullptr,
@@ -2029,7 +2031,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithExtraDelay) {
 
   scoped_ptr<RenderPass> pass = CreateRenderPass();
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   DirectRenderer::DrawingFrame frame1;
   frame1.render_passes_in_draw_order = &pass_list;

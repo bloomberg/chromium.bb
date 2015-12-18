@@ -5,6 +5,7 @@
 #include "cc/resources/resource_pool.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
@@ -222,11 +223,11 @@ void ResourcePool::CheckBusyResources() {
     PoolResource* resource = it->get();
 
     if (resource_provider_->CanLockForWrite(resource->id())) {
-      DidFinishUsingResource(it->Pass());
+      DidFinishUsingResource(std::move(*it));
       busy_resources_.erase(it);
     } else if (resource_provider_->IsLost(resource->id())) {
       // Remove lost resources from pool.
-      DeleteResource(it->Pass());
+      DeleteResource(std::move(*it));
       busy_resources_.erase(it);
     } else {
       ++i;

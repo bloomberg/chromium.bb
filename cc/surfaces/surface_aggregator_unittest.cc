@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/surfaces/surface_aggregator.h"
+
+#include <utility>
+
 #include "cc/output/compositor_frame.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/render_pass.h"
@@ -11,7 +15,6 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id_allocator.h"
@@ -505,7 +508,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
   scoped_ptr<CopyOutputRequest> copy_request(
       CopyOutputRequest::CreateEmptyRequest());
   CopyOutputRequest* copy_request_ptr = copy_request.get();
-  factory_.RequestCopyOfSurface(embedded_surface_id, copy_request.Pass());
+  factory_.RequestCopyOfSurface(embedded_surface_id, std::move(copy_request));
 
   SurfaceId parent_surface_id = allocator_.GenerateId();
   factory_.Create(parent_surface_id);
@@ -524,10 +527,10 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
               parent_passes, arraysize(parent_passes));
 
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
-    frame->delegated_frame_data = frame_data.Pass();
+    frame->delegated_frame_data = std::move(frame_data);
     frame->metadata.referenced_surfaces.push_back(embedded_surface_id);
 
-    factory_.SubmitCompositorFrame(parent_surface_id, frame.Pass(),
+    factory_.SubmitCompositorFrame(parent_surface_id, std::move(frame),
                                    SurfaceFactory::DrawCallback());
   }
 
@@ -541,13 +544,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
               root_passes, arraysize(root_passes));
 
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
-    frame->delegated_frame_data = frame_data.Pass();
+    frame->delegated_frame_data = std::move(frame_data);
     frame->metadata.referenced_surfaces.push_back(parent_surface_id);
     // Reference to Surface ID of a Surface that doesn't exist should be
     // included in previous_contained_surfaces, but otherwise ignored.
     frame->metadata.referenced_surfaces.push_back(nonexistent_surface_id);
 
-    factory_.SubmitCompositorFrame(root_surface_id_, frame.Pass(),
+    factory_.SubmitCompositorFrame(root_surface_id_, std::move(frame),
                                    SurfaceFactory::DrawCallback());
   }
 
