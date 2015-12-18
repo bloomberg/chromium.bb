@@ -4,6 +4,8 @@
 
 #include "mojo/edk/test/multiprocess_test_helper.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process/kill.h"
@@ -117,7 +119,7 @@ void MultiprocessTestHelper::ChildSetup() {
   ScopedPlatformHandle broker_handle =
       PlatformChannelPair::PassClientHandleFromParentProcessFromString(
           broker_handle_str);
-  SetParentPipeHandle(broker_handle.Pass());
+  SetParentPipeHandle(std::move(broker_handle));
 }
 
 // static

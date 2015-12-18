@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_PLATFORM_HANDLE_DISPATCHER_H_
 #define MOJO_EDK_SYSTEM_PLATFORM_HANDLE_DISPATCHER_H_
 
+#include <utility>
+
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/simple_dispatcher.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -21,7 +23,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher final
   static scoped_refptr<PlatformHandleDispatcher> Create(
       ScopedPlatformHandle platform_handle) {
     return make_scoped_refptr(
-        new PlatformHandleDispatcher(platform_handle.Pass()));
+        new PlatformHandleDispatcher(std::move(platform_handle)));
   }
 
   ScopedPlatformHandle PassPlatformHandle();

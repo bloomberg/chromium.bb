@@ -10,9 +10,9 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
-
 #include <algorithm>
 #include <deque>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -109,7 +109,7 @@ class RawChannelPosix final : public RawChannel,
 };
 
 RawChannelPosix::RawChannelPosix(ScopedPlatformHandle handle)
-    : fd_(handle.Pass()),
+    : fd_(std::move(handle)),
       pending_read_(false),
       pending_write_(false),
       weak_ptr_factory_(this) {
@@ -152,9 +152,9 @@ void RawChannelPosix::EnqueueMessageNoLock(
             new PlatformHandleVector(
                 platform_handles->begin() + i,
                 platform_handles->begin() + i + kPlatformChannelMaxNumHandles));
-        fd_message->SetTransportData(make_scoped_ptr(
-            new TransportData(fds.Pass(), GetSerializedPlatformHandleSize())));
-        RawChannel::EnqueueMessageNoLock(fd_message.Pass());
+        fd_message->SetTransportData(make_scoped_ptr(new TransportData(
+            std::move(fds), GetSerializedPlatformHandleSize())));
+        RawChannel::EnqueueMessageNoLock(std::move(fd_message));
       }
 
       // Remove the handles that we "moved" into the other messages.
@@ -163,7 +163,7 @@ void RawChannelPosix::EnqueueMessageNoLock(
     }
   }
 
-  RawChannel::EnqueueMessageNoLock(message.Pass());
+  RawChannel::EnqueueMessageNoLock(std::move(message));
 }
 
 bool RawChannelPosix::OnReadMessageForRawChannel(
@@ -196,7 +196,7 @@ ScopedPlatformHandle RawChannelPosix::ReleaseHandleNoLock(
     read_platform_handles_.pop_front();
   }
 
-  return fd_.Pass();
+  return std::move(fd_);
 }
 
 void RawChannelPosix::SetSerializedFDs(
@@ -218,9 +218,9 @@ void RawChannelPosix::SetSerializedFDs(
       ScopedPlatformHandleVectorPtr fds(
           new PlatformHandleVector(serialized_write_fds->begin() + i,
                                    serialized_write_fds->begin() + i + batch));
-      fd_message->SetTransportData(make_scoped_ptr(
-          new TransportData(fds.Pass(), GetSerializedPlatformHandleSize())));
-      RawChannel::EnqueueMessageNoLock(fd_message.Pass());
+      fd_message->SetTransportData(make_scoped_ptr(new TransportData(
+          std::move(fds), GetSerializedPlatformHandleSize())));
+      RawChannel::EnqueueMessageNoLock(std::move(fd_message));
       i += batch;
     }
   }
@@ -269,7 +269,7 @@ ScopedPlatformHandleVectorPtr RawChannelPosix::GetReadPlatformHandles(
   read_platform_handles_.erase(
       read_platform_handles_.begin(),
       read_platform_handles_.begin() + num_platform_handles);
-  return rv.Pass();
+  return rv;
 }
 
 size_t RawChannelPosix::SerializePlatformHandles(std::vector<int>* fds) {
@@ -557,7 +557,7 @@ void RawChannelPosix::WaitToWrite() {
 // Static factory method declared in raw_channel.h.
 // static
 RawChannel* RawChannel::Create(ScopedPlatformHandle handle) {
-  return new RawChannelPosix(handle.Pass());
+  return new RawChannelPosix(std::move(handle));
 }
 
 size_t RawChannel::GetSerializedPlatformHandleSize() {

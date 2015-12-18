@@ -5,6 +5,7 @@
 #include "mojo/edk/system/data_pipe_consumer_dispatcher.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -26,7 +27,7 @@ void DataPipeConsumerDispatcher::Init(
     ScopedPlatformHandle message_pipe,
     char* serialized_read_buffer, size_t serialized_read_buffer_size) {
   if (message_pipe.is_valid()) {
-    channel_ = RawChannel::Create(message_pipe.Pass());
+    channel_ = RawChannel::Create(std::move(message_pipe));
     channel_->SetSerializedData(
         serialized_read_buffer, serialized_read_buffer_size, nullptr, 0u,
         nullptr, nullptr);
@@ -82,7 +83,7 @@ DataPipeConsumerDispatcher::Deserialize(
   scoped_ptr<PlatformSharedBufferMapping> mapping;
   if (shared_memory_size) {
     shared_buffer = internal::g_platform_support->CreateSharedBufferFromHandle(
-        shared_memory_size, shared_memory_handle.Pass());
+        shared_memory_size, std::move(shared_memory_handle));
     mapping = shared_buffer->Map(0, shared_memory_size);
     char* buffer = static_cast<char*>(mapping->GetBase());
     SharedMemoryHeader* header = reinterpret_cast<SharedMemoryHeader*>(buffer);
@@ -99,7 +100,7 @@ DataPipeConsumerDispatcher::Deserialize(
     }
   }
 
-  rv->Init(platform_handle.Pass(), serialized_read_buffer,
+  rv->Init(std::move(platform_handle), serialized_read_buffer,
            serialized_read_buffer_size);
   return rv;
 }
@@ -143,7 +144,7 @@ DataPipeConsumerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   scoped_refptr<DataPipeConsumerDispatcher> rv = Create(options_);
   data_.swap(rv->data_);
   serialized_read_buffer_.swap(rv->serialized_read_buffer_);
-  rv->serialized_platform_handle_ = serialized_platform_handle_.Pass();
+  rv->serialized_platform_handle_ = std::move(serialized_platform_handle_);
   rv->serialized_ = true;
 
   return scoped_refptr<Dispatcher>(rv.get());
@@ -373,11 +374,9 @@ bool DataPipeConsumerDispatcher::EndSerializeAndCloseImplNoLock(
     shared_memory_handle.reset(shared_buffer->PassPlatformHandle().release());
   }
 
-  DataPipe::EndSerialize(
-      options_,
-      serialized_platform_handle_.Pass(),
-      shared_memory_handle.Pass(), shared_memory_size,
-      destination, actual_size, platform_handles);
+  DataPipe::EndSerialize(options_, std::move(serialized_platform_handle_),
+                         std::move(shared_memory_handle), shared_memory_size,
+                         destination, actual_size, platform_handles);
   CloseImplNoLock();
   return true;
 }

@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/routed_raw_channel.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/edk/embedder/embedder_internal.h"
@@ -24,7 +26,7 @@ RoutedRawChannel::PendingMessage::~PendingMessage() {
 RoutedRawChannel::RoutedRawChannel(
     ScopedPlatformHandle handle,
     const base::Callback<void(RoutedRawChannel*)>& destruct_callback)
-    : channel_(RawChannel::Create(handle.Pass())),
+    : channel_(RawChannel::Create(std::move(handle))),
       destruct_callback_(destruct_callback) {
   internal::g_io_thread_task_runner->PostTask(
       FROM_HERE,
@@ -46,7 +48,7 @@ void RoutedRawChannel::AddRoute(uint64_t route_id,
     MessageInTransit::View view(pending_messages_[i]->message.size(),
                                 &pending_messages_[i]->message[0]);
     if (view.route_id() == route_id) {
-      delegate->OnReadMessage(view, pending_messages_[i]->handles.Pass());
+      delegate->OnReadMessage(view, std::move(pending_messages_[i]->handles));
       pending_messages_.erase(pending_messages_.begin() + i);
     } else {
       ++i;
@@ -77,7 +79,7 @@ void RoutedRawChannel::RemoveRoute(uint64_t route_id) {
         MessageInTransit::Type::MESSAGE, arraysize(message_data),
           message_data));
     message->set_route_id(kInternalRouteId);
-    channel_->WriteMessage(message.Pass());
+    channel_->WriteMessage(std::move(message));
   }
 
   if (!channel_ && routes_.empty()) {
@@ -121,14 +123,14 @@ void RoutedRawChannel::OnReadMessage(
   }
 
   if (routes_.find(route_id) != routes_.end()) {
-    routes_[route_id]->OnReadMessage(message_view, platform_handles.Pass());
+    routes_[route_id]->OnReadMessage(message_view, std::move(platform_handles));
   } else {
     scoped_ptr<PendingMessage> msg(new PendingMessage);
     msg->message.resize(message_view.total_size());
     memcpy(&msg->message[0], message_view.main_buffer(),
            message_view.total_size());
-    msg->handles = platform_handles.Pass();
-    pending_messages_.push_back(msg.Pass());
+    msg->handles = std::move(platform_handles);
+    pending_messages_.push_back(std::move(msg));
   }
 }
 

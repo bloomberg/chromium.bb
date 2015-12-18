@@ -4,6 +4,8 @@
 
 #include "mojo/edk/embedder/embedder.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -357,9 +359,11 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
   multiprocess_test_helper.StartChild("MultiprocessChannelsClient");
 
   {
-    MojoHandle server_mp = CreateMessagePipe(
-        multiprocess_test_helper.server_platform_handle.Pass()).release().
-            value();
+    MojoHandle server_mp =
+        CreateMessagePipe(
+            std::move(multiprocess_test_helper.server_platform_handle))
+            .release()
+            .value();
 
     // 1. Write a message to |server_mp| (attaching nothing).
     const char kHello[] = "hello";
@@ -465,11 +469,11 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
 
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
   ScopedPlatformHandle client_platform_handle =
-      test::MultiprocessTestHelper::client_platform_handle.Pass();
+      std::move(test::MultiprocessTestHelper::client_platform_handle);
   EXPECT_TRUE(client_platform_handle.is_valid());
 
-  MojoHandle client_mp = CreateMessagePipe(
-      client_platform_handle.Pass()).release().value();
+  MojoHandle client_mp =
+      CreateMessagePipe(std::move(client_platform_handle)).release().value();
 
   // 1. Read the first message from |client_mp|.
   MojoHandleSignalsState state;

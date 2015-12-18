@@ -85,7 +85,7 @@ base::ScopedFILE FILEFromPlatformHandle(ScopedPlatformHandle h,
   CHECK(h.is_valid());
   base::ScopedFILE rv(fdopen(h.release().handle, mode));
   PCHECK(rv) << "fdopen";
-  return rv.Pass();
+  return rv;
 }
 
 }  // namespace test

@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/data_pipe_producer_dispatcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -20,7 +22,7 @@ void DataPipeProducerDispatcher::Init(
     ScopedPlatformHandle message_pipe,
     char* serialized_write_buffer, size_t serialized_write_buffer_size) {
   if (message_pipe.is_valid()) {
-    channel_ = RawChannel::Create(message_pipe.Pass());
+    channel_ = RawChannel::Create(std::move(message_pipe));
     channel_->SetSerializedData(
         nullptr, 0u, serialized_write_buffer, serialized_write_buffer_size,
         nullptr, nullptr);
@@ -69,13 +71,13 @@ DataPipeProducerDispatcher::Deserialize(
   scoped_ptr<PlatformSharedBufferMapping> mapping;
   if (shared_memory_size) {
     shared_buffer = internal::g_platform_support->CreateSharedBufferFromHandle(
-        shared_memory_size, shared_memory_handle.Pass());
+        shared_memory_size, std::move(shared_memory_handle));
     mapping = shared_buffer->Map(0, shared_memory_size);
     serialized_write_buffer = static_cast<char*>(mapping->GetBase());
     serialized_write_buffer_size = shared_memory_size;
   }
 
-  rv->Init(platform_handle.Pass(), serialized_write_buffer,
+  rv->Init(std::move(platform_handle), serialized_write_buffer,
            serialized_write_buffer_size);
   return rv;
 }
@@ -112,7 +114,7 @@ DataPipeProducerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
 
   scoped_refptr<DataPipeProducerDispatcher> rv = Create(options_);
   serialized_write_buffer_.swap(rv->serialized_write_buffer_);
-  rv->serialized_platform_handle_ = serialized_platform_handle_.Pass();
+  rv->serialized_platform_handle_ = std::move(serialized_platform_handle_);
   rv->serialized_ = true;
   return scoped_refptr<Dispatcher>(rv.get());
 }
@@ -288,11 +290,9 @@ bool DataPipeProducerDispatcher::EndSerializeAndCloseImplNoLock(
     shared_memory_handle.reset(shared_buffer->PassPlatformHandle().release());
   }
 
-  DataPipe::EndSerialize(
-      options_,
-      serialized_platform_handle_.Pass(),
-      shared_memory_handle.Pass(), shared_memory_size,
-      destination, actual_size, platform_handles);
+  DataPipe::EndSerialize(options_, std::move(serialized_platform_handle_),
+                         std::move(shared_memory_handle), shared_memory_size,
+                         destination, actual_size, platform_handles);
   CloseImplNoLock();
   return true;
 }
@@ -373,7 +373,7 @@ bool DataPipeProducerDispatcher::WriteDataIntoMessages(
     scoped_ptr<MessageInTransit> message(new MessageInTransit(
         MessageInTransit::Type::MESSAGE, message_num_bytes,
         static_cast<const char*>(elements) + offset));
-    if (!channel_->WriteMessage(message.Pass())) {
+    if (!channel_->WriteMessage(std::move(message))) {
       error_ = true;
       return false;
     }

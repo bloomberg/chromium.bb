@@ -4,6 +4,7 @@
 
 #include "mojo/edk/system/core.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/containers/stack_container.h"
@@ -293,10 +294,10 @@ MojoResult Core::CreateMessagePipe(
     server_handle = channel_pair.PassServerHandle();
     client_handle = channel_pair.PassClientHandle();
 #endif
-    dispatcher0->Init(server_handle.Pass(), nullptr, 0u, nullptr, 0u, nullptr,
-                      nullptr);
-    dispatcher1->Init(client_handle.Pass(), nullptr, 0u, nullptr, 0u, nullptr,
-                      nullptr);
+    dispatcher0->Init(std::move(server_handle), nullptr, 0u, nullptr, 0u,
+                      nullptr, nullptr);
+    dispatcher1->Init(std::move(client_handle), nullptr, 0u, nullptr, 0u,
+                      nullptr, nullptr);
   } else {
     uint64_t pipe_id = 0;
     // route_id 0 is used internally in RoutedRawChannel. See kInternalRouteId
@@ -471,8 +472,8 @@ MojoResult Core::CreateDataPipe(
   server_handle = channel_pair.PassServerHandle();
   client_handle = channel_pair.PassClientHandle();
 #endif
-  producer_dispatcher->Init(server_handle.Pass(), nullptr, 0u);
-  consumer_dispatcher->Init(client_handle.Pass(), nullptr, 0u);
+  producer_dispatcher->Init(std::move(server_handle), nullptr, 0u);
+  consumer_dispatcher->Init(std::move(client_handle), nullptr, 0u);
 
   *data_pipe_producer_handle = handle_pair.first;
   *data_pipe_consumer_handle = handle_pair.second;
@@ -618,7 +619,7 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
   void* address = mapping->GetBase();
   {
     base::AutoLock locker(mapping_table_lock_);
-    result = mapping_table_.AddMapping(mapping.Pass());
+    result = mapping_table_.AddMapping(std::move(mapping));
   }
   if (result != MOJO_RESULT_OK)
     return result;

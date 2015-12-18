@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
@@ -126,7 +128,7 @@ void MessagePipeDispatcher::Init(
     std::vector<int>* serialized_write_fds) {
   CHECK(transferable_);
   if (message_pipe.get().is_valid()) {
-    channel_ = RawChannel::Create(message_pipe.Pass());
+    channel_ = RawChannel::Create(std::move(message_pipe));
 
     // TODO(jam): It's probably cleaner to pass this in Init call.
     channel_->SetSerializedData(
@@ -270,7 +272,7 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
   scoped_ptr<PlatformSharedBufferMapping> mapping;
   if (shared_memory_handle.is_valid()) {
     shared_buffer = internal::g_platform_support->CreateSharedBufferFromHandle(
-            serialization->shared_memory_size, shared_memory_handle.Pass());
+        serialization->shared_memory_size, std::move(shared_memory_handle));
     mapping = shared_buffer->Map(0, serialization->shared_memory_size);
     char* buffer = static_cast<char*>(mapping->GetBase());
     if (serialization->serialized_read_buffer_size) {
@@ -374,18 +376,15 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
       message->SetDispatchers(TransportData::DeserializeDispatchers(
           message_view.transport_data_buffer(),
           message_view.transport_data_buffer_size(),
-          temp_platform_handles.Pass()));
+          std::move(temp_platform_handles)));
     }
 
-    rv->message_queue_.AddMessage(message.Pass());
+    rv->message_queue_.AddMessage(std::move(message));
   }
 
-  rv->Init(platform_handle.Pass(),
-           serialized_read_buffer,
-           serialized_read_buffer_size,
-           serialized_write_buffer,
-           serialized_write_buffer_size,
-           &serialized_read_fds,
+  rv->Init(std::move(platform_handle), serialized_read_buffer,
+           serialized_read_buffer_size, serialized_write_buffer,
+           serialized_write_buffer_size, &serialized_read_fds,
            &serialized_write_fds);
 
   if (message_queue_size) {  // Should be empty by now.
@@ -559,7 +558,7 @@ MessagePipeDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
       new MessagePipeDispatcher(transferable_));
   rv->serialized_ = true;
   if (transferable_) {
-    rv->serialized_platform_handle_ = serialized_platform_handle_.Pass();
+    rv->serialized_platform_handle_ = std::move(serialized_platform_handle_);
     serialized_message_queue_.swap(rv->serialized_message_queue_);
     serialized_read_buffer_.swap(rv->serialized_read_buffer_);
     serialized_write_buffer_.swap(rv->serialized_write_buffer_);
@@ -610,9 +609,9 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
        non_transferable_state_ == CONNECT_CALLED)) {
     if (non_transferable_state_ == WAITING_FOR_READ_OR_WRITE)
       RequestNontransferableChannel();
-    non_transferable_outgoing_message_queue_.AddMessage(message.Pass());
+    non_transferable_outgoing_message_queue_.AddMessage(std::move(message));
   } else {
-    channel_->WriteMessage(message.Pass());
+    channel_->WriteMessage(std::move(message));
   }
 
   return MOJO_RESULT_OK;
@@ -861,7 +860,8 @@ void MessagePipeDispatcher::OnReadMessage(
     DCHECK(message_view.transport_data_buffer());
     message->SetDispatchers(TransportData::DeserializeDispatchers(
         message_view.transport_data_buffer(),
-        message_view.transport_data_buffer_size(), platform_handles.Pass()));
+        message_view.transport_data_buffer_size(),
+        std::move(platform_handles)));
   }
 
   if (started_transport_.Try()) {
@@ -874,7 +874,7 @@ void MessagePipeDispatcher::OnReadMessage(
     }
 
     bool was_empty = message_queue_.IsEmpty();
-    message_queue_.AddMessage(message.Pass());
+    message_queue_.AddMessage(std::move(message));
     if (was_empty)
       awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
 
@@ -883,7 +883,7 @@ void MessagePipeDispatcher::OnReadMessage(
     // If RawChannel is calling OnRead, that means it has its read_lock_
     // acquired. That means StartSerialize can't be accessing message queue as
     // it waits on ReleaseHandle first which acquires readlock_.
-    message_queue_.AddMessage(message.Pass());
+    message_queue_.AddMessage(std::move(message));
   }
 }
 
@@ -986,7 +986,7 @@ MojoResult MessagePipeDispatcher::AttachTransportsNoLock(
       dispatchers->push_back(nullptr);
     }
   }
-  message->SetDispatchers(dispatchers.Pass());
+  message->SetDispatchers(std::move(dispatchers));
   return MOJO_RESULT_OK;
 }
 

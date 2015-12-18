@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/child_broker_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "mojo/edk/embedder/embedder_internal.h"
@@ -28,7 +30,7 @@ ChildBrokerHost::ChildBrokerHost(base::ProcessHandle child_process,
     : process_id_(base::GetProcId(child_process)), child_channel_(nullptr) {
   ScopedPlatformHandle parent_async_channel_handle;
 #if defined(OS_POSIX)
-  parent_async_channel_handle = pipe.Pass();
+  parent_async_channel_handle = std::move(pipe);
 #else
   DuplicateHandle(GetCurrentProcess(), child_process,
                   GetCurrentProcess(), &child_process,
@@ -75,14 +77,14 @@ void ChildBrokerHost::ConnectToProcess(base::ProcessId process_id,
   scoped_ptr<MessageInTransit> message(new MessageInTransit(
       MessageInTransit::Type::MESSAGE, sizeof(data), &data));
   scoped_refptr<Dispatcher> dispatcher =
-      PlatformHandleDispatcher::Create(pipe.Pass());
+      PlatformHandleDispatcher::Create(std::move(pipe));
   internal::g_core->AddDispatcher(dispatcher);
   scoped_ptr<DispatcherVector> dispatchers(new DispatcherVector);
   dispatchers->push_back(dispatcher);
-  message->SetDispatchers(dispatchers.Pass());
+  message->SetDispatchers(std::move(dispatchers));
   message->SerializeAndCloseDispatchers();
   message->set_route_id(kBrokerRouteId);
-  child_channel_->channel()->WriteMessage(message.Pass());
+  child_channel_->channel()->WriteMessage(std::move(message));
 }
 
 void ChildBrokerHost::ConnectMessagePipe(uint64_t pipe_id,
@@ -96,7 +98,7 @@ void ChildBrokerHost::ConnectMessagePipe(uint64_t pipe_id,
   scoped_ptr<MessageInTransit> message(new MessageInTransit(
       MessageInTransit::Type::MESSAGE, sizeof(data), &data));
   message->set_route_id(kBrokerRouteId);
-  child_channel_->channel()->WriteMessage(message.Pass());
+  child_channel_->channel()->WriteMessage(std::move(message));
 }
 
 ChildBrokerHost::~ChildBrokerHost() {
@@ -109,7 +111,7 @@ ChildBrokerHost::~ChildBrokerHost() {
 void ChildBrokerHost::InitOnIO(
     ScopedPlatformHandle parent_async_channel_handle) {
   child_channel_ = new RoutedRawChannel(
-      parent_async_channel_handle.Pass(),
+      std::move(parent_async_channel_handle),
       base::Bind(&ChildBrokerHost::ChannelDestructed, base::Unretained(this)));
   child_channel_->AddRoute(kBrokerRouteId, this);
 

@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -197,7 +197,7 @@ class TestMessageReaderAndChecker {
 // Tests writing (and verifies reading using our own custom reader).
 TEST_F(RawChannelTest, WriteMessage) {
   WriteOnlyRawChannelDelegate delegate;
-  RawChannel* rc = RawChannel::Create(handles[0].Pass());
+  RawChannel* rc = RawChannel::Create(std::move(handles[0]));
   TestMessageReaderAndChecker checker(handles[1].get());
   internal::g_io_thread_task_runner->PostTask(
       FROM_HERE,
@@ -283,7 +283,7 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
 // Tests reading (writing using our own custom writer).
 TEST_F(RawChannelTest, OnReadMessage) {
   ReadCheckerRawChannelDelegate delegate;
-  RawChannel* rc = RawChannel::Create(handles[0].Pass());
+  RawChannel* rc = RawChannel::Create(std::move(handles[0]));
   internal::g_io_thread_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc, base::Unretained(&delegate)));
@@ -380,7 +380,7 @@ TEST_F(RawChannelTest, WriteMessageAndOnReadMessage) {
   static const size_t kNumWriteMessagesPerThread = 400;
 
   WriteOnlyRawChannelDelegate writer_delegate;
-  RawChannel* writer_rc = RawChannel::Create(handles[0].Pass());
+  RawChannel* writer_rc = RawChannel::Create(std::move(handles[0]));
   internal::g_io_thread_task_runner->PostTask(
     FROM_HERE,
     base::Bind(&InitOnIOThread, writer_rc,
@@ -388,7 +388,7 @@ TEST_F(RawChannelTest, WriteMessageAndOnReadMessage) {
 
   ReadCountdownRawChannelDelegate reader_delegate(kNumWriterThreads *
                                                   kNumWriteMessagesPerThread);
-  RawChannel* reader_rc = RawChannel::Create(handles[1].Pass());
+  RawChannel* reader_rc = RawChannel::Create(std::move(handles[1]));
   internal::g_io_thread_task_runner->PostTask(
     FROM_HERE,
     base::Bind(&InitOnIOThread, reader_rc,
@@ -479,7 +479,7 @@ class ErrorRecordingRawChannelDelegate
 // Tests (fatal) errors.
 TEST_F(RawChannelTest, OnError) {
   ErrorRecordingRawChannelDelegate delegate(0, true, true);
-  RawChannel* rc = RawChannel::Create(handles[0].Pass());
+  RawChannel* rc = RawChannel::Create(std::move(handles[0]));
   internal::g_io_thread_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc, base::Unretained(&delegate)));
@@ -523,7 +523,7 @@ TEST_F(RawChannelTest, ReadUnaffectedByWriteError) {
   // Only start up reading here. The system buffer should still contain the
   // messages that were written.
   ErrorRecordingRawChannelDelegate delegate(kMessageCount, true, true);
-  RawChannel* rc = RawChannel::Create(handles[0].Pass());
+  RawChannel* rc = RawChannel::Create(std::move(handles[0]));
   internal::g_io_thread_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc, base::Unretained(&delegate)));
@@ -572,7 +572,7 @@ class ReadPlatformHandlesCheckerRawChannelDelegate
     {
       char buffer[100] = {};
 
-      base::ScopedFILE fp(test::FILEFromPlatformHandle(h1.Pass(), "rb"));
+      base::ScopedFILE fp(test::FILEFromPlatformHandle(std::move(h1), "rb"));
       EXPECT_TRUE(fp);
       rewind(fp.get());
       EXPECT_EQ(1u, fread(buffer, 1, sizeof(buffer), fp.get()));
@@ -581,7 +581,7 @@ class ReadPlatformHandlesCheckerRawChannelDelegate
 
     {
       char buffer[100] = {};
-      base::ScopedFILE fp(test::FILEFromPlatformHandle(h2.Pass(), "rb"));
+      base::ScopedFILE fp(test::FILEFromPlatformHandle(std::move(h2), "rb"));
       EXPECT_TRUE(fp);
       rewind(fp.get());
       EXPECT_EQ(1u, fread(buffer, 1, sizeof(buffer), fp.get()));
@@ -608,13 +608,13 @@ TEST_F(RawChannelTest, ReadWritePlatformHandles) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   WriteOnlyRawChannelDelegate write_delegate;
-  RawChannel* rc_write = RawChannel::Create(handles[0].Pass());
+  RawChannel* rc_write = RawChannel::Create(std::move(handles[0]));
   internal::g_io_thread_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc_write, base::Unretained(&write_delegate)));
 
   ReadPlatformHandlesCheckerRawChannelDelegate read_delegate;
-  RawChannel* rc_read = RawChannel::Create(handles[1].Pass());
+  RawChannel* rc_read = RawChannel::Create(std::move(handles[1]));
   internal::g_io_thread_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc_read, base::Unretained(&read_delegate)));
@@ -631,16 +631,17 @@ TEST_F(RawChannelTest, ReadWritePlatformHandles) {
     const char kHello[] = "hello";
     ScopedPlatformHandleVectorPtr platform_handles(new PlatformHandleVector());
     platform_handles->push_back(
-        test::PlatformHandleFromFILE(fp1.Pass()).release());
+        test::PlatformHandleFromFILE(std::move(fp1)).release());
     platform_handles->push_back(
-        test::PlatformHandleFromFILE(fp2.Pass()).release());
+        test::PlatformHandleFromFILE(std::move(fp2)).release());
 
     scoped_ptr<MessageInTransit> message(
         new MessageInTransit(MessageInTransit::Type::MESSAGE,
                              sizeof(kHello), kHello));
-    message->SetTransportData(make_scoped_ptr(new TransportData(
-        platform_handles.Pass(), rc_write->GetSerializedPlatformHandleSize())));
-    EXPECT_TRUE(rc_write->WriteMessage(message.Pass()));
+    message->SetTransportData(make_scoped_ptr(
+        new TransportData(std::move(platform_handles),
+                          rc_write->GetSerializedPlatformHandleSize())));
+    EXPECT_TRUE(rc_write->WriteMessage(std::move(message)));
   }
 
   read_delegate.Wait();

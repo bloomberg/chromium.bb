@@ -5,8 +5,8 @@
 #include "mojo/edk/system/raw_channel.h"
 
 #include <string.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -283,7 +283,7 @@ void RawChannel::Shutdown() {
     {
       base::AutoLock read_locker(read_lock_);
       base::AutoLock locker(write_lock_);
-      OnShutdownNoLock(read_buffer_.Pass(), write_buffer_.Pass());
+      OnShutdownNoLock(std::move(read_buffer_), std::move(write_buffer_));
     }
 
     if (initialized_) {
@@ -335,7 +335,7 @@ bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
     return false;
 
   bool queue_was_empty = write_buffer_->message_queue_.IsEmpty();
-  EnqueueMessageNoLock(message.Pass());
+  EnqueueMessageNoLock(std::move(message));
   if (queue_was_empty && write_ready_)
     return SendQueuedMessagesNoLock();
 
@@ -398,7 +398,7 @@ void RawChannel::SetSerializedData(
       scoped_ptr<MessageInTransit> message(new MessageInTransit(
           MessageInTransit::Type::RAW_MESSAGE, message_num_bytes,
           static_cast<const char*>(serialized_write_buffer) + offset));
-      write_buffer_->message_queue_.AddMessage(message.Pass());
+      write_buffer_->message_queue_.AddMessage(std::move(message));
       offset += message_num_bytes;
     }
   }
@@ -526,7 +526,7 @@ void RawChannel::SerializeWriteBuffer(
 
 void RawChannel::EnqueueMessageNoLock(scoped_ptr<MessageInTransit> message) {
   write_lock_.AssertAcquired();
-  write_buffer_->message_queue_.AddMessage(message.Pass());
+  write_buffer_->message_queue_.AddMessage(std::move(message));
 }
 
 bool RawChannel::OnReadMessageForRawChannel(
@@ -660,9 +660,8 @@ void RawChannel::DispatchMessages(bool* did_dispatch_message,
             &platform_handle_table);
 
         if (num_platform_handles > 0) {
-          platform_handles =
-              GetReadPlatformHandles(num_platform_handles,
-                                      platform_handle_table).Pass();
+          platform_handles = GetReadPlatformHandles(num_platform_handles,
+                                                    platform_handle_table);
           if (!platform_handles) {
             LOG(ERROR) << "Invalid number of platform handles received";
             CallOnError(Delegate::ERROR_READ_BAD_MESSAGE);
@@ -677,7 +676,7 @@ void RawChannel::DispatchMessages(bool* did_dispatch_message,
       if (delegate_) {
         DCHECK(!calling_delegate_);
         calling_delegate_ = true;
-        delegate_->OnReadMessage(message_view, platform_handles.Pass());
+        delegate_->OnReadMessage(message_view, std::move(platform_handles));
         calling_delegate_ = false;
       }
     }

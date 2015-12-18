@@ -12,8 +12,8 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
-
 #include <deque>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -64,8 +64,8 @@ class PlatformChannelPairPosixTest : public testing::Test {
 
 TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {
   PlatformChannelPair channel_pair;
-  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle().Pass();
-  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle().Pass();
+  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle();
+  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle();
 
   // Write to the client.
   static const char kHello[] = "hello";
@@ -105,8 +105,8 @@ TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {
 
 TEST_F(PlatformChannelPairPosixTest, SendReceiveData) {
   PlatformChannelPair channel_pair;
-  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle().Pass();
-  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle().Pass();
+  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle();
+  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle();
 
   for (size_t i = 0; i < 10; i++) {
     std::string send_string(1 << i, 'A' + i);
@@ -134,8 +134,8 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
   static const char kHello[] = "hello";
 
   PlatformChannelPair channel_pair;
-  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle().Pass();
-  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle().Pass();
+  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle();
+  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle();
 
 // Reduce the number of FDs opened on OS X to avoid test flake.
 #if defined(OS_MACOSX)
@@ -156,7 +156,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
       ASSERT_TRUE(fp);
       ASSERT_EQ(j, fwrite(std::string(j, c).data(), 1, j, fp.get()));
       platform_handles->push_back(
-          test::PlatformHandleFromFILE(fp.Pass()).release());
+          test::PlatformHandleFromFILE(std::move(fp)).release());
       ASSERT_TRUE(platform_handles->back().is_valid());
     }
 
@@ -200,8 +200,8 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
   static const char kHello[] = "hello";
 
   PlatformChannelPair channel_pair;
-  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle().Pass();
-  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle().Pass();
+  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle();
+  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle();
 
   const std::string file_contents("hello world");
 
@@ -214,7 +214,7 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
               fwrite(file_contents.data(), 1, file_contents.size(), fp.get()));
     ScopedPlatformHandleVectorPtr platform_handles(new PlatformHandleVector);
     platform_handles->push_back(
-        test::PlatformHandleFromFILE(fp.Pass()).release());
+        test::PlatformHandleFromFILE(std::move(fp)).release());
     ASSERT_TRUE(platform_handles->back().is_valid());
 
     // Send the FD (+ "hello").

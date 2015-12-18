@@ -5,6 +5,7 @@
 #include "mojo/edk/system/platform_handle_dispatcher.h"
 
 #include <stdio.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -31,19 +32,19 @@ TEST(PlatformHandleDispatcherTest, Basic) {
   EXPECT_EQ(sizeof(kHelloWorld),
             fwrite(kHelloWorld, 1, sizeof(kHelloWorld), fp.get()));
 
-  ScopedPlatformHandle h(test::PlatformHandleFromFILE(fp.Pass()));
+  ScopedPlatformHandle h(test::PlatformHandleFromFILE(std::move(fp)));
   EXPECT_FALSE(fp);
   ASSERT_TRUE(h.is_valid());
 
   scoped_refptr<PlatformHandleDispatcher> dispatcher =
-      PlatformHandleDispatcher::Create(h.Pass());
+      PlatformHandleDispatcher::Create(std::move(h));
   EXPECT_FALSE(h.is_valid());
   EXPECT_EQ(Dispatcher::Type::PLATFORM_HANDLE, dispatcher->GetType());
 
-  h = dispatcher->PassPlatformHandle().Pass();
+  h = dispatcher->PassPlatformHandle();
   EXPECT_TRUE(h.is_valid());
 
-  fp = test::FILEFromPlatformHandle(h.Pass(), "rb").Pass();
+  fp = test::FILEFromPlatformHandle(std::move(h), "rb");
   EXPECT_FALSE(h.is_valid());
   EXPECT_TRUE(fp);
 
@@ -54,7 +55,7 @@ TEST(PlatformHandleDispatcherTest, Basic) {
   EXPECT_STREQ(kHelloWorld, read_buffer);
 
   // Try getting the handle again. (It should fail cleanly.)
-  h = dispatcher->PassPlatformHandle().Pass();
+  h = dispatcher->PassPlatformHandle();
   EXPECT_FALSE(h.is_valid());
 
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher->Close());
@@ -73,7 +74,7 @@ TEST(PlatformHandleDispatcherTest, CreateEquivalentDispatcherAndClose) {
 
   scoped_refptr<PlatformHandleDispatcher> dispatcher =
       PlatformHandleDispatcher::Create(
-          test::PlatformHandleFromFILE(fp.Pass()));
+          test::PlatformHandleFromFILE(std::move(fp)));
 
   DispatcherTransport transport(
       test::DispatcherTryStartTransport(dispatcher.get()));
@@ -92,8 +93,7 @@ TEST(PlatformHandleDispatcherTest, CreateEquivalentDispatcherAndClose) {
   ASSERT_EQ(Dispatcher::Type::PLATFORM_HANDLE, generic_dispatcher->GetType());
   dispatcher = static_cast<PlatformHandleDispatcher*>(generic_dispatcher.get());
 
-  fp = test::FILEFromPlatformHandle(dispatcher->PassPlatformHandle(),
-                                          "rb").Pass();
+  fp = test::FILEFromPlatformHandle(dispatcher->PassPlatformHandle(), "rb");
   EXPECT_TRUE(fp);
 
   rewind(fp.get());

@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/child_broker.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/edk/embedder/embedder_internal.h"
@@ -22,7 +24,7 @@ ChildBroker* ChildBroker::GetInstance() {
 void ChildBroker::SetChildBrokerHostHandle(ScopedPlatformHandle handle)  {
   ScopedPlatformHandle parent_async_channel_handle;
 #if defined(OS_POSIX)
-  parent_async_channel_handle = handle.Pass();
+  parent_async_channel_handle = std::move(handle);
 #else
   // On Windows we have two pipes to the parent. The first is for the token
   // exchange for creating and passing handles, since the child needs the
@@ -119,7 +121,7 @@ void ChildBroker::ConnectMessagePipe(uint64_t pipe_id,
     data.type = CANCEL_CONNECT_MESSAGE_PIPE;
     scoped_ptr<MessageInTransit> message(new MessageInTransit(
         MessageInTransit::Type::MESSAGE, sizeof(data), &data));
-    WriteAsyncMessage(message.Pass());
+    WriteAsyncMessage(std::move(message));
 
     if (!in_process_pipes_channel1_) {
       ScopedPlatformHandle server_handle, client_handle;
@@ -131,10 +133,10 @@ void ChildBroker::ConnectMessagePipe(uint64_t pipe_id,
       client_handle = channel_pair.PassClientHandle();
 #endif
       in_process_pipes_channel1_ = new RoutedRawChannel(
-          server_handle.Pass(),
+          std::move(server_handle),
           base::Bind(&ChildBroker::ChannelDestructed, base::Unretained(this)));
       in_process_pipes_channel2_ = new RoutedRawChannel(
-          client_handle.Pass(),
+          std::move(client_handle),
           base::Bind(&ChildBroker::ChannelDestructed, base::Unretained(this)));
     }
 
@@ -149,7 +151,7 @@ void ChildBroker::ConnectMessagePipe(uint64_t pipe_id,
   scoped_ptr<MessageInTransit> message(new MessageInTransit(
       MessageInTransit::Type::MESSAGE, sizeof(data), &data));
   pending_connects_[pipe_id] = message_pipe;
-  WriteAsyncMessage(message.Pass());
+  WriteAsyncMessage(std::move(message));
 }
 
 void ChildBroker::CloseMessagePipe(
@@ -191,7 +193,7 @@ void ChildBroker::OnReadMessage(
 
     CHECK(channels_.find(message->process_id) == channels_.end());
     channels_[message->process_id] = new RoutedRawChannel(
-        handle.Pass(),
+        std::move(handle),
         base::Bind(&ChildBroker::ChannelDestructed, base::Unretained(this)));
   } else if (type == PEER_PIPE_CONNECTED) {
     DCHECK(!platform_handles);
@@ -237,9 +239,9 @@ void ChildBroker::WriteAsyncMessage(scoped_ptr<MessageInTransit> message) {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
   message->set_route_id(kBrokerRouteId);
   if (parent_async_channel_) {
-    parent_async_channel_->channel()->WriteMessage(message.Pass());
+    parent_async_channel_->channel()->WriteMessage(std::move(message));
   } else {
-    async_channel_queue_.AddMessage(message.Pass());
+    async_channel_queue_.AddMessage(std::move(message));
   }
 }
 
@@ -248,7 +250,7 @@ void ChildBroker::InitAsyncChannel(
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
 
   parent_async_channel_ = new RoutedRawChannel(
-      parent_async_channel_handle.Pass()  ,
+      std::move(parent_async_channel_handle),
       base::Bind(&ChildBroker::ChannelDestructed, base::Unretained(this)));
   parent_async_channel_->AddRoute(kBrokerRouteId, this);
   while (!async_channel_queue_.IsEmpty()) {

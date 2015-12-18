@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -86,10 +88,10 @@ class MultiprocessMessagePipePerfTest
 // not including any "quitquitquit" message, modulo 100.
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PingPongClient) {
   ScopedPlatformHandle client_platform_handle =
-      test::MultiprocessTestHelper::client_platform_handle.Pass();
+      std::move(test::MultiprocessTestHelper::client_platform_handle);
   CHECK(client_platform_handle.is_valid());
   ScopedMessagePipeHandle mp =
-      CreateMessagePipe(client_platform_handle.Pass());
+      CreateMessagePipe(std::move(client_platform_handle));
 
   std::string buffer(1000000, '\0');
   int rv = 0;
@@ -135,8 +137,8 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PingPongClient) {
 TEST_F(MultiprocessMessagePipePerfTest, MAYBE_PingPong) {
   helper()->StartChild("PingPongClient");
 
-  ScopedMessagePipeHandle mp = CreateMessagePipe(
-      helper()->server_platform_handle.Pass());
+  ScopedMessagePipeHandle mp =
+      CreateMessagePipe(std::move(helper()->server_platform_handle));
 
   // This values are set to align with one at ipc_pertests.cc for comparison.
   const size_t kMsgSize[5] = {12, 144, 1728, 20736, 248832};

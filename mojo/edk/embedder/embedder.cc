@@ -4,6 +4,8 @@
 
 #include "mojo/edk/embedder/embedder.h"
 
+#include <utility>
+
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -64,11 +66,11 @@ ScopedPlatformHandle ChildProcessLaunched(base::ProcessHandle child_process) {
 
 void ChildProcessLaunched(base::ProcessHandle child_process,
                           ScopedPlatformHandle server_pipe) {
-  new ChildBrokerHost(child_process, server_pipe.Pass());
+  new ChildBrokerHost(child_process, std::move(server_pipe));
 }
 
 void SetParentPipeHandle(ScopedPlatformHandle pipe) {
-  ChildBroker::GetInstance()->SetChildBrokerHostHandle(pipe.Pass());
+  ChildBroker::GetInstance()->SetChildBrokerHostHandle(std::move(pipe));
 }
 
 void Init() {
@@ -96,7 +98,7 @@ MojoResult CreatePlatformHandleWrapper(
   DCHECK(platform_handle_wrapper_handle);
 
   scoped_refptr<Dispatcher> dispatcher =
-      PlatformHandleDispatcher::Create(platform_handle.Pass());
+      PlatformHandleDispatcher::Create(std::move(platform_handle));
 
   DCHECK(internal::g_core);
   MojoHandle h = internal::g_core->AddDispatcher(dispatcher);
@@ -123,10 +125,8 @@ MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
   if (dispatcher->GetType() != Dispatcher::Type::PLATFORM_HANDLE)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  *platform_handle =
-      static_cast<PlatformHandleDispatcher*>(dispatcher.get())
-          ->PassPlatformHandle()
-          .Pass();
+  *platform_handle = static_cast<PlatformHandleDispatcher*>(dispatcher.get())
+                         ->PassPlatformHandle();
   return MOJO_RESULT_OK;
 }
 
@@ -157,11 +157,11 @@ ScopedMessagePipeHandle CreateMessagePipe(
   ScopedMessagePipeHandle rv(
       MessagePipeHandle(internal::g_core->AddDispatcher(dispatcher)));
   CHECK(rv.is_valid());
-  dispatcher->Init(platform_handle.Pass(), nullptr, 0, nullptr, 0, nullptr,
+  dispatcher->Init(std::move(platform_handle), nullptr, 0, nullptr, 0, nullptr,
                    nullptr);
   // TODO(vtl): The |.Pass()| below is only needed due to an MSVS bug; remove it
   // once that's fixed.
-  return rv.Pass();
+  return rv;
 }
 
 }  // namespace edk
