@@ -5,6 +5,8 @@
 #ifndef UI_AURA_TEST_ENV_TEST_HELPER_H_
 #define UI_AURA_TEST_ENV_TEST_HELPER_H_
 
+#include <utility>
+
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
 
@@ -17,7 +19,7 @@ class EnvTestHelper {
   ~EnvTestHelper() {}
 
   void SetInputStateLookup(scoped_ptr<InputStateLookup> input_state_lookup) {
-    env_->input_state_lookup_ = input_state_lookup.Pass();
+    env_->input_state_lookup_ = std::move(input_state_lookup);
   }
 
   void ResetEventState() {

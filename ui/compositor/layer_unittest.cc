@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/compositor/layer.h"
+
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -24,7 +28,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/dip_util.h"
-#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/paint_context.h"
@@ -150,7 +153,7 @@ class LayerWithRealCompositorTest : public testing::Test {
             base::Bind(&ReadbackHolder::OutputRequestCallback, holder));
     request->set_area(source_rect);
 
-    GetCompositor()->root_layer()->RequestCopyOfOutput(request.Pass());
+    GetCompositor()->root_layer()->RequestCopyOfOutput(std::move(request));
 
     // Wait for copy response.  This needs to wait as the compositor could
     // be in the middle of a draw right now, and the commit with the
@@ -1472,8 +1475,8 @@ static scoped_ptr<cc::DelegatedFrameData> MakeFrameData(gfx::Size size) {
   scoped_ptr<cc::RenderPass> render_pass(cc::RenderPass::Create());
   render_pass->SetNew(
       cc::RenderPassId(1, 1), gfx::Rect(size), gfx::Rect(), gfx::Transform());
-  frame_data->render_pass_list.push_back(render_pass.Pass());
-  return frame_data.Pass();
+  frame_data->render_pass_list.push_back(std::move(render_pass));
+  return frame_data;
 }
 
 TEST_F(LayerWithDelegateTest, DelegatedLayer) {

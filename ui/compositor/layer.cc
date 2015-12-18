@@ -5,6 +5,7 @@
 #include "ui/compositor/layer.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -363,7 +364,7 @@ void Layer::SetBackgroundZoom(float zoom, int inset) {
 }
 
 void Layer::SetAlphaShape(scoped_ptr<SkRegion> region) {
-  alpha_shape_ = region.Pass();
+  alpha_shape_ = std::move(region);
 
   SetLayerFilters();
 }
@@ -552,7 +553,7 @@ void Layer::SetTextureMailbox(
   }
   if (mailbox_release_callback_)
     mailbox_release_callback_->Run(gpu::SyncToken(), false);
-  mailbox_release_callback_ = release_callback.Pass();
+  mailbox_release_callback_ = std::move(release_callback);
   mailbox_ = mailbox;
   SetTextureSize(texture_size_in_dip);
 }
@@ -745,7 +746,7 @@ void Layer::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
 }
 
 void Layer::RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
-  cc_layer_->RequestCopyOfOutput(request.Pass());
+  cc_layer_->RequestCopyOfOutput(std::move(request));
 }
 
 gfx::Rect Layer::PaintableRegion() {
@@ -786,7 +787,7 @@ bool Layer::PrepareTextureMailbox(
   if (!mailbox_release_callback_)
     return false;
   *mailbox = mailbox_;
-  *release_callback = mailbox_release_callback_.Pass();
+  *release_callback = std::move(mailbox_release_callback_);
   return true;
 }
 
@@ -973,9 +974,9 @@ void Layer::AddThreadedAnimation(scoped_ptr<cc::Animation> animation) {
   // Until this layer has a compositor (and hence cc_layer_ has a
   // LayerTreeHost), addAnimation will fail.
   if (GetCompositor())
-    cc_layer_->AddAnimation(animation.Pass());
+    cc_layer_->AddAnimation(std::move(animation));
   else
-    pending_threaded_animations_.push_back(animation.Pass());
+    pending_threaded_animations_.push_back(std::move(animation));
 }
 
 void Layer::RemoveThreadedAnimation(int animation_id) {

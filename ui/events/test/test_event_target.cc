@@ -4,6 +4,8 @@
 
 #include "ui/events/test/test_event_target.h"
 
+#include <utility>
+
 #include "ui/events/event.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/event_targeter.h"
@@ -25,7 +27,7 @@ void TestEventTarget::AddChild(scoped_ptr<TestEventTarget> child) {
   if (child->parent()) {
     AddChild(child->parent()->RemoveChild(child.release()));
   } else {
-    children_.push_back(child.Pass());
+    children_.push_back(std::move(child));
   }
   child_r->set_parent(this);
 }
@@ -43,7 +45,7 @@ scoped_ptr<TestEventTarget> TestEventTarget::RemoveChild(TestEventTarget *c) {
 }
 
 void TestEventTarget::SetEventTargeter(scoped_ptr<EventTargeter> targeter) {
-  targeter_ = targeter.Pass();
+  targeter_ = std::move(targeter);
 }
 
 bool TestEventTarget::DidReceiveEvent(ui::EventType type) const {

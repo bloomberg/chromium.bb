@@ -25,7 +25,7 @@ scoped_ptr<Widget> CreateDesktopWidget() {
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.native_widget = new DesktopNativeWidgetAura(widget.get());
   widget->Init(params);
-  return widget.Pass();
+  return widget;
 }
 
 }  // namespace

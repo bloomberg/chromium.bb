@@ -4,6 +4,8 @@
 
 #include "ui/views/test/scoped_views_test_helper.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/compositor/test/context_factories_for_test.h"
@@ -18,7 +20,7 @@ ScopedViewsTestHelper::ScopedViewsTestHelper()
 
 ScopedViewsTestHelper::ScopedViewsTestHelper(
     scoped_ptr<TestViewsDelegate> views_delegate)
-    : views_delegate_(views_delegate.Pass()) {
+    : views_delegate_(std::move(views_delegate)) {
   // The ContextFactory must exist before any Compositors are created.
   bool enable_pixel_output = false;
   ui::ContextFactory* context_factory =

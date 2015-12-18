@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 
+#include <utility>
+
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor_loader.h"
@@ -13,7 +15,7 @@ namespace views {
 
 DesktopNativeCursorManager::DesktopNativeCursorManager(
     scoped_ptr<DesktopCursorLoaderUpdater> cursor_loader_updater)
-    : cursor_loader_updater_(cursor_loader_updater.Pass()),
+    : cursor_loader_updater_(std::move(cursor_loader_updater)),
       cursor_loader_(ui::CursorLoader::Create()) {
   if (cursor_loader_updater_.get())
     cursor_loader_updater_->OnCreate(1.0f, cursor_loader_.get());

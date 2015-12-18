@@ -4,6 +4,8 @@
 
 #include "ui/views/test/menu_runner_test_api.h"
 
+#include <utility>
+
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_runner_handler.h"
 
@@ -19,7 +21,7 @@ MenuRunnerTestAPI::~MenuRunnerTestAPI() {
 
 void MenuRunnerTestAPI::SetMenuRunnerHandler(
     scoped_ptr<MenuRunnerHandler> menu_runner_handler) {
-  menu_runner_->SetRunnerHandler(menu_runner_handler.Pass());
+  menu_runner_->SetRunnerHandler(std::move(menu_runner_handler));
 }
 
 }  // test

@@ -5,6 +5,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 
 #include <string>
+#include <utility>
 
 #include "base/trace_event/trace_event.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -563,7 +564,7 @@ void Textfield::ExecuteCommand(int command_id) {
 }
 
 void Textfield::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
-  focus_painter_ = focus_painter.Pass();
+  focus_painter_ = std::move(focus_painter);
 }
 
 bool Textfield::HasTextBeingDragged() {

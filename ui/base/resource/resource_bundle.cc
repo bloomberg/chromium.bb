@@ -5,6 +5,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/big_endian.h"
@@ -177,7 +178,7 @@ void ResourceBundle::InitSharedInstanceWithPakFileRegion(
     const base::MemoryMappedFile::Region& region) {
   InitSharedInstance(NULL);
   scoped_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
-  if (!data_pack->LoadFromFileRegion(pak_file.Pass(), region)) {
+  if (!data_pack->LoadFromFileRegion(std::move(pak_file), region)) {
     NOTREACHED() << "failed to load pak file";
     return;
   }
@@ -243,8 +244,9 @@ void ResourceBundle::AddOptionalMaterialDesignDataPackFromPath(
 
 void ResourceBundle::AddDataPackFromFile(base::File file,
                                          ScaleFactor scale_factor) {
-  AddDataPackFromFileRegion(
-      file.Pass(), base::MemoryMappedFile::Region::kWholeFile, scale_factor);
+  AddDataPackFromFileRegion(std::move(file),
+                            base::MemoryMappedFile::Region::kWholeFile,
+                            scale_factor);
 }
 
 void ResourceBundle::AddDataPackFromFileRegion(
@@ -253,7 +255,7 @@ void ResourceBundle::AddDataPackFromFileRegion(
     ScaleFactor scale_factor) {
   scoped_ptr<DataPack> data_pack(
       new DataPack(scale_factor));
-  if (data_pack->LoadFromFileRegion(file.Pass(), region)) {
+  if (data_pack->LoadFromFileRegion(std::move(file), region)) {
     AddDataPack(data_pack.release());
   } else {
     LOG(ERROR) << "Failed to load data pack from file."

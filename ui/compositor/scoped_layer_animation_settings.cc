@@ -67,7 +67,7 @@ class InvertingObserver : public ImplicitAnimationObserver {
 
       scoped_ptr<LayerAnimationElement> to_return(
           LayerAnimationElement::CreateInverseTransformElement(base, element));
-      return to_return.Pass();
+      return to_return;
     }
 
     Layer* base_layer_;

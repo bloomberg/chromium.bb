@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/button/image_button.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -70,7 +72,7 @@ void ImageButton::SetImageAlignment(HorizontalAlignment h_align,
 }
 
 void ImageButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
-  focus_painter_ = focus_painter.Pass();
+  focus_painter_ = std::move(focus_painter);
 }
 
 void ImageButton::SetMinimumImageSize(const gfx::Size& size) {

@@ -4,6 +4,8 @@
 
 #include "ui/app_list/search_box_model.h"
 
+#include <utility>
+
 #include "base/metrics/histogram.h"
 #include "ui/app_list/search_box_model_observer.h"
 
@@ -38,7 +40,7 @@ void SearchBoxModel::SetIcon(const gfx::ImageSkia& icon) {
 
 void SearchBoxModel::SetSpeechRecognitionButton(
     scoped_ptr<SearchBoxModel::SpeechButtonProperty> speech_button) {
-  speech_button_ = speech_button.Pass();
+  speech_button_ = std::move(speech_button);
   FOR_EACH_OBSERVER(SearchBoxModelObserver,
                     observers_,
                     SpeechRecognitionButtonPropChanged());

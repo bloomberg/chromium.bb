@@ -4,6 +4,8 @@
 
 #include "ui/app_list/search/dictionary_data_store.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
@@ -75,7 +77,7 @@ scoped_ptr<base::DictionaryValue> DictionaryDataStore::LoadOnBlockingPool() {
 
   scoped_ptr<base::DictionaryValue> return_dict =
       make_scoped_ptr(dict_value.get()->DeepCopy());
-  cached_dict_ = dict_value.Pass();
+  cached_dict_ = std::move(dict_value);
   return return_dict;
 }
 

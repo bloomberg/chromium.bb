@@ -4,6 +4,8 @@
 
 #include "ui/app_list/test/app_list_test_model.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -145,7 +147,7 @@ AppListTestModel::AppListTestItem* AppListTestModel::CreateItem(
 AppListTestModel::AppListTestItem* AppListTestModel::CreateAndAddItem(
     const std::string& id) {
   scoped_ptr<AppListTestItem> test_item(CreateItem(id));
-  AppListItem* item = AppListModel::AddItem(test_item.Pass());
+  AppListItem* item = AppListModel::AddItem(std::move(test_item));
   return static_cast<AppListTestItem*>(item);
 }
 void AppListTestModel::HighlightItemAt(int index) {

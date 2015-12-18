@@ -4,6 +4,8 @@
 
 #include "ui/events/scoped_target_handler.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_handler.h"
@@ -34,8 +36,8 @@ class TestEventTarget : public EventTarget {
 
   void SetHandler(scoped_ptr<EventHandler> target_handler,
                   scoped_ptr<EventHandler> delegate) {
-    target_handler_ = target_handler.Pass();
-    delegate_ = delegate.Pass();
+    target_handler_ = std::move(target_handler);
+    delegate_ = std::move(delegate);
   }
 
   // EventTarget:
@@ -142,7 +144,7 @@ TEST(ScopedTargetHandlerTest, HandlerInvoked) {
       new NestedEventHandler(target, 1));
   scoped_ptr<EventCountingEventHandler> delegate(
       new EventCountingEventHandler(target, &count));
-  target->SetHandler(target_handler.Pass(), delegate.Pass());
+  target->SetHandler(std::move(target_handler), std::move(delegate));
   MouseEvent event(ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    EventTimeForNow(), EF_LEFT_MOUSE_BUTTON,
                    EF_LEFT_MOUSE_BUTTON);
@@ -160,7 +162,7 @@ TEST(ScopedTargetHandlerTest, HandlerInvokedNested) {
       new NestedEventHandler(target, 2));
   scoped_ptr<EventCountingEventHandler> delegate(
       new EventCountingEventHandler(target, &count));
-  target->SetHandler(target_handler.Pass(), delegate.Pass());
+  target->SetHandler(std::move(target_handler), std::move(delegate));
   MouseEvent event(ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    EventTimeForNow(), EF_LEFT_MOUSE_BUTTON,
                    EF_LEFT_MOUSE_BUTTON);
@@ -178,7 +180,7 @@ TEST(ScopedTargetHandlerTest, SafeToDestroy) {
       new TargetDestroyingEventHandler(target, 1));
   scoped_ptr<EventCountingEventHandler> delegate(
       new EventCountingEventHandler(target, &count));
-  target->SetHandler(target_handler.Pass(), delegate.Pass());
+  target->SetHandler(std::move(target_handler), std::move(delegate));
   MouseEvent event(ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    EventTimeForNow(), EF_LEFT_MOUSE_BUTTON,
                    EF_LEFT_MOUSE_BUTTON);
@@ -195,7 +197,7 @@ TEST(ScopedTargetHandlerTest, SafeToDestroyNested) {
       new TargetDestroyingEventHandler(target, 2));
   scoped_ptr<EventCountingEventHandler> delegate(
       new EventCountingEventHandler(target, &count));
-  target->SetHandler(target_handler.Pass(), delegate.Pass());
+  target->SetHandler(std::move(target_handler), std::move(delegate));
   MouseEvent event(ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    EventTimeForNow(), EF_LEFT_MOUSE_BUTTON,
                    EF_LEFT_MOUSE_BUTTON);

@@ -5,6 +5,7 @@
 #include "ui/base/resource/data_pack.h"
 
 #include <errno.h>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
@@ -86,7 +87,7 @@ bool DataPack::LoadFromPath(const base::FilePath& path) {
 }
 
 bool DataPack::LoadFromFile(base::File file) {
-  return LoadFromFileRegion(file.Pass(),
+  return LoadFromFileRegion(std::move(file),
                             base::MemoryMappedFile::Region::kWholeFile);
 }
 
@@ -94,7 +95,7 @@ bool DataPack::LoadFromFileRegion(
     base::File file,
     const base::MemoryMappedFile::Region& region) {
   mmap_.reset(new base::MemoryMappedFile);
-  if (!mmap_->Initialize(file.Pass(), region)) {
+  if (!mmap_->Initialize(std::move(file), region)) {
     DLOG(ERROR) << "Failed to mmap datapack";
     UMA_HISTOGRAM_ENUMERATION("DataPack.Load", INIT_FAILED_FROM_FILE,
                               LOAD_ERRORS_COUNT);

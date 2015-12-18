@@ -4,6 +4,8 @@
 
 #include "ui/events/gestures/gesture_provider_aura.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "ui/events/event.h"
@@ -61,7 +63,7 @@ void GestureProviderAura::OnGestureEvent(
     client_->OnGestureEvent(event.get());
   } else {
     // Memory managed by ScopedVector pending_gestures_.
-    pending_gestures_.push_back(event.Pass());
+    pending_gestures_.push_back(std::move(event));
   }
 }
 

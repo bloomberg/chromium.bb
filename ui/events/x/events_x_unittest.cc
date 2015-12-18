@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cstring>
-#include <set>
-
-#include <X11/extensions/XInput2.h>
+#include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/XKBlib.h>
+#include <X11/extensions/XInput2.h>
+#include <cstring>
+#include <set>
+#include <utility>
 
 // Generically-named #defines from Xlib that conflict with symbols in GTest.
 #undef Bool
@@ -378,7 +378,7 @@ TEST_F(EventsXTest, DisableKeyboard) {
 
   scoped_ptr<std::set<KeyboardCode> > excepted_keys(new std::set<KeyboardCode>);
   excepted_keys->insert(VKEY_B);
-  device_data_manager->SetDisabledKeyboardAllowedKeys(excepted_keys.Pass());
+  device_data_manager->SetDisabledKeyboardAllowedKeys(std::move(excepted_keys));
 
   ScopedXI2Event xev;
   // A is not allowed on the blocked keyboard, and should return ET_UNKNOWN.

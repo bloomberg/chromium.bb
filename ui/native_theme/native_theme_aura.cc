@@ -5,6 +5,7 @@
 #include "ui/native_theme/native_theme_aura.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/logging.h"
 #include "ui/base/layout.h"
@@ -282,7 +283,7 @@ scoped_ptr<NativeThemeAura::DualPainter> NativeThemeAura::CreateDualPainter(
                                        fill_alphas,
                                        CreateNineImagePainter(stroke_image_ids),
                                        stroke_alphas));
-  return dual_painter.Pass();
+  return dual_painter;
 }
 
 void NativeThemeAura::PaintDualPainter(
@@ -325,9 +326,9 @@ NativeThemeAura::DualPainter::DualPainter(
     const uint8 fill_alphas[kNumStates],
     scoped_ptr<NineImagePainter> stroke_painter,
     const uint8 stroke_alphas[kNumStates])
-    : fill_painter(fill_painter.Pass()),
+    : fill_painter(std::move(fill_painter)),
       fill_alphas(fill_alphas),
-      stroke_painter(stroke_painter.Pass()),
+      stroke_painter(std::move(stroke_painter)),
       stroke_alphas(stroke_alphas) {}
 
 NativeThemeAura::DualPainter::~DualPainter() {}

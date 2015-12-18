@@ -4,6 +4,8 @@
 
 #include "ui/views/mus/input_method_mus.h"
 
+#include <utility>
+
 #include "components/mus/public/cpp/window.h"
 #include "mojo/converters/ime/ime_type_converters.h"
 #include "ui/base/ime/text_input_client.h"
@@ -96,9 +98,9 @@ void InputMethodMUS::UpdateTextInputType() {
   mojo::TextInputStatePtr state = mojo::TextInputState::New();
   state->type = mojo::ConvertTo<mojo::TextInputType>(type);
   if (type != ui::TEXT_INPUT_TYPE_NONE)
-    window_->SetImeVisibility(true, state.Pass());
+    window_->SetImeVisibility(true, std::move(state));
   else
-    window_->SetTextInputState(state.Pass());
+    window_->SetTextInputState(std::move(state));
 }
 
 }  // namespace mandoline

@@ -4,6 +4,8 @@
 
 #include "ui/events/event.h"
 
+#include <utility>
+
 #if defined(USE_X11)
 #include <X11/extensions/XInput2.h>
 #include <X11/keysym.h>
@@ -761,7 +763,7 @@ KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
 KeyEvent::~KeyEvent() {}
 
 void KeyEvent::SetExtendedKeyEventData(scoped_ptr<ExtendedKeyEventData> data) {
-  extended_key_event_data_ = data.Pass();
+  extended_key_event_data_ = std::move(data);
 }
 
 void KeyEvent::ApplyLayout() const {

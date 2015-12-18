@@ -4,6 +4,8 @@
 
 #include "ui/events/gesture_detection/motion_event_buffer.h"
 
+#include <utility>
+
 #include "base/trace_event/trace_event.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
 
@@ -72,7 +74,7 @@ MotionEventVector ConsumeSamplesNoLaterThan(MotionEventVector* batch,
     return MotionEventVector();
 
   if (count == batch->size())
-    return batch->Pass();
+    return std::move(*batch);
 
   // TODO(jdduke): Use a ScopedDeque to work around this mess.
   MotionEventVector unconsumed_batch;
@@ -82,7 +84,7 @@ MotionEventVector ConsumeSamplesNoLaterThan(MotionEventVector* batch,
 
   unconsumed_batch.swap(*batch);
   DCHECK_GE(unconsumed_batch.size(), 1U);
-  return unconsumed_batch.Pass();
+  return unconsumed_batch;
 }
 
 // Linearly interpolate the pointer position between two MotionEvent samples.
@@ -147,7 +149,7 @@ scoped_ptr<MotionEventGeneric> ResampleMotionEvent(
 
   DCHECK(event);
   event->set_button_state(event0.GetButtonState());
-  return event.Pass();
+  return event;
 }
 
 // Synthesize a compound MotionEventGeneric event from a sequence of events.
@@ -158,7 +160,7 @@ scoped_ptr<MotionEventGeneric> ConsumeSamples(MotionEventVector events) {
   for (size_t i = 0; i + 1 < events.size(); ++i)
     event->PushHistoricalEvent(scoped_ptr<MotionEvent>(events[i]));
   events.weak_clear();
-  return event.Pass();
+  return event;
 }
 
 // Consume a series of event samples, attempting to synthesize a new, synthetic
@@ -205,7 +207,7 @@ scoped_ptr<MotionEventGeneric> ConsumeSamplesAndTryResampling(
     TRACE_EVENT_INSTANT0("input",
                          "MotionEventBuffer::TryResample insufficient data",
                          TRACE_EVENT_SCOPE_THREAD);
-    return ConsumeSamples(events.Pass());
+    return ConsumeSamples(std::move(events));
   }
 
   DCHECK(event0);
@@ -219,7 +221,7 @@ scoped_ptr<MotionEventGeneric> ConsumeSamplesAndTryResampling(
                          TRACE_EVENT_SCOPE_THREAD,
                          "event_delta_too_small(ms)",
                          delta.InMilliseconds());
-    return ConsumeSamples(events.Pass());
+    return ConsumeSamples(std::move(events));
   }
 
   scoped_ptr<MotionEventGeneric> resampled_event =
@@ -227,7 +229,7 @@ scoped_ptr<MotionEventGeneric> ConsumeSamplesAndTryResampling(
   for (size_t i = 0; i < events.size(); ++i)
     resampled_event->PushHistoricalEvent(scoped_ptr<MotionEvent>(events[i]));
   events.weak_clear();
-  return resampled_event.Pass();
+  return resampled_event;
 }
 
 }  // namespace
@@ -245,7 +247,7 @@ void MotionEventBuffer::OnMotionEvent(const MotionEvent& event) {
   if (event.GetAction() != MotionEvent::ACTION_MOVE) {
     last_extrapolated_event_time_ = base::TimeTicks();
     if (!buffered_events_.empty())
-      FlushWithoutResampling(buffered_events_.Pass());
+      FlushWithoutResampling(std::move(buffered_events_));
     client_->ForwardMotionEvent(event);
     return;
   }
@@ -261,7 +263,7 @@ void MotionEventBuffer::OnMotionEvent(const MotionEvent& event) {
 
   scoped_ptr<MotionEventGeneric> clone = MotionEventGeneric::CloneEvent(event);
   if (buffered_events_.empty()) {
-    buffered_events_.push_back(clone.Pass());
+    buffered_events_.push_back(std::move(clone));
     client_->SetNeedsFlush();
     return;
   }
@@ -269,10 +271,10 @@ void MotionEventBuffer::OnMotionEvent(const MotionEvent& event) {
   if (CanAddSample(*buffered_events_.front(), *clone)) {
     DCHECK(buffered_events_.back()->GetEventTime() <= clone->GetEventTime());
   } else {
-    FlushWithoutResampling(buffered_events_.Pass());
+    FlushWithoutResampling(std::move(buffered_events_));
   }
 
-  buffered_events_.push_back(clone.Pass());
+  buffered_events_.push_back(std::move(clone));
   // No need to request another flush as the first event will have requested it.
 }
 
@@ -296,13 +298,13 @@ void MotionEventBuffer::Flush(base::TimeTicks frame_time) {
   }
 
   if (!resample_ || (events.size() == 1 && buffered_events_.empty())) {
-    FlushWithoutResampling(events.Pass());
+    FlushWithoutResampling(std::move(events));
     if (!buffered_events_.empty())
       client_->SetNeedsFlush();
     return;
   }
 
-  FlushWithResampling(events.Pass(), frame_time);
+  FlushWithResampling(std::move(events), frame_time);
 }
 
 void MotionEventBuffer::FlushWithResampling(MotionEventVector events,
@@ -313,7 +315,8 @@ void MotionEventBuffer::FlushWithResampling(MotionEventVector events,
       !buffered_events_.empty() ? buffered_events_.front() : nullptr;
 
   scoped_ptr<MotionEventGeneric> resampled_event =
-      ConsumeSamplesAndTryResampling(resample_time, events.Pass(), next_event);
+      ConsumeSamplesAndTryResampling(resample_time, std::move(events),
+                                     next_event);
   DCHECK(resampled_event);
 
   // Log the extrapolated event time, guarding against subsequently queued
@@ -334,7 +337,7 @@ void MotionEventBuffer::FlushWithoutResampling(MotionEventVector events) {
   if (events.empty())
     return;
 
-  client_->ForwardMotionEvent(*ConsumeSamples(events.Pass()));
+  client_->ForwardMotionEvent(*ConsumeSamples(std::move(events)));
 }
 
 }  // namespace ui

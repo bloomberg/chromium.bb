@@ -5,6 +5,7 @@
 #include "ui/app_list/app_list_model.h"
 
 #include <string>
+#include <utility>
 
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
@@ -82,13 +83,13 @@ AppListFolderItem* AppListModel::FindFolderItem(const std::string& id) {
 AppListItem* AppListModel::AddItem(scoped_ptr<AppListItem> item) {
   DCHECK(!item->IsInFolder());
   DCHECK(!top_level_item_list()->FindItem(item->id()));
-  return AddItemToItemListAndNotify(item.Pass());
+  return AddItemToItemListAndNotify(std::move(item));
 }
 
 AppListItem* AppListModel::AddItemToFolder(scoped_ptr<AppListItem> item,
                                            const std::string& folder_id) {
   if (folder_id.empty())
-    return AddItem(item.Pass());
+    return AddItem(std::move(item));
   DVLOG(2) << "AddItemToFolder: " << item->id() << ": " << folder_id;
   CHECK_NE(folder_id, item->folder_id());
   DCHECK_NE(AppListFolderItem::kItemType, item->GetItemType());
@@ -97,7 +98,7 @@ AppListItem* AppListModel::AddItemToFolder(scoped_ptr<AppListItem> item,
     return NULL;
   DCHECK(!dest_folder->item_list()->FindItem(item->id()))
       << "Already in folder: " << dest_folder->id();
-  return AddItemToFolderItemAndNotify(dest_folder, item.Pass());
+  return AddItemToFolderItemAndNotify(dest_folder, std::move(item));
 }
 
 const std::string AppListModel::MergeItems(const std::string& target_item_id,
@@ -139,7 +140,7 @@ const std::string AppListModel::MergeItems(const std::string& target_item_id,
     source_item_ptr->set_position(
         target_folder->item_list()->CreatePositionBefore(
             syncer::StringOrdinal()));
-    AddItemToFolderItemAndNotify(target_folder, source_item_ptr.Pass());
+    AddItemToFolderItemAndNotify(target_folder, std::move(source_item_ptr));
     return target_folder->id();
   }
 
@@ -160,17 +161,17 @@ const std::string AppListModel::MergeItems(const std::string& target_item_id,
       new_folder_id, AppListFolderItem::FOLDER_TYPE_NORMAL));
   new_folder_ptr->set_position(target_item_ptr->position());
   AppListFolderItem* new_folder = static_cast<AppListFolderItem*>(
-      AddItemToItemListAndNotify(new_folder_ptr.Pass()));
+      AddItemToItemListAndNotify(std::move(new_folder_ptr)));
 
   // Add the items to the new folder.
   target_item_ptr->set_position(
       new_folder->item_list()->CreatePositionBefore(
           syncer::StringOrdinal()));
-  AddItemToFolderItemAndNotify(new_folder, target_item_ptr.Pass());
+  AddItemToFolderItemAndNotify(new_folder, std::move(target_item_ptr));
   source_item_ptr->set_position(
       new_folder->item_list()->CreatePositionBefore(
           syncer::StringOrdinal()));
-  AddItemToFolderItemAndNotify(new_folder, source_item_ptr.Pass());
+  AddItemToFolderItemAndNotify(new_folder, std::move(source_item_ptr));
 
   return new_folder->id();
 }
@@ -185,9 +186,9 @@ void AppListModel::MoveItemToFolder(AppListItem* item,
   scoped_ptr<AppListItem> item_ptr = RemoveItem(item);
   if (dest_folder) {
     CHECK(!item->IsInFolder());
-    AddItemToFolderItemAndNotify(dest_folder, item_ptr.Pass());
+    AddItemToFolderItemAndNotify(dest_folder, std::move(item_ptr));
   } else {
-    AddItemToItemListAndNotifyUpdate(item_ptr.Pass());
+    AddItemToItemListAndNotifyUpdate(std::move(item_ptr));
   }
 }
 
@@ -210,11 +211,11 @@ bool AppListModel::MoveItemToFolderAt(AppListItem* item,
   if (dest_folder) {
     item_ptr->set_position(
         dest_folder->item_list()->CreatePositionBefore(position));
-    AddItemToFolderItemAndNotify(dest_folder, item_ptr.Pass());
+    AddItemToFolderItemAndNotify(dest_folder, std::move(item_ptr));
   } else {
     item_ptr->set_position(
         top_level_item_list_->CreatePositionBefore(position));
-    AddItemToItemListAndNotifyUpdate(item_ptr.Pass());
+    AddItemToItemListAndNotifyUpdate(std::move(item_ptr));
   }
   return true;
 }
@@ -317,7 +318,7 @@ void AppListModel::SetFoldersEnabled(bool folders_enabled) {
     while (folder->item_list()->item_count()) {
       scoped_ptr<AppListItem> child = folder->item_list()->RemoveItemAt(0);
       child->set_folder_id("");
-      AddItemToItemListAndNotifyUpdate(child.Pass());
+      AddItemToItemListAndNotifyUpdate(std::move(child));
     }
     folder_ids.push_back(folder->id());
   }
@@ -399,14 +400,15 @@ AppListFolderItem* AppListModel::FindOrCreateFolderItem(
       new AppListFolderItem(folder_id, AppListFolderItem::FOLDER_TYPE_NORMAL));
   new_folder->set_position(
       top_level_item_list_->CreatePositionBefore(syncer::StringOrdinal()));
-  AppListItem* new_folder_item = AddItemToItemListAndNotify(new_folder.Pass());
+  AppListItem* new_folder_item =
+      AddItemToItemListAndNotify(std::move(new_folder));
   return static_cast<AppListFolderItem*>(new_folder_item);
 }
 
 AppListItem* AppListModel::AddItemToItemListAndNotify(
     scoped_ptr<AppListItem> item_ptr) {
   DCHECK(!item_ptr->IsInFolder());
-  AppListItem* item = top_level_item_list_->AddItem(item_ptr.Pass());
+  AppListItem* item = top_level_item_list_->AddItem(std::move(item_ptr));
   FOR_EACH_OBSERVER(AppListModelObserver,
                     observers_,
                     OnAppListItemAdded(item));
@@ -416,7 +418,7 @@ AppListItem* AppListModel::AddItemToItemListAndNotify(
 AppListItem* AppListModel::AddItemToItemListAndNotifyUpdate(
     scoped_ptr<AppListItem> item_ptr) {
   DCHECK(!item_ptr->IsInFolder());
-  AppListItem* item = top_level_item_list_->AddItem(item_ptr.Pass());
+  AppListItem* item = top_level_item_list_->AddItem(std::move(item_ptr));
   FOR_EACH_OBSERVER(AppListModelObserver,
                     observers_,
                     OnAppListItemUpdated(item));
@@ -427,7 +429,7 @@ AppListItem* AppListModel::AddItemToFolderItemAndNotify(
     AppListFolderItem* folder,
     scoped_ptr<AppListItem> item_ptr) {
   CHECK_NE(folder->id(), item_ptr->folder_id());
-  AppListItem* item = folder->item_list()->AddItem(item_ptr.Pass());
+  AppListItem* item = folder->item_list()->AddItem(std::move(item_ptr));
   item->set_folder_id(folder->id());
   FOR_EACH_OBSERVER(AppListModelObserver,
                     observers_,
@@ -454,7 +456,7 @@ scoped_ptr<AppListItem> AppListModel::RemoveItemFromFolder(
     DVLOG(2) << "Deleting empty folder: " << folder->ToDebugString();
     DeleteItem(folder_id);
   }
-  return result.Pass();
+  return result;
 }
 
 }  // namespace app_list

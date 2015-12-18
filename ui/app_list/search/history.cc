@@ -50,7 +50,7 @@ void History::AddLaunchEvent(const std::string& query,
 scoped_ptr<KnownResults> History::GetKnownResults(
     const std::string& query) const {
   DCHECK(IsReady());
-  return data_->GetKnownResults(NormalizeString(query)).Pass();
+  return data_->GetKnownResults(NormalizeString(query));
 }
 
 void History::OnHistoryDataLoadedFromStore() {

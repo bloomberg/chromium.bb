@@ -4,6 +4,8 @@
 
 #include "ui/wm/core/nested_accelerator_controller.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -26,7 +28,7 @@ void NestedAcceleratorController::PrepareNestedLoopClosures(
     base::Closure* run_closure,
     base::Closure* quit_closure) {
   scoped_ptr<NestedAcceleratorDispatcher> old_accelerator_dispatcher =
-      accelerator_dispatcher_.Pass();
+      std::move(accelerator_dispatcher_);
   accelerator_dispatcher_ = NestedAcceleratorDispatcher::Create(
       dispatcher_delegate_.get(), nested_dispatcher);
 
@@ -45,7 +47,7 @@ void NestedAcceleratorController::RunNestedMessageLoop(
     scoped_ptr<base::RunLoop> run_loop,
     scoped_ptr<NestedAcceleratorDispatcher> old_accelerator_dispatcher) {
   run_loop->Run();
-  accelerator_dispatcher_ = old_accelerator_dispatcher.Pass();
+  accelerator_dispatcher_ = std::move(old_accelerator_dispatcher);
 }
 
 void NestedAcceleratorController::QuitNestedMessageLoop(

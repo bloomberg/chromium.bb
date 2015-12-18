@@ -53,7 +53,7 @@ scoped_ptr<Event> EventFromNative(const base::NativeEvent& native_event) {
     default:
       break;
   }
-  return event.Pass();
+  return event;
 }
 
 int RegisterCustomEventType() {

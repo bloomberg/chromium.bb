@@ -59,7 +59,7 @@ class MotionEventBufferTest : public testing::Test,
   ScopedVector<MotionEvent> GetAndResetForwardedEvents() {
     ScopedVector<MotionEvent> forwarded_events;
     forwarded_events.swap(forwarded_events_);
-    return forwarded_events.Pass();
+    return forwarded_events;
   }
 
   const MotionEvent* GetLastEvent() const {

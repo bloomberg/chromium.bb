@@ -57,7 +57,7 @@ scoped_ptr<Label> CreateLabelRange(
         result->font_list().DeriveWithStyle(style_info.font_style));
   }
 
-  return result.Pass();
+  return result;
 }
 
 }  // namespace

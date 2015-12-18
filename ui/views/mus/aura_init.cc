@@ -4,6 +4,8 @@
 
 #include "ui/views/mus/aura_init.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
@@ -80,9 +82,9 @@ void AuraInit::InitializeResources(mojo::ApplicationImpl* app) {
   base::File pak_file = resource_loader.ReleaseFile(resource_file_);
   base::File pak_file_2 = pak_file.Duplicate();
   ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-      pak_file.Pass(), base::MemoryMappedFile::Region::kWholeFile);
+      std::move(pak_file), base::MemoryMappedFile::Region::kWholeFile);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-      pak_file_2.Pass(), ui::SCALE_FACTOR_100P);
+      std::move(pak_file_2), ui::SCALE_FACTOR_100P);
 
 // Initialize the skia font code to go ask fontconfig underneath.
 #if defined(OS_LINUX) && !defined(OS_ANDROID)

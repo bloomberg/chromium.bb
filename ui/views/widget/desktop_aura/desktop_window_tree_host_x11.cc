@@ -4,11 +4,12 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
-#include <X11/extensions/shape.h>
-#include <X11/extensions/XInput2.h>
 #include <X11/Xatom.h>
 #include <X11/Xregion.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/shape.h>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -258,7 +259,7 @@ void DesktopWindowTreeHostX11::SwapNonClientEventHandler(
   if (x11_non_client_event_filter_)
     compound_event_filter->RemoveHandler(x11_non_client_event_filter_.get());
   compound_event_filter->AddHandler(handler.get());
-  x11_non_client_event_filter_ = handler.Pass();
+  x11_non_client_event_filter_ = std::move(handler);
 }
 
 void DesktopWindowTreeHostX11::CleanUpWindowList(
@@ -309,7 +310,7 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
 
   // TODO(erg): Unify this code once the other consumer goes away.
   SwapNonClientEventHandler(
-      scoped_ptr<ui::EventHandler>(new X11WindowEventFilter(this)).Pass());
+      scoped_ptr<ui::EventHandler>(new X11WindowEventFilter(this)));
   SetUseNativeFrame(params.type == Widget::InitParams::TYPE_WINDOW &&
                     !params.remove_standard_frame);
 

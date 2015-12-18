@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/menu/menu_runner.h"
 
+#include <utility>
+
 #include "ui/views/controls/menu/menu_runner_handler.h"
 #include "ui/views/controls/menu/menu_runner_impl.h"
 
@@ -73,7 +75,7 @@ base::TimeDelta MenuRunner::closing_event_time() const {
 
 void MenuRunner::SetRunnerHandler(
     scoped_ptr<MenuRunnerHandler> runner_handler) {
-  runner_handler_ = runner_handler.Pass();
+  runner_handler_ = std::move(runner_handler);
 }
 
 }  // namespace views

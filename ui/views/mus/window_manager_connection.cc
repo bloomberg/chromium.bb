@@ -4,6 +4,8 @@
 
 #include "ui/views/mus/window_manager_connection.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
@@ -112,13 +114,13 @@ mus::Window* WindowManagerConnection::NewWindow(
   mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
       window_tree_client_request = GetProxy(&window_tree_client);
   window_manager_->OpenWindow(
-      window_tree_client.Pass(),
+      std::move(window_tree_client),
       mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(properties));
 
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   mus::WindowTreeConnection* window_tree_connection =
       mus::WindowTreeConnection::Create(
-          this, window_tree_client_request.Pass(),
+          this, std::move(window_tree_client_request),
           mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED);
   DCHECK(window_tree_connection->GetRoot());
   return window_tree_connection->GetRoot();

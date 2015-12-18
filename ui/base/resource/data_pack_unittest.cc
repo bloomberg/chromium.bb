@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/base/resource/data_pack.h"
+
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -9,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/data_pack.h"
 #include "ui/base/ui_base_paths.h"
 
 namespace ui {
@@ -71,7 +74,7 @@ TEST(DataPackTest, LoadFromFile) {
 
   // Load the file through the data pack API.
   DataPack pack(SCALE_FACTOR_100P);
-  ASSERT_TRUE(pack.LoadFromFile(file.Pass()));
+  ASSERT_TRUE(pack.LoadFromFile(std::move(file)));
 
   base::StringPiece data;
   ASSERT_TRUE(pack.HasResource(4));
@@ -111,7 +114,7 @@ TEST(DataPackTest, LoadFromFileRegion) {
   // Load the file through the data pack API.
   DataPack pack(SCALE_FACTOR_100P);
   base::MemoryMappedFile::Region region = {sizeof(kPadding), kSamplePakSize};
-  ASSERT_TRUE(pack.LoadFromFileRegion(file.Pass(), region));
+  ASSERT_TRUE(pack.LoadFromFileRegion(std::move(file), region));
 
   base::StringPiece data;
   ASSERT_TRUE(pack.HasResource(4));
@@ -200,7 +203,7 @@ TEST(DataPackTest, ModifiedWhileUsed) {
 
   // Load the file through the data pack API.
   DataPack pack(SCALE_FACTOR_100P);
-  ASSERT_TRUE(pack.LoadFromFile(file.Pass()));
+  ASSERT_TRUE(pack.LoadFromFile(std::move(file)));
 
   base::StringPiece data;
   ASSERT_TRUE(pack.HasResource(10));

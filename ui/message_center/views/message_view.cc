@@ -77,8 +77,7 @@ MessageView::MessageView(MessageViewController* controller,
   close_button_.reset(close);
 
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor,
-      gfx::Insets(0, 1, 3, 2)).Pass();
+      kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
 }
 
 MessageView::~MessageView() {

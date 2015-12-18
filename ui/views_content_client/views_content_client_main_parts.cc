@@ -4,6 +4,8 @@
 
 #include "ui/views_content_client/views_content_client_main_parts.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "content/public/browser/context_factory.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -28,7 +30,7 @@ void ViewsContentClientMainParts::PreMainMessageLoopRun() {
   scoped_ptr<views::TestViewsDelegate> test_views_delegate(
       new views::DesktopTestViewsDelegate);
   test_views_delegate->set_context_factory(content::GetContextFactory());
-  views_delegate_ = test_views_delegate.Pass();
+  views_delegate_ = std::move(test_views_delegate);
 }
 
 void ViewsContentClientMainParts::PostMainMessageLoopRun() {

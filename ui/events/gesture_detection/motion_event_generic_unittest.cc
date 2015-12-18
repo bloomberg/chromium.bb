@@ -5,11 +5,13 @@
 // MSVC++ requires this to be set before any other includes to get M_PI.
 #define _USE_MATH_DEFINES
 
+#include "ui/events/gesture_detection/motion_event_generic.h"
+
 #include <cmath>
+#include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/gesture_detection/motion_event_generic.h"
 #include "ui/events/test/motion_event_test_utils.h"
 
 namespace ui {
@@ -107,7 +109,7 @@ TEST(MotionEventGenericTest, CloneWithHistory) {
   scoped_ptr<MotionEvent> historical_event(new MotionEventGeneric(
       MotionEvent::ACTION_MOVE, historical_event_time, historical_pointer));
 
-  event.PushHistoricalEvent(historical_event.Pass());
+  event.PushHistoricalEvent(std::move(historical_event));
   EXPECT_EQ(1U, event.GetHistorySize());
 
   scoped_ptr<MotionEvent> clone = event.Clone();
@@ -261,8 +263,8 @@ TEST(MotionEventGenericTest, ToString) {
       MotionEvent::ACTION_MOVE, historical_event_time1, pointer0));
   historical_event1->PushPointer(pointer1);
 
-  event.PushHistoricalEvent(historical_event0.Pass());
-  event.PushHistoricalEvent(historical_event1.Pass());
+  event.PushHistoricalEvent(std::move(historical_event0));
+  event.PushHistoricalEvent(std::move(historical_event1));
   ASSERT_EQ(2U, event.GetHistorySize());
   ASSERT_EQ(2U, event.GetPointerCount());
 

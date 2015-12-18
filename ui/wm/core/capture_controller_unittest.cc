@@ -4,6 +4,8 @@
 
 #include "ui/wm/core/capture_controller.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "ui/aura/client/capture_delegate.h"
 #include "ui/aura/env.h"
@@ -215,7 +217,9 @@ class GestureEventDeleteWindowOnScrollEnd
  public:
   GestureEventDeleteWindowOnScrollEnd() {}
 
-  void SetWindow(scoped_ptr<aura::Window> window) { window_ = window.Pass(); }
+  void SetWindow(scoped_ptr<aura::Window> window) {
+    window_ = std::move(window);
+  }
   aura::Window* window() { return window_.get(); }
 
   // aura::test::TestWindowDelegate:
@@ -246,7 +250,7 @@ TEST_F(CaptureControllerTest, GestureResetWithCapture) {
   bounds.Offset(0, 100);
   scoped_ptr<aura::Window> window2(CreateNormalWindowWithBounds(
       -1234, root_window(), bounds, delegate.get()));
-  delegate->SetWindow(window1.Pass());
+  delegate->SetWindow(std::move(window1));
 
   ui::test::EventGenerator event_generator(root_window());
   const int position_x = bounds.x() + 1;

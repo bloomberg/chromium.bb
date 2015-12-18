@@ -5,6 +5,7 @@
 #include "ui/aura/window.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -291,9 +292,9 @@ void Window::SetLayoutManager(LayoutManager* layout_manager) {
 
 scoped_ptr<ui::EventTargeter>
 Window::SetEventTargeter(scoped_ptr<ui::EventTargeter> targeter) {
-  scoped_ptr<ui::EventTargeter> old_targeter = targeter_.Pass();
-  targeter_ = targeter.Pass();
-  return old_targeter.Pass();
+  scoped_ptr<ui::EventTargeter> old_targeter = std::move(targeter_);
+  targeter_ = std::move(targeter);
+  return old_targeter;
 }
 
 void Window::SetBounds(const gfx::Rect& new_bounds) {

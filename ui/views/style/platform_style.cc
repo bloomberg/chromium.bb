@@ -22,7 +22,7 @@ scoped_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
   scoped_ptr<LabelButtonBorder> border(new views::LabelButtonBorder());
   border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
       Button::STYLE_TEXTBUTTON));
-  return border.Pass();
+  return border;
 }
 #endif
 

@@ -128,7 +128,7 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
     params.remove_standard_frame = true;
     toplevel->Init(params);
     toplevel->Show();
-    return toplevel.Pass();
+    return toplevel;
   }
 
   // Creates and shows an X window with |bounds|.

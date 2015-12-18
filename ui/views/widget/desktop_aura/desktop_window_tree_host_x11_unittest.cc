@@ -149,7 +149,7 @@ scoped_ptr<Widget> CreateWidget(WidgetDelegate* delegate) {
   params.native_widget = new DesktopNativeWidgetAura(widget.get());
   params.bounds = gfx::Rect(100, 100, 100, 100);
   widget->Init(params);
-  return widget.Pass();
+  return widget;
 }
 
 // Returns the list of rectangles which describe |xid|'s bounding region via the

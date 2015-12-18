@@ -5,6 +5,7 @@
 #include "ui/message_center/views/message_popup_collection.h"
 
 #include <list>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -99,7 +100,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
         base::UTF8ToUTF16("test message"), gfx::Image(),
         base::string16() /* display_source */, GURL(), NotifierId(),
         message_center::RichNotificationData(), new NotificationDelegate()));
-    MessageCenter::Get()->AddNotification(notification.Pass());
+    MessageCenter::Get()->AddNotification(std::move(notification));
     return id;
   }
 

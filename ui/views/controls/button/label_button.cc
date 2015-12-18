@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/button/label_button.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -216,7 +218,7 @@ void LabelButton::SetImageLabelSpacing(int spacing) {
 }
 
 void LabelButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
-  focus_painter_ = focus_painter.Pass();
+  focus_painter_ = std::move(focus_painter);
 }
 
 gfx::Size LabelButton::GetPreferredSize() const {
@@ -353,7 +355,7 @@ scoped_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
 
 void LabelButton::SetBorder(scoped_ptr<Border> border) {
   border_is_themed_border_ = false;
-  View::SetBorder(border.Pass());
+  View::SetBorder(std::move(border));
   ResetCachedPreferredSize();
 }
 

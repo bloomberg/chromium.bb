@@ -5,6 +5,7 @@
 #include "ui/views/controls/table/table_view.h"
 
 #include <map>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
@@ -176,7 +177,7 @@ View* TableView::CreateParentIfNecessary() {
 
 void TableView::SetRowBackgroundPainter(
     scoped_ptr<TableViewRowBackgroundPainter> painter) {
-  row_background_painter_ = painter.Pass();
+  row_background_painter_ = std::move(painter);
 }
 
 void TableView::SetGrouper(TableGrouper* grouper) {

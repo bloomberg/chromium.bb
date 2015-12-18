@@ -4,6 +4,8 @@
 
 #include "ui/compositor/layer_animation_element.h"
 
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_id_provider.h"
@@ -363,7 +365,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
     set_effective_start_time(base::TimeTicks());
     scoped_ptr<cc::Animation> animation = CreateCCAnimation();
     animation->set_needs_synchronized_start_time(true);
-    delegate->AddThreadedAnimation(animation.Pass());
+    delegate->AddThreadedAnimation(std::move(animation));
   }
 
   virtual void OnEnd(LayerAnimationDelegate* delegate) = 0;
@@ -411,9 +413,9 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
                                        target_,
                                        duration()));
     scoped_ptr<cc::Animation> animation(
-        cc::Animation::Create(animation_curve.Pass(), animation_id(),
+        cc::Animation::Create(std::move(animation_curve), animation_id(),
                               animation_group_id(), cc::Animation::OPACITY));
-    return animation.Pass();
+    return animation;
   }
 
   void OnGetTarget(TargetValue* target) const override {
@@ -464,9 +466,9 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
                                            target_,
                                            duration()));
     scoped_ptr<cc::Animation> animation(
-        cc::Animation::Create(animation_curve.Pass(), animation_id(),
+        cc::Animation::Create(std::move(animation_curve), animation_id(),
                               animation_group_id(), cc::Animation::TRANSFORM));
-    return animation.Pass();
+    return animation;
   }
 
   void OnGetTarget(TargetValue* target) const override {
@@ -538,7 +540,7 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
     scoped_ptr<cc::Animation> animation(
         cc::Animation::Create(animation_curve_->Clone(), animation_id(),
                               animation_group_id(), cc::Animation::TRANSFORM));
-    return animation.Pass();
+    return animation;
   }
 
   void OnGetTarget(TargetValue* target) const override {

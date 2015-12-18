@@ -5,6 +5,7 @@
 #include "ui/app_list/search_controller.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -129,7 +130,7 @@ void SearchController::AddProvider(size_t group_id,
       &SearchController::OnResultsChanged,
       base::Unretained(this)));
   mixer_->AddProviderToGroup(group_id, provider.get());
-  providers_.push_back(provider.Pass());
+  providers_.push_back(std::move(provider));
 }
 
 void SearchController::OnResultsChanged() {

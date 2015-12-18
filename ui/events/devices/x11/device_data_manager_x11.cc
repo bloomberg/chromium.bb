@@ -712,7 +712,7 @@ void DeviceDataManagerX11::SetDisabledKeyboardAllowedKeys(
     scoped_ptr<std::set<KeyboardCode> > excepted_keys) {
   DCHECK(!excepted_keys.get() ||
          !blocked_keyboard_allowed_keys_.get());
-  blocked_keyboard_allowed_keys_ = excepted_keys.Pass();
+  blocked_keyboard_allowed_keys_ = std::move(excepted_keys);
 }
 
 void DeviceDataManagerX11::DisableDevice(int deviceid) {

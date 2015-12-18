@@ -4,6 +4,8 @@
 
 #include "ui/aura/window_targeter.h"
 
+#include <utility>
+
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -240,7 +242,7 @@ TEST_F(WindowTargeterTest, Bounds) {
   EXPECT_EQ(child_r, targeter->FindTargetForEvent(root_target, &mouse3));
 
   // restore original WindowTargeter for |child|.
-  child_r->SetEventTargeter(original_targeter.Pass());
+  child_r->SetEventTargeter(std::move(original_targeter));
 
   // Target |grandchild| location.
   ui::MouseEvent second(ui::ET_MOUSE_MOVED, gfx::Point(12, 12),

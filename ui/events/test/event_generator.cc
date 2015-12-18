@@ -4,6 +4,8 @@
 
 #include "ui/events/test/event_generator.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
@@ -553,7 +555,7 @@ void EventGenerator::Dispatch(ui::Event* event) {
 }
 
 void EventGenerator::SetTickClock(scoped_ptr<base::TickClock> tick_clock) {
-  tick_clock_ = tick_clock.Pass();
+  tick_clock_ = std::move(tick_clock);
 }
 
 base::TimeDelta EventGenerator::Now() {

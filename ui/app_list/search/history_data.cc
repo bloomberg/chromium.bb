@@ -129,7 +129,7 @@ scoped_ptr<KnownResults> HistoryData::GetKnownResults(
     }
   }
 
-  return results.Pass();
+  return results;
 }
 
 void HistoryData::AddObserver(HistoryDataObserver* observer) {

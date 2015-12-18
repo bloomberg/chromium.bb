@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/combobox/combobox.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/ime/input_method.h"
@@ -687,7 +689,7 @@ void Combobox::UpdateBorder() {
     border->SetInsets(5, 10, 5, 10);
   if (invalid_)
     border->SetColor(gfx::kGoogleRed700);
-  SetBorder(border.Pass());
+  SetBorder(std::move(border));
 }
 
 void Combobox::AdjustBoundsForRTLUI(gfx::Rect* rect) const {

@@ -4,6 +4,8 @@
 
 #include "ui/wm/core/transient_window_manager.h"
 
+#include <utility>
+
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
@@ -49,7 +51,8 @@ class WindowVisibilityObserver : public aura::WindowObserver {
  public:
   WindowVisibilityObserver(Window* observed_window,
                            scoped_ptr<Window> owned_window)
-      : observed_window_(observed_window), owned_window_(owned_window.Pass()) {
+      : observed_window_(observed_window),
+        owned_window_(std::move(owned_window)) {
     observed_window_->AddObserver(this);
   }
   ~WindowVisibilityObserver() override {
@@ -342,7 +345,8 @@ TEST_F(TransientWindowManagerTest, CrashOnVisibilityChange) {
   window1->Show();
   window2->Show();
 
-  WindowVisibilityObserver visibility_observer(window1.get(), window2.Pass());
+  WindowVisibilityObserver visibility_observer(window1.get(),
+                                               std::move(window2));
   root_window()->Hide();
 }
 // Tests that windows are restacked properly after a call to AddTransientChild()

@@ -4,6 +4,8 @@
 
 #include "ui/wm/core/cursor_manager.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/wm/core/native_cursor_manager.h"
@@ -71,11 +73,10 @@ class CursorState {
 }  // namespace internal
 
 CursorManager::CursorManager(scoped_ptr<NativeCursorManager> delegate)
-    : delegate_(delegate.Pass()),
+    : delegate_(std::move(delegate)),
       cursor_lock_count_(0),
       current_state_(new internal::CursorState),
-      state_on_unlock_(new internal::CursorState) {
-}
+      state_on_unlock_(new internal::CursorState) {}
 
 CursorManager::~CursorManager() {
 }

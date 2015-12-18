@@ -4,6 +4,8 @@
 
 #include "ui/views/test/views_test_base.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -28,7 +30,7 @@ void ViewsTestBase::SetUp() {
     views_delegate_for_setup_.reset(new TestViewsDelegate());
 
   test_helper_.reset(
-      new ScopedViewsTestHelper(views_delegate_for_setup_.Pass()));
+      new ScopedViewsTestHelper(std::move(views_delegate_for_setup_)));
 }
 
 void ViewsTestBase::TearDown() {

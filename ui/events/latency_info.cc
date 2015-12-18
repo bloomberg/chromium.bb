@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -324,10 +325,11 @@ LatencyInfo::AsTraceableData() {
     component_info->SetDouble("count", lc.second.event_count);
     component_info->SetDouble("sequence_number",
                               lc.second.sequence_number);
-    record_data->Set(GetComponentName(lc.first.first), component_info.Pass());
+    record_data->Set(GetComponentName(lc.first.first),
+                     std::move(component_info));
   }
   record_data->SetDouble("trace_id", static_cast<double>(trace_id_));
-  return LatencyInfoTracedValue::FromValue(record_data.Pass());
+  return LatencyInfoTracedValue::FromValue(std::move(record_data));
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
@@ -340,7 +342,7 @@ LatencyInfo::CoordinatesAsTraceableData() {
     coordinate_pair->SetDouble("y", input_coordinates_[i].y);
     coordinates->Append(coordinate_pair.release());
   }
-  return LatencyInfoTracedValue::FromValue(coordinates.Pass());
+  return LatencyInfoTracedValue::FromValue(std::move(coordinates));
 }
 
 bool LatencyInfo::FindLatency(LatencyComponentType type,

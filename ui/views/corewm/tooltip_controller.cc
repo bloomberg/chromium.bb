@@ -4,6 +4,7 @@
 
 #include "ui/views/corewm/tooltip_controller.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/strings/string_util.h"
@@ -124,7 +125,7 @@ TooltipController::TooltipController(scoped_ptr<Tooltip> tooltip)
     : tooltip_window_(NULL),
       tooltip_id_(NULL),
       tooltip_window_at_mouse_press_(NULL),
-      tooltip_(tooltip.Pass()),
+      tooltip_(std::move(tooltip)),
       tooltips_enabled_(true) {
   tooltip_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),

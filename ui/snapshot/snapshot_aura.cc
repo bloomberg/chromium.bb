@@ -4,6 +4,8 @@
 
 #include "ui/snapshot/snapshot.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/task_runner_util.h"
@@ -37,7 +39,7 @@ static void MakeAsyncCopyRequest(
   scoped_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateBitmapRequest(callback);
   request->set_area(source_rect);
-  window->layer()->RequestCopyOfOutput(request.Pass());
+  window->layer()->RequestCopyOfOutput(std::move(request));
 }
 
 void GrabWindowSnapshotAndScaleAsync(

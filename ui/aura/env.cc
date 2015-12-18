@@ -71,7 +71,7 @@ bool Env::IsMouseButtonDown() const {
 Env::Env()
     : mouse_button_flags_(0),
       is_touch_down_(false),
-      input_state_lookup_(InputStateLookup::Create().Pass()),
+      input_state_lookup_(InputStateLookup::Create()),
       context_factory_(NULL) {
   DCHECK(lazy_tls_ptr.Pointer()->Get() == NULL);
   lazy_tls_ptr.Pointer()->Set(this);

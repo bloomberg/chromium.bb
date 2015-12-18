@@ -5,6 +5,7 @@
 #include "ui/views/mus/surface_binding.h"
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -128,7 +129,7 @@ void SurfaceBinding::PerConnectionState::Init() {
   mojo::ServiceProviderPtr service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:mus");
-  shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
+  shell_->ConnectToApplication(std::move(request), GetProxy(&service_provider),
                                nullptr,
                                mojo::CreatePermissiveCapabilityFilter(),
                                base::Bind(&OnGotContentHandlerID));

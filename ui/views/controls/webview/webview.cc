@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/webview/webview.h"
 
+#include <utility>
+
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -113,12 +115,12 @@ scoped_ptr<content::WebContents> WebView::SwapWebContents(
     scoped_ptr<content::WebContents> new_web_contents) {
   if (wc_owner_)
     wc_owner_->SetDelegate(NULL);
-  scoped_ptr<content::WebContents> old_web_contents(wc_owner_.Pass());
-  wc_owner_ = new_web_contents.Pass();
+  scoped_ptr<content::WebContents> old_web_contents(std::move(wc_owner_));
+  wc_owner_ = std::move(new_web_contents);
   if (wc_owner_)
     wc_owner_->SetDelegate(this);
   SetWebContents(wc_owner_.get());
-  return old_web_contents.Pass();
+  return old_web_contents;
 }
 
 void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

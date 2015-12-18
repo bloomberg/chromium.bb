@@ -87,7 +87,7 @@ class TestSearchProvider : public SearchProvider {
       result->set_display_type(display_type_);
       if (voice_result_indices.find(i) != voice_result_indices.end())
         result->set_voice_result(true);
-      Add(scoped_ptr<SearchResult>(result).Pass());
+      Add(scoped_ptr<SearchResult>(result));
     }
   }
   void Stop() override {}

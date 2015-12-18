@@ -4,6 +4,8 @@
 
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
@@ -58,20 +60,19 @@ scoped_ptr<WebGestureCurve> WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
 scoped_ptr<WebGestureCurve> WebGestureCurveImpl::CreateFromUICurveForTesting(
     scoped_ptr<GestureCurve> curve,
     const gfx::Vector2dF& initial_offset) {
-  return scoped_ptr<WebGestureCurve>(
-      new WebGestureCurveImpl(curve.Pass(), initial_offset, ThreadType::TEST));
+  return scoped_ptr<WebGestureCurve>(new WebGestureCurveImpl(
+      std::move(curve), initial_offset, ThreadType::TEST));
 }
 
 WebGestureCurveImpl::WebGestureCurveImpl(scoped_ptr<GestureCurve> curve,
                                          const gfx::Vector2dF& initial_offset,
                                          ThreadType animating_thread_type)
-    : curve_(curve.Pass()),
+    : curve_(std::move(curve)),
       last_offset_(initial_offset),
       animating_thread_type_(animating_thread_type),
       ticks_since_first_animate_(0),
       first_animate_time_(0),
-      last_animate_time_(0) {
-}
+      last_animate_time_(0) {}
 
 WebGestureCurveImpl::~WebGestureCurveImpl() {
   if (ticks_since_first_animate_ <= 1)

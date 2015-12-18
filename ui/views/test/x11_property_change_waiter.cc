@@ -35,8 +35,8 @@ X11PropertyChangeWaiter::X11PropertyChangeWaiter(XID window,
   // Override the dispatcher so that we get events before
   // DesktopWindowTreeHostX11 does. We must do this because
   // DesktopWindowTreeHostX11 stops propagation.
-  dispatcher_ = ui::PlatformEventSource::GetInstance()->
-      OverrideDispatcher(this).Pass();
+  dispatcher_ =
+      ui::PlatformEventSource::GetInstance()->OverrideDispatcher(this);
 }
 
 X11PropertyChangeWaiter::~X11PropertyChangeWaiter() {

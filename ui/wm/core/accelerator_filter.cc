@@ -4,6 +4,8 @@
 
 #include "ui/wm/core/accelerator_filter.h"
 
+#include <utility>
+
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_history.h"
 #include "ui/events/event.h"
@@ -41,7 +43,7 @@ bool IsSystemKey(ui::KeyboardCode key_code) {
 AcceleratorFilter::AcceleratorFilter(
     scoped_ptr<AcceleratorDelegate> delegate,
     ui::AcceleratorHistory* accelerator_history)
-    : delegate_(delegate.Pass()),
+    : delegate_(std::move(delegate)),
       accelerator_history_(accelerator_history) {
   DCHECK(accelerator_history);
 }

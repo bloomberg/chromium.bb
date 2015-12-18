@@ -4,6 +4,8 @@
 
 #include "ui/views_content_client/views_content_browser_client.h"
 
+#include <utility>
+
 #include "content/shell/browser/shell_browser_context.h"
 #include "ui/views_content_client/views_content_client_main_parts.h"
 
@@ -33,7 +35,7 @@ ViewsContentBrowserClient::CreateRequestContext(
   content::ShellBrowserContext* shell_context =
       views_content_main_parts_->browser_context();
   return shell_context->CreateRequestContext(protocol_handlers,
-                                             request_interceptors.Pass());
+                                             std::move(request_interceptors));
 }
 
 }  // namespace ui

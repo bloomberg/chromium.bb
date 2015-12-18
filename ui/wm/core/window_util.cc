@@ -85,7 +85,7 @@ scoped_ptr<ui::LayerTreeOwner> RecreateLayers(ui::LayerOwner* root) {
       new ui::LayerTreeOwner(root->RecreateLayer().release()));
   if (old_layer->root())
     CloneChildren(root->layer(), old_layer->root());
-  return old_layer.Pass();
+  return old_layer;
 }
 
 aura::Window* GetTransientParent(aura::Window* window) {

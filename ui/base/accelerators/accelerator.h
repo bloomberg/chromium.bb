@@ -11,6 +11,8 @@
 #ifndef UI_BASE_ACCELERATORS_ACCELERATOR_H_
 #define UI_BASE_ACCELERATORS_ACCELERATOR_H_
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/accelerators/platform_accelerator.h"
@@ -66,7 +68,7 @@ class UI_BASE_EXPORT Accelerator {
   base::string16 GetShortcutText() const;
 
   void set_platform_accelerator(scoped_ptr<PlatformAccelerator> p) {
-    platform_accelerator_ = p.Pass();
+    platform_accelerator_ = std::move(p);
   }
 
   // This class keeps ownership of the returned object.

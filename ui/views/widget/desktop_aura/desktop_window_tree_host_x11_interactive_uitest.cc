@@ -88,7 +88,7 @@ scoped_ptr<Widget> CreateWidget(const gfx::Rect& bounds) {
   params.native_widget = new DesktopNativeWidgetAura(widget.get());
   params.bounds = bounds;
   widget->Init(params);
-  return widget.Pass();
+  return widget;
 }
 
 // Dispatches an XMotionEvent targeted at |host|'s X window with location
