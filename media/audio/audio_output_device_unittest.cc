@@ -44,7 +44,10 @@ class MockRenderCallback : public AudioRendererSink::RenderCallback {
   MockRenderCallback() {}
   virtual ~MockRenderCallback() {}
 
-  MOCK_METHOD2(Render, int(AudioBus* dest, int audio_delay_milliseconds));
+  MOCK_METHOD3(Render,
+               int(AudioBus* dest,
+                   uint32_t audio_delay_milliseconds,
+                   uint32_t frames_skipped));
   MOCK_METHOD0(OnRenderError, void());
 };
 
@@ -117,7 +120,8 @@ class AudioOutputDeviceTest
 
 int AudioOutputDeviceTest::CalculateMemorySize() {
   // Calculate output memory size.
-  return AudioBus::CalculateMemorySize(default_audio_parameters_);
+  return sizeof(AudioOutputBufferParameters) +
+         AudioBus::CalculateMemorySize(default_audio_parameters_);
 }
 
 AudioOutputDeviceTest::AudioOutputDeviceTest()
@@ -214,10 +218,9 @@ void AudioOutputDeviceTest::ExpectRenderCallback() {
   // So, for the sake of this test, we consider the call to Render a sign
   // of success and quit the loop.
   const int kNumberOfFramesToProcess = 0;
-  EXPECT_CALL(callback_, Render(_, _))
-      .WillOnce(DoAll(
-          QuitLoop(io_loop_.task_runner()),
-          Return(kNumberOfFramesToProcess)));
+  EXPECT_CALL(callback_, Render(_, _, _))
+      .WillOnce(DoAll(QuitLoop(io_loop_.task_runner()),
+                      Return(kNumberOfFramesToProcess)));
 }
 
 void AudioOutputDeviceTest::WaitUntilRenderCallback() {

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
+#include "media/audio/audio_parameters.h"
 #include "ppapi/nacl_irt/public/irt_ppapi.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
@@ -112,8 +113,14 @@ void PPB_Audio_Shared::SetStreamInfo(
         std::string(),
         "Failed to map shared memory for PPB_Audio_Shared.");
   } else {
-    audio_bus_ = media::AudioBus::WrapMemory(
-        kAudioOutputChannels, sample_frame_count, shared_memory_->memory());
+    DCHECK_EQ(shared_memory_size_,
+              sizeof(media::AudioOutputBufferParameters) +
+                  media::AudioBus::CalculateMemorySize(kAudioOutputChannels,
+                                                       sample_frame_count));
+    media::AudioOutputBuffer* buffer =
+        reinterpret_cast<media::AudioOutputBuffer*>(shared_memory_->memory());
+    audio_bus_ = media::AudioBus::WrapMemory(kAudioOutputChannels,
+                                             sample_frame_count, buffer->audio);
     // Setup integer audio buffer for user audio data.
     client_buffer_size_bytes_ = audio_bus_->frames() * audio_bus_->channels() *
                                 kBitsPerAudioOutputSample / 8;

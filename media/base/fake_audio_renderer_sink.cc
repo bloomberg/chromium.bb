@@ -60,12 +60,13 @@ OutputDevice* FakeAudioRendererSink::GetOutputDevice() {
   return output_device_.get();
 }
 
-bool FakeAudioRendererSink::Render(AudioBus* dest, int audio_delay_milliseconds,
+bool FakeAudioRendererSink::Render(AudioBus* dest,
+                                   uint32_t audio_delay_milliseconds,
                                    int* frames_written) {
   if (state_ != kPlaying)
     return false;
 
-  *frames_written = callback_->Render(dest, audio_delay_milliseconds);
+  *frames_written = callback_->Render(dest, audio_delay_milliseconds, 0);
   return true;
 }
 

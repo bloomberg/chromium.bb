@@ -15,8 +15,10 @@ class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
   MockAudioSourceCallback();
   virtual ~MockAudioSourceCallback();
 
-  MOCK_METHOD2(OnMoreData, int(AudioBus* audio_bus,
-                               uint32 total_bytes_delay));
+  MOCK_METHOD3(OnMoreData,
+               int(AudioBus* audio_bus,
+                   uint32_t total_bytes_delay,
+                   uint32_t frames_skipped));
   MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
 
  private:

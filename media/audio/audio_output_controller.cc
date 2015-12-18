@@ -164,7 +164,7 @@ void AudioOutputController::DoPlay() {
     return;
 
   // Ask for first packet.
-  sync_reader_->UpdatePendingBytes(0);
+  sync_reader_->UpdatePendingBytes(0, 0);
 
   state_ = kPlaying;
 
@@ -217,7 +217,7 @@ void AudioOutputController::DoPause() {
   // Let the renderer know we've stopped.  Necessary to let PPAPI clients know
   // audio has been shutdown.  TODO(dalecurtis): This stinks.  PPAPI should have
   // a better way to know when it should exit PPB_Audio_Shared::Run().
-  sync_reader_->UpdatePendingBytes(std::numeric_limits<uint32_t>::max());
+  sync_reader_->UpdatePendingBytes(std::numeric_limits<uint32_t>::max(), 0);
 
   handler_->OnPaused();
 }
@@ -284,7 +284,8 @@ void AudioOutputController::DoReportError() {
 }
 
 int AudioOutputController::OnMoreData(AudioBus* dest,
-                                      uint32_t total_bytes_delay) {
+                                      uint32_t total_bytes_delay,
+                                      uint32_t frames_skipped) {
   TRACE_EVENT0("audio", "AudioOutputController::OnMoreData");
 
   // Indicate that we haven't wedged (at least not indefinitely, WedgeCheck()
@@ -297,8 +298,8 @@ int AudioOutputController::OnMoreData(AudioBus* dest,
   sync_reader_->Read(dest);
 
   const int frames = dest->frames();
-  sync_reader_->UpdatePendingBytes(base::saturated_cast<uint32_t>(
-      total_bytes_delay + frames * params_.GetBytesPerFrame()));
+  sync_reader_->UpdatePendingBytes(
+      total_bytes_delay + frames * params_.GetBytesPerFrame(), frames_skipped);
 
   if (will_monitor_audio_levels())
     power_monitor_.Scan(*dest, frames);

@@ -128,7 +128,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
             audio_track_recorder_->GetOpusBufferDuration(
                 first_params_.sample_rate()) /
             1000));
-    first_source_.OnMoreData(bus.get(), 0);
+    first_source_.OnMoreData(bus.get(), 0, 0);
     return bus.Pass();
   }
   scoped_ptr<media::AudioBus> GetSecondSourceAudioBus() {
@@ -138,7 +138,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
             audio_track_recorder_->GetOpusBufferDuration(
                 second_params_.sample_rate()) /
             1000));
-    second_source_.OnMoreData(bus.get(), 0);
+    second_source_.OnMoreData(bus.get(), 0, 0);
     return bus.Pass();
   }
 

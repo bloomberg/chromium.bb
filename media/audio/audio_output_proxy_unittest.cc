@@ -124,7 +124,9 @@ class MockAudioManager : public AudioManagerBase {
 
 class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
  public:
-  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) {
+  int OnMoreData(AudioBus* audio_bus,
+                 uint32_t total_bytes_delay,
+                 uint32_t frames_skipped) {
     audio_bus->Zero();
     return audio_bus->frames();
   }

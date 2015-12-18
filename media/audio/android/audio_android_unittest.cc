@@ -121,7 +121,9 @@ void CheckDeviceNames(const AudioDeviceNames& device_names) {
 }
 
 // We clear the data bus to ensure that the test does not cause noise.
-int RealOnMoreData(AudioBus* dest, uint32 total_bytes_delay) {
+int RealOnMoreData(AudioBus* dest,
+                   uint32_t total_bytes_delay,
+                   uint32_t frames_skipped) {
   dest->Zero();
   return dest->frames();
 }
@@ -177,7 +179,9 @@ class FileAudioSource : public AudioOutputStream::AudioSourceCallback {
 
   // Use samples read from a data file and fill up the audio buffer
   // provided to us in the callback.
-  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) override {
+  int OnMoreData(AudioBus* audio_bus,
+                 uint32_t total_bytes_delay,
+                 uint32_t frames_skipped) override {
     bool stop_playing = false;
     int max_size =
         audio_bus->frames() * audio_bus->channels() * kBytesPerSample;
@@ -352,7 +356,9 @@ class FullDuplexAudioSinkSource
   void OnError(AudioInputStream* stream) override {}
 
   // AudioOutputStream::AudioSourceCallback implementation
-  int OnMoreData(AudioBus* dest, uint32 total_bytes_delay) override {
+  int OnMoreData(AudioBus* dest,
+                 uint32_t total_bytes_delay,
+                 uint32_t frames_skipped) override {
     const int size_in_bytes =
         (params_.bits_per_sample() / 8) * dest->frames() * dest->channels();
     EXPECT_EQ(size_in_bytes, params_.GetBytesPerBuffer());
@@ -491,11 +497,11 @@ class AudioAndroidOutputTest : public testing::Test {
     int count = 0;
     MockAudioSourceCallback source;
 
-    EXPECT_CALL(source, OnMoreData(NotNull(), _))
+    EXPECT_CALL(source, OnMoreData(NotNull(), _, 0))
         .Times(AtLeast(num_callbacks))
         .WillRepeatedly(
-             DoAll(CheckCountAndPostQuitTask(&count, num_callbacks, loop()),
-                   Invoke(RealOnMoreData)));
+            DoAll(CheckCountAndPostQuitTask(&count, num_callbacks, loop()),
+                  Invoke(RealOnMoreData)));
     EXPECT_CALL(source, OnError(audio_output_stream_)).Times(0);
 
     OpenAndStartAudioOutputStreamOnAudioThread(&source);
@@ -895,7 +901,7 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
   FileAudioSink sink(&event, in_params, file_name);
   MockAudioSourceCallback source;
 
-  EXPECT_CALL(source, OnMoreData(NotNull(), _))
+  EXPECT_CALL(source, OnMoreData(NotNull(), _, 0))
       .WillRepeatedly(Invoke(RealOnMoreData));
   EXPECT_CALL(source, OnError(audio_output_stream_)).Times(0);
 

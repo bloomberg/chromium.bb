@@ -32,7 +32,9 @@ using ::testing::Return;
 
 namespace media {
 
-static int ClearData(AudioBus* audio_bus, uint32 total_bytes_delay) {
+static int ClearData(AudioBus* audio_bus,
+                     uint32_t total_bytes_delay,
+                     uint32_t frames_skipped) {
   audio_bus->Zero();
   return audio_bus->frames();
 }
@@ -46,7 +48,9 @@ class TestSourceBasic : public AudioOutputStream::AudioSourceCallback {
         had_error_(0) {
   }
   // AudioSourceCallback::OnMoreData implementation:
-  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) override {
+  int OnMoreData(AudioBus* audio_bus,
+                 uint32_t total_bytes_delay,
+                 uint32_t frames_skipped) override {
     ++callback_count_;
     // Touch the channel memory value to make sure memory is good.
     audio_bus->Zero();
@@ -80,9 +84,11 @@ class TestSourceLaggy : public TestSourceBasic {
   explicit TestSourceLaggy(int lag_in_ms)
       : lag_in_ms_(lag_in_ms) {
   }
-  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) override {
+  int OnMoreData(AudioBus* audio_bus,
+                 uint32_t total_bytes_delay,
+                 uint32_t frames_skipped) override {
     // Call the base, which increments the callback_count_.
-    TestSourceBasic::OnMoreData(audio_bus, total_bytes_delay);
+    TestSourceBasic::OnMoreData(audio_bus, total_bytes_delay, frames_skipped);
     if (callback_count() > kMaxNumBuffers) {
       ::Sleep(lag_in_ms_);
     }
@@ -474,22 +480,21 @@ TEST(WinAudioTest, PCMWaveStreamPendingBytes) {
   // pending bytes will go down and eventually read zero.
   InSequence s;
 
-  EXPECT_CALL(source, OnMoreData(NotNull(), 0))
-      .WillOnce(Invoke(ClearData));
+  EXPECT_CALL(source, OnMoreData(NotNull(), 0, 0)).WillOnce(Invoke(ClearData));
 
   // Note: If AudioManagerWin::NumberOfWaveOutBuffers() ever changes, or if this
   // test is run on Vista, these expectations will fail.
-  EXPECT_CALL(source, OnMoreData(NotNull(), bytes_100_ms))
+  EXPECT_CALL(source, OnMoreData(NotNull(), bytes_100_ms, 0))
       .WillOnce(Invoke(ClearData));
-  EXPECT_CALL(source, OnMoreData(NotNull(), 2 * bytes_100_ms))
+  EXPECT_CALL(source, OnMoreData(NotNull(), 2 * bytes_100_ms, 0))
       .WillOnce(Invoke(ClearData));
-  EXPECT_CALL(source, OnMoreData(NotNull(), 2 * bytes_100_ms))
+  EXPECT_CALL(source, OnMoreData(NotNull(), 2 * bytes_100_ms, 0))
       .Times(AnyNumber())
       .WillRepeatedly(Return(0));
-  EXPECT_CALL(source, OnMoreData(NotNull(), bytes_100_ms))
+  EXPECT_CALL(source, OnMoreData(NotNull(), bytes_100_ms, 0))
       .Times(AnyNumber())
       .WillRepeatedly(Return(0));
-  EXPECT_CALL(source, OnMoreData(NotNull(), 0))
+  EXPECT_CALL(source, OnMoreData(NotNull(), 0, 0))
       .Times(AnyNumber())
       .WillRepeatedly(Return(0));
 
@@ -514,7 +519,9 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
   ~SyncSocketSource() override {}
 
   // AudioSourceCallback::OnMoreData implementation:
-  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) override {
+  int OnMoreData(AudioBus* audio_bus,
+                 uint32_t total_bytes_delay,
+                 uint32_t frames_skipped) override {
     socket_->Send(&total_bytes_delay, sizeof(total_bytes_delay));
     uint32 size = socket_->Receive(data_.get(), data_size_);
     DCHECK_EQ(static_cast<size_t>(size) % sizeof(*audio_bus_->channel(0)), 0U);
@@ -565,7 +572,7 @@ DWORD __stdcall SyncSocketThread(void* context) {
     if (ctx.socket->Receive(&total_bytes_delay, sizeof(total_bytes_delay)) == 0)
       break;
     if ((times > 0) && (total_bytes_delay < 1000)) __debugbreak();
-    sine.OnMoreData(audio_bus.get(), total_bytes_delay);
+    sine.OnMoreData(audio_bus.get(), total_bytes_delay, 0);
     ctx.socket->Send(data.get(), ctx.packet_size_bytes);
     ++times;
   }
