@@ -6,7 +6,7 @@ background-attachment: scroll
 background-clip: border-box
     initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
 background-color: rgb(128, 128, 128)
-    grey - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+    gray - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
     OVERLOADED black - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:1
     OVERLOADED green - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:1
 background-image: none

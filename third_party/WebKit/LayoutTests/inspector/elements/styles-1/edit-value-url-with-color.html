@@ -9,7 +9,7 @@ function test()
     var maxIndex = 11;
     var idIndex = 1;
 
-    WebInspector.ColorSwatchPopoverIcon._colorFormat = function() {
+    WebInspector.Color.detectColorFormat = function() {
         return WebInspector.Color.Format.RGB;
     };
 
