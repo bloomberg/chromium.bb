@@ -12,7 +12,6 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.ColorPickerDialog;
 import org.chromium.ui.ColorSuggestion;
 import org.chromium.ui.OnColorChangedListener;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * ColorChooserAndroid communicates with the java ColorPickerDialog and the
@@ -52,11 +51,8 @@ public class ColorChooserAndroid {
             ContentViewCore contentViewCore,
             int initialColor,
             ColorSuggestion[] suggestions) {
-        if (contentViewCore.getWindowAndroid() == null) return null;
-        Context windowContext = contentViewCore.getWindowAndroid().getContext().get();
-        if (WindowAndroid.activityFromContext(windowContext) == null) return null;
         ColorChooserAndroid chooser = new ColorChooserAndroid(nativeColorChooserAndroid,
-                windowContext, initialColor, suggestions);
+                contentViewCore.getContext(), initialColor, suggestions);
         chooser.openColorChooser();
         return chooser;
     }

@@ -12,7 +12,6 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -124,24 +123,6 @@ public class WindowAndroid {
             }
         }
     };
-
-    /**
-     * Extract the activity if the given Context either is or wraps one.
-     * Only retrieve the base context if the supplied context is a {@link ContextWrapper} but not
-     * an Activity, given that Activity is already a subclass of ContextWrapper.
-     * @param context The context to check.
-     * @return The {@link Activity} that is extracted through the given Context.
-     */
-    public static Activity activityFromContext(Context context) {
-        if (context instanceof Activity) {
-            return ((Activity) context);
-        } else if (context instanceof ContextWrapper) {
-            context = ((ContextWrapper) context).getBaseContext();
-            return activityFromContext(context);
-        } else {
-            return null;
-        }
-    }
 
     /**
      * @return true if onVSync handler is executing.

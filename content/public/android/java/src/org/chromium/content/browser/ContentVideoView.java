@@ -26,7 +26,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * This class implements accelerated fullscreen video playback using surface view.
@@ -228,7 +227,7 @@ public class ContentVideoView extends FrameLayout
 
         mCurrentState = STATE_ERROR;
 
-        if (WindowAndroid.activityFromContext(getContext()) == null) {
+        if (ContentViewCore.activityFromContext(getContext()) == null) {
             Log.w(TAG, "Unable to show alert dialog because it requires an activity context");
             return;
         }
