@@ -19,8 +19,6 @@ declare_args() {
   # Set to true to enable the clang plugin that checks the usage of the Blink
   # garbage-collection infrastructure during compilation.
   blink_gc_plugin = true
-
-  blink_asserts_always_on = false
 }
 
 # Whether Android ARM or x86 build uses OpenMAX DL FFT. Currently only
@@ -91,9 +89,6 @@ if (use_default_render_theme) {
 }
 if (enable_oilpan) {
   feature_defines_list += [ "ENABLE_OILPAN=1" ]
-}
-if (blink_asserts_always_on) {
-  feature_defines_list += [ "ENABLE_ASSERT=1" ]
 }
 
 # feature_defines_string -------------------------------------------------------
