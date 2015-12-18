@@ -10,14 +10,10 @@ namespace base {
 namespace trace_event {
 
 AllocationRegister::AllocationRegister()
-    : AllocationRegister(kNumBuckets * kNumCellsPerBucket) {}
-
-AllocationRegister::AllocationRegister(uint32_t num_cells)
-    // Reserve enough address space to store |num_cells_| entries if necessary,
+    // Reserve enough address space to store |kNumCells| entries if necessary,
     // with a guard page after it to crash the program when attempting to store
     // more entries.
-    : num_cells_(num_cells),
-      cells_(static_cast<Cell*>(AllocateVirtualMemory(num_cells_ *
+    : cells_(static_cast<Cell*>(AllocateVirtualMemory(kNumCells *
                                                       sizeof(Cell)))),
       buckets_(static_cast<CellIndex*>(
           AllocateVirtualMemory(kNumBuckets * sizeof(CellIndex)))),
@@ -27,10 +23,9 @@ AllocationRegister::AllocationRegister(uint32_t num_cells)
       free_list_(0),
       next_unused_cell_(1) {}
 
-
 AllocationRegister::~AllocationRegister() {
   FreeVirtualMemory(buckets_, kNumBuckets * sizeof(CellIndex));
-  FreeVirtualMemory(cells_, num_cells_ * sizeof(Cell));
+  FreeVirtualMemory(cells_, kNumCells * sizeof(Cell));
 }
 
 void AllocationRegister::Insert(void* address,
@@ -149,7 +144,7 @@ AllocationRegister::CellIndex AllocationRegister::GetFreeCell() {
   // the simplest solution is to just allocate a humongous chunk of address
   // space.
 
-  DCHECK_LT(next_unused_cell_, num_cells_ + 1);
+  DCHECK_LT(next_unused_cell_, kNumCells + 1);
 
   return idx;
 }
