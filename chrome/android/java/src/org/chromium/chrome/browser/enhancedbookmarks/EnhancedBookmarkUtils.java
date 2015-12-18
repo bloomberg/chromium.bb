@@ -82,17 +82,22 @@ public class EnhancedBookmarkUtils {
     /**
      * Saves an offline copy for the specified tab that is bookmarked. A snackbar will be shown to
      * notify the user.
-     * @param bookmarkId The bookmark ID for the tab.
+     * @param id The bookmark ID for the tab.
      * @param bookmarkModel The enhanced bookmark model.
      * @param tab The bookmarked tab to save an offline copy.
      * @param snackbarManager The SnackbarManager used to show the snackbar.
      * @param activity Current activity.
      */
-    public static void saveBookmarkOffline(long bookmarkId, EnhancedBookmarksModel bookmarkModel,
+    public static void saveBookmarkOffline(long id, EnhancedBookmarksModel bookmarkModel,
             Tab tab, final SnackbarManager snackbarManager, Activity activity) {
-        assert bookmarkId != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
-        bookmarkModel.saveOfflinePage(new BookmarkId(bookmarkId, BookmarkType.NORMAL),
-                tab.getWebContents(),
+        assert id != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
+        BookmarkId bookmarkId = new BookmarkId(id, BookmarkType.NORMAL);
+
+        // Bail out if the ID no longer points to a valid bookmark, which might happen if the user
+        // deleted the bookmark while the page was loading.
+        if (!bookmarkModel.doesBookmarkExist(bookmarkId)) return;
+
+        bookmarkModel.saveOfflinePage(bookmarkId, tab.getWebContents(),
                 createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
     }
 
