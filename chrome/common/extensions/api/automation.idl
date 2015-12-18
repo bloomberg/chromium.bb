@@ -187,7 +187,7 @@
     collapsed,
     default,
     disabled,  // ui/views only
-    editable,  // ui/views only
+    editable,
     enabled,   // content only
     expanded,
     focusable,
@@ -204,6 +204,7 @@
     protected,
     readOnly,
     required,
+    richlyEditable,
     selectable,
     selected,
     vertical,

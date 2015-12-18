@@ -35,6 +35,7 @@ chrome.automation.EventType = {
   blur: '',
   checkedStateChanged: '',
   childrenChanged: '',
+  documentSelectionChanged: '',
   focus: '',
   hide: '',
   hover: '',
@@ -214,12 +215,14 @@ chrome.automation.StateType = {
   indeterminate: '',
   invisible: '',
   linked: '',
+  multiline: '',
   multiselectable: '',
   offscreen: '',
   pressed: '',
   protected: '',
   readOnly: '',
   required: '',
+  richlyEditable: '',
   selectable: '',
   selected: '',
   vertical: '',
@@ -259,6 +262,18 @@ chrome.automation.FindParams;
  * @constructor
  */
 chrome.automation.AutomationEvent = function() {};
+
+/**
+ * @type {!chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationEvent.prototype.target;
+
+/**
+ * @type {!chrome.automation.EventType}
+ */
+chrome.automation.AutomationEvent.prototype.type;
+
+chrome.automation.AutomationEvent.prototype.stopPropagation = function() {};
 
 /**
  * @typedef {{
@@ -514,3 +529,28 @@ chrome.automation.AutomationNode.prototype.find = function(findParams) {};
  * @type {string}
  */
 chrome.automation.AutomationNode.prototype.inputType;
+
+/**
+ * @type {(chrome.automation.AutomationNode|undefined)}
+ */
+chrome.automation.AutomationNode.prototype.anchorObject;
+
+/**
+ * @type {(number|undefined)}
+ */
+chrome.automation.anchorOffset;
+
+/**
+ * @type {(chrome.automation.AutomationNode|undefined)}
+ */
+chrome.automation.AutomationNode.prototype.focusObject;
+
+/**
+ * @type {(Array<number>|undefined)}
+ */
+chrome.automation.AutomationNode.prototype.lineBreaks;
+
+/**
+ * @type {(number|undefined)}
+ */
+chrome.automation.focusOffset;
