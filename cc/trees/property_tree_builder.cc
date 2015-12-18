@@ -301,6 +301,8 @@ bool AddTransformNodeIfNeeded(
     layer->set_should_flatten_transform_from_property_tree(
         data_from_ancestor.should_flatten);
     layer->SetTransformTreeIndex(parent_index);
+    if (layer->mask_layer())
+      layer->mask_layer()->SetTransformTreeIndex(parent_index);
     return false;
   }
 
@@ -308,6 +310,8 @@ bool AddTransformNodeIfNeeded(
 
   TransformNode* node = data_for_children->transform_tree->back();
   layer->SetTransformTreeIndex(node->id);
+  if (layer->mask_layer())
+    layer->mask_layer()->SetTransformTreeIndex(node->id);
 
   node->data.scrolls = is_scrollable;
   node->data.flattens_inherited_transform = data_for_children->should_flatten;

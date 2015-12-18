@@ -9276,6 +9276,36 @@ TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
   EXPECT_EQ(gfx::Rect(-10, -10, 30, 30), render_surface2->clip_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, MaskLayerScreenSpaceTransform) {
+  // Tests that the mask layer gets its owning layer's screen space transform.
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(root);
+
+  const gfx::Transform identity_matrix;
+  gfx::Transform transform;
+  transform.Translate(10, 10);
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, transform, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(30, 30), true, false, false);
+  root->SetDrawsContent(true);
+  child->SetDrawsContent(false);
+  child->SetMaskLayer(LayerImpl::Create(root->layer_tree_impl(), 100));
+  ExecuteCalculateDrawProperties(root);
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
+                                  child->mask_layer()->ScreenSpaceTransform());
+  transform.Translate(10, 10);
+  child->SetTransform(transform);
+  child->SetDrawsContent(true);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
+                                  child->mask_layer()->ScreenSpaceTransform());
+}
+
 TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
   LayerImpl* root = root_layer();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(root);

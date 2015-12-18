@@ -2600,6 +2600,8 @@ static void ComputeMaskLayerDrawProperties(const LayerImpl* layer,
   mask_layer_draw_properties.visible_layer_rect = gfx::Rect(layer->bounds());
   mask_layer_draw_properties.target_space_transform =
       layer->draw_properties().target_space_transform;
+  mask_layer_draw_properties.screen_space_transform =
+      layer->draw_properties().screen_space_transform;
   mask_layer_draw_properties.maximum_animation_contents_scale =
       layer->draw_properties().maximum_animation_contents_scale;
   mask_layer_draw_properties.starting_animation_contents_scale =
