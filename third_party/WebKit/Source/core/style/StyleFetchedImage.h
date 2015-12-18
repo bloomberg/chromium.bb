@@ -63,6 +63,11 @@ public:
     bool knownToBeOpaque(const LayoutObject*) const override;
     ImageResource* cachedImage() const override;
 
+#if ENABLE(OILPAN)
+    // Promptly remove as a ImageResource client.
+    EAGERLY_FINALIZE();
+    DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
+#endif
     DECLARE_VIRTUAL_TRACE();
 
 private:
