@@ -37,10 +37,6 @@ namespace net {
 
 class AddressList;
 
-// This is a "forward declaration" to avoid including ip_address_number.h
-// Keep this in sync.
-typedef std::vector<unsigned char> IPAddressNumber;
-
 #if defined(OS_WIN)
 // Bluetooth address size. Windows Bluetooth is supported via winsock.
 static const size_t kBluetoothAddressSize = 6;

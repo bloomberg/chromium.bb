@@ -23,8 +23,7 @@ namespace net {
 // TODO(Martijnc): Remove the IPAddressNumber typedef. New code should use
 // IPAddress instead and existing code should be switched over.
 // https://crbug.com/496258
-typedef std::vector<unsigned char>
-    IPAddressNumber;  // This is also duplicated in net_util.h
+typedef std::vector<unsigned char> IPAddressNumber;
 typedef std::vector<IPAddressNumber> IPAddressList;
 
 static const size_t kIPv4AddressSize = 4;
