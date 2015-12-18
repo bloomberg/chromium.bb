@@ -109,8 +109,14 @@ TEST_F(SpdyServerPropertiesTest, Initialize) {
   HostPortPair spdy_server_google("www.google.com", 443);
   std::string spdy_server_g = spdy_server_google.ToString();
 
+  HostPortPair spdy_server_photos("photos.google.com", 443);
+  std::string spdy_server_p = spdy_server_photos.ToString();
+
   HostPortPair spdy_server_docs("docs.google.com", 443);
   std::string spdy_server_d = spdy_server_docs.ToString();
+
+  HostPortPair spdy_server_mail("mail.google.com", 443);
+  std::string spdy_server_m = spdy_server_mail.ToString();
 
   // Check by initializing NULL spdy servers.
   impl_.InitializeSpdyServers(NULL, true);
@@ -121,31 +127,80 @@ TEST_F(SpdyServerPropertiesTest, Initialize) {
   impl_.InitializeSpdyServers(&spdy_servers, true);
   EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_google));
 
-  // Check by initializing with www.google.com:443 spdy server.
-  std::vector<std::string> spdy_servers1;
-  spdy_servers1.push_back(spdy_server_g);
-  impl_.InitializeSpdyServers(&spdy_servers1, true);
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
-
-  // Check by initializing with www.google.com:443 and docs.google.com:443 spdy
+  // Check by initializing www.google.com:443 and photos.google.com:443 as spdy
   // servers.
-  std::vector<std::string> spdy_servers2;
-  spdy_servers2.push_back(spdy_server_g);
-  spdy_servers2.push_back(spdy_server_d);
-  impl_.InitializeSpdyServers(&spdy_servers2, true);
+  std::vector<std::string> spdy_servers1;
+  spdy_servers1.push_back(spdy_server_g);  // Will be 0th index.
+  spdy_servers1.push_back(spdy_server_p);  // Will be 1st index.
+  impl_.InitializeSpdyServers(&spdy_servers1, true);
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_photos));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
 
   // Verify spdy_server_g and spdy_server_d are in the list in the same order.
   base::ListValue spdy_server_list;
   impl_.GetSpdyServerList(&spdy_server_list, kMaxSupportsSpdyServerHosts);
   EXPECT_EQ(2U, spdy_server_list.GetSize());
   std::string string_value_g;
+  ASSERT_TRUE(spdy_server_list.GetString(0, &string_value_g));  // 0th index.
+  ASSERT_EQ(spdy_server_g, string_value_g);
+  std::string string_value_p;
+  ASSERT_TRUE(spdy_server_list.GetString(1, &string_value_p));  // 1st index.
+  ASSERT_EQ(spdy_server_p, string_value_p);
+
+  // Check by initializing mail.google.com:443 and docs.google.com:443 as spdy
+  // servers.
+  std::vector<std::string> spdy_servers2;
+  spdy_servers2.push_back(spdy_server_m);  // Will be 2nd index.
+  spdy_servers2.push_back(spdy_server_d);  // Will be 3rd index.
+  impl_.InitializeSpdyServers(&spdy_servers2, true);
+
+  // Verify all the servers are in the list in the same order.
+  spdy_server_list.Clear();
+  impl_.GetSpdyServerList(&spdy_server_list, kMaxSupportsSpdyServerHosts);
+  EXPECT_EQ(4U, spdy_server_list.GetSize());
+
   ASSERT_TRUE(spdy_server_list.GetString(0, &string_value_g));
   ASSERT_EQ(spdy_server_g, string_value_g);
+  ASSERT_TRUE(spdy_server_list.GetString(1, &string_value_p));
+  ASSERT_EQ(spdy_server_p, string_value_p);
+  std::string string_value_m;
+  ASSERT_TRUE(spdy_server_list.GetString(2, &string_value_m));
+  ASSERT_EQ(spdy_server_m, string_value_m);
   std::string string_value_d;
-  ASSERT_TRUE(spdy_server_list.GetString(1, &string_value_d));
+  ASSERT_TRUE(spdy_server_list.GetString(3, &string_value_d));
   ASSERT_EQ(spdy_server_d, string_value_d);
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
+
   EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_docs));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_mail));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_photos));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
+
+  // Verify new data that is being initialized overwrites what is already in the
+  // memory and also verify the recency list order.
+  //
+  // Change supports SPDY value for photos and mails servers and order of
+  // initalization shouldn't matter.
+  std::vector<std::string> spdy_servers3;
+  spdy_servers3.push_back(spdy_server_m);
+  spdy_servers3.push_back(spdy_server_p);
+  impl_.InitializeSpdyServers(&spdy_servers3, false);
+
+  // Verify the entries are in the same order.
+  ASSERT_TRUE(spdy_server_list.GetString(0, &string_value_g));
+  ASSERT_EQ(spdy_server_g, string_value_g);
+  ASSERT_TRUE(spdy_server_list.GetString(1, &string_value_p));
+  ASSERT_EQ(spdy_server_p, string_value_p);
+  ASSERT_TRUE(spdy_server_list.GetString(2, &string_value_m));
+  ASSERT_EQ(spdy_server_m, string_value_m);
+  ASSERT_TRUE(spdy_server_list.GetString(3, &string_value_d));
+  ASSERT_EQ(spdy_server_d, string_value_d);
+
+  // Verify photos and mail servers don't support SPDY and other servers support
+  // SPDY.
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_docs));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_mail));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_photos));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
 }
 
 TEST_F(SpdyServerPropertiesTest, SupportsRequestPriorityTest) {

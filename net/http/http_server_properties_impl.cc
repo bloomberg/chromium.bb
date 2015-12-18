@@ -47,10 +47,24 @@ void HttpServerPropertiesImpl::InitializeSpdyServers(
   DCHECK(CalledOnValidThread());
   if (!spdy_servers)
     return;
+
   // Add the entries from persisted data.
+  SpdyServerHostPortMap spdy_servers_map(SpdyServerHostPortMap::NO_AUTO_EVICT);
   for (std::vector<std::string>::reverse_iterator it = spdy_servers->rbegin();
        it != spdy_servers->rend(); ++it) {
-    spdy_servers_map_.Put(*it, support_spdy);
+    spdy_servers_map.Put(*it, support_spdy);
+  }
+
+  // |spdy_servers_map| will have the memory cache.
+  spdy_servers_map_.Swap(spdy_servers_map);
+
+  // Add the entries from the memory cache.
+  for (SpdyServerHostPortMap::reverse_iterator it = spdy_servers_map.rbegin();
+       it != spdy_servers_map.rend(); ++it) {
+    // Add the entry if it is not in the cache, otherwise move it to the front
+    // of recency list.
+    if (spdy_servers_map_.Get(it->first) == spdy_servers_map_.end())
+      spdy_servers_map_.Put(it->first, it->second);
   }
 }
 
