@@ -165,7 +165,7 @@ bool UsesV8Memory(int process_type) {
 
 ChildProcessTask::ChildProcessTask(const content::ChildProcessData& data)
     : Task(GetLocalizedTitle(data.name, data.process_type),
-           base::UTF16ToASCII(data.name),
+           base::UTF16ToUTF8(data.name),
            GetDefaultIcon(),
            data.handle),
       process_resources_sampler_(CreateProcessResourcesSampler(data.id)),
