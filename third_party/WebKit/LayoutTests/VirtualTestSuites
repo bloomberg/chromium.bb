@@ -58,13 +58,6 @@
              "--enable-prefer-compositing-to-lcd-text"]
   },
   {
-    "prefix": "threaded_animation_timelines",
-    "base": "fast/scroll-behavior",
-    "args": ["--enable-threaded-compositing",
-             "--enable-prefer-compositing-to-lcd-text",
-             "--enable-compositor-animation-timelines"]
-  },
-  {
     "prefix": "stable",
     "base": "webexposed",
     "args": ["--stable-release-mode"]

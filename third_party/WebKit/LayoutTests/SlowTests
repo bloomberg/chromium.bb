@@ -128,7 +128,6 @@ crbug.com/248938 virtual/threaded/animations/3d/replace-filling-transform.html [
 crbug.com/311482 virtual/threaded/animations/interpolation/filter-interpolation.html [ Slow ]
 crbug.com/311482 virtual/threaded/animations/keyframes-unprefixed-03.html [ Slow ]
 crbug.com/243871 virtual/threaded/fast/scroll-behavior/ [ Slow ]
-crbug.com/243871 virtual/threaded_animation_timelines/fast/scroll-behavior/ [ Slow ]
 
 crbug.com/258896 animations/animation-direction-reverse-fill-mode.html [ Slow ]
 

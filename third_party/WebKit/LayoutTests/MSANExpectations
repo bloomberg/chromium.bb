@@ -28,7 +28,6 @@ crbug.com/420606 [ Linux ] virtual/sharedarraybuffer/fast/workers/worker-constru
 
 # Flaky under MSan (hang forever).
 crbug.com/422982 [ Linux ] virtual/threaded [ Skip ]
-crbug.com/487880 [ Linux ] virtual/threaded_animation_timelines/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 
 crbug.com/450639 [ Linux ] inspector/tracing/animations.html [ Timeout ]
 crbug.com/450639 [ Linux ] virtual/deferred/inspector/tracing/animations.html [ Timeout ]
@@ -63,7 +62,6 @@ crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow
 # Flaky under MSAN (hang forever)
 crbug.com/456525 [ Linux ] inspector/sources/debugger [ Skip ]
 
-crbug.com/243871 [ Linux ] virtual/threaded_animation_timelines/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Timeout Pass ]
 crbug.com/517704 [ Linux ] imported/web-platform-tests/encoding/api-invalid-label.html [ Timeout Pass ]
 
 # Times out on MSAN

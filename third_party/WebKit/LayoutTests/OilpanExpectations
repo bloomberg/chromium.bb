@@ -27,7 +27,6 @@ crbug.com/410145 [ Win ] fast/writing-mode/english-lr-text.html [ Failure ]
 crbug.com/377567 [ Debug ] editing/selection/extend-selection-character.html [ Timeout Pass ]
 crbug.com/377567 [ Debug ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Timeout Pass ]
 crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pass ]
-crbug.com/243871 [ Win Debug ] virtual/threaded_animation_timelines/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Timeout Pass ]
 
 # Times out on the Mac Debug Oilpan bot.
 crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [ Timeout ]

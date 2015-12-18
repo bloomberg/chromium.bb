@@ -148,12 +148,6 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scro
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
-crbug.com/410974 virtual/threaded_animation_timelines/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
-crbug.com/410974 virtual/threaded_animation_timelines/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
-crbug.com/410974 virtual/threaded_animation_timelines/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]
-crbug.com/410974 virtual/threaded_animation_timelines/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
-crbug.com/410974 virtual/threaded_animation_timelines/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
-
 crbug.com/518972 [ Linux XP ] http/tests/navigation/navigation-redirect-schedule-crash.html [ Failure Pass ]
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Failure Pass ]
 crbug.com/518974 http/tests/navigatorconnect/postmessage.html [ Failure Pass Timeout ]
@@ -218,7 +212,6 @@ crbug.com/248938 [ Win ] virtual/threaded/animations/change-keyframes.html [ Pas
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/503874 http/tests/inspector/sources/debugger/worker-debugging-script-mapping.html [ Pass Failure ]
 crbug.com/513143 virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
-crbug.com/513143 virtual/threaded_animation_timelines/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/display-none-terminates-animation.html  [ Pass Failure ]
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/delay-start-event.html [ Pass Failure ]
@@ -840,11 +833,9 @@ crbug.com/440452 virtual/display_list_2d_canvas/fast/canvas/canvas-partial-inval
 crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
-crbug.com/364614 [ Mac ] virtual/threaded_animation_timelines/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
-crbug.com/364614 [ Mac ] virtual/threaded_animation_timelines/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
 
 crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-change-color.html [ Failure ]
 crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-move.html [ Failure ]
