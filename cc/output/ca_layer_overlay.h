@@ -29,6 +29,8 @@ class CC_EXPORT CALayerOverlay {
   float opacity;
   // The background color property for the CALayer.
   SkColor background_color;
+  // The edge anti-aliasing mask property for the CALayer.
+  unsigned edge_aa_mask;
   // The bounds for the CALayer in pixels.
   gfx::SizeF bounds_size;
   // The transform to apply to the CALayer.

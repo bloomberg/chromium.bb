@@ -11,6 +11,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/resource_provider.h"
+#include "gpu/GLES2/gl2extchromium.h"
 
 namespace cc {
 
@@ -127,6 +128,16 @@ CALayerResult FromDrawQuad(ResourceProvider* resource_provider,
     *skip = true;
     return CA_LAYER_SUCCESS;
   }
+
+  // Enable edge anti-aliasing only on layer boundaries.
+  if (quad->IsLeftEdge())
+    ca_layer_overlay->edge_aa_mask |= GL_CA_LAYER_EDGE_LEFT_CHROMIUM;
+  if (quad->IsRightEdge())
+    ca_layer_overlay->edge_aa_mask |= GL_CA_LAYER_EDGE_RIGHT_CHROMIUM;
+  if (quad->IsBottomEdge())
+    ca_layer_overlay->edge_aa_mask |= GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM;
+  if (quad->IsTopEdge())
+    ca_layer_overlay->edge_aa_mask |= GL_CA_LAYER_EDGE_TOP_CHROMIUM;
 
   // Check rect clipping.
   gfx::RectF quad_rect(quad->rect);

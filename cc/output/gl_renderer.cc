@@ -3542,7 +3542,6 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
         ca_layer_overlay.contents_rect.width(),
         ca_layer_overlay.contents_rect.height(),
     };
-    GLuint edge_aa_mask = 0;
     GLfloat bounds_rect[4] = {
         0, 0, ca_layer_overlay.bounds_size.width(),
         ca_layer_overlay.bounds_size.height(),
@@ -3556,8 +3555,8 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
     ca_layer_overlay.transform.asColMajorf(transform);
     gl_->ScheduleCALayerCHROMIUM(
         texture_id, contents_rect, ca_layer_overlay.opacity,
-        ca_layer_overlay.background_color, edge_aa_mask, bounds_rect,
-        is_clipped, clip_rect, sorting_context_id, transform);
+        ca_layer_overlay.background_color, ca_layer_overlay.edge_aa_mask,
+        bounds_rect, is_clipped, clip_rect, sorting_context_id, transform);
   }
 }
 

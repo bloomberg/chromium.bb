@@ -103,7 +103,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
     transform.Translate(pixel_frame_rect.x(), pixel_frame_rect.y());
     return linked_ptr<OverlayPlane>(
         new OverlayPlane(z_order, io_surface_id, io_surface, contents_rect, 1.f,
-                         base::ScopedCFTypeRef<CGColorRef>(),
+                         base::ScopedCFTypeRef<CGColorRef>(), 0,
                          pixel_frame_rect.size(), transform, pixel_frame_rect));
   }
 
@@ -114,13 +114,15 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
       const gfx::RectF& contents_rect,
       float opacity,
       base::ScopedCFTypeRef<CGColorRef> background_color,
+      unsigned int edge_aa_mask,
       const gfx::SizeF& bounds_size,
       const gfx::Transform& transform) {
     gfx::RectF pixel_frame_rect = gfx::RectF(bounds_size);
     transform.TransformRect(&pixel_frame_rect);
     return linked_ptr<OverlayPlane>(new OverlayPlane(
         z_order, io_surface_id, io_surface, contents_rect, opacity,
-        background_color, bounds_size, transform, pixel_frame_rect));
+        background_color, edge_aa_mask, bounds_size, transform,
+        pixel_frame_rect));
   }
 
   ~OverlayPlane() { DCHECK(!ca_layer); }
@@ -134,6 +136,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
   const gfx::RectF contents_rect;
   float opacity;
   const base::ScopedCFTypeRef<CGColorRef> background_color;
+  unsigned int edge_aa_mask;
   const gfx::SizeF bounds_size;
   const gfx::Transform transform;
 
@@ -168,6 +171,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
       } else {
         [ca_layer setBackgroundColor:CGColorGetConstantColor(kCGColorClear)];
       }
+      [ca_layer setEdgeAntialiasingMask:edge_aa_mask];
 
       [ca_layer setAnchorPoint:CGPointZero];
       [ca_layer setBounds:gfx::RectF(bounds_size).ToCGRect()];
@@ -214,6 +218,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
                const gfx::RectF& contents_rect,
                float opacity,
                base::ScopedCFTypeRef<CGColorRef> background_color,
+               unsigned edge_aa_mask,
                const gfx::SizeF& bounds_size,
                const gfx::Transform& transform,
                const gfx::RectF& pixel_frame_rect)
@@ -223,6 +228,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
         contents_rect(contents_rect),
         opacity(opacity),
         background_color(background_color),
+        edge_aa_mask(edge_aa_mask),
         bounds_size(bounds_size),
         transform(transform),
         pixel_frame_rect(pixel_frame_rect),
@@ -787,7 +793,8 @@ bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
 
   pending_overlay_planes_.push_back(OverlayPlane::CreateWithTransform(
       next_ca_layer_z_order_++, io_surface_id, io_surface, contents_rect,
-      opacity, srgb_background_color, bounds_rect.size(), transform));
+      opacity, srgb_background_color, edge_aa_mask, bounds_rect.size(),
+      transform));
   return true;
 }
 
