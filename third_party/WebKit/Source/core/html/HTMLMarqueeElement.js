@@ -264,24 +264,24 @@ privateScriptController.installClass('HTMLMarqueeElement', function(HTMLMarqueeE
             switch (direction) {
             case kDirectionLeft:
             default:
-                parameters.transformBegin = 'translateX(' + innerWidth + 'px)';
-                parameters.transformEnd = 'translateX(0)';
-                parameters.distance = innerWidth;
+                parameters.transformBegin = 'translateX(' + (innerWidth >= 0 ? innerWidth : 0) + 'px)';
+                parameters.transformEnd = 'translateX(' + (innerWidth >= 0 ? 0 : innerWidth) + 'px)';
+                parameters.distance = Math.abs(innerWidth);
                 break;
             case kDirectionRight:
-                parameters.transformBegin = 'translateX(0)';
-                parameters.transformEnd = 'translateX(' + innerWidth + 'px)';
-                parameters.distance = innerWidth;
+                parameters.transformBegin = 'translateX(' + (innerWidth >= 0 ? 0 : innerWidth) + 'px)';
+                parameters.transformEnd = 'translateX(' + (innerWidth >= 0 ? innerWidth : 0) + 'px)';
+                parameters.distance = Math.abs(innerWidth);
                 break;
             case kDirectionUp:
-                parameters.transformBegin = 'translateY(' + innerHeight + 'px)';
-                parameters.transformEnd = 'translateY(0)';
-                parameters.distance = innerHeight;
+                parameters.transformBegin = 'translateY(' + (innerHeight >= 0 ? innerHeight : 0) + 'px)';
+                parameters.transformEnd = 'translateY(' + (innerHeight >= 0 ? 0 : innerHeight) + 'px)';
+                parameters.distance = Math.abs(innerHeight);
                 break;
             case kDirectionDown:
-                parameters.transformBegin = 'translateY(0)';
-                parameters.transformEnd = 'translateY(' + innerHeight + 'px)';
-                parameters.distance = innerHeight;
+                parameters.transformBegin = 'translateY(' + (innerHeight >= 0 ? 0 : innerHeight) + 'px)';
+                parameters.transformEnd = 'translateY(' + (innerHeight >= 0 ? innerHeight : 0) + 'px)';
+                parameters.distance = Math.abs(innerHeight);
                 break;
             }
 
