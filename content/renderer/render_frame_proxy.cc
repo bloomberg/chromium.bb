@@ -64,11 +64,22 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     int opener_routing_id,
     int parent_routing_id,
     const FrameReplicationState& replicated_state) {
+  RenderFrameProxy* parent = nullptr;
+  if (parent_routing_id != MSG_ROUTING_NONE) {
+    parent = RenderFrameProxy::FromRoutingID(parent_routing_id);
+    // It is possible that the parent proxy has been detached in this renderer
+    // process, just as the parent's real frame was creating this child frame.
+    // In this case, do not create the proxy. See https://crbug.com/568670.
+    if (!parent)
+      return nullptr;
+  }
+
   scoped_ptr<RenderFrameProxy> proxy(
       new RenderFrameProxy(routing_id, MSG_ROUTING_NONE));
   RenderViewImpl* render_view = NULL;
   blink::WebRemoteFrame* web_frame = NULL;
-  if (parent_routing_id == MSG_ROUTING_NONE) {
+
+  if (!parent) {
     // Create a top level WebRemoteFrame.
     render_view = RenderViewImpl::FromRoutingID(render_view_routing_id);
     web_frame =
@@ -78,8 +89,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     // Create a frame under an existing parent. The parent is always expected
     // to be a RenderFrameProxy, because navigations initiated by local frames
     // should not wind up here.
-    RenderFrameProxy* parent =
-        RenderFrameProxy::FromRoutingID(parent_routing_id);
+
     web_frame = parent->web_frame()->createRemoteChild(
         replicated_state.scope,
         blink::WebString::fromUTF8(replicated_state.name),

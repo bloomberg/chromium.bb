@@ -4463,6 +4463,63 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(1, child_count);
 }
 
+// Test for https://crbug.com/568670.  In A-embed-B, simultaneously have B
+// create a new (local) child frame, and have A detach B's proxy.  The child
+// frame creation sends an IPC to create a new proxy in A's process, and if
+// that IPC arrives after the detach, the new frame's parent (a proxy) won't be
+// available, and this shouldn't cause RenderFrameProxy::CreateFrameProxy to
+// crash.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       RaceBetweenCreateChildFrameAndDetachParentProxy) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContents* contents = shell()->web_contents();
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(contents)->GetFrameTree()->root();
+
+  // Simulate subframe B creating a new child frame in parallel to main frame A
+  // detaching subframe B.  We can't use ExecuteScript in both A and B to do
+  // this simultaneously, as that won't guarantee the timing that we want.
+  // Instead, tell A to detach B and then send a fake proxy creation IPC to A
+  // that would've come from create-child-frame code in B.  Prepare parameters
+  // for that IPC ahead of the detach, while B's FrameTreeNode still exists.
+  SiteInstance* site_instance_a = root->current_frame_host()->GetSiteInstance();
+  RenderProcessHost* process_a =
+      root->render_manager()->current_frame_host()->GetProcess();
+  int new_routing_id = process_a->GetNextRoutingID();
+  int view_routing_id =
+      root->frame_tree()->GetRenderViewHost(site_instance_a)->GetRoutingID();
+  int parent_routing_id =
+      root->child_at(0)->render_manager()->GetProxyToParent()->GetRoutingID();
+
+  // Tell main frame A to delete its subframe B.
+  FrameDeletedObserver observer(root->child_at(0));
+  EXPECT_TRUE(ExecuteScript(
+      root->current_frame_host(),
+      "document.body.removeChild(document.querySelector('iframe'));"));
+
+  // Send the message to create a proxy for B's new child frame in A.  This
+  // used to crash, as parent_routing_id refers to a proxy that doesn't exist
+  // anymore.
+  process_a->Send(new FrameMsg_NewFrameProxy(
+      new_routing_id, view_routing_id, MSG_ROUTING_NONE, parent_routing_id,
+      FrameReplicationState()));
+
+  // Ensure the subframe is detached in the browser process.
+  observer.Wait();
+  EXPECT_EQ(0U, root->child_count());
+
+  // Make sure process A did not crash.
+  int child_count = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->current_frame_host(),
+      "domAutomationController.send(frames.length)",
+      &child_count));
+  EXPECT_EQ(0, child_count);
+}
+
 // This test ensures that the RenderFrame isn't leaked in the renderer process
 // if a pending cross-process navigation is cancelled. The test works by trying
 // to create a new RenderFrame with the same routing id. If there is an
