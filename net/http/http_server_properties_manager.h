@@ -216,6 +216,8 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
                            AddToAlternativeServiceMap);
+  FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
+                           DoNotLoadExpiredAlternativeService);
   void OnHttpServerPropertiesChanged();
 
   bool ReadSupportsQuic(const base::DictionaryValue& server_dict,

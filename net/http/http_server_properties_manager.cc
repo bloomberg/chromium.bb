@@ -658,7 +658,9 @@ bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
                                      &alternative_service_info)) {
       return false;
     }
-    alternative_service_info_vector.push_back(alternative_service_info);
+    if (base::Time::Now() < alternative_service_info.expiration) {
+      alternative_service_info_vector.push_back(alternative_service_info);
+    }
   }
 
   if (alternative_service_info_vector.empty()) {

@@ -1101,6 +1101,53 @@ TEST_F(HttpServerPropertiesManagerTest,
   EXPECT_EQ("valid.example.com", hostname);
 }
 
+// Test that expired alternative service entries on disk are ignored.
+TEST_F(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
+  scoped_ptr<base::ListValue> alternative_service_list(new base::ListValue);
+  base::DictionaryValue* expired_dict = new base::DictionaryValue;
+  expired_dict->SetString("protocol_str", "npn-h2");
+  expired_dict->SetString("host", "expired.example.com");
+  expired_dict->SetInteger("port", 443);
+  expired_dict->SetDouble("probability", 1.0);
+  base::Time time_one_day_ago =
+      base::Time::Now() - base::TimeDelta::FromDays(1);
+  expired_dict->SetString(
+      "expiration", base::Int64ToString(time_one_day_ago.ToInternalValue()));
+  alternative_service_list->Append(expired_dict);
+
+  base::DictionaryValue* valid_dict = new base::DictionaryValue;
+  valid_dict->SetString("protocol_str", "npn-h2");
+  valid_dict->SetString("host", "valid.example.com");
+  valid_dict->SetInteger("port", 443);
+  valid_dict->SetDouble("probability", 1.0);
+  valid_dict->SetString(
+      "expiration", base::Int64ToString(one_day_from_now_.ToInternalValue()));
+  alternative_service_list->Append(valid_dict);
+
+  base::DictionaryValue server_pref_dict;
+  server_pref_dict.SetWithoutPathExpansion("alternative_service",
+                                           alternative_service_list.release());
+
+  const HostPortPair host_port_pair("example.com", 443);
+  AlternativeServiceMap alternative_service_map(/*max_size=*/5);
+  ASSERT_TRUE(http_server_props_manager_->AddToAlternativeServiceMap(
+      host_port_pair, server_pref_dict, &alternative_service_map));
+
+  AlternativeServiceMap::iterator it =
+      alternative_service_map.Get(host_port_pair);
+  ASSERT_NE(alternative_service_map.end(), it);
+  AlternativeServiceInfoVector alternative_service_info_vector = it->second;
+  ASSERT_EQ(1u, alternative_service_info_vector.size());
+
+  EXPECT_EQ(NPN_HTTP_2,
+            alternative_service_info_vector[0].alternative_service.protocol);
+  EXPECT_EQ("valid.example.com",
+            alternative_service_info_vector[0].alternative_service.host);
+  EXPECT_EQ(443, alternative_service_info_vector[0].alternative_service.port);
+  EXPECT_DOUBLE_EQ(1.0, alternative_service_info_vector[0].probability);
+  EXPECT_EQ(one_day_from_now_, alternative_service_info_vector[0].expiration);
+}
+
 TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache0) {
   // Post an update task to the UI thread.
   http_server_props_manager_->ScheduleUpdateCacheOnPrefThread();
