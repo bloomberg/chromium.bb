@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/time/time.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,7 +56,10 @@ TEST_F(NTPSnippetsServiceTest, Loop) {
 
   EXPECT_FALSE(service->is_loaded());
 
-  std::string json_str("[{ \"url\" : \"http://localhost/foobar\" }]");
+  std::string json_str(
+      "{ \"recos\": [ "
+      "{ \"contentInfo\": { \"url\" : \"http://localhost/foobar\" }}"
+      "]}");
   EXPECT_TRUE(service->LoadFromJSONString(json_str));
 
   EXPECT_TRUE(service->is_loaded());
@@ -77,15 +81,17 @@ TEST_F(NTPSnippetsServiceTest, Full) {
       new ntp_snippets::NTPSnippetsService(language_code));
 
   std::string json_str(
-      "[{"
+      "{ \"recos\": [ "
+      "{ \"contentInfo\": {"
       "\"url\" : \"http://localhost/foobar\","
       "\"site_title\" : \"Site Title\","
       "\"favicon_url\" : \"http://localhost/favicon\","
       "\"title\" : \"Title\","
       "\"snippet\" : \"Snippet\","
-      "\"salient_image_url\" : \"http://localhost/salient_image\""
-      // TODO: Add dates.
-      "}]");
+      "\"thumbnailUrl\" : \"http://localhost/salient_image\","
+      "\"creationTimestampSec\" : 1448459205"
+      "}}"
+      "]}");
   EXPECT_TRUE(service->LoadFromJSONString(json_str));
 
   // The same for loop without the '&' should not compile.
@@ -98,6 +104,9 @@ TEST_F(NTPSnippetsServiceTest, Full) {
     EXPECT_EQ(snippet.snippet(), "Snippet");
     EXPECT_EQ(snippet.salient_image_url(),
               GURL("http://localhost/salient_image"));
+    base::Time then =
+        base::Time::FromUTCExploded({2015, 11, 4, 25, 13, 46, 45});
+    EXPECT_EQ(then, snippet.publish_date());
   }
 }
 
@@ -110,7 +119,10 @@ TEST_F(NTPSnippetsServiceTest, ObserverNotLoaded) {
   service->AddObserver(&observer);
   EXPECT_FALSE(observer.loaded_);
 
-  std::string json_str("[{ \"url\" : \"http://localhost/foobar\" }]");
+  std::string json_str(
+      "{ \"recos\": [ "
+      "{ \"contentInfo\": { \"url\" : \"http://localhost/foobar\" }}"
+      "]}");
   EXPECT_TRUE(service->LoadFromJSONString(json_str));
   EXPECT_TRUE(observer.loaded_);
 
@@ -122,7 +134,10 @@ TEST_F(NTPSnippetsServiceTest, ObserverLoaded) {
   scoped_ptr<ntp_snippets::NTPSnippetsService> service(
       new ntp_snippets::NTPSnippetsService(language_code));
 
-  std::string json_str("[{ \"url\" : \"http://localhost/foobar\" }]");
+  std::string json_str(
+      "{ \"recos\": [ "
+      "{ \"contentInfo\": { \"url\" : \"http://localhost/foobar\" }}"
+      "]}");
   EXPECT_TRUE(service->LoadFromJSONString(json_str));
 
   SnippetObserver observer;

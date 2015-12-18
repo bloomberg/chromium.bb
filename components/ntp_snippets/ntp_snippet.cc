@@ -36,9 +36,13 @@ std::unique_ptr<NTPSnippet> NTPSnippet::NTPSnippetFromDictionary(
   if (dict.GetString("snippet", &snippet_str))
     snippet->set_snippet(snippet_str);
   std::string salient_image_url;
-  if (dict.GetString("salient_image_url", &salient_image_url))
+  if (dict.GetString("thumbnailUrl", &salient_image_url))
     snippet->set_salient_image_url(GURL(salient_image_url));
-
+  int creation_timestamp;
+  if (dict.GetInteger("creationTimestampSec", &creation_timestamp)) {
+    snippet->set_publish_date(base::Time::UnixEpoch() +
+                              base::TimeDelta::FromSeconds(creation_timestamp));
+  }
   // TODO: Dates in json?
 
   return snippet;

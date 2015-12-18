@@ -33,15 +33,20 @@ void NTPSnippetsService::RemoveObserver(NTPSnippetsServiceObserver* observer) {
 
 bool NTPSnippetsService::LoadFromJSONString(const std::string& str) {
   JSONStringValueDeserializer deserializer(str);
+  int error_code;
+  std::string error_message;
 
   scoped_ptr<base::Value> deserialized =
-      deserializer.Deserialize(nullptr, nullptr);
-  if (!deserialized) {
+      deserializer.Deserialize(&error_code, &error_message);
+  if (!deserialized)
     return false;
-  }
+
+  const base::DictionaryValue* top_dict = NULL;
+  if (!deserialized->GetAsDictionary(&top_dict))
+    return false;
 
   const base::ListValue* list = NULL;
-  if (!deserialized->GetAsList(&list))
+  if (!top_dict->GetList("recos", &list))
     return false;
 
   for (base::Value* const value : *list) {
@@ -49,8 +54,11 @@ bool NTPSnippetsService::LoadFromJSONString(const std::string& str) {
     if (!value->GetAsDictionary(&dict))
       return false;
 
+    const base::DictionaryValue* content = NULL;
+    if (!dict->GetDictionary("contentInfo", &content))
+      return false;
     std::unique_ptr<NTPSnippet> snippet =
-        NTPSnippet::NTPSnippetFromDictionary(*dict);
+        NTPSnippet::NTPSnippetFromDictionary(*content);
     if (!snippet)
       return false;
     snippets_.push_back(std::move(snippet));
