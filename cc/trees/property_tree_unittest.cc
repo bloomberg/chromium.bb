@@ -911,13 +911,13 @@ class PropertyTreeTestScreenSpaceOpacityUpdateTest : public PropertyTreeTest {
     tree.Node(parent)->data.opacity = 0.5f;
     tree.set_needs_update(true);
     tree = EffectTreeForTest(tree);
-    ComputeOpacities(&tree);
+    ComputeEffects(&tree);
     EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 0.5f);
 
     tree.Node(child)->data.opacity = 0.5f;
     tree.set_needs_update(true);
     tree = EffectTreeForTest(tree);
-    ComputeOpacities(&tree);
+    ComputeEffects(&tree);
     EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 0.25f);
   }
 };

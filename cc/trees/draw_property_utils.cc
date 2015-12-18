@@ -650,11 +650,11 @@ void ComputeTransforms(TransformTree* transform_tree) {
   transform_tree->set_needs_update(false);
 }
 
-void ComputeOpacities(EffectTree* effect_tree) {
+void ComputeEffects(EffectTree* effect_tree) {
   if (!effect_tree->needs_update())
     return;
   for (int i = 1; i < static_cast<int>(effect_tree->size()); ++i)
-    effect_tree->UpdateOpacities(i);
+    effect_tree->UpdateEffects(i);
   effect_tree->set_needs_update(false);
 }
 
@@ -675,7 +675,7 @@ static void ComputeVisibleRectsUsingPropertyTreesInternal(
   ComputeTransforms(&property_trees->transform_tree);
   ComputeClips(&property_trees->clip_tree, property_trees->transform_tree,
                can_render_to_separate_surface);
-  ComputeOpacities(&property_trees->effect_tree);
+  ComputeEffects(&property_trees->effect_tree);
 
   const bool subtree_is_visible_from_ancestor = true;
   FindLayersThatNeedUpdates(root_layer, property_trees->transform_tree,

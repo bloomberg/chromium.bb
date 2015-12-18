@@ -45,6 +45,7 @@ struct DataForRecursion {
   bool affected_by_outer_viewport_bounds_delta;
   bool should_flatten;
   bool target_is_clipped;
+  bool is_hidden;
   const gfx::Transform* device_transform;
   gfx::Vector2dF scroll_compensation_adjustment;
   gfx::Transform compound_transform_since_render_target;
@@ -645,6 +646,10 @@ void BuildPropertyTreesInternal(
   if (layer == data_from_parent.page_scale_layer)
     data_for_children.in_subtree_of_page_scale_layer = true;
 
+  data_for_children.is_hidden =
+      layer->hide_layer_and_subtree() || data_from_parent.is_hidden;
+  layer->set_is_hidden_from_property_trees(data_for_children.is_hidden);
+
   for (size_t i = 0; i < layer->children().size(); ++i) {
     if (!layer->child_at(i)->scroll_parent()) {
       BuildPropertyTreesInternal(layer->child_at(i), data_for_children);
@@ -716,6 +721,7 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.affected_by_outer_viewport_bounds_delta = false;
   data_for_recursion.should_flatten = false;
   data_for_recursion.target_is_clipped = false;
+  data_for_recursion.is_hidden = false;
   data_for_recursion.device_transform = &device_transform;
 
   data_for_recursion.transform_tree->clear();

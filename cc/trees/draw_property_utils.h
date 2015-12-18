@@ -37,7 +37,7 @@ void CC_EXPORT ComputeClips(ClipTree* clip_tree,
 void CC_EXPORT ComputeTransforms(TransformTree* transform_tree);
 
 // Computes screen space opacity for every node in the opacity tree.
-void CC_EXPORT ComputeOpacities(EffectTree* effect_tree);
+void CC_EXPORT ComputeEffects(EffectTree* effect_tree);
 
 // Computes the visible content rect for every layer under |root_layer|. The
 // visible content rect is the clipped content space rect that will be used for

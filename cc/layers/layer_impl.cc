@@ -96,7 +96,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       visited_(false),
       layer_or_descendant_is_drawn_(false),
       layer_or_descendant_has_input_handler_(false),
-      sorted_for_recursion_(false) {
+      sorted_for_recursion_(false),
+      is_hidden_from_property_trees_(false) {
   DCHECK_GT(layer_id_, 0);
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
@@ -624,6 +625,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetClipTreeIndex(clip_tree_index_);
   layer->SetEffectTreeIndex(effect_tree_index_);
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
+  layer->set_is_hidden_from_property_trees(is_hidden_from_property_trees_);
 
   LayerImpl* scroll_parent = nullptr;
   if (scroll_parent_) {
@@ -1873,6 +1875,14 @@ gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
   gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(bounds(), scale);
   return MathUtil::MapEnclosingClippedRect(scaled_draw_transform,
                                            gfx::Rect(scaled_bounds));
+}
+
+bool LayerImpl::LayerIsHidden() const {
+  if (layer_tree_impl()->settings().use_property_trees) {
+    return is_hidden_from_property_trees_;
+  } else {
+    return hide_layer_and_subtree_ || (parent() && parent()->LayerIsHidden());
+  }
 }
 
 float LayerImpl::GetIdealContentsScale() const {

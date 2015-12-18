@@ -560,6 +560,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool layer_or_descendant_is_drawn();
   void set_sorted_for_recursion(bool sorted_for_recursion);
   bool sorted_for_recursion();
+  void set_is_hidden_from_property_trees(bool is_hidden) {
+    if (is_hidden == is_hidden_from_property_trees_)
+      return;
+    is_hidden_from_property_trees_ = is_hidden;
+    SetNeedsPushProperties();
+  }
 
   // LayerAnimationValueProvider implementation.
   gfx::ScrollOffset ScrollOffsetForAnimation() const override;
@@ -789,6 +795,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   std::vector<FrameTimingRequest> frame_timing_requests_;
   bool frame_timing_requests_dirty_;
+  bool is_hidden_from_property_trees_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

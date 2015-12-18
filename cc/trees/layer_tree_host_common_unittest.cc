@@ -9244,6 +9244,33 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(50, 50), test_layer->clip_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, SubtreeIsHiddenTest) {
+  // Tests that subtree is hidden is updated.
+  LayerImpl* root = root_layer();
+  LayerImpl* hidden = AddChild<LayerImpl>(root);
+  LayerImpl* test = AddChild<LayerImpl>(hidden);
+
+  const gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(hidden, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(10, 10), gfx::Size(30, 30), true,
+                               false, true);
+  SetLayerPropertiesForTesting(test, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+
+  hidden->SetHideLayerAndSubtree(true);
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_TRUE(test->LayerIsHidden());
+
+  hidden->SetHideLayerAndSubtree(false);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_FALSE(test->LayerIsHidden());
+}
+
 TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
   LayerImpl* root = root_layer();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(root);

@@ -33,10 +33,8 @@ ScrollbarLayerImplBase::~ScrollbarLayerImplBase() {
 
 void ScrollbarLayerImplBase::PushPropertiesTo(LayerImpl* layer) {
   float active_opacity = layer->opacity();
-  bool active_hidden = layer->hide_layer_and_subtree();
   LayerImpl::PushPropertiesTo(layer);
   layer->SetOpacity(active_opacity);
-  layer->SetHideLayerAndSubtree(active_hidden);
   DCHECK(layer->ToScrollbarLayer());
   layer->ToScrollbarLayer()->set_is_overlay_scrollbar(is_overlay_scrollbar_);
   layer->ToScrollbarLayer()->SetScrollLayerId(ScrollLayerId());

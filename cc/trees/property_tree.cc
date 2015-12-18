@@ -1020,13 +1020,18 @@ void TransformTree::FromProtobuf(const proto::PropertyTree& proto) {
   }
 }
 
-void EffectTree::UpdateOpacities(int id) {
-  EffectNode* node = Node(id);
+void EffectTree::UpdateOpacities(EffectNode* node, EffectNode* parent_node) {
   node->data.screen_space_opacity = node->data.opacity;
 
-  EffectNode* parent_node = parent(node);
   if (parent_node)
     node->data.screen_space_opacity *= parent_node->data.screen_space_opacity;
+}
+
+void EffectTree::UpdateEffects(int id) {
+  EffectNode* node = Node(id);
+  EffectNode* parent_node = parent(node);
+
+  UpdateOpacities(node, parent_node);
 }
 
 void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(
