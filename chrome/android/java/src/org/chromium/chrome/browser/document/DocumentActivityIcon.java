@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.document;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -19,7 +18,7 @@ public class DocumentActivityIcon {
     private static final int APP_ICON_SIZE_DP = 64;
     private static final int APP_ICON_CORNER_RADIUS_DP = 3;
     private static final int APP_ICON_TEXT_SIZE_DP = 30;
-    private static final int APP_ICON_DEFAULT_BACKGROUND_COLOR = Color.rgb(50, 50, 50);
+    private static final int APP_ICON_DEFAULT_BACKGROUND_COLOR = 0xFF323232;
 
     private Context mContext;
 

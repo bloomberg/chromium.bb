@@ -55,9 +55,9 @@ class SuggestionView extends ViewGroup {
 
     private static final long RELAYOUT_DELAY_MS = 20;
 
-    private static final int TITLE_COLOR_STANDARD_FONT_DARK = Color.rgb(51, 51, 51);
-    private static final int TITLE_COLOR_STANDARD_FONT_LIGHT = Color.rgb(255, 255, 255);
-    private static final int URL_COLOR = Color.rgb(85, 149, 254);
+    private static final int TITLE_COLOR_STANDARD_FONT_DARK = 0xFF333333;
+    private static final int TITLE_COLOR_STANDARD_FONT_LIGHT = 0xFFFFFFFF;
+    private static final int URL_COLOR = 0xFF5595FE;
 
     private static final int ANSWER_IMAGE_HORIZONTAL_SPACING_DP = 4;
     private static final int ANSWER_IMAGE_VERTICAL_SPACING_DP = 5;

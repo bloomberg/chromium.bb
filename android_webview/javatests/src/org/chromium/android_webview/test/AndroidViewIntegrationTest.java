@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.graphics.Color;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -321,7 +320,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
                 mOnContentSizeChangedHelper, expectedWidthCss, expectedHeightCss, false);
 
         GraphicsTestUtils.pollForBackgroundColor(
-                testContainerView.getAwContents(), Color.rgb(0x22, 0x77, 0x88));
+                testContainerView.getAwContents(), 0xFF227788);
     }
 
     @SmallTest

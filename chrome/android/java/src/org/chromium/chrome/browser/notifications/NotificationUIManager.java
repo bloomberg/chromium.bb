@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -58,7 +57,7 @@ public class NotificationUIManager {
     // that it was set by us.
     private static final String PLATFORM_TAG_PREFIX = NotificationUIManager.class.getSimpleName();
 
-    private static final int NOTIFICATION_ICON_BG_COLOR = Color.rgb(150, 150, 150);
+    private static final int NOTIFICATION_ICON_BG_COLOR = 0xFF969696;
     private static final int NOTIFICATION_TEXT_SIZE_DP = 28;
 
     // We always use the same request code for pending intents. We use other ways to force

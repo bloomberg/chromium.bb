@@ -63,16 +63,15 @@ public class AwContentsRenderTest extends AwTestBase {
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 "data:text/html,<html><head><style>body {background-color:#227788}</style></head>"
                 + "<body></body></html>");
-        GraphicsTestUtils.pollForBackgroundColor(mAwContents, Color.rgb(0x22, 0x77, 0x88));
+        final int teal = 0xFF227788;
+        GraphicsTestUtils.pollForBackgroundColor(mAwContents, teal);
 
         // Changing the base background should not override CSS background.
         setBackgroundColorOnUiThread(Color.MAGENTA);
-        assertEquals(Color.rgb(0x22, 0x77, 0x88),
-                GraphicsTestUtils.sampleBackgroundColorOnUiThread(mAwContents));
+        assertEquals(teal, GraphicsTestUtils.sampleBackgroundColorOnUiThread(mAwContents));
         // ...setting the background is asynchronous, so pause a bit and retest just to be sure.
         Thread.sleep(500);
-        assertEquals(Color.rgb(0x22, 0x77, 0x88),
-                GraphicsTestUtils.sampleBackgroundColorOnUiThread(mAwContents));
+        assertEquals(teal, GraphicsTestUtils.sampleBackgroundColorOnUiThread(mAwContents));
     }
 
     @SmallTest

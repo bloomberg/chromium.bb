@@ -128,9 +128,9 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     // response (as opposed to treating it like a typed string in the Omnibox).
     private static final float VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD = 0.9f;
 
-    private static final int CONTENT_OVERLAY_COLOR = Color.argb(166, 0, 0, 0);
-    private static final int OMNIBOX_RESULTS_BG_COLOR = Color.rgb(245, 245, 246);
-    private static final int OMNIBOX_INCOGNITO_RESULTS_BG_COLOR = Color.rgb(50, 50, 50);
+    private static final int CONTENT_OVERLAY_COLOR = 0xA6000000;
+    private static final int OMNIBOX_RESULTS_BG_COLOR = 0xFFF5F5F6;
+    private static final int OMNIBOX_INCOGNITO_RESULTS_BG_COLOR = 0xFF323232;
 
     /**
      * URI schemes that ContentView can handle.
