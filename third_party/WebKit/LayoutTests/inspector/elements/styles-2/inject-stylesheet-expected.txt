@@ -49,22 +49,22 @@ div { (user agent stylesheet)
 
 iframe style:
 background-attachment: scroll
-    initial - #iframebody injected stylesheet
+    initial - #iframeBody injected stylesheet
     OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
 background-clip: border-box
-    initial - #iframebody injected stylesheet
+    initial - #iframeBody injected stylesheet
     OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
 background-color: rgb(255, 0, 0)
-    red - #iframebody injected stylesheet
+    red - #iframeBody injected stylesheet
     OVERLOADED green - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
 background-image: none
-    initial - #iframebody injected stylesheet
+    initial - #iframeBody injected stylesheet
     OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
 background-origin: padding-box
-    initial - #iframebody injected stylesheet
+    initial - #iframeBody injected stylesheet
     OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
 background-size: auto
-    initial - #iframebody injected stylesheet
+    initial - #iframeBody injected stylesheet
     OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
 display: block
     block - body user agent stylesheet
@@ -80,7 +80,7 @@ margin-top: 8px
 element.style { ()
 
 [expanded] 
-#iframebody { (injected stylesheet)
+#iframeBody { (injected stylesheet)
     background: red;
         background-image: initial;
         background-position-x: initial;

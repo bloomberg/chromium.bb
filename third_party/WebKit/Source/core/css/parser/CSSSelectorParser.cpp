@@ -251,10 +251,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeId(CSSParserTokenRange& 
     OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
     selector->setMatch(CSSSelector::Id);
     const AtomicString& value = range.consume().value();
-    if (isQuirksModeBehavior(m_context.mode()))
-        selector->setValue(value.lower());
-    else
-        selector->setValue(value);
+    selector->setValue(value, isQuirksModeBehavior(m_context.mode()));
     return selector.release();
 }
 
@@ -268,10 +265,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeClass(CSSParserTokenRang
     OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
     selector->setMatch(CSSSelector::Class);
     const AtomicString& value = range.consume().value();
-    if (isQuirksModeBehavior(m_context.mode()))
-        selector->setValue(value.lower());
-    else
-        selector->setValue(value);
+    selector->setValue(value, isQuirksModeBehavior(m_context.mode()));
     return selector.release();
 }
 

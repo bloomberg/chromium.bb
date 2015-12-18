@@ -603,13 +603,13 @@ String CSSSelector::selectorText(const String& rightSide) const
     while (true) {
         if (cs->m_match == Id) {
             str.append('#');
-            serializeIdentifier(cs->value(), str);
+            serializeIdentifier(cs->serializingValue(), str);
         } else if (cs->m_match == Class) {
             str.append('.');
-            serializeIdentifier(cs->value(), str);
+            serializeIdentifier(cs->serializingValue(), str);
         } else if (cs->m_match == PseudoClass || cs->m_match == PagePseudoClass) {
             str.append(':');
-            str.append(cs->value());
+            str.append(cs->serializingValue());
 
             switch (cs->pseudoType()) {
             case PseudoNthChild:
@@ -652,7 +652,7 @@ String CSSSelector::selectorText(const String& rightSide) const
             }
         } else if (cs->m_match == PseudoElement) {
             str.appendLiteral("::");
-            str.append(cs->value());
+            str.append(cs->serializingValue());
             // ::content is always stored at the end of the compound.
             if (cs->pseudoType() == PseudoContent && cs->relation() == SubSelector && cs->tagHistory()) {
                 return cs->tagHistory()->selectorText() + str.toString() + rightSide;
@@ -692,7 +692,7 @@ String CSSSelector::selectorText(const String& rightSide) const
                 break;
             }
             if (cs->m_match != AttributeSet) {
-                serializeString(cs->value(), str);
+                serializeString(cs->serializingValue(), str);
                 if (cs->attributeMatchType() == CaseInsensitive)
                     str.appendLiteral(" i");
                 str.append(']');
@@ -883,7 +883,8 @@ bool CSSSelector::matchNth(int count) const
 }
 
 CSSSelector::RareData::RareData(const AtomicString& value)
-    : m_value(value)
+    : m_matchingValue(value)
+    , m_serializingValue(value)
     , m_bits()
     , m_attribute(anyQName())
     , m_argument(nullAtom)

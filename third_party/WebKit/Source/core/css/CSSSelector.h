@@ -221,6 +221,7 @@ public:
 
     const QualifiedName& tagQName() const;
     const AtomicString& value() const;
+    const AtomicString& serializingValue() const;
 
     // WARNING: Use of QualifiedName by attribute() is a lie.
     // attribute() will return a QualifiedName with prefix and namespaceURI
@@ -239,7 +240,8 @@ public:
     void show(int indent) const;
 #endif
 
-    void setValue(const AtomicString&);
+    bool isASCIILower(const AtomicString& value);
+    void setValue(const AtomicString&, bool matchLowerCase);
     void setAttribute(const QualifiedName&, AttributeMatchType);
     void setArgument(const AtomicString&);
     void setSelectorList(PassOwnPtr<CSSSelectorList>);
@@ -316,7 +318,8 @@ private:
         int nthAValue() const { return m_bits.m_nth.m_a; }
         int nthBValue() const { return m_bits.m_nth.m_b; }
 
-        AtomicString m_value;
+        AtomicString m_matchingValue;
+        AtomicString m_serializingValue;
         union {
             struct {
                 int m_a; // Used for :nth-*
@@ -376,18 +379,31 @@ inline bool CSSSelector::isSiblingSelector() const
         || type == PseudoNthLastOfType;
 }
 
-inline void CSSSelector::setValue(const AtomicString& value)
+inline bool CSSSelector::isASCIILower(const AtomicString& value)
+{
+    for (size_t i = 0; i < value.length(); ++i) {
+        if (isASCIIUpper(value[i]))
+            return false;
+    }
+    return true;
+}
+
+inline void CSSSelector::setValue(const AtomicString& value, bool matchLowerCase = false)
 {
     ASSERT(m_match != Tag);
+    if (matchLowerCase && !m_hasRareData && !isASCIILower(value)) {
+        createRareData();
+    }
     // Need to do ref counting manually for the union.
-    if (m_hasRareData) {
-        m_data.m_rareData->m_value = value;
+    if (!m_hasRareData) {
+        if (m_data.m_value)
+            m_data.m_value->deref();
+        m_data.m_value = value.impl();
+        m_data.m_value->ref();
         return;
     }
-    if (m_data.m_value)
-        m_data.m_value->deref();
-    m_data.m_value = value.impl();
-    m_data.m_value->ref();
+    m_data.m_rareData->m_matchingValue = matchLowerCase ? value.lower() : value;
+    m_data.m_rareData->m_serializingValue = value;
 }
 
 inline CSSSelector::CSSSelector()
@@ -461,7 +477,17 @@ inline const AtomicString& CSSSelector::value() const
 {
     ASSERT(m_match != Tag);
     if (m_hasRareData)
-        return m_data.m_rareData->m_value;
+        return m_data.m_rareData->m_matchingValue;
+    // AtomicString is really just a StringImpl* so the cast below is safe.
+    // FIXME: Perhaps call sites could be changed to accept StringImpl?
+    return *reinterpret_cast<const AtomicString*>(&m_data.m_value);
+}
+
+inline const AtomicString& CSSSelector::serializingValue() const
+{
+    ASSERT(m_match != Tag);
+    if (m_hasRareData)
+        return m_data.m_rareData->m_serializingValue;
     // AtomicString is really just a StringImpl* so the cast below is safe.
     // FIXME: Perhaps call sites could be changed to accept StringImpl?
     return *reinterpret_cast<const AtomicString*>(&m_data.m_value);
