@@ -1338,3 +1338,5 @@ crbug.com/570002 fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
 crbug.com/570002 [ XP Linux ] virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
 crbug.com/570002 [ XP ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
 crbug.com/570002 [ XP ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
+
+crbug.com/570893 [ Win10 Mac10.8 ] css3/flexbox/repaint.html [ Pass Failure ]
