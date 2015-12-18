@@ -163,6 +163,40 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
   return SecurityStateModel::NONE;
 }
 
+void SecurityInfoForRequest(
+    SecurityStateModelClient* client,
+    const SecurityStateModel::VisibleSecurityState& visible_security_state,
+    const scoped_refptr<net::X509Certificate>& cert,
+    SecurityStateModel::SecurityInfo* security_info) {
+  if (!visible_security_state.initialized) {
+    *security_info = SecurityStateModel::SecurityInfo();
+    return;
+  }
+  security_info->cert_id = visible_security_state.cert_id;
+  security_info->sha1_deprecation_status =
+      GetSHA1DeprecationStatus(cert, visible_security_state);
+  security_info->mixed_content_status =
+      GetMixedContentStatus(visible_security_state);
+  security_info->security_bits = visible_security_state.security_bits;
+  security_info->connection_status = visible_security_state.connection_status;
+  security_info->cert_status = visible_security_state.cert_status;
+  security_info->scheme_is_cryptographic =
+      visible_security_state.url.SchemeIsCryptographic();
+  security_info->is_secure_protocol_and_ciphersuite =
+      (net::SSLConnectionStatusToVersion(security_info->connection_status) >=
+           net::SSL_CONNECTION_VERSION_TLS1_2 &&
+       net::IsSecureTLSCipherSuite(net::SSLConnectionStatusToCipherSuite(
+           security_info->connection_status)));
+
+  security_info->sct_verify_statuses =
+      visible_security_state.sct_verify_statuses;
+
+  security_info->security_level =
+      GetSecurityLevelForRequest(visible_security_state, client, cert,
+                                 security_info->sha1_deprecation_status,
+                                 security_info->mixed_content_status);
+}
+
 }  // namespace
 
 const SecurityStateModel::SecurityLevel
@@ -217,41 +251,6 @@ const SecurityStateModel::SecurityInfo& SecurityStateModel::GetSecurityInfo()
 
 void SecurityStateModel::SetClient(SecurityStateModelClient* client) {
   client_ = client;
-}
-
-// static
-void SecurityStateModel::SecurityInfoForRequest(
-    SecurityStateModelClient* client,
-    const VisibleSecurityState& visible_security_state,
-    const scoped_refptr<net::X509Certificate>& cert,
-    SecurityInfo* security_info) {
-  if (!visible_security_state.initialized) {
-    *security_info = SecurityInfo();
-    return;
-  }
-  security_info->cert_id = visible_security_state.cert_id;
-  security_info->sha1_deprecation_status =
-      GetSHA1DeprecationStatus(cert, visible_security_state);
-  security_info->mixed_content_status =
-      GetMixedContentStatus(visible_security_state);
-  security_info->security_bits = visible_security_state.security_bits;
-  security_info->connection_status = visible_security_state.connection_status;
-  security_info->cert_status = visible_security_state.cert_status;
-  security_info->scheme_is_cryptographic =
-      visible_security_state.url.SchemeIsCryptographic();
-  security_info->is_secure_protocol_and_ciphersuite =
-      (net::SSLConnectionStatusToVersion(security_info->connection_status) >=
-           net::SSL_CONNECTION_VERSION_TLS1_2 &&
-       net::IsSecureTLSCipherSuite(net::SSLConnectionStatusToCipherSuite(
-           security_info->connection_status)));
-
-  security_info->sct_verify_statuses =
-      visible_security_state.sct_verify_statuses;
-
-  security_info->security_level =
-      GetSecurityLevelForRequest(visible_security_state, client, cert,
-                                 security_info->sha1_deprecation_status,
-                                 security_info->mixed_content_status);
 }
 
 SecurityStateModel::VisibleSecurityState::VisibleSecurityState()

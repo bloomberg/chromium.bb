@@ -151,14 +151,6 @@ class SecurityStateModel {
 
   void SetClient(SecurityStateModelClient* client);
 
-  // Returns a SecurityInfo describing an individual request for the
-  // given |client|.
-  static void SecurityInfoForRequest(
-      SecurityStateModelClient* client,
-      const VisibleSecurityState& visible_security_state,
-      const scoped_refptr<net::X509Certificate>& cert,
-      SecurityInfo* security_info);
-
  private:
   // Caches the SecurityInfo for the visible page. Marked
   // mutable so that the const accessor GetSecurityInfo() can update the

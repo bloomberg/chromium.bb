@@ -95,16 +95,11 @@ class SecurityStateModelTest : public ChromeRenderViewHostTestHarness {};
 // Tests that SHA1-signed certificates expiring in 2016 downgrade the
 // security state of the page.
 TEST_F(SecurityStateModelTest, SHA1Warning) {
-  SecurityStateModel::SecurityInfo security_info;
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
-  scoped_refptr<net::X509Certificate> cert;
-  ASSERT_TRUE(client.RetrieveCert(&cert));
-  SecurityStateModel::VisibleSecurityState visible_security_state;
-  client.GetVisibleSecurityState(&visible_security_state);
-  SecurityStateModel::SecurityInfoForRequest(&client, visible_security_state,
-                                             cert, &security_info);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model.GetSecurityInfo();
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
@@ -113,34 +108,28 @@ TEST_F(SecurityStateModelTest, SHA1Warning) {
 // Tests that SHA1 warnings don't interfere with the handling of mixed
 // content.
 TEST_F(SecurityStateModelTest, SHA1WarningMixedContent) {
-  SecurityStateModel::SecurityInfo security_info;
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
-  scoped_refptr<net::X509Certificate> cert;
-  ASSERT_TRUE(client.RetrieveCert(&cert));
   client.SetDisplayedMixedContent(true);
-  SecurityStateModel::VisibleSecurityState visible_security_state;
-  client.GetVisibleSecurityState(&visible_security_state);
-  SecurityStateModel::SecurityInfoForRequest(&client, visible_security_state,
-                                             cert, &security_info);
+  const SecurityStateModel::SecurityInfo& security_info1 =
+      model.GetSecurityInfo();
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
-            security_info.sha1_deprecation_status);
+            security_info1.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::DISPLAYED_MIXED_CONTENT,
-            security_info.mixed_content_status);
-  EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
+            security_info1.mixed_content_status);
+  EXPECT_EQ(SecurityStateModel::NONE, security_info1.security_level);
 
   client.set_initial_security_level(SecurityStateModel::SECURITY_ERROR);
   client.SetDisplayedMixedContent(false);
   client.SetRanMixedContent(true);
-  client.GetVisibleSecurityState(&visible_security_state);
-  SecurityStateModel::SecurityInfoForRequest(&client, visible_security_state,
-                                             cert, &security_info);
+  const SecurityStateModel::SecurityInfo& security_info2 =
+      model.GetSecurityInfo();
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
-            security_info.sha1_deprecation_status);
+            security_info2.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::RAN_MIXED_CONTENT,
-            security_info.mixed_content_status);
-  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
+            security_info2.mixed_content_status);
+  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info2.security_level);
 }
 
 // Tests that SHA1 warnings don't interfere with the handling of major
@@ -149,15 +138,10 @@ TEST_F(SecurityStateModelTest, SHA1WarningBrokenHTTPS) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
-  scoped_refptr<net::X509Certificate> cert;
-  ASSERT_TRUE(client.RetrieveCert(&cert));
-  SecurityStateModel::SecurityInfo security_info;
   client.set_initial_security_level(SecurityStateModel::SECURITY_ERROR);
   client.AddCertStatus(net::CERT_STATUS_DATE_INVALID);
-  SecurityStateModel::VisibleSecurityState visible_security_state;
-  client.GetVisibleSecurityState(&visible_security_state);
-  SecurityStateModel::SecurityInfoForRequest(&client, visible_security_state,
-                                             cert, &security_info);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model.GetSecurityInfo();
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
@@ -169,19 +153,14 @@ TEST_F(SecurityStateModelTest, SecureProtocolAndCiphersuite) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
-  scoped_refptr<net::X509Certificate> cert;
-  ASSERT_TRUE(client.RetrieveCert(&cert));
-  SecurityStateModel::SecurityInfo security_info;
   // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
   // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
   const uint16 ciphersuite = 0xc02f;
   client.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_2
                                << net::SSL_CONNECTION_VERSION_SHIFT);
   client.SetCipherSuite(ciphersuite);
-  SecurityStateModel::VisibleSecurityState visible_security_state;
-  client.GetVisibleSecurityState(&visible_security_state);
-  SecurityStateModel::SecurityInfoForRequest(&client, visible_security_state,
-                                             cert, &security_info);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model.GetSecurityInfo();
   EXPECT_TRUE(security_info.is_secure_protocol_and_ciphersuite);
 }
 
@@ -189,19 +168,14 @@ TEST_F(SecurityStateModelTest, NonsecureProtocol) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
-  scoped_refptr<net::X509Certificate> cert;
-  ASSERT_TRUE(client.RetrieveCert(&cert));
   // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
   // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
   const uint16 ciphersuite = 0xc02f;
   client.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_1
                                << net::SSL_CONNECTION_VERSION_SHIFT);
   client.SetCipherSuite(ciphersuite);
-  SecurityStateModel::SecurityInfo security_info;
-  SecurityStateModel::VisibleSecurityState visible_security_state;
-  client.GetVisibleSecurityState(&visible_security_state);
-  SecurityStateModel::SecurityInfoForRequest(&client, visible_security_state,
-                                             cert, &security_info);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model.GetSecurityInfo();
   EXPECT_FALSE(security_info.is_secure_protocol_and_ciphersuite);
 }
 
@@ -209,19 +183,14 @@ TEST_F(SecurityStateModelTest, NonsecureCiphersuite) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
-  scoped_refptr<net::X509Certificate> cert;
-  ASSERT_TRUE(client.RetrieveCert(&cert));
   // TLS_RSA_WITH_AES_128_CCM_8 from
   // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
   const uint16 ciphersuite = 0xc0a0;
   client.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_2
                                << net::SSL_CONNECTION_VERSION_SHIFT);
-  SecurityStateModel::SecurityInfo security_info;
   client.SetCipherSuite(ciphersuite);
-  SecurityStateModel::VisibleSecurityState visible_security_state;
-  client.GetVisibleSecurityState(&visible_security_state);
-  SecurityStateModel::SecurityInfoForRequest(&client, visible_security_state,
-                                             cert, &security_info);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model.GetSecurityInfo();
   EXPECT_FALSE(security_info.is_secure_protocol_and_ciphersuite);
 }
 
