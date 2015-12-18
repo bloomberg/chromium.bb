@@ -65,13 +65,16 @@ const int kNewTabCaptionMaximizedSpacing = 16;
 
 // Converts the |image| to a Windows icon and returns the corresponding HICON
 // handle. |image| is resized to desired |width| and |height| if needed.
-HICON CreateHICONFromSkBitmapSizedTo(const gfx::ImageSkia& image,
-                                     int width,
-                                     int height) {
-  if (width == image.width() && height == image.height())
-    return IconUtil::CreateHICONFromSkBitmap(*image.bitmap());
-  return IconUtil::CreateHICONFromSkBitmap(skia::ImageOperations::Resize(
-      *image.bitmap(), skia::ImageOperations::RESIZE_BEST, width, height));
+base::win::ScopedHICON CreateHICONFromSkBitmapSizedTo(
+    const gfx::ImageSkia& image,
+    int width,
+    int height) {
+  return IconUtil::CreateHICONFromSkBitmap(
+      width == image.width() && height == image.height()
+          ? *image.bitmap()
+          : skia::ImageOperations::Resize(*image.bitmap(),
+                                          skia::ImageOperations::RESIZE_BEST,
+                                          width, height));
 }
 
 }  // namespace
@@ -616,6 +619,8 @@ void GlassBrowserFrameView::StopThrobber() {
   if (throbber_running_) {
     throbber_running_ = false;
 
+    base::win::ScopedHICON previous_small_icon;
+    base::win::ScopedHICON previous_big_icon;
     HICON small_icon = nullptr;
     HICON big_icon = nullptr;
 
@@ -623,10 +628,22 @@ void GlassBrowserFrameView::StopThrobber() {
     if (browser_view()->ShouldShowWindowIcon()) {
       gfx::ImageSkia icon = browser_view()->GetWindowIcon();
       if (!icon.isNull()) {
-        small_icon = CreateHICONFromSkBitmapSizedTo(
-            icon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
-        big_icon = CreateHICONFromSkBitmapSizedTo(
-            icon, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+        // Keep previous icons alive as long as they are referenced by the HWND.
+        previous_small_icon = small_window_icon_.Pass();
+        previous_big_icon = big_window_icon_.Pass();
+
+        // Take responsibility for eventually destroying the created icons.
+        small_window_icon_ =
+            CreateHICONFromSkBitmapSizedTo(icon, GetSystemMetrics(SM_CXSMICON),
+                                           GetSystemMetrics(SM_CYSMICON))
+                .Pass();
+        big_window_icon_ =
+            CreateHICONFromSkBitmapSizedTo(icon, GetSystemMetrics(SM_CXICON),
+                                           GetSystemMetrics(SM_CYICON))
+                .Pass();
+
+        small_icon = small_window_icon_.get();
+        big_icon = big_window_icon_.get();
       }
     }
 
@@ -643,21 +660,13 @@ void GlassBrowserFrameView::StopThrobber() {
     // This will reset the icon which we set in the throbber code.
     // WM_SETICON with null icon restores the icon for title bar but not
     // for taskbar. See http://crbug.com/29996
-    HICON previous_small_icon = reinterpret_cast<HICON>(
-        SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
-                    static_cast<WPARAM>(ICON_SMALL),
-                    reinterpret_cast<LPARAM>(small_icon)));
+    SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
+                static_cast<WPARAM>(ICON_SMALL),
+                reinterpret_cast<LPARAM>(small_icon));
 
-    HICON previous_big_icon = reinterpret_cast<HICON>(
-        SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
-                    static_cast<WPARAM>(ICON_BIG),
-                    reinterpret_cast<LPARAM>(big_icon)));
-
-    if (previous_small_icon)
-      ::DestroyIcon(previous_small_icon);
-
-    if (previous_big_icon)
-      ::DestroyIcon(previous_big_icon);
+    SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
+                static_cast<WPARAM>(ICON_BIG),
+                reinterpret_cast<LPARAM>(big_icon));
   }
 }
 

@@ -76,25 +76,26 @@ int32_t PepperTrueTypeFontWin::Initialize(
   }
   // TODO(bbudge) support widths (extended, condensed).
 
-  font_.Set(CreateFont(0 /* height */,
-                       0 /* width */,
-                       0 /* escapement */,
-                       0 /* orientation */,
-                       desc->weight,  // our weight enum matches Windows.
-                       (desc->style & PP_TRUETYPEFONTSTYLE_ITALIC) ? 1 : 0,
-                       0 /* underline */,
-                       0 /* strikeout */,
-                       desc->charset,       // our charset enum matches Windows.
-                       OUT_OUTLINE_PRECIS,  // truetype and other outline fonts
-                       CLIP_DEFAULT_PRECIS,
-                       DEFAULT_QUALITY,
-                       pitch_and_family,
-                       base::UTF8ToUTF16(desc->family).c_str()));
-  if (!font_.Get())
+  font_.reset(CreateFont(
+      0 /* height */,
+      0 /* width */,
+      0 /* escapement */,
+      0 /* orientation */,
+      desc->weight,  // our weight enum matches Windows.
+      (desc->style & PP_TRUETYPEFONTSTYLE_ITALIC) ? 1 : 0,
+      0 /* underline */,
+      0 /* strikeout */,
+      desc->charset,       // our charset enum matches Windows.
+      OUT_OUTLINE_PRECIS,  // truetype and other outline fonts
+      CLIP_DEFAULT_PRECIS,
+      DEFAULT_QUALITY,
+      pitch_and_family,
+      base::UTF8ToUTF16(desc->family).c_str()));
+  if (!font_.is_valid())
     return PP_ERROR_FAILED;
 
   LOGFONT font_desc;
-  if (!::GetObject(font_.Get(), sizeof(LOGFONT), &font_desc))
+  if (!::GetObject(font_.get(), sizeof(LOGFONT), &font_desc))
     return PP_ERROR_FAILED;
 
   switch (font_desc.lfPitchAndFamily & 0xF0) {  // Top 4 bits are family.
@@ -125,7 +126,7 @@ int32_t PepperTrueTypeFontWin::Initialize(
   // doesn't fill in the name field of the LOGFONT structure.
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
   if (hdc.IsValid()) {
-    base::win::ScopedSelectObject select_object(hdc.Get(), font_.Get());
+    base::win::ScopedSelectObject select_object(hdc.Get(), font_.get());
     WCHAR name[LF_FACESIZE];
     GetTextFace(hdc.Get(), LF_FACESIZE, name);
     desc->family = base::UTF16ToUTF8(name);
@@ -135,14 +136,14 @@ int32_t PepperTrueTypeFontWin::Initialize(
 }
 
 int32_t PepperTrueTypeFontWin::GetTableTags(std::vector<uint32_t>* tags) {
-  if (!font_.Get())
+  if (!font_.is_valid())
     return PP_ERROR_FAILED;
 
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
   if (!hdc.IsValid())
     return PP_ERROR_FAILED;
 
-  base::win::ScopedSelectObject select_object(hdc.Get(), font_.Get());
+  base::win::ScopedSelectObject select_object(hdc.Get(), font_.get());
 
   // Get the whole font header.
   static const DWORD kFontHeaderSize = 12;
@@ -181,14 +182,14 @@ int32_t PepperTrueTypeFontWin::GetTable(uint32_t table_tag,
                                         int32_t offset,
                                         int32_t max_data_length,
                                         std::string* data) {
-  if (!font_.Get())
+  if (!font_.is_valid())
     return PP_ERROR_FAILED;
 
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
   if (!hdc.IsValid())
     return PP_ERROR_FAILED;
 
-  base::win::ScopedSelectObject select_object(hdc.Get(), font_.Get());
+  base::win::ScopedSelectObject select_object(hdc.Get(), font_.get());
 
   // Tags are byte swapped on Windows.
   table_tag = base::ByteSwap(table_tag);

@@ -28,8 +28,8 @@ void MenuConfig::Init() {
   l10n_util::AdjustUIFont(&(metrics.lfMenuFont));
   {
     base::win::ScopedHFONT new_font(CreateFontIndirect(&metrics.lfMenuFont));
-    DLOG_ASSERT(new_font.Get());
-    font_list = gfx::FontList(gfx::Font(new_font));
+    DLOG_ASSERT(new_font.is_valid());
+    font_list = gfx::FontList(gfx::Font(new_font.get()));
   }
   NativeTheme::ExtraParams extra;
   extra.menu_check.is_radio = false;

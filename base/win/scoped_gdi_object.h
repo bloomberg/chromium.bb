@@ -7,63 +7,31 @@
 
 #include <windows.h>
 
-#include "base/basictypes.h"
-#include "base/logging.h"
+#include "base/scoped_generic.h"
 
 namespace base {
 namespace win {
 
-// Like ScopedHandle but for GDI objects.
-template<class T>
-class ScopedGDIObject {
- public:
-  ScopedGDIObject() : object_(NULL) {}
-  explicit ScopedGDIObject(T object) : object_(object) {}
+namespace internal {
 
-  ~ScopedGDIObject() {
-    Close();
-  }
-
-  T Get() {
-    return object_;
-  }
-
-  void Set(T object) {
-    if (object_ && object != object_)
-      Close();
-    object_ = object;
-  }
-
-  ScopedGDIObject& operator=(T object) {
-    Set(object);
-    return *this;
-  }
-
-  T release() {
-    T object = object_;
-    object_ = NULL;
-    return object;
-  }
-
-  operator T() { return object_; }
-
- private:
-  void Close() {
-    if (object_)
-      DeleteObject(object_);
-  }
-
-  T object_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedGDIObject);
+template <class T>
+struct ScopedGDIObjectTraits {
+  static T InvalidValue() { return nullptr; }
+  static void Free(T object) { DeleteObject(object); }
 };
 
 // An explicit specialization for HICON because we have to call DestroyIcon()
 // instead of DeleteObject() for HICON.
-template<>
-void inline ScopedGDIObject<HICON>::Close() {
-  if (object_)
-    DestroyIcon(object_);
+template <>
+void inline ScopedGDIObjectTraits<HICON>::Free(HICON icon) {
+  DestroyIcon(icon);
 }
+
+}  // namespace internal
+
+// Like ScopedHandle but for GDI objects.
+template <class T>
+using ScopedGDIObject = ScopedGeneric<T, internal::ScopedGDIObjectTraits<T>>;
 
 // Typedefs for some common use cases.
 typedef ScopedGDIObject<HBITMAP> ScopedBitmap;

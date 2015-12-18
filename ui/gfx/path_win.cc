@@ -17,8 +17,9 @@ HRGN CreateHRGNFromSkRegion(const SkRegion& region) {
 
   for (SkRegion::Iterator i(region); !i.done(); i.next()) {
     const SkIRect& rect = i.rect();
-    ::SetRectRgn(temp, rect.left(), rect.top(), rect.right(), rect.bottom());
-    ::CombineRgn(result, result, temp, RGN_OR);
+    ::SetRectRgn(temp.get(),
+                 rect.left(), rect.top(), rect.right(), rect.bottom());
+    ::CombineRgn(result.get(), result.get(), temp.get(), RGN_OR);
   }
 
   return result.release();

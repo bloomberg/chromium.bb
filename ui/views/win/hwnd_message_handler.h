@@ -523,6 +523,12 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // so that we can restore it.
   HCURSOR previous_cursor_;
 
+  // The icon created from the bitmap image of the window icon.
+  base::win::ScopedHICON window_icon_;
+
+  // The icon created from the bitmap image of the app icon.
+  base::win::ScopedHICON app_icon_;
+
   // Event handling ------------------------------------------------------------
 
   // The flags currently being used with TrackMouseEvent to track mouse

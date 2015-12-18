@@ -70,8 +70,8 @@ bool Image::LoadMetafile(const Metafile& metafile) {
   base::win::ScopedBitmap bitmap(
       ::CreateDIBSection(hdc.Get(), reinterpret_cast<BITMAPINFO*>(&hdr), 0,
                          reinterpret_cast<void**>(&bits), NULL, 0));
-  DCHECK(bitmap);
-  base::win::ScopedSelectObject select_object(hdc.Get(), bitmap);
+  DCHECK(bitmap.is_valid());
+  base::win::ScopedSelectObject select_object(hdc.Get(), bitmap.get());
 
   skia::InitializeDC(hdc.Get());
 

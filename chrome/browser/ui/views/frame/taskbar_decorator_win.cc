@@ -59,11 +59,11 @@ void SetOverlayIcon(HWND hwnd, scoped_ptr<SkBitmap> bitmap) {
     SkCanvas offscreen_canvas(offscreen_bitmap);
     offscreen_canvas.clear(SK_ColorTRANSPARENT);
     offscreen_canvas.drawBitmap(sk_icon, 0, kOverlayIconSize - resized_height);
-    icon.Set(IconUtil::CreateHICONFromSkBitmap(offscreen_bitmap));
-    if (!icon.Get())
+    icon = IconUtil::CreateHICONFromSkBitmap(offscreen_bitmap).Pass();
+    if (!icon.is_valid())
       return;
   }
-  taskbar->SetOverlayIcon(hwnd, icon, L"");
+  taskbar->SetOverlayIcon(hwnd, icon.get(), L"");
 }
 
 }  // namespace

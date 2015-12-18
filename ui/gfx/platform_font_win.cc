@@ -130,7 +130,7 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
   // If this succeeds we return the matched font.
   base::win::ScopedGDIObject<HFONT> font(::CreateFontIndirect(font_info));
   base::win::ScopedGetDC screen_dc(NULL);
-  base::win::ScopedSelectObject scoped_font(screen_dc, font);
+  base::win::ScopedSelectObject scoped_font(screen_dc, font.get());
 
   base::win::ScopedComPtr<IDWriteFontFace> font_face;
   hr = gdi_interop->CreateFontFaceFromHdc(screen_dc, font_face.Receive());
@@ -453,7 +453,7 @@ int PlatformFontWin::GetFontSize(const LOGFONT& font_info) {
   base::win::ScopedGDIObject<HFONT> font(CreateFontIndirect(&font_info));
 
   TEXTMETRIC font_metrics = {0};
-  PlatformFontWin::GetTextMetricsForFont(screen_dc, font, &font_metrics);
+  PlatformFontWin::GetTextMetricsForFont(screen_dc, font.get(), &font_metrics);
   return font_metrics.tmAscent;
 }
 

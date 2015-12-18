@@ -109,16 +109,16 @@ class TopMostFinder : public BaseWindowFinder {
     }
 
     // hwnd is at the point. Make sure the point is within the windows region.
-    if (GetWindowRgn(hwnd, tmp_region_.Get()) == ERROR) {
+    if (GetWindowRgn(hwnd, tmp_region_.get()) == ERROR) {
       // There's no region on the window and the window contains the point. Stop
       // iterating.
       return true;
     }
 
     // The region is relative to the window's rect.
-    BOOL is_point_in_region = PtInRegion(tmp_region_.Get(),
-        screen_loc_.x() - r.left, screen_loc_.y() - r.top);
-    tmp_region_ = CreateRectRgn(0, 0, 0, 0);
+    BOOL is_point_in_region = PtInRegion(
+        tmp_region_.get(), screen_loc_.x() - r.left, screen_loc_.y() - r.top);
+    tmp_region_.reset(CreateRectRgn(0, 0, 0, 0));
     // Stop iterating if the region contains the point.
     return !!is_point_in_region;
   }

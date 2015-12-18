@@ -104,12 +104,12 @@ class RasterBitmap {
     gfx::Rect bitmap_rect(raster_size);
     gfx::CreateBitmapHeader(raster_size.width(), raster_size.height(),
                             &header_.bmiHeader);
-    bitmap_.Set(::CreateDIBSection(context_.Get(), &header_, DIB_RGB_COLORS,
+    bitmap_.reset(CreateDIBSection(context_.Get(), &header_, DIB_RGB_COLORS,
                                    &bits, NULL, 0));
-    if (!bitmap_)
+    if (!bitmap_.is_valid())
       NOTREACHED() << "Raster bitmap creation for printing failed";
 
-    saved_object_ = ::SelectObject(context_.Get(), bitmap_);
+    saved_object_ = ::SelectObject(context_.Get(), bitmap_.get());
     RECT rect = bitmap_rect.ToRECT();
     ::FillRect(context_.Get(), &rect,
                static_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH)));

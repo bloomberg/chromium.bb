@@ -28,6 +28,8 @@ static const char kTempIconFilename[] = "temp_test_icon.ico";
 
 class IconUtilTest : public testing::Test {
  public:
+  using ScopedHICON = base::win::ScopedHICON;
+
   void SetUp() override {
     gfx::RegisterPathProvider();
     ASSERT_TRUE(PathService::Get(gfx::DIR_TEST_DATA, &test_data_directory_));
@@ -41,15 +43,16 @@ class IconUtilTest : public testing::Test {
 
   // Given a file name for an .ico file and an image dimensions, this
   // function loads the icon and returns an HICON handle.
-  HICON LoadIconFromFile(const base::FilePath& filename,
-                         int width, int height) {
+  ScopedHICON LoadIconFromFile(const base::FilePath& filename,
+                               int width,
+                               int height) {
     HICON icon = static_cast<HICON>(LoadImage(NULL,
                                     filename.value().c_str(),
                                     IMAGE_ICON,
                                     width,
                                     height,
                                     LR_LOADTRANSPARENT | LR_LOADFROMFILE));
-    return icon;
+    return ScopedHICON(icon);
   }
 
   SkBitmap CreateBlackSkBitmap(int width, int height) {
@@ -87,11 +90,8 @@ void IconUtilTest::CheckAllIconSizes(const base::FilePath& icon_filename,
   }
 
   // First, use the Windows API to load the icon, a basic validity test.
-  HICON icon = LoadIconFromFile(icon_filename, kSmallIconWidth,
-                                kSmallIconHeight);
-  EXPECT_NE(static_cast<HICON>(NULL), icon);
-  if (icon != NULL)
-    ::DestroyIcon(icon);
+  EXPECT_TRUE(LoadIconFromFile(icon_filename, kSmallIconWidth, kSmallIconHeight)
+                  .is_valid());
 
   // Read the file completely into memory.
   std::string icon_data;
@@ -145,14 +145,13 @@ TEST_F(IconUtilTest, TestIconToBitmapInvalidParameters) {
   base::FilePath icon_filename =
       test_data_directory_.AppendASCII(kSmallIconName);
   gfx::Size icon_size(kSmallIconWidth, kSmallIconHeight);
-  HICON icon = LoadIconFromFile(icon_filename,
-                                icon_size.width(),
-                                icon_size.height());
-  ASSERT_TRUE(icon != NULL);
+  ScopedHICON icon(
+      LoadIconFromFile(icon_filename, icon_size.width(), icon_size.height()));
+  ASSERT_TRUE(icon.is_valid());
 
   // Invalid size parameter.
   gfx::Size invalid_icon_size(kSmallIconHeight, 0);
-  EXPECT_EQ(IconUtil::CreateSkBitmapFromHICON(icon, invalid_icon_size),
+  EXPECT_EQ(IconUtil::CreateSkBitmapFromHICON(icon.get(), invalid_icon_size),
             static_cast<SkBitmap*>(NULL));
 
   // Invalid icon.
@@ -161,38 +160,37 @@ TEST_F(IconUtilTest, TestIconToBitmapInvalidParameters) {
 
   // The following code should succeed.
   scoped_ptr<SkBitmap> bitmap;
-  bitmap.reset(IconUtil::CreateSkBitmapFromHICON(icon, icon_size));
+  bitmap.reset(IconUtil::CreateSkBitmapFromHICON(icon.get(), icon_size));
   EXPECT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  ::DestroyIcon(icon);
 }
 
 // The following test case makes sure IconUtil::CreateHICONFromSkBitmap fails
 // gracefully when called with invalid input parameters.
 TEST_F(IconUtilTest, TestBitmapToIconInvalidParameters) {
-  HICON icon = NULL;
+  ScopedHICON icon;
   scoped_ptr<SkBitmap> bitmap;
 
   // Wrong bitmap format.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   bitmap->setInfo(SkImageInfo::MakeA8(kSmallIconWidth, kSmallIconHeight));
-  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
-  EXPECT_EQ(icon, static_cast<HICON>(NULL));
+  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap).Pass();
+  EXPECT_FALSE(icon.is_valid());
 
   // Invalid bitmap size.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   bitmap->setInfo(SkImageInfo::MakeN32Premul(0, 0));
-  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
-  EXPECT_EQ(icon, static_cast<HICON>(NULL));
+  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap).Pass();
+  EXPECT_FALSE(icon.is_valid());
 
   // Valid bitmap configuration but no pixels allocated.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   bitmap->setInfo(SkImageInfo::MakeN32Premul(kSmallIconWidth,
                                              kSmallIconHeight));
-  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
-  EXPECT_TRUE(icon == NULL);
+  icon = IconUtil::CreateHICONFromSkBitmap(*bitmap).Pass();
+  EXPECT_FALSE(icon.is_valid());
 }
 
 // The following test case makes sure IconUtil::CreateIconFileFromImageFamily
@@ -275,30 +273,28 @@ TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
   base::FilePath small_icon_filename = test_data_directory_.AppendASCII(
       kSmallIconName);
   gfx::Size small_icon_size(kSmallIconWidth, kSmallIconHeight);
-  HICON small_icon = LoadIconFromFile(small_icon_filename,
-                                      small_icon_size.width(),
-                                      small_icon_size.height());
-  ASSERT_NE(small_icon, static_cast<HICON>(NULL));
-  bitmap.reset(IconUtil::CreateSkBitmapFromHICON(small_icon, small_icon_size));
+  ScopedHICON small_icon(LoadIconFromFile(
+      small_icon_filename, small_icon_size.width(), small_icon_size.height()));
+  ASSERT_TRUE(small_icon.is_valid());
+  bitmap.reset(
+      IconUtil::CreateSkBitmapFromHICON(small_icon.get(), small_icon_size));
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   EXPECT_EQ(bitmap->width(), small_icon_size.width());
   EXPECT_EQ(bitmap->height(), small_icon_size.height());
   EXPECT_EQ(bitmap->colorType(), kN32_SkColorType);
-  ::DestroyIcon(small_icon);
 
   base::FilePath large_icon_filename = test_data_directory_.AppendASCII(
       kLargeIconName);
   gfx::Size large_icon_size(kLargeIconWidth, kLargeIconHeight);
-  HICON large_icon = LoadIconFromFile(large_icon_filename,
-                                      large_icon_size.width(),
-                                      large_icon_size.height());
-  ASSERT_NE(large_icon, static_cast<HICON>(NULL));
-  bitmap.reset(IconUtil::CreateSkBitmapFromHICON(large_icon, large_icon_size));
+  ScopedHICON large_icon(LoadIconFromFile(
+      large_icon_filename, large_icon_size.width(), large_icon_size.height()));
+  ASSERT_TRUE(large_icon.is_valid());
+  bitmap.reset(
+      IconUtil::CreateSkBitmapFromHICON(large_icon.get(), large_icon_size));
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   EXPECT_EQ(bitmap->width(), large_icon_size.width());
   EXPECT_EQ(bitmap->height(), large_icon_size.height());
   EXPECT_EQ(bitmap->colorType(), kN32_SkColorType);
-  ::DestroyIcon(large_icon);
 }
 
 // This test case makes sure that when an HICON is created from an SkBitmap,
@@ -306,10 +302,10 @@ TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
 // dimensions color depth etc.
 TEST_F(IconUtilTest, TestBasicCreateHICONFromSkBitmap) {
   SkBitmap bitmap = CreateBlackSkBitmap(kSmallIconWidth, kSmallIconHeight);
-  HICON icon = IconUtil::CreateHICONFromSkBitmap(bitmap);
-  EXPECT_NE(icon, static_cast<HICON>(NULL));
+  ScopedHICON icon(IconUtil::CreateHICONFromSkBitmap(bitmap));
+  EXPECT_TRUE(icon.is_valid());
   ICONINFO icon_info;
-  ASSERT_TRUE(::GetIconInfo(icon, &icon_info));
+  ASSERT_TRUE(GetIconInfo(icon.get(), &icon_info));
   EXPECT_TRUE(icon_info.fIcon);
 
   // Now that have the icon information, we should obtain the specification of
@@ -336,7 +332,6 @@ TEST_F(IconUtilTest, TestBasicCreateHICONFromSkBitmap) {
   EXPECT_EQ(bitmap_info.bmiHeader.biPlanes, 1);
   EXPECT_EQ(bitmap_info.bmiHeader.biBitCount, 32);
   ::ReleaseDC(NULL, hdc);
-  ::DestroyIcon(icon);
 }
 
 // This test case makes sure that CreateIconFileFromImageFamily creates a

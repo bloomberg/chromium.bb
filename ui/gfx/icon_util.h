@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/win/scoped_gdi_object.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
@@ -42,18 +43,15 @@ class SkBitmap;
 //   ...
 //
 //   // Convert the bitmap into a Windows HICON
-//   HICON icon = IconUtil::CreateHICONFromSkBitmap(bitmap);
-//   if (icon == NULL) {
+//   base::win::ScopedHICON icon(IconUtil::CreateHICONFromSkBitmap(bitmap));
+//   if (!icon.is_valid()) {
 //     // Handle error
 //     ...
 //   }
 //
 //   // Use the icon with a WM_SETICON message
 //   ::SendMessage(hwnd, WM_SETICON, static_cast<WPARAM>(ICON_BIG),
-//                 reinterpret_cast<LPARAM>(icon));
-//
-//   // Destroy the icon when we are done
-//   ::DestroyIcon(icon);
+//                 reinterpret_cast<LPARAM>(icon.get()));
 //
 ///////////////////////////////////////////////////////////////////////////////
 class GFX_EXPORT IconUtil {
@@ -86,7 +84,7 @@ class GFX_EXPORT IconUtil {
   //
   // The client is responsible for destroying the icon when it is no longer
   // needed by calling ::DestroyIcon().
-  static HICON CreateHICONFromSkBitmap(const SkBitmap& bitmap);
+  static base::win::ScopedHICON CreateHICONFromSkBitmap(const SkBitmap& bitmap);
 
   // Given a valid HICON handle representing an icon, this function converts
   // the icon into an SkBitmap object containing an ARGB bitmap using the
@@ -136,10 +134,10 @@ class GFX_EXPORT IconUtil {
 
   // Creates a cursor of the specified size from the DIB passed in.
   // Returns the cursor on success or NULL on failure.
-  static HICON CreateCursorFromDIB(const gfx::Size& icon_size,
-                                   const gfx::Point& hotspot,
-                                   const void* dib_bits,
-                                   size_t dib_size);
+  static base::win::ScopedHICON CreateCursorFromDIB(const gfx::Size& icon_size,
+                                                    const gfx::Point& hotspot,
+                                                    const void* dib_bits,
+                                                    size_t dib_size);
 
  private:
   // The icon format is published in the MSDN but there is no definition of

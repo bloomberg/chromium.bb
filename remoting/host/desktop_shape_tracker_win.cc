@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
@@ -63,17 +64,18 @@ void DesktopShapeTrackerWin::RefreshDesktopShape() {
   }
 
   // If the shape has changed, refresh |desktop_shape_|.
-  if (!EqualRgn(shape_data->desktop_region, old_desktop_region_)) {
-    old_desktop_region_.Set(shape_data->desktop_region.release());
+  if (!EqualRgn(shape_data->desktop_region.get(), old_desktop_region_.get())) {
+    old_desktop_region_ = shape_data->desktop_region.Pass();
 
     // Determine the size of output buffer required to receive the region.
-    DWORD bytes_size = GetRegionData(old_desktop_region_, 0, nullptr);
+    DWORD bytes_size = GetRegionData(old_desktop_region_.get(), 0, nullptr);
     CHECK(bytes_size != 0);
 
     // Fetch the Windows RECTs that comprise the region.
     std::vector<char> buffer(bytes_size);
     LPRGNDATA region_data = reinterpret_cast<LPRGNDATA>(buffer.data());
-    DWORD result = GetRegionData(old_desktop_region_, bytes_size, region_data);
+    DWORD result =
+        GetRegionData(old_desktop_region_.get(), bytes_size, region_data);
     CHECK(result == bytes_size);
     const LPRECT rects = reinterpret_cast<LPRECT>(&region_data->Buffer[0]);
 
@@ -93,8 +95,8 @@ const webrtc::DesktopRegion& DesktopShapeTrackerWin::desktop_shape() {
 // static
 BOOL DesktopShapeTrackerWin::EnumWindowsCallback(HWND window, LPARAM lparam) {
   EnumDesktopShapeData* data = reinterpret_cast<EnumDesktopShapeData*>(lparam);
-  HRGN desktop_region = data->desktop_region.Get();
-  HRGN window_region = data->window_region.Get();
+  HRGN desktop_region = data->desktop_region.get();
+  HRGN window_region = data->window_region.get();
 
   // Is the window visible?
   if (!IsWindow(window) || !IsWindowVisible(window) || IsIconic(window))

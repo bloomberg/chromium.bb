@@ -1167,7 +1167,7 @@ gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
   base::win::GetNonClientMetrics(&ncm);
   l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
   base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
-  return gfx::FontList(gfx::Font(caption_font));
+  return gfx::FontList(gfx::Font(caption_font.get()));
 #else
   return gfx::FontList();
 #endif

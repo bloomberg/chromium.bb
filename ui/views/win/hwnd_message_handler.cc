@@ -558,7 +558,7 @@ void HWNDMessageHandler::CenterWindow(const gfx::Size& size) {
 }
 
 void HWNDMessageHandler::SetRegion(HRGN region) {
-  custom_window_region_.Set(region);
+  custom_window_region_.reset(region);
   ResetWindowRegion(true, true);
 }
 
@@ -750,7 +750,7 @@ void HWNDMessageHandler::FlashFrame(bool flash) {
   fwi.cbSize = sizeof(fwi);
   fwi.hwnd = hwnd();
   if (flash) {
-    fwi.dwFlags = custom_window_region_ ? FLASHW_TRAY : FLASHW_ALL;
+    fwi.dwFlags = custom_window_region_.is_valid() ? FLASHW_TRAY : FLASHW_ALL;
     fwi.uCount = 4;
     fwi.dwTimeout = 0;
   } else {
@@ -818,7 +818,7 @@ void HWNDMessageHandler::FrameTypeChanged() {
     delegate_->HandleFrameChanged();
     InvalidateRect(hwnd(), NULL, FALSE);
   } else {
-    if (!custom_window_region_ && !delegate_->IsUsingCustomFrame())
+    if (!custom_window_region_.is_valid() && !delegate_->IsUsingCustomFrame())
       dwm_transition_desired_ = true;
     if (!dwm_transition_desired_ || !fullscreen_handler_->fullscreen())
       PerformDwmTransition();
@@ -828,23 +828,17 @@ void HWNDMessageHandler::FrameTypeChanged() {
 void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                         const gfx::ImageSkia& app_icon) {
   if (!window_icon.isNull()) {
-    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(
-        *window_icon.bitmap());
-    // We need to make sure to destroy the previous icon, otherwise we'll leak
-    // these GDI objects until we crash!
-    HICON old_icon = reinterpret_cast<HICON>(
-        SendMessage(hwnd(), WM_SETICON, ICON_SMALL,
-                    reinterpret_cast<LPARAM>(windows_icon)));
-    if (old_icon)
-      DestroyIcon(old_icon);
+    base::win::ScopedHICON previous_icon = window_icon_.Pass();
+    window_icon_ =
+        IconUtil::CreateHICONFromSkBitmap(*window_icon.bitmap()).Pass();
+    SendMessage(hwnd(), WM_SETICON, ICON_SMALL,
+                reinterpret_cast<LPARAM>(window_icon_.get()));
   }
   if (!app_icon.isNull()) {
-    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(*app_icon.bitmap());
-    HICON old_icon = reinterpret_cast<HICON>(
-        SendMessage(hwnd(), WM_SETICON, ICON_BIG,
-                    reinterpret_cast<LPARAM>(windows_icon)));
-    if (old_icon)
-      DestroyIcon(old_icon);
+    base::win::ScopedHICON previous_icon = app_icon_.Pass();
+    app_icon_ = IconUtil::CreateHICONFromSkBitmap(*app_icon.bitmap()).Pass();
+    SendMessage(hwnd(), WM_SETICON, ICON_BIG,
+                reinterpret_cast<LPARAM>(app_icon_.get()));
   }
 }
 
@@ -1121,7 +1115,8 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   // automatically makes clicks on transparent pixels fall through, that isn't
   // the case with WS_EX_COMPOSITED. So, we route WS_EX_COMPOSITED through to
   // the delegate to allow for a custom hit mask.
-  if ((window_ex_style() & WS_EX_COMPOSITED) == 0 && !custom_window_region_ &&
+  if ((window_ex_style() & WS_EX_COMPOSITED) == 0 &&
+      !custom_window_region_.is_valid() &&
       (!delegate_->IsUsingCustomFrame() || !delegate_->IsWidgetWindow())) {
     if (force)
       SetWindowRgn(hwnd(), NULL, redraw);
@@ -1131,14 +1126,14 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   // Changing the window region is going to force a paint. Only change the
   // window region if the region really differs.
   base::win::ScopedRegion current_rgn(CreateRectRgn(0, 0, 0, 0));
-  GetWindowRgn(hwnd(), current_rgn);
+  GetWindowRgn(hwnd(), current_rgn.get());
 
   RECT window_rect;
   GetWindowRect(hwnd(), &window_rect);
   base::win::ScopedRegion new_region;
-  if (custom_window_region_) {
-    new_region.Set(::CreateRectRgn(0, 0, 0, 0));
-    ::CombineRgn(new_region, custom_window_region_.Get(), NULL, RGN_COPY);
+  if (custom_window_region_.is_valid()) {
+    new_region.reset(CreateRectRgn(0, 0, 0, 0));
+    CombineRgn(new_region.get(), custom_window_region_.get(), NULL, RGN_COPY);
   } else if (IsMaximized()) {
     HMONITOR monitor = MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST);
     MONITORINFO mi;
@@ -1146,20 +1141,20 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
     GetMonitorInfo(monitor, &mi);
     RECT work_rect = mi.rcWork;
     OffsetRect(&work_rect, -window_rect.left, -window_rect.top);
-    new_region.Set(CreateRectRgnIndirect(&work_rect));
+    new_region.reset(CreateRectRgnIndirect(&work_rect));
   } else {
     gfx::Path window_mask;
     delegate_->GetWindowMask(gfx::Size(window_rect.right - window_rect.left,
                                        window_rect.bottom - window_rect.top),
                              &window_mask);
     if (!window_mask.isEmpty())
-      new_region.Set(gfx::CreateHRGNFromSkPath(window_mask));
+      new_region.reset(gfx::CreateHRGNFromSkPath(window_mask));
   }
 
   const bool has_current_region = current_rgn != 0;
   const bool has_new_region = new_region != 0;
   if (has_current_region != has_new_region ||
-      (has_current_region && !EqualRgn(current_rgn, new_region))) {
+      (has_current_region && !EqualRgn(current_rgn.get(), new_region.get()))) {
     // SetWindowRgn takes ownership of the HRGN.
     SetWindowRgn(hwnd(), new_region.release(), redraw);
   }
@@ -1173,8 +1168,9 @@ void HWNDMessageHandler::UpdateDwmNcRenderingPolicy() {
     return;
 
   DWMNCRENDERINGPOLICY policy =
-      custom_window_region_ || delegate_->IsUsingCustomFrame() ?
-          DWMNCRP_DISABLED : DWMNCRP_ENABLED;
+      custom_window_region_.is_valid() || delegate_->IsUsingCustomFrame()
+          ? DWMNCRP_DISABLED
+          : DWMNCRP_ENABLED;
 
   DwmSetWindowAttribute(hwnd(), DWMWA_NCRENDERING_POLICY,
                         &policy, sizeof(DWMNCRENDERINGPOLICY));

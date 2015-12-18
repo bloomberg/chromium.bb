@@ -30,7 +30,8 @@ ui::PlatformCursor WebCursor::GetPlatformCursor() {
       custom_size,
       hotspot,
       !custom_data.empty() ? &custom_data[0] : NULL,
-      custom_data.size());
+      custom_data.size())
+      .release();
   return custom_cursor_;
 }
 

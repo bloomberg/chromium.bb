@@ -161,14 +161,15 @@ const int IconUtil::kIconDimensions[] = {
 const size_t IconUtil::kNumIconDimensions = arraysize(kIconDimensions);
 const size_t IconUtil::kNumIconDimensionsUpToMediumSize = 9;
 
-HICON IconUtil::CreateHICONFromSkBitmap(const SkBitmap& bitmap) {
+base::win::ScopedHICON IconUtil::CreateHICONFromSkBitmap(
+    const SkBitmap& bitmap) {
   // Only 32 bit ARGB bitmaps are supported. We also try to perform as many
   // validations as we can on the bitmap.
   SkAutoLockPixels bitmap_lock(bitmap);
   if ((bitmap.colorType() != kN32_SkColorType) ||
       (bitmap.width() <= 0) || (bitmap.height() <= 0) ||
       (bitmap.getPixels() == NULL))
-    return NULL;
+    return base::win::ScopedHICON();
 
   // We start by creating a DIB which we'll use later on in order to create
   // the HICON. We use BITMAPV5HEADER since the bitmap we are about to convert
@@ -186,7 +187,7 @@ HICON IconUtil::CreateHICONFromSkBitmap(const SkBitmap& bitmap) {
                              DIB_RGB_COLORS, &bits, NULL, 0);
   }
   if (!dib || !bits)
-    return NULL;
+    return base::win::ScopedHICON();
 
   memcpy(bits, bitmap.getPixels(), bitmap.width() * bitmap.height() * 4);
 
@@ -225,7 +226,7 @@ HICON IconUtil::CreateHICONFromSkBitmap(const SkBitmap& bitmap) {
   icon_info.yHotspot = 0;
   icon_info.hbmMask = mono_bitmap;
   icon_info.hbmColor = dib;
-  HICON icon = ::CreateIconIndirect(&icon_info);
+  base::win::ScopedHICON icon(CreateIconIndirect(&icon_info));
   ::DeleteObject(dib);
   ::DeleteObject(mono_bitmap);
   return icon;
@@ -269,12 +270,11 @@ scoped_ptr<gfx::ImageFamily> IconUtil::CreateImageFamilyFromIconResource(
         continue;
 
       // For everything except the Vista+ 256x256 icons, use |LoadImage()|.
-      HICON icon_handle = static_cast<HICON>(LoadImage(
+      base::win::ScopedHICON icon_handle(static_cast<HICON>(LoadImage(
           module, MAKEINTRESOURCE(resource_id), IMAGE_ICON, entry->bWidth,
-          entry->bHeight, LR_DEFAULTCOLOR | LR_DEFAULTSIZE));
+          entry->bHeight, LR_DEFAULTCOLOR | LR_DEFAULTSIZE)));
       scoped_ptr<SkBitmap> bitmap(
-          IconUtil::CreateSkBitmapFromHICON(icon_handle));
-      DestroyIcon(icon_handle);
+          IconUtil::CreateSkBitmapFromHICON(icon_handle.get()));
       result->Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
     } else {
       // 256x256 icons are stored with width and height set to 0.
@@ -313,10 +313,10 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon) {
   return new SkBitmap(CreateSkBitmapFromHICONHelper(icon, icon_size));
 }
 
-HICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
-                                    const gfx::Point& hotspot,
-                                    const void* dib_bits,
-                                    size_t dib_size) {
+base::win::ScopedHICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
+                                                     const gfx::Point& hotspot,
+                                                     const void* dib_bits,
+                                                     size_t dib_size) {
   BITMAPINFO icon_bitmap_info = {};
   gfx::CreateBitmapHeader(
       icon_size.width(),
@@ -334,7 +334,7 @@ HICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
                        0));
   if (dib_size > 0) {
     SetDIBits(0,
-              bitmap_handle,
+              bitmap_handle.get(),
               0,
               icon_size.height(),
               dib_bits,
@@ -343,7 +343,7 @@ HICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
   }
 
   HBITMAP old_bitmap = reinterpret_cast<HBITMAP>(
-      SelectObject(working_dc.Get(), bitmap_handle));
+      SelectObject(working_dc.Get(), bitmap_handle.get()));
   SetBkMode(working_dc.Get(), TRANSPARENT);
   SelectObject(working_dc.Get(), old_bitmap);
 
@@ -357,10 +357,10 @@ HICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
   ii.fIcon = FALSE;
   ii.xHotspot = hotspot.x();
   ii.yHotspot = hotspot.y();
-  ii.hbmMask = mask;
-  ii.hbmColor = bitmap_handle;
+  ii.hbmMask = mask.get();
+  ii.hbmColor = bitmap_handle.get();
 
-  return CreateIconIndirect(&ii);
+  return base::win::ScopedHICON(CreateIconIndirect(&ii));
 }
 
 SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,

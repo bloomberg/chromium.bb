@@ -877,7 +877,7 @@ HRESULT NativeThemeWin::PaintMenuArrow(
     base::win::ScopedCreateDC mem_dc(CreateCompatibleDC(hdc));
     base::win::ScopedBitmap mem_bitmap(CreateCompatibleBitmap(hdc, r.width(),
                                                               r.height()));
-    base::win::ScopedSelectObject select_bitmap(mem_dc.Get(), mem_bitmap);
+    base::win::ScopedSelectObject select_bitmap(mem_dc.Get(), mem_bitmap.get());
     // Copy and horizontally mirror the background from hdc into mem_dc. Use
     // a negative-width source rect, starting at the rightmost pixel.
     StretchBlt(mem_dc.Get(), 0, 0, r.width(), r.height(),
@@ -1604,8 +1604,9 @@ HRESULT NativeThemeWin::PaintTextField(HDC hdc,
       DrawEdge(hdc, rect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
 
     if (fill_content_area) {
-      FillRect(hdc, rect, (classic_state & DFCS_INACTIVE) ?
-                   reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1) : bg_brush);
+      FillRect(hdc, rect, (classic_state & DFCS_INACTIVE)
+                              ? reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1)
+                              : bg_brush.get());
     }
     return S_OK;
   }
@@ -1625,7 +1626,7 @@ HRESULT NativeThemeWin::PaintTextField(HDC hdc,
     RECT content_rect;
     hr = get_theme_content_rect_(handle, hdc, part_id, state_id, rect,
                                   &content_rect);
-    FillRect(hdc, &content_rect, bg_brush);
+    FillRect(hdc, &content_rect, bg_brush.get());
   }
   return hr;
 }
@@ -1979,7 +1980,8 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
     return E_OUTOFMEMORY;
 
   base::win::ScopedCreateDC bitmap_dc(CreateCompatibleDC(NULL));
-  base::win::ScopedSelectObject select_bitmap(bitmap_dc.Get(), mask_bitmap);
+  base::win::ScopedSelectObject select_bitmap(bitmap_dc.Get(),
+                                              mask_bitmap.get());
   RECT local_rect = { 0, 0, width, height };
   DrawFrameControl(bitmap_dc.Get(), &local_rect, type, state);
 
