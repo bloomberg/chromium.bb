@@ -67,6 +67,21 @@ void VerifyPageFocusMessage(MockRenderProcessHost* rph,
   EXPECT_EQ(expected_focus, base::get<0>(params));
 }
 
+// Helper function for strict mixed content checking tests.
+void CheckMixedContentIPC(TestRenderFrameHost* rfh,
+                          bool expected_param,
+                          int expected_routing_id) {
+  const IPC::Message* message =
+      rfh->GetProcess()->sink().GetUniqueMessageMatching(
+          FrameMsg_EnforceStrictMixedContentChecking::ID);
+  ASSERT_TRUE(message);
+  EXPECT_EQ(expected_routing_id, message->routing_id());
+  FrameMsg_EnforceStrictMixedContentChecking::Param params;
+  EXPECT_TRUE(
+      FrameMsg_EnforceStrictMixedContentChecking::Read(message, &params));
+  EXPECT_EQ(expected_param, base::get<0>(params));
+}
+
 class RenderFrameHostManagerTestWebUIControllerFactory
     : public WebUIControllerFactory {
  public:
@@ -3138,6 +3153,93 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
   EXPECT_FALSE(GetPendingFrameHost(manager));
   EXPECT_FALSE(speculative_host->pending_web_ui());
   EXPECT_FALSE(manager->GetNavigatingWebUI());
+}
+
+// Tests that frame proxies receive updates when a frame's enforcement
+// of strict mixed content checking changes.
+TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
+       ProxiesReceiveShouldEnforceStrictMixedContentChecking) {
+  const GURL kUrl1("http://www.google.test");
+  const GURL kUrl2("http://www.google2.test");
+  const GURL kUrl3("http://www.google2.test/foo");
+
+  contents()->NavigateAndCommit(kUrl1);
+
+  // Create a child frame and navigate it cross-site.
+  main_test_rfh()->OnCreateChildFrame(
+      main_test_rfh()->GetProcess()->GetNextRoutingID(),
+      blink::WebTreeScopeType::Document, "frame1", blink::WebSandboxFlags::None,
+      blink::WebFrameOwnerProperties());
+
+  FrameTreeNode* root = contents()->GetFrameTree()->root();
+  RenderFrameHostManager* child = root->child_at(0)->render_manager();
+
+  // Navigate subframe to kUrl2.
+  NavigationEntryImpl entry1(nullptr /* instance */, -1 /* page_id */, kUrl2,
+                             Referrer(kUrl1, blink::WebReferrerPolicyDefault),
+                             base::string16() /* title */,
+                             ui::PAGE_TRANSITION_LINK,
+                             false /* is_renderer_init */);
+  TestRenderFrameHost* child_host =
+      static_cast<TestRenderFrameHost*>(NavigateToEntry(child, entry1));
+  child->DidNavigateFrame(child_host, true);
+
+  // Verify that parent and child are in different processes.
+  EXPECT_NE(child_host->GetProcess(), main_test_rfh()->GetProcess());
+
+  // Change the parent's enforcement of strict mixed content checking,
+  // and check that the correct IPC is sent to the child frame's
+  // process.
+  EXPECT_FALSE(root->current_replication_state()
+                   .should_enforce_strict_mixed_content_checking);
+  main_test_rfh()->DidEnforceStrictMixedContentChecking();
+  RenderFrameProxyHost* proxy_to_child =
+      root->render_manager()->GetRenderFrameProxyHost(
+          child_host->GetSiteInstance());
+  EXPECT_NO_FATAL_FAILURE(
+      CheckMixedContentIPC(child_host, true, proxy_to_child->GetRoutingID()));
+  EXPECT_TRUE(root->current_replication_state()
+                  .should_enforce_strict_mixed_content_checking);
+
+  // Do the same for the child's enforcement. In general, the parent
+  // needs to know the status of the child's flag in case a grandchild
+  // is created: if A.com embeds B.com, and B.com enforces strict mixed
+  // content checking, and B.com adds an iframe to A.com, then the
+  // A.com process needs to know B.com's flag so that the grandchild
+  // A.com frame can inherit it.
+  EXPECT_FALSE(root->child_at(0)
+                   ->current_replication_state()
+                   .should_enforce_strict_mixed_content_checking);
+  child_host->DidEnforceStrictMixedContentChecking();
+  RenderFrameProxyHost* proxy_to_parent =
+      child->GetRenderFrameProxyHost(main_test_rfh()->GetSiteInstance());
+  EXPECT_NO_FATAL_FAILURE(CheckMixedContentIPC(
+      main_test_rfh(), true, proxy_to_parent->GetRoutingID()));
+  EXPECT_TRUE(root->child_at(0)
+                  ->current_replication_state()
+                  .should_enforce_strict_mixed_content_checking);
+
+  // Check that the flag for the parent's proxy to the child is reset
+  // when the child navigates.
+  main_test_rfh()->GetProcess()->sink().ClearMessages();
+  FrameHostMsg_DidCommitProvisionalLoad_Params commit_params;
+  commit_params.page_id = 0;
+  commit_params.nav_entry_id = 0;
+  commit_params.did_create_new_entry = false;
+  commit_params.url = kUrl3;
+  commit_params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+  commit_params.should_update_history = false;
+  commit_params.gesture = NavigationGestureAuto;
+  commit_params.was_within_same_page = false;
+  commit_params.is_post = false;
+  commit_params.page_state = PageState::CreateFromURL(kUrl3);
+  commit_params.should_enforce_strict_mixed_content_checking = false;
+  child_host->SendNavigateWithParams(&commit_params);
+  EXPECT_NO_FATAL_FAILURE(CheckMixedContentIPC(
+      main_test_rfh(), false, proxy_to_parent->GetRoutingID()));
+  EXPECT_FALSE(root->child_at(0)
+                   ->current_replication_state()
+                   .should_enforce_strict_mixed_content_checking);
 }
 
 }  // namespace content

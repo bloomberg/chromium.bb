@@ -587,6 +587,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidAccessInitialDocument();
   void OnDidChangeOpener(int32 opener_routing_id);
   void OnDidChangeName(const std::string& name);
+  void OnEnforceStrictMixedContentChecking();
   void OnDidAssignPageId(int32 page_id);
   void OnDidChangeSandboxFlags(int32 frame_routing_id,
                                blink::WebSandboxFlags flags);

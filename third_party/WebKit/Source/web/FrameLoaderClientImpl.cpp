@@ -883,6 +883,13 @@ void FrameLoaderClientImpl::didChangeName(const String& name)
     m_webFrame->client()->didChangeName(m_webFrame, name);
 }
 
+void FrameLoaderClientImpl::didEnforceStrictMixedContentChecking()
+{
+    if (!m_webFrame->client())
+        return;
+    m_webFrame->client()->didEnforceStrictMixedContentChecking();
+}
+
 void FrameLoaderClientImpl::didChangeSandboxFlags(Frame* childFrame, SandboxFlags flags)
 {
     if (!m_webFrame->client())

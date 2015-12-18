@@ -1170,6 +1170,17 @@ void RenderFrameHostManager::OnDidUpdateName(const std::string& name) {
   }
 }
 
+void RenderFrameHostManager::OnEnforceStrictMixedContentChecking(
+    bool should_enforce) {
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    return;
+
+  for (const auto& pair : *proxy_hosts_) {
+    pair.second->Send(new FrameMsg_EnforceStrictMixedContentChecking(
+        pair.second->GetRoutingID(), should_enforce));
+  }
+}
+
 void RenderFrameHostManager::OnDidUpdateOrigin(const url::Origin& origin) {
   if (!SiteIsolationPolicy::IsSwappedOutStateForbidden())
     return;

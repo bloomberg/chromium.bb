@@ -2591,6 +2591,10 @@ void RenderFrameImpl::didChangeName(blink::WebLocalFrame* frame,
   }
 }
 
+void RenderFrameImpl::didEnforceStrictMixedContentChecking() {
+  Send(new FrameHostMsg_EnforceStrictMixedContentChecking(routing_id_));
+}
+
 void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,
                                             blink::WebSandboxFlags flags) {
   Send(new FrameHostMsg_DidChangeSandboxFlags(
@@ -4283,10 +4287,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params.was_within_same_page = navigation_state->WasWithinSamePage();
   params.security_info = response.securityInfo();
 
-  // Set the URL to be displayed in the browser UI to the user.
-  params.url = GetLoadingUrl();
-  DCHECK(!is_swapped_out_ || params.url == GURL(kSwappedOutURL));
-
   // Set the origin of the frame.  This will be replicated to the corresponding
   // RenderFrameProxies in other processes.
   // TODO(alexmos): Origins for URLs with non-standard schemes are excluded due
@@ -4298,6 +4298,13 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
       params.origin = frame->document().securityOrigin();
     }
   }
+
+  params.should_enforce_strict_mixed_content_checking =
+      frame->shouldEnforceStrictMixedContentChecking();
+
+  // Set the URL to be displayed in the browser UI to the user.
+  params.url = GetLoadingUrl();
+  DCHECK(!is_swapped_out_ || params.url == GURL(kSwappedOutURL));
 
   if (frame->document().baseURL() != params.url)
     params.base_url = frame->document().baseURL();

@@ -526,6 +526,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeName, OnDidChangeName)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_EnforceStrictMixedContentChecking,
+                        OnEnforceStrictMixedContentChecking)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAssignPageId, OnDidAssignPageId)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeSandboxFlags,
                         OnDidChangeSandboxFlags)
@@ -1389,6 +1391,10 @@ void RenderFrameHostImpl::OnDidChangeName(const std::string& name) {
   if (old_name.empty() && !name.empty())
     frame_tree_node_->render_manager()->CreateProxiesForNewNamedFrame();
   delegate_->DidChangeName(this, name);
+}
+
+void RenderFrameHostImpl::OnEnforceStrictMixedContentChecking() {
+  frame_tree_node()->SetEnforceStrictMixedContentChecking(true);
 }
 
 void RenderFrameHostImpl::OnDidAssignPageId(int32 page_id) {

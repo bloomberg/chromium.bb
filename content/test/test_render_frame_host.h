@@ -101,6 +101,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   void DidChangeOpener(int opener_routing_id);
 
+  void DidEnforceStrictMixedContentChecking();
+
   // If set, navigations will appear to have cleared the history list in the
   // RenderFrame
   // (FrameHostMsg_DidCommitProvisionalLoad_Params::history_list_was_cleared).

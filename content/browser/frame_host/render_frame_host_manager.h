@@ -438,6 +438,10 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // window.name property.
   void OnDidUpdateName(const std::string& name);
 
+  // Sends updated enforcement of strict mixed content checking to all
+  // frame proxies when the frame changes its setting.
+  void OnEnforceStrictMixedContentChecking(bool should_enforce);
+
   // Send updated origin to all frame proxies when the frame navigates to a new
   // origin.
   void OnDidUpdateOrigin(const url::Origin& origin);

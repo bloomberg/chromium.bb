@@ -80,6 +80,9 @@ public:
     void addInsecureNavigationUpgrade(unsigned hashedHost) { m_insecureNavigationsToUpgrade.add(hashedHost); }
     InsecureNavigationsSet* insecureNavigationsToUpgrade() { return &m_insecureNavigationsToUpgrade; }
 
+    void setShouldEnforceStrictMixedContentChecking(bool shouldEnforce) { m_enforceStrictMixedContentChecking = shouldEnforce; }
+    bool shouldEnforceStrictMixedContentChecking() { return m_enforceStrictMixedContentChecking; }
+
 protected:
     SecurityContext();
     virtual ~SecurityContext();
@@ -99,6 +102,7 @@ private:
     bool m_hostedInReservedIPRange;
     InsecureRequestsPolicy m_insecureRequestsPolicy;
     InsecureNavigationsSet m_insecureNavigationsToUpgrade;
+    bool m_enforceStrictMixedContentChecking;
 };
 
 } // namespace blink

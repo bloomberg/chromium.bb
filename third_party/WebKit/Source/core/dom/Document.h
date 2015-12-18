@@ -1057,6 +1057,8 @@ public:
     WebTaskRunner* loadingTaskRunner() const;
     WebTaskRunner* timerTaskRunner() const;
 
+    void enforceStrictMixedContentChecking();
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 

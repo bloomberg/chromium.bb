@@ -201,6 +201,8 @@ public:
 
     virtual void didChangeName(const String&) { }
 
+    virtual void didEnforceStrictMixedContentChecking() {}
+
     virtual void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) { }
 
     virtual void didChangeFrameOwnerProperties(HTMLFrameElementBase*) { }

@@ -261,6 +261,10 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
 
   // Timestamp at which the UI action that triggered the navigation originated.
   IPC_STRUCT_MEMBER(base::TimeTicks, ui_timestamp)
+
+  // True if the document for the load is enforcing strict mixed content
+  // checking.
+  IPC_STRUCT_MEMBER(bool, should_enforce_strict_mixed_content_checking)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)
@@ -678,6 +682,12 @@ IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateSandboxFlags, blink::WebSandboxFlags)
 // changed in another process.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateName, std::string /* name */)
 
+// Update a proxy's replicated enforcement of strict mixed content
+// checking.  Used when the frame's mixed content setting is changed in
+// another process.
+IPC_MESSAGE_ROUTED1(FrameMsg_EnforceStrictMixedContentChecking,
+                    bool /* should enforce */)
+
 // Update a proxy's replicated origin.  Used when the frame is navigated to a
 // new origin.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateOrigin, url::Origin /* origin */)
@@ -856,6 +866,13 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateState, content::PageState /* state */)
 
 // Sent when the frame changes its window.name.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeName, std::string /* name */)
+
+// Sent when the frame starts enforcing strict mixed content
+// checking. Sending this information in DidCommitProvisionalLoad isn't
+// sufficient; this message is needed because, for example, a document
+// can dynamically insert a <meta> tag that causes strict mixed content
+// checking to be enforced.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_EnforceStrictMixedContentChecking)
 
 // Sent when the renderer changed the progress of a load.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeLoadProgress,

@@ -789,6 +789,12 @@ void WebRemoteFrameImpl::setReplicatedName(const WebString& name) const
     frame()->tree().setName(name, nullAtom);
 }
 
+void WebRemoteFrameImpl::setReplicatedShouldEnforceStrictMixedContentChecking(bool shouldEnforce) const
+{
+    ASSERT(frame());
+    frame()->securityContext()->setShouldEnforceStrictMixedContentChecking(shouldEnforce);
+}
+
 void WebRemoteFrameImpl::DispatchLoadEventForFrameOwner() const
 {
     ASSERT(frame()->owner()->isLocal());

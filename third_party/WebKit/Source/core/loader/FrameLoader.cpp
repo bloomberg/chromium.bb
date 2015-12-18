@@ -1522,13 +1522,7 @@ bool FrameLoader::shouldEnforceStrictMixedContentChecking() const
     if (!parentFrame)
         return false;
 
-    // FIXME: We need a way to propagate strict mixed content checking flags to
-    // out-of-process frames. For now, we'll always enforce.
-    if (!parentFrame->isLocalFrame())
-        return true;
-
-    ASSERT(toLocalFrame(parentFrame)->document());
-    return toLocalFrame(parentFrame)->document()->shouldEnforceStrictMixedContentChecking();
+    return parentFrame->securityContext()->shouldEnforceStrictMixedContentChecking();
 }
 
 SecurityContext::InsecureRequestsPolicy FrameLoader::insecureRequestsPolicy() const

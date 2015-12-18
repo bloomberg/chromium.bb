@@ -39,6 +39,9 @@ public:
     // Set frame name replicated from another process.
     virtual void setReplicatedName(const WebString&) const = 0;
 
+    // Set frame enforcement of strict mixed content checking replicated from another process.
+    virtual void setReplicatedShouldEnforceStrictMixedContentChecking(bool) const = 0;
+
     virtual void DispatchLoadEventForFrameOwner() const = 0;
 
     virtual void didStartLoading() = 0;

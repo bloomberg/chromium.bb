@@ -434,6 +434,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void willClose(blink::WebFrame* frame) override;
   void didChangeName(blink::WebLocalFrame* frame,
                      const blink::WebString& name) override;
+  void didEnforceStrictMixedContentChecking() override;
   void didChangeSandboxFlags(blink::WebFrame* child_frame,
                              blink::WebSandboxFlags flags) override;
   void didChangeFrameOwnerProperties(

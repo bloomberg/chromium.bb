@@ -89,7 +89,11 @@ FrameTreeNode::FrameTreeNode(
       opener_(nullptr),
       opener_observer_(nullptr),
       has_committed_real_load_(false),
-      replication_state_(scope, name, sandbox_flags),
+      replication_state_(
+          scope,
+          name,
+          sandbox_flags,
+          false /* should enforce strict mixed content checking */),
       // Effective sandbox flags also need to be set, since initial sandbox
       // flags should apply to the initial empty document in the frame.
       effective_sandbox_flags_(sandbox_flags),
@@ -203,6 +207,16 @@ void FrameTreeNode::SetFrameName(const std::string& name) {
   if (name != replication_state_.name)
     render_manager_.OnDidUpdateName(name);
   replication_state_.name = name;
+}
+
+void FrameTreeNode::SetEnforceStrictMixedContentChecking(bool should_enforce) {
+  if (should_enforce ==
+      replication_state_.should_enforce_strict_mixed_content_checking) {
+    return;
+  }
+  render_manager_.OnEnforceStrictMixedContentChecking(should_enforce);
+  replication_state_.should_enforce_strict_mixed_content_checking =
+      should_enforce;
 }
 
 bool FrameTreeNode::IsDescendantOf(FrameTreeNode* other) const {

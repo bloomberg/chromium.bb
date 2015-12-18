@@ -449,6 +449,9 @@ void NavigatorImpl::DidNavigate(
   // created via ViewMsg_New and FrameMsg_NewFrameProxy.
   render_frame_host->frame_tree_node()->SetCurrentOrigin(params.origin);
 
+  render_frame_host->frame_tree_node()->SetEnforceStrictMixedContentChecking(
+      params.should_enforce_strict_mixed_content_checking);
+
   // When using --site-per-process, we notify the RFHM for all navigations,
   // not just main frame navigations.
   if (oopifs_possible) {

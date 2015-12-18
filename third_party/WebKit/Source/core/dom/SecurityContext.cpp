@@ -37,6 +37,7 @@ SecurityContext::SecurityContext()
     , m_sandboxFlags(SandboxNone)
     , m_hostedInReservedIPRange(false)
     , m_insecureRequestsPolicy(InsecureRequestsDoNotUpgrade)
+    , m_enforceStrictMixedContentChecking(false)
 {
 }
 

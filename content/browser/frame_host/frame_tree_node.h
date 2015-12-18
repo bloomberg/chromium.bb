@@ -137,6 +137,10 @@ class CONTENT_EXPORT FrameTreeNode {
   // Set the current name and notify proxies about the update.
   void SetFrameName(const std::string& name);
 
+  // Sets the current enforcement of strict mixed content checking and
+  // notifies proxies about the update.
+  void SetEnforceStrictMixedContentChecking(bool should_enforce);
+
   blink::WebSandboxFlags effective_sandbox_flags() {
     return effective_sandbox_flags_;
   }

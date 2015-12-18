@@ -350,6 +350,10 @@ void TestRenderFrameHost::DidChangeOpener(int opener_routing_id) {
   OnDidChangeOpener(opener_routing_id);
 }
 
+void TestRenderFrameHost::DidEnforceStrictMixedContentChecking() {
+  OnEnforceStrictMixedContentChecking();
+}
+
 void TestRenderFrameHost::PrepareForCommit() {
   PrepareForCommitWithServerRedirect(GURL());
 }

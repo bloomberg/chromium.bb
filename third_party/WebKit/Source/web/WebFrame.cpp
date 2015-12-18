@@ -132,6 +132,11 @@ void WebFrame::setFrameOwnerSandboxFlags(WebSandboxFlags flags)
     toRemoteBridgeFrameOwner(owner)->setSandboxFlags(static_cast<SandboxFlags>(flags));
 }
 
+bool WebFrame::shouldEnforceStrictMixedContentChecking() const
+{
+    return toImplBase()->frame()->securityContext()->shouldEnforceStrictMixedContentChecking();
+}
+
 WebFrame* WebFrame::opener() const
 {
     return m_opener;

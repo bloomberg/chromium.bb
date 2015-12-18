@@ -192,6 +192,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   web_frame_->setReplicatedOrigin(state.origin);
   web_frame_->setReplicatedSandboxFlags(state.sandbox_flags);
   web_frame_->setReplicatedName(blink::WebString::fromUTF8(state.name));
+  web_frame_->setReplicatedShouldEnforceStrictMixedContentChecking(
+      state.should_enforce_strict_mixed_content_checking);
 }
 
 // Update the proxy's SecurityContext and FrameOwner with new sandbox flags
@@ -229,6 +231,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
     IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
+    IPC_MESSAGE_HANDLER(FrameMsg_EnforceStrictMixedContentChecking,
+                        OnEnforceStrictMixedContentChecking)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetPageFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
@@ -338,6 +342,12 @@ void RenderFrameProxy::OnDispatchLoad() {
 
 void RenderFrameProxy::OnDidUpdateName(const std::string& name) {
   web_frame_->setReplicatedName(blink::WebString::fromUTF8(name));
+}
+
+void RenderFrameProxy::OnEnforceStrictMixedContentChecking(
+    bool should_enforce) {
+  web_frame_->setReplicatedShouldEnforceStrictMixedContentChecking(
+      should_enforce);
 }
 
 void RenderFrameProxy::OnDidUpdateOrigin(const url::Origin& origin) {

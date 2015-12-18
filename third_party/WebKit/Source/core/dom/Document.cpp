@@ -5784,6 +5784,13 @@ WebTaskRunner* Document::timerTaskRunner() const
     return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
 }
 
+void Document::enforceStrictMixedContentChecking()
+{
+    securityContext().setShouldEnforceStrictMixedContentChecking(true);
+    if (frame())
+        frame()->loader().client()->didEnforceStrictMixedContentChecking();
+}
+
 DEFINE_TRACE(Document)
 {
 #if ENABLE(OILPAN)

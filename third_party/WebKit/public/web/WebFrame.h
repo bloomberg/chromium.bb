@@ -175,6 +175,9 @@ public:
     // navigation.
     BLINK_EXPORT void setFrameOwnerSandboxFlags(WebSandboxFlags);
 
+    // Returns true if the frame is enforcing strict mixed content checking.
+    BLINK_EXPORT bool shouldEnforceStrictMixedContentChecking() const;
+
     // Geometry -----------------------------------------------------------
 
     // NOTE: These routines do not force page layout so their results may

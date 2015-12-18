@@ -178,6 +178,9 @@ public:
     // This frame's name has changed.
     virtual void didChangeName(WebLocalFrame*, const WebString&) { }
 
+    // This frame has been set to enforce strict mixed content checking.
+    virtual void didEnforceStrictMixedContentChecking() {}
+
     // The sandbox flags have changed for a child frame of this frame.
     virtual void didChangeSandboxFlags(WebFrame* childFrame, WebSandboxFlags flags) { }
 

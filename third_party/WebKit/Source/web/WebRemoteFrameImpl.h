@@ -187,6 +187,7 @@ public:
     void setReplicatedOrigin(const WebSecurityOrigin&) const override;
     void setReplicatedSandboxFlags(WebSandboxFlags) const override;
     void setReplicatedName(const WebString&) const override;
+    void setReplicatedShouldEnforceStrictMixedContentChecking(bool) const override;
     void DispatchLoadEventForFrameOwner() const override;
 
     void didStartLoading() override;
