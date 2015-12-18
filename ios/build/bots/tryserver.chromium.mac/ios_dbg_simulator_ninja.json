@@ -27,16 +27,6 @@
       "include": "common_tests.json",
       "device type": "iPad Retina",
       "os": "9.0"
-    },
-    {
-      "include": "common_tests.json",
-      "device type": "iPhone 5s",
-      "os": "8.3"
-    },
-    {
-      "include": "common_tests.json",
-      "device type": "iPad Retina",
-      "os": "8.3"
     }
   ]
 }
