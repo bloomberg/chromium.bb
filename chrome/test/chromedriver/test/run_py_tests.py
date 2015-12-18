@@ -1210,13 +1210,6 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load('http://invalid./')
     self.assertEquals('http://invalid./', self._driver.GetCurrentUrl())
 
-  def testReturningAFunctionInJavascript(self):
-    self._driver.Log(self.GetHttpUrlForFile(
-        '/chromedriver/circularly_self_reference_function.html'))
-    func = self.driver.ExecuteScript('return func;')
-    self.assertEquals(
-        1, self._driver.ExecuteScript('return arguments[0]();', func))
-
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
   """End to end tests for Android-specific tests."""
