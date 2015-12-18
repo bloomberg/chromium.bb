@@ -363,12 +363,6 @@ blink::WebData TestBlinkWebUnitTestSupport::readFromFile(
   return blink::WebData(buffer.data(), buffer.size());
 }
 
-bool TestBlinkWebUnitTestSupport::getBlobItems(
-    const blink::WebString& uuid,
-    blink::WebVector<blink::WebBlobData::Item*>* items) {
-  return blob_registry_.GetBlobItems(uuid, items);
-}
-
 blink::WebThread* TestBlinkWebUnitTestSupport::currentThread() {
   if (web_thread_ && web_thread_->isCurrentThread())
     return web_thread_.get();

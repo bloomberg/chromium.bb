@@ -85,9 +85,6 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   blink::WebString webKitRootDir() override;
   blink::WebLayerTreeView* createLayerTreeViewForTesting() override;
   blink::WebData readFromFile(const blink::WebString& path) override;
-  bool getBlobItems(
-      const blink::WebString& uuid,
-      blink::WebVector<blink::WebBlobData::Item*>* items) override;
   blink::WebThread* currentThread() override;
   void enterRunLoop() override;
   void exitRunLoop() override;
