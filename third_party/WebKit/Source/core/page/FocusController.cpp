@@ -577,7 +577,9 @@ void FocusController::setFocusedFrame(PassRefPtrWillBeRawPtr<Frame> frame, bool 
 
     m_isChangingFocusedFrame = false;
 
-    if (m_focusedFrame && notifyEmbedder)
+    // Checking client() is necessary, as the frame might have been detached as
+    // part of dispatching the focus event above. See https://crbug.com/570874.
+    if (m_focusedFrame && m_focusedFrame->client() && notifyEmbedder)
         m_focusedFrame->client()->frameFocused();
 }
 
