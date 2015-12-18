@@ -318,7 +318,8 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
         int textStyle = res.getInteger(R.integer.infobar_message_textstyle);
         float textSize = res.getDimension(R.dimen.infobar_big_icon_message_size);
         mMessageTextView.setTypeface(Typeface.create(typeface, textStyle));
-        mMessageTextView.setSingleLine();
+        mMessageTextView.setMaxLines(1);
+        mMessageTextView.setEllipsize(TextUtils.TruncateAt.END);
         mMessageTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
     }
 
