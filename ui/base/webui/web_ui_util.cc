@@ -36,11 +36,9 @@ std::string GetBitmapDataUrl(const SkBitmap& bitmap) {
                "width", bitmap.width(), "height", bitmap.height());
   std::vector<unsigned char> output;
   gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &output);
-  return GetPngDataUrl(output.data(), output.size());
-}
+  std::string str_url;
+  str_url.insert(str_url.end(), output.begin(), output.end());
 
-std::string GetPngDataUrl(const unsigned char* data, size_t size) {
-  std::string str_url(reinterpret_cast<const char*>(data), size);
   base::Base64Encode(str_url, &str_url);
   str_url.insert(0, "data:image/png;base64,");
   return str_url;

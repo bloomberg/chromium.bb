@@ -49,30 +49,28 @@ namespace options {
 
 // Static.
 base::RefCountedMemory* UserImageSource::GetUserImage(
-    const AccountId& account_id) {
+    const AccountId& account_id,
+    ui::ScaleFactor scale_factor) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);
-
-  // Always use the 100% scaling. These source images are 256x256, and are
-  // downscaled to ~64x64 for use in WebUI pages. Therefore, they are big enough
-  // for device scale factors up to 4. We do not use SCALE_FACTOR_NONE, as we
-  // specifically want 100% scale images to not transmit more data than needed.
   if (user) {
     if (user->has_raw_image()) {
       return new base::RefCountedBytes(user->raw_image());
     } else if (user->image_is_stub()) {
-      return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-          IDR_PROFILE_PICTURE_LOADING, ui::SCALE_FACTOR_100P);
+      return ResourceBundle::GetSharedInstance().
+          LoadDataResourceBytesForScale(IDR_PROFILE_PICTURE_LOADING,
+                                        scale_factor);
     } else if (user->HasDefaultImage()) {
-      return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-          user_manager::kDefaultImageResourceIDs[user->image_index()],
-          ui::SCALE_FACTOR_100P);
+      return ResourceBundle::GetSharedInstance().
+          LoadDataResourceBytesForScale(
+              user_manager::kDefaultImageResourceIDs[user->image_index()],
+              scale_factor);
     } else {
       NOTREACHED() << "User with custom image missing raw data";
     }
   }
-  return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-      IDR_LOGIN_DEFAULT_USER, ui::SCALE_FACTOR_100P);
+  return ResourceBundle::GetSharedInstance().
+      LoadDataResourceBytesForScale(IDR_LOGIN_DEFAULT_USER, scale_factor);
 }
 
 UserImageSource::UserImageSource() {
@@ -93,7 +91,7 @@ void UserImageSource::StartDataRequest(
   GURL url(chrome::kChromeUIUserImageURL + path);
   ParseRequest(url, &email);
   const AccountId account_id(AccountId::FromUserEmail(email));
-  callback.Run(GetUserImage(account_id));
+  callback.Run(GetUserImage(account_id, ui::SCALE_FACTOR_100P));
 }
 
 std::string UserImageSource::GetMimeType(const std::string& path) const {
