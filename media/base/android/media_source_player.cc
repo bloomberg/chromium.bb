@@ -504,7 +504,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
   if (IsEventPending(SEEK_EVENT_PENDING)) {
     ProcessPendingEvents();
     // In case of Seek GetCurrentTime() already tells the time to seek to.
-    if (is_clock_manager)
+    if (is_clock_manager && !doing_browser_seek_)
       media_stat_->StopAndReport(current_presentation_timestamp);
     return;
   }
@@ -568,8 +568,6 @@ void MediaSourcePlayer::MediaDecoderCallback(
   // in the middle of a seek or stop event and needs to wait for the IPCs to
   // come.
   if (status == MEDIA_CODEC_ABORT) {
-    if (is_clock_manager)
-      media_stat_->StopAndReport(GetCurrentTime());
     return;
   }
 
@@ -761,7 +759,8 @@ void MediaSourcePlayer::OnPrefetchDone() {
   if (!interpolator_.interpolating())
     interpolator_.StartInterpolating();
 
-  media_stat_->Start(start_presentation_timestamp_);
+  if (!AudioFinished() || !VideoFinished())
+    media_stat_->Start(start_presentation_timestamp_);
 
   if (!AudioFinished())
     DecodeMoreAudio();

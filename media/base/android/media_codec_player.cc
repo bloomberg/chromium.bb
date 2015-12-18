@@ -87,6 +87,8 @@ MediaCodecPlayer::~MediaCodecPlayer()
   DVLOG(1) << "MediaCodecPlayer::~MediaCodecPlayer";
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
 
+  media_stat_->StopAndReport(GetInterpolatedTime());
+
   // Currently the unit tests wait for the MediaCodecPlayer destruction by
   // watching the demuxer, which is destroyed as one of the member variables.
   // Release the codecs here, before any member variable is destroyed to make
@@ -96,8 +98,6 @@ MediaCodecPlayer::~MediaCodecPlayer()
     video_decoder_->ReleaseDecoderResources();
   if (audio_decoder_)
     audio_decoder_->ReleaseDecoderResources();
-
-  media_stat_->StopAndReport(GetInterpolatedTime());
 
   if (cdm_) {
     DCHECK(cdm_registration_id_);
@@ -247,6 +247,8 @@ void MediaCodecPlayer::Pause(bool is_media_related_action) {
 
   DVLOG(1) << __FUNCTION__;
 
+  media_stat_->StopAndReport(GetInterpolatedTime());
+
   SetPendingStart(false);
 
   switch (state_) {
@@ -278,6 +280,8 @@ void MediaCodecPlayer::SeekTo(base::TimeDelta timestamp) {
   RUN_ON_MEDIA_THREAD(SeekTo, timestamp);
 
   DVLOG(1) << __FUNCTION__ << " " << timestamp;
+
+  media_stat_->StopAndReport(GetInterpolatedTime());
 
   switch (state_) {
     case kStatePaused:
@@ -328,6 +332,8 @@ void MediaCodecPlayer::Release() {
   RUN_ON_MEDIA_THREAD(Release);
 
   DVLOG(1) << __FUNCTION__;
+
+  media_stat_->StopAndReport(GetInterpolatedTime());
 
   // Stop decoding threads and delete MediaCodecs, but keep IPC between browser
   // and renderer processes going. Seek should work across and after Release().
@@ -822,13 +828,13 @@ void MediaCodecPlayer::OnStopDone(DemuxerStream::Type type) {
       return;
   }
 
-  media_stat_->StopAndReport(GetInterpolatedTime());
-
   // DetachListener to UI thread
   ui_task_runner_->PostTask(FROM_HERE, detach_listener_cb_);
 
-  if (AudioFinished() && VideoFinished())
+  if (AudioFinished() && VideoFinished()) {
+    media_stat_->StopAndReport(GetInterpolatedTime());
     ui_task_runner_->PostTask(FROM_HERE, completion_cb_);
+  }
 }
 
 void MediaCodecPlayer::OnMissingKeyReported(DemuxerStream::Type type) {
@@ -839,6 +845,8 @@ void MediaCodecPlayer::OnMissingKeyReported(DemuxerStream::Type type) {
   key_is_required_ = true;
 
   if (state_ == kStatePlaying) {
+    media_stat_->StopAndReport(GetInterpolatedTime());
+
     SetState(kStateStopping);
     RequestToStopDecoders();
     SetPendingStart(true);
@@ -848,6 +856,8 @@ void MediaCodecPlayer::OnMissingKeyReported(DemuxerStream::Type type) {
 void MediaCodecPlayer::OnError() {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__;
+
+  media_stat_->StopAndReport(GetInterpolatedTime());
 
   // kStateError blocks all events
   SetState(kStateError);
@@ -1243,7 +1253,6 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::StartDecoders() {
 
   // At this point decoder threads are either not running at all or their
   // message pumps are in the idle state after the preroll is done.
-  media_stat_->Start(current_time);
 
   if (!AudioFinished()) {
     if (!audio_decoder_->Start(current_time))
@@ -1258,6 +1267,8 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::StartDecoders() {
       return kStartFailed;
   }
 
+  media_stat_->Start(current_time);
+
   return kStartOk;
 }
 
@@ -1267,8 +1278,6 @@ void MediaCodecPlayer::StopDecoders() {
 
   video_decoder_->SyncStop();
   audio_decoder_->SyncStop();
-
-  media_stat_->StopAndReport(GetInterpolatedTime());
 }
 
 void MediaCodecPlayer::RequestToStopDecoders() {
@@ -1326,8 +1335,6 @@ void MediaCodecPlayer::ReleaseDecoderResources() {
   // At this point decoder threads should not be running
   if (interpolator_.interpolating())
     interpolator_.StopInterpolating();
-
-  media_stat_->StopAndReport(GetInterpolatedTime());
 }
 
 void MediaCodecPlayer::CreateDecoders() {

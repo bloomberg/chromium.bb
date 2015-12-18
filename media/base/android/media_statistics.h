@@ -57,12 +57,12 @@ class MediaStatistics {
   // Returns the frame statistics for video frames.
   FrameStatistics& video_frame_stats() { return video_frame_stats_; }
 
-  // Starts gathering statistics. When called in a row only the firts call will
+  // Starts gathering statistics. When called in a row only the first call will
   // take effect.
   void Start(base::TimeDelta current_playback_time);
 
   // Stops gathering statistics, calculate and report results. When called
-  // in a row only the firts call will take effect.
+  // in a row only the first call will take effect.
   void StopAndReport(base::TimeDelta current_playback_time);
 
   // Adds starvation event. Starvation happens when the player interrupts
