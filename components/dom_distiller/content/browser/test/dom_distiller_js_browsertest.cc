@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -118,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, RunJsTests) {
   // Add timeout in case JS Test execution fails. It is safe to call the
   // QuitClosure multiple times.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(30));
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_max_timeout());
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16(kRunJsTestsJs),
       base::Bind(&DomDistillerJsTest::OnJsTestExecutionDone,
