@@ -343,6 +343,10 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
         if (mSearchPanel.isShowing()) {
             mSearchPanel.closePanel(reason, false);
+        } else {
+            if (mSelectionController.getSelectionType() == SelectionType.TAP) {
+                mSelectionController.clearSelection();
+            }
         }
     }
 

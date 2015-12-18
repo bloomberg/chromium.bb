@@ -41,6 +41,7 @@ public class ContextualSearchSelectionController {
     private static final int TAP_NAVIGATION_DETECTION_DELAY = 16;
 
     private static final String CONTAINS_WORD_PATTERN = "(\\w|\\p{L}|\\p{N})+";
+    private static final String SINGLE_DIGIT_PATTERN = "^\\d$";
 
     // Max selection length must be limited or the entire request URL can go past the 2K limit.
     private static final int MAX_SELECTION_LENGTH = 100;
@@ -51,6 +52,7 @@ public class ContextualSearchSelectionController {
     private final Handler mRunnableHandler;
     private final float mPxToDp;
     private final Pattern mContainsWordPattern;
+    private final Pattern mSingleDigitPattern;
 
     private String mSelectedText;
     private SelectionType mSelectionType;
@@ -107,6 +109,7 @@ public class ContextualSearchSelectionController {
         };
 
         mContainsWordPattern = Pattern.compile(CONTAINS_WORD_PATTERN);
+        mSingleDigitPattern = Pattern.compile(SINGLE_DIGIT_PATTERN);
     }
 
     /**
@@ -130,7 +133,7 @@ public class ContextualSearchSelectionController {
         }
 
         // Long press selections should remain visible after ending a Contextual Search.
-        if (getSelectionType() == SelectionType.TAP) {
+        if (mSelectionType == SelectionType.TAP) {
             clearSelection();
         }
     }
@@ -434,10 +437,24 @@ public class ContextualSearchSelectionController {
 
     @VisibleForTesting
     boolean isValidSelection(String selection, ContentViewCore baseContentView) {
-        if (selection.length() > MAX_SELECTION_LENGTH || !doesContainAWord(selection)) {
+        if (selection.length() > MAX_SELECTION_LENGTH) {
             return false;
         }
-        return baseContentView != null && !baseContentView.isFocusedNodeEditable();
+
+        if (!doesContainAWord(selection)) {
+            return false;
+        }
+
+        if (baseContentView != null && baseContentView.isFocusedNodeEditable()) {
+            return false;
+        }
+
+        if (ContextualSearchFieldTrial.isDigitBlacklistEnabled()
+                && isBlacklistedWord(selection)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -448,5 +465,13 @@ public class ContextualSearchSelectionController {
     @VisibleForTesting
     public boolean doesContainAWord(String selection) {
         return mContainsWordPattern.matcher(selection).find();
+    }
+
+    /**
+     * @param word A given word.
+     * @return Whether the given word is blacklisted.
+     */
+    private boolean isBlacklistedWord(String word) {
+        return mSingleDigitPattern.matcher(word).find();
     }
 }

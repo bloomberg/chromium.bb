@@ -30,6 +30,8 @@ public class ContextualSearchFieldTrial {
 
     static final String DISABLE_EXTRA_SEARCH_BAR_ANIMATIONS = "disable_extra_search_bar_animations";
 
+    static final String ENABLE_DIGIT_BLACKLIST = "enable_digit_blacklist";
+
     // Translation.
     @VisibleForTesting
     static final String DISABLE_FORCE_TRANSLATION_ONEBOX = "disable_force_translation_onebox";
@@ -127,6 +129,13 @@ public class ContextualSearchFieldTrial {
      */
     static boolean areExtraSearchBarAnimationsDisabled() {
         return getBooleanParam(DISABLE_EXTRA_SEARCH_BAR_ANIMATIONS);
+    }
+
+    /**
+     * @return Whether the digit blacklist is enabled.
+     */
+    static boolean isDigitBlacklistEnabled() {
+        return getBooleanParam(ENABLE_DIGIT_BLACKLIST);
     }
 
     /**
