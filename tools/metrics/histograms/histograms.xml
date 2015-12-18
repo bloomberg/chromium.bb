@@ -68683,6 +68683,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="458410433" label="disable-views-rect-based-targeting"/>
   <int value="460475728" label="wake-on-wifi-packet"/>
   <int value="466248382" label="disable-push-api-background-mode"/>
+  <int value="468959230"
+      label="enable-non-validating-reload-on-refresh-content"/>
   <int value="474743272" label="material-design-ink-drop"/>
   <int value="493903641" label="disable-appcontainer"/>
   <int value="494733611" label="disable-drop-sync-credential"/>

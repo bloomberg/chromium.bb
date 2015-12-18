@@ -1057,6 +1057,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_NAVIGATION_TRACING_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableNavigationTracing)},
+#if defined(OS_ANDROID)
+    {"enable-non-validating-reload-on-refresh-content",
+     IDS_FLAGS_ENABLE_NON_VALIDATING_RELOAD_ON_REFRESH_CONTENT_NAME,
+     IDS_FLAGS_ENABLE_NON_VALIDATING_RELOAD_ON_REFRESH_CONTENT_DESCRIPTION,
+     kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kEnableNonValidatingReloadOnRefreshContent)},
+#endif
     {"trace-upload-url",
      IDS_FLAGS_TRACE_UPLOAD_URL,
      IDS_FLAGS_TRACE_UPLOAD_URL_DESCRIPTION,
