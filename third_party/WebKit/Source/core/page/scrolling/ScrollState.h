@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class CORE_EXPORT ScrollState final : public RefCountedWillBeGarbageCollected<ScrollState>, public ScriptWrappable {
+class CORE_EXPORT ScrollState final : public RefCountedWillBeGarbageCollectedFinalized<ScrollState>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
