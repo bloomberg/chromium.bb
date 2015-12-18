@@ -183,12 +183,12 @@ replaced with calls to ``abort()``. The usual ``-fno-exceptions`` flag is also
 supported, though the default is ``-fexceptions``. PNaCl will support full
 zero-cost exception handling in the future.
 
-.. note:: When using naclports_ or other prebuilt static libraries, you don't
+.. note:: When using webports_ or other prebuilt static libraries, you don't
           need to recompile because the exception handling support is
           implemented at link time (when all the static libraries are put
           together with your application).
 
-.. _naclports: https://code.google.com/p/naclports
+.. _webports: https://chromium.googlesource.com/webports
 
 NaCl supports full zero-cost C++ exception handling.
 

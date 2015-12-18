@@ -507,10 +507,10 @@ def FindObjdumpExecutable():
 
 
 def GetDefaultLibPath(config):
-  """Derive default library path to use when searching for shared
-  objects.  This currently include the toolchain library folders
-  as well as the top level SDK lib folder and the naclports lib
-  folder.  We include both 32-bit and 64-bit library paths.
+  """Derive default library path.
+
+  This path is used when searching for shared objects.  This currently includes
+  the toolchain library folders and the top level SDK lib folder.
   """
   sdk_root = GetSDKRoot()
 
@@ -520,7 +520,7 @@ def GetDefaultLibPath(config):
     'toolchain/%s_x86_glibc/x86_64-nacl/lib' % osname,
     'toolchain/%s_x86_glibc/x86_64-nacl/lib32' % osname,
     'toolchain/%s_arm_glibc/arm-nacl/lib' % osname,
-    # naclports installed libraries
+    # user installed libraries (used by webports)
     'toolchain/%s_x86_glibc/x86_64-nacl/usr/lib' % osname,
     'toolchain/%s_x86_glibc/i686-nacl/usr/lib' % osname,
     'toolchain/%s_arm_glibc/arm-nacl/usr/lib' % osname,
@@ -528,10 +528,6 @@ def GetDefaultLibPath(config):
     'lib/glibc_x86_32/%s' % config,
     'lib/glibc_x86_64/%s' % config,
     'lib/glibc_arm/%s' % config,
-    # naclports bundle libraries
-    'ports/lib/glibc_x86_32/%s' % config,
-    'ports/lib/glibc_x86_64/%s' % config,
-    'ports/lib/glibc_arm/%s' % config,
   ]
 
   # In some cases (e.g. ASAN, TSAN, STANDALONE) the name of the configuration

@@ -235,7 +235,7 @@ Do I have to use C or C++? I'd really like to use another language.
 Right now only C and C++ are supported directly by the toolchain in the SDK. C#
 and other languages in the .NET family are supported via the `Mono port`_ for
 Native Client. Moreover, there are several ongoing projects to support
-additional language runtimes (e.g. `naclports supports Lua, Python and Ruby`_)
+additional language runtimes (e.g. `webports includes Lua, Python and Ruby`_)
 as well as to compile more languages to LLVM's intermediate representation
 (e.g. support Halide_, Haskell with GHC_ or support Fortran with flang_), or
 transpile languages to C/C++ (source-to-source compilation). Even JavaScript is
@@ -454,8 +454,8 @@ Is my favorite third-party library available for Native Client?
 ---------------------------------------------------------------
 
 Google has ported several third-party libraries to Native Client; such libraries
-are available in the naclports_ project. We encourage you to contribute
-libraries to naclports, and/or to host your own ported libraries, and to let the
+are available in the webports_ project. We encourage you to contribute
+libraries to webports, and/or to host your own ported libraries, and to let the
 team know about it on native-client-discuss_ when you do. You can also read
 through :doc:`contributor ideas <reference/ideas>` to find ideas of new projects
 to port.
@@ -587,7 +587,7 @@ Here are ways to resolve some common problems that can prevent loading:
 .. _experimental development environment which runs within NaCl: https://www.youtube.com/watch?v=OzNuzBDEWzk&list=PLOU2XLYxmsIIwGK7v7jg3gQvIAWJzdat_
 .. _introduction to GCC: https://www.google.com/search?q=gcc+introduction
 .. _Mono port: https://github.com/elijahtaylor/mono
-.. _naclports supports Lua, Python and Ruby: https://code.google.com/p/naclports/source/browse#svn%2Ftrunk%2Fsrc%2Fexamples%2Ftools
+.. _webports includes Lua, Python and Ruby: https://chromium.googlesource.com/webports
 .. _Halide: http://halide-lang.org/
 .. _GHC: http://www.haskell.org/ghc/docs/latest/html/users_guide/code-generators.html
 .. _flang: https://flang-gsoc.blogspot.ie/2013/09/end-of-gsoc-report.html
@@ -600,5 +600,5 @@ Here are ways to resolve some common problems that can prevent loading:
 .. _GLES2 file: https://code.google.com/p/chromium/codesearch#chromium/src/ppapi/lib/gl/gles2/gles2.c
 .. _Google Chrome privacy policy: https://www.google.com/chrome/intl/en/privacy.html
 .. _Google Chrome Terms of Service: https://www.google.com/chrome/intl/en/eula_text.html
-.. _naclports: https://code.google.com/p/naclports
+.. _webports: https://chromium.googlesource.com/webports
 .. _CORS: http://en.wikipedia.org/wiki/Cross-origin_resource_sharing

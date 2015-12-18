@@ -101,7 +101,7 @@ interpreted languages that have been ported to PNaCl.
 
 Check out the range of interpreters, libraries, and tools
 `already ported to PNaCl and ready to be integrated with your Web App
-<https://code.google.com/p/naclports/wiki/PortList>`_.
+<https://chromium.googlesource.com/webports/+/master/docs/port_list.md>`_.
 
 While our in-browser environment is rapidly evolving
 to become a complete development solution,

@@ -96,11 +96,6 @@ class TestDefaultLibpath(unittest.TestCase):
     self.assertIn(path_fallback, paths)
     self.assertGreater(paths.index(path_fallback), paths.index(path_base))
 
-  def testIncludesNaClPorts(self):
-    paths = create_nmf.GetDefaultLibPath('Debug')
-    self.assertTrue(any(os.path.join('ports', 'lib') in p for p in paths),
-                    'naclports libpath missing: %s' % str(paths))
-
 
 class TestNmfUtils(unittest.TestCase):
   """Tests for the main NmfUtils class in create_nmf."""

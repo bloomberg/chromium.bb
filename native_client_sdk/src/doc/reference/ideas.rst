@@ -87,13 +87,13 @@ New Filesystems
 Open Source Porting
 ^^^^^^^^^^^^^^^^^^^
 
-* **Project:** Port substantial open source projects to work in naclports.
-* **Brief explanation:** naclports contains a large collection of open source
+* **Project:** Port substantial open source projects to work in webports.
+* **Brief explanation:** webports contains a large collection of open source
   projects that properly compile and run on the PNaCl platform. This project
-  involves adding new useful projects to naclports, and upstreaming any patches
+  involves adding new useful projects to webports, and upstreaming any patches
   to the original project: running on PNaCl effective involves porting to a new
   architecture and operating system. Project ideas include: Gimp, Inkscape, Gtk.
-* **Expected results:** New open source projects are usable from naclports.
+* **Expected results:** New open source projects are usable from webports.
 * **Knowledge Prerequisite:** C/C++.
 * **Mentor:** Brad Nelson.
 

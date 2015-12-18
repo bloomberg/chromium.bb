@@ -581,9 +581,9 @@ The header files are in:
 * ARM toolchain: ``toolchain/<platform>_arm_<c_library>/arm-nacl/include``
 
 Many other libraries have been ported for use with Native Client; for more
-information, see the `naclports <http://code.google.com/p/naclports/>`_
+information, see the `webports <https://chromium.googlesource.com/webports>`_
 project. If you port an open-source library for your own use, we recommend
-adding it to naclports.
+adding it to webports.
 
 Besides the standard libraries, the SDK includes Pepper libraries.
 The PNaCl Pepper libraries are located in the the
@@ -633,8 +633,8 @@ libppapi_simple.a
   * Since the Native Client toolchains use their own library and header search
     paths, the tools won't find third-party libraries you use in your
     non-Native-Client development. If you want to use a specific third-party
-    library for Native Client development, look for it in `naclports
-    <http://code.google.com/p/naclports/>`_, or port the library yourself.
+    library for Native Client development, look for it in `webports
+    <https://chromium.googlesource.com/webports>`_, or port the library yourself.
   * The order in which you list libraries in your build commands is important,
     since the linker searches and processes libraries in the order in which they
     are specified. See the ``\*_LDFLAGS`` variables in the Makefiles of the SDK

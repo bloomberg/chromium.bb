@@ -40,7 +40,7 @@ import parse_dsc
 import verify_filelist
 
 from build_paths import SCRIPT_DIR, SDK_SRC_DIR, SRC_DIR, NACL_DIR, OUT_DIR
-from build_paths import NACLPORTS_DIR, GSTORE, GONACL_APPENGINE_SRC_DIR
+from build_paths import GSTORE, GONACL_APPENGINE_SRC_DIR
 
 # Add SDK make tools scripts to the python path.
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
@@ -55,9 +55,6 @@ NACL_TOOLCHAINTARS_DIR = os.path.join(NACL_TOOLCHAIN_DIR, '.tars')
 
 CYGTAR = os.path.join(BUILD_DIR, 'cygtar.py')
 PKGVER = os.path.join(BUILD_DIR, 'package_version', 'package_version.py')
-
-NACLPORTS_URL = 'https://chromium.googlesource.com/external/naclports.git'
-NACLPORTS_REV = '65c71c1524a74ff8415573e5e5ef7c59ce4ac437'
 
 GYPBUILD_DIR = 'gypbuild'
 

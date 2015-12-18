@@ -243,7 +243,7 @@ it&#8217;s platform-independent, and we&#8217;d like it to stay that way.</p>
 <p>Right now only C and C++ are supported directly by the toolchain in the SDK. C#
 and other languages in the .NET family are supported via the <a class="reference external" href="https://github.com/elijahtaylor/mono">Mono port</a> for
 Native Client. Moreover, there are several ongoing projects to support
-additional language runtimes (e.g. <a class="reference external" href="https://code.google.com/p/naclports/source/browse#svn%2Ftrunk%2Fsrc%2Fexamples%2Ftools">naclports supports Lua, Python and Ruby</a>)
+additional language runtimes (e.g. <a class="reference external" href="https://chromium.googlesource.com/webports">webports includes Lua, Python and Ruby</a>)
 as well as to compile more languages to LLVM&#8217;s intermediate representation
 (e.g. support <a class="reference external" href="http://halide-lang.org/">Halide</a>, Haskell with <a class="reference external" href="http://www.haskell.org/ghc/docs/latest/html/users_guide/code-generators.html">GHC</a> or support Fortran with <a class="reference external" href="https://flang-gsoc.blogspot.ie/2013/09/end-of-gsoc-report.html">flang</a>), or
 transpile languages to C/C++ (source-to-source compilation). Even JavaScript is
@@ -391,8 +391,8 @@ Native Client provides an <code>mmap()</code> system call that behaves much like
 the standard UNIX <code>mmap()</code> system call.</p>
 <h3 id="is-my-favorite-third-party-library-available-for-native-client">Is my favorite third-party library available for Native Client?</h3>
 <p>Google has ported several third-party libraries to Native Client; such libraries
-are available in the <a class="reference external" href="https://code.google.com/p/naclports">naclports</a> project. We encourage you to contribute
-libraries to naclports, and/or to host your own ported libraries, and to let the
+are available in the <a class="reference external" href="https://chromium.googlesource.com/webports">webports</a> project. We encourage you to contribute
+libraries to webports, and/or to host your own ported libraries, and to let the
 team know about it on <a class="reference external" href="https://groups.google.com/group/native-client-discuss">native-client-discuss</a> when you do. You can also read
 through <a class="reference internal" href="/native-client/reference/ideas.html"><em>contributor ideas</em></a> to find ideas of new projects
 to port.</p>

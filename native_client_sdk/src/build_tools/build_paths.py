@@ -17,7 +17,6 @@ OUT_DIR = os.path.join(SRC_DIR, 'out')
 BUILD_ARCHIVE_DIR = os.path.join(OUT_DIR, 'nacl_sdk_build')
 EXTRACT_ARCHIVE_DIR = os.path.join(OUT_DIR, 'nacl_sdk_extract')
 PPAPI_DIR = os.path.join(SRC_DIR, 'ppapi')
-NACLPORTS_DIR = os.path.join(OUT_DIR, 'naclports')
 GONACL_APPENGINE_DIR = os.path.join(SDK_SRC_DIR, 'gonacl_appengine')
 GONACL_APPENGINE_SRC_DIR = os.path.join(GONACL_APPENGINE_DIR, 'src')
 

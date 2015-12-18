@@ -292,8 +292,8 @@ Next steps
   </devguide/devcycle/running>`, and :doc:`Debugging pages
   </devguide/devcycle/debugging>` for information about how to build, run, and
   debug Native Client applications.
-* Check the `naclports <http://code.google.com/p/naclports/>`_ project to see
-  what libraries have been ported for use with Native Client. If you port an
-  open-source library for your own use, we recommend adding it to naclports
-  (see `How to check code into naclports
-  <http://code.google.com/p/naclports/wiki/HowTo_Checkin>`_).
+* Check the `webports <https://chromium.googlesource.com/webports>`_ project to
+  see what libraries have been ported for use with Native Client. If you port an
+  open-source library for your own use, we recommend adding it to webports
+  (see `How to check code into webports
+  <https://chromium.googlesource.com/webports/+/master/CONTRIBUTING.md>`_).
