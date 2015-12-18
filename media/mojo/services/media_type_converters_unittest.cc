@@ -25,6 +25,24 @@ void CompareBytes(uint8* original_data, uint8* result_data, size_t length) {
   EXPECT_EQ(memcmp(original_data, result_data, length), 0);
 }
 
+// Compare the actual video frame bytes (|rows| rows of |row|bytes| data),
+// skipping any padding that may be in either frame.
+void CompareRowBytes(uint8* original_data,
+                     uint8* result_data,
+                     size_t rows,
+                     size_t row_bytes,
+                     size_t original_stride,
+                     size_t result_stride) {
+  DCHECK_GE(original_stride, row_bytes);
+  DCHECK_GE(result_stride, row_bytes);
+
+  for (size_t i = 0; i < rows; ++i) {
+    CompareBytes(original_data, result_data, row_bytes);
+    original_data += original_stride;
+    result_data += result_stride;
+  }
+}
+
 void CompareAudioBuffers(SampleFormat sample_format,
                          const scoped_refptr<AudioBuffer>& original,
                          const scoped_refptr<AudioBuffer>& result) {
@@ -58,8 +76,9 @@ void CompareVideoPlane(size_t plane,
   EXPECT_EQ(original->stride(plane), result->stride(plane));
   EXPECT_EQ(original->row_bytes(plane), result->row_bytes(plane));
   EXPECT_EQ(original->rows(plane), result->rows(plane));
-  CompareBytes(original->data(plane), result->data(plane),
-               original->rows(plane) * original->row_bytes(plane));
+  CompareRowBytes(original->data(plane), result->data(plane),
+                  original->rows(plane), original->row_bytes(plane),
+                  original->stride(plane), result->stride(plane));
 }
 
 void CompareVideoFrames(const scoped_refptr<VideoFrame>& original,
