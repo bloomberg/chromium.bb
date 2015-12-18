@@ -408,8 +408,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     /** Updates the current InputStrategy used by the TouchInputHandler. */
     public void changeInputMode(
             Desktop.InputMode inputMode, CapabilityManager.HostCapability hostTouchCapability) {
-        // In order to set the correct input strategy, we need to know the current input mode and
-        // the host input capabilities.
+        // We need both input mode and host input capabilities to select the input strategy.
         if (!inputMode.isSet() || !hostTouchCapability.isSet()) {
             return;
         }
@@ -420,9 +419,12 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
                 break;
 
             case TOUCH:
-                // TODO(joedow): Add TouchInputStrategy once it is finished.
-                mInputHandler.setInputStrategy(
-                        new SimulatedTouchInputStrategy(mRenderData, getContext()));
+                if (hostTouchCapability.isSupported()) {
+                    mInputHandler.setInputStrategy(new TouchInputStrategy(mRenderData));
+                } else {
+                    mInputHandler.setInputStrategy(
+                            new SimulatedTouchInputStrategy(mRenderData, getContext()));
+                }
                 break;
 
             default:
