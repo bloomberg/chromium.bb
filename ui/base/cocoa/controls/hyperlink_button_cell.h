@@ -11,8 +11,8 @@
 #include "ui/base/ui_base_export.h"
 
 // A HyperlinkButtonCell is used to create an NSButton that looks and acts
-// like a hyperlink. The default styling is to look like blue, underlined text
-// and to have the pointingHand cursor on mouse over.
+// like a hyperlink. The default styling is to look like blue (#3367D6) text
+// with no underline and to have the pointingHand cursor on mouse over.
 //
 // To use in Interface Builder:
 //  1. Drag out an NSButton.

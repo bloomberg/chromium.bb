@@ -15,7 +15,11 @@
 @synthesize shouldUnderline = shouldUnderline_;
 
 + (NSColor*)defaultTextColor {
-  return [NSColor blueColor];
+  // Equates to rgb(51, 103, 214) or #3367D6.
+  return [NSColor colorWithCalibratedRed:51.0/255.0
+                                   green:103.0/255.0
+                                    blue:214.0/255.0
+                                   alpha:1.0];
 }
 
 + (NSButton*)buttonWithString:(NSString*)string {
@@ -65,7 +69,7 @@
 - (void)customizeButtonCell {
   [self setBordered:NO];
   [self setTextColor:[HyperlinkButtonCell defaultTextColor]];
-  [self setShouldUnderline:YES];
+  [self setShouldUnderline:NO];
 
   CGFloat fontSize = [NSFont systemFontSizeForControlSize:[self controlSize]];
   NSFont* font = [NSFont controlContentFontOfSize:fontSize];
