@@ -766,7 +766,7 @@ String UseCounter::deprecationMessage(Feature feature)
 
     // Keyboard Event (DOM Level 3)
     case KeyboardEventKeyLocation:
-        return replacedBy("'KeyboardEvent.keyLocation'", "'KeyboardEvent.location'");
+        return replacedWillBeRemoved("'KeyboardEvent.keyLocation'", "'KeyboardEvent.location'", 50, "4997403308457984");
 
     case ConsoleMarkTimeline:
         return replacedBy("'console.markTimeline'", "'console.timeStamp'");

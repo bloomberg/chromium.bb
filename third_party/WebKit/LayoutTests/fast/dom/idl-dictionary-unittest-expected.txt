@@ -1,4 +1,4 @@
-CONSOLE WARNING: 'KeyboardEvent.keyLocation' is deprecated. Please use 'KeyboardEvent.location' instead.
+CONSOLE WARNING: 'KeyboardEvent.keyLocation' is deprecated and will be removed in M50, around April 2016. Please use 'KeyboardEvent.location' instead. See https://www.chromestatus.com/features/4997403308457984 for more details.
 IDL dictionary unittest
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
