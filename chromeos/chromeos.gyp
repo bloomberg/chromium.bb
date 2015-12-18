@@ -400,6 +400,8 @@
       'binder/transaction_data.h',
       'binder/transaction_data_from_driver.cc',
       'binder/transaction_data_from_driver.h',
+      'binder/transaction_data_reader.cc',
+      'binder/transaction_data_reader.h',
       'binder/transaction_status.cc',
       'binder/transaction_status.h',
       'binder/util.cc',
@@ -412,6 +414,7 @@
       'binder/command_broker_unittest.cc',
       'binder/command_stream_unittest.cc',
       'binder/driver_unittest.cc',
+      'binder/transaction_data_reader_unittest.cc',
       'binder/writable_transaction_data_unittest.cc',
     ],
     'chromeos_test_sources': [
