@@ -41,6 +41,7 @@ class ContextualSearchSceneLayer : public SceneLayer {
       jint peek_promo_text_resource_id,
       jint search_provider_icon_sprite_bitmap_resource_id,
       jint search_provider_icon_sprite_metadata_resource_id,
+      jfloat dp_to_px,
       const base::android::JavaParamRef<jobject>& jcontent_view_core,
       jboolean search_promo_visible,
       jfloat search_promo_height,

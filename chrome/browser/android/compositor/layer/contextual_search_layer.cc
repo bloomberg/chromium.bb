@@ -29,6 +29,9 @@ const SkColor kPeekPromoRippleBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xF4);
 // a lighter shade of the color of the Peek Promo Ripple.
 const SkAlpha kPeekPromoBackgroundMaximumAlphaBlend = 0.25f * 255;
 
+// This is the default width for any icon displayed on an OverlayPanel.
+const float kDefaultIconWidthDp = 36.0f;
+
 }  // namespace
 
 namespace chrome {
@@ -55,6 +58,7 @@ void ContextualSearchLayer::SetProperties(
     int peek_promo_text_resource_id,
     int search_provider_icon_sprite_bitmap_resource_id,
     int search_provider_icon_sprite_metadata_resource_id,
+    float dp_to_px,
     content::ContentViewCore* content_view_core,
     bool search_promo_visible,
     float search_promo_height,
@@ -272,13 +276,19 @@ void ContextualSearchLayer::SetProperties(
                                        panel_icon_resource_id);
     DCHECK(panel_icon_resource);
 
+    // If the icon is not the default width, add or remove padding so it appears
+    // centered.
+    float icon_padding = (kDefaultIconWidthDp * dp_to_px -
+        panel_icon_resource->size.width()) / 2.0f;
+
     // Positions the Icon at the start of the Search Bar.
     float search_provider_icon_left;
     if (is_rtl) {
       search_provider_icon_left = search_panel_width -
-          panel_icon_resource->size.width() - search_bar_margin_side;
+          panel_icon_resource->size.width() -
+          (search_bar_margin_side + icon_padding);
     } else {
-      search_provider_icon_left = search_bar_margin_side;
+      search_provider_icon_left = search_bar_margin_side + icon_padding;
     }
 
     // Centers the Icon vertically in the Search Bar.
