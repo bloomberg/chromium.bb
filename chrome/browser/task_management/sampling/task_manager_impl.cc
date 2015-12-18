@@ -4,6 +4,7 @@
 
 #include "chrome/browser/task_management/sampling/task_manager_impl.h"
 
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/task_management/providers/browser_process_task_provider.h"
 #include "chrome/browser/task_management/providers/child_process_task_provider.h"
@@ -44,7 +45,10 @@ TaskManagerImpl::TaskManagerImpl()
   task_providers_.push_back(new ChildProcessTaskProvider());
   task_providers_.push_back(new WebContentsTaskProvider());
 #if defined(OS_CHROMEOS)
-  task_providers_.push_back(new ArcProcessTaskProvider());
+  if (arc::ArcBridgeService::GetEnabled(
+          base::CommandLine::ForCurrentProcess())) {
+    task_providers_.push_back(new ArcProcessTaskProvider());
+  }
 #endif  // defined(OS_CHROMEOS)
 
   content::GpuDataManager::GetInstance()->AddObserver(this);
