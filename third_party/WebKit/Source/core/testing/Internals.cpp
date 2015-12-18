@@ -2368,8 +2368,12 @@ void Internals::setNetworkStateNotifierTestOnly(bool testOnly)
 void Internals::setNetworkConnectionInfo(const String& type, double downlinkMaxMbps, ExceptionState& exceptionState)
 {
     WebConnectionType webtype;
-    if (type == "cellular") {
-        webtype = WebConnectionTypeCellular;
+    if (type == "cellular2g") {
+        webtype = WebConnectionTypeCellular2G;
+    } else if (type == "cellular3g") {
+        webtype = WebConnectionTypeCellular3G;
+    } else if (type == "cellular4g") {
+        webtype = WebConnectionTypeCellular4G;
     } else if (type == "bluetooth") {
         webtype = WebConnectionTypeBluetooth;
     } else if (type == "ethernet") {

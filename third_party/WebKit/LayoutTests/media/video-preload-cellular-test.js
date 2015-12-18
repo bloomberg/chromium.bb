@@ -1,7 +1,7 @@
 function cellular_preload_test() {
   async_test(function(t) {
     internals.setNetworkStateNotifierTestOnly(true);
-    internals.setNetworkConnectionInfo('cellular', 2.0);
+    internals.setNetworkConnectionInfo('cellular3g', 2.0);
 
     var video = document.querySelector('video');
     assert_equals(video.preload, 'none')

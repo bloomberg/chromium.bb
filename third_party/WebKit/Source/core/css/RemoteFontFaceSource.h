@@ -80,6 +80,7 @@ private:
     const FontDisplay m_display;
     DisplayPeriod m_period;
     FontLoadHistograms m_histograms;
+    bool m_isInterventionEnabled;
 };
 
 } // namespace blink

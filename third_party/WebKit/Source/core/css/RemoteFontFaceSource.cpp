@@ -8,6 +8,8 @@
 #include "core/css/CSSCustomFontData.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/FontLoader.h"
+#include "core/page/NetworkStateNotifier.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -21,11 +23,19 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, PassRefPtrWillBeR
     , m_fontLoader(fontLoader)
     , m_display(display)
     , m_period(display == FontDisplaySwap ? SwapPeriod : BlockPeriod)
+    , m_isInterventionEnabled(false)
 {
 #if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
 #endif
     m_font->addClient(this);
+
+    if (RuntimeEnabledFeatures::cssFontDisplayEnabled()) {
+        // TODO(crbug.com/515343): Consider to use better signals.
+        m_isInterventionEnabled = networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
+        if (m_isInterventionEnabled && m_display == FontDisplayAuto)
+            m_period = SwapPeriod;
+    }
 }
 
 RemoteFontFaceSource::~RemoteFontFaceSource()
@@ -102,7 +112,7 @@ void RemoteFontFaceSource::fontLoadShortLimitExceeded(FontResource*)
 
 void RemoteFontFaceSource::fontLoadLongLimitExceeded(FontResource*)
 {
-    if (m_display == FontDisplayAuto || m_display == FontDisplayBlock)
+    if (m_display == FontDisplayBlock || (!m_isInterventionEnabled && m_display == FontDisplayAuto))
         switchToSwapPeriod();
     else if (m_display == FontDisplayFallback)
         switchToFailurePeriod();

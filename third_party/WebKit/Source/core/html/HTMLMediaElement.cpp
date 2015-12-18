@@ -1909,7 +1909,7 @@ void HTMLMediaElement::setPreload(const AtomicString& preload)
 WebMediaPlayer::Preload HTMLMediaElement::preloadType() const
 {
     // Force preload to none for cellular connections.
-    if (networkStateNotifier().connectionType() == WebConnectionTypeCellular) {
+    if (networkStateNotifier().isCellularConnectionType()) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadForcedNone);
         return WebMediaPlayer::PreloadNone;
     }

@@ -37,8 +37,15 @@ connection.addEventListener('change', function(e) {
     finishJSTest();
 });
 
+// Blink internally handles fine grained connection types on cellular network.
+function convertType(type) {
+  if (type == 'cellular')
+    return 'cellular2g';
+  return type;
+}
+
 for(var i = 0; i < types.length; i++)
-  internals.setNetworkConnectionInfo(types[i][0], types[i][1]);
+  internals.setNetworkConnectionInfo(convertType(types[i][0]), types[i][1]);
 
 </script>
 </body>

@@ -74,6 +74,27 @@ public:
     }
 
     // Can be called on any thread.
+    bool isCellularConnectionType() const
+    {
+        switch (connectionType()) {
+        case WebConnectionTypeCellular2G:
+        case WebConnectionTypeCellular3G:
+        case WebConnectionTypeCellular4G:
+            return true;
+        case WebConnectionTypeBluetooth:
+        case WebConnectionTypeEthernet:
+        case WebConnectionTypeWifi:
+        case WebConnectionTypeWimax:
+        case WebConnectionTypeOther:
+        case WebConnectionTypeNone:
+        case WebConnectionTypeUnknown:
+            return false;
+        }
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+
+    // Can be called on any thread.
     double maxBandwidth() const
     {
         MutexLocker locker(m_mutex);

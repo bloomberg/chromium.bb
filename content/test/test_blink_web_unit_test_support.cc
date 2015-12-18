@@ -25,6 +25,7 @@
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
 #include "storage/browser/database/vfs_backend.h"
+#include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
@@ -34,6 +35,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
@@ -121,6 +123,11 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   blink::WebRuntimeFeatures::enableDatabase(true);
   blink::WebRuntimeFeatures::enableNotifications(true);
   blink::WebRuntimeFeatures::enableTouch(true);
+
+  // Initialize NetworkStateNotifier.
+  blink::WebNetworkStateNotifier::setWebConnection(
+      blink::WebConnectionType::WebConnectionTypeUnknown,
+      std::numeric_limits<double>::infinity());
 
   // External cc::AnimationHost is enabled for unit tests.
   cc::LayerSettings layer_settings;

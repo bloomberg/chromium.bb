@@ -19,7 +19,9 @@ using namespace blink;
 String connectionTypeToString(WebConnectionType type)
 {
     switch (type) {
-    case WebConnectionTypeCellular:
+    case WebConnectionTypeCellular2G:
+    case WebConnectionTypeCellular3G:
+    case WebConnectionTypeCellular4G:
         return "cellular";
     case WebConnectionTypeBluetooth:
         return "bluetooth";
