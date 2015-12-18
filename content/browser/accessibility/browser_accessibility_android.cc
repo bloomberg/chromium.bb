@@ -315,6 +315,18 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
     return base::string16();
   }
 
+  // In accordance with ARIA, some elements use their contents as an
+  // accessibility name, so some elements will have the same name as their
+  // child. While most platforms expect this, it causes Android to speak the
+  // name twice. So in this case we should remove the name from the parent.
+  if (GetRole() == ui::AX_ROLE_LIST_ITEM &&
+      GetIntAttribute(ui::AX_ATTR_NAME_FROM) == ui::AX_NAME_FROM_CONTENTS) {
+    // This is an approximation of "PlatformChildCount() > 0" because we can't
+    // call PlatformChildCount from here.
+    if (InternalChildCount() > 0 && !HasOnlyStaticTextChildren())
+      return base::string16();
+  }
+
   // We can only expose one accessible name on Android,
   // not 2 or 3 like on Windows or Mac.
 
