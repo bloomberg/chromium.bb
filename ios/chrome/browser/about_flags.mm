@@ -211,6 +211,14 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   }
 #endif
 
+  // Populate command line flags from TabEviction.
+  NSString* tabEviction = [defaults stringForKey:@"TabEviction"];
+  if ([tabEviction isEqualToString:@"Enabled"]) {
+    command_line->AppendSwitch(switches::kEnableTabEviction);
+  } else if ([tabEviction isEqualToString:@"Disabled"]) {
+    command_line->AppendSwitch(switches::kDisableTabEviction);
+  }
+
   // Set the UA flag if UseMobileSafariUA is enabled.
   if ([defaults boolForKey:@"UseMobileSafariUA"]) {
     // Safari uses "Vesion/", followed by the OS version excluding bugfix, where

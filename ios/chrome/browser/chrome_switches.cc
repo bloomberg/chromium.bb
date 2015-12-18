@@ -52,6 +52,9 @@ const char kDisableTabSwitcher[] = "disable-tab-switcher";
 // Disable the snapshots lru cache.
 const char kDisableLRUSnapshotCache[] = "disable-lru-snapshot-cache";
 
+// Disables the tab eviction policy. (applicable iff WKWebView is enabled)
+const char kDisableTabEviction[] = "disable-tab-eviction";
+
 // Enables Contextual Search.
 const char kEnableContextualSearch[] = "enable-contextual-search";
 
@@ -91,6 +94,9 @@ const char kEnableTabSwitcher[] = "enable-tab-switcher";
 
 // Enables the snapshot lru cache.
 const char kEnableLRUSnapshotCache[] = "enable-lru-snapshot-cache";
+
+// Enables the tab eviction policy. (applicable iff WKWebView is enabled)
+const char kEnableTabEviction[] = "enable-tab-eviction";
 
 // Forces additional Chrome Variation Ids that will be sent in X-Client-Data
 // header, specified as a 64-bit encoded list of numeric experiment ids. Ids
