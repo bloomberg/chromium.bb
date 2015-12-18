@@ -4,6 +4,8 @@
 
 #include "mandoline/ui/omnibox/omnibox_application.h"
 
+#include <utility>
+
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/public/cpp/window.h"
@@ -96,7 +98,7 @@ bool OmniboxApplication::ConfigureIncomingConnection(
 
 void OmniboxApplication::Create(mojo::ApplicationConnection* connection,
                                 mojo::InterfaceRequest<Omnibox> request) {
-  new OmniboxImpl(app_, connection, request.Pass());
+  new OmniboxImpl(app_, connection, std::move(request));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,7 +110,7 @@ OmniboxImpl::OmniboxImpl(mojo::ApplicationImpl* app,
     : app_(app),
       root_(nullptr),
       edit_(nullptr),
-      binding_(this, request.Pass()) {
+      binding_(this, std::move(request)) {
   connection->ConnectToService(&view_embedder_);
 }
 OmniboxImpl::~OmniboxImpl() {}
@@ -183,7 +185,7 @@ bool OmniboxImpl::HandleKeyEvent(views::Textfield* sender,
     GURL url = url_formatter::FixupURL(base::UTF16ToUTF8(sender->text()),
                                        std::string());
     request->url = url.spec();
-    view_embedder_->Embed(request.Pass());
+    view_embedder_->Embed(std::move(request));
     HideWindow();
     return true;
   }
@@ -196,7 +198,7 @@ bool OmniboxImpl::HandleKeyEvent(views::Textfield* sender,
 void OmniboxImpl::GetWindowTreeClient(
     mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) {
   mus::WindowTreeConnection::Create(
-      this, request.Pass(),
+      this, std::move(request),
       mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
@@ -207,7 +209,7 @@ void OmniboxImpl::ShowForURL(const mojo::String& url) {
   } else {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:omnibox");
-    view_embedder_->Embed(request.Pass());
+    view_embedder_->Embed(std::move(request));
   }
 }
 

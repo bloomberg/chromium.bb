@@ -4,6 +4,8 @@
 
 #include "mandoline/ui/desktop_ui/browser_manager.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
@@ -74,7 +76,7 @@ bool BrowserManager::ConfigureIncomingConnection(
 
 void BrowserManager::Create(mojo::ApplicationConnection* connection,
                             mojo::InterfaceRequest<LaunchHandler> request) {
-  launch_handler_bindings_.AddBinding(this, request.Pass());
+  launch_handler_bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace mandoline

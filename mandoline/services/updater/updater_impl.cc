@@ -4,6 +4,8 @@
 
 #include "mandoline/services/updater/updater_impl.h"
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "mandoline/services/updater/updater_app.h"
@@ -17,8 +19,7 @@ UpdaterImpl::UpdaterImpl(mojo::ApplicationImpl* app_impl,
                          mojo::InterfaceRequest<Updater> request)
     : application_(application),
       app_impl_(app_impl),
-      binding_(this, request.Pass()) {
-}
+      binding_(this, std::move(request)) {}
 
 UpdaterImpl::~UpdaterImpl() {
 }

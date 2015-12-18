@@ -4,6 +4,8 @@
 
 #include "mandoline/services/core_services/core_services_application_delegate.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -26,22 +28,20 @@ namespace core_services {
 // A helper class for hosting a mojo::ApplicationImpl on its own thread.
 class ApplicationThread : public base::SimpleThread {
  public:
-  ApplicationThread(
-      const base::WeakPtr<CoreServicesApplicationDelegate>
-          core_services_application,
-      const std::string& url,
-      scoped_ptr<mojo::ApplicationDelegate> delegate,
-      mojo::InterfaceRequest<mojo::Application> request,
-      const mojo::Callback<void()>& destruct_callback)
+  ApplicationThread(const base::WeakPtr<CoreServicesApplicationDelegate>
+                        core_services_application,
+                    const std::string& url,
+                    scoped_ptr<mojo::ApplicationDelegate> delegate,
+                    mojo::InterfaceRequest<mojo::Application> request,
+                    const mojo::Callback<void()>& destruct_callback)
       : base::SimpleThread(url),
         core_services_application_(core_services_application),
-        core_services_application_task_runner_(
-            base::MessageLoop::current()->task_runner()),
+        core_services_application_task_runner_(base::MessageLoop::current()
+                                                   ->task_runner()),
         url_(url),
-        delegate_(delegate.Pass()),
-        request_(request.Pass()),
-        destruct_callback_(destruct_callback) {
-  }
+        delegate_(std::move(delegate)),
+        request_(std::move(request)),
+        destruct_callback_(destruct_callback) {}
 
   ~ApplicationThread() override {
     Join();
@@ -117,7 +117,7 @@ void CoreServicesApplicationDelegate::Quit() {
 void CoreServicesApplicationDelegate::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::ContentHandler> request) {
-  handler_bindings_.AddBinding(this, request.Pass());
+  handler_bindings_.AddBinding(this, std::move(request));
 }
 
 void CoreServicesApplicationDelegate::StartApplication(
@@ -147,11 +147,11 @@ void CoreServicesApplicationDelegate::StartApplication(
       NOTREACHED() << "This application package does not support " << url;
   }
 
-  scoped_ptr<ApplicationThread> thread(
-      new ApplicationThread(weak_factory_.GetWeakPtr(), url, delegate.Pass(),
-                            request.Pass(), destruct_callback));
+  scoped_ptr<ApplicationThread> thread(new ApplicationThread(
+      weak_factory_.GetWeakPtr(), url, std::move(delegate), std::move(request),
+      destruct_callback));
   thread->Start();
-  application_threads_.push_back(thread.Pass());
+  application_threads_.push_back(std::move(thread));
 }
 
 }  // namespace core_services

@@ -4,6 +4,8 @@
 
 #include "mandoline/ui/desktop_ui/browser_window.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -109,7 +111,7 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
       web_view_(this) {
   mus::mojom::WindowTreeHostClientPtr host_client;
   host_client_binding_.Bind(GetProxy(&host_client));
-  mus::CreateWindowTreeHost(host_factory, host_client.Pass(), this, &host_,
+  mus::CreateWindowTreeHost(host_factory, std::move(host_client), this, &host_,
                             nullptr, nullptr);
 }
 
@@ -128,7 +130,7 @@ void BrowserWindow::LoadURL(const GURL& url) {
 
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = url.spec();
-  Embed(request.Pass());
+  Embed(std::move(request));
 }
 
 void BrowserWindow::Close() {
@@ -294,7 +296,7 @@ void BrowserWindow::OnAccelerator(uint32_t id, mus::mojom::EventPtr event) {
 
 void BrowserWindow::TopLevelNavigateRequest(mojo::URLRequestPtr request) {
   OnHideFindBar();
-  Embed(request.Pass());
+  Embed(std::move(request));
 }
 
 void BrowserWindow::TopLevelNavigationStarted(const mojo::String& url) {
@@ -348,7 +350,7 @@ void BrowserWindow::Embed(mojo::URLRequestPtr request) {
     EmbedOmnibox();
     return;
   }
-  web_view_.web_view()->LoadRequest(request.Pass());
+  web_view_.web_view()->LoadRequest(std::move(request));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -356,7 +358,7 @@ void BrowserWindow::Embed(mojo::URLRequestPtr request) {
 
 void BrowserWindow::Create(mojo::ApplicationConnection* connection,
                            mojo::InterfaceRequest<ViewEmbedder> request) {
-  view_embedder_bindings_.AddBinding(this, request.Pass());
+  view_embedder_bindings_.AddBinding(this, std::move(request));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -414,7 +416,7 @@ void BrowserWindow::Init(mus::Window* root) {
 void BrowserWindow::EmbedOmnibox() {
   mus::mojom::WindowTreeClientPtr view_tree_client;
   omnibox_->GetWindowTreeClient(GetProxy(&view_tree_client));
-  omnibox_view_->Embed(view_tree_client.Pass());
+  omnibox_view_->Embed(std::move(view_tree_client));
 
   // TODO(beng): This should be handled sufficiently by
   //             OmniboxImpl::ShowWindow() but unfortunately view manager policy
