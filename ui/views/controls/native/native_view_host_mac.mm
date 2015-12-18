@@ -136,7 +136,16 @@ gfx::NativeViewAccessible NativeViewHostMac::GetNativeViewAccessible() {
 }
 
 gfx::NativeCursor NativeViewHostMac::GetCursor(int x, int y) {
-  NOTIMPLEMENTED();
+  // Intentionally not implemented: Not required on non-aura Mac because OSX
+  // will query the native view for the cursor directly. For NativeViewHostMac
+  // in practice, OSX will retrieve the cursor that was last set by
+  // -[RenderWidgetHostViewCocoa updateCursor:] whenever the pointer is over the
+  // hosted view. With some plumbing, NativeViewHostMac could return that same
+  // cursor here, but it doesn't achieve anything. The implications of returning
+  // null simply mean that the "fallback" cursor on the window itself will be
+  // cleared (see -[NativeWidgetMacNSWindow cursorUpdate:]). However, while the
+  // pointer is over a RenderWidgetHostViewCocoa, OSX won't ask for the fallback
+  // cursor.
   return gfx::kNullCursor;
 }
 
