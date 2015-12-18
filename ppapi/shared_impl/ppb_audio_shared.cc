@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/audio_parameters.h"
@@ -180,7 +182,7 @@ void PPB_Audio_Shared::StopThread() {
     }
   } else {
     if (audio_thread_.get()) {
-      auto local_audio_thread(audio_thread_.Pass());
+      auto local_audio_thread(std::move(audio_thread_));
       CallWhileUnlocked(base::Bind(&base::DelegateSimpleThread::Join,
                                    base::Unretained(local_audio_thread.get())));
     }

@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/video_decoder_resource.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -33,7 +35,7 @@ VideoDecoderResource::ShmBuffer::ShmBuffer(
     scoped_ptr<base::SharedMemory> shm_ptr,
     uint32_t size,
     uint32_t shm_id)
-    : shm(shm_ptr.Pass()), addr(NULL), shm_id(shm_id) {
+    : shm(std::move(shm_ptr)), addr(NULL), shm_id(shm_id) {
   if (shm->Map(size))
     addr = shm->memory();
 }
@@ -231,7 +233,7 @@ int32_t VideoDecoderResource::Decode(uint32_t decode_id,
     scoped_ptr<base::SharedMemory> shm(
         new base::SharedMemory(shm_handle, false /* read_only */));
     scoped_ptr<ShmBuffer> shm_buffer(
-        new ShmBuffer(shm.Pass(), shm_size, shm_id));
+        new ShmBuffer(std::move(shm), shm_size, shm_id));
     if (!shm_buffer->addr)
       return PP_ERROR_NOMEMORY;
 

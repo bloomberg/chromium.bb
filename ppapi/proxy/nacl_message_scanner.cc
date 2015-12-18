@@ -4,7 +4,9 @@
 
 #include "ppapi/proxy/nacl_message_scanner.h"
 
+#include <utility>
 #include <vector>
+
 #include "base/bind.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -342,7 +344,7 @@ bool NaClMessageScanner::ScanMessage(
   // we ever add new param types that also require rewriting.
   if (!results.handles.empty()) {
     handles->swap(results.handles);
-    *new_msg_ptr = results.new_msg.Pass();
+    *new_msg_ptr = std::move(results.new_msg);
   }
   return true;
 }

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <utility>
 
 #include "base/logging.h"
 #include "ppapi/c/pp_errors.h"
@@ -183,7 +184,7 @@ void UDPSocketFilter::RecvQueue::DataReceivedOnIOThread(
     //     is actually run.)
     scoped_ptr<std::string> data_to_pass(new std::string(data));
     recvfrom_callback_->set_completion_task(base::Bind(
-        &SetRecvFromOutput, pp_instance_, base::Passed(data_to_pass.Pass()),
+        &SetRecvFromOutput, pp_instance_, base::Passed(std::move(data_to_pass)),
         addr, base::Unretained(read_buffer_), bytes_to_read_,
         base::Unretained(recvfrom_addr_resource_)));
     last_recvfrom_addr_ = addr;
@@ -226,8 +227,8 @@ int32_t UDPSocketFilter::RecvQueue::RequestData(
     int32_t result = static_cast<int32_t>(front.data.size());
     scoped_ptr<std::string> data_to_pass(new std::string);
     data_to_pass->swap(front.data);
-    SetRecvFromOutput(pp_instance_, data_to_pass.Pass(), front.addr, buffer_out,
-                      num_bytes, addr_out, PP_OK);
+    SetRecvFromOutput(pp_instance_, std::move(data_to_pass), front.addr,
+                      buffer_out, num_bytes, addr_out, PP_OK);
     last_recvfrom_addr_ = front.addr;
     recv_buffers_.pop();
     slot_available_callback_.Run();

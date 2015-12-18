@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/ppb_instance_proxy.h"
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
@@ -788,7 +790,7 @@ int32_t PPB_Instance_Proxy::RegisterMessageHandler(
   scoped_ptr<MessageHandler> message_handler = MessageHandler::Create(
       instance, handler, user_data, message_loop, &result);
   if (message_handler)
-    data->message_handler = message_handler.Pass();
+    data->message_handler = std::move(message_handler);
   return result;
 }
 

@@ -5,12 +5,13 @@
 #ifndef PPAPI_SHARED_IMPL_PROXY_LOCK_H_
 #define PPAPI_SHARED_IMPL_PROXY_LOCK_H_
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace base {
@@ -194,7 +195,7 @@ class RunWhileLockedHelper<void()> {
       // Use a scope and local Callback to ensure that the callback is cleared
       // before the lock is released, even in the unlikely event that Run()
       // throws an exception.
-      scoped_ptr<CallbackType> temp_callback(ptr->callback_.Pass());
+      scoped_ptr<CallbackType> temp_callback(std::move(ptr->callback_));
       temp_callback->Run();
     }
   }
@@ -245,7 +246,7 @@ class RunWhileLockedHelper<void(P1)> {
     DCHECK(ptr->thread_checker_.CalledOnValidThread());
     ProxyAutoLock lock;
     {
-      scoped_ptr<CallbackType> temp_callback(ptr->callback_.Pass());
+      scoped_ptr<CallbackType> temp_callback(std::move(ptr->callback_));
       temp_callback->Run(p1);
     }
   }
@@ -276,7 +277,7 @@ class RunWhileLockedHelper<void(P1, P2)> {
     DCHECK(ptr->thread_checker_.CalledOnValidThread());
     ProxyAutoLock lock;
     {
-      scoped_ptr<CallbackType> temp_callback(ptr->callback_.Pass());
+      scoped_ptr<CallbackType> temp_callback(std::move(ptr->callback_));
       temp_callback->Run(p1, p2);
     }
   }
@@ -307,7 +308,7 @@ class RunWhileLockedHelper<void(P1, P2, P3)> {
     DCHECK(ptr->thread_checker_.CalledOnValidThread());
     ProxyAutoLock lock;
     {
-      scoped_ptr<CallbackType> temp_callback(ptr->callback_.Pass());
+      scoped_ptr<CallbackType> temp_callback(std::move(ptr->callback_));
       temp_callback->Run(p1, p2, p3);
     }
   }
@@ -377,7 +378,7 @@ inline base::Callback<FunctionType> RunWhileLocked(
       new internal::RunWhileLockedHelper<FunctionType>(callback));
   return base::Bind(
       &internal::RunWhileLockedHelper<FunctionType>::CallWhileLocked,
-      base::Passed(helper.Pass()));
+      base::Passed(std::move(helper)));
 }
 
 }  // namespace ppapi

@@ -156,7 +156,7 @@ scoped_ptr<RawVarDataGraph> RawVarDataGraph::Create(const PP_Var& var,
       }
     }
   }
-  return graph.Pass();
+  return graph;
 }
 
 PP_Var RawVarDataGraph::CreatePPVar(PP_Instance instance) {
@@ -199,7 +199,7 @@ scoped_ptr<RawVarDataGraph> RawVarDataGraph::Read(const IPC::Message* m,
     if (!result->data_.back()->Read(var_type, m, iter))
       return scoped_ptr<RawVarDataGraph>();
   }
-  return result.Pass();
+  return result;
 }
 
 std::vector<SerializedHandle*> RawVarDataGraph::GetHandles() {

@@ -129,14 +129,12 @@ scoped_ptr<ResourceHost> PpapiHost::CreateResourceHost(
   scoped_ptr<ResourceHost> resource_host;
   DCHECK(!host_factory_filters_.empty());  // Caller forgot to add a factory.
   for (size_t i = 0; i < host_factory_filters_.size(); i++) {
-    resource_host =
-        host_factory_filters_[i]
-            ->CreateResourceHost(this, resource, instance, nested_msg)
-            .Pass();
+    resource_host = host_factory_filters_[i]->CreateResourceHost(
+        this, resource, instance, nested_msg);
     if (resource_host.get())
       break;
   }
-  return resource_host.Pass();
+  return resource_host;
 }
 
 int PpapiHost::AddPendingResourceHost(scoped_ptr<ResourceHost> resource_host) {

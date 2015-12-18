@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/ppapi_command_buffer_proxy.h"
 
+#include <utility>
+
 #include "base/numerics/safe_conversions.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/api_id.h"
@@ -159,7 +161,8 @@ scoped_refptr<gpu::Buffer> PpapiCommandBufferProxy::CreateTransferBuffer(
     }
   }
 
-  return gpu::MakeBufferFromSharedMemory(shared_memory.Pass(), handle.size());
+  return gpu::MakeBufferFromSharedMemory(std::move(shared_memory),
+                                         handle.size());
 }
 
 void PpapiCommandBufferProxy::DestroyTransferBuffer(int32 id) {

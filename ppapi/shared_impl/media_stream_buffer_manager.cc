@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/media_stream_buffer_manager.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
@@ -35,7 +37,7 @@ bool MediaStreamBufferManager::SetBuffers(int32_t number_of_buffers,
   buffer_size_ = buffer_size;
 
   size_t size = number_of_buffers_ * buffer_size;
-  shm_ = shm.Pass();
+  shm_ = std::move(shm);
   if (!shm_->Map(size))
     return false;
 

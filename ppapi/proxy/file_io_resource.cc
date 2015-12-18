@@ -5,6 +5,7 @@
 #include "ppapi/proxy/file_io_resource.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/task_runner_util.h"
@@ -86,10 +87,9 @@ FileIOResource::WriteOp::WriteOp(scoped_refptr<FileHolder> file_holder,
                                  bool append)
     : file_holder_(file_holder),
       offset_(offset),
-      buffer_(buffer.Pass()),
+      buffer_(std::move(buffer)),
       bytes_to_write_(bytes_to_write),
-      append_(append) {
-}
+      append_(append) {}
 
 FileIOResource::WriteOp::~WriteOp() {
 }
@@ -517,8 +517,8 @@ int32_t FileIOResource::WriteValidated(
   // plugin's buffer at this point.
   scoped_ptr<char[]> copy(new char[bytes_to_write]);
   memcpy(copy.get(), buffer, bytes_to_write);
-  scoped_refptr<WriteOp> write_op(
-      new WriteOp(file_holder_, offset, copy.Pass(), bytes_to_write, append));
+  scoped_refptr<WriteOp> write_op(new WriteOp(
+      file_holder_, offset, std::move(copy), bytes_to_write, append));
   base::PostTaskAndReplyWithResult(
       PpapiGlobals::Get()->GetFileTaskRunner(),
       FROM_HERE,
@@ -610,7 +610,7 @@ void FileIOResource::OnRequestWriteQuotaComplete(
   } else {
     bool append = (open_flags_ & PP_FILEOPENFLAG_APPEND) != 0;
     scoped_refptr<WriteOp> write_op(new WriteOp(
-        file_holder_, offset, buffer.Pass(), bytes_to_write, append));
+        file_holder_, offset, std::move(buffer), bytes_to_write, append));
     base::PostTaskAndReplyWithResult(
         PpapiGlobals::Get()->GetFileTaskRunner(),
         FROM_HERE,
