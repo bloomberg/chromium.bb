@@ -5657,7 +5657,7 @@ private:
     bool m_didScrollFrame;
 };
 
-TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage)
+TEST_P(ParameterizedWebFrameTest, CompositorScrollIsUserScrollLongPage)
 {
     registerMockedHttpURLLoad("long_scroll.html");
     TestScrolledFrameClient client;

@@ -63,6 +63,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -402,8 +403,10 @@ void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffse
     box().view()->clearHitTestCache();
 
     // Inform the FrameLoader of the new scroll position, so it can be restored when navigating back.
-    if (layer()->isRootLayer())
+    if (layer()->isRootLayer()) {
         frameView->frame().loader().saveScrollState();
+        frame->loader().client()->didChangeScrollOffset();
+    }
 
     // All scrolls clear the scroll anchor.
     frameView->clearScrollAnchor();
