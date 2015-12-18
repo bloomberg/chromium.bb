@@ -1181,10 +1181,8 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
 
     // Check kids first.
     for (LayoutObject* child = slowLastChild(); child; child = child->previousSibling()) {
-        if ((!child->hasLayer() || !toLayoutBoxModelObject(child)->layer()->isSelfPaintingLayer()) && child->nodeAtPoint(result, locationInContainer, adjustedLocation, action)) {
-            updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
+        if ((!child->hasLayer() || !toLayoutBoxModelObject(child)->layer()->isSelfPaintingLayer()) && child->nodeAtPoint(result, locationInContainer, adjustedLocation, action))
             return true;
-        }
     }
 
     if (hitTestClippedOutByRoundedBorder(locationInContainer, adjustedLocation))
