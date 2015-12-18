@@ -108,9 +108,20 @@ void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
 
 void HttpServerPropertiesImpl::InitializeSpdySettingsServers(
     SpdySettingsMap* spdy_settings_map) {
+  // Add the entries from persisted data.
+  SpdySettingsMap new_spdy_settings_map(SpdySettingsMap::NO_AUTO_EVICT);
   for (SpdySettingsMap::reverse_iterator it = spdy_settings_map->rbegin();
        it != spdy_settings_map->rend(); ++it) {
-    spdy_settings_map_.Put(it->first, it->second);
+    new_spdy_settings_map.Put(it->first, it->second);
+  }
+
+  spdy_settings_map_.Swap(new_spdy_settings_map);
+
+  // Add the entries from the memory cache.
+  for (SpdySettingsMap::reverse_iterator it = new_spdy_settings_map.rbegin();
+       it != new_spdy_settings_map.rend(); ++it) {
+    if (spdy_settings_map_.Get(it->first) == spdy_settings_map_.end())
+      spdy_settings_map_.Put(it->first, it->second);
   }
 }
 

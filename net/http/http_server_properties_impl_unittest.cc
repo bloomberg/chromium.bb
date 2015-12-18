@@ -22,8 +22,6 @@ class ListValue;
 
 namespace net {
 
-const int kMaxSupportsSpdyServerHosts = 500;
-
 class HttpServerPropertiesImplPeer {
  public:
   static void AddBrokenAlternativeServiceWithExpirationTime(
@@ -47,6 +45,15 @@ void PrintTo(const AlternativeService& alternative_service, std::ostream* os) {
 
 namespace {
 
+const int kMaxSupportsSpdyServerHosts = 500;
+const SpdySettingsIds kSpdySettingsId = SETTINGS_UPLOAD_BANDWIDTH;
+const SpdySettingsFlags kSpdySettingsFlags = SETTINGS_FLAG_PERSISTED;
+
+struct SpdySettingsDataToVerify {
+  HostPortPair spdy_server;
+  uint32 value;
+};
+
 class HttpServerPropertiesImplTest : public testing::Test {
  protected:
   bool HasAlternativeService(const HostPortPair& origin) {
@@ -62,6 +69,35 @@ class HttpServerPropertiesImplTest : public testing::Test {
         base::Time::Now() + base::TimeDelta::FromDays(1);
     return impl_.SetAlternativeService(origin, alternative_service,
                                        alternative_probability, expiration);
+  }
+
+  void InitializeSpdySettingsUploadBandwidth(SpdySettingsMap* spdy_settings_map,
+                                             const HostPortPair& spdy_server,
+                                             uint32 value) {
+    SettingsMap settings_map;
+    settings_map[kSpdySettingsId] =
+        SettingsFlagsAndValue(kSpdySettingsFlags, value);
+    spdy_settings_map->Put(spdy_server, settings_map);
+  }
+
+  void VerifySpdySettingsUploadBandwidth(
+      const SpdySettingsDataToVerify* data_to_verify) {
+    const SpdySettingsMap& spdy_settings_map = impl_.spdy_settings_map();
+    int count = 0;
+    for (SpdySettingsMap::const_iterator map_it = spdy_settings_map.begin();
+         map_it != spdy_settings_map.end(); ++map_it, ++count) {
+      const SpdySettingsDataToVerify& data = data_to_verify[count];
+      EXPECT_TRUE(data.spdy_server.Equals(map_it->first));
+      const SettingsMap& settings_map_memory = map_it->second;
+
+      EXPECT_EQ(1U, settings_map_memory.size());
+      SettingsMap::const_iterator it =
+          settings_map_memory.find(kSpdySettingsId);
+      EXPECT_TRUE(it != settings_map_memory.end());
+      SettingsFlagsAndValue flags_and_value_memory = it->second;
+      EXPECT_EQ(kSpdySettingsFlags, flags_and_value_memory.first);
+      EXPECT_EQ(data.value, flags_and_value_memory.second);
+    }
   }
 
   HttpServerPropertiesImpl impl_;
@@ -946,29 +982,67 @@ typedef HttpServerPropertiesImplTest SpdySettingsServerPropertiesTest;
 
 TEST_F(SpdySettingsServerPropertiesTest, Initialize) {
   HostPortPair spdy_server_google("www.google.com", 443);
+  HostPortPair spdy_server_photos("photos.google.com", 443);
+  HostPortPair spdy_server_docs("docs.google.com", 443);
+  HostPortPair spdy_server_mail("mail.google.com", 443);
 
   // Check by initializing empty spdy settings.
   SpdySettingsMap spdy_settings_map(SpdySettingsMap::NO_AUTO_EVICT);
   impl_.InitializeSpdySettingsServers(&spdy_settings_map);
   EXPECT_TRUE(impl_.GetSpdySettings(spdy_server_google).empty());
 
-  // Check by initializing with www.google.com:443 spdy server settings.
-  SettingsMap settings_map;
-  const SpdySettingsIds id = SETTINGS_UPLOAD_BANDWIDTH;
-  const SpdySettingsFlags flags = SETTINGS_FLAG_PERSISTED;
-  const uint32 value = 31337;
-  SettingsFlagsAndValue flags_and_value(flags, value);
-  settings_map[id] = flags_and_value;
-  spdy_settings_map.Put(spdy_server_google, settings_map);
-  impl_.InitializeSpdySettingsServers(&spdy_settings_map);
+  // Check by initializing spdy server settings for www.google.com:443 and
+  // photos.google.com:443.
+  const SpdySettingsDataToVerify data_to_verify1[] = {
+      {spdy_server_google, 10000}, {spdy_server_photos, 20000},
+  };
+  // Insert them in reverse order to make spdy_server_google as MRU.
+  SpdySettingsMap spdy_settings_map1(SpdySettingsMap::NO_AUTO_EVICT);
+  InitializeSpdySettingsUploadBandwidth(&spdy_settings_map1,
+                                        data_to_verify1[1].spdy_server,
+                                        data_to_verify1[1].value);
+  InitializeSpdySettingsUploadBandwidth(&spdy_settings_map1,
+                                        data_to_verify1[0].spdy_server,
+                                        data_to_verify1[0].value);
+  impl_.InitializeSpdySettingsServers(&spdy_settings_map1);
+  VerifySpdySettingsUploadBandwidth(data_to_verify1);
 
-  const SettingsMap& settings_map2 = impl_.GetSpdySettings(spdy_server_google);
-  ASSERT_EQ(1U, settings_map2.size());
-  SettingsMap::const_iterator it = settings_map2.find(id);
-  EXPECT_TRUE(it != settings_map2.end());
-  SettingsFlagsAndValue flags_and_value2 = it->second;
-  EXPECT_EQ(flags, flags_and_value2.first);
-  EXPECT_EQ(value, flags_and_value2.second);
+  // Check by initializing mail.google.com:443 and docs.google.com:443 as spdy
+  // servers.
+  const SpdySettingsDataToVerify data_to_verify2[] = {
+      {spdy_server_google, 10000},
+      {spdy_server_photos, 20000},
+      {spdy_server_mail, 30000},
+      {spdy_server_docs, 40000},
+  };
+  SpdySettingsMap spdy_settings_map2(SpdySettingsMap::NO_AUTO_EVICT);
+  InitializeSpdySettingsUploadBandwidth(&spdy_settings_map2,
+                                        data_to_verify2[3].spdy_server,
+                                        data_to_verify2[3].value);
+  InitializeSpdySettingsUploadBandwidth(&spdy_settings_map2,
+                                        data_to_verify2[2].spdy_server,
+                                        data_to_verify2[2].value);
+  impl_.InitializeSpdySettingsServers(&spdy_settings_map2);
+  VerifySpdySettingsUploadBandwidth(data_to_verify2);
+
+  // Verify new data that is being initialized overwrites what is already in the
+  // memory and also verify the recency list order by updating 3rd and 1st
+  // element's data.
+  const SpdySettingsDataToVerify data_to_verify3[] = {
+      {spdy_server_google, 10000},
+      {spdy_server_photos, 60000},  // Change the value of photos.
+      {spdy_server_mail, 30000},
+      {spdy_server_docs, 50000},  // Change the value of docs.
+  };
+  SpdySettingsMap spdy_settings_map3(SpdySettingsMap::NO_AUTO_EVICT);
+  InitializeSpdySettingsUploadBandwidth(&spdy_settings_map3,
+                                        data_to_verify3[3].spdy_server,
+                                        data_to_verify3[3].value);
+  InitializeSpdySettingsUploadBandwidth(&spdy_settings_map3,
+                                        data_to_verify3[1].spdy_server,
+                                        data_to_verify3[1].value);
+  impl_.InitializeSpdySettingsServers(&spdy_settings_map3);
+  VerifySpdySettingsUploadBandwidth(data_to_verify3);
 }
 
 TEST_F(SpdySettingsServerPropertiesTest, SetSpdySetting) {
