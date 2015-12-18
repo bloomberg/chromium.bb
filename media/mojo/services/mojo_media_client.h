@@ -5,8 +5,6 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_MEDIA_CLIENT_H_
 #define MEDIA_MOJO_SERVICES_MOJO_MEDIA_CLIENT_H_
 
-#include "base/lazy_instance.h"
-#include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/cdm_factory.h"
@@ -20,11 +18,11 @@ class ServiceProvider;
 
 namespace media {
 
-// Interface class which clients will extend to override (at compile time) the
-// default configurations for mojo media services.
-class PlatformMojoMediaClient {
+class MojoMediaClient {
  public:
-  virtual ~PlatformMojoMediaClient();
+  virtual ~MojoMediaClient();
+
+  static scoped_ptr<MojoMediaClient> Create();
 
   // Called exactly once before any other method.
   virtual void Initialize();
@@ -41,30 +39,9 @@ class PlatformMojoMediaClient {
   // Returns the CdmFactory to be used by MojoCdmService.
   virtual scoped_ptr<CdmFactory> CreateCdmFactory(
       mojo::ServiceProvider* service_provider);
-};
 
-class MojoMediaClient {
- public:
-  ~MojoMediaClient();
-
-  static scoped_ptr<MojoMediaClient> Create();
-
-  // Copy of the PlatformMojoMediaClient interface.
-  void Initialize();
-  scoped_ptr<RendererFactory> CreateRendererFactory(
-      const scoped_refptr<MediaLog>& media_log);
-  scoped_refptr<AudioRendererSink> CreateAudioRendererSink();
-  scoped_ptr<VideoRendererSink> CreateVideoRendererSink(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-  scoped_ptr<CdmFactory> CreateCdmFactory(
-      mojo::ServiceProvider* service_provider);
-
- private:
-  MojoMediaClient(scoped_ptr<PlatformMojoMediaClient> platform_client);
-
-  scoped_ptr<PlatformMojoMediaClient> platform_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoMediaClient);
+ protected:
+  MojoMediaClient();
 };
 
 }  // namespace media

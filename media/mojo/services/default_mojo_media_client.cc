@@ -16,15 +16,15 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 
 namespace media {
-namespace internal {
 
-class DefaultMojoMediaClient : public PlatformMojoMediaClient {
+namespace {
+class DefaultMojoMediaClient : public MojoMediaClient {
  public:
   DefaultMojoMediaClient() {}
 
+  // MojoMediaClient overrides.
   void Initialize() override {
     InitializeMediaLibrary();
-
     // TODO(dalecurtis): We should find a single owner per process for the audio
     // manager or make it a lazy instance.  It's not safe to call Get()/Create()
     // across multiple threads...
@@ -70,9 +70,10 @@ class DefaultMojoMediaClient : public PlatformMojoMediaClient {
   DISALLOW_COPY_AND_ASSIGN(DefaultMojoMediaClient);
 };
 
-scoped_ptr<PlatformMojoMediaClient> CreatePlatformMojoMediaClient() {
+}  // namespace (anonymous)
+
+scoped_ptr<MojoMediaClient> MojoMediaClient::Create() {
   return make_scoped_ptr(new DefaultMojoMediaClient());
 }
 
-}  // namespace internal
 }  // namespace media
