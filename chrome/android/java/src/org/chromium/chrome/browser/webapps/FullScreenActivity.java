@@ -8,19 +8,28 @@ import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.Log;
+import org.chromium.base.StreamUtil;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContentsObserver;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Base class for task-focused activities that need to display web content in a nearly UI-less
@@ -31,8 +40,14 @@ import java.io.File;
  * the regular browser's UI is either unnecessary or undesirable.
  * Subclasses can override {@link #createUI()} if they need something more exotic.
  */
+@SuppressFBWarnings("URF_UNREAD_FIELD")
 public abstract class FullScreenActivity extends ChromeActivity {
-    private FullScreenActivityTab mTab;
+    protected static final String BUNDLE_TAB_ID = "tabId";
+    protected static final String BUNDLE_TAB_URL = "tabUrl";
+    private static final String TAG = "FullScreenActivity";
+
+    private Tab mTab;
+    private WebContentsObserver mWebContentsObserver;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -62,8 +77,7 @@ public abstract class FullScreenActivity extends ChromeActivity {
 
     @Override
     public void finishNativeInitialization() {
-        mTab = FullScreenActivityTab.create(this, getWindowAndroid(),
-                getActivityDirectory(), getSavedInstanceState(), createTabDelegateFactory());
+        mTab = createTab();
         getTabModelSelector().setTab(mTab);
         mTab.show(TabSelectionType.FROM_NEW);
 
@@ -85,8 +99,65 @@ public abstract class FullScreenActivity extends ChromeActivity {
     }
 
     @Override
-    public final FullScreenActivityTab getActivityTab() {
+    public final Tab getActivityTab() {
         return mTab;
+    }
+
+    /**
+     * Creates the {@link Tab} used by the FullScreenActivity.
+     * If the {@code savedInstanceState} exists, then the user did not intentionally close the app
+     * by swiping it away in the recent tasks list.  In that case, we try to restore the tab from
+     * disk.
+     */
+    private Tab createTab() {
+        Tab tab = null;
+        boolean unfreeze = false;
+
+        int tabId = Tab.INVALID_TAB_ID;
+        String tabUrl = null;
+        if (getSavedInstanceState() != null) {
+            tabId = getSavedInstanceState().getInt(BUNDLE_TAB_ID, Tab.INVALID_TAB_ID);
+            tabUrl = getSavedInstanceState().getString(BUNDLE_TAB_URL);
+        }
+
+        if (tabId != Tab.INVALID_TAB_ID && tabUrl != null && getActivityDirectory() != null) {
+            FileInputStream stream = null;
+            try {
+                // Restore the tab.
+                stream = new FileInputStream(getTabFile(getActivityDirectory(), tabId));
+                TabState tabState = TabState.readState(stream, false);
+                tab = new Tab(tabId, Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
+                        TabLaunchType.FROM_RESTORE,
+                        TabCreationState.FROZEN_ON_RESTORE, tabState);
+                unfreeze = true;
+            } catch (FileNotFoundException exception) {
+                Log.e(TAG, "Failed to restore tab state.", exception);
+            } catch (IOException exception) {
+                Log.e(TAG, "Failed to restore tab state.", exception);
+            } finally {
+                StreamUtil.closeQuietly(stream);
+            }
+        }
+
+        if (tab == null) {
+            tab = new Tab(Tab.INVALID_TAB_ID, Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
+                    TabLaunchType.FROM_MENU_OR_OVERVIEW, null, null);
+        }
+
+        tab.initialize(null, getTabContentManager(), createTabDelegateFactory(), false, unfreeze);
+        mWebContentsObserver = new WebContentsObserver(tab.getWebContents()) {
+            @Override
+            public void didCommitProvisionalLoadForFrame(
+                    long frameId, boolean isMainFrame, String url, int transitionType) {
+                if (isMainFrame) {
+                    // Notify the renderer to permanently hide the top controls since they do
+                    // not apply to fullscreen content views.
+                    getActivityTab().updateTopControlsState(
+                            getActivityTab().getTopControlsStateConstraints(), true);
+                }
+            }
+        };
+        return tab;
     }
 
     /**
@@ -101,6 +172,13 @@ public abstract class FullScreenActivity extends ChromeActivity {
      */
     protected File getActivityDirectory() {
         return null;
+    }
+
+    /**
+     * @return {@link File} pointing at the tab state for this Activity.
+     */
+    protected static File getTabFile(File activityDirectory, int tabId) {
+        return new File(activityDirectory, TabState.getTabStateFilename(tabId, false));
     }
 
     @Override

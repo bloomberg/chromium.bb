@@ -10,8 +10,8 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +22,12 @@ import android.widget.TextView;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
+import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.metrics.WebappUma;
@@ -42,6 +45,9 @@ import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
@@ -107,7 +113,7 @@ public class WebappActivity extends FullScreenActivity {
 
         getActivityTab().addObserver(createTabObserver());
         getActivityTab().getTabWebContentsDelegateAndroid().setDisplayMode(
-                (int) WebDisplayMode.Standalone);
+                WebDisplayMode.Standalone);
     }
 
     @Override
@@ -130,7 +136,10 @@ public class WebappActivity extends FullScreenActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (getActivityTab() != null) getActivityTab().saveInstanceState(outState);
+        if (getActivityTab() != null) {
+            outState.putInt(BUNDLE_TAB_ID, getActivityTab().getId());
+            outState.putString(BUNDLE_TAB_URL, getActivityTab().getUrl());
+        }
     }
 
     @Override
@@ -143,9 +152,32 @@ public class WebappActivity extends FullScreenActivity {
     public void onStopWithNative() {
         super.onStopWithNative();
         mDirectoryManager.cancelCleanup();
-        if (getActivityTab() != null) getActivityTab().saveState(getActivityDirectory());
+        if (getActivityTab() != null) saveState(getActivityDirectory());
         if (getFullscreenManager() != null) {
             getFullscreenManager().setPersistentFullscreenMode(false);
+        }
+    }
+
+    /**
+     * Saves the tab data out to a file.
+     */
+    void saveState(File activityDirectory) {
+        File tabFile = getTabFile(activityDirectory, getActivityTab().getId());
+
+        FileOutputStream foutput = null;
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525781
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
+        try {
+            foutput = new FileOutputStream(tabFile);
+            TabState.saveState(foutput, getActivityTab().getState(), false);
+        } catch (FileNotFoundException exception) {
+            Log.e(TAG, "Failed to save out tab state.", exception);
+        } catch (IOException exception) {
+            Log.e(TAG, "Failed to save out tab state.", exception);
+        } finally {
+            StreamUtil.closeQuietly(foutput);
+            StrictMode.setThreadPolicy(oldPolicy);
         }
     }
 
