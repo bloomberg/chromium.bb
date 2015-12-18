@@ -18,16 +18,7 @@ namespace remoting {
 namespace protocol {
 
 FakeStreamSocket::FakeStreamSocket()
-    : async_write_(false),
-      write_pending_(false),
-      write_limit_(0),
-      next_write_error_(net::OK),
-      next_read_error_(net::OK),
-      read_buffer_size_(0),
-      input_pos_(0),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {
-}
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()), weak_factory_(this) {}
 
 FakeStreamSocket::~FakeStreamSocket() {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
@@ -157,8 +148,6 @@ void FakeStreamSocket::DoWrite(const scoped_refptr<net::IOBuffer>& buf,
 
 FakeStreamChannelFactory::FakeStreamChannelFactory()
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      asynchronous_create_(false),
-      fail_create_(false),
       weak_factory_(this) {
 }
 
@@ -180,6 +169,7 @@ void FakeStreamChannelFactory::CreateChannel(
     const ChannelCreatedCallback& callback) {
   scoped_ptr<FakeStreamSocket> channel(new FakeStreamSocket());
   channels_[name] = channel->GetWeakPtr();
+  channel->set_async_write(async_write_);
 
   if (peer_factory_) {
     FakeStreamSocket* peer_channel = peer_factory_->GetFakeChannel(name);

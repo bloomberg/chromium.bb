@@ -12,7 +12,7 @@
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/connection_tester.h"
-#include "remoting/protocol/fake_session.h"
+#include "remoting/protocol/fake_stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -71,30 +71,16 @@ class ChannelMultiplexerTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    host_channel_factory_.PairWith(&client_channel_factory_);
+
     // Create pair of multiplexers and connect them to each other.
-    host_mux_.reset(new ChannelMultiplexer(
-        host_session_.GetTransport()->GetStreamChannelFactory(),
-        kMuxChannelName));
-    client_mux_.reset(new ChannelMultiplexer(
-        client_session_.GetTransport()->GetStreamChannelFactory(),
-        kMuxChannelName));
-  }
+    host_mux_.reset(
+        new ChannelMultiplexer(&host_channel_factory_, kMuxChannelName));
+    client_mux_.reset(
+        new ChannelMultiplexer(&client_channel_factory_, kMuxChannelName));
 
-  // Connect sockets to each other. Must be called after we've created at least
-  // one channel with each multiplexer.
-  void ConnectSockets() {
-    FakeStreamSocket* host_socket =
-        host_session_.GetTransport()
-            ->GetStreamChannelFactory()
-            ->GetFakeChannel(ChannelMultiplexer::kMuxChannelName);
-    FakeStreamSocket* client_socket =
-        client_session_.GetTransport()
-            ->GetStreamChannelFactory()
-            ->GetFakeChannel(ChannelMultiplexer::kMuxChannelName);
-    host_socket->PairWith(client_socket);
-
-    // Make writes asynchronous in one direction.
-    host_socket->set_async_write(true);
+    // Make writes asynchronous in one direction
+    host_channel_factory_.set_async_write(true);
   }
 
   void CreateChannel(const std::string& name,
@@ -136,8 +122,8 @@ class ChannelMultiplexerTest : public testing::Test {
 
   base::MessageLoop message_loop_;
 
-  FakeSession host_session_;
-  FakeSession client_session_;
+  FakeStreamChannelFactory host_channel_factory_;
+  FakeStreamChannelFactory client_channel_factory_;
 
   scoped_ptr<ChannelMultiplexer> host_mux_;
   scoped_ptr<ChannelMultiplexer> client_mux_;
@@ -154,8 +140,6 @@ TEST_F(ChannelMultiplexerTest, OneChannel) {
   scoped_ptr<P2PStreamSocket> client_socket;
   ASSERT_NO_FATAL_FAILURE(
       CreateChannel(kTestChannelName, &host_socket, &client_socket));
-
-  ConnectSockets();
 
   StreamConnectionTester tester(host_socket.get(), client_socket.get(),
                                 kMessageSize, kMessages);
@@ -174,8 +158,6 @@ TEST_F(ChannelMultiplexerTest, TwoChannels) {
   scoped_ptr<P2PStreamSocket> client_socket2_;
   ASSERT_NO_FATAL_FAILURE(
       CreateChannel(kTestChannelName2, &host_socket2_, &client_socket2_));
-
-  ConnectSockets();
 
   StreamConnectionTester tester1(host_socket1_.get(), client_socket1_.get(),
                                 kMessageSize, kMessages);
@@ -212,8 +194,6 @@ TEST_F(ChannelMultiplexerTest, FourChannels) {
   ASSERT_NO_FATAL_FAILURE(
       CreateChannel("ch4", &host_socket4, &client_socket4));
 
-  ConnectSockets();
-
   StreamConnectionTester tester1(host_socket1_.get(), client_socket1_.get(),
                                 kMessageSize, kMessages);
   StreamConnectionTester tester2(host_socket2_.get(), client_socket2_.get(),
@@ -247,11 +227,8 @@ TEST_F(ChannelMultiplexerTest, WriteFailSync) {
   ASSERT_NO_FATAL_FAILURE(
       CreateChannel(kTestChannelName2, &host_socket2_, &client_socket2_));
 
-  ConnectSockets();
-
   FakeStreamSocket* socket =
-      host_session_.GetTransport()->GetStreamChannelFactory()->GetFakeChannel(
-          kMuxChannelName);
+      host_channel_factory_.GetFakeChannel(kMuxChannelName);
   socket->set_next_write_error(net::ERR_FAILED);
   socket->set_async_write(false);
 
@@ -283,11 +260,8 @@ TEST_F(ChannelMultiplexerTest, WriteFailAsync) {
   ASSERT_NO_FATAL_FAILURE(
       CreateChannel(kTestChannelName2, &host_socket2_, &client_socket2_));
 
-  ConnectSockets();
-
   FakeStreamSocket* socket =
-      host_session_.GetTransport()->GetStreamChannelFactory()->GetFakeChannel(
-          kMuxChannelName);
+      host_channel_factory_.GetFakeChannel(kMuxChannelName);
   socket->set_next_write_error(net::ERR_FAILED);
   socket->set_async_write(true);
 
@@ -318,11 +292,8 @@ TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
   ASSERT_NO_FATAL_FAILURE(
       CreateChannel(kTestChannelName2, &host_socket2_, &client_socket2_));
 
-  ConnectSockets();
-
   FakeStreamSocket* socket =
-      host_session_.GetTransport()->GetStreamChannelFactory()->GetFakeChannel(
-          kMuxChannelName);
+      host_channel_factory_.GetFakeChannel(kMuxChannelName);
   socket->set_next_write_error(net::ERR_FAILED);
   socket->set_async_write(true);
 
@@ -356,10 +327,8 @@ TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
 }
 
 TEST_F(ChannelMultiplexerTest, SessionFail) {
-  host_session_.GetTransport()->GetStreamChannelFactory()
-      ->set_asynchronous_create(true);
-  host_session_.GetTransport()->GetStreamChannelFactory()
-      ->set_fail_create(true);
+  host_channel_factory_.set_asynchronous_create(true);
+  host_channel_factory_.set_fail_create(true);
 
   MockConnectCallback cb1;
   MockConnectCallback cb2;
