@@ -171,6 +171,7 @@ static ResourceRequestCachePolicy memoryCachePolicyToResourceRequestCachePolicy(
 
 ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceRequest& request, Resource::Type type) const
 {
+    ASSERT(frame());
     if (type == Resource::MainResource) {
         FrameLoadType frameLoadType = frame()->loader().loadType();
         if (request.httpMethod() == "POST" && frameLoadType == FrameLoadTypeBackForward)
@@ -192,6 +193,21 @@ ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const R
                 return ReloadIgnoringCacheData;
         }
         return UseProtocolCachePolicy;
+    }
+
+    // For users on slow connections, we want to avoid blocking the parser in
+    // the main frame on script loads inserted via document.write, since it can
+    // add significant delays before page content is displayed on the screen.
+    // For now, as a prototype, we block fetches for main frame scripts
+    // inserted via document.write as long as the
+    // disallowFetchForDocWrittenScriptsInMainFrame setting is enabled. In the
+    // future, we'll extend this logic to only block if estimated network RTT
+    // is above some threshold.
+    if (type == Resource::Script && isMainFrame()) {
+        const bool isInDocumentWrite = m_document && m_document->isInDocumentWrite();
+        const bool disallowFetchForDocWriteScripts = frame()->settings() && frame()->settings()->disallowFetchForDocWrittenScriptsInMainFrame();
+        if (isInDocumentWrite && disallowFetchForDocWriteScripts)
+            return ReturnCacheDataDontLoad;
     }
 
     if (request.isConditional())

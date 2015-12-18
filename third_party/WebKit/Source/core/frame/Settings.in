@@ -379,5 +379,9 @@ fetchIncreaseAsyncScriptPriority initial=false
 # as soon as possible for something currently on the screen.
 fetchIncreasePriorities initial=false
 
+# Whether to disallow network fetches for parser blocking scripts in the main
+# frame inserted via document.write.
+disallowFetchForDocWrittenScriptsInMainFrame initial=false
+
 # The autoplay gesture override experiment is described in crbug.com/487345 .
 autoplayExperimentMode type=String, initial="off"
