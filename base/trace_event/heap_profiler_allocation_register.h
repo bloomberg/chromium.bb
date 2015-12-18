@@ -60,6 +60,8 @@ class BASE_EXPORT AllocationRegister {
   };
 
   AllocationRegister();
+  explicit AllocationRegister(uint32_t num_cells);
+
   ~AllocationRegister();
 
   // Inserts allocation details into the table. If the address was present
@@ -112,7 +114,7 @@ class BASE_EXPORT AllocationRegister {
   // not an option). A value of ~3M entries is large enough to handle spikes in
   // the number of allocations, and modest enough to require no more than a few
   // dozens of MiB of address space.
-  static const uint32_t kNumCells = kNumBuckets * 10;
+  static const uint32_t kNumCellsPerBucket = 10;
 
   // Returns a value in the range [0, kNumBuckets - 1] (inclusive).
   static uint32_t Hash(void* address);
@@ -135,6 +137,9 @@ class BASE_EXPORT AllocationRegister {
   // Takes a cell that is not being used to store an entry (either by recycling
   // from the free list or by taking a fresh cell) and returns its index.
   CellIndex GetFreeCell();
+
+  // The maximum number of cells which can be allocated.
+  uint32_t const num_cells_;
 
   // The array of cells. This array is backed by mmapped memory. Lower indices
   // are accessed first, higher indices are only accessed when required. In

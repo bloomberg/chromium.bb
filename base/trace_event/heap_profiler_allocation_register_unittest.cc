@@ -14,7 +14,6 @@ namespace trace_event {
 class AllocationRegisterTest : public testing::Test {
  public:
   static const uint32_t kNumBuckets = AllocationRegister::kNumBuckets;
-  static const uint32_t kNumCells = AllocationRegister::kNumCells;
 
   // Returns the number of cells that the |AllocationRegister| can store per
   // system page.
@@ -24,6 +23,10 @@ class AllocationRegisterTest : public testing::Test {
 
   uint32_t GetHighWaterMark(const AllocationRegister& reg) {
     return reg.next_unused_cell_;
+  }
+
+  uint32_t GetNumCells(const AllocationRegister& reg) {
+    return reg.num_cells_;
   }
 };
 
@@ -203,14 +206,15 @@ TEST_F(AllocationRegisterTest, InsertRemoveRandomOrder) {
 // too many elements.
 #if GTEST_HAS_DEATH_TEST
 TEST_F(AllocationRegisterTest, OverflowDeathTest) {
-  AllocationRegister reg;
+  // Use a smaller register to prevent OOM errors on low-end devices.
+  AllocationRegister reg(static_cast<uint32_t>(GetNumCellsPerPage()));
   AllocationContext ctx = AllocationContext::Empty();
   uintptr_t i;
 
-  // Fill up all of the memory allocated for the register. |kNumCells| minus 1
-  // elements are inserted, because cell 0 is unused, so this should fill up
-  // the available cells exactly.
-  for (i = 1; i < kNumCells; i++) {
+  // Fill up all of the memory allocated for the register. |GetNumCells(reg)|
+  // minus 1 elements are inserted, because cell 0 is unused, so this should
+  // fill up the available cells exactly.
+  for (i = 1; i < GetNumCells(reg); i++) {
     reg.Insert(reinterpret_cast<void*>(i), 0, ctx);
   }
 
