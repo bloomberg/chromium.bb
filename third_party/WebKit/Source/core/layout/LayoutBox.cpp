@@ -1179,11 +1179,8 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
     // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
     //            case, similar to overflow clip in LayoutBlock::nodeAtPoint.
 
-    // Check kids first.
-    for (LayoutObject* child = slowLastChild(); child; child = child->previousSibling()) {
-        if ((!child->hasLayer() || !toLayoutBoxModelObject(child)->layer()->isSelfPaintingLayer()) && child->nodeAtPoint(result, locationInContainer, adjustedLocation, action))
-            return true;
-    }
+    if (hitTestChildren(result, locationInContainer, adjustedLocation, action))
+        return true;
 
     if (hitTestClippedOutByRoundedBorder(locationInContainer, adjustedLocation))
         return false;
@@ -1195,6 +1192,16 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
     if (visibleToHitTestRequest(result.hitTestRequest()) && action == HitTestForeground && locationInContainer.intersects(boundsRect)) {
         updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
         if (!result.addNodeToListBasedTestResult(node(), locationInContainer, boundsRect))
+            return true;
+    }
+
+    return false;
+}
+
+bool LayoutBox::hitTestChildren(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
+{
+    for (LayoutObject* child = slowLastChild(); child; child = child->previousSibling()) {
+        if ((!child->hasLayer() || !toLayoutBoxModelObject(child)->layer()->isSelfPaintingLayer()) && child->nodeAtPoint(result, locationInContainer, accumulatedOffset, action))
             return true;
     }
 

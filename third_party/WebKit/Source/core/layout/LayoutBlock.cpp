@@ -1659,41 +1659,11 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
             return true;
     }
 
-    // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
-    //            case, similar to overflow clip below.
-
-    bool checkChildren = true;
-
     // TODO(pdr): We should also include checks for hit testing border radius at
     //            the layer level (see: crbug.com/568904).
-    if (hasOverflowClip() && !hasSelfPaintingLayer()) {
-        if (style()->hasBorderRadius()) {
-            LayoutRect borderRect = borderBoxRect();
-            borderRect.moveBy(adjustedLocation);
-            checkChildren = locationInContainer.intersects(style()->getRoundedInnerBorderFor(borderRect));
-        } else {
-            checkChildren = locationInContainer.intersects(overflowClipRect(adjustedLocation, IncludeOverlayScrollbarSize));
-        }
-    }
 
-    // A control clip can also clip out child hit testing.
-    if (checkChildren && hasControlClip())
-        checkChildren = locationInContainer.intersects(controlClipRect(adjustedLocation));
-
-    if (checkChildren) {
-        // Hit test descendants first.
-        LayoutSize scrolledOffset(localOffset);
-        if (hasOverflowClip())
-            scrolledOffset -= scrolledContentOffset();
-
-        // Hit test contents
-        if (hitTestContents(result, locationInContainer, toLayoutPoint(scrolledOffset), hitTestAction)) {
-            updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - localOffset));
-            return true;
-        }
-        if (hitTestAction == HitTestFloat && hitTestFloats(result, locationInContainer, toLayoutPoint(scrolledOffset)))
-            return true;
-    }
+    if (hitTestChildren(result, locationInContainer, adjustedLocation, hitTestAction))
+        return true;
 
     if (hitTestClippedOutByRoundedBorder(locationInContainer, adjustedLocation))
         return false;
@@ -1711,23 +1681,47 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
     return false;
 }
 
-bool LayoutBlock::hitTestContents(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutBlock::hitTestChildren(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
+    // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
+    //            case, similar to overflow clip below.
+    if (hasOverflowClip() && !hasSelfPaintingLayer()) {
+        if (style()->hasBorderRadius()) {
+            LayoutRect borderRect = borderBoxRect();
+            borderRect.moveBy(accumulatedOffset);
+            if (!locationInContainer.intersects(style()->getRoundedInnerBorderFor(borderRect)))
+                return false;
+        } else {
+            if (!locationInContainer.intersects(overflowClipRect(accumulatedOffset, IncludeOverlayScrollbarSize)))
+                return false;
+        }
+    }
+
+    // A control clip can also clip out child hit testing.
+    if (hasControlClip() && !locationInContainer.intersects(controlClipRect(accumulatedOffset)))
+        return false;
+
+    LayoutPoint scrolledOffset(hasOverflowClip() ? accumulatedOffset - scrolledContentOffset() : accumulatedOffset);
     if (childrenInline() && !isTable()) {
-        // We have to hit-test our line boxes.
-        if (m_lineBoxes.hitTest(LineLayoutBoxModel(this), result, locationInContainer, accumulatedOffset, hitTestAction))
+        if (m_lineBoxes.hitTest(LineLayoutBoxModel(this), result, locationInContainer, scrolledOffset, hitTestAction)) {
+            updateHitTestResult(result, flipForWritingMode(toLayoutPoint(locationInContainer.point() - accumulatedOffset)));
             return true;
+        }
     } else {
-        // Hit test our children.
         HitTestAction childHitTest = hitTestAction;
         if (hitTestAction == HitTestChildBlockBackgrounds)
             childHitTest = HitTestChildBlockBackground;
         for (LayoutBox* child = lastChildBox(); child; child = child->previousSiblingBox()) {
-            LayoutPoint childPoint = flipForWritingModeForChild(child, accumulatedOffset);
-            if (!child->hasSelfPaintingLayer() && !child->isFloating() && !child->isColumnSpanAll() && child->nodeAtPoint(result, locationInContainer, childPoint, childHitTest))
+            LayoutPoint childPoint = flipForWritingModeForChild(child, scrolledOffset);
+            if (!child->hasSelfPaintingLayer() && !child->isFloating() && !child->isColumnSpanAll() && child->nodeAtPoint(result, locationInContainer, childPoint, childHitTest)) {
+                updateHitTestResult(result, flipForWritingMode(toLayoutPoint(locationInContainer.point() - accumulatedOffset)));
                 return true;
+            }
         }
     }
+
+    if (hitTestAction == HitTestFloat && hitTestFloats(result, locationInContainer, scrolledOffset))
+        return true;
 
     return false;
 }

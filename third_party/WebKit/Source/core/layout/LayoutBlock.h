@@ -408,7 +408,7 @@ private:
 
     bool avoidsFloats() const override { return true; }
 
-    bool hitTestContents(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
+    bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
     virtual bool hitTestFloats(HitTestResult&, const HitTestLocation&, const LayoutPoint&) { return false; }
 

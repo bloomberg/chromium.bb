@@ -963,6 +963,8 @@ private:
     // Returns true if the box intersects the viewport visible to the user.
     bool intersectsVisibleViewport();
 
+    bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
+
     void updateBackgroundAttachmentFixedStatusAfterStyleChange();
 
     // The width/height of the contents + borders + padding.  The x/y location is relative to our container (which is not always our parent).
