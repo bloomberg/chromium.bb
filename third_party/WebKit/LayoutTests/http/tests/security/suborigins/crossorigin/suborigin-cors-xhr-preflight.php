@@ -42,6 +42,10 @@ SuboriginXHRTest.prototype.execute = function() {
     }
 
     xhr.open("GET", this.src);
+    // Set a custom header to force a preflight. Even though the
+    // scheme/host/port of the source and destination origins are the same, the
+    // Suborigin should cause the request to be treated as cross-origin.
+    xhr.setRequestHeader("x-custom-header", "foobar");
     xhr.send();
 };
 
@@ -49,27 +53,51 @@ var xorigin_preflight_script = "http://127.0.0.1:8000/security/resources/cors-sc
 
 // XHR preflight tests
 new SuboriginXHRTest(
-    true,
-    "Basic anonymous XHR preflight",
+    false,
+    "Complex anonymous XHR preflight, no AC for custom header",
     xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000",
     "anonymous").execute();
 
 new SuboriginXHRTest(
     true,
-    "Basic anonymous XHR preflight with '*' ACAO",
+    "Complex anonymous XHR preflight, has AC for custom header",
+    xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000&custom=x-custom-header",
+    "anonymous").execute();
+
+new SuboriginXHRTest(
+    false,
+    "Complex anonymous XHR preflight with '*' ACAO, no AC for custom header",
     xorigin_preflight_script + "?cors=*",
     "anonymous").execute();
 
 new SuboriginXHRTest(
     true,
-    "Basic XHR with credentials preflight",
+    "Complex anonymous XHR preflight with '*' ACAO, has AC for custom header",
+    xorigin_preflight_script + "?cors=*&custom=x-custom-header",
+    "anonymous").execute();
+
+new SuboriginXHRTest(
+    false,
+    "Complex XHR with credentials preflight, no AC for custom header",
     xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000&credentials=true",
     "use-credentials").execute();
 
 new SuboriginXHRTest(
+    true,
+    "Complex XHR with credentials preflight, has AC for custom header",
+    xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000&credentials=true&custom=x-custom-header",
+    "use-credentials").execute();
+
+new SuboriginXHRTest(
     false,
-    "Basic XHR with credentials preflight with '*' ACAO",
+    "Complex XHR with credentials preflight with '*' ACAO, no AC for custom header",
     xorigin_preflight_script + "?cors=*&credentials=true",
+    "use-credentials").execute();
+
+new SuboriginXHRTest(
+    false,
+    "Complex XHR with credentials preflight with '*' ACAO, has AC for custom header",
+    xorigin_preflight_script + "?cors=*&credentials=true&custom=x-custom-header",
     "use-credentials").execute();
 </script>
 </body>

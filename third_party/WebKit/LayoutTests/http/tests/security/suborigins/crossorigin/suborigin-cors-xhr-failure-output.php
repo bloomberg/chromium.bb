@@ -13,21 +13,43 @@ console.log("If a Suborigin makes a request, a response without an Access-Contro
 
 function success() {
     alert("PASS: XHR correctly failed");
-    if (window.testRunner)
-        testRunner.notifyDone();
+    next();
 }
 
 function failure() {
     alert("FAIL: XHR incorrectly succeeded");
-    if (window.testRunner)
-        testRunner.notifyDone();
+    next();
 }
 
-var xhr = new XMLHttpRequest();
-xhr.onerror = success;
-xhr.onload = failure;
-xhr.open("GET", "http://127.0.0.1:8000/security/resources/cors-script.php?cors=false");
-xhr.send();
+// First one should fail with preflight failure. Second one should
+// fail with access control header failure.
+var tests = [
+    function() {
+        var xhr = new XMLHttpRequest();
+        xhr.onerror = success;
+        xhr.onload = failure;
+        xhr.open("GET", "http://127.0.0.1:8000/security/resources/cors-script.php?cors=false");
+        xhr.setRequestHeader("x-custom-header", "foobar");
+        xhr.send();
+    },
+    function() {
+        var xhr = new XMLHttpRequest();
+        xhr.onerror = success;
+        xhr.onload = failure;
+        xhr.open("GET", "http://127.0.0.1:8000/security/resources/cors-script.php?cors=false");
+        xhr.send();
+    }
+];
+
+function next() {
+    if (tests.length !== 0) {
+        tests.shift()();
+    } else if (window.testRunner) {
+        testRunner.notifyDone();
+    }
+}
+
+next();
 </script>
 </body>
 </html>

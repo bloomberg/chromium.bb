@@ -894,7 +894,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
         request.addHTTPHeaderFields(m_requestHeaders);
 
     ThreadableLoaderOptions options;
-    options.preflightPolicy = (uploadEvents || securityOrigin()->hasSuborigin()) ? ForcePreflight : ConsiderPreflight;
+    options.preflightPolicy = uploadEvents ? ForcePreflight : ConsiderPreflight;
     options.crossOriginRequestPolicy = UseAccessControl;
     options.initiator = FetchInitiatorTypeNames::xmlhttprequest;
     options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(&executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
