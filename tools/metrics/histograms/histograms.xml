@@ -62793,6 +62793,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1097" label="BLUETOOTHPRIVATE_FORGETDEVICE"/>
   <int value="1098" label="DISPLAYSOURCE_GETAVAILABLESINKS"/>
   <int value="1099" label="DISPLAYSOURCE_REQUESTAUTHENTICATION"/>
+  <int value="1100" label="WEBRTCLOGGINGPRIVATE_STARTAUDIODEBUGRECORDINGS"/>
+  <int value="1101" label="WEBRTCLOGGINGPRIVATE_STOPAUDIODEBUGRECORDINGS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

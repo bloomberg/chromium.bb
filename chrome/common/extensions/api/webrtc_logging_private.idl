@@ -28,7 +28,23 @@ namespace webrtcLoggingPrivate {
     long? guestProcessId;
   };
 
+  // This contains information about the result of audio debug recordings.
+  dictionary AudioDebugRecordingsInfo {
+    // Absolute path prefix for the files with the audio debug recordings.
+    DOMString prefixPath;
+
+    // Indicates if recording was stopped.
+    boolean didStop;
+
+    // Indicates if recording was stopped manually through a
+    // stopAudioDebugRecordings() call.
+    boolean didManualStop;
+  };
+
+
   callback GenericDoneCallback = void ();
+  callback AudioDebugRecordingsCallback =
+      void (AudioDebugRecordingsInfo info);
   callback UploadDoneCallback = void (UploadResult result);
 
   interface Functions {
@@ -111,5 +127,25 @@ namespace webrtcLoggingPrivate {
                             boolean incoming,
                             boolean outgoing,
                             GenericDoneCallback callback);
+
+    // Starts audio debug recordings.
+    // |seconds| indicates how many seconds of audio to record. |callback|
+    // is invoked once recording stops.
+    // If |seconds| is zero, recording will continue until
+    // stopAudioDebugRecordings() is explicitly called. In this case,
+    // |callback| is invoked once recording starts and will report
+    // that recording has not stopped.
+    // If |seconds| is negative, startAudioDebugRecordings() fails.
+    static void startAudioDebugRecordings(RequestInfo request,
+                             DOMString securityOrigin,
+                             long seconds,
+                             AudioDebugRecordingsCallback callback);
+
+    // Stops audio debug recordings.  |callback| is invoked once recording
+    // stops. If there is no recording in progress, stopAudioDebugRecordings()
+    // fails.
+    static void stopAudioDebugRecordings(RequestInfo request,
+                            DOMString securityOrigin,
+                            AudioDebugRecordingsCallback callback);
   };
 };

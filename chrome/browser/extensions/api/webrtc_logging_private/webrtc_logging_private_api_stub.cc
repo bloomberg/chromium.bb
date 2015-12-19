@@ -74,4 +74,16 @@ bool WebrtcLoggingPrivateStopRtpDumpFunction::RunAsync() {
   return false;
 }
 
+bool WebrtcLoggingPrivateStartAudioDebugRecordingsFunction::RunAsync() {
+  SetError(kErrorNotSupported);
+  SendResponse(false);
+  return false;
+}
+
+bool WebrtcLoggingPrivateStopAudioDebugRecordingsFunction::RunAsync() {
+  SetError(kErrorNotSupported);
+  SendResponse(false);
+  return false;
+}
+
 }  // namespace extensions

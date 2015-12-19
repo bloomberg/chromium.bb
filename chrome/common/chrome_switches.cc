@@ -375,6 +375,10 @@ const char kEnableAddToShelf[] = "enable-add-to-shelf";
 // Enable OS integration for Chrome app file associations.
 const char kEnableAppsFileAssociations[]    = "enable-apps-file-associations";
 
+// If the WebRTC logging private API is active, enables audio debug recordings.
+const char kEnableAudioDebugRecordingsFromExtension[] =
+    "enable-audio-debug-recordings-from-extension";
+
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 

@@ -167,6 +167,14 @@ chrome.runtime.onMessageExternal.addListener(
           chrome.webrtcLoggingPrivate.stopRtpDump(
               requestInfo, origin, incoming, outgoing, doSendResponse);
           return true;
+        } else if (method == 'logging.startAudioDebugRecordings') {
+          var seconds = message['seconds'] || 0;
+          chrome.webrtcLoggingPrivate.startAudioDebugRecordings(
+              seconds, doSendResponse);
+          return true;
+        } else if (method == 'logging.stopAudioDebugRecordings') {
+          chrome.webrtcLoggingPrivate.stopAudioDebugRecordings(doSendResponse);
+          return true;
         }
         throw new Error('Unknown method: ' + method);
       } catch (e) {

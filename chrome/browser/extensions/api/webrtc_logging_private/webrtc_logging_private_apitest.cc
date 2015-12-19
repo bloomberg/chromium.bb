@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media/webrtc_log_uploader.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/compression/compression_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -28,6 +29,8 @@ using extensions::WebrtcLoggingPrivateStopRtpDumpFunction;
 using extensions::WebrtcLoggingPrivateStoreFunction;
 using extensions::WebrtcLoggingPrivateUploadFunction;
 using extensions::WebrtcLoggingPrivateUploadStoredFunction;
+using extensions::WebrtcLoggingPrivateStartAudioDebugRecordingsFunction;
+using extensions::WebrtcLoggingPrivateStopAudioDebugRecordingsFunction;
 
 namespace utils = extension_function_test_utils;
 
@@ -58,7 +61,6 @@ void InitializeTestMetaData(base::ListValue* parameters) {
 
 class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
  protected:
-
   void SetUp() override {
     ExtensionApiTest::SetUp();
     extension_ = extensions::test_util::CreateEmptyExtension();
@@ -160,6 +162,21 @@ class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
     AppendTabIdAndUrl(&params);
     params.AppendString(log_id);
     return RunFunction<WebrtcLoggingPrivateUploadStoredFunction>(params, true);
+  }
+
+  bool StartAudioDebugRecordings(int seconds) {
+    base::ListValue params;
+    AppendTabIdAndUrl(&params);
+    params.AppendInteger(seconds);
+    return RunFunction<WebrtcLoggingPrivateStartAudioDebugRecordingsFunction>(
+        params, true);
+  }
+
+  bool StopAudioDebugRecordings() {
+    base::ListValue params;
+    AppendTabIdAndUrl(&params);
+    return RunFunction<WebrtcLoggingPrivateStopAudioDebugRecordingsFunction>(
+        params, true);
   }
 
  private:
@@ -407,3 +424,20 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
             buffer_override.multipart().find(kTestLoggingUrl));
 }
 
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       TestStartStopAudioDebugRecordings) {
+  // TODO(guidou): These tests are missing verification of the actual AEC dump
+  // data. This will be fixed with a separate browser test.
+  // See crbug.com/569957.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAudioDebugRecordingsFromExtension);
+  ASSERT_TRUE(StartAudioDebugRecordings(0));
+  ASSERT_TRUE(StopAudioDebugRecordings());
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       TestStartTimedAudioDebugRecordings) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAudioDebugRecordingsFromExtension);
+  ASSERT_TRUE(StartAudioDebugRecordings(1));
+}

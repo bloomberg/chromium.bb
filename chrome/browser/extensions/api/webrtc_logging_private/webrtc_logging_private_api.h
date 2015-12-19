@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEBRTC_LOGGING_PRIVATE_WEBRTC_LOGGING_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEBRTC_LOGGING_PRIVATE_WEBRTC_LOGGING_PRIVATE_API_H_
 
+#include <string>
+
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #if defined(ENABLE_WEBRTC)
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
@@ -66,6 +68,20 @@ class WebrtcLoggingPrivateFunctionWithUploadCallback
   // Must be called on UI thread.
   void FireCallback(bool success, const std::string& report_id,
                     const std::string& error_message);
+#endif
+};
+
+class WebrtcLoggingPrivateFunctionWithAudioDebugRecordingsCallback
+    : public WebrtcLoggingPrivateFunction {
+ protected:
+  ~WebrtcLoggingPrivateFunctionWithAudioDebugRecordingsCallback() override {}
+
+#if defined(ENABLE_WEBRTC)
+  // Must be called on UI thread.
+  void FireErrorCallback(const std::string& error_message);
+  void FireCallback(const std::string& prefix_path,
+                    bool did_stop,
+                    bool did_manual_stop);
 #endif
 };
 
@@ -204,6 +220,34 @@ class WebrtcLoggingPrivateStopRtpDumpFunction
 
  private:
   ~WebrtcLoggingPrivateStopRtpDumpFunction() override {}
+
+  // ExtensionFunction overrides.
+  bool RunAsync() override;
+};
+
+class WebrtcLoggingPrivateStartAudioDebugRecordingsFunction
+    : public WebrtcLoggingPrivateFunctionWithAudioDebugRecordingsCallback {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.startAudioDebugRecordings",
+                             WEBRTCLOGGINGPRIVATE_STARTAUDIODEBUGRECORDINGS)
+  WebrtcLoggingPrivateStartAudioDebugRecordingsFunction() {}
+
+ private:
+  ~WebrtcLoggingPrivateStartAudioDebugRecordingsFunction() override {}
+
+  // ExtensionFunction overrides.
+  bool RunAsync() override;
+};
+
+class WebrtcLoggingPrivateStopAudioDebugRecordingsFunction
+    : public WebrtcLoggingPrivateFunctionWithAudioDebugRecordingsCallback {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.stopAudioDebugRecordings",
+                             WEBRTCLOGGINGPRIVATE_STOPAUDIODEBUGRECORDINGS)
+  WebrtcLoggingPrivateStopAudioDebugRecordingsFunction() {}
+
+ private:
+  ~WebrtcLoggingPrivateStopAudioDebugRecordingsFunction() override {}
 
   // ExtensionFunction overrides.
   bool RunAsync() override;
