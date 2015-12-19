@@ -13633,9 +13633,8 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
       spdy_util_.ConstructSpdySyn(3, req2_block, MEDIUM, false, true));
 
   MockWrite writes1[] = {
-    CreateMockWrite(*connect, 0),
-    CreateMockWrite(*wrapped_req1, 2),
-    CreateMockWrite(*req2, 5),
+      CreateMockWrite(*connect, 0), CreateMockWrite(*wrapped_req1, 2),
+      CreateMockWrite(*req2, 6),
   };
 
   scoped_ptr<SpdyFrame> conn_resp(
@@ -13648,15 +13647,19 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
       spdy_util_wrapped.ConstructWrappedSpdyFrame(body1, 1));
   scoped_ptr<SpdyFrame> resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
   scoped_ptr<SpdyFrame> body2(spdy_util_.ConstructSpdyBodyFrame(3, true));
-  MockRead reads1[] = {CreateMockRead(*conn_resp, 1),
-                       CreateMockRead(*wrapped_resp1, 3),
-                       CreateMockRead(*wrapped_body1, 4),
-                       CreateMockRead(*resp2, 6),
-                       CreateMockRead(*body2, 7),
-                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 8)};
+  MockRead reads1[] = {
+      CreateMockRead(*conn_resp, 1),
+      MockRead(ASYNC, ERR_IO_PENDING, 3),
+      CreateMockRead(*wrapped_resp1, 4),
+      CreateMockRead(*wrapped_body1, 5),
+      MockRead(ASYNC, ERR_IO_PENDING, 7),
+      CreateMockRead(*resp2, 8),
+      CreateMockRead(*body2, 9),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 10),
+  };
 
-  DeterministicSocketData data1(reads1, arraysize(reads1),
-                                writes1, arraysize(writes1));
+  SequencedSocketData data1(reads1, arraysize(reads1), writes1,
+                            arraysize(writes1));
   MockConnect connect_data1(ASYNC, OK);
   data1.set_connect_data(connect_data1);
 
@@ -13666,14 +13669,13 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   session_deps_.net_log = &log;
   SSLSocketDataProvider ssl1(ASYNC, OK);  // to the proxy
   ssl1.SetNextProto(GetProtocol());
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl1);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
   SSLSocketDataProvider ssl2(ASYNC, OK);  // to the server
   ssl2.SetNextProto(GetProtocol());
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl2);
-  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data1);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
-  scoped_ptr<HttpNetworkSession> session(
-      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_));
+  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Start the first transaction to set up the SpdySession
   HttpRequestInfo request1;
@@ -13682,12 +13684,13 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   request1.load_flags = 0;
   HttpNetworkTransaction trans1(LOWEST, session.get());
   TestCompletionCallback callback1;
-  EXPECT_EQ(ERR_IO_PENDING,
-            trans1.Start(&request1, callback1.callback(), BoundNetLog()));
-  base::MessageLoop::current()->RunUntilIdle();
-  data1.RunFor(4);
+  int rv = trans1.Start(&request1, callback1.callback(), BoundNetLog());
 
-  EXPECT_EQ(OK, callback1.WaitForResult());
+  // This pause is a hack to avoid running into https://crbug.com/497228.
+  data1.RunUntilPaused();
+  base::RunLoop().RunUntilIdle();
+  data1.Resume();
+  EXPECT_EQ(OK, callback1.GetResult(rv));
   EXPECT_TRUE(trans1.GetResponseInfo()->was_fetched_via_spdy);
 
   LoadTimingInfo load_timing_info1;
@@ -13695,19 +13698,21 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   TestLoadTimingNotReusedWithPac(load_timing_info1,
                                  CONNECT_TIMING_HAS_SSL_TIMES);
 
-  // Now, start the HTTP request
+  // Now, start the HTTP request.
   HttpRequestInfo request2;
   request2.method = "GET";
   request2.url = GURL(http_url);
   request2.load_flags = 0;
   HttpNetworkTransaction trans2(MEDIUM, session.get());
   TestCompletionCallback callback2;
-  EXPECT_EQ(ERR_IO_PENDING,
-            trans2.Start(&request2, callback2.callback(), BoundNetLog()));
-  base::MessageLoop::current()->RunUntilIdle();
-  data1.RunFor(3);
+  rv = trans2.Start(&request2, callback2.callback(), BoundNetLog());
 
-  EXPECT_EQ(OK, callback2.WaitForResult());
+  // This pause is a hack to avoid running into https://crbug.com/497228.
+  data1.RunUntilPaused();
+  base::RunLoop().RunUntilIdle();
+  data1.Resume();
+  EXPECT_EQ(OK, callback2.GetResult(rv));
+
   EXPECT_TRUE(trans2.GetResponseInfo()->was_fetched_via_spdy);
 
   LoadTimingInfo load_timing_info2;
@@ -13744,19 +13749,17 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   scoped_ptr<SpdyFrame> resp1(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body1(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads1[] = {
-      CreateMockRead(*resp1, 1),
-      CreateMockRead(*body1, 2),
-      MockRead(ASYNC, OK, 3)  // EOF
+      MockRead(ASYNC, ERR_IO_PENDING, 1), CreateMockRead(*resp1, 2),
+      CreateMockRead(*body1, 3), MockRead(ASYNC, OK, 4),  // EOF
   };
 
-  scoped_ptr<DeterministicSocketData> data1(
-      new DeterministicSocketData(reads1, arraysize(reads1),
-                                  writes1, arraysize(writes1)));
+  SequencedSocketData data1(reads1, arraysize(reads1), writes1,
+                            arraysize(writes1));
   IPAddressNumber ip;
   ASSERT_TRUE(ParseIPLiteralToNumber(ip_addr, &ip));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);
   MockConnect connect_data1(ASYNC, OK, peer_addr);
-  data1->set_connect_data(connect_data1);
+  data1.set_connect_data(connect_data1);
 
   // SPDY GET for HTTPS URL (direct)
   scoped_ptr<SpdyFrame> req2(
@@ -13769,17 +13772,13 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   scoped_ptr<SpdyFrame> resp2(
       spdy_util_secure.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body2(spdy_util_secure.ConstructSpdyBodyFrame(1, true));
-  MockRead reads2[] = {
-      CreateMockRead(*resp2, 1),
-      CreateMockRead(*body2, 2),
-      MockRead(ASYNC, OK, 3)  // EOF
-  };
+  MockRead reads2[] = {CreateMockRead(*resp2, 1), CreateMockRead(*body2, 2),
+                       MockRead(ASYNC, OK, 3)};
 
-  scoped_ptr<DeterministicSocketData> data2(
-      new DeterministicSocketData(reads2, arraysize(reads2),
-                                  writes2, arraysize(writes2)));
+  SequencedSocketData data2(reads2, arraysize(reads2), writes2,
+                            arraysize(writes2));
   MockConnect connect_data2(ASYNC, OK);
-  data2->set_connect_data(connect_data2);
+  data2.set_connect_data(connect_data2);
 
   // Set up a proxy config that sends HTTP requests to a proxy, and
   // all others direct.
@@ -13797,22 +13796,19 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   // to see if it is valid for the new origin
   ssl1.cert = ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
   ASSERT_TRUE(ssl1.cert.get());
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl1);
-  session_deps_.deterministic_socket_factory->AddSocketDataProvider(
-      data1.get());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   SSLSocketDataProvider ssl2(ASYNC, OK);  // to the server
   ssl2.SetNextProto(GetProtocol());
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl2);
-  session_deps_.deterministic_socket_factory->AddSocketDataProvider(
-      data2.get());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   session_deps_.host_resolver.reset(new MockCachingHostResolver());
   session_deps_.host_resolver->rules()->AddRule("news.example.org", ip_addr);
   session_deps_.host_resolver->rules()->AddRule("proxy", ip_addr);
 
-  scoped_ptr<HttpNetworkSession> session(
-      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_));
+  scoped_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Start the first transaction to set up the SpdySession
   HttpRequestInfo request1;
@@ -13823,9 +13819,11 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   TestCompletionCallback callback1;
   ASSERT_EQ(ERR_IO_PENDING,
             trans1.Start(&request1, callback1.callback(), BoundNetLog()));
-  data1->RunFor(3);
+  // This pause is a hack to avoid running into https://crbug.com/497228.
+  data1.RunUntilPaused();
+  base::RunLoop().RunUntilIdle();
+  data1.Resume();
 
-  ASSERT_TRUE(callback1.have_result());
   EXPECT_EQ(OK, callback1.WaitForResult());
   EXPECT_TRUE(trans1.GetResponseInfo()->was_fetched_via_spdy);
 
@@ -13839,7 +13837,6 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   EXPECT_EQ(ERR_IO_PENDING,
             trans2.Start(&request2, callback2.callback(), BoundNetLog()));
   base::MessageLoop::current()->RunUntilIdle();
-  data2->RunFor(3);
 
   ASSERT_TRUE(callback2.have_result());
   EXPECT_EQ(OK, callback2.WaitForResult());

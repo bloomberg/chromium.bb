@@ -178,8 +178,6 @@ struct SpdySessionDependencies {
 
   static scoped_ptr<HttpNetworkSession> SpdyCreateSession(
       SpdySessionDependencies* session_deps);
-  static scoped_ptr<HttpNetworkSession> SpdyCreateSessionDeterministic(
-      SpdySessionDependencies* session_deps);
   static HttpNetworkSession::Params CreateSessionParams(
       SpdySessionDependencies* session_deps);
 
@@ -190,7 +188,6 @@ struct SpdySessionDependencies {
   scoped_ptr<ProxyService> proxy_service;
   scoped_refptr<SSLConfigService> ssl_config_service;
   scoped_ptr<MockClientSocketFactory> socket_factory;
-  scoped_ptr<DeterministicMockClientSocketFactory> deterministic_socket_factory;
   scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
   HttpServerPropertiesImpl http_server_properties;
   bool enable_ip_pooling;

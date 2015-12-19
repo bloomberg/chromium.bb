@@ -341,7 +341,6 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       proxy_service(ProxyService::CreateDirect()),
       ssl_config_service(new SSLConfigServiceDefaults),
       socket_factory(new MockClientSocketFactory),
-      deterministic_socket_factory(new DeterministicMockClientSocketFactory),
       http_auth_handler_factory(
           HttpAuthHandlerFactory::CreateDefault(host_resolver.get())),
       enable_ip_pooling(true),
@@ -377,7 +376,6 @@ SpdySessionDependencies::SpdySessionDependencies(
       proxy_service(proxy_service.Pass()),
       ssl_config_service(new SSLConfigServiceDefaults),
       socket_factory(new MockClientSocketFactory),
-      deterministic_socket_factory(new DeterministicMockClientSocketFactory),
       http_auth_handler_factory(
           HttpAuthHandlerFactory::CreateDefault(host_resolver.get())),
       enable_ip_pooling(true),
@@ -403,19 +401,6 @@ scoped_ptr<HttpNetworkSession> SpdySessionDependencies::SpdyCreateSession(
     SpdySessionDependencies* session_deps) {
   HttpNetworkSession::Params params = CreateSessionParams(session_deps);
   params.client_socket_factory = session_deps->socket_factory.get();
-  scoped_ptr<HttpNetworkSession> http_session(new HttpNetworkSession(params));
-  SpdySessionPoolPeer pool_peer(http_session->spdy_session_pool());
-  pool_peer.SetEnableSendingInitialData(false);
-  return http_session.Pass();
-}
-
-// static
-scoped_ptr<HttpNetworkSession>
-SpdySessionDependencies::SpdyCreateSessionDeterministic(
-    SpdySessionDependencies* session_deps) {
-  HttpNetworkSession::Params params = CreateSessionParams(session_deps);
-  params.client_socket_factory =
-      session_deps->deterministic_socket_factory.get();
   scoped_ptr<HttpNetworkSession> http_session(new HttpNetworkSession(params));
   SpdySessionPoolPeer pool_peer(http_session->spdy_session_pool());
   pool_peer.SetEnableSendingInitialData(false);
