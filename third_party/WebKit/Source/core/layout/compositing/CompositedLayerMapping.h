@@ -128,7 +128,6 @@ public:
     // in coordinate space of the layer's layout object.
     // |visualRect| can be nullptr if we know it's unchanged and PaintController has cached the previous value.
     void invalidateDisplayItemClient(const DisplayItemClient&, PaintInvalidationReason, const LayoutRect* visualRect);
-    void invalidateDisplayItemClientOnScrollingContentsLayer(const DisplayItemClient&, PaintInvalidationReason, const LayoutRect* visualRect);
 
     // Notification from the layoutObject that its content changed.
     void contentChanged(ContentChangeType);
