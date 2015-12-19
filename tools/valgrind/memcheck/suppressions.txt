@@ -2705,35 +2705,6 @@
    fun:_ZN3net16HostResolverImpl*
 }
 {
-   bug_388013
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blinkL33createInjectedScriptHostV8WrapperEPNS_18InjectedScriptHostEPN2v87IsolateE
-   fun:_ZN5blink21InjectedScriptManager20createInjectedScriptERKN3WTF6StringEPNS_11ScriptStateEi
-   fun:_ZN5blink21InjectedScriptManager17injectedScriptForEPNS_11ScriptStateE
-   fun:_ZN5blink22InspectorDebuggerAgent17currentCallFramesEv
-   fun:_ZN5blink22InspectorDebuggerAgent8didPauseEPNS_11ScriptStateERKNS_11ScriptValueES5_RKN3WTF6VectorINS6_6StringELm0ENS6_16DefaultAllocatorEEE
-   ...
-   fun:_ZN2v88internal5Debug17CallEventCallbackENS_10DebugEventENS0_6HandleINS0_6ObjectEEES5_PNS_5Debug10ClientDataE
-   fun:_ZN2v88internal5Debug17ProcessDebugEventENS_10DebugEventENS0_6HandleINS0_8JSObjectEEEb
-   fun:_ZN2v88internal5Debug12OnDebugBreakENS0_6HandleINS0_6ObjectEEEb
-}
-{
-   bug_388013_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blinkL33createInjectedScriptHostV8WrapperEPNS_18InjectedScriptHostEPN2v87IsolateE
-   fun:_ZN5blink21InjectedScriptManager20createInjectedScriptERKN3WTF6StringEPNS_11ScriptStateEi
-   fun:_ZN5blink21InjectedScriptManager17injectedScriptForEPNS_11ScriptStateE
-   fun:_ZN5blink18WorkerRuntimeAgent21injectedScriptForEvalEPN3WTF6StringEPKi
-   fun:_ZN5blink21InspectorRuntimeAgent8evaluateEPN3WTF6String*
-   fun:_ZThn32_N5blink21InspectorRuntimeAgent8evaluateEPN3WTF6String*
-   fun:_ZN5blink30InspectorBackendDispatcherImpl16Runtime_evaluateElPNS_10JSONObjectEPNS_9JSONArrayE
-   fun:_ZN5blink30InspectorBackendDispatcherImpl8dispatchERKN3WTF6StringE
-   fun:_ZN5blink25WorkerInspectorController27dispatchMessageFromFrontendERKN3WTF6StringE
-   fun:_ZN5blinkL30dispatchOnInspectorBackendTaskEPNS_16ExecutionContextERKN3WTF6StringE
-}
-{
    bug_388668
    Memcheck:Leak
    fun:_Znw*
