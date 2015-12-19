@@ -284,6 +284,7 @@ void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(
   switch (transition) {
     case TRANSITION_OMNIBOX_SEARCH:
     case TRANSITION_OMNIBOX_NAVIGATION:
+    case TRANSITION_BOOKMARK:
       // Enter or exit events.
       if (!url.is_empty()) {
         matches = data_use_matcher_->MatchesURL(url, new_label);
@@ -310,7 +311,6 @@ void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(
       }
       break;
 
-    case TRANSITION_BOOKMARK:
     case TRANSITION_HISTORY_ITEM:
       // Exit events.
       DCHECK(new_label->empty());

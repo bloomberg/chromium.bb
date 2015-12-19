@@ -725,7 +725,10 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
       // Clicking on matching URL links in the page starts tracking.
       {DataUseTabModel::TRANSITION_LINK, kURLFoo, std::string(), kTestLabel2,
        STARTED},
-      // Navigating to bookmarks ends tracking.
+      // Navigating to bookmark with matching URL does not end tracking.
+      {DataUseTabModel::TRANSITION_BOOKMARK, kURLFoo, std::string(),
+       kTestLabel2, CONTINUES},
+      // Navigating to bookmark with non-matching URL ends tracking.
       {DataUseTabModel::TRANSITION_BOOKMARK, std::string(), std::string(),
        std::string(), ENDED},
       // Navigating to a matching URL from omnibox starts tracking.

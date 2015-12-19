@@ -110,10 +110,10 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
   } tests[] = {
       {ui::PageTransitionFromInt(ui::PageTransition::PAGE_TRANSITION_LINK |
                                  ui::PAGE_TRANSITION_FROM_API),
-       std::string()},
+       kFooLabel},
       {ui::PageTransition::PAGE_TRANSITION_LINK, kFooLabel},
       {ui::PageTransition::PAGE_TRANSITION_TYPED, kFooLabel},
-      {ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK, std::string()},
+      {ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK, kFooLabel},
       {ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string()},
       {ui::PageTransition::PAGE_TRANSITION_GENERATED, kFooLabel},
       {ui::PageTransition::PAGE_TRANSITION_RELOAD, kFooLabel},
