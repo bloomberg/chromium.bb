@@ -17,21 +17,21 @@ class WebString;
 class BLINK_PLATFORM_EXPORT WebMediaRecorderHandler {
 public:
     virtual ~WebMediaRecorderHandler() = default;
-    virtual bool initialize(WebMediaRecorderHandlerClient* client, const WebMediaStream& stream, const WebString& mimeType) { return false; }
+    virtual bool initialize(WebMediaRecorderHandlerClient* client, const WebMediaStream& stream, const WebString& type, const WebString& codecs) { return false; }
     virtual bool start() { return false; }
     virtual bool start(int timeslice) { return false; }
     virtual void stop() {}
     virtual void pause() {}
     virtual void resume() {}
 
-    // MediaRecorder API canRecordMimeType() is a tristate in which the returned
-    // value 'probably' means that "the user agent is confident that mimeType
-    // represents a type that it can record" [1], but a number of reasons might
-    // prevent a firm answer at this stage, so a boolean is a better option,
-    // because "Implementors are encouraged to return "maybe" unless the type
-    // can be confidently established as being supported or not." [1].
+    // MediaRecorder API isTypeSupported(), which boils down to
+    // canSupportMimeType() [1] "If true is returned from this method, it only
+    // indicates that the MediaRecorder implementation is capable of recording
+    // Blob objects for the specified MIME type. Recording may still fail if
+    // sufficient resources are not available to support the concrete media
+    // encoding."
     // [1] https://w3c.github.io/mediacapture-record/MediaRecorder.html#methods
-    virtual bool canSupportMimeType(const WebString& mimeType) { return false; }
+    virtual bool canSupportMimeType(const WebString& type, const WebString& codecs) { return false; }
 };
 
 } // namespace blink

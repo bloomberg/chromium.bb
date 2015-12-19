@@ -12,6 +12,7 @@
 #include "modules/EventTargetModules.h"
 #include "modules/mediarecorder/BlobEvent.h"
 #include "modules/mediarecorder/MediaRecorderErrorEvent.h"
+#include "platform/ContentType.h"
 #include "platform/NotImplemented.h"
 #include "platform/blob/BlobData.h"
 #include "public/platform/Platform.h"
@@ -73,7 +74,8 @@ MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, con
         exceptionState.throwDOMException(NotSupportedError, "No MediaRecorder handler can be created.");
         return;
     }
-    if (!m_recorderHandler->initialize(this, stream->descriptor(), m_mimeType)) {
+    ContentType contentType(m_mimeType);
+    if (!m_recorderHandler->initialize(this, stream->descriptor(), contentType.type(), contentType.parameter("codecs"))) {
         exceptionState.throwDOMException(NotSupportedError, "Failed to initialize native MediaRecorder, the type provided " + m_mimeType + "is unsupported." );
         return;
     }
@@ -166,7 +168,8 @@ bool MediaRecorder::isTypeSupported(const String& type)
     // specified MIME type. Recording may still fail if sufficient resources are
     // not available to support the concrete media encoding.
     // [1] https://w3c.github.io/mediacapture-record/MediaRecorder.html#methods
-    return handler->canSupportMimeType(type);
+    ContentType contentType(type);
+    return handler->canSupportMimeType(contentType.type(), contentType.parameter("codecs"));
 }
 
 const AtomicString& MediaRecorder::interfaceName() const

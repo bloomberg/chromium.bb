@@ -44,16 +44,19 @@ struct MediaRecorderTestParams {
   const bool has_video;
   const bool has_audio;
   const char* const mime_type;
+  const char* const codecs;
   const size_t first_encoded_video_frame_size;
   const size_t second_encoded_video_frame_size;
   const size_t first_encoded_audio_frame_size;
   const size_t second_encoded_audio_frame_size;
 };
 
+// Array of valid combinations of video/audio/codecs and expected collected
+// encoded sizes to use for parameterizing MediaRecorderHandlerTest.
 static const MediaRecorderTestParams kMediaRecorderTestParams[] = {
-    {true, false, "video/vp8", 52, 32, 0, 0},
-    {true, false, "video/vp9", 33, 18, 0, 0},
-    {false, true, "video/vp8", 0, 0, 990, 706}};
+    {true, false, "video/webm", "vp8", 52, 32, 0, 0},
+    {true, false, "video/webm", "vp9", 33, 18, 0, 0},
+    {false, true, "video/webm", "vp8", 0, 0, 990, 706}};
 
 class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
                                  public blink::WebMediaRecorderHandlerClient {
@@ -130,38 +133,57 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
   DISALLOW_COPY_AND_ASSIGN(MediaRecorderHandlerTest);
 };
 
-// Checks that canSupportMimeType() works as expected.
-// TODO(mcasas): revisit this when canSupportMimeType() is fully implemented.
+// Checks that canSupportMimeType() works as expected, by sending supported
+// combinations and unsupported ones.
 TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
-  const WebString good_mime_type_vp8(base::UTF8ToUTF16("video/vp8"));
-  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(good_mime_type_vp8));
+  const WebString unsupported_mime_type(base::UTF8ToUTF16("video/mpeg"));
+  EXPECT_FALSE(media_recorder_handler_->canSupportMimeType(
+                   unsupported_mime_type, WebString()));
 
-  const WebString good_mime_type_vp9(base::UTF8ToUTF16("video/vp9"));
-  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(good_mime_type_vp9));
+  const WebString mime_type_video(base::UTF8ToUTF16("video/webm"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
+                  mime_type_video, WebString()));
+  const WebString mime_type_video_uppercase(base::UTF8ToUTF16("video/WEBM"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
+                  mime_type_video_uppercase, WebString()));
+  const WebString example_good_codecs_1(base::UTF8ToUTF16("vp8"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
+                  mime_type_video, example_good_codecs_1));
+  const WebString example_good_codecs_2(base::UTF8ToUTF16("vp9,opus"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
+                  mime_type_video, example_good_codecs_2));
+  const WebString example_good_codecs_3(base::UTF8ToUTF16("VP9,opus"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
+                  mime_type_video, example_good_codecs_3));
 
-  const WebString audio_mime_type(base::UTF8ToUTF16("audio/opus"));
-  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(audio_mime_type));
+  const WebString example_unsupported_codecs_1(base::UTF8ToUTF16("daala"));
+  EXPECT_FALSE(media_recorder_handler_->canSupportMimeType(
+                   mime_type_video, example_unsupported_codecs_1));
 
-  const WebString combo_mime_type(base::UTF8ToUTF16("video/vp8, audio/opus"));
-  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(combo_mime_type));
+  const WebString mime_type_audio(base::UTF8ToUTF16("audio/webm"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
+                  mime_type_audio, WebString()));
+  const WebString example_good_codecs_4(base::UTF8ToUTF16("opus"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
+                  mime_type_audio, example_good_codecs_4));
+  const WebString example_good_codecs_5(base::UTF8ToUTF16("OpUs"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
+                  mime_type_audio, example_good_codecs_5));
 
-  const WebString bad_combo(base::UTF8ToUTF16("video/vp8, audio/unsupported"));
-  EXPECT_FALSE(media_recorder_handler_->canSupportMimeType(bad_combo));
-
-  const WebString bad_mime_type(base::UTF8ToUTF16("video/unsupportedcodec"));
-  EXPECT_FALSE(media_recorder_handler_->canSupportMimeType(bad_mime_type));
-
-  const WebString empty_mime_type(base::UTF8ToUTF16(""));
-  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(empty_mime_type));
+  const WebString example_unsupported_codecs_2(base::UTF8ToUTF16("vorbis"));
+  EXPECT_FALSE(media_recorder_handler_->canSupportMimeType(
+                   mime_type_audio, example_unsupported_codecs_2));
 }
 
 // Checks that the initialization-destruction sequence works fine.
 TEST_P(MediaRecorderHandlerTest, InitializeStartStop) {
   AddTracks();
   const WebString mime_type(base::UTF8ToUTF16(GetParam().mime_type));
+  const WebString codecs(base::UTF8ToUTF16(GetParam().codecs));
   EXPECT_TRUE(media_recorder_handler_->initialize(this,
                                                   registry_.test_stream(),
-                                                  mime_type));
+                                                  mime_type,
+                                                  codecs));
   EXPECT_FALSE(recording());
   EXPECT_FALSE(hasVideoRecorders());
   EXPECT_FALSE(hasAudioRecorders());
@@ -191,8 +213,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   AddTracks();
 
   const WebString mime_type(base::UTF8ToUTF16(GetParam().mime_type));
+  const WebString codecs(base::UTF8ToUTF16(GetParam().codecs));
   EXPECT_TRUE(media_recorder_handler_->initialize(this, registry_.test_stream(),
-                                                  mime_type));
+                                                  mime_type, codecs));
   EXPECT_TRUE(media_recorder_handler_->start());
 
   InSequence s;
@@ -250,9 +273,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeAudioFrames) {
 
   AddTracks();
 
-  const WebString mime_type(base::UTF8ToUTF16("audio/opus"));
+  const WebString mime_type(base::UTF8ToUTF16("audio/webm"));
   EXPECT_TRUE(media_recorder_handler_->initialize(this, registry_.test_stream(),
-                                                  mime_type));
+                                                  mime_type, WebString()));
   EXPECT_TRUE(media_recorder_handler_->start());
 
   InSequence s;
