@@ -35,6 +35,7 @@ class ImageResource;
 
 class StyleFetchedImage final : public StyleImage, private ImageResourceClient {
     USING_FAST_MALLOC_WILL_BE_REMOVED(StyleFetchedImage);
+    WILL_BE_USING_PRE_FINALIZER(StyleFetchedImage, dispose);
 public:
     static PassRefPtrWillBeRawPtr<StyleFetchedImage> create(ImageResource* image, Document* document, const KURL& url)
     {
@@ -63,15 +64,12 @@ public:
     bool knownToBeOpaque(const LayoutObject*) const override;
     ImageResource* cachedImage() const override;
 
-#if ENABLE(OILPAN)
-    // Promptly remove as a ImageResource client.
-    EAGERLY_FINALIZE();
-    DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
-#endif
     DECLARE_VIRTUAL_TRACE();
 
 private:
     StyleFetchedImage(ImageResource*, Document*, const KURL&);
+
+    void dispose();
 
     ResourcePtr<ImageResource> m_image;
     RawPtrWillBeMember<Document> m_document;
