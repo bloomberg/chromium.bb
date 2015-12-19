@@ -1,4 +1,5 @@
 include_rules = [
+    "+base/location.h",
     "+base/memory",
     "+base/trace_event",
     "+mozilla",

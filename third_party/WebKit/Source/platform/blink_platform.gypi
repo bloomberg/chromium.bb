@@ -929,6 +929,8 @@
       'text/UnicodeRange.h',
       'text/UnicodeUtilities.cpp',
       'text/UnicodeUtilities.h',
+      'threading/BackgroundTaskRunner.cpp',
+      'threading/BackgroundTaskRunner.h',      
       'transforms/AffineTransform.cpp',
       'transforms/AffineTransform.h',
       'transforms/IdentityTransformOperation.h',
@@ -1077,6 +1079,7 @@
       'image-decoders/gif/GIFImageDecoderTest.cpp',
       'image-decoders/jpeg/JPEGImageDecoderTest.cpp',
       'image-decoders/webp/WEBPImageDecoderTest.cpp',
+      'threading/BackgroundTaskRunnerTest.cpp',
     ],
     # TODO(jbroman): Move these into platform_test_support_files.
     'platform_unittest_support_files': [
