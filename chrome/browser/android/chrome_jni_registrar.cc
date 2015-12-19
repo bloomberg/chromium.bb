@@ -19,6 +19,7 @@
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/android/bottombar/overlay_panel_content.h"
 #include "chrome/browser/android/chrome_application.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/compositor/compositor_view.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/android/compositor/scene_layer/contextual_search_scene_layer.h"
@@ -219,6 +220,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ChromeApplication", ChromeApplication::RegisterBindings},
     {"ChromeBrowserProvider",
      ChromeBrowserProvider::RegisterChromeBrowserProvider},
+    {"ChromeFeatureList", RegisterChromeFeatureListJni},
     {"ChromeHttpAuthHandler",
      ChromeHttpAuthHandler::RegisterChromeHttpAuthHandler},
 #if defined(ENABLE_MEDIA_ROUTER)
