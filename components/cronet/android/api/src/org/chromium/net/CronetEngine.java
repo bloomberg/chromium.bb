@@ -6,6 +6,7 @@ package org.chromium.net;
 
 import android.content.Context;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.File;
@@ -17,6 +18,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -262,6 +264,7 @@ public abstract class CronetEngine {
          * @deprecated Marked as deprecated because @hide doesn't properly hide but
          *         javadocs are built with nodeprecated="yes".
          */
+        @Deprecated
         @SuppressWarnings("DepAnn")
         public Builder setDataReductionProxyOptions(
                 String primaryProxy, String fallbackProxy, String secureProxyCheckUrl) {
@@ -591,6 +594,24 @@ public abstract class CronetEngine {
             Executor executor, @UrlRequest.Builder.RequestPriority int priority);
 
     /**
+     * Creates a {@link UrlRequest} object. All callbacks will
+     * be called on {@code executor}'s thread. {@code executor} must not run
+     * tasks on the current thread to prevent blocking networking operations
+     * and causing exceptions during shutdown.
+     *
+     * @param url {@link URL} for the request.
+     * @param callback callback object that gets invoked on different events.
+     * @param executor {@link Executor} on which all callbacks will be invoked.
+     * @param priority priority of the request which should be one of the
+     *         {@link UrlRequest.Builder#REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*}
+     *         values.
+     * @param requestAnnotations Objects to pass on to {@link CronetEngine.RequestFinishedListener}.
+     * @return new request.
+     */
+    protected abstract UrlRequest createRequest(String url, UrlRequest.Callback callback,
+            Executor executor, int priority, Collection<Object> requestAnnotations);
+
+    /**
      * Creates a {@link BidirectionalStream} object. {@code callback} methods will
      * be invoked on {@code executor}. {@code executor} must not run
      * tasks on the current thread to prevent blocking networking operations
@@ -777,7 +798,9 @@ public abstract class CronetEngine {
      *         javadocs are built with nodeprecated="yes".
      *         TODO(pauljensen): Expose once implemented, http://crbug.com/418111
      */
-    @SuppressWarnings("DepAnn") public abstract URLConnection openConnection(URL url, Proxy proxy);
+    @Deprecated
+    @SuppressWarnings("DepAnn")
+    public abstract URLConnection openConnection(URL url, Proxy proxy);
 
     /**
      * Creates a {@link URLStreamHandlerFactory} to handle HTTP and HTTPS
@@ -857,5 +880,152 @@ public abstract class CronetEngine {
             throw new IllegalStateException("Cannot instantiate: " + CRONET_URL_REQUEST_CONTEXT, e);
         }
         return cronetEngine;
+    }
+
+    /**
+     * Registers a listener that gets called after the end of each request with the request info.
+     *
+     * <p>This must be called after {@link #enableNetworkQualityEstimator} and will throw an
+     * exception otherwise.
+     *
+     * <p>The listener is called on the {@link java.util.concurrent.Executor} that
+     * is passed to {@link #enableNetworkQualityEstimator}.
+     *
+     * @param listener the listener for finished requests.
+     *
+     * @deprecated not really deprecated but hidden for now as it's a prototype.
+     */
+    @Deprecated public abstract void addRequestFinishedListener(RequestFinishedListener listener);
+
+    /**
+     * Removes a finished request listener.
+     *
+     * @param listener the listener to remove.
+     *
+     * @deprecated not really deprecated but hidden for now as it's a prototype.
+     */
+    @Deprecated
+    public abstract void removeRequestFinishedListener(RequestFinishedListener listener);
+
+    /**
+     * Information about a finished request. Passed to {@link RequestFinishedListener}.
+     *
+     * @deprecated not really deprecated but hidden for now as it's a prototype.
+     */
+    @Deprecated
+    public static final class UrlRequestInfo {
+        private final String mUrl;
+        private final Collection<Object> mAnnotations;
+        private final UrlRequestMetrics mMetrics;
+        @Nullable private final UrlResponseInfo mResponseInfo;
+
+        UrlRequestInfo(String url, Collection<Object> annotations, UrlRequestMetrics metrics,
+                @Nullable UrlResponseInfo responseInfo) {
+            mUrl = url;
+            mAnnotations = annotations;
+            mMetrics = metrics;
+            mResponseInfo = responseInfo;
+        }
+
+        /** Returns the request's original URL. */
+        public String getUrl() {
+            return mUrl;
+        }
+
+        /** Returns the objects that the caller has supplied when initiating the request. */
+        public Collection<Object> getAnnotations() {
+            return mAnnotations;
+        }
+
+        // TODO(klm): Collect and return a chain of Metrics objects for redirect responses.
+        /**
+         * Returns metrics collected for this request.
+         *
+         * <p>The reported times and bytes account for all redirects, i.e.
+         * the TTFB is from the start of the original request to the ultimate response headers,
+         * the TTLB is from the start of the original request to the end of the ultimate response,
+         * the received byte count is for all redirects and the ultimate response combined.
+         * These cumulative metric definitions are debatable, but are chosen to make sense
+         * for user-facing latency analysis.
+         *
+         * <p>Must call {@link #enableNetworkQualityEstimator} to enable request metrics collection.
+         */
+        public UrlRequestMetrics getMetrics() {
+            return mMetrics;
+        }
+
+        /** Returns a UrlResponseInfo for the request, if its response had started. */
+        @Nullable
+        public UrlResponseInfo getResponseInfo() {
+            return mResponseInfo;
+        }
+    }
+
+    /**
+     * Metrics collected for a single request.
+     *
+     * <p>Must call {@link #enableNetworkQualityEstimator} to enable request metrics collection.
+     *
+     * @deprecated not really deprecated but hidden for now as it's a prototype.
+     */
+    @Deprecated
+    public static final class UrlRequestMetrics {
+        @Nullable private final Long mTtfbMs;
+        @Nullable private final Long mTotalTimeMs;
+        @Nullable private final Long mSentBytesCount;
+        @Nullable private final Long mReceivedBytesCount;
+
+        public UrlRequestMetrics(@Nullable Long ttfbMs, @Nullable Long totalTimeMs,
+                @Nullable Long sentBytesCount, @Nullable Long receivedBytesCount) {
+            mTtfbMs = ttfbMs;
+            mTotalTimeMs = totalTimeMs;
+            mSentBytesCount = sentBytesCount;
+            mReceivedBytesCount = receivedBytesCount;
+        }
+
+        /**
+         * Returns milliseconds between request initiation and first byte of response headers,
+         * or null if not collected.
+         */
+        @Nullable
+        public Long getTtfbMs() {
+            return mTtfbMs;
+        }
+
+        /**
+         * Returns milliseconds between request initiation and finish,
+         * including a failure or cancellation, or null if not collected.
+         */
+        @Nullable
+        public Long getTotalTimeMs() {
+            return mTotalTimeMs;
+        }
+
+        /**
+         * Returns total bytes sent over the network transport layer, or null if not collected.
+         */
+        @Nullable
+        public Long getSentBytesCount() {
+            return mSentBytesCount;
+        }
+
+        /**
+         * Returns total bytes received over the network transport layer, or null if not collected.
+         */
+        @Nullable
+        public Long getReceivedBytesCount() {
+            return mReceivedBytesCount;
+        }
+    }
+
+    /**
+     * Interface to listen for finished requests that were created via this CronetEngine instance.
+     *
+     * @deprecated not really deprecated but hidden for now as it's a prototype.
+     */
+    @Deprecated
+    public interface RequestFinishedListener { // TODO(klm): Add a convenience abstract class.
+        /** Invoked with request info. */
+        void onRequestFinished(UrlRequestInfo requestInfo);
     }
 }

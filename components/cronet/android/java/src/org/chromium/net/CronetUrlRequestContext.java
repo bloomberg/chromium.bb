@@ -24,6 +24,8 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -68,6 +70,10 @@ class CronetUrlRequestContext extends CronetEngine {
     @GuardedBy("mNetworkQualityLock")
     private final ObserverList<NetworkQualityThroughputListener> mThroughputListenerList =
             new ObserverList<NetworkQualityThroughputListener>();
+
+    @GuardedBy("mNetworkQualityLock")
+    private final ObserverList<RequestFinishedListener> mFinishedListenerList =
+            new ObserverList<RequestFinishedListener>();
 
     @UsedByReflection("CronetEngine.java")
     public CronetUrlRequestContext(CronetEngine.Builder builder) {
@@ -120,11 +126,8 @@ class CronetUrlRequestContext extends CronetEngine {
 
     @Override
     public UrlRequest createRequest(String url, UrlRequest.Callback callback, Executor executor) {
-        synchronized (mLock) {
-            checkHaveAdapter();
-            return new CronetUrlRequest(this, mUrlRequestContextAdapter, url,
-                    UrlRequest.Builder.REQUEST_PRIORITY_MEDIUM, callback, executor);
-        }
+        return createRequest(url, callback, executor, UrlRequest.Builder.REQUEST_PRIORITY_MEDIUM,
+                Collections.emptyList());
     }
 
     @Override
@@ -132,8 +135,24 @@ class CronetUrlRequestContext extends CronetEngine {
             @UrlRequest.Builder.RequestPriority int priority) {
         synchronized (mLock) {
             checkHaveAdapter();
-            return new CronetUrlRequest(
-                    this, mUrlRequestContextAdapter, url, priority, callback, executor);
+            return new CronetUrlRequest(this, mUrlRequestContextAdapter, url, priority, callback,
+                    executor, Collections.emptyList(), mNetworkQualityEstimatorEnabled);
+        }
+    }
+
+    @Override
+    public UrlRequest createRequest(String url, UrlRequest.Callback callback, Executor executor,
+            int priority, Collection<Object> requestAnnotations) {
+        synchronized (mLock) {
+            checkHaveAdapter();
+            boolean metricsCollectionEnabled = mNetworkQualityEstimatorEnabled;
+            if (metricsCollectionEnabled) { // Collect metrics only if someone is listening.
+                synchronized (mNetworkQualityLock) {
+                    metricsCollectionEnabled = !mFinishedListenerList.isEmpty();
+                }
+            }
+            return new CronetUrlRequest(this, mUrlRequestContextAdapter, url, priority, callback,
+                    executor, requestAnnotations, metricsCollectionEnabled);
         }
     }
 
@@ -296,6 +315,26 @@ class CronetUrlRequestContext extends CronetEngine {
     }
 
     @Override
+    public void addRequestFinishedListener(RequestFinishedListener listener) {
+        if (!mNetworkQualityEstimatorEnabled) {
+            throw new IllegalStateException("Network quality estimator must be enabled");
+        }
+        synchronized (mNetworkQualityLock) {
+            mFinishedListenerList.addObserver(listener);
+        }
+    }
+
+    @Override
+    public void removeRequestFinishedListener(RequestFinishedListener listener) {
+        if (!mNetworkQualityEstimatorEnabled) {
+            throw new IllegalStateException("Network quality estimator must be enabled");
+        }
+        synchronized (mNetworkQualityLock) {
+            mFinishedListenerList.removeObserver(listener);
+        }
+    }
+
+    @Override
     public URLConnection openConnection(URL url) {
         return openConnection(url, Proxy.NO_PROXY);
     }
@@ -326,7 +365,7 @@ class CronetUrlRequestContext extends CronetEngine {
     }
 
     /**
-     * Mark request as completed to allow shutdown when there are no active
+     * Mark request as finished to allow shutdown when there are no active
      * requests.
      */
     void onRequestDestroyed(UrlRequest urlRequest) {
@@ -409,6 +448,23 @@ class CronetUrlRequestContext extends CronetEngine {
             }
         };
         postObservationTaskToNetworkQualityExecutor(task);
+    }
+
+    void reportFinished(final CronetUrlRequest request) {
+        if (mNetworkQualityEstimatorEnabled) {
+            Runnable task = new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (mNetworkQualityLock) {
+                        UrlRequestInfo requestInfo = request.getRequestInfo();
+                        for (RequestFinishedListener listener : mFinishedListenerList) {
+                            listener.onRequestFinished(requestInfo);
+                        }
+                    }
+                }
+            };
+            postObservationTaskToNetworkQualityExecutor(task);
+        }
     }
 
     void postObservationTaskToNetworkQualityExecutor(Runnable task) {

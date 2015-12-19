@@ -11,6 +11,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.Executor;
 
 /**
@@ -44,6 +46,8 @@ public interface UrlRequest {
         boolean mDisableCache;
         // Priority of request. Default is medium.
         @RequestPriority int mPriority = REQUEST_PRIORITY_MEDIUM;
+        // Request reporting annotations. Avoid extra object creation if no annotations added.
+        Collection<Object> mRequestAnnotations = Collections.emptyList();
         // If request is an upload, this provides the request body data.
         UploadDataProvider mUploadDataProvider;
         // Executor to call upload data provider back on.
@@ -200,6 +204,29 @@ public interface UrlRequest {
         }
 
         /**
+         * Associates the annotation object with this request. May add more than one.
+         * Passed through to a {@link CronetEngine.RequestFinishedListener},
+         * see {@link CronetEngine.UrlRequestInfo#getAnnotations}.
+         *
+         * @param annotation an object to pass on to the
+         * {@link CronetEngine.RequestFinishedListener} with a {@link CronetEngine.UrlRequestInfo}.
+         * @return the builder to facilitate chaining.
+         *
+         * @deprecated not really deprecated but hidden for now as it's a prototype.
+         */
+        @Deprecated
+        public Builder addRequestAnnotation(Object annotation) {
+            if (annotation == null) {
+                throw new NullPointerException("Invalid metrics annotation.");
+            }
+            if (mRequestAnnotations.isEmpty()) {
+                mRequestAnnotations = new ArrayList<Object>();
+            }
+            mRequestAnnotations.add(annotation);
+            return this;
+        }
+
+        /**
          * Creates a {@link UrlRequest} using configuration within this
          * {@link Builder}. The returned {@code UrlRequest} can then be started
          * by calling {@link UrlRequest#start}.
@@ -208,8 +235,8 @@ public interface UrlRequest {
          *         this {@link Builder}.
          */
         public UrlRequest build() {
-            final UrlRequest request =
-                    mCronetEngine.createRequest(mUrl, mCallback, mExecutor, mPriority);
+            final UrlRequest request = mCronetEngine.createRequest(
+                    mUrl, mCallback, mExecutor, mPriority, mRequestAnnotations);
             if (mMethod != null) {
                 request.setHttpMethod(mMethod);
             }
@@ -628,9 +655,9 @@ public interface UrlRequest {
 
     /**
      * Returns {@code true} if the request was successfully started and is now
-     * done (completed, canceled, or failed).
+     * finished (completed, canceled, or failed).
      * @return {@code true} if the request was successfully started and is now
-     *         done (completed, canceled, or failed).
+     *         finished (completed, canceled, or failed).
      */
     public boolean isDone();
 
