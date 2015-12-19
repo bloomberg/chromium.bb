@@ -2,7 +2,8 @@ Tests that scripts panel UI elements work as intended.
 
 
 Running: testInitialLoad
-  Dumping ScriptsNavigator sources tab:
+mock-target-1
+  top
     (no domain)
       bar.js
       baz.js
@@ -10,24 +11,31 @@ Running: testInitialLoad
       foobar.js
 
 Running: testReset
-  Dumping ScriptsNavigator sources tab:
-    (no domain)
-Revealing in navigator.
-  Dumping ScriptsNavigator sources tab:
+mock-target-2
+  top
     (no domain)
       bar.js
       baz.js
       foo.js
-  Dumping ScriptsNavigator sources tab:
-  Dumping ScriptsNavigator sources tab:
+Revealing in navigator.
+mock-target-2
+  top
+    (no domain)
+      bar.js
+      baz.js
+      foo.js
+mock-target-2
+  top
     (no domain)
       bar.js
 
 Running: testDebuggerUISourceCodeAddedAndRemoved
-  Dumping ScriptsNavigator sources tab:
+mock-target-3
+  top
     (no domain)
       foo.js
-  Dumping ScriptsNavigator sources tab:
+mock-target-3
+  top
     (no domain)
       foo.js
       source.js

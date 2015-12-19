@@ -23,8 +23,8 @@ function test()
         {
             InspectorTest.runtimeModel._executionContextCreated(mockExecutionContext);
             var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-            WebInspector.NetworkProject.forTarget(InspectorTest.mainTarget).addFileForURL(mockContentScriptURL, contentProvider, true);
-            InspectorTest.dumpNavigatorView(contentScriptsNavigatorView, "contentScripts", "  ");
+            WebInspector.NetworkProject.forTarget(InspectorTest.mainTarget).addFileForURL(mockContentScriptURL, contentProvider, InspectorTest.mainFrame(), true);
+            InspectorTest.dumpNavigatorView(contentScriptsNavigatorView);
             next();
         },
     ]);

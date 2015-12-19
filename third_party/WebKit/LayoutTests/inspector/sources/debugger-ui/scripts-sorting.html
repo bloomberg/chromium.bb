@@ -9,7 +9,7 @@ function test()
 {
     function dumpNavigator(sourcesNavigatorView)
     {
-        InspectorTest.dumpNavigatorView(sourcesNavigatorView, "sources", "  ");
+        InspectorTest.dumpNavigatorView(sourcesNavigatorView);
     }
 
     function createNavigatorView(constructor)
@@ -28,32 +28,35 @@ function test()
     function addUISourceCode(url, isContentScript)
     {
         var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-        var uiSourceCode = InspectorTest.testNetworkProject.addFileForURL(url, contentProvider, isContentScript);
+        var uiSourceCode = InspectorTest.testNetworkProject.addFileForURL(url, contentProvider, InspectorTest.mainFrame(), isContentScript);
         uiSourceCodes.push(uiSourceCode);
     }
 
-    function dumpNavigator()
+    function dumpNavigator(view)
     {
-        InspectorTest.dumpNavigatorView(sourcesNavigatorView, "sources", "  ");
-        InspectorTest.dumpNavigatorView(contentScriptsNavigatorView, "contentScripts", "  ");
+        ["frame", "frame/domain", "frame/domain/folder", "domain", "domain/folder"].forEach(dumpNavigatorInMode.bind(null, view));
+    }
+
+    function dumpNavigatorInMode(view, mode)
+    {
+        InspectorTest.addResult(view === sourcesNavigatorView ? "Sources:" : "Content Scripts:");
+        WebInspector.moduleSetting("navigatorGrouping").set(mode);
+        InspectorTest.addResult("-------- Setting mode: [" + mode + "]");
+        InspectorTest.dumpNavigatorView(view);
     }
 
     function dumpScriptsList()
     {
-        InspectorTest.addResult("");
-        dumpNavigator();
-
-        sourcesNavigatorView.revealUISourceCode(uiSourceCodes[0]);
-        contentScriptsNavigatorView.revealUISourceCode(uiSourceCodes[0]);
-
-        dumpNavigator();
+        dumpNavigator(sourcesNavigatorView);
+        dumpNavigator(contentScriptsNavigatorView);
 
         for (var i = 0; i < uiSourceCodes.length; ++i) {
             sourcesNavigatorView.revealUISourceCode(uiSourceCodes[i]);
             contentScriptsNavigatorView.revealUISourceCode(uiSourceCodes[i]);
         }
 
-        dumpNavigator();
+        dumpNavigator(sourcesNavigatorView);
+        dumpNavigator(contentScriptsNavigatorView);
     }
 
     var scripts = [

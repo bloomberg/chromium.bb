@@ -701,6 +701,11 @@ InspectorTest.hideInspectorView = function()
     WebInspector.inspectorView.element.setAttribute("style", "display:none !important");
 }
 
+InspectorTest.mainFrame = function()
+{
+    return InspectorTest.mainTarget.resourceTreeModel.mainFrame;
+}
+
 InspectorTest.StringOutputStream = function(callback)
 {
     this._callback = callback;

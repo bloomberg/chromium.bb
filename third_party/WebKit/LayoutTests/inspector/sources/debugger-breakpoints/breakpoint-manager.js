@@ -221,7 +221,7 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
     InspectorTest.addResult("  Adding UISourceCode: " + url);
     var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
     var binding = breakpointManager._debuggerWorkspaceBinding;
-    var uiSourceCode = InspectorTest.testNetworkProject.addFileForURL(url, contentProvider);
+    var uiSourceCode = InspectorTest.testNetworkProject.addFileForURL(url, contentProvider, null);
     InspectorTest.uiSourceCodes[url] = uiSourceCode;
     if (!doNotSetSourceMapping) {
         breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target, uiSourceCode, breakpointManager.defaultMapping);
@@ -271,8 +271,6 @@ InspectorTest.createBreakpointManager = function(targetManager, debuggerWorkspac
         InspectorTest.initializeDefaultMappingOnTarget(targets[i]);
         if (!mappingForManager)
             mappingForManager = targets[i].defaultMapping;
-        var model = new InspectorTest.DebuggerModelMock(targets[i], targets[i].defaultMapping, debuggerWorkspaceBinding);
-        targets[i].debuggerModel = model;
     }
 
     var breakpointManager = new WebInspector.BreakpointManager(setting, debuggerWorkspaceBinding._workspace, debuggerWorkspaceBinding._networkMapping, targetManager, debuggerWorkspaceBinding);

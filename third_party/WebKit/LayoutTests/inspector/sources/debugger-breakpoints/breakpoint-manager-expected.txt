@@ -312,8 +312,10 @@ Running: testNavigation
     breakpointAdded(debugger:///VMa.js a.js, 10, 0, foo == bar, true)
     Location created: a.js:10
   Adding UISourceCode: a.js
-    breakpointAdded(a.js, 20, 0, , false)
     breakpointRemoved(debugger:///VMa.js a.js, 10, 0)
+    breakpointAdded(a.js, 10, 0, foo == bar, true)
+    breakpointAdded(a.js, 20, 0, , false)
+    breakpointRemoved(a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, foo == bar, true)
   Dumping Breakpoint Locations
     UISourceCode (url='a.js', uri='a.js')
@@ -451,6 +453,8 @@ Running: testSourceMappingReload
     Location created: a.js:10
   Adding UISourceCode: a.js
     breakpointRemoved(debugger:///VMa.js a.js, 10, 0)
+    breakpointAdded(a.js, 10, 0, foo == bar, true)
+    breakpointRemoved(a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, foo == bar, true)
   Adding UISourceCode: b.js
 

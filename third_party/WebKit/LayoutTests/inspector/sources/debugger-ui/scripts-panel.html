@@ -8,7 +8,7 @@ function test()
 {
     function dumpNavigator(sourcesNavigatorView)
     {
-        InspectorTest.dumpNavigatorView(sourcesNavigatorView, "sources", "  ");
+        InspectorTest.dumpNavigatorView(sourcesNavigatorView);
     }
 
     function createNavigatorView()
@@ -39,7 +39,7 @@ function test()
 
     function addNetworkFile(workspace, url)
     {
-        return InspectorTest.testNetworkProject.addFileForURL(url, createContentProvider(url));
+        return InspectorTest.testNetworkProject.addFileForURL(url, createContentProvider(url), InspectorTest.mainFrame());
     }
 
     function addDebuggerFile(workspace, url)

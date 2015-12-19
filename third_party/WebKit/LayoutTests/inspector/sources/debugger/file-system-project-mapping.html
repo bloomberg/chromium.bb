@@ -52,12 +52,12 @@ function test()
             function fileSystemCreated1()
             {
                 InspectorTest.addResult("Adding network resource.");
-                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>");
-                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>");
+                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>", target);
+                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>", target);
                 dumpFileSystemUISourceCodesMappings();
 
                 var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
-                networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode(WebInspector.NetworkProject.projectId(target, false), "http://localhost/html/foo.js");
+                networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode(WebInspector.NetworkProject.projectId(target, target.resourceTreeModel.mainFrame, false), "http://localhost/html/foo.js");
                 InspectorTest.addResult("Adding mapping between network and file system resources.");
                 InspectorTest.testNetworkMapping.addMapping(networkUISourceCode, uiSourceCode);
                 var setting = JSON.stringify(WebInspector.fileSystemMapping._fileSystemMappingSetting.get());
@@ -72,8 +72,8 @@ function test()
 
             function fileSystemCreated2()
             {
-                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>");
-                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>");
+                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>", target);
+                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>", target);
                 dumpFileSystemUISourceCodesMappings();
 
                 InspectorTest.addResult("Removing mapping between network and file system resources.");
@@ -88,8 +88,8 @@ function test()
 
             function fileSystemCreated3()
             {
-                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>");
-                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>");
+                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>", target);
+                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>", target);
                 dumpFileSystemUISourceCodesMappings();
 
                 var networkURL = InspectorTest.testNetworkMapping.networkURL(networkUISourceCode);
@@ -327,8 +327,8 @@ function test()
 
             function fileSystemCreated()
             {
-                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/h1/foo.js", WebInspector.resourceTypes.Script, "<foo content>");
-                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/h2/bar.js", WebInspector.resourceTypes.Script, "<bar content>");
+                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/h1/foo.js", WebInspector.resourceTypes.Script, "<foo content>", target);
+                InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/h2/bar.js", WebInspector.resourceTypes.Script, "<bar content>", target);
                 dumpFileSystemUISourceCodesMappings();
                 fs.reportRemoved();
                 next();

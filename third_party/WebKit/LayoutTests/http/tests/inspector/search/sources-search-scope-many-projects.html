@@ -67,7 +67,7 @@ function test()
     {
         var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, content);
         var networkProject = WebInspector.NetworkProject.forTarget(WebInspector.targetManager.mainTarget());
-        var uiSourceCode = networkProject.addFileForURL(url, contentProvider, false);
+        var uiSourceCode = networkProject.addFileForURL(url, contentProvider, InspectorTest.mainFrame(), false);
         return uiSourceCode;
     }
 

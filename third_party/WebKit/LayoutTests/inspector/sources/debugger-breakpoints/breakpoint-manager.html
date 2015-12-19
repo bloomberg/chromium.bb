@@ -5,16 +5,10 @@
 <script src="breakpoint-manager.js"></script>
 
 <script>
-
 function test()
 {
     var mockTarget;
-
-    function createWorkspace()
-    {
-        InspectorTest.createWorkspace(true);
-        mockTarget = InspectorTest.createMockTarget(1, InspectorTest.DebuggerModelMock);
-    }
+    var lastTargetId = 0;
 
     function resetWorkspace(breakpointManager)
     {
@@ -34,14 +28,18 @@ function test()
     serializedBreakpoints.push(createBreakpoint("a.js", 20, "", false));
     serializedBreakpoints.push(createBreakpoint("b.js", 3, "", true));
 
-    createWorkspace();
     InspectorTest.setupLiveLocationSniffers();
 
-    var addUISourceCode = function() {
+    function addUISourceCode()
+    {
         var args = [mockTarget].concat(Array.prototype.slice.call(arguments));
         return InspectorTest.addUISourceCode.apply(null, args);
     }
-    var createBreakpointManager = function(serializedBreakpoints) {
+
+    function createBreakpointManager(serializedBreakpoints)
+    {
+        InspectorTest.createWorkspace(true);
+        mockTarget = InspectorTest.createMockTarget(++lastTargetId, InspectorTest.DebuggerModelMock);
         return InspectorTest.createBreakpointManager(InspectorTest.testTargetManager, InspectorTest.testDebuggerWorkspaceBinding, serializedBreakpoints);
     }
 
@@ -84,7 +82,6 @@ function test()
 
         function testRestoreBreakpoints(next)
         {
-            createWorkspace();
             var breakpointManager = createBreakpointManager(serializedBreakpoints);
             addUISourceCode(breakpointManager, "a.js");
             InspectorTest.finishBreakpointTest(breakpointManager, next);
@@ -92,7 +89,6 @@ function test()
 
         function testRestoreBreakpointsTwice(next)
         {
-            createWorkspace();
             var breakpointManager = createBreakpointManager(serializedBreakpoints);
             addUISourceCode(breakpointManager, "a.js");
             addUISourceCode(breakpointManager, "a.js");
@@ -101,7 +97,6 @@ function test()
 
         function testRemoveBreakpoints(next)
         {
-            createWorkspace();
             var breakpointManager = createBreakpointManager(serializedBreakpoints);
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
             window.setBreakpointCallback = step2.bind(this);
@@ -124,7 +119,6 @@ function test()
 
         function testSetBreakpointThatShifts(next)
         {
-            createWorkspace();
             var breakpointManager = createBreakpointManager();
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
             InspectorTest.setBreakpoint(breakpointManager, uiSourceCode, 1015, 0, "", true);
@@ -133,7 +127,6 @@ function test()
 
         function testSetBreakpointThatShiftsTwice(next)
         {
-            createWorkspace();
             var breakpointManager = createBreakpointManager();
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
             InspectorTest.setBreakpoint(breakpointManager, uiSourceCode, 1015, 0, "", true, step2);
@@ -148,7 +141,6 @@ function test()
 
         function testSetBreakpointOutsideScript(next)
         {
-            createWorkspace();
             var breakpointManager = createBreakpointManager();
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
             breakpointManager.setBreakpoint(uiSourceCode, 2500, 0, "", true);
@@ -157,7 +149,6 @@ function test()
 
         function testNavigation(next)
         {
-            createWorkspace();
             var breakpointManager = createBreakpointManager(serializedBreakpoints);
             var uiSourceCodeA = addUISourceCode(breakpointManager, "a.js");
             window.setBreakpointCallback = step2.bind(this);
@@ -211,7 +202,6 @@ function test()
             serializedBreakpoints.push(createBreakpoint("a.js", 10, "foo == bar", true));
             serializedBreakpoints.push(createBreakpoint("a.js", 20, "", true));
 
-            createWorkspace();
             var breakpointManager = createBreakpointManager(serializedBreakpoints);
             var uiSourceCodeA = addUISourceCode(breakpointManager, "a.js");
             window.setBreakpointCallback = step2.bind(this);
@@ -239,7 +229,6 @@ function test()
             var serializedBreakpoints = [];
             serializedBreakpoints.push(createBreakpoint("a.js", 10, "foo == bar", true));
 
-            createWorkspace();
             var breakpointManager = createBreakpointManager(serializedBreakpoints);
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
             window.setBreakpointCallback = step2.bind(this);
@@ -285,7 +274,6 @@ function test()
             }
             // Source mapping will shift everything 10 lines ahead.
             var serializedBreakpoints = [createBreakpoint("b.js", 20, "foo == bar", true)];
-            createWorkspace();
             var breakpointManager = createBreakpointManager(serializedBreakpoints);
             InspectorTest.addResult("\n  Adding files:");
             var uiSourceCodeA = addUISourceCode(breakpointManager, "a.js");
@@ -324,7 +312,6 @@ function test()
 
         function testBreakpointInCollectedReload(next)
         {
-            createWorkspace();
             var breakpointManager = createBreakpointManager();
             InspectorTest.addResult("\n  Adding file without script:");
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js", true, true);

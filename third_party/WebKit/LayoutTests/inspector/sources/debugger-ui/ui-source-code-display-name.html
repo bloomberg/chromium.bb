@@ -21,7 +21,7 @@ function test()
 
     function addNetworkFile(url)
     {
-        return workspace.networkProject.addFileForURL(url, createContentProvider(url));
+        return workspace.networkProject.addFileForURL(url, createContentProvider(url), InspectorTest.mainFrame());
     }
 
     function dumpUISourceCodeDisplayName(url)

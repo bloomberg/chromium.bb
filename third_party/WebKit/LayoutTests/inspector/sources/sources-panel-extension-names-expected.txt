@@ -2,6 +2,7 @@ The test verifies that extension names are resolved properly in navigator view.
 
 
 Running: testAddExecutionContextBeforeFile
-  Dumping ScriptsNavigator contentScripts tab:
-    FibExtension
+top
+  FibExtension
+    script.js
 
