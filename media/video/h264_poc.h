@@ -5,6 +5,8 @@
 #ifndef MEDIA_VIDEO_H264_POC_H_
 #define MEDIA_VIDEO_H264_POC_H_
 
+#include "base/macros.h"
+
 namespace media {
 
 struct H264SPS;

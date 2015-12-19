@@ -5,6 +5,7 @@
 #ifndef MEDIA_FORMATS_MPEG_ADTS_STREAM_PARSER_H_
 #define MEDIA_FORMATS_MPEG_ADTS_STREAM_PARSER_H_
 
+#include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/formats/mpeg/mpeg_audio_stream_parser_base.h"
 

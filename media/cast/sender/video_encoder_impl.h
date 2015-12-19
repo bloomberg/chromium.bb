@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_SENDER_VIDEO_ENCODER_IMPL_H_
 #define MEDIA_CAST_SENDER_VIDEO_ENCODER_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"

@@ -10,6 +10,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "media/capture/video/video_capture_device.h"
 
 namespace media {

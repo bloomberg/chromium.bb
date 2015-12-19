@@ -6,6 +6,7 @@
 #define MEDIA_BLINK_VIDEO_FRAME_COMPOSITOR_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"

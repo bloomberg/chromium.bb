@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
 

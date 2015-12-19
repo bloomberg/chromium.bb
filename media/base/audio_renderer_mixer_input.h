@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_renderer_sink.h"
 #include "url/origin.h"

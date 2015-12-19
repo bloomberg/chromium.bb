@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "media/base/android/media_decoder_job.h"
 
 namespace media {

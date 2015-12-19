@@ -46,6 +46,7 @@
 #include <sys/types.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "media/base/media_export.h"
 
 namespace media {

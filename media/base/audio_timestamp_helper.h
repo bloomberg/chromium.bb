@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_AUDIO_TIMESTAMP_HELPER_H_
 #define MEDIA_BASE_AUDIO_TIMESTAMP_HELPER_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 

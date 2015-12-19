@@ -6,6 +6,7 @@
 #define MEDIA_BASE_TEST_HELPERS_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"

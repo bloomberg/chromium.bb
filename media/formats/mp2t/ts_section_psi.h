@@ -6,6 +6,7 @@
 #define MEDIA_FORMATS_MP2T_TS_SECTION_PSI_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "media/base/byte_queue.h"
 #include "media/formats/mp2t/ts_section.h"
 

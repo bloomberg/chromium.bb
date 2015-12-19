@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_AUDIO_BLOCK_FIFO_H_
 #define MEDIA_BASE_AUDIO_BLOCK_FIFO_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "media/base/audio_bus.h"
 #include "media/base/media_export.h"

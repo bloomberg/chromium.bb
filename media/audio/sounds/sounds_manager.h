@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_SOUNDS_SOUNDS_MANAGER_H_
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"

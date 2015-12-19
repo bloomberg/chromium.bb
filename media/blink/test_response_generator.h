@@ -5,6 +5,7 @@
 #ifndef MEDIA_BLINK_TEST_RESPONSE_GENERATOR_H_
 #define MEDIA_BLINK_TEST_RESPONSE_GENERATOR_H_
 
+#include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "url/gurl.h"

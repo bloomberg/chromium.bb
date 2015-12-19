@@ -12,6 +12,7 @@
 #define NO_DSHOW_STRSAFE
 #include <dshow.h>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/win/scoped_comptr.h"
 

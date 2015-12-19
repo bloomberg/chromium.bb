@@ -8,6 +8,7 @@
 // Helper class to handle encryption for the Cast Transport library.
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"

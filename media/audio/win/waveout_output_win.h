@@ -9,6 +9,7 @@
 #include <mmsystem.h>
 #include <mmreg.h>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_handle.h"

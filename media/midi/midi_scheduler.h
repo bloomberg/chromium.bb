@@ -6,6 +6,7 @@
 #define MEDIA_MIDI_MIDI_SCHEDULER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/midi/midi_export.h"
 

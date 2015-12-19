@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_ANDROID_AUDIO_RECORD_INPUT_H_
 
 #include "base/android/jni_android.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"

@@ -6,6 +6,7 @@
 #define MEDIA_FILTERS_LIBWEBM_MUXER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"

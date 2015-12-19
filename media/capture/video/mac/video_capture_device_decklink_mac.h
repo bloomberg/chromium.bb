@@ -12,6 +12,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "media/base/media_log.h"
 #include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebMediaSource.h"

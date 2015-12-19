@@ -5,6 +5,7 @@
 #ifndef MEDIA_VIDEO_CAPTURE_LINUX_VIDEO_CAPTURE_DEVICE_CHROMEOS_H_
 #define MEDIA_VIDEO_CAPTURE_LINUX_VIDEO_CAPTURE_DEVICE_CHROMEOS_H_
 
+#include "base/macros.h"
 #include "media/capture/video/linux/video_capture_device_linux.h"
 
 namespace gfx {

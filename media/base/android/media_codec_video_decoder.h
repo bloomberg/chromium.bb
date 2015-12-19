@@ -6,6 +6,7 @@
 #define MEDIA_BASE_ANDROID_MEDIA_CODEC_VIDEO_DECODER_H_
 
 #include <set>
+#include "base/macros.h"
 #include "media/base/android/media_codec_decoder.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/android/scoped_java_surface.h"

@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_AUDIO_SPLICER_H_
 #define MEDIA_BASE_AUDIO_SPLICER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"

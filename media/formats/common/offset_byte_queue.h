@@ -5,6 +5,7 @@
 #ifndef MEDIA_FORMATS_COMMON_OFFSET_BYTE_QUEUE_H_
 #define MEDIA_FORMATS_COMMON_OFFSET_BYTE_QUEUE_H_
 
+#include "base/macros.h"
 #include "media/base/byte_queue.h"
 #include "media/base/media_export.h"
 

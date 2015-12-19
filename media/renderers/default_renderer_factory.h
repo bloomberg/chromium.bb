@@ -6,6 +6,7 @@
 #define MEDIA_RENDERERS_DEFAULT_RENDERER_FACTORY_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/renderer_factory.h"
 

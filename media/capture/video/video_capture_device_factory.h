@@ -5,6 +5,7 @@
 #ifndef MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
 #define MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
 
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/capture/video/video_capture_device.h"
 

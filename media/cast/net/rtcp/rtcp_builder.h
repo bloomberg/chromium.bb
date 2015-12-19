@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/big_endian.h"
+#include "base/macros.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/rtcp/receiver_rtcp_event_subscriber.h"

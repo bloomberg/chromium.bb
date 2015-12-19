@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_NET_RTP_RECEIVER_STATS_H_
 #define MEDIA_CAST_NET_RTP_RECEIVER_STATS_H_
 
+#include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/net/rtcp/rtcp.h"

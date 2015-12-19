@@ -5,6 +5,7 @@
 #ifndef MEDIA_BLINK_WEBINBANDTEXTTRACK_IMPL_H_
 #define MEDIA_BLINK_WEBINBANDTEXTTRACK_IMPL_H_
 
+#include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebInbandTextTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 

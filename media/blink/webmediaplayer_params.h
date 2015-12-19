@@ -6,6 +6,7 @@
 #define MEDIA_BLINK_WEBMEDIAPLAYER_PARAMS_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/blink/media_blink_export.h"
 #include "media/filters/context_3d.h"

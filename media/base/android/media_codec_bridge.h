@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/media_export.h"

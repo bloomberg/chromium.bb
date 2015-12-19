@@ -9,6 +9,7 @@
 #include <queue>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/media_export.h"

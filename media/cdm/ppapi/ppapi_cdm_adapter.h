@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
+#include "base/macros.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/cdm_helpers.h"
 #include "media/cdm/cdm_wrapper.h"

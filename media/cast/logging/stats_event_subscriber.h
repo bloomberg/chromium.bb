@@ -6,6 +6,7 @@
 #define MEDIA_CAST_LOGGING_STATS_EVENT_SUBSCRIBER_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"

@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_TEST_AUDIO_INPUT_CONTROLLER_FACTORY_H_
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "media/audio/audio_input_controller.h"
 
 namespace media {

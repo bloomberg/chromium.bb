@@ -10,6 +10,7 @@
 #include <deque>
 #include <map>
 
+#include "base/macros.h"
 #include "media/cast/net/rtcp/rtcp.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 

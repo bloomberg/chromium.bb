@@ -6,6 +6,7 @@
 #define MEDIA_MOJO_SERVICES_DEMUXER_STREAM_PROVIDER_SHIM_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/demuxer_stream_provider.h"

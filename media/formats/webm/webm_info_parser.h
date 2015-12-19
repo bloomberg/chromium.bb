@@ -6,6 +6,7 @@
 #define MEDIA_FORMATS_WEBM_WEBM_INFO_PARSER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/formats/webm/webm_parser.h"

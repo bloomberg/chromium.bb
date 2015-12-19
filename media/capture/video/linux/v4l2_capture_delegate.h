@@ -12,6 +12,7 @@
 #endif
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/capture/video/video_capture_device.h"
 

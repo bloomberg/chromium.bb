@@ -6,6 +6,7 @@
 #define MEDIA_BASE_BIT_READER_CORE_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "media/base/media_export.h"
 
 namespace media {

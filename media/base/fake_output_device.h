@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "media/base/output_device.h"
 
 namespace media {

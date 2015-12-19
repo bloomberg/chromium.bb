@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_FAKE_AUDIO_LOG_FACTORY_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "media/audio/audio_logging.h"
 #include "media/base/media_export.h"
 

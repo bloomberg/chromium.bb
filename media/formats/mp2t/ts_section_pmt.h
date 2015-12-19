@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "media/formats/mp2t/ts_section_psi.h"
 
 namespace media {

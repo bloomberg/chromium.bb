@@ -5,6 +5,7 @@
 #ifndef CAST_MEDIA_TEST_SKEWED_TICK_CLOCK_H
 #define CAST_MEDIA_TEST_SKEWED_TICK_CLOCK_H
 
+#include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 

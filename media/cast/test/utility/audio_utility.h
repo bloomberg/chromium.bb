@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_TEST_UTILITY_AUDIO_UTILITY_H_
 #define MEDIA_CAST_TEST_UTILITY_AUDIO_UTILITY_H_
 
+#include "base/macros.h"
 #include "media/audio/simple_sources.h"
 
 namespace base {

@@ -14,6 +14,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/win/scoped_comptr.h"

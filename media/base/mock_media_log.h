@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "media/base/media_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

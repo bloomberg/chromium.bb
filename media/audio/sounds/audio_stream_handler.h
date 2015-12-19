@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_SOUNDS_AUDIO_STREAM_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/media_keys.h"
 #include "media/blink/media_blink_export.h"

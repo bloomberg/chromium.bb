@@ -8,6 +8,7 @@
 #include <deque>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/raw_event_subscriber.h"

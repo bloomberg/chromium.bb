@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_TEST_IN_PROCESS_RECEIVER_H_
 #define MEDIA_CAST_TEST_IN_PROCESS_RECEIVER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

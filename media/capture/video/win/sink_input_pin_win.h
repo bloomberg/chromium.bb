@@ -8,6 +8,7 @@
 #ifndef MEDIA_VIDEO_CAPTURE_WIN_SINK_INPUT_PIN_WIN_H_
 #define MEDIA_VIDEO_CAPTURE_WIN_SINK_INPUT_PIN_WIN_H_
 
+#include "base/macros.h"
 #include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/win/pin_base_win.h"

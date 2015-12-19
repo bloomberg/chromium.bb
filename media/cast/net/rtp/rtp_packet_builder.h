@@ -7,6 +7,7 @@
 #ifndef MEDIA_CAST_NET_RTP_RTP_PACKET_BUILDER_H_
 #define MEDIA_CAST_NET_RTP_RTP_PACKET_BUILDER_H_
 
+#include "base/macros.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {

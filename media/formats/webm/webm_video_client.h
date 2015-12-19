@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "media/base/media_log.h"
 #include "media/formats/webm/webm_parser.h"
 

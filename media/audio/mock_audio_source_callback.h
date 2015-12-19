@@ -5,6 +5,7 @@
 #ifndef MEDIA_AUDIO_MOCK_AUDIO_SOURCE_CALLBACK_H_
 #define MEDIA_AUDIO_MOCK_AUDIO_SOURCE_CALLBACK_H_
 
+#include "base/macros.h"
 #include "media/audio/audio_io.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "media/base/media_export.h"
 

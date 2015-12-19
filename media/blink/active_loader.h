@@ -5,6 +5,7 @@
 #ifndef MEDIA_BLINK_ACTIVE_LOADER_H_
 #define MEDIA_BLINK_ACTIVE_LOADER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/blink/media_blink_export.h"
 

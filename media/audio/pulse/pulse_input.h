@@ -8,6 +8,7 @@
 #include <pulse/pulseaudio.h>
 #include <string>
 
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_device_name.h"

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/atomicops.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"

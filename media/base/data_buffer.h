@@ -6,6 +6,7 @@
 #define MEDIA_BASE_DATA_BUFFER_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"

@@ -5,6 +5,7 @@
 #ifndef MEDIA_FILTERS_DEFAULT_MEDIA_PERMISSION_H_
 #define MEDIA_FILTERS_DEFAULT_MEDIA_PERMISSION_H_
 
+#include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/media_permission.h"
 

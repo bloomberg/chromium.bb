@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "media/audio/sounds/audio_stream_handler.h"
 
 namespace base {

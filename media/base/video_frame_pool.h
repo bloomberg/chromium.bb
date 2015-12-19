@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_VIDEO_FRAME_POOL_H_
 #define MEDIA_BASE_VIDEO_FRAME_POOL_H_
 
+#include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/video_frame.h"
 

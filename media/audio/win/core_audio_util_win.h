@@ -15,6 +15,7 @@
 #include <mmdeviceapi.h>
 #include <string>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/win/scoped_comptr.h"
 #include "media/audio/audio_device_name.h"

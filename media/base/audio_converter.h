@@ -21,6 +21,7 @@
 #include <list>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/audio/audio_parameters.h"

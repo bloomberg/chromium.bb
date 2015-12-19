@@ -6,6 +6,7 @@
 #define MEDIA_CAST_RECEIVER_VIDEO_DECODER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"

@@ -6,6 +6,7 @@
 #define MEDIA_FORMATS_WEBM_WEBM_STREAM_PARSER_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/byte_queue.h"

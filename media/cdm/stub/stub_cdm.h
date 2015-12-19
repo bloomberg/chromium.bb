@@ -5,6 +5,7 @@
 #ifndef MEDIA_CDM_STUB_STUB_CDM_H_
 #define MEDIA_CDM_STUB_STUB_CDM_H_
 
+#include "base/macros.h"
 #include "media/cdm/api/content_decryption_module.h"
 
 namespace media {

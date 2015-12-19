@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_NET_RTP_RTP_PARSER_H_
 #define MEDIA_CAST_NET_RTP_RTP_PARSER_H_
 
+#include "base/macros.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 

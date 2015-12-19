@@ -9,6 +9,7 @@
 #include <SLES/OpenSLES_Android.h>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "media/audio/android/opensles_util.h"

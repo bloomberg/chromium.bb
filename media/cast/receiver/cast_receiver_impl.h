@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_RECEIVER_CAST_RECEIVER_IMPL_H_
 #define MEDIA_CAST_RECEIVER_CAST_RECEIVER_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/cast_environment.h"

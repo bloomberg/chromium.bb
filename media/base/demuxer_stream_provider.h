@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_DEMUXER_STREAM_PROVIDER_H_
 #define MEDIA_BASE_DEMUXER_STREAM_PROVIDER_H_
 
+#include "base/macros.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 

@@ -6,6 +6,7 @@
 #define MEDIA_FILTERS_DECRYPTING_VIDEO_DECODER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"

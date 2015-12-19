@@ -7,6 +7,7 @@
 
 #include <deque>
 
+#include "base/macros.h"
 #include "media/cast/net/pacing/paced_sender.h"
 
 namespace media {

@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/audio_decoder_config.h"
