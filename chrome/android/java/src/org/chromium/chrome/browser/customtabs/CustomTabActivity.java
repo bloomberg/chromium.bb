@@ -51,6 +51,7 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.ui.base.PageTransition;
 
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
@@ -290,6 +291,7 @@ public class CustomTabActivity extends ChromeActivity {
                         };
                     }
             }, false, false);
+        tab.getTabRedirectHandler().updateIntent(getIntent());
         tab.getView().requestFocus();
         return tab;
     }
@@ -353,6 +355,9 @@ public class CustomTabActivity extends ChromeActivity {
             params.setReferrer(CustomTabsConnection.getInstance(getApplication())
                     .getReferrerForSession(mSession));
         }
+        // See ChromeTabCreator#getTransitionType(). This marks the navigation chain as starting
+        // from an external intent.
+        params.setTransitionType(PageTransition.LINK | PageTransition.FROM_API);
         mTabObserver.trackNextPageLoadFromTimestamp(timeStamp);
         if (mShouldReplaceCurrentEntry) params.setShouldReplaceCurrentEntry(true);
         mShouldReplaceCurrentEntry = false;
