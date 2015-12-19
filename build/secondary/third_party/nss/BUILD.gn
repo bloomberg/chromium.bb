@@ -695,6 +695,8 @@ if (is_linux) {
       "nss/lib/freebl/win_rand.c",
       "nss/lib/nss/nss.h",
       "nss/lib/nss/nssinit.c",
+      "nss/lib/nss/nssoptions.c",
+      "nss/lib/nss/nssoptions.h",
       "nss/lib/nss/nssrenam.h",
       "nss/lib/nss/utilwrap.c",
       "nss/lib/pk11wrap/debug_module.c",
@@ -859,6 +861,7 @@ if (is_linux) {
       "nss/lib/util/utilpars.h",
       "nss/lib/util/utilparst.h",
       "nss/lib/util/utilrename.h",
+      "nss/lib/util/verref.h",
     ]
 
     sources -= [

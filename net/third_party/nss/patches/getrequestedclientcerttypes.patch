@@ -1,8 +1,8 @@
-diff --git a/ssl/ssl.h b/ssl/ssl.h
-index 34142fc..e2d1b09 100644
---- a/ssl/ssl.h
-+++ b/ssl/ssl.h
-@@ -803,6 +803,16 @@ SSL_IMPORT SECStatus SSL_ReHandshakeWithTimeout(PRFileDesc *fd,
+diff --git a/lib/ssl/ssl.h b/lib/ssl/ssl.h
+index 0983b5f..cf9f6db 100644
+--- a/lib/ssl/ssl.h
++++ b/lib/ssl/ssl.h
+@@ -896,6 +896,16 @@ SSL_IMPORT SECStatus SSL_ReHandshakeWithTimeout(PRFileDesc *fd,
                                                  PRBool flushCache,
                                                  PRIntervalTime timeout);
  
@@ -19,11 +19,11 @@ index 34142fc..e2d1b09 100644
  
  #ifdef SSL_DEPRECATED_FUNCTION 
  /* deprecated!
-diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index b9014ef..800c28e 100644
---- a/ssl/ssl3con.c
-+++ b/ssl/ssl3con.c
-@@ -7061,6 +7061,9 @@ ssl3_HandleCertificateRequest(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
+index cc193cd..27038f3 100644
+--- a/lib/ssl/ssl3con.c
++++ b/lib/ssl/ssl3con.c
+@@ -7266,6 +7266,9 @@ ssl3_HandleCertificateRequest(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
      if (rv != SECSuccess)
      	goto loser;		/* malformed, alert has been sent */
  
@@ -33,7 +33,7 @@ index b9014ef..800c28e 100644
      if (isTLS12) {
  	rv = ssl3_ConsumeHandshakeVariable(ss, &algorithms, 2, &b, &length);
  	if (rv != SECSuccess)
-@@ -7262,6 +7265,7 @@ loser:
+@@ -7469,6 +7472,7 @@ loser:
      PORT_SetError(errCode);
      rv = SECFailure;
  done:
@@ -41,11 +41,11 @@ index b9014ef..800c28e 100644
      if (arena != NULL)
      	PORT_FreeArena(arena, PR_FALSE);
  #ifdef NSS_PLATFORM_CLIENT_AUTH
-diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index bbc9bd2..46e618a 100644
---- a/ssl/sslimpl.h
-+++ b/ssl/sslimpl.h
-@@ -1238,6 +1238,10 @@ struct sslSocketStr {
+diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
+index 94bb9f4..c7231a7 100644
+--- a/lib/ssl/sslimpl.h
++++ b/lib/ssl/sslimpl.h
+@@ -1265,6 +1265,10 @@ struct sslSocketStr {
      unsigned int     sizeCipherSpecs;
  const unsigned char *  preferredCipher;
  
@@ -55,12 +55,12 @@ index bbc9bd2..46e618a 100644
 +
      ssl3KeyPair *         stepDownKeyPair;	/* RSA step down keys */
  
-     /* Callbacks */
-diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index 1a9c584..9431fe4 100644
---- a/ssl/sslsock.c
-+++ b/ssl/sslsock.c
-@@ -1911,6 +1911,20 @@ SSL_HandshakeResumedSession(PRFileDesc *fd, PRBool *handshake_resumed) {
+     const ssl3DHParams *dheParams;          /* DHE param */
+diff --git a/lib/ssl/sslsock.c b/lib/ssl/sslsock.c
+index b73f8f6..11e66f2 100644
+--- a/lib/ssl/sslsock.c
++++ b/lib/ssl/sslsock.c
+@@ -2165,6 +2165,20 @@ SSL_HandshakeResumedSession(PRFileDesc *fd, PRBool *handshake_resumed) {
      return SECSuccess;
  }
  
@@ -81,11 +81,11 @@ index 1a9c584..9431fe4 100644
  /************************************************************************/
  /* The following functions are the TOP LEVEL SSL functions.
  ** They all get called through the NSPRIOMethods table below.
-@@ -2989,6 +3003,7 @@ ssl_NewSocket(PRBool makeLocks, SSLProtocolVariant protocolVariant)
+@@ -3243,6 +3257,7 @@ ssl_NewSocket(PRBool makeLocks, SSLProtocolVariant protocolVariant)
              sc->serverKeyBits   = 0;
              ss->certStatusArray[i] = NULL;
          }
 +        ss->requestedCertTypes = NULL;
          ss->stepDownKeyPair    = NULL;
-         ss->dbHandle           = CERT_GetDefaultCertDB();
  
+         ss->dheParams = NULL;

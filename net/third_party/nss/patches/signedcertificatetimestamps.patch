@@ -1,18 +1,17 @@
-diff --git a/ssl/ssl.h b/ssl/ssl.h
-index 80717db..e9f5fb0 100644
---- a/ssl/ssl.h
-+++ b/ssl/ssl.h
-@@ -191,6 +191,9 @@ SSL_IMPORT PRFileDesc *DTLS_ImportFD(PRFileDesc *model, PRFileDesc *fd);
- #define SSL_ENABLE_FALLBACK_SCSV       28 /* Send fallback SCSV in
-                                            * handshakes. */
+diff --git a/lib/ssl/ssl.h b/lib/ssl/ssl.h
+index eb7f7ec..db09425 100644
+--- a/lib/ssl/ssl.h
++++ b/lib/ssl/ssl.h
+@@ -203,6 +203,8 @@ SSL_IMPORT PRFileDesc *DTLS_ImportFD(PRFileDesc *model, PRFileDesc *fd);
+  */
+ #define SSL_ENABLE_EXTENDED_MASTER_SECRET 30
  
 +/* Request Signed Certificate Timestamps via TLS extension (client) */
-+#define SSL_ENABLE_SIGNED_CERT_TIMESTAMPS 29
-+
++#define SSL_ENABLE_SIGNED_CERT_TIMESTAMPS 31
+ 
  #ifdef SSL_DEPRECATED_FUNCTION 
  /* Old deprecated function names */
- SSL_IMPORT SECStatus SSL_Enable(PRFileDesc *fd, int option, PRBool on);
-@@ -493,6 +496,23 @@ SSL_IMPORT CERTCertList *SSL_PeerCertificateChain(PRFileDesc *fd);
+@@ -586,6 +588,23 @@ SSL_IMPORT CERTCertList *SSL_PeerCertificateChain(PRFileDesc *fd);
   */
  SSL_IMPORT const SECItemArray * SSL_PeerStapledOCSPResponses(PRFileDesc *fd);
  
@@ -36,13 +35,13 @@ index 80717db..e9f5fb0 100644
  /* SSL_SetStapledOCSPResponses stores an array of one or multiple OCSP responses
   * in the fd's data, which may be sent as part of a server side cert_status
   * handshake message. Parameter |responses| is for the server certificate of
-diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 6a4a443..54c5b80 100644
---- a/ssl/ssl3con.c
-+++ b/ssl/ssl3con.c
-@@ -6752,6 +6752,14 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
-     sid->u.ssl3.sessionIDLength = sidBytes.len;
-     PORT_Memcpy(sid->u.ssl3.sessionID, sidBytes.data, sidBytes.len);
+diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
+index ba3d012..5c09f25 100644
+--- a/lib/ssl/ssl3con.c
++++ b/lib/ssl/ssl3con.c
+@@ -6957,6 +6957,14 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+     sid->u.ssl3.keys.extendedMasterSecretUsed =
+             ssl3_ExtensionNegotiated(ss, ssl_extended_master_secret_xtn);
  
 +    /* Copy Signed Certificate Timestamps, if any. */
 +    if (ss->xtnData.signedCertTimestamps.data) {
@@ -55,7 +54,7 @@ index 6a4a443..54c5b80 100644
      ss->ssl3.hs.isResuming = PR_FALSE;
      if (ss->ssl3.hs.kea_def->signKeyType != sign_null) {
          /* All current cipher suites other than those with sign_null (i.e.,
-@@ -6765,6 +6773,10 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+@@ -6971,6 +6979,10 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
      }
  
  winner:
@@ -66,7 +65,7 @@ index 6a4a443..54c5b80 100644
      /* If we will need a ChannelID key then we make the callback now. This
       * allows the handshake to be restarted cleanly if the callback returns
       * SECWouldBlock. */
-@@ -6790,6 +6802,9 @@ alert_loser:
+@@ -6996,6 +7008,9 @@ alert_loser:
      (void)SSL3_SendAlert(ss, alert_fatal, desc);
  
  loser:
@@ -76,10 +75,10 @@ index 6a4a443..54c5b80 100644
      errCode = ssl_MapLowLevelError(errCode);
      return SECFailure;
  }
-diff --git a/ssl/ssl3ext.c b/ssl/ssl3ext.c
-index 4d17587..c18d6f6 100644
---- a/ssl/ssl3ext.c
-+++ b/ssl/ssl3ext.c
+diff --git a/lib/ssl/ssl3ext.c b/lib/ssl/ssl3ext.c
+index 78825cb..9cfd541 100644
+--- a/lib/ssl/ssl3ext.c
++++ b/lib/ssl/ssl3ext.c
 @@ -90,6 +90,12 @@ static PRInt32 ssl3_ClientSendSigAlgsXtn(sslSocket *ss, PRBool append,
                                           PRUint32 maxBytes);
  static SECStatus ssl3_ServerHandleSigAlgsXtn(sslSocket *ss, PRUint16 ex_type,
@@ -93,16 +92,16 @@ index 4d17587..c18d6f6 100644
  
  static PRInt32 ssl3_ClientSendDraftVersionXtn(sslSocket *ss, PRBool append,
                                                PRUint32 maxBytes);
-@@ -275,6 +281,8 @@ static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
-     { ssl_use_srtp_xtn,           &ssl3_ClientHandleUseSRTPXtn },
+@@ -283,6 +289,8 @@ static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
      { ssl_channel_id_xtn,         &ssl3_ClientHandleChannelIDXtn },
      { ssl_cert_status_xtn,        &ssl3_ClientHandleStatusRequestXtn },
+     { ssl_extended_master_secret_xtn, &ssl3_HandleExtendedMasterSecretXtn },
 +    { ssl_signed_certificate_timestamp_xtn,
 +      &ssl3_ClientHandleSignedCertTimestampXtn },
      { -1, NULL }
  };
  
-@@ -303,6 +311,8 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
+@@ -311,6 +319,8 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
      { ssl_use_srtp_xtn,           &ssl3_ClientSendUseSRTPXtn },
      { ssl_channel_id_xtn,         &ssl3_ClientSendChannelIDXtn },
      { ssl_cert_status_xtn,        &ssl3_ClientSendStatusRequestXtn },
@@ -110,12 +109,16 @@ index 4d17587..c18d6f6 100644
 +      &ssl3_ClientSendSignedCertTimestampXtn },
      { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn },
      { ssl_tls13_draft_version_xtn, &ssl3_ClientSendDraftVersionXtn },
-     /* any extra entries will appear as { 0, NULL }    */
-@@ -2616,3 +2626,65 @@ ssl3_ServerHandleDraftVersionXtn(sslSocket * ss, PRUint16 ex_type,
+     { ssl_extended_master_secret_xtn,       &ssl3_SendExtendedMasterSecretXtn},
+@@ -2698,11 +2708,48 @@ ssl3_SendExtendedMasterSecretXtn(sslSocket * ss, PRBool append,
+     }
  
-     return SECSuccess;
+     return extension_length;
+-
+ loser:
+     return -1;
  }
-+
+ 
 +/* ssl3_ClientSendSignedCertTimestampXtn sends the signed_certificate_timestamp
 + * extension for TLS ClientHellos. */
 +static PRInt32
@@ -129,7 +132,12 @@ index 4d17587..c18d6f6 100644
 +    if (!ss->opt.enableSignedCertTimestamps)
 +        return 0;
 +
-+    if (append && maxBytes >= extension_length) {
++    if (maxBytes < extension_length) {
++        PORT_Assert(0);
++        return 0;
++    }
++
++    if (append) {
 +        SECStatus rv;
 +        /* extension_type */
 +        rv = ssl3_AppendHandshakeNumber(ss,
@@ -143,15 +151,19 @@ index 4d17587..c18d6f6 100644
 +            goto loser;
 +        ss->xtnData.advertised[ss->xtnData.numAdvertised++] =
 +            ssl_signed_certificate_timestamp_xtn;
-+    } else if (maxBytes < extension_length) {
-+        PORT_Assert(0);
-+        return 0;
 +    }
 +
 +    return extension_length;
 +loser:
 +    return -1;
 +}
+ 
+ static SECStatus
+ ssl3_HandleExtendedMasterSecretXtn(sslSocket * ss, PRUint16 ex_type,
+@@ -2743,3 +2790,28 @@ ssl3_HandleExtendedMasterSecretXtn(sslSocket * ss, PRUint16 ex_type,
+     }
+     return SECSuccess;
+ }
 +
 +static SECStatus
 +ssl3_ClientHandleSignedCertTimestampXtn(sslSocket *ss, PRUint16 ex_type,
@@ -177,19 +189,19 @@ index 4d17587..c18d6f6 100644
 +    ss->xtnData.negotiated[ss->xtnData.numNegotiated++] = ex_type;
 +    return SECSuccess;
 +}
-diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index c4c87b4..0fd0a89 100644
---- a/ssl/sslimpl.h
-+++ b/ssl/sslimpl.h
-@@ -339,6 +339,7 @@ typedef struct sslOptionsStr {
-     unsigned int enableALPN             : 1;  /* 27 */
-     unsigned int reuseServerECDHEKey    : 1;  /* 28 */
+diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
+index d53c446..080debe 100644
+--- a/lib/ssl/sslimpl.h
++++ b/lib/ssl/sslimpl.h
+@@ -349,6 +349,7 @@ typedef struct sslOptionsStr {
      unsigned int enableFallbackSCSV     : 1;  /* 29 */
-+    unsigned int enableSignedCertTimestamps : 1;  /* 30 */
+     unsigned int enableServerDhe        : 1;  /* 30 */
+     unsigned int enableExtendedMS       : 1;  /* 31 */
++    unsigned int enableSignedCertTimestamps : 1;  /* 32 */
  } sslOptions;
  
  typedef enum { sslHandshakingUndetermined = 0,
-@@ -721,6 +722,11 @@ struct sslSessionIDStr {
+@@ -732,6 +733,11 @@ struct sslSessionIDStr {
               * resumption handshake to the original handshake. */
  	    SECItem           originalHandshakeHash;
  
@@ -201,7 +213,7 @@ index c4c87b4..0fd0a89 100644
  	    /* This lock is lazily initialized by CacheSID when a sid is first
  	     * cached. Before then, there is no need to lock anything because
  	     * the sid isn't being shared by anything.
-@@ -835,6 +841,18 @@ struct TLSExtensionDataStr {
+@@ -846,6 +852,18 @@ struct TLSExtensionDataStr {
       * is beyond ssl3_HandleClientHello function. */
      SECItem *sniNameArr;
      PRUint32 sniNameArrSize;
@@ -220,10 +232,10 @@ index c4c87b4..0fd0a89 100644
  };
  
  typedef SECStatus (*sslRestartTarget)(sslSocket *);
-diff --git a/ssl/sslnonce.c b/ssl/sslnonce.c
+diff --git a/lib/ssl/sslnonce.c b/lib/ssl/sslnonce.c
 index c45849d..cefdda6 100644
---- a/ssl/sslnonce.c
-+++ b/ssl/sslnonce.c
+--- a/lib/ssl/sslnonce.c
++++ b/lib/ssl/sslnonce.c
 @@ -131,6 +131,9 @@ ssl_DestroySID(sslSessionID *sid)
          if (sid->u.ssl3.originalHandshakeHash.data) {
              SECITEM_FreeItem(&sid->u.ssl3.originalHandshakeHash, PR_FALSE);
@@ -234,22 +246,22 @@ index c45849d..cefdda6 100644
  
          if (sid->u.ssl3.lock) {
              PR_DestroyRWLock(sid->u.ssl3.lock);
-diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index 6a6c8d1..72058f5 100644
---- a/ssl/sslsock.c
-+++ b/ssl/sslsock.c
-@@ -89,7 +89,8 @@ static sslOptions ssl_defaults = {
-     PR_TRUE,    /* enableNPN          */
-     PR_FALSE,   /* enableALPN         */
+diff --git a/lib/ssl/sslsock.c b/lib/ssl/sslsock.c
+index 6d700a7..28e3543 100644
+--- a/lib/ssl/sslsock.c
++++ b/lib/ssl/sslsock.c
+@@ -92,7 +92,8 @@ static sslOptions ssl_defaults = {
      PR_TRUE,    /* reuseServerECDHEKey */
--    PR_FALSE    /* enableFallbackSCSV */
-+    PR_FALSE,   /* enableFallbackSCSV */
+     PR_FALSE,   /* enableFallbackSCSV */
+     PR_TRUE,    /* enableServerDhe */
+-    PR_FALSE    /* enableExtendedMS    */
++    PR_FALSE,   /* enableExtendedMS    */
 +    PR_FALSE,   /* enableSignedCertTimestamps */
  };
  
  /*
-@@ -807,6 +808,10 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRBool on)
-         ss->opt.enableFallbackSCSV = on;
+@@ -843,6 +844,10 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRBool on)
+         ss->opt.enableExtendedMS = on;
          break;
  
 +      case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
@@ -259,19 +271,19 @@ index 6a6c8d1..72058f5 100644
        default:
          PORT_SetError(SEC_ERROR_INVALID_ARGS);
          rv = SECFailure;
-@@ -882,6 +887,9 @@ SSL_OptionGet(PRFileDesc *fd, PRInt32 which, PRBool *pOn)
-     case SSL_REUSE_SERVER_ECDHE_KEY:
-                                   on = ss->opt.reuseServerECDHEKey; break;
-     case SSL_ENABLE_FALLBACK_SCSV: on = ss->opt.enableFallbackSCSV; break;
+@@ -921,6 +926,9 @@ SSL_OptionGet(PRFileDesc *fd, PRInt32 which, PRBool *pOn)
+     case SSL_ENABLE_SERVER_DHE:   on = ss->opt.enableServerDhe; break;
+     case SSL_ENABLE_EXTENDED_MASTER_SECRET:
+                                   on = ss->opt.enableExtendedMS; break;
 +    case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
 +        on = ss->opt.enableSignedCertTimestamps;
 +        break;
  
      default:
          PORT_SetError(SEC_ERROR_INVALID_ARGS);
-@@ -951,6 +959,9 @@ SSL_OptionGetDefault(PRInt32 which, PRBool *pOn)
-     case SSL_ENABLE_FALLBACK_SCSV:
-        on = ssl_defaults.enableFallbackSCSV;
+@@ -996,6 +1004,9 @@ SSL_OptionGetDefault(PRInt32 which, PRBool *pOn)
+     case SSL_ENABLE_EXTENDED_MASTER_SECRET:
+        on = ssl_defaults.enableExtendedMS;
         break;
 +    case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
 +       on = ssl_defaults.enableSignedCertTimestamps;
@@ -279,8 +291,8 @@ index 6a6c8d1..72058f5 100644
  
      default:
          PORT_SetError(SEC_ERROR_INVALID_ARGS);
-@@ -1134,6 +1145,10 @@ SSL_OptionSetDefault(PRInt32 which, PRBool on)
-         ssl_defaults.enableFallbackSCSV = on;
+@@ -1187,6 +1198,10 @@ SSL_OptionSetDefault(PRInt32 which, PRBool on)
+         ssl_defaults.enableExtendedMS = on;
          break;
  
 +      case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
@@ -290,7 +302,7 @@ index 6a6c8d1..72058f5 100644
        default:
          PORT_SetError(SEC_ERROR_INVALID_ARGS);
          return SECFailure;
-@@ -1963,6 +1978,29 @@ SSL_PeerStapledOCSPResponses(PRFileDesc *fd)
+@@ -2218,6 +2233,29 @@ SSL_PeerStapledOCSPResponses(PRFileDesc *fd)
      return &ss->sec.ci.sid->peerCertStatus;
  }
  
@@ -320,23 +332,24 @@ index 6a6c8d1..72058f5 100644
  SECStatus
  SSL_HandshakeResumedSession(PRFileDesc *fd, PRBool *handshake_resumed) {
      sslSocket *ss = ssl_FindSocket(fd);
-diff --git a/ssl/sslt.h b/ssl/sslt.h
-index fe0ad07..c36b8c7 100644
---- a/ssl/sslt.h
-+++ b/ssl/sslt.h
-@@ -202,6 +202,7 @@ typedef enum {
+diff --git a/lib/ssl/sslt.h b/lib/ssl/sslt.h
+index a2eff62..36e34df 100644
+--- a/lib/ssl/sslt.h
++++ b/lib/ssl/sslt.h
+@@ -248,6 +248,7 @@ typedef enum {
      ssl_signature_algorithms_xtn     = 13,
      ssl_use_srtp_xtn                 = 14,
      ssl_app_layer_protocol_xtn       = 16,
 +    ssl_signed_certificate_timestamp_xtn = 18,   /* RFC 6962 */
      ssl_padding_xtn                  = 21,
+     ssl_extended_master_secret_xtn   = 23,
      ssl_session_ticket_xtn           = 35,
-     ssl_next_proto_nego_xtn          = 13172,
-@@ -210,6 +211,6 @@ typedef enum {
+@@ -257,7 +258,7 @@ typedef enum {
      ssl_tls13_draft_version_xtn      = 0xff02   /* experimental number */
  } SSLExtensionType;
  
--#define SSL_MAX_EXTENSIONS             12 /* doesn't include ssl_padding_xtn. */
-+#define SSL_MAX_EXTENSIONS             13 /* doesn't include ssl_padding_xtn. */
+-#define SSL_MAX_EXTENSIONS             13 /* doesn't include ssl_padding_xtn. */
++#define SSL_MAX_EXTENSIONS             14 /* doesn't include ssl_padding_xtn. */
  
- #endif /* __sslt_h_ */
+ typedef enum {
+     ssl_dhe_group_none = 0,

@@ -1,8 +1,8 @@
-diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 0ece0ed..ea71975 100644
---- a/ssl/sslimpl.h
-+++ b/ssl/sslimpl.h
-@@ -1373,6 +1373,15 @@ extern sslSessionIDUncacheFunc ssl_sid_uncache;
+diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
+index 976330e..60dd243 100644
+--- a/lib/ssl/sslimpl.h
++++ b/lib/ssl/sslimpl.h
+@@ -1403,6 +1403,15 @@ extern sslSessionIDUncacheFunc ssl_sid_uncache;
  
  SEC_BEGIN_PROTOS
  
@@ -18,11 +18,11 @@ index 0ece0ed..ea71975 100644
  /* Internal initialization and installation of the SSL error tables */
  extern SECStatus ssl_Init(void);
  extern SECStatus ssl_InitializePRErrorTable(void);
-diff --git a/ssl/sslt.h b/ssl/sslt.h
-index 0900f28..430d216 100644
---- a/ssl/sslt.h
-+++ b/ssl/sslt.h
-@@ -10,6 +10,19 @@
+diff --git a/lib/ssl/sslt.h b/lib/ssl/sslt.h
+index b6616e2..5593579 100644
+--- a/lib/ssl/sslt.h
++++ b/lib/ssl/sslt.h
+@@ -11,6 +11,19 @@
  
  #include "prtypes.h"
  

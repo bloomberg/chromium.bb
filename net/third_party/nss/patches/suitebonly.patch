@@ -1,8 +1,8 @@
-diff --git a/ssl/ssl3ecc.c b/ssl/ssl3ecc.c
-index aca2b74..dac7a9e 100644
---- a/ssl/ssl3ecc.c
-+++ b/ssl/ssl3ecc.c
-@@ -1090,6 +1090,7 @@ static const PRUint8 ecPtFmt[6] = {
+diff --git a/lib/ssl/ssl3ecc.c b/lib/ssl/ssl3ecc.c
+index 94008a0..6d89bbe 100644
+--- a/lib/ssl/ssl3ecc.c
++++ b/lib/ssl/ssl3ecc.c
+@@ -1093,6 +1093,7 @@ static const PRUint8 ecPtFmt[6] = {
  static PRBool
  ssl3_SuiteBOnly(sslSocket *ss)
  {
@@ -10,7 +10,7 @@ index aca2b74..dac7a9e 100644
      /* See if we can support small curves (like 163). If not, assume we can
       * only support Suite-B curves (P-256, P-384, P-521). */
      PK11SlotInfo *slot =
-@@ -1103,6 +1104,9 @@ ssl3_SuiteBOnly(sslSocket *ss)
+@@ -1106,6 +1107,9 @@ ssl3_SuiteBOnly(sslSocket *ss)
      /* we can, presume we can do all curves */
      PK11_FreeSlot(slot);
      return PR_FALSE;

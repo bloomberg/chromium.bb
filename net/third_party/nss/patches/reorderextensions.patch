@@ -1,8 +1,8 @@
-diff --git a/ssl/ssl3ext.c b/ssl/ssl3ext.c
-index c18d6f6..9214a2e 100644
---- a/ssl/ssl3ext.c
-+++ b/ssl/ssl3ext.c
-@@ -313,6 +313,10 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
+diff --git a/lib/ssl/ssl3ext.c b/lib/ssl/ssl3ext.c
+index 9cfd541..eb3fb70 100644
+--- a/lib/ssl/ssl3ext.c
++++ b/lib/ssl/ssl3ext.c
+@@ -321,6 +321,10 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
      { ssl_cert_status_xtn,        &ssl3_ClientSendStatusRequestXtn },
      { ssl_signed_certificate_timestamp_xtn,
        &ssl3_ClientSendSignedCertTimestampXtn },
@@ -12,8 +12,8 @@ index c18d6f6..9214a2e 100644
 +     * extension. */
      { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn },
      { ssl_tls13_draft_version_xtn, &ssl3_ClientSendDraftVersionXtn },
-     /* any extra entries will appear as { 0, NULL }    */
-@@ -2507,9 +2511,11 @@ ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength)
+     { ssl_extended_master_secret_xtn,       &ssl3_SendExtendedMasterSecretXtn},
+@@ -2546,9 +2550,11 @@ ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength)
      }
  
      extensionLength = 512 - recordLength;

@@ -1,8 +1,8 @@
-diff --git a/ssl/ssl.h b/ssl/ssl.h
-index 4e7d52e..34142fc 100644
---- a/ssl/ssl.h
-+++ b/ssl/ssl.h
-@@ -1007,6 +1007,9 @@ SSL_IMPORT SECStatus SSL_HandshakeNegotiatedExtension(PRFileDesc * socket,
+diff --git a/lib/ssl/ssl.h b/lib/ssl/ssl.h
+index 48fa018..0983b5f 100644
+--- a/lib/ssl/ssl.h
++++ b/lib/ssl/ssl.h
+@@ -1117,6 +1117,9 @@ SSL_IMPORT SECStatus SSL_HandshakeNegotiatedExtension(PRFileDesc * socket,
                                                        SSLExtensionType extId,
                                                        PRBool *yes);
  
@@ -12,11 +12,11 @@ index 4e7d52e..34142fc 100644
  /*
  ** How long should we wait before retransmitting the next flight of
  ** the DTLS handshake? Returns SECFailure if not DTLS or not in a
-diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index 6c09992..1a9c584 100644
---- a/ssl/sslsock.c
-+++ b/ssl/sslsock.c
-@@ -1897,6 +1897,20 @@ SSL_PeerStapledOCSPResponses(PRFileDesc *fd)
+diff --git a/lib/ssl/sslsock.c b/lib/ssl/sslsock.c
+index 21754d6..b73f8f6 100644
+--- a/lib/ssl/sslsock.c
++++ b/lib/ssl/sslsock.c
+@@ -2151,6 +2151,20 @@ SSL_PeerStapledOCSPResponses(PRFileDesc *fd)
      return &ss->sec.ci.sid->peerCertStatus;
  }
  

@@ -1,8 +1,8 @@
-diff --git a/ssl/ssl.h b/ssl/ssl.h
-index be6d88e..57771cd 100644
---- a/ssl/ssl.h
-+++ b/ssl/ssl.h
-@@ -900,6 +900,18 @@ SSL_IMPORT int SSL_DataPending(PRFileDesc *fd);
+diff --git a/lib/ssl/ssl.h b/lib/ssl/ssl.h
+index 437a822..bc417a5 100644
+--- a/lib/ssl/ssl.h
++++ b/lib/ssl/ssl.h
+@@ -992,6 +992,18 @@ SSL_IMPORT int SSL_DataPending(PRFileDesc *fd);
  SSL_IMPORT SECStatus SSL_InvalidateSession(PRFileDesc *fd);
  
  /*
@@ -21,11 +21,11 @@ index be6d88e..57771cd 100644
  ** Return a SECItem containing the SSL session ID associated with the fd.
  */
  SSL_IMPORT SECItem *SSL_GetSessionID(PRFileDesc *fd);
-diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 26b87c6..0ac85da 100644
---- a/ssl/ssl3con.c
-+++ b/ssl/ssl3con.c
-@@ -11375,7 +11375,7 @@ ssl3_FinishHandshake(sslSocket * ss)
+diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
+index 572bba9..afab931 100644
+--- a/lib/ssl/ssl3con.c
++++ b/lib/ssl/ssl3con.c
+@@ -12058,7 +12058,7 @@ ssl3_FinishHandshake(sslSocket * ss)
          ss->ssl3.hs.receivedNewSessionTicket = PR_FALSE;
      }
  
@@ -34,11 +34,11 @@ index 26b87c6..0ac85da 100644
  	PORT_Assert(ss->sec.ci.sid->cached == never_cached);
  	(*ss->sec.cache)(ss->sec.ci.sid);
  	ss->ssl3.hs.cacheSID = PR_FALSE;
-diff --git a/ssl/sslsecur.c b/ssl/sslsecur.c
-index 5c6751a..00ab455 100644
---- a/ssl/sslsecur.c
-+++ b/ssl/sslsecur.c
-@@ -1467,6 +1467,49 @@ SSL_InvalidateSession(PRFileDesc *fd)
+diff --git a/lib/ssl/sslsecur.c b/lib/ssl/sslsecur.c
+index cca55bb..b4b8e95 100644
+--- a/lib/ssl/sslsecur.c
++++ b/lib/ssl/sslsecur.c
+@@ -1483,6 +1483,49 @@ SSL_InvalidateSession(PRFileDesc *fd)
      return rv;
  }
  

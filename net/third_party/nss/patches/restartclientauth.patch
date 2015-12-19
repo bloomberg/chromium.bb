@@ -1,8 +1,8 @@
-diff --git a/ssl/ssl.h b/ssl/ssl.h
-index e2d1b09..593dd00 100644
---- a/ssl/ssl.h
-+++ b/ssl/ssl.h
-@@ -409,6 +409,11 @@ SSL_IMPORT SECStatus SSL_ForceHandshake(PRFileDesc *fd);
+diff --git a/lib/ssl/ssl.h b/lib/ssl/ssl.h
+index cf9f6db..85ced8a 100644
+--- a/lib/ssl/ssl.h
++++ b/lib/ssl/ssl.h
+@@ -502,6 +502,11 @@ SSL_IMPORT SECStatus SSL_ForceHandshake(PRFileDesc *fd);
  SSL_IMPORT SECStatus SSL_ForceHandshakeWithTimeout(PRFileDesc *fd,
                                                     PRIntervalTime timeout);
  
@@ -14,11 +14,11 @@ index e2d1b09..593dd00 100644
  /*
  ** Query security status of socket. *on is set to one if security is
  ** enabled. *keySize will contain the stream key size used. *issuer will
-diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 800c28e..29e8f1c 100644
---- a/ssl/ssl3con.c
-+++ b/ssl/ssl3con.c
-@@ -7275,6 +7275,85 @@ done:
+diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
+index 27038f3..304e03b 100644
+--- a/lib/ssl/ssl3con.c
++++ b/lib/ssl/ssl3con.c
+@@ -7482,6 +7482,85 @@ done:
      return rv;
  }
  
@@ -104,11 +104,11 @@ index 800c28e..29e8f1c 100644
  static SECStatus
  ssl3_CheckFalseStart(sslSocket *ss)
  {
-diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 46e618a..2cf0b3a 100644
---- a/ssl/sslimpl.h
-+++ b/ssl/sslimpl.h
-@@ -1599,16 +1599,17 @@ extern  SECStatus ssl3_MasterKeyDeriveBypass( ssl3CipherSpec * pwSpec,
+diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
+index c7231a7..c089889 100644
+--- a/lib/ssl/sslimpl.h
++++ b/lib/ssl/sslimpl.h
+@@ -1629,16 +1629,17 @@ extern  SECStatus ssl3_MasterSecretDeriveBypass( ssl3CipherSpec * pwSpec,
  /* These functions are called from secnav, even though they're "private". */
  
  extern int ssl2_SendErrorMessage(struct sslSocketStr *ss, int error);
@@ -130,11 +130,11 @@ index 46e618a..2cf0b3a 100644
  extern SECStatus ssl3_AuthCertificateComplete(sslSocket *ss, PRErrorCode error);
  
  /*
-diff --git a/ssl/sslsecur.c b/ssl/sslsecur.c
-index ea2d408..d44336e 100644
---- a/ssl/sslsecur.c
-+++ b/ssl/sslsecur.c
-@@ -1516,17 +1516,70 @@ SSL_CertDBHandleSet(PRFileDesc *fd, CERTCertDBHandle *dbHandle)
+diff --git a/lib/ssl/sslsecur.c b/lib/ssl/sslsecur.c
+index 53b4885..f77d6fa 100644
+--- a/lib/ssl/sslsecur.c
++++ b/lib/ssl/sslsecur.c
+@@ -1532,17 +1532,70 @@ SSL_CertDBHandleSet(PRFileDesc *fd, CERTCertDBHandle *dbHandle)
      return SECSuccess;
  }
  

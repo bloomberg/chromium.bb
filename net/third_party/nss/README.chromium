@@ -1,6 +1,6 @@
 Name: Network Security Services (NSS)
 URL: http://www.mozilla.org/projects/security/pki/nss/
-Version: 3.19 RTM
+Version: 3.21 RTM
 Security Critical: Yes
 License: MPL 2
 License File: NOT_SHIPPED
@@ -11,7 +11,7 @@ This directory includes a copy of NSS's libssl from the hg repo at:
 The same module appears in crypto/third_party/nss (and third_party/nss on some
 platforms), so we don't repeat the license file here.
 
-The snapshot was updated to the hg tag: NSS_3_19_RTM
+The snapshot was updated to the hg tag: NSS_3_21_RTM
 
 Patches:
 
@@ -99,16 +99,6 @@ Patches:
     zero length. This also ensures that the padding extension has non-zero
     length.
     patches/reorderextensions.patch
-
-  * Make the build metadata deterministic
-    patches/removebuildmetadata.patch
-
-  * Fix locking bug in ssl3_HandleHelloRequest when rejecting a renegotiation.
-    patches/norenegotiatelock.patch
-    https://bugzilla.mozilla.org/show_bug.cgi?id=1162521
-
-  * Increase the minimum DH group size to 1024
-    patches/dh1024.patch
 
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.

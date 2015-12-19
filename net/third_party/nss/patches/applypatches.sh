@@ -46,9 +46,3 @@ patch -p2 < $patches_dir/sessioncache.patch
 patch -p2 < $patches_dir/nssrwlock.patch
 
 patch -p2 < $patches_dir/reorderextensions.patch
-
-patch -p2 < $patches_dir/removebuildmetadata.patch
-
-patch -p2 < $patches_dir/norenegotiatelock.patch
-
-patch -p2 < $patches_dir/dh1024.patch

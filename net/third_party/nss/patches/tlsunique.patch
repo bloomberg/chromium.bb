@@ -1,10 +1,10 @@
-diff --git a/ssl/ssl.h b/ssl/ssl.h
-index 716537d..80717db 100644
---- a/ssl/ssl.h
-+++ b/ssl/ssl.h
-@@ -292,6 +292,27 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDefault(PRInt32 cipher, PRBool *enabled);
- SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
- SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
+diff --git a/lib/ssl/ssl.h b/lib/ssl/ssl.h
+index 120c257..eb7f7ec 100644
+--- a/lib/ssl/ssl.h
++++ b/lib/ssl/ssl.h
+@@ -385,6 +385,27 @@ SSL_IMPORT SECStatus SSL_DHEGroupPrefSet(PRFileDesc *fd,
+ */
+ SSL_IMPORT SECStatus SSL_EnableWeakDHEPrimeGroup(PRFileDesc *fd, PRBool enabled);
  
 +/* SSLChannelBindingType enumerates the types of supported channel binding
 + * values. See RFC 5929. */
@@ -30,12 +30,12 @@ index 716537d..80717db 100644
  /* SSL Version Range API
  **
  ** This API should be used to control SSL 3.0 & TLS support instead of the
-diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index c0e8e79..7c06815 100644
---- a/ssl/ssl3con.c
-+++ b/ssl/ssl3con.c
-@@ -12479,6 +12479,68 @@ ssl3_InitSocketPolicy(sslSocket *ss)
-     PORT_Memcpy(ss->cipherSuites, cipherSuites, sizeof cipherSuites);
+diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
+index 2ae8ce9..ce92cf1 100644
+--- a/lib/ssl/ssl3con.c
++++ b/lib/ssl/ssl3con.c
+@@ -13241,6 +13241,68 @@ ssl3_InitSocketPolicy(sslSocket *ss)
+     ss->ssl3.signatureAlgorithmCount = PR_ARRAY_SIZE(defaultSignatureAlgorithms);
  }
  
 +SECStatus
@@ -103,11 +103,11 @@ index c0e8e79..7c06815 100644
  /* ssl3_config_match_init must have already been called by
   * the caller of this function.
   */
-diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index e11860e..0ece0ed 100644
---- a/ssl/sslimpl.h
-+++ b/ssl/sslimpl.h
-@@ -1864,6 +1864,11 @@ extern PRBool ssl_GetSessionTicketKeysPKCS11(SECKEYPrivateKey *svrPrivKey,
+diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
+index c286518..976330e 100644
+--- a/lib/ssl/sslimpl.h
++++ b/lib/ssl/sslimpl.h
+@@ -1897,6 +1897,11 @@ extern PRBool ssl_GetSessionTicketKeysPKCS11(SECKEYPrivateKey *svrPrivKey,
  extern SECStatus ssl3_ValidateNextProtoNego(const unsigned char* data,
  					    unsigned int length);
  
@@ -119,12 +119,12 @@ index e11860e..0ece0ed 100644
  /* Construct a new NSPR socket for the app to use */
  extern PRFileDesc *ssl_NewPRSocket(sslSocket *ss, PRFileDesc *fd);
  extern void ssl_FreePRSocket(PRFileDesc *fd);
-diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index 042f24f..14ff328 100644
---- a/ssl/sslsock.c
-+++ b/ssl/sslsock.c
-@@ -1345,6 +1345,27 @@ NSS_SetFrancePolicy(void)
-     return NSS_SetDomesticPolicy();
+diff --git a/lib/ssl/sslsock.c b/lib/ssl/sslsock.c
+index efba686..c9a4493 100644
+--- a/lib/ssl/sslsock.c
++++ b/lib/ssl/sslsock.c
+@@ -1540,6 +1540,28 @@ SSL_EnableWeakDHEPrimeGroup(PRFileDesc *fd, PRBool enabled)
+     return SECSuccess;
  }
  
 +SECStatus
@@ -148,6 +148,7 @@ index 042f24f..14ff328 100644
 +
 +    return ssl3_GetTLSUniqueChannelBinding(ss, out, outLen, outLenMax);
 +}
++
+ #include "dhe-param.c"
  
- 
- /* LOCKS ??? XXX */
+ static const SSLDHEGroupType ssl_default_dhe_groups[] = {

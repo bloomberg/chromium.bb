@@ -1,7 +1,7 @@
-diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 1167d6d..dabe333 100644
---- a/ssl/ssl3con.c
-+++ b/ssl/ssl3con.c
+diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
+index c5cb1eb..299e414 100644
+--- a/lib/ssl/ssl3con.c
++++ b/lib/ssl/ssl3con.c
 @@ -8,6 +8,7 @@
  
  /* TODO(ekr): Implement HelloVerifyRequest on server side. OK for now. */
@@ -10,7 +10,7 @@ index 1167d6d..dabe333 100644
  #include "cert.h"
  #include "ssl.h"
  #include "cryptohi.h"	/* for DSAU_ stuff */
-@@ -44,6 +45,9 @@
+@@ -46,6 +47,9 @@
  #ifdef NSS_ENABLE_ZLIB
  #include "zlib.h"
  #endif
@@ -20,7 +20,7 @@ index 1167d6d..dabe333 100644
  
  #ifndef PK11_SETATTRS
  #define PK11_SETATTRS(x,id,v,l) (x)->type = (id); \
-@@ -1874,6 +1878,63 @@ ssl3_BuildRecordPseudoHeader(unsigned char *out,
+@@ -1897,6 +1901,63 @@ ssl3_BuildRecordPseudoHeader(unsigned char *out,
      return 13;
  }
  
@@ -84,7 +84,7 @@ index 1167d6d..dabe333 100644
  static SECStatus
  ssl3_AESGCM(ssl3KeyMaterial *keys,
  	    PRBool doDecrypt,
-@@ -1925,10 +1986,10 @@ ssl3_AESGCM(ssl3KeyMaterial *keys,
+@@ -1948,10 +2009,10 @@ ssl3_AESGCM(ssl3KeyMaterial *keys,
      gcmParams.ulTagBits = tagSize * 8;
  
      if (doDecrypt) {
@@ -97,7 +97,7 @@ index 1167d6d..dabe333 100644
  			  maxout, in, inlen);
      }
      *outlen += (int) uOutLen;
-@@ -5162,6 +5223,10 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5337,6 +5398,10 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	ssl3_DisableNonDTLSSuites(ss);
      }
  
@@ -108,7 +108,7 @@ index 1167d6d..dabe333 100644
      /* how many suites are permitted by policy and user preference? */
      num_suites = count_cipher_suites(ss, ss->ssl3.policy, PR_TRUE);
      if (!num_suites) {
-@@ -8172,6 +8237,10 @@ ssl3_HandleClientHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+@@ -8400,6 +8465,10 @@ ssl3_HandleClientHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
  	ssl3_DisableNonDTLSSuites(ss);
      }
  

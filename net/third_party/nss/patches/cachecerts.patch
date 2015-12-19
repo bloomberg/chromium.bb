@@ -1,8 +1,8 @@
-diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 163572c..60af5b0 100644
---- a/ssl/ssl3con.c
-+++ b/ssl/ssl3con.c
-@@ -43,6 +43,7 @@
+diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
+index 8f1c547..9aaf601 100644
+--- a/lib/ssl/ssl3con.c
++++ b/lib/ssl/ssl3con.c
+@@ -45,6 +45,7 @@
  
  static SECStatus ssl3_AuthCertificate(sslSocket *ss);
  static void      ssl3_CleanupPeerCerts(sslSocket *ss);
@@ -10,15 +10,15 @@ index 163572c..60af5b0 100644
  static PK11SymKey *ssl3_GenerateRSAPMS(sslSocket *ss, ssl3CipherSpec *spec,
                                         PK11SlotInfo * serverKeySlot);
  static SECStatus ssl3_DeriveMasterSecret(sslSocket *ss, PK11SymKey *pms);
-@@ -6549,6 +6550,7 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+@@ -6751,6 +6752,7 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
  	/* copy the peer cert from the SID */
  	if (sid->peerCert != NULL) {
  	    ss->sec.peerCert = CERT_DupCertificate(sid->peerCert);
 +	    ssl3_CopyPeerCertsFromSID(ss, sid);
  	}
  
- 	/* NULL value for PMS signifies re-use of the old MS */
-@@ -8140,6 +8142,7 @@ compression_found:
+ 	/* NULL value for PMS because we are reusing the old MS */
+@@ -8405,6 +8407,7 @@ compression_found:
  	ss->sec.ci.sid = sid;
  	if (sid->peerCert != NULL) {
  	    ss->sec.peerCert = CERT_DupCertificate(sid->peerCert);
@@ -26,7 +26,7 @@ index 163572c..60af5b0 100644
  	}
  
  	/*
-@@ -9763,6 +9766,44 @@ ssl3_CleanupPeerCerts(sslSocket *ss)
+@@ -10389,6 +10392,44 @@ ssl3_CleanupPeerCerts(sslSocket *ss)
      ss->ssl3.peerCertChain = NULL;
  }
  
@@ -71,7 +71,7 @@ index 163572c..60af5b0 100644
  /* Called from ssl3_HandleHandshakeMessage() when it has deciphered a complete
   * ssl3 CertificateStatus message.
   * Caller must hold Handshake and RecvBuf locks.
-@@ -10041,6 +10082,7 @@ ssl3_AuthCertificate(sslSocket *ss)
+@@ -10669,6 +10710,7 @@ ssl3_AuthCertificate(sslSocket *ss)
      }
  
      ss->sec.ci.sid->peerCert = CERT_DupCertificate(ss->sec.peerCert);
@@ -79,11 +79,11 @@ index 163572c..60af5b0 100644
  
      if (!ss->sec.isServer) {
          CERTCertificate *cert = ss->sec.peerCert;
-diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 1b38a52..086f6d2 100644
---- a/ssl/sslimpl.h
-+++ b/ssl/sslimpl.h
-@@ -597,6 +597,8 @@ typedef enum {	never_cached,
+diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
+index ad31aae..9dcc29e 100644
+--- a/lib/ssl/sslimpl.h
++++ b/lib/ssl/sslimpl.h
+@@ -608,6 +608,8 @@ typedef enum {	never_cached,
  		invalid_cache		/* no longer in any cache. */
  } Cached;
  
@@ -92,7 +92,7 @@ index 1b38a52..086f6d2 100644
  struct sslSessionIDStr {
      /* The global cache lock must be held when accessing these members when the
       * sid is in any cache.
-@@ -611,6 +613,7 @@ struct sslSessionIDStr {
+@@ -622,6 +624,7 @@ struct sslSessionIDStr {
       */
  
      CERTCertificate *     peerCert;
@@ -100,10 +100,10 @@ index 1b38a52..086f6d2 100644
      SECItemArray          peerCertStatus; /* client only */
      const char *          peerID;     /* client only */
      const char *          urlSvrName; /* client only */
-diff --git a/ssl/sslnonce.c b/ssl/sslnonce.c
+diff --git a/lib/ssl/sslnonce.c b/lib/ssl/sslnonce.c
 index 2e861f1..be11008 100644
---- a/ssl/sslnonce.c
-+++ b/ssl/sslnonce.c
+--- a/lib/ssl/sslnonce.c
++++ b/lib/ssl/sslnonce.c
 @@ -164,6 +164,7 @@ lock_cache(void)
  static void
  ssl_DestroySID(sslSessionID *sid)

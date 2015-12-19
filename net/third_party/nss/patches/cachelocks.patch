@@ -1,8 +1,8 @@
-diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 6819b03..6a4a443 100644
---- a/ssl/ssl3con.c
-+++ b/ssl/ssl3con.c
-@@ -5748,7 +5748,6 @@ SSL3_ShutdownServerCache(void)
+diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
+index 2533679..ba3d012 100644
+--- a/lib/ssl/ssl3con.c
++++ b/lib/ssl/ssl3con.c
+@@ -5921,7 +5921,6 @@ SSL3_ShutdownServerCache(void)
      }
  
      PZ_Unlock(symWrapKeysLock);
@@ -10,7 +10,7 @@ index 6819b03..6a4a443 100644
      return SECSuccess;
  }
  
-@@ -5800,7 +5799,7 @@ getWrappingKey( sslSocket *       ss,
+@@ -5973,7 +5972,7 @@ getWrappingKey( sslSocket *       ss,
  
      pSymWrapKey = &symWrapKeys[symWrapMechIndex].symWrapKey[exchKeyType];
  
@@ -19,11 +19,11 @@ index 6819b03..6a4a443 100644
  
      PZ_Lock(symWrapKeysLock);
  
-diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 88b2eba..c4c87b4 100644
---- a/ssl/sslimpl.h
-+++ b/ssl/sslimpl.h
-@@ -1924,9 +1924,7 @@ extern SECStatus ssl_InitSymWrapKeysLock(void);
+diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
+index d5f326f..d53c446 100644
+--- a/lib/ssl/sslimpl.h
++++ b/lib/ssl/sslimpl.h
+@@ -1957,9 +1957,7 @@ extern SECStatus ssl_InitSymWrapKeysLock(void);
  
  extern SECStatus ssl_FreeSymWrapKeysLock(void);
  
@@ -34,10 +34,10 @@ index 88b2eba..c4c87b4 100644
  
  /***************** platform client auth ****************/
  
-diff --git a/ssl/sslnonce.c b/ssl/sslnonce.c
+diff --git a/lib/ssl/sslnonce.c b/lib/ssl/sslnonce.c
 index 1326a8b..c45849d 100644
---- a/ssl/sslnonce.c
-+++ b/ssl/sslnonce.c
+--- a/lib/ssl/sslnonce.c
++++ b/lib/ssl/sslnonce.c
 @@ -35,91 +35,55 @@ static PZLock *      cacheLock = NULL;
  #define LOCK_CACHE 	lock_cache()
  #define UNLOCK_CACHE	PZ_Unlock(cacheLock)
@@ -204,11 +204,11 @@ index 1326a8b..c45849d 100644
      PZ_Lock(cacheLock);
  }
  
-diff --git a/ssl/sslsnce.c b/ssl/sslsnce.c
-index 4d9ef38..3279200 100644
---- a/ssl/sslsnce.c
-+++ b/ssl/sslsnce.c
-@@ -1352,7 +1352,7 @@ SSL_ConfigServerSessionIDCache(	int      maxCacheEntries,
+diff --git a/lib/ssl/sslsnce.c b/lib/ssl/sslsnce.c
+index f31b2e9..3856c13 100644
+--- a/lib/ssl/sslsnce.c
++++ b/lib/ssl/sslsnce.c
+@@ -1363,7 +1363,7 @@ SSL_ConfigServerSessionIDCache(	int      maxCacheEntries,
  			       	PRUint32 ssl3_timeout, 
  			  const char *   directory)
  {
@@ -217,7 +217,7 @@ index 4d9ef38..3279200 100644
      return SSL_ConfigServerSessionIDCacheInstance(&globalCache, 
      		maxCacheEntries, ssl2_timeout, ssl3_timeout, directory, PR_FALSE);
  }
-@@ -1466,7 +1466,7 @@ SSL_ConfigServerSessionIDCacheWithOpt(
+@@ -1477,7 +1477,7 @@ SSL_ConfigServerSessionIDCacheWithOpt(
                                  PRBool enableMPCache)
  {
      if (!enableMPCache) {
@@ -226,7 +226,7 @@ index 4d9ef38..3279200 100644
          return ssl_ConfigServerSessionIDCacheInstanceWithOpt(&globalCache, 
             ssl2_timeout, ssl3_timeout, directory, PR_FALSE,
             maxCacheEntries, maxCertCacheEntries, maxSrvNameCacheEntries);
-@@ -1511,7 +1511,7 @@ SSL_InheritMPServerSIDCacheInstance(cacheDesc *cache, const char * envString)
+@@ -1521,7 +1521,7 @@ SSL_InheritMPServerSIDCacheInstance(cacheDesc *cache, const char * envString)
      	return SECSuccess;	/* already done. */
      }
  

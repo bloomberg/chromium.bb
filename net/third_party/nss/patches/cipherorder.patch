@@ -1,10 +1,10 @@
-diff --git a/ssl/ssl.h b/ssl/ssl.h
-index e9f5fb0..be6d88e 100644
---- a/ssl/ssl.h
-+++ b/ssl/ssl.h
-@@ -295,6 +295,13 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDefault(PRInt32 cipher, PRBool *enabled);
- SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
- SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
+diff --git a/lib/ssl/ssl.h b/lib/ssl/ssl.h
+index db09425..437a822 100644
+--- a/lib/ssl/ssl.h
++++ b/lib/ssl/ssl.h
+@@ -387,6 +387,13 @@ SSL_IMPORT SECStatus SSL_DHEGroupPrefSet(PRFileDesc *fd,
+ */
+ SSL_IMPORT SECStatus SSL_EnableWeakDHEPrimeGroup(PRFileDesc *fd, PRBool enabled);
  
 +/* SSL_CipherOrderSet sets the cipher suite preference order from |ciphers|,
 + * which must be an array of cipher suite ids of length |len|. All the given
@@ -16,12 +16,12 @@ index e9f5fb0..be6d88e 100644
  /* SSLChannelBindingType enumerates the types of supported channel binding
   * values. See RFC 5929. */
  typedef enum SSLChannelBindingType {
-diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 54c5b80..26b87c6 100644
---- a/ssl/ssl3con.c
-+++ b/ssl/ssl3con.c
-@@ -12631,6 +12631,46 @@ ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *enabled)
-     return rv;
+diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
+index 5c09f25..572bba9 100644
+--- a/lib/ssl/ssl3con.c
++++ b/lib/ssl/ssl3con.c
+@@ -13390,6 +13390,46 @@ SSL_SignatureMaxCount() {
+     return MAX_SIGNATURE_ALGORITHMS;
  }
  
 +SECStatus
@@ -67,11 +67,11 @@ index 54c5b80..26b87c6 100644
  /* copy global default policy into socket. */
  void
  ssl3_InitSocketPolicy(sslSocket *ss)
-diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 0fd0a89..d12228e 100644
---- a/ssl/sslimpl.h
-+++ b/ssl/sslimpl.h
-@@ -1754,6 +1754,8 @@ extern SECStatus ssl3_CipherPrefSet(sslSocket *ss, ssl3CipherSuite which, PRBool
+diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
+index 080debe..3403091 100644
+--- a/lib/ssl/sslimpl.h
++++ b/lib/ssl/sslimpl.h
+@@ -1786,6 +1786,8 @@ extern SECStatus ssl3_CipherPrefSet(sslSocket *ss, ssl3CipherSuite which, PRBool
  extern SECStatus ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *on);
  extern SECStatus ssl2_CipherPrefSet(sslSocket *ss, PRInt32 which, PRBool enabled);
  extern SECStatus ssl2_CipherPrefGet(sslSocket *ss, PRInt32 which, PRBool *enabled);
@@ -80,11 +80,11 @@ index 0fd0a89..d12228e 100644
  
  extern SECStatus ssl3_SetPolicy(ssl3CipherSuite which, PRInt32 policy);
  extern SECStatus ssl3_GetPolicy(ssl3CipherSuite which, PRInt32 *policy);
-diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index 72058f5..09a0fb5 100644
---- a/ssl/sslsock.c
-+++ b/ssl/sslsock.c
-@@ -1316,6 +1316,19 @@ SSL_CipherPrefSet(PRFileDesc *fd, PRInt32 which, PRBool enabled)
+diff --git a/lib/ssl/sslsock.c b/lib/ssl/sslsock.c
+index 28e3543..8ad1517 100644
+--- a/lib/ssl/sslsock.c
++++ b/lib/ssl/sslsock.c
+@@ -1369,6 +1369,19 @@ SSL_CipherPrefSet(PRFileDesc *fd, PRInt32 which, PRBool enabled)
  }
  
  SECStatus

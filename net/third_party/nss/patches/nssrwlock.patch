@@ -1,8 +1,8 @@
-diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 0ac85da..f5afab7 100644
---- a/ssl/ssl3con.c
-+++ b/ssl/ssl3con.c
-@@ -5261,7 +5261,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
+index afab931..e5e620f 100644
+--- a/lib/ssl/ssl3con.c
++++ b/lib/ssl/ssl3con.c
+@@ -5436,7 +5436,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
       * the lock across the calls to ssl3_CallHelloExtensionSenders.
       */
      if (sid->u.ssl3.lock) {
@@ -11,7 +11,7 @@ index 0ac85da..f5afab7 100644
      }
  
      if (isTLS || (ss->firstHsDone && ss->peerRequestedProtection)) {
-@@ -5270,7 +5270,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5445,7 +5445,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  
  	extLen = ssl3_CallHelloExtensionSenders(ss, PR_FALSE, maxBytes, NULL);
  	if (extLen < 0) {
@@ -20,7 +20,7 @@ index 0ac85da..f5afab7 100644
  	    return SECFailure;
  	}
  	total_exten_len += extLen;
-@@ -5297,7 +5297,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5472,7 +5472,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
      /* how many suites are permitted by policy and user preference? */
      num_suites = count_cipher_suites(ss, ss->ssl3.policy, PR_TRUE);
      if (!num_suites) {
@@ -29,7 +29,7 @@ index 0ac85da..f5afab7 100644
      	return SECFailure;	/* count_cipher_suites has set error code. */
      }
  
-@@ -5342,7 +5342,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5517,7 +5517,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  
      rv = ssl3_AppendHandshakeHeader(ss, client_hello, length);
      if (rv != SECSuccess) {
@@ -38,7 +38,7 @@ index 0ac85da..f5afab7 100644
  	return rv;	/* err set by ssl3_AppendHandshake* */
      }
  
-@@ -5361,21 +5361,21 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5536,21 +5536,21 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	rv = ssl3_AppendHandshakeNumber(ss, ss->clientHelloVersion, 2);
      }
      if (rv != SECSuccess) {
@@ -63,7 +63,7 @@ index 0ac85da..f5afab7 100644
  	return rv;	/* err set by ssl3_AppendHandshake* */
      }
  
-@@ -5385,7 +5385,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5560,7 +5560,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
      else
  	rv = ssl3_AppendHandshakeNumber(ss, 0, 1);
      if (rv != SECSuccess) {
@@ -72,7 +72,7 @@ index 0ac85da..f5afab7 100644
  	return rv;	/* err set by ssl3_AppendHandshake* */
      }
  
-@@ -5393,14 +5393,14 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5568,14 +5568,14 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	rv = ssl3_AppendHandshakeVariable(
  	    ss, ss->ssl3.hs.cookie, ss->ssl3.hs.cookieLen, 1);
  	if (rv != SECSuccess) {
@@ -89,7 +89,7 @@ index 0ac85da..f5afab7 100644
  	return rv;	/* err set by ssl3_AppendHandshake* */
      }
  
-@@ -5409,7 +5409,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5584,7 +5584,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	rv = ssl3_AppendHandshakeNumber(ss, TLS_EMPTY_RENEGOTIATION_INFO_SCSV,
  					sizeof(ssl3CipherSuite));
  	if (rv != SECSuccess) {
@@ -98,7 +98,7 @@ index 0ac85da..f5afab7 100644
  	    return rv;	/* err set by ssl3_AppendHandshake* */
  	}
  	actual_count++;
-@@ -5418,7 +5418,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5593,7 +5593,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	rv = ssl3_AppendHandshakeNumber(ss, TLS_FALLBACK_SCSV,
  					sizeof(ssl3CipherSuite));
  	if (rv != SECSuccess) {
@@ -107,8 +107,8 @@ index 0ac85da..f5afab7 100644
  	    return rv;	/* err set by ssl3_AppendHandshake* */
  	}
  	actual_count++;
-@@ -5428,7 +5428,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
- 	if (config_match(suite, ss->ssl3.policy, PR_TRUE, &ss->vrange)) {
+@@ -5603,7 +5603,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+ 	if (config_match(suite, ss->ssl3.policy, PR_TRUE, &ss->vrange, ss)) {
  	    actual_count++;
  	    if (actual_count > num_suites) {
 -		if (sid->u.ssl3.lock) { PR_RWLock_Unlock(sid->u.ssl3.lock); }
@@ -116,7 +116,7 @@ index 0ac85da..f5afab7 100644
  		/* set error card removal/insertion error */
  		PORT_SetError(SSL_ERROR_TOKEN_INSERTION_REMOVAL);
  		return SECFailure;
-@@ -5436,7 +5436,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5611,7 +5611,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	    rv = ssl3_AppendHandshakeNumber(ss, suite->cipher_suite,
  					    sizeof(ssl3CipherSuite));
  	    if (rv != SECSuccess) {
@@ -125,7 +125,7 @@ index 0ac85da..f5afab7 100644
  		return rv;	/* err set by ssl3_AppendHandshake* */
  	    }
  	}
-@@ -5447,14 +5447,14 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5622,14 +5622,14 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
       * the server.. */
      if (actual_count != num_suites) {
  	/* Card removal/insertion error */
@@ -142,7 +142,7 @@ index 0ac85da..f5afab7 100644
  	return rv;	/* err set by ssl3_AppendHandshake* */
      }
      for (i = 0; i < compressionMethodsCount; i++) {
-@@ -5462,7 +5462,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5637,7 +5637,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	    continue;
  	rv = ssl3_AppendHandshakeNumber(ss, compressions[i], 1);
  	if (rv != SECSuccess) {
@@ -151,7 +151,7 @@ index 0ac85da..f5afab7 100644
  	    return rv;	/* err set by ssl3_AppendHandshake* */
  	}
      }
-@@ -5473,20 +5473,20 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5648,20 +5648,20 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  
  	rv = ssl3_AppendHandshakeNumber(ss, maxBytes, 2);
  	if (rv != SECSuccess) {
@@ -175,7 +175,7 @@ index 0ac85da..f5afab7 100644
  	    return SECFailure;
  	}
  	maxBytes -= extLen;
-@@ -5495,7 +5495,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5670,7 +5670,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
      } 
  
      if (sid->u.ssl3.lock) {
@@ -184,11 +184,11 @@ index 0ac85da..f5afab7 100644
      }
  
      if (ss->xtnData.sentSessionTicketInClientHello) {
-diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index d12228e..efcbf9f 100644
---- a/ssl/sslimpl.h
-+++ b/ssl/sslimpl.h
-@@ -731,7 +731,7 @@ struct sslSessionIDStr {
+diff --git a/lib/ssl/sslimpl.h b/lib/ssl/sslimpl.h
+index 3403091..874e59c 100644
+--- a/lib/ssl/sslimpl.h
++++ b/lib/ssl/sslimpl.h
+@@ -742,7 +742,7 @@ struct sslSessionIDStr {
  	     * cached. Before then, there is no need to lock anything because
  	     * the sid isn't being shared by anything.
  	     */
@@ -197,10 +197,10 @@ index d12228e..efcbf9f 100644
  
  	    /* The lock must be held while reading or writing these members
  	     * because they change while the sid is cached.
-diff --git a/ssl/sslnonce.c b/ssl/sslnonce.c
+diff --git a/lib/ssl/sslnonce.c b/lib/ssl/sslnonce.c
 index cefdda6..28ad364 100644
---- a/ssl/sslnonce.c
-+++ b/ssl/sslnonce.c
+--- a/lib/ssl/sslnonce.c
++++ b/lib/ssl/sslnonce.c
 @@ -136,7 +136,7 @@ ssl_DestroySID(sslSessionID *sid)
          }
  
