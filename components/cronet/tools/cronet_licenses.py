@@ -37,11 +37,11 @@ def GenerateLicense():
   """
   # TODO(mef): Generate list of third_party libraries using checkdeps.
   third_party_dirs = [
-    "libevent",
-    "ashmem",
-    "zlib",
-    "modp_b64",
-    "boringssl"
+    'base/third_party/libevent',
+    'third_party/ashmem',
+    'third_party/boringssl',
+    'third_party/modp_b64',
+    'third_party/zlib',
   ]
 
   # Start with Chromium's LICENSE file
@@ -49,11 +49,11 @@ def GenerateLicense():
 
   # Add necessary third_party.
   for directory in sorted(third_party_dirs):
-    metadata = licenses.ParseDir("third_party/" + directory, REPOSITORY_ROOT,
+    metadata = licenses.ParseDir(directory, REPOSITORY_ROOT,
                                  require_license_file=True)
-    content.append("-" * 20)
+    content.append('-' * 20)
     content.append(directory)
-    content.append("-" * 20)
+    content.append('-' * 20)
     license_file = metadata['License File']
     if license_file and license_file != licenses.NOT_SHIPPED:
       content.append(_ReadFile(license_file))
