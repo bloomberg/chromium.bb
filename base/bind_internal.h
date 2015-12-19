@@ -143,7 +143,9 @@ class RunnableAdapter;
 template <typename R, typename... Args>
 class RunnableAdapter<R(*)(Args...)> {
  public:
-  typedef R (RunType)(Args...);
+  // MSVC 2013 doesn't support Type Alias of function types.
+  // Revisit this after we update it to newer version.
+  typedef R RunType(Args...);
 
   explicit RunnableAdapter(R(*function)(Args...))
       : function_(function) {
@@ -161,8 +163,10 @@ class RunnableAdapter<R(*)(Args...)> {
 template <typename R, typename T, typename... Args>
 class RunnableAdapter<R(T::*)(Args...)> {
  public:
-  typedef R (RunType)(T*, Args...);
-  typedef true_type IsMethod;
+  // MSVC 2013 doesn't support Type Alias of function types.
+  // Revisit this after we update it to newer version.
+  typedef R RunType(T*, Args...);
+  using IsMethod = true_type;
 
   explicit RunnableAdapter(R(T::*method)(Args...))
       : method_(method) {
@@ -180,8 +184,8 @@ class RunnableAdapter<R(T::*)(Args...)> {
 template <typename R, typename T, typename... Args>
 class RunnableAdapter<R(T::*)(Args...) const> {
  public:
-  typedef R (RunType)(const T*, Args...);
-  typedef true_type IsMethod;
+  using RunType = R(const T*, Args...);
+  using IsMethod = true_type;
 
   explicit RunnableAdapter(R(T::*method)(Args...) const)
       : method_(method) {
@@ -205,7 +209,9 @@ struct ForceVoidReturn;
 
 template <typename R, typename... Args>
 struct ForceVoidReturn<R(Args...)> {
-  typedef void(RunType)(Args...);
+  // MSVC 2013 doesn't support Type Alias of function types.
+  // Revisit this after we update it to newer version.
+  typedef void RunType(Args...);
 };
 
 
@@ -214,21 +220,21 @@ struct ForceVoidReturn<R(Args...)> {
 // See description at top of file.
 template <typename T>
 struct FunctorTraits {
-  typedef RunnableAdapter<T> RunnableType;
-  typedef typename RunnableType::RunType RunType;
+  using RunnableType = RunnableAdapter<T>;
+  using RunType = typename RunnableType::RunType;
 };
 
 template <typename T>
 struct FunctorTraits<IgnoreResultHelper<T>> {
-  typedef typename FunctorTraits<T>::RunnableType RunnableType;
-  typedef typename ForceVoidReturn<
-      typename RunnableType::RunType>::RunType RunType;
+  using RunnableType = typename FunctorTraits<T>::RunnableType;
+  using RunType =
+      typename ForceVoidReturn<typename RunnableType::RunType>::RunType;
 };
 
 template <typename T>
 struct FunctorTraits<Callback<T>> {
-  typedef Callback<T> RunnableType;
-  typedef typename Callback<T>::RunType RunType;
+  using RunnableType = Callback<T> ;
+  using RunType = typename Callback<T>::RunType;
 };
 
 

@@ -55,14 +55,14 @@ base::Callback<
         typename internal::CallbackParamTraits<Args>::StorageType...>
             ::UnboundRunType>
 Bind(Functor functor, const Args&... args) {
-  // Typedefs for how to store and run the functor.
-  typedef typename internal::FunctorTraits<Functor>::RunnableType RunnableType;
-  typedef typename internal::FunctorTraits<Functor>::RunType RunType;
+  // Type aliases for how to store and run the functor.
+  using RunnableType = typename internal::FunctorTraits<Functor>::RunnableType;
+  using RunType = typename internal::FunctorTraits<Functor>::RunType;
 
   // Use RunnableType::RunType instead of RunType above because our
-  // checks should below for bound references need to know what the actual
+  // checks below for bound references need to know what the actual
   // functor is going to interpret the argument as.
-  typedef typename RunnableType::RunType BoundRunType;
+  using BoundRunType = typename RunnableType::RunType;
 
   using BoundArgs =
       internal::TakeTypeListItem<sizeof...(Args),
@@ -88,10 +88,9 @@ Bind(Functor functor, const Args&... args) {
       !internal::HasRefCountedParamAsRawPtr<is_method, Args...>::value,
       "a parameter is a refcounted type and needs scoped_refptr");
 
-  typedef internal::BindState<
+  using BindState = internal::BindState<
       RunnableType, RunType,
-      typename internal::CallbackParamTraits<Args>::StorageType...>
-      BindState;
+      typename internal::CallbackParamTraits<Args>::StorageType...>;
 
   return Callback<typename BindState::UnboundRunType>(
       new BindState(internal::MakeRunnable(functor), args...));

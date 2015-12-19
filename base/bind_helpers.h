@@ -188,7 +188,7 @@ namespace internal {
 // want to probe for.  Then we create a class Base that inherits from both T
 // (the class we wish to probe) and BaseMixin.  Note that the function
 // signature in BaseMixin does not need to match the signature of the function
-// we are probing for; thus it's easiest to just use void(void).
+// we are probing for; thus it's easiest to just use void().
 //
 // Now, if TargetFunc exists somewhere in T, then &Base::TargetFunc has an
 // ambiguous resolution between BaseMixin and T.  This lets us write the
@@ -225,8 +225,8 @@ namespace internal {
 // See http://crbug.com/82038.
 template <typename T>
 class SupportsAddRefAndRelease {
-  typedef char Yes[1];
-  typedef char No[2];
+  using Yes = char[1];
+  using No = char[2];
 
   struct BaseMixin {
     void AddRef();
@@ -245,7 +245,7 @@ class SupportsAddRefAndRelease {
 #pragma warning(pop)
 #endif
 
-  template <void(BaseMixin::*)(void)> struct Helper {};
+  template <void(BaseMixin::*)()> struct Helper {};
 
   template <typename C>
   static No& Check(Helper<&C::AddRef>*);
@@ -279,8 +279,8 @@ struct UnsafeBindtoRefCountedArg<T*>
 
 template <typename T>
 class HasIsMethodTag {
-  typedef char Yes[1];
-  typedef char No[2];
+  using Yes = char[1];
+  using No = char[2];
 
   template <typename U>
   static Yes& Check(typename U::IsMethod*);
@@ -390,13 +390,13 @@ class PassedWrapper {
 // Unwrap the stored parameters for the wrappers above.
 template <typename T>
 struct UnwrapTraits {
-  typedef const T& ForwardType;
+  using ForwardType = const T&;
   static ForwardType Unwrap(const T& o) { return o; }
 };
 
 template <typename T>
 struct UnwrapTraits<UnretainedWrapper<T> > {
-  typedef T* ForwardType;
+  using ForwardType = T*;
   static ForwardType Unwrap(UnretainedWrapper<T> unretained) {
     return unretained.get();
   }
@@ -404,7 +404,7 @@ struct UnwrapTraits<UnretainedWrapper<T> > {
 
 template <typename T>
 struct UnwrapTraits<ConstRefWrapper<T> > {
-  typedef const T& ForwardType;
+  using ForwardType = const T&;
   static ForwardType Unwrap(ConstRefWrapper<T> const_ref) {
     return const_ref.get();
   }
@@ -412,19 +412,19 @@ struct UnwrapTraits<ConstRefWrapper<T> > {
 
 template <typename T>
 struct UnwrapTraits<scoped_refptr<T> > {
-  typedef T* ForwardType;
+  using ForwardType = T*;
   static ForwardType Unwrap(const scoped_refptr<T>& o) { return o.get(); }
 };
 
 template <typename T>
 struct UnwrapTraits<WeakPtr<T> > {
-  typedef const WeakPtr<T>& ForwardType;
+  using ForwardType = const WeakPtr<T>&;
   static ForwardType Unwrap(const WeakPtr<T>& o) { return o; }
 };
 
 template <typename T>
 struct UnwrapTraits<OwnedWrapper<T> > {
-  typedef T* ForwardType;
+  using ForwardType = T*;
   static ForwardType Unwrap(const OwnedWrapper<T>& o) {
     return o.get();
   }
@@ -432,7 +432,7 @@ struct UnwrapTraits<OwnedWrapper<T> > {
 
 template <typename T>
 struct UnwrapTraits<PassedWrapper<T> > {
-  typedef T ForwardType;
+  using ForwardType = T;
   static T Unwrap(PassedWrapper<T>& o) {
     return o.Pass();
   }
@@ -515,12 +515,12 @@ struct DropTypeListItemImpl<n, TypeList<T, List...>>
 
 template <typename T, typename... List>
 struct DropTypeListItemImpl<0, TypeList<T, List...>> {
-  typedef TypeList<T, List...> Type;
+  using Type = TypeList<T, List...>;
 };
 
 template <>
 struct DropTypeListItemImpl<0, TypeList<>> {
-  typedef TypeList<> Type;
+  using Type = TypeList<>;
 };
 
 // A type-level function that drops |n| list item from given TypeList.
@@ -558,7 +558,7 @@ struct ConcatTypeListsImpl;
 
 template <typename... Types1, typename... Types2>
 struct ConcatTypeListsImpl<TypeList<Types1...>, TypeList<Types2...>> {
-  typedef TypeList<Types1..., Types2...> Type;
+  using Type = TypeList<Types1..., Types2...>;
 };
 
 // A type-level function that concats two TypeLists.
@@ -571,7 +571,9 @@ struct MakeFunctionTypeImpl;
 
 template <typename R, typename... Args>
 struct MakeFunctionTypeImpl<R, TypeList<Args...>> {
-  typedef R(Type)(Args...);
+  // MSVC 2013 doesn't support Type Alias of function types.
+  // Revisit this after we update it to newer version.
+  typedef R Type(Args...);
 };
 
 // A type-level function that constructs a function type that has |R| as its

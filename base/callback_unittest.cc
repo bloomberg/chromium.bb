@@ -15,7 +15,9 @@ namespace base {
 namespace {
 
 struct FakeInvoker {
-  typedef void(RunType)(internal::BindStateBase*);
+  // MSVC 2013 doesn't support Type Alias of function types.
+  // Revisit this after we update it to newer version.
+  typedef void RunType(internal::BindStateBase*);
   static void Run(internal::BindStateBase*) {
   }
 };
@@ -30,11 +32,11 @@ namespace internal {
 // chance of colliding with another instantiation and breaking the
 // one-definition-rule.
 template <>
-struct BindState<void(void), void(void), FakeInvoker>
+struct BindState<void(), void(), FakeInvoker>
     : public BindStateBase {
  public:
   BindState() : BindStateBase(&Destroy) {}
-  typedef FakeInvoker InvokerType;
+  using InvokerType = FakeInvoker;
  private:
   ~BindState() {}
   static void Destroy(BindStateBase* self) {
@@ -43,11 +45,11 @@ struct BindState<void(void), void(void), FakeInvoker>
 };
 
 template <>
-struct BindState<void(void), void(void), FakeInvoker, FakeInvoker>
+struct BindState<void(), void(), FakeInvoker, FakeInvoker>
     : public BindStateBase {
  public:
   BindState() : BindStateBase(&Destroy) {}
-  typedef FakeInvoker InvokerType;
+  using InvokerType = FakeInvoker;
  private:
   ~BindState() {}
   static void Destroy(BindStateBase* self) {
@@ -58,10 +60,9 @@ struct BindState<void(void), void(void), FakeInvoker, FakeInvoker>
 
 namespace {
 
-typedef internal::BindState<void(void), void(void), FakeInvoker>
-    FakeBindState1;
-typedef internal::BindState<void(void), void(void), FakeInvoker, FakeInvoker>
-    FakeBindState2;
+using FakeBindState1 = internal::BindState<void(), void(), FakeInvoker>;
+using FakeBindState2 =
+    internal::BindState<void(), void(), FakeInvoker, FakeInvoker>;
 
 class CallbackTest : public ::testing::Test {
  public:
@@ -73,15 +74,15 @@ class CallbackTest : public ::testing::Test {
   ~CallbackTest() override {}
 
  protected:
-  Callback<void(void)> callback_a_;
-  const Callback<void(void)> callback_b_;  // Ensure APIs work with const.
-  Callback<void(void)> null_callback_;
+  Callback<void()> callback_a_;
+  const Callback<void()> callback_b_;  // Ensure APIs work with const.
+  Callback<void()> null_callback_;
 };
 
 // Ensure we can create unbound callbacks. We need this to be able to store
 // them in class members that can be initialized later.
 TEST_F(CallbackTest, DefaultConstruction) {
-  Callback<void(void)> c0;
+  Callback<void()> c0;
   Callback<void(int)> c1;
   Callback<void(int,int)> c2;
   Callback<void(int,int,int)> c3;
@@ -110,13 +111,13 @@ TEST_F(CallbackTest, Equals) {
   EXPECT_FALSE(callback_b_.Equals(callback_a_));
 
   // We should compare based on instance, not type.
-  Callback<void(void)> callback_c(new FakeBindState1());
-  Callback<void(void)> callback_a2 = callback_a_;
+  Callback<void()> callback_c(new FakeBindState1());
+  Callback<void()> callback_a2 = callback_a_;
   EXPECT_TRUE(callback_a_.Equals(callback_a2));
   EXPECT_FALSE(callback_a_.Equals(callback_c));
 
   // Empty, however, is always equal to empty.
-  Callback<void(void)> empty2;
+  Callback<void()> empty2;
   EXPECT_TRUE(null_callback_.Equals(empty2));
 }
 

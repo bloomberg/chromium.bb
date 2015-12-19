@@ -23,7 +23,7 @@ class Child : Parent {
 // considered distinct.
 void WontCompile() {
   Closure c1;
-  Callback<int(void)> c2;
+  Callback<int()> c2;
   c1.Equals(c2);
 }
 
@@ -34,8 +34,8 @@ void WontCompile() {
 // While this is technically safe, most people aren't used to it when coding
 // C++ so if this is happening, it is almost certainly an error.
 void WontCompile() {
-  Callback<Parent(void)> cb_a;
-  Callback<Child(void)> cb_b = cb_a;
+  Callback<Parent()> cb_a;
+  Callback<Child()> cb_b = cb_a;
 }
 
 #elif defined(NCTEST_ASSIGNMENT_FROM_SUBTYPE)  // [r"fatal error: no viable overloaded '='"]
@@ -43,8 +43,8 @@ void WontCompile() {
 // Assignment of Callback<A> from Callback<B> if A is supertype of B.
 // See explanation for NCTEST_CONSTRUCTION_FROM_SUBTYPE
 void WontCompile() {
-  Callback<Parent(void)> cb_a;
-  Callback<Child(void)> cb_b;
+  Callback<Parent()> cb_a;
+  Callback<Child()> cb_b;
   cb_a = cb_b;
 }
 

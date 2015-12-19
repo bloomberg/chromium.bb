@@ -29,8 +29,8 @@ class HasRef : public NoRef, public base::RefCounted<HasRef> {
 
 class Parent {
  public:
-  void AddRef(void) const {}
-  void Release(void) const {}
+  void AddRef() const {}
+  void Release() const {}
   virtual void VirtualSet() { value = kParentValue; }
   void NonVirtualSet() { value = kParentValue; }
   int value;
@@ -75,7 +75,7 @@ void VoidPolymorphic1(T t) {
 void WontCompile() {
   HasRef has_ref;
   const HasRef* const_has_ref_ptr_ = &has_ref;
-  Callback<void(void)> method_to_const_cb =
+  Callback<void()> method_to_const_cb =
       Bind(&HasRef::VoidMethod0, const_has_ref_ptr_);
   method_to_const_cb.Run();
 }
@@ -87,7 +87,7 @@ void WontCompile() {
 // We require refcounts unless you have Unretained().
 void WontCompile() {
   NoRef no_ref;
-  Callback<void(void)> no_ref_cb =
+  Callback<void()> no_ref_cb =
       Bind(&NoRef::VoidMethod0, &no_ref);
   no_ref_cb.Run();
 }
@@ -99,7 +99,7 @@ void WontCompile() {
 // We require refcounts unless you have Unretained().
 void WontCompile() {
   NoRef no_ref;
-  Callback<void(void)> no_ref_const_cb =
+  Callback<void()> no_ref_const_cb =
       Bind(&NoRef::VoidConstMethod0, &no_ref);
   no_ref_const_cb.Run();
 }
@@ -111,7 +111,7 @@ void WontCompile() {
 // This is just a const-correctness check.
 void WontCompile() {
   const NoRef* const_no_ref_ptr;
-  Callback<NoRef*(void)> pointer_same_cb =
+  Callback<NoRef*()> pointer_same_cb =
       Bind(&PolymorphicIdentity<NoRef*>, const_no_ref_ptr);
   pointer_same_cb.Run();
 }
@@ -123,7 +123,7 @@ void WontCompile() {
 // This is just a const-correctness check.
 void WontCompile() {
   const NoRefChild* const_child_ptr;
-  Callback<NoRefParent*(void)> pointer_super_cb =
+  Callback<NoRefParent*()> pointer_super_cb =
     Bind(&PolymorphicIdentity<NoRefParent*>, const_child_ptr);
   pointer_super_cb.Run();
 }
@@ -152,7 +152,7 @@ void WontCompile() {
 // See comment in NCTEST_DISALLOW_NON_CONST_REF_PARAM
 void WontCompile() {
   Parent p;
-  Callback<int(void)> ref_cb = Bind(&UnwrapParentRef, p);
+  Callback<int()> ref_cb = Bind(&UnwrapParentRef, p);
   ref_cb.Run();
 }
 
@@ -165,7 +165,7 @@ void WontCompile() {
 // implicitly convert an array type to a pointer type.
 void WontCompile() {
   HasRef p[10];
-  Callback<void(void)> method_bound_to_array_cb =
+  Callback<void()> method_bound_to_array_cb =
       Bind(&HasRef::VoidMethod0, p);
   method_bound_to_array_cb.Run();
 }
@@ -176,9 +176,9 @@ void WontCompile() {
 void WontCompile() {
   HasRef for_raw_ptr;
   int a;
-  Callback<void(void)> ref_count_as_raw_ptr_a =
+  Callback<void()> ref_count_as_raw_ptr_a =
       Bind(&VoidPolymorphic1<int*>, &a);
-  Callback<void(void)> ref_count_as_raw_ptr =
+  Callback<void()> ref_count_as_raw_ptr =
       Bind(&VoidPolymorphic1<HasRef*>, &for_raw_ptr);
 }
 
@@ -188,7 +188,7 @@ void WontCompile() {
 void WontCompile() {
   NoRef no_ref;
   WeakPtrFactory<NoRef> weak_factory(&no_ref);
-  Callback<int(void)> weak_ptr_with_non_void_return_type =
+  Callback<int()> weak_ptr_with_non_void_return_type =
       Bind(&NoRef::IntMethod0, weak_factory.GetWeakPtr());
   weak_ptr_with_non_void_return_type.Run();
 }
