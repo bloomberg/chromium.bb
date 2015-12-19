@@ -2456,6 +2456,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)handleWindowHistoryDidPushStateMessage:(base::DictionaryValue*)message
                                        context:(NSDictionary*)context {
+  // If there is a pending entry, a new navigation has been registered but
+  // hasn't begun loading.  Since the pushState message is coming from the
+  // previous page, ignore it and allow the previously registered navigation to
+  // continue.  This can ocur if a pushState is issued from an anchor tag
+  // onClick event, as the click would have already been registered.
+  if ([self sessionController].pendingEntry)
+    return NO;
+
   std::string pageURL;
   std::string baseURL;
   if (!message->GetString("pageUrl", &pageURL) ||
