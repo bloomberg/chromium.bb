@@ -737,16 +737,14 @@ void InspectorResourceAgent::didFinishEventSourceRequest(ThreadableLoaderClient*
 
 void InspectorResourceAgent::willDestroyResource(Resource* cachedResource)
 {
-    Vector<String> requestIds = m_resourcesData->removeResource(cachedResource);
-    if (!requestIds.size())
-        return;
-
     String content;
     bool base64Encoded;
-    if (!InspectorPageAgent::cachedResourceContent(cachedResource, &content, &base64Encoded))
-        return;
-    for (auto& request : requestIds)
-        m_resourcesData->setResourceContent(request, content, base64Encoded);
+    bool hasContent = InspectorPageAgent::cachedResourceContent(cachedResource, &content, &base64Encoded);
+    Vector<String> requestIds = m_resourcesData->removeResource(cachedResource);
+    if (hasContent) {
+        for (auto& request : requestIds)
+            m_resourcesData->setResourceContent(request, content, base64Encoded);
+    }
 }
 
 void InspectorResourceAgent::applyUserAgentOverride(String* userAgent)
