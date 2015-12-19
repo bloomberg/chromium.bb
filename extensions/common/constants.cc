@@ -81,4 +81,7 @@ const char* const kHangoutsExtensionIds[6] = {
     // Keep in sync with _api_features.json and _manifest_features.json.
 };
 
+const char* const kIMEExtensionIds[2] = {"gjaehgfemfahhmlgpdfknkhdnemmolop",
+                                         "jkghodnilhceideoidjikpgommlajknk"};
+
 }  // namespace extension_misc

@@ -66,9 +66,9 @@ const char kImeOptionIsNotSupported[] =
 const char kImeWindowUnsupportedPlatform[] =
     "The \"ime\" option can only be used on ChromeOS.";
 #else
-const char kImeOptionMustBeTrueAndNeedsFrameNone[] =
-    "IME extensions must create window with \"ime: true\" and "
-    "\"frame: 'none'\".";
+const char kImeWindowMustBeImeWindowOrPanel[] =
+    "IME extensions must create ime window ( with \"ime: true\" and "
+    "\"frame: 'none'\") or panel window (with \"type: panel\").";
 #endif
 }  // namespace app_window_constants
 
@@ -235,13 +235,17 @@ bool AppWindowCreateFunction::RunAsync() {
       error_ = app_window_constants::kImeWindowUnsupportedPlatform;
       return false;
 #else
-      // IME extensions must create window with "ime: true" and "frame: none".
-      if (!options->ime.get() || !*options->ime.get() ||
-          create_params.frame != AppWindow::FRAME_NONE) {
-        error_ = app_window_constants::kImeOptionMustBeTrueAndNeedsFrameNone;
+      // IME extensions must create ime window (with "ime: true" and
+      // "frame: none") or panel window (with "type: panel").
+      if (options->ime.get() && *options->ime.get() &&
+          create_params.frame == AppWindow::FRAME_NONE) {
+        create_params.is_ime_window = true;
+      } else if (options->type == app_window::WINDOW_TYPE_PANEL) {
+        create_params.window_type = AppWindow::WINDOW_TYPE_PANEL;
+      } else {
+        error_ = app_window_constants::kImeWindowMustBeImeWindowOrPanel;
         return false;
       }
-      create_params.is_ime_window = true;
 #endif  // OS_CHROMEOS
     } else {
       if (options->ime.get()) {

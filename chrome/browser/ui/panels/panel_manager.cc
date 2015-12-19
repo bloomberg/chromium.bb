@@ -130,6 +130,14 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
       return true;
   }
 
+#if defined(OS_CHROMEOS)
+  // Without --enable-panels, only support IME extensions on Chrome OS.
+  for (const char* id : extension_misc::kIMEExtensionIds) {
+    if (extension_id == id)
+      return true;
+  }
+#endif
+
   return false;
 }
 

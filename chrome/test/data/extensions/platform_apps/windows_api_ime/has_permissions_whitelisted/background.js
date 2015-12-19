@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var error = "IME extensions must create window with \"ime: true\" and " +
-"\"frame: 'none'\".";
+var error = "IME extensions must create ime window ( with \"ime: true\" and " +
+  "\"frame: 'none'\") or panel window (with \"type: panel\").";
 
 function testImeEnabled(createOptions) {
   if (createOptions.frame == 'none' && createOptions.ime) {
+    chrome.app.window.create('index.html',
+                             createOptions,
+                             chrome.test.callbackPass(function(win) {}));
+  } else if (createOptions.type == 'type'){
     chrome.app.window.create('index.html',
                              createOptions,
                              chrome.test.callbackPass(function(win) {}));

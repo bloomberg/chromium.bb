@@ -211,6 +211,9 @@ extern const char kProdHangoutsExtensionId[];
 // Extension ids used by Hangouts.
 extern const char* const kHangoutsExtensionIds[6];
 
+// Extension ids used by IME.
+extern const char* const kIMEExtensionIds[2];
+
 }  // namespace extension_misc
 
 #endif  // EXTENSIONS_COMMON_CONSTANTS_H_
