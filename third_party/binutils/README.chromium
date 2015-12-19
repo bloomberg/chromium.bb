@@ -26,6 +26,12 @@ Local patches:
    https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=3c537f7fdb11f02f7082749f3f21dfdd2c2025e8
    (Landed upstream Thu, 5 Feb 2015 - should be in 2.26)
 
+ * long-plt.patch for http://crbug.com/554017 from upstream change
+   https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=ce3e49806d505721e0875e704de0b6fcba7660ed
+   (Landed upstream Thu, 17 Dec 2015 - should be in 2.27)
+   The local patch has been backported to 2.25. The patch in the upstream
+   repository currently applies cleanly to the 2.26 branch.
+
  * (build-all.sh|build-one.sh|upload.sh) scripts for building the binutils
    binaries and uploading them to Google storage.
 

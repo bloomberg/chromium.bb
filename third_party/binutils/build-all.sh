@@ -36,25 +36,29 @@ if ! gpg --verify binutils-$VERSION.tar.bz2.sig; then
 fi
 
 
-if [ ! -d binutils-$VERSION ]; then
-  # Extract the source
-  tar jxf binutils-$VERSION.tar.bz2
+# Extract the source
+rm -rf binutils-$VERSION
+tar jxf binutils-$VERSION.tar.bz2
 
-  # Patch the source
-  (
-    cd binutils-$VERSION
-    echo "unlock-thin.patch"
-    echo "=================================="
-    patch -p1 < ../unlock-thin.patch
-    echo "----------------------------------"
-    echo
-    echo "plugin-dso-fix.patch"
-    echo "=================================="
-    patch -p1 < ../plugin-dso-fix.patch
-    echo "----------------------------------"
-    echo
-  )
-fi
+# Patch the source
+(
+  cd binutils-$VERSION
+  echo "unlock-thin.patch"
+  echo "=================================="
+  patch -p1 < ../unlock-thin.patch
+  echo "----------------------------------"
+  echo
+  echo "plugin-dso-fix.patch"
+  echo "=================================="
+  patch -p1 < ../plugin-dso-fix.patch
+  echo "----------------------------------"
+  echo
+  echo "long-plt.patch"
+  echo "=================================="
+  patch -p1 < ../long-plt.patch
+  echo "----------------------------------"
+  echo
+)
 
 for ARCH in i386 amd64; do
   if [ ! -d precise-chroot-$ARCH ]; then
