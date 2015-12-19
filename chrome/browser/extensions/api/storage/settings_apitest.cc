@@ -503,15 +503,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
                std::move(
                    extensions::ListBuilder().Append("one").Append("two").Append(
                        "three")))
-          .Set("dict-policy",
-               extensions::DictionaryBuilder().Set(
-                   "list",
-                   std::move(extensions::ListBuilder()
-                                 .Append(extensions::DictionaryBuilder()
-                                             .Set("one", 1)
-                                             .Set("two", 2))
-                                 .Append(extensions::DictionaryBuilder().Set(
-                                     "three", 3)))))
+          .Set(
+              "dict-policy",
+              std::move(extensions::DictionaryBuilder().Set(
+                  "list",
+                  std::move(
+                      extensions::ListBuilder()
+                          .Append(std::move(
+                              extensions::DictionaryBuilder().Set("one", 1).Set(
+                                  "two", 2)))
+                          .Append(std::move(extensions::DictionaryBuilder().Set(
+                              "three", 3)))))))
           .Build();
   SetPolicies(*policy);
   // Now run the extension.

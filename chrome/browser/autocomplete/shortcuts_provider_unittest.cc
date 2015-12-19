@@ -848,9 +848,9 @@ TEST_F(ShortcutsProviderTest, Extension) {
   // Claim the extension has been unloaded.
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder()
-          .SetManifest(extensions::DictionaryBuilder()
-              .Set("name", "Echo")
-              .Set("version", "1.0"))
+          .SetManifest(std::move(extensions::DictionaryBuilder()
+                                     .Set("name", "Echo")
+                                     .Set("version", "1.0")))
           .SetID("cedabbhfglmiikkmdgcpjdkocfcmbkee")
           .Build();
   extensions::UnloadedExtensionInfo details(

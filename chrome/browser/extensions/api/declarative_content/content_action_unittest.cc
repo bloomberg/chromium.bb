@@ -165,9 +165,10 @@ TEST(DeclarativeContentActionTest, SetIcon) {
   base::Base64Encode(binary_data, &data64);
 
   scoped_ptr<base::DictionaryValue> dict =
-      DictionaryBuilder().Set("instanceType", "declarativeContent.SetIcon")
-                         .Set("imageData",
-                              DictionaryBuilder().Set("19", data64)).Build();
+      DictionaryBuilder()
+          .Set("instanceType", "declarativeContent.SetIcon")
+          .Set("imageData", std::move(DictionaryBuilder().Set("19", data64)))
+          .Build();
 
   const Extension* extension = env.MakeExtension(
       *ParseJson("{\"page_action\": { \"default_title\": \"Extension\" } }"));

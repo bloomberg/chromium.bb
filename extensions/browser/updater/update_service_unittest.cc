@@ -178,10 +178,10 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
   ASSERT_TRUE(AddFileToDirectory(temp_dir.path(), bar_html, "world"));
 
   ExtensionBuilder builder;
-  builder.SetManifest(DictionaryBuilder()
-                          .Set("name", "Foo")
-                          .Set("version", "1.0")
-                          .Set("manifest_version", 2));
+  builder.SetManifest(std::move(DictionaryBuilder()
+                                    .Set("name", "Foo")
+                                    .Set("version", "1.0")
+                                    .Set("manifest_version", 2)));
   builder.SetID(crx_file::id_util::GenerateId("whatever"));
   builder.SetPath(temp_dir.path());
 

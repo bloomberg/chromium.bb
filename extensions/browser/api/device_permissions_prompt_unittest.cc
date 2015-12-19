@@ -19,10 +19,10 @@ class DevicePermissionsPromptTest : public testing::Test {};
 TEST_F(DevicePermissionsPromptTest, HidPromptMessages) {
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                           .Set("name", "Test Application")
-                           .Set("manifest_version", 2)
-                           .Set("version", "1.0"))
+          .SetManifest(std::move(DictionaryBuilder()
+                                     .Set("name", "Test Application")
+                                     .Set("manifest_version", 2)
+                                     .Set("version", "1.0")))
           .Build();
 
   scoped_refptr<DevicePermissionsPrompt::Prompt> prompt =
@@ -47,10 +47,10 @@ TEST_F(DevicePermissionsPromptTest, HidPromptMessages) {
 TEST_F(DevicePermissionsPromptTest, UsbPromptMessages) {
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                           .Set("name", "Test Application")
-                           .Set("manifest_version", 2)
-                           .Set("version", "1.0"))
+          .SetManifest(std::move(DictionaryBuilder()
+                                     .Set("name", "Test Application")
+                                     .Set("manifest_version", 2)
+                                     .Set("version", "1.0")))
           .Build();
 
   scoped_refptr<DevicePermissionsPrompt::Prompt> prompt =

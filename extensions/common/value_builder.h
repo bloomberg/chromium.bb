@@ -52,10 +52,9 @@ class DictionaryBuilder {
   explicit DictionaryBuilder(const base::DictionaryValue& init);
   ~DictionaryBuilder();
 
-  // Workaround to allow you to pass rvalue ExtensionBuilders by reference to
-  // other functions.
-  // TODO(limasdf): Remove. Write move constructor instead.
-  DictionaryBuilder& Pass() { return *this; }
+  // Move constructor and operator=.
+  DictionaryBuilder(DictionaryBuilder&& other);
+  DictionaryBuilder& operator=(DictionaryBuilder&& other);
 
   // Can only be called once, after which it's invalid to use the builder.
   scoped_ptr<base::DictionaryValue> Build() { return std::move(dict_); }
@@ -69,7 +68,7 @@ class DictionaryBuilder {
   DictionaryBuilder& Set(const std::string& path, const std::string& in_value);
   DictionaryBuilder& Set(const std::string& path,
                          const base::string16& in_value);
-  DictionaryBuilder& Set(const std::string& path, DictionaryBuilder& in_value);
+  DictionaryBuilder& Set(const std::string& path, DictionaryBuilder in_value);
   DictionaryBuilder& Set(const std::string& path, ListBuilder in_value);
   DictionaryBuilder& Set(const std::string& path,
                          scoped_ptr<base::Value> in_value);
@@ -99,7 +98,7 @@ class ListBuilder {
   ListBuilder& Append(double in_value);
   ListBuilder& Append(const std::string& in_value);
   ListBuilder& Append(const base::string16& in_value);
-  ListBuilder& Append(DictionaryBuilder& in_value);
+  ListBuilder& Append(DictionaryBuilder in_value);
   ListBuilder& Append(ListBuilder in_value);
 
   // Named differently because overload resolution is too eager to

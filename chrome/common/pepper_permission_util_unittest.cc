@@ -31,8 +31,8 @@ scoped_refptr<Extension> CreateExtensionImportingModule(
           .Set("name", "Has Dependent Modules")
           .Set("version", "1.0")
           .Set("manifest_version", 2)
-          .Set("import", std::move(ListBuilder().Append(
-                             DictionaryBuilder().Set("id", import_id))))
+          .Set("import", std::move(ListBuilder().Append(std::move(
+                             DictionaryBuilder().Set("id", import_id)))))
           .Build();
 
   return ExtensionBuilder()
@@ -92,12 +92,13 @@ TEST(PepperPermissionUtilTest, SharedModuleWhitelisting) {
           .Set("version", "1.0")
           .Set("manifest_version", 2)
           .Set("export",
-               DictionaryBuilder()
-                   .Set("resources", std::move(ListBuilder().Append("*")))
-                   // Add the extension to the whitelist.  This
-                   // restricts import to |whitelisted_id| only.
-                   .Set("whitelist",
-                        std::move(ListBuilder().Append(whitelisted_id))))
+               std::move(
+                   DictionaryBuilder()
+                       .Set("resources", std::move(ListBuilder().Append("*")))
+                       // Add the extension to the whitelist.  This
+                       // restricts import to |whitelisted_id| only.
+                       .Set("whitelist",
+                            std::move(ListBuilder().Append(whitelisted_id)))))
           .Build();
   scoped_refptr<Extension> shared_module =
       ExtensionBuilder().SetManifest(shared_module_manifest.Pass()).Build();

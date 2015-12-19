@@ -25,13 +25,14 @@ TEST_F(BrowserActionManifestTest,
        BrowserActionManifestIcons_NoDefaultIcons) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-      .SetManifest(DictionaryBuilder()
-                   .Set("name", "No default properties")
-                   .Set("version", "1.0.0")
-                   .Set("manifest_version", 2)
-                   .Set("browser_action", DictionaryBuilder()
-                       .Set("default_title", "Title")))
-      .Build();
+          .SetManifest(std::move(
+              DictionaryBuilder()
+                  .Set("name", "No default properties")
+                  .Set("version", "1.0.0")
+                  .Set("manifest_version", 2)
+                  .Set("browser_action", std::move(DictionaryBuilder().Set(
+                                             "default_title", "Title")))))
+          .Build();
 
   ASSERT_TRUE(extension.get());
   const ActionInfo* browser_action_info =
@@ -44,13 +45,14 @@ TEST_F(BrowserActionManifestTest,
        BrowserActionManifestIcons_StringDefaultIcon) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-      .SetManifest(DictionaryBuilder()
-                   .Set("name", "String default icon")
-                   .Set("version", "1.0.0")
-                   .Set("manifest_version", 2)
-                   .Set("browser_action", DictionaryBuilder()
-                       .Set("default_icon", "icon.png")))
-      .Build();
+          .SetManifest(std::move(
+              DictionaryBuilder()
+                  .Set("name", "String default icon")
+                  .Set("version", "1.0.0")
+                  .Set("manifest_version", 2)
+                  .Set("browser_action", std::move(DictionaryBuilder().Set(
+                                             "default_icon", "icon.png")))))
+          .Build();
 
   ASSERT_TRUE(extension.get());
   const ActionInfo* browser_action_info =
@@ -70,17 +72,18 @@ TEST_F(BrowserActionManifestTest,
   // Arbitrary sizes should be allowed (useful for various scale factors).
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(
+          .SetManifest(std::move(
               DictionaryBuilder()
                   .Set("name", "Dictionary default icon")
                   .Set("version", "1.0.0")
                   .Set("manifest_version", 2)
                   .Set("browser_action",
-                       DictionaryBuilder().Set("default_icon",
-                                               DictionaryBuilder()
-                                                   .Set("19", "icon19.png")
-                                                   .Set("24", "icon24.png")
-                                                   .Set("38", "icon38.png"))))
+                       std::move(DictionaryBuilder().Set(
+                           "default_icon",
+                           std::move(DictionaryBuilder()
+                                         .Set("19", "icon19.png")
+                                         .Set("24", "icon24.png")
+                                         .Set("38", "icon38.png")))))))
           // Don't check for existence of icons during parsing.
           .SetLocation(Manifest::UNPACKED)
           .Build();
@@ -102,14 +105,19 @@ TEST_F(BrowserActionManifestTest,
 
 TEST_F(BrowserActionManifestTest,
        BrowserActionManifestIcons_InvalidDefaultIcon) {
-  scoped_ptr<base::DictionaryValue> manifest_value = DictionaryBuilder()
-      .Set("name", "Invalid default icon").Set("version", "1.0.0")
-      .Set("manifest_version", 2)
-      .Set("browser_action",
-           DictionaryBuilder().Set(
-               "default_icon",
-               DictionaryBuilder().Set("19", std::string())  // Invalid value.
-                   .Set("24", "icon24.png").Set("38", "icon38.png"))).Build();
+  scoped_ptr<base::DictionaryValue> manifest_value =
+      DictionaryBuilder()
+          .Set("name", "Invalid default icon")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("browser_action",
+               std::move(DictionaryBuilder().Set(
+                   "default_icon",
+                   std::move(DictionaryBuilder()
+                                 .Set("19", std::string())  // Invalid value.
+                                 .Set("24", "icon24.png")
+                                 .Set("38", "icon38.png")))))
+          .Build();
 
   base::string16 error = ErrorUtils::FormatErrorMessageUTF16(
       errors::kInvalidIconPath, "19");

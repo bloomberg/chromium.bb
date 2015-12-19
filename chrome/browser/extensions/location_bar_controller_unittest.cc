@@ -74,13 +74,14 @@ class LocationBarControllerUnitTest : public ChromeRenderViewHostTestHarness {
         .Set("manifest_version", 2)
         .Set("permissions", std::move(ListBuilder().Append("tabs")));
     if (has_page_actions) {
-      manifest.Set("page_action", DictionaryBuilder()
-              .Set("default_title", "Hello"));
+      manifest.Set("page_action", std::move(DictionaryBuilder().Set(
+                                      "default_title", "Hello")));
     }
     scoped_refptr<const Extension> extension =
-        ExtensionBuilder().SetManifest(manifest.Pass())
-                          .SetID(crx_file::id_util::GenerateId(name))
-                          .Build();
+        ExtensionBuilder()
+            .SetManifest(std::move(manifest))
+            .SetID(crx_file::id_util::GenerateId(name))
+            .Build();
     extension_service_->AddExtension(extension.get());
     return extension.get();
   }

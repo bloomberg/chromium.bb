@@ -50,11 +50,11 @@ scoped_refptr<const Extension> CreateTestExtension(
   if (has_tab_capture_permission)
     permissions.Append("tabCapture");
   return ExtensionBuilder()
-      .SetManifest(DictionaryBuilder()
-                       .Set("name", "Extension with ID " + id)
-                       .Set("version", "1.0")
-                       .Set("manifest_version", 2)
-                       .Set("permissions", std::move(permissions)))
+      .SetManifest(std::move(DictionaryBuilder()
+                                 .Set("name", "Extension with ID " + id)
+                                 .Set("version", "1.0")
+                                 .Set("manifest_version", 2)
+                                 .Set("permissions", std::move(permissions))))
       .SetID(id)
       .Build();
 }

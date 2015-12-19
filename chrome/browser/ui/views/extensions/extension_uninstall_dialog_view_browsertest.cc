@@ -16,9 +16,9 @@ namespace {
 
 scoped_refptr<extensions::Extension> BuildTestExtension() {
   return extensions::ExtensionBuilder()
-      .SetManifest(extensions::DictionaryBuilder()
-                       .Set("name", "foo")
-                       .Set("version", "1.0"))
+      .SetManifest(std::move(extensions::DictionaryBuilder()
+                                 .Set("name", "foo")
+                                 .Set("version", "1.0")))
       .Build();
 }
 

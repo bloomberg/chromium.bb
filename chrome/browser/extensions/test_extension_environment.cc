@@ -58,11 +58,11 @@ scoped_ptr<base::DictionaryValue> MakePackagedAppManifest() {
       .Set("name", "Test App Name")
       .Set("version", "2.0")
       .Set("manifest_version", 2)
-      .Set("app", extensions::DictionaryBuilder().Set(
+      .Set("app", std::move(extensions::DictionaryBuilder().Set(
                       "background",
-                      extensions::DictionaryBuilder().Set(
+                      std::move(extensions::DictionaryBuilder().Set(
                           "scripts", std::move(extensions::ListBuilder().Append(
-                                         "background.js")))))
+                                         "background.js")))))))
       .Build();
 }
 

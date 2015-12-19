@@ -41,14 +41,14 @@ scoped_refptr<const Extension> CreateExtensionWithOptionalPermissions(
     const std::string& name) {
   return ExtensionBuilder()
       .SetLocation(Manifest::INTERNAL)
-      .SetManifest(
+      .SetManifest(std::move(
           DictionaryBuilder()
               .Set("name", name)
               .Set("description", "foo")
               .Set("manifest_version", 2)
               .Set("version", "0.1.2.3")
               .Set("permissions", permissions.Pass())
-              .Set("optional_permissions", optional_permissions.Pass()))
+              .Set("optional_permissions", std::move(optional_permissions))))
       .SetID(crx_file::id_util::GenerateId(name))
       .Build();
 }

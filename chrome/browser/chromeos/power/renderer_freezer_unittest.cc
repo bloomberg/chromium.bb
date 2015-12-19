@@ -311,20 +311,20 @@ TEST_F(RendererFreezerTestWithExtensions, DoesNotFreezeGcmExtensionRenderers) {
   // First build the GCM extension.
   scoped_refptr<extensions::Extension> gcm_app =
       extensions::ExtensionBuilder()
-          .SetManifest(
+          .SetManifest(std::move(
               extensions::DictionaryBuilder()
                   .Set("name", "GCM App")
                   .Set("version", "1.0.0")
                   .Set("manifest_version", 2)
                   .Set("app",
-                       extensions::DictionaryBuilder().Set(
+                       std::move(extensions::DictionaryBuilder().Set(
                            "background",
-                           extensions::DictionaryBuilder().Set(
+                           std::move(extensions::DictionaryBuilder().Set(
                                "scripts",
                                std::move(extensions::ListBuilder().Append(
-                                   "background.js")))))
+                                   "background.js")))))))
                   .Set("permissions",
-                       std::move(extensions::ListBuilder().Append("gcm"))))
+                       std::move(extensions::ListBuilder().Append("gcm")))))
           .Build();
 
   // Now install it and give it a renderer.
@@ -344,18 +344,18 @@ TEST_F(RendererFreezerTestWithExtensions, FreezesNonGcmExtensionRenderers) {
   // First build the extension.
   scoped_refptr<extensions::Extension> background_app =
       extensions::ExtensionBuilder()
-          .SetManifest(
+          .SetManifest(std::move(
               extensions::DictionaryBuilder()
                   .Set("name", "Background App")
                   .Set("version", "1.0.0")
                   .Set("manifest_version", 2)
                   .Set("app",
-                       extensions::DictionaryBuilder().Set(
+                       std::move(extensions::DictionaryBuilder().Set(
                            "background",
-                           extensions::DictionaryBuilder().Set(
+                           std::move(extensions::DictionaryBuilder().Set(
                                "scripts",
                                std::move(extensions::ListBuilder().Append(
-                                   "background.js"))))))
+                                   "background.js")))))))))
           .Build();
 
   // Now install it and give it a renderer.

@@ -62,10 +62,10 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
   manifest.Set(manifest_keys::kName, "ext1")
       .Set(manifest_keys::kVersion, "0.1")
       .Set(std::string(manifest_keys::kChromeURLOverrides),
-           DictionaryBuilder().Set("bookmarks", "1.html"));
+           std::move(DictionaryBuilder().Set("bookmarks", "1.html")));
   scoped_refptr<Extension> ext_unpacked(
       ExtensionBuilder()
-          .SetManifest(manifest)
+          .SetManifest(std::move(manifest))
           .SetLocation(Manifest::UNPACKED)
           .SetID("abcdefghijabcdefghijabcdefghijaa")
           .Build());
@@ -82,10 +82,10 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
   manifest2.Set(manifest_keys::kName, "ext2")
       .Set(manifest_keys::kVersion, "0.1")
       .Set(std::string(manifest_keys::kChromeURLOverrides),
-           DictionaryBuilder().Set("bookmarks", "2.html"));
+           std::move(DictionaryBuilder().Set("bookmarks", "2.html")));
   scoped_refptr<Extension> ext_component(
       ExtensionBuilder()
-          .SetManifest(manifest2)
+          .SetManifest(std::move(manifest2))
           .SetLocation(Manifest::COMPONENT)
           .SetID("bbabcdefghijabcdefghijabcdefghij")
           .Build());

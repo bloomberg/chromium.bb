@@ -475,10 +475,10 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, NotInstalled) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetID("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-          .SetManifest(DictionaryBuilder()
-                           .Set("name", "Fake extension")
-                           .Set("version", "1")
-                           .Set("manifest_version", 2))
+          .SetManifest(std::move(DictionaryBuilder()
+                                     .Set("name", "Fake extension")
+                                     .Set("version", "1")
+                                     .Set("manifest_version", 2)))
           .Build();
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
@@ -1191,10 +1191,10 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
       ExtensionBuilder()
           // A bit scary that this works...
           .SetID("invalid")
-          .SetManifest(DictionaryBuilder()
-                           .Set("name", "Fake extension")
-                           .Set("version", "1")
-                           .Set("manifest_version", 2))
+          .SetManifest(std::move(DictionaryBuilder()
+                                     .Set("name", "Fake extension")
+                                     .Set("version", "1")
+                                     .Set("manifest_version", 2)))
           .Build();
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());

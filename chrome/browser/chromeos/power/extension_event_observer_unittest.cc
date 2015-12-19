@@ -88,21 +88,21 @@ class ExtensionEventObserverTest : public ::testing::Test {
                                                  bool uses_gcm) {
     scoped_refptr<extensions::Extension> app =
         extensions::ExtensionBuilder()
-            .SetManifest(
+            .SetManifest(std::move(
                 extensions::DictionaryBuilder()
                     .Set("name", name)
                     .Set("version", "1.0.0")
                     .Set("manifest_version", 2)
                     .Set("app",
-                         extensions::DictionaryBuilder().Set(
+                         std::move(extensions::DictionaryBuilder().Set(
                              "background",
-                             extensions::DictionaryBuilder().Set(
+                             std::move(extensions::DictionaryBuilder().Set(
                                  "scripts",
                                  std::move(extensions::ListBuilder().Append(
-                                     "background.js")))))
+                                     "background.js")))))))
                     .Set("permissions",
                          std::move(extensions::ListBuilder().Append(
-                             uses_gcm ? "gcm" : ""))))
+                             uses_gcm ? "gcm" : "")))))
             .Build();
 
     created_apps_.push_back(app);

@@ -309,11 +309,11 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, ExtensionLoadAndSendPolicy) {
   manifest.Set("name", "test")
       .Set("version", "1")
       .Set("manifest_version", 2)
-      .Set("storage", storage);
+      .Set("storage", std::move(storage));
 
   extensions::ExtensionBuilder builder;
   builder.SetPath(temp_dir_.path());
-  builder.SetManifest(manifest);
+  builder.SetManifest(std::move(manifest));
 
   // Install extension.
   ExtensionService* service = extensions::ExtensionSystem::Get(

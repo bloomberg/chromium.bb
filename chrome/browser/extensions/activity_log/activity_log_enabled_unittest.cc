@@ -149,10 +149,10 @@ TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
 
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                       .Set("name", "Watchdog Extension ")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2))
+          .SetManifest(std::move(DictionaryBuilder()
+                                     .Set("name", "Watchdog Extension ")
+                                     .Set("version", "1.0.0")
+                                     .Set("manifest_version", 2)))
           .SetID(kExtensionID)
           .Build();
   extension_service1->AddExtension(extension.get());
@@ -206,10 +206,10 @@ TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
 
   scoped_refptr<Extension> extension2 =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                       .Set("name", "Watchdog Extension ")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2))
+          .SetManifest(std::move(DictionaryBuilder()
+                                     .Set("name", "Watchdog Extension ")
+                                     .Set("version", "1.0.0")
+                                     .Set("manifest_version", 2)))
           .SetID("fpofdchlamddhnajleknffcbmnjfahpg")
           .Build();
   extension_service1->AddExtension(extension.get());
@@ -255,10 +255,10 @@ TEST_F(ActivityLogEnabledTest, AppAndCommandLine) {
   // Enable the extension.
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                       .Set("name", "Watchdog Extension ")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2))
+          .SetManifest(std::move(DictionaryBuilder()
+                                     .Set("name", "Watchdog Extension ")
+                                     .Set("version", "1.0.0")
+                                     .Set("manifest_version", 2)))
           .SetID(kExtensionID)
           .Build();
   extension_service->AddExtension(extension.get());

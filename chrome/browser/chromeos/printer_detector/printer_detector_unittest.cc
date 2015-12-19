@@ -130,22 +130,22 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
   // Creates a test extension with the provided permissions.
   scoped_refptr<extensions::Extension> CreateTestExtension(
       ListBuilder permissions_builder,
-      DictionaryBuilder& usb_printers_builder) {
+      DictionaryBuilder usb_printers_builder) {
     return extensions::ExtensionBuilder()
         .SetID("fake_extension_id")
-        .SetManifest(
+        .SetManifest(std::move(
             DictionaryBuilder()
                 .Set("name", "Printer provider extension")
                 .Set("manifest_version", 2)
                 .Set("version", "1.0")
                 // Needed to enable usb API.
-                .Set("app", DictionaryBuilder().Set(
+                .Set("app", std::move(DictionaryBuilder().Set(
                                 "background",
-                                DictionaryBuilder().Set(
-                                    "scripts",
-                                    std::move(ListBuilder().Append("bg.js")))))
+                                std::move(DictionaryBuilder().Set(
+                                    "scripts", std::move(ListBuilder().Append(
+                                                   "bg.js")))))))
                 .Set("permissions", std::move(permissions_builder))
-                .Set("usb_printers", usb_printers_builder))
+                .Set("usb_printers", std::move(usb_printers_builder))))
         .Build();
   }
 
@@ -177,12 +177,12 @@ TEST_F(PrinterDetectorAppSearchEnabledTest, ShowAppFoundNotification) {
       std::move(ListBuilder()
                     .Append("usb")
                     .Append("printerProvider")
-                    .Append(DictionaryBuilder().Set(
-                        "usbDevices", std::move(ListBuilder().Append(
+                    .Append(std::move(DictionaryBuilder().Set(
+                        "usbDevices", std::move(ListBuilder().Append(std::move(
                                           DictionaryBuilder()
                                               .Set("vendorId", 123)
-                                              .Set("productId", 456)))))),
-      DictionaryBuilder().Set("filters", ListBuilder()).Pass());
+                                              .Set("productId", 456)))))))),
+      std::move(DictionaryBuilder().Set("filters", ListBuilder())));
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile_.get())
                   ->AddEnabled(extension));
 
@@ -200,12 +200,13 @@ TEST_F(PrinterDetectorAppSearchEnabledTest, ShowAppFoundNotification) {
 TEST_F(PrinterDetectorAppSearchEnabledTest,
        UsbHandlerExists_NotPrinterProvider) {
   scoped_refptr<extensions::Extension> extension = CreateTestExtension(
-      std::move(ListBuilder().Append("usb").Append(DictionaryBuilder().Set(
-          "usbDevices",
-          std::move(ListBuilder().Append(DictionaryBuilder()
-                                             .Set("vendorId", 123)
-                                             .Set("productId", 756)))))),
-      DictionaryBuilder().Set("filters", ListBuilder()).Pass());
+      std::move(
+          ListBuilder().Append("usb").Append(std::move(DictionaryBuilder().Set(
+              "usbDevices", std::move(ListBuilder().Append(
+                                std::move(DictionaryBuilder()
+                                              .Set("vendorId", 123)
+                                              .Set("productId", 756)))))))),
+      std::move(DictionaryBuilder().Set("filters", ListBuilder())));
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile_.get())
                   ->AddEnabled(extension));
 
@@ -226,12 +227,12 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
       std::move(ListBuilder()
                     .Append("usb")
                     .Append("printerProvider")
-                    .Append(DictionaryBuilder().Set(
-                        "usbDevices", std::move(ListBuilder().Append(
+                    .Append(std::move(DictionaryBuilder().Set(
+                        "usbDevices", std::move(ListBuilder().Append(std::move(
                                           DictionaryBuilder()
                                               .Set("vendorId", 123)
-                                              .Set("productId", 001)))))),
-      DictionaryBuilder().Set("filters", ListBuilder()).Pass());
+                                              .Set("productId", 001)))))))),
+      std::move(DictionaryBuilder().Set("filters", ListBuilder())));
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile_.get())
                   ->AddEnabled(extension));
 
@@ -250,10 +251,11 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
        PrinterProvider_UsbPrinters_NotFound) {
   scoped_refptr<extensions::Extension> extension = CreateTestExtension(
       std::move(ListBuilder().Append("usb").Append("printerProvider")),
-      DictionaryBuilder().Set("filters", std::move(ListBuilder().Append(
-                                             DictionaryBuilder()
-                                                 .Set("vendorId", 123)
-                                                 .Set("productId", 001)))));
+      std::move(DictionaryBuilder().Set(
+          "filters", std::move(ListBuilder().Append(
+                         std::move(DictionaryBuilder()
+                                       .Set("vendorId", 123)
+                                       .Set("productId", 001)))))));
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile_.get())
                   ->AddEnabled(extension));
 
@@ -272,10 +274,11 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
        PrinterProvider_UsbPrinters_WithProductId) {
   scoped_refptr<extensions::Extension> extension = CreateTestExtension(
       std::move(ListBuilder().Append("usb").Append("printerProvider")),
-      DictionaryBuilder().Set("filters", std::move(ListBuilder().Append(
-                                             DictionaryBuilder()
-                                                 .Set("vendorId", 123)
-                                                 .Set("productId", 456)))));
+      std::move(DictionaryBuilder().Set(
+          "filters", std::move(ListBuilder().Append(
+                         std::move(DictionaryBuilder()
+                                       .Set("vendorId", 123)
+                                       .Set("productId", 456)))))));
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile_.get())
                   ->AddEnabled(extension));
 
@@ -294,11 +297,12 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
        PrinterProvider_UsbPrinters_WithInterfaceClass) {
   scoped_refptr<extensions::Extension> extension = CreateTestExtension(
       std::move(ListBuilder().Append("usb").Append("printerProvider")),
-      DictionaryBuilder().Set(
-          "filters", std::move(ListBuilder().Append(
-                         DictionaryBuilder()
-                             .Set("vendorId", 123)
-                             .Set("interfaceClass", kPrinterInterfaceClass)))));
+      std::move(DictionaryBuilder().Set(
+          "filters",
+          std::move(ListBuilder().Append(std::move(
+              DictionaryBuilder()
+                  .Set("vendorId", 123)
+                  .Set("interfaceClass", kPrinterInterfaceClass)))))));
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile_.get())
                   ->AddEnabled(extension));
 
@@ -316,11 +320,12 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
 TEST_F(PrinterDetectorAppSearchEnabledTest, IgnoreNonPrinters) {
   scoped_refptr<extensions::Extension> extension = CreateTestExtension(
       std::move(ListBuilder().Append("usb").Append("printerProvider")),
-      DictionaryBuilder().Set(
-          "filters", std::move(ListBuilder().Append(
-                         DictionaryBuilder()
-                             .Set("vendorId", 123)
-                             .Set("interfaceClass", kPrinterInterfaceClass)))));
+      std::move(DictionaryBuilder().Set(
+          "filters",
+          std::move(ListBuilder().Append(std::move(
+              DictionaryBuilder()
+                  .Set("vendorId", 123)
+                  .Set("interfaceClass", kPrinterInterfaceClass)))))));
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile_.get())
                   ->AddEnabled(extension));
 

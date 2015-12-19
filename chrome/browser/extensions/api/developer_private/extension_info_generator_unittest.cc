@@ -86,12 +86,13 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
     const std::string kId = crx_file::id_util::GenerateId(name);
     scoped_refptr<const Extension> extension =
         ExtensionBuilder()
-            .SetManifest(DictionaryBuilder()
-                             .Set("name", name)
-                             .Set("description", "an extension")
-                             .Set("manifest_version", 2)
-                             .Set("version", "1.0.0")
-                             .Set("permissions", std::move(permissions)))
+            .SetManifest(
+                std::move(DictionaryBuilder()
+                              .Set("name", name)
+                              .Set("description", "an extension")
+                              .Set("manifest_version", 2)
+                              .Set("version", "1.0.0")
+                              .Set("permissions", std::move(permissions))))
             .SetLocation(Manifest::INTERNAL)
             .SetID(kId)
             .Build();

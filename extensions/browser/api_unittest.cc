@@ -44,11 +44,12 @@ void ApiUnitTest::SetUp() {
       content::TestBrowserThreadBundle::DEFAULT));
   user_prefs::UserPrefs::Set(browser_context(), &testing_pref_service_);
 
-  extension_ = ExtensionBuilder()
-                   .SetManifest(DictionaryBuilder().Set("name", "Test").Set(
-                       "version", "1.0"))
-                   .SetLocation(Manifest::UNPACKED)
-                   .Build();
+  extension_ =
+      ExtensionBuilder()
+          .SetManifest(std::move(
+              DictionaryBuilder().Set("name", "Test").Set("version", "1.0")))
+          .SetLocation(Manifest::UNPACKED)
+          .Build();
 }
 
 void ApiUnitTest::CreateBackgroundPage() {

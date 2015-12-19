@@ -57,13 +57,13 @@ TEST(ValueStoreChangeTest, NonNullValues) {
 
 TEST(ValueStoreChangeTest, ToJson) {
   // Create a mildly complicated structure that has dots in it.
-  scoped_ptr<base::DictionaryValue> value = DictionaryBuilder()
-      .Set("key", "value")
-      .Set("key.with.dots", "value.with.dots")
-      .Set("tricked", DictionaryBuilder()
-          .Set("you", "nodots"))
-      .Set("tricked.you", "with.dots")
-      .Build();
+  scoped_ptr<base::DictionaryValue> value =
+      DictionaryBuilder()
+          .Set("key", "value")
+          .Set("key.with.dots", "value.with.dots")
+          .Set("tricked", std::move(DictionaryBuilder().Set("you", "nodots")))
+          .Set("tricked.you", "with.dots")
+          .Build();
 
   ValueStoreChangeList change_list;
   change_list.push_back(
@@ -79,14 +79,15 @@ TEST(ValueStoreChangeTest, ToJson) {
   DictionaryBuilder v2(*value);
   DictionaryBuilder v3(*value);
   DictionaryBuilder v4(*value);
-  scoped_ptr<base::DictionaryValue> expected_from_json = DictionaryBuilder()
-      .Set("key", DictionaryBuilder()
-          .Set("oldValue", v1)
-          .Set("newValue", v2))
-      .Set("key.with.dots", DictionaryBuilder()
-          .Set("oldValue", v3)
-          .Set("newValue", v4))
-      .Build();
+  scoped_ptr<base::DictionaryValue> expected_from_json =
+      DictionaryBuilder()
+          .Set("key", std::move(DictionaryBuilder()
+                                    .Set("oldValue", std::move(v1))
+                                    .Set("newValue", std::move(v2))))
+          .Set("key.with.dots", std::move(DictionaryBuilder()
+                                              .Set("oldValue", std::move(v3))
+                                              .Set("newValue", std::move(v4))))
+          .Build();
 
   EXPECT_TRUE(from_json->Equals(expected_from_json.get()));
 }

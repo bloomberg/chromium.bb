@@ -39,7 +39,7 @@ class ExtensionBuilder {
   ExtensionBuilder& SetLocation(Manifest::Location location);
 
   ExtensionBuilder& SetManifest(scoped_ptr<base::DictionaryValue> manifest);
-  ExtensionBuilder& SetManifest(DictionaryBuilder& manifest_builder) {
+  ExtensionBuilder& SetManifest(DictionaryBuilder manifest_builder) {
     return SetManifest(manifest_builder.Build());
   }
 

@@ -27,16 +27,17 @@ class KeepAliveTest : public ExtensionsTest {
     message_loop_.reset(new base::MessageLoop);
     extension_ =
         ExtensionBuilder()
-            .SetManifest(DictionaryBuilder()
-                             .Set("name", "app")
-                             .Set("version", "1")
-                             .Set("manifest_version", 2)
-                             .Set("app", DictionaryBuilder().Set(
-                                             "background",
-                                             DictionaryBuilder().Set(
-                                                 "scripts",
-                                                 std::move(ListBuilder().Append(
-                                                     "background.js"))))))
+            .SetManifest(std::move(
+                DictionaryBuilder()
+                    .Set("name", "app")
+                    .Set("version", "1")
+                    .Set("manifest_version", 2)
+                    .Set("app",
+                         std::move(DictionaryBuilder().Set(
+                             "background",
+                             std::move(DictionaryBuilder().Set(
+                                 "scripts", std::move(ListBuilder().Append(
+                                                "background.js")))))))))
             .SetID("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             .Build();
   }
@@ -108,16 +109,16 @@ TEST_F(KeepAliveTest, UnloadExtension) {
 
   scoped_refptr<const Extension> other_extension =
       ExtensionBuilder()
-          .SetManifest(
+          .SetManifest(std::move(
               DictionaryBuilder()
                   .Set("name", "app")
                   .Set("version", "1")
                   .Set("manifest_version", 2)
-                  .Set("app", DictionaryBuilder().Set(
+                  .Set("app", std::move(DictionaryBuilder().Set(
                                   "background",
-                                  DictionaryBuilder().Set(
+                                  std::move(DictionaryBuilder().Set(
                                       "scripts", std::move(ListBuilder().Append(
-                                                     "background.js"))))))
+                                                     "background.js")))))))))
           .SetID("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
           .Build();
 

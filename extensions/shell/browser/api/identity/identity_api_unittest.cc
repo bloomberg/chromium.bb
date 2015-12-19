@@ -65,19 +65,18 @@ class IdentityApiTest : public ApiUnitTest {
     // Create an extension with OAuth2 scopes.
     set_extension(
         ExtensionBuilder()
-            .SetManifest(
+            .SetManifest(std::move(
                 DictionaryBuilder()
                     .Set("name", "Test")
                     .Set("version", "1.0")
-                    .Set(
-                        "oauth2",
-                        DictionaryBuilder()
-                            .Set("client_id",
-                                 "123456.apps.googleusercontent.com")
-                            .Set(
-                                "scopes",
-                                std::move(ListBuilder().Append(
-                                    "https://www.googleapis.com/auth/drive")))))
+                    .Set("oauth2",
+                         std::move(DictionaryBuilder()
+                                       .Set("client_id",
+                                            "123456.apps.googleusercontent.com")
+                                       .Set("scopes",
+                                            std::move(ListBuilder().Append(
+                                                "https://www.googleapis.com/"
+                                                "auth/drive")))))))
             .SetLocation(Manifest::UNPACKED)
             .Build());
   }

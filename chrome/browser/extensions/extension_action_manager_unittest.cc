@@ -30,8 +30,8 @@ class ExtensionActionManagerTest : public testing::Test {
  protected:
   // Build an extension, populating |action_type| key with |action|, and
   // "icons" key with |extension_icons|.
-  scoped_refptr<Extension> BuildExtension(DictionaryBuilder& extension_icons,
-                                          DictionaryBuilder& action,
+  scoped_refptr<Extension> BuildExtension(DictionaryBuilder extension_icons,
+                                          DictionaryBuilder action,
                                           const char* action_type);
 
   // Returns true if |action|'s title matches |extension|'s name.
@@ -71,19 +71,19 @@ ExtensionActionManagerTest::ExtensionActionManagerTest()
 }
 
 scoped_refptr<Extension> ExtensionActionManagerTest::BuildExtension(
-    DictionaryBuilder& extension_icons,
-    DictionaryBuilder& action,
+    DictionaryBuilder extension_icons,
+    DictionaryBuilder action,
     const char* action_type) {
   std::string id = base::IntToString(curr_id_++);
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
-          .SetManifest(
+          .SetManifest(std::move(
               DictionaryBuilder()
                   .Set("version", "1")
                   .Set("manifest_version", 2)
-                  .Set("icons", extension_icons)
-                  .Set(action_type, action)
-                  .Set("name", std::string("Test Extension").append(id)))
+                  .Set("icons", std::move(extension_icons))
+                  .Set(action_type, std::move(action))
+                  .Set("name", std::string("Test Extension").append(id))))
           .SetLocation(Manifest::UNPACKED)
           .SetID(id)
           .Build();
@@ -119,11 +119,11 @@ void ExtensionActionManagerTest::TestPopulateMissingValues(
   // Test that the largest icon from the extension's "icons" key is chosen as a
   // replacement for missing action default_icons keys. "19" should not be
   // replaced because "38" can always be used in its place.
-  scoped_refptr<Extension> extension = BuildExtension(
-      DictionaryBuilder().Set("48", "icon48.png")
-                         .Set("128", "icon128.png"),
-      DictionaryBuilder().Pass(),
-      action_type);
+  scoped_refptr<Extension> extension =
+      BuildExtension(std::move(DictionaryBuilder()
+                                   .Set("48", "icon48.png")
+                                   .Set("128", "icon128.png")),
+                     DictionaryBuilder(), action_type);
 
   ASSERT_TRUE(extension.get());
   const ExtensionAction* action = GetAction(action_type, *extension.get());
@@ -134,10 +134,9 @@ void ExtensionActionManagerTest::TestPopulateMissingValues(
 
   // Test that the action's missing default_icons are not replaced with smaller
   // icons.
-  extension = BuildExtension(
-      DictionaryBuilder().Set("24", "icon24.png"),
-      DictionaryBuilder().Pass(),
-      action_type);
+  extension =
+      BuildExtension(std::move(DictionaryBuilder().Set("24", "icon24.png")),
+                     DictionaryBuilder(), action_type);
 
   ASSERT_TRUE(extension.get());
   action = GetAction(action_type, *extension.get());
@@ -149,9 +148,10 @@ void ExtensionActionManagerTest::TestPopulateMissingValues(
   // Test that an action's 19px icon is not replaced if a 38px action icon
   // exists.
   extension = BuildExtension(
-      DictionaryBuilder().Set("128", "icon128.png"),
-      DictionaryBuilder().Set("default_icon", DictionaryBuilder()
-                                              .Set("38", "action38.png")),
+      std::move(DictionaryBuilder().Set("128", "icon128.png")),
+      std::move(DictionaryBuilder().Set(
+          "default_icon",
+          std::move(DictionaryBuilder().Set("38", "action38.png")))),
       action_type);
 
   ASSERT_TRUE(extension.get());
@@ -162,11 +162,13 @@ void ExtensionActionManagerTest::TestPopulateMissingValues(
 
   // Test that existing default_icons and default_title are not replaced.
   extension = BuildExtension(
-      DictionaryBuilder().Set("128", "icon128.png"),
-      DictionaryBuilder().Set("default_title", "Action!")
-                         .Set("default_icon", DictionaryBuilder()
-                                              .Set("19", "action19.png")
-                                              .Set("38", "action38.png")),
+      std::move(DictionaryBuilder().Set("128", "icon128.png")),
+      std::move(
+          DictionaryBuilder()
+              .Set("default_title", "Action!")
+              .Set("default_icon", std::move(DictionaryBuilder()
+                                                 .Set("19", "action19.png")
+                                                 .Set("38", "action38.png")))),
       action_type);
 
   ASSERT_TRUE(extension.get());
@@ -191,10 +193,11 @@ TEST_F(ExtensionActionManagerTest, PopulatePageAction) {
 TEST_F(ExtensionActionManagerTest, GetBestFitActionTest) {
   // Create an extension with page action defaults.
   scoped_refptr<Extension> extension = BuildExtension(
-      DictionaryBuilder().Set("48", "icon48.png"),
-      DictionaryBuilder().Set("default_title", "Action!")
-                         .Set("default_icon", DictionaryBuilder()
-                                              .Set("38", "action38.png")),
+      std::move(DictionaryBuilder().Set("48", "icon48.png")),
+      std::move(DictionaryBuilder()
+                    .Set("default_title", "Action!")
+                    .Set("default_icon", std::move(DictionaryBuilder().Set(
+                                             "38", "action38.png")))),
       kPageAction);
   ASSERT_TRUE(extension.get());
 
@@ -210,10 +213,9 @@ TEST_F(ExtensionActionManagerTest, GetBestFitActionTest) {
             "action38.png");
 
   // Create a new extension without page action defaults.
-  extension = BuildExtension(
-      DictionaryBuilder().Set("48", "icon48.png"),
-      DictionaryBuilder().Pass(),
-      kPageAction);
+  extension =
+      BuildExtension(std::move(DictionaryBuilder().Set("48", "icon48.png")),
+                     DictionaryBuilder(), kPageAction);
   ASSERT_TRUE(extension.get());
 
   action =

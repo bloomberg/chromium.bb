@@ -134,13 +134,14 @@ void ExtensionReenablerUnitTest::TearDown() {
 TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
   // Create a simple extension and add it to the service.
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder().
-          SetManifest(DictionaryBuilder().Set("name", "test ext").
-                                          Set("version", "1.0").
-                                          Set("manifest_version", 2).
-                                          Set("description", "a test ext")).
-          SetID(crx_file::id_util::GenerateId("test ext")).
-          Build();
+      ExtensionBuilder()
+          .SetManifest(std::move(DictionaryBuilder()
+                                     .Set("name", "test ext")
+                                     .Set("version", "1.0")
+                                     .Set("manifest_version", 2)
+                                     .Set("description", "a test ext")))
+          .SetID(crx_file::id_util::GenerateId("test ext"))
+          .Build();
   service()->AddExtension(extension.get());
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
 

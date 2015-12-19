@@ -78,41 +78,36 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
     manifest.Set("manifest_version", 2);
     switch (type) {
       case PAGE_ACTION:
-        manifest.Set("page_action", DictionaryBuilder().Pass());
+        manifest.Set("page_action", DictionaryBuilder());
         break;
       case BROWSER_ACTION:
-        manifest.Set("browser_action", DictionaryBuilder().Pass());
+        manifest.Set("browser_action", DictionaryBuilder());
         break;
       case APP:
-        manifest.Set(
-            "app",
-            DictionaryBuilder().Set(
-                "launch",
-                DictionaryBuilder().Set("web_url", "http://www.example.com")));
+        manifest.Set("app",
+                     std::move(DictionaryBuilder().Set(
+                         "launch", std::move(DictionaryBuilder().Set(
+                                       "web_url", "http://www.example.com")))));
         break;
     }
 
     if (has_keybinding) {
       DictionaryBuilder command;
-      command.Set(
-          type == PAGE_ACTION ? "_execute_page_action"
-                              : "_execute_browser_action",
-          DictionaryBuilder()
-              .Set(
-                  "suggested_key",
-                  DictionaryBuilder()
-                      .Set("mac", "MacCtrl+Shift+E")
-                      .Set("default", "Ctrl+Shift+E"))
-              .Pass());
-      manifest.Set("commands", command.Pass());
+      command.Set(type == PAGE_ACTION ? "_execute_page_action"
+                                      : "_execute_browser_action",
+                  std::move(DictionaryBuilder().Set(
+                      "suggested_key",
+                      std::move(DictionaryBuilder()
+                                    .Set("mac", "MacCtrl+Shift+E")
+                                    .Set("default", "Ctrl+Shift+E")))));
+      manifest.Set("commands", std::move(command));
     }
 
-    extension_ =
-        extensions::ExtensionBuilder()
-            .SetManifest(manifest.Pass())
-            .SetID(crx_file::id_util::GenerateId("foo"))
-            .SetLocation(location)
-            .Build();
+    extension_ = extensions::ExtensionBuilder()
+                     .SetManifest(std::move(manifest))
+                     .SetID(crx_file::id_util::GenerateId("foo"))
+                     .SetLocation(location)
+                     .Build();
     extensionService_->AddExtension(extension_.get());
     if (has_keybinding) {
       // Slight hack: manually notify the command service of the extension since

@@ -1657,14 +1657,16 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
 
   scoped_refptr<Extension> CreateTestExtension(const std::string& id) {
     return ExtensionBuilder()
-        .SetManifest(DictionaryBuilder()
-                         .Set("name", "Test")
-                         .Set("version", "1.0")
-                         .Set("oauth2",
-                              DictionaryBuilder()
-                                  .Set("client_id", "clientId")
-                                  .Set("scopes", std::move(ListBuilder().Append(
-                                                     "scope1")))))
+        .SetManifest(std::move(
+            DictionaryBuilder()
+                .Set("name", "Test")
+                .Set("version", "1.0")
+                .Set("oauth2",
+                     std::move(
+                         DictionaryBuilder()
+                             .Set("client_id", "clientId")
+                             .Set("scopes",
+                                  std::move(ListBuilder().Append("scope1")))))))
         .SetLocation(Manifest::UNPACKED)
         .SetID(id)
         .Build();

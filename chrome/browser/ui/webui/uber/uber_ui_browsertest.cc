@@ -64,13 +64,13 @@ IN_PROC_BROWSER_TEST_F(UberUIBrowserTest, HistoryOverride) {
 
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder()
-          .SetManifest(
+          .SetManifest(std::move(
               extensions::DictionaryBuilder()
                   .Set("name", "History Override")
                   .Set("version", "1")
                   .Set("manifest_version", 2)
                   .Set("permission",
-                       std::move(extensions::ListBuilder().Append("history"))))
+                       std::move(extensions::ListBuilder().Append("history")))))
           .Build();
 
   ExtensionService* service = extensions::ExtensionSystem::Get(

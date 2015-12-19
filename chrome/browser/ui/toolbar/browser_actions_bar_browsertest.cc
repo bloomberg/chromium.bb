@@ -40,11 +40,11 @@ scoped_refptr<const extensions::Extension> CreateExtension(
            Set("manifest_version", 2).
            Set("version", "1.0");
   if (has_browser_action)
-    manifest.Set("browser_action", extensions::DictionaryBuilder().Pass());
-  return extensions::ExtensionBuilder().
-      SetManifest(manifest.Pass()).
-      SetID(crx_file::id_util::GenerateId(name)).
-      Build();
+    manifest.Set("browser_action", extensions::DictionaryBuilder());
+  return extensions::ExtensionBuilder()
+      .SetManifest(std::move(manifest))
+      .SetID(crx_file::id_util::GenerateId(name))
+      .Build();
 }
 
 }  // namespace

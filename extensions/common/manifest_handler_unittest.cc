@@ -182,19 +182,20 @@ TEST_F(ManifestHandlerTest, DependentHandlers) {
       Register();
   ManifestHandler::FinalizeRegistration();
 
-  scoped_refptr<Extension> extension = ExtensionBuilder()
-      .SetManifest(DictionaryBuilder()
-                   .Set("name", "no name")
-                   .Set("version", "0")
-                   .Set("manifest_version", 2)
-                   .Set("a", 1)
-                   .Set("b", 2)
-                   .Set("c", DictionaryBuilder()
-                        .Set("d", 3)
-                        .Set("e", 4)
-                        .Set("f", 5))
-                   .Set("g", 6))
-      .Build();
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(std::move(
+              DictionaryBuilder()
+                  .Set("name", "no name")
+                  .Set("version", "0")
+                  .Set("manifest_version", 2)
+                  .Set("a", 1)
+                  .Set("b", 2)
+                  .Set("c", std::move(
+                                DictionaryBuilder().Set("d", 3).Set("e", 4).Set(
+                                    "f", 5)))
+                  .Set("g", 6)))
+          .Build();
 
   // A, B, C.EZ, C.D, K
   EXPECT_EQ(5u, watcher.parsed_names().size());
@@ -243,14 +244,15 @@ TEST_F(ManifestHandlerTest, FailingHandlers) {
 
 TEST_F(ManifestHandlerTest, Validate) {
   ScopedTestingManifestHandlerRegistry registry;
-  scoped_refptr<Extension> extension = ExtensionBuilder()
-      .SetManifest(DictionaryBuilder()
-                   .Set("name", "no name")
-                   .Set("version", "0")
-                   .Set("manifest_version", 2)
-                   .Set("a", 1)
-                   .Set("b", 2))
-      .Build();
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(std::move(DictionaryBuilder()
+                                     .Set("name", "no name")
+                                     .Set("version", "0")
+                                     .Set("manifest_version", 2)
+                                     .Set("a", 1)
+                                     .Set("b", 2)))
+          .Build();
   EXPECT_TRUE(extension.get());
 
   std::string error;

@@ -75,7 +75,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
       DictionaryBuilder()
           .Set("manifest_version", 2)
           .Set("name", "Extension for options param test")
-          .Set("options_ui", DictionaryBuilder().Set("page", "options.html"))
+          .Set("options_ui",
+               std::move(DictionaryBuilder().Set("page", "options.html")))
           .Set("version", "1")
           .ToJSON());
 

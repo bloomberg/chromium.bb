@@ -150,12 +150,13 @@ scoped_refptr<const Extension> CreateActionExtension(
   }
 
   if (action_key)
-    manifest.Set(action_key, DictionaryBuilder().Pass());
+    manifest.Set(action_key, DictionaryBuilder());
 
-  return ExtensionBuilder().SetManifest(manifest.Pass()).
-                            SetID(crx_file::id_util::GenerateId(name)).
-                            SetLocation(location).
-                            Build();
+  return ExtensionBuilder()
+      .SetManifest(std::move(manifest))
+      .SetID(crx_file::id_util::GenerateId(name))
+      .SetLocation(location)
+      .Build();
 }
 
 ToolbarActionsModel* CreateToolbarModelForProfile(Profile* profile) {

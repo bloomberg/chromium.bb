@@ -130,8 +130,8 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
     if (has_background_process) {
       manifest.Set(
           "background",
-          DictionaryBuilder().Set(
-              "scripts", std::move(ListBuilder().Append("script.js"))));
+          std::move(DictionaryBuilder().Set(
+              "scripts", std::move(ListBuilder().Append("script.js")))));
       dir->WriteFile(FILE_PATH_LITERAL("script.js"),
                      "console.log('" + name + " running');");
     }
@@ -179,10 +179,11 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
         .Set("version", "1.0")
         .Set("manifest_version", 2)
         .Set("app",
-             DictionaryBuilder()
-                 .Set("urls", std::move(ListBuilder().Append(app_url.spec())))
-                 .Set("launch",
-                      DictionaryBuilder().Set("web_url", app_url.spec())));
+             std::move(DictionaryBuilder()
+                           .Set("urls",
+                                std::move(ListBuilder().Append(app_url.spec())))
+                           .Set("launch", std::move(DictionaryBuilder().Set(
+                                              "web_url", app_url.spec())))));
     dir->WriteManifest(manifest.ToJSON());
 
     const Extension* extension = LoadExtension(dir->unpacked_path());

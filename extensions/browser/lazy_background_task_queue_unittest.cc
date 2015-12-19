@@ -79,30 +79,33 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
 
   // Creates and registers an extension without a background page.
   scoped_refptr<Extension> CreateSimpleExtension() {
-    scoped_refptr<Extension> extension = ExtensionBuilder()
-        .SetManifest(DictionaryBuilder()
-                     .Set("name", "No background")
-                     .Set("version", "1")
-                     .Set("manifest_version", 2))
-        .SetID("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        .Build();
+    scoped_refptr<Extension> extension =
+        ExtensionBuilder()
+            .SetManifest(std::move(DictionaryBuilder()
+                                       .Set("name", "No background")
+                                       .Set("version", "1")
+                                       .Set("manifest_version", 2)))
+            .SetID("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+            .Build();
     ExtensionRegistry::Get(browser_context())->AddEnabled(extension);
     return extension;
   }
 
   // Creates and registers an extension with a lazy background page.
   scoped_refptr<Extension> CreateLazyBackgroundExtension() {
-    scoped_refptr<Extension> extension = ExtensionBuilder()
-        .SetManifest(DictionaryBuilder()
-            .Set("name", "Lazy background")
-            .Set("version", "1")
-            .Set("manifest_version", 2)
-            .Set("background",
-                  DictionaryBuilder()
-                  .Set("page", "background.html")
-                  .SetBoolean("persistent", false)))
-        .SetID("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
-        .Build();
+    scoped_refptr<Extension> extension =
+        ExtensionBuilder()
+            .SetManifest(std::move(
+                DictionaryBuilder()
+                    .Set("name", "Lazy background")
+                    .Set("version", "1")
+                    .Set("manifest_version", 2)
+                    .Set("background",
+                         std::move(DictionaryBuilder()
+                                       .Set("page", "background.html")
+                                       .SetBoolean("persistent", false)))))
+            .SetID("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+            .Build();
     ExtensionRegistry::Get(browser_context())->AddEnabled(extension);
     return extension;
   }

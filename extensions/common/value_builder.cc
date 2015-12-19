@@ -20,6 +20,14 @@ DictionaryBuilder::DictionaryBuilder(const base::DictionaryValue& init)
 
 DictionaryBuilder::~DictionaryBuilder() {}
 
+DictionaryBuilder::DictionaryBuilder(DictionaryBuilder&& other)
+    : dict_(other.Build()) {}
+
+DictionaryBuilder& DictionaryBuilder::operator=(DictionaryBuilder&& other) {
+  dict_ = other.Build();
+  return *this;
+}
+
 std::string DictionaryBuilder::ToJSON() const {
   std::string json;
   base::JSONWriter::WriteWithOptions(
@@ -52,7 +60,7 @@ DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
-                                          DictionaryBuilder& in_value) {
+                                          DictionaryBuilder in_value) {
   dict_->SetWithoutPathExpansion(path, in_value.Build());
   return *this;
 }
@@ -110,7 +118,7 @@ ListBuilder& ListBuilder::Append(const base::string16& in_value) {
   return *this;
 }
 
-ListBuilder& ListBuilder::Append(DictionaryBuilder& in_value) {
+ListBuilder& ListBuilder::Append(DictionaryBuilder in_value) {
   list_->Append(in_value.Build());
   return *this;
 }

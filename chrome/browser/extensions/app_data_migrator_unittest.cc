@@ -73,32 +73,34 @@ class AppDataMigratorTest : public testing::Test {
 scoped_refptr<const Extension> GetTestExtension(bool platform_app) {
   scoped_refptr<const Extension> app;
   if (platform_app) {
-    app = ExtensionBuilder()
-              .SetManifest(
-                  DictionaryBuilder()
-                      .Set("name", "test app")
-                      .Set("version", "1")
-                      .Set("app",
-                           DictionaryBuilder().Set(
-                               "background",
-                               DictionaryBuilder().Set(
-                                   "scripts", std::move(ListBuilder().Append(
-                                                  "background.js")))))
-                      .Set("permissions",
-                           std::move(ListBuilder().Append("unlimitedStorage"))))
-              .Build();
-  } else {
     app =
         ExtensionBuilder()
-            .SetManifest(
+            .SetManifest(std::move(
                 DictionaryBuilder()
                     .Set("name", "test app")
                     .Set("version", "1")
-                    .Set("app", DictionaryBuilder().Set(
-                                    "launch", DictionaryBuilder().Set(
-                                                  "local_path", "index.html")))
+                    .Set("app",
+                         std::move(DictionaryBuilder().Set(
+                             "background",
+                             std::move(DictionaryBuilder().Set(
+                                 "scripts", std::move(ListBuilder().Append(
+                                                "background.js")))))))
                     .Set("permissions",
-                         std::move(ListBuilder().Append("unlimitedStorage"))))
+                         std::move(ListBuilder().Append("unlimitedStorage")))))
+            .Build();
+  } else {
+    app =
+        ExtensionBuilder()
+            .SetManifest(std::move(
+                DictionaryBuilder()
+                    .Set("name", "test app")
+                    .Set("version", "1")
+                    .Set("app",
+                         std::move(DictionaryBuilder().Set(
+                             "launch", std::move(DictionaryBuilder().Set(
+                                           "local_path", "index.html")))))
+                    .Set("permissions",
+                         std::move(ListBuilder().Append("unlimitedStorage")))))
             .Build();
   }
   return app;

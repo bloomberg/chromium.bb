@@ -179,16 +179,18 @@ TEST_F(ChromeChannelFeatureFilterTest, SimpleFeatureAvailability) {
       DictionaryBuilder()
           .Set("feature1",
                std::move(ListBuilder()
-                             .Append(DictionaryBuilder()
-                                         .Set("channel", "beta")
-                                         .Set("extension_types",
-                                              std::move(ListBuilder().Append(
-                                                  "extension"))))
-                             .Append(DictionaryBuilder()
-                                         .Set("channel", "beta")
-                                         .Set("extension_types",
-                                              std::move(ListBuilder().Append(
-                                                  "legacy_packaged_app"))))))
+                             .Append(std::move(
+                                 DictionaryBuilder()
+                                     .Set("channel", "beta")
+                                     .Set("extension_types",
+                                          std::move(ListBuilder().Append(
+                                              "extension")))))
+                             .Append(std::move(
+                                 DictionaryBuilder()
+                                     .Set("channel", "beta")
+                                     .Set("extension_types",
+                                          std::move(ListBuilder().Append(
+                                              "legacy_packaged_app")))))))
           .Build());
 
   scoped_ptr<BaseFeatureProvider> provider(

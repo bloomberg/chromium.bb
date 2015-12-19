@@ -75,11 +75,13 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
       new PermissionSet(api_permissions, ManifestPermissionSet(),
                         URLPatternSet(), URLPatternSet()));
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder().SetManifest(
-          DictionaryBuilder().Set("name", "foo")
-                             .Set("version", "1.0")
-                             .Set("manifest_version", 2)
-                             .Set("description", "Random Ext")).Build();
+      ExtensionBuilder()
+          .SetManifest(std::move(DictionaryBuilder()
+                                     .Set("name", "foo")
+                                     .Set("version", "1.0")
+                                     .Set("manifest_version", 2)
+                                     .Set("description", "Random Ext")))
+          .Build();
 
   content::TestWebContentsFactory factory;
   ExtensionInstallPrompt prompt(factory.CreateWebContents(profile()));
@@ -103,16 +105,17 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsWithheldPermissions) {
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                           .Set("name", "foo")
-                           .Set("version", "1.0")
-                           .Set("manifest_version", 2)
-                           .Set("description", "Random Ext")
-                           .Set("permissions",
-                                std::move(ListBuilder()
-                                              .Append("http://*/*")
-                                              .Append("http://www.google.com/")
-                                              .Append("tabs"))))
+          .SetManifest(
+              std::move(DictionaryBuilder()
+                            .Set("name", "foo")
+                            .Set("version", "1.0")
+                            .Set("manifest_version", 2)
+                            .Set("description", "Random Ext")
+                            .Set("permissions",
+                                 std::move(ListBuilder()
+                                               .Append("http://*/*")
+                                               .Append("http://www.google.com/")
+                                               .Append("tabs")))))
           .Build();
 
   content::TestWebContentsFactory factory;
@@ -133,15 +136,16 @@ TEST_F(ExtensionInstallPromptUnitTest,
        DelegatedPromptShowsOptionalPermissions) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                           .Set("name", "foo")
-                           .Set("version", "1.0")
-                           .Set("manifest_version", 2)
-                           .Set("description", "Random Ext")
-                           .Set("permissions", std::move(ListBuilder().Append(
-                                                   "clipboardRead")))
-                           .Set("optional_permissions",
-                                std::move(ListBuilder().Append("tabs"))))
+          .SetManifest(std::move(
+              DictionaryBuilder()
+                  .Set("name", "foo")
+                  .Set("version", "1.0")
+                  .Set("manifest_version", 2)
+                  .Set("description", "Random Ext")
+                  .Set("permissions",
+                       std::move(ListBuilder().Append("clipboardRead")))
+                  .Set("optional_permissions",
+                       std::move(ListBuilder().Append("tabs")))))
           .Build();
 
   content::TestWebContentsFactory factory;

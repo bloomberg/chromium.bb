@@ -1836,14 +1836,14 @@ TEST_F(ExtensionServiceSyncTest, SyncExtensionHasAllhostsWithheld) {
   scoped_refptr<const Extension> extension =
       extensions::ExtensionBuilder()
           .SetLocation(Manifest::INTERNAL)
-          .SetManifest(
+          .SetManifest(std::move(
               extensions::DictionaryBuilder()
                   .Set("name", kName)
                   .Set("description", "foo")
                   .Set("manifest_version", 2)
                   .Set("version", "1.0")
                   .Set("permissions",
-                       std::move(extensions::ListBuilder().Append("*://*/*"))))
+                       std::move(extensions::ListBuilder().Append("*://*/*")))))
           .SetID(crx_file::id_util::GenerateId(kName))
           .Build();
 

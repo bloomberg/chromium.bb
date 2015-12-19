@@ -45,11 +45,11 @@ class AppInfoPermissionsPanelTest : public testing::Test {
         .Set("version", "2.0")
         .Set("manifest_version", 2)
         .Set("app",
-             extensions::DictionaryBuilder().Set(
+             std::move(extensions::DictionaryBuilder().Set(
                  "background",
-                 extensions::DictionaryBuilder().Set(
+                 std::move(extensions::DictionaryBuilder().Set(
                      "scripts", std::move(extensions::ListBuilder().Append(
-                                    "background.js")))))
+                                    "background.js")))))))
         .Build();
   }
 
@@ -136,9 +136,9 @@ TEST_F(AppInfoPermissionsPanelTest, RetainedFilePermissionsObtainedCorrectly) {
           .MergeManifest(extensions::DictionaryBuilder().Set(
               "permissions",
               std::move(extensions::ListBuilder().Append(
-                  extensions::DictionaryBuilder().Set(
+                  std::move(extensions::DictionaryBuilder().Set(
                       "fileSystem", std::move(extensions::ListBuilder().Append(
-                                        "retainEntries")))))))
+                                        "retainEntries"))))))))
           .SetID(kTestExtensionId)
           .Build();
   AppInfoPermissionsPanel panel(&profile_, app.get());

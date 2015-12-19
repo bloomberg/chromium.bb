@@ -82,12 +82,12 @@ void ExtensionTestingProfile::AddExtension(std::string extension_id,
   scoped_refptr<extensions::Extension> extension =
       extensions::ExtensionBuilder()
           .SetID(extension_id)
-          .SetManifest(extensions::DictionaryBuilder()
-                           .Set("name", extension_name)
-                           .Set("version", version)
-                           .Set("manifest_version", 2)
-                           .Set("description", description)
-                           .Set("update_url", update_url))
+          .SetManifest(std::move(extensions::DictionaryBuilder()
+                                     .Set("name", extension_name)
+                                     .Set("version", version)
+                                     .Set("manifest_version", 2)
+                                     .Set("description", description)
+                                     .Set("update_url", update_url)))
           .Build();
 
   // Install the extension on the faked extension service.

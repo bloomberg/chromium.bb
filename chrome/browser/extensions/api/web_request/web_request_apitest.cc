@@ -399,14 +399,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
           "/extensions/api_test/webrequest_hosted_app/index.html"));
   scoped_refptr<extensions::Extension> hosted_app =
       extensions::ExtensionBuilder()
-      .SetManifest(extensions::DictionaryBuilder()
-          .Set("name", "Some hosted app")
-          .Set("version", "1")
-          .Set("manifest_version", 2)
-          .Set("app", extensions::DictionaryBuilder()
-              .Set("launch", extensions::DictionaryBuilder()
-                  .Set("web_url", hosted_app_url.spec()))))
-      .Build();
+          .SetManifest(std::move(
+              extensions::DictionaryBuilder()
+                  .Set("name", "Some hosted app")
+                  .Set("version", "1")
+                  .Set("manifest_version", 2)
+                  .Set("app", std::move(extensions::DictionaryBuilder().Set(
+                                  "launch",
+                                  std::move(extensions::DictionaryBuilder().Set(
+                                      "web_url", hosted_app_url.spec())))))))
+          .Build();
   extensions::ExtensionSystem::Get(browser()->profile())->extension_service()
       ->AddExtension(hosted_app.get());
 

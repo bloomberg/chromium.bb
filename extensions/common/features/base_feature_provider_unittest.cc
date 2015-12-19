@@ -46,10 +46,10 @@ TEST(BaseFeatureProviderTest, ManifestFeatureAvailability) {
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                           .Set("name", "test extension")
-                           .Set("version", "1")
-                           .Set("description", "hello there"))
+          .SetManifest(std::move(DictionaryBuilder()
+                                     .Set("name", "test extension")
+                                     .Set("version", "1")
+                                     .Set("description", "hello there")))
           .Build();
   ASSERT_TRUE(extension.get());
 
@@ -100,16 +100,17 @@ TEST(BaseFeatureProviderTest, PermissionFeatureAvailability) {
 
   scoped_refptr<const Extension> app =
       ExtensionBuilder()
-          .SetManifest(
+          .SetManifest(std::move(
               DictionaryBuilder()
                   .Set("name", "test app")
                   .Set("version", "1")
-                  .Set("app", DictionaryBuilder().Set(
+                  .Set("app", std::move(DictionaryBuilder().Set(
                                   "background",
-                                  DictionaryBuilder().Set(
+                                  std::move(DictionaryBuilder().Set(
                                       "scripts", std::move(ListBuilder().Append(
-                                                     "background.js")))))
-                  .Set("permissions", std::move(ListBuilder().Append("power"))))
+                                                     "background.js")))))))
+                  .Set("permissions",
+                       std::move(ListBuilder().Append("power")))))
           .Build();
   ASSERT_TRUE(app.get());
   ASSERT_TRUE(app->is_platform_app());

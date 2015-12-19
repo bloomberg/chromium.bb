@@ -103,12 +103,13 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
         .Set("content_security_policy",
              "script-src 'self' 'unsafe-eval'; object-src 'self'")
         .Set("sandbox",
-             DictionaryBuilder().Set(
-                 "pages", std::move(ListBuilder().Append("sandboxed.html"))))
+             std::move(DictionaryBuilder().Set(
+                 "pages", std::move(ListBuilder().Append("sandboxed.html")))))
         .Set("web_accessible_resources", std::move(ListBuilder().Append("*")));
 
     if (has_background_process) {
-      manifest.Set("background", DictionaryBuilder().Set("page", "bg.html"));
+      manifest.Set("background",
+                   std::move(DictionaryBuilder().Set("page", "bg.html")));
       dir->WriteFile(FILE_PATH_LITERAL("bg.html"),
                      "<iframe id='bgframe' src='empty.html'></iframe>");
     }
