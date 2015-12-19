@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "blimp/net/blimp_connection.h"
+#include "blimp/net/blimp_message_checkpointer.h"
 #include "blimp/net/blimp_message_demultiplexer.h"
 #include "blimp/net/blimp_message_multiplexer.h"
 #include "blimp/net/blimp_message_output_buffer.h"
@@ -25,7 +26,10 @@ const int kMaxBufferSizeBytes = 1 << 24;
 BrowserConnectionHandler::BrowserConnectionHandler()
     : demultiplexer_(new BlimpMessageDemultiplexer),
       output_buffer_(new BlimpMessageOutputBuffer(kMaxBufferSizeBytes)),
-      multiplexer_(new BlimpMessageMultiplexer(output_buffer_.get())) {}
+      multiplexer_(new BlimpMessageMultiplexer(output_buffer_.get())),
+      checkpointer_(new BlimpMessageCheckpointer(demultiplexer_.get(),
+                                                 output_buffer_.get(),
+                                                 output_buffer_.get())) {}
 
 BrowserConnectionHandler::~BrowserConnectionHandler() {}
 
@@ -45,7 +49,7 @@ void BrowserConnectionHandler::HandleConnection(
   connection_->SetConnectionErrorObserver(this);
 
   // Connect the incoming & outgoing message streams.
-  connection_->SetIncomingMessageProcessor(demultiplexer_.get());
+  connection_->SetIncomingMessageProcessor(checkpointer_.get());
   output_buffer_->SetOutputProcessor(
       connection_->GetOutgoingMessageProcessor());
 }

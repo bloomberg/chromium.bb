@@ -4,8 +4,12 @@
 
 #include "blimp/net/blimp_message_checkpointer.h"
 
+#include "base/logging.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
+#include "blimp/common/proto/protocol_control.pb.h"
+#include "blimp/net/blimp_message_checkpoint_observer.h"
+#include "net/base/net_errors.h"
 
 namespace blimp {
 
@@ -15,16 +19,38 @@ const int kDeferCheckpointAckSeconds = 1;
 
 BlimpMessageCheckpointer::BlimpMessageCheckpointer(
     BlimpMessageProcessor* incoming_processor,
-    BlimpMessageProcessor* outgoing_processor)
+    BlimpMessageProcessor* outgoing_processor,
+    BlimpMessageCheckpointObserver* checkpoint_observer)
     : incoming_processor_(incoming_processor),
       outgoing_processor_(outgoing_processor),
-      weak_factory_(this) {}
+      checkpoint_observer_(checkpoint_observer),
+      weak_factory_(this) {
+  DCHECK(incoming_processor_);
+  DCHECK(outgoing_processor_);
+  DCHECK(checkpoint_observer_);
+}
 
 BlimpMessageCheckpointer::~BlimpMessageCheckpointer() {}
 
 void BlimpMessageCheckpointer::ProcessMessage(
     scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
+  if (message->type() == BlimpMessage::PROTOCOL_CONTROL &&
+      message->protocol_control().type() ==
+          ProtocolControlMessage::CHECKPOINT_ACK) {
+    if (message->protocol_control().has_checkpoint_ack() &&
+        message->protocol_control().checkpoint_ack().has_checkpoint_id()) {
+      checkpoint_observer_->OnMessageCheckpoint(
+          message->protocol_control().checkpoint_ack().checkpoint_id());
+      callback.Run(net::OK);
+    } else {
+      DLOG(WARNING) << "Invalid checkpoint ACK. Dropping connection.";
+      callback.Run(net::ERR_FAILED);
+    }
+
+    return;
+  }
+
   // TODO(wez): Provide independent checkpoints for each message->type()?
   DCHECK(message->has_message_id());
 

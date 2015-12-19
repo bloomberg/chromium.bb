@@ -7,6 +7,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "blimp/common/create_blimp_message.h"
+#include "blimp/net/blimp_message_checkpoint_observer.h"
 #include "blimp/net/test_common.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -19,6 +21,17 @@ using testing::Return;
 using testing::SaveArg;
 
 namespace blimp {
+
+namespace {
+class MockCheckpointObserver : public BlimpMessageCheckpointObserver {
+ public:
+  MockCheckpointObserver() {}
+  ~MockCheckpointObserver() override {}
+
+  MOCK_METHOD1(OnMessageCheckpoint, void(int64));
+};
+
+}  // namespace
 
 static scoped_ptr<BlimpMessage> CreateExpectedAckMessage(int64 id) {
   scoped_ptr<BlimpMessage> message = make_scoped_ptr(new BlimpMessage);
@@ -52,7 +65,7 @@ class BlimpMessageCheckpointerTest : public testing::Test {
 
   void SetUp() override {
     checkpointer_ = make_scoped_ptr(new BlimpMessageCheckpointer(
-        &incoming_processor_, &outgoing_processor_));
+        &incoming_processor_, &outgoing_processor_, &checkpoint_observer_));
   }
 
   MOCK_METHOD1(IncomingCompletionCallback, void(int));
@@ -64,8 +77,9 @@ class BlimpMessageCheckpointerTest : public testing::Test {
 
   int64 message_id_ = 0;
 
-  MockBlimpMessageProcessor incoming_processor_;
-  MockBlimpMessageProcessor outgoing_processor_;
+  testing::StrictMock<MockBlimpMessageProcessor> incoming_processor_;
+  testing::StrictMock<MockBlimpMessageProcessor> outgoing_processor_;
+  testing::StrictMock<MockCheckpointObserver> checkpoint_observer_;
   net::CompletionCallback captured_cb_;
 
   scoped_ptr<BlimpMessageCheckpointer> checkpointer_;
@@ -74,7 +88,6 @@ class BlimpMessageCheckpointerTest : public testing::Test {
 TEST_F(BlimpMessageCheckpointerTest, CallbackPropagates) {
   EXPECT_CALL(incoming_processor_, MockableProcessMessage(_, _))
       .WillOnce(SaveArg<1>(&captured_cb_));
-  EXPECT_CALL(outgoing_processor_, MockableProcessMessage(_, _)).Times(0);
   EXPECT_CALL(*this, IncomingCompletionCallback(_));
 
   // Simulate an incoming message.
@@ -87,7 +100,6 @@ TEST_F(BlimpMessageCheckpointerTest, CallbackPropagates) {
 TEST_F(BlimpMessageCheckpointerTest, DeleteWhileProcessing) {
   EXPECT_CALL(incoming_processor_, MockableProcessMessage(_, _))
       .WillOnce(SaveArg<1>(&captured_cb_));
-  EXPECT_CALL(outgoing_processor_, MockableProcessMessage(_, _)).Times(0);
   EXPECT_CALL(*this, IncomingCompletionCallback(_)).Times(0);
 
   // Simulate an incoming message.
@@ -105,6 +117,7 @@ TEST_F(BlimpMessageCheckpointerTest, SingleMessageAck) {
   scoped_ptr<BlimpMessage> expected_ack = CreateExpectedAckMessage(1);
   EXPECT_CALL(outgoing_processor_,
               MockableProcessMessage(EqualsProto(*expected_ack), _));
+  EXPECT_CALL(*this, IncomingCompletionCallback(net::OK));
 
   // Simulate an incoming message.
   SimulateIncomingMessage();
@@ -121,6 +134,7 @@ TEST_F(BlimpMessageCheckpointerTest, BatchMessageAck) {
   scoped_ptr<BlimpMessage> expected_ack = CreateExpectedAckMessage(10);
   EXPECT_CALL(outgoing_processor_,
               MockableProcessMessage(EqualsProto(*expected_ack), _));
+  EXPECT_CALL(*this, IncomingCompletionCallback(net::OK)).Times(10);
 
   // Simulate ten incoming messages.
   for (int i = 0; i < 10; ++i) {
@@ -142,6 +156,7 @@ TEST_F(BlimpMessageCheckpointerTest, MultipleAcks) {
   scoped_ptr<BlimpMessage> expected_ack2 = CreateExpectedAckMessage(2);
   EXPECT_CALL(outgoing_processor_,
               MockableProcessMessage(EqualsProto(*expected_ack2), _));
+  EXPECT_CALL(*this, IncomingCompletionCallback(net::OK)).Times(2);
 
   // Simulate an incoming messages and fast-forward to get the ACK.
   SimulateIncomingMessage();
@@ -152,6 +167,18 @@ TEST_F(BlimpMessageCheckpointerTest, MultipleAcks) {
   SimulateIncomingMessage();
   captured_cb_.Run(net::OK);
   runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
+}
+
+TEST_F(BlimpMessageCheckpointerTest, IncomingAckMessage) {
+  EXPECT_CALL(*this, IncomingCompletionCallback(net::OK));
+  EXPECT_CALL(checkpoint_observer_, OnMessageCheckpoint(10));
+
+  // Simulate an incoming message.
+  scoped_ptr<BlimpMessage> ack_message = CreateCheckpointAckMessage(10);
+  checkpointer_->ProcessMessage(
+      std::move(ack_message),
+      base::Bind(&BlimpMessageCheckpointerTest::IncomingCompletionCallback,
+                 base::Unretained(this)));
 }
 
 }  // namespace blimp

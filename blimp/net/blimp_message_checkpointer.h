@@ -13,6 +13,7 @@
 namespace blimp {
 
 class BlimpMessage;
+class BlimpMessageCheckpointObserver;
 
 // Utility class configured with incoming & outgoing MessageProcessors,
 // responsible for dispatching checkpoint/ACK messages to the outgoing
@@ -23,7 +24,8 @@ class BlimpMessage;
 class BLIMP_NET_EXPORT BlimpMessageCheckpointer : public BlimpMessageProcessor {
  public:
   BlimpMessageCheckpointer(BlimpMessageProcessor* incoming_processor,
-                           BlimpMessageProcessor* outgoing_processor);
+                           BlimpMessageProcessor* outgoing_processor,
+                           BlimpMessageCheckpointObserver* checkpoint_observer);
   ~BlimpMessageCheckpointer() override;
 
   // BlimpMessageProcessor interface.
@@ -37,6 +39,7 @@ class BLIMP_NET_EXPORT BlimpMessageCheckpointer : public BlimpMessageProcessor {
 
   BlimpMessageProcessor* incoming_processor_;
   BlimpMessageProcessor* outgoing_processor_;
+  BlimpMessageCheckpointObserver* checkpoint_observer_;
 
   // Holds the Id of the message that most recently completed processing.
   int64 checkpoint_id_ = 0;
