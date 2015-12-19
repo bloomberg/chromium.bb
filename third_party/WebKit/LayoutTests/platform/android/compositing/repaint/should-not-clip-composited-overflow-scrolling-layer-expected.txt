@@ -7,51 +7,49 @@
       "drawsContent": true,
       "children": [
         {
-          "position": [10, 60],
-          "bounds": [300, 400],
+          "position": [8, 8],
+          "bounds": [500, 500],
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "repaintRects": [
-            [50, 160, 200, 50],
-            [50, 50, 200, 50]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV id='block'"
+            [-2000, -2000, 5000, 5000]
           ],
           "children": [
             {
-              "bounds": [285, 385],
+              "bounds": [485, 485],
               "shouldFlattenTransform": false,
               "children": [
                 {
-                  "bounds": [285, 900],
+                  "bounds": [5000, 5000],
                   "drawsContent": true,
                   "repaintRects": [
-                    [50, 310, 200, 50],
-                    [50, 200, 200, 50]
+                    [0, 0, 5000, 5000]
                   ],
                   "paintInvalidationClients": [
-                    "LayoutBlockFlow (positioned) DIV id='block'"
+                    "LayoutBlockFlow DIV id='content'"
                   ]
                 }
               ]
             },
             {
-              "bounds": [300, 400],
+              "bounds": [500, 500],
               "children": [
                 {
-                  "position": [0, 385],
-                  "bounds": [285, 15]
-                },
-                {
-                  "position": [285, 0],
-                  "bounds": [15, 385],
+                  "position": [0, 485],
+                  "bounds": [485, 15],
                   "repaintRects": [
-                    [0, 0, 15, 385]
+                    [0, 0, 485, 15]
                   ]
                 },
                 {
-                  "position": [285, 385],
+                  "position": [485, 0],
+                  "bounds": [15, 485],
+                  "repaintRects": [
+                    [0, 0, 15, 485]
+                  ]
+                },
+                {
+                  "position": [485, 485],
                   "bounds": [15, 15],
                   "drawsContent": true
                 }

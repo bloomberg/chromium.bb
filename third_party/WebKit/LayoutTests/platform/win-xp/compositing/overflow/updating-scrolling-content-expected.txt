@@ -1,57 +1,52 @@
 {
-  "bounds": [800, 600],
+  "bounds": [1600, 1200],
   "children": [
     {
-      "bounds": [800, 600],
+      "bounds": [1600, 1200],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
-          "position": [10, 60],
-          "bounds": [300, 400],
+          "position": [8, 8],
+          "bounds": [200, 200],
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "repaintRects": [
-            [50, 160, 200, 50],
-            [50, 50, 200, 50]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV id='block'"
+            [0, 0, 185, 200]
           ],
           "children": [
             {
-              "bounds": [285, 385],
+              "bounds": [185, 185],
               "shouldFlattenTransform": false,
               "children": [
                 {
-                  "bounds": [285, 900],
+                  "bounds": [185, 1200],
                   "drawsContent": true,
                   "repaintRects": [
-                    [50, 310, 200, 50],
-                    [50, 200, 200, 50]
+                    [0, 0, 185, 200]
                   ],
                   "paintInvalidationClients": [
-                    "LayoutBlockFlow (positioned) DIV id='block'"
+                    "LayoutBlockFlow DIV id='indicator'"
                   ]
                 }
               ]
             },
             {
-              "bounds": [300, 400],
+              "bounds": [200, 200],
               "children": [
                 {
-                  "position": [0, 385],
-                  "bounds": [285, 15]
+                  "position": [0, 185],
+                  "bounds": [185, 15]
                 },
                 {
-                  "position": [285, 0],
-                  "bounds": [15, 385],
+                  "position": [185, 0],
+                  "bounds": [15, 185],
                   "repaintRects": [
-                    [0, 0, 15, 385]
+                    [0, 0, 15, 185]
                   ]
                 },
                 {
-                  "position": [285, 385],
+                  "position": [185, 185],
                   "bounds": [15, 15],
                   "drawsContent": true
                 }

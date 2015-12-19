@@ -6,7 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [282, 36, 45, 18]
+        [259, 40, 40, 19]
       ],
       "paintInvalidationClients": [
         "LayoutText #text",
@@ -14,34 +14,18 @@
       ],
       "children": [
         {
-          "position": [0, 54],
+          "position": [0, 60],
           "bounds": [800, 500],
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "repaintRects": [
-            [268, 0, 46, 18],
-            [224, 0, 45, 18],
-            [90, 0, 46, 18],
-            [52, 18, 45, 18],
-            [20, 160, 200, 72],
-            [10, 126, 139, 12],
-            [10, 72, 227, 18]
-          ],
-          "paintInvalidationClients": [
-            "LayoutText #text",
-            "InlineTextBox 'findme'",
-            "LayoutText #text",
-            "InlineTextBox 'findme'",
-            "LayoutText #text",
-            "InlineTextBox 'findme'",
-            "LayoutText #text",
-            "InlineTextBox 'findme'",
-            "LayoutSVGInlineText #text",
-            "InlineTextBox 'Can you findme in this boring text?'",
-            "LayoutSVGInlineText #text",
-            "InlineTextBox 'Findme in a typewriter!'",
-            "LayoutSVGInlineText #text",
-            "InlineTextBox 'Findme on a path! Did you findme?'"
+            [244, 0, 40, 19],
+            [204, 0, 40, 19],
+            [83, 0, 40, 19],
+            [47, 20, 40, 19],
+            [20, 164, 202, 72],
+            [10, 131, 138, 12],
+            [10, 75, 208, 19]
           ],
           "children": [
             {
@@ -49,16 +33,16 @@
               "shouldFlattenTransform": false,
               "children": [
                 {
-                  "bounds": [785, 1340],
+                  "bounds": [785, 1345],
                   "drawsContent": true,
                   "repaintRects": [
-                    [268, 0, 46, 18],
-                    [224, 0, 45, 18],
-                    [90, 0, 46, 18],
-                    [52, 18, 45, 18],
-                    [20, 160, 200, 72],
-                    [10, 126, 139, 12],
-                    [10, 72, 227, 18]
+                    [244, 0, 40, 19],
+                    [204, 0, 40, 19],
+                    [83, 0, 40, 19],
+                    [47, 20, 40, 19],
+                    [20, 164, 202, 72],
+                    [10, 131, 138, 12],
+                    [10, 75, 208, 19]
                   ],
                   "paintInvalidationClients": [
                     "LayoutText #text",
