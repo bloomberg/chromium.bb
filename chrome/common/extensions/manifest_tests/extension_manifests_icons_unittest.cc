@@ -15,9 +15,22 @@ namespace extensions {
 class IconsManifestTest : public ChromeManifestTest {
 };
 
+// Icons that don't exist on disk should be ignored (for most manifest
+// locations).
+TEST_F(IconsManifestTest, IgnoreNonExistentIcons) {
+  scoped_refptr<extensions::Extension> extension(
+      LoadAndExpectSuccess("normalize_icon_paths.json", Manifest::INTERNAL));
+  const ExtensionIconSet& icons = IconsInfo::GetIcons(extension.get());
+
+  EXPECT_EQ("", icons.Get(extension_misc::EXTENSION_ICON_BITTY,
+                          ExtensionIconSet::MATCH_EXACTLY));
+  EXPECT_EQ("", icons.Get(extension_misc::EXTENSION_ICON_MEDIUM,
+                          ExtensionIconSet::MATCH_EXACTLY));
+}
+
 TEST_F(IconsManifestTest, NormalizeIconPaths) {
   scoped_refptr<extensions::Extension> extension(
-      LoadAndExpectSuccess("normalize_icon_paths.json"));
+      LoadAndExpectSuccess("normalize_icon_paths.json", Manifest::UNPACKED));
   const ExtensionIconSet& icons = IconsInfo::GetIcons(extension.get());
 
   EXPECT_EQ("16.png", icons.Get(extension_misc::EXTENSION_ICON_BITTY,
@@ -28,7 +41,7 @@ TEST_F(IconsManifestTest, NormalizeIconPaths) {
 
 TEST_F(IconsManifestTest, IconSizes) {
   scoped_refptr<extensions::Extension> extension(
-      LoadAndExpectSuccess("init_icon_size.json"));
+      LoadAndExpectSuccess("init_icon_size.json", Manifest::UNPACKED));
   const ExtensionIconSet& icons = IconsInfo::GetIcons(extension.get());
 
   EXPECT_EQ("16.png", icons.Get(extension_misc::EXTENSION_ICON_BITTY,

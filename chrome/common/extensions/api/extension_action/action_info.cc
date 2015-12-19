@@ -52,7 +52,7 @@ ActionInfo::~ActionInfo() {
 }
 
 // static
-scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
+scoped_ptr<ActionInfo> ActionInfo::Load(Extension* extension,
                                         const base::DictionaryValue* dict,
                                         base::string16* error) {
   scoped_ptr<ActionInfo> result(new ActionInfo());
@@ -92,7 +92,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     std::string default_icon;
     if (dict->GetDictionary(keys::kPageActionDefaultIcon, &icons_value)) {
       if (!manifest_handler_helpers::LoadIconsFromDictionary(
-              icons_value, &result->default_icon, error)) {
+              extension, icons_value, &result->default_icon, error)) {
         return scoped_ptr<ActionInfo>();
       }
     } else if (dict->GetString(keys::kPageActionDefaultIcon, &default_icon) &&

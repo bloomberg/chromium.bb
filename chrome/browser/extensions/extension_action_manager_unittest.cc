@@ -75,15 +75,18 @@ scoped_refptr<Extension> ExtensionActionManagerTest::BuildExtension(
     DictionaryBuilder& action,
     const char* action_type) {
   std::string id = base::IntToString(curr_id_++);
-  scoped_refptr<Extension> extension = ExtensionBuilder()
-      .SetManifest(DictionaryBuilder().Set("version", "1")
-          .Set("manifest_version", 2)
-          .Set("icons", extension_icons)
-          .Set(action_type, action)
-          .Set("name",
-              std::string("Test Extension").append(id)))
-      .SetID(id)
-      .Build();
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(
+              DictionaryBuilder()
+                  .Set("version", "1")
+                  .Set("manifest_version", 2)
+                  .Set("icons", extension_icons)
+                  .Set(action_type, action)
+                  .Set("name", std::string("Test Extension").append(id)))
+          .SetLocation(Manifest::UNPACKED)
+          .SetID(id)
+          .Build();
   registry_->AddEnabled(extension);
   return extension;
 }
