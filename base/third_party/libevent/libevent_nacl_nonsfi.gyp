@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    '../../build/common_untrusted.gypi',
+    '../../../build/common_untrusted.gypi',
   ],
   'conditions': [
     ['disable_nacl==0 and disable_nacl_untrusted==0', {

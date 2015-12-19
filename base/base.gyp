@@ -207,7 +207,7 @@
           },
         }],
         ['OS != "win" and (OS != "ios" or _toolset == "host")', {
-            'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
+            'dependencies': ['third_party/libevent/libevent.gyp:libevent'],
         },],
         ['component=="shared_library"', {
           'conditions': [
@@ -809,7 +809,7 @@
           ],
         }, {  # OS != "win"
           'dependencies': [
-            '../third_party/libevent/libevent.gyp:libevent'
+            'third_party/libevent/libevent.gyp:libevent'
           ],
         }],
       ],  # conditions

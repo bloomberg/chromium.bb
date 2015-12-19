@@ -19,9 +19,9 @@
 /* config.h must be included before any other libevent header is included. */
 #include "config.h"
 
-#include "third_party/libevent/event-internal.h"
-#include "third_party/libevent/event.h"
-#include "third_party/libevent/evsignal.h"
+#include "base/third_party/libevent/event-internal.h"
+#include "base/third_party/libevent/event.h"
+#include "base/third_party/libevent/evsignal.h"
 
 
 struct event_base *evsignal_base = 0;

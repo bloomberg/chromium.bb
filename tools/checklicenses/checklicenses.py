@@ -108,6 +108,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    'base/third_party/libevent': [  # http://crbug.com/98309
+        'UNKNOWN',
+    ],
+
     # http://code.google.com/p/google-breakpad/issues/detail?id=450
     'breakpad/src': [
         'UNKNOWN',
@@ -408,9 +412,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
     'third_party/lcov/contrib/galaxy/genflat.pl': [
         'GPL (v2 or later)',
-    ],
-    'third_party/libevent': [  # http://crbug.com/98309
-        'UNKNOWN',
     ],
     'third_party/libjingle/source/talk': [  # http://crbug.com/98310
         'UNKNOWN',

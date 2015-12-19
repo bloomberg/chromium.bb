@@ -235,10 +235,6 @@
             '../third_party/bspatch/bspatch.gyp:*',
             '../tools/win/static_initializers/static_initializers.gyp:*',
           ],
-        }, {
-          'dependencies': [
-            '../third_party/libevent/libevent.gyp:*',
-          ],
         }],
         ['toolkit_views==1', {
           'dependencies': [

@@ -117,8 +117,8 @@
             'rand_util_nacl.cc',
           ],
           'dependencies': [
-            '../third_party/libevent/libevent_nacl_nonsfi.gyp:event_nacl_nonsfi',
             'base.gyp:base_debugging_flags',
+            'third_party/libevent/libevent_nacl_nonsfi.gyp:event_nacl_nonsfi',
           ],
         },
         {

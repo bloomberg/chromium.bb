@@ -14,9 +14,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/third_party/libevent/event.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/libevent/event.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"

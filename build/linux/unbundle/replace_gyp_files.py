@@ -22,7 +22,7 @@ REPLACEMENTS = {
   'use_system_harfbuzz': 'third_party/harfbuzz-ng/harfbuzz.gyp',
   'use_system_icu': 'third_party/icu/icu.gyp',
   'use_system_jsoncpp': 'third_party/jsoncpp/jsoncpp.gyp',
-  'use_system_libevent': 'third_party/libevent/libevent.gyp',
+  'use_system_libevent': 'base/third_party/libevent/libevent.gyp',
   'use_system_libjpeg': 'third_party/libjpeg/libjpeg.gyp',
   'use_system_libpng': 'third_party/libpng/libpng.gyp',
   'use_system_libusb': 'third_party/libusb/libusb.gyp',

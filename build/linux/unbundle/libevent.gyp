@@ -15,7 +15,7 @@
         ],
       },
       'includes': [
-        '../../build/shim_headers.gypi',
+        '../../../build/shim_headers.gypi',
       ],
       'link_settings': {
         'libraries': [

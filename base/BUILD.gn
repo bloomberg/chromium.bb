@@ -850,7 +850,7 @@ component("base") {
     all_dependent_configs = [ ":base_win_linker_flags" ]
   } else if (!is_nacl || is_nacl_nonsfi) {
     # Non-Windows.
-    deps += [ "//third_party/libevent" ]
+    deps += [ "//base/third_party/libevent" ]
   }
 
   # Mac.
@@ -1580,7 +1580,7 @@ test("base_unittests") {
 
   if (is_posix && !is_ios) {
     sources += [ "message_loop/message_pump_libevent_unittest.cc" ]
-    deps += [ "//third_party/libevent" ]
+    deps += [ "//base/third_party/libevent" ]
   }
 
   if (is_android) {

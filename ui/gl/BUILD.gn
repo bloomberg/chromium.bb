@@ -159,9 +159,6 @@ component("gl") {
       "gl_implementation_osmesa.h",
     ]
   }
-  if (is_linux) {
-    deps += [ "//third_party/libevent" ]
-  }
   if (!is_android) {  # TODO(GYP) Enable on Android when osmesa links.
     deps += [ "//third_party/mesa:osmesa" ]
   }

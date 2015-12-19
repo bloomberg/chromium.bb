@@ -28,7 +28,7 @@
         'HAVE_CONFIG_H',
       ],
       'include_dirs': [
-        '../..',
+        '../../..',
       ],
       'conditions': [
         # libevent has platform-specific implementation files.  Since its
