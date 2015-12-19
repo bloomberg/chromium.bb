@@ -48,9 +48,17 @@
     'asm_sources': [
     ],
 
+
     # Allow overriding the selection of which FFmpeg binaries to copy via an
     # environment variable.  Affects the ffmpeg_binaries target.
     'conditions': [
+      # Android ia32 can't handle textrels and ffmpeg can't compile without them.
+      # http://crbug.com/559379
+      ['(OS == "android" and target_arch == "ia32") or msan==1', {
+        'disable_ffmpeg_asm%': 1,
+      }, {
+        'disable_ffmpeg_asm%': 0,
+      }],
       ['target_arch == "arm" and arm_version == 7 and arm_neon == 1', {
         # Need a separate config for arm+neon vs arm
         'ffmpeg_config%': 'arm-neon',
@@ -86,7 +94,7 @@
     'sig_files': ['chromium/ffmpeg.sigs'],
   },
   'conditions': [
-    ['(target_arch == "ia32" or target_arch == "x64") and os_config != "linux-noasm"', {
+    ['(target_arch == "ia32" or target_arch == "x64") and disable_ffmpeg_asm == 0', {
       'targets': [
         {
           'target_name': 'ffmpeg_yasm',
@@ -232,7 +240,7 @@
           # Silence a warning in libc++ builds (C code doesn't need this flag).
           'ldflags!': [ '-stdlib=libc++', ],
           'conditions': [
-            ['(target_arch == "ia32" or target_arch == "x64") and os_config != "linux-noasm"', {
+            ['(target_arch == "ia32" or target_arch == "x64") and disable_ffmpeg_asm == 0', {
               'dependencies': [
                 'ffmpeg_yasm',
               ],

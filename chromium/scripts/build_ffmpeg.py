@@ -357,10 +357,19 @@ def main(argv):
     elif target_arch == 'ia32':
       configure_flags['Common'].extend([
           '--arch=i686',
-          '--enable-yasm',
           '--extra-cflags="-m32"',
           '--extra-ldflags="-m32"',
       ])
+      # Android ia32 can't handle textrels and ffmpeg can't compile without
+      # them.  http://crbug.com/559379
+      if target_os != 'android':
+        configure_flags['Common'].extend([
+          '--enable-yasm',
+        ])
+      else:
+        configure_flags['Common'].extend([
+          '--disable-yasm',
+        ])
     elif target_arch == 'arm' or target_arch == 'arm-neon':
       # TODO(ihf): ARM compile flags are tricky. The final options
       # overriding everything live in chroot /build/*/etc/make.conf
