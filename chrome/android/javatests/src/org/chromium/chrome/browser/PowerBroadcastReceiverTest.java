@@ -6,10 +6,8 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 import android.content.Intent;
-import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -113,11 +111,9 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
 
     /**
      * Check if the runnable is posted and run while the screen is on.
-     */
-    /*
-        @MediumTest
-        @Feature({"Omaha", "Sync"})
-        Bug http://crbug.com/156745
+     * @MediumTest
+     * @Feature({"Omaha", "Sync"})
+     * crbug.com/571200
      */
     @DisabledTest
     public void testRunnableRunsWithScreenOn() throws Exception {
@@ -138,9 +134,11 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
 
     /**
      * Check that the runnable gets posted and canceled when Main is sent to the background.
+     * @MediumTest
+     * @Feature({"Omaha", "Sync"})
+     * crbug.com/571200
      */
-    @MediumTest
-    @Feature({"Omaha", "Sync"})
+    @DisabledTest
     public void testRunnableGetsCanceled() throws Exception {
         // Claim the screen is on.
         PowerBroadcastReceiver receiver = getPowerBroadcastReceiver();
@@ -167,11 +165,9 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
 
     /**
      * Check that the runnable gets run only while the screen is on.
-     */
-    /*
-        @MediumTest
-        @Feature({"Omaha", "Sync"})
-        Bug http://crbug.com/156745
+     * @MediumTest
+     * @Feature({"Omaha", "Sync"})
+     * crbug.com/571200
      */
     @DisabledTest
     public void testRunnableGetsRunWhenScreenIsOn() throws Exception {
