@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -172,8 +173,7 @@ void UserSelectionScreen::FillUserDictionary(
 void UserSelectionScreen::FillKnownUserPrefs(user_manager::User* user,
                                              base::DictionaryValue* user_dict) {
   std::string gaia_id;
-  if (user_manager::UserManager::Get()->FindGaiaID(user->GetAccountId(),
-                                                   &gaia_id)) {
+  if (user_manager::known_user::FindGaiaID(user->GetAccountId(), &gaia_id)) {
     user_dict->SetString(kKeyGaiaID, gaia_id);
   }
 }
@@ -349,8 +349,8 @@ void UserSelectionScreen::SendUserList() {
   std::string owner_email;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
                                            &owner_email);
-  const AccountId owner = user_manager::UserManager::GetKnownUserAccountId(
-      owner_email, std::string());
+  const AccountId owner =
+      user_manager::known_user::GetAccountId(owner_email, std::string());
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -412,8 +412,7 @@ void UserSelectionScreen::CheckUserStatus(const AccountId& account_id) {
     return;
 
   if (!token_handle_util_.get()) {
-    token_handle_util_.reset(
-        new TokenHandleUtil(user_manager::UserManager::Get()));
+    token_handle_util_.reset(new TokenHandleUtil());
   }
 
   if (token_handle_util_->HasToken(account_id)) {

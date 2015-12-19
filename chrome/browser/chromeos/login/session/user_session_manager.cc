@@ -94,6 +94,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -466,8 +467,8 @@ void UserSessionManager::StartSession(
   NotifyUserLoggedIn();
 
   if (!user_context.GetDeviceId().empty()) {
-    user_manager::UserManager::Get()->SetKnownUserDeviceId(
-        user_context.GetAccountId(), user_context.GetDeviceId());
+    user_manager::known_user::SetDeviceId(user_context.GetAccountId(),
+                                          user_context.GetDeviceId());
   }
 
   PrepareProfile();
@@ -864,8 +865,8 @@ void UserSessionManager::PreStartSession() {
 void UserSessionManager::StoreUserContextDataBeforeProfileIsCreated() {
   // Store obfuscated GAIA ID.
   if (!user_context_.GetGaiaID().empty()) {
-    user_manager::UserManager::Get()->UpdateGaiaID(user_context_.GetAccountId(),
-                                                   user_context_.GetGaiaID());
+    user_manager::known_user::UpdateGaiaID(user_context_.GetAccountId(),
+                                           user_context_.GetGaiaID());
   }
 }
 
@@ -981,10 +982,11 @@ void UserSessionManager::InitProfilePreferences(
 
     // Backfill GAIA ID in user prefs stored in Local State.
     std::string tmp_gaia_id;
-    user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-    if (!user_manager->FindGaiaID(user_context.GetAccountId(), &tmp_gaia_id) &&
+    if (!user_manager::known_user::FindGaiaID(user_context.GetAccountId(),
+                                              &tmp_gaia_id) &&
         !gaia_id.empty()) {
-      user_manager->UpdateGaiaID(user_context.GetAccountId(), gaia_id);
+      user_manager::known_user::UpdateGaiaID(user_context.GetAccountId(),
+                                             gaia_id);
     }
   }
 }
@@ -1090,7 +1092,8 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->IsLoggedInAsUserWithGaiaAccount()) {
     if (user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML)
-      user_manager->UpdateUsingSAML(user_context_.GetAccountId(), true);
+      user_manager::known_user::UpdateUsingSAML(user_context_.GetAccountId(),
+                                                true);
     SAMLOfflineSigninLimiter* saml_offline_signin_limiter =
         SAMLOfflineSigninLimiterFactory::GetForProfile(profile);
     if (saml_offline_signin_limiter)
@@ -1763,8 +1766,7 @@ void UserSessionManager::Shutdown() {
 
 void UserSessionManager::CreateTokenUtilIfMissing() {
   if (!token_handle_util_.get())
-    token_handle_util_.reset(
-        new TokenHandleUtil(user_manager::UserManager::Get()));
+    token_handle_util_.reset(new TokenHandleUtil());
 }
 
 }  // namespace chromeos

@@ -87,27 +87,4 @@ UserManager* UserManager::SetForTesting(UserManager* user_manager) {
   return previous_instance;
 }
 
-// static
-AccountId UserManager::GetKnownUserAccountId(const std::string& user_email,
-                                             const std::string& gaia_id) {
-  // In tests empty accounts are possible.
-  if (user_email.empty() && gaia_id.empty())
-    return EmptyAccountId();
-
-  if (user_email == chromeos::login::kStubUser)
-    return chromeos::login::StubAccountId();
-
-  if (user_email == chromeos::login::kGuestUserName)
-    return chromeos::login::GuestAccountId();
-
-  UserManager* user_manager = Get();
-  if (user_manager)
-    return user_manager->GetKnownUserAccountIdImpl(user_email, gaia_id);
-
-  // This is fallback for tests.
-  return (gaia_id.empty()
-              ? AccountId::FromUserEmail(user_email)
-              : AccountId::FromUserEmailGaiaId(user_email, gaia_id));
-}
-
 }  // namespace user_manager

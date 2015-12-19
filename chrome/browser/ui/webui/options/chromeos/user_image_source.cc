@@ -9,6 +9,7 @@
 #include "base/strings/string_split.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_manager.h"
 #include "grit/theme_resources.h"
@@ -36,7 +37,7 @@ void ParseRequest(const GURL& url,
   // migrated.
   if (!status) {
     LOG(WARNING) << "Failed to deserialize '" << serialized_account_id << "'";
-    account_id = user_manager::UserManager::Get()->GetKnownUserAccountId(
+    account_id = user_manager::known_user::GetAccountId(
         serialized_account_id, std::string() /* gaia_id */);
   }
   *email = account_id.GetUserEmail();

@@ -56,6 +56,7 @@
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_type.h"
@@ -439,8 +440,7 @@ void ChromeUserManagerImpl::Observe(
 void ChromeUserManagerImpl::OnExternalDataSet(const std::string& policy,
                                               const std::string& user_id) {
   const AccountId account_id =
-      user_manager::UserManager::Get()->GetKnownUserAccountId(user_id,
-                                                              std::string());
+      user_manager::known_user::GetAccountId(user_id, std::string());
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)->OnExternalDataSet(policy);
   else if (policy == policy::key::kWallpaperImage)
@@ -452,8 +452,7 @@ void ChromeUserManagerImpl::OnExternalDataSet(const std::string& policy,
 void ChromeUserManagerImpl::OnExternalDataCleared(const std::string& policy,
                                                   const std::string& user_id) {
   const AccountId account_id =
-      user_manager::UserManager::Get()->GetKnownUserAccountId(user_id,
-                                                              std::string());
+      user_manager::known_user::GetAccountId(user_id, std::string());
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)->OnExternalDataCleared(policy);
   else if (policy == policy::key::kWallpaperImage)
@@ -467,8 +466,7 @@ void ChromeUserManagerImpl::OnExternalDataFetched(
     const std::string& user_id,
     scoped_ptr<std::string> data) {
   const AccountId account_id =
-      user_manager::UserManager::Get()->GetKnownUserAccountId(user_id,
-                                                              std::string());
+      user_manager::known_user::GetAccountId(user_id, std::string());
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)->OnExternalDataFetched(policy, data.Pass());
   else if (policy == policy::key::kWallpaperImage)
@@ -479,8 +477,7 @@ void ChromeUserManagerImpl::OnExternalDataFetched(
 
 void ChromeUserManagerImpl::OnPolicyUpdated(const std::string& user_id) {
   const AccountId account_id =
-      user_manager::UserManager::Get()->GetKnownUserAccountId(user_id,
-                                                              std::string());
+      user_manager::known_user::GetAccountId(user_id, std::string());
   const user_manager::User* user = FindUser(account_id);
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     return;
@@ -1156,8 +1153,7 @@ void ChromeUserManagerImpl::SetUserAffiliation(
     const std::string& user_email,
     const AffiliationIDSet& user_affiliation_ids) {
   const AccountId& account_id =
-      user_manager::UserManager::GetKnownUserAccountId(user_email,
-                                                       std::string());
+      user_manager::known_user::GetAccountId(user_email, std::string());
   user_manager::User* user = FindUserAndModify(account_id);
 
   if (user) {

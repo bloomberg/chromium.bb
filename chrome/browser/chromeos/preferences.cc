@@ -38,7 +38,9 @@
 #include "components/feedback/tracing_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -625,8 +627,8 @@ void Preferences::ApplyPreferences(ApplyReason reason,
   if (pref_name == prefs::kUse24HourClock ||
       reason != REASON_ACTIVE_USER_CHANGED) {
     const bool value = prefs_->GetBoolean(prefs::kUse24HourClock);
-    user_manager::UserManager::Get()->SetKnownUserBooleanPref(
-        user_->GetAccountId(), prefs::kUse24HourClock, value);
+    user_manager::known_user::SetBooleanPref(user_->GetAccountId(),
+                                             prefs::kUse24HourClock, value);
   }
 }
 

@@ -106,46 +106,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
       UserManager::UserSessionStateObserver* obs) override;
   void NotifyLocalStateChanged() override;
   void ChangeUserChildStatus(User* user, bool is_child) override;
-  bool FindKnownUserPrefs(const AccountId& account_id,
-                          const base::DictionaryValue** out_value) override;
-  void UpdateKnownUserPrefs(const AccountId& account_id,
-                            const base::DictionaryValue& values,
-                            bool clear) override;
-  bool GetKnownUserStringPref(const AccountId& account_id,
-                              const std::string& path,
-                              std::string* out_value) override;
-  void SetKnownUserStringPref(const AccountId& account_id,
-                              const std::string& path,
-                              const std::string& in_value) override;
-  bool GetKnownUserBooleanPref(const AccountId& account_id,
-                               const std::string& path,
-                               bool* out_value) override;
-  void SetKnownUserBooleanPref(const AccountId& account_id,
-                               const std::string& path,
-                               const bool in_value) override;
-  bool GetKnownUserIntegerPref(const AccountId& account_id,
-                               const std::string& path,
-                               int* out_value) override;
-  void SetKnownUserIntegerPref(const AccountId& account_id,
-                               const std::string& path,
-                               int in_value) override;
-  AccountId GetKnownUserAccountIdImpl(const std::string& user_email,
-                                      const std::string& gaia_id) override;
-  void UpdateGaiaID(const AccountId& account_id,
-                    const std::string& gaia_id) override;
-  bool FindGaiaID(const AccountId& account_id, std::string* out_value) override;
-  void UpdateUsingSAML(const AccountId& account_id,
-                       const bool using_saml) override;
-  bool FindUsingSAML(const AccountId& account_id) override;
-  void SetKnownUserDeviceId(const AccountId& account_id,
-                            const std::string& device_id) override;
-  std::string GetKnownUserDeviceId(const AccountId& account_id) override;
-  void SetKnownUserGAPSCookie(const AccountId& account_id,
-                              const std::string& gaps_cookie) override;
-  std::string GetKnownUserGAPSCookie(const AccountId& account_id) override;
-  void UpdateReauthReason(const AccountId& account_id,
-                          int reauth_reason) override;
-  bool FindReauthReason(const AccountId& account_id, int* out_value) override;
 
   // This method updates "User was added to the device in this session nad is
   // not full initialized yet" flag.
@@ -180,9 +140,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Returns the locale used by the application.
   virtual const std::string& GetApplicationLocale() const = 0;
-
-  // Returns "Local State" PrefService instance.
-  virtual PrefService* GetLocalState() const = 0;
 
   // Loads |users_| from Local State if the list has not been loaded yet.
   // Subsequent calls have no effect. Must be called on the UI thread.
@@ -371,9 +328,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Updates user account after locale was resolved.
   void DoUpdateAccountLocale(const AccountId& account_id,
                              scoped_ptr<std::string> resolved_locale);
-
-  // Removes all user preferences associated with |account_id|.
-  void RemoveKnownUserPrefs(const AccountId& account_id);
 
   // Indicates stage of loading user from prefs.
   UserLoadStage user_loading_stage_ = STAGE_NOT_LOADED;

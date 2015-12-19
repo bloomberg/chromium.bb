@@ -29,6 +29,7 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/login/user_names.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -70,30 +71,6 @@ const char kLastLoggedInGaiaUser[] = "LastLoggedInRegularUser";
 // session restore.
 const char kLastActiveUser[] = "LastActiveUser";
 
-// A vector pref of preferences of known users. All new preferences should be
-// placed in this list.
-const char kKnownUsers[] = "KnownUsers";
-
-// Known user preferences keys (stored in Local State).
-
-// Key of canonical e-mail value.
-const char kCanonicalEmail[] = "email";
-
-// Key of obfuscated GAIA id value.
-const char kGAIAIdKey[] = "gaia_id";
-
-// Key of whether this user ID refers to a SAML user.
-const char kUsingSAMLKey[] = "using_saml";
-
-// Key of Device Id.
-const char kDeviceId[] = "device_id";
-
-// Key of GAPS cookie.
-const char kGAPSCookie[] = "gaps_cookie";
-
-// Key of the reason for re-auth.
-const char kReauthReasonKey[] = "reauth_reason";
-
 // Upper bound for a histogram metric reporting the amount of time between
 // one regular user logging out and a different regular user logging in.
 const int kLogoutToLoginDelayMaxSec = 1800;
@@ -115,34 +92,11 @@ void ResolveLocale(const std::string& raw_locale,
   ignore_result(l10n_util::CheckAndResolveLocale(raw_locale, resolved_locale));
 }
 
-// Checks if values in |dict| correspond with |account_id| identity.
-bool UserMatches(const AccountId& account_id,
-                 const base::DictionaryValue& dict) {
-  std::string value;
-
-  // TODO(alemate): update code once user id is really a struct.
-  bool has_gaia_id = dict.GetString(kGAIAIdKey, &value);
-  if (has_gaia_id && account_id.GetGaiaId() == value)
-    return true;
-
-  bool has_email = dict.GetString(kCanonicalEmail, &value);
-  if (has_email && account_id.GetUserEmail() == value)
-    return true;
-
-  return false;
-}
-
-// Fills relevant |dict| values based on |account_id|.
-void UpdateIdentity(const AccountId& account_id, base::DictionaryValue& dict) {
-  dict.SetString(kCanonicalEmail, account_id.GetUserEmail());
-}
-
 }  // namespace
 
 // static
 void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kRegularUsers);
-  registry->RegisterListPref(kKnownUsers);
   registry->RegisterStringPref(kLastLoggedInGaiaUser, std::string());
   registry->RegisterDictionaryPref(kUserDisplayName);
   registry->RegisterDictionaryPref(kUserGivenName);
@@ -151,6 +105,8 @@ void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kUserForceOnlineSignin);
   registry->RegisterDictionaryPref(kUserType);
   registry->RegisterStringPref(kLastActiveUser, std::string());
+
+  known_user::RegisterPrefs(registry);
 }
 
 UserManagerBase::UserManagerBase(
@@ -539,28 +495,6 @@ void UserManagerBase::SaveUserType(const AccountId& account_id,
   GetLocalState()->CommitPendingWrite();
 }
 
-void UserManagerBase::UpdateUsingSAML(const AccountId& account_id,
-                                      const bool using_saml) {
-  SetKnownUserBooleanPref(account_id, kUsingSAMLKey, using_saml);
-}
-
-bool UserManagerBase::FindUsingSAML(const AccountId& account_id) {
-  bool using_saml;
-  if (GetKnownUserBooleanPref(account_id, kUsingSAMLKey, &using_saml))
-    return using_saml;
-  return false;
-}
-
-void UserManagerBase::UpdateReauthReason(const AccountId& account_id,
-                                         const int reauth_reason) {
-  SetKnownUserIntegerPref(account_id, kReauthReasonKey, reauth_reason);
-}
-
-bool UserManagerBase::FindReauthReason(const AccountId& account_id,
-                                       int* out_value) {
-  return GetKnownUserIntegerPref(account_id, kReauthReasonKey, out_value);
-}
-
 void UserManagerBase::UpdateUserAccountData(
     const AccountId& account_id,
     const UserAccountData& account_data) {
@@ -594,7 +528,7 @@ void UserManagerBase::ParseUserList(const base::ListValue& users_list,
       continue;
     }
 
-    const AccountId account_id = GetKnownUserAccountId(email, std::string());
+    const AccountId account_id = known_user::GetAccountId(email, std::string());
 
     if (existing_users.find(account_id) != existing_users.end() ||
         !users_set->insert(account_id).second) {
@@ -852,7 +786,7 @@ void UserManagerBase::EnsureUsersLoaded() {
     const AccountId account_id = user->GetAccountId();
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
     user->set_force_online_signin(LoadForceOnlineSignin(*it));
-    user->set_using_saml(FindUsingSAML(*it));
+    user->set_using_saml(known_user::IsUsingSAML(*it));
     users_.push_back(user);
 
     base::string16 display_name;
@@ -1013,217 +947,12 @@ void UserManagerBase::RemoveNonCryptohomeData(const AccountId& account_id) {
   prefs_force_online_update->RemoveWithoutPathExpansion(
       account_id.GetUserEmail(), nullptr);
 
-  RemoveKnownUserPrefs(account_id);
+  known_user::RemovePrefs(account_id);
 
   const AccountId last_active_user =
       AccountId::FromUserEmail(GetLocalState()->GetString(kLastActiveUser));
   if (account_id == last_active_user)
     GetLocalState()->SetString(kLastActiveUser, std::string());
-}
-
-bool UserManagerBase::FindKnownUserPrefs(
-    const AccountId& account_id,
-    const base::DictionaryValue** out_value) {
-  PrefService* local_state = GetLocalState();
-
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return false;
-
-  if (IsUserNonCryptohomeDataEphemeral(account_id))
-    return false;
-
-  const base::ListValue* known_users = local_state->GetList(kKnownUsers);
-  for (size_t i = 0; i < known_users->GetSize(); ++i) {
-    const base::DictionaryValue* element = nullptr;
-    if (known_users->GetDictionary(i, &element)) {
-      if (UserMatches(account_id, *element)) {
-        known_users->GetDictionary(i, out_value);
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-void UserManagerBase::UpdateKnownUserPrefs(const AccountId& account_id,
-                                           const base::DictionaryValue& values,
-                                           bool clear) {
-  PrefService* local_state = GetLocalState();
-
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-
-  if (IsUserNonCryptohomeDataEphemeral(account_id))
-    return;
-
-  ListPrefUpdate update(local_state, kKnownUsers);
-  for (size_t i = 0; i < update->GetSize(); ++i) {
-    base::DictionaryValue* element = nullptr;
-    if (update->GetDictionary(i, &element)) {
-      if (UserMatches(account_id, *element)) {
-        if (clear)
-          element->Clear();
-        element->MergeDictionary(&values);
-        UpdateIdentity(account_id, *element);
-        return;
-      }
-    }
-  }
-  scoped_ptr<base::DictionaryValue> new_value(new base::DictionaryValue());
-  new_value->MergeDictionary(&values);
-  UpdateIdentity(account_id, *new_value);
-  update->Append(new_value.release());
-}
-
-bool UserManagerBase::GetKnownUserStringPref(const AccountId& account_id,
-                                             const std::string& path,
-                                             std::string* out_value) {
-  const base::DictionaryValue* user_pref_dict = nullptr;
-  if (!FindKnownUserPrefs(account_id, &user_pref_dict))
-    return false;
-
-  return user_pref_dict->GetString(path, out_value);
-}
-
-void UserManagerBase::SetKnownUserStringPref(const AccountId& account_id,
-                                             const std::string& path,
-                                             const std::string& in_value) {
-  PrefService* local_state = GetLocalState();
-
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-
-  ListPrefUpdate update(local_state, kKnownUsers);
-  base::DictionaryValue dict;
-  dict.SetString(path, in_value);
-  UpdateKnownUserPrefs(account_id, dict, false);
-}
-
-bool UserManagerBase::GetKnownUserBooleanPref(const AccountId& account_id,
-                                              const std::string& path,
-                                              bool* out_value) {
-  const base::DictionaryValue* user_pref_dict = nullptr;
-  if (!FindKnownUserPrefs(account_id, &user_pref_dict))
-    return false;
-
-  return user_pref_dict->GetBoolean(path, out_value);
-}
-
-void UserManagerBase::SetKnownUserBooleanPref(const AccountId& account_id,
-                                              const std::string& path,
-                                              const bool in_value) {
-  PrefService* local_state = GetLocalState();
-
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-
-  ListPrefUpdate update(local_state, kKnownUsers);
-  base::DictionaryValue dict;
-  dict.SetBoolean(path, in_value);
-  UpdateKnownUserPrefs(account_id, dict, false);
-}
-
-bool UserManagerBase::GetKnownUserIntegerPref(const AccountId& account_id,
-                                              const std::string& path,
-                                              int* out_value) {
-  const base::DictionaryValue* user_pref_dict = nullptr;
-  if (!FindKnownUserPrefs(account_id, &user_pref_dict))
-    return false;
-  return user_pref_dict->GetInteger(path, out_value);
-}
-
-void UserManagerBase::SetKnownUserIntegerPref(const AccountId& account_id,
-                                              const std::string& path,
-                                              const int in_value) {
-  PrefService* local_state = GetLocalState();
-
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-
-  ListPrefUpdate update(local_state, kKnownUsers);
-  base::DictionaryValue dict;
-  dict.SetInteger(path, in_value);
-  UpdateKnownUserPrefs(account_id, dict, false);
-}
-
-AccountId UserManagerBase::GetKnownUserAccountIdImpl(
-    const std::string& user_email,
-    const std::string& gaia_id) {
-  DCHECK(!(user_email.empty() && gaia_id.empty()));
-
-  // We can have several users with the same gaia_id but different e-mails.
-  // The opposite case is not possible.
-  std::string stored_gaia_id;
-  const std::string sanitized_email =
-      user_email.empty()
-          ? std::string()
-          : gaia::CanonicalizeEmail(gaia::SanitizeEmail(user_email));
-  if (!sanitized_email.empty() &&
-      GetKnownUserStringPref(AccountId::FromUserEmail(sanitized_email),
-                             kGAIAIdKey, &stored_gaia_id)) {
-    if (!gaia_id.empty() && gaia_id != stored_gaia_id)
-      LOG(ERROR) << "User gaia id has changed. Sync will not work.";
-
-    // gaia_id is associated with cryptohome.
-    return AccountId::FromUserEmailGaiaId(sanitized_email, stored_gaia_id);
-  }
-
-  std::string stored_email;
-  // GetKnownUserStringPref() returns the first user record that matches
-  // given ID. So we will get the first one if there are multiples.
-  if (!gaia_id.empty() &&
-      GetKnownUserStringPref(AccountId::FromGaiaId(gaia_id), kCanonicalEmail,
-                             &stored_email)) {
-    return AccountId::FromUserEmailGaiaId(stored_email, gaia_id);
-  }
-
-  return AccountId::FromUserEmailGaiaId(sanitized_email, gaia_id);
-}
-
-void UserManagerBase::UpdateGaiaID(const AccountId& account_id,
-                                   const std::string& gaia_id) {
-  SetKnownUserStringPref(account_id, kGAIAIdKey, gaia_id);
-}
-
-bool UserManagerBase::FindGaiaID(const AccountId& account_id,
-                                 std::string* out_value) {
-  return GetKnownUserStringPref(account_id, kGAIAIdKey, out_value);
-}
-
-void UserManagerBase::SetKnownUserDeviceId(const AccountId& account_id,
-                                           const std::string& device_id) {
-  const std::string known_device_id = GetKnownUserDeviceId(account_id);
-  if (!known_device_id.empty() && device_id != known_device_id) {
-    NOTREACHED() << "Trying to change device ID for known user.";
-  }
-  SetKnownUserStringPref(account_id, kDeviceId, device_id);
-}
-
-std::string UserManagerBase::GetKnownUserDeviceId(const AccountId& account_id) {
-  std::string device_id;
-  if (GetKnownUserStringPref(account_id, kDeviceId, &device_id)) {
-    return device_id;
-  }
-  return std::string();
-}
-
-void UserManagerBase::SetKnownUserGAPSCookie(const AccountId& account_id,
-                                             const std::string& gaps_cookie) {
-  SetKnownUserStringPref(account_id, kGAPSCookie, gaps_cookie);
-}
-
-std::string UserManagerBase::GetKnownUserGAPSCookie(
-    const AccountId& account_id) {
-  std::string gaps_cookie;
-  if (GetKnownUserStringPref(account_id, kGAPSCookie, &gaps_cookie)) {
-    return gaps_cookie;
-  }
-  return std::string();
 }
 
 User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
@@ -1245,19 +974,6 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
   }
   OnUserRemoved(account_id);
   return user;
-}
-
-void UserManagerBase::RemoveKnownUserPrefs(const AccountId& account_id) {
-  ListPrefUpdate update(GetLocalState(), kKnownUsers);
-  for (size_t i = 0; i < update->GetSize(); ++i) {
-    base::DictionaryValue* element = nullptr;
-    if (update->GetDictionary(i, &element)) {
-      if (UserMatches(account_id, *element)) {
-        update->Remove(i, nullptr);
-        break;
-      }
-    }
-  }
 }
 
 void UserManagerBase::NotifyActiveUserChanged(const User* active_user) {

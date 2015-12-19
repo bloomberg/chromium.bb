@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/user_manager/user_manager.h"
+#include "components/user_manager/known_user.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
 namespace {
@@ -25,9 +25,7 @@ static const int kMaxRetries = 3;
 
 }  // namespace
 
-TokenHandleUtil::TokenHandleUtil(user_manager::UserManager* user_manager)
-    : user_manager_(user_manager), weak_factory_(this) {
-}
+TokenHandleUtil::TokenHandleUtil() : weak_factory_(this) {}
 
 TokenHandleUtil::~TokenHandleUtil() {
   weak_factory_.InvalidateWeakPtrs();
@@ -37,7 +35,7 @@ TokenHandleUtil::~TokenHandleUtil() {
 bool TokenHandleUtil::HasToken(const AccountId& account_id) {
   const base::DictionaryValue* dict = nullptr;
   std::string token;
-  if (!user_manager_->FindKnownUserPrefs(account_id, &dict))
+  if (!user_manager::known_user::FindPrefs(account_id, &dict))
     return false;
   if (!dict->GetString(kTokenHandlePref, &token))
     return false;
@@ -47,7 +45,7 @@ bool TokenHandleUtil::HasToken(const AccountId& account_id) {
 bool TokenHandleUtil::ShouldObtainHandle(const AccountId& account_id) {
   const base::DictionaryValue* dict = nullptr;
   std::string token;
-  if (!user_manager_->FindKnownUserPrefs(account_id, &dict))
+  if (!user_manager::known_user::FindPrefs(account_id, &dict))
     return true;
   if (!dict->GetString(kTokenHandlePref, &token))
     return true;
@@ -60,25 +58,25 @@ bool TokenHandleUtil::ShouldObtainHandle(const AccountId& account_id) {
 
 void TokenHandleUtil::DeleteHandle(const AccountId& account_id) {
   const base::DictionaryValue* dict = nullptr;
-  if (!user_manager_->FindKnownUserPrefs(account_id, &dict))
+  if (!user_manager::known_user::FindPrefs(account_id, &dict))
     return;
   scoped_ptr<base::DictionaryValue> dict_copy(dict->DeepCopy());
   dict_copy->Remove(kTokenHandlePref, nullptr);
   dict_copy->Remove(kTokenHandleStatusPref, nullptr);
-  user_manager_->UpdateKnownUserPrefs(account_id, *dict_copy.get(),
-                                      /* replace values */ true);
+  user_manager::known_user::UpdatePrefs(account_id, *dict_copy.get(),
+                                        /* replace values */ true);
 }
 
 void TokenHandleUtil::MarkHandleInvalid(const AccountId& account_id) {
-  user_manager_->SetKnownUserStringPref(account_id, kTokenHandleStatusPref,
-                                        kHandleStatusInvalid);
+  user_manager::known_user::SetStringPref(account_id, kTokenHandleStatusPref,
+                                          kHandleStatusInvalid);
 }
 
 void TokenHandleUtil::CheckToken(const AccountId& account_id,
                                  const TokenValidationCallback& callback) {
   const base::DictionaryValue* dict = nullptr;
   std::string token;
-  if (!user_manager_->FindKnownUserPrefs(account_id, &dict)) {
+  if (!user_manager::known_user::FindPrefs(account_id, &dict)) {
     callback.Run(account_id, UNKNOWN);
     return;
   }
@@ -102,9 +100,9 @@ void TokenHandleUtil::CheckToken(const AccountId& account_id,
 
 void TokenHandleUtil::StoreTokenHandle(const AccountId& account_id,
                                        const std::string& handle) {
-  user_manager_->SetKnownUserStringPref(account_id, kTokenHandlePref, handle);
-  user_manager_->SetKnownUserStringPref(account_id, kTokenHandleStatusPref,
-                                        kHandleStatusValid);
+  user_manager::known_user::SetStringPref(account_id, kTokenHandlePref, handle);
+  user_manager::known_user::SetStringPref(account_id, kTokenHandleStatusPref,
+                                          kHandleStatusValid);
 }
 
 void TokenHandleUtil::OnValidationComplete(const std::string& token) {

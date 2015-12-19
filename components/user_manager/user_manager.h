@@ -12,6 +12,7 @@
 #include "components/user_manager/user_type.h"
 
 class AccountId;
+class PrefService;
 
 namespace base {
 class DictionaryValue;
@@ -315,109 +316,8 @@ class USER_MANAGER_EXPORT UserManager {
   // Returns true if supervised users allowed.
   virtual bool AreSupervisedUsersAllowed() const = 0;
 
-  // Methods for storage/retrieval of per-user properties in Local State.
-
-  // Performs a lookup of properties associated with |account_id|. If found,
-  // returns |true| and fills |out_value|. |out_value| can be NULL, if
-  // only existence check is required.
-  virtual bool FindKnownUserPrefs(const AccountId& account_id,
-                                  const base::DictionaryValue** out_value) = 0;
-
-  // Updates (or creates) properties associated with |account_id| based
-  // on |values|. |clear| defines if existing properties are cleared (|true|)
-  // or if it is just a incremental update (|false|).
-  virtual void UpdateKnownUserPrefs(const AccountId& account_id,
-                                    const base::DictionaryValue& values,
-                                    bool clear) = 0;
-
-  // Returns true if |account_id| preference by |path| does exist,
-  // fills in |out_value|. Otherwise returns false.
-  virtual bool GetKnownUserStringPref(const AccountId& account_id,
-                                      const std::string& path,
-                                      std::string* out_value) = 0;
-
-  // Updates user's identified by |account_id| string preference |path|.
-  virtual void SetKnownUserStringPref(const AccountId& account_id,
-                                      const std::string& path,
-                                      const std::string& in_value) = 0;
-
-  // Returns true if |account_id| preference by |path| does exist,
-  // fills in |out_value|. Otherwise returns false.
-  virtual bool GetKnownUserBooleanPref(const AccountId& account_id,
-                                       const std::string& path,
-                                       bool* out_value) = 0;
-
-  // Updates user's identified by |account_id| boolean preference |path|.
-  virtual void SetKnownUserBooleanPref(const AccountId& account_id,
-                                       const std::string& path,
-                                       const bool in_value) = 0;
-
-  // Returns true if |account_id| preference by |path| does exist,
-  // fills in |out_value|. Otherwise returns false.
-  virtual bool GetKnownUserIntegerPref(const AccountId& account_id,
-                                       const std::string& path,
-                                       int* out_value) = 0;
-
-  // Updates user's identified by |account_id| integer preference |path|.
-  virtual void SetKnownUserIntegerPref(const AccountId& account_id,
-                                       const std::string& path,
-                                       const int in_value) = 0;
-
-  // This call forms full account id of a known user by email and (optionally)
-  // gaia_id.
-  // This is a temporary call while migrating to AccountId.
-  virtual AccountId GetKnownUserAccountIdImpl(const std::string& user_email,
-                                              const std::string& gaia_id) = 0;
-
-  // The same as above, but doesn't crash in unit_tests when Usermanager
-  // doesn't exist.
-  static AccountId GetKnownUserAccountId(const std::string& user_email,
-                                         const std::string& gaia_id);
-
-  // Updates |gaia_id| for user with |account_id|.
-  // TODO(alemate): Update this once AccountId contains GAIA ID
-  // (crbug.com/548926).
-  virtual void UpdateGaiaID(const AccountId& account_id,
-                            const std::string& gaia_id) = 0;
-
-  // Find GAIA ID for user with |account_id|, fill in |out_value| and return
-  // true
-  // if GAIA ID was found or false otherwise.
-  // TODO(antrim): Update this once AccountId contains GAIA ID
-  // (crbug.com/548926).
-  virtual bool FindGaiaID(const AccountId& account_id,
-                          std::string* out_value) = 0;
-
-  // Saves whether the user authenticates using SAML.
-  virtual void UpdateUsingSAML(const AccountId& account_id,
-                               const bool using_saml) = 0;
-
-  // Returns if SAML needs to be used for authentication of the user with
-  // |account_id|, if it is known (was set by a |UpdateUsingSaml| call).
-  // Otherwise
-  // returns false.
-  virtual bool FindUsingSAML(const AccountId& account_id) = 0;
-
-  // Setter and getter for DeviceId known user string preference.
-  virtual void SetKnownUserDeviceId(const AccountId& account_id,
-                                    const std::string& device_id) = 0;
-  virtual std::string GetKnownUserDeviceId(const AccountId& account_id) = 0;
-
-  // Setter and getter for GAPSCookie known user string preference.
-  virtual void SetKnownUserGAPSCookie(const AccountId& account_id,
-                                      const std::string& gaps_cookie) = 0;
-
-  virtual std::string GetKnownUserGAPSCookie(const AccountId& account_id) = 0;
-
-  // Saves why the user has to go through re-auth flow.
-  virtual void UpdateReauthReason(const AccountId& account_id,
-                                  const int reauth_reason) = 0;
-
-  // Returns the reason why the user with |account_id| has to go through the
-  // re-auth flow. Returns true if such a reason was recorded or false
-  // otherwise.
-  virtual bool FindReauthReason(const AccountId& account_id,
-                                int* out_value) = 0;
+  // Returns "Local State" PrefService instance.
+  virtual PrefService* GetLocalState() const = 0;
 
  protected:
   // Sets UserManager instance.

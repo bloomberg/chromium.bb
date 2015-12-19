@@ -63,6 +63,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
@@ -1065,8 +1066,7 @@ void ExistingUserController::DoCompleteLogin(
     const UserContext& user_context_wo_device_id) {
   UserContext user_context = user_context_wo_device_id;
   std::string device_id =
-      user_manager::UserManager::Get()->GetKnownUserDeviceId(
-          user_context.GetAccountId());
+      user_manager::known_user::GetDeviceId(user_context.GetAccountId());
   if (device_id.empty()) {
     bool is_ephemeral = ChromeUserManager::Get()->AreEphemeralUsersEnabled() &&
                         user_context.GetAccountId() !=
@@ -1077,8 +1077,8 @@ void ExistingUserController::DoCompleteLogin(
 
   const std::string& gaps_cookie = user_context.GetGAPSCookie();
   if (!gaps_cookie.empty()) {
-    user_manager::UserManager::Get()->SetKnownUserGAPSCookie(
-        user_context.GetAccountId(), gaps_cookie);
+    user_manager::known_user::SetGAPSCookie(user_context.GetAccountId(),
+                                            gaps_cookie);
   }
 
   PerformPreLoginActions(user_context);

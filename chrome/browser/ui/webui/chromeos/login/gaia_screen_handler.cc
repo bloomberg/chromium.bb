@@ -35,6 +35,7 @@
 #include "chromeos/system/devicetype.h"
 #include "chromeos/system/version_loader.h"
 #include "components/login/localized_values_builder.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -369,9 +370,8 @@ void GaiaScreenHandler::OnPortalDetectionCompleted(
 }
 
 void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
-  if (!Delegate()->IsUserWhitelisted(
-          user_manager::UserManager::Get()->GetKnownUserAccountId(
-              user_email, std::string() /* gaia_id */)))
+  if (!Delegate()->IsUserWhitelisted(user_manager::known_user::GetAccountId(
+          user_email, std::string() /* gaia_id */)))
     ShowWhitelistCheckFailedError();
 }
 
@@ -415,8 +415,8 @@ AccountId GaiaScreenHandler::GetAccountId(
   const std::string canonicalized_email =
       gaia::CanonicalizeEmail(gaia::SanitizeEmail(authenticated_email));
 
-  const AccountId account_id = user_manager::UserManager::GetKnownUserAccountId(
-      authenticated_email, gaia_id);
+  const AccountId account_id =
+      user_manager::known_user::GetAccountId(authenticated_email, gaia_id);
 
   if (account_id.GetUserEmail() != canonicalized_email) {
     LOG(WARNING) << "Existing user '" << account_id.GetUserEmail()
@@ -666,9 +666,8 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   if (populated_email_.empty()) {
     Delegate()->LoadSigninWallpaper();
   } else {
-    Delegate()->LoadWallpaper(
-        user_manager::UserManager::Get()->GetKnownUserAccountId(
-            populated_email_, std::string()));
+    Delegate()->LoadWallpaper(user_manager::known_user::GetAccountId(
+        populated_email_, std::string()));
   }
 
   input_method::InputMethodManager* imm =
@@ -769,15 +768,14 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
 
   std::string gaia_id;
   if (!context.email.empty() &&
-      user_manager::UserManager::Get()->FindGaiaID(
+      user_manager::known_user::FindGaiaID(
           AccountId::FromUserEmail(context.email), &gaia_id)) {
     context.gaia_id = gaia_id;
   }
 
   if (!context.email.empty()) {
-    context.gaps_cookie =
-        user_manager::UserManager::Get()->GetKnownUserGAPSCookie(
-            AccountId::FromUserEmail(gaia::CanonicalizeEmail(context.email)));
+    context.gaps_cookie = user_manager::known_user::GetGAPSCookie(
+        AccountId::FromUserEmail(gaia::CanonicalizeEmail(context.email)));
   }
 
   populated_email_.clear();

@@ -21,17 +21,13 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace user_manager {
-class UserManager;
-}
-
 // This class is responsible for operations with External Token Handle.
 // Handle is an extra token associated with OAuth refresh token that have
 // exactly same lifetime. It is not secure, and it's only purpose is checking
 // validity of corresponding refresh token in the insecure environment.
 class TokenHandleUtil {
  public:
-  explicit TokenHandleUtil(user_manager::UserManager* user_manager);
+  TokenHandleUtil();
   ~TokenHandleUtil();
 
   enum TokenHandleStatus { VALID, INVALID, UNKNOWN };
@@ -87,9 +83,6 @@ class TokenHandleUtil {
 
   void OnValidationComplete(const std::string& token);
   void OnObtainTokenComplete(const AccountId& account_id);
-
-  // UserManager that stores corresponding user data.
-  user_manager::UserManager* user_manager_;
 
   // Map of pending check operations.
   base::ScopedPtrHashMap<std::string, scoped_ptr<TokenDelegate>>

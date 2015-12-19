@@ -9,6 +9,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
+#include "components/user_manager/known_user.h"
 
 namespace chromeos {
 
@@ -62,8 +63,8 @@ void BootstrapManager::RemoveAllPendingBootstrap() {
     std::string current_user_email;
     if (users->GetString(i, &current_user_email)) {
       delegate_->RemovePendingBootstrapUser(
-          user_manager::UserManager::Get()->GetKnownUserAccountId(
-              current_user_email, std::string() /* gaia_id */));
+          user_manager::known_user::GetAccountId(current_user_email,
+                                                 std::string() /* gaia_id */));
     }
   }
 

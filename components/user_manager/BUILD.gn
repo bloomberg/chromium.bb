@@ -24,6 +24,8 @@ component("user_manager") {
 
   if (is_chromeos) {
     sources += [
+      "known_user.cc",
+      "known_user.h",
       "remove_user_delegate.h",
       "user.cc",
       "user.h",

@@ -16,6 +16,8 @@
     ],
     # Chrome OS user_manager sources.
     'user_manager_chromeos_sources': [
+      'user_manager/known_user.cc',
+      'user_manager/known_user.h',
       'user_manager/remove_user_delegate.h',
       'user_manager/user.cc',
       'user_manager/user.h',
