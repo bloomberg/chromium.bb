@@ -20,10 +20,6 @@
 
 class GURL;
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace chrome {
 
 namespace android {
@@ -45,8 +41,7 @@ namespace android {
 class DataUseUITabModel : public KeyedService,
                           public DataUseTabModel::TabDataUseObserver {
  public:
-  explicit DataUseUITabModel(
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  DataUseUITabModel();
   ~DataUseUITabModel() override;
 
   // Reports a browser navigation to the DataUseTabModel on IO thread. Includes
@@ -75,8 +70,9 @@ class DataUseUITabModel : public KeyedService,
   // Calling this function resets the state of the tab.
   bool HasDataUseTrackingEnded(SessionID::id_type tab_id);
 
-  // Sets the weak pointer to DataUseTabModel.
-  void SetDataUseTabModel(base::WeakPtr<DataUseTabModel> data_use_tab_model);
+  // Sets the pointer to DataUseTabModel. |data_use_tab_model| is owned by the
+  // caller.
+  void SetDataUseTabModel(DataUseTabModel* data_use_tab_model);
 
   base::WeakPtr<DataUseUITabModel> GetWeakPtr();
 
@@ -122,11 +118,8 @@ class DataUseUITabModel : public KeyedService,
   TabEvents tab_events_;
 
   // |data_use_tab_model_| is notified by |this| about browser navigations
-  // and tab closures on IO thread. |data_use_tab_model_| should only be
-  // used on IO thread.
+  // and tab closures on UI thread.
   base::WeakPtr<DataUseTabModel> data_use_tab_model_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   base::ThreadChecker thread_checker_;
 

@@ -15,7 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/android/data_usage/data_use_tab_model_test_utils.h"
+#include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
@@ -61,10 +61,6 @@ class ExternalDataUseObserverTest : public testing::Test {
         ui_task_runner_.get()));
     // Wait for |external_data_use_observer_| to create the Java object.
     base::RunLoop().RunUntilIdle();
-
-    test_data_use_tab_model_ = new TestDataUseTabModel(ui_task_runner_.get());
-    external_data_use_observer_->data_use_tab_model_.reset(
-        test_data_use_tab_model_);
   }
 
   // Replaces |external_data_use_observer_| with a new ExternalDataUseObserver.
@@ -83,18 +79,16 @@ class ExternalDataUseObserverTest : public testing::Test {
     external_data_use_observer_.reset(new ExternalDataUseObserver(
         data_use_aggregator_.get(), io_task_runner_.get(),
         ui_task_runner_.get()));
-    // |test_data_use_tab_model| is owned by |observer|.
-    TestDataUseTabModel* test_data_use_tab_model(
-        new TestDataUseTabModel(ui_task_runner_.get()));
-    external_data_use_observer_->data_use_tab_model_.reset(
-        test_data_use_tab_model);
+    // Wait for |external_data_use_observer_| to create the Java object.
+    base::RunLoop().RunUntilIdle();
   }
 
   void FetchMatchingRulesDone(const std::vector<std::string>& app_package_name,
                               const std::vector<std::string>& domain_path_regex,
                               const std::vector<std::string>& label) {
-    external_data_use_observer_->FetchMatchingRulesDone(
-        &app_package_name, &domain_path_regex, &label);
+    external_data_use_observer_->GetDataUseTabModel()->RegisterURLRegexes(
+        app_package_name, domain_path_regex, label);
+    base::RunLoop().RunUntilIdle();
   }
 
   // Adds a default matching rule to |external_data_use_observer_|.
@@ -123,12 +117,13 @@ class ExternalDataUseObserverTest : public testing::Test {
         default_upload_bytes(), default_download_bytes());
   }
 
-  ExternalDataUseObserver* external_data_use_observer() const {
-    return external_data_use_observer_.get();
+  void OnDataUse(const data_usage::DataUse& data_use) {
+    external_data_use_observer_->OnDataUse(data_use);
+    base::RunLoop().RunUntilIdle();
   }
 
-  TestDataUseTabModel* test_data_use_tab_model() const {
-    return test_data_use_tab_model_;
+  ExternalDataUseObserver* external_data_use_observer() const {
+    return external_data_use_observer_.get();
   }
 
   const ExternalDataUseObserver::DataUseReports& buffered_data_reports() const {
@@ -146,35 +141,25 @@ class ExternalDataUseObserverTest : public testing::Test {
   scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
   scoped_ptr<ExternalDataUseObserver> external_data_use_observer_;
 
-  // Owned by |external_data_use_observer_|.
-  TestDataUseTabModel* test_data_use_tab_model_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 };
 
-// Tests that tab model is notified when tracking labels are removed.
-TEST_F(ExternalDataUseObserverTest, LabelRemoved) {
-  std::vector<std::string> labels;
+// Verifies that the external data use observer is registered as an observer
+// only when at least one matching rule is present.
+TEST_F(ExternalDataUseObserverTest, RegisteredAsDataUseObserver) {
+  EXPECT_FALSE(external_data_use_observer()->registered_as_data_use_observer_);
 
-  labels.push_back("label_1");
-  labels.push_back("label_2");
-  labels.push_back("label_3");
-  FetchMatchingRulesDone(
-      std::vector<std::string>(labels.size(), std::string()),
-      std::vector<std::string>(labels.size(), "http://foobar.com"), labels);
+  AddDefaultMatchingRule();
+  EXPECT_TRUE(external_data_use_observer()->registered_as_data_use_observer_);
 
-  EXPECT_CALL(*test_data_use_tab_model(), OnTrackingLabelRemoved("label_3"))
-      .Times(1);
-  EXPECT_CALL(*test_data_use_tab_model(), OnTrackingLabelRemoved("label_2"))
-      .Times(1);
-
-  labels.clear();
-  labels.push_back("label_1");
-  labels.push_back("label_4");
-  labels.push_back("label_5");
-  FetchMatchingRulesDone(
-      std::vector<std::string>(labels.size(), std::string()),
-      std::vector<std::string>(labels.size(), "http://foobar.com"), labels);
+  // Push an empty vector. Since no matching rules are present,
+  // |external_data_use_observer| should no longer be registered as a data use
+  // observer.
+  FetchMatchingRulesDone(std::vector<std::string>(), std::vector<std::string>(),
+                         std::vector<std::string>());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(external_data_use_observer()->registered_as_data_use_observer_);
 }
 
 // Verifies that buffer size does not exceed the specified limit.
@@ -182,12 +167,13 @@ TEST_F(ExternalDataUseObserverTest, BufferSize) {
   base::HistogramTester histogram_tester;
 
   AddDefaultMatchingRule();
+  TriggerTabTrackingOnDefaultTab();
 
   // Push more entries than the buffer size. Buffer size should not be exceeded.
   for (size_t i = 0; i < ExternalDataUseObserver::kMaxBufferSize * 2; ++i) {
     data_usage::DataUse data_use = default_data_use();
     data_use.mcc_mnc = "mccmnc" + base::Int64ToString(i);
-    external_data_use_observer()->OnDataUse(data_use);
+    OnDataUse(data_use);
   }
 
   EXPECT_LE(0, external_data_use_observer()->total_bytes_buffered_);
@@ -218,24 +204,25 @@ TEST_F(ExternalDataUseObserverTest, BufferSize) {
 // Tests that buffered data use reports are merged correctly.
 TEST_F(ExternalDataUseObserverTest, ReportsMergedCorrectly) {
   AddDefaultMatchingRule();
+  TriggerTabTrackingOnDefaultTab();
 
   const size_t num_iterations = ExternalDataUseObserver::kMaxBufferSize * 2;
 
   for (size_t i = 0; i < num_iterations; ++i) {
     data_usage::DataUse data_use_foo = default_data_use();
     data_use_foo.mcc_mnc = kFooMccMnc;
-    external_data_use_observer()->OnDataUse(data_use_foo);
+    OnDataUse(data_use_foo);
 
     data_usage::DataUse data_use_bar = default_data_use();
     data_use_bar.mcc_mnc = kBarMccMnc;
-    external_data_use_observer()->OnDataUse(data_use_bar);
+    OnDataUse(data_use_bar);
 
     data_usage::DataUse data_use_baz = default_data_use();
     data_use_baz.mcc_mnc = kBazMccMnc;
-    external_data_use_observer()->OnDataUse(data_use_baz);
+    OnDataUse(data_use_baz);
   }
 
-  EXPECT_EQ(3U, buffered_data_reports().size());
+  ASSERT_EQ(3U, buffered_data_reports().size());
 
   // One of the foo reports should have been submitted, and all the other foo
   // reports should have been merged together. All of the bar and baz reports
@@ -305,22 +292,31 @@ TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
   app_package_names.push_back(kAppBar);
 
   FetchMatchingRulesDone(app_package_names, url_regexes, labels);
+
+  external_data_use_observer()->GetDataUseTabModel()->OnNavigationEvent(
+      kDefaultTabId, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
+      GURL("http://www.foo.com/#q=abc"), std::string());
+
+  external_data_use_observer()->GetDataUseTabModel()->OnNavigationEvent(
+      kDefaultTabId + 1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
+      GURL("http://www.bar.com/#q=abc"), std::string());
+
   EXPECT_EQ(0U, external_data_use_observer()->buffered_data_reports_.size());
   EXPECT_TRUE(external_data_use_observer()
                   ->last_data_report_submitted_ticks_.is_null());
-  EXPECT_FALSE(external_data_use_observer()->matching_rules_fetch_pending_);
 
   // Check |kLabelFoo| matching rule.
   data_usage::DataUse data_foo = default_data_use();
   data_foo.url = GURL("http://www.foo.com/#q=abc");
   data_foo.mcc_mnc = kFooMccMnc;
-  external_data_use_observer()->OnDataUse(data_foo);
+  OnDataUse(data_foo);
 
   // Check |kLabelBar| matching rule.
   data_usage::DataUse data_bar = default_data_use();
+  data_bar.tab_id = kDefaultTabId + 1;
   data_bar.url = GURL("http://www.bar.com/#q=abc");
   data_bar.mcc_mnc = kBarMccMnc;
-  external_data_use_observer()->OnDataUse(data_bar);
+  OnDataUse(data_bar);
 
   // bar report should be present.
   EXPECT_EQ(1U, buffered_data_reports().size());
@@ -355,7 +351,6 @@ TEST_F(ExternalDataUseObserverTest, HashFunction) {
 TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
   AddDefaultMatchingRule();
 
-  EXPECT_FALSE(external_data_use_observer()->matching_rules_fetch_pending_);
   EXPECT_FALSE(
       external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
 
@@ -369,7 +364,7 @@ TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
             external_data_use_observer()->fetch_matching_rules_duration_);
 
   // OnDataUse should trigger fetching of matching rules.
-  external_data_use_observer()->OnDataUse(default_data_use());
+  OnDataUse(default_data_use());
 
   // Matching rules should not be expired.
   EXPECT_LT(base::TimeTicks::Now() -
@@ -394,7 +389,7 @@ TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
     data_usage::DataUse data_use = default_data_use();
     data_use.tx_bytes = 1024;
     data_use.rx_bytes = 0;
-    external_data_use_observer()->OnDataUse(data_use);
+    OnDataUse(data_use);
 
     if (i != num_iterations - 1) {
       // Total buffered bytes is less than the minimum threshold. Data use
@@ -431,7 +426,7 @@ TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
 
   // Verify that metrics were updated correctly for the report that was not
   // successfully submitted.
-  external_data_use_observer()->OnDataUse(default_data_use());
+  OnDataUse(default_data_use());
   external_data_use_observer()->OnReportDataUseDone(false);
   histogram_tester.ExpectTotalCount("DataUsage.ReportSubmissionResult", 2);
   histogram_tester.ExpectBucketCount(
@@ -479,8 +474,8 @@ TEST_F(ExternalDataUseObserverTest, DataUseReportTimedOut) {
 
   base::HistogramTester histogram_tester;
   TriggerTabTrackingOnDefaultTab();
-  external_data_use_observer()->OnDataUse(default_data_use());
-  external_data_use_observer()->OnDataUse(default_data_use());
+  OnDataUse(default_data_use());
+  OnDataUse(default_data_use());
   // First data use report should be marked as timed out.
   histogram_tester.ExpectUniqueSample(
       "DataUsage.ReportSubmissionResult",

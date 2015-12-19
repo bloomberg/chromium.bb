@@ -13,7 +13,6 @@
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "components/data_usage/core/data_use.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
@@ -31,11 +30,7 @@ namespace {
 
 class TestDataUseTabModel : public DataUseTabModel {
  public:
-  TestDataUseTabModel(
-      ExternalDataUseObserver* external_data_use_observer,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
-      : DataUseTabModel(ui_task_runner) {}
-
+  TestDataUseTabModel() {}
   ~TestDataUseTabModel() override {}
 
   using DataUseTabModel::NotifyObserversOfTrackingStarting;
@@ -44,9 +39,9 @@ class TestDataUseTabModel : public DataUseTabModel {
 
 class DataUseUITabModelTest : public testing::Test {
  public:
-  DataUseUITabModel* data_use_ui_tab_model() {
-    return data_use_ui_tab_model_.get();
-  }
+  DataUseUITabModelTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+  DataUseUITabModel* data_use_ui_tab_model() { return &data_use_ui_tab_model_; }
 
   ExternalDataUseObserver* external_data_use_observer() const {
     return external_data_use_observer_.get();
@@ -59,19 +54,14 @@ class DataUseUITabModelTest : public testing::Test {
   void RegisterURLRegexes(const std::vector<std::string>& app_package_name,
                           const std::vector<std::string>& domain_path_regex,
                           const std::vector<std::string>& label) {
-    data_use_tab_model_->RegisterURLRegexes(&app_package_name,
-                                            &domain_path_regex, &label);
+    data_use_tab_model_->RegisterURLRegexes(app_package_name, domain_path_regex,
+                                            label);
   }
 
  protected:
   void SetUp() override {
-    thread_bundle_.reset(new content::TestBrowserThreadBundle(
-        content::TestBrowserThreadBundle::IO_MAINLOOP));
     io_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::IO);
-    data_use_ui_tab_model_.reset(
-        new chrome::android::DataUseUITabModel(io_task_runner_));
-
     ui_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::UI);
 
@@ -83,16 +73,15 @@ class DataUseUITabModelTest : public testing::Test {
     // Wait for |external_data_use_observer_| to create the Java object.
     base::RunLoop().RunUntilIdle();
 
-    data_use_tab_model_.reset(
-        new TestDataUseTabModel(external_data_use_observer(), ui_task_runner_));
-    data_use_tab_model_->AddObserver(data_use_ui_tab_model()->GetWeakPtr());
-    data_use_ui_tab_model_->SetDataUseTabModel(
-        data_use_tab_model_->GetWeakPtr());
+    data_use_tab_model_.reset(new TestDataUseTabModel());
+    data_use_tab_model_->InitOnUIThread(
+        io_task_runner_, external_data_use_observer_->GetWeakPtr());
+    data_use_ui_tab_model_.SetDataUseTabModel(data_use_tab_model_.get());
   }
 
  private:
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
-  scoped_ptr<DataUseUITabModel> data_use_ui_tab_model_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  DataUseUITabModel data_use_ui_tab_model_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
@@ -152,14 +141,9 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
     EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingEnded(foo_tab_id))
         << i;
 
-    // DataUse object should be labeled correctly.
-    data_usage::DataUse data_use(GURL("http://foo.com/#q=abc"),
-                                 base::TimeTicks::Now(),
-                                 GURL("http://foobar.com"), foo_tab_id,
-                                 net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                                 std::string(), 1000, 1000);
     std::string got_label;
-    data_use_tab_model()->GetLabelForDataUse(data_use, &got_label);
+    data_use_tab_model()->GetLabelForTabAtTime(
+        foo_tab_id, base::TimeTicks::Now(), &got_label);
     EXPECT_EQ(tests[i].expected_label, got_label) << i;
 
     // Report closure of tab.
@@ -168,9 +152,9 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
 
     // DataUse object should not be labeled.
     EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingEnded(foo_tab_id));
-    data_use.request_start =
-        base::TimeTicks::Now() + base::TimeDelta::FromMinutes(10);
-    data_use_tab_model()->GetLabelForDataUse(data_use, &got_label);
+    data_use_tab_model()->GetLabelForTabAtTime(
+        foo_tab_id, base::TimeTicks::Now() + base::TimeDelta::FromMinutes(10),
+        &got_label);
     EXPECT_EQ(std::string(), got_label) << i;
   }
 

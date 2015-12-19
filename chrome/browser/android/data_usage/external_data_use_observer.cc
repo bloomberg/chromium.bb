@@ -11,7 +11,9 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
 #include "components/data_usage/core/data_use.h"
@@ -131,7 +133,7 @@ ExternalDataUseObserver::ExternalDataUseObserver(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : data_use_aggregator_(data_use_aggregator),
-      matching_rules_fetch_pending_(false),
+      data_use_tab_model_(new DataUseTabModel()),
       last_data_report_submitted_ticks_(base::TimeTicks()),
       pending_report_bytes_(0),
       ui_task_runner_(ui_task_runner),
@@ -144,11 +146,18 @@ ExternalDataUseObserver::ExternalDataUseObserver(
       data_use_report_min_bytes_(GetMinBytes()),
       data_report_submit_timeout_(
           base::TimeDelta::FromMilliseconds(GetDataReportSubmitTimeoutMsec())),
+      registered_as_data_use_observer_(false),
       weak_factory_(this) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(data_use_aggregator_);
   DCHECK(io_task_runner);
   DCHECK(ui_task_runner_);
   DCHECK(last_data_report_submitted_ticks_.is_null());
+
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(&DataUseTabModel::InitOnUIThread,
+                                       base::Unretained(data_use_tab_model_),
+                                       io_task_runner, GetWeakPtr()));
 
   // Initialize the ExternalDataUseObserverBridge object. Initialization will
   // also trigger the fetching of matching rules. It is okay to use
@@ -158,19 +167,14 @@ ExternalDataUseObserver::ExternalDataUseObserver(
       FROM_HERE,
       base::Bind(&ExternalDataUseObserverBridge::Init,
                  base::Unretained(external_data_use_observer_bridge_),
-                 io_task_runner, GetWeakPtr()));
-
-  // |this| owns and must outlive the |data_use_tab_model_|.
-  data_use_tab_model_.reset(new DataUseTabModel(ui_task_runner_));
-
-  matching_rules_fetch_pending_ = true;
-  data_use_aggregator_->AddObserver(this);
+                 io_task_runner, GetWeakPtr(), data_use_tab_model_));
 }
 
 ExternalDataUseObserver::~ExternalDataUseObserver() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  data_use_aggregator_->RemoveObserver(this);
+  if (registered_as_data_use_observer_)
+    data_use_aggregator_->RemoveObserver(this);
 
   // Delete |external_data_use_observer_bridge_| on the UI thread.
   if (!ui_task_runner_->DeleteSoon(FROM_HERE,
@@ -178,18 +182,11 @@ ExternalDataUseObserver::~ExternalDataUseObserver() {
     NOTIMPLEMENTED()
         << " ExternalDataUseObserverBridge was not deleted successfully";
   }
-}
 
-void ExternalDataUseObserver::FetchMatchingRulesDone(
-    const std::vector<std::string>* app_package_name,
-    const std::vector<std::string>* domain_path_regex,
-    const std::vector<std::string>* label) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  data_use_tab_model_->RegisterURLRegexes(app_package_name, domain_path_regex,
-                                          label);
-  matching_rules_fetch_pending_ = false;
-  // Process buffered reports.
+  // Delete |data_use_tab_model_| on the UI thread.
+  if (!ui_task_runner_->DeleteSoon(FROM_HERE, data_use_tab_model_)) {
+    NOTIMPLEMENTED() << " DataUseTabModel was not deleted successfully";
+  }
 }
 
 void ExternalDataUseObserver::OnReportDataUseDone(bool success) {
@@ -212,6 +209,8 @@ void ExternalDataUseObserver::OnReportDataUseDone(bool success) {
 
 void ExternalDataUseObserver::OnDataUse(const data_usage::DataUse& data_use) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(registered_as_data_use_observer_);
+
   const base::TimeTicks now_ticks = base::TimeTicks::Now();
   const base::Time now_time = base::Time::Now();
 
@@ -230,16 +229,47 @@ void ExternalDataUseObserver::OnDataUse(const data_usage::DataUse& data_use) {
                    base::Unretained(external_data_use_observer_bridge_)));
   }
 
-  if (matching_rules_fetch_pending_) {
-    // TODO(tbansal): Buffer reports.
-  }
+  scoped_ptr<std::string> label(new std::string());
 
-  std::string label;
-  if (data_use_tab_model_->GetLabelForDataUse(data_use, &label))
-    BufferDataUseReport(data_use, label, previous_report_time_, now_time);
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&DataUseTabModel::GetLabelForTabAtTime,
+                 base::Unretained(data_use_tab_model_), data_use.tab_id,
+                 data_use.request_start, label.get()),
+      base::Bind(&ExternalDataUseObserver::DataUseLabelApplied, GetWeakPtr(),
+                 data_use, previous_report_time_, now_time,
+                 base::Owned(label.release())));
 
   previous_report_time_ = now_time;
+}
 
+void ExternalDataUseObserver::ShouldRegisterAsDataUseObserver(
+    bool should_register) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (registered_as_data_use_observer_ == should_register)
+    return;
+
+  if (!registered_as_data_use_observer_ && should_register)
+    data_use_aggregator_->AddObserver(this);
+
+  if (registered_as_data_use_observer_ && !should_register)
+    data_use_aggregator_->RemoveObserver(this);
+
+  registered_as_data_use_observer_ = should_register;
+}
+
+void ExternalDataUseObserver::DataUseLabelApplied(
+    const data_usage::DataUse& data_use,
+    const base::Time& start_time,
+    const base::Time& end_time,
+    const std::string* label,
+    bool label_applied) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!label_applied)
+    return;
+
+  BufferDataUseReport(data_use, *label, start_time, end_time);
   SubmitBufferedDataUseReport();
 }
 
@@ -350,7 +380,7 @@ base::WeakPtr<ExternalDataUseObserver> ExternalDataUseObserver::GetWeakPtr() {
 
 DataUseTabModel* ExternalDataUseObserver::GetDataUseTabModel() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return data_use_tab_model_.get();
+  return data_use_tab_model_;
 }
 
 ExternalDataUseObserver::DataUseReportKey::DataUseReportKey(

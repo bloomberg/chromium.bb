@@ -5,6 +5,7 @@
 #include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
 
 #include "base/memory/singleton.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "chrome/browser/android/data_usage/data_use_ui_tab_model.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
@@ -20,23 +21,18 @@ namespace android {
 
 namespace {
 
-// Returns the weak pointer to DataUseTabModel, and adds |data_use_ui_tab_model|
-// as an observer to DataUseTabModel. Must be called only on IO thread.
-base::WeakPtr<DataUseTabModel> SetDataUseTabModelOnIOThread(
-    IOThread* io_thread,
-    base::WeakPtr<DataUseUITabModel> data_use_ui_tab_model) {
+// Returns the pointer to the DataUseTabModel. Must be called on IO thread. The
+// caller does not have the ownership of the returned pointer.
+DataUseTabModel* GetDataUseTabModelOnIOThread(IOThread* io_thread) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (!io_thread || !io_thread->globals())
-    return base::WeakPtr<DataUseTabModel>();
+  // Avoid null pointer referencing during browser shutdown.
+  if (!io_thread || !io_thread->globals() ||
+      !io_thread->globals()->external_data_use_observer) {
+    return nullptr;
+  }
 
-  base::WeakPtr<DataUseTabModel> data_use_tab_model =
-      io_thread->globals()
-          ->external_data_use_observer->GetDataUseTabModel()
-          ->GetWeakPtr();
-  if (data_use_tab_model)
-    data_use_tab_model->AddObserver(data_use_ui_tab_model);
-  return data_use_tab_model;
+  return io_thread->globals()->external_data_use_observer->GetDataUseTabModel();
 }
 
 }  // namespace
@@ -67,20 +63,16 @@ DataUseUITabModelFactory::~DataUseUITabModelFactory() {}
 
 KeyedService* DataUseUITabModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  DataUseUITabModel* data_use_ui_tab_model = new DataUseUITabModel(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::IO));
+  DataUseUITabModel* data_use_ui_tab_model = new DataUseUITabModel();
 
   // DataUseUITabModel should not be created for incognito profile.
   DCHECK_EQ(Profile::FromBrowserContext(context)->GetOriginalProfile(),
             Profile::FromBrowserContext(context));
 
-  // Pass the DataUseTabModel weak pointer to DataUseUITabModel, and register
-  // DataUseUITabModel as a DataUseTabModel::TabDataUseObserver.
+  // Pass the DataUseTabModel pointer to DataUseUITabModel.
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetDataUseTabModelOnIOThread, g_browser_process->io_thread(),
-                 data_use_ui_tab_model->GetWeakPtr()),
+      base::Bind(&GetDataUseTabModelOnIOThread, g_browser_process->io_thread()),
       base::Bind(&chrome::android::DataUseUITabModel::SetDataUseTabModel,
                  data_use_ui_tab_model->GetWeakPtr()));
 

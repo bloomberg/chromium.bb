@@ -12,8 +12,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/data_use_matcher.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
-#include "components/data_usage/core/data_use.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 namespace {
@@ -125,18 +125,15 @@ namespace chrome {
 
 namespace android {
 
-DataUseTabModel::DataUseTabModel(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
+DataUseTabModel::DataUseTabModel()
     : max_tab_entries_(GetMaxTabEntries()),
       max_sessions_per_tab_(GetMaxSessionsPerTab()),
       closed_tab_expiration_duration_(GetClosedTabExpirationDuration()),
       open_tab_expiration_duration_(GetOpenTabExpirationDuration()),
-      tick_clock_(new base::DefaultTickClock()),
-      ui_task_runner_(ui_task_runner),
       weak_factory_(this) {
-  DCHECK(ui_task_runner_);
-  data_use_matcher_.reset(new DataUseMatcher(
-      weak_factory_.GetWeakPtr(), GetDefaultMatchingRuleExpirationDuration()));
+  // Detach from current thread since rest of DataUseTabModel lives on the UI
+  // thread and the current thread may not be UI thread..
+  thread_checker_.DetachFromThread();
 }
 
 DataUseTabModel::~DataUseTabModel() {
@@ -146,6 +143,19 @@ DataUseTabModel::~DataUseTabModel() {
 base::WeakPtr<DataUseTabModel> DataUseTabModel::GetWeakPtr() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return weak_factory_.GetWeakPtr();
+}
+
+void DataUseTabModel::InitOnUIThread(
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    const base::WeakPtr<ExternalDataUseObserver>& external_data_use_observer) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(io_task_runner);
+
+  tick_clock_.reset(new base::DefaultTickClock());
+  data_use_matcher_.reset(new DataUseMatcher(
+      GetWeakPtr(), io_task_runner, external_data_use_observer,
+      GetDefaultMatchingRuleExpirationDuration()));
 }
 
 void DataUseTabModel::OnNavigationEvent(SessionID::id_type tab_id,
@@ -185,21 +195,20 @@ void DataUseTabModel::OnTrackingLabelRemoved(std::string label) {
   }
 }
 
-bool DataUseTabModel::GetLabelForDataUse(const data_usage::DataUse& data_use,
-                                         std::string* output_label) const {
+bool DataUseTabModel::GetLabelForTabAtTime(SessionID::id_type tab_id,
+                                           base::TimeTicks timestamp,
+                                           std::string* output_label) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   *output_label = "";
 
   // Data use that cannot be attributed to a tab will not be labeled.
-  if (!IsValidTabID(data_use.tab_id))
+  if (!IsValidTabID(tab_id))
     return false;
 
-  TabEntryMap::const_iterator tab_entry_iterator =
-      active_tabs_.find(data_use.tab_id);
+  TabEntryMap::const_iterator tab_entry_iterator = active_tabs_.find(tab_id);
   if (tab_entry_iterator != active_tabs_.end()) {
-    return tab_entry_iterator->second.GetLabel(data_use.request_start,
-                                               output_label);
+    return tab_entry_iterator->second.GetLabel(timestamp, output_label);
   }
 
   return false;  // Tab session not found.
@@ -216,43 +225,42 @@ bool DataUseTabModel::WouldNavigationEventEndTracking(SessionID::id_type tab_id,
   return (!current_label.empty() && new_label.empty());
 }
 
-void DataUseTabModel::AddObserver(base::WeakPtr<TabDataUseObserver> observer) {
+void DataUseTabModel::AddObserver(TabDataUseObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  observers_.push_back(observer);
+  observers_.AddObserver(observer);
+}
+
+void DataUseTabModel::RemoveObserver(TabDataUseObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observers_.RemoveObserver(observer);
 }
 
 void DataUseTabModel::RegisterURLRegexes(
-    const std::vector<std::string>* app_package_name,
-    const std::vector<std::string>* domain_path_regex,
-    const std::vector<std::string>* label) {
+    const std::vector<std::string>& app_package_name,
+    const std::vector<std::string>& domain_path_regex,
+    const std::vector<std::string>& label) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   data_use_matcher_->RegisterURLRegexes(app_package_name, domain_path_regex,
                                         label);
 }
 
 base::TimeTicks DataUseTabModel::NowTicks() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return tick_clock_->NowTicks();
 }
 
 void DataUseTabModel::NotifyObserversOfTrackingStarting(
     SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_);
-  for (const auto& observer : observers_) {
-    ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&TabDataUseObserver::NotifyTrackingStarting,
-                              observer, tab_id));
-  }
+  FOR_EACH_OBSERVER(TabDataUseObserver, observers_,
+                    NotifyTrackingStarting(tab_id));
 }
 
 void DataUseTabModel::NotifyObserversOfTrackingEnding(
     SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_);
-  for (const auto& observer : observers_) {
-    ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&TabDataUseObserver::NotifyTrackingEnding,
-                              observer, tab_id));
-  }
+  FOR_EACH_OBSERVER(TabDataUseObserver, observers_,
+                    NotifyTrackingEnding(tab_id));
 }
 
 void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(

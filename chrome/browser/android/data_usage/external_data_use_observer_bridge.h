@@ -27,6 +27,7 @@ namespace chrome {
 
 namespace android {
 
+class DataUseTabModel;
 class ExternalDataUseObserver;
 
 // ExternalDataUseObserverBridge creates and owns a Java listener object
@@ -43,7 +44,8 @@ class ExternalDataUseObserverBridge {
   // |j_external_data_use_observer_|, and fetches matching rules from
   // |j_external_data_use_observer_|.
   void Init(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-            base::WeakPtr<ExternalDataUseObserver> external_data_use_observer);
+            base::WeakPtr<ExternalDataUseObserver> external_data_use_observer,
+            DataUseTabModel* data_use_tab_model);
 
   // Fetches matching rules from Java. Returns result asynchronously via
   // FetchMatchingRulesDone. FetchMatchingRules should not be called if a
@@ -91,6 +93,9 @@ class ExternalDataUseObserverBridge {
   // |external_data_use_observer_| owns |this|. |external_data_use_observer_| is
   // notified of results from Java code by |this|.
   base::WeakPtr<ExternalDataUseObserver> external_data_use_observer_;
+
+  // |data_use_tab_model_| is notified of the matching rules on UI thread.
+  base::WeakPtr<DataUseTabModel> data_use_tab_model_;
 
   // |io_task_runner_| accesses ExternalDataUseObserver members on IO thread.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

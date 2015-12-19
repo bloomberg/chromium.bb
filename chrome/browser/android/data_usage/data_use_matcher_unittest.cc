@@ -12,6 +12,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/data_usage/external_data_use_observer.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -48,10 +51,16 @@ namespace chrome {
 
 namespace android {
 
+class ExternalDataUseObserver;
+
 class DataUseMatcherTest : public testing::Test {
  public:
   DataUseMatcherTest()
-      : data_use_matcher_(base::WeakPtr<DataUseTabModel>(),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        data_use_matcher_(base::WeakPtr<DataUseTabModel>(),
+                          content::BrowserThread::GetMessageLoopProxyForThread(
+                              content::BrowserThread::IO),
+                          base::WeakPtr<ExternalDataUseObserver>(),
                           base::TimeDelta::FromSeconds(
                               kDefaultMatchingRuleExpirationDurationSeconds)) {}
 
@@ -60,8 +69,8 @@ class DataUseMatcherTest : public testing::Test {
   void RegisterURLRegexes(const std::vector<std::string>& app_package_name,
                           const std::vector<std::string>& domain_path_regex,
                           const std::vector<std::string>& label) {
-    data_use_matcher_.RegisterURLRegexes(&app_package_name, &domain_path_regex,
-                                         &label);
+    data_use_matcher_.RegisterURLRegexes(app_package_name, domain_path_regex,
+                                         label);
   }
 
   // Returns true if the matching rule at |index| is expired.
@@ -72,6 +81,7 @@ class DataUseMatcherTest : public testing::Test {
   }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   DataUseMatcher data_use_matcher_;
   DISALLOW_COPY_AND_ASSIGN(DataUseMatcherTest);
 };

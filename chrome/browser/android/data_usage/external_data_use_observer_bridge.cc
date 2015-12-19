@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/ExternalDataUseObserver_jni.h"
@@ -40,13 +41,18 @@ ExternalDataUseObserverBridge::~ExternalDataUseObserverBridge() {
 
 void ExternalDataUseObserverBridge::Init(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    base::WeakPtr<ExternalDataUseObserver> external_data_use_observer) {
+    base::WeakPtr<ExternalDataUseObserver> external_data_use_observer,
+    DataUseTabModel* data_use_tab_model) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(io_task_runner);
   DCHECK(j_external_data_use_observer_.is_null());
+  // |data_use_tab_model| is guaranteed to be non-null because this method is
+  // called in the constructor of ExternalDataUseObserver.
+  DCHECK(data_use_tab_model);
 
   external_data_use_observer_ = external_data_use_observer;
+  data_use_tab_model_ = data_use_tab_model->GetWeakPtr();
   io_task_runner_ = io_task_runner;
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -75,28 +81,27 @@ void ExternalDataUseObserverBridge::FetchMatchingRulesDone(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Convert to native objects.
-  scoped_ptr<std::vector<std::string>> app_package_name_native(
-      new std::vector<std::string>());
-  scoped_ptr<std::vector<std::string>> domain_path_regex_native(
-      new std::vector<std::string>());
-  scoped_ptr<std::vector<std::string>> label_native(
-      new std::vector<std::string>());
+  std::vector<std::string> app_package_name_native;
+  std::vector<std::string> domain_path_regex_native;
+  std::vector<std::string> label_native;
 
   if (app_package_name && domain_path_regex && label) {
     base::android::AppendJavaStringArrayToStringVector(
-        env, app_package_name, app_package_name_native.get());
+        env, app_package_name, &app_package_name_native);
     base::android::AppendJavaStringArrayToStringVector(
-        env, domain_path_regex, domain_path_regex_native.get());
+        env, domain_path_regex, &domain_path_regex_native);
     base::android::AppendJavaStringArrayToStringVector(env, label,
-                                                       label_native.get());
+                                                       &label_native);
   }
 
-  io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ExternalDataUseObserver::FetchMatchingRulesDone,
-                            external_data_use_observer_,
-                            base::Owned(app_package_name_native.release()),
-                            base::Owned(domain_path_regex_native.release()),
-                            base::Owned(label_native.release())));
+  DCHECK_EQ(app_package_name_native.size(), domain_path_regex_native.size());
+  DCHECK_EQ(app_package_name_native.size(), label_native.size());
+
+  if (!data_use_tab_model_)
+    return;
+
+  data_use_tab_model_->RegisterURLRegexes(
+      app_package_name_native, domain_path_regex_native, label_native);
 }
 
 void ExternalDataUseObserverBridge::ReportDataUse(

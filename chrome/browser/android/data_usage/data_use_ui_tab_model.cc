@@ -7,8 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -16,15 +14,15 @@ namespace chrome {
 
 namespace android {
 
-DataUseUITabModel::DataUseUITabModel(
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : io_task_runner_(io_task_runner), weak_factory_(this) {
+DataUseUITabModel::DataUseUITabModel() : weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(io_task_runner_);
 }
 
 DataUseUITabModel::~DataUseUITabModel() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (data_use_tab_model_)
+    data_use_tab_model_->RemoveObserver(this);
 }
 
 void DataUseUITabModel::ReportBrowserNavigation(
@@ -36,21 +34,18 @@ void DataUseUITabModel::ReportBrowserNavigation(
 
   DataUseTabModel::TransitionType transition_type;
 
-  if (ConvertTransitionType(page_transition, &transition_type)) {
-    io_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DataUseTabModel::OnNavigationEvent, data_use_tab_model_,
-                   tab_id, transition_type, gurl, std::string()));
+  if (data_use_tab_model_ &&
+      ConvertTransitionType(page_transition, &transition_type)) {
+    data_use_tab_model_->OnNavigationEvent(tab_id, transition_type, gurl,
+                                           std::string());
   }
 }
 
 void DataUseUITabModel::ReportTabClosure(SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_LE(0, tab_id);
-
-  io_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&DataUseTabModel::OnTabCloseEvent,
-                                       data_use_tab_model_, tab_id));
+  if (data_use_tab_model_)
+    data_use_tab_model_->OnTabCloseEvent(tab_id);
 
   // Clear out local state.
   TabEvents::iterator it = tab_events_.find(tab_id);
@@ -68,17 +63,22 @@ void DataUseUITabModel::ReportCustomTabInitialNavigation(
   if (tab_id <= 0)
     return;
 
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DataUseTabModel::OnNavigationEvent, data_use_tab_model_,
-                 tab_id, DataUseTabModel::TRANSITION_CUSTOM_TAB, GURL(url),
-                 package_name));
+  if (data_use_tab_model_) {
+    data_use_tab_model_->OnNavigationEvent(
+        tab_id, DataUseTabModel::TRANSITION_CUSTOM_TAB, GURL(url),
+        package_name);
+  }
 }
 
 void DataUseUITabModel::SetDataUseTabModel(
-    base::WeakPtr<DataUseTabModel> data_use_tab_model) {
+    DataUseTabModel* data_use_tab_model) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  data_use_tab_model_ = data_use_tab_model;
+
+  if (!data_use_tab_model)
+    return;
+
+  data_use_tab_model_ = data_use_tab_model->GetWeakPtr();
+  data_use_tab_model_->AddObserver(this);
 }
 
 base::WeakPtr<DataUseUITabModel> DataUseUITabModel::GetWeakPtr() {
@@ -147,6 +147,8 @@ bool DataUseUITabModel::RemoveTabEvent(SessionID::id_type tab_id,
 bool DataUseUITabModel::ConvertTransitionType(
     ui::PageTransition page_transition,
     DataUseTabModel::TransitionType* transition_type) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!ui::PageTransitionIsMainFrame(page_transition) ||
       (((page_transition & ui::PAGE_TRANSITION_CORE_MASK) !=
         ui::PAGE_TRANSITION_RELOAD) &&

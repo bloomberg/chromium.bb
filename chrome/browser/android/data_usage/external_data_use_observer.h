@@ -38,11 +38,11 @@ class ExternalDataUseObserverBridge;
 
 // This class allows platform APIs that are external to Chromium to observe how
 // much data is used by Chromium on the current Android device. This class
-// receives regular expressions from the platform. It also registers as a data
-// use observer with DataUseAggregator, filters the received observations by
-// applying the regex matching to the URLs of the requests, and notifies the
-// filtered data use to the platform. This class is not thread safe, and must
-// only be accessed on IO thread.
+// registers as a data use observer with DataUseAggregator (as long as there is
+// at least one valid matching rule is present), filters the received
+// observations by applying the regex matching to the URLs of the requests, and
+// notifies the filtered data use to the platform. This class is not thread
+// safe, and must only be accessed on IO thread.
 class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
  public:
   // Result of data usage report submission.  This enum must remain synchronized
@@ -68,29 +68,20 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
   ~ExternalDataUseObserver() override;
 
+  // Returns the pointer to the DataUseTabModel object owned by |this|. The
+  // caller does not owns the returned pointer.
   DataUseTabModel* GetDataUseTabModel() const;
-
-  // Called by ExternalDataUseObserverBridge::FetchMatchingRulesDone when new
-  // matching rules have been fetched. |app_package_name| is the package name
-  // of the app that should be matched. |domain_path_regex| is the regex to be
-  // used for matching URLs. |label| is the label that must be applied to data
-  // reports corresponding to the matching rule, and must uniquely identify the
-  // matching rule. Each element in |label| must have non-zero length. The
-  // three vectors should have equal length. The vectors may be empty which
-  // implies that no matching rules are active. All vectors must be non-null and
-  // are owned by the caller.
-  void FetchMatchingRulesDone(const std::vector<std::string>* app_package_name,
-                              const std::vector<std::string>* domain_path_regex,
-                              const std::vector<std::string>* label);
 
   // Called by ExternalDataUseObserverBridge::OnReportDataUseDone when a data
   // use report has been submitted. |success| is true if the request was
   // successfully submitted to the external data use observer by Java.
   void OnReportDataUseDone(bool success);
 
-  DataUseTabModel* data_use_tab_model() const {
-    return data_use_tab_model_.get();
-  }
+  // Called by DataUseMatcher. |should_register| is true if |this| should
+  // register as a data use observer.
+  void ShouldRegisterAsDataUseObserver(bool should_register);
+
+  base::WeakPtr<ExternalDataUseObserver> GetWeakPtr();
 
  private:
   friend class DataUseTabModelTest;
@@ -99,10 +90,11 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferSize);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, DataUseReportTimedOut);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, HashFunction);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, LabelRemoved);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleMatchingRules);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            PeriodicFetchMatchingRules);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
+                           RegisteredAsDataUseObserver);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ReportsMergedCorrectly);
   FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, ReportTabEventsTest);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
@@ -175,6 +167,15 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // data_usage::DataUseAggregator::Observer implementation:
   void OnDataUse(const data_usage::DataUse& data_use) override;
 
+  // Called by DataUseTabModel when a label has been applied to the |data_use|
+  // object. |label_applied| is true if a label can be applied to the |data_use|
+  // object. |label| is owned by the caller.
+  void DataUseLabelApplied(const data_usage::DataUse& data_use,
+                           const base::Time& start_time,
+                           const base::Time& end_time,
+                           const std::string* label,
+                           bool label_applied);
+
   // Adds |data_use| to buffered reports. |data_use| is the data use report
   // received from DataUseAggregator. |label| is a non-empty label that applies
   // to |data_use|. |start_time| and |end_time| are the start, and end times of
@@ -192,16 +193,12 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // submitted is the oldest one buffered.
   void SubmitBufferedDataUseReport();
 
-  base::WeakPtr<ExternalDataUseObserver> GetWeakPtr();
-
   // Aggregator that sends data use observations to |this|.
   data_usage::DataUseAggregator* data_use_aggregator_;
 
-  // Maintains tab sessions.
-  scoped_ptr<DataUseTabModel> data_use_tab_model_;
-
-  // True if callback from |FetchMatchingRulesDone| is currently pending.
-  bool matching_rules_fetch_pending_;
+  // Maintains tab sessions and is owned by |this|. It is created on IO thread
+  // but afterwards, should only be accessed on UI thread.
+  DataUseTabModel* data_use_tab_model_;
 
   // Time when the currently pending data use report was submitted.
   // |last_data_report_submitted_ticks_| is null if no data use report is
@@ -216,8 +213,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // |external_data_use_observer_bridge_|.
   DataUseReports buffered_data_reports_;
 
-  // |ui_task_runner_| is used to call ExternalDataUseObserverBridge methods on
-  // UI thread.
+  // |ui_task_runner_| is used to call methods on UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Time when the data use reports were last received from DataUseAggregator.
@@ -245,6 +241,9 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // If a data use report is pending for more than |data_report_submit_timeout_|
   // duration, it is considered as timed out.
   const base::TimeDelta data_report_submit_timeout_;
+
+  // True if |this| is currently registered as a data use observer.
+  bool registered_as_data_use_observer_;
 
   base::ThreadChecker thread_checker_;
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 
 namespace base {
+class SingleThreadTaskRunner;
 class TickClock;
 }
 
@@ -31,6 +32,8 @@ namespace chrome {
 
 namespace android {
 
+class ExternalDataUseObserver;
+
 // DataUseMatcher stores the matching URL patterns and package names along with
 // the labels. It also provides functionality to get the matching label for a
 // given URL or package. DataUseMatcher is not thread safe.
@@ -38,6 +41,8 @@ class DataUseMatcher {
  public:
   DataUseMatcher(
       const base::WeakPtr<DataUseTabModel>& data_use_tab_model,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const base::WeakPtr<ExternalDataUseObserver>& external_data_use_observer,
       const base::TimeDelta& default_matching_rule_expiration_duration);
 
   ~DataUseMatcher();
@@ -45,10 +50,10 @@ class DataUseMatcher {
   // Called by FetchMatchingRulesDoneOnIOThread to register multiple
   // case-insensitive regular expressions. If the url of the data use request
   // matches any of the regular expression, the observation is passed to the
-  // Java listener. All vectors must be non-null and are owned by the caller.
-  void RegisterURLRegexes(const std::vector<std::string>* app_package_names,
-                          const std::vector<std::string>* domain_path_regexes,
-                          const std::vector<std::string>* labels);
+  // Java listener.
+  void RegisterURLRegexes(const std::vector<std::string>& app_package_names,
+                          const std::vector<std::string>& domain_path_regexes,
+                          const std::vector<std::string>& labels);
 
   // Returns true if the |url| matches the registered regular expressions.
   // |label| must not be null. If a match is found, the |label| is set to the
@@ -125,6 +130,12 @@ class DataUseMatcher {
 
   // TickClock used for obtaining the current time.
   scoped_ptr<base::TickClock> tick_clock_;
+  // |io_task_runner_| is used to call ExternalDataUseObserver methods on
+  // IO thread.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // |external_data_use_observer_| is notified when matching rules are fetched.
+  base::WeakPtr<ExternalDataUseObserver> external_data_use_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseMatcher);
 };

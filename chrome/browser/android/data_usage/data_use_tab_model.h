@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_DATA_USAGE_DATA_USE_TAB_MODEL_H_
 #define CHROME_BROWSER_ANDROID_DATA_USAGE_DATA_USE_TAB_MODEL_H_
 
-#include <list>
 #include <string>
 #include <vector>
 
@@ -15,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/tab_data_use_entry.h"
@@ -25,10 +25,6 @@ class SingleThreadTaskRunner;
 class TickClock;
 }
 
-namespace data_usage {
-struct DataUse;
-}
-
 class GURL;
 
 namespace chrome {
@@ -36,6 +32,7 @@ namespace chrome {
 namespace android {
 
 class DataUseMatcher;
+class ExternalDataUseObserver;
 
 // Models tracking and labeling of data usage within each Tab. Within each tab,
 // the model tracks the data use of a sequence of navigations in a "tracking
@@ -84,8 +81,13 @@ class DataUseTabModel {
     virtual void NotifyTrackingEnding(SessionID::id_type tab_id) = 0;
   };
 
-  explicit DataUseTabModel(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
+  DataUseTabModel();
+
+  // Initializes |this| on UI thread. |external_data_use_observer| is the weak
+  // pointer to ExternalDataUseObserver object that owns |this|.
+  void InitOnUIThread(
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const base::WeakPtr<ExternalDataUseObserver>& external_data_use_observer);
 
   virtual ~DataUseTabModel();
 
@@ -109,12 +111,14 @@ class DataUseTabModel {
   // active tracking sessions with the label are ended.
   virtual void OnTrackingLabelRemoved(std::string label);
 
-  // Gets the label for the |data_use| object. |output_label| must not be null.
-  // If a tab tracking session is found that was active at the time of request
-  // start of |data_use|, returns true and |output_label| is populated with its
-  // label. Otherwise returns false and |output_label| is set to empty string.
-  virtual bool GetLabelForDataUse(const data_usage::DataUse& data_use,
-                                  std::string* output_label) const;
+  // Gets the label for the tab with id |tab_id| at time |timestamp|.
+  // |output_label| must not be null. If a tab tracking session is found that
+  // was active at |timestamp|, returns true and |output_label| is populated
+  // with its label. Otherwise, returns false and |output_label| is set to
+  // empty string.
+  virtual bool GetLabelForTabAtTime(SessionID::id_type tab_id,
+                                    base::TimeTicks timestamp,
+                                    std::string* output_label) const;
 
   // Returns true if the navigation event would end the tracking session for
   // |tab_id|. |transition| is the type of the UI event/transition. |url| is the
@@ -123,16 +127,16 @@ class DataUseTabModel {
                                        TransitionType transition,
                                        const GURL& url) const;
 
-  // Adds observers to the observer list. Must be called on IO thread.
-  // |observer| is notified on UI thread.
-  // TODO(tbansal): Remove observers that have been destroyed.
-  void AddObserver(base::WeakPtr<TabDataUseObserver> observer);
+  // Adds observers to the observer list. Must be called on UI thread.
+  // |observer| is notified on the UI thread.
+  void AddObserver(TabDataUseObserver* observer);
+  void RemoveObserver(TabDataUseObserver* observer);
 
   // Called by ExternalDataUseObserver to register multiple case-insensitive
   // regular expressions.
-  void RegisterURLRegexes(const std::vector<std::string>* app_package_name,
-                          const std::vector<std::string>* domain_path_regex,
-                          const std::vector<std::string>* label);
+  void RegisterURLRegexes(const std::vector<std::string>& app_package_name,
+                          const std::vector<std::string>& domain_path_regex,
+                          const std::vector<std::string>& label);
 
   // Returns the maximum number of tracking sessions to maintain per tab.
   size_t max_sessions_per_tab() const { return max_sessions_per_tab_; }
@@ -207,7 +211,7 @@ class DataUseTabModel {
 
   // Collection of observers that receive tracking session start and end
   // notifications. Notifications are posted on UI thread.
-  std::list<base::WeakPtr<TabDataUseObserver>> observers_;
+  base::ObserverList<TabDataUseObserver> observers_;
 
   // Maintains the tracking sessions of multiple tabs.
   TabEntryMap active_tabs_;
@@ -225,9 +229,6 @@ class DataUseTabModel {
 
   // TickClock used for obtaining the current time.
   scoped_ptr<base::TickClock> tick_clock_;
-
-  // |ui_task_runner_| is used to notify TabDataUseObserver on UI thread.
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Stores the matching patterns.
   scoped_ptr<DataUseMatcher> data_use_matcher_;

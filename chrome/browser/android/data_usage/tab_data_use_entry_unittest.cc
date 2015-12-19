@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/tick_clock.h"
@@ -67,7 +66,7 @@ class SimpleOffsetTestTickClock : public base::TickClock {
 class TabDataUseEntryTest : public testing::Test {
  public:
   TabDataUseEntryTest() {
-    tab_model_.reset(new DataUseTabModel(message_loop_.task_runner()));
+    tab_model_.reset(new DataUseTabModel());
     tick_clock_ = new SimpleOffsetTestTickClock();
     tab_model_->tick_clock_.reset(tick_clock_);
     tab_entry_.reset(new TabDataUseEntry(tab_model_.get()));
@@ -148,8 +147,6 @@ class TabDataUseEntryTest : public testing::Test {
 
   scoped_ptr<DataUseTabModel> tab_model_;
   scoped_ptr<TabDataUseEntry> tab_entry_;
-
-  base::MessageLoopForIO message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TabDataUseEntryTest);
 };
