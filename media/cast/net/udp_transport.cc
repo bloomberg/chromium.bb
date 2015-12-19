@@ -40,7 +40,7 @@ UdpTransport::UdpTransport(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
-    int32 send_buffer_size,
+    int32_t send_buffer_size,
     const CastTransportStatusCallback& status_callback)
     : io_thread_proxy_(io_thread_proxy),
       local_addr_(local_end_point),
@@ -257,7 +257,7 @@ bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
   return true;
 }
 
-int64 UdpTransport::GetBytesSent() {
+int64_t UdpTransport::GetBytesSent() {
   return bytes_sent_;
 }
 

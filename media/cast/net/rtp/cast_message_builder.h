@@ -19,25 +19,25 @@ namespace cast {
 class Framer;
 class RtpPayloadFeedback;
 
-typedef std::map<uint32, base::TimeTicks> TimeLastNackMap;
+typedef std::map<uint32_t, base::TimeTicks> TimeLastNackMap;
 
 class CastMessageBuilder {
  public:
   CastMessageBuilder(base::TickClock* clock,
                      RtpPayloadFeedback* incoming_payload_feedback,
                      const Framer* framer,
-                     uint32 media_ssrc,
+                     uint32_t media_ssrc,
                      bool decoder_faster_than_max_frame_rate,
                      int max_unacked_frames);
   ~CastMessageBuilder();
 
-  void CompleteFrameReceived(uint32 frame_id);
+  void CompleteFrameReceived(uint32_t frame_id);
   bool TimeToSendNextCastMessage(base::TimeTicks* time_to_send);
   void UpdateCastMessage();
   void Reset();
 
  private:
-  bool UpdateAckMessage(uint32 frame_id);
+  bool UpdateAckMessage(uint32_t frame_id);
   void BuildPacketList();
   bool UpdateCastMessageInternal(RtcpCastMessage* message);
 
@@ -46,7 +46,7 @@ class CastMessageBuilder {
 
   // CastMessageBuilder has only const access to the framer.
   const Framer* const framer_;
-  const uint32 media_ssrc_;
+  const uint32_t media_ssrc_;
   const bool decoder_faster_than_max_frame_rate_;
   const int max_unacked_frames_;
 
@@ -57,8 +57,8 @@ class CastMessageBuilder {
 
   bool slowing_down_ack_;
   bool acked_last_frame_;
-  uint32 last_acked_frame_id_;
-  std::deque<uint32> ack_queue_;
+  uint32_t last_acked_frame_id_;
+  std::deque<uint32_t> ack_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMessageBuilder);
 };

@@ -105,16 +105,16 @@ void AudioDecoderJob::ReleaseOutputBuffer(
   render_output = render_output && (size != 0u);
   bool is_audio_underrun = false;
   if (render_output) {
-    int64 head_position = (static_cast<AudioCodecBridge*>(
-        media_codec_bridge_.get()))->PlayOutputBuffer(
-            output_buffer_index, size, offset);
+    int64_t head_position =
+        (static_cast<AudioCodecBridge*>(media_codec_bridge_.get()))
+            ->PlayOutputBuffer(output_buffer_index, size, offset);
 
     base::TimeTicks current_time = base::TimeTicks::Now();
 
     size_t new_frames_count = size / bytes_per_frame_;
     frame_count_ += new_frames_count;
     audio_timestamp_helper_->AddFrames(new_frames_count);
-    int64 frames_to_play = frame_count_ - head_position;
+    int64_t frames_to_play = frame_count_ - head_position;
     DCHECK_GE(frames_to_play, 0);
 
     const base::TimeDelta last_buffered =

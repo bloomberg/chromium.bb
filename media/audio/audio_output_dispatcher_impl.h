@@ -16,7 +16,6 @@
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "media/audio/audio_io.h"

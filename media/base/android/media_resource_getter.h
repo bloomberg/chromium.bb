@@ -60,11 +60,10 @@ class MEDIA_EXPORT MediaResourceGetter {
 
   // Extracts the metadata from a file descriptor. Once completed, the
   // provided callback function will be run.
-  virtual void ExtractMediaMetadata(
-      const int fd,
-      const int64 offset,
-      const int64 size,
-      const ExtractMediaMetadataCB& callback) = 0;
+  virtual void ExtractMediaMetadata(const int fd,
+                                    const int64_t offset,
+                                    const int64_t size,
+                                    const ExtractMediaMetadataCB& callback) = 0;
 };
 
 }  // namespace media

@@ -81,7 +81,8 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
   };
 
   // Implements SinkFilterObserver.
-  void FrameReceived(const uint8* buffer, int length,
+  void FrameReceived(const uint8_t* buffer,
+                     int length,
                      base::TimeTicks timestamp) override;
 
   bool CreateCapabilityMap();

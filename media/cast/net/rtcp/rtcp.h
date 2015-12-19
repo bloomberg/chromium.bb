@@ -85,7 +85,7 @@ class Rtcp {
   // and used to maintain a RTCP session.
   // Returns false if this is not a RTCP packet or it is not directed to
   // this session, e.g. SSRC doesn't match.
-  bool IncomingRtcpPacket(const uint8* data, size_t length);
+  bool IncomingRtcpPacket(const uint8_t* data, size_t length);
 
   // If available, returns true and sets the output arguments to the latest
   // lip-sync timestamps gleaned from the sender reports.  While the sender
@@ -102,8 +102,8 @@ class Rtcp {
     return current_round_trip_time_;
   }
 
-  static bool IsRtcpPacket(const uint8* packet, size_t length);
-  static uint32_t GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);
+  static bool IsRtcpPacket(const uint8_t* packet, size_t length);
+  static uint32_t GetSsrcOfSender(const uint8_t* rtcp_buffer, size_t length);
 
   uint32_t GetLocalSsrc() const { return local_ssrc_; }
   uint32_t GetRemoteSsrc() const { return remote_ssrc_; }

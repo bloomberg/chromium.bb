@@ -112,7 +112,7 @@ class H264VideoToolboxEncoder : public VideoEncoder,
   scoped_refptr<VideoFrameFactoryImpl> video_frame_factory_;
 
   // The ID of the last frame that was emitted.
-  uint32 last_frame_id_;
+  uint32_t last_frame_id_;
 
   // Force next frame to be a keyframe.
   bool encode_next_frame_as_keyframe_;

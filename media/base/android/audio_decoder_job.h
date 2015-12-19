@@ -62,9 +62,9 @@ class AudioDecoderJob : public MediaDecoderJob {
   AudioCodec audio_codec_;
   int num_channels_;
   int config_sampling_rate_;
-  std::vector<uint8> audio_extra_data_;
-  int64 audio_codec_delay_ns_;
-  int64 audio_seek_preroll_ns_;
+  std::vector<uint8_t> audio_extra_data_;
+  int64_t audio_codec_delay_ns_;
+  int64_t audio_seek_preroll_ns_;
   double volume_;
   int bytes_per_frame_;
 
@@ -72,7 +72,7 @@ class AudioDecoderJob : public MediaDecoderJob {
   int output_sampling_rate_;
 
   // Frame count to sync with audio codec output
-  int64 frame_count_;
+  int64_t frame_count_;
 
   // Base timestamp for the |audio_timestamp_helper_|.
   base::TimeDelta base_timestamp_;

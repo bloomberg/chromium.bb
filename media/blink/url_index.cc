@@ -84,7 +84,7 @@ void UrlData::set_cacheable(bool cacheable) {
   cacheable_ = cacheable;
 }
 
-void UrlData::set_length(int64 length) {
+void UrlData::set_length(int64_t length) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (length != kPositionNotSpecified) {
     length_ = length;

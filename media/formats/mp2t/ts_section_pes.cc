@@ -14,7 +14,7 @@
 
 static const int kPesStartCode = 0x000001;
 
-static bool IsTimestampSectionValid(int64 timestamp_section) {
+static bool IsTimestampSectionValid(int64_t timestamp_section) {
   // |pts_section| has 40 bits:
   // - starting with either '0010' or '0011' or '0001'
   // - and ending with a marker bit.
@@ -26,7 +26,7 @@ static bool IsTimestampSectionValid(int64 timestamp_section) {
          ((timestamp_section & 0x100000000) != 0);
 }
 
-static int64 ConvertTimestampSectionToTimestamp(int64 timestamp_section) {
+static int64_t ConvertTimestampSectionToTimestamp(int64_t timestamp_section) {
   return (((timestamp_section >> 33) & 0x7) << 30) |
          (((timestamp_section >> 17) & 0x7fff) << 15) |
          (((timestamp_section >> 1) & 0x7fff) << 0);
@@ -48,7 +48,8 @@ TsSectionPes::~TsSectionPes() {
 }
 
 bool TsSectionPes::Parse(bool payload_unit_start_indicator,
-                             const uint8* buf, int size) {
+                         const uint8_t* buf,
+                         int size) {
   // Ignore partial PES.
   if (wait_for_pusi_ && !payload_unit_start_indicator)
     return true;
@@ -59,7 +60,7 @@ bool TsSectionPes::Parse(bool payload_unit_start_indicator,
     // with an undefined size.
     // In this case, a unit is emitted when the next unit is coming.
     int raw_pes_size;
-    const uint8* raw_pes;
+    const uint8_t* raw_pes;
     pes_byte_queue_.Peek(&raw_pes, &raw_pes_size);
     if (raw_pes_size > 0)
       parse_result = Emit(true);
@@ -95,7 +96,7 @@ void TsSectionPes::Reset() {
 
 bool TsSectionPes::Emit(bool emit_for_unknown_size) {
   int raw_pes_size;
-  const uint8* raw_pes;
+  const uint8_t* raw_pes;
   pes_byte_queue_.Peek(&raw_pes, &raw_pes_size);
 
   // A PES should be at least 6 bytes.
@@ -126,7 +127,7 @@ bool TsSectionPes::Emit(bool emit_for_unknown_size) {
   return parse_result;
 }
 
-bool TsSectionPes::ParseInternal(const uint8* raw_pes, int raw_pes_size) {
+bool TsSectionPes::ParseInternal(const uint8_t* raw_pes, int raw_pes_size) {
   BitReader bit_reader(raw_pes, raw_pes_size);
 
   // Read up to the pes_packet_length (6 bytes).
@@ -199,8 +200,8 @@ bool TsSectionPes::ParseInternal(const uint8* raw_pes, int raw_pes_size) {
   // Read the timing information section.
   bool is_pts_valid = false;
   bool is_dts_valid = false;
-  int64 pts_section = 0;
-  int64 dts_section = 0;
+  int64_t pts_section = 0;
+  int64_t dts_section = 0;
   if (pts_dts_flags == 0x2) {
     RCHECK(bit_reader.ReadBits(40, &pts_section));
     RCHECK((((pts_section >> 36) & 0xf) == 0x2) &&
@@ -222,12 +223,12 @@ bool TsSectionPes::ParseInternal(const uint8* raw_pes, int raw_pes_size) {
   base::TimeDelta media_pts(kNoTimestamp());
   DecodeTimestamp media_dts(kNoDecodeTimestamp());
   if (is_pts_valid) {
-    int64 pts = timestamp_unroller_->GetUnrolledTimestamp(
+    int64_t pts = timestamp_unroller_->GetUnrolledTimestamp(
         ConvertTimestampSectionToTimestamp(pts_section));
     media_pts = base::TimeDelta::FromMicroseconds((1000 * pts) / 90);
   }
   if (is_dts_valid) {
-    int64 dts = timestamp_unroller_->GetUnrolledTimestamp(
+    int64_t dts = timestamp_unroller_->GetUnrolledTimestamp(
         ConvertTimestampSectionToTimestamp(dts_section));
     media_dts = DecodeTimestamp::FromMicroseconds((1000 * dts) / 90);
   }

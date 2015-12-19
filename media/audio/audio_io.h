@@ -5,7 +5,6 @@
 #ifndef MEDIA_AUDIO_AUDIO_IO_H_
 #define MEDIA_AUDIO_AUDIO_IO_H_
 
-#include "base/basictypes.h"
 #include "media/base/audio_bus.h"
 
 // Low-level audio output support. To make sound there are 3 objects involved:
@@ -112,15 +111,15 @@ class MEDIA_EXPORT AudioInputStream {
     // TODO(henrika): should be pure virtual when old OnData() is phased out.
     virtual void OnData(AudioInputStream* stream,
                         const AudioBus* source,
-                        uint32 hardware_delay_bytes,
-                        double volume) {};
+                        uint32_t hardware_delay_bytes,
+                        double volume){};
 
     // TODO(henrika): don't use; to be removed.
     virtual void OnData(AudioInputStream* stream,
-                        const uint8* src,
-                        uint32 size,
-                        uint32 hardware_delay_bytes,
-                        double volume) {};
+                        const uint8_t* src,
+                        uint32_t size,
+                        uint32_t hardware_delay_bytes,
+                        double volume){};
 
     // There was an error while recording audio. The audio sink cannot be
     // destroyed yet. No direct action needed by the AudioInputStream, but it

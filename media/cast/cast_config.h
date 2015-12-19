@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
@@ -60,10 +59,10 @@ struct AudioSenderConfig {
   ~AudioSenderConfig();
 
   // Identifier referring to the sender, used by the receiver.
-  uint32 ssrc;
+  uint32_t ssrc;
 
   // The receiver's SSRC identifier.
-  uint32 receiver_ssrc;
+  uint32_t receiver_ssrc;
 
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This should be
@@ -98,10 +97,10 @@ struct VideoSenderConfig {
   ~VideoSenderConfig();
 
   // Identifier referring to the sender, used by the receiver.
-  uint32 ssrc;
+  uint32_t ssrc;
 
   // The receiver's SSRC identifier.
-  uint32 receiver_ssrc;
+  uint32_t receiver_ssrc;
 
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This should be
@@ -154,10 +153,10 @@ struct FrameReceiverConfig {
   ~FrameReceiverConfig();
 
   // The receiver's SSRC identifier.
-  uint32 receiver_ssrc;
+  uint32_t receiver_ssrc;
 
   // The sender's SSRC identifier.
-  uint32 sender_ssrc;
+  uint32_t sender_ssrc;
 
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This is fixed as

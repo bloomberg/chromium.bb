@@ -6,7 +6,7 @@
 
 namespace media {
 
-BitReader::BitReader(const uint8* data, int size)
+BitReader::BitReader(const uint8_t* data, int size)
     : initial_size_(size),
       data_(data),
       bytes_left_(size),
@@ -17,7 +17,7 @@ BitReader::BitReader(const uint8* data, int size)
 
 BitReader::~BitReader() {}
 
-int BitReader::GetBytes(int max_nbytes, const uint8** out) {
+int BitReader::GetBytes(int max_nbytes, const uint8_t** out) {
   DCHECK_GE(max_nbytes, 0);
   DCHECK(out);
 

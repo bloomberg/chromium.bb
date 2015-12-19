@@ -44,7 +44,7 @@ FakeVideoEncodeAccelerator::GetSupportedProfiles() {
 bool FakeVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
                                             const gfx::Size& input_visible_size,
                                             VideoCodecProfile output_profile,
-                                            uint32 initial_bitrate,
+                                            uint32_t initial_bitrate,
                                             Client* client) {
   if (!will_initialization_succeed_) {
     return false;
@@ -79,8 +79,8 @@ void FakeVideoEncodeAccelerator::UseOutputBitstreamBuffer(
 }
 
 void FakeVideoEncodeAccelerator::RequestEncodingParametersChange(
-    uint32 bitrate,
-    uint32 framerate) {
+    uint32_t bitrate,
+    uint32_t framerate) {
   stored_bitrates_.push_back(bitrate);
 }
 
@@ -113,7 +113,7 @@ void FakeVideoEncodeAccelerator::EncodeTask() {
   while (!queued_frames_.empty() && !available_buffers_.empty()) {
     bool force_key_frame = queued_frames_.front();
     queued_frames_.pop();
-    int32 bitstream_buffer_id = available_buffers_.front().id();
+    int32_t bitstream_buffer_id = available_buffers_.front().id();
     available_buffers_.pop_front();
     bool key_frame = next_frame_is_first_frame_ || force_key_frame;
     next_frame_is_first_frame_ = false;
@@ -128,7 +128,7 @@ void FakeVideoEncodeAccelerator::EncodeTask() {
 }
 
 void FakeVideoEncodeAccelerator::DoBitstreamBufferReady(
-    int32 bitstream_buffer_id,
+    int32_t bitstream_buffer_id,
     size_t payload_size,
     bool key_frame) const {
   client_->BitstreamBufferReady(bitstream_buffer_id,

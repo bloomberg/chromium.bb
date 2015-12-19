@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_ANDROID_DEMUXER_ANDROID_H_
 #define MEDIA_BASE_ANDROID_DEMUXER_ANDROID_H_
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"

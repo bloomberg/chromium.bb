@@ -42,8 +42,8 @@ void AudioRecordInputStream::CacheDirectBufferAddress(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& byte_buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  direct_buffer_address_ = static_cast<uint8*>(
-      env->GetDirectBufferAddress(byte_buffer));
+  direct_buffer_address_ =
+      static_cast<uint8_t*>(env->GetDirectBufferAddress(byte_buffer));
 }
 
 // static

@@ -14,8 +14,8 @@
 namespace media {
 namespace cast {
 
-static const int64 kStartMillisecond = INT64_C(12345678900000);
-static const uint32 kStdTimeIncrementMs = 33;
+static const int64_t kStartMillisecond = INT64_C(12345678900000);
+static const uint32_t kStdTimeIncrementMs = 33;
 
 class ReceiverStatsTest : public ::testing::Test {
  protected:
@@ -28,7 +28,7 @@ class ReceiverStatsTest : public ::testing::Test {
   }
   ~ReceiverStatsTest() override {}
 
-  uint32 ExpectedJitter(uint32 const_interval, int num_packets) {
+  uint32_t ExpectedJitter(uint32_t const_interval, int num_packets) {
     float jitter = 0;
     // Assume timestamps have a constant kStdTimeIncrementMs interval.
     float float_interval =
@@ -36,7 +36,7 @@ class ReceiverStatsTest : public ::testing::Test {
     for (int i = 0; i < num_packets; ++i) {
       jitter += (float_interval - jitter) / 16;
     }
-    return static_cast<uint32>(jitter + 0.5f);
+    return static_cast<uint32_t>(jitter + 0.5f);
   }
 
   ReceiverStats stats_;
@@ -71,7 +71,7 @@ TEST_F(ReceiverStatsTest, LossCount) {
   EXPECT_EQ(63u, s.fraction_lost);
   EXPECT_EQ(74u, s.cumulative_lost);
   // Build extended sequence number.
-  const uint32 extended_seq_num = rtp_header_.sequence_number - 1;
+  const uint32_t extended_seq_num = rtp_header_.sequence_number - 1;
   EXPECT_EQ(extended_seq_num, s.extended_high_sequence_number);
 }
 
@@ -89,12 +89,12 @@ TEST_F(ReceiverStatsTest, NoLossWrap) {
   EXPECT_EQ(0u, s.fraction_lost);
   EXPECT_EQ(0u, s.cumulative_lost);
   // Build extended sequence number (one wrap cycle).
-  const uint32 extended_seq_num = (1 << 16) + rtp_header_.sequence_number - 1;
+  const uint32_t extended_seq_num = (1 << 16) + rtp_header_.sequence_number - 1;
   EXPECT_EQ(extended_seq_num, s.extended_high_sequence_number);
 }
 
 TEST_F(ReceiverStatsTest, LossCountWrap) {
-  const uint32 kStartSequenceNumber = 65500;
+  const uint32_t kStartSequenceNumber = 65500;
   rtp_header_.sequence_number = kStartSequenceNumber;
   for (int i = 0; i < 300; ++i) {
     if (i % 4)
@@ -109,7 +109,7 @@ TEST_F(ReceiverStatsTest, LossCountWrap) {
   EXPECT_EQ(63u, s.fraction_lost);
   EXPECT_EQ(74u, s.cumulative_lost);
   // Build extended sequence number (one wrap cycle).
-  const uint32 extended_seq_num = (1 << 16) + rtp_header_.sequence_number - 1;
+  const uint32_t extended_seq_num = (1 << 16) + rtp_header_.sequence_number - 1;
   EXPECT_EQ(extended_seq_num, s.extended_high_sequence_number);
 }
 
@@ -124,7 +124,7 @@ TEST_F(ReceiverStatsTest, BasicJitter) {
   EXPECT_FALSE(s.fraction_lost);
   EXPECT_FALSE(s.cumulative_lost);
   // Build extended sequence number (one wrap cycle).
-  const uint32 extended_seq_num = rtp_header_.sequence_number - 1;
+  const uint32_t extended_seq_num = rtp_header_.sequence_number - 1;
   EXPECT_EQ(extended_seq_num, s.extended_high_sequence_number);
   EXPECT_EQ(ExpectedJitter(kStdTimeIncrementMs, 300), s.jitter);
 }
@@ -143,7 +143,7 @@ TEST_F(ReceiverStatsTest, NonTrivialJitter) {
   EXPECT_FALSE(s.fraction_lost);
   EXPECT_FALSE(s.cumulative_lost);
   // Build extended sequence number (one wrap cycle).
-  const uint32 extended_seq_num = rtp_header_.sequence_number - 1;
+  const uint32_t extended_seq_num = rtp_header_.sequence_number - 1;
   EXPECT_EQ(extended_seq_num, s.extended_high_sequence_number);
   EXPECT_EQ(ExpectedJitter(kStdTimeIncrementMs + kAdditionalIncrement, 300),
             s.jitter);

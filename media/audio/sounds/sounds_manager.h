@@ -5,7 +5,6 @@
 #ifndef MEDIA_AUDIO_SOUNDS_SOUNDS_MANAGER_H_
 #define MEDIA_AUDIO_SOUNDS_SOUNDS_MANAGER_H_
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"

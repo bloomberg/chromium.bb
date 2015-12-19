@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
 namespace media {
@@ -32,9 +31,10 @@ class BitstreamConverter
   // of input frame are encrypted and should update |subsamples| if necessary,
   // to make sure it correctly describes the converted output frame. See
   // SubsampleEntry definition in media/base/decrypt_config.h for more info.
-  virtual bool ConvertFrame(std::vector<uint8>* frame_buf,
+  virtual bool ConvertFrame(std::vector<uint8_t>* frame_buf,
                             bool is_keyframe,
                             std::vector<SubsampleEntry>* subsamples) const = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<BitstreamConverter>;
   virtual ~BitstreamConverter();

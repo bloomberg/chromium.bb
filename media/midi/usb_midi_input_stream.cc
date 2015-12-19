@@ -52,7 +52,7 @@ void UsbMidiInputStream::Add(const UsbMidiJack& jack) {
 
 void UsbMidiInputStream::OnReceivedData(UsbMidiDevice* device,
                                         int endpoint_number,
-                                        const uint8* data,
+                                        const uint8_t* data,
                                         size_t size,
                                         base::TimeTicks time) {
   DCHECK_EQ(0u, size % kPacketSize);
@@ -65,11 +65,11 @@ void UsbMidiInputStream::OnReceivedData(UsbMidiDevice* device,
 
 void UsbMidiInputStream::ProcessOnePacket(UsbMidiDevice* device,
                                           int endpoint_number,
-                                          const uint8* packet,
+                                          const uint8_t* packet,
                                           base::TimeTicks time) {
   // The first 4 bytes of the packet is accessible here.
-  uint8 code_index = packet[0] & 0x0f;
-  uint8 cable_number = packet[0] >> 4;
+  uint8_t code_index = packet[0] & 0x0f;
+  uint8_t cable_number = packet[0] >> 4;
   const size_t packet_size_table[16] = {
     0, 0, 2, 3, 3, 1, 2, 3, 3, 3, 3, 3, 2, 2, 3, 1,
   };

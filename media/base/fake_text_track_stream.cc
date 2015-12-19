@@ -52,15 +52,16 @@ void FakeTextTrackStream::SatisfyPendingRead(
     const std::string& settings) {
   DCHECK(!read_cb_.is_null());
 
-  const uint8* const data_buf = reinterpret_cast<const uint8*>(content.data());
+  const uint8_t* const data_buf =
+      reinterpret_cast<const uint8_t*>(content.data());
   const int data_len = static_cast<int>(content.size());
 
-  std::vector<uint8> side_data;
+  std::vector<uint8_t> side_data;
   MakeSideData(id.begin(), id.end(),
                 settings.begin(), settings.end(),
                 &side_data);
 
-  const uint8* const sd_buf = &side_data[0];
+  const uint8_t* const sd_buf = &side_data[0];
   const int sd_len = static_cast<int>(side_data.size());
 
   scoped_refptr<DecoderBuffer> buffer;

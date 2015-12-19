@@ -45,14 +45,13 @@ void AVFreeFrame(AVFrame* frame) {
   av_frame_free(&frame);
 }
 
-base::TimeDelta PtsToTimeDelta(int64 pts, const AVRational& time_base) {
+base::TimeDelta PtsToTimeDelta(int64_t pts, const AVRational& time_base) {
   return pts * base::TimeDelta::FromSeconds(1) * time_base.num / time_base.den;
 }
 
-int64 TimeDeltaToPts(base::TimeDelta delta, const AVRational& time_base) {
-  return static_cast<int64>(
-      delta.InSecondsF() * time_base.den / time_base.num +
-      0.5 /* rounding */);
+int64_t TimeDeltaToPts(base::TimeDelta delta, const AVRational& time_base) {
+  return static_cast<int64_t>(
+      delta.InSecondsF() * time_base.den / time_base.num + 0.5 /* rounding */);
 }
 
 }  // namespace
@@ -542,7 +541,7 @@ void FakeMediaSource::DecodeVideo(ScopedAVPacket packet) {
     const AVRational& frame_rate = av_video_stream()->r_frame_rate;
     timestamp = last_video_frame_timestamp_ +
         (base::TimeDelta::FromSeconds(1) * frame_rate.den / frame_rate.num);
-    const int64 adjustment_pts = TimeDeltaToPts(timestamp, time_base);
+    const int64_t adjustment_pts = TimeDeltaToPts(timestamp, time_base);
     video_first_pts_ = avframe->pkt_pts - adjustment_pts;
   }
 

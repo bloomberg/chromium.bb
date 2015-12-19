@@ -9,9 +9,9 @@
 
 // The elementary stream size is specific by up to 4 bytes.
 // The MSB of a byte indicates if there are more bytes for the size.
-static bool ReadESSize(media::BitReader* reader, uint32* size) {
-  uint8 msb;
-  uint8 byte;
+static bool ReadESSize(media::BitReader* reader, uint32_t* size) {
+  uint8_t msb;
+  uint8_t byte;
 
   *size = 0;
 
@@ -32,7 +32,7 @@ namespace media {
 namespace mp4 {
 
 // static
-bool ESDescriptor::IsAAC(uint8 object_type) {
+bool ESDescriptor::IsAAC(uint8_t object_type) {
   return object_type == kISO_14496_3 || object_type == kISO_13818_7_AAC_LC;
 }
 
@@ -42,14 +42,14 @@ ESDescriptor::ESDescriptor()
 
 ESDescriptor::~ESDescriptor() {}
 
-bool ESDescriptor::Parse(const std::vector<uint8>& data) {
+bool ESDescriptor::Parse(const std::vector<uint8_t>& data) {
   BitReader reader(&data[0], data.size());
-  uint8 tag;
-  uint32 size;
-  uint8 stream_dependency_flag;
-  uint8 url_flag;
-  uint8 ocr_stream_flag;
-  uint16 dummy;
+  uint8_t tag;
+  uint32_t size;
+  uint8_t stream_dependency_flag;
+  uint8_t url_flag;
+  uint8_t ocr_stream_flag;
+  uint16_t dummy;
 
   RCHECK(reader.ReadBits(8, &tag));
   RCHECK(tag == kESDescrTag);
@@ -72,18 +72,18 @@ bool ESDescriptor::Parse(const std::vector<uint8>& data) {
   return true;
 }
 
-uint8 ESDescriptor::object_type() const {
+uint8_t ESDescriptor::object_type() const {
   return object_type_;
 }
 
-const std::vector<uint8>& ESDescriptor::decoder_specific_info() const {
+const std::vector<uint8_t>& ESDescriptor::decoder_specific_info() const {
   return decoder_specific_info_;
 }
 
 bool ESDescriptor::ParseDecoderConfigDescriptor(BitReader* reader) {
-  uint8 tag;
-  uint32 size;
-  uint64 dummy;
+  uint8_t tag;
+  uint32_t size;
+  uint64_t dummy;
 
   RCHECK(reader->ReadBits(8, &tag));
   RCHECK(tag == kDecoderConfigDescrTag);
@@ -98,15 +98,15 @@ bool ESDescriptor::ParseDecoderConfigDescriptor(BitReader* reader) {
 }
 
 bool ESDescriptor::ParseDecoderSpecificInfo(BitReader* reader) {
-  uint8 tag;
-  uint32 size;
+  uint8_t tag;
+  uint32_t size;
 
   RCHECK(reader->ReadBits(8, &tag));
   RCHECK(tag == kDecoderSpecificInfoTag);
   RCHECK(ReadESSize(reader, &size));
 
   decoder_specific_info_.resize(size);
-  for (uint32 i = 0; i < size; ++i)
+  for (uint32_t i = 0; i < size; ++i)
     RCHECK(reader->ReadBits(8, &decoder_specific_info_[i]));
 
   return true;

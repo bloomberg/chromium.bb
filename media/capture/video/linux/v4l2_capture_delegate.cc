@@ -24,7 +24,7 @@ namespace media {
 // buffers by v4l2 driver can be higher or lower than this number.
 // kNumVideoBuffers should not be too small, or Chrome may not return enough
 // buffers back to driver in time.
-const uint32 kNumVideoBuffers = 4;
+const uint32_t kNumVideoBuffers = 4;
 // Timeout in milliseconds v4l2_thread_ blocks waiting for a frame from the hw.
 const int kCaptureTimeoutMs = 200;
 // The number of continuous timeouts tolerated before treated as error.

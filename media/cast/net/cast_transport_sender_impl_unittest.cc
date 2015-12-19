@@ -20,9 +20,9 @@ namespace media {
 namespace cast {
 
 namespace {
-const int64 kStartMillisecond = INT64_C(12345678900000);
-const uint32 kVideoSsrc = 1;
-const uint32 kAudioSsrc = 2;
+const int64_t kStartMillisecond = INT64_C(12345678900000);
+const uint32_t kVideoSsrc = 1;
+const uint32_t kAudioSsrc = 2;
 }  // namespace
 
 class FakePacketSender : public PacketSender {
@@ -41,7 +41,7 @@ class FakePacketSender : public PacketSender {
     return true;
   }
 
-  int64 GetBytesSent() final { return bytes_sent_; }
+  int64_t GetBytesSent() final { return bytes_sent_; }
 
   void SetPaused(bool paused) {
     paused_ = paused;
@@ -58,7 +58,7 @@ class FakePacketSender : public PacketSender {
   base::Closure callback_;
   PacketRef stored_packet_;
   int packets_sent_;
-  int64 bytes_sent_;
+  int64_t bytes_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePacketSender);
 };
@@ -256,7 +256,7 @@ TEST_F(CastTransportSenderImplTest, CancelRetransmits) {
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
   EXPECT_EQ(2, num_times_logging_callback_called_);
 
-  std::vector<uint32> cancel_sending_frames;
+  std::vector<uint32_t> cancel_sending_frames;
   cancel_sending_frames.push_back(1);
   transport_sender_->CancelSendingFrames(kVideoSsrc,
                                          cancel_sending_frames);

@@ -4,7 +4,6 @@
 
 #include "media/audio/mac/audio_manager_mac.h"
 
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/mac/mac_logging.h"
@@ -429,7 +428,7 @@ bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
     return false;
 
   // Allocate storage.
-  scoped_ptr<uint8[]> list_storage(new uint8[size]);
+  scoped_ptr<uint8_t[]> list_storage(new uint8_t[size]);
   AudioBufferList& buffer_list =
       *reinterpret_cast<AudioBufferList*>(list_storage.get());
 

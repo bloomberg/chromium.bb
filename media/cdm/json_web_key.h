@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
 
@@ -49,7 +48,7 @@ namespace media {
 // http://tools.ietf.org/html/draft-jones-jose-json-private-and-symmetric-key
 
 // Vector of key IDs.
-typedef std::vector<std::vector<uint8>> KeyIdList;
+typedef std::vector<std::vector<uint8_t>> KeyIdList;
 
 // Vector of [key_id, key_value] pairs. Values are raw binary data, stored in
 // strings for convenience.
@@ -57,8 +56,10 @@ typedef std::pair<std::string, std::string> KeyIdAndKeyPair;
 typedef std::vector<KeyIdAndKeyPair> KeyIdAndKeyPairs;
 
 // Converts a single |key|, |key_id| pair to a JSON Web Key Set.
-MEDIA_EXPORT std::string GenerateJWKSet(const uint8* key, int key_length,
-                                        const uint8* key_id, int key_id_length);
+MEDIA_EXPORT std::string GenerateJWKSet(const uint8_t* key,
+                                        int key_length,
+                                        const uint8_t* key_id,
+                                        int key_id_length);
 
 // Converts a set of |key|, |key_id| pairs to a JSON Web Key Set.
 MEDIA_EXPORT std::string GenerateJWKSet(const KeyIdAndKeyPairs& keys,
@@ -83,19 +84,19 @@ MEDIA_EXPORT bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
 // specified. |license| is updated to contain the resulting JSON string.
 MEDIA_EXPORT void CreateLicenseRequest(const KeyIdList& key_ids,
                                        MediaKeys::SessionType session_type,
-                                       std::vector<uint8>* license);
+                                       std::vector<uint8_t>* license);
 
 // Creates a keyIDs init_data message for the |key_ids| specified.
 // |key_ids_init_data| is updated to contain the resulting JSON string.
 MEDIA_EXPORT void CreateKeyIdsInitData(const KeyIdList& key_ids,
-                                       std::vector<uint8>* key_ids_init_data);
+                                       std::vector<uint8_t>* key_ids_init_data);
 
 // Extract the first key from the license request message. Returns true if
 // |license| is a valid license request and contains at least one key,
 // otherwise false and |first_key| is not touched.
 MEDIA_EXPORT bool ExtractFirstKeyIdFromLicenseRequest(
-    const std::vector<uint8>& license,
-    std::vector<uint8>* first_key);
+    const std::vector<uint8_t>& license,
+    std::vector<uint8_t>* first_key);
 
 }  // namespace media
 

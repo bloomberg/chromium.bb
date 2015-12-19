@@ -17,7 +17,7 @@ TimestampUnroller::TimestampUnroller()
 TimestampUnroller::~TimestampUnroller() {
 }
 
-int64 TimestampUnroller::GetUnrolledTimestamp(int64 timestamp) {
+int64_t TimestampUnroller::GetUnrolledTimestamp(int64_t timestamp) {
   // Mpeg2 TS timestamps have an accuracy of 33 bits.
   const int nbits = 33;
 
@@ -48,17 +48,16 @@ int64 TimestampUnroller::GetUnrolledTimestamp(int64 timestamp) {
   // values during that process.
   // - possible overflows are not considered here since 64 bits on a 90kHz
   // timescale is way enough to represent several years of playback.
-  int64 previous_unrolled_time_high =
-      (previous_unrolled_timestamp_ >> nbits);
-  int64 time0 = ((previous_unrolled_time_high - 1) << nbits) | timestamp;
-  int64 time1 = ((previous_unrolled_time_high + 0) << nbits) | timestamp;
-  int64 time2 = ((previous_unrolled_time_high + 1) << nbits) | timestamp;
+  int64_t previous_unrolled_time_high = (previous_unrolled_timestamp_ >> nbits);
+  int64_t time0 = ((previous_unrolled_time_high - 1) << nbits) | timestamp;
+  int64_t time1 = ((previous_unrolled_time_high + 0) << nbits) | timestamp;
+  int64_t time2 = ((previous_unrolled_time_high + 1) << nbits) | timestamp;
 
   // Select the min absolute difference with the current time
   // so as to ensure time continuity.
-  int64 diff0 = time0 - previous_unrolled_timestamp_;
-  int64 diff1 = time1 - previous_unrolled_timestamp_;
-  int64 diff2 = time2 - previous_unrolled_timestamp_;
+  int64_t diff0 = time0 - previous_unrolled_timestamp_;
+  int64_t diff1 = time1 - previous_unrolled_timestamp_;
+  int64_t diff2 = time2 - previous_unrolled_timestamp_;
   if (diff0 < 0)
     diff0 = -diff0;
   if (diff1 < 0)
@@ -66,8 +65,8 @@ int64 TimestampUnroller::GetUnrolledTimestamp(int64 timestamp) {
   if (diff2 < 0)
     diff2 = -diff2;
 
-  int64 unrolled_time;
-  int64 min_diff;
+  int64_t unrolled_time;
+  int64_t min_diff;
   if (diff1 < diff0) {
     unrolled_time = time1;
     min_diff = diff1;

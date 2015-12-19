@@ -48,14 +48,15 @@ class MEDIA_EXPORT DecoderBuffer
   // Create a DecoderBuffer whose |data_| is copied from |data|.  Buffer will be
   // padded and aligned as necessary.  |data| must not be NULL and |size| >= 0.
   // The buffer's |is_key_frame_| will default to false.
-  static scoped_refptr<DecoderBuffer> CopyFrom(const uint8* data, int size);
+  static scoped_refptr<DecoderBuffer> CopyFrom(const uint8_t* data, int size);
 
   // Create a DecoderBuffer whose |data_| is copied from |data| and |side_data_|
   // is copied from |side_data|. Buffers will be padded and aligned as necessary
   // Data pointers must not be NULL and sizes must be >= 0. The buffer's
   // |is_key_frame_| will default to false.
-  static scoped_refptr<DecoderBuffer> CopyFrom(const uint8* data, int size,
-                                               const uint8* side_data,
+  static scoped_refptr<DecoderBuffer> CopyFrom(const uint8_t* data,
+                                               int size,
+                                               const uint8_t* side_data,
                                                int side_data_size);
 
   // Create a DecoderBuffer indicating we've reached end of stream.
@@ -86,12 +87,12 @@ class MEDIA_EXPORT DecoderBuffer
     duration_ = duration;
   }
 
-  const uint8* data() const {
+  const uint8_t* data() const {
     DCHECK(!end_of_stream());
     return data_.get();
   }
 
-  uint8* writable_data() const {
+  uint8_t* writable_data() const {
     DCHECK(!end_of_stream());
     return data_.get();
   }
@@ -102,7 +103,7 @@ class MEDIA_EXPORT DecoderBuffer
     return size_;
   }
 
-  const uint8* side_data() const {
+  const uint8_t* side_data() const {
     DCHECK(!end_of_stream());
     return side_data_.get();
   }
@@ -172,7 +173,7 @@ class MEDIA_EXPORT DecoderBuffer
   std::string AsHumanReadableString();
 
   // Replaces any existing side data with data copied from |side_data|.
-  void CopySideDataFrom(const uint8* side_data, int side_data_size);
+  void CopySideDataFrom(const uint8_t* side_data, int side_data_size);
 
  protected:
   friend class base::RefCountedThreadSafe<DecoderBuffer>;
@@ -181,8 +182,10 @@ class MEDIA_EXPORT DecoderBuffer
   // will be padded and aligned as necessary.  If |data| is NULL then |data_| is
   // set to NULL and |buffer_size_| to 0.  |is_key_frame_| will default to
   // false.
-  DecoderBuffer(const uint8* data, int size,
-                const uint8* side_data, int side_data_size);
+  DecoderBuffer(const uint8_t* data,
+                int size,
+                const uint8_t* side_data,
+                int side_data_size);
   virtual ~DecoderBuffer();
 
  private:
@@ -191,9 +194,9 @@ class MEDIA_EXPORT DecoderBuffer
 
   // TODO(servolk): Consider changing size_/side_data_size_ types to size_t.
   int size_;
-  scoped_ptr<uint8, base::AlignedFreeDeleter> data_;
+  scoped_ptr<uint8_t, base::AlignedFreeDeleter> data_;
   int side_data_size_;
-  scoped_ptr<uint8, base::AlignedFreeDeleter> side_data_;
+  scoped_ptr<uint8_t, base::AlignedFreeDeleter> side_data_;
   scoped_ptr<DecryptConfig> decrypt_config_;
   DiscardPadding discard_padding_;
   base::TimeDelta splice_timestamp_;

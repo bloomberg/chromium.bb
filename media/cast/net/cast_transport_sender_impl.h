@@ -99,25 +99,25 @@ class CastTransportSenderImpl : public CastTransportSender {
   void InitializeVideo(const CastTransportRtpConfig& config,
                        const RtcpCastMessageCallback& cast_message_cb,
                        const RtcpRttCallback& rtt_cb) final;
-  void InsertFrame(uint32 ssrc, const EncodedFrame& frame) final;
+  void InsertFrame(uint32_t ssrc, const EncodedFrame& frame) final;
 
-  void SendSenderReport(uint32 ssrc,
+  void SendSenderReport(uint32_t ssrc,
                         base::TimeTicks current_time,
-                        uint32 current_time_as_rtp_timestamp) final;
+                        uint32_t current_time_as_rtp_timestamp) final;
 
-  void CancelSendingFrames(uint32 ssrc,
-                           const std::vector<uint32>& frame_ids) final;
+  void CancelSendingFrames(uint32_t ssrc,
+                           const std::vector<uint32_t>& frame_ids) final;
 
-  void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) final;
+  void ResendFrameForKickstart(uint32_t ssrc, uint32_t frame_id) final;
 
   PacketReceiverCallback PacketReceiverForTesting() final;
 
   // CastTransportReceiver implementation.
-  void AddValidSsrc(uint32 ssrc) final;
+  void AddValidSsrc(uint32_t ssrc) final;
 
   void SendRtcpFromRtpReceiver(
-      uint32 ssrc,
-      uint32 sender_ssrc,
+      uint32_t ssrc,
+      uint32_t sender_ssrc,
       const RtcpTimeData& time_data,
       const RtcpCastMessage* cast_message,
       base::TimeDelta target_delay,
@@ -135,7 +135,7 @@ class CastTransportSenderImpl : public CastTransportSender {
   // If |cancel_rtx_if_not_in_list| is true then transmission of packets for the
   // frames but not in the list will be dropped.
   // See PacedSender::ResendPackets() to see how |dedup_info| works.
-  void ResendPackets(uint32 ssrc,
+  void ResendPackets(uint32_t ssrc,
                      const MissingFramesAndPacketsMap& missing_packets,
                      bool cancel_rtx_if_not_in_list,
                      const DedupInfo& dedup_info);
@@ -152,7 +152,7 @@ class CastTransportSenderImpl : public CastTransportSender {
                             const RtcpReceiverLogMessage& log);
 
   // Called when a RTCP Cast message is received.
-  void OnReceivedCastMessage(uint32 ssrc,
+  void OnReceivedCastMessage(uint32_t ssrc,
                              const RtcpCastMessageCallback& cast_message_cb,
                              const RtcpCastMessage& cast_message);
 
@@ -192,10 +192,10 @@ class CastTransportSenderImpl : public CastTransportSender {
   // Right after a frame is sent we record the number of bytes sent to the
   // socket. We record the corresponding bytes sent for the most recent ACKed
   // audio packet.
-  int64 last_byte_acked_for_audio_;
+  int64_t last_byte_acked_for_audio_;
 
   // Packets that don't match these ssrcs are ignored.
-  std::set<uint32> valid_ssrcs_;
+  std::set<uint32_t> valid_ssrcs_;
 
   // Called with incoming packets. (Unless they match the
   // channels created by Initialize{Audio,Video}.

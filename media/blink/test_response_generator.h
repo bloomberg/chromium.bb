@@ -5,7 +5,6 @@
 #ifndef MEDIA_BLINK_TEST_RESPONSE_GENERATOR_H_
 #define MEDIA_BLINK_TEST_RESPONSE_GENERATOR_H_
 
-#include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "url/gurl.h"
@@ -25,7 +24,7 @@ class TestResponseGenerator {
 
   // Build an HTTP response generator for the given URL. |content_length| is
   // used to generate Content-Length and Content-Range headers.
-  TestResponseGenerator(const GURL& gurl, int64 content_length);
+  TestResponseGenerator(const GURL& gurl, int64_t content_length);
 
   // Generates a WebURLError object.
   blink::WebURLError GenerateError();
@@ -35,23 +34,23 @@ class TestResponseGenerator {
 
   // Generates a regular HTTP 206 response starting from |first_byte_offset|
   // until the end of the resource.
-  blink::WebURLResponse Generate206(int64 first_byte_offset);
+  blink::WebURLResponse Generate206(int64_t first_byte_offset);
 
   // Generates a custom HTTP 206 response starting from |first_byte_offset|
   // until the end of the resource. You can tweak what gets included in the
   // headers via |flags|.
-  blink::WebURLResponse Generate206(int64 first_byte_offset, Flags flags);
+  blink::WebURLResponse Generate206(int64_t first_byte_offset, Flags flags);
 
   // Generates a regular HTTP 206 response starting from |first_byte_offset|
   // until |last_byte_offset|.
-  blink::WebURLResponse GeneratePartial206(int64 first_byte_offset,
-                                           int64 last_byte_offset);
+  blink::WebURLResponse GeneratePartial206(int64_t first_byte_offset,
+                                           int64_t last_byte_offset);
 
   // Generates a custom HTTP 206 response starting from |first_byte_offset|
   // until |last_byte_offset|. You can tweak what gets included in the
   // headers via |flags|.
-  blink::WebURLResponse GeneratePartial206(int64 first_byte_offset,
-                                           int64 last_byte_offset,
+  blink::WebURLResponse GeneratePartial206(int64_t first_byte_offset,
+                                           int64_t last_byte_offset,
                                            Flags flags);
 
   // Generates a regular HTTP 404 response.
@@ -62,13 +61,13 @@ class TestResponseGenerator {
   //
   // If |first_byte_offset| is negative a response containing no content length
   // will be returned.
-  blink::WebURLResponse GenerateFileResponse(int64 first_byte_offset);
+  blink::WebURLResponse GenerateFileResponse(int64_t first_byte_offset);
 
-  int64 content_length() { return content_length_; }
+  int64_t content_length() { return content_length_; }
 
  private:
   GURL gurl_;
-  int64 content_length_;
+  int64_t content_length_;
 
   DISALLOW_COPY_AND_ASSIGN(TestResponseGenerator);
 };

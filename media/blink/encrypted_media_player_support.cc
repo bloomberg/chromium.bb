@@ -4,7 +4,6 @@
 
 #include "media/blink/encrypted_media_player_support.h"
 
-
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram.h"
@@ -291,16 +290,16 @@ void EncryptedMediaPlayerSupport::OnKeyAdded(const std::string& session_id) {
 
 void EncryptedMediaPlayerSupport::OnKeyError(const std::string& session_id,
                                              MediaKeys::KeyError error_code,
-                                             uint32 system_code) {
+                                             uint32_t system_code) {
   EmeUMAHistogramEnumeration(current_key_system_, "KeyError",
                              error_code, MediaKeys::kMaxKeyError);
 
-  uint16 short_system_code = 0;
-  if (system_code > std::numeric_limits<uint16>::max()) {
+  uint16_t short_system_code = 0;
+  if (system_code > std::numeric_limits<uint16_t>::max()) {
     LOG(WARNING) << "system_code exceeds unsigned short limit.";
-    short_system_code = std::numeric_limits<uint16>::max();
+    short_system_code = std::numeric_limits<uint16_t>::max();
   } else {
-    short_system_code = static_cast<uint16>(system_code);
+    short_system_code = static_cast<uint16_t>(system_code);
   }
 
   client_->keyError(
@@ -313,7 +312,7 @@ void EncryptedMediaPlayerSupport::OnKeyError(const std::string& session_id,
 
 void EncryptedMediaPlayerSupport::OnKeyMessage(
     const std::string& session_id,
-    const std::vector<uint8>& message,
+    const std::vector<uint8_t>& message,
     const GURL& destination_url) {
   DCHECK(destination_url.is_empty() || destination_url.is_valid());
 

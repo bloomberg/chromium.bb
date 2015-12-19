@@ -90,20 +90,20 @@ class StatsEventSubscriber : public RawEventSubscriber {
     // Overflow bucket: >= max
     // |min| must be less than |max|.
     // |width| must divide |max - min| evenly.
-    SimpleHistogram(int64 min, int64 max, int64 width);
+    SimpleHistogram(int64_t min, int64_t max, int64_t width);
 
     ~SimpleHistogram();
 
-    void Add(int64 sample);
+    void Add(int64_t sample);
 
     void Reset();
 
     scoped_ptr<base::ListValue> GetHistogram() const;
 
    private:
-    int64 min_;
-    int64 max_;
-    int64 width_;
+    int64_t min_;
+    int64_t max_;
+    int64_t width_;
     std::vector<int> buckets_;
   };
 
@@ -183,9 +183,8 @@ class StatsEventSubscriber : public RawEventSubscriber {
   typedef std::map<CastStat, double> StatsMap;
   typedef std::map<CastStat, linked_ptr<SimpleHistogram> > HistogramMap;
   typedef std::map<RtpTimestamp, FrameInfo> FrameInfoMap;
-  typedef std::map<
-      std::pair<RtpTimestamp, uint16>,
-      std::pair<base::TimeTicks, CastLoggingEvent> >
+  typedef std::map<std::pair<RtpTimestamp, uint16_t>,
+                   std::pair<base::TimeTicks, CastLoggingEvent>>
       PacketEventTimeMap;
   typedef std::map<CastLoggingEvent, FrameLogStats> FrameStatsMap;
   typedef std::map<CastLoggingEvent, PacketLogStats> PacketStatsMap;

@@ -22,7 +22,7 @@ FrameBuffer::FrameBuffer()
 
 FrameBuffer::~FrameBuffer() {}
 
-bool FrameBuffer::InsertPacket(const uint8* payload_data,
+bool FrameBuffer::InsertPacket(const uint8_t* payload_data,
                                size_t payload_size,
                                const RtpCastHeader& rtp_header) {
   // Is this the first packet in the frame?
@@ -45,7 +45,7 @@ bool FrameBuffer::InsertPacket(const uint8* payload_data,
     return false;
   }
 
-  std::vector<uint8> data;
+  std::vector<uint8_t> data;
   std::pair<PacketMap::iterator, bool> retval =
       packets_.insert(make_pair(rtp_header.packet_id, data));
 

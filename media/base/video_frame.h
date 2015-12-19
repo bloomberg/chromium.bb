@@ -152,7 +152,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
-      uint8* data,
+      uint8_t* data,
       size_t data_size,
       base::TimeDelta timestamp);
 
@@ -162,7 +162,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
-      uint8* data,
+      uint8_t* data,
       size_t data_size,
       base::SharedMemoryHandle handle,
       size_t shared_memory_offset,
@@ -175,12 +175,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
-      int32 y_stride,
-      int32 u_stride,
-      int32 v_stride,
-      uint8* y_data,
-      uint8* u_data,
-      uint8* v_data,
+      int32_t y_stride,
+      int32_t u_stride,
+      int32_t v_stride,
+      uint8_t* y_data,
+      uint8_t* u_data,
+      uint8_t* v_data,
       base::TimeDelta timestamp);
 
   // Wraps external YUV data with the given parameters with a VideoFrame.
@@ -190,12 +190,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
-      int32 y_stride,
-      int32 u_stride,
-      int32 v_stride,
-      uint8* y_data,
-      uint8* u_data,
-      uint8* v_data,
+      int32_t y_stride,
+      int32_t u_stride,
+      int32_t v_stride,
+      uint8_t* y_data,
+      uint8_t* u_data,
+      uint8_t* v_data,
       const gfx::GpuMemoryBufferHandle& y_handle,
       const gfx::GpuMemoryBufferHandle& u_handle,
       const gfx::GpuMemoryBufferHandle& v_handle,
@@ -246,10 +246,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   static scoped_refptr<VideoFrame> CreateEOSFrame();
 
   // Allocates YV12 frame based on |size|, and sets its data to the YUV(y,u,v).
-  static scoped_refptr<VideoFrame> CreateColorFrame(
-      const gfx::Size& size,
-      uint8 y, uint8 u, uint8 v,
-      base::TimeDelta timestamp);
+  static scoped_refptr<VideoFrame> CreateColorFrame(const gfx::Size& size,
+                                                    uint8_t y,
+                                                    uint8_t u,
+                                                    uint8_t v,
+                                                    base::TimeDelta timestamp);
 
   // Allocates YV12 frame based on |size|, and sets its data to the YUV
   // equivalent of RGB(0,0,0).
@@ -329,15 +330,15 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns pointer to the buffer for a given plane, if this is an
   // IsMappable() frame type. The memory is owned by VideoFrame object and must
   // not be freed by the caller.
-  const uint8* data(size_t plane) const;
-  uint8* data(size_t plane);
+  const uint8_t* data(size_t plane) const;
+  uint8_t* data(size_t plane);
 
   // Returns pointer to the data in the visible region of the frame, for
   // IsMappable() storage types. The returned pointer is offsetted into the
   // plane buffer specified by visible_rect().origin(). Memory is owned by
   // VideoFrame object and must not be freed by the caller.
-  const uint8* visible_data(size_t plane) const;
-  uint8* visible_data(size_t plane);
+  const uint8_t* visible_data(size_t plane) const;
+  uint8_t* visible_data(size_t plane);
 
   // Returns a mailbox holder for a given texture.
   // Only valid to call if this is a NATIVE_TEXTURE frame. Before using the
@@ -413,7 +414,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
-      uint8* data,
+      uint8_t* data,
       size_t data_size,
       base::TimeDelta timestamp,
       base::SharedMemoryHandle handle,
@@ -479,12 +480,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Array of strides for each plane, typically greater or equal to the width
   // of the surface divided by the horizontal sampling period.  Note that
   // strides can be negative.
-  int32 strides_[kMaxPlanes];
+  int32_t strides_[kMaxPlanes];
 
   // Array of data pointers to each plane.
   // TODO(mcasas): we don't know on ctor if we own |data_| or not. After
-  // refactoring VideoFrame, change to scoped_ptr<uint8, AlignedFreeDeleter>.
-  uint8* data_[kMaxPlanes];
+  // refactoring VideoFrame, change to scoped_ptr<uint8_t, AlignedFreeDeleter>.
+  uint8_t* data_[kMaxPlanes];
 
   // Native texture mailboxes, if this is a IsTexture() frame.
   gpu::MailboxHolder mailbox_holders_[kMaxPlanes];

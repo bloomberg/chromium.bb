@@ -45,7 +45,6 @@
 
 #include <sys/types.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "media/base/media_export.h"
 

@@ -4,13 +4,12 @@
 
 #include "media/base/decoder_buffer.h"
 
-
 namespace media {
 
 // Allocates a block of memory which is padded for use with the SIMD
 // optimizations used by FFmpeg.
-static uint8* AllocateFFmpegSafeBlock(int size) {
-  uint8* const block = reinterpret_cast<uint8*>(base::AlignedAlloc(
+static uint8_t* AllocateFFmpegSafeBlock(int size) {
+  uint8_t* const block = reinterpret_cast<uint8_t*>(base::AlignedAlloc(
       size + DecoderBuffer::kPaddingSize, DecoderBuffer::kAlignmentSize));
   memset(block + size, 0, DecoderBuffer::kPaddingSize);
   return block;
@@ -23,13 +22,11 @@ DecoderBuffer::DecoderBuffer(int size)
   Initialize();
 }
 
-DecoderBuffer::DecoderBuffer(const uint8* data,
+DecoderBuffer::DecoderBuffer(const uint8_t* data,
                              int size,
-                             const uint8* side_data,
+                             const uint8_t* side_data,
                              int side_data_size)
-    : size_(size),
-      side_data_size_(side_data_size),
-      is_key_frame_(false) {
+    : size_(size), side_data_size_(side_data_size), is_key_frame_(false) {
   if (!data) {
     CHECK_EQ(size_, 0);
     CHECK(!side_data);
@@ -61,7 +58,7 @@ void DecoderBuffer::Initialize() {
 }
 
 // static
-scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8* data,
+scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8_t* data,
                                                      int data_size) {
   // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
   CHECK(data);
@@ -69,9 +66,9 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8* data,
 }
 
 // static
-scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8* data,
+scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8_t* data,
                                                      int data_size,
-                                                     const uint8* side_data,
+                                                     const uint8_t* side_data,
                                                      int side_data_size) {
   // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
   CHECK(data);
@@ -111,7 +108,7 @@ void DecoderBuffer::set_timestamp(base::TimeDelta timestamp) {
   timestamp_ = timestamp;
 }
 
-void DecoderBuffer::CopySideDataFrom(const uint8* side_data,
+void DecoderBuffer::CopySideDataFrom(const uint8_t* side_data,
                                      int side_data_size) {
   if (side_data_size > 0) {
     side_data_size_ = side_data_size;

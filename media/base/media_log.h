@@ -57,8 +57,9 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   scoped_ptr<MediaLogEvent> CreatePipelineErrorEvent(PipelineStatus error);
   scoped_ptr<MediaLogEvent> CreateVideoSizeSetEvent(
       size_t width, size_t height);
-  scoped_ptr<MediaLogEvent> CreateBufferedExtentsChangedEvent(
-      int64 start, int64 current, int64 end);
+  scoped_ptr<MediaLogEvent> CreateBufferedExtentsChangedEvent(int64_t start,
+                                                              int64_t current,
+                                                              int64_t end);
 
   // Report a log message at the specified log level.
   void AddLogEvent(MediaLogLevel level, const std::string& message);
@@ -76,7 +77,7 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
 
  private:
   // A unique (to this process) id for this MediaLog.
-  int32 id_;
+  int32_t id_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaLog);
 };

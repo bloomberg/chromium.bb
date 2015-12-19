@@ -41,7 +41,7 @@ void SmoothEventSampler::ConsiderPresentationEvent(base::TimeTicks event_time) {
         token_bucket_ = token_bucket_capacity_;
     }
     TRACE_COUNTER1("gpu.capture", "MirroringTokenBucketUsec",
-                   std::max<int64>(0, token_bucket_.InMicroseconds()));
+                   std::max<int64_t>(0, token_bucket_.InMicroseconds()));
   }
   current_event_ = event_time;
 }
@@ -55,7 +55,7 @@ void SmoothEventSampler::RecordSample() {
   if (token_bucket_ < base::TimeDelta())
     token_bucket_ = base::TimeDelta();
   TRACE_COUNTER1("gpu.capture", "MirroringTokenBucketUsec",
-                 std::max<int64>(0, token_bucket_.InMicroseconds()));
+                 std::max<int64_t>(0, token_bucket_.InMicroseconds()));
 
   if (HasUnrecordedEvent()) {
     last_sample_ = current_event_;

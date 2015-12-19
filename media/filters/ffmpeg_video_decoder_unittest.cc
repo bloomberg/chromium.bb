@@ -55,7 +55,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
     FFmpegGlue::InitializeFFmpeg();
 
     // Initialize various test buffers.
-    frame_buffer_.reset(new uint8[kCodedSize.GetArea()]);
+    frame_buffer_.reset(new uint8_t[kCodedSize.GetArea()]);
     end_of_stream_buffer_ = DecoderBuffer::CreateEOSBuffer();
     i_frame_buffer_ = ReadTestDataFile("vp8-I-frame-320x240");
     corrupt_i_frame_buffer_ = ReadTestDataFile("vp8-corrupt-I-frame");

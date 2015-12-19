@@ -53,7 +53,7 @@ class TestPacketSender : public PacketSender {
     return true;
   }
 
-  int64 GetBytesSent() final { return 0; }
+  int64_t GetBytesSent() final { return 0; }
 
   int number_of_rtp_packets() const { return number_of_rtp_packets_; }
 

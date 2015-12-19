@@ -13,18 +13,18 @@ namespace media {
 namespace midi {
 namespace {
 
-const uint8 kSysEx = 0xf0;
-const uint8 kEndOfSysEx = 0xf7;
+const uint8_t kSysEx = 0xf0;
+const uint8_t kEndOfSysEx = 0xf7;
 
-bool IsDataByte(uint8 data) {
+bool IsDataByte(uint8_t data) {
   return (data & 0x80) == 0;
 }
 
-bool IsSystemRealTimeMessage(uint8 data) {
+bool IsSystemRealTimeMessage(uint8_t data) {
   return 0xf8 <= data;
 }
 
-bool IsSystemMessage(uint8 data) {
+bool IsSystemMessage(uint8_t data) {
   return 0xf0 <= data;
 }
 
@@ -35,21 +35,21 @@ MidiMessageQueue::MidiMessageQueue(bool allow_running_status)
 
 MidiMessageQueue::~MidiMessageQueue() {}
 
-void MidiMessageQueue::Add(const std::vector<uint8>& data) {
+void MidiMessageQueue::Add(const std::vector<uint8_t>& data) {
   queue_.insert(queue_.end(), data.begin(), data.end());
 }
 
-void MidiMessageQueue::Add(const uint8* data, size_t length) {
+void MidiMessageQueue::Add(const uint8_t* data, size_t length) {
   queue_.insert(queue_.end(), data, data + length);
 }
 
-void MidiMessageQueue::Get(std::vector<uint8>* message) {
+void MidiMessageQueue::Get(std::vector<uint8_t>* message) {
   message->clear();
 
   while (true) {
     // Check if |next_message_| is already a complete MIDI message or not.
     if (!next_message_.empty()) {
-      const uint8 status_byte = next_message_.front();
+      const uint8_t status_byte = next_message_.front();
       const size_t target_len = GetMidiMessageLength(status_byte);
       if (target_len == 0) {
         DCHECK_EQ(kSysEx, status_byte);
@@ -83,7 +83,7 @@ void MidiMessageQueue::Get(std::vector<uint8>* message) {
     // at an arbitrary byte position of MIDI stream. Here we reorder
     // "System Real Time Messages" prior to |next_message_| so that each message
     // can be clearly separated as a complete MIDI message.
-    const uint8 next = queue_.front();
+    const uint8_t next = queue_.front();
     if (IsSystemRealTimeMessage(next)) {
       message->push_back(next);
       queue_.pop_front();
@@ -106,7 +106,7 @@ void MidiMessageQueue::Get(std::vector<uint8>* message) {
       continue;
     }
 
-    const uint8 status_byte = next_message_.front();
+    const uint8_t status_byte = next_message_.front();
 
     // If we receive a new non-data byte before completing the pending message,
     // drop the pending message and respin the loop to re-evaluate |next|.

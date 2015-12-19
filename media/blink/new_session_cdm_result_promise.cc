@@ -56,7 +56,7 @@ void NewSessionCdmResultPromise::resolve(const std::string& session_id) {
 }
 
 void NewSessionCdmResultPromise::reject(MediaKeys::Exception exception_code,
-                                        uint32 system_code,
+                                        uint32_t system_code,
                                         const std::string& error_message) {
   MarkPromiseSettled();
   ReportCdmResultUMA(uma_name_,

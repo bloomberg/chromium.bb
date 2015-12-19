@@ -42,9 +42,9 @@ MATCHER(IsEndOfStreamBuffer,
   return arg->end_of_stream();
 }
 
-const uint8 kEncryptedMediaInitData[] = {
-  0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
-  0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
+const uint8_t kEncryptedMediaInitData[] = {
+    0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+    0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
 };
 
 static void EosOnReadDone(bool* got_eos_buffer,
@@ -110,21 +110,20 @@ class FFmpegDemuxerTest : public testing::Test {
     InitializeDemuxerText(false);
   }
 
-  MOCK_METHOD2(OnReadDoneCalled, void(int, int64));
+  MOCK_METHOD2(OnReadDoneCalled, void(int, int64_t));
 
   struct ReadExpectation {
     ReadExpectation(int size,
-                    int64 timestamp_us,
+                    int64_t timestamp_us,
                     const base::TimeDelta& discard_front_padding,
                     bool is_key_frame)
         : size(size),
           timestamp_us(timestamp_us),
           discard_front_padding(discard_front_padding),
-          is_key_frame(is_key_frame) {
-    }
+          is_key_frame(is_key_frame) {}
 
     int size;
-    int64 timestamp_us;
+    int64_t timestamp_us;
     base::TimeDelta discard_front_padding;
     bool is_key_frame;
   };
@@ -155,7 +154,7 @@ class FFmpegDemuxerTest : public testing::Test {
 
   DemuxerStream::ReadCB NewReadCB(const tracked_objects::Location& location,
                                   int size,
-                                  int64 timestamp_us,
+                                  int64_t timestamp_us,
                                   bool is_key_frame) {
     return NewReadCBWithCheckedDiscard(location,
                                        size,
@@ -167,7 +166,7 @@ class FFmpegDemuxerTest : public testing::Test {
   DemuxerStream::ReadCB NewReadCBWithCheckedDiscard(
       const tracked_objects::Location& location,
       int size,
-      int64 timestamp_us,
+      int64_t timestamp_us,
       base::TimeDelta discard_front_padding,
       bool is_key_frame) {
     EXPECT_CALL(*this, OnReadDoneCalled(size, timestamp_us));
@@ -185,7 +184,7 @@ class FFmpegDemuxerTest : public testing::Test {
 
   MOCK_METHOD2(OnEncryptedMediaInitData,
                void(EmeInitDataType init_data_type,
-                    const std::vector<uint8>& init_data));
+                    const std::vector<uint8_t>& init_data));
 
   // Accessor to demuxer internals.
   void set_duration_known(bool duration_known) {
@@ -377,9 +376,9 @@ TEST_F(FFmpegDemuxerTest, Initialize_Encrypted) {
   EXPECT_CALL(*this,
               OnEncryptedMediaInitData(
                   EmeInitDataType::WEBM,
-                  std::vector<uint8>(kEncryptedMediaInitData,
-                                     kEncryptedMediaInitData +
-                                         arraysize(kEncryptedMediaInitData))))
+                  std::vector<uint8_t>(kEncryptedMediaInitData,
+                                       kEncryptedMediaInitData +
+                                           arraysize(kEncryptedMediaInitData))))
       .Times(Exactly(2));
 
   CreateDemuxer("bear-320x240-av_enc-av.webm");
@@ -444,7 +443,7 @@ TEST_F(FFmpegDemuxerTest, SeekInitialized_NoVideoStartTime) {
 }
 
 TEST_F(FFmpegDemuxerTest, Read_VideoPositiveStartTime) {
-  const int64 kTimelineOffsetMs = 1352550896000LL;
+  const int64_t kTimelineOffsetMs = 1352550896000LL;
 
   // Test the start time is the first timestamp of the video and audio stream.
   CreateDemuxer("nonzero-start-time.webm");
@@ -983,7 +982,7 @@ TEST_P(Mp3SeekFFmpegDemuxerTest, TestFastSeek) {
   // Verify that seeking to the end read only a small portion of the file.
   // Slow seeks that read sequentially up to the seek point will read too many
   // bytes and fail this check.
-  int64 file_size = 0;
+  int64_t file_size = 0;
   ASSERT_TRUE(data_source_->GetSize(&file_size));
   EXPECT_LT(data_source_->bytes_read_for_testing(), (file_size * .25));
 }

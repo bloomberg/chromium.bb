@@ -28,12 +28,12 @@ class MediaLog;
 class MEDIA_BLINK_EXPORT BufferedDataSourceHost {
  public:
   // Notify the host of the total size of the media file.
-  virtual void SetTotalBytes(int64 total_bytes) = 0;
+  virtual void SetTotalBytes(int64_t total_bytes) = 0;
 
   // Notify the host that byte range [start,end] has been buffered.
   // TODO(fischman): remove this method when demuxing is push-based instead of
   // pull-based.  http://crbug.com/131444
-  virtual void AddBufferedByteRange(int64 start, int64 end) = 0;
+  virtual void AddBufferedByteRange(int64_t start, int64_t end) = 0;
 
  protected:
   virtual ~BufferedDataSourceHost() {}
@@ -184,11 +184,11 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   // Called from demuxer thread.
   void Stop() override;
 
-  void Read(int64 position,
+  void Read(int64_t position,
             int size,
-            uint8* data,
+            uint8_t* data,
             const DataSource::ReadCB& read_cb) override;
-  bool GetSize(int64* size_out) override;
+  bool GetSize(int64_t* size_out) override;
   bool IsStreaming() override;
   void SetBitrate(int bitrate) override;
 
@@ -197,7 +197,8 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   // parameters. We can override this file to object a mock
   // BufferedResourceLoader for testing.
   virtual BufferedResourceLoader* CreateResourceLoader(
-      int64 first_byte_position, int64 last_byte_position);
+      int64_t first_byte_position,
+      int64_t last_byte_position);
 
  private:
   friend class BufferedDataSourceTest;
@@ -232,7 +233,7 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   // BufferedResourceLoader callbacks.
   void ReadCallback(BufferedResourceLoader::Status status, int bytes_read);
   void LoadingStateChangedCallback(BufferedResourceLoader::LoadingState state);
-  void ProgressCallback(int64 position);
+  void ProgressCallback(int64_t position);
 
   // Update |loader_|'s deferring strategy.
   void UpdateDeferStrategy();
@@ -245,7 +246,7 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   // The total size of the resource. Set during StartCallback() if the size is
   // known, otherwise it will remain kPositionNotSpecified until the size is
   // determined by reaching EOF.
-  int64 total_bytes_;
+  int64_t total_bytes_;
 
   // This value will be true if this data source can only support streaming.
   // i.e. range request is not supported.
@@ -275,7 +276,7 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   // because we want buffer to be passed into BufferedResourceLoader to be
   // always non-null. And by initializing this member with a default size we can
   // avoid creating zero-sized buffered if the first read has zero size.
-  std::vector<uint8> intermediate_read_buffer_;
+  std::vector<uint8_t> intermediate_read_buffer_;
 
   // The task runner of the render thread.
   const scoped_refptr<base::SingleThreadTaskRunner> render_task_runner_;

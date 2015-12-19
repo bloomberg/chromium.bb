@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "media/audio/point.h"
@@ -57,11 +56,11 @@ static_assert(sizeof(AudioOutputBufferParameters) %
 
 struct MEDIA_EXPORT AudioInputBuffer {
   AudioInputBufferParameters params;
-  int8 audio[1];
+  int8_t audio[1];
 };
 struct MEDIA_EXPORT AudioOutputBuffer {
   AudioOutputBufferParameters params;
-  int8 audio[1];
+  int8_t audio[1];
 };
 
 class MEDIA_EXPORT AudioParameters {

@@ -7,7 +7,7 @@
 
 #include <pulse/pulseaudio.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "media/audio/audio_device_name.h"
 #include "media/base/channel_layout.h"
 

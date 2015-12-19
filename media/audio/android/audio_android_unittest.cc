@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/android/build_info.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -153,7 +152,7 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
   MOCK_METHOD4(OnData,
                void(AudioInputStream* stream,
                     const AudioBus* src,
-                    uint32 hardware_delay_bytes,
+                    uint32_t hardware_delay_bytes,
                     double volume));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
 };
@@ -248,7 +247,7 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
   ~FileAudioSink() override {
     int bytes_written = 0;
     while (bytes_written < buffer_->forward_capacity()) {
-      const uint8* chunk;
+      const uint8_t* chunk;
       int chunk_size;
 
       // Stop writing if no more data is available.
@@ -267,10 +266,10 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
   // AudioInputStream::AudioInputCallback implementation.
   void OnData(AudioInputStream* stream,
               const AudioBus* src,
-              uint32 hardware_delay_bytes,
+              uint32_t hardware_delay_bytes,
               double volume) override {
     const int num_samples = src->frames() * src->channels();
-    scoped_ptr<int16> interleaved(new int16[num_samples]);
+    scoped_ptr<int16_t> interleaved(new int16_t[num_samples]);
     const int bytes_per_sample = sizeof(*interleaved);
     src->ToInterleaved(src->frames(), bytes_per_sample, interleaved.get());
 
@@ -278,7 +277,7 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
     // fwrite() calls in the audio callback. The complete buffer will be
     // written to file in the destructor.
     const int size = bytes_per_sample * num_samples;
-    if (!buffer_->Append((const uint8*)interleaved.get(), size))
+    if (!buffer_->Append((const uint8_t*)interleaved.get(), size))
       event_->Signal();
   }
 
@@ -307,7 +306,7 @@ class FullDuplexAudioSinkSource
     // Start with a reasonably small FIFO size. It will be increased
     // dynamically during the test if required.
     fifo_.reset(new media::SeekableBuffer(0, 2 * params.GetBytesPerBuffer()));
-    buffer_.reset(new uint8[params_.GetBytesPerBuffer()]);
+    buffer_.reset(new uint8_t[params_.GetBytesPerBuffer()]);
   }
 
   ~FullDuplexAudioSinkSource() override {}
@@ -315,14 +314,14 @@ class FullDuplexAudioSinkSource
   // AudioInputStream::AudioInputCallback implementation
   void OnData(AudioInputStream* stream,
               const AudioBus* src,
-              uint32 hardware_delay_bytes,
+              uint32_t hardware_delay_bytes,
               double volume) override {
     const base::TimeTicks now_time = base::TimeTicks::Now();
     const int diff = (now_time - previous_time_).InMilliseconds();
 
     EXPECT_EQ(params_.bits_per_sample(), 16);
     const int num_samples = src->frames() * src->channels();
-    scoped_ptr<int16> interleaved(new int16[num_samples]);
+    scoped_ptr<int16_t> interleaved(new int16_t[num_samples]);
     const int bytes_per_sample = sizeof(*interleaved);
     src->ToInterleaved(src->frames(), bytes_per_sample, interleaved.get());
     const int size = bytes_per_sample * num_samples;
@@ -347,7 +346,7 @@ class FullDuplexAudioSinkSource
 
     // Append new data to the FIFO and extend the size if the max capacity
     // was exceeded. Flush the FIFO when extended just in case.
-    if (!fifo_->Append((const uint8*)interleaved.get(), size)) {
+    if (!fifo_->Append((const uint8_t*)interleaved.get(), size)) {
       fifo_->set_forward_capacity(2 * fifo_->forward_capacity());
       fifo_->Clear();
     }
@@ -402,7 +401,7 @@ class FullDuplexAudioSinkSource
   base::TimeTicks previous_time_;
   base::Lock lock_;
   scoped_ptr<media::SeekableBuffer> fifo_;
-  scoped_ptr<uint8[]> buffer_;
+  scoped_ptr<uint8_t[]> buffer_;
   bool started_;
 
   DISALLOW_COPY_AND_ASSIGN(FullDuplexAudioSinkSource);

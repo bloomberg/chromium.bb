@@ -24,22 +24,25 @@ RtpPacketBuilder::RtpPacketBuilder()
 
 void RtpPacketBuilder::SetKeyFrame(bool is_key) { is_key_ = is_key; }
 
-void RtpPacketBuilder::SetFrameIds(uint32 frame_id, uint32 reference_frame_id) {
+void RtpPacketBuilder::SetFrameIds(uint32_t frame_id,
+                                   uint32_t reference_frame_id) {
   frame_id_ = frame_id;
   reference_frame_id_ = reference_frame_id;
 }
 
-void RtpPacketBuilder::SetPacketId(uint16 packet_id) { packet_id_ = packet_id; }
+void RtpPacketBuilder::SetPacketId(uint16_t packet_id) {
+  packet_id_ = packet_id;
+}
 
-void RtpPacketBuilder::SetMaxPacketId(uint16 max_packet_id) {
+void RtpPacketBuilder::SetMaxPacketId(uint16_t max_packet_id) {
   max_packet_id_ = max_packet_id;
 }
 
-void RtpPacketBuilder::SetTimestamp(uint32 timestamp) {
+void RtpPacketBuilder::SetTimestamp(uint32_t timestamp) {
   timestamp_ = timestamp;
 }
 
-void RtpPacketBuilder::SetSequenceNumber(uint16 sequence_number) {
+void RtpPacketBuilder::SetSequenceNumber(uint16_t sequence_number) {
   sequence_number_ = sequence_number;
 }
 
@@ -49,14 +52,16 @@ void RtpPacketBuilder::SetPayloadType(int payload_type) {
   payload_type_ = payload_type;
 }
 
-void RtpPacketBuilder::SetSsrc(uint32 ssrc) { ssrc_ = ssrc; }
+void RtpPacketBuilder::SetSsrc(uint32_t ssrc) {
+  ssrc_ = ssrc;
+}
 
-void RtpPacketBuilder::BuildHeader(uint8* data, uint32 data_length) {
+void RtpPacketBuilder::BuildHeader(uint8_t* data, uint32_t data_length) {
   BuildCommonHeader(data, data_length);
   BuildCastHeader(data + kRtpHeaderLength, data_length - kRtpHeaderLength);
 }
 
-void RtpPacketBuilder::BuildCastHeader(uint8* data, uint32 data_length) {
+void RtpPacketBuilder::BuildCastHeader(uint8_t* data, uint32_t data_length) {
   // Build header.
   DCHECK_LE(kCastHeaderLength, data_length);
   // Set the first 7 bytes to 0.
@@ -75,7 +80,7 @@ void RtpPacketBuilder::BuildCastHeader(uint8* data, uint32 data_length) {
   }
 }
 
-void RtpPacketBuilder::BuildCommonHeader(uint8* data, uint32 data_length) {
+void RtpPacketBuilder::BuildCommonHeader(uint8_t* data, uint32_t data_length) {
   DCHECK_LE(kRtpHeaderLength, data_length);
   base::BigEndianWriter big_endian_writer(reinterpret_cast<char*>(data), 96);
   big_endian_writer.WriteU8(0x80);

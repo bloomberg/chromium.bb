@@ -9,7 +9,7 @@
 #include "base/sys_byteorder.h"
 
 namespace {
-const int kRegWidthInBits = sizeof(uint64) * 8;
+const int kRegWidthInBits = sizeof(uint64_t) * 8;
 }
 
 namespace media {
@@ -43,7 +43,7 @@ bool BitReaderCore::ReadFlag(bool* flag) {
   return true;
 }
 
-int BitReaderCore::PeekBitsMsbAligned(int num_bits, uint64* out) {
+int BitReaderCore::PeekBitsMsbAligned(int num_bits, uint64_t* out) {
   // Try to have at least |num_bits| in the bit register.
   if (nbits_ < num_bits)
     Refill(num_bits);
@@ -54,7 +54,7 @@ int BitReaderCore::PeekBitsMsbAligned(int num_bits, uint64* out) {
 
 bool BitReaderCore::SkipBitsSmall(int num_bits) {
   DCHECK_GE(num_bits, 0);
-  uint64 dummy;
+  uint64_t dummy;
   while (num_bits >= kRegWidthInBits) {
     if (!ReadBitsInternal(kRegWidthInBits, &dummy))
       return false;
@@ -81,7 +81,7 @@ bool BitReaderCore::SkipBits(int num_bits) {
   // Next, skip an integer number of bytes.
   const int nbytes = num_bits / 8;
   if (nbytes > 0) {
-    const uint8* byte_stream_window;
+    const uint8_t* byte_stream_window;
     const int window_size =
         byte_stream_provider_->GetBytes(nbytes, &byte_stream_window);
     DCHECK_GE(window_size, 0);
@@ -100,7 +100,7 @@ int BitReaderCore::bits_read() const {
   return bits_read_;
 }
 
-bool BitReaderCore::ReadBitsInternal(int num_bits, uint64* out) {
+bool BitReaderCore::ReadBitsInternal(int num_bits, uint64_t* out) {
   DCHECK_GE(num_bits, 0);
 
   if (num_bits == 0) {
@@ -147,7 +147,7 @@ bool BitReaderCore::Refill(int min_nbits) {
   int max_nbytes = sizeof(reg_next_);
 
   // Refill.
-  const uint8* byte_stream_window;
+  const uint8_t* byte_stream_window;
   int window_size =
       byte_stream_provider_->GetBytes(max_nbytes, &byte_stream_window);
   DCHECK_GE(window_size, 0);

@@ -24,11 +24,13 @@ class TestUsbMidiDevice : public UsbMidiDevice {
  public:
   TestUsbMidiDevice() {}
   ~TestUsbMidiDevice() override {}
-  std::vector<uint8> GetDescriptors() override { return std::vector<uint8>(); }
+  std::vector<uint8_t> GetDescriptors() override {
+    return std::vector<uint8_t>();
+  }
   std::string GetManufacturer() override { return std::string(); }
   std::string GetProductName() override { return std::string(); }
   std::string GetDeviceVersion() override { return std::string(); }
-  void Send(int endpoint_number, const std::vector<uint8>& data) override {}
+  void Send(int endpoint_number, const std::vector<uint8_t>& data) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestUsbMidiDevice);
@@ -39,7 +41,7 @@ class MockDelegate : public UsbMidiInputStream::Delegate {
   MockDelegate() {}
   ~MockDelegate() override {}
   void OnReceivedData(size_t jack_index,
-                      const uint8* data,
+                      const uint8_t* data,
                       size_t size,
                       base::TimeTicks time) override {
     for (size_t i = 0; i < size; ++i)
@@ -87,9 +89,8 @@ class UsbMidiInputStreamTest : public ::testing::Test {
 };
 
 TEST_F(UsbMidiInputStreamTest, UnknownMessage) {
-  uint8 data[] = {
-    0x40, 0xff, 0xff, 0xff,
-    0x41, 0xff, 0xff, 0xff,
+  uint8_t data[] = {
+      0x40, 0xff, 0xff, 0xff, 0x41, 0xff, 0xff, 0xff,
   };
 
   stream_->OnReceivedData(&device1_, 7, data, arraysize(data), TimeTicks());
@@ -97,10 +98,8 @@ TEST_F(UsbMidiInputStreamTest, UnknownMessage) {
 }
 
 TEST_F(UsbMidiInputStreamTest, SystemCommonMessage) {
-  uint8 data[] = {
-    0x45, 0xf8, 0x00, 0x00,
-    0x42, 0xf3, 0x22, 0x00,
-    0x43, 0xf2, 0x33, 0x44,
+  uint8_t data[] = {
+      0x45, 0xf8, 0x00, 0x00, 0x42, 0xf3, 0x22, 0x00, 0x43, 0xf2, 0x33, 0x44,
   };
 
   stream_->OnReceivedData(&device1_, 7, data, arraysize(data), TimeTicks());
@@ -110,11 +109,9 @@ TEST_F(UsbMidiInputStreamTest, SystemCommonMessage) {
 }
 
 TEST_F(UsbMidiInputStreamTest, SystemExclusiveMessage) {
-  uint8 data[] = {
-    0x44, 0xf0, 0x11, 0x22,
-    0x45, 0xf7, 0x00, 0x00,
-    0x46, 0xf0, 0xf7, 0x00,
-    0x47, 0xf0, 0x33, 0xf7,
+  uint8_t data[] = {
+      0x44, 0xf0, 0x11, 0x22, 0x45, 0xf7, 0x00, 0x00,
+      0x46, 0xf0, 0xf7, 0x00, 0x47, 0xf0, 0x33, 0xf7,
   };
 
   stream_->OnReceivedData(&device1_, 7, data, arraysize(data), TimeTicks());
@@ -125,14 +122,10 @@ TEST_F(UsbMidiInputStreamTest, SystemExclusiveMessage) {
 }
 
 TEST_F(UsbMidiInputStreamTest, ChannelMessage) {
-  uint8 data[] = {
-    0x48, 0x80, 0x11, 0x22,
-    0x49, 0x90, 0x33, 0x44,
-    0x4a, 0xa0, 0x55, 0x66,
-    0x4b, 0xb0, 0x77, 0x88,
-    0x4c, 0xc0, 0x99, 0x00,
-    0x4d, 0xd0, 0xaa, 0x00,
-    0x4e, 0xe0, 0xbb, 0xcc,
+  uint8_t data[] = {
+      0x48, 0x80, 0x11, 0x22, 0x49, 0x90, 0x33, 0x44, 0x4a, 0xa0,
+      0x55, 0x66, 0x4b, 0xb0, 0x77, 0x88, 0x4c, 0xc0, 0x99, 0x00,
+      0x4d, 0xd0, 0xaa, 0x00, 0x4e, 0xe0, 0xbb, 0xcc,
   };
 
   stream_->OnReceivedData(&device1_, 7, data, arraysize(data), TimeTicks());
@@ -146,8 +139,8 @@ TEST_F(UsbMidiInputStreamTest, ChannelMessage) {
 }
 
 TEST_F(UsbMidiInputStreamTest, SingleByteMessage) {
-  uint8 data[] = {
-    0x4f, 0xf8, 0x00, 0x00,
+  uint8_t data[] = {
+      0x4f, 0xf8, 0x00, 0x00,
   };
 
   stream_->OnReceivedData(&device1_, 7, data, arraysize(data), TimeTicks());
@@ -155,10 +148,8 @@ TEST_F(UsbMidiInputStreamTest, SingleByteMessage) {
 }
 
 TEST_F(UsbMidiInputStreamTest, DispatchForMultipleCables) {
-  uint8 data[] = {
-    0x4f, 0xf8, 0x00, 0x00,
-    0x5f, 0xfa, 0x00, 0x00,
-    0x6f, 0xfb, 0x00, 0x00,
+  uint8_t data[] = {
+      0x4f, 0xf8, 0x00, 0x00, 0x5f, 0xfa, 0x00, 0x00, 0x6f, 0xfb, 0x00, 0x00,
   };
 
   stream_->OnReceivedData(&device1_, 7, data, arraysize(data), TimeTicks());
@@ -166,7 +157,7 @@ TEST_F(UsbMidiInputStreamTest, DispatchForMultipleCables) {
 }
 
 TEST_F(UsbMidiInputStreamTest, DispatchForDevice2) {
-  uint8 data[] = { 0x4f, 0xf8, 0x00, 0x00 };
+  uint8_t data[] = {0x4f, 0xf8, 0x00, 0x00};
 
   stream_->OnReceivedData(&device2_, 7, data, arraysize(data), TimeTicks());
   EXPECT_EQ("0xf8 \n", delegate_.received_data());

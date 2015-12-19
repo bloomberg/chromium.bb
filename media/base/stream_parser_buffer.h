@@ -60,19 +60,17 @@ class DecodeTimestamp {
     return DecodeTimestamp(ts_ - rhs);
   }
 
-  int64 operator/(const base::TimeDelta& rhs) const {
-    return ts_ / rhs;
-  }
+  int64_t operator/(const base::TimeDelta& rhs) const { return ts_ / rhs; }
 
   static DecodeTimestamp FromSecondsD(double seconds) {
     return DecodeTimestamp(base::TimeDelta::FromSecondsD(seconds));
   }
 
-  static DecodeTimestamp FromMilliseconds(int64 milliseconds) {
+  static DecodeTimestamp FromMilliseconds(int64_t milliseconds) {
     return DecodeTimestamp(base::TimeDelta::FromMilliseconds(milliseconds));
   }
 
-  static DecodeTimestamp FromMicroseconds(int64 microseconds) {
+  static DecodeTimestamp FromMicroseconds(int64_t microseconds) {
     return DecodeTimestamp(base::TimeDelta::FromMicroseconds(microseconds));
   }
 
@@ -83,8 +81,8 @@ class DecodeTimestamp {
   }
 
   double InSecondsF() const { return ts_.InSecondsF(); }
-  int64 InMilliseconds() const { return ts_.InMilliseconds(); }
-  int64 InMicroseconds() const { return ts_.InMicroseconds(); }
+  int64_t InMilliseconds() const { return ts_.InMilliseconds(); }
+  int64_t InMicroseconds() const { return ts_.InMicroseconds(); }
 
   // TODO(acolwell): Remove once all the hacks are gone. This method is called
   // by hacks where a decode time is being used as a presentation time.
@@ -110,13 +108,18 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
 
   static scoped_refptr<StreamParserBuffer> CreateEOSBuffer();
 
-  static scoped_refptr<StreamParserBuffer> CopyFrom(
-      const uint8* data, int data_size, bool is_key_frame, Type type,
-      TrackId track_id);
-  static scoped_refptr<StreamParserBuffer> CopyFrom(
-      const uint8* data, int data_size,
-      const uint8* side_data, int side_data_size, bool is_key_frame, Type type,
-      TrackId track_id);
+  static scoped_refptr<StreamParserBuffer> CopyFrom(const uint8_t* data,
+                                                    int data_size,
+                                                    bool is_key_frame,
+                                                    Type type,
+                                                    TrackId track_id);
+  static scoped_refptr<StreamParserBuffer> CopyFrom(const uint8_t* data,
+                                                    int data_size,
+                                                    const uint8_t* side_data,
+                                                    int side_data_size,
+                                                    bool is_key_frame,
+                                                    Type type,
+                                                    TrackId track_id);
 
   // Decode timestamp. If not explicitly set, or set to kNoTimestamp(), the
   // value will be taken from the normal timestamp.
@@ -179,9 +182,12 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   }
 
  private:
-  StreamParserBuffer(const uint8* data, int data_size,
-                     const uint8* side_data, int side_data_size,
-                     bool is_key_frame, Type type,
+  StreamParserBuffer(const uint8_t* data,
+                     int data_size,
+                     const uint8_t* side_data,
+                     int side_data_size,
+                     bool is_key_frame,
+                     Type type,
                      TrackId track_id);
   ~StreamParserBuffer() override;
 

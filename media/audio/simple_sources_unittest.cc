@@ -6,7 +6,6 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/simple_sources.h"
@@ -18,8 +17,8 @@ namespace media {
 
 // Validate that the SineWaveAudioSource writes the expected values.
 TEST(SimpleSources, SineWaveAudioSource) {
-  static const uint32 samples = 1024;
-  static const uint32 bytes_per_sample = 2;
+  static const uint32_t samples = 1024;
+  static const uint32_t bytes_per_sample = 2;
   static const int freq = 200;
 
   AudioParameters params(
@@ -32,7 +31,7 @@ TEST(SimpleSources, SineWaveAudioSource) {
   EXPECT_EQ(1, source.callbacks());
   EXPECT_EQ(0, source.errors());
 
-  uint32 half_period = AudioParameters::kTelephoneSampleRate / (freq * 2);
+  uint32_t half_period = AudioParameters::kTelephoneSampleRate / (freq * 2);
 
   // Spot test positive incursion of sine wave.
   EXPECT_NEAR(0, audio_bus->channel(0)[0],

@@ -5,7 +5,6 @@
 #include <windows.h>
 #include <mmsystem.h>
 
-#include "base/basictypes.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -379,8 +378,8 @@ TEST(WASAPIAudioOutputStreamTest, ValidPacketSize) {
   EXPECT_TRUE(aos->Open());
 
   // Derive the expected size in bytes of each packet.
-  uint32 bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
-      (aosw.bits_per_sample() / 8);
+  uint32_t bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
+                              (aosw.bits_per_sample() / 8);
 
   // Wait for the first callback and verify its parameters.  Ignore any
   // subsequent callbacks that might arrive.
@@ -574,8 +573,8 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeMinBufferSizeAt48kHz) {
   EXPECT_TRUE(aos->Open());
 
   // Derive the expected size in bytes of each packet.
-  uint32 bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
-      (aosw.bits_per_sample() / 8);
+  uint32_t bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
+                              (aosw.bits_per_sample() / 8);
 
  // Wait for the first callback and verify its parameters.
   EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet), 0))
@@ -608,8 +607,8 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeMinBufferSizeAt44kHz) {
   EXPECT_TRUE(aos->Open());
 
   // Derive the expected size in bytes of each packet.
-  uint32 bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
-      (aosw.bits_per_sample() / 8);
+  uint32_t bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
+                              (aosw.bits_per_sample() / 8);
 
   // Wait for the first callback and verify its parameters.
   EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet), 0))

@@ -58,7 +58,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
 
     if (GetParam().codec == CODEC_AUDIO_OPUS) {
       opus_encoder_memory_.reset(
-          new uint8[opus_encoder_get_size(GetParam().num_channels)]);
+          new uint8_t[opus_encoder_get_size(GetParam().num_channels)]);
       OpusEncoder* const opus_encoder =
           reinterpret_cast<OpusEncoder*>(opus_encoder_memory_.get());
       CHECK_EQ(OPUS_OK, opus_encoder_init(opus_encoder,
@@ -90,15 +90,15 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
 
     // Encode |audio_bus| into |encoded_frame->data|.
     const int num_elements = audio_bus->channels() * audio_bus->frames();
-    std::vector<int16> interleaved(num_elements);
-    audio_bus->ToInterleaved(
-        audio_bus->frames(), sizeof(int16), &interleaved.front());
+    std::vector<int16_t> interleaved(num_elements);
+    audio_bus->ToInterleaved(audio_bus->frames(), sizeof(int16_t),
+                             &interleaved.front());
     if (GetParam().codec == CODEC_AUDIO_PCM16) {
-      encoded_frame->data.resize(num_elements * sizeof(int16));
-      int16* const pcm_data =
-          reinterpret_cast<int16*>(encoded_frame->mutable_bytes());
+      encoded_frame->data.resize(num_elements * sizeof(int16_t));
+      int16_t* const pcm_data =
+          reinterpret_cast<int16_t*>(encoded_frame->mutable_bytes());
       for (size_t i = 0; i < interleaved.size(); ++i)
-        pcm_data[i] = static_cast<int16>(base::HostToNet16(interleaved[i]));
+        pcm_data[i] = static_cast<int16_t>(base::HostToNet16(interleaved[i]));
     } else if (GetParam().codec == CODEC_AUDIO_OPUS) {
       OpusEncoder* const opus_encoder =
           reinterpret_cast<OpusEncoder*>(opus_encoder_memory_.get());
@@ -183,9 +183,9 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
   const scoped_refptr<StandaloneCastEnvironment> cast_environment_;
   scoped_ptr<AudioDecoder> audio_decoder_;
   scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
-  uint32 last_frame_id_;
+  uint32_t last_frame_id_;
   bool seen_a_decoded_frame_;
-  scoped_ptr<uint8[]> opus_encoder_memory_;
+  scoped_ptr<uint8_t[]> opus_encoder_memory_;
 
   base::Lock lock_;
   base::ConditionVariable cond_;

@@ -41,7 +41,7 @@ bool FFmpegH264ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
     }
   }
 
-  uint32 output_packet_size = converter_.CalculateNeededOutputBufferSize(
+  uint32_t output_packet_size = converter_.CalculateNeededOutputBufferSize(
       packet->data, packet->size, avc_config.get());
 
   if (output_packet_size == 0)
@@ -59,7 +59,7 @@ bool FFmpegH264ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
 
   // Proceed with the conversion of the actual in-band NAL units, leave room
   // for configuration in the beginning.
-  uint32 io_size = dest_packet.size;
+  uint32_t io_size = dest_packet.size;
   if (!converter_.ConvertNalUnitStreamToByteStream(
           packet->data, packet->size,
           avc_config.get(),

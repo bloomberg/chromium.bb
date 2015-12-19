@@ -8,14 +8,14 @@
 
 namespace media {
 
-static const uint32 kADTSStartCodeMask = 0xfff00000;
+static const uint32_t kADTSStartCodeMask = 0xfff00000;
 
 ADTSStreamParser::ADTSStreamParser()
     : MPEGAudioStreamParserBase(kADTSStartCodeMask, kCodecAAC, 0) {}
 
 ADTSStreamParser::~ADTSStreamParser() {}
 
-int ADTSStreamParser::ParseFrameHeader(const uint8* data,
+int ADTSStreamParser::ParseFrameHeader(const uint8_t* data,
                                        int size,
                                        int* frame_size,
                                        int* sample_rate,

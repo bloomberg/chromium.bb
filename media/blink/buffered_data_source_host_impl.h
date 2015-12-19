@@ -20,8 +20,8 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
   ~BufferedDataSourceHostImpl() override;
 
   // BufferedDataSourceHost implementation.
-  void SetTotalBytes(int64 total_bytes) override;
-  void AddBufferedByteRange(int64 start, int64 end) override;
+  void SetTotalBytes(int64_t total_bytes) override;
+  void AddBufferedByteRange(int64_t start, int64_t end) override;
 
   // Translate the byte ranges to time ranges and append them to the list.
   // TODO(sandersd): This is a confusing name, find something better.
@@ -33,11 +33,11 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
 
  private:
   // Total size of the data source.
-  int64 total_bytes_;
+  int64_t total_bytes_;
 
   // List of buffered byte ranges for estimating buffered time.
   // The InterValMap value is 1 for bytes that are buffered, 0 otherwise.
-  IntervalMap<int64, int> buffered_byte_ranges_;
+  IntervalMap<int64_t, int> buffered_byte_ranges_;
 
   // True when AddBufferedByteRange() has been called more recently than
   // DidLoadingProgress().

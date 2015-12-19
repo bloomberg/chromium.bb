@@ -48,7 +48,7 @@ DemuxerData AccessUnitQueueTest::CreateDemuxerData(const AUDescriptor* descr,
       continue;
     }
 
-    au.data = std::vector<uint8>(descr[i].data.begin(), descr[i].data.end());
+    au.data = std::vector<uint8_t>(descr[i].data.begin(), descr[i].data.end());
 
     if (descr[i].unit_type == kKeyFrame)
       au.is_key_frame = true;

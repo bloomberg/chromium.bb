@@ -59,12 +59,12 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // VideoDecodeAccelerator::Client implementation.
   void NotifyCdmAttached(bool success) override;
-  void ProvidePictureBuffers(uint32 count,
+  void ProvidePictureBuffers(uint32_t count,
                              const gfx::Size& size,
-                             uint32 texture_target) override;
-  void DismissPictureBuffer(int32 id) override;
+                             uint32_t texture_target) override;
+  void DismissPictureBuffer(int32_t id) override;
   void PictureReady(const media::Picture& picture) override;
-  void NotifyEndOfBitstreamBuffer(int32 id) override;
+  void NotifyEndOfBitstreamBuffer(int32_t id) override;
   void NotifyFlushDone() override;
   void NotifyResetDone() override;
   void NotifyError(media::VideoDecodeAccelerator::Error error) override;
@@ -101,7 +101,7 @@ class MEDIA_EXPORT GpuVideoDecoder
     DecodeCB done_cb;
   };
 
-  typedef std::map<int32, PictureBuffer> PictureBufferMap;
+  typedef std::map<int32_t, PictureBuffer> PictureBufferMap;
 
   // Callback to set CDM. |cdm_attached_cb| is called when the decryptor in the
   // CDM has been completely attached to the pipeline.
@@ -112,16 +112,18 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Static method is to allow it to run even after GVD is deleted.
   static void ReleaseMailbox(base::WeakPtr<GpuVideoDecoder> decoder,
                              media::GpuVideoAcceleratorFactories* factories,
-                             int64 picture_buffer_id,
-                             uint32 texture_id,
+                             int64_t picture_buffer_id,
+                             uint32_t texture_id,
                              const gpu::SyncToken& release_sync_token);
   // Indicate the picture buffer can be reused by the decoder.
-  void ReusePictureBuffer(int64 picture_buffer_id);
+  void ReusePictureBuffer(int64_t picture_buffer_id);
 
   void RecordBufferData(
       const BitstreamBuffer& bitstream_buffer, const DecoderBuffer& buffer);
-  void GetBufferData(int32 id, base::TimeDelta* timetamp,
-                     gfx::Rect* visible_rect, gfx::Size* natural_size);
+  void GetBufferData(int32_t id,
+                     base::TimeDelta* timetamp,
+                     gfx::Rect* visible_rect,
+                     gfx::Size* natural_size);
 
   void DestroyVDA();
 
@@ -174,23 +176,25 @@ class MEDIA_EXPORT GpuVideoDecoder
   // steady-state of the decoder.
   std::vector<SHMBuffer*> available_shm_segments_;
 
-  std::map<int32, PendingDecoderBuffer> bitstream_buffers_in_decoder_;
+  std::map<int32_t, PendingDecoderBuffer> bitstream_buffers_in_decoder_;
   PictureBufferMap assigned_picture_buffers_;
   // PictureBuffers given to us by VDA via PictureReady, which we sent forward
   // as VideoFrames to be rendered via decode_cb_, and which will be returned
   // to us via ReusePictureBuffer.
-  typedef std::map<int32 /* picture_buffer_id */, uint32 /* texture_id */>
+  typedef std::map<int32_t /* picture_buffer_id */, uint32_t /* texture_id */>
       PictureBufferTextureMap;
   PictureBufferTextureMap picture_buffers_at_display_;
 
   // The texture target used for decoded pictures.
-  uint32 decoder_texture_target_;
+  uint32_t decoder_texture_target_;
 
   struct BufferData {
-    BufferData(int32 bbid, base::TimeDelta ts, const gfx::Rect& visible_rect,
+    BufferData(int32_t bbid,
+               base::TimeDelta ts,
+               const gfx::Rect& visible_rect,
                const gfx::Size& natural_size);
     ~BufferData();
-    int32 bitstream_buffer_id;
+    int32_t bitstream_buffer_id;
     base::TimeDelta timestamp;
     gfx::Rect visible_rect;
     gfx::Size natural_size;
@@ -199,8 +203,8 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // picture_buffer_id and the frame wrapping the corresponding Picture, for
   // frames that have been decoded but haven't been requested by a Decode() yet.
-  int32 next_picture_buffer_id_;
-  int32 next_bitstream_buffer_id_;
+  int32_t next_picture_buffer_id_;
+  int32_t next_bitstream_buffer_id_;
 
   // Set during ProvidePictureBuffers(), used for checking and implementing
   // HasAvailableOutputFrames().

@@ -4,7 +4,6 @@
 
 #include "media/capture/content/thread_safe_capture_oracle.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/logging.h"
@@ -35,14 +34,13 @@ ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
     const VideoCaptureParams& params,
     bool enable_auto_throttling)
     : client_(client.Pass()),
-      oracle_(base::TimeDelta::FromMicroseconds(static_cast<int64>(
+      oracle_(base::TimeDelta::FromMicroseconds(static_cast<int64_t>(
                   1000000.0 / params.requested_format.frame_rate +
                   0.5 /* to round to nearest int */)),
               params.requested_format.frame_size,
               params.resolution_change_policy,
               enable_auto_throttling),
-      params_(params) {
-}
+      params_(params) {}
 
 ThreadSafeCaptureOracle::~ThreadSafeCaptureOracle() {
 }
@@ -118,8 +116,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   *storage = VideoFrame::WrapExternalSharedMemory(
       params_.requested_format.pixel_format, coded_size,
       gfx::Rect(visible_size), visible_size,
-      static_cast<uint8*>(output_buffer->data()), output_buffer->mapped_size(),
-      base::SharedMemory::NULLHandle(), 0u, base::TimeDelta());
+      static_cast<uint8_t*>(output_buffer->data()),
+      output_buffer->mapped_size(), base::SharedMemory::NULLHandle(), 0u,
+      base::TimeDelta());
   DCHECK(*storage);
   *callback =
       base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame, this, frame_number,

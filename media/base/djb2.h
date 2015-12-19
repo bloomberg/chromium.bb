@@ -5,7 +5,9 @@
 #ifndef MEDIA_BASE_DJB2_H_
 #define MEDIA_BASE_DJB2_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "media/base/media_export.h"
 
 // DJB2 is a hash algorithm with excellent distribution and speed
@@ -19,15 +21,15 @@
 // See Also:
 //   http://www.cse.yorku.ca/~oz/hash.html
 
-static const uint32 kDJB2HashSeed = 5381u;
+static const uint32_t kDJB2HashSeed = 5381u;
 
 // These functions perform DJB2 hash. The simplest call is DJB2Hash() to
 // generate the DJB2 hash of the given data:
-//   uint32 hash = DJB2Hash(data1, length1, kDJB2HashSeed);
+//   uint32_t hash = DJB2Hash(data1, length1, kDJB2HashSeed);
 //
 // You can also compute the DJB2 hash of data incrementally by making multiple
 // calls to DJB2Hash():
-//   uint32 hash_value = kDJB2HashSeed;  // Initial seed for DJB2.
+//   uint32_t hash_value = kDJB2HashSeed;  // Initial seed for DJB2.
 //   for (size_t i = 0; i < copy_lines; ++i) {
 //     hash_value = DJB2Hash(source, bytes_per_line, hash_value);
 //     source += source_stride;
@@ -35,7 +37,7 @@ static const uint32 kDJB2HashSeed = 5381u;
 
 // For the given buffer of data, compute the DJB2 hash of
 // the data. You can call this any number of times during the computation.
-MEDIA_EXPORT uint32 DJB2Hash(const void* buf, size_t len, uint32 seed);
+MEDIA_EXPORT uint32_t DJB2Hash(const void* buf, size_t len, uint32_t seed);
 
 #endif  // MEDIA_BASE_DJB2_H_
 

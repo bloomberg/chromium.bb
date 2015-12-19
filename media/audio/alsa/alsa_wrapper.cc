@@ -4,7 +4,6 @@
 
 #include "media/audio/alsa/alsa_wrapper.h"
 
-
 namespace media {
 
 AlsaWrapper::AlsaWrapper() {

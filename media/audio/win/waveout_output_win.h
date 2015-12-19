@@ -9,7 +9,6 @@
 #include <mmsystem.h>
 #include <mmreg.h>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_handle.h"
@@ -96,7 +95,7 @@ class PCMWaveOutAudioOutputStream : public AudioOutputStream {
   const int num_buffers_;
 
   // The size in bytes of each audio buffer, we usually have two of these.
-  uint32 buffer_size_;
+  uint32_t buffer_size_;
 
   // Volume level from 0 to 1.
   float volume_;
@@ -105,7 +104,7 @@ class PCMWaveOutAudioOutputStream : public AudioOutputStream {
   const int channels_;
 
   // Number of bytes yet to be played in the hardware buffer.
-  uint32 pending_bytes_;
+  uint32_t pending_bytes_;
 
   // The id assigned by the operating system to the selected wave output
   // hardware device. Usually this is just -1 which means 'default device'.

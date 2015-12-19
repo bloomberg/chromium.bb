@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
@@ -105,19 +104,19 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // Callback to tell client how many and what size of buffers to provide.
     // Note that the actual count provided through AssignPictureBuffers() can be
     // larger than the value requested.
-    virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
+    virtual void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
                                        const gfx::Size& dimensions,
-                                       uint32 texture_target) = 0;
+                                       uint32_t texture_target) = 0;
 
     // Callback to dismiss picture buffer that was assigned earlier.
-    virtual void DismissPictureBuffer(int32 picture_buffer_id) = 0;
+    virtual void DismissPictureBuffer(int32_t picture_buffer_id) = 0;
 
     // Callback to deliver decoded pictures ready to be displayed.
     virtual void PictureReady(const Picture& picture) = 0;
 
     // Callback to notify that decoded has decoded the end of the current
     // bitstream buffer.
-    virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) = 0;
+    virtual void NotifyEndOfBitstreamBuffer(int32_t bitstream_buffer_id) = 0;
 
     // Flush completion callback.
     virtual void NotifyFlushDone() = 0;
@@ -184,7 +183,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   //
   // Parameters:
   //  |picture_buffer_id| id of the picture buffer that is to be reused.
-  virtual void ReusePictureBuffer(int32 picture_buffer_id) = 0;
+  virtual void ReusePictureBuffer(int32_t picture_buffer_id) = 0;
 
   // Flushes the decoder: all pending inputs will be decoded and pictures handed
   // back to the client, followed by NotifyFlushDone() being called on the

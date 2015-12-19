@@ -111,15 +111,16 @@ class VpxVideoDecoder::MemoryPool
   // |min_size|   Minimum size needed by libvpx to decompress the next frame.
   // |fb|         Pointer to the frame buffer to update.
   // Returns 0 on success. Returns < 0 on failure.
-  static int32 GetVP9FrameBuffer(void* user_priv, size_t min_size,
-                                 vpx_codec_frame_buffer* fb);
+  static int32_t GetVP9FrameBuffer(void* user_priv,
+                                   size_t min_size,
+                                   vpx_codec_frame_buffer* fb);
 
   // Callback that will be called by libvpx when the frame buffer is no longer
   // being used by libvpx. Parameters:
   // |user_priv|  Private data passed to libvpx (pointer to memory pool).
   // |fb|         Pointer to the frame buffer that's being released.
-  static int32 ReleaseVP9FrameBuffer(void* user_priv,
-                                     vpx_codec_frame_buffer* fb);
+  static int32_t ReleaseVP9FrameBuffer(void* user_priv,
+                                       vpx_codec_frame_buffer* fb);
 
   // Generates a "no_longer_needed" closure that holds a reference to this pool.
   base::Closure CreateFrameCallback(void* fb_priv_data);
@@ -140,8 +141,8 @@ class VpxVideoDecoder::MemoryPool
   // before a buffer can be re-used.
   struct VP9FrameBuffer {
     VP9FrameBuffer() : ref_cnt(0) {}
-    std::vector<uint8> data;
-    uint32 ref_cnt;
+    std::vector<uint8_t> data;
+    uint32_t ref_cnt;
   };
 
   // Gets the next available frame buffer for use by libvpx.
@@ -193,8 +194,10 @@ VpxVideoDecoder::MemoryPool::GetFreeFrameBuffer(size_t min_size) {
   return frame_buffers_[i];
 }
 
-int32 VpxVideoDecoder::MemoryPool::GetVP9FrameBuffer(
-    void* user_priv, size_t min_size, vpx_codec_frame_buffer* fb) {
+int32_t VpxVideoDecoder::MemoryPool::GetVP9FrameBuffer(
+    void* user_priv,
+    size_t min_size,
+    vpx_codec_frame_buffer* fb) {
   DCHECK(user_priv);
   DCHECK(fb);
 
@@ -215,7 +218,7 @@ int32 VpxVideoDecoder::MemoryPool::GetVP9FrameBuffer(
   return 0;
 }
 
-int32 VpxVideoDecoder::MemoryPool::ReleaseVP9FrameBuffer(
+int32_t VpxVideoDecoder::MemoryPool::ReleaseVP9FrameBuffer(
     void* user_priv,
     vpx_codec_frame_buffer* fb) {
   DCHECK(user_priv);
@@ -436,7 +439,7 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   DCHECK(video_frame);
   DCHECK(!buffer->end_of_stream());
 
-  int64 timestamp = buffer->timestamp().InMicroseconds();
+  int64_t timestamp = buffer->timestamp().InMicroseconds();
   void* user_priv = reinterpret_cast<void*>(&timestamp);
   {
     TRACE_EVENT1("video", "vpx_codec_decode", "timestamp", timestamp);
@@ -485,7 +488,7 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   if (buffer->side_data_size() < 8) {
     // TODO(mcasas): Is this a warning or an error?
     DLOG(WARNING) << "Making Alpha channel opaque due to missing input";
-    const uint32 kAlphaOpaqueValue = 255;
+    const uint32_t kAlphaOpaqueValue = 255;
     libyuv::SetPlane((*video_frame)->visible_data(VideoFrame::kAPlane),
                      (*video_frame)->stride(VideoFrame::kAPlane),
                      (*video_frame)->visible_rect().width(),
@@ -495,13 +498,13 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   }
 
   // First 8 bytes of side data is |side_data_id| in big endian.
-  const uint64 side_data_id = base::NetToHost64(
-      *(reinterpret_cast<const uint64*>(buffer->side_data())));
+  const uint64_t side_data_id = base::NetToHost64(
+      *(reinterpret_cast<const uint64_t*>(buffer->side_data())));
   if (side_data_id != 1)
     return true;
 
   // Try and decode buffer->side_data() minus the first 8 bytes as a full frame.
-  int64 timestamp_alpha = buffer->timestamp().InMicroseconds();
+  int64_t timestamp_alpha = buffer->timestamp().InMicroseconds();
   void* user_priv_alpha = reinterpret_cast<void*>(&timestamp_alpha);
   {
     TRACE_EVENT1("video", "vpx_codec_decode_alpha", "timestamp_alpha",

@@ -136,10 +136,8 @@ TEST_F(FFmpegCommonTest, OpusAudioDecoderConfig) {
 }
 
 TEST_F(FFmpegCommonTest, TimeBaseConversions) {
-  const int64 test_data[][5] = {
-    {1, 2, 1, 500000, 1 },
-    {1, 3, 1, 333333, 1 },
-    {1, 3, 2, 666667, 2 },
+  const int64_t test_data[][5] = {
+      {1, 2, 1, 500000, 1}, {1, 3, 1, 333333, 1}, {1, 3, 2, 666667, 2},
   };
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {

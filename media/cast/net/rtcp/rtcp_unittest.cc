@@ -19,8 +19,8 @@ namespace cast {
 
 using testing::_;
 
-static const uint32 kSenderSsrc = 0x10203;
-static const uint32 kReceiverSsrc = 0x40506;
+static const uint32_t kSenderSsrc = 0x10203;
+static const uint32_t kReceiverSsrc = 0x40506;
 static const int kInitialReceiverClockOffsetSeconds = -5;
 
 class FakeRtcpTransport : public PacedPacketSender {
@@ -35,7 +35,7 @@ class FakeRtcpTransport : public PacedPacketSender {
   base::TimeDelta packet_delay() const { return packet_delay_; }
   void set_packet_delay(base::TimeDelta delay) { packet_delay_ = delay; }
 
-  bool SendRtcpPacket(uint32 ssrc, PacketRef packet) final {
+  bool SendRtcpPacket(uint32_t ssrc, PacketRef packet) final {
     clock_->Advance(packet_delay_);
     if (paused_) {
       packet_queue_.push_back(packet);
@@ -143,13 +143,13 @@ TEST_F(RtcpTest, LipSyncGleanedFromSenderReport) {
   // Initially, expect no lip-sync info receiver-side without having first
   // received a RTCP packet.
   base::TimeTicks reference_time;
-  uint32 rtp_timestamp;
+  uint32_t rtp_timestamp;
   ASSERT_FALSE(rtcp_for_receiver_.GetLatestLipSyncTimes(&rtp_timestamp,
                                                         &reference_time));
 
   // Send a Sender Report to the receiver.
   const base::TimeTicks reference_time_sent = sender_clock_->NowTicks();
-  const uint32 rtp_timestamp_sent = 0xbee5;
+  const uint32_t rtp_timestamp_sent = 0xbee5;
   rtcp_for_sender_.SendRtcpFromRtpSender(
       reference_time_sent, rtp_timestamp_sent, 1, 1);
 
@@ -193,7 +193,7 @@ TEST_F(RtcpTest, RoundTripTimesDeterminedFromReportPingPong) {
 
     // Sender --> Receiver
     base::TimeTicks reference_time_sent = sender_clock_->NowTicks();
-    uint32 rtp_timestamp_sent = 0xbee5 + i;
+    uint32_t rtp_timestamp_sent = 0xbee5 + i;
     rtcp_for_sender_.SendRtcpFromRtpSender(
         reference_time_sent, rtp_timestamp_sent, 1, 1);
     EXPECT_EQ(expected_rtt_according_to_sender,
@@ -267,11 +267,11 @@ TEST_F(RtcpTest, NegativeTimeTicks) {
 
 // TODO(miu): Find a better home for this test.
 TEST(MisplacedCastTest, NtpAndTime) {
-  const int64 kSecondsbetweenYear1900and2010 = INT64_C(40176 * 24 * 60 * 60);
-  const int64 kSecondsbetweenYear1900and2030 = INT64_C(47481 * 24 * 60 * 60);
+  const int64_t kSecondsbetweenYear1900and2010 = INT64_C(40176 * 24 * 60 * 60);
+  const int64_t kSecondsbetweenYear1900and2030 = INT64_C(47481 * 24 * 60 * 60);
 
-  uint32 ntp_seconds_1 = 0;
-  uint32 ntp_fraction_1 = 0;
+  uint32_t ntp_seconds_1 = 0;
+  uint32_t ntp_fraction_1 = 0;
   base::TimeTicks input_time = base::TimeTicks::Now();
   ConvertTimeTicksToNtp(input_time, &ntp_seconds_1, &ntp_fraction_1);
 
@@ -285,8 +285,8 @@ TEST(MisplacedCastTest, NtpAndTime) {
   base::TimeDelta time_delta = base::TimeDelta::FromMilliseconds(1000);
   input_time += time_delta;
 
-  uint32 ntp_seconds_2 = 0;
-  uint32 ntp_fraction_2 = 0;
+  uint32_t ntp_seconds_2 = 0;
+  uint32_t ntp_fraction_2 = 0;
 
   ConvertTimeTicksToNtp(input_time, &ntp_seconds_2, &ntp_fraction_2);
   base::TimeTicks out_2 = ConvertNtpToTimeTicks(ntp_seconds_2, ntp_fraction_2);
@@ -300,8 +300,8 @@ TEST(MisplacedCastTest, NtpAndTime) {
   time_delta = base::TimeDelta::FromMilliseconds(500);
   input_time += time_delta;
 
-  uint32 ntp_seconds_3 = 0;
-  uint32 ntp_fraction_3 = 0;
+  uint32_t ntp_seconds_3 = 0;
+  uint32_t ntp_fraction_3 = 0;
 
   ConvertTimeTicksToNtp(input_time, &ntp_seconds_3, &ntp_fraction_3);
   base::TimeTicks out_3 = ConvertNtpToTimeTicks(ntp_seconds_3, ntp_fraction_3);

@@ -14,16 +14,16 @@ namespace midi {
 UsbMidiOutputStream::UsbMidiOutputStream(const UsbMidiJack& jack)
     : jack_(jack), pending_size_(0), is_sending_sysex_(false) {}
 
-void UsbMidiOutputStream::Send(const std::vector<uint8>& data) {
+void UsbMidiOutputStream::Send(const std::vector<uint8_t>& data) {
   // To prevent link errors caused by DCHECK_*.
   const size_t kPacketContentSize = UsbMidiOutputStream::kPacketContentSize;
   DCHECK_LT(jack_.cable_number, 16u);
 
-  std::vector<uint8> data_to_send;
+  std::vector<uint8_t> data_to_send;
   size_t current = 0;
   size_t size = GetSize(data);
   while (current < size) {
-    uint8 first_byte = Get(data, current);
+    uint8_t first_byte = Get(data, current);
     if (first_byte == kSysExByte || is_sending_sysex_) {
       // System Exclusive messages
       if (!PushSysExMessage(data, &current, &data_to_send))
@@ -58,25 +58,25 @@ void UsbMidiOutputStream::Send(const std::vector<uint8>& data) {
   pending_size_ = size - current;
 }
 
-size_t UsbMidiOutputStream::GetSize(const std::vector<uint8>& data) const {
+size_t UsbMidiOutputStream::GetSize(const std::vector<uint8_t>& data) const {
   return data.size() + pending_size_;
 }
 
-uint8_t UsbMidiOutputStream::Get(const std::vector<uint8>& data,
-                               size_t index) const {
+uint8_t UsbMidiOutputStream::Get(const std::vector<uint8_t>& data,
+                                 size_t index) const {
   DCHECK_LT(index, GetSize(data));
   if (index < pending_size_)
     return pending_data_[index];
   return data[index - pending_size_];
 }
 
-bool UsbMidiOutputStream::PushSysExMessage(const std::vector<uint8>& data,
+bool UsbMidiOutputStream::PushSysExMessage(const std::vector<uint8_t>& data,
                                            size_t* current,
-                                           std::vector<uint8>* data_to_send) {
+                                           std::vector<uint8_t>* data_to_send) {
   size_t index = *current;
   size_t message_size = 0;
   const size_t kMessageSizeMax = 3;
-  uint8 message[kMessageSizeMax] = {};
+  uint8_t message[kMessageSizeMax] = {};
 
   while (index < GetSize(data)) {
     if (message_size == kMessageSizeMax) {
@@ -89,7 +89,7 @@ bool UsbMidiOutputStream::PushSysExMessage(const std::vector<uint8>& data,
       is_sending_sysex_ = true;
       return true;
     }
-    uint8 byte = Get(data, index);
+    uint8_t byte = Get(data, index);
     if ((byte & kSysRTMessageBitMask) == kSysRTMessageBitPattern) {
       // System Real-Time messages interleaved in a SysEx message
       PushSysRTMessage(data, &index, data_to_send);
@@ -99,7 +99,7 @@ bool UsbMidiOutputStream::PushSysExMessage(const std::vector<uint8>& data,
     message[message_size] = byte;
     ++message_size;
     if (byte == kEndOfSysExByte) {
-      uint8 code_index = static_cast<uint8>(message_size) + 0x4;
+      uint8_t code_index = static_cast<uint8_t>(message_size) + 0x4;
       DCHECK(code_index == 0x5 || code_index == 0x6 || code_index == 0x7);
       data_to_send->push_back((jack_.cable_number << 4) | code_index);
       data_to_send->insert(data_to_send->end(),
@@ -115,11 +115,11 @@ bool UsbMidiOutputStream::PushSysExMessage(const std::vector<uint8>& data,
 }
 
 bool UsbMidiOutputStream::PushSysCommonMessage(
-    const std::vector<uint8>& data,
+    const std::vector<uint8_t>& data,
     size_t* current,
-    std::vector<uint8>* data_to_send) {
+    std::vector<uint8_t>* data_to_send) {
   size_t index = *current;
-  uint8 first_byte = Get(data, index);
+  uint8_t first_byte = Get(data, index);
   DCHECK_LE(0xf1, first_byte);
   DCHECK_LE(first_byte, 0xf7);
   DCHECK_EQ(0xf0, first_byte & 0xf8);
@@ -136,7 +136,8 @@ bool UsbMidiOutputStream::PushSysCommonMessage(
     return false;
   }
 
-  uint8 code_index = message_size == 1 ? 0x5 : static_cast<uint8>(message_size);
+  uint8_t code_index =
+      message_size == 1 ? 0x5 : static_cast<uint8_t>(message_size);
   data_to_send->push_back((jack_.cable_number << 4) | code_index);
   for (size_t i = index; i < index + 3; ++i)
     data_to_send->push_back(i < index + message_size ? Get(data, i) : 0);
@@ -144,11 +145,11 @@ bool UsbMidiOutputStream::PushSysCommonMessage(
   return true;
 }
 
-void UsbMidiOutputStream::PushSysRTMessage(const std::vector<uint8>& data,
+void UsbMidiOutputStream::PushSysRTMessage(const std::vector<uint8_t>& data,
                                            size_t* current,
-                                           std::vector<uint8>* data_to_send) {
+                                           std::vector<uint8_t>* data_to_send) {
   size_t index = *current;
-  uint8 first_byte = Get(data, index);
+  uint8_t first_byte = Get(data, index);
   DCHECK_LE(0xf8, first_byte);
   DCHECK_LE(first_byte, 0xff);
 
@@ -159,11 +160,12 @@ void UsbMidiOutputStream::PushSysRTMessage(const std::vector<uint8>& data,
   *current += 1;
 }
 
-bool UsbMidiOutputStream::PushChannelMessage(const std::vector<uint8>& data,
-                                           size_t* current,
-                                           std::vector<uint8>* data_to_send) {
+bool UsbMidiOutputStream::PushChannelMessage(
+    const std::vector<uint8_t>& data,
+    size_t* current,
+    std::vector<uint8_t>* data_to_send) {
   size_t index = *current;
-  uint8 first_byte = Get(data, index);
+  uint8_t first_byte = Get(data, index);
 
   DCHECK_LE(0x80, (first_byte & 0xf0));
   DCHECK_LE((first_byte & 0xf0), 0xe0);
@@ -172,7 +174,7 @@ bool UsbMidiOutputStream::PushChannelMessage(const std::vector<uint8>& data,
   const size_t message_size_table[8] = {
     3, 3, 3, 3, 2, 3, 3, 0,
   };
-  uint8 code_index = first_byte >> 4;
+  uint8_t code_index = first_byte >> 4;
   DCHECK_LE(0x08, code_index);
   DCHECK_LE(code_index, 0x0e);
   size_t message_size = message_size_table[code_index & 0x7];

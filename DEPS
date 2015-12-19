@@ -246,7 +246,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/opus.git' + '@' + 'cae696156f1e60006e39821e79a1811ae1933c69',
 
   'src/media/cdm/api':
-   Var('chromium_git') + '/chromium/cdm.git' + '@' + 'a4773c3cec827c3a880e8a2c22e43a287ced0d20',
+   Var('chromium_git') + '/chromium/cdm.git' + '@' + '1dea7088184dec2ebe4a8b3800aabb0afbb4b88a',
 
   'src/third_party/mesa/src':
    Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + 'ef811c6bd4de74e13e7035ca882cc77f85793fef',

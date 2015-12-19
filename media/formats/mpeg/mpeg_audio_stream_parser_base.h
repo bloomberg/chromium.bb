@@ -8,7 +8,6 @@
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -25,7 +24,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
   // referred to as the sync code in the MP3 and ADTS header specifications.
   // |codec_delay| is the number of samples the decoder will output before the
   // first real frame.
-  MPEGAudioStreamParserBase(uint32 start_code_mask,
+  MPEGAudioStreamParserBase(uint32_t start_code_mask,
                             AudioCodec audio_codec,
                             int codec_delay);
   ~MPEGAudioStreamParserBase() override;
@@ -40,7 +39,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
             const base::Closure& end_of_segment_cb,
             const scoped_refptr<MediaLog>& media_log) override;
   void Flush() override;
-  bool Parse(const uint8* buf, int size) override;
+  bool Parse(const uint8_t* buf, int size) override;
 
  protected:
   // Subclasses implement this method to parse format specific frame headers.
@@ -73,7 +72,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
   // > 0 : The number of bytes parsed.
   //   0 : If more data is needed to parse the entire frame header.
   // < 0 : An error was encountered during parsing.
-  virtual int ParseFrameHeader(const uint8* data,
+  virtual int ParseFrameHeader(const uint8_t* data,
                                int size,
                                int* frame_size,
                                int* sample_rate,
@@ -99,10 +98,10 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
   // > 0 : The number of bytes parsed.
   //   0 : If more data is needed to parse the entire element.
   // < 0 : An error was encountered during parsing.
-  int ParseFrame(const uint8* data, int size, BufferQueue* buffers);
-  int ParseIcecastHeader(const uint8* data, int size);
-  int ParseID3v1(const uint8* data, int size);
-  int ParseID3v2(const uint8* data, int size);
+  int ParseFrame(const uint8_t* data, int size, BufferQueue* buffers);
+  int ParseIcecastHeader(const uint8_t* data, int size);
+  int ParseID3v1(const uint8_t* data, int size);
+  int ParseID3v2(const uint8_t* data, int size);
 
   // Parses an ID3v2 "sync safe" integer.
   // |reader| - A BitReader to read from.
@@ -112,7 +111,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
   // was set.
   // Returns false if an error was encountered. The state of |value| is
   // undefined when false is returned.
-  bool ParseSyncSafeInt(BitReader* reader, int32* value);
+  bool ParseSyncSafeInt(BitReader* reader, int32_t* value);
 
   // Scans |data| for the next valid start code.
   // Returns:
@@ -120,7 +119,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
   //       next start code..
   //   0 : If a valid start code was not found and more data is needed.
   // < 0 : An error was encountered during parsing.
-  int FindNextValidStartCode(const uint8* data, int size) const;
+  int FindNextValidStartCode(const uint8_t* data, int size) const;
 
   // Sends the buffers in |buffers| to |new_buffers_cb_| and then clears
   // |buffers|.
@@ -144,7 +143,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
   AudioDecoderConfig config_;
   scoped_ptr<AudioTimestampHelper> timestamp_helper_;
   bool in_media_segment_;
-  const uint32 start_code_mask_;
+  const uint32_t start_code_mask_;
   const AudioCodec audio_codec_;
   const int codec_delay_;
 

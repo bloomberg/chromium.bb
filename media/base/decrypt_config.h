@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
@@ -26,10 +25,10 @@ namespace media {
 // position of the corresponding encrypted byte.
 struct SubsampleEntry {
   SubsampleEntry() : clear_bytes(0), cypher_bytes(0) {}
-  SubsampleEntry(uint32 clear_bytes, uint32 cypher_bytes)
+  SubsampleEntry(uint32_t clear_bytes, uint32_t cypher_bytes)
       : clear_bytes(clear_bytes), cypher_bytes(cypher_bytes) {}
-  uint32 clear_bytes;
-  uint32 cypher_bytes;
+  uint32_t clear_bytes;
+  uint32_t cypher_bytes;
 };
 
 // Contains all information that a decryptor needs to decrypt a media sample.

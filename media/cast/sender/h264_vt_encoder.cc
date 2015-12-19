@@ -725,7 +725,7 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
 
   // Increment the encoder-scoped frame id and assign the new value to this
   // frame. VideoToolbox calls the output callback serially, so this is safe.
-  const uint32 frame_id = ++encoder->last_frame_id_;
+  const uint32_t frame_id = ++encoder->last_frame_id_;
 
   scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
   encoded_frame->frame_id = frame_id;

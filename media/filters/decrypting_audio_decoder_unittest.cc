@@ -32,8 +32,8 @@ const int kSampleRate = 44100;
 // Make sure the kFakeAudioFrameSize is a valid frame size for all audio decoder
 // configs used in this test.
 const int kFakeAudioFrameSize = 48;
-const uint8 kFakeKeyId[] = { 0x4b, 0x65, 0x79, 0x20, 0x49, 0x44 };
-const uint8 kFakeIv[DecryptConfig::kDecryptionKeySize] = { 0 };
+const uint8_t kFakeKeyId[] = {0x4b, 0x65, 0x79, 0x20, 0x49, 0x44};
+const uint8_t kFakeIv[DecryptConfig::kDecryptionKeySize] = {0};
 const int kDecodingDelay = 3;
 
 // Create a fake non-empty encrypted buffer.

@@ -17,7 +17,7 @@ ContentEncoding::ContentEncoding()
 
 ContentEncoding::~ContentEncoding() {}
 
-void ContentEncoding::SetEncryptionKeyId(const uint8* encryption_key_id,
+void ContentEncoding::SetEncryptionKeyId(const uint8_t* encryption_key_id,
                                          int size) {
   DCHECK(encryption_key_id);
   DCHECK_GT(size, 0);

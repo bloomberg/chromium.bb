@@ -70,7 +70,7 @@ class MEDIA_EXPORT AudioRecordInputStream : public AudioInputStream {
   AudioInputCallback* callback_;
 
   // Owned by j_audio_record_.
-  uint8* direct_buffer_address_;
+  uint8_t* direct_buffer_address_;
 
   scoped_ptr<media::AudioBus> audio_bus_;
   int bytes_per_sample_;

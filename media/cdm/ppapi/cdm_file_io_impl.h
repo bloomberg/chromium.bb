@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/cpp/file_io.h"

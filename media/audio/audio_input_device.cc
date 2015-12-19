@@ -40,7 +40,7 @@ class AudioInputDevice::AudioThreadCallback
 
  private:
   int current_segment_id_;
-  uint32 last_buffer_id_;
+  uint32_t last_buffer_id_;
   ScopedVector<media::AudioBus> audio_buses_;
   CaptureCallback* capture_callback_;
 
@@ -286,7 +286,7 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
   shared_memory_.Map(memory_length_);
 
   // Create vector of audio buses by wrapping existing blocks of memory.
-  uint8* ptr = static_cast<uint8*>(shared_memory_.memory());
+  uint8_t* ptr = static_cast<uint8_t*>(shared_memory_.memory());
   for (int i = 0; i < total_segments_; ++i) {
     media::AudioInputBuffer* buffer =
         reinterpret_cast<media::AudioInputBuffer*>(ptr);
@@ -301,7 +301,7 @@ void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   // The shared memory represents parameters, size of the data buffer and the
   // actual data buffer containing audio data. Map the memory into this
   // structure and parse out parameters and the data area.
-  uint8* ptr = static_cast<uint8*>(shared_memory_.memory());
+  uint8_t* ptr = static_cast<uint8_t*>(shared_memory_.memory());
   ptr += current_segment_id_ * segment_length_;
   AudioInputBuffer* buffer = reinterpret_cast<AudioInputBuffer*>(ptr);
 

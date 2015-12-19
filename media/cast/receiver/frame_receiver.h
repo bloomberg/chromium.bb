@@ -69,7 +69,7 @@ class FrameReceiver : public RtpPayloadFeedback,
   friend class FrameReceiverTest;  // Invokes ProcessParsedPacket().
 
   void ProcessParsedPacket(const RtpCastHeader& rtp_header,
-                           const uint8* payload_data,
+                           const uint8_t* payload_data,
                            size_t payload_size);
 
   // RtpPayloadFeedback implementation.

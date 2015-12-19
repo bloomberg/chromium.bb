@@ -11,7 +11,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
@@ -306,7 +305,7 @@ bool SdkMediaCodecBridge::CopyFromOutputBuffer(int index,
       src_capacity - offset < static_cast<size_t>(dst_size)) {
     return false;
   }
-  memcpy(dst, static_cast<uint8*>(src_data) + offset, dst_size);
+  memcpy(dst, static_cast<uint8_t*>(src_data) + offset, dst_size);
   return true;
 }
 
@@ -317,7 +316,7 @@ int SdkMediaCodecBridge::GetOutputBufferAddress(int index,
   ScopedJavaLocalRef<jobject> j_buffer(
       Java_MediaCodecBridge_getOutputBuffer(env, j_media_codec_.obj(), index));
   *addr =
-      reinterpret_cast<uint8*>(env->GetDirectBufferAddress(j_buffer.obj())) +
+      reinterpret_cast<uint8_t*>(env->GetDirectBufferAddress(j_buffer.obj())) +
       offset;
   return env->GetDirectBufferCapacity(j_buffer.obj()) - offset;
 }

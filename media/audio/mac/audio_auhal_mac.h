@@ -182,7 +182,7 @@ class AUHALStream : public AudioOutputStream {
   scoped_ptr<AudioPullFifo> audio_fifo_;
 
   // Current buffer delay.  Set by Render().
-  uint32 current_hardware_pending_bytes_;
+  uint32_t current_hardware_pending_bytes_;
 
   // Lost frames not yet reported to the provider. Increased in
   // UpdatePlayoutTimestamp() if any lost frame since last time. Forwarded to

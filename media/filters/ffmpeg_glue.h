@@ -25,7 +25,6 @@
 #ifndef MEDIA_FILTERS_FFMPEG_GLUE_H_
 #define MEDIA_FILTERS_FFMPEG_GLUE_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
@@ -39,18 +38,18 @@ class MEDIA_EXPORT FFmpegURLProtocol {
  public:
   // Read the given amount of bytes into data, returns the number of bytes read
   // if successful, kReadError otherwise.
-  virtual int Read(int size, uint8* data) = 0;
+  virtual int Read(int size, uint8_t* data) = 0;
 
   // Returns true and the current file position for this file, false if the
   // file position could not be retrieved.
-  virtual bool GetPosition(int64* position_out) = 0;
+  virtual bool GetPosition(int64_t* position_out) = 0;
 
   // Returns true if the file position could be set, false otherwise.
-  virtual bool SetPosition(int64 position) = 0;
+  virtual bool SetPosition(int64_t position) = 0;
 
   // Returns true and the file size, false if the file size could not be
   // retrieved.
-  virtual bool GetSize(int64* size_out) = 0;
+  virtual bool GetSize(int64_t* size_out) = 0;
 
   // Returns false if this protocol supports random seeking.
   virtual bool IsStreaming() = 0;

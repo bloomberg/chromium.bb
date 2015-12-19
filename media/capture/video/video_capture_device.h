@@ -203,7 +203,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // be tightly packed. This method will try to reserve an output buffer and
     // copy from |data| into the output buffer. If no output buffer is
     // available, the frame will be silently dropped.
-    virtual void OnIncomingCapturedData(const uint8* data,
+    virtual void OnIncomingCapturedData(const uint8_t* data,
                                         int length,
                                         const VideoCaptureFormat& frame_format,
                                         int clockwise_rotation,
@@ -212,9 +212,9 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // Captured a 3 planar YUV frame. Planes are possibly disjoint.
     // |frame_format| must indicate I420.
     virtual void OnIncomingCapturedYuvData(
-        const uint8* y_data,
-        const uint8* u_data,
-        const uint8* v_data,
+        const uint8_t* y_data,
+        const uint8_t* u_data,
+        const uint8_t* v_data,
         size_t y_stride,
         size_t u_stride,
         size_t v_stride,

@@ -128,7 +128,8 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
       // Create buffer. Encode the original time_in_ms as the buffer's data to
       // enable later verification of possible buffer relocation in presentation
       // timeline due to coded frame processing.
-      const uint8* timestamp_as_data = reinterpret_cast<uint8*>(&time_in_ms);
+      const uint8_t* timestamp_as_data =
+          reinterpret_cast<uint8_t*>(&time_in_ms);
       scoped_refptr<StreamParserBuffer> buffer =
           StreamParserBuffer::CopyFrom(timestamp_as_data, sizeof(time_in_ms),
                                        is_keyframe, type, track_id);
@@ -165,8 +166,8 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
     std::stringstream ss;
     ss << "{ ";
     for (size_t i = 0; i < r.size(); ++i) {
-      int64 start = r.start(i).InMilliseconds();
-      int64 end = r.end(i).InMilliseconds();
+      int64_t start = r.start(i).InMilliseconds();
+      int64_t end = r.end(i).InMilliseconds();
       ss << "[" << start << "," << end << ") ";
     }
     ss << "}";

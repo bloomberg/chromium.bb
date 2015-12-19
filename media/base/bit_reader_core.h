@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_BIT_READER_CORE_H_
 #define MEDIA_BASE_BIT_READER_CORE_H_
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "media/base/media_export.h"
 
@@ -23,7 +22,7 @@ class MEDIA_EXPORT BitReaderCore {
     // Set |*array| to point to a memory buffer containing those n bytes.
     // Note: |*array| must be valid until the next call to GetBytes
     // but there is no guarantee it is valid after.
-    virtual int GetBytes(int max_n, const uint8** array) = 0;
+    virtual int GetBytes(int max_n, const uint8_t** array) = 0;
   };
 
   // Lifetime of |byte_stream_provider| must be longer than BitReaderCore.
@@ -54,7 +53,7 @@ class MEDIA_EXPORT BitReaderCore {
   // integer type.
   template<typename T> bool ReadBits(int num_bits, T* out) {
     DCHECK_LE(num_bits, static_cast<int>(sizeof(T) * 8));
-    uint64 temp;
+    uint64_t temp;
     bool ret = ReadBitsInternal(num_bits, &temp);
     *out = static_cast<T>(temp);
     return ret;
@@ -72,7 +71,7 @@ class MEDIA_EXPORT BitReaderCore {
   // - The number of bits returned can be more than |num_bits|.
   // - However, it will be strictly less than |num_bits|
   //   if and only if there are not enough bits left in the stream.
-  int PeekBitsMsbAligned(int num_bits, uint64* out);
+  int PeekBitsMsbAligned(int num_bits, uint64_t* out);
 
   // Skip |num_bits| next bits from stream. Return false if the given number of
   // bits cannot be skipped (not enough bits in the stream), true otherwise.
@@ -91,7 +90,7 @@ class MEDIA_EXPORT BitReaderCore {
   bool SkipBitsSmall(int num_bits);
 
   // Help function used by ReadBits to avoid inlining the bit reading logic.
-  bool ReadBitsInternal(int num_bits, uint64* out);
+  bool ReadBitsInternal(int num_bits, uint64_t* out);
 
   // Refill bit registers to have at least |min_nbits| bits available.
   // Return true if the mininimum bit count condition is met after the refill.
@@ -108,12 +107,12 @@ class MEDIA_EXPORT BitReaderCore {
   // Number of bits in |reg_| that have not been consumed yet.
   // Note: bits are consumed from MSB to LSB.
   int nbits_;
-  uint64 reg_;
+  uint64_t reg_;
 
   // Number of bits in |reg_next_| that have not been consumed yet.
   // Note: bits are consumed from MSB to LSB.
   int nbits_next_;
-  uint64 reg_next_;
+  uint64_t reg_next_;
 
   DISALLOW_COPY_AND_ASSIGN(BitReaderCore);
 };

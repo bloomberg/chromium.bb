@@ -153,7 +153,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
   scoped_ptr<VideoDecoder> video_decoder_;
   gfx::Size next_frame_size_;
   base::TimeDelta next_frame_timestamp_;
-  uint32 last_frame_id_;
+  uint32_t last_frame_id_;
   bool seen_a_decoded_frame_;
 
   Vp8Encoder vp8_encoder_;

@@ -5,7 +5,6 @@
 #ifndef MEDIA_FILTERS_FFMPEG_H265_TO_ANNEX_B_BITSTREAM_CONVERTER_H_
 #define MEDIA_FILTERS_FFMPEG_H265_TO_ANNEX_B_BITSTREAM_CONVERTER_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/filters/ffmpeg_bitstream_converter.h"

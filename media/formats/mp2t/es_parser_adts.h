@@ -58,7 +58,7 @@ class MEDIA_EXPORT EsParserAdts : public EsParser {
   // Signal any audio configuration change (if any).
   // Return false if the current audio config is not
   // a supported ADTS audio config.
-  bool UpdateAudioConfiguration(const uint8* adts_header);
+  bool UpdateAudioConfiguration(const uint8_t* adts_header);
 
   // Callbacks:
   // - to signal a new audio configuration,

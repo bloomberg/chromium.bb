@@ -72,7 +72,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   gfx::BufferFormat format_;
   const gfx::Size size_;
   size_t num_planes_;
-  std::vector<uint8> bytes_[kMaxPlanes];
+  std::vector<uint8_t> bytes_[kMaxPlanes];
 };
 
 }  // unnamed namespace

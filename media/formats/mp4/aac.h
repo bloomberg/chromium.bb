@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
@@ -31,7 +30,7 @@ class MEDIA_EXPORT AAC {
   // The function will parse the data and get the ElementaryStreamDescriptor,
   // then it will parse the ElementaryStreamDescriptor to get audio stream
   // configurations.
-  bool Parse(const std::vector<uint8>& data,
+  bool Parse(const std::vector<uint8_t>& data,
              const scoped_refptr<MediaLog>& media_log);
 
   // Gets the output sample rate for the AAC stream.
@@ -52,11 +51,11 @@ class MEDIA_EXPORT AAC {
   // header. On success, the function returns true and stores the converted data
   // in the buffer. The function returns false on failure and leaves the buffer
   // unchanged.
-  bool ConvertEsdsToADTS(std::vector<uint8>* buffer) const;
+  bool ConvertEsdsToADTS(std::vector<uint8_t>* buffer) const;
 
 #if defined(OS_ANDROID)
   // Returns the codec specific data needed by android MediaCodec.
-  std::vector<uint8> codec_specific_data() const {
+  std::vector<uint8_t> codec_specific_data() const {
     return codec_specific_data_;
   }
 #endif
@@ -68,13 +67,13 @@ class MEDIA_EXPORT AAC {
 
   // The following variables store the AAC specific configuration information
   // that are used to generate the ADTS header.
-  uint8 profile_;
-  uint8 frequency_index_;
-  uint8 channel_config_;
+  uint8_t profile_;
+  uint8_t frequency_index_;
+  uint8_t channel_config_;
 
 #if defined(OS_ANDROID)
   // The codec specific data needed by the android MediaCodec.
-  std::vector<uint8> codec_specific_data_;
+  std::vector<uint8_t> codec_specific_data_;
 #endif
 
   // The following variables store audio configuration information that

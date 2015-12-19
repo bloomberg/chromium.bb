@@ -526,7 +526,7 @@ media::interfaces::VideoDecoderConfigPtr TypeConverter<
   config->coded_size = Size::From(input.coded_size());
   config->visible_rect = Rect::From(input.visible_rect());
   config->natural_size = Size::From(input.natural_size());
-  config->extra_data = mojo::Array<uint8>::From(input.extra_data());
+  config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
   config->is_encrypted = input.is_encrypted();
   return config.Pass();
 }

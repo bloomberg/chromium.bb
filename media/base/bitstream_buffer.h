@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_BITSTREAM_BUFFER_H_
 #define MEDIA_BASE_BITSTREAM_BUFFER_H_
 
-#include "base/basictypes.h"
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "media/base/decrypt_config.h"
@@ -18,9 +17,9 @@ namespace media {
 // data.  This is the media-namespace equivalent of PP_VideoBitstreamBuffer_Dev.
 class MEDIA_EXPORT BitstreamBuffer {
  public:
-  BitstreamBuffer(int32 id, base::SharedMemoryHandle handle, size_t size);
+  BitstreamBuffer(int32_t id, base::SharedMemoryHandle handle, size_t size);
 
-  BitstreamBuffer(int32 id,
+  BitstreamBuffer(int32_t id,
                   base::SharedMemoryHandle handle,
                   size_t size,
                   base::TimeDelta presentation_timestamp);
@@ -29,7 +28,7 @@ class MEDIA_EXPORT BitstreamBuffer {
 
   void SetDecryptConfig(const DecryptConfig& decrypt_config);
 
-  int32 id() const { return id_; }
+  int32_t id() const { return id_; }
   base::SharedMemoryHandle handle() const { return handle_; }
   size_t size() const { return size_; }
 
@@ -45,7 +44,7 @@ class MEDIA_EXPORT BitstreamBuffer {
   const std::vector<SubsampleEntry>& subsamples() const { return subsamples_; }
 
  private:
-  int32 id_;
+  int32_t id_;
   base::SharedMemoryHandle handle_;
   size_t size_;
 

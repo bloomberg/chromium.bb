@@ -8,12 +8,13 @@
 
 namespace media {
 
-static const uint8 kData[] = { 0x01, 0x02, 0x03, 0x04 };
+static const uint8_t kData[] = {0x01, 0x02, 0x03, 0x04};
 
 TEST(InMemoryUrlProtocolTest, ReadFromLargeBuffer) {
-  InMemoryUrlProtocol protocol(kData, std::numeric_limits<int64>::max(), false);
+  InMemoryUrlProtocol protocol(kData, std::numeric_limits<int64_t>::max(),
+                               false);
 
-  uint8 out[sizeof(kData)];
+  uint8_t out[sizeof(kData)];
   EXPECT_EQ(4, protocol.Read(sizeof(out), out));
   EXPECT_EQ(0, memcmp(out, kData, sizeof(out)));
 }
@@ -21,14 +22,14 @@ TEST(InMemoryUrlProtocolTest, ReadFromLargeBuffer) {
 TEST(InMemoryUrlProtocolTest, ReadWithNegativeSize) {
   InMemoryUrlProtocol protocol(kData, sizeof(kData), false);
 
-  uint8 out[sizeof(kData)];
+  uint8_t out[sizeof(kData)];
   EXPECT_EQ(AVERROR(EIO), protocol.Read(-2, out));
 }
 
 TEST(InMemoryUrlProtocolTest, ReadWithZeroSize) {
   InMemoryUrlProtocol protocol(kData, sizeof(kData), false);
 
-  uint8 out;
+  uint8_t out;
   EXPECT_EQ(0, protocol.Read(0, &out));
 }
 
@@ -38,7 +39,7 @@ TEST(InMemoryUrlProtocolTest, SetPosition) {
   EXPECT_FALSE(protocol.SetPosition(-1));
   EXPECT_FALSE(protocol.SetPosition(sizeof(kData) + 1));
 
-  uint8 out;
+  uint8_t out;
   EXPECT_TRUE(protocol.SetPosition(sizeof(kData)));
   EXPECT_EQ(0, protocol.Read(1, &out));
 

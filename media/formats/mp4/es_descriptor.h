@@ -5,9 +5,10 @@
 #ifndef MEDIA_FORMATS_MP4_ES_DESCRIPTOR_H_
 #define MEDIA_FORMATS_MP4_ES_DESCRIPTOR_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -30,15 +31,15 @@ enum ObjectType {
 class MEDIA_EXPORT ESDescriptor {
  public:
   // Utility function to check if the given object type is AAC.
-  static bool IsAAC(uint8 object_type);
+  static bool IsAAC(uint8_t object_type);
 
   ESDescriptor();
   ~ESDescriptor();
 
-  bool Parse(const std::vector<uint8>& data);
+  bool Parse(const std::vector<uint8_t>& data);
 
-  uint8 object_type() const;
-  const std::vector<uint8>& decoder_specific_info() const;
+  uint8_t object_type() const;
+  const std::vector<uint8_t>& decoder_specific_info() const;
 
  private:
   enum Tag {
@@ -50,8 +51,8 @@ class MEDIA_EXPORT ESDescriptor {
   bool ParseDecoderConfigDescriptor(BitReader* reader);
   bool ParseDecoderSpecificInfo(BitReader* reader);
 
-  uint8 object_type_;
-  std::vector<uint8> decoder_specific_info_;
+  uint8_t object_type_;
+  std::vector<uint8_t> decoder_specific_info_;
 };
 
 }  // namespace mp4

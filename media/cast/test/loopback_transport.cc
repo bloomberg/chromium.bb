@@ -53,7 +53,7 @@ bool LoopBackTransport::SendPacket(PacketRef packet,
   return true;
 }
 
-int64 LoopBackTransport::GetBytesSent() {
+int64_t LoopBackTransport::GetBytesSent() {
   return bytes_sent_;
 }
 

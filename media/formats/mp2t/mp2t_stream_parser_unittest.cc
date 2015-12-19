@@ -84,13 +84,15 @@ class Mp2tStreamParserTest : public testing::Test {
     video_max_dts_ = kNoDecodeTimestamp();
   }
 
-  bool AppendData(const uint8* data, size_t length) {
+  bool AppendData(const uint8_t* data, size_t length) {
     return parser_->Parse(data, length);
   }
 
-  bool AppendDataInPieces(const uint8* data, size_t length, size_t piece_size) {
-    const uint8* start = data;
-    const uint8* end = data + length;
+  bool AppendDataInPieces(const uint8_t* data,
+                          size_t length,
+                          size_t piece_size) {
+    const uint8_t* start = data;
+    const uint8_t* end = data + length;
     while (start < end) {
       size_t append_size = std::min(piece_size,
                                     static_cast<size_t>(end - start));
@@ -171,7 +173,8 @@ class Mp2tStreamParserTest : public testing::Test {
     return true;
   }
 
-  void OnKeyNeeded(EmeInitDataType type, const std::vector<uint8>& init_data) {
+  void OnKeyNeeded(EmeInitDataType type,
+                   const std::vector<uint8_t>& init_data) {
     NOTREACHED() << "OnKeyNeeded not expected in the Mpeg2 TS parser";
   }
 

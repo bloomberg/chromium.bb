@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -145,7 +144,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   // A unique ID to trace CdmSessionAdapter::CreateCdm() call and the matching
   // OnCdmCreated() call.
-  uint32 trace_id_;
+  uint32_t trace_id_;
 
   scoped_ptr<blink::WebContentDecryptionModuleResult> cdm_created_result_;
 

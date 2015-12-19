@@ -19,7 +19,7 @@ using media::cast::proto::LogMetadata;
 
 namespace {
 
-int64 InMilliseconds(base::TimeTicks event_time) {
+int64_t InMilliseconds(base::TimeTicks event_time) {
   return (event_time - base::TimeTicks()).InMilliseconds();
 }
 

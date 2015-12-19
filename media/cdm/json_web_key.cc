@@ -44,9 +44,9 @@ static std::string ShortenTo64Characters(const std::string& input) {
 }
 
 static scoped_ptr<base::DictionaryValue> CreateJSONDictionary(
-    const uint8* key,
+    const uint8_t* key,
     int key_length,
-    const uint8* key_id,
+    const uint8_t* key_id,
     int key_id_length) {
   std::string key_string, key_id_string;
   base::Base64UrlEncode(
@@ -63,8 +63,10 @@ static scoped_ptr<base::DictionaryValue> CreateJSONDictionary(
   return jwk.Pass();
 }
 
-std::string GenerateJWKSet(const uint8* key, int key_length,
-                           const uint8* key_id, int key_id_length) {
+std::string GenerateJWKSet(const uint8_t* key,
+                           int key_length,
+                           const uint8_t* key_id,
+                           int key_id_length) {
   // Create the JWK, and wrap it into a JWK Set.
   scoped_ptr<base::ListValue> list(new base::ListValue());
   list->Append(
@@ -84,9 +86,9 @@ std::string GenerateJWKSet(const KeyIdAndKeyPairs& keys,
   scoped_ptr<base::ListValue> list(new base::ListValue());
   for (const auto& key_pair : keys) {
     list->Append(CreateJSONDictionary(
-                     reinterpret_cast<const uint8*>(key_pair.second.data()),
+                     reinterpret_cast<const uint8_t*>(key_pair.second.data()),
                      key_pair.second.length(),
-                     reinterpret_cast<const uint8*>(key_pair.first.data()),
+                     reinterpret_cast<const uint8_t*>(key_pair.first.data()),
                      key_pair.first.length())
                      .release());
   }
@@ -283,7 +285,7 @@ bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
     }
 
     // Add the decoded key ID to the list.
-    local_key_ids.push_back(std::vector<uint8>(
+    local_key_ids.push_back(std::vector<uint8_t>(
         raw_key_id.data(), raw_key_id.data() + raw_key_id.length()));
   }
 
@@ -295,7 +297,7 @@ bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
 
 void CreateLicenseRequest(const KeyIdList& key_ids,
                           MediaKeys::SessionType session_type,
-                          std::vector<uint8>* license) {
+                          std::vector<uint8_t>* license) {
   // Create the license request.
   scoped_ptr<base::DictionaryValue> request(new base::DictionaryValue());
   scoped_ptr<base::ListValue> list(new base::ListValue());
@@ -328,12 +330,12 @@ void CreateLicenseRequest(const KeyIdList& key_ids,
   serializer.Serialize(*request);
 
   // Convert the serialized license request into std::vector and return it.
-  std::vector<uint8> result(json.begin(), json.end());
+  std::vector<uint8_t> result(json.begin(), json.end());
   license->swap(result);
 }
 
 void CreateKeyIdsInitData(const KeyIdList& key_ids,
-                          std::vector<uint8>* init_data) {
+                          std::vector<uint8_t>* init_data) {
   // Create the init_data.
   scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
   scoped_ptr<base::ListValue> list(new base::ListValue());
@@ -354,12 +356,12 @@ void CreateKeyIdsInitData(const KeyIdList& key_ids,
   serializer.Serialize(*dictionary);
 
   // Convert the serialized data into std::vector and return it.
-  std::vector<uint8> result(json.begin(), json.end());
+  std::vector<uint8_t> result(json.begin(), json.end());
   init_data->swap(result);
 }
 
-bool ExtractFirstKeyIdFromLicenseRequest(const std::vector<uint8>& license,
-                                         std::vector<uint8>* first_key) {
+bool ExtractFirstKeyIdFromLicenseRequest(const std::vector<uint8_t>& license,
+                                         std::vector<uint8_t>* first_key) {
   const std::string license_as_str(
       reinterpret_cast<const char*>(!license.empty() ? &license[0] : NULL),
       license.size());
@@ -404,7 +406,7 @@ bool ExtractFirstKeyIdFromLicenseRequest(const std::vector<uint8>& license,
     return false;
   }
 
-  std::vector<uint8> result(decoded_string.begin(), decoded_string.end());
+  std::vector<uint8_t> result(decoded_string.begin(), decoded_string.end());
   first_key->swap(result);
   return true;
 }

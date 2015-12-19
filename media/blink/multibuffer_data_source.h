@@ -101,11 +101,11 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
   // Called from demuxer thread.
   void Stop() override;
 
-  void Read(int64 position,
+  void Read(int64_t position,
             int size,
-            uint8* data,
+            uint8_t* data,
             const DataSource::ReadCB& read_cb) override;
-  bool GetSize(int64* size_out) override;
+  bool GetSize(int64_t* size_out) override;
   bool IsStreaming() override;
   void SetBitrate(int bitrate) override;
 
@@ -114,8 +114,8 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
 
   // A factory method to create a BufferedResourceLoader based on the read
   // parameters.
-  void CreateResourceLoader(int64 first_byte_position,
-                            int64 last_byte_position);
+  void CreateResourceLoader(int64_t first_byte_position,
+                            int64_t last_byte_position);
 
   friend class MultibufferDataSourceTest;
 
@@ -139,7 +139,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
   void UpdateSingleOrigin();
 
   // MultiBufferReader progress callback.
-  void ProgressCallback(int64 begin, int64 end);
+  void ProgressCallback(int64_t begin, int64_t end);
 
   // call downloading_cb_ if needed.
   // If |force_loading| is true, we call downloading_cb_ and tell it that
@@ -158,7 +158,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
   // The total size of the resource. Set during StartCallback() if the size is
   // known, otherwise it will remain kPositionNotSpecified until the size is
   // determined by reaching EOF.
-  int64 total_bytes_;
+  int64_t total_bytes_;
 
   // This value will be true if this data source can only support streaming.
   // i.e. range request is not supported.

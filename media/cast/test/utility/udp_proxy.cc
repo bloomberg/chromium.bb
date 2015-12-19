@@ -72,7 +72,7 @@ class Buffer : public PacketPipe {
     last_schedule_ = clock_->NowTicks();
     double megabits = buffer_.front()->size() * 8 / 1000000.0;
     double seconds = megabits / max_megabits_per_second_;
-    int64 microseconds = static_cast<int64>(seconds * 1E6);
+    int64_t microseconds = static_cast<int64_t>(seconds * 1E6);
     task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&Buffer::ProcessBuffer, weak_factory_.GetWeakPtr()),
@@ -80,14 +80,14 @@ class Buffer : public PacketPipe {
   }
 
   void ProcessBuffer() {
-    int64 bytes_to_send = static_cast<int64>(
+    int64_t bytes_to_send = static_cast<int64_t>(
         (clock_->NowTicks() - last_schedule_).InSecondsF() *
         max_megabits_per_second_ * 1E6 / 8);
-    if (bytes_to_send < static_cast<int64>(buffer_.front()->size())) {
+    if (bytes_to_send < static_cast<int64_t>(buffer_.front()->size())) {
       bytes_to_send = buffer_.front()->size();
     }
     while (!buffer_.empty() &&
-           static_cast<int64>(buffer_.front()->size()) <= bytes_to_send) {
+           static_cast<int64_t>(buffer_.front()->size()) <= bytes_to_send) {
       CHECK(!buffer_.empty());
       scoped_ptr<Packet> packet(buffer_.front().release());
       bytes_to_send -= packet->size();
@@ -140,10 +140,9 @@ class SimpleDelayBase : public PacketPipe {
     double seconds = GetDelay();
     task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&SimpleDelayBase::SendInternal,
-                   weak_factory_.GetWeakPtr(),
+        base::Bind(&SimpleDelayBase::SendInternal, weak_factory_.GetWeakPtr(),
                    base::Passed(&packet)),
-        base::TimeDelta::FromMicroseconds(static_cast<int64>(seconds * 1E6)));
+        base::TimeDelta::FromMicroseconds(static_cast<int64_t>(seconds * 1E6)));
   }
  protected:
   virtual double GetDelay() = 0;
@@ -239,7 +238,7 @@ class RandomSortedDelay : public PacketPipe {
  private:
   void ScheduleExtraDelay(double mult) {
     double seconds = seconds_between_extra_delay_ * mult * base::RandDouble();
-    int64 microseconds = static_cast<int64>(seconds * 1E6);
+    int64_t microseconds = static_cast<int64_t>(seconds * 1E6);
     task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&RandomSortedDelay::CauseExtraDelay,
@@ -249,9 +248,8 @@ class RandomSortedDelay : public PacketPipe {
 
   void CauseExtraDelay() {
     next_send_ = std::max<base::TimeTicks>(
-        clock_->NowTicks() +
-        base::TimeDelta::FromMicroseconds(
-            static_cast<int64>(extra_delay_ * 1E6)),
+        clock_->NowTicks() + base::TimeDelta::FromMicroseconds(
+                                 static_cast<int64_t>(extra_delay_ * 1E6)),
         next_send_);
     // An extra delay just happened, wait up to seconds_between_extra_delay_*2
     // before scheduling another one to make the average equal to
@@ -324,7 +322,7 @@ class NetworkGlitchPipe : public PacketPipe {
     works_ = !works_;
     double seconds = base::RandDouble() *
         (works_ ? max_work_time_ : max_outage_time_);
-    int64 microseconds = static_cast<int64>(seconds * 1E6);
+    int64_t microseconds = static_cast<int64_t>(seconds * 1E6);
     task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&NetworkGlitchPipe::Flip, weak_factory_.GetWeakPtr()),
@@ -415,7 +413,7 @@ InterruptedPoissonProcess::InterruptedPoissonProcess(
     const std::vector<double>& average_rates,
     double coef_burstiness,
     double coef_variance,
-    uint32 rand_seed)
+    uint32_t rand_seed)
     : clock_(NULL),
       average_rates_(average_rates),
       coef_burstiness_(coef_burstiness),
@@ -462,7 +460,7 @@ base::TimeDelta InterruptedPoissonProcess::NextEvent(double rate) {
 double InterruptedPoissonProcess::RandDouble() {
   // Generate a 64-bits random number from MT19937 and then convert
   // it to double.
-  uint64 rand = mt_rand_.genrand_int32();
+  uint64_t rand = mt_rand_.genrand_int32();
   rand <<= 32;
   rand |= mt_rand_.genrand_int32();
   return base::BitsToOpenEndedUnitInterval(rand);

@@ -70,7 +70,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   bool Init(VideoCaptureDevice::Name::CaptureApiType capture_api_type);
 
   // Called to deliver captured video frames.
-  void ReceiveFrame(const uint8* video_frame,
+  void ReceiveFrame(const uint8_t* video_frame,
                     int video_frame_length,
                     const VideoCaptureFormat& frame_format,
                     int aspect_numerator,

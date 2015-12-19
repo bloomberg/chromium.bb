@@ -5,7 +5,10 @@
 #ifndef MEDIA_FILTERS_FFMPEG_AAC_BITSTREAM_CONVERTER_H_
 #define MEDIA_FILTERS_FFMPEG_AAC_BITSTREAM_CONVERTER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
+
 #include "media/base/media_export.h"
 #include "media/filters/ffmpeg_bitstream_converter.h"
 

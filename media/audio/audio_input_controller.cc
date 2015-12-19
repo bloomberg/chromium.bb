@@ -507,7 +507,7 @@ void AudioInputController::DoCheckForNoData() {
 
 void AudioInputController::OnData(AudioInputStream* stream,
                                   const AudioBus* source,
-                                  uint32 hardware_delay_bytes,
+                                  uint32_t hardware_delay_bytes,
                                   double volume) {
   // |input_writer_| should only be accessed on the audio thread, but as a means
   // to avoid copying data and posting on the audio thread, we just check for

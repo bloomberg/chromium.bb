@@ -81,7 +81,7 @@ class AlsaPcmInputStream : public AgcAudioStream<AudioInputStream> {
   snd_pcm_t* device_handle_;  // Handle to the ALSA PCM recording device.
   snd_mixer_t* mixer_handle_; // Handle to the ALSA microphone mixer.
   snd_mixer_elem_t* mixer_element_handle_; // Handle to the capture element.
-  scoped_ptr<uint8[]> audio_buffer_;  // Buffer used for reading audio data.
+  scoped_ptr<uint8_t[]> audio_buffer_;  // Buffer used for reading audio data.
   bool read_callback_behind_schedule_;
   scoped_ptr<AudioBus> audio_bus_;
 

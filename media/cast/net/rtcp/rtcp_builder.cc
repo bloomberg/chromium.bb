@@ -18,20 +18,20 @@ namespace {
 
 // Max delta is 4095 milliseconds because we need to be able to encode it in
 // 12 bits.
-const int64 kMaxWireFormatTimeDeltaMs = INT64_C(0xfff);
+const int64_t kMaxWireFormatTimeDeltaMs = INT64_C(0xfff);
 
-uint16 MergeEventTypeAndTimestampForWireFormat(
+uint16_t MergeEventTypeAndTimestampForWireFormat(
     const CastLoggingEvent& event,
     const base::TimeDelta& time_delta) {
-  int64 time_delta_ms = time_delta.InMilliseconds();
+  int64_t time_delta_ms = time_delta.InMilliseconds();
 
   DCHECK_GE(time_delta_ms, 0);
   DCHECK_LE(time_delta_ms, kMaxWireFormatTimeDeltaMs);
 
-  uint16 time_delta_12_bits =
-      static_cast<uint16>(time_delta_ms & kMaxWireFormatTimeDeltaMs);
+  uint16_t time_delta_12_bits =
+      static_cast<uint16_t>(time_delta_ms & kMaxWireFormatTimeDeltaMs);
 
-  uint16 event_type_4_bits = ConvertEventTypeToWireFormat(event);
+  uint16_t event_type_4_bits = ConvertEventTypeToWireFormat(event);
   DCHECK(event_type_4_bits);
   DCHECK(~(event_type_4_bits & 0xfff0));
   return (event_type_4_bits << 12) | time_delta_12_bits;
@@ -114,11 +114,8 @@ class NackStringBuilder {
 };
 }  // namespace
 
-RtcpBuilder::RtcpBuilder(uint32 sending_ssrc)
-    : writer_(NULL, 0),
-      ssrc_(sending_ssrc),
-      ptr_of_length_(NULL) {
-}
+RtcpBuilder::RtcpBuilder(uint32_t sending_ssrc)
+    : writer_(NULL, 0), ssrc_(sending_ssrc), ptr_of_length_(NULL) {}
 
 RtcpBuilder::~RtcpBuilder() {}
 
@@ -237,8 +234,8 @@ void RtcpBuilder::AddCast(const RtcpCastMessage* cast,
   writer_.WriteU32(ssrc_);              // Add our own SSRC.
   writer_.WriteU32(cast->media_ssrc);  // Remote SSRC.
   writer_.WriteU32(kCast);
-  writer_.WriteU8(static_cast<uint8>(cast->ack_frame_id));
-  uint8* cast_loss_field_pos = reinterpret_cast<uint8*>(writer_.ptr());
+  writer_.WriteU8(static_cast<uint8_t>(cast->ack_frame_id));
+  uint8_t* cast_loss_field_pos = reinterpret_cast<uint8_t*>(writer_.ptr());
   writer_.WriteU8(0);  // Overwritten with number_of_loss_fields.
   DCHECK_LE(target_delay.InMilliseconds(),
             std::numeric_limits<uint16_t>::max());
@@ -259,7 +256,7 @@ void RtcpBuilder::AddCast(const RtcpCastMessage* cast,
     // Iterate through all frames with missing packets.
     if (frame_it->second.empty()) {
       // Special case all packets in a frame is missing.
-      writer_.WriteU8(static_cast<uint8>(frame_it->first));
+      writer_.WriteU8(static_cast<uint8_t>(frame_it->first));
       writer_.WriteU16(kRtcpCastAllPacketsLost);
       writer_.WriteU8(0);
       nack_string_builder.PushPacket(kRtcpCastAllPacketsLost);
@@ -267,16 +264,16 @@ void RtcpBuilder::AddCast(const RtcpCastMessage* cast,
     } else {
       PacketIdSet::const_iterator packet_it = frame_it->second.begin();
       while (packet_it != frame_it->second.end()) {
-        uint16 packet_id = *packet_it;
+        uint16_t packet_id = *packet_it;
         // Write frame and packet id to buffer before calculating bitmask.
-        writer_.WriteU8(static_cast<uint8>(frame_it->first));
+        writer_.WriteU8(static_cast<uint8_t>(frame_it->first));
         writer_.WriteU16(packet_id);
         nack_string_builder.PushPacket(packet_id);
 
-        uint8 bitmask = 0;
+        uint8_t bitmask = 0;
         ++packet_it;
         while (packet_it != frame_it->second.end()) {
-          int shift = static_cast<uint8>(*packet_it - packet_id) - 1;
+          int shift = static_cast<uint8_t>(*packet_it - packet_id) - 1;
           if (shift >= 0 && shift <= 7) {
             nack_string_builder.PushPacket(*packet_it);
             bitmask |= (1 << shift);
@@ -295,7 +292,7 @@ void RtcpBuilder::AddCast(const RtcpCastMessage* cast,
       << ", ACK: " << cast->ack_frame_id
       << ", NACK: " << nack_string_builder.GetString();
   DCHECK_LE(number_of_loss_fields, kRtcpMaxCastLossFields);
-  *cast_loss_field_pos = static_cast<uint8>(number_of_loss_fields);
+  *cast_loss_field_pos = static_cast<uint8_t>(number_of_loss_fields);
 }
 
 void RtcpBuilder::AddSR(const RtcpSenderInfo& sender_info) {
@@ -305,7 +302,7 @@ void RtcpBuilder::AddSR(const RtcpSenderInfo& sender_info) {
   writer_.WriteU32(sender_info.ntp_fraction);
   writer_.WriteU32(sender_info.rtp_timestamp);
   writer_.WriteU32(sender_info.send_packet_count);
-  writer_.WriteU32(static_cast<uint32>(sender_info.send_octet_count));
+  writer_.WriteU32(static_cast<uint32_t>(sender_info.send_octet_count));
 }
 
 /*
@@ -367,21 +364,21 @@ void RtcpBuilder::AddReceiverLog(
     total_number_of_messages_to_send -= messages_in_frame;
 
     // On the wire format is number of messages - 1.
-    writer_.WriteU8(static_cast<uint8>(messages_in_frame - 1));
+    writer_.WriteU8(static_cast<uint8_t>(messages_in_frame - 1));
 
     base::TimeTicks event_timestamp_base =
         frame_log_messages.event_log_messages_.front().event_timestamp;
-    uint32 base_timestamp_ms =
+    uint32_t base_timestamp_ms =
         (event_timestamp_base - base::TimeTicks()).InMilliseconds();
-    writer_.WriteU8(static_cast<uint8>(base_timestamp_ms >> 16));
-    writer_.WriteU8(static_cast<uint8>(base_timestamp_ms >> 8));
-    writer_.WriteU8(static_cast<uint8>(base_timestamp_ms));
+    writer_.WriteU8(static_cast<uint8_t>(base_timestamp_ms >> 16));
+    writer_.WriteU8(static_cast<uint8_t>(base_timestamp_ms >> 8));
+    writer_.WriteU8(static_cast<uint8_t>(base_timestamp_ms));
 
     while (!frame_log_messages.event_log_messages_.empty() &&
            messages_in_frame > 0) {
       const RtcpReceiverEventLogMessage& event_message =
           frame_log_messages.event_log_messages_.front();
-      uint16 event_type_and_timestamp_delta =
+      uint16_t event_type_and_timestamp_delta =
           MergeEventTypeAndTimestampForWireFormat(
               event_message.type,
               event_message.event_timestamp - event_timestamp_base);
@@ -389,8 +386,8 @@ void RtcpBuilder::AddReceiverLog(
         case FRAME_ACK_SENT:
         case FRAME_PLAYOUT:
         case FRAME_DECODED:
-          writer_.WriteU16(
-              static_cast<uint16>(event_message.delay_delta.InMilliseconds()));
+          writer_.WriteU16(static_cast<uint16_t>(
+              event_message.delay_delta.InMilliseconds()));
           writer_.WriteU16(event_type_and_timestamp_delta);
           break;
         case PACKET_RECEIVED:

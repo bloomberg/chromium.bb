@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/media_export.h"
@@ -16,7 +15,7 @@
 namespace media {
 
 typedef base::Callback<void(MediaKeys::Exception exception_code,
-                            uint32 system_code,
+                            uint32_t system_code,
                             const std::string& error_message)>
     PromiseRejectedCB;
 
@@ -30,7 +29,7 @@ class MEDIA_EXPORT CdmCallbackPromise : public CdmPromiseTemplate<T...> {
   // CdmPromiseTemplate<T> implementation.
   virtual void resolve(const T&... result) override;
   virtual void reject(MediaKeys::Exception exception_code,
-                      uint32 system_code,
+                      uint32_t system_code,
                       const std::string& error_message) override;
 
  private:

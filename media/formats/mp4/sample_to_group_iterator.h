@@ -30,13 +30,13 @@ class MEDIA_EXPORT SampleToGroupIterator {
   bool IsValid() const;
 
   // Returns group description index for current sample.
-  uint32 group_description_index() const {
+  uint32_t group_description_index() const {
     return iterator_->group_description_index;
   }
 
  private:
   // Track how many samples remaining for current table entry.
-  uint32 remaining_samples_;
+  uint32_t remaining_samples_;
   const std::vector<SampleToGroupEntry>& sample_to_group_table_;
   std::vector<SampleToGroupEntry>::const_iterator iterator_;
 

@@ -70,7 +70,7 @@ class MEDIA_EXPORT AudioInputIPC {
                             int session_id,
                             const AudioParameters& params,
                             bool automatic_gain_control,
-                            uint32 total_segments) = 0;
+                            uint32_t total_segments) = 0;
 
   // Corresponds to a call to AudioInputController::Record() on the server side.
   virtual void RecordStream() = 0;

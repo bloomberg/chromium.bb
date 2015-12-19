@@ -7,7 +7,6 @@
 
 #include <string>
 #include <vector>
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"

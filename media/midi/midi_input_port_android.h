@@ -19,7 +19,7 @@ class MidiInputPortAndroid final {
    public:
     virtual ~Delegate() {}
     virtual void OnReceivedData(MidiInputPortAndroid* port,
-                                const uint8* data,
+                                const uint8_t* data,
                                 size_t size,
                                 base::TimeTicks time) = 0;
   };

@@ -23,7 +23,7 @@
 
 namespace media {
 
-static bool HasUsableFormats(int fd, uint32 capabilities) {
+static bool HasUsableFormats(int fd, uint32_t capabilities) {
   const std::list<uint32_t>& usable_fourccs =
       VideoCaptureDeviceLinux::GetListOfUsableFourCCs(false);
 
@@ -51,9 +51,9 @@ static bool HasUsableFormats(int fd, uint32 capabilities) {
 }
 
 static std::list<float> GetFrameRateList(int fd,
-                                         uint32 fourcc,
-                                         uint32 width,
-                                         uint32 height) {
+                                         uint32_t fourcc,
+                                         uint32_t width,
+                                         uint32_t height) {
   std::list<float> frame_rates;
 
   v4l2_frmivalenum frame_interval = {};

@@ -31,7 +31,7 @@ CastMessageBuilder::CastMessageBuilder(
     base::TickClock* clock,
     RtpPayloadFeedback* incoming_payload_feedback,
     const Framer* framer,
-    uint32 media_ssrc,
+    uint32_t media_ssrc,
     bool decoder_faster_than_max_frame_rate,
     int max_unacked_frames)
     : clock_(clock),
@@ -49,8 +49,8 @@ CastMessageBuilder::CastMessageBuilder(
 
 CastMessageBuilder::~CastMessageBuilder() {}
 
-void CastMessageBuilder::CompleteFrameReceived(uint32 frame_id) {
-  DCHECK_GE(static_cast<int32>(frame_id - last_acked_frame_id_), 0);
+void CastMessageBuilder::CompleteFrameReceived(uint32_t frame_id) {
+  DCHECK_GE(static_cast<int32_t>(frame_id - last_acked_frame_id_), 0);
   VLOG(2) << "CompleteFrameReceived: " << frame_id;
   if (last_update_time_.is_null()) {
     // Our first update.
@@ -67,7 +67,7 @@ void CastMessageBuilder::CompleteFrameReceived(uint32 frame_id) {
   cast_feedback_->CastFeedback(cast_msg_);
 }
 
-bool CastMessageBuilder::UpdateAckMessage(uint32 frame_id) {
+bool CastMessageBuilder::UpdateAckMessage(uint32_t frame_id) {
   if (!decoder_faster_than_max_frame_rate_) {
     int complete_frame_count = framer_->NumberOfCompleteFrames();
     if (complete_frame_count > max_unacked_frames_) {
@@ -169,8 +169,8 @@ void CastMessageBuilder::BuildPacketList() {
   if (framer_->Empty())
     return;
 
-  uint32 newest_frame_id = framer_->NewestFrameId();
-  uint32 next_expected_frame_id = cast_msg_.ack_frame_id + 1;
+  uint32_t newest_frame_id = framer_->NewestFrameId();
+  uint32_t next_expected_frame_id = cast_msg_.ack_frame_id + 1;
 
   // Iterate over all frames.
   for (; !IsNewerFrameId(next_expected_frame_id, newest_frame_id);

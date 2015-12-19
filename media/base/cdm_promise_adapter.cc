@@ -46,7 +46,7 @@ void CdmPromiseAdapter::ResolvePromise(uint32_t promise_id,
 
 void CdmPromiseAdapter::RejectPromise(uint32_t promise_id,
                                       MediaKeys::Exception exception_code,
-                                      uint32 system_code,
+                                      uint32_t system_code,
                                       const std::string& error_message) {
   scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
   if (!promise) {

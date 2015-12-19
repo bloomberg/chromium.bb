@@ -16,7 +16,7 @@ namespace {
 // CTR IV appended with a CTR block counter. |iv| is an 8 byte CTR IV.
 // |iv_size| is the size of |iv| in btyes. Returns a string of
 // kDecryptionKeySize bytes.
-std::string GenerateWebMCounterBlock(const uint8* iv, int iv_size) {
+std::string GenerateWebMCounterBlock(const uint8_t* iv, int iv_size) {
   std::string counter_block(reinterpret_cast<const char*>(iv), iv_size);
   counter_block.append(DecryptConfig::kDecryptionKeySize - iv_size, 0);
   return counter_block;
@@ -24,8 +24,10 @@ std::string GenerateWebMCounterBlock(const uint8* iv, int iv_size) {
 
 }  // namespace anonymous
 
-bool WebMCreateDecryptConfig(const uint8* data, int data_size,
-                             const uint8* key_id, int key_id_size,
+bool WebMCreateDecryptConfig(const uint8_t* data,
+                             int data_size,
+                             const uint8_t* key_id,
+                             int key_id_size,
                              scoped_ptr<DecryptConfig>* decrypt_config,
                              int* data_offset) {
   if (data_size < kWebMSignalByteSize) {
@@ -33,7 +35,7 @@ bool WebMCreateDecryptConfig(const uint8* data, int data_size,
     return false;
   }
 
-  uint8 signal_byte = data[0];
+  uint8_t signal_byte = data[0];
   int frame_offset = sizeof(signal_byte);
 
   // Setting the DecryptConfig object of the buffer while leaving the

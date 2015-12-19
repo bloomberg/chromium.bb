@@ -9,7 +9,6 @@
 #include <tuple>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -37,9 +36,9 @@ struct PacketKey {
   enum PacketType { RTCP = 0, RTP = 1 };
 
   PacketType packet_type;
-  uint32 frame_id;
-  uint32 ssrc;
-  uint16 packet_id;
+  uint32_t frame_id;
+  uint32_t ssrc;
+  uint16_t packet_id;
 
   bool operator<(const PacketKey& key) const {
     return std::tie(packet_type, frame_id, ssrc, packet_id) <
@@ -66,7 +65,7 @@ typedef std::vector<std::pair<PacketKey, PacketRef> > SendPacketVector;
 struct DedupInfo {
   DedupInfo();
   base::TimeDelta resend_interval;
-  int64 last_byte_acked_for_audio;
+  int64_t last_byte_acked_for_audio;
 };
 
 // We have this pure virtual class to enable mocking.
@@ -75,15 +74,15 @@ class PacedPacketSender {
   virtual bool SendPackets(const SendPacketVector& packets) = 0;
   virtual bool ResendPackets(const SendPacketVector& packets,
                              const DedupInfo& dedup_info) = 0;
-  virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) = 0;
+  virtual bool SendRtcpPacket(uint32_t ssrc, PacketRef packet) = 0;
   virtual void CancelSendingPacket(const PacketKey& packet_key) = 0;
 
   virtual ~PacedPacketSender() {}
 
   static PacketKey MakePacketKey(PacketKey::PacketType,
-                                 uint32 frame_id,
-                                 uint32 ssrc,
-                                 uint16 packet_id);
+                                 uint32_t frame_id,
+                                 uint32_t ssrc,
+                                 uint16_t packet_id);
 };
 
 class PacedSender : public PacedPacketSender,
@@ -105,29 +104,29 @@ class PacedSender : public PacedPacketSender,
   ~PacedSender() final;
 
   // These must be called before non-RTCP packets are sent.
-  void RegisterAudioSsrc(uint32 audio_ssrc);
-  void RegisterVideoSsrc(uint32 video_ssrc);
+  void RegisterAudioSsrc(uint32_t audio_ssrc);
+  void RegisterVideoSsrc(uint32_t video_ssrc);
 
   // Register SSRC that has a higher priority for sending. Multiple SSRCs can
   // be registered.
   // Note that it is not expected to register many SSRCs with this method.
   // Because IsHigherPriority() is determined in linear time.
-  void RegisterPrioritySsrc(uint32 ssrc);
+  void RegisterPrioritySsrc(uint32_t ssrc);
 
   // Returns the total number of bytes sent to the socket when the specified
   // packet was just sent.
   // Returns 0 if the packet cannot be found or not yet sent.
-  int64 GetLastByteSentForPacket(const PacketKey& packet_key);
+  int64_t GetLastByteSentForPacket(const PacketKey& packet_key);
 
   // Returns the total number of bytes sent to the socket when the last payload
   // identified by SSRC is just sent.
-  int64 GetLastByteSentForSsrc(uint32 ssrc);
+  int64_t GetLastByteSentForSsrc(uint32_t ssrc);
 
   // PacedPacketSender implementation.
   bool SendPackets(const SendPacketVector& packets) final;
   bool ResendPackets(const SendPacketVector& packets,
                      const DedupInfo& dedup_info) final;
-  bool SendRtcpPacket(uint32 ssrc, PacketRef packet) final;
+  bool SendRtcpPacket(uint32_t ssrc, PacketRef packet) final;
   void CancelSendingPacket(const PacketKey& packet_key) final;
 
  private:
@@ -185,12 +184,12 @@ class PacedSender : public PacedPacketSender,
   PacketSender* const transport_;
 
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
-  uint32 audio_ssrc_;
-  uint32 video_ssrc_;
+  uint32_t audio_ssrc_;
+  uint32_t video_ssrc_;
 
   // Set of SSRCs that have higher priority. This is a vector instead of a
   // set because there's only very few in it (most likely 1).
-  std::vector<uint32> priority_ssrcs_;
+  std::vector<uint32_t> priority_ssrcs_;
   typedef std::map<PacketKey, std::pair<PacketType, PacketRef> > PacketList;
   PacketList packet_list_;
   PacketList priority_packet_list_;
@@ -198,16 +197,16 @@ class PacedSender : public PacedPacketSender,
   struct PacketSendRecord {
     PacketSendRecord();
     base::TimeTicks time;  // Time when the packet was sent.
-    int64 last_byte_sent;  // Number of bytes sent to network just after this
-                           // packet was sent.
-    int64 last_byte_sent_for_audio;  // Number of bytes sent to network from
-                                     // audio stream just before this packet.
+    int64_t last_byte_sent;  // Number of bytes sent to network just after this
+                             // packet was sent.
+    int64_t last_byte_sent_for_audio;  // Number of bytes sent to network from
+                                       // audio stream just before this packet.
   };
   typedef std::map<PacketKey, PacketSendRecord> PacketSendHistory;
   PacketSendHistory send_history_;
   PacketSendHistory send_history_buffer_;
   // Records the last byte sent for payload with a specific SSRC.
-  std::map<uint32, int64> last_byte_sent_;
+  std::map<uint32_t, int64_t> last_byte_sent_;
 
   size_t target_burst_size_;
   size_t max_burst_size_;

@@ -24,8 +24,8 @@ namespace media {
 
 enum { kHttpOK = 200, kHttpPartialContent = 206 };
 
-uint32 GetReasonsForUncacheability(const WebURLResponse& response) {
-  uint32 reasons = 0;
+uint32_t GetReasonsForUncacheability(const WebURLResponse& response) {
+  uint32_t reasons = 0;
   const int code = response.httpStatusCode();
   const int version = response.httpVersion();
   const HttpVersion http_version =
@@ -66,7 +66,7 @@ uint32 GetReasonsForUncacheability(const WebURLResponse& response) {
   const char kMaxAgePrefix[] = "max-age=";
   const size_t kMaxAgePrefixLen = arraysize(kMaxAgePrefix) - 1;
   if (cache_control_header.substr(0, kMaxAgePrefixLen) == kMaxAgePrefix) {
-    int64 max_age_seconds;
+    int64_t max_age_seconds;
     base::StringToInt64(
         base::StringPiece(cache_control_header.begin() + kMaxAgePrefixLen,
                           cache_control_header.end()),
@@ -102,7 +102,7 @@ base::TimeDelta GetCacheValidUntil(const WebURLResponse& response) {
   const char kMaxAgePrefix[] = "max-age=";
   const size_t kMaxAgePrefixLen = arraysize(kMaxAgePrefix) - 1;
   if (cache_control_header.substr(0, kMaxAgePrefixLen) == kMaxAgePrefix) {
-    int64 max_age_seconds;
+    int64_t max_age_seconds;
     base::StringToInt64(
         base::StringPiece(cache_control_header.begin() + kMaxAgePrefixLen,
                           cache_control_header.end()),

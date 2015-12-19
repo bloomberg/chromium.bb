@@ -26,7 +26,7 @@ DemuxerConfigs TestDataFactory::CreateAudioConfigs(AudioCodec audio_codec,
       configs.audio_sampling_rate = 44100;
       scoped_refptr<DecoderBuffer> buffer =
           ReadTestDataFile("vorbis-extradata");
-      configs.audio_extra_data = std::vector<uint8>(
+      configs.audio_extra_data = std::vector<uint8_t>(
           buffer->data(), buffer->data() + buffer->data_size());
     } break;
 
@@ -156,8 +156,8 @@ void TestDataFactory::LoadPackets(const char* file_name_template) {
   for (int i = 0; i < 4; ++i) {
     scoped_refptr<DecoderBuffer> buffer =
         ReadTestDataFile(base::StringPrintf(file_name_template, i));
-    packet_[i] = std::vector<uint8>(buffer->data(),
-                                    buffer->data() + buffer->data_size());
+    packet_[i] = std::vector<uint8_t>(buffer->data(),
+                                      buffer->data() + buffer->data_size());
   }
 }
 

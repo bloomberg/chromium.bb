@@ -232,7 +232,7 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived(
     IDeckLinkVideoInputFrame* video_frame,
     IDeckLinkAudioInputPacket* /* audio_packet */) {
   // Capture frames are manipulated as an IDeckLinkVideoFrame.
-  uint8* video_data = NULL;
+  uint8_t* video_data = NULL;
   video_frame->GetBytes(reinterpret_cast<void**>(&video_data));
 
   media::VideoPixelFormat pixel_format =
@@ -444,7 +444,7 @@ VideoCaptureDeviceDeckLinkMac::~VideoCaptureDeviceDeckLinkMac() {
 }
 
 void VideoCaptureDeviceDeckLinkMac::OnIncomingCapturedData(
-    const uint8* data,
+    const uint8_t* data,
     size_t length,
     const VideoCaptureFormat& frame_format,
     int rotation,  // Clockwise.

@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "base/basictypes.h"
 
 #include "media/midi/midi_device_android.h"
 #include "media/midi/midi_input_port_android.h"

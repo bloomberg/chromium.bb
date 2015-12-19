@@ -31,12 +31,12 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD0(DoCreateVideoEncodeAccelerator, VideoEncodeAccelerator*());
 
   MOCK_METHOD5(CreateTextures,
-               bool(int32 count,
+               bool(int32_t count,
                     const gfx::Size& size,
-                    std::vector<uint32>* texture_ids,
+                    std::vector<uint32_t>* texture_ids,
                     std::vector<gpu::Mailbox>* texture_mailboxes,
-                    uint32 texture_target));
-  MOCK_METHOD1(DeleteTexture, void(uint32 texture_id));
+                    uint32_t texture_target));
+  MOCK_METHOD1(DeleteTexture, void(uint32_t texture_id));
   MOCK_METHOD1(WaitSyncToken, void(const gpu::SyncToken& sync_token));
   MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(GetVideoDecodeAcceleratorCapabilities,

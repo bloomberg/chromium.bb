@@ -8,7 +8,6 @@
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/time/time.h"
 #include "media/midi/usb_midi_export.h"
@@ -30,7 +29,7 @@ class USB_MIDI_EXPORT UsbMidiInputStream {
     // This function is called when some data arrives to a USB-MIDI jack.
     // An input USB-MIDI jack corresponds to an input MIDIPortInfo.
     virtual void OnReceivedData(size_t jack_index,
-                                const uint8* data,
+                                const uint8_t* data,
                                 size_t size,
                                 base::TimeTicks time) = 0;
   };
@@ -57,7 +56,7 @@ class USB_MIDI_EXPORT UsbMidiInputStream {
   // |size| must be a multiple of |kPacketSize|.
   void OnReceivedData(UsbMidiDevice* device,
                       int endpoint_number,
-                      const uint8* data,
+                      const uint8_t* data,
                       size_t size,
                       base::TimeTicks time);
 
@@ -69,7 +68,7 @@ class USB_MIDI_EXPORT UsbMidiInputStream {
   // The first |kPacketSize| bytes of |packet| must be accessible.
   void ProcessOnePacket(UsbMidiDevice* device,
                         int endpoint_number,
-                        const uint8* packet,
+                        const uint8_t* packet,
                         base::TimeTicks time);
 
   std::vector<UsbMidiJack> jacks_;

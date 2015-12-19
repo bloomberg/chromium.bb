@@ -15,7 +15,6 @@
 #include <mmdeviceapi.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "base/win/scoped_comptr.h"
 #include "media/audio/audio_device_name.h"
@@ -30,7 +29,7 @@ namespace media {
 // Represents audio channel configuration constants as understood by Windows.
 // E.g. KSAUDIO_SPEAKER_MONO.  For a list of possible values see:
 // http://msdn.microsoft.com/en-us/library/windows/hardware/ff537083(v=vs.85).aspx
-typedef uint32 ChannelConfig;
+typedef uint32_t ChannelConfig;
 
 class MEDIA_EXPORT CoreAudioUtil {
  public:
@@ -205,7 +204,7 @@ class MEDIA_EXPORT CoreAudioUtil {
   static HRESULT SharedModeInitialize(IAudioClient* client,
                                       const WAVEFORMATPCMEX* format,
                                       HANDLE event_handle,
-                                      uint32* endpoint_buffer_size,
+                                      uint32_t* endpoint_buffer_size,
                                       const GUID* session_guid);
 
   // TODO(henrika): add ExclusiveModeInitialize(...)

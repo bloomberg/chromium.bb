@@ -67,9 +67,9 @@ static const gfx::Size kCaptureSizes[] = {gfx::Size(640, 480),
 class MockClient : public VideoCaptureDevice::Client {
  public:
   MOCK_METHOD9(OnIncomingCapturedYuvData,
-               void(const uint8* y_data,
-                    const uint8* u_data,
-                    const uint8* v_data,
+               void(const uint8_t* y_data,
+                    const uint8_t* u_data,
+                    const uint8_t* v_data,
                     size_t y_stride,
                     size_t u_stride,
                     size_t v_stride,
@@ -88,7 +88,7 @@ class MockClient : public VideoCaptureDevice::Client {
       : main_thread_(base::ThreadTaskRunnerHandle::Get()),
         frame_cb_(frame_cb) {}
 
-  void OnIncomingCapturedData(const uint8* data,
+  void OnIncomingCapturedData(const uint8_t* data,
                               int length,
                               const VideoCaptureFormat& format,
                               int rotation,

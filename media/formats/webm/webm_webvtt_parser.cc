@@ -6,7 +6,8 @@
 
 namespace media {
 
-void WebMWebVTTParser::Parse(const uint8* payload, int payload_size,
+void WebMWebVTTParser::Parse(const uint8_t* payload,
+                             int payload_size,
                              std::string* id,
                              std::string* settings,
                              std::string* content) {
@@ -14,10 +15,8 @@ void WebMWebVTTParser::Parse(const uint8* payload, int payload_size,
   parser.Parse(id, settings, content);
 }
 
-WebMWebVTTParser::WebMWebVTTParser(const uint8* payload, int payload_size)
-    : ptr_(payload),
-      ptr_end_(payload + payload_size) {
-}
+WebMWebVTTParser::WebMWebVTTParser(const uint8_t* payload, int payload_size)
+    : ptr_(payload), ptr_end_(payload + payload_size) {}
 
 void WebMWebVTTParser::Parse(std::string* id,
                              std::string* settings,
@@ -27,7 +26,7 @@ void WebMWebVTTParser::Parse(std::string* id,
   content->assign(ptr_, ptr_end_);
 }
 
-bool WebMWebVTTParser::GetByte(uint8* byte) {
+bool WebMWebVTTParser::GetByte(uint8_t* byte) {
   if (ptr_ >= ptr_end_)
     return false;  // indicates end-of-stream
 
@@ -59,7 +58,7 @@ void WebMWebVTTParser::ParseLine(std::string* line) {
   };
 
   for (;;) {
-    uint8 byte;
+    uint8_t byte;
 
     if (!GetByte(&byte) || byte == kLF)
       return;

@@ -293,7 +293,7 @@ void VideoCaptureDeviceMFWin::StopAndDeAllocate() {
 }
 
 void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
-    const uint8* data,
+    const uint8_t* data,
     int length,
     int rotation,
     const base::TimeTicks& time_stamp) {

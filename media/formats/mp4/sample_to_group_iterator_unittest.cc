@@ -20,7 +20,8 @@ class SampleToGroupIteratorTest : public testing::Test {
   SampleToGroupIteratorTest() {
     // Build sample group description index table from kSampleToGroupTable.
     for (size_t i = 0; i < arraysize(kCompactSampleToGroupTable); ++i) {
-      for (uint32 j = 0; j < kCompactSampleToGroupTable[i].sample_count; ++j) {
+      for (uint32_t j = 0; j < kCompactSampleToGroupTable[i].sample_count;
+           ++j) {
         sample_to_group_table_.push_back(
             kCompactSampleToGroupTable[i].group_description_index);
       }
@@ -34,7 +35,7 @@ class SampleToGroupIteratorTest : public testing::Test {
   }
 
  protected:
-  std::vector<uint32> sample_to_group_table_;
+  std::vector<uint32_t> sample_to_group_table_;
   SampleToGroup sample_to_group_;
   scoped_ptr<SampleToGroupIterator> sample_to_group_iterator_;
 
@@ -51,7 +52,7 @@ TEST_F(SampleToGroupIteratorTest, EmptyTable) {
 TEST_F(SampleToGroupIteratorTest, Advance) {
   ASSERT_EQ(sample_to_group_table_[0],
             sample_to_group_iterator_->group_description_index());
-  for (uint32 sample = 1; sample < sample_to_group_table_.size(); ++sample) {
+  for (uint32_t sample = 1; sample < sample_to_group_table_.size(); ++sample) {
     ASSERT_TRUE(sample_to_group_iterator_->Advance());
     ASSERT_EQ(sample_to_group_table_[sample],
               sample_to_group_iterator_->group_description_index());

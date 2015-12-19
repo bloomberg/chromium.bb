@@ -18,18 +18,18 @@ namespace cast {
 
 namespace {
 // Sender report.
-static const uint32 kNtpHigh = 0x01020304;
-static const uint32 kNtpLow = 0x05060708;
-static const uint32 kRtpTimestamp = 0x10203040;
-static const uint32 kSendPacketCount = 987;
-static const uint32 kSendOctetCount = 87654;
+static const uint32_t kNtpHigh = 0x01020304;
+static const uint32_t kNtpLow = 0x05060708;
+static const uint32_t kRtpTimestamp = 0x10203040;
+static const uint32_t kSendPacketCount = 987;
+static const uint32_t kSendOctetCount = 87654;
 
 // Report block.
 static const int kLoss = 0x01000123;
 static const int kExtendedMax = 0x15678;
 static const int kTestJitter = 0x10203;
-static const uint32 kLastSr = 0x34561234;
-static const uint32 kDelayLastSr = 1000;
+static const uint32_t kLastSr = 0x34561234;
+static const uint32_t kDelayLastSr = 1000;
 
 // DLRR block.
 static const int kLastRr = 0x34561234;
@@ -39,9 +39,9 @@ static const int kDelayLastRr = 1000;
 static const int kMissingPacket = 34567;
 
 // CAST.
-static const uint32 kAckFrameId = 17;
-static const uint32 kLostFrameId = 18;
-static const uint32 kFrameIdWithLostPackets = 19;
+static const uint32_t kAckFrameId = 17;
+static const uint32_t kLostFrameId = 18;
+static const uint32_t kFrameIdWithLostPackets = 19;
 static const int kLostPacketId1 = 3;
 static const int kLostPacketId2 = 5;
 static const int kLostPacketId3 = 12;
@@ -51,37 +51,37 @@ class TestRtcpPacketBuilder {
  public:
   TestRtcpPacketBuilder();
 
-  void AddSr(uint32 sender_ssrc, int number_of_report_blocks);
-  void AddSrWithNtp(uint32 sender_ssrc,
-                    uint32 ntp_high,
-                    uint32 ntp_low,
-                    uint32 rtp_timestamp);
-  void AddRr(uint32 sender_ssrc, int number_of_report_blocks);
-  void AddRb(uint32 rtp_ssrc);
+  void AddSr(uint32_t sender_ssrc, int number_of_report_blocks);
+  void AddSrWithNtp(uint32_t sender_ssrc,
+                    uint32_t ntp_high,
+                    uint32_t ntp_low,
+                    uint32_t rtp_timestamp);
+  void AddRr(uint32_t sender_ssrc, int number_of_report_blocks);
+  void AddRb(uint32_t rtp_ssrc);
 
-  void AddXrHeader(uint32 sender_ssrc);
-  void AddXrDlrrBlock(uint32 sender_ssrc);
-  void AddXrExtendedDlrrBlock(uint32 sender_ssrc);
+  void AddXrHeader(uint32_t sender_ssrc);
+  void AddXrDlrrBlock(uint32_t sender_ssrc);
+  void AddXrExtendedDlrrBlock(uint32_t sender_ssrc);
   void AddXrRrtrBlock();
   void AddXrUnknownBlock();
   void AddUnknownBlock();
 
-  void AddNack(uint32 sender_ssrc, uint32 media_ssrc);
-  void AddSendReportRequest(uint32 sender_ssrc, uint32 media_ssrc);
+  void AddNack(uint32_t sender_ssrc, uint32_t media_ssrc);
+  void AddSendReportRequest(uint32_t sender_ssrc, uint32_t media_ssrc);
 
-  void AddCast(uint32 sender_ssrc,
-               uint32 media_ssrc,
+  void AddCast(uint32_t sender_ssrc,
+               uint32_t media_ssrc,
                base::TimeDelta target_delay);
-  void AddReceiverLog(uint32 sender_ssrc);
-  void AddReceiverFrameLog(uint32 rtp_timestamp,
+  void AddReceiverLog(uint32_t sender_ssrc);
+  void AddReceiverFrameLog(uint32_t rtp_timestamp,
                            int num_events,
-                           uint32 event_timesamp_base);
-  void AddReceiverEventLog(uint16 event_data,
+                           uint32_t event_timesamp_base);
+  void AddReceiverEventLog(uint16_t event_data,
                            CastLoggingEvent event,
-                           uint16 event_timesamp_delta);
+                           uint16_t event_timesamp_delta);
 
   scoped_ptr<Packet> GetPacket();
-  const uint8* Data();
+  const uint8_t* Data();
   int Length() { return kMaxIpPacketSize - big_endian_writer_.remaining(); }
   base::BigEndianReader* Reader();
 
@@ -91,7 +91,7 @@ class TestRtcpPacketBuilder {
 
   // Where the length field of the current packet is.
   // Note: 0 is not a legal value, it is used for "uninitialized".
-  uint8 buffer_[kMaxIpPacketSize];
+  uint8_t buffer_[kMaxIpPacketSize];
   char* ptr_of_length_;
   base::BigEndianWriter big_endian_writer_;
   base::BigEndianReader big_endian_reader_;

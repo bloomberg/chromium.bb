@@ -6,7 +6,7 @@
 
 namespace media {
 
-BitstreamBuffer::BitstreamBuffer(int32 id,
+BitstreamBuffer::BitstreamBuffer(int32_t id,
                                  base::SharedMemoryHandle handle,
                                  size_t size)
     : id_(id),
@@ -14,7 +14,7 @@ BitstreamBuffer::BitstreamBuffer(int32 id,
       size_(size),
       presentation_timestamp_(kNoTimestamp()) {}
 
-BitstreamBuffer::BitstreamBuffer(int32 id,
+BitstreamBuffer::BitstreamBuffer(int32_t id,
                                  base::SharedMemoryHandle handle,
                                  size_t size,
                                  base::TimeDelta presentation_timestamp)

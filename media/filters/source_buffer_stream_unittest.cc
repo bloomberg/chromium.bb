@@ -34,8 +34,8 @@ typedef StreamParser::BufferQueue BufferQueue;
 
 static const int kDefaultFramesPerSecond = 30;
 static const int kDefaultKeyframesPerSecond = 6;
-static const uint8 kDataA = 0x11;
-static const uint8 kDataB = 0x33;
+static const uint8_t kDataA = 0x11;
+static const uint8_t kDataB = 0x33;
 static const int kDataSize = 1;
 
 // Matchers for verifying common media log entry strings.
@@ -118,8 +118,9 @@ class SourceBufferStreamTest : public testing::Test {
                   base::TimeDelta(), true, &kDataA, kDataSize);
   }
 
-  void NewSegmentAppend(int starting_position, int number_of_buffers,
-                        const uint8* data) {
+  void NewSegmentAppend(int starting_position,
+                        int number_of_buffers,
+                        const uint8_t* data) {
     AppendBuffers(starting_position, number_of_buffers, true,
                   base::TimeDelta(), true, data, kDataSize);
   }
@@ -142,8 +143,9 @@ class SourceBufferStreamTest : public testing::Test {
                   base::TimeDelta(), true, &kDataA, kDataSize);
   }
 
-  void AppendBuffers(int starting_position, int number_of_buffers,
-                     const uint8* data) {
+  void AppendBuffers(int starting_position,
+                     int number_of_buffers,
+                     const uint8_t* data) {
     AppendBuffers(starting_position, number_of_buffers, false,
                   base::TimeDelta(), true, data, kDataSize);
   }
@@ -220,8 +222,8 @@ class SourceBufferStreamTest : public testing::Test {
     std::stringstream ss;
     ss << "{ ";
     for (size_t i = 0; i < r.size(); ++i) {
-      int64 start = (r.start(i) / frame_duration_);
-      int64 end = (r.end(i) / frame_duration_) - 1;
+      int64_t start = (r.start(i) / frame_duration_);
+      int64_t end = (r.end(i) / frame_duration_) - 1;
       ss << "[" << start << "," << end << ") ";
     }
     ss << "}";
@@ -234,8 +236,8 @@ class SourceBufferStreamTest : public testing::Test {
     std::stringstream ss;
     ss << "{ ";
     for (size_t i = 0; i < r.size(); ++i) {
-      int64 start = r.start(i).InMilliseconds();
-      int64 end = r.end(i).InMilliseconds();
+      int64_t start = r.start(i).InMilliseconds();
+      int64_t end = r.end(i).InMilliseconds();
       ss << "[" << start << "," << end << ") ";
     }
     ss << "}";
@@ -253,22 +255,26 @@ class SourceBufferStreamTest : public testing::Test {
                          NULL, 0);
   }
 
-  void CheckExpectedBuffers(
-      int starting_position, int ending_position, const uint8* data) {
+  void CheckExpectedBuffers(int starting_position,
+                            int ending_position,
+                            const uint8_t* data) {
     CheckExpectedBuffers(starting_position, ending_position, false, data,
                          kDataSize);
   }
 
-  void CheckExpectedBuffers(
-      int starting_position, int ending_position, const uint8* data,
-      bool expect_keyframe) {
+  void CheckExpectedBuffers(int starting_position,
+                            int ending_position,
+                            const uint8_t* data,
+                            bool expect_keyframe) {
     CheckExpectedBuffers(starting_position, ending_position, expect_keyframe,
                          data, kDataSize);
   }
 
-  void CheckExpectedBuffers(
-      int starting_position, int ending_position, bool expect_keyframe,
-      const uint8* expected_data, int expected_size) {
+  void CheckExpectedBuffers(int starting_position,
+                            int ending_position,
+                            bool expect_keyframe,
+                            const uint8_t* expected_data,
+                            int expected_size) {
     int current_position = starting_position;
     for (; current_position <= ending_position; current_position++) {
       scoped_refptr<StreamParserBuffer> buffer;
@@ -282,7 +288,7 @@ class SourceBufferStreamTest : public testing::Test {
         EXPECT_TRUE(buffer->is_key_frame());
 
       if (expected_data) {
-        const uint8* actual_data = buffer->data();
+        const uint8_t* actual_data = buffer->data();
         const int actual_size = buffer->data_size();
         EXPECT_EQ(expected_size, actual_size);
         for (int i = 0; i < std::min(actual_size, expected_size); i++) {
@@ -434,7 +440,7 @@ class SourceBufferStreamTest : public testing::Test {
                      bool begin_media_segment,
                      base::TimeDelta first_buffer_offset,
                      bool expect_success,
-                     const uint8* data,
+                     const uint8_t* data,
                      int size) {
     if (begin_media_segment)
       stream_->OnNewMediaSegment(DecodeTimestamp::FromPresentationTime(
@@ -1059,8 +1065,8 @@ TEST_F(SourceBufferStreamTest, Complete_Overlap_Selected_EdgeCase) {
 }
 
 TEST_F(SourceBufferStreamTest, Complete_Overlap_Selected_Multiple) {
-  static const uint8 kDataC = 0x55;
-  static const uint8 kDataD = 0x77;
+  static const uint8_t kDataC = 0x55;
+  static const uint8_t kDataD = 0x77;
 
   // Append 5 buffers at positions 5 through 9.
   NewSegmentAppend(5, 5, &kDataA);

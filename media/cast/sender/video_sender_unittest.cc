@@ -30,7 +30,7 @@ namespace media {
 namespace cast {
 
 namespace {
-static const uint8 kPixelValue = 123;
+static const uint8_t kPixelValue = 123;
 static const int kWidth = 320;
 static const int kHeight = 240;
 
@@ -73,7 +73,7 @@ class TestPacketSender : public PacketSender {
     return true;
   }
 
-  int64 GetBytesSent() final { return 0; }
+  int64_t GetBytesSent() final { return 0; }
 
   int number_of_rtp_packets() const { return number_of_rtp_packets_; }
 
@@ -126,12 +126,8 @@ class PeerVideoSender : public VideoSender {
 scoped_refptr<VideoFrame> CreateFakeFrame(const gfx::Size& resolution,
                                           bool high_frame_rate_in_metadata) {
   const scoped_refptr<VideoFrame> frame = VideoFrame::WrapExternalData(
-      PIXEL_FORMAT_I420,
-      resolution,
-      gfx::Rect(resolution),
-      resolution,
-      static_cast<uint8*>(nullptr) + 1,
-      resolution.GetArea() * 3 / 2,
+      PIXEL_FORMAT_I420, resolution, gfx::Rect(resolution), resolution,
+      static_cast<uint8_t*>(nullptr) + 1, resolution.GetArea() * 3 / 2,
       base::TimeDelta());
   const double frame_rate = high_frame_rate_in_metadata ? 60.0 : 30.0;
   frame->metadata()->SetTimeDelta(

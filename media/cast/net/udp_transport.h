@@ -40,7 +40,7 @@ class UdpTransport : public PacketSender {
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
       const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
-      int32 send_buffer_size,
+      int32_t send_buffer_size,
       const CastTransportStatusCallback& status_callback);
   ~UdpTransport() final;
 
@@ -59,7 +59,7 @@ class UdpTransport : public PacketSender {
 
   // PacketSender implementations.
   bool SendPacket(PacketRef packet, const base::Closure& cb) final;
-  int64 GetBytesSent() final;
+  int64_t GetBytesSent() final;
 
  private:
   // Requests and processes packets from |udp_socket_|.  This method is called
@@ -88,7 +88,7 @@ class UdpTransport : public PacketSender {
   scoped_refptr<net::WrappedIOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;
   PacketReceiverCallbackWithStatus packet_receiver_;
-  int32 send_buffer_size_;
+  int32_t send_buffer_size_;
   const CastTransportStatusCallback status_callback_;
   int bytes_sent_;
 

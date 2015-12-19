@@ -24,14 +24,13 @@ const int64_t kUnixEpochInNtpSeconds = INT64_C(2208988800);
 const double kMagicFractionalUnit = 4.294967296E3;
 }
 
-RtcpParser::RtcpParser(uint32 local_ssrc, uint32 remote_ssrc) :
-    local_ssrc_(local_ssrc),
-    remote_ssrc_(remote_ssrc),
-    has_sender_report_(false),
-    has_last_report_(false),
-    has_cast_message_(false),
-    has_receiver_reference_time_report_(false) {
-}
+RtcpParser::RtcpParser(uint32_t local_ssrc, uint32_t remote_ssrc)
+    : local_ssrc_(local_ssrc),
+      remote_ssrc_(remote_ssrc),
+      has_sender_report_(false),
+      has_last_report_(false),
+      has_cast_message_(false),
+      has_receiver_reference_time_report_(false) {}
 
 RtcpParser::~RtcpParser() {}
 
@@ -86,7 +85,7 @@ bool RtcpParser::ParseCommonHeader(base::BigEndianReader* reader,
   //
   // Common header for all Rtcp packets, 4 octets.
 
-  uint8 byte;
+  uint8_t byte;
   if (!reader->ReadU8(&byte))
     return false;
   parsed_header->V = byte >> 6;
@@ -100,7 +99,7 @@ bool RtcpParser::ParseCommonHeader(base::BigEndianReader* reader,
   if (!reader->ReadU8(&parsed_header->PT))
     return false;
 
-  uint16 bytes;
+  uint16_t bytes;
   if (!reader->ReadU16(&bytes))
     return false;
 
@@ -114,14 +113,14 @@ bool RtcpParser::ParseCommonHeader(base::BigEndianReader* reader,
 
 bool RtcpParser::ParseSR(base::BigEndianReader* reader,
                          const RtcpCommonHeader& header) {
-  uint32 sender_ssrc;
+  uint32_t sender_ssrc;
   if (!reader->ReadU32(&sender_ssrc))
     return false;
 
   if (sender_ssrc != remote_ssrc_)
     return true;
 
-  uint32 tmp;
+  uint32_t tmp;
   if (!reader->ReadU32(&sender_report_.ntp_seconds) ||
       !reader->ReadU32(&sender_report_.ntp_fraction) ||
       !reader->ReadU32(&sender_report_.rtp_timestamp) ||
@@ -140,7 +139,7 @@ bool RtcpParser::ParseSR(base::BigEndianReader* reader,
 
 bool RtcpParser::ParseRR(base::BigEndianReader* reader,
                          const RtcpCommonHeader& header) {
-  uint32 receiver_ssrc;
+  uint32_t receiver_ssrc;
   if (!reader->ReadU32(&receiver_ssrc))
     return false;
 
@@ -155,7 +154,7 @@ bool RtcpParser::ParseRR(base::BigEndianReader* reader,
 }
 
 bool RtcpParser::ParseReportBlock(base::BigEndianReader* reader) {
-  uint32 ssrc, last_report, delay;
+  uint32_t ssrc, last_report, delay;
   if (!reader->ReadU32(&ssrc) ||
       !reader->Skip(12) ||
       !reader->ReadU32(&last_report) ||
@@ -173,8 +172,8 @@ bool RtcpParser::ParseReportBlock(base::BigEndianReader* reader) {
 
 bool RtcpParser::ParseApplicationDefined(base::BigEndianReader* reader,
                                          const RtcpCommonHeader& header) {
-  uint32 sender_ssrc;
-  uint32 name;
+  uint32_t sender_ssrc;
+  uint32_t name;
   if (!reader->ReadU32(&sender_ssrc) ||
       !reader->ReadU32(&name))
     return false;
@@ -198,8 +197,8 @@ bool RtcpParser::ParseCastReceiverLogFrameItem(
     base::BigEndianReader* reader) {
 
   while (reader->remaining()) {
-    uint32 rtp_timestamp;
-    uint32 data;
+    uint32_t rtp_timestamp;
+    uint32_t data;
     if (!reader->ReadU32(&rtp_timestamp) ||
         !reader->ReadU32(&data))
       return false;
@@ -208,19 +207,19 @@ bool RtcpParser::ParseCastReceiverLogFrameItem(
     base::TimeTicks event_timestamp_base = base::TimeTicks() +
         base::TimeDelta::FromMilliseconds(data & 0xffffff);
 
-    size_t num_events = 1 + static_cast<uint8>(data >> 24);
+    size_t num_events = 1 + static_cast<uint8_t>(data >> 24);
 
     RtcpReceiverFrameLogMessage frame_log(rtp_timestamp);
     for (size_t event = 0; event < num_events; event++) {
-      uint16 delay_delta_or_packet_id;
-      uint16 event_type_and_timestamp_delta;
+      uint16_t delay_delta_or_packet_id;
+      uint16_t event_type_and_timestamp_delta;
       if (!reader->ReadU16(&delay_delta_or_packet_id) ||
           !reader->ReadU16(&event_type_and_timestamp_delta))
         return false;
 
       RtcpReceiverEventLogMessage event_log;
       event_log.type = TranslateToLogEventFromWireFormat(
-          static_cast<uint8>(event_type_and_timestamp_delta >> 12));
+          static_cast<uint8_t>(event_type_and_timestamp_delta >> 12));
       event_log.event_timestamp =
           event_timestamp_base +
           base::TimeDelta::FromMilliseconds(
@@ -229,7 +228,7 @@ bool RtcpParser::ParseCastReceiverLogFrameItem(
         event_log.packet_id = delay_delta_or_packet_id;
       } else {
         event_log.delay_delta = base::TimeDelta::FromMilliseconds(
-            static_cast<int16>(delay_delta_or_packet_id));
+            static_cast<int16_t>(delay_delta_or_packet_id));
       }
       frame_log.event_log_messages_.push_back(event_log);
     }
@@ -247,8 +246,8 @@ bool RtcpParser::ParseFeedbackCommon(base::BigEndianReader* reader,
   if (header.IC != 15) {
     return true;
   }
-  uint32 remote_ssrc;
-  uint32 media_ssrc;
+  uint32_t remote_ssrc;
+  uint32_t media_ssrc;
   if (!reader->ReadU32(&remote_ssrc) ||
       !reader->ReadU32(&media_ssrc))
     return false;
@@ -256,7 +255,7 @@ bool RtcpParser::ParseFeedbackCommon(base::BigEndianReader* reader,
   if (remote_ssrc != remote_ssrc_)
     return true;
 
-  uint32 name;
+  uint32_t name;
   if (!reader->ReadU32(&name))
     return false;
 
@@ -266,8 +265,8 @@ bool RtcpParser::ParseFeedbackCommon(base::BigEndianReader* reader,
 
   cast_message_.media_ssrc = remote_ssrc;
 
-  uint8 last_frame_id;
-  uint8 number_of_lost_fields;
+  uint8_t last_frame_id;
+  uint8_t number_of_lost_fields;
   if (!reader->ReadU8(&last_frame_id) ||
       !reader->ReadU8(&number_of_lost_fields) ||
       !reader->ReadU16(&cast_message_.target_delay_ms))
@@ -277,9 +276,9 @@ bool RtcpParser::ParseFeedbackCommon(base::BigEndianReader* reader,
   cast_message_.ack_frame_id = last_frame_id;
 
   for (size_t i = 0; i < number_of_lost_fields; i++) {
-    uint8 frame_id;
-    uint16 packet_id;
-    uint8 bitmask;
+    uint8_t frame_id;
+    uint16_t packet_id;
+    uint8_t bitmask;
     if (!reader->ReadU8(&frame_id) ||
         !reader->ReadU16(&packet_id) ||
         !reader->ReadU8(&bitmask))
@@ -301,7 +300,7 @@ bool RtcpParser::ParseFeedbackCommon(base::BigEndianReader* reader,
 
 bool RtcpParser::ParseExtendedReport(base::BigEndianReader* reader,
                                      const RtcpCommonHeader& header) {
-  uint32 remote_ssrc;
+  uint32_t remote_ssrc;
   if (!reader->ReadU32(&remote_ssrc))
     return false;
 
@@ -310,8 +309,8 @@ bool RtcpParser::ParseExtendedReport(base::BigEndianReader* reader,
     return true;
 
   while (reader->remaining()) {
-    uint8 block_type;
-    uint16 block_length;
+    uint8_t block_type;
+    uint16_t block_length;
     if (!reader->ReadU8(&block_type) ||
         !reader->Skip(1) ||
         !reader->ReadU16(&block_length))
@@ -338,7 +337,7 @@ bool RtcpParser::ParseExtendedReport(base::BigEndianReader* reader,
 
 bool RtcpParser::ParseExtendedReportReceiverReferenceTimeReport(
     base::BigEndianReader* reader,
-    uint32 remote_ssrc) {
+    uint32_t remote_ssrc) {
   receiver_reference_time_report_.remote_ssrc = remote_ssrc;
   if(!reader->ReadU32(&receiver_reference_time_report_.ntp_seconds) ||
      !reader->ReadU32(&receiver_reference_time_report_.ntp_fraction))
@@ -351,7 +350,7 @@ bool RtcpParser::ParseExtendedReportReceiverReferenceTimeReport(
 // Converts a log event type to an integer value.
 // NOTE: We have only allocated 4 bits to represent the type of event over the
 // wire. Therefore, this function can only return values from 0 to 15.
-uint8 ConvertEventTypeToWireFormat(CastLoggingEvent event) {
+uint8_t ConvertEventTypeToWireFormat(CastLoggingEvent event) {
   switch (event) {
     case FRAME_ACK_SENT:
       return 11;
@@ -366,7 +365,7 @@ uint8 ConvertEventTypeToWireFormat(CastLoggingEvent event) {
   }
 }
 
-CastLoggingEvent TranslateToLogEventFromWireFormat(uint8 event) {
+CastLoggingEvent TranslateToLogEventFromWireFormat(uint8_t event) {
   // TODO(imcheng): Remove the old mappings once they are no longer used.
   switch (event) {
     case 1:  // AudioAckSent
@@ -407,10 +406,10 @@ void ConvertTimeToFractions(int64_t ntp_time_us,
   // off the entire system.
   DCHECK_LT(seconds_component, INT64_C(4263431296))
       << "One year left to fix the NTP year 2036 wrap-around issue!";
-  *seconds = static_cast<uint32>(seconds_component);
+  *seconds = static_cast<uint32_t>(seconds_component);
   *fractions =
-      static_cast<uint32>((ntp_time_us % base::Time::kMicrosecondsPerSecond) *
-                          kMagicFractionalUnit);
+      static_cast<uint32_t>((ntp_time_us % base::Time::kMicrosecondsPerSecond) *
+                            kMagicFractionalUnit);
 }
 
 void ConvertTimeTicksToNtp(const base::TimeTicks& time,

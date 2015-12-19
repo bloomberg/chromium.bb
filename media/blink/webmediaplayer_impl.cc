@@ -805,7 +805,7 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
 
 void WebMediaPlayerImpl::OnEncryptedMediaInitData(
     EmeInitDataType init_data_type,
-    const std::vector<uint8>& init_data) {
+    const std::vector<uint8_t>& init_data) {
   DCHECK(init_data_type != EmeInitDataType::UNKNOWN);
 
   // Do not fire "encrypted" event if encrypted media is not enabled.

@@ -13,7 +13,7 @@ namespace media {
 
 class MEDIA_EXPORT DataSource {
  public:
-  typedef base::Callback<void(int64, int64)> StatusCallback;
+  typedef base::Callback<void(int64_t, int64_t)> StatusCallback;
   typedef base::Callback<void(int)> ReadCB;
 
   enum { kReadError = -1 };
@@ -24,7 +24,9 @@ class MEDIA_EXPORT DataSource {
   // Reads |size| bytes from |position| into |data|. And when the read is done
   // or failed, |read_cb| is called with the number of bytes read or
   // kReadError in case of error.
-  virtual void Read(int64 position, int size, uint8* data,
+  virtual void Read(int64_t position,
+                    int size,
+                    uint8_t* data,
                     const DataSource::ReadCB& read_cb) = 0;
 
   // Stops the DataSource. Once this is called all future Read() calls will
@@ -33,7 +35,7 @@ class MEDIA_EXPORT DataSource {
 
   // Returns true and the file size, false if the file size could not be
   // retrieved.
-  virtual bool GetSize(int64* size_out) = 0;
+  virtual bool GetSize(int64_t* size_out) = 0;
 
   // Returns true if we are performing streaming. In this case seeking is
   // not possible.

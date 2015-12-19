@@ -40,7 +40,7 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
             const base::Closure& end_of_segment_cb,
             const scoped_refptr<MediaLog>& media_log) override;
   void Flush() override;
-  bool Parse(const uint8* buf, int size) override;
+  bool Parse(const uint8_t* buf, int size) override;
 
  private:
   typedef std::map<int, PidState*> PidMap;

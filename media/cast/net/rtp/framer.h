@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
@@ -20,13 +19,13 @@
 namespace media {
 namespace cast {
 
-typedef std::map<uint32, linked_ptr<FrameBuffer> > FrameList;
+typedef std::map<uint32_t, linked_ptr<FrameBuffer>> FrameList;
 
 class Framer {
  public:
   Framer(base::TickClock* clock,
          RtpPayloadFeedback* incoming_payload_feedback,
-         uint32 ssrc,
+         uint32_t ssrc,
          bool decoder_faster_than_max_frame_rate,
          int max_unacked_frames);
   ~Framer();
@@ -34,7 +33,7 @@ class Framer {
   // Return true when receiving the last packet in a frame, creating a
   // complete frame. If a duplicate packet for an already complete frame is
   // received, the function returns false but sets |duplicate| to true.
-  bool InsertPacket(const uint8* payload_data,
+  bool InsertPacket(const uint8_t* payload_data,
                     size_t payload_size,
                     const RtpCastHeader& rtp_header,
                     bool* duplicate);
@@ -49,9 +48,9 @@ class Framer {
                        bool* have_multiple_complete_frames);
 
   // TODO(hubbe): Move this elsewhere.
-  void AckFrame(uint32 frame_id);
+  void AckFrame(uint32_t frame_id);
 
-  void ReleaseFrame(uint32 frame_id);
+  void ReleaseFrame(uint32_t frame_id);
 
   // Reset framer state to original state and flush all pending buffers.
   void Reset();
@@ -59,20 +58,20 @@ class Framer {
   void SendCastMessage();
 
   bool Empty() const;
-  bool FrameExists(uint32 frame_id) const;
-  uint32 NewestFrameId() const;
+  bool FrameExists(uint32_t frame_id) const;
+  uint32_t NewestFrameId() const;
 
-  void RemoveOldFrames(uint32 frame_id);
+  void RemoveOldFrames(uint32_t frame_id);
 
   // Identifies the next frame to be released (rendered).
-  bool NextContinuousFrame(uint32* frame_id) const;
-  uint32 LastContinuousFrame() const;
+  bool NextContinuousFrame(uint32_t* frame_id) const;
+  uint32_t LastContinuousFrame() const;
 
-  bool NextFrameAllowingSkippingFrames(uint32* frame_id) const;
+  bool NextFrameAllowingSkippingFrames(uint32_t* frame_id) const;
   bool HaveMultipleDecodableFrames() const;
 
   int NumberOfCompleteFrames() const;
-  void GetMissingPackets(uint32 frame_id,
+  void GetMissingPackets(uint32_t frame_id,
                          bool last_frame,
                          PacketIdSet* missing_packets) const;
 
@@ -84,8 +83,8 @@ class Framer {
   FrameList frames_;
   scoped_ptr<CastMessageBuilder> cast_msg_builder_;
   bool waiting_for_key_;
-  uint32 last_released_frame_;
-  uint32 newest_frame_id_;
+  uint32_t last_released_frame_;
+  uint32_t newest_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Framer);
 };

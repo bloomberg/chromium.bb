@@ -46,7 +46,7 @@ class TestEncodedAudioFrameReceiver {
   void FrameEncoded(scoped_ptr<SenderEncodedFrame> encoded_frame,
                     int samples_skipped) {
     EXPECT_EQ(encoded_frame->dependency, EncodedFrame::KEY);
-    EXPECT_EQ(static_cast<uint8>(frames_received_ & 0xff),
+    EXPECT_EQ(static_cast<uint8_t>(frames_received_ & 0xff),
               encoded_frame->frame_id);
     EXPECT_EQ(encoded_frame->frame_id, encoded_frame->referenced_frame_id);
     // RTP timestamps should be monotonically increasing and integer multiples
@@ -68,7 +68,7 @@ class TestEncodedAudioFrameReceiver {
 
  private:
   int frames_received_;
-  uint32 rtp_lower_bound_;
+  uint32_t rtp_lower_bound_;
   int samples_per_frame_;
   base::TimeTicks lower_bound_;
   base::TimeTicks upper_bound_;
@@ -77,10 +77,10 @@ class TestEncodedAudioFrameReceiver {
 };
 
 struct TestScenario {
-  const int64* durations_in_ms;
+  const int64_t* durations_in_ms;
   size_t num_durations;
 
-  TestScenario(const int64* d, size_t n)
+  TestScenario(const int64_t* d, size_t n)
       : durations_in_ms(d), num_durations(n) {}
 
   std::string ToString() const {
@@ -191,38 +191,38 @@ TEST_P(AudioEncoderTest, EncodeAac) {
 }
 #endif
 
-static const int64 kOneCall_3Millis[] = {3};
-static const int64 kOneCall_10Millis[] = {10};
-static const int64 kOneCall_13Millis[] = {13};
-static const int64 kOneCall_20Millis[] = {20};
+static const int64_t kOneCall_3Millis[] = {3};
+static const int64_t kOneCall_10Millis[] = {10};
+static const int64_t kOneCall_13Millis[] = {13};
+static const int64_t kOneCall_20Millis[] = {20};
 
-static const int64 kTwoCalls_3Millis[] = {3, 3};
-static const int64 kTwoCalls_10Millis[] = {10, 10};
-static const int64 kTwoCalls_Mixed1[] = {3, 10};
-static const int64 kTwoCalls_Mixed2[] = {10, 3};
-static const int64 kTwoCalls_Mixed3[] = {3, 17};
-static const int64 kTwoCalls_Mixed4[] = {17, 3};
+static const int64_t kTwoCalls_3Millis[] = {3, 3};
+static const int64_t kTwoCalls_10Millis[] = {10, 10};
+static const int64_t kTwoCalls_Mixed1[] = {3, 10};
+static const int64_t kTwoCalls_Mixed2[] = {10, 3};
+static const int64_t kTwoCalls_Mixed3[] = {3, 17};
+static const int64_t kTwoCalls_Mixed4[] = {17, 3};
 
-static const int64 kManyCalls_3Millis[] = {3, 3, 3, 3, 3, 3, 3, 3,
-                                           3, 3, 3, 3, 3, 3, 3};
-static const int64 kManyCalls_10Millis[] = {10, 10, 10, 10, 10, 10, 10, 10,
-                                            10, 10, 10, 10, 10, 10, 10};
-static const int64 kManyCalls_Mixed1[] = {3,  10, 3,  10, 3,  10, 3,  10, 3,
-                                          10, 3,  10, 3,  10, 3,  10, 3,  10};
-static const int64 kManyCalls_Mixed2[] = {10, 3, 10, 3, 10, 3, 10, 3, 10, 3,
-                                          10, 3, 10, 3, 10, 3, 10, 3, 10, 3};
-static const int64 kManyCalls_Mixed3[] = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8,
-                                          9, 7, 9, 3, 2, 3, 8, 4, 6, 2, 6, 4};
-static const int64 kManyCalls_Mixed4[] = {31, 4, 15, 9,  26, 53, 5,  8, 9,
-                                          7,  9, 32, 38, 4,  62, 64, 3};
-static const int64 kManyCalls_Mixed5[] = {3, 14, 15, 9, 26, 53, 58, 9, 7,
-                                          9, 3,  23, 8, 4,  6,  2,  6, 43};
+static const int64_t kManyCalls_3Millis[] = {3, 3, 3, 3, 3, 3, 3, 3,
+                                             3, 3, 3, 3, 3, 3, 3};
+static const int64_t kManyCalls_10Millis[] = {10, 10, 10, 10, 10, 10, 10, 10,
+                                              10, 10, 10, 10, 10, 10, 10};
+static const int64_t kManyCalls_Mixed1[] = {3,  10, 3,  10, 3,  10, 3,  10, 3,
+                                            10, 3,  10, 3,  10, 3,  10, 3,  10};
+static const int64_t kManyCalls_Mixed2[] = {10, 3, 10, 3, 10, 3, 10, 3, 10, 3,
+                                            10, 3, 10, 3, 10, 3, 10, 3, 10, 3};
+static const int64_t kManyCalls_Mixed3[] = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8,
+                                            9, 7, 9, 3, 2, 3, 8, 4, 6, 2, 6, 4};
+static const int64_t kManyCalls_Mixed4[] = {31, 4, 15, 9,  26, 53, 5,  8, 9,
+                                            7,  9, 32, 38, 4,  62, 64, 3};
+static const int64_t kManyCalls_Mixed5[] = {3, 14, 15, 9, 26, 53, 58, 9, 7,
+                                            9, 3,  23, 8, 4,  6,  2,  6, 43};
 
-static const int64 kOneBigUnderrun[] = {10, 10, 10, 10, -1000, 10, 10, 10};
-static const int64 kTwoBigUnderruns[] = {10, 10, 10, 10, -712, 10, 10, 10,
-                                         -1311, 10, 10, 10};
-static const int64 kMixedUnderruns[] = {31, -64, 4, 15, 9, 26, -53, 5,  8, -9,
-                                        7,  9, 32, 38, -4, 62, -64, 3};
+static const int64_t kOneBigUnderrun[] = {10, 10, 10, 10, -1000, 10, 10, 10};
+static const int64_t kTwoBigUnderruns[] = {10, 10, 10,    10, -712, 10,
+                                           10, 10, -1311, 10, 10,   10};
+static const int64_t kMixedUnderruns[] = {31, -64, 4, 15, 9,  26, -53, 5,   8,
+                                          -9, 7,   9, 32, 38, -4, 62,  -64, 3};
 
 INSTANTIATE_TEST_CASE_P(
     AudioEncoderTestScenarios,

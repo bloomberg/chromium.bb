@@ -279,7 +279,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalData(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    uint8* data,
+    uint8_t* data,
     size_t data_size,
     base::TimeDelta timestamp) {
   return WrapExternalStorage(format, STORAGE_UNOWNED_MEMORY, coded_size,
@@ -293,7 +293,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalSharedMemory(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    uint8* data,
+    uint8_t* data,
     size_t data_size,
     base::SharedMemoryHandle handle,
     size_t data_offset,
@@ -309,12 +309,12 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    int32 y_stride,
-    int32 u_stride,
-    int32 v_stride,
-    uint8* y_data,
-    uint8* u_data,
-    uint8* v_data,
+    int32_t y_stride,
+    int32_t u_stride,
+    int32_t v_stride,
+    uint8_t* y_data,
+    uint8_t* u_data,
+    uint8_t* v_data,
     base::TimeDelta timestamp) {
   const StorageType storage = STORAGE_UNOWNED_MEMORY;
   if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
@@ -341,12 +341,12 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvGpuMemoryBuffers(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    int32 y_stride,
-    int32 u_stride,
-    int32 v_stride,
-    uint8* y_data,
-    uint8* u_data,
-    uint8* v_data,
+    int32_t y_stride,
+    int32_t u_stride,
+    int32_t v_stride,
+    uint8_t* y_data,
+    uint8_t* u_data,
+    uint8_t* v_data,
     const gfx::GpuMemoryBufferHandle& y_handle,
     const gfx::GpuMemoryBufferHandle& u_handle,
     const gfx::GpuMemoryBufferHandle& v_handle,
@@ -510,7 +510,9 @@ scoped_refptr<VideoFrame> VideoFrame::CreateEOSFrame() {
 // static
 scoped_refptr<VideoFrame> VideoFrame::CreateColorFrame(
     const gfx::Size& size,
-    uint8 y, uint8 u, uint8 v,
+    uint8_t y,
+    uint8_t u,
+    uint8_t v,
     base::TimeDelta timestamp) {
   scoped_refptr<VideoFrame> frame =
       CreateFrame(PIXEL_FORMAT_YV12, size, gfx::Rect(size), size, timestamp);
@@ -520,8 +522,8 @@ scoped_refptr<VideoFrame> VideoFrame::CreateColorFrame(
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::CreateBlackFrame(const gfx::Size& size) {
-  const uint8 kBlackY = 0x00;
-  const uint8 kBlackUV = 0x80;
+  const uint8_t kBlackY = 0x00;
+  const uint8_t kBlackUV = 0x80;
   const base::TimeDelta kZero;
   return CreateColorFrame(size, kBlackY, kBlackUV, kBlackUV, kZero);
 }
@@ -529,9 +531,9 @@ scoped_refptr<VideoFrame> VideoFrame::CreateBlackFrame(const gfx::Size& size) {
 // static
 scoped_refptr<VideoFrame> VideoFrame::CreateTransparentFrame(
     const gfx::Size& size) {
-  const uint8 kBlackY = 0x00;
-  const uint8 kBlackUV = 0x00;
-  const uint8 kTransparentA = 0x00;
+  const uint8_t kBlackY = 0x00;
+  const uint8_t kBlackUV = 0x00;
+  const uint8_t kTransparentA = 0x00;
   const base::TimeDelta kZero;
   scoped_refptr<VideoFrame> frame =
       CreateFrame(PIXEL_FORMAT_YV12A, size, gfx::Rect(size), size, kZero);
@@ -695,19 +697,19 @@ int VideoFrame::rows(size_t plane) const {
   return Rows(plane, format_, coded_size_.height());
 }
 
-const uint8* VideoFrame::data(size_t plane) const {
+const uint8_t* VideoFrame::data(size_t plane) const {
   DCHECK(IsValidPlane(plane, format_));
   DCHECK(IsMappable());
   return data_[plane];
 }
 
-uint8* VideoFrame::data(size_t plane) {
+uint8_t* VideoFrame::data(size_t plane) {
   DCHECK(IsValidPlane(plane, format_));
   DCHECK(IsMappable());
   return data_[plane];
 }
 
-const uint8* VideoFrame::visible_data(size_t plane) const {
+const uint8_t* VideoFrame::visible_data(size_t plane) const {
   DCHECK(IsValidPlane(plane, format_));
   DCHECK(IsMappable());
 
@@ -725,8 +727,8 @@ const uint8* VideoFrame::visible_data(size_t plane) const {
              (offset.x() / subsample.width());
 }
 
-uint8* VideoFrame::visible_data(size_t plane) {
-  return const_cast<uint8*>(
+uint8_t* VideoFrame::visible_data(size_t plane) {
+  return const_cast<uint8_t*>(
       static_cast<const VideoFrame*>(this)->visible_data(plane));
 }
 
@@ -825,7 +827,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    uint8* data,
+    uint8_t* data,
     size_t data_size,
     base::TimeDelta timestamp,
     base::SharedMemoryHandle handle,
@@ -1006,7 +1008,7 @@ void VideoFrame::AllocateYUV(bool zero_initialize_memory) {
   DCHECK(IsValidPlane(kUPlane, format_));
   data_size += strides_[kUPlane] + kFrameSizePadding;
 
-  uint8* data = reinterpret_cast<uint8*>(
+  uint8_t* data = reinterpret_cast<uint8_t*>(
       base::AlignedAlloc(data_size, kFrameAddressAlignment));
   if (zero_initialize_memory)
     memset(data, 0, data_size);

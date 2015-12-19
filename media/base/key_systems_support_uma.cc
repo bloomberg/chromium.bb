@@ -4,7 +4,6 @@
 
 #include "media/base/key_systems_support_uma.h"
 
-
 #include "base/metrics/histogram.h"
 #include "media/base/key_systems.h"
 

@@ -18,30 +18,30 @@ class RtpPacketBuilder {
  public:
   RtpPacketBuilder();
   void SetKeyFrame(bool is_key);
-  void SetFrameIds(uint32 frame_id, uint32 reference_frame_id);
-  void SetPacketId(uint16 packet_id);
-  void SetMaxPacketId(uint16 max_packet_id);
-  void SetTimestamp(uint32 timestamp);
-  void SetSequenceNumber(uint16 sequence_number);
+  void SetFrameIds(uint32_t frame_id, uint32_t reference_frame_id);
+  void SetPacketId(uint16_t packet_id);
+  void SetMaxPacketId(uint16_t max_packet_id);
+  void SetTimestamp(uint32_t timestamp);
+  void SetSequenceNumber(uint16_t sequence_number);
   void SetMarkerBit(bool marker);
   void SetPayloadType(int payload_type);
-  void SetSsrc(uint32 ssrc);
-  void BuildHeader(uint8* data, uint32 data_length);
+  void SetSsrc(uint32_t ssrc);
+  void BuildHeader(uint8_t* data, uint32_t data_length);
 
  private:
   bool is_key_;
-  uint32 frame_id_;
-  uint16 packet_id_;
-  uint16 max_packet_id_;
-  uint32 reference_frame_id_;
-  uint32 timestamp_;
-  uint16 sequence_number_;
+  uint32_t frame_id_;
+  uint16_t packet_id_;
+  uint16_t max_packet_id_;
+  uint32_t reference_frame_id_;
+  uint32_t timestamp_;
+  uint16_t sequence_number_;
   bool marker_;
   int payload_type_;
-  uint32 ssrc_;
+  uint32_t ssrc_;
 
-  void BuildCastHeader(uint8* data, uint32 data_length);
-  void BuildCommonHeader(uint8* data, uint32 data_length);
+  void BuildCastHeader(uint8_t* data, uint32_t data_length);
+  void BuildCommonHeader(uint8_t* data, uint32_t data_length);
 
   DISALLOW_COPY_AND_ASSIGN(RtpPacketBuilder);
 };

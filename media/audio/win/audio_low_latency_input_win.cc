@@ -291,7 +291,7 @@ void WASAPIAudioInputStream::Run() {
   size_t capture_buffer_size = std::max(
       2 * endpoint_buffer_size_frames_ * frame_size_,
       2 * packet_size_frames_ * frame_size_);
-  scoped_ptr<uint8[]> capture_buffer(new uint8[capture_buffer_size]);
+  scoped_ptr<uint8_t[]> capture_buffer(new uint8_t[capture_buffer_size]);
 
   LARGE_INTEGER now_count = {};
   bool recording = true;
@@ -387,10 +387,12 @@ void WASAPIAudioInputStream::Run() {
 
           // Deliver captured data to the registered consumer using a packet
           // size which was specified at construction.
-          uint32 delay_frames = static_cast<uint32>(audio_delay_frames + 0.5);
+          uint32_t delay_frames =
+              static_cast<uint32_t>(audio_delay_frames + 0.5);
           while (buffer_frame_index >= packet_size_frames_) {
             // Copy data to audio bus to match the OnData interface.
-            uint8* audio_data = reinterpret_cast<uint8*>(capture_buffer.get());
+            uint8_t* audio_data =
+                reinterpret_cast<uint8_t*>(capture_buffer.get());
             audio_bus_->FromInterleaved(
                 audio_data, audio_bus_->frames(), format_.wBitsPerSample / 8);
 

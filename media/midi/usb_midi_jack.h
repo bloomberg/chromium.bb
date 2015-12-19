@@ -5,7 +5,8 @@
 #ifndef MEDIA_MIDI_USB_MIDI_JACK_H_
 #define MEDIA_MIDI_USB_MIDI_JACK_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "media/midi/usb_midi_export.h"
 
 namespace media {
@@ -23,9 +24,9 @@ struct USB_MIDI_EXPORT UsbMidiJack {
     DIRECTION_OUT,
   };
   UsbMidiJack(UsbMidiDevice* device,
-              uint8 jack_id,
-              uint8 cable_number,
-              uint8 endpoint_address)
+              uint8_t jack_id,
+              uint8_t cable_number,
+              uint8_t endpoint_address)
       : device(device),
         jack_id(jack_id),
         cable_number(cable_number),
@@ -33,18 +34,16 @@ struct USB_MIDI_EXPORT UsbMidiJack {
   // Not owned
   UsbMidiDevice* device;
   // The id of this jack unique in the interface.
-  uint8 jack_id;
+  uint8_t jack_id;
   // The cable number of this jack in the associated endpoint.
-  uint8 cable_number;
+  uint8_t cable_number;
   // The address of the endpoint that this jack is associated with.
-  uint8 endpoint_address;
+  uint8_t endpoint_address;
 
   Direction direction() const {
     return (endpoint_address & 0x80) ? DIRECTION_IN : DIRECTION_OUT;
   }
-  uint8 endpoint_number() const {
-    return (endpoint_address & 0xf);
-  }
+  uint8_t endpoint_number() const { return (endpoint_address & 0xf); }
 };
 
 }  // namespace midi

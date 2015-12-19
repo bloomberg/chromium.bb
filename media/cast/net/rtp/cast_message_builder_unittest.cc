@@ -16,12 +16,12 @@ namespace media {
 namespace cast {
 
 namespace {
-static const uint32 kSsrc = 0x1234;
-static const uint32 kShortTimeIncrementMs = 10;
-static const uint32 kLongTimeIncrementMs = 40;
-static const int64 kStartMillisecond = INT64_C(12345678900000);
+static const uint32_t kSsrc = 0x1234;
+static const uint32_t kShortTimeIncrementMs = 10;
+static const uint32_t kLongTimeIncrementMs = 40;
+static const int64_t kStartMillisecond = INT64_C(12345678900000);
 
-typedef std::map<uint32, size_t> MissingPacketsMap;
+typedef std::map<uint32_t, size_t> MissingPacketsMap;
 
 class NackFeedbackVerification : public RtpPayloadFeedback {
  public:
@@ -53,7 +53,7 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
     triggered_ = true;
   }
 
-  size_t num_missing_packets(uint32 frame_id) {
+  size_t num_missing_packets(uint32_t frame_id) {
     MissingPacketsMap::iterator it;
     it = missing_packets_.find(frame_id);
     if (it == missing_packets_.end())
@@ -69,12 +69,12 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
     return ret_val;
   }
 
-  uint32 last_frame_acked() { return last_frame_acked_; }
+  uint32_t last_frame_acked() { return last_frame_acked_; }
 
  private:
   bool triggered_;
   MissingPacketsMap missing_packets_;  // Missing packets per frame.
-  uint32 last_frame_acked_;
+  uint32_t last_frame_acked_;
 
   DISALLOW_COPY_AND_ASSIGN(NackFeedbackVerification);
 };
@@ -102,14 +102,14 @@ class CastMessageBuilderTest : public ::testing::Test {
 
   ~CastMessageBuilderTest() override {}
 
-  void SetFrameIds(uint32 frame_id, uint32 reference_frame_id) {
+  void SetFrameIds(uint32_t frame_id, uint32_t reference_frame_id) {
     rtp_header_.frame_id = frame_id;
     rtp_header_.reference_frame_id = reference_frame_id;
   }
 
-  void SetPacketId(uint16 packet_id) { rtp_header_.packet_id = packet_id; }
+  void SetPacketId(uint16_t packet_id) { rtp_header_.packet_id = packet_id; }
 
-  void SetMaxPacketId(uint16 max_packet_id) {
+  void SetMaxPacketId(uint16_t max_packet_id) {
     rtp_header_.max_packet_id = max_packet_id;
   }
 
@@ -117,7 +117,7 @@ class CastMessageBuilderTest : public ::testing::Test {
 
   void InsertPacket() {
     bool duplicate;
-    uint8 payload = 0;
+    uint8_t payload = 0;
     if (framer_.InsertPacket(&payload, 1, rtp_header_, &duplicate)) {
       cast_msg_builder_->CompleteFrameReceived(rtp_header_.frame_id);
     }
@@ -391,7 +391,7 @@ TEST_F(CastMessageBuilderTest, SlowDownAck) {
   SetKeyFrame(true);
   InsertPacket();
 
-  uint32 frame_id;
+  uint32_t frame_id;
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kShortTimeIncrementMs));
   SetKeyFrame(false);
@@ -404,7 +404,7 @@ TEST_F(CastMessageBuilderTest, SlowDownAck) {
         base::TimeDelta::FromMilliseconds(kShortTimeIncrementMs));
   }
   // We should now have entered the slowdown ACK state.
-  uint32 expected_frame_id = 1;
+  uint32_t expected_frame_id = 1;
   for (; frame_id < 10; ++frame_id) {
     if (frame_id % 2) {
       ++expected_frame_id;

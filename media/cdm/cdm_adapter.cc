@@ -256,10 +256,10 @@ void ToCdmInputBuffer(const scoped_refptr<DecoderBuffer>& encrypted_buffer,
 
   const DecryptConfig* decrypt_config = encrypted_buffer->decrypt_config();
   input_buffer->key_id =
-      reinterpret_cast<const uint8*>(decrypt_config->key_id().data());
+      reinterpret_cast<const uint8_t*>(decrypt_config->key_id().data());
   input_buffer->key_id_size = decrypt_config->key_id().size();
   input_buffer->iv =
-      reinterpret_cast<const uint8*>(decrypt_config->iv().data());
+      reinterpret_cast<const uint8_t*>(decrypt_config->iv().data());
   input_buffer->iv_size = decrypt_config->iv().size();
 
   DCHECK(subsamples->empty());
@@ -772,7 +772,7 @@ void CdmAdapter::OnSessionMessage(const char* session_id,
     verified_gurl = GURL::EmptyGURL();  // Replace invalid destination_url.
   }
 
-  const uint8_t* message_ptr = reinterpret_cast<const uint8*>(message);
+  const uint8_t* message_ptr = reinterpret_cast<const uint8_t*>(message);
   session_message_cb_.Run(
       std::string(session_id, session_id_size),
       ToMediaMessageType(message_type),

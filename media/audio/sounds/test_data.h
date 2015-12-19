@@ -5,7 +5,6 @@
 #ifndef MEDIA_AUDIO_SOUNDS_TEST_DATA_H_
 #define MEDIA_AUDIO_SOUNDS_TEST_DATA_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "media/audio/sounds/audio_stream_handler.h"

@@ -45,13 +45,13 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
 
  private:
   // Convert Latency in time to bytes.
-  uint32 GetBytesLatency(const struct timespec& latency);
+  uint32_t GetBytesLatency(const struct timespec& latency);
 
   // Handles captured audio and fills the ouput with audio to be played.
   static int UnifiedCallback(cras_client* client,
                              cras_stream_id_t stream_id,
-                             uint8* input_samples,
-                             uint8* output_samples,
+                             uint8_t* input_samples,
+                             uint8_t* output_samples,
                              unsigned int frames,
                              const timespec* input_ts,
                              const timespec* output_ts,
@@ -64,14 +64,16 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
                          void* arg);
 
   // Chooses the correct audio callback based on stream direction.
-  uint32 DispatchCallback(size_t frames,
-                          uint8* input_samples,
-                          uint8* output_samples,
-                          const timespec* input_ts,
-                          const timespec* output_ts);
+  uint32_t DispatchCallback(size_t frames,
+                            uint8_t* input_samples,
+                            uint8_t* output_samples,
+                            const timespec* input_ts,
+                            const timespec* output_ts);
 
   // Writes audio for a playback stream.
-  uint32 WriteAudio(size_t frames, uint8* buffer, const timespec* sample_ts);
+  uint32_t WriteAudio(size_t frames,
+                      uint8_t* buffer,
+                      const timespec* sample_ts);
 
   // Deals with an error that occured in the stream.  Called from StreamError().
   void NotifyStreamError(int err);
@@ -86,7 +88,7 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
   AudioParameters params_;
 
   // Size of frame in bytes.
-  uint32 bytes_per_frame_;
+  uint32_t bytes_per_frame_;
 
   // True if stream is playing.
   bool is_playing_;

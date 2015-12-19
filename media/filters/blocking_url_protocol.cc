@@ -27,14 +27,14 @@ void BlockingUrlProtocol::Abort() {
   aborted_.Signal();
 }
 
-int BlockingUrlProtocol::Read(int size, uint8* data) {
+int BlockingUrlProtocol::Read(int size, uint8_t* data) {
   // Read errors are unrecoverable.
   if (aborted_.IsSignaled())
     return AVERROR(EIO);
 
   // Even though FFmpeg defines AVERROR_EOF, it's not to be used with I/O
   // routines. Instead return 0 for any read at or past EOF.
-  int64 file_size;
+  int64_t file_size;
   if (data_source_->GetSize(&file_size) && read_position_ >= file_size)
     return 0;
 
@@ -60,13 +60,13 @@ int BlockingUrlProtocol::Read(int size, uint8* data) {
   return last_read_bytes_;
 }
 
-bool BlockingUrlProtocol::GetPosition(int64* position_out) {
+bool BlockingUrlProtocol::GetPosition(int64_t* position_out) {
   *position_out = read_position_;
   return true;
 }
 
-bool BlockingUrlProtocol::SetPosition(int64 position) {
-  int64 file_size;
+bool BlockingUrlProtocol::SetPosition(int64_t position) {
+  int64_t file_size;
   if ((data_source_->GetSize(&file_size) && position > file_size) ||
       position < 0) {
     return false;
@@ -76,7 +76,7 @@ bool BlockingUrlProtocol::SetPosition(int64 position) {
   return true;
 }
 
-bool BlockingUrlProtocol::GetSize(int64* size_out) {
+bool BlockingUrlProtocol::GetSize(int64_t* size_out) {
   return data_source_->GetSize(size_out);
 }
 

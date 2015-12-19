@@ -46,8 +46,8 @@ void MidiManagerAndroid::StartInitialization() {
 }
 
 void MidiManagerAndroid::DispatchSendMidiData(MidiManagerClient* client,
-                                              uint32 port_index,
-                                              const std::vector<uint8>& data,
+                                              uint32_t port_index,
+                                              const std::vector<uint8_t>& data,
                                               double timestamp) {
   if (port_index >= all_output_ports_.size()) {
     // |port_index| is provided by a renderer so we can't believe that it is
@@ -76,7 +76,7 @@ void MidiManagerAndroid::DispatchSendMidiData(MidiManagerClient* client,
 }
 
 void MidiManagerAndroid::OnReceivedData(MidiInputPortAndroid* port,
-                                        const uint8* data,
+                                        const uint8_t* data,
                                         size_t size,
                                         base::TimeTicks timestamp) {
   const auto i = input_port_to_index_.find(port);

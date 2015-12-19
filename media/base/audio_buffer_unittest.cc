@@ -479,7 +479,7 @@ static void ReadFramesInterleavedS32Test(SampleFormat sample_format) {
   EXPECT_EQ(frames, buffer->frame_count());
   EXPECT_EQ(duration, buffer->duration());
 
-  int32* dest = new int32[frames * channels];
+  int32_t* dest = new int32_t[frames * channels];
   buffer->ReadFramesInterleavedS32(frames, dest);
 
   int count = 0;
@@ -521,7 +521,7 @@ static void ReadFramesInterleavedS16Test(SampleFormat sample_format) {
   EXPECT_EQ(frames, buffer->frame_count());
   EXPECT_EQ(duration, buffer->duration());
 
-  int16* dest = new int16[frames * channels];
+  int16_t* dest = new int16_t[frames * channels];
   buffer->ReadFramesInterleavedS16(frames, dest);
 
   int count = 0;

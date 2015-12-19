@@ -20,7 +20,7 @@ namespace cast {
 
 class RtcpBuilder {
  public:
-  explicit RtcpBuilder(uint32 sending_ssrc);
+  explicit RtcpBuilder(uint32_t sending_ssrc);
   ~RtcpBuilder();
 
   PacketRef BuildRtcpFromReceiver(
@@ -54,7 +54,7 @@ class RtcpBuilder {
   PacketRef Finish();
 
   base::BigEndianWriter writer_;
-  const uint32 ssrc_;
+  const uint32_t ssrc_;
   char* ptr_of_length_;
   PacketRef packet_;
 

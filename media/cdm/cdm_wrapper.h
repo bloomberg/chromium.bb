@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/supported_cdm_versions.h"
 

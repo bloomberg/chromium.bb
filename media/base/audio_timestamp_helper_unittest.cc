@@ -18,12 +18,12 @@ class AudioTimestampHelperTest : public ::testing::Test {
 
   // Adds frames to the helper and returns the current timestamp in
   // microseconds.
-  int64 AddFrames(int frames) {
+  int64_t AddFrames(int frames) {
     helper_.AddFrames(frames);
     return helper_.GetTimestamp().InMicroseconds();
   }
 
-  int64 FramesToTarget(int target_in_microseconds) {
+  int64_t FramesToTarget(int target_in_microseconds) {
     return helper_.GetFramesToTarget(
         base::TimeDelta::FromMicroseconds(target_in_microseconds));
   }
@@ -73,7 +73,7 @@ TEST_F(AudioTimestampHelperTest, GetDuration) {
   helper_.SetBaseTimestamp(base::TimeDelta::FromMicroseconds(100));
 
   int frame_count = 5;
-  int64 expected_durations[] = { 113, 113, 114, 113, 113, 114 };
+  int64_t expected_durations[] = {113, 113, 114, 113, 113, 114};
   for (size_t i = 0; i < arraysize(expected_durations); ++i) {
     base::TimeDelta duration = helper_.GetFrameDuration(frame_count);
     EXPECT_EQ(expected_durations[i], duration.InMicroseconds());

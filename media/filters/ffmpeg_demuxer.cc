@@ -345,18 +345,14 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
 
   if (type() == DemuxerStream::TEXT) {
     int id_size = 0;
-    uint8* id_data = av_packet_get_side_data(
-        packet.get(),
-        AV_PKT_DATA_WEBVTT_IDENTIFIER,
-        &id_size);
+    uint8_t* id_data = av_packet_get_side_data(
+        packet.get(), AV_PKT_DATA_WEBVTT_IDENTIFIER, &id_size);
 
     int settings_size = 0;
-    uint8* settings_data = av_packet_get_side_data(
-        packet.get(),
-        AV_PKT_DATA_WEBVTT_SETTINGS,
-        &settings_size);
+    uint8_t* settings_data = av_packet_get_side_data(
+        packet.get(), AV_PKT_DATA_WEBVTT_SETTINGS, &settings_size);
 
-    std::vector<uint8> side_data;
+    std::vector<uint8_t> side_data;
     MakeSideData(id_data, id_data + id_size,
                  settings_data, settings_data + settings_size,
                  &side_data);
@@ -365,21 +361,17 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
                                      side_data.data(), side_data.size());
   } else {
     int side_data_size = 0;
-    uint8* side_data = av_packet_get_side_data(
-        packet.get(),
-        AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL,
-        &side_data_size);
+    uint8_t* side_data = av_packet_get_side_data(
+        packet.get(), AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL, &side_data_size);
 
     scoped_ptr<DecryptConfig> decrypt_config;
     int data_offset = 0;
     if ((type() == DemuxerStream::AUDIO && audio_config_->is_encrypted()) ||
         (type() == DemuxerStream::VIDEO && video_config_->is_encrypted())) {
       if (!WebMCreateDecryptConfig(
-          packet->data, packet->size,
-          reinterpret_cast<const uint8*>(encryption_key_id_.data()),
-          encryption_key_id_.size(),
-          &decrypt_config,
-          &data_offset)) {
+              packet->data, packet->size,
+              reinterpret_cast<const uint8_t*>(encryption_key_id_.data()),
+              encryption_key_id_.size(), &decrypt_config, &data_offset)) {
         LOG(ERROR) << "Creation of DecryptConfig failed.";
       }
     }
@@ -397,8 +389,8 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     }
 
     int skip_samples_size = 0;
-    const uint32* skip_samples_ptr =
-        reinterpret_cast<const uint32*>(av_packet_get_side_data(
+    const uint32_t* skip_samples_ptr =
+        reinterpret_cast<const uint32_t*>(av_packet_get_side_data(
             packet.get(), AV_PKT_DATA_SKIP_SAMPLES, &skip_samples_size));
     const int kSkipSamplesValidSize = 10;
     const int kSkipEndSamplesOffset = 1;
@@ -731,8 +723,9 @@ std::string FFmpegDemuxerStream::GetMetadata(const char* key) const {
 
 // static
 base::TimeDelta FFmpegDemuxerStream::ConvertStreamTimestamp(
-    const AVRational& time_base, int64 timestamp) {
-  if (timestamp == static_cast<int64>(AV_NOPTS_VALUE))
+    const AVRational& time_base,
+    int64_t timestamp) {
+  if (timestamp == static_cast<int64_t>(AV_NOPTS_VALUE))
     return kNoTimestamp();
 
   return ConvertFromTimeBase(time_base, timestamp);
@@ -948,10 +941,9 @@ int64_t FFmpegDemuxer::GetMemoryUsage() const {
 // in |format_context| or failing that the size and duration of the media.
 //
 // Returns 0 if a bitrate could not be determined.
-static int CalculateBitrate(
-    AVFormatContext* format_context,
-    const base::TimeDelta& duration,
-    int64 filesize_in_bytes) {
+static int CalculateBitrate(AVFormatContext* format_context,
+                            const base::TimeDelta& duration,
+                            int64_t filesize_in_bytes) {
   // If there is a bitrate set on the container, use it.
   if (format_context->bit_rate > 0)
     return format_context->bit_rate;
@@ -973,7 +965,7 @@ static int CalculateBitrate(
     return 0;
   }
 
-  // Do math in floating point as we'd overflow an int64 if the filesize was
+  // Do math in floating point as we'd overflow an int64_t if the filesize was
   // larger than ~1073GB.
   double bytes = filesize_in_bytes;
   double duration_us = duration.InMicroseconds();
@@ -1042,14 +1034,14 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
                                                     kInfiniteDuration());
   const AVFormatInternal* internal = format_context->internal;
   if (internal && internal->packet_buffer &&
-      format_context->start_time != static_cast<int64>(AV_NOPTS_VALUE)) {
+      format_context->start_time != static_cast<int64_t>(AV_NOPTS_VALUE)) {
     struct AVPacketList* packet_buffer = internal->packet_buffer;
     while (packet_buffer != internal->packet_buffer_end) {
       DCHECK_LT(static_cast<size_t>(packet_buffer->pkt.stream_index),
                 start_time_estimates.size());
       const AVStream* stream =
           format_context->streams[packet_buffer->pkt.stream_index];
-      if (packet_buffer->pkt.pts != static_cast<int64>(AV_NOPTS_VALUE)) {
+      if (packet_buffer->pkt.pts != static_cast<int64_t>(AV_NOPTS_VALUE)) {
         const base::TimeDelta packet_pts =
             ConvertFromTimeBase(stream->time_base, packet_buffer->pkt.pts);
         if (packet_pts < start_time_estimates[stream->index])
@@ -1260,7 +1252,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   host_->SetDuration(max_duration);
   duration_known_ = (max_duration != kInfiniteDuration());
 
-  int64 filesize_in_bytes = 0;
+  int64_t filesize_in_bytes = 0;
   url_protocol_->GetSize(&filesize_in_bytes);
   bitrate_ = CalculateBitrate(format_context, max_duration, filesize_in_bytes);
   if (bitrate_ > 0)
@@ -1496,8 +1488,8 @@ void FFmpegDemuxer::StreamHasEnded() {
 void FFmpegDemuxer::OnEncryptedMediaInitData(
     EmeInitDataType init_data_type,
     const std::string& encryption_key_id) {
-  std::vector<uint8> key_id_local(encryption_key_id.begin(),
-                                  encryption_key_id.end());
+  std::vector<uint8_t> key_id_local(encryption_key_id.begin(),
+                                    encryption_key_id.end());
   encrypted_media_init_data_cb_.Run(init_data_type, key_id_local);
 }
 

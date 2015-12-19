@@ -20,8 +20,10 @@
 
 namespace media {
 
-static uint16 ReadLE16(const uint8* data, size_t data_size, int read_offset) {
-  uint16 value = 0;
+static uint16_t ReadLE16(const uint8_t* data,
+                         size_t data_size,
+                         int read_offset) {
+  uint16_t value = 0;
   DCHECK_LE(read_offset + sizeof(value), data_size);
   memcpy(&value, data + read_offset, sizeof(value));
   return base::ByteSwapToLE16(value);
@@ -33,14 +35,14 @@ static uint16 ReadLE16(const uint8* data, size_t data_size, int read_offset) {
 // Maximum packet size used in Xiph's opusdec and FFmpeg's libopusdec.
 static const int kMaxOpusOutputPacketSizeSamples = 960 * 6;
 
-static void RemapOpusChannelLayout(const uint8* opus_mapping,
+static void RemapOpusChannelLayout(const uint8_t* opus_mapping,
                                    int num_channels,
-                                   uint8* channel_layout) {
+                                   uint8_t* channel_layout) {
   DCHECK_LE(num_channels, OPUS_MAX_VORBIS_CHANNELS);
 
   // Reorder the channels to produce the same ordering as FFmpeg, which is
   // what the pipeline expects.
-  const uint8* vorbis_layout_offset =
+  const uint8_t* vorbis_layout_offset =
       kFFmpegChannelDecodingLayouts[num_channels - 1];
   for (int channel = 0; channel < num_channels; ++channel)
     channel_layout[channel] = opus_mapping[vorbis_layout_offset[channel]];
@@ -59,18 +61,19 @@ struct OpusExtraData {
            OPUS_MAX_CHANNELS_WITH_DEFAULT_LAYOUT);
   }
   int channels;
-  uint16 skip_samples;
+  uint16_t skip_samples;
   int channel_mapping;
   int num_streams;
   int num_coupled;
-  int16 gain_db;
-  uint8 stream_map[OPUS_MAX_VORBIS_CHANNELS];
+  int16_t gain_db;
+  uint8_t stream_map[OPUS_MAX_VORBIS_CHANNELS];
 };
 
 // Returns true when able to successfully parse and store Opus extra data in
 // |extra_data|. Based on opus header parsing code in libopusdec from FFmpeg,
 // and opus_header from Xiph's opus-tools project.
-static bool ParseOpusExtraData(const uint8* data, int data_size,
+static bool ParseOpusExtraData(const uint8_t* data,
+                               int data_size,
                                const AudioDecoderConfig& config,
                                OpusExtraData* extra_data) {
   if (data_size < OPUS_EXTRADATA_SIZE) {
@@ -89,8 +92,8 @@ static bool ParseOpusExtraData(const uint8* data, int data_size,
 
   extra_data->skip_samples =
       ReadLE16(data, data_size, OPUS_EXTRADATA_SKIP_SAMPLES_OFFSET);
-  extra_data->gain_db =
-      static_cast<int16>(ReadLE16(data, data_size, OPUS_EXTRADATA_GAIN_OFFSET));
+  extra_data->gain_db = static_cast<int16_t>(
+      ReadLE16(data, data_size, OPUS_EXTRADATA_GAIN_OFFSET));
 
   extra_data->channel_mapping = *(data + OPUS_EXTRADATA_CHANNEL_MAPPING_OFFSET);
 
@@ -267,7 +270,7 @@ bool OpusAudioDecoder::ConfigureDecoder() {
                        config_.seek_preroll(), opus_extra_data.skip_samples);
   }
 
-  uint8 channel_mapping[OPUS_MAX_VORBIS_CHANNELS] = {0};
+  uint8_t channel_mapping[OPUS_MAX_VORBIS_CHANNELS] = {0};
   memcpy(&channel_mapping, kDefaultOpusChannelLayout,
          OPUS_MAX_CHANNELS_WITH_DEFAULT_LAYOUT);
 

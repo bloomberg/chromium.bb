@@ -5,7 +5,7 @@
 #ifndef MEDIA_BASE_MAC_VIDEOTOOLBOX_GLUE_H_
 #define MEDIA_BASE_MAC_VIDEOTOOLBOX_GLUE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "media/base/mac/coremedia_glue.h"
 #include "media/base/media_export.h"
 

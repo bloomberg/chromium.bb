@@ -4,7 +4,6 @@
 
 #include "media/ffmpeg/ffmpeg_common.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
@@ -52,13 +51,13 @@ static_assert(
 static const AVRational kMicrosBase = { 1, base::Time::kMicrosecondsPerSecond };
 
 base::TimeDelta ConvertFromTimeBase(const AVRational& time_base,
-                                    int64 timestamp) {
-  int64 microseconds = av_rescale_q(timestamp, time_base, kMicrosBase);
+                                    int64_t timestamp) {
+  int64_t microseconds = av_rescale_q(timestamp, time_base, kMicrosBase);
   return base::TimeDelta::FromMicroseconds(microseconds);
 }
 
-int64 ConvertToTimeBase(const AVRational& time_base,
-                        const base::TimeDelta& timestamp) {
+int64_t ConvertToTimeBase(const AVRational& time_base,
+                          const base::TimeDelta& timestamp) {
   return av_rescale_q(timestamp.InMicroseconds(), kMicrosBase, time_base);
 }
 

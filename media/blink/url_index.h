@@ -20,7 +20,7 @@
 
 namespace media {
 
-const int64 kPositionNotSpecified = -1;
+const int64_t kPositionNotSpecified = -1;
 
 class UrlData;
 
@@ -81,7 +81,7 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   KeyType key() const;
 
   // Length of data associated with url or |kPositionNotSpecified|
-  int64 length() const { return length_; }
+  int64_t length() const { return length_; }
 
   // Returns the number of blocks cached for this resource.
   size_t CachedSize();
@@ -95,7 +95,7 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   void Use();
 
   // Setters.
-  void set_length(int64 length);
+  void set_length(int64_t length);
   void set_cacheable(bool cacheable);
   void set_valid_until(base::Time valid_until);
   void set_range_supported();
@@ -151,7 +151,7 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   base::WeakPtr<UrlIndex> url_index_;
 
   // Length of resource this url points to. (in bytes)
-  int64 length_;
+  int64_t length_;
 
   // Does the server support ranges?
   bool range_supported_;

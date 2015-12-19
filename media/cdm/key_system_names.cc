@@ -4,7 +4,6 @@
 
 #include "media/cdm/key_system_names.h"
 
-
 namespace media {
 
 const char kClearKey[] = "org.w3.clearkey";

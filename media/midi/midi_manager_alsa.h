@@ -9,7 +9,6 @@
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -31,8 +30,8 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   void StartInitialization() override;
   void Finalize() override;
   void DispatchSendMidiData(MidiManagerClient* client,
-                            uint32 port_index,
-                            const std::vector<uint8>& data,
+                            uint32_t port_index,
+                            const std::vector<uint8_t>& data,
                             double timestamp) override;
 
  private:
@@ -124,11 +123,11 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
     int port_id() const { return port_id_; }
     int midi_device() const { return midi_device_; }
     Type type() const { return type_; }
-    uint32 web_port_index() const { return web_port_index_; }
+    uint32_t web_port_index() const { return web_port_index_; }
     bool connected() const { return connected_; }
 
     // mutators
-    void set_web_port_index(uint32 web_port_index) {
+    void set_web_port_index(uint32_t web_port_index) {
       web_port_index_ = web_port_index;
     }
     void set_connected(bool connected) { connected_ = connected; }
@@ -166,7 +165,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
     std::string version_;
 
     // Index for MidiManager.
-    uint32 web_port_index_ = 0;
+    uint32_t web_port_index_ = 0;
 
     // Port is present in the ALSA system.
     bool connected_ = true;
@@ -218,11 +217,11 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
     MidiPortState();
 
     // Inserts a port at the end. Returns web_port_index.
-    uint32 push_back(scoped_ptr<MidiPort> port);
+    uint32_t push_back(scoped_ptr<MidiPort> port);
 
    private:
-    uint32 num_input_ports_ = 0;
-    uint32 num_output_ports_ = 0;
+    uint32_t num_input_ports_ = 0;
+    uint32_t num_output_ports_ = 0;
   };
 
   class AlsaSeqState {
@@ -357,11 +356,11 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
     };
   };
 
-  typedef base::hash_map<int, uint32> SourceMap;
-  typedef base::hash_map<uint32, int> OutPortMap;
+  typedef base::hash_map<int, uint32_t> SourceMap;
+  typedef base::hash_map<uint32_t, int> OutPortMap;
 
   // An internal callback that runs on MidiSendThread.
-  void SendMidiData(uint32 port_index, const std::vector<uint8>& data);
+  void SendMidiData(uint32_t port_index, const std::vector<uint8_t>& data);
 
   void ScheduleEventLoop();
   void EventLoop();
@@ -382,10 +381,10 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   // Enumerates udev cards. Call once after initializing the udev monitor.
   bool EnumerateUdevCards();
   // Returns true if successful.
-  bool CreateAlsaOutputPort(uint32 port_index, int client_id, int port_id);
-  void DeleteAlsaOutputPort(uint32 port_index);
+  bool CreateAlsaOutputPort(uint32_t port_index, int client_id, int port_id);
+  void DeleteAlsaOutputPort(uint32_t port_index);
   // Returns true if successful.
-  bool Subscribe(uint32 port_index, int client_id, int port_id);
+  bool Subscribe(uint32_t port_index, int client_id, int port_id);
 
   AlsaSeqState alsa_seq_state_;
   MidiPortState port_state_;

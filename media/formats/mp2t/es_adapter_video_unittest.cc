@@ -35,7 +35,7 @@ StreamParserBuffer::BufferQueue
 GenerateFakeBuffers(const int* frame_pts_ms,
                     const bool* is_key_frame,
                     size_t frame_count) {
-  uint8 dummy_buffer[] = {0, 0, 0, 0};
+  uint8_t dummy_buffer[] = {0, 0, 0, 0};
 
   StreamParserBuffer::BufferQueue buffers(frame_count);
   for (size_t k = 0; k < frame_count; k++) {

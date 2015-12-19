@@ -106,7 +106,7 @@ class MEDIA_EXPORT StreamParser {
   // First parameter - The type of the initialization data associated with the
   //                   stream.
   // Second parameter - The initialization data associated with the stream.
-  typedef base::Callback<void(EmeInitDataType, const std::vector<uint8>&)>
+  typedef base::Callback<void(EmeInitDataType, const std::vector<uint8_t>&)>
       EncryptedMediaInitDataCB;
 
   StreamParser();
@@ -135,7 +135,7 @@ class MEDIA_EXPORT StreamParser {
   // Called when there is new data to parse.
   //
   // Returns true if the parse succeeds.
-  virtual bool Parse(const uint8* buf, int size) = 0;
+  virtual bool Parse(const uint8_t* buf, int size) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StreamParser);

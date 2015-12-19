@@ -45,22 +45,22 @@ enum JackType {
   JACK_TYPE_EXTERNAL = 2,
 };
 
-const uint8 kAudioInterfaceClass = 1;
-const uint8 kAudioMidiInterfaceSubclass = 3;
+const uint8_t kAudioInterfaceClass = 1;
+const uint8_t kAudioMidiInterfaceSubclass = 3;
 
 class JackMatcher {
  public:
-  explicit JackMatcher(uint8 id) : id_(id) {}
+  explicit JackMatcher(uint8_t id) : id_(id) {}
 
   bool operator() (const UsbMidiJack& jack) const {
     return jack.jack_id == id_;
   }
 
  private:
-  uint8 id_;
+  uint8_t id_;
 };
 
-int DecodeBcd(uint8 byte) {
+int DecodeBcd(uint8_t byte) {
   DCHECK_LT((byte & 0xf0) >> 4, 0xa);
   DCHECK_LT(byte & 0x0f, 0xa);
   return ((byte & 0xf0) >> 4) * 10 + (byte & 0x0f);
@@ -69,7 +69,7 @@ int DecodeBcd(uint8 byte) {
 }  // namespace
 
 std::string UsbMidiDescriptorParser::DeviceInfo::BcdVersionToString(
-    uint16 version) {
+    uint16_t version) {
   return base::StringPrintf("%d.%02d", DecodeBcd(version >> 8),
                             DecodeBcd(version & 0xff));
 }
@@ -82,7 +82,7 @@ UsbMidiDescriptorParser::UsbMidiDescriptorParser()
 UsbMidiDescriptorParser::~UsbMidiDescriptorParser() {}
 
 bool UsbMidiDescriptorParser::Parse(UsbMidiDevice* device,
-                                    const uint8* data,
+                                    const uint8_t* data,
                                     size_t size,
                                     std::vector<UsbMidiJack>* jacks) {
   jacks->clear();
@@ -93,13 +93,13 @@ bool UsbMidiDescriptorParser::Parse(UsbMidiDevice* device,
   return result;
 }
 
-bool UsbMidiDescriptorParser::ParseDeviceInfo(
-    const uint8* data, size_t size, DeviceInfo* info) {
+bool UsbMidiDescriptorParser::ParseDeviceInfo(const uint8_t* data,
+                                              size_t size,
+                                              DeviceInfo* info) {
   *info = DeviceInfo();
-  for (const uint8* current = data;
-       current < data + size;
+  for (const uint8_t* current = data; current < data + size;
        current += current[0]) {
-    uint8 length = current[0];
+    uint8_t length = current[0];
     if (length < 2) {
       DVLOG(1) << "Descriptor Type is not accessible.";
       return false;
@@ -119,13 +119,12 @@ bool UsbMidiDescriptorParser::ParseDeviceInfo(
 }
 
 bool UsbMidiDescriptorParser::ParseInternal(UsbMidiDevice* device,
-                                            const uint8* data,
+                                            const uint8_t* data,
                                             size_t size,
                                             std::vector<UsbMidiJack>* jacks) {
-  for (const uint8* current = data;
-       current < data + size;
+  for (const uint8_t* current = data; current < data + size;
        current += current[0]) {
-    uint8 length = current[0];
+    uint8_t length = current[0];
     if (length < 2) {
       DVLOG(1) << "Descriptor Type is not accessible.";
       return false;
@@ -168,8 +167,9 @@ bool UsbMidiDescriptorParser::ParseInternal(UsbMidiDevice* device,
   return true;
 }
 
-bool UsbMidiDescriptorParser::ParseDevice(
-    const uint8* data, size_t size, DeviceInfo* info) {
+bool UsbMidiDescriptorParser::ParseDevice(const uint8_t* data,
+                                          size_t size,
+                                          DeviceInfo* info) {
   if (size < 0x12) {
     DVLOG(1) << "DEVICE header size is incorrect.";
     return false;
@@ -183,15 +183,15 @@ bool UsbMidiDescriptorParser::ParseDevice(
   return true;
 }
 
-bool UsbMidiDescriptorParser::ParseInterface(const uint8* data, size_t size) {
+bool UsbMidiDescriptorParser::ParseInterface(const uint8_t* data, size_t size) {
   if (size != 9) {
     DVLOG(1) << "INTERFACE header size is incorrect.";
     return false;
   }
   incomplete_jacks_.clear();
 
-  uint8 interface_class = data[5];
-  uint8 interface_subclass = data[6];
+  uint8_t interface_class = data[5];
+  uint8_t interface_subclass = data[6];
 
   // All descriptors of endpoints contained in this interface
   // precede the next INTERFACE descriptor.
@@ -202,7 +202,7 @@ bool UsbMidiDescriptorParser::ParseInterface(const uint8* data, size_t size) {
 }
 
 bool UsbMidiDescriptorParser::ParseCSInterface(UsbMidiDevice* device,
-                                               const uint8* data,
+                                               const uint8_t* data,
                                                size_t size) {
   // Descriptor Type and Descriptor Subtype should be accessible.
   if (size < 3) {
@@ -220,8 +220,8 @@ bool UsbMidiDescriptorParser::ParseCSInterface(UsbMidiDevice* device,
     DVLOG(1) << "CS_INTERFACE (MIDI JACK) header size is incorrect.";
     return false;
   }
-  uint8 jack_type = data[3];
-  uint8 id = data[4];
+  uint8_t jack_type = data[3];
+  uint8_t id = data[4];
   if (jack_type == JACK_TYPE_EMBEDDED) {
     // We can't determine the associated endpoint now.
     incomplete_jacks_.push_back(UsbMidiJack(device, id, 0, 0));
@@ -229,7 +229,7 @@ bool UsbMidiDescriptorParser::ParseCSInterface(UsbMidiDevice* device,
   return true;
 }
 
-bool UsbMidiDescriptorParser::ParseEndpoint(const uint8* data, size_t size) {
+bool UsbMidiDescriptorParser::ParseEndpoint(const uint8_t* data, size_t size) {
   if (size < 4) {
     DVLOG(1) << "ENDPOINT header size is incorrect.";
     return false;
@@ -239,7 +239,7 @@ bool UsbMidiDescriptorParser::ParseEndpoint(const uint8* data, size_t size) {
   return true;
 }
 
-bool UsbMidiDescriptorParser::ParseCSEndpoint(const uint8* data,
+bool UsbMidiDescriptorParser::ParseCSEndpoint(const uint8_t* data,
                                               size_t size,
                                               std::vector<UsbMidiJack>* jacks) {
   const size_t kSizeForEmptyJacks = 4;
@@ -249,14 +249,14 @@ bool UsbMidiDescriptorParser::ParseCSEndpoint(const uint8* data,
     DVLOG(1) << "CS_ENDPOINT header size is incorrect.";
     return false;
   }
-  uint8 num_jacks = data[3];
+  uint8_t num_jacks = data[3];
   if (size != kSizeForEmptyJacks + num_jacks) {
     DVLOG(1) << "CS_ENDPOINT header size is incorrect.";
     return false;
   }
 
   for (size_t i = 0; i < num_jacks; ++i) {
-    uint8 jack = data[kSizeForEmptyJacks + i];
+    uint8_t jack = data[kSizeForEmptyJacks + i];
     std::vector<UsbMidiJack>::iterator it =
         std::find_if(incomplete_jacks_.begin(),
                      incomplete_jacks_.end(),

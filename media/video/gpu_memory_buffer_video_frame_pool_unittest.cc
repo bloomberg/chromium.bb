@@ -63,9 +63,9 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
   static scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame(
       int dimension) {
     const int kDimension = 10;
-    static uint8 y_data[kDimension * kDimension] = {0};
-    static uint8 u_data[kDimension * kDimension / 2] = {0};
-    static uint8 v_data[kDimension * kDimension / 2] = {0};
+    static uint8_t y_data[kDimension * kDimension] = {0};
+    static uint8_t u_data[kDimension * kDimension / 2] = {0};
+    static uint8_t v_data[kDimension * kDimension / 2] = {0};
 
     DCHECK_LE(dimension, kDimension);
     gfx::Size size(dimension, dimension);

@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "media/base/media_export.h"
 #include "media/cdm/json_web_key.h"
 

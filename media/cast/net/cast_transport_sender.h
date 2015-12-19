@@ -18,7 +18,6 @@
 #ifndef MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_H_
 #define MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -82,26 +81,25 @@ class CastTransportSender : public base::NonThreadSafe {
 
   // Encrypt, packetize and transmit |frame|. |ssrc| must refer to a
   // a channel already established with InitializeAudio / InitializeVideo.
-  virtual void InsertFrame(uint32 ssrc, const EncodedFrame& frame) = 0;
+  virtual void InsertFrame(uint32_t ssrc, const EncodedFrame& frame) = 0;
 
   // Sends a RTCP sender report to the receiver.
   // |ssrc| is the SSRC for this report.
   // |current_time| is the current time reported by a tick clock.
   // |current_time_as_rtp_timestamp| is the corresponding RTP timestamp.
-  virtual void SendSenderReport(
-      uint32 ssrc,
-      base::TimeTicks current_time,
-      uint32 current_time_as_rtp_timestamp) = 0;
+  virtual void SendSenderReport(uint32_t ssrc,
+                                base::TimeTicks current_time,
+                                uint32_t current_time_as_rtp_timestamp) = 0;
 
   // Cancels sending packets for the frames in the set.
   // |ssrc| is the SSRC for the stream.
   // |frame_ids| contains the IDs of the frames that will be cancelled.
-  virtual void CancelSendingFrames(uint32 ssrc,
-                                   const std::vector<uint32>& frame_ids) = 0;
+  virtual void CancelSendingFrames(uint32_t ssrc,
+                                   const std::vector<uint32_t>& frame_ids) = 0;
 
   // Resends a frame or part of a frame to kickstart. This is used when the
   // stream appears to be stalled.
-  virtual void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) = 0;
+  virtual void ResendFrameForKickstart(uint32_t ssrc, uint32_t frame_id) = 0;
 
   // Returns a callback for receiving packets for testing purposes.
   virtual PacketReceiverCallback PacketReceiverForTesting();
@@ -111,12 +109,12 @@ class CastTransportSender : public base::NonThreadSafe {
   // Add a valid SSRC. This is used to verify that incoming packets
   // come from the right sender. Without valid SSRCs, the return address cannot
   // be automatically established.
-  virtual void AddValidSsrc(uint32 ssrc) = 0;
+  virtual void AddValidSsrc(uint32_t ssrc) = 0;
 
   // Send an RTCP message from receiver to sender.
   virtual void SendRtcpFromRtpReceiver(
-      uint32 ssrc,
-      uint32 sender_ssrc,
+      uint32_t ssrc,
+      uint32_t sender_ssrc,
       const RtcpTimeData& time_data,
       const RtcpCastMessage* cast_message,
       base::TimeDelta target_delay,

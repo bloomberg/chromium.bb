@@ -47,13 +47,14 @@ void H265Parser::Reset() {
   encrypted_ranges_.clear();
 }
 
-void H265Parser::SetStream(const uint8* stream, off_t stream_size) {
+void H265Parser::SetStream(const uint8_t* stream, off_t stream_size) {
   std::vector<SubsampleEntry> subsamples;
   SetEncryptedStream(stream, stream_size, subsamples);
 }
 
 void H265Parser::SetEncryptedStream(
-    const uint8* stream, off_t stream_size,
+    const uint8_t* stream,
+    off_t stream_size,
     const std::vector<SubsampleEntry>& subsamples) {
   DCHECK(stream);
   DCHECK_GT(stream_size, 0);
@@ -62,12 +63,13 @@ void H265Parser::SetEncryptedStream(
   bytes_left_ = stream_size;
 
   encrypted_ranges_.clear();
-  const uint8* start = stream;
-  const uint8* stream_end = stream_ + bytes_left_;
+  const uint8_t* start = stream;
+  const uint8_t* stream_end = stream_ + bytes_left_;
   for (size_t i = 0; i < subsamples.size() && start < stream_end; ++i) {
     start += subsamples[i].clear_bytes;
 
-    const uint8* end = std::min(start + subsamples[i].cypher_bytes, stream_end);
+    const uint8_t* end =
+        std::min(start + subsamples[i].cypher_bytes, stream_end);
     encrypted_ranges_.Add(start, end);
     start = end;
   }
@@ -90,7 +92,7 @@ bool H265Parser::LocateNALU(off_t* nalu_size, off_t* start_code_size) {
   stream_ += nalu_start_off;
   bytes_left_ -= nalu_start_off;
 
-  const uint8* nalu_data = stream_ + annexb_start_code_size;
+  const uint8_t* nalu_data = stream_ + annexb_start_code_size;
   off_t max_nalu_data_size = bytes_left_ - annexb_start_code_size;
   if (max_nalu_data_size <= 0) {
     DVLOG(3) << "End of stream";

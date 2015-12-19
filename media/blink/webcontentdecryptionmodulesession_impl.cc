@@ -102,7 +102,7 @@ static MediaKeys::SessionType convertSessionType(
 static bool SanitizeInitData(EmeInitDataType init_data_type,
                              const unsigned char* init_data,
                              size_t init_data_length,
-                             std::vector<uint8>* sanitized_init_data,
+                             std::vector<uint8_t>* sanitized_init_data,
                              std::string* error_message) {
   if (init_data_length > limits::kMaxInitDataLength) {
     error_message->assign("Initialization data too long.");
@@ -179,9 +179,9 @@ static bool SanitizeSessionId(const blink::WebString& session_id,
 }
 
 static bool SanitizeResponse(const std::string& key_system,
-                             const uint8* response,
+                             const uint8_t* response,
                              size_t response_length,
-                             std::vector<uint8>* sanitized_response) {
+                             std::vector<uint8_t>* sanitized_response) {
   // The user agent should thoroughly validate the response before passing it
   // to the CDM. This may include verifying values are within reasonable limits,
   // stripping irrelevant data or fields, pre-parsing it, sanitizing it,
@@ -279,7 +279,7 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
   //     needed by the CDM.
   // 9.3 If the previous step failed, reject promise with a new DOMException
   //     whose name is InvalidAccessError.
-  std::vector<uint8> sanitized_init_data;
+  std::vector<uint8_t> sanitized_init_data;
   std::string message;
   if (!SanitizeInitData(eme_init_data_type, init_data, init_data_length,
                         &sanitized_init_data, &message)) {
@@ -335,14 +335,14 @@ void WebContentDecryptionModuleSessionImpl::load(
 }
 
 void WebContentDecryptionModuleSessionImpl::update(
-    const uint8* response,
+    const uint8_t* response,
     size_t response_length,
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(response);
   DCHECK(!session_id_.empty());
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<uint8> sanitized_response;
+  std::vector<uint8_t> sanitized_response;
   if (!SanitizeResponse(adapter_->GetKeySystem(), response, response_length,
                         &sanitized_response)) {
     result.completeWithError(
@@ -379,7 +379,7 @@ void WebContentDecryptionModuleSessionImpl::remove(
 
 void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
     MediaKeys::MessageType message_type,
-    const std::vector<uint8>& message) {
+    const std::vector<uint8_t>& message) {
   DCHECK(client_) << "Client not set before message event";
   DCHECK(thread_checker_.CalledOnValidThread());
   client_->message(convertMessageType(message_type), message.data(),

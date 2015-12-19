@@ -26,7 +26,7 @@ void MidiOutputPortAndroid::Close() {
   Java_MidiOutputPortAndroid_close(env, raw_port_.obj());
 }
 
-void MidiOutputPortAndroid::Send(const std::vector<uint8>& data) {
+void MidiOutputPortAndroid::Send(const std::vector<uint8_t>& data) {
   if (data.size() == 0) {
     return;
   }

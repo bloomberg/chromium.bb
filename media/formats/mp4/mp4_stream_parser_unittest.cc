@@ -62,13 +62,15 @@ class MP4StreamParserTest : public testing::Test {
   VideoDecoderConfig video_decoder_config_;
   DecodeTimestamp lower_bound_;
 
-  bool AppendData(const uint8* data, size_t length) {
+  bool AppendData(const uint8_t* data, size_t length) {
     return parser_->Parse(data, length);
   }
 
-  bool AppendDataInPieces(const uint8* data, size_t length, size_t piece_size) {
-    const uint8* start = data;
-    const uint8* end = data + length;
+  bool AppendDataInPieces(const uint8_t* data,
+                          size_t length,
+                          size_t piece_size) {
+    const uint8_t* start = data;
+    const uint8_t* end = data + length;
     while (start < end) {
       size_t append_size = std::min(piece_size,
                                     static_cast<size_t>(end - start));
@@ -140,7 +142,7 @@ class MP4StreamParserTest : public testing::Test {
     return true;
   }
 
-  void KeyNeededF(EmeInitDataType type, const std::vector<uint8>& init_data) {
+  void KeyNeededF(EmeInitDataType type, const std::vector<uint8_t>& init_data) {
     DVLOG(1) << "KeyNeededF: " << init_data.size();
     EXPECT_EQ(EmeInitDataType::CENC, type);
     EXPECT_FALSE(init_data.empty());

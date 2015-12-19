@@ -5,7 +5,8 @@
 #ifndef MEDIA_BASE_SIMD_FILTER_YUV_H_
 #define MEDIA_BASE_SIMD_FILTER_YUV_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "media/base/media_export.h"
 
 namespace media {
@@ -13,17 +14,17 @@ namespace media {
 // These methods are exported for testing purposes only.  Library users should
 // only call the methods listed in yuv_convert.h.
 
-MEDIA_EXPORT void FilterYUVRows_C(uint8* ybuf,
-                                  const uint8* y0_ptr,
-                                  const uint8* y1_ptr,
+MEDIA_EXPORT void FilterYUVRows_C(uint8_t* ybuf,
+                                  const uint8_t* y0_ptr,
+                                  const uint8_t* y1_ptr,
                                   int source_width,
-                                  uint8 source_y_fraction);
+                                  uint8_t source_y_fraction);
 
-MEDIA_EXPORT void FilterYUVRows_SSE2(uint8* ybuf,
-                                     const uint8* y0_ptr,
-                                     const uint8* y1_ptr,
+MEDIA_EXPORT void FilterYUVRows_SSE2(uint8_t* ybuf,
+                                     const uint8_t* y0_ptr,
+                                     const uint8_t* y1_ptr,
                                      int source_width,
-                                     uint8 source_y_fraction);
+                                     uint8_t source_y_fraction);
 
 }  // namespace media
 

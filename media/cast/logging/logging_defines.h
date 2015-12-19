@@ -14,9 +14,9 @@
 namespace media {
 namespace cast {
 
-static const uint32 kFrameIdUnknown = 0xFFFFFFFF;
+static const uint32_t kFrameIdUnknown = 0xFFFFFFFF;
 
-typedef uint32 RtpTimestamp;
+typedef uint32_t RtpTimestamp;
 
 enum CastLoggingEvent {
   UNKNOWN,
@@ -53,7 +53,7 @@ struct FrameEvent {
   ~FrameEvent();
 
   RtpTimestamp rtp_timestamp;
-  uint32 frame_id;
+  uint32_t frame_id;
 
   // Resolution of the frame. Only set for video FRAME_CAPTURE_END events.
   int width;
@@ -93,9 +93,9 @@ struct PacketEvent {
   ~PacketEvent();
 
   RtpTimestamp rtp_timestamp;
-  uint32 frame_id;
-  uint16 max_packet_id;
-  uint16 packet_id;
+  uint32_t frame_id;
+  uint16_t max_packet_id;
+  uint16_t packet_id;
   size_t size;
 
   // Time of event logged.

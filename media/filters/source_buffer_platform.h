@@ -5,7 +5,8 @@
 #ifndef MEDIA_FILTERS_SOURCE_BUFFER_PLATFORM_H_
 #define MEDIA_FILTERS_SOURCE_BUFFER_PLATFORM_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "media/base/media_export.h"
 
 namespace media {

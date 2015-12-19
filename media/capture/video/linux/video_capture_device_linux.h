@@ -25,8 +25,7 @@ class V4L2CaptureDelegate;
 // Linux V4L2 implementation of VideoCaptureDevice.
 class VideoCaptureDeviceLinux : public VideoCaptureDevice {
  public:
-  static VideoPixelFormat V4l2FourCcToChromiumPixelFormat(
-      uint32 v4l2_fourcc);
+  static VideoPixelFormat V4l2FourCcToChromiumPixelFormat(uint32_t v4l2_fourcc);
   static std::list<uint32_t> GetListOfUsableFourCCs(bool favour_mjpeg);
 
   explicit VideoCaptureDeviceLinux(const Name& device_name);

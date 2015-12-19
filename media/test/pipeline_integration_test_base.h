@@ -122,7 +122,7 @@ class PipelineIntegrationTestBase {
   void OnSeeked(base::TimeDelta seek_time, PipelineStatus status);
   void OnStatusCallback(PipelineStatus status);
   void DemuxerEncryptedMediaInitDataCB(EmeInitDataType type,
-                                       const std::vector<uint8>& init_data);
+                                       const std::vector<uint8_t>& init_data);
   void set_encrypted_media_init_data_cb(
       const Demuxer::EncryptedMediaInitDataCB& encrypted_media_init_data_cb) {
     encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;

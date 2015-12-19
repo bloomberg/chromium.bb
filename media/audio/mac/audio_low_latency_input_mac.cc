@@ -6,7 +6,6 @@
 
 #include <CoreServices/CoreServices.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -89,7 +88,7 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
   // Allocate AudioBuffers to be used as storage for the received audio.
   // The AudioBufferList structure works as a placeholder for the
   // AudioBuffer structure, which holds a pointer to the actual data buffer.
-  audio_data_buffer_.reset(new uint8[data_byte_size]);
+  audio_data_buffer_.reset(new uint8_t[data_byte_size]);
   audio_buffer_list_.mNumberBuffers = 1;
 
   AudioBuffer* audio_buffer = audio_buffer_list_.mBuffers;
@@ -521,7 +520,7 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
       // handles it.
       // See See http://www.crbug.com/434681 for one example when we can enter
       // this scope.
-      audio_input->audio_data_buffer_.reset(new uint8[new_size]);
+      audio_input->audio_data_buffer_.reset(new uint8_t[new_size]);
       audio_buffer->mData = audio_input->audio_data_buffer_.get();
     }
 
@@ -582,9 +581,9 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   GetAgcVolume(&normalized_volume);
 
   AudioBuffer& buffer = io_data->mBuffers[0];
-  uint8* audio_data = reinterpret_cast<uint8*>(buffer.mData);
-  uint32 capture_delay_bytes = static_cast<uint32>
-      ((capture_latency_frames + 0.5) * format_.mBytesPerFrame);
+  uint8_t* audio_data = reinterpret_cast<uint8_t*>(buffer.mData);
+  uint32_t capture_delay_bytes = static_cast<uint32_t>(
+      (capture_latency_frames + 0.5) * format_.mBytesPerFrame);
   DCHECK(audio_data);
   if (!audio_data)
     return kAudioUnitErr_InvalidElement;

@@ -43,8 +43,8 @@ enum AudioDecoderType {
 };
 
 struct DecodedBufferExpectations {
-  const int64 timestamp;
-  const int64 duration;
+  const int64_t timestamp;
+  const int64_t duration;
   const char* hash;
 };
 
@@ -83,8 +83,8 @@ static void SetDiscardPadding(AVPacket* packet,
 
   // If the timestamp is positive, try to use FFmpeg's discard data.
   int skip_samples_size = 0;
-  const uint32* skip_samples_ptr =
-      reinterpret_cast<const uint32*>(av_packet_get_side_data(
+  const uint32_t* skip_samples_ptr =
+      reinterpret_cast<const uint32_t*>(av_packet_get_side_data(
           packet, AV_PKT_DATA_SKIP_SAMPLES, &skip_samples_size));
   if (skip_samples_size < 4)
     return;

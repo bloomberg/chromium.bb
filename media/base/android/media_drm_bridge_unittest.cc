@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/android/build_info.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"

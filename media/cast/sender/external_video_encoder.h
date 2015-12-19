@@ -29,7 +29,7 @@ class ExternalVideoEncoder : public VideoEncoder {
       const scoped_refptr<CastEnvironment>& cast_environment,
       const VideoSenderConfig& video_config,
       const gfx::Size& frame_size,
-      uint32 first_frame_id,
+      uint32_t first_frame_id,
       const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
@@ -52,7 +52,7 @@ class ExternalVideoEncoder : public VideoEncoder {
   // |client_| holds a reference to the new VEAClientImpl.
   void OnCreateVideoEncodeAccelerator(
       const VideoSenderConfig& video_config,
-      uint32 first_frame_id,
+      uint32_t first_frame_id,
       const StatusChangeCallback& status_change_cb,
       scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
       scoped_ptr<media::VideoEncodeAccelerator> vea);
@@ -149,7 +149,7 @@ class QuantizerEstimator {
   // A cache of a subset of rows of pixels from the last frame examined.  This
   // is used to compute the entropy of the difference between frames, which in
   // turn is used to compute the entropy and quantizer.
-  scoped_ptr<uint8[]> last_frame_pixel_buffer_;
+  scoped_ptr<uint8_t[]> last_frame_pixel_buffer_;
   gfx::Size last_frame_size_;
 
   DISALLOW_COPY_AND_ASSIGN(QuantizerEstimator);

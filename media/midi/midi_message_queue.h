@@ -5,10 +5,12 @@
 #ifndef MEDIA_MIDI_MIDI_MESSAGE_QUEUE_H_
 #define MEDIA_MIDI_MIDI_MESSAGE_QUEUE_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "media/midi/midi_export.h"
 
 namespace media {
@@ -28,12 +30,12 @@ namespace midi {
 //   MidiMessageQueue queue(true);  // true to support "running status"
 //   while (true) {
 //     if (is_incoming_midi_data_available()) {
-//       std::vector<uint8> incoming_data;
+//       std::vector<uint8_t> incoming_data;
 //       read_incoming_midi_data(&incoming_data)
 //       queue.Add(incoming_data);
 //     }
 //     while (true) {
-//       std::vector<uint8> next_message;
+//       std::vector<uint8_t> next_message;
 //       queue.Get(&next_message);
 //       if (!next_message.empty())
 //         dispatch(next_message);
@@ -47,8 +49,8 @@ class MIDI_EXPORT MidiMessageQueue {
   ~MidiMessageQueue();
 
   // Enqueues |data| to the internal buffer.
-  void Add(const std::vector<uint8>& data);
-  void Add(const uint8* data, size_t length);
+  void Add(const std::vector<uint8_t>& data);
+  void Add(const uint8_t* data, size_t length);
 
   // Fills the next complete MIDI message into |message|. If |message| is
   // not empty, the data sequence falls into one of the following types of
@@ -59,11 +61,11 @@ class MIDI_EXPORT MidiMessageQueue {
   // - Single "System Common Message"    (w/o "System Real Time Messages")
   // - Single "System Real Time message"
   // |message| is empty if there is no complete MIDI message any more.
-  void Get(std::vector<uint8>* message);
+  void Get(std::vector<uint8_t>* message);
 
  private:
-  std::deque<uint8> queue_;
-  std::vector<uint8> next_message_;
+  std::deque<uint8_t> queue_;
+  std::vector<uint8_t> next_message_;
   const bool allow_running_status_;
   DISALLOW_COPY_AND_ASSIGN(MidiMessageQueue);
 };

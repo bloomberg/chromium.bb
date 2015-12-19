@@ -12,11 +12,10 @@ namespace media {
 enum { kDefaultQueueSize = 1024 };
 
 ByteQueue::ByteQueue()
-    : buffer_(new uint8[kDefaultQueueSize]),
+    : buffer_(new uint8_t[kDefaultQueueSize]),
       size_(kDefaultQueueSize),
       offset_(0),
-      used_(0) {
-}
+      used_(0) {}
 
 ByteQueue::~ByteQueue() {}
 
@@ -25,7 +24,7 @@ void ByteQueue::Reset() {
   used_ = 0;
 }
 
-void ByteQueue::Push(const uint8* data, int size) {
+void ByteQueue::Push(const uint8_t* data, int size) {
   DCHECK(data);
   DCHECK_GT(size, 0);
 
@@ -40,7 +39,7 @@ void ByteQueue::Push(const uint8* data, int size) {
     // Sanity check to make sure we didn't overflow.
     CHECK_GT(new_size, size_);
 
-    scoped_ptr<uint8[]> new_buffer(new uint8[new_size]);
+    scoped_ptr<uint8_t[]> new_buffer(new uint8_t[new_size]);
 
     // Copy the data from the old buffer to the start of the new one.
     if (used_ > 0)
@@ -59,7 +58,7 @@ void ByteQueue::Push(const uint8* data, int size) {
   used_ += size;
 }
 
-void ByteQueue::Peek(const uint8** data, int* size) const {
+void ByteQueue::Peek(const uint8_t** data, int* size) const {
   DCHECK(data);
   DCHECK(size);
   *data = front();
@@ -79,6 +78,8 @@ void ByteQueue::Pop(int count) {
   }
 }
 
-uint8* ByteQueue::front() const { return buffer_.get() + offset_; }
+uint8_t* ByteQueue::front() const {
+  return buffer_.get() + offset_;
+}
 
 }  // namespace media

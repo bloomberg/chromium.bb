@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
@@ -70,7 +69,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
                   SampleFormat sample_format,
                   ChannelLayout channel_layout,
                   int samples_per_second,
-                  const std::vector<uint8>& extra_data,
+                  const std::vector<uint8_t>& extra_data,
                   bool is_encrypted,
                   base::TimeDelta seek_preroll,
                   int codec_delay);

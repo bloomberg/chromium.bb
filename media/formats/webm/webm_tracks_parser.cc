@@ -30,11 +30,12 @@ static TextKind CodecIdToTextKind(const std::string& codec_id) {
 }
 
 static base::TimeDelta PrecisionCappedDefaultDuration(
-    const double timecode_scale_in_us, const int64 duration_in_ns) {
+    const double timecode_scale_in_us,
+    const int64_t duration_in_ns) {
   if (duration_in_ns <= 0)
     return kNoTimestamp();
 
-  int64 mult = duration_in_ns / 1000;
+  int64_t mult = duration_in_ns / 1000;
   mult /= timecode_scale_in_us;
   if (mult == 0)
     return kNoTimestamp();
@@ -62,7 +63,7 @@ WebMTracksParser::WebMTracksParser(const scoped_refptr<MediaLog>& media_log,
 
 WebMTracksParser::~WebMTracksParser() {}
 
-int WebMTracksParser::Parse(const uint8* buf, int size) {
+int WebMTracksParser::Parse(const uint8_t* buf, int size) {
   track_type_ =-1;
   track_num_ = -1;
   default_duration_ = -1;
@@ -267,8 +268,8 @@ bool WebMTracksParser::OnListEnd(int id) {
   return true;
 }
 
-bool WebMTracksParser::OnUInt(int id, int64 val) {
-  int64* dst = NULL;
+bool WebMTracksParser::OnUInt(int id, int64_t val) {
+  int64_t* dst = NULL;
 
   switch (id) {
     case kWebMIdTrackNumber:
@@ -304,7 +305,7 @@ bool WebMTracksParser::OnFloat(int id, double val) {
   return true;
 }
 
-bool WebMTracksParser::OnBinary(int id, const uint8* data, int size) {
+bool WebMTracksParser::OnBinary(int id, const uint8_t* data, int size) {
   if (id == kWebMIdCodecPrivate) {
     if (!codec_private_.empty()) {
       MEDIA_LOG(ERROR, media_log_)

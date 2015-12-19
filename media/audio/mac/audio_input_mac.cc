@@ -6,7 +6,6 @@
 
 #include <CoreServices/CoreServices.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "media/audio/mac/audio_manager_mac.h"
@@ -224,7 +223,7 @@ void PCMQueueInAudioInputStream::HandleInputBuffer(
     if (elapsed < kMinDelay)
       base::PlatformThread::Sleep(kMinDelay - elapsed);
 
-    uint8* audio_data = reinterpret_cast<uint8*>(audio_buffer->mAudioData);
+    uint8_t* audio_data = reinterpret_cast<uint8_t*>(audio_buffer->mAudioData);
     audio_bus_->FromInterleaved(
         audio_data, audio_bus_->frames(), format_.mBitsPerChannel / 8);
     callback_->OnData(

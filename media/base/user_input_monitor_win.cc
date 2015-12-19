@@ -65,7 +65,7 @@ class UserInputMonitorWinCore
 
   // These members are only accessed on the UI thread.
   scoped_ptr<base::win::MessageWindow> window_;
-  uint8 events_monitored_;
+  uint8_t events_monitored_;
   KeyboardEventCounter counter_;
 
   DISALLOW_COPY_AND_ASSIGN(UserInputMonitorWinCore);
@@ -187,7 +187,7 @@ LRESULT UserInputMonitorWinCore::OnInput(HRAWINPUT input_handle) {
   DCHECK_EQ(0u, result);
 
   // Retrieve the input record itself.
-  scoped_ptr<uint8[]> buffer(new uint8[size]);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[size]);
   RAWINPUT* input = reinterpret_cast<RAWINPUT*>(buffer.get());
   result = GetRawInputData(
       input_handle, RID_INPUT, buffer.get(), &size, sizeof(RAWINPUTHEADER));

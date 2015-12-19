@@ -31,7 +31,7 @@ void H264BitstreamBuffer::Reset() {
 }
 
 void H264BitstreamBuffer::Grow() {
-  data_ = static_cast<uint8*>(realloc(data_, capacity_ + kGrowBytes));
+  data_ = static_cast<uint8_t*>(realloc(data_, capacity_ + kGrowBytes));
   CHECK(data_) << "Failed growing the buffer";
   capacity_ += kGrowBytes;
 }
@@ -60,16 +60,16 @@ void H264BitstreamBuffer::FlushReg() {
   bits_left_in_reg_ = kRegBitSize;
 }
 
-void H264BitstreamBuffer::AppendU64(size_t num_bits, uint64 val) {
+void H264BitstreamBuffer::AppendU64(size_t num_bits, uint64_t val) {
   CHECK_LE(num_bits, kRegBitSize);
 
   while (num_bits > 0) {
     if (bits_left_in_reg_ == 0)
       FlushReg();
 
-    uint64 bits_to_write =
+    uint64_t bits_to_write =
         num_bits > bits_left_in_reg_ ? bits_left_in_reg_ : num_bits;
-    uint64 val_to_write = (val >> (num_bits - bits_to_write));
+    uint64_t val_to_write = (val >> (num_bits - bits_to_write));
     if (bits_to_write < 64)
       val_to_write &= ((1ull << bits_to_write) - 1);
     reg_ <<= bits_to_write;
@@ -84,7 +84,7 @@ void H264BitstreamBuffer::AppendBool(bool val) {
     FlushReg();
 
   reg_ <<= 1;
-  reg_ |= (static_cast<uint64>(val) & 1);
+  reg_ |= (static_cast<uint64_t>(val) & 1);
   --bits_left_in_reg_;
 }
 
@@ -142,7 +142,7 @@ size_t H264BitstreamBuffer::BytesInBuffer() {
   return pos_;
 }
 
-uint8* H264BitstreamBuffer::data() {
+uint8_t* H264BitstreamBuffer::data() {
   DCHECK(data_);
   DCHECK_FINISHED();
 

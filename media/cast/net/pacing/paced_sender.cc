@@ -14,7 +14,7 @@ namespace cast {
 
 namespace {
 
-static const int64 kPacingIntervalMs = 10;
+static const int64_t kPacingIntervalMs = 10;
 // Each frame will be split into no more than kPacingMaxBurstsPerFrame
 // bursts of packets.
 static const size_t kPacingMaxBurstsPerFrame = 3;
@@ -32,9 +32,9 @@ DedupInfo::DedupInfo() : last_byte_acked_for_audio(0) {}
 
 // static
 PacketKey PacedPacketSender::MakePacketKey(PacketKey::PacketType packet_type,
-                                           uint32 frame_id,
-                                           uint32 ssrc,
-                                           uint16 packet_id) {
+                                           uint32_t frame_id,
+                                           uint32_t ssrc,
+                                           uint16_t packet_id) {
   PacketKey key{packet_type, frame_id, ssrc, packet_id};
   return key;
 }
@@ -67,27 +67,27 @@ PacedSender::PacedSender(
 
 PacedSender::~PacedSender() {}
 
-void PacedSender::RegisterAudioSsrc(uint32 audio_ssrc) {
+void PacedSender::RegisterAudioSsrc(uint32_t audio_ssrc) {
   audio_ssrc_ = audio_ssrc;
 }
 
-void PacedSender::RegisterVideoSsrc(uint32 video_ssrc) {
+void PacedSender::RegisterVideoSsrc(uint32_t video_ssrc) {
   video_ssrc_ = video_ssrc;
 }
 
-void PacedSender::RegisterPrioritySsrc(uint32 ssrc) {
+void PacedSender::RegisterPrioritySsrc(uint32_t ssrc) {
   priority_ssrcs_.push_back(ssrc);
 }
 
-int64 PacedSender::GetLastByteSentForPacket(const PacketKey& packet_key) {
+int64_t PacedSender::GetLastByteSentForPacket(const PacketKey& packet_key) {
   PacketSendHistory::const_iterator it = send_history_.find(packet_key);
   if (it == send_history_.end())
     return 0;
   return it->second.last_byte_sent;
 }
 
-int64 PacedSender::GetLastByteSentForSsrc(uint32 ssrc) {
-  std::map<uint32, int64>::const_iterator it = last_byte_sent_.find(ssrc);
+int64_t PacedSender::GetLastByteSentForSsrc(uint32_t ssrc) {
+  std::map<uint32_t, int64_t>::const_iterator it = last_byte_sent_.find(ssrc);
   if (it == last_byte_sent_.end())
     return 0;
   return it->second;
@@ -169,7 +169,7 @@ bool PacedSender::ResendPackets(const SendPacketVector& packets,
   return true;
 }
 
-bool PacedSender::SendRtcpPacket(uint32 ssrc, PacketRef packet) {
+bool PacedSender::SendRtcpPacket(uint32_t ssrc, PacketRef packet) {
   if (state_ == State_TransportBlocked) {
     PacketKey key =
         PacedPacketSender::MakePacketKey(PacketKey::RTCP, 0, ssrc, 0);
@@ -336,7 +336,7 @@ void PacedSender::LogPacketEvent(const Packet& packet, CastLoggingEvent type) {
                                packet.size());
   bool success = reader.Skip(4);
   success &= reader.ReadU32(&event.rtp_timestamp);
-  uint32 ssrc;
+  uint32_t ssrc;
   success &= reader.ReadU32(&ssrc);
   if (ssrc == audio_ssrc_) {
     event.media_type = AUDIO_EVENT;

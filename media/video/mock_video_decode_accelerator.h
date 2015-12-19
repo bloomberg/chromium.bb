@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
@@ -28,7 +27,7 @@ class MockVideoDecodeAccelerator : public VideoDecodeAccelerator {
   MOCK_METHOD1(Decode, void(const BitstreamBuffer& bitstream_buffer));
   MOCK_METHOD1(AssignPictureBuffers,
                void(const std::vector<PictureBuffer>& buffers));
-  MOCK_METHOD1(ReusePictureBuffer, void(int32 picture_buffer_id));
+  MOCK_METHOD1(ReusePictureBuffer, void(int32_t picture_buffer_id));
   MOCK_METHOD0(Flush, void());
   MOCK_METHOD0(Reset, void());
   MOCK_METHOD0(Destroy, void());

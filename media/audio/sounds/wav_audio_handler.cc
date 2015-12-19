@@ -76,10 +76,10 @@ bool ParseFmtChunk(const base::StringPiece data, WavAudioParameters* params) {
   }
 
   // Read in serialized parameters.
-  params->audio_format = ReadInt<uint16>(data, kAudioFormatOffset);
-  params->num_channels = ReadInt<uint16>(data, kChannelOffset);
-  params->sample_rate = ReadInt<uint32>(data, kSampleRateOffset);
-  params->bits_per_sample = ReadInt<uint16>(data, kBitsPerSampleOffset);
+  params->audio_format = ReadInt<uint16_t>(data, kAudioFormatOffset);
+  params->num_channels = ReadInt<uint16_t>(data, kChannelOffset);
+  params->sample_rate = ReadInt<uint32_t>(data, kSampleRateOffset);
+  params->bits_per_sample = ReadInt<uint16_t>(data, kBitsPerSampleOffset);
   return true;
 }
 

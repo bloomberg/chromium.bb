@@ -58,26 +58,26 @@ class ReceiverTimeOffsetEstimatorImpl : public ReceiverTimeOffsetEstimator {
   class BoundCalculator {
    public:
     typedef std::pair<base::TimeTicks, base::TimeTicks> TimeTickPair;
-    typedef std::map<uint64, TimeTickPair> EventMap;
+    typedef std::map<uint64_t, TimeTickPair> EventMap;
 
     BoundCalculator();
     ~BoundCalculator();
     bool has_bound() const { return has_bound_; }
     base::TimeDelta bound() const { return bound_; }
 
-    void SetSent(uint32 rtp,
-                 uint32 packet_id,
+    void SetSent(uint32_t rtp,
+                 uint32_t packet_id,
                  bool audio,
                  base::TimeTicks t);
 
-    void SetReceived(uint32 rtp,
-                     uint16 packet_id,
+    void SetReceived(uint32_t rtp,
+                     uint16_t packet_id,
                      bool audio,
                      base::TimeTicks t);
 
    private:
     void UpdateBound(base::TimeTicks a, base::TimeTicks b);
-    void CheckUpdate(uint64 key);
+    void CheckUpdate(uint64_t key);
 
    private:
     EventMap events_;

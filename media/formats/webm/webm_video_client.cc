@@ -31,8 +31,10 @@ void WebMVideoClient::Reset() {
 }
 
 bool WebMVideoClient::InitializeConfig(
-    const std::string& codec_id, const std::vector<uint8>& codec_private,
-    bool is_encrypted, VideoDecoderConfig* config) {
+    const std::string& codec_id,
+    const std::vector<uint8_t>& codec_private,
+    bool is_encrypted,
+    VideoDecoderConfig* config) {
   DCHECK(config);
 
   VideoCodec video_codec = kUnknownVideoCodec;
@@ -95,8 +97,8 @@ bool WebMVideoClient::InitializeConfig(
   return config->IsValidConfig();
 }
 
-bool WebMVideoClient::OnUInt(int id, int64 val) {
-  int64* dst = NULL;
+bool WebMVideoClient::OnUInt(int id, int64_t val) {
+  int64_t* dst = NULL;
 
   switch (id) {
     case kWebMIdPixelWidth:
@@ -144,7 +146,7 @@ bool WebMVideoClient::OnUInt(int id, int64 val) {
   return true;
 }
 
-bool WebMVideoClient::OnBinary(int id, const uint8* data, int size) {
+bool WebMVideoClient::OnBinary(int id, const uint8_t* data, int size) {
   // Accept binary fields we don't care about for now.
   return true;
 }

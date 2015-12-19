@@ -19,7 +19,7 @@ namespace {
 // necessary parts being exported.
 class Vp8BitReader {
  public:
-  Vp8BitReader(const uint8* data, size_t size)
+  Vp8BitReader(const uint8_t* data, size_t size)
       : encoded_data_(data), encoded_data_end_(data + size) {
     Vp8DecoderReadBytes();
   }
@@ -34,8 +34,8 @@ class Vp8BitReader {
   // Read new bytes frome the encoded data buffer until |bit_count_| > 0.
   void Vp8DecoderReadBytes();
 
-  const uint8* encoded_data_;            // Current byte to decode.
-  const uint8* const encoded_data_end_;  // The end of the byte to decode.
+  const uint8_t* encoded_data_;            // Current byte to decode.
+  const uint8_t* const encoded_data_end_;  // The end of the byte to decode.
   // The following two variables are maintained by the decoder.
   // General decoding rule:
   // If |value_| is in the range of 0 to half of |range_|, output 0.
@@ -53,7 +53,7 @@ class Vp8BitReader {
 };
 
 // The number of bits to be left-shifted to make the variable range_ over 128.
-const uint8 vp8_shift[128] = {
+const uint8_t vp8_shift[128] = {
     0, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1,
@@ -62,7 +62,7 @@ const uint8 vp8_shift[128] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 // Mapping from the q_index(0-127) to the quantizer value(0-63).
-const uint8 vp8_quantizer_lookup[128] = {
+const uint8_t vp8_quantizer_lookup[128] = {
     0,  1,  2,  3,  4,  5,  6,  6,  7,  8,  9,  10, 10, 11, 12, 12, 13, 13, 14,
     15, 16, 17, 18, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 27, 28, 28, 29, 29,
     30, 30, 31, 31, 32, 32, 33, 33, 34, 34, 35, 35, 36, 36, 37, 37, 38, 38, 39,
@@ -167,7 +167,7 @@ void ParseFilterHeader(Vp8BitReader* bit_reader) {
 }
 }  // unnamed namespace
 
-int ParseVp8HeaderQuantizer(const uint8* encoded_data, size_t size) {
+int ParseVp8HeaderQuantizer(const uint8_t* encoded_data, size_t size) {
   DCHECK(encoded_data);
   if (size <= 3) {
     return -1;
@@ -198,7 +198,7 @@ int ParseVp8HeaderQuantizer(const uint8* encoded_data, size_t size) {
   // Parse the number of coefficient data partitions.
   bit_reader.DecodeValue(2);
   // Parse the base q_index.
-  uint8 q_index = static_cast<uint8>(bit_reader.DecodeValue(7));
+  uint8_t q_index = static_cast<uint8_t>(bit_reader.DecodeValue(7));
   if (q_index > 127) {
     return 63;
   }

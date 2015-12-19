@@ -69,7 +69,7 @@ enum {
   // count, coupling information, and per channel mapping values:
   //   - Byte 0: Number of streams.
   //   - Byte 1: Number coupled.
-  //   - Byte 2: Starting at byte 2 are |extra_data->channels| uint8 mapping
+  //   - Byte 2: Starting at byte 2 are |extra_data->channels| uint8_t mapping
   //             values.
   OPUS_EXTRADATA_NUM_STREAMS_OFFSET = OPUS_EXTRADATA_SIZE,
   OPUS_EXTRADATA_NUM_COUPLED_OFFSET = OPUS_EXTRADATA_NUM_STREAMS_OFFSET + 1,

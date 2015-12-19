@@ -18,8 +18,8 @@ namespace media {
 namespace cast {
 
 namespace {
-static const uint32 kSendingSsrc = 0x12345678;
-static const uint32 kMediaSsrc = 0x87654321;
+static const uint32_t kSendingSsrc = 0x12345678;
+static const uint32_t kMediaSsrc = 0x87654321;
 static const base::TimeDelta kDefaultDelay =
     base::TimeDelta::FromMilliseconds(100);
 
@@ -167,8 +167,8 @@ TEST_F(RtcpBuilderTest, RtcpReceiverReportWithRrtraAndCastMessage) {
 }
 
 TEST_F(RtcpBuilderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
-  static const uint32 kTimeBaseMs = 12345678;
-  static const uint32 kTimeDelayMs = 10;
+  static const uint32_t kTimeBaseMs = 12345678;
+  static const uint32_t kTimeDelayMs = 10;
 
   TestRtcpPacketBuilder p;
   p.AddRr(kSendingSsrc, 1);
@@ -242,8 +242,8 @@ TEST_F(RtcpBuilderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
 }
 
 TEST_F(RtcpBuilderTest, RtcpReceiverReportWithOversizedFrameLog) {
-  static const uint32 kTimeBaseMs = 12345678;
-  static const uint32 kTimeDelayMs = 10;
+  static const uint32_t kTimeBaseMs = 12345678;
+  static const uint32_t kTimeDelayMs = 10;
 
   TestRtcpPacketBuilder p;
   p.AddRr(kSendingSsrc, 1);
@@ -264,10 +264,8 @@ TEST_F(RtcpBuilderTest, RtcpReceiverReportWithOversizedFrameLog) {
       num_events,
       kTimeBaseMs);
   for (int i = 0; i < num_events; i++) {
-    p.AddReceiverEventLog(
-        kLostPacketId1,
-        PACKET_RECEIVED,
-        static_cast<uint16>(kTimeDelayMs * i));
+    p.AddReceiverEventLog(kLostPacketId1, PACKET_RECEIVED,
+                          static_cast<uint16_t>(kTimeDelayMs * i));
   }
 
 
@@ -297,8 +295,8 @@ TEST_F(RtcpBuilderTest, RtcpReceiverReportWithOversizedFrameLog) {
 }
 
 TEST_F(RtcpBuilderTest, RtcpReceiverReportWithTooManyLogFrames) {
-  static const uint32 kTimeBaseMs = 12345678;
-  static const uint32 kTimeDelayMs = 10;
+  static const uint32_t kTimeBaseMs = 12345678;
+  static const uint32_t kTimeDelayMs = 10;
 
   TestRtcpPacketBuilder p;
   p.AddRr(kSendingSsrc, 1);
@@ -343,7 +341,7 @@ TEST_F(RtcpBuilderTest, RtcpReceiverReportWithTooManyLogFrames) {
 }
 
 TEST_F(RtcpBuilderTest, RtcpReceiverReportWithOldLogFrames) {
-  static const uint32 kTimeBaseMs = 12345678;
+  static const uint32_t kTimeBaseMs = 12345678;
 
   TestRtcpPacketBuilder p;
   p.AddRr(kSendingSsrc, 1);
@@ -390,7 +388,7 @@ TEST_F(RtcpBuilderTest, RtcpReceiverReportWithOldLogFrames) {
 }
 
 TEST_F(RtcpBuilderTest, RtcpReceiverReportRedundancy) {
-  uint32 time_base_ms = 12345678;
+  uint32_t time_base_ms = 12345678;
   int kTimeBetweenEventsMs = 10;
 
   RtcpReportBlock report_block = GetReportBlock();
@@ -413,9 +411,9 @@ TEST_F(RtcpBuilderTest, RtcpReceiverReportRedundancy) {
         time_base_ms - (num_events - 1) * kResendDelay *
         kTimeBetweenEventsMs);
     for (int i = 0; i < num_events; i++) {
-      p.AddReceiverEventLog(
-          0, FRAME_ACK_SENT,
-          base::checked_cast<uint16>(i * kResendDelay * kTimeBetweenEventsMs));
+      p.AddReceiverEventLog(0, FRAME_ACK_SENT,
+                            base::checked_cast<uint16_t>(i * kResendDelay *
+                                                         kTimeBetweenEventsMs));
     }
 
     FrameEvent frame_event;

@@ -162,8 +162,8 @@ void MidiManager::AccumulateMidiBytesSent(MidiManagerClient* client, size_t n) {
 }
 
 void MidiManager::DispatchSendMidiData(MidiManagerClient* client,
-                                       uint32 port_index,
-                                       const std::vector<uint8>& data,
+                                       uint32_t port_index,
+                                       const std::vector<uint8_t>& data,
                                        double timestamp) {
   NOTREACHED();
 }
@@ -197,7 +197,7 @@ void MidiManager::AddOutputPort(const MidiPortInfo& info) {
     client->AddOutputPort(info);
 }
 
-void MidiManager::SetInputPortState(uint32 port_index, MidiPortState state) {
+void MidiManager::SetInputPortState(uint32_t port_index, MidiPortState state) {
   base::AutoLock auto_lock(lock_);
   DCHECK_LT(port_index, input_ports_.size());
   input_ports_[port_index].state = state;
@@ -205,7 +205,7 @@ void MidiManager::SetInputPortState(uint32 port_index, MidiPortState state) {
     client->SetInputPortState(port_index, state);
 }
 
-void MidiManager::SetOutputPortState(uint32 port_index, MidiPortState state) {
+void MidiManager::SetOutputPortState(uint32_t port_index, MidiPortState state) {
   base::AutoLock auto_lock(lock_);
   DCHECK_LT(port_index, output_ports_.size());
   output_ports_[port_index].state = state;
@@ -213,11 +213,10 @@ void MidiManager::SetOutputPortState(uint32 port_index, MidiPortState state) {
     client->SetOutputPortState(port_index, state);
 }
 
-void MidiManager::ReceiveMidiData(
-    uint32 port_index,
-    const uint8* data,
-    size_t length,
-    double timestamp) {
+void MidiManager::ReceiveMidiData(uint32_t port_index,
+                                  const uint8_t* data,
+                                  size_t length,
+                                  double timestamp) {
   base::AutoLock auto_lock(lock_);
 
   for (auto client : clients_)

@@ -89,7 +89,7 @@ class OpenSLESInputStream : public AudioInputStream {
 
   // Audio buffers that are allocated in the constructor based on
   // info from audio parameters.
-  uint8* audio_data_[kMaxNumOfBuffersInQueue];
+  uint8_t* audio_data_[kMaxNumOfBuffersInQueue];
 
   int active_buffer_index_;
   int buffer_size_bytes_;

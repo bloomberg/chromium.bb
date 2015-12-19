@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_PLAYER_TRACKER_H_
 #define MEDIA_BASE_PLAYER_TRACKER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "media/base/media_export.h"
 

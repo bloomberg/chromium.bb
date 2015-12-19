@@ -5,7 +5,6 @@
 #ifndef MEDIA_VIDEO_PICTURE_H_
 #define MEDIA_VIDEO_PICTURE_H_
 
-#include "base/basictypes.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -17,20 +16,18 @@ namespace media {
 // This is the media-namespace equivalent of PP_PictureBuffer_Dev.
 class MEDIA_EXPORT PictureBuffer {
  public:
-  PictureBuffer(int32 id, gfx::Size size, uint32 texture_id);
-  PictureBuffer(int32 id,
+  PictureBuffer(int32_t id, gfx::Size size, uint32_t texture_id);
+  PictureBuffer(int32_t id,
                 gfx::Size size,
-                uint32 texture_id,
-                uint32 internal_texture_id);
-  PictureBuffer(int32 id,
+                uint32_t texture_id,
+                uint32_t internal_texture_id);
+  PictureBuffer(int32_t id,
                 gfx::Size size,
-                uint32 texture_id,
+                uint32_t texture_id,
                 const gpu::Mailbox& texture_mailbox);
 
   // Returns the client-specified id of the buffer.
-  int32 id() const {
-    return id_;
-  }
+  int32_t id() const { return id_; }
 
   // Returns the size of the buffer.
   gfx::Size size() const {
@@ -40,21 +37,19 @@ class MEDIA_EXPORT PictureBuffer {
   // Returns the id of the texture.
   // NOTE: The texture id in the renderer process corresponds to a different
   // texture id in the GPU process.
-  uint32 texture_id() const {
-    return texture_id_;
-  }
+  uint32_t texture_id() const { return texture_id_; }
 
-  uint32 internal_texture_id() const { return internal_texture_id_; }
+  uint32_t internal_texture_id() const { return internal_texture_id_; }
 
   const gpu::Mailbox& texture_mailbox() const {
     return texture_mailbox_;
   }
 
  private:
-  int32 id_;
+  int32_t id_;
   gfx::Size size_;
-  uint32 texture_id_;
-  uint32 internal_texture_id_;
+  uint32_t texture_id_;
+  uint32_t internal_texture_id_;
   gpu::Mailbox texture_mailbox_;
 };
 
@@ -62,22 +57,18 @@ class MEDIA_EXPORT PictureBuffer {
 // This is the media-namespace equivalent of PP_Picture_Dev.
 class MEDIA_EXPORT Picture {
  public:
-  Picture(int32 picture_buffer_id,
-          int32 bitstream_buffer_id,
+  Picture(int32_t picture_buffer_id,
+          int32_t bitstream_buffer_id,
           const gfx::Rect& visible_rect,
           bool allow_overlay);
 
   // Returns the id of the picture buffer where this picture is contained.
-  int32 picture_buffer_id() const {
-    return picture_buffer_id_;
-  }
+  int32_t picture_buffer_id() const { return picture_buffer_id_; }
 
   // Returns the id of the bitstream buffer from which this frame was decoded.
-  int32 bitstream_buffer_id() const {
-    return bitstream_buffer_id_;
-  }
+  int32_t bitstream_buffer_id() const { return bitstream_buffer_id_; }
 
-  void set_bitstream_buffer_id(int32 bitstream_buffer_id) {
+  void set_bitstream_buffer_id(int32_t bitstream_buffer_id) {
     bitstream_buffer_id_ = bitstream_buffer_id;
   }
 
@@ -89,8 +80,8 @@ class MEDIA_EXPORT Picture {
   bool allow_overlay() const { return allow_overlay_; }
 
  private:
-  int32 picture_buffer_id_;
-  int32 bitstream_buffer_id_;
+  int32_t picture_buffer_id_;
+  int32_t bitstream_buffer_id_;
   gfx::Rect visible_rect_;
   bool allow_overlay_;
 };

@@ -528,9 +528,9 @@ void RunSimulation(const base::FilePath& source_path,
   int encoded_video_frames = 0;
   int dropped_video_frames = 0;
   int late_video_frames = 0;
-  int64 total_delay_of_late_frames_ms = 0;
-  int64 encoded_size = 0;
-  int64 target_bitrate = 0;
+  int64_t total_delay_of_late_frames_ms = 0;
+  int64_t encoded_size = 0;
+  int64_t target_bitrate = 0;
   for (size_t i = 0; i < video_frame_events.size(); ++i) {
     const media::cast::proto::AggregatedFrameEvent& event =
         *video_frame_events[i];

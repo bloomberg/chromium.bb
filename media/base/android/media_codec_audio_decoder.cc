@@ -202,7 +202,7 @@ void MediaCodecAudioDecoder::Render(int buffer_index,
 
     const bool postpone = (render_mode == kRenderAfterPreroll);
 
-    int64 head_position =
+    int64_t head_position =
         audio_codec->PlayOutputBuffer(buffer_index, size, offset, postpone);
 
     base::TimeTicks current_time = base::TimeTicks::Now();
@@ -227,7 +227,7 @@ void MediaCodecAudioDecoder::Render(int buffer_index,
       media_task_runner_->PostTask(
           FROM_HERE, base::Bind(update_current_time_cb_, pts, pts, true));
     } else {
-      int64 frames_to_play = frame_count_ - head_position;
+      int64_t frames_to_play = frame_count_ - head_position;
 
       DCHECK_GE(frames_to_play, 0) << class_name() << "::" << __FUNCTION__
                                    << " pts:" << pts

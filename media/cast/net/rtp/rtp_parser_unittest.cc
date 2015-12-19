@@ -14,10 +14,10 @@ namespace cast {
 
 static const size_t kPacketLength = 1500;
 static const int kTestPayloadType = 127;
-static const uint32 kTestSsrc = 1234;
-static const uint32 kTestTimestamp = 111111;
-static const uint16 kTestSeqNum = 4321;
-static const uint8 kRefFrameId = 17;
+static const uint32_t kTestSsrc = 1234;
+static const uint32_t kTestTimestamp = 111111;
+static const uint16_t kTestSeqNum = 4321;
+static const uint8_t kRefFrameId = 17;
 
 class RtpParserTest : public ::testing::Test {
  protected:
@@ -38,7 +38,7 @@ class RtpParserTest : public ::testing::Test {
 
   void ExpectParsesPacket() {
     RtpCastHeader parsed_header;
-    const uint8* payload = NULL;
+    const uint8_t* payload = NULL;
     size_t payload_size = static_cast<size_t>(-1);
     EXPECT_TRUE(rtp_parser_.ParsePacket(
         packet_, kPacketLength, &parsed_header, &payload, &payload_size));
@@ -62,14 +62,14 @@ class RtpParserTest : public ::testing::Test {
 
   void ExpectDoesNotParsePacket() {
     RtpCastHeader parsed_header;
-    const uint8* payload = NULL;
+    const uint8_t* payload = NULL;
     size_t payload_size = static_cast<size_t>(-1);
     EXPECT_FALSE(rtp_parser_.ParsePacket(
         packet_, kPacketLength, &parsed_header, &payload, &payload_size));
   }
 
   RtpPacketBuilder packet_builder_;
-  uint8 packet_[kPacketLength];
+  uint8_t packet_[kPacketLength];
   RtpParser rtp_parser_;
   RtpCastHeader cast_header_;
 };
@@ -164,10 +164,10 @@ TEST_F(RtpParserTest, ParseCastPacketWithSpecificFrameReference) {
 }
 
 TEST_F(RtpParserTest, ParseExpandingFrameIdTo32Bits) {
-  const uint32 kMaxFrameId = 1000;
+  const uint32_t kMaxFrameId = 1000;
   packet_builder_.SetKeyFrame(true);
   cast_header_.is_key_frame = true;
-  for (uint32 frame_id = 0; frame_id <= kMaxFrameId; ++frame_id) {
+  for (uint32_t frame_id = 0; frame_id <= kMaxFrameId; ++frame_id) {
     packet_builder_.SetFrameIds(frame_id, frame_id);
     packet_builder_.BuildHeader(packet_, kPacketLength);
     cast_header_.frame_id = frame_id;
@@ -177,13 +177,13 @@ TEST_F(RtpParserTest, ParseExpandingFrameIdTo32Bits) {
 }
 
 TEST_F(RtpParserTest, ParseExpandingReferenceFrameIdTo32Bits) {
-  const uint32 kMaxFrameId = 1000;
-  const uint32 kMaxBackReferenceOffset = 10;
+  const uint32_t kMaxFrameId = 1000;
+  const uint32_t kMaxBackReferenceOffset = 10;
   packet_builder_.SetKeyFrame(false);
   cast_header_.is_key_frame = false;
-  for (uint32 frame_id = kMaxBackReferenceOffset;
-       frame_id <= kMaxFrameId; ++frame_id) {
-    const uint32 reference_frame_id =
+  for (uint32_t frame_id = kMaxBackReferenceOffset; frame_id <= kMaxFrameId;
+       ++frame_id) {
+    const uint32_t reference_frame_id =
         frame_id - base::RandInt(1, kMaxBackReferenceOffset);
     packet_builder_.SetFrameIds(frame_id, reference_frame_id);
     packet_builder_.BuildHeader(packet_, kPacketLength);

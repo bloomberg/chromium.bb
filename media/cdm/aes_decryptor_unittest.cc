@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
 #include "base/json/json_reader.h"
@@ -44,17 +43,16 @@ MATCHER(IsJSONDictionary, "") {
 
 namespace media {
 
-const uint8 kOriginalData[] = "Original subsample data.";
+const uint8_t kOriginalData[] = "Original subsample data.";
 const int kOriginalDataSize = 24;
 
 // In the examples below, 'k'(key) has to be 16 bytes, and will always require
 // 2 bytes of padding. 'kid'(keyid) is variable length, and may require 0, 1,
 // or 2 bytes of padding.
 
-const uint8 kKeyId[] = {
+const uint8_t kKeyId[] = {
     // base64 equivalent is AAECAw
-    0x00, 0x01, 0x02, 0x03
-};
+    0x00, 0x01, 0x02, 0x03};
 
 // Key is 0x0405060708090a0b0c0d0e0f10111213,
 // base64 equivalent is BAUGBwgJCgsMDQ4PEBESEw.
@@ -108,40 +106,30 @@ const char kWrongSizedKeyAsJWK[] =
     "  ]"
     "}";
 
-const uint8 kIv[] = {
-  0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
+const uint8_t kIv[] = {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
+                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 // kOriginalData encrypted with kKey and kIv but without any subsamples (or
 // equivalently using kSubsampleEntriesCypherOnly).
-const uint8 kEncryptedData[] = {
-  0x2f, 0x03, 0x09, 0xef, 0x71, 0xaf, 0x31, 0x16,
-  0xfa, 0x9d, 0x18, 0x43, 0x1e, 0x96, 0x71, 0xb5,
-  0xbf, 0xf5, 0x30, 0x53, 0x9a, 0x20, 0xdf, 0x95
-};
+const uint8_t kEncryptedData[] = {
+    0x2f, 0x03, 0x09, 0xef, 0x71, 0xaf, 0x31, 0x16, 0xfa, 0x9d, 0x18, 0x43,
+    0x1e, 0x96, 0x71, 0xb5, 0xbf, 0xf5, 0x30, 0x53, 0x9a, 0x20, 0xdf, 0x95};
 
 // kOriginalData encrypted with kSubsampleKey and kSubsampleIv using
 // kSubsampleEntriesNormal.
-const uint8 kSubsampleEncryptedData[] = {
-  0x4f, 0x72, 0x09, 0x16, 0x09, 0xe6, 0x79, 0xad,
-  0x70, 0x73, 0x75, 0x62, 0x09, 0xbb, 0x83, 0x1d,
-  0x4d, 0x08, 0xd7, 0x78, 0xa4, 0xa7, 0xf1, 0x2e
-};
+const uint8_t kSubsampleEncryptedData[] = {
+    0x4f, 0x72, 0x09, 0x16, 0x09, 0xe6, 0x79, 0xad, 0x70, 0x73, 0x75, 0x62,
+    0x09, 0xbb, 0x83, 0x1d, 0x4d, 0x08, 0xd7, 0x78, 0xa4, 0xa7, 0xf1, 0x2e};
 
-const uint8 kOriginalData2[] = "Changed Original data.";
+const uint8_t kOriginalData2[] = "Changed Original data.";
 
-const uint8 kIv2[] = {
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
+const uint8_t kIv2[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-const uint8 kKeyId2[] = {
+const uint8_t kKeyId2[] = {
     // base64 equivalent is AAECAwQFBgcICQoLDA0ODxAREhM=
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
-    0x10, 0x11, 0x12, 0x13
-};
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+    0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13};
 
 const char kKey2AsJWK[] =
     "{"
@@ -157,11 +145,9 @@ const char kKey2AsJWK[] =
 
 // 'k' in bytes is x14x15x16x17x18x19x1ax1bx1cx1dx1ex1fx20x21x22x23
 
-const uint8 kEncryptedData2[] = {
-  0x57, 0x66, 0xf4, 0x12, 0x1a, 0xed, 0xb5, 0x79,
-  0x1c, 0x8e, 0x25, 0xd7, 0x17, 0xe7, 0x5e, 0x16,
-  0xe3, 0x40, 0x08, 0x27, 0x11, 0xe9
-};
+const uint8_t kEncryptedData2[] = {
+    0x57, 0x66, 0xf4, 0x12, 0x1a, 0xed, 0xb5, 0x79, 0x1c, 0x8e, 0x25,
+    0xd7, 0x17, 0xe7, 0x5e, 0x16, 0xe3, 0x40, 0x08, 0x27, 0x11, 0xe9};
 
 // Subsample entries for testing. The sum of |cypher_bytes| and |clear_bytes| of
 // all entries must be equal to kOriginalDataSize to make the subsample entries
@@ -198,9 +184,9 @@ const SubsampleEntry kSubsampleEntriesCypherOnly[] = {
 };
 
 static scoped_refptr<DecoderBuffer> CreateEncryptedBuffer(
-    const std::vector<uint8>& data,
-    const std::vector<uint8>& key_id,
-    const std::vector<uint8>& iv,
+    const std::vector<uint8_t>& data,
+    const std::vector<uint8_t>& key_id,
+    const std::vector<uint8_t>& iv,
     const std::vector<SubsampleEntry>& subsample_entries) {
   DCHECK(!data.empty());
   scoped_refptr<DecoderBuffer> encrypted_buffer(new DecoderBuffer(data.size()));
@@ -298,7 +284,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
 
   void OnReject(ExpectedResult expected_result,
                 MediaKeys::Exception exception_code,
-                uint32 system_code,
+                uint32_t system_code,
                 const std::string& error_message) {
     EXPECT_EQ(expected_result, REJECTED)
         << "Unexpectedly rejected with message: " << error_message;
@@ -329,7 +315,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
   }
 
   // Creates a new session using |key_id|. Returns the session ID.
-  std::string CreateSession(const std::vector<uint8>& key_id) {
+  std::string CreateSession(const std::vector<uint8_t>& key_id) {
     DCHECK(!key_id.empty());
     EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
                                         GURL::EmptyGURL()));
@@ -387,11 +373,12 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
       EXPECT_CALL(*this, OnSessionKeysChangeCalled(_, _)).Times(0);
     }
 
-    cdm_->UpdateSession(session_id, std::vector<uint8>(key.begin(), key.end()),
+    cdm_->UpdateSession(session_id,
+                        std::vector<uint8_t>(key.begin(), key.end()),
                         CreatePromise(expected_result));
   }
 
-  bool KeysInfoContains(std::vector<uint8> expected) {
+  bool KeysInfoContains(std::vector<uint8_t> expected) {
     for (const auto& key_id : keys_info_) {
       if (key_id->key_id == expected)
         return true;
@@ -411,7 +398,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
   };
 
   void DecryptAndExpect(const scoped_refptr<DecoderBuffer>& encrypted,
-                        const std::vector<uint8>& plain_text,
+                        const std::vector<uint8_t>& plain_text,
                         DecryptExpectation result) {
     scoped_refptr<DecoderBuffer> decrypted;
 
@@ -439,7 +426,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
       decryptor_->Decrypt(Decryptor::kVideo, encrypted, decrypt_cb_);
     }
 
-    std::vector<uint8> decrypted_text;
+    std::vector<uint8_t> decrypted_text;
     if (decrypted.get() && decrypted->data_size()) {
       decrypted_text.assign(
         decrypted->data(), decrypted->data() + decrypted->data_size());
@@ -466,7 +453,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
   MOCK_METHOD4(OnSessionMessage,
                void(const std::string& session_id,
                     MediaKeys::MessageType message_type,
-                    const std::vector<uint8>& message,
+                    const std::vector<uint8_t>& message,
                     const GURL& legacy_destination_url));
   MOCK_METHOD1(OnSessionClosed, void(const std::string& session_id));
   MOCK_METHOD4(OnLegacySessionError,
@@ -490,11 +477,11 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
   base::MessageLoop message_loop_;
 
   // Constants for testing.
-  const std::vector<uint8> original_data_;
-  const std::vector<uint8> encrypted_data_;
-  const std::vector<uint8> subsample_encrypted_data_;
-  const std::vector<uint8> key_id_;
-  const std::vector<uint8> iv_;
+  const std::vector<uint8_t> original_data_;
+  const std::vector<uint8_t> encrypted_data_;
+  const std::vector<uint8_t> subsample_encrypted_data_;
+  const std::vector<uint8_t> key_id_;
+  const std::vector<uint8_t> iv_;
   const std::vector<SubsampleEntry> normal_subsample_entries_;
   const std::vector<SubsampleEntry> no_subsample_entries_;
 };
@@ -503,32 +490,32 @@ TEST_P(AesDecryptorTest, CreateSessionWithNullInitData) {
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
-      CreateSessionPromise(RESOLVED));
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      std::vector<uint8_t>(), CreateSessionPromise(RESOLVED));
 }
 
 TEST_P(AesDecryptorTest, MultipleCreateSession) {
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
-      CreateSessionPromise(RESOLVED));
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      std::vector<uint8_t>(), CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
-      CreateSessionPromise(RESOLVED));
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      std::vector<uint8_t>(), CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
-      CreateSessionPromise(RESOLVED));
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      std::vector<uint8_t>(), CreateSessionPromise(RESOLVED));
 }
 
 TEST_P(AesDecryptorTest, CreateSessionWithCencInitData) {
-  const uint8 init_data[] = {
+  const uint8_t init_data[] = {
       0x00, 0x00, 0x00, 0x44,                          // size = 68
       0x70, 0x73, 0x73, 0x68,                          // 'pssh'
       0x01,                                            // version
@@ -548,12 +535,12 @@ TEST_P(AesDecryptorTest, CreateSessionWithCencInitData) {
                                       GURL::EmptyGURL()));
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
-      std::vector<uint8>(init_data, init_data + arraysize(init_data)),
+      std::vector<uint8_t>(init_data, init_data + arraysize(init_data)),
       CreateSessionPromise(RESOLVED));
 #else
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
-      std::vector<uint8>(init_data, init_data + arraysize(init_data)),
+      std::vector<uint8_t>(init_data, init_data + arraysize(init_data)),
       CreateSessionPromise(REJECTED));
 #endif
 }
@@ -566,7 +553,7 @@ TEST_P(AesDecryptorTest, CreateSessionWithKeyIdsInitData) {
                                       GURL::EmptyGURL()));
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::KEYIDS,
-      std::vector<uint8>(init_data, init_data + arraysize(init_data) - 1),
+      std::vector<uint8_t>(init_data, init_data + arraysize(init_data) - 1),
       CreateSessionPromise(RESOLVED));
 }
 
@@ -581,7 +568,7 @@ TEST_P(AesDecryptorTest, NormalDecryption) {
 TEST_P(AesDecryptorTest, UnencryptedFrame) {
   // An empty iv string signals that the frame is unencrypted.
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
-      original_data_, key_id_, std::vector<uint8>(), no_subsample_entries_);
+      original_data_, key_id_, std::vector<uint8_t>(), no_subsample_entries_);
   DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS);
 }
 
@@ -635,15 +622,15 @@ TEST_P(AesDecryptorTest, MultipleKeysAndFrames) {
 
   // The second key is also available.
   encrypted_buffer = CreateEncryptedBuffer(
-      std::vector<uint8>(kEncryptedData2,
-                         kEncryptedData2 + arraysize(kEncryptedData2)),
-      std::vector<uint8>(kKeyId2, kKeyId2 + arraysize(kKeyId2)),
-      std::vector<uint8>(kIv2, kIv2 + arraysize(kIv2)),
+      std::vector<uint8_t>(kEncryptedData2,
+                           kEncryptedData2 + arraysize(kEncryptedData2)),
+      std::vector<uint8_t>(kKeyId2, kKeyId2 + arraysize(kKeyId2)),
+      std::vector<uint8_t>(kIv2, kIv2 + arraysize(kIv2)),
       no_subsample_entries_);
   ASSERT_NO_FATAL_FAILURE(DecryptAndExpect(
       encrypted_buffer,
-      std::vector<uint8>(kOriginalData2,
-                         kOriginalData2 + arraysize(kOriginalData2) - 1),
+      std::vector<uint8_t>(kOriginalData2,
+                           kOriginalData2 + arraysize(kOriginalData2) - 1),
       SUCCESS));
 }
 
@@ -651,7 +638,7 @@ TEST_P(AesDecryptorTest, CorruptedIv) {
   std::string session_id = CreateSession(key_id_);
   UpdateSessionAndExpect(session_id, kKeyAsJWK, RESOLVED, true);
 
-  std::vector<uint8> bad_iv = iv_;
+  std::vector<uint8_t> bad_iv = iv_;
   bad_iv[1]++;
 
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
@@ -664,7 +651,7 @@ TEST_P(AesDecryptorTest, CorruptedData) {
   std::string session_id = CreateSession(key_id_);
   UpdateSessionAndExpect(session_id, kKeyAsJWK, RESOLVED, true);
 
-  std::vector<uint8> bad_data = encrypted_data_;
+  std::vector<uint8_t> bad_data = encrypted_data_;
   bad_data[1]++;
 
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
@@ -676,7 +663,7 @@ TEST_P(AesDecryptorTest, EncryptedAsUnencryptedFailure) {
   std::string session_id = CreateSession(key_id_);
   UpdateSessionAndExpect(session_id, kKeyAsJWK, RESOLVED, true);
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
-      encrypted_data_, key_id_, std::vector<uint8>(), no_subsample_entries_);
+      encrypted_data_, key_id_, std::vector<uint8_t>(), no_subsample_entries_);
   DecryptAndExpect(encrypted_buffer, original_data_, DATA_MISMATCH);
 }
 
@@ -977,8 +964,8 @@ TEST_P(AesDecryptorTest, JWKKey) {
 }
 
 TEST_P(AesDecryptorTest, GetKeyIds) {
-  std::vector<uint8> key_id1(kKeyId, kKeyId + arraysize(kKeyId));
-  std::vector<uint8> key_id2(kKeyId2, kKeyId2 + arraysize(kKeyId2));
+  std::vector<uint8_t> key_id1(kKeyId, kKeyId + arraysize(kKeyId));
+  std::vector<uint8_t> key_id2(kKeyId2, kKeyId2 + arraysize(kKeyId2));
 
   std::string session_id = CreateSession(key_id_);
   EXPECT_FALSE(KeysInfoContains(key_id1));
@@ -996,7 +983,7 @@ TEST_P(AesDecryptorTest, GetKeyIds) {
 }
 
 TEST_P(AesDecryptorTest, NoKeysChangeForSameKey) {
-  std::vector<uint8> key_id(kKeyId, kKeyId + arraysize(kKeyId));
+  std::vector<uint8_t> key_id(kKeyId, kKeyId + arraysize(kKeyId));
 
   std::string session_id = CreateSession(key_id_);
   EXPECT_FALSE(KeysInfoContains(key_id));

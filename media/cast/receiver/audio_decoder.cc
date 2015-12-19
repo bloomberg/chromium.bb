@@ -45,7 +45,7 @@ class AudioDecoder::ImplBase
                   "size of frame_id types do not match");
     bool is_continuous = true;
     if (seen_first_frame_) {
-      const uint32 frames_ahead = encoded_frame->frame_id - last_frame_id_;
+      const uint32_t frames_ahead = encoded_frame->frame_id - last_frame_id_;
       if (frames_ahead > 1) {
         RecoverBecauseFramesWereDropped();
         is_continuous = false;
@@ -81,7 +81,7 @@ class AudioDecoder::ImplBase
   virtual void RecoverBecauseFramesWereDropped() {}
 
   // Note: Implementation of Decode() is allowed to mutate |data|.
-  virtual scoped_ptr<AudioBus> Decode(uint8* data, int len) = 0;
+  virtual scoped_ptr<AudioBus> Decode(uint8_t* data, int len) = 0;
 
   const scoped_refptr<CastEnvironment> cast_environment_;
   const Codec codec_;
@@ -92,7 +92,7 @@ class AudioDecoder::ImplBase
 
  private:
   bool seen_first_frame_;
-  uint32 last_frame_id_;
+  uint32_t last_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ImplBase);
 };
@@ -106,10 +106,10 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
                  CODEC_AUDIO_OPUS,
                  num_channels,
                  sampling_rate),
-        decoder_memory_(new uint8[opus_decoder_get_size(num_channels)]),
+        decoder_memory_(new uint8_t[opus_decoder_get_size(num_channels)]),
         opus_decoder_(reinterpret_cast<OpusDecoder*>(decoder_memory_.get())),
-        max_samples_per_frame_(
-            kOpusMaxFrameDurationMillis * sampling_rate / 1000),
+        max_samples_per_frame_(kOpusMaxFrameDurationMillis * sampling_rate /
+                               1000),
         buffer_(new float[max_samples_per_frame_ * num_channels]) {
     if (ImplBase::operational_status_ != STATUS_UNINITIALIZED)
       return;
@@ -132,7 +132,7 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
     DCHECK_GE(result, 0);
   }
 
-  scoped_ptr<AudioBus> Decode(uint8* data, int len) final {
+  scoped_ptr<AudioBus> Decode(uint8_t* data, int len) final {
     scoped_ptr<AudioBus> audio_bus;
     const opus_int32 num_samples_decoded = opus_decode_float(
         opus_decoder_, data, len, buffer_.get(), max_samples_per_frame_, 0);
@@ -153,7 +153,7 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
     return audio_bus.Pass();
   }
 
-  const scoped_ptr<uint8[]> decoder_memory_;
+  const scoped_ptr<uint8_t[]> decoder_memory_;
   OpusDecoder* const opus_decoder_;
   const int max_samples_per_frame_;
   const scoped_ptr<float[]> buffer_;
@@ -183,21 +183,21 @@ class AudioDecoder::Pcm16Impl : public AudioDecoder::ImplBase {
  private:
   ~Pcm16Impl() final {}
 
-  scoped_ptr<AudioBus> Decode(uint8* data, int len) final {
+  scoped_ptr<AudioBus> Decode(uint8_t* data, int len) final {
     scoped_ptr<AudioBus> audio_bus;
-    const int num_samples = len / sizeof(int16) / num_channels_;
+    const int num_samples = len / sizeof(int16_t) / num_channels_;
     if (num_samples <= 0)
       return audio_bus.Pass();
 
-    int16* const pcm_data = reinterpret_cast<int16*>(data);
+    int16_t* const pcm_data = reinterpret_cast<int16_t*>(data);
 #if defined(ARCH_CPU_LITTLE_ENDIAN)
     // Convert endianness.
     const int num_elements = num_samples * num_channels_;
     for (int i = 0; i < num_elements; ++i)
-      pcm_data[i] = static_cast<int16>(base::NetToHost16(pcm_data[i]));
+      pcm_data[i] = static_cast<int16_t>(base::NetToHost16(pcm_data[i]));
 #endif
     audio_bus = AudioBus::Create(num_channels_, num_samples).Pass();
-    audio_bus->FromInterleaved(pcm_data, num_samples, sizeof(int16));
+    audio_bus->FromInterleaved(pcm_data, num_samples, sizeof(int16_t));
     return audio_bus.Pass();
   }
 

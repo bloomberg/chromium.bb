@@ -44,7 +44,7 @@ bool FFmpegH265ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
     }
   }
 
-  std::vector<uint8> input_frame;
+  std::vector<uint8_t> input_frame;
   std::vector<SubsampleEntry> subsamples;
   // TODO(servolk): Performance could be improved here, by reducing unnecessary
   // data copying, but first annex b conversion code needs to be refactored to
@@ -64,7 +64,7 @@ bool FFmpegH265ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
     DVLOG(4) << "Inserted HEVC decoder params";
   }
 
-  uint32 output_packet_size = input_frame.size();
+  uint32_t output_packet_size = input_frame.size();
 
   if (output_packet_size == 0)
     return false;  // Invalid input packet.

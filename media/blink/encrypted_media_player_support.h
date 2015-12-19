@@ -88,9 +88,9 @@ class EncryptedMediaPlayerSupport
   void OnKeyAdded(const std::string& session_id);
   void OnKeyError(const std::string& session_id,
                   MediaKeys::KeyError error_code,
-                  uint32 system_code);
+                  uint32_t system_code);
   void OnKeyMessage(const std::string& session_id,
-                    const std::vector<uint8>& message,
+                    const std::vector<uint8_t>& message,
                     const GURL& destination_url);
 
   CdmFactory* cdm_factory_;

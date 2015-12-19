@@ -52,7 +52,7 @@ template<class TimeType>
 void SetTimeValue(VideoFrameMetadata::Key key,
                   const TimeType& value,
                   base::DictionaryValue* dictionary) {
-  const int64 internal_value = value.ToInternalValue();
+  const int64_t internal_value = value.ToInternalValue();
   dictionary->SetWithoutPathExpansion(
       ToInternalKey(key),
       base::BinaryValue::CreateWithCopiedBuffer(
@@ -100,7 +100,7 @@ namespace {
 template<class TimeType>
 bool ToTimeValue(const base::BinaryValue& binary_value, TimeType* value) {
   DCHECK(value);
-  int64 internal_value;
+  int64_t internal_value;
   if (binary_value.GetSize() != sizeof(internal_value))
     return false;
   memcpy(&internal_value, binary_value.GetBuffer(), sizeof(internal_value));

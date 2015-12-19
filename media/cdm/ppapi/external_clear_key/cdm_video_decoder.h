@@ -5,7 +5,6 @@
 #ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CDM_VIDEO_DECODER_H_
 #define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CDM_VIDEO_DECODER_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"

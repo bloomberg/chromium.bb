@@ -8,7 +8,6 @@
 // Helper class to handle encryption for the Cast Transport library.
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"
@@ -28,11 +27,11 @@ class TransportEncryptionHandler : public base::NonThreadSafe {
 
   bool Initialize(const std::string& aes_key, const std::string& aes_iv_mask);
 
-  bool Encrypt(uint32 frame_id,
+  bool Encrypt(uint32_t frame_id,
                const base::StringPiece& data,
                std::string* encrypted_data);
 
-  bool Decrypt(uint32 frame_id,
+  bool Decrypt(uint32_t frame_id,
                const base::StringPiece& ciphertext,
                std::string* plaintext);
 

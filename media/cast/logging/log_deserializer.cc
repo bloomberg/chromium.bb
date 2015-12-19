@@ -72,7 +72,7 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
 
   int num_frame_events = log->metadata.num_frame_events();
   RtpTimestamp relative_rtp_timestamp = 0;
-  uint16 proto_size = 0;
+  uint16_t proto_size = 0;
   for (int i = 0; i < num_frame_events; i++) {
     if (!reader->ReadU16(&proto_size))
       return false;
@@ -146,7 +146,7 @@ bool DoDeserializeEvents(const char* data,
   base::BigEndianReader reader(data, data_bytes);
 
   LogMetadata metadata;
-  uint16 proto_size = 0;
+  uint16_t proto_size = 0;
   while (reader.remaining() > 0) {
     if (!reader.ReadU16(&proto_size))
       return false;
@@ -186,9 +186,9 @@ bool Uncompress(const char* data,
                 int* uncompressed_bytes) {
   z_stream stream = {0};
 
-  stream.next_in = reinterpret_cast<uint8*>(const_cast<char*>(data));
+  stream.next_in = reinterpret_cast<uint8_t*>(const_cast<char*>(data));
   stream.avail_in = data_bytes;
-  stream.next_out = reinterpret_cast<uint8*>(uncompressed);
+  stream.next_out = reinterpret_cast<uint8_t*>(uncompressed);
   stream.avail_out = max_uncompressed_bytes;
 
   bool success = false;

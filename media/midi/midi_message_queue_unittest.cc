@@ -10,38 +10,37 @@ namespace media {
 namespace midi {
 namespace {
 
-const uint8 kGMOn[] = { 0xf0, 0x7e, 0x7f, 0x09, 0x01, 0xf7 };
-const uint8 kPartialGMOn1st[] = { 0xf0 };
-const uint8 kPartialGMOn2nd[] = { 0x7e, 0x7f, 0x09, 0x01 };
-const uint8 kPartialGMOn3rd[] = { 0xf7 };
-const uint8 kGSOn[] = {
-  0xf0, 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7f, 0x00, 0x41, 0xf7,
+const uint8_t kGMOn[] = {0xf0, 0x7e, 0x7f, 0x09, 0x01, 0xf7};
+const uint8_t kPartialGMOn1st[] = {0xf0};
+const uint8_t kPartialGMOn2nd[] = {0x7e, 0x7f, 0x09, 0x01};
+const uint8_t kPartialGMOn3rd[] = {0xf7};
+const uint8_t kGSOn[] = {
+    0xf0, 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7f, 0x00, 0x41, 0xf7,
 };
-const uint8 kNoteOn[] = { 0x90, 0x3c, 0x7f };
-const uint8 kPartialNoteOn1st[] = { 0x90 };
-const uint8 kPartialNoteOn2nd[] = { 0x3c };
-const uint8 kPartialNoteOn3rd[] = { 0x7f };
+const uint8_t kNoteOn[] = {0x90, 0x3c, 0x7f};
+const uint8_t kPartialNoteOn1st[] = {0x90};
+const uint8_t kPartialNoteOn2nd[] = {0x3c};
+const uint8_t kPartialNoteOn3rd[] = {0x7f};
 
-const uint8 kNoteOnWithRunningStatus[] = {
-  0x90, 0x3c, 0x7f, 0x3c, 0x7f, 0x3c, 0x7f,
+const uint8_t kNoteOnWithRunningStatus[] = {
+    0x90, 0x3c, 0x7f, 0x3c, 0x7f, 0x3c, 0x7f,
 };
-const uint8 kChannelPressure[] = { 0xd0, 0x01 };
-const uint8 kChannelPressureWithRunningStatus[] = {
-  0xd0, 0x01, 0x01, 0x01,
+const uint8_t kChannelPressure[] = {0xd0, 0x01};
+const uint8_t kChannelPressureWithRunningStatus[] = {
+    0xd0, 0x01, 0x01, 0x01,
 };
-const uint8 kTimingClock[] = { 0xf8 };
-const uint8 kSystemCommonMessageTuneRequest[] = { 0xf6 };
-const uint8 kMTCFrame[] = { 0xf1, 0x00 };
-const uint8 kBrokenData1[] = { 0x92 };
-const uint8 kBrokenData2[] = { 0xf7 };
-const uint8 kBrokenData3[] = { 0xf2, 0x00 };
-const uint8 kDataByte0[] = { 0x00 };
+const uint8_t kTimingClock[] = {0xf8};
+const uint8_t kSystemCommonMessageTuneRequest[] = {0xf6};
+const uint8_t kMTCFrame[] = {0xf1, 0x00};
+const uint8_t kBrokenData1[] = {0x92};
+const uint8_t kBrokenData2[] = {0xf7};
+const uint8_t kBrokenData3[] = {0xf2, 0x00};
+const uint8_t kDataByte0[] = {0x00};
 
-const uint8 kReservedMessage1[] = { 0xf4 };
-const uint8 kReservedMessage2[] = { 0xf5 };
-const uint8 kReservedMessage1WithDataBytes[] = {
-  0xf4, 0x01, 0x01, 0x01, 0x01, 0x01
-};
+const uint8_t kReservedMessage1[] = {0xf4};
+const uint8_t kReservedMessage2[] = {0xf5};
+const uint8_t kReservedMessage1WithDataBytes[] = {0xf4, 0x01, 0x01,
+                                                  0x01, 0x01, 0x01};
 
 template <typename T, size_t N>
 void Add(MidiMessageQueue* queue, const T(&array)[N]) {
@@ -72,7 +71,7 @@ template <typename T, size_t N>
 
 TEST(MidiMessageQueueTest, EmptyData) {
   MidiMessageQueue queue(false);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
   queue.Get(&message);
   EXPECT_TRUE(message.empty());
 }
@@ -92,7 +91,7 @@ TEST(MidiMessageQueueTest, RunningStatusDisabled) {
   Add(&queue, kTimingClock);
   Add(&queue, kBrokenData3);
 
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
   queue.Get(&message);
   EXPECT_MESSAGE(kGMOn, message);
   queue.Get(&message);
@@ -125,7 +124,7 @@ TEST(MidiMessageQueueTest, RunningStatusEnabled) {
   Add(&queue, kTimingClock);
   Add(&queue, kDataByte0);
 
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
   queue.Get(&message);
   EXPECT_MESSAGE(kGMOn, message);
   queue.Get(&message);
@@ -157,12 +156,12 @@ TEST(MidiMessageQueueTest, RunningStatusEnabled) {
 
 TEST(MidiMessageQueueTest, RunningStatusEnabledWithRealTimeEvent) {
   MidiMessageQueue queue(true);
-  const uint8 kNoteOnWithRunningStatusWithTimingClock[] = {
-    0x90, 0xf8, 0x3c, 0xf8, 0x7f, 0xf8, 0x3c, 0xf8, 0x7f, 0xf8, 0x3c, 0xf8,
-    0x7f,
+  const uint8_t kNoteOnWithRunningStatusWithTimingClock[] = {
+      0x90, 0xf8, 0x3c, 0xf8, 0x7f, 0xf8, 0x3c,
+      0xf8, 0x7f, 0xf8, 0x3c, 0xf8, 0x7f,
   };
   Add(&queue, kNoteOnWithRunningStatusWithTimingClock);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
   queue.Get(&message);
   EXPECT_MESSAGE(kTimingClock, message);
   queue.Get(&message);
@@ -187,11 +186,11 @@ TEST(MidiMessageQueueTest, RunningStatusEnabledWithRealTimeEvent) {
 
 TEST(MidiMessageQueueTest, RunningStatusEnabledWithSystemCommonMessage) {
   MidiMessageQueue queue(true);
-  const uint8 kNoteOnWithRunningStatusWithSystemCommonMessage[] = {
-    0x90, 0x3c, 0x7f, 0xf1, 0x00, 0x3c, 0x7f, 0xf8, 0x90, 0x3c, 0x7f,
+  const uint8_t kNoteOnWithRunningStatusWithSystemCommonMessage[] = {
+      0x90, 0x3c, 0x7f, 0xf1, 0x00, 0x3c, 0x7f, 0xf8, 0x90, 0x3c, 0x7f,
   };
   Add(&queue, kNoteOnWithRunningStatusWithSystemCommonMessage);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
   queue.Get(&message);
   EXPECT_MESSAGE(kNoteOn, message);
   queue.Get(&message);
@@ -205,17 +204,17 @@ TEST(MidiMessageQueueTest, RunningStatusEnabledWithSystemCommonMessage) {
 }
 
 TEST(MidiMessageQueueTest, Issue540016) {
-  const uint8 kData[] = { 0xf4, 0x3a };
+  const uint8_t kData[] = {0xf4, 0x3a};
   MidiMessageQueue queue(false);
   Add(&queue, kData);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
   queue.Get(&message);
   EXPECT_TRUE(message.empty());
 }
 
 TEST(MidiMessageQueueTest, ReconstructNonSysExMessage) {
   MidiMessageQueue queue(true);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
 
   Add(&queue, kPartialNoteOn1st);
   queue.Get(&message);
@@ -235,7 +234,7 @@ TEST(MidiMessageQueueTest, ReconstructNonSysExMessage) {
 
 TEST(MidiMessageQueueTest, ReconstructBrokenNonSysExMessage) {
   MidiMessageQueue queue(true);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
 
   Add(&queue, kPartialNoteOn1st);
   queue.Get(&message);
@@ -256,7 +255,7 @@ TEST(MidiMessageQueueTest, ReconstructBrokenNonSysExMessage) {
 
 TEST(MidiMessageQueueTest, ReconstructSysExMessage) {
   MidiMessageQueue queue(true);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
 
   Add(&queue, kPartialGMOn1st);
   queue.Get(&message);
@@ -276,7 +275,7 @@ TEST(MidiMessageQueueTest, ReconstructSysExMessage) {
 
 TEST(MidiMessageQueueTest, ReconstructBrokenSysExMessage) {
   MidiMessageQueue queue(true);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
 
   Add(&queue, kPartialGMOn1st);
   queue.Get(&message);
@@ -300,7 +299,7 @@ TEST(MidiMessageQueueTest, ReconstructBrokenSysExMessage) {
 
 TEST(MidiMessageQueueTest, OneByteMessage) {
   MidiMessageQueue queue(true);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
 
   Add(&queue, kSystemCommonMessageTuneRequest);
   Add(&queue, kSystemCommonMessageTuneRequest);
@@ -336,7 +335,7 @@ TEST(MidiMessageQueueTest, OneByteMessage) {
 
 TEST(MidiMessageQueueTest, OneByteMessageInjectedInNonSysExMessage) {
   MidiMessageQueue queue(true);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
 
   Add(&queue, kPartialNoteOn1st);
   queue.Get(&message);
@@ -360,7 +359,7 @@ TEST(MidiMessageQueueTest, OneByteMessageInjectedInNonSysExMessage) {
 
 TEST(MidiMessageQueueTest, OneByteMessageInjectedInSysExMessage) {
   MidiMessageQueue queue(true);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
 
   Add(&queue, kPartialGMOn1st);
   queue.Get(&message);
@@ -384,7 +383,7 @@ TEST(MidiMessageQueueTest, OneByteMessageInjectedInSysExMessage) {
 
 TEST(MidiMessageQueueTest, ReservedMessage) {
   MidiMessageQueue queue(true);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
 
   Add(&queue, kReservedMessage1);
   Add(&queue, kNoteOn);
@@ -475,7 +474,7 @@ TEST(MidiMessageQueueTest, ReservedMessage) {
 
 TEST(MidiMessageQueueTest, ReservedMessageInjectedInNonSysExMessage) {
   MidiMessageQueue queue(true);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
 
   // Inject |kReservedMessage1|
   Add(&queue, kPartialNoteOn1st);
@@ -522,7 +521,7 @@ TEST(MidiMessageQueueTest, ReservedMessageInjectedInNonSysExMessage) {
 
 TEST(MidiMessageQueueTest, ReservedMessageInjectedInSysExMessage) {
   MidiMessageQueue queue(true);
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
 
   // Inject |kReservedMessage1|
   Add(&queue, kPartialGMOn1st);

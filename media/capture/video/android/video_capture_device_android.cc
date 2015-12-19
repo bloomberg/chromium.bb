@@ -161,7 +161,7 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
   if (expected_next_frame_time_ <= current_time) {
     expected_next_frame_time_ += frame_interval_;
 
-    client_->OnIncomingCapturedData(reinterpret_cast<uint8*>(buffer), length,
+    client_->OnIncomingCapturedData(reinterpret_cast<uint8_t*>(buffer), length,
                                     capture_format_, rotation,
                                     base::TimeTicks::Now());
   }

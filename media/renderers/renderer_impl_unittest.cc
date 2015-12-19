@@ -24,7 +24,7 @@ using ::testing::StrictMock;
 
 namespace media {
 
-const int64 kStartPlayingTimeInMs = 100;
+const int64_t kStartPlayingTimeInMs = 100;
 
 ACTION_P2(SetBufferingState, cb, buffering_state) {
   cb->Run(buffering_state);
@@ -223,13 +223,13 @@ class RendererImplTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  int64 GetMediaTimeMs() {
+  int64_t GetMediaTimeMs() {
     return renderer_impl_->GetMediaTime().InMilliseconds();
   }
 
   bool IsMediaTimeAdvancing(double playback_rate) {
-    int64 start_time_ms = GetMediaTimeMs();
-    const int64 time_to_advance_ms = 100;
+    int64_t start_time_ms = GetMediaTimeMs();
+    const int64_t time_to_advance_ms = 100;
 
     test_tick_clock_.Advance(
         base::TimeDelta::FromMilliseconds(time_to_advance_ms));

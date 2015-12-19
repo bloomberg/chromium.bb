@@ -32,16 +32,16 @@ class MEDIA_EXPORT FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   bool Initialize(VideoPixelFormat input_format,
                   const gfx::Size& input_visible_size,
                   VideoCodecProfile output_profile,
-                  uint32 initial_bitrate,
+                  uint32_t initial_bitrate,
                   Client* client) override;
   void Encode(const scoped_refptr<VideoFrame>& frame,
               bool force_keyframe) override;
   void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
-  void RequestEncodingParametersChange(uint32 bitrate,
-                                       uint32 framerate) override;
+  void RequestEncodingParametersChange(uint32_t bitrate,
+                                       uint32_t framerate) override;
   void Destroy() override;
 
-  const std::vector<uint32>& stored_bitrates() const {
+  const std::vector<uint32_t>& stored_bitrates() const {
     return stored_bitrates_;
   }
   void SendDummyFrameForTesting(bool key_frame);
@@ -52,13 +52,13 @@ class MEDIA_EXPORT FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
                                  const gfx::Size& input_coded_size,
                                  size_t output_buffer_size) const;
   void EncodeTask();
-  void DoBitstreamBufferReady(int32 bitstream_buffer_id,
+  void DoBitstreamBufferReady(int32_t bitstream_buffer_id,
                               size_t payload_size,
                               bool key_frame) const;
 
   // Our original (constructor) calling message loop used for all tasks.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::vector<uint32> stored_bitrates_;
+  std::vector<uint32_t> stored_bitrates_;
   bool will_initialization_succeed_;
 
   VideoEncodeAccelerator::Client* client_;

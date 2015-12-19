@@ -9,7 +9,6 @@
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"

@@ -426,7 +426,7 @@ void VideoRendererAlgorithm::AccountForMissedIntervals(
   }
 
   DCHECK_GT(render_interval_, base::TimeDelta());
-  const int64 render_cycle_count =
+  const int64_t render_cycle_count =
       (deadline_min - last_deadline_max_) / render_interval_;
 
   // In the ideal case this value will be zero.

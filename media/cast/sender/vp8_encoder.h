@@ -5,7 +5,6 @@
 #ifndef MEDIA_CAST_SENDER_CODECS_VP8_VP8_ENCODER_H_
 #define MEDIA_CAST_SENDER_CODECS_VP8_VP8_ENCODER_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/cast/cast_config.h"
@@ -31,7 +30,7 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   void Encode(const scoped_refptr<media::VideoFrame>& video_frame,
               const base::TimeTicks& reference_time,
               SenderEncodedFrame* encoded_frame) final;
-  void UpdateRates(uint32 new_bitrate) final;
+  void UpdateRates(uint32_t new_bitrate) final;
   void GenerateKeyFrame() final;
 
  private:
@@ -66,7 +65,7 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   base::TimeDelta last_frame_timestamp_;
 
   // The last encoded frame's ID.
-  uint32 last_encoded_frame_id_;
+  uint32_t last_encoded_frame_id_;
 
   // This is bound to the thread where Initialize() is called.
   base::ThreadChecker thread_checker_;

@@ -137,7 +137,7 @@ class MEDIA_EXPORT AudioInputController
     virtual void Write(const AudioBus* data,
                        double volume,
                        bool key_pressed,
-                       uint32 hardware_delay_bytes) = 0;
+                       uint32_t hardware_delay_bytes) = 0;
 
     // Close this synchronous writer.
     virtual void Close() = 0;
@@ -225,7 +225,7 @@ class MEDIA_EXPORT AudioInputController
   // device-specific implementation.
   void OnData(AudioInputStream* stream,
               const AudioBus* source,
-              uint32 hardware_delay_bytes,
+              uint32_t hardware_delay_bytes,
               double volume) override;
   void OnError(AudioInputStream* stream) override;
 

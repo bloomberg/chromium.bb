@@ -5,7 +5,6 @@
 #ifndef MEDIA_FILTERS_FFMPEG_BITSTREAM_CONVERTER_H_
 #define MEDIA_FILTERS_FFMPEG_BITSTREAM_CONVERTER_H_
 
-#include "base/basictypes.h"
 #include "media/base/media_export.h"
 
 struct AVPacket;

@@ -77,7 +77,7 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
   int output_sampling_rate_;
 
   // Frame count to sync with audio codec output.
-  int64 frame_count_;
+  int64_t frame_count_;
 
   // Base timestamp for the |audio_timestamp_helper_|.
   base::TimeDelta base_timestamp_;

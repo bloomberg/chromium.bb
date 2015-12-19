@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "media/base/media_export.h"
 
@@ -46,9 +45,9 @@ class MEDIA_EXPORT AudioHash {
   // positives related to incorrect sample position.  Value chosen by dice roll.
   float audio_hash_[6];
 
-  // The total number of samples processed per channel.  Uses a uint32 instead
+  // The total number of samples processed per channel.  Uses a uint32_t instead
   // of size_t so overflows on 64-bit and 32-bit machines are equivalent.
-  uint32 sample_count_;
+  uint32_t sample_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioHash);
 };

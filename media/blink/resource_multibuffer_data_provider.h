@@ -76,9 +76,9 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   // NOTE: only public for testing!  This is an implementation detail of
   // VerifyPartialResponse (a private method).
   static bool ParseContentRange(const std::string& content_range_str,
-                                int64* first_byte_position,
-                                int64* last_byte_position,
-                                int64* instance_size);
+                                int64_t* first_byte_position,
+                                int64_t* last_byte_position,
+                                int64_t* instance_size);
 
   int64_t byte_pos() const;
   int64_t block_size() const;

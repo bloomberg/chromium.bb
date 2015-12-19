@@ -45,9 +45,9 @@ TEST(AudioBusPerfTest, Interleave) {
   FakeAudioRenderCallback callback(0.2);
   callback.Render(bus.get(), 0, 0);
 
-  RunInterleaveBench<int8>(bus.get(), "int8");
-  RunInterleaveBench<int16>(bus.get(), "int16");
-  RunInterleaveBench<int32>(bus.get(), "int32");
+  RunInterleaveBench<int8_t>(bus.get(), "int8_t");
+  RunInterleaveBench<int16_t>(bus.get(), "int16_t");
+  RunInterleaveBench<int32_t>(bus.get(), "int32_t");
 }
 
 } // namespace media

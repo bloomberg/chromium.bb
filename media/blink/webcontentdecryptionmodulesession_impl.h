@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -42,7 +41,7 @@ class WebContentDecryptionModuleSessionImpl
       blink::WebContentDecryptionModuleResult result) override;
   void load(const blink::WebString& session_id,
             blink::WebContentDecryptionModuleResult result) override;
-  void update(const uint8* response,
+  void update(const uint8_t* response,
               size_t response_length,
               blink::WebContentDecryptionModuleResult result) override;
   void close(blink::WebContentDecryptionModuleResult result) override;
@@ -50,7 +49,7 @@ class WebContentDecryptionModuleSessionImpl
 
   // Callbacks.
   void OnSessionMessage(MediaKeys::MessageType message_type,
-                        const std::vector<uint8>& message);
+                        const std::vector<uint8_t>& message);
   void OnSessionKeysChange(bool has_additional_usable_key,
                            CdmKeysInfo keys_info);
   void OnSessionExpirationUpdate(const base::Time& new_expiry_time);

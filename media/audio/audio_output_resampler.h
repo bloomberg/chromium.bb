@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

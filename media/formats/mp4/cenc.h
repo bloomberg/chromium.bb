@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "media/base/decrypt_config.h"
 
 namespace media {
@@ -16,7 +15,7 @@ namespace mp4 {
 class BufferReader;
 
 struct FrameCENCInfo {
-  uint8 iv[16];
+  uint8_t iv[16];
   std::vector<SubsampleEntry> subsamples;
 
   FrameCENCInfo();

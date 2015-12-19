@@ -11,7 +11,7 @@
 namespace media {
 namespace cast {
 
-static const uint32 kMaxSequenceNumber = 65536;
+static const uint32_t kMaxSequenceNumber = 65536;
 
 ReceiverStats::ReceiverStats(base::TickClock* clock)
     : clock_(clock),
@@ -43,7 +43,7 @@ RtpReceiverStatistics ReceiverStats::GetStatistics() {
     } else {
       float tmp_ratio =
           (1 - static_cast<float>(interval_number_packets_) / abs(diff));
-      ret.fraction_lost = static_cast<uint8>(256 * tmp_ratio);
+      ret.fraction_lost = static_cast<uint8_t>(256 * tmp_ratio);
     }
   }
 
@@ -63,7 +63,8 @@ RtpReceiverStatistics ReceiverStats::GetStatistics() {
   ret.extended_high_sequence_number =
       (sequence_number_cycles_ << 16) + max_sequence_number_;
 
-  ret.jitter = static_cast<uint32>(std::abs(jitter_.InMillisecondsRoundedUp()));
+  ret.jitter =
+      static_cast<uint32_t>(std::abs(jitter_.InMillisecondsRoundedUp()));
 
   // Reset interval values.
   interval_min_sequence_number_ = 0;
@@ -74,7 +75,7 @@ RtpReceiverStatistics ReceiverStats::GetStatistics() {
 }
 
 void ReceiverStats::UpdateStatistics(const RtpCastHeader& header) {
-  const uint16 new_seq_num = header.sequence_number;
+  const uint16_t new_seq_num = header.sequence_number;
 
   if (interval_number_packets_ == 0) {
     // First packet in the interval.

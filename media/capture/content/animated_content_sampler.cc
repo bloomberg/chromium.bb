@@ -160,7 +160,7 @@ gfx::Rect AnimatedContentSampler::ElectMajorityDamageRect() const {
   // pixel in a candidate gets one vote, as opposed to each candidate getting
   // one vote.
   const gfx::Rect* candidate = NULL;
-  int64 votes = 0;
+  int64_t votes = 0;
   for (ObservationFifo::const_iterator i = observations_.begin();
        i != observations_.end(); ++i) {
     DCHECK_GT(i->damage_rect.size().GetArea(), 0);
@@ -191,8 +191,8 @@ bool AnimatedContentSampler::AnalyzeObservations(
   // Scan |observations_|, gathering metrics about the ones having a damage Rect
   // equivalent to the |elected_rect|.  Along the way, break early whenever the
   // event times reveal a non-animating period.
-  int64 num_pixels_damaged_in_all = 0;
-  int64 num_pixels_damaged_in_chosen = 0;
+  int64_t num_pixels_damaged_in_all = 0;
+  int64_t num_pixels_damaged_in_chosen = 0;
   base::TimeDelta sum_frame_durations;
   size_t count_frame_durations = 0;
   base::TimeTicks first_event_time;
@@ -248,7 +248,7 @@ base::TimeTicks AnimatedContentSampler::ComputeNextFrameTimestamp(
   // TODO(miu): This is similar to the ClockSmoother in
   // media/base/audio_shifter.cc.  Consider refactor-and-reuse here.
   const base::TimeDelta drift = ideal_timestamp - event_time;
-  const int64 correct_over_num_frames =
+  const int64_t correct_over_num_frames =
       base::TimeDelta::FromMilliseconds(kDriftCorrectionMillis) /
       sampling_period_;
   DCHECK_GT(correct_over_num_frames, 0);
@@ -275,7 +275,7 @@ base::TimeDelta AnimatedContentSampler::ComputeSamplingPeriod(
   // 42/3 = 14, and so on.  Of these candidates, 21 FPS is closest to 30.
   base::TimeDelta sampling_period;
   if (animation_period < target_sampling_period) {
-    const int64 ratio = target_sampling_period / animation_period;
+    const int64_t ratio = target_sampling_period / animation_period;
     const double target_fps = 1.0 / target_sampling_period.InSecondsF();
     const double animation_fps = 1.0 / animation_period.InSecondsF();
     if (std::abs(animation_fps / ratio - target_fps) <

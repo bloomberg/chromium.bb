@@ -6,7 +6,6 @@
 
 #include <math.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/audio/audio_manager.h"
@@ -163,7 +162,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
 
   // Initialize channel layout to all -1 to indicate that none of
   // the channels is set in the layout.
-  int8 layout[CRAS_CH_MAX];
+  int8_t layout[CRAS_CH_MAX];
   for (size_t i = 0; i < arraysize(layout); ++i)
     layout[i] = -1;
 
@@ -240,7 +239,7 @@ void CrasInputStream::Stop() {
 // Static callback asking for samples.  Run on high priority thread.
 int CrasInputStream::SamplesReady(cras_client* client,
                                   cras_stream_id_t stream_id,
-                                  uint8* samples,
+                                  uint8_t* samples,
                                   size_t frames,
                                   const timespec* sample_ts,
                                   void* arg) {
@@ -260,7 +259,7 @@ int CrasInputStream::StreamError(cras_client* client,
 }
 
 void CrasInputStream::ReadAudio(size_t frames,
-                                uint8* buffer,
+                                uint8_t* buffer,
                                 const timespec* sample_ts) {
   DCHECK(callback_);
 

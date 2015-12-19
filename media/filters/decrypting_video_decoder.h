@@ -114,7 +114,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
 
   // A unique ID to trace Decryptor::DecryptAndDecodeVideo() call and the
   // matching DecryptCB call (in DoDeliverFrame()).
-  uint32 trace_id_;
+  uint32_t trace_id_;
 
   base::WeakPtr<DecryptingVideoDecoder> weak_this_;
   base::WeakPtrFactory<DecryptingVideoDecoder> weak_factory_;

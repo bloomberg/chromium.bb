@@ -47,7 +47,7 @@ bool DoSerializeEvents(const LogMetadata& metadata,
 
   int proto_size = metadata.ByteSize();
   DCHECK(proto_size <= kMaxSerializedProtoBytes);
-  if (!writer.WriteU16(static_cast<uint16>(proto_size)))
+  if (!writer.WriteU16(static_cast<uint16_t>(proto_size)))
     return false;
   if (!metadata.SerializeToArray(writer.ptr(), writer.remaining()))
     return false;
@@ -73,7 +73,7 @@ bool DoSerializeEvents(const LogMetadata& metadata,
     DCHECK(proto_size <= kMaxSerializedProtoBytes);
 
     // Write size of the proto, then write the proto.
-    if (!writer.WriteU16(static_cast<uint16>(proto_size)))
+    if (!writer.WriteU16(static_cast<uint16_t>(proto_size)))
       return false;
     if (!frame_event.SerializeToArray(writer.ptr(), writer.remaining()))
       return false;
@@ -97,7 +97,7 @@ bool DoSerializeEvents(const LogMetadata& metadata,
     DCHECK(proto_size <= kMaxSerializedProtoBytes);
 
     // Write size of the proto, then write the proto.
-    if (!writer.WriteU16(static_cast<uint16>(proto_size)))
+    if (!writer.WriteU16(static_cast<uint16_t>(proto_size)))
       return false;
     if (!packet_event.SerializeToArray(writer.ptr(), writer.remaining()))
       return false;
@@ -124,9 +124,9 @@ bool Compress(char* uncompressed_buffer,
                             Z_DEFAULT_STRATEGY);
   DCHECK_EQ(Z_OK, result);
 
-  stream.next_in = reinterpret_cast<uint8*>(uncompressed_buffer);
+  stream.next_in = reinterpret_cast<uint8_t*>(uncompressed_buffer);
   stream.avail_in = uncompressed_bytes;
-  stream.next_out = reinterpret_cast<uint8*>(output);
+  stream.next_out = reinterpret_cast<uint8_t*>(output);
   stream.avail_out = max_output_bytes;
 
   // Do a one-shot compression. This will return Z_STREAM_END only if |output|

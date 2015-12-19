@@ -31,7 +31,7 @@ const media::cast::CastLoggingEvent kVideoPacketEvents[] = {
 const int kWidth[] = {1280, 1280, 1280, 1280, 1920, 1920, 1920, 1920};
 const int kHeight[] = {720, 720, 720, 720, 1080, 1080, 1080, 1080};
 const int kEncodedFrameSize[] = {512, 425, 399, 400, 237};
-const int64 kDelayMillis[] = {15, 4, 8, 42, 23, 16};
+const int64_t kDelayMillis[] = {15, 4, 8, 42, 23, 16};
 const int kEncoderCPUPercentUtilized[] = {10, 9, 42, 3, 11, 12, 15, 7};
 const int kIdealizedBitratePercentUtilized[] = {9, 9, 9, 15, 36, 38, 35, 40};
 
@@ -55,12 +55,12 @@ class SerializeDeserializeTest : public ::testing::Test {
     metadata_.set_num_frame_events(10);
     metadata_.set_num_packet_events(10);
 
-    int64 event_time_ms = 0;
+    int64_t event_time_ms = 0;
     // Insert frame and packet events with RTP timestamps 0, 90, 180, ...
     for (int i = 0; i < metadata_.num_frame_events(); i++) {
       linked_ptr<AggregatedFrameEvent> frame_event(new AggregatedFrameEvent);
       frame_event->set_relative_rtp_timestamp(i * 90);
-      for (uint32 event_index = 0; event_index < arraysize(kVideoFrameEvents);
+      for (uint32_t event_index = 0; event_index < arraysize(kVideoFrameEvents);
            ++event_index) {
         frame_event->add_event_type(
             ToProtoEventType(kVideoFrameEvents[event_index]));
@@ -90,9 +90,8 @@ class SerializeDeserializeTest : public ::testing::Test {
         BasePacketEvent* base_event = packet_event->add_base_packet_event();
         base_event->set_packet_id(packet_id);
         packet_id++;
-        for (uint32 event_index = 0;
-             event_index < arraysize(kVideoPacketEvents);
-             ++event_index) {
+        for (uint32_t event_index = 0;
+             event_index < arraysize(kVideoPacketEvents); ++event_index) {
           base_event->add_event_type(
               ToProtoEventType(kVideoPacketEvents[event_index]));
           base_event->add_event_timestamp_ms(event_time_ms);

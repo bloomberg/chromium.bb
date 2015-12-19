@@ -65,7 +65,7 @@ std::string AsString(JNIEnv* env, jbyteArray j_byte_array) {
   return std::string(byte_vector.begin(), byte_vector.end());
 }
 
-const uint8 kWidevineUuid[16] = {
+const uint8_t kWidevineUuid[16] = {
     0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,  //
     0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED};
 
@@ -220,9 +220,9 @@ bool MediaDrmBridge::IsAvailable() {
   if (base::android::BuildInfo::GetInstance()->sdk_int() < 19)
     return false;
 
-  int32 os_major_version = 0;
-  int32 os_minor_version = 0;
-  int32 os_bugfix_version = 0;
+  int32_t os_major_version = 0;
+  int32_t os_minor_version = 0;
+  int32_t os_bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(
       &os_major_version, &os_minor_version, &os_bugfix_version);
   if (os_major_version == 4 && os_minor_version == 4 && os_bugfix_version == 0)
@@ -336,7 +336,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
     MediaDrmBridgeDelegate* delegate =
         client->GetMediaDrmBridgeDelegate(scheme_uuid_);
     if (delegate) {
-      std::vector<uint8> init_data_from_delegate;
+      std::vector<uint8_t> init_data_from_delegate;
       std::vector<std::string> optional_parameters_from_delegate;
       if (!delegate->OnCreateSession(init_data_type, init_data,
                                      &init_data_from_delegate,
@@ -580,7 +580,7 @@ void MediaDrmBridge::OnSessionMessage(
     const JavaParamRef<jstring>& j_legacy_destination_url) {
   DVLOG(2) << __FUNCTION__;
 
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
   JavaByteArrayToByteVector(env, j_message, &message);
   GURL legacy_destination_url =
       GURL(ConvertJavaStringToUTF8(env, j_legacy_destination_url));
@@ -623,7 +623,7 @@ void MediaDrmBridge::OnSessionKeysChange(
 
     ScopedJavaLocalRef<jbyteArray> j_key_id =
         Java_KeyStatus_getKeyId(env, j_key_status.obj());
-    std::vector<uint8> key_id;
+    std::vector<uint8_t> key_id;
     JavaByteArrayToByteVector(env, j_key_id.obj(), &key_id);
     DCHECK(!key_id.empty());
 
@@ -697,7 +697,7 @@ void MediaDrmBridge::OnResetDeviceCredentialsCompleted(
 // The following are private methods.
 
 MediaDrmBridge::MediaDrmBridge(
-    const std::vector<uint8>& scheme_uuid,
+    const std::vector<uint8_t>& scheme_uuid,
     SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,

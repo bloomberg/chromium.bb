@@ -12,7 +12,6 @@
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/ranges.h"
@@ -83,7 +82,7 @@ struct MEDIA_EXPORT H265NALU {
 
   // After (without) start code; we don't own the underlying memory
   // and a shallow copy should be made when copying this struct.
-  const uint8* data;
+  const uint8_t* data;
   off_t size;  // From after start code to start code of next NALU (or EOS).
 
   int nal_unit_type;
@@ -109,8 +108,9 @@ class MEDIA_EXPORT H265Parser {
   // |stream| owned by caller.
   // |subsamples| contains information about what parts of |stream| are
   // encrypted.
-  void SetStream(const uint8* stream, off_t stream_size);
-  void SetEncryptedStream(const uint8* stream, off_t stream_size,
+  void SetStream(const uint8_t* stream, off_t stream_size);
+  void SetEncryptedStream(const uint8_t* stream,
+                          off_t stream_size,
                           const std::vector<SubsampleEntry>& subsamples);
 
   // Read the stream to find the next NALU, identify it and return
@@ -132,7 +132,7 @@ class MEDIA_EXPORT H265Parser {
   bool LocateNALU(off_t* nalu_size, off_t* start_code_size);
 
   // Pointer to the current NALU in the stream.
-  const uint8* stream_;
+  const uint8_t* stream_;
 
   // Bytes left in the stream after the current NALU.
   off_t bytes_left_;
@@ -141,7 +141,7 @@ class MEDIA_EXPORT H265Parser {
 
   // Ranges of encrypted bytes in the buffer passed to
   // SetEncryptedStream().
-  Ranges<const uint8*> encrypted_ranges_;
+  Ranges<const uint8_t*> encrypted_ranges_;
 
   DISALLOW_COPY_AND_ASSIGN(H265Parser);
 };

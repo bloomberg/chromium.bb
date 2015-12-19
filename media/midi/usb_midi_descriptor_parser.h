@@ -1,3 +1,4 @@
+
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -5,10 +6,12 @@
 #ifndef MEDIA_MIDI_USB_MIDI_DESCRIPTOR_PARSER_H_
 #define MEDIA_MIDI_USB_MIDI_DESCRIPTOR_PARSER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "media/midi/usb_midi_export.h"
 #include "media/midi/usb_midi_jack.h"
 
@@ -30,15 +33,15 @@ class USB_MIDI_EXPORT UsbMidiDescriptorParser {
           bcd_device_version(0),
           manufacturer_index(0),
           product_index(0) {}
-    uint16 vendor_id;
-    uint16 product_id;
+    uint16_t vendor_id;
+    uint16_t product_id;
     // The higher one byte represents the "major" number and the lower one byte
     // represents the "minor" number.
-    uint16 bcd_device_version;
-    uint8 manufacturer_index;
-    uint8 product_index;
+    uint16_t bcd_device_version;
+    uint8_t manufacturer_index;
+    uint8_t product_index;
 
-    static std::string BcdVersionToString(uint16);
+    static std::string BcdVersionToString(uint16_t);
   };
 
   UsbMidiDescriptorParser();
@@ -48,29 +51,31 @@ class USB_MIDI_EXPORT UsbMidiDescriptorParser {
   // When an incorrect input is given, this method may return true but
   // never crashes.
   bool Parse(UsbMidiDevice* device,
-             const uint8* data,
+             const uint8_t* data,
              size_t size,
              std::vector<UsbMidiJack>* jacks);
 
-  bool ParseDeviceInfo(const uint8* data, size_t size, DeviceInfo* info);
+  bool ParseDeviceInfo(const uint8_t* data, size_t size, DeviceInfo* info);
 
  private:
   bool ParseInternal(UsbMidiDevice* device,
-                     const uint8* data,
+                     const uint8_t* data,
                      size_t size,
                      std::vector<UsbMidiJack>* jacks);
-  bool ParseDevice(const uint8* data, size_t size, DeviceInfo* info);
-  bool ParseInterface(const uint8* data, size_t size);
-  bool ParseCSInterface(UsbMidiDevice* device, const uint8* data, size_t size);
-  bool ParseEndpoint(const uint8* data, size_t size);
-  bool ParseCSEndpoint(const uint8* data,
+  bool ParseDevice(const uint8_t* data, size_t size, DeviceInfo* info);
+  bool ParseInterface(const uint8_t* data, size_t size);
+  bool ParseCSInterface(UsbMidiDevice* device,
+                        const uint8_t* data,
+                        size_t size);
+  bool ParseEndpoint(const uint8_t* data, size_t size);
+  bool ParseCSEndpoint(const uint8_t* data,
                        size_t size,
                        std::vector<UsbMidiJack>* jacks);
   void Clear();
 
   bool is_parsing_usb_midi_interface_;
-  uint8 current_endpoint_address_;
-  uint8 current_cable_number_;
+  uint8_t current_endpoint_address_;
+  uint8_t current_cable_number_;
 
   std::vector<UsbMidiJack> incomplete_jacks_;
 

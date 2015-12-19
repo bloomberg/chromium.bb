@@ -4,7 +4,6 @@
 
 #include "media/midi/usb_midi_device_android.h"
 
-
 #include "base/android/jni_array.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -32,7 +31,7 @@ UsbMidiDeviceAndroid::~UsbMidiDeviceAndroid() {
   Java_UsbMidiDeviceAndroid_close(env, raw_device_.obj());
 }
 
-std::vector<uint8> UsbMidiDeviceAndroid::GetDescriptors() {
+std::vector<uint8_t> UsbMidiDeviceAndroid::GetDescriptors() {
   return descriptors_;
 }
 
@@ -49,9 +48,9 @@ std::string UsbMidiDeviceAndroid::GetDeviceVersion() {
 }
 
 void UsbMidiDeviceAndroid::Send(int endpoint_number,
-                                const std::vector<uint8>& data) {
+                                const std::vector<uint8_t>& data) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  const uint8* head = data.size() ? &data[0] : NULL;
+  const uint8_t* head = data.size() ? &data[0] : NULL;
   ScopedJavaLocalRef<jbyteArray> data_to_pass =
       base::android::ToJavaByteArray(env, head, data.size());
 
@@ -63,10 +62,10 @@ void UsbMidiDeviceAndroid::OnData(JNIEnv* env,
                                   const JavaParamRef<jobject>& caller,
                                   jint endpoint_number,
                                   const JavaParamRef<jbyteArray>& data) {
-  std::vector<uint8> bytes;
+  std::vector<uint8_t> bytes;
   base::android::JavaByteArrayToByteVector(env, data, &bytes);
 
-  const uint8* head = bytes.size() ? &bytes[0] : NULL;
+  const uint8_t* head = bytes.size() ? &bytes[0] : NULL;
   delegate_->ReceiveUsbMidiData(this, endpoint_number, head, bytes.size(),
                                 base::TimeTicks::Now());
 }
@@ -88,7 +87,7 @@ void UsbMidiDeviceAndroid::InitDeviceInfo() {
   UsbMidiDescriptorParser parser;
   UsbMidiDescriptorParser::DeviceInfo info;
 
-  const uint8* data = descriptors_.size() > 0 ? &descriptors_[0] : nullptr;
+  const uint8_t* data = descriptors_.size() > 0 ? &descriptors_[0] : nullptr;
 
   if (!parser.ParseDeviceInfo(data, descriptors_.size(), &info)) {
     // We don't report the error here. If it is critical, we will realize it
@@ -108,26 +107,26 @@ void UsbMidiDeviceAndroid::InitDeviceInfo() {
   device_version_ = info.BcdVersionToString(info.bcd_device_version);
 }
 
-std::vector<uint8> UsbMidiDeviceAndroid::GetStringDescriptor(int index) {
+std::vector<uint8_t> UsbMidiDeviceAndroid::GetStringDescriptor(int index) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jbyteArray> descriptors =
       Java_UsbMidiDeviceAndroid_getStringDescriptor(env, raw_device_.obj(),
                                                     index);
 
-  std::vector<uint8> ret;
+  std::vector<uint8_t> ret;
   base::android::JavaByteArrayToByteVector(env, descriptors.obj(), &ret);
   return ret;
 }
 
 std::string UsbMidiDeviceAndroid::GetString(int index,
                                             const std::string& backup) {
-  const uint8 DESCRIPTOR_TYPE_STRING = 3;
+  const uint8_t DESCRIPTOR_TYPE_STRING = 3;
 
   if (!index) {
     // index 0 means there is no such descriptor.
     return backup;
   }
-  std::vector<uint8> descriptor = GetStringDescriptor(index);
+  std::vector<uint8_t> descriptor = GetStringDescriptor(index);
   if (descriptor.size() < 2 || descriptor.size() < descriptor[0] ||
       descriptor[1] != DESCRIPTOR_TYPE_STRING) {
     // |descriptor| is not a valid string descriptor.

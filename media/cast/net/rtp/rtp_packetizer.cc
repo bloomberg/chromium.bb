@@ -38,14 +38,14 @@ RtpPacketizer::RtpPacketizer(PacedSender* const transport,
 
 RtpPacketizer::~RtpPacketizer() {}
 
-uint16 RtpPacketizer::NextSequenceNumber() {
+uint16_t RtpPacketizer::NextSequenceNumber() {
   ++sequence_number_;
   return sequence_number_ - 1;
 }
 
 void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
-  uint16 rtp_header_length = kRtpHeaderLength + kCastHeaderLength;
-  uint16 max_length = config_.max_payload_length - rtp_header_length - 1;
+  uint16_t rtp_header_length = kRtpHeaderLength + kCastHeaderLength;
+  uint16_t max_length = config_.max_payload_length - rtp_header_length - 1;
   rtp_timestamp_ = frame.rtp_timestamp;
 
   // Split the payload evenly (round number up).
@@ -58,7 +58,7 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
   size_t remaining_size = frame.data.size();
   std::string::const_iterator data_iter = frame.data.begin();
 
-  uint8 num_extensions = 0;
+  uint8_t num_extensions = 0;
   if (frame.new_playout_delay_ms)
     num_extensions++;
   DCHECK_LE(num_extensions, kCastExtensionCountmask);
@@ -76,29 +76,28 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
     // Build Cast header.
     // TODO(miu): Should we always set the ref frame bit and the ref_frame_id?
     DCHECK_NE(frame.dependency, EncodedFrame::UNKNOWN_DEPENDENCY);
-    uint8 byte0 = kCastReferenceFrameIdBitMask;
+    uint8_t byte0 = kCastReferenceFrameIdBitMask;
     if (frame.dependency == EncodedFrame::KEY)
       byte0 |= kCastKeyFrameBitMask;
     // Extensions only go on the first packet of the frame
     if (packet_id_ == 0)
       byte0 |= num_extensions;
     packet->data.push_back(byte0);
-    packet->data.push_back(static_cast<uint8>(frame.frame_id));
+    packet->data.push_back(static_cast<uint8_t>(frame.frame_id));
     size_t start_size = packet->data.size();
     packet->data.resize(start_size + 4);
     base::BigEndianWriter big_endian_writer(
         reinterpret_cast<char*>(&(packet->data[start_size])), 4);
     big_endian_writer.WriteU16(packet_id_);
-    big_endian_writer.WriteU16(static_cast<uint16>(num_packets - 1));
-    packet->data.push_back(static_cast<uint8>(frame.referenced_frame_id));
+    big_endian_writer.WriteU16(static_cast<uint16_t>(num_packets - 1));
+    packet->data.push_back(static_cast<uint8_t>(frame.referenced_frame_id));
     // Add extension details only on the first packet of the frame
     if (packet_id_ == 0 && frame.new_playout_delay_ms) {
       packet->data.push_back(kCastRtpExtensionAdaptiveLatency << 2);
       packet->data.push_back(2);  // 2 bytes
       packet->data.push_back(
-          static_cast<uint8>(frame.new_playout_delay_ms >> 8));
-      packet->data.push_back(
-          static_cast<uint8>(frame.new_playout_delay_ms));
+          static_cast<uint8_t>(frame.new_playout_delay_ms >> 8));
+      packet->data.push_back(static_cast<uint8_t>(frame.new_playout_delay_ms));
     }
 
     // Copy payload data.
@@ -128,9 +127,9 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
 
 void RtpPacketizer::BuildCommonRTPheader(Packet* packet,
                                          bool marker_bit,
-                                         uint32 time_stamp) {
+                                         uint32_t time_stamp) {
   packet->push_back(0x80);
-  packet->push_back(static_cast<uint8>(config_.payload_type) |
+  packet->push_back(static_cast<uint8_t>(config_.payload_type) |
                     (marker_bit ? kRtpMarkerBitMask : 0));
   size_t start_size = packet->size();
   packet->resize(start_size + 10);

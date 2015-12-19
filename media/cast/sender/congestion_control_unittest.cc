@@ -15,9 +15,9 @@ namespace cast {
 
 static const int kMaxBitrateConfigured = 5000000;
 static const int kMinBitrateConfigured = 500000;
-static const int64 kFrameDelayMs = 33;
+static const int64_t kFrameDelayMs = 33;
 static const double kMaxFrameRate = 1000.0 / kFrameDelayMs;
-static const int64 kStartMillisecond = INT64_C(12345678900000);
+static const int64_t kStartMillisecond = INT64_C(12345678900000);
 static const double kTargetEmptyBufferFraction = 0.9;
 
 class CongestionControlTest : public ::testing::Test {
@@ -36,11 +36,11 @@ class CongestionControlTest : public ::testing::Test {
     congestion_control_->UpdateTargetPlayoutDelay(target_playout_delay);
   }
 
-  void AckFrame(uint32 frame_id) {
+  void AckFrame(uint32_t frame_id) {
     congestion_control_->AckFrame(frame_id, testing_clock_.NowTicks());
   }
 
-  void Run(uint32 frames,
+  void Run(uint32_t frames,
            size_t frame_size,
            base::TimeDelta rtt,
            base::TimeDelta frame_delay,
@@ -61,7 +61,7 @@ class CongestionControlTest : public ::testing::Test {
   base::SimpleTestTickClock testing_clock_;
   scoped_ptr<CongestionControl> congestion_control_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
-  uint32 frame_id_;
+  uint32_t frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CongestionControlTest);
 };
@@ -70,7 +70,7 @@ class CongestionControlTest : public ::testing::Test {
 // estimations of network bandwidth and how much is in-flight (i.e, using the
 // "target buffer fill" model).
 TEST_F(CongestionControlTest, SimpleRun) {
-  uint32 frame_size = 10000 * 8;
+  uint32_t frame_size = 10000 * 8;
   Run(500,
       frame_size,
       base::TimeDelta::FromMilliseconds(10),
@@ -83,11 +83,10 @@ TEST_F(CongestionControlTest, SimpleRun) {
   // the underlying computations.
   const int soft_max_bitrate = std::numeric_limits<int>::max();
 
-  uint32 safe_bitrate = frame_size * 1000 / kFrameDelayMs;
-  uint32 bitrate = congestion_control_->GetBitrate(
+  uint32_t safe_bitrate = frame_size * 1000 / kFrameDelayMs;
+  uint32_t bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(300),
-      base::TimeDelta::FromMilliseconds(300),
-      soft_max_bitrate);
+      base::TimeDelta::FromMilliseconds(300), soft_max_bitrate);
   EXPECT_NEAR(
       safe_bitrate / kTargetEmptyBufferFraction, bitrate, safe_bitrate * 0.05);
 

@@ -140,7 +140,7 @@ std::ostream& operator<<(std::ostream& os, const media::DemuxerConfigs& conf) {
 
     if (!conf.audio_extra_data.empty()) {
       os << " extra:{" << std::hex;
-      for (uint8 byte : conf.audio_extra_data)
+      for (uint8_t byte : conf.audio_extra_data)
         os << " " << std::setfill('0') << std::setw(2) << (int)byte;
       os << "}" << std::dec;
     }

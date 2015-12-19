@@ -9,7 +9,7 @@
 
 #include "media/cdm/ppapi/cdm_logging.h"
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <io.h>
@@ -32,6 +32,8 @@
 #include <unistd.h>
 #endif
 
+#include <stdint.h>
+
 #include <iomanip>
 #include <iostream>
 
@@ -43,7 +45,7 @@ namespace {
 
 // Helper functions to wrap platform differences.
 
-int32 CurrentProcessId() {
+int32_t CurrentProcessId() {
 #if defined(OS_WIN)
   return GetCurrentProcessId();
 #elif defined(OS_POSIX)
@@ -51,7 +53,7 @@ int32 CurrentProcessId() {
 #endif
 }
 
-int32 CurrentThreadId() {
+int32_t CurrentThreadId() {
   // Pthreads doesn't have the concept of a thread ID, so we have to reach down
   // into the kernel.
 #if defined(OS_LINUX)
@@ -61,13 +63,13 @@ int32 CurrentThreadId() {
 #elif defined(OS_SOLARIS)
   return pthread_self();
 #elif defined(OS_POSIX)
-  return reinterpret_cast<int64>(pthread_self());
+  return reinterpret_cast<int64_t>(pthread_self());
 #elif defined(OS_WIN)
-  return static_cast<int32>(::GetCurrentThreadId());
+  return static_cast<int32_t>(::GetCurrentThreadId());
 #endif
 }
 
-uint64 TickCount() {
+uint64_t TickCount() {
 #if defined(OS_WIN)
   return GetTickCount();
 #elif defined(OS_MACOSX)
@@ -76,9 +78,8 @@ uint64 TickCount() {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
 
-  uint64 absolute_micro =
-    static_cast<int64>(ts.tv_sec) * 1000000 +
-    static_cast<int64>(ts.tv_nsec) / 1000;
+  uint64_t absolute_micro = static_cast<int64_t>(ts.tv_sec) * 1000000 +
+                            static_cast<int64_t>(ts.tv_nsec) / 1000;
 
   return absolute_micro;
 #endif

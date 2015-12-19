@@ -15,7 +15,6 @@
 #include "media/audio/audio_parameters.h"
 #include "media/audio/fake_audio_worker.h"
 
-
 namespace media {
 
 class AudioBus;

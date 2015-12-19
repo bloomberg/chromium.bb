@@ -70,7 +70,7 @@ void FakeSoftwareVideoEncoder::Encode(
   }
 }
 
-void FakeSoftwareVideoEncoder::UpdateRates(uint32 new_bitrate) {
+void FakeSoftwareVideoEncoder::UpdateRates(uint32_t new_bitrate) {
   frame_size_ = new_bitrate / video_config_.max_frame_rate / 8;
 }
 

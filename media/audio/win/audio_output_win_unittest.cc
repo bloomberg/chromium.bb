@@ -5,7 +5,6 @@
 #include <windows.h>
 #include <mmsystem.h>
 
-#include "base/basictypes.h"
 #include "base/base_paths.h"
 #include "base/memory/aligned_memory.h"
 #include "base/sync_socket.h"
@@ -132,18 +131,14 @@ class ReadOnlyMappedFile {
     return ((start_ > 0) && (size_ > 0));
   }
   // Returns the size in bytes of the mapped memory.
-  uint32 size() const {
-    return size_;
-  }
+  uint32_t size() const { return size_; }
   // Returns the memory backing the file.
-  const void* GetChunkAt(uint32 offset) {
-    return &start_[offset];
-  }
+  const void* GetChunkAt(uint32_t offset) { return &start_[offset]; }
 
  private:
   HANDLE fmap_;
   char* start_;
-  uint32 size_;
+  uint32_t size_;
 };
 
 // ===========================================================================
@@ -260,7 +255,7 @@ TEST(WinAudioTest, PCMWaveStreamPlaySlowLoop) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
   ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
-  uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
+  uint32_t samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
                       AudioParameters::kAudioCDSampleRate, 16, samples_100_ms),
@@ -291,7 +286,7 @@ TEST(WinAudioTest, PCMWaveStreamPlay200HzTone44Kss) {
     return;
   }
 
-  uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
+  uint32_t samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
                       AudioParameters::kAudioCDSampleRate, 16, samples_100_ms),
@@ -316,7 +311,7 @@ TEST(WinAudioTest, PCMWaveStreamPlay200HzTone22Kss) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
   ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
-  uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 20;
+  uint32_t samples_100_ms = AudioParameters::kAudioCDSampleRate / 20;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
                       AudioParameters::kAudioCDSampleRate / 2, 16,
@@ -351,7 +346,7 @@ TEST(WinAudioTest, PushSourceFile16KHz)  {
   static const int kSampleRate = 16000;
   SineWaveAudioSource source(1, 200.0, kSampleRate);
   // Compute buffer size for 100ms of audio.
-  const uint32 kSamples100ms = (kSampleRate / 1000) * 100;
+  const uint32_t kSamples100ms = (kSampleRate / 1000) * 100;
   // Restrict SineWaveAudioSource to 100ms of samples.
   source.CapSamples(kSamples100ms);
 
@@ -369,7 +364,7 @@ TEST(WinAudioTest, PushSourceFile16KHz)  {
   // We buffer and play at the same time, buffering happens every ~10ms and the
   // consuming of the buffer happens every ~100ms. We do 100 buffers which
   // effectively wrap around the file more than once.
-  for (uint32 ix = 0; ix != 100; ++ix) {
+  for (uint32_t ix = 0; ix != 100; ++ix) {
     ::Sleep(10);
     source.Reset();
   }
@@ -388,7 +383,7 @@ TEST(WinAudioTest, PCMWaveStreamPlayTwice200HzTone44Kss) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
   ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
-  uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
+  uint32_t samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
                       AudioParameters::kAudioCDSampleRate, 16, samples_100_ms),
@@ -426,7 +421,7 @@ TEST(WinAudioTest, PCMWaveStreamPlay200HzToneLowLatency) {
   // Take the existing native sample rate into account.
   const AudioParameters params = audio_man->GetDefaultOutputStreamParameters();
   int sample_rate = params.sample_rate();
-  uint32 samples_10_ms = sample_rate / 100;
+  uint32_t samples_10_ms = sample_rate / 100;
   int n = 1;
   (base::win::GetVersion() <= base::win::VERSION_XP) ? n = 5 : n = 1;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
@@ -460,7 +455,7 @@ TEST(WinAudioTest, PCMWaveStreamPendingBytes) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
   ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
-  uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
+  uint32_t samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
                       AudioParameters::kAudioCDSampleRate, 16, samples_100_ms),
@@ -470,7 +465,7 @@ TEST(WinAudioTest, PCMWaveStreamPendingBytes) {
   NiceMock<MockAudioSourceCallback> source;
   EXPECT_TRUE(oas->Open());
 
-  uint32 bytes_100_ms = samples_100_ms * 2;
+  uint32_t bytes_100_ms = samples_100_ms * 2;
 
   // Audio output stream has either a double or triple buffer scheme.
   // We expect the amount of pending bytes will reaching up to 2 times of
@@ -523,7 +518,7 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
                  uint32_t total_bytes_delay,
                  uint32_t frames_skipped) override {
     socket_->Send(&total_bytes_delay, sizeof(total_bytes_delay));
-    uint32 size = socket_->Receive(data_.get(), data_size_);
+    uint32_t size = socket_->Receive(data_.get(), data_size_);
     DCHECK_EQ(static_cast<size_t>(size) % sizeof(*audio_bus_->channel(0)), 0U);
     audio_bus_->CopyTo(audio_bus);
     return audio_bus_->frames();
@@ -545,7 +540,7 @@ struct SyncThreadContext {
   int channels;
   int frames;
   double sine_freq;
-  uint32 packet_size_bytes;
+  uint32_t packet_size_bytes;
 };
 
 // This thread provides the data that the SyncSocketSource above needs
@@ -566,7 +561,7 @@ DWORD __stdcall SyncSocketThread(void* context) {
   SineWaveAudioSource sine(1, ctx.sine_freq, ctx.sample_rate);
   const int kTwoSecFrames = ctx.sample_rate * 2;
 
-  uint32 total_bytes_delay = 0;
+  uint32_t total_bytes_delay = 0;
   int times = 0;
   for (int ix = 0; ix < kTwoSecFrames; ix += ctx.frames) {
     if (ctx.socket->Receive(&total_bytes_delay, sizeof(total_bytes_delay)) == 0)
@@ -593,7 +588,7 @@ TEST(WinAudioTest, SyncSocketBasic) {
   ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   static const int sample_rate = AudioParameters::kAudioCDSampleRate;
-  static const uint32 kSamples20ms = sample_rate / 50;
+  static const uint32_t kSamples20ms = sample_rate / 50;
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
                          CHANNEL_LAYOUT_MONO, sample_rate, 16, kSamples20ms);
 

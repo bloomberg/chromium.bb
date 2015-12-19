@@ -151,16 +151,16 @@ class ByteCounter {
     return packets / time_range().InSecondsF();
   }
 
-  void Increment(uint64 x) {
+  void Increment(uint64_t x) {
     bytes_ += x;
     packets_ ++;
   }
 
  private:
-  uint64 bytes_;
-  uint64 packets_;
-  std::deque<uint64> byte_data_;
-  std::deque<uint64> packet_data_;
+  uint64_t bytes_;
+  uint64_t packets_;
+  std::deque<uint64_t> byte_data_;
+  std::deque<uint64_t> packet_data_;
   std::deque<base::TimeTicks> time_data_;
 };
 

@@ -31,27 +31,27 @@ class WebMVideoClient : public WebMParserClient {
   // video track element fields. The contents of |config| are undefined in this
   // case and should not be relied upon.
   bool InitializeConfig(const std::string& codec_id,
-                        const std::vector<uint8>& codec_private,
+                        const std::vector<uint8_t>& codec_private,
                         bool is_encrypted,
                         VideoDecoderConfig* config);
 
  private:
   // WebMParserClient implementation.
-  bool OnUInt(int id, int64 val) override;
-  bool OnBinary(int id, const uint8* data, int size) override;
+  bool OnUInt(int id, int64_t val) override;
+  bool OnBinary(int id, const uint8_t* data, int size) override;
   bool OnFloat(int id, double val) override;
 
   scoped_refptr<MediaLog> media_log_;
-  int64 pixel_width_;
-  int64 pixel_height_;
-  int64 crop_bottom_;
-  int64 crop_top_;
-  int64 crop_left_;
-  int64 crop_right_;
-  int64 display_width_;
-  int64 display_height_;
-  int64 display_unit_;
-  int64 alpha_mode_;
+  int64_t pixel_width_;
+  int64_t pixel_height_;
+  int64_t crop_bottom_;
+  int64_t crop_top_;
+  int64_t crop_left_;
+  int64_t crop_right_;
+  int64_t display_width_;
+  int64_t display_height_;
+  int64_t display_unit_;
+  int64_t alpha_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMVideoClient);
 };

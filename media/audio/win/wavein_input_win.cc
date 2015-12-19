@@ -86,7 +86,7 @@ void PCMWaveInAudioInputStream::SetupBuffers() {
   WAVEHDR* last = NULL;
   WAVEHDR* first = NULL;
   for (int ix = 0; ix != num_buffers_; ++ix) {
-    uint32 sz = sizeof(WAVEHDR) + buffer_size_;
+    uint32_t sz = sizeof(WAVEHDR) + buffer_size_;
     buffer_ =  reinterpret_cast<WAVEHDR*>(new char[sz]);
     buffer_->lpData = reinterpret_cast<char*>(buffer_) + sizeof(WAVEHDR);
     buffer_->dwBufferLength = buffer_size_;
@@ -300,9 +300,9 @@ void PCMWaveInAudioInputStream::WaveCallback(HWAVEIN hwi, UINT msg,
       // there is currently no support for controlling the microphone volume
       // level.
       WAVEHDR* buffer = reinterpret_cast<WAVEHDR*>(param1);
-      obj->audio_bus_->FromInterleaved(reinterpret_cast<uint8*>(buffer->lpData),
-                                       obj->audio_bus_->frames(),
-                                       obj->format_.wBitsPerSample / 8);
+      obj->audio_bus_->FromInterleaved(
+          reinterpret_cast<uint8_t*>(buffer->lpData), obj->audio_bus_->frames(),
+          obj->format_.wBitsPerSample / 8);
       obj->callback_->OnData(
           obj, obj->audio_bus_.get(), buffer->dwBytesRecorded, 0.0);
 

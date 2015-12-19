@@ -32,13 +32,13 @@ enum {
 };
 
 WebMClusterParser::WebMClusterParser(
-    int64 timecode_scale,
+    int64_t timecode_scale,
     int audio_track_num,
     base::TimeDelta audio_default_duration,
     int video_track_num,
     base::TimeDelta video_default_duration,
     const WebMTracksParser::TextTracks& text_tracks,
-    const std::set<int64>& ignored_tracks,
+    const std::set<int64_t>& ignored_tracks,
     const std::string& audio_encryption_key_id,
     const std::string& video_encryption_key_id,
     const AudioCodec audio_codec,
@@ -293,8 +293,8 @@ bool WebMClusterParser::OnListEnd(int id) {
   return result;
 }
 
-bool WebMClusterParser::OnUInt(int id, int64 val) {
-  int64* dst;
+bool WebMClusterParser::OnUInt(int id, int64_t val) {
+  int64_t* dst;
   switch (id) {
     case kWebMIdTimecode:
       dst = &cluster_timecode_;
@@ -320,7 +320,7 @@ bool WebMClusterParser::ParseBlock(bool is_simple_block,
                                    const uint8_t* additional,
                                    int additional_size,
                                    int duration,
-                                   int64 discard_padding) {
+                                   int64_t discard_padding) {
   if (size < 4)
     return false;
 
@@ -371,7 +371,7 @@ bool WebMClusterParser::OnBinary(int id, const uint8_t* data, int size) {
       return true;
 
     case kWebMIdBlockAdditional: {
-      uint64 block_add_id = base::HostToNet64(block_add_id_);
+      uint64_t block_add_id = base::HostToNet64(block_add_id_);
       if (block_additional_data_) {
         // TODO(vigneshv): Technically, more than 1 BlockAdditional is allowed
         // as per matroska spec. But for now we don't have a use case to
@@ -397,7 +397,7 @@ bool WebMClusterParser::OnBinary(int id, const uint8_t* data, int size) {
       discard_padding_set_ = true;
 
       // Read in the big-endian integer.
-      discard_padding_ = static_cast<int8>(data[0]);
+      discard_padding_ = static_cast<int8_t>(data[0]);
       for (int i = 1; i < size; ++i)
         discard_padding_ = (discard_padding_ << 8) | data[i];
 
@@ -417,7 +417,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
                                 int size,
                                 const uint8_t* additional,
                                 int additional_size,
-                                int64 discard_padding) {
+                                int64_t discard_padding) {
   DCHECK_GE(size, 0);
   if (cluster_timecode_ == -1) {
     MEDIA_LOG(ERROR, media_log_) << "Got a block before cluster timecode.";

@@ -8,7 +8,7 @@
 
 namespace media {
 
-static void SetBit(uint8* buf, size_t size, size_t bit_pos) {
+static void SetBit(uint8_t* buf, size_t size, size_t bit_pos) {
   size_t byte_pos = bit_pos / 8;
   bit_pos -= byte_pos * 8;
   DCHECK_LT(byte_pos, size);
@@ -16,10 +16,10 @@ static void SetBit(uint8* buf, size_t size, size_t bit_pos) {
 }
 
 TEST(BitReaderTest, NormalOperationTest) {
-  uint8 value8;
-  uint64 value64;
+  uint8_t value8;
+  uint64_t value64;
   // 0101 0101 1001 1001 repeats 4 times
-  uint8 buffer[] = {0x55, 0x99, 0x55, 0x99, 0x55, 0x99, 0x55, 0x99};
+  uint8_t buffer[] = {0x55, 0x99, 0x55, 0x99, 0x55, 0x99, 0x55, 0x99};
   BitReader reader1(buffer, 6);  // Initialize with 6 bytes only
 
   EXPECT_TRUE(reader1.ReadBits(1, &value8));
@@ -42,8 +42,8 @@ TEST(BitReaderTest, NormalOperationTest) {
 }
 
 TEST(BitReaderTest, ReadBeyondEndTest) {
-  uint8 value8;
-  uint8 buffer[] = {0x12};
+  uint8_t value8;
+  uint8_t buffer[] = {0x12};
   BitReader reader1(buffer, sizeof(buffer));
 
   EXPECT_TRUE(reader1.ReadBits(4, &value8));
@@ -53,8 +53,8 @@ TEST(BitReaderTest, ReadBeyondEndTest) {
 }
 
 TEST(BitReaderTest, SkipBitsTest) {
-  uint8 value8;
-  uint8 buffer[] = { 0x0a, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+  uint8_t value8;
+  uint8_t buffer[] = {0x0a, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
   BitReader reader1(buffer, sizeof(buffer));
 
   EXPECT_TRUE(reader1.SkipBits(2));
@@ -72,7 +72,7 @@ TEST(BitReaderTest, SkipBitsTest) {
 }
 
 TEST(BitReaderTest, VariableSkipBitsTest) {
-  uint8 buffer[256] = {0};
+  uint8_t buffer[256] = {0};
 
   // The test alternates between ReadBits and SkipBits.
   // The first number is the number of bits to read, the second one is the
@@ -120,7 +120,7 @@ TEST(BitReaderTest, VariableSkipBitsTest) {
 TEST(BitReaderTest, BitsReadTest) {
   int value;
   bool flag;
-  uint8 buffer[] = { 0x0a, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+  uint8_t buffer[] = {0x0a, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
   BitReader reader1(buffer, sizeof(buffer));
   EXPECT_EQ(reader1.bits_available(), 120);
 

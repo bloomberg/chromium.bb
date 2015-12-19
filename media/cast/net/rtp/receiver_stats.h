@@ -24,10 +24,10 @@ class ReceiverStats {
   base::TickClock* const clock_;  // Not owned by this class.
 
   // Global metrics.
-  uint16 min_sequence_number_;
-  uint16 max_sequence_number_;
-  uint32 total_number_packets_;
-  uint16 sequence_number_cycles_;
+  uint16_t min_sequence_number_;
+  uint16_t max_sequence_number_;
+  uint32_t total_number_packets_;
+  uint16_t sequence_number_cycles_;
   base::TimeDelta last_received_timestamp_;
   base::TimeTicks last_received_packet_time_;
   base::TimeDelta jitter_;

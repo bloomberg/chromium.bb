@@ -22,14 +22,9 @@ static scoped_refptr<AudioBuffer> MakeTestBuffer(int sample_rate,
                                                  ChannelLayout channel_layout,
                                                  int channel_count,
                                                  int frames) {
-  return MakeAudioBuffer<uint8>(kSampleFormatU8,
-                                channel_layout,
-                                channel_count,
-                                sample_rate,
-                                0,
-                                1,
-                                frames,
-                                base::TimeDelta::FromSeconds(0));
+  return MakeAudioBuffer<uint8_t>(kSampleFormatU8, channel_layout,
+                                  channel_count, sample_rate, 0, 1, frames,
+                                  base::TimeDelta::FromSeconds(0));
 }
 
 class AudioBufferConverterTest : public ::testing::Test {

@@ -17,7 +17,7 @@ namespace media {
 // as necessary.
 //
 // Unlike DecoderBuffer, allocations are assumed to be allocated with the
-// default memory allocator (i.e., new uint8[]).
+// default memory allocator (i.e., new uint8_t[]).
 //
 // NOTE: It is illegal to call any method when end_of_stream() is true.
 class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
@@ -26,12 +26,12 @@ class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
   explicit DataBuffer(int buffer_size);
 
   // Assumes valid data of size |buffer_size|.
-  DataBuffer(scoped_ptr<uint8[]> buffer, int buffer_size);
+  DataBuffer(scoped_ptr<uint8_t[]> buffer, int buffer_size);
 
   // Create a DataBuffer whose |data_| is copied from |data|.
   //
   // |data| must not be null and |size| must be >= 0.
-  static scoped_refptr<DataBuffer> CopyFrom(const uint8* data, int size);
+  static scoped_refptr<DataBuffer> CopyFrom(const uint8_t* data, int size);
 
   // Create a DataBuffer indicating we've reached end of stream.
   //
@@ -59,12 +59,12 @@ class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
     duration_ = duration;
   }
 
-  const uint8* data() const {
+  const uint8_t* data() const {
     DCHECK(!end_of_stream());
     return data_.get();
   }
 
-  uint8* writable_data() {
+  uint8_t* writable_data() {
     DCHECK(!end_of_stream());
     return data_.get();
   }
@@ -93,7 +93,7 @@ class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
   // the allocated buffer and sets data size to |data_size|.
   //
   // If |data| is null an end of stream buffer is created.
-  DataBuffer(const uint8* data, int data_size);
+  DataBuffer(const uint8_t* data, int data_size);
 
   virtual ~DataBuffer();
 
@@ -101,7 +101,7 @@ class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
   base::TimeDelta timestamp_;
   base::TimeDelta duration_;
 
-  scoped_ptr<uint8[]> data_;
+  scoped_ptr<uint8_t[]> data_;
   int buffer_size_;
   int data_size_;
 

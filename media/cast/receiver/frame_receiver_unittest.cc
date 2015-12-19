@@ -28,7 +28,7 @@ namespace cast {
 namespace {
 
 const int kPacketSize = 1500;
-const uint32 kFirstFrameId = 1234;
+const uint32_t kFirstFrameId = 1234;
 const int kPlayoutDelayMillis = 100;
 
 class FakeFrameClient {
@@ -36,7 +36,7 @@ class FakeFrameClient {
   FakeFrameClient() : num_called_(0) {}
   virtual ~FakeFrameClient() {}
 
-  void AddExpectedResult(uint32 expected_frame_id,
+  void AddExpectedResult(uint32_t expected_frame_id,
                          const base::TimeTicks& expected_playout_time) {
     expected_results_.push_back(
         std::make_pair(expected_frame_id, expected_playout_time));
@@ -56,7 +56,7 @@ class FakeFrameClient {
   int number_times_called() const { return num_called_; }
 
  private:
-  std::deque<std::pair<uint32, base::TimeTicks> > expected_results_;
+  std::deque<std::pair<uint32_t, base::TimeTicks>> expected_results_;
   int num_called_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFrameClient);
@@ -119,21 +119,20 @@ class FrameReceiverTest : public ::testing::Test {
 
   void FeedLipSyncInfoIntoReceiver() {
     const base::TimeTicks now = testing_clock_->NowTicks();
-    const int64 rtp_timestamp = (now - start_time_) *
-        config_.rtp_timebase / base::TimeDelta::FromSeconds(1);
+    const int64_t rtp_timestamp = (now - start_time_) * config_.rtp_timebase /
+                                  base::TimeDelta::FromSeconds(1);
     CHECK_LE(0, rtp_timestamp);
-    uint32 ntp_seconds;
-    uint32 ntp_fraction;
+    uint32_t ntp_seconds;
+    uint32_t ntp_fraction;
     ConvertTimeTicksToNtp(now, &ntp_seconds, &ntp_fraction);
     TestRtcpPacketBuilder rtcp_packet;
-    rtcp_packet.AddSrWithNtp(config_.sender_ssrc,
-                             ntp_seconds, ntp_fraction,
-                             static_cast<uint32>(rtp_timestamp));
+    rtcp_packet.AddSrWithNtp(config_.sender_ssrc, ntp_seconds, ntp_fraction,
+                             static_cast<uint32_t>(rtp_timestamp));
     ASSERT_TRUE(receiver_->ProcessPacket(rtcp_packet.GetPacket().Pass()));
   }
 
   FrameReceiverConfig config_;
-  std::vector<uint8> payload_;
+  std::vector<uint8_t> payload_;
   RtpCastHeader rtp_header_;
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   base::TimeTicks start_time_;
@@ -217,7 +216,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
   EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver(_, _, _, _, _, _, _))
       .WillRepeatedly(testing::Return());
 
-  const uint32 rtp_advance_per_frame =
+  const uint32_t rtp_advance_per_frame =
       config_.rtp_timebase / config_.target_frame_rate;
   const base::TimeDelta time_advance_per_frame =
       base::TimeDelta::FromSeconds(1) / config_.target_frame_rate;
@@ -320,7 +319,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
   EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver(_, _, _, _, _, _, _))
       .WillRepeatedly(testing::Return());
 
-  const uint32 rtp_advance_per_frame =
+  const uint32_t rtp_advance_per_frame =
       config_.rtp_timebase / config_.target_frame_rate;
   const base::TimeDelta time_advance_per_frame =
       base::TimeDelta::FromSeconds(1) / config_.target_frame_rate;

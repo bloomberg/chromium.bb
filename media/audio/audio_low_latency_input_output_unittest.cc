@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -184,7 +183,7 @@ class FullDuplexAudioSinkSource
   // AudioInputStream::AudioInputCallback.
   void OnData(AudioInputStream* stream,
               const AudioBus* src,
-              uint32 hardware_delay_bytes,
+              uint32_t hardware_delay_bytes,
               double volume) override {
     base::AutoLock lock(lock_);
 
@@ -230,7 +229,7 @@ class FullDuplexAudioSinkSource
     }
 
     int size;
-    const uint8* source;
+    const uint8_t* source;
     // Read the data from the seekable media buffer which contains
     // captured data at the same size and sample rate as the output side.
     if (buffer_->GetCurrentChunk(&source, &size) && size > 0) {
@@ -251,7 +250,7 @@ class FullDuplexAudioSinkSource
  protected:
   // Converts from bytes to milliseconds taking the sample rate and size
   // of an audio frame into account.
-  int BytesToMilliseconds(uint32 delay_bytes) const {
+  int BytesToMilliseconds(uint32_t delay_bytes) const {
     return static_cast<int>((delay_bytes / frame_size_) * frames_to_ms_ + 0.5);
   }
 

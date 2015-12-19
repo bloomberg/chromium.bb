@@ -8,7 +8,6 @@
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -38,8 +37,8 @@ class MIDI_EXPORT MidiManagerClient {
 
   // SetInputPortState() and SetOutputPortState() are called to notify a known
   // device gets disconnected, or connected again.
-  virtual void SetInputPortState(uint32 port_index, MidiPortState state) = 0;
-  virtual void SetOutputPortState(uint32 port_index, MidiPortState state) = 0;
+  virtual void SetInputPortState(uint32_t port_index, MidiPortState state) = 0;
+  virtual void SetOutputPortState(uint32_t port_index, MidiPortState state) = 0;
 
   // CompleteStartSession() is called when platform dependent preparation is
   // finished.
@@ -51,8 +50,8 @@ class MIDI_EXPORT MidiManagerClient {
   // |data| represents a series of bytes encoding one or more MIDI messages.
   // |length| is the number of bytes in |data|.
   // |timestamp| is the time the data was received, in seconds.
-  virtual void ReceiveMidiData(uint32 port_index,
-                               const uint8* data,
+  virtual void ReceiveMidiData(uint32_t port_index,
+                               const uint8_t* data,
                                size_t length,
                                double timestamp) = 0;
 
@@ -109,8 +108,8 @@ class MIDI_EXPORT MidiManager {
   // means send "now" or as soon as possible.
   // The default implementation is for unsupported platforms.
   virtual void DispatchSendMidiData(MidiManagerClient* client,
-                                    uint32 port_index,
-                                    const std::vector<uint8>& data,
+                                    uint32_t port_index,
+                                    const std::vector<uint8_t>& data,
                                     double timestamp);
 
  protected:
@@ -141,19 +140,19 @@ class MIDI_EXPORT MidiManager {
 
   void AddInputPort(const MidiPortInfo& info);
   void AddOutputPort(const MidiPortInfo& info);
-  void SetInputPortState(uint32 port_index, MidiPortState state);
-  void SetOutputPortState(uint32 port_index, MidiPortState state);
+  void SetInputPortState(uint32_t port_index, MidiPortState state);
+  void SetOutputPortState(uint32_t port_index, MidiPortState state);
 
   // Dispatches to all clients.
   // TODO(toyoshim): Fix the mac implementation to use
   // |ReceiveMidiData(..., base::TimeTicks)|.
-  void ReceiveMidiData(uint32 port_index,
-                       const uint8* data,
+  void ReceiveMidiData(uint32_t port_index,
+                       const uint8_t* data,
                        size_t length,
                        double timestamp);
 
-  void ReceiveMidiData(uint32 port_index,
-                       const uint8* data,
+  void ReceiveMidiData(uint32_t port_index,
+                       const uint8_t* data,
                        size_t length,
                        base::TimeTicks time) {
     ReceiveMidiData(port_index, data, length,

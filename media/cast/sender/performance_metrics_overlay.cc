@@ -29,7 +29,7 @@ const int kPlane = 0;  // Y-plane in YUV formats.
 // different value than it did before.  |p_ul| is a pointer to the pixel at
 // coordinate (0,0) in a single-channel 8bpp bitmap.  |stride| is the number of
 // bytes per row in the output bitmap.
-void DivergePixels(const gfx::Rect& rect, uint8* p_ul, int stride) {
+void DivergePixels(const gfx::Rect& rect, uint8_t* p_ul, int stride) {
   DCHECK(p_ul);
   DCHECK_GT(stride, 0);
 
@@ -52,14 +52,14 @@ void DivergePixels(const gfx::Rect& rect, uint8* p_ul, int stride) {
   const int left = rect.x() * kScale;
   const int right = rect.right() * kScale;
   for (int y = top; y < bottom; ++y) {
-    uint8* const p_l = p_ul + y * stride;
+    uint8_t* const p_l = p_ul + y * stride;
     for (int x = left; x < right; ++x) {
       int intensity = p_l[x];
       if (intensity >= kDivergeDownThreshold)
         intensity = std::max(kMinIntensity, intensity - kDivergeDownAmount);
       else
         intensity += kDivergeUpAmount;
-      p_l[x] = static_cast<uint8>(intensity);
+      p_l[x] = static_cast<uint8_t>(intensity);
     }
   }
 }
@@ -84,7 +84,7 @@ void RenderLineOfText(const std::string& line, int top, VideoFrame* frame) {
   // Compute the pointer to the pixel at the upper-left corner of the first
   // character to be rendered.
   const int stride = frame->stride(kPlane);
-  uint8* p_ul =
+  uint8_t* p_ul =
       // Start at the first pixel in the first row...
       frame->visible_data(kPlane) + (stride * top)
       // ...now move to the right edge of the visible part of the frame...

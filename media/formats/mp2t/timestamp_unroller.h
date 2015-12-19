@@ -5,7 +5,8 @@
 #ifndef MEDIA_FORMATS_MP2T_TIMESTAMP_UNROLLER_H_
 #define MEDIA_FORMATS_MP2T_TIMESTAMP_UNROLLER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "media/base/media_export.h"
 
@@ -26,7 +27,7 @@ class MEDIA_EXPORT TimestampUnroller {
   // possible to the previous unrolled timestamp returned by this function
   // (if this function has not been called before, it will return the timestamp
   // unmodified).
-  int64 GetUnrolledTimestamp(int64 timestamp);
+  int64_t GetUnrolledTimestamp(int64_t timestamp);
 
   // Reset the TimestampUnroller to its initial state.
   void Reset();
@@ -36,7 +37,7 @@ class MEDIA_EXPORT TimestampUnroller {
   bool is_previous_timestamp_valid_;
 
   // This is the last output of GetUnrolledTimestamp.
-  int64 previous_unrolled_timestamp_;
+  int64_t previous_unrolled_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(TimestampUnroller);
 };

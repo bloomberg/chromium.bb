@@ -17,10 +17,8 @@ using blink::WebURLResponse;
 namespace media {
 
 TestResponseGenerator::TestResponseGenerator(const GURL& gurl,
-                                             int64 content_length)
-    : gurl_(gurl),
-      content_length_(content_length) {
-}
+                                             int64_t content_length)
+    : gurl_(gurl), content_length_(content_length) {}
 
 WebURLError TestResponseGenerator::GenerateError() {
   WebURLError error;
@@ -40,26 +38,26 @@ WebURLResponse TestResponseGenerator::Generate200() {
   return response;
 }
 
-WebURLResponse TestResponseGenerator::Generate206(int64 first_byte_offset) {
+WebURLResponse TestResponseGenerator::Generate206(int64_t first_byte_offset) {
   return GeneratePartial206(first_byte_offset, content_length_ - 1, kNormal);
 }
 
-WebURLResponse TestResponseGenerator::Generate206(int64 first_byte_offset,
+WebURLResponse TestResponseGenerator::Generate206(int64_t first_byte_offset,
                                                   Flags flags) {
   return GeneratePartial206(first_byte_offset, content_length_ - 1, flags);
 }
 
 WebURLResponse TestResponseGenerator::GeneratePartial206(
-    int64 first_byte_offset,
-    int64 last_byte_offset) {
+    int64_t first_byte_offset,
+    int64_t last_byte_offset) {
   return GeneratePartial206(first_byte_offset, last_byte_offset, kNormal);
 }
 
 WebURLResponse TestResponseGenerator::GeneratePartial206(
-    int64 first_byte_offset,
-    int64 last_byte_offset,
+    int64_t first_byte_offset,
+    int64_t last_byte_offset,
     Flags flags) {
-  int64 range_content_length = content_length_ - first_byte_offset;
+  int64_t range_content_length = content_length_ - first_byte_offset;
 
   WebURLResponse response(gurl_);
   response.setHTTPStatusCode(206);
@@ -97,7 +95,7 @@ WebURLResponse TestResponseGenerator::Generate404() {
 }
 
 WebURLResponse TestResponseGenerator::GenerateFileResponse(
-    int64 first_byte_offset) {
+    int64_t first_byte_offset) {
   WebURLResponse response(gurl_);
   response.setHTTPStatusCode(0);
 

@@ -25,7 +25,7 @@ struct GRFUTestCase {
   WebURLResponse::HTTPVersion version;
   int status_code;
   const char* headers;
-  uint32 expected_reasons;
+  uint32_t expected_reasons;
 };
 
 // Create a new WebURLResponse object.

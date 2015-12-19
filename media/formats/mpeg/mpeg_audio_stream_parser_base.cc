@@ -14,17 +14,17 @@
 
 namespace media {
 
-static const uint32 kICYStartCode = 0x49435920; // 'ICY '
+static const uint32_t kICYStartCode = 0x49435920;  // 'ICY '
 
 // Arbitrary upper bound on the size of an IceCast header before it
 // triggers an error.
 static const int kMaxIcecastHeaderSize = 4096;
 
-static const uint32 kID3StartCodeMask = 0xffffff00;
-static const uint32 kID3v1StartCode = 0x54414700; // 'TAG\0'
+static const uint32_t kID3StartCodeMask = 0xffffff00;
+static const uint32_t kID3v1StartCode = 0x54414700;  // 'TAG\0'
 static const int kID3v1Size = 128;
 static const int kID3v1ExtendedSize = 227;
-static const uint32 kID3v2StartCode = 0x49443300; // 'ID3\0'
+static const uint32_t kID3v2StartCode = 0x49443300;  // 'ID3\0'
 
 static int LocateEndOfHeaders(const uint8_t* buf, int buf_len, int i) {
   bool was_lf = false;
@@ -43,7 +43,7 @@ static int LocateEndOfHeaders(const uint8_t* buf, int buf_len, int i) {
   return -1;
 }
 
-MPEGAudioStreamParserBase::MPEGAudioStreamParserBase(uint32 start_code_mask,
+MPEGAudioStreamParserBase::MPEGAudioStreamParserBase(uint32_t start_code_mask,
                                                      AudioCodec audio_codec,
                                                      int codec_delay)
     : state_(UNINITIALIZED),
@@ -84,7 +84,7 @@ void MPEGAudioStreamParserBase::Flush() {
   in_media_segment_ = false;
 }
 
-bool MPEGAudioStreamParserBase::Parse(const uint8* buf, int size) {
+bool MPEGAudioStreamParserBase::Parse(const uint8_t* buf, int size) {
   DVLOG(1) << __FUNCTION__ << "(" << size << ")";
   DCHECK(buf);
   DCHECK_GT(size, 0);
@@ -100,14 +100,15 @@ bool MPEGAudioStreamParserBase::Parse(const uint8* buf, int size) {
   bool end_of_segment = true;
   BufferQueue buffers;
   for (;;) {
-    const uint8* data;
+    const uint8_t* data;
     int data_size;
     queue_.Peek(&data, &data_size);
 
     if (data_size < 4)
       break;
 
-    uint32 start_code = data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
+    uint32_t start_code =
+        data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
     int bytes_read = 0;
     bool parsed_metadata = true;
     if ((start_code & start_code_mask_) == start_code_mask_) {
@@ -161,7 +162,7 @@ void MPEGAudioStreamParserBase::ChangeState(State state) {
   state_ = state;
 }
 
-int MPEGAudioStreamParserBase::ParseFrame(const uint8* data,
+int MPEGAudioStreamParserBase::ParseFrame(const uint8_t* data,
                                           int size,
                                           BufferQueue* buffers) {
   DVLOG(2) << __FUNCTION__ << "(" << size << ")";
@@ -248,7 +249,8 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8* data,
   return frame_size;
 }
 
-int MPEGAudioStreamParserBase::ParseIcecastHeader(const uint8* data, int size) {
+int MPEGAudioStreamParserBase::ParseIcecastHeader(const uint8_t* data,
+                                                  int size) {
   DVLOG(1) << __FUNCTION__ << "(" << size << ")";
 
   if (size < 4)
@@ -271,7 +273,7 @@ int MPEGAudioStreamParserBase::ParseIcecastHeader(const uint8* data, int size) {
   return offset;
 }
 
-int MPEGAudioStreamParserBase::ParseID3v1(const uint8* data, int size) {
+int MPEGAudioStreamParserBase::ParseID3v1(const uint8_t* data, int size) {
   DVLOG(1) << __FUNCTION__ << "(" << size << ")";
 
   if (size < kID3v1Size)
@@ -282,17 +284,17 @@ int MPEGAudioStreamParserBase::ParseID3v1(const uint8* data, int size) {
   return !memcmp(data, "TAG+", 4) ? kID3v1ExtendedSize : kID3v1Size;
 }
 
-int MPEGAudioStreamParserBase::ParseID3v2(const uint8* data, int size) {
+int MPEGAudioStreamParserBase::ParseID3v2(const uint8_t* data, int size) {
   DVLOG(1) << __FUNCTION__ << "(" << size << ")";
 
   if (size < 10)
     return 0;
 
   BitReader reader(data, size);
-  int32 id;
+  int32_t id;
   int version;
-  uint8 flags;
-  int32 id3_size;
+  uint8_t flags;
+  int32_t id3_size;
 
   if (!reader.ReadBits(24, &id) ||
       !reader.ReadBits(16, &version) ||
@@ -301,7 +303,7 @@ int MPEGAudioStreamParserBase::ParseID3v2(const uint8* data, int size) {
     return -1;
   }
 
-  int32 actual_tag_size = 10 + id3_size;
+  int32_t actual_tag_size = 10 + id3_size;
 
   // Increment size if 'Footer present' flag is set.
   if (flags & 0x10)
@@ -317,10 +319,10 @@ int MPEGAudioStreamParserBase::ParseID3v2(const uint8* data, int size) {
 }
 
 bool MPEGAudioStreamParserBase::ParseSyncSafeInt(BitReader* reader,
-                                                 int32* value) {
+                                                 int32_t* value) {
   *value = 0;
   for (int i = 0; i < 4; ++i) {
-    uint8 tmp;
+    uint8_t tmp;
     if (!reader->ReadBits(1, &tmp) || tmp != 0) {
       MEDIA_LOG(ERROR, media_log_) << "ID3 syncsafe integer byte MSb is not 0!";
       return false;
@@ -336,21 +338,21 @@ bool MPEGAudioStreamParserBase::ParseSyncSafeInt(BitReader* reader,
   return true;
 }
 
-int MPEGAudioStreamParserBase::FindNextValidStartCode(const uint8* data,
+int MPEGAudioStreamParserBase::FindNextValidStartCode(const uint8_t* data,
                                                       int size) const {
-  const uint8* start = data;
-  const uint8* end = data + size;
+  const uint8_t* start = data;
+  const uint8_t* end = data + size;
 
   while (start < end) {
     int bytes_left = end - start;
-    const uint8* candidate_start_code =
-        static_cast<const uint8*>(memchr(start, 0xff, bytes_left));
+    const uint8_t* candidate_start_code =
+        static_cast<const uint8_t*>(memchr(start, 0xff, bytes_left));
 
     if (!candidate_start_code)
       return 0;
 
     bool parse_header_failed = false;
-    const uint8* sync = candidate_start_code;
+    const uint8_t* sync = candidate_start_code;
     // Try to find 3 valid frames in a row. 3 was selected to decrease
     // the probability of false positives.
     for (int i = 0; i < 3; ++i) {

@@ -24,7 +24,7 @@ class FramerTest : public ::testing::Test {
 
   ~FramerTest() override {}
 
-  std::vector<uint8> payload_;
+  std::vector<uint8_t> payload_;
   RtpCastHeader rtp_header_;
   MockRtpPayloadFeedback mock_rtp_payload_feedback_;
   Framer framer_;

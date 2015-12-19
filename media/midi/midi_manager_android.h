@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -35,13 +34,13 @@ class MidiManagerAndroid final : public MidiManager,
   // MidiManager implementation.
   void StartInitialization() override;
   void DispatchSendMidiData(MidiManagerClient* client,
-                            uint32 port_index,
-                            const std::vector<uint8>& data,
+                            uint32_t port_index,
+                            const std::vector<uint8_t>& data,
                             double timestamp) override;
 
   // MidiInputPortAndroid::Delegate implementation.
   void OnReceivedData(MidiInputPortAndroid*,
-                      const uint8* data,
+                      const uint8_t* data,
                       size_t size,
                       base::TimeTicks timestamp) override;
 

@@ -33,27 +33,26 @@ using ::testing::_;
 
 namespace media {
 
-const uint8 kTracksHeader[] = {
-  0x16, 0x54, 0xAE, 0x6B,  // Tracks ID
-  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // tracks(size = 0)
+const uint8_t kTracksHeader[] = {
+    0x16, 0x54, 0xAE, 0x6B,                          // Tracks ID
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // tracks(size = 0)
 };
 
 // WebM Block bytes that represent a VP8 key frame.
-const uint8 kVP8Keyframe[] = {
-  0x010, 0x00, 0x00, 0x9d, 0x01, 0x2a, 0x00, 0x10, 0x00, 0x10, 0x00
-};
+const uint8_t kVP8Keyframe[] = {0x010, 0x00, 0x00, 0x9d, 0x01, 0x2a,
+                                0x00,  0x10, 0x00, 0x10, 0x00};
 
 // WebM Block bytes that represent a VP8 interframe.
-const uint8 kVP8Interframe[] = { 0x11, 0x00, 0x00 };
+const uint8_t kVP8Interframe[] = {0x11, 0x00, 0x00};
 
-const uint8 kCuesHeader[] = {
-  0x1C, 0x53, 0xBB, 0x6B,  // Cues ID
-  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // cues(size = 0)
+const uint8_t kCuesHeader[] = {
+    0x1C, 0x53, 0xBB, 0x6B,                          // Cues ID
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // cues(size = 0)
 };
 
-const uint8 kEncryptedMediaInitData[] = {
-  0x68, 0xFE, 0xF9, 0xA1, 0xB3, 0x0D, 0x6B, 0x4D,
-  0xF2, 0x22, 0xB5, 0x0B, 0x4D, 0xE9, 0xE9, 0x95,
+const uint8_t kEncryptedMediaInitData[] = {
+    0x68, 0xFE, 0xF9, 0xA1, 0xB3, 0x0D, 0x6B, 0x4D,
+    0xF2, 0x22, 0xB5, 0x0B, 0x4D, 0xE9, 0xE9, 0x95,
 };
 
 const int kTracksHeaderSize = sizeof(kTracksHeader);
@@ -95,10 +94,10 @@ base::TimeDelta kDefaultDuration() {
 // Write an integer into buffer in the form of vint that spans 8 bytes.
 // The data pointed by |buffer| should be at least 8 bytes long.
 // |number| should be in the range 0 <= number < 0x00FFFFFFFFFFFFFF.
-static void WriteInt64(uint8* buffer, int64 number) {
+static void WriteInt64(uint8_t* buffer, int64_t number) {
   DCHECK(number >= 0 && number < 0x00FFFFFFFFFFFFFFLL);
   buffer[0] = 0x01;
-  int64 tmp = number;
+  int64_t tmp = number;
   for (int i = 7; i > 0; i--) {
     buffer[i] = tmp & 0xff;
     tmp >>= 8;
@@ -189,7 +188,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   void CreateInitSegment(int stream_flags,
                          bool is_audio_encrypted,
                          bool is_video_encrypted,
-                         scoped_ptr<uint8[]>* buffer,
+                         scoped_ptr<uint8_t[]>* buffer,
                          int* size) {
     CreateInitSegmentInternal(
         stream_flags, is_audio_encrypted, is_video_encrypted, buffer, false,
@@ -199,7 +198,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   void CreateInitSegmentWithAlternateTextTrackNum(int stream_flags,
                                                   bool is_audio_encrypted,
                                                   bool is_video_encrypted,
-                                                  scoped_ptr<uint8[]>* buffer,
+                                                  scoped_ptr<uint8_t[]>* buffer,
                                                   int* size) {
     DCHECK(stream_flags & HAS_TEXT);
     CreateInitSegmentInternal(
@@ -210,7 +209,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   void CreateInitSegmentInternal(int stream_flags,
                                  bool is_audio_encrypted,
                                  bool is_video_encrypted,
-                                 scoped_ptr<uint8[]>* buffer,
+                                 scoped_ptr<uint8_t[]>* buffer,
                                  bool use_alternate_text_track_id,
                                  int* size) {
     bool has_audio = (stream_flags & HAS_AUDIO) != 0;
@@ -269,7 +268,7 @@ class ChunkDemuxerTest : public ::testing::Test {
 
       const int len = strlen(str);
       DCHECK_EQ(len, 32);
-      const uint8* const buf = reinterpret_cast<const uint8*>(str);
+      const uint8_t* const buf = reinterpret_cast<const uint8_t*>(str);
       text_track_entry = DecoderBuffer::CopyFrom(buf, len);
       tracks_element_size += text_track_entry->data_size();
     }
@@ -277,9 +276,9 @@ class ChunkDemuxerTest : public ::testing::Test {
     *size = ebml_header->data_size() + info->data_size() +
         kTracksHeaderSize + tracks_element_size;
 
-    buffer->reset(new uint8[*size]);
+    buffer->reset(new uint8_t[*size]);
 
-    uint8* buf = buffer->get();
+    uint8_t* buf = buffer->get();
     memcpy(buf, ebml_header->data(), ebml_header->data_size());
     buf += ebml_header->data_size();
 
@@ -366,7 +365,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     return demuxer_->AddId(source_id, type, codecs);
   }
 
-  void AppendData(const uint8* data, size_t length) {
+  void AppendData(const uint8_t* data, size_t length) {
     AppendData(kSourceId, data, length);
   }
 
@@ -478,7 +477,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     DCHECK_GT(blocks.size(), 0u);
     ClusterBuilder cb;
 
-    std::vector<uint8> data(10);
+    std::vector<uint8_t> data(10);
     for (size_t i = 0; i < blocks.size(); ++i) {
       if (i == 0)
         cb.SetClusterTimecode(blocks[i].timestamp_in_ms);
@@ -575,7 +574,8 @@ class ChunkDemuxerTest : public ::testing::Test {
   }
 
   void AppendData(const std::string& source_id,
-                  const uint8* data, size_t length) {
+                  const uint8_t* data,
+                  size_t length) {
     EXPECT_CALL(host_, AddBufferedTimeRange(_, _)).Times(AnyNumber());
 
     demuxer_->AppendData(source_id, data, length,
@@ -585,13 +585,15 @@ class ChunkDemuxerTest : public ::testing::Test {
                          init_segment_received_cb_);
   }
 
-  void AppendDataInPieces(const uint8* data, size_t length) {
+  void AppendDataInPieces(const uint8_t* data, size_t length) {
     AppendDataInPieces(data, length, 7);
   }
 
-  void AppendDataInPieces(const uint8* data, size_t length, size_t piece_size) {
-    const uint8* start = data;
-    const uint8* end = data + length;
+  void AppendDataInPieces(const uint8_t* data,
+                          size_t length,
+                          size_t piece_size) {
+    const uint8_t* start = data;
+    const uint8_t* end = data + length;
     while (start < end) {
       size_t append_size = std::min(piece_size,
                                     static_cast<size_t>(end - start));
@@ -613,7 +615,7 @@ class ChunkDemuxerTest : public ::testing::Test {
                                           int stream_flags,
                                           bool is_audio_encrypted,
                                           bool is_video_encrypted) {
-    scoped_ptr<uint8[]> info_tracks;
+    scoped_ptr<uint8_t[]> info_tracks;
     int info_tracks_size = 0;
     CreateInitSegment(stream_flags,
                       is_audio_encrypted, is_video_encrypted,
@@ -624,7 +626,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   void AppendGarbage() {
     // Fill up an array with gibberish.
     int garbage_cluster_size = 10;
-    scoped_ptr<uint8[]> garbage_cluster(new uint8[garbage_cluster_size]);
+    scoped_ptr<uint8_t[]> garbage_cluster(new uint8_t[garbage_cluster_size]);
     for (int i = 0; i < garbage_cluster_size; ++i)
       garbage_cluster[i] = i;
     AppendData(garbage_cluster.get(), garbage_cluster_size);
@@ -800,8 +802,8 @@ class ChunkDemuxerTest : public ::testing::Test {
     }
   }
 
-  void AddSimpleBlock(ClusterBuilder* cb, int track_num, int64 timecode) {
-    uint8 data[] = { 0x00 };
+  void AddSimpleBlock(ClusterBuilder* cb, int track_num, int64_t timecode) {
+    uint8_t data[] = {0x00};
     cb->AddSimpleBlock(track_num, timecode, 0, data, sizeof(data));
   }
 
@@ -809,9 +811,12 @@ class ChunkDemuxerTest : public ::testing::Test {
     return GenerateCluster(timecode, timecode, block_count);
   }
 
-  void AddVideoBlockGroup(ClusterBuilder* cb, int track_num, int64 timecode,
-                          int duration, int flags) {
-    const uint8* data =
+  void AddVideoBlockGroup(ClusterBuilder* cb,
+                          int track_num,
+                          int64_t timecode,
+                          int duration,
+                          int flags) {
+    const uint8_t* data =
         (flags & kWebMFlagKeyframe) != 0 ? kVP8Keyframe : kVP8Interframe;
     int size = (flags & kWebMFlagKeyframe) != 0 ? sizeof(kVP8Keyframe) :
         sizeof(kVP8Interframe);
@@ -845,7 +850,7 @@ class ChunkDemuxerTest : public ::testing::Test {
 
     // Create simple blocks for everything except the last 2 blocks.
     // The first video frame must be a key frame.
-    uint8 video_flag = kWebMFlagKeyframe;
+    uint8_t video_flag = kWebMFlagKeyframe;
     for (int i = 0; i < block_count - 2; i++) {
       if (audio_timecode <= video_timecode) {
         block_queue.push(BlockInfo(kAudioTrackNum,
@@ -884,7 +889,7 @@ class ChunkDemuxerTest : public ::testing::Test {
                                                   int block_duration) {
     CHECK_GT(end_timecode, timecode);
 
-    std::vector<uint8> data(kBlockSize);
+    std::vector<uint8_t> data(kBlockSize);
 
     ClusterBuilder cb;
     cb.SetClusterTimecode(timecode);
@@ -1041,7 +1046,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  void ExpectRead(DemuxerStream::Type type, int64 timestamp_in_ms) {
+  void ExpectRead(DemuxerStream::Type type, int64_t timestamp_in_ms) {
     EXPECT_CALL(*this, ReadDone(DemuxerStream::kOk,
                                 HasTimestamp(timestamp_in_ms)));
     demuxer_->GetStream(type)->Read(base::Bind(
@@ -1158,7 +1163,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   MOCK_METHOD0(DemuxerOpened, void());
   MOCK_METHOD2(OnEncryptedMediaInitData,
                void(EmeInitDataType init_data_type,
-                    const std::vector<uint8>& init_data));
+                    const std::vector<uint8_t>& init_data));
 
   MOCK_METHOD0(InitSegmentReceived, void(void));
 
@@ -1221,7 +1226,7 @@ TEST_F(ChunkDemuxerTest, Init) {
                            (is_video_encrypted ? 1 : 0);
       EXPECT_CALL(*this, OnEncryptedMediaInitData(
                              EmeInitDataType::WEBM,
-                             std::vector<uint8>(
+                             std::vector<uint8_t>(
                                  kEncryptedMediaInitData,
                                  kEncryptedMediaInitData +
                                      arraysize(kEncryptedMediaInitData))))
@@ -1366,7 +1371,7 @@ TEST_F(ChunkDemuxerTest, SingleTextTrackIdChange) {
       MuxedStreamInfo(kTextTrackNum, "10K"));
   CheckExpectedRanges(kSourceId, "{ [0,46) }");
 
-  scoped_ptr<uint8[]> info_tracks;
+  scoped_ptr<uint8_t[]> info_tracks;
   int info_tracks_size = 0;
   CreateInitSegmentWithAlternateTextTrackNum(HAS_TEXT | HAS_AUDIO | HAS_VIDEO,
                                              false, false,
@@ -1558,7 +1563,7 @@ TEST_F(ChunkDemuxerTest, SeekWhileParsingCluster) {
 
 // Test the case where AppendData() is called before Init().
 TEST_F(ChunkDemuxerTest, AppendDataBeforeInit) {
-  scoped_ptr<uint8[]> info_tracks;
+  scoped_ptr<uint8_t[]> info_tracks;
   int info_tracks_size = 0;
   CreateInitSegment(HAS_AUDIO | HAS_VIDEO,
                     false, false, &info_tracks, &info_tracks_size);
@@ -1946,7 +1951,7 @@ TEST_F(ChunkDemuxerTest, AppendingInPieces) {
 
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
-  scoped_ptr<uint8[]> info_tracks;
+  scoped_ptr<uint8_t[]> info_tracks;
   int info_tracks_size = 0;
   CreateInitSegment(HAS_AUDIO | HAS_VIDEO,
                     false, false, &info_tracks, &info_tracks_size);
@@ -1955,8 +1960,8 @@ TEST_F(ChunkDemuxerTest, AppendingInPieces) {
   scoped_ptr<Cluster> cluster_b(kDefaultSecondCluster());
 
   size_t buffer_size = info_tracks_size + cluster_a->size() + cluster_b->size();
-  scoped_ptr<uint8[]> buffer(new uint8[buffer_size]);
-  uint8* dst = buffer.get();
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  uint8_t* dst = buffer.get();
   memcpy(dst, info_tracks.get(), info_tracks_size);
   dst += info_tracks_size;
 
@@ -2127,7 +2132,7 @@ TEST_F(ChunkDemuxerTest, ParseErrorDuringInit) {
 
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
-  uint8 tmp = 0;
+  uint8_t tmp = 0;
   demuxer_->AppendData(kSourceId, &tmp, 1,
                        append_window_start_for_next_append_,
                        append_window_end_for_next_append_,
@@ -3125,14 +3130,16 @@ TEST_F(ChunkDemuxerTest, SeekCompleteDuringAbort) {
 #endif
 
 TEST_F(ChunkDemuxerTest, WebMIsParsingMediaSegmentDetection) {
-  const uint8 kBuffer[] = {
-    0x1F, 0x43, 0xB6, 0x75, 0x83,  // CLUSTER (size = 3)
-    0xE7, 0x81, 0x01,                // Cluster TIMECODE (value = 1)
+  const uint8_t kBuffer[] = {
+      0x1F, 0x43, 0xB6, 0x75, 0x83,  // CLUSTER (size = 3)
+      0xE7, 0x81, 0x01,              // Cluster TIMECODE (value = 1)
 
-    0x1F, 0x43, 0xB6, 0x75, 0xFF,  // CLUSTER (size = unknown; really 3 due to:)
-    0xE7, 0x81, 0x02,                // Cluster TIMECODE (value = 2)
-    /* e.g. put some blocks here... */
-    0x1A, 0x45, 0xDF, 0xA3, 0x8A,  // EBMLHEADER (size = 10, not fully appended)
+      0x1F, 0x43, 0xB6, 0x75,
+      0xFF,              // CLUSTER (size = unknown; really 3 due to:)
+      0xE7, 0x81, 0x02,  // Cluster TIMECODE (value = 2)
+      /* e.g. put some blocks here... */
+      0x1A, 0x45, 0xDF, 0xA3,
+      0x8A,  // EBMLHEADER (size = 10, not fully appended)
   };
 
   // This array indicates expected return value of IsParsingMediaSegment()
@@ -3901,7 +3908,7 @@ TEST_F(ChunkDemuxerTest, CuesBetweenClustersWithUnknownSize) {
 
   // Add two clusters separated by Cues in a single Append() call.
   scoped_ptr<Cluster> cluster = GenerateCluster(0, 0, 4, true);
-  std::vector<uint8> data(cluster->data(), cluster->data() + cluster->size());
+  std::vector<uint8_t> data(cluster->data(), cluster->data() + cluster->size());
   data.insert(data.end(), kCuesHeader, kCuesHeader + sizeof(kCuesHeader));
   cluster = GenerateCluster(46, 66, 5, true);
   data.insert(data.end(), cluster->data(), cluster->data() + cluster->size());

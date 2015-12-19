@@ -60,7 +60,7 @@ void RtpSender::ResendPackets(
        it != missing_frames_and_packets.end();
        ++it) {
     SendPacketVector packets_to_resend;
-    uint8 frame_id = it->first;
+    uint8_t frame_id = it->first;
     // Set of packets that the receiver wants us to re-send.
     // If empty, we need to re-send all packets for this frame.
     const PacketIdSet& missing_packet_set = it->second;
@@ -77,7 +77,7 @@ void RtpSender::ResendPackets(
     for (SendPacketVector::const_iterator it = stored_packets->begin();
          it != stored_packets->end(); ++it) {
       const PacketKey& packet_key = it->first;
-      const uint16 packet_id = packet_key.packet_id;
+      const uint16_t packet_id = packet_key.packet_id;
 
       // Should we resend the packet?
       bool resend = resend_all;
@@ -110,8 +110,8 @@ void RtpSender::ResendPackets(
   }
 }
 
-void RtpSender::CancelSendingFrames(const std::vector<uint32>& frame_ids) {
-  for (std::vector<uint32>::const_iterator i = frame_ids.begin();
+void RtpSender::CancelSendingFrames(const std::vector<uint32_t>& frame_ids) {
+  for (std::vector<uint32_t>::const_iterator i = frame_ids.begin();
        i != frame_ids.end(); ++i) {
     const SendPacketVector* stored_packets = storage_.GetFrame8(*i & 0xFF);
     if (!stored_packets)
@@ -124,7 +124,7 @@ void RtpSender::CancelSendingFrames(const std::vector<uint32>& frame_ids) {
   }
 }
 
-void RtpSender::ResendFrameForKickstart(uint32 frame_id,
+void RtpSender::ResendFrameForKickstart(uint32_t frame_id,
                                         base::TimeDelta dedupe_window) {
   // Send the last packet of the encoded frame to kick start
   // retransmission. This gives enough information to the receiver what
@@ -147,11 +147,11 @@ void RtpSender::UpdateSequenceNumber(Packet* packet) {
   static const int kByteOffsetToSequenceNumber = 2;
   base::BigEndianWriter big_endian_writer(
       reinterpret_cast<char*>((&packet->front()) + kByteOffsetToSequenceNumber),
-      sizeof(uint16));
+      sizeof(uint16_t));
   big_endian_writer.WriteU16(packetizer_->NextSequenceNumber());
 }
 
-int64 RtpSender::GetLastByteSentForFrame(uint32 frame_id) {
+int64_t RtpSender::GetLastByteSentForFrame(uint32_t frame_id) {
   const SendPacketVector* stored_packets = storage_.GetFrame8(frame_id & 0xFF);
   if (!stored_packets)
     return 0;

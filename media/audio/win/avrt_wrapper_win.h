@@ -20,8 +20,6 @@
 #include <windows.h>
 #include <avrt.h>
 
-#include "base/basictypes.h"
-
 namespace avrt {
 
 // Loads the Avrt.dll which is available on Windows Vista and later.

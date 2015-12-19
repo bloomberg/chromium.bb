@@ -243,7 +243,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // Constructs a MediaDrmBridge for |scheme_uuid| and |security_level|. The
   // default security level will be used if |security_level| is
   // SECURITY_LEVEL_DEFAULT.
-  MediaDrmBridge(const std::vector<uint8>& scheme_uuid,
+  MediaDrmBridge(const std::vector<uint8_t>& scheme_uuid,
                  SecurityLevel security_level,
                  const CreateFetcherCB& create_fetcher_cb,
                  const SessionMessageCB& session_message_cb,
@@ -273,7 +273,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   void ProcessProvisionResponse(bool success, const std::string& response);
 
   // UUID of the key system.
-  std::vector<uint8> scheme_uuid_;
+  std::vector<uint8_t> scheme_uuid_;
 
   // Java MediaDrm instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_drm_;

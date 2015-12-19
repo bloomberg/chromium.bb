@@ -72,7 +72,7 @@ WrapVideoFrameInCVPixelBuffer(const VideoFrame& frame) {
   size_t plane_heights[kMaxPlanes];
   size_t plane_bytes_per_row[kMaxPlanes];
   for (int plane_i = 0; plane_i < num_planes; ++plane_i) {
-    plane_ptrs[plane_i] = const_cast<uint8*>(frame.data(plane_i));
+    plane_ptrs[plane_i] = const_cast<uint8_t*>(frame.data(plane_i));
     gfx::Size plane_size =
         VideoFrame::PlaneSize(video_frame_format, plane_i, coded_size);
     plane_widths[plane_i] = plane_size.width();

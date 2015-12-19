@@ -20,7 +20,7 @@ namespace media {
 
 namespace {
 
-void CompareBytes(uint8* original_data, uint8* result_data, size_t length) {
+void CompareBytes(uint8_t* original_data, uint8_t* result_data, size_t length) {
   EXPECT_GT(length, 0u);
   EXPECT_EQ(memcmp(original_data, result_data, length), 0);
 }
@@ -105,15 +105,15 @@ void CompareVideoFrames(const scoped_refptr<VideoFrame>& original,
 }  // namespace
 
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_Normal) {
-  const uint8 kData[] = "hello, world";
-  const uint8 kSideData[] = "sideshow bob";
+  const uint8_t kData[] = "hello, world";
+  const uint8_t kSideData[] = "sideshow bob";
   const int kDataSize = arraysize(kData);
   const int kSideDataSize = arraysize(kSideData);
 
   // Original.
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
-      reinterpret_cast<const uint8*>(&kData), kDataSize,
-      reinterpret_cast<const uint8*>(&kSideData), kSideDataSize));
+      reinterpret_cast<const uint8_t*>(&kData), kDataSize,
+      reinterpret_cast<const uint8_t*>(&kSideData), kSideDataSize));
   buffer->set_timestamp(base::TimeDelta::FromMilliseconds(123));
   buffer->set_duration(base::TimeDelta::FromMilliseconds(456));
   buffer->set_splice_timestamp(base::TimeDelta::FromMilliseconds(200));
@@ -155,12 +155,12 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EOS) {
 }
 
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_KeyFrame) {
-  const uint8 kData[] = "hello, world";
+  const uint8_t kData[] = "hello, world";
   const int kDataSize = arraysize(kData);
 
   // Original.
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
-      reinterpret_cast<const uint8*>(&kData), kDataSize));
+      reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   buffer->set_is_key_frame(true);
   EXPECT_TRUE(buffer->is_key_frame());
 
@@ -176,7 +176,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_KeyFrame) {
 }
 
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
-  const uint8 kData[] = "hello, world";
+  const uint8_t kData[] = "hello, world";
   const int kDataSize = arraysize(kData);
   const char kKeyId[] = "00112233445566778899aabbccddeeff";
   const char kIv[] = "0123456789abcdef";
@@ -188,7 +188,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
 
   // Original.
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
-      reinterpret_cast<const uint8*>(&kData), kDataSize));
+      reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   buffer->set_decrypt_config(
       make_scoped_ptr(new DecryptConfig(kKeyId, kIv, subsamples)));
 
@@ -280,7 +280,7 @@ TEST(MediaTypeConvertersTest, ConvertAudioBuffer_MONO) {
   // Original.
   const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_MONO;
   const int kSampleRate = 48000;
-  scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<uint8>(
+  scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<uint8_t>(
       kSampleFormatU8, kChannelLayout,
       ChannelLayoutToChannelCount(kChannelLayout), kSampleRate, 1, 1,
       kSampleRate / 100, base::TimeDelta());

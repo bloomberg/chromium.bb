@@ -46,7 +46,10 @@ scoped_refptr<StreamParserBuffer> StreamParserBuffer::CreateEOSBuffer() {
 }
 
 scoped_refptr<StreamParserBuffer> StreamParserBuffer::CopyFrom(
-    const uint8* data, int data_size, bool is_key_frame, Type type,
+    const uint8_t* data,
+    int data_size,
+    bool is_key_frame,
+    Type type,
     TrackId track_id) {
   return make_scoped_refptr(
       new StreamParserBuffer(data, data_size, NULL, 0, is_key_frame, type,
@@ -54,9 +57,13 @@ scoped_refptr<StreamParserBuffer> StreamParserBuffer::CopyFrom(
 }
 
 scoped_refptr<StreamParserBuffer> StreamParserBuffer::CopyFrom(
-    const uint8* data, int data_size,
-    const uint8* side_data, int side_data_size,
-    bool is_key_frame, Type type, TrackId track_id) {
+    const uint8_t* data,
+    int data_size,
+    const uint8_t* side_data,
+    int side_data_size,
+    bool is_key_frame,
+    Type type,
+    TrackId track_id) {
   return make_scoped_refptr(
       new StreamParserBuffer(data, data_size, side_data, side_data_size,
                              is_key_frame, type, track_id));
@@ -74,9 +81,9 @@ void StreamParserBuffer::SetDecodeTimestamp(DecodeTimestamp timestamp) {
     preroll_buffer_->SetDecodeTimestamp(timestamp);
 }
 
-StreamParserBuffer::StreamParserBuffer(const uint8* data,
+StreamParserBuffer::StreamParserBuffer(const uint8_t* data,
                                        int data_size,
-                                       const uint8* side_data,
+                                       const uint8_t* side_data,
                                        int side_data_size,
                                        bool is_key_frame,
                                        Type type,

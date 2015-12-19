@@ -54,11 +54,11 @@ void StubCdm::Initialize(bool /* allow_distinctive_identifier */,
 }
 
 void StubCdm::CreateSessionAndGenerateRequest(
-    uint32 promise_id,
+    uint32_t promise_id,
     cdm::SessionType /* session_type */,
     cdm::InitDataType /* init_data_type */,
-    const uint8* /* init_data */,
-    uint32 /* init_data_size */) {
+    const uint8_t* /* init_data */,
+    uint32_t /* init_data_size */) {
   // Provide a dummy message (with a trivial session ID) to enable some testing
   // and be consistent with existing testing without a license server.
   std::string session_id(base::UintToString(next_session_id_++));
@@ -70,35 +70,35 @@ void StubCdm::CreateSessionAndGenerateRequest(
                           cdm::kLicenseRequest, nullptr, 0, nullptr, 0);
 }
 
-void StubCdm::LoadSession(uint32 promise_id,
+void StubCdm::LoadSession(uint32_t promise_id,
                           cdm::SessionType /* session_type */,
                           const char* /* session_id */,
                           uint32_t /* session_id_length */) {
   FailRequest(promise_id);
 }
 
-void StubCdm::UpdateSession(uint32 promise_id,
+void StubCdm::UpdateSession(uint32_t promise_id,
                             const char* /* session_id */,
                             uint32_t /* session_id_length */,
-                            const uint8* /* response */,
-                            uint32 /* response_size */) {
+                            const uint8_t* /* response */,
+                            uint32_t /* response_size */) {
   FailRequest(promise_id);
 }
 
-void StubCdm::CloseSession(uint32 promise_id,
+void StubCdm::CloseSession(uint32_t promise_id,
                            const char* /* session_id */,
                            uint32_t /* session_id_length */) {
   FailRequest(promise_id);
 }
 
-void StubCdm::RemoveSession(uint32 promise_id,
+void StubCdm::RemoveSession(uint32_t promise_id,
                             const char* /* session_id */,
                             uint32_t /* session_id_length */) {
   FailRequest(promise_id);
 }
 
 void StubCdm::SetServerCertificate(
-    uint32 promise_id,
+    uint32_t promise_id,
     const uint8_t* /* server_certificate_data */,
     uint32_t /* server_certificate_data_size */) {
   FailRequest(promise_id);
@@ -156,7 +156,7 @@ void StubCdm::OnQueryOutputProtectionStatus(
   NOTREACHED();
 };
 
-void StubCdm::FailRequest(uint32 promise_id) {
+void StubCdm::FailRequest(uint32_t promise_id) {
   std::string message("Operation not supported by stub CDM.");
   host_->OnRejectPromise(promise_id, cdm::kInvalidAccessError, 0,
                          message.data(),

@@ -26,8 +26,8 @@ using ::testing::StrictMock;
 namespace media {
 
 static const int kFakeBufferSize = 16;
-static const uint8 kFakeKeyId[] = { 0x4b, 0x65, 0x79, 0x20, 0x49, 0x44 };
-static const uint8 kFakeIv[DecryptConfig::kDecryptionKeySize] = { 0 };
+static const uint8_t kFakeKeyId[] = {0x4b, 0x65, 0x79, 0x20, 0x49, 0x44};
+static const uint8_t kFakeIv[DecryptConfig::kDecryptionKeySize] = {0};
 
 // Create a fake non-empty buffer in an encrypted stream. When |is_clear| is
 // true, the buffer is not encrypted (signaled by an empty IV).

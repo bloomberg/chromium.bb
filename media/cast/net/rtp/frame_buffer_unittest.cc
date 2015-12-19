@@ -18,7 +18,7 @@ class FrameBufferTest : public ::testing::Test {
   ~FrameBufferTest() override {}
 
   FrameBuffer buffer_;
-  std::vector<uint8> payload_;
+  std::vector<uint8_t> payload_;
   RtpCastHeader rtp_header_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameBufferTest);

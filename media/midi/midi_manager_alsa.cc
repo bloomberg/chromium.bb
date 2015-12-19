@@ -278,8 +278,8 @@ void MidiManagerAlsa::Finalize() {
 }
 
 void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
-                                           uint32 port_index,
-                                           const std::vector<uint8>& data,
+                                           uint32_t port_index,
+                                           const std::vector<uint8_t>& data,
                                            double timestamp) {
   if (!send_thread_.IsRunning())
     send_thread_.Start();
@@ -399,7 +399,7 @@ std::string MidiManagerAlsa::MidiPort::JSONValue() const {
 //               mapping and just use a UUID or other random string.
 //               http://crbug.com/465320
 std::string MidiManagerAlsa::MidiPort::OpaqueKey() const {
-  uint8 hash[crypto::kSHA256Length];
+  uint8_t hash[crypto::kSHA256Length];
   crypto::SHA256HashString(JSONValue(), &hash, sizeof(hash));
   return base::HexEncode(&hash, sizeof(hash));
 }
@@ -564,9 +564,9 @@ MidiManagerAlsa::MidiPortStateBase::MidiPortStateBase() = default;
 
 MidiManagerAlsa::MidiPortState::MidiPortState() = default;
 
-uint32 MidiManagerAlsa::MidiPortState::push_back(scoped_ptr<MidiPort> port) {
+uint32_t MidiManagerAlsa::MidiPortState::push_back(scoped_ptr<MidiPort> port) {
   // Add the web midi index.
-  uint32 web_port_index = 0;
+  uint32_t web_port_index = 0;
   switch (port->type()) {
     case MidiPort::Type::kInput:
       web_port_index = num_input_ports_++;
@@ -810,8 +810,8 @@ std::string MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
   return "";
 }
 
-void MidiManagerAlsa::SendMidiData(uint32 port_index,
-                                   const std::vector<uint8>& data) {
+void MidiManagerAlsa::SendMidiData(uint32_t port_index,
+                                   const std::vector<uint8_t>& data) {
   DCHECK(send_thread_.task_runner()->BelongsToCurrentThread());
 
   snd_midi_event_t* encoder;
@@ -928,10 +928,10 @@ void MidiManagerAlsa::ProcessSingleEvent(snd_seq_event_t* event,
   auto source_it =
       source_map_.find(AddrToInt(event->source.client, event->source.port));
   if (source_it != source_map_.end()) {
-    uint32 source = source_it->second;
+    uint32_t source = source_it->second;
     if (event->type == SND_SEQ_EVENT_SYSEX) {
       // Special! Variable-length sysex.
-      ReceiveMidiData(source, static_cast<const uint8*>(event->data.ext.ptr),
+      ReceiveMidiData(source, static_cast<const uint8_t*>(event->data.ext.ptr),
                       event->data.ext.len, timestamp);
     } else {
       // Otherwise, decode this and send that on.
@@ -1144,7 +1144,7 @@ void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
     if (old_port->connected() &&
         (new_port_state->FindConnected(*old_port) == new_port_state->end())) {
       old_port->set_connected(false);
-      uint32 web_port_index = old_port->web_port_index();
+      uint32_t web_port_index = old_port->web_port_index();
       switch (old_port->type()) {
         case MidiPort::Type::kInput:
           source_map_.erase(
@@ -1174,7 +1174,7 @@ void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
       const auto& client_id = new_port->client_id();
       const auto& port_id = new_port->port_id();
 
-      uint32 web_port_index = port_state_.push_back(new_port.Pass());
+      uint32_t web_port_index = port_state_.push_back(new_port.Pass());
       it = new_port_state->erase(it);
 
       MidiPortInfo info(opaque_key, manufacturer, port_name, version,
@@ -1191,7 +1191,7 @@ void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
       }
     } else if (!(*old_port)->connected()) {
       // Reconnect.
-      uint32 web_port_index = (*old_port)->web_port_index();
+      uint32_t web_port_index = (*old_port)->web_port_index();
       (*old_port)->Update(new_port->path(), new_port->client_id(),
                           new_port->port_id(), new_port->client_name(),
                           new_port->port_name(), new_port->manufacturer(),
@@ -1277,7 +1277,7 @@ bool MidiManagerAlsa::EnumerateUdevCards() {
   return true;
 }
 
-bool MidiManagerAlsa::CreateAlsaOutputPort(uint32 port_index,
+bool MidiManagerAlsa::CreateAlsaOutputPort(uint32_t port_index,
                                            int client_id,
                                            int port_id) {
   // Create the port.
@@ -1311,7 +1311,7 @@ bool MidiManagerAlsa::CreateAlsaOutputPort(uint32 port_index,
   return true;
 }
 
-void MidiManagerAlsa::DeleteAlsaOutputPort(uint32 port_index) {
+void MidiManagerAlsa::DeleteAlsaOutputPort(uint32_t port_index) {
   base::AutoLock lock(out_ports_lock_);
   auto it = out_ports_.find(port_index);
   if (it == out_ports_.end())
@@ -1322,7 +1322,9 @@ void MidiManagerAlsa::DeleteAlsaOutputPort(uint32 port_index) {
   out_ports_.erase(it);
 }
 
-bool MidiManagerAlsa::Subscribe(uint32 port_index, int client_id, int port_id) {
+bool MidiManagerAlsa::Subscribe(uint32_t port_index,
+                                int client_id,
+                                int port_id) {
   // Activate port subscription.
   snd_seq_port_subscribe_t* subs;
   snd_seq_port_subscribe_alloca(&subs);

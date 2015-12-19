@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_CDM_PROMISE_ADAPTER_H_
 #define MEDIA_BASE_CDM_PROMISE_ADAPTER_H_
 
-#include "base/basictypes.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -35,7 +34,7 @@ class MEDIA_EXPORT CdmPromiseAdapter {
   // |system_code| and |error_message|.
   void RejectPromise(uint32_t promise_id,
                      MediaKeys::Exception exception_code,
-                     uint32 system_code,
+                     uint32_t system_code,
                      const std::string& error_message);
 
   // Rejects and clears all |promises_|.

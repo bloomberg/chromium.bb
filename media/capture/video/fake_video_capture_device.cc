@@ -119,7 +119,7 @@ void FakeVideoCaptureDevice::AllocateAndStart(
   }
 
   if (capture_format_.pixel_format == PIXEL_FORMAT_I420) {
-    fake_frame_.reset(new uint8[VideoFrame::AllocationSize(
+    fake_frame_.reset(new uint8_t[VideoFrame::AllocationSize(
         PIXEL_FORMAT_I420, capture_format_.frame_size)]);
   }
 

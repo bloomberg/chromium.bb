@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_MAC_COREVIDEO_GLUE_H_
 #define MEDIA_BASE_MAC_COREVIDEO_GLUE_H_
 
-#include "base/basictypes.h"
 #include "media/base/media_export.h"
 
 // Although CoreVideo exists in 10.6, not all of its types and functions were

@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -20,24 +19,24 @@
 
 namespace media {
 
-static int ExtractAdtsFrameSize(const uint8* adts_header) {
+static int ExtractAdtsFrameSize(const uint8_t* adts_header) {
   return ((static_cast<int>(adts_header[5]) >> 5) |
           (static_cast<int>(adts_header[4]) << 3) |
           ((static_cast<int>(adts_header[3]) & 0x3) << 11));
 }
 
-static size_t ExtractAdtsFrequencyIndex(const uint8* adts_header) {
+static size_t ExtractAdtsFrequencyIndex(const uint8_t* adts_header) {
   return ((adts_header[2] >> 2) & 0xf);
 }
 
-static size_t ExtractAdtsChannelConfig(const uint8* adts_header) {
+static size_t ExtractAdtsChannelConfig(const uint8_t* adts_header) {
   return (((adts_header[3] >> 6) & 0x3) |
           ((adts_header[2] & 0x1) << 2));
 }
 
 // Return true if buf corresponds to an ADTS syncword.
 // |buf| size must be at least 2.
-static bool isAdtsSyncWord(const uint8* buf) {
+static bool isAdtsSyncWord(const uint8_t* buf) {
   // The first 12 bits must be 1.
   // The layer field (2 bits) must be set to 0.
   return (buf[0] == 0xff) && ((buf[1] & 0xf6) == 0xf0);
@@ -47,18 +46,18 @@ namespace mp2t {
 
 struct EsParserAdts::AdtsFrame {
   // Pointer to the ES data.
-  const uint8* data;
+  const uint8_t* data;
 
   // Frame size;
   int size;
 
   // Frame offset in the ES queue.
-  int64 queue_offset;
+  int64_t queue_offset;
 };
 
 bool EsParserAdts::LookForAdtsFrame(AdtsFrame* adts_frame) {
   int es_size;
-  const uint8* es;
+  const uint8_t* es;
   es_queue_->Peek(&es, &es_size);
 
   int max_offset = es_size - kADTSHeaderMinSize;
@@ -66,7 +65,7 @@ bool EsParserAdts::LookForAdtsFrame(AdtsFrame* adts_frame) {
     return false;
 
   for (int offset = 0; offset < max_offset; offset++) {
-    const uint8* cur_buf = &es[offset];
+    const uint8_t* cur_buf = &es[offset];
     if (!isAdtsSyncWord(cur_buf))
       continue;
 
@@ -182,7 +181,7 @@ void EsParserAdts::ResetInternal() {
   last_audio_decoder_config_ = AudioDecoderConfig();
 }
 
-bool EsParserAdts::UpdateAudioConfiguration(const uint8* adts_header) {
+bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header) {
   size_t frequency_index = ExtractAdtsFrequencyIndex(adts_header);
   if (frequency_index >= kADTSFrequencyTableSize) {
     // Frequency index 13 & 14 are reserved
@@ -213,7 +212,7 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8* adts_header) {
 
   // The following code is written according to ISO 14496 Part 3 Table 1.13 -
   // Syntax of AudioSpecificConfig.
-  uint16 extra_data_int = static_cast<uint16>(
+  uint16_t extra_data_int = static_cast<uint16_t>(
       // Note: adts_profile is in the range [0,3], since the ADTS header only
       // allows two bits for its value.
       ((adts_profile + 1) << 11) +
@@ -222,8 +221,8 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8* adts_header) {
       // channel_configuration is [0..7], per early out above.
       (channel_configuration << 3));
   std::vector<uint8_t> extra_data;
-  extra_data.push_back(static_cast<uint8>(extra_data_int >> 8));
-  extra_data.push_back(static_cast<uint8>(extra_data_int & 0xff));
+  extra_data.push_back(static_cast<uint8_t>(extra_data_int >> 8));
+  extra_data.push_back(static_cast<uint8_t>(extra_data_int & 0xff));
 
   AudioDecoderConfig audio_decoder_config(
       kCodecAAC,

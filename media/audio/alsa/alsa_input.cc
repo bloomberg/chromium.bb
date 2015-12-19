@@ -4,7 +4,6 @@
 
 #include "media/audio/alsa/alsa_input.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -60,7 +59,7 @@ bool AlsaPcmInputStream::Open() {
     return false;
   }
 
-  uint32 latency_us =
+  uint32_t latency_us =
       buffer_duration_.InMicroseconds() * kNumPacketsInRingBuffer;
 
   // Use the same minimum required latency as output.
@@ -87,7 +86,7 @@ bool AlsaPcmInputStream::Open() {
   }
 
   if (device_handle_) {
-    audio_buffer_.reset(new uint8[bytes_per_buffer_]);
+    audio_buffer_.reset(new uint8_t[bytes_per_buffer_]);
 
     // Open the microphone mixer.
     mixer_handle_ = alsa_util::OpenMixer(wrapper_, device_name_);
@@ -196,8 +195,8 @@ void AlsaPcmInputStream::ReadAudio() {
   }
 
   int num_buffers = frames / params_.frames_per_buffer();
-  uint32 hardware_delay_bytes =
-      static_cast<uint32>(GetCurrentDelay() * params_.GetBytesPerFrame());
+  uint32_t hardware_delay_bytes =
+      static_cast<uint32_t>(GetCurrentDelay() * params_.GetBytesPerFrame());
   double normalized_volume = 0.0;
 
   // Update the AGC volume level once every second. Note that, |volume| is

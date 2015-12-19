@@ -52,17 +52,18 @@ std::string StreamParserTestBase::ParseFile(const std::string& filename,
   return results_stream_.str();
 }
 
-std::string StreamParserTestBase::ParseData(const uint8* data, size_t length) {
+std::string StreamParserTestBase::ParseData(const uint8_t* data,
+                                            size_t length) {
   results_stream_.clear();
   EXPECT_TRUE(AppendDataInPieces(data, length, length));
   return results_stream_.str();
 }
 
-bool StreamParserTestBase::AppendDataInPieces(const uint8* data,
+bool StreamParserTestBase::AppendDataInPieces(const uint8_t* data,
                                               size_t length,
                                               size_t piece_size) {
-  const uint8* start = data;
-  const uint8* end = data + length;
+  const uint8_t* start = data;
+  const uint8_t* end = data + length;
   while (start < end) {
     size_t append_size = std::min(piece_size, static_cast<size_t>(end - start));
     if (!parser_->Parse(start, append_size))
@@ -109,7 +110,7 @@ bool StreamParserTestBase::OnNewBuffers(
 }
 
 void StreamParserTestBase::OnKeyNeeded(EmeInitDataType type,
-                                       const std::vector<uint8>& init_data) {
+                                       const std::vector<uint8_t>& init_data) {
   DVLOG(1) << __FUNCTION__ << "(" << static_cast<int>(type) << ", "
            << init_data.size() << ")";
 }

@@ -29,7 +29,7 @@ namespace media {
 class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
   MOCK_METHOD4(OnData,
-               void(AudioInputStream*, const AudioBus*, uint32, double));
+               void(AudioInputStream*, const AudioBus*, uint32_t, double));
   MOCK_METHOD1(OnError, void(AudioInputStream*));
 };
 
@@ -64,13 +64,13 @@ class CrasInputStreamTest : public testing::Test {
   }
 
   CrasInputStream* CreateStream(ChannelLayout layout,
-                                int32 samples_per_packet) {
+                                int32_t samples_per_packet) {
     return CreateStream(layout, samples_per_packet,
                         AudioManagerBase::kDefaultDeviceId);
   }
 
   CrasInputStream* CreateStream(ChannelLayout layout,
-                                int32 samples_per_packet,
+                                int32_t samples_per_packet,
                                 const std::string& device_id) {
     AudioParameters params(kTestFormat,
                            layout,
@@ -109,7 +109,7 @@ class CrasInputStreamTest : public testing::Test {
   static const unsigned int kTestCaptureDurationMs;
   static const ChannelLayout kTestChannelLayout;
   static const AudioParameters::Format kTestFormat;
-  static const uint32 kTestFramesPerPacket;
+  static const uint32_t kTestFramesPerPacket;
   static const int kTestSampleRate;
 
   scoped_ptr<StrictMock<MockAudioManagerCrasInput> > mock_manager_;
@@ -124,7 +124,7 @@ const ChannelLayout CrasInputStreamTest::kTestChannelLayout =
     CHANNEL_LAYOUT_STEREO;
 const AudioParameters::Format CrasInputStreamTest::kTestFormat =
     AudioParameters::AUDIO_PCM_LINEAR;
-const uint32 CrasInputStreamTest::kTestFramesPerPacket = 1000;
+const uint32_t CrasInputStreamTest::kTestFramesPerPacket = 1000;
 const int CrasInputStreamTest::kTestSampleRate = 44100;
 
 TEST_F(CrasInputStreamTest, OpenMono) {

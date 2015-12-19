@@ -5,7 +5,6 @@
 #ifndef MEDIA_FORMATS_MPEG_ADTS_STREAM_PARSER_H_
 #define MEDIA_FORMATS_MPEG_ADTS_STREAM_PARSER_H_
 
-#include "base/basictypes.h"
 #include "media/base/media_export.h"
 #include "media/formats/mpeg/mpeg_audio_stream_parser_base.h"
 
@@ -18,7 +17,7 @@ class MEDIA_EXPORT ADTSStreamParser : public MPEGAudioStreamParserBase {
 
  private:
   // MPEGAudioStreamParserBase overrides.
-  int ParseFrameHeader(const uint8* data,
+  int ParseFrameHeader(const uint8_t* data,
                        int size,
                        int* frame_size,
                        int* sample_rate,

@@ -5,9 +5,11 @@
 #ifndef MEDIA_MIDI_USB_MIDI_OUTPUT_STREAM_H_
 #define MEDIA_MIDI_USB_MIDI_OUTPUT_STREAM_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "media/midi/usb_midi_export.h"
 #include "media/midi/usb_midi_jack.h"
 
@@ -22,32 +24,32 @@ class USB_MIDI_EXPORT UsbMidiOutputStream {
   explicit UsbMidiOutputStream(const UsbMidiJack& jack);
 
   // Converts |data| to USB-MIDI data and send it to the jack.
-  void Send(const std::vector<uint8>& data);
+  void Send(const std::vector<uint8_t>& data);
 
   const UsbMidiJack& jack() const { return jack_; }
 
  private:
-  size_t GetSize(const std::vector<uint8>& data) const;
-  uint8_t Get(const std::vector<uint8>& data, size_t index) const;
+  size_t GetSize(const std::vector<uint8_t>& data) const;
+  uint8_t Get(const std::vector<uint8_t>& data, size_t index) const;
 
-  bool PushSysExMessage(const std::vector<uint8>& data,
+  bool PushSysExMessage(const std::vector<uint8_t>& data,
                         size_t* current,
-                        std::vector<uint8>* data_to_send);
-  bool PushSysCommonMessage(const std::vector<uint8>& data,
+                        std::vector<uint8_t>* data_to_send);
+  bool PushSysCommonMessage(const std::vector<uint8_t>& data,
                             size_t* current,
-                            std::vector<uint8>* data_to_send);
-  void PushSysRTMessage(const std::vector<uint8>& data,
+                            std::vector<uint8_t>* data_to_send);
+  void PushSysRTMessage(const std::vector<uint8_t>& data,
                         size_t* current,
-                        std::vector<uint8>* data_to_send);
-  bool PushChannelMessage(const std::vector<uint8>& data,
+                        std::vector<uint8_t>* data_to_send);
+  bool PushChannelMessage(const std::vector<uint8_t>& data,
                           size_t* current,
-                          std::vector<uint8>* data_to_send);
+                          std::vector<uint8_t>* data_to_send);
 
   static const size_t kPacketContentSize = 3;
 
   UsbMidiJack jack_;
   size_t pending_size_;
-  uint8 pending_data_[kPacketContentSize];
+  uint8_t pending_data_[kPacketContentSize];
   bool is_sending_sysex_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbMidiOutputStream);

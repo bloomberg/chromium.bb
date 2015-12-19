@@ -6,7 +6,6 @@
 
 #include <CoreServices/CoreServices.h>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -240,7 +239,7 @@ OSStatus AUHALStream::Render(
 
   // Update the playout latency.
   const double playout_latency_frames = GetPlayoutLatency(output_time_stamp);
-  current_hardware_pending_bytes_ = static_cast<uint32>(
+  current_hardware_pending_bytes_ = static_cast<uint32_t>(
       (playout_latency_frames + 0.5) * params_.GetBytesPerFrame());
 
   if (audio_fifo_)

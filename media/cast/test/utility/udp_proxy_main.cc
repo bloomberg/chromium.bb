@@ -48,16 +48,16 @@ class ByteCounter {
     return packets / time_range().InSecondsF();
   }
 
-  void Increment(uint64 x) {
+  void Increment(uint64_t x) {
     bytes_ += x;
     packets_ ++;
   }
 
  private:
-  uint64 bytes_;
-  uint64 packets_;
-  std::deque<uint64> byte_data_;
-  std::deque<uint64> packet_data_;
+  uint64_t bytes_;
+  uint64_t packets_;
+  std::deque<uint64_t> byte_data_;
+  std::deque<uint64_t> packet_data_;
   std::deque<base::TimeTicks> time_data_;
 };
 
@@ -161,9 +161,9 @@ int main(int argc, char** argv) {
     exit(1);
   }
   net::IPEndPoint remote_endpoint(remote_ip_number,
-                                  static_cast<uint16>(remote_port));
+                                  static_cast<uint16_t>(remote_port));
   net::IPEndPoint local_endpoint(local_ip_number,
-                                 static_cast<uint16>(local_port));
+                                 static_cast<uint16_t>(local_port));
   scoped_ptr<media::cast::test::PacketPipe> in_pipe, out_pipe;
   scoped_ptr<media::cast::test::InterruptedPoissonProcess> ipp(
       media::cast::test::DefaultInterruptedPoissonProcess());

@@ -15,7 +15,7 @@ TestRtcpPacketBuilder::TestRtcpPacketBuilder()
       big_endian_writer_(reinterpret_cast<char*>(buffer_), kMaxIpPacketSize),
       big_endian_reader_(NULL, 0) {}
 
-void TestRtcpPacketBuilder::AddSr(uint32 sender_ssrc,
+void TestRtcpPacketBuilder::AddSr(uint32_t sender_ssrc,
                                   int number_of_report_blocks) {
   AddRtcpHeader(200, number_of_report_blocks);
   big_endian_writer_.WriteU32(sender_ssrc);
@@ -26,10 +26,10 @@ void TestRtcpPacketBuilder::AddSr(uint32 sender_ssrc,
   big_endian_writer_.WriteU32(kSendOctetCount);
 }
 
-void TestRtcpPacketBuilder::AddSrWithNtp(uint32 sender_ssrc,
-                                         uint32 ntp_high,
-                                         uint32 ntp_low,
-                                         uint32 rtp_timestamp) {
+void TestRtcpPacketBuilder::AddSrWithNtp(uint32_t sender_ssrc,
+                                         uint32_t ntp_high,
+                                         uint32_t ntp_low,
+                                         uint32_t rtp_timestamp) {
   AddRtcpHeader(200, 0);
   big_endian_writer_.WriteU32(sender_ssrc);
   big_endian_writer_.WriteU32(ntp_high);
@@ -39,13 +39,13 @@ void TestRtcpPacketBuilder::AddSrWithNtp(uint32 sender_ssrc,
   big_endian_writer_.WriteU32(kSendOctetCount);
 }
 
-void TestRtcpPacketBuilder::AddRr(uint32 sender_ssrc,
+void TestRtcpPacketBuilder::AddRr(uint32_t sender_ssrc,
                                   int number_of_report_blocks) {
   AddRtcpHeader(201, number_of_report_blocks);
   big_endian_writer_.WriteU32(sender_ssrc);
 }
 
-void TestRtcpPacketBuilder::AddRb(uint32 rtp_ssrc) {
+void TestRtcpPacketBuilder::AddRb(uint32_t rtp_ssrc) {
   big_endian_writer_.WriteU32(rtp_ssrc);
   big_endian_writer_.WriteU32(kLoss);
   big_endian_writer_.WriteU32(kExtendedMax);
@@ -54,7 +54,7 @@ void TestRtcpPacketBuilder::AddRb(uint32 rtp_ssrc) {
   big_endian_writer_.WriteU32(kDelayLastSr);
 }
 
-void TestRtcpPacketBuilder::AddXrHeader(uint32 sender_ssrc) {
+void TestRtcpPacketBuilder::AddXrHeader(uint32_t sender_ssrc) {
   AddRtcpHeader(207, 0);
   big_endian_writer_.WriteU32(sender_ssrc);
 }
@@ -77,7 +77,7 @@ void TestRtcpPacketBuilder::AddUnknownBlock() {
   big_endian_writer_.WriteU32(42);
 }
 
-void TestRtcpPacketBuilder::AddXrDlrrBlock(uint32 sender_ssrc) {
+void TestRtcpPacketBuilder::AddXrDlrrBlock(uint32_t sender_ssrc) {
   big_endian_writer_.WriteU8(5);   // Block type.
   big_endian_writer_.WriteU8(0);   // Reserved.
   big_endian_writer_.WriteU16(3);  // Block length.
@@ -88,7 +88,7 @@ void TestRtcpPacketBuilder::AddXrDlrrBlock(uint32 sender_ssrc) {
   big_endian_writer_.WriteU32(kDelayLastRr);
 }
 
-void TestRtcpPacketBuilder::AddXrExtendedDlrrBlock(uint32 sender_ssrc) {
+void TestRtcpPacketBuilder::AddXrExtendedDlrrBlock(uint32_t sender_ssrc) {
   big_endian_writer_.WriteU8(5);   // Block type.
   big_endian_writer_.WriteU8(0);   // Reserved.
   big_endian_writer_.WriteU16(9);  // Block length.
@@ -113,7 +113,7 @@ void TestRtcpPacketBuilder::AddXrRrtrBlock() {
   big_endian_writer_.WriteU32(kNtpLow);
 }
 
-void TestRtcpPacketBuilder::AddNack(uint32 sender_ssrc, uint32 media_ssrc) {
+void TestRtcpPacketBuilder::AddNack(uint32_t sender_ssrc, uint32_t media_ssrc) {
   AddRtcpHeader(205, 1);
   big_endian_writer_.WriteU32(sender_ssrc);
   big_endian_writer_.WriteU32(media_ssrc);
@@ -121,15 +121,15 @@ void TestRtcpPacketBuilder::AddNack(uint32 sender_ssrc, uint32 media_ssrc) {
   big_endian_writer_.WriteU16(0);
 }
 
-void TestRtcpPacketBuilder::AddSendReportRequest(uint32 sender_ssrc,
-                                                 uint32 media_ssrc) {
+void TestRtcpPacketBuilder::AddSendReportRequest(uint32_t sender_ssrc,
+                                                 uint32_t media_ssrc) {
   AddRtcpHeader(205, 5);
   big_endian_writer_.WriteU32(sender_ssrc);
   big_endian_writer_.WriteU32(media_ssrc);
 }
 
-void TestRtcpPacketBuilder::AddCast(uint32 sender_ssrc,
-                                    uint32 media_ssrc,
+void TestRtcpPacketBuilder::AddCast(uint32_t sender_ssrc,
+                                    uint32_t media_ssrc,
                                     base::TimeDelta target_delay) {
   AddRtcpHeader(206, 15);
   big_endian_writer_.WriteU32(sender_ssrc);
@@ -152,7 +152,7 @@ void TestRtcpPacketBuilder::AddCast(uint32 sender_ssrc,
   big_endian_writer_.WriteU8(0);  // Lost packet id mask.
 }
 
-void TestRtcpPacketBuilder::AddReceiverLog(uint32 sender_ssrc) {
+void TestRtcpPacketBuilder::AddReceiverLog(uint32_t sender_ssrc) {
   AddRtcpHeader(204, 2);
   big_endian_writer_.WriteU32(sender_ssrc);
   big_endian_writer_.WriteU8('C');
@@ -161,22 +161,22 @@ void TestRtcpPacketBuilder::AddReceiverLog(uint32 sender_ssrc) {
   big_endian_writer_.WriteU8('T');
 }
 
-void TestRtcpPacketBuilder::AddReceiverFrameLog(uint32 rtp_timestamp,
+void TestRtcpPacketBuilder::AddReceiverFrameLog(uint32_t rtp_timestamp,
                                                 int num_events,
-                                                uint32 event_timesamp_base) {
+                                                uint32_t event_timesamp_base) {
   big_endian_writer_.WriteU32(rtp_timestamp);
-  big_endian_writer_.WriteU8(static_cast<uint8>(num_events - 1));
-  big_endian_writer_.WriteU8(static_cast<uint8>(event_timesamp_base >> 16));
-  big_endian_writer_.WriteU8(static_cast<uint8>(event_timesamp_base >> 8));
-  big_endian_writer_.WriteU8(static_cast<uint8>(event_timesamp_base));
+  big_endian_writer_.WriteU8(static_cast<uint8_t>(num_events - 1));
+  big_endian_writer_.WriteU8(static_cast<uint8_t>(event_timesamp_base >> 16));
+  big_endian_writer_.WriteU8(static_cast<uint8_t>(event_timesamp_base >> 8));
+  big_endian_writer_.WriteU8(static_cast<uint8_t>(event_timesamp_base));
 }
 
-void TestRtcpPacketBuilder::AddReceiverEventLog(uint16 event_data,
+void TestRtcpPacketBuilder::AddReceiverEventLog(uint16_t event_data,
                                                 CastLoggingEvent event,
-                                                uint16 event_timesamp_delta) {
+                                                uint16_t event_timesamp_delta) {
   big_endian_writer_.WriteU16(event_data);
-  uint8 event_id = ConvertEventTypeToWireFormat(event);
-  uint16 type_and_delta = static_cast<uint16>(event_id) << 12;
+  uint8_t event_id = ConvertEventTypeToWireFormat(event);
+  uint16_t type_and_delta = static_cast<uint16_t>(event_id) << 12;
   type_and_delta += event_timesamp_delta & 0x0fff;
   big_endian_writer_.WriteU16(type_and_delta);
 }
@@ -187,7 +187,7 @@ scoped_ptr<media::cast::Packet> TestRtcpPacketBuilder::GetPacket() {
       new media::cast::Packet(buffer_, buffer_ + Length()));
 }
 
-const uint8* TestRtcpPacketBuilder::Data() {
+const uint8_t* TestRtcpPacketBuilder::Data() {
   PatchLengthField();
   return buffer_;
 }

@@ -165,7 +165,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // for exclusive audio mode.
   HRESULT ExclusiveModeInitialization(IAudioClient* client,
                                       HANDLE event_handle,
-                                      uint32* endpoint_buffer_size);
+                                      uint32_t* endpoint_buffer_size);
 
   // If |render_thread_| is valid, sets |stop_render_event_| and blocks until
   // the thread has stopped.  |stop_render_event_| is reset after the call.
@@ -202,7 +202,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   size_t packet_size_bytes_;
 
   // Length of the audio endpoint buffer.
-  uint32 endpoint_buffer_size_frames_;
+  uint32_t endpoint_buffer_size_frames_;
 
   // The target device id or an empty string for the default device.
   const std::string device_id_;

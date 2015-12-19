@@ -5,7 +5,6 @@
 #ifndef MEDIA_FILTERS_AUDIO_FILE_READER_H_
 #define MEDIA_FILTERS_AUDIO_FILE_READER_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/filters/ffmpeg_glue.h"

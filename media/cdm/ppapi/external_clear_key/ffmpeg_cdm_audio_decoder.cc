@@ -351,7 +351,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
       // If we've exhausted the packet in the first decode we can write directly
       // into the frame buffer instead of a multistep serialization approach.
       if (serialized_audio_frames_.empty() && !packet.size) {
-        const uint32_t buffer_size = decoded_audio_size + sizeof(int64) * 2;
+        const uint32_t buffer_size = decoded_audio_size + sizeof(int64_t) * 2;
         decoded_frames->SetFrameBuffer(host_->Allocate(buffer_size));
         if (!decoded_frames->FrameBuffer()) {
           LOG(ERROR) << "DecodeBuffer() ClearKeyCdmHost::Allocate failed.";
@@ -360,11 +360,11 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
         decoded_frames->FrameBuffer()->SetSize(buffer_size);
         uint8_t* output_buffer = decoded_frames->FrameBuffer()->Data();
 
-        const int64 timestamp = output_timestamp.InMicroseconds();
+        const int64_t timestamp = output_timestamp.InMicroseconds();
         memcpy(output_buffer, &timestamp, sizeof(timestamp));
         output_buffer += sizeof(timestamp);
 
-        const int64 output_size = decoded_audio_size;
+        const int64_t output_size = decoded_audio_size;
         memcpy(output_buffer, &output_size, sizeof(output_size));
         output_buffer += sizeof(output_size);
 
@@ -420,7 +420,7 @@ void FFmpegCdmAudioDecoder::ReleaseFFmpegResources() {
   av_frame_.reset();
 }
 
-void FFmpegCdmAudioDecoder::SerializeInt64(int64 value) {
+void FFmpegCdmAudioDecoder::SerializeInt64(int64_t value) {
   const size_t previous_size = serialized_audio_frames_.size();
   serialized_audio_frames_.resize(previous_size + sizeof(value));
   memcpy(&serialized_audio_frames_[0] + previous_size, &value, sizeof(value));

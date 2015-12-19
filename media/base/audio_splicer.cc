@@ -70,7 +70,7 @@ class AudioStreamSanitizer {
 
   // Similar to Reset(), but initializes the timestamp helper with the given
   // parameters.
-  void ResetTimestampState(int64 frame_count, base::TimeDelta base_timestamp);
+  void ResetTimestampState(int64_t frame_count, base::TimeDelta base_timestamp);
 
   // Adds a new buffer full of samples or end of stream buffer to the splicer.
   // Returns true if the buffer was accepted. False is returned if an error
@@ -124,7 +124,7 @@ void AudioStreamSanitizer::Reset() {
   ResetTimestampState(0, kNoTimestamp());
 }
 
-void AudioStreamSanitizer::ResetTimestampState(int64 frame_count,
+void AudioStreamSanitizer::ResetTimestampState(int64_t frame_count,
                                                base::TimeDelta base_timestamp) {
   output_buffers_.clear();
   received_end_of_stream_ = false;

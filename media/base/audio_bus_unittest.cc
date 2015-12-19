@@ -280,7 +280,7 @@ TEST_F(AudioBusTest, FromInterleaved) {
            kTestVectorFrames * sizeof(*expected->channel(ch)));
   }
   {
-    SCOPED_TRACE("uint8");
+    SCOPED_TRACE("uint8_t");
     bus->Zero();
     bus->FromInterleaved(
         kTestVectorUint8, kTestVectorFrames, sizeof(*kTestVectorUint8));
@@ -290,7 +290,7 @@ TEST_F(AudioBusTest, FromInterleaved) {
                          1.0f / (std::numeric_limits<uint8_t>::max() - 1));
   }
   {
-    SCOPED_TRACE("int16");
+    SCOPED_TRACE("int16_t");
     bus->Zero();
     bus->FromInterleaved(
         kTestVectorInt16, kTestVectorFrames, sizeof(*kTestVectorInt16));
@@ -298,7 +298,7 @@ TEST_F(AudioBusTest, FromInterleaved) {
                          1.0f / (std::numeric_limits<uint16_t>::max() + 1.0f));
   }
   {
-    SCOPED_TRACE("int32");
+    SCOPED_TRACE("int32_t");
     bus->Zero();
     bus->FromInterleaved(
         kTestVectorInt32, kTestVectorFrames, sizeof(*kTestVectorInt32));
@@ -342,21 +342,21 @@ TEST_F(AudioBusTest, ToInterleaved) {
            kTestVectorFrames * sizeof(*bus->channel(ch)));
   }
   {
-    SCOPED_TRACE("uint8");
+    SCOPED_TRACE("uint8_t");
     uint8_t test_array[arraysize(kTestVectorUint8)];
     bus->ToInterleaved(bus->frames(), sizeof(*kTestVectorUint8), test_array);
     ASSERT_EQ(memcmp(
         test_array, kTestVectorUint8, sizeof(kTestVectorUint8)), 0);
   }
   {
-    SCOPED_TRACE("int16");
+    SCOPED_TRACE("int16_t");
     int16_t test_array[arraysize(kTestVectorInt16)];
     bus->ToInterleaved(bus->frames(), sizeof(*kTestVectorInt16), test_array);
     ASSERT_EQ(memcmp(
         test_array, kTestVectorInt16, sizeof(kTestVectorInt16)), 0);
   }
   {
-    SCOPED_TRACE("int32");
+    SCOPED_TRACE("int32_t");
     int32_t test_array[arraysize(kTestVectorInt32)];
     bus->ToInterleaved(bus->frames(), sizeof(*kTestVectorInt32), test_array);
 

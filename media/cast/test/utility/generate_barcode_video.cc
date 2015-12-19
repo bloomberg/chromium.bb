@@ -29,11 +29,11 @@ int main(int argc, char **argv) {
   int width = atoi(argv[1]);
   int height = atoi(argv[2]);
   int fps = atoi(argv[3]);
-  uint16 wanted_frames = atoi(argv[4]);
+  uint16_t wanted_frames = atoi(argv[4]);
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(width, height));
   printf("YUV4MPEG2 W%d H%d F%d:1 Ip C420mpeg2\n", width, height, fps);
-  for (uint16 frame_id = 1; frame_id <= wanted_frames; frame_id++) {
+  for (uint16_t frame_id = 1; frame_id <= wanted_frames; frame_id++) {
     CHECK(media::cast::test::EncodeBarcode(frame_id, frame));
     printf("FRAME\n");
     DumpPlane(frame, media::VideoFrame::kYPlane);

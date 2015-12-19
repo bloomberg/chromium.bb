@@ -24,10 +24,10 @@ class MockProtocol : public FFmpegURLProtocol {
  public:
   MockProtocol() {}
 
-  MOCK_METHOD2(Read, int(int size, uint8* data));
-  MOCK_METHOD1(GetPosition, bool(int64* position_out));
-  MOCK_METHOD1(SetPosition, bool(int64 position));
-  MOCK_METHOD1(GetSize, bool(int64* size_out));
+  MOCK_METHOD2(Read, int(int size, uint8_t* data));
+  MOCK_METHOD1(GetPosition, bool(int64_t* position_out));
+  MOCK_METHOD1(SetPosition, bool(int64_t position));
+  MOCK_METHOD1(GetSize, bool(int64_t* size_out));
   MOCK_METHOD0(IsStreaming, bool());
 
  private:
@@ -54,12 +54,12 @@ class FFmpegGlueTest : public ::testing::Test {
     glue_.reset();
   }
 
-  int ReadPacket(int size, uint8* data) {
+  int ReadPacket(int size, uint8_t* data) {
     return glue_->format_context()->pb->read_packet(
         protocol_.get(), data, size);
   }
 
-  int64 Seek(int64 offset, int whence) {
+  int64_t Seek(int64_t offset, int whence) {
     return glue_->format_context()->pb->seek(protocol_.get(), offset, whence);
   }
 
@@ -116,7 +116,7 @@ TEST_F(FFmpegGlueTest, Write) {
 // Test both successful and unsuccessful reads pass through correctly.
 TEST_F(FFmpegGlueTest, Read) {
   const int kBufferSize = 16;
-  uint8 buffer[kBufferSize];
+  uint8_t buffer[kBufferSize];
 
   // Reads are for the most part straight-through calls to Read().
   InSequence s;

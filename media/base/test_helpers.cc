@@ -216,9 +216,9 @@ scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
       type increment,                                        \
       size_t frames,                                         \
       base::TimeDelta start_time)
-DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(uint8);
-DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(int16);
-DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(int32);
+DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(uint8_t);
+DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(int16_t);
+DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(int32_t);
 DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(float);
 
 static const char kFakeVideoBufferHeader[] = "FakeVideoBufferForTest";
@@ -232,9 +232,9 @@ scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
   pickle.WriteInt(config.coded_size().height());
   pickle.WriteInt64(timestamp.InMilliseconds());
 
-  scoped_refptr<DecoderBuffer> buffer = DecoderBuffer::CopyFrom(
-      static_cast<const uint8*>(pickle.data()),
-      static_cast<int>(pickle.size()));
+  scoped_refptr<DecoderBuffer> buffer =
+      DecoderBuffer::CopyFrom(static_cast<const uint8_t*>(pickle.data()),
+                              static_cast<int>(pickle.size()));
   buffer->set_timestamp(timestamp);
   buffer->set_duration(duration);
   buffer->set_is_key_frame(true);

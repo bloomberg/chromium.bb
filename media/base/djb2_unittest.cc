@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-uint8 kTestData[] = { 1, 2, 3 };
+uint8_t kTestData[] = {1, 2, 3};
 
 TEST(DJB2HashTest, HashTest) {
   EXPECT_EQ(DJB2Hash(NULL, 0, 0u), 0u);

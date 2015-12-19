@@ -231,7 +231,7 @@ void FileSource::OnError(AudioOutputStream* stream) {
 
 BeepingSource::BeepingSource(const AudioParameters& params)
     : buffer_size_(params.GetBytesPerBuffer()),
-      buffer_(new uint8[buffer_size_]),
+      buffer_(new uint8_t[buffer_size_]),
       params_(params),
       last_callback_time_(base::TimeTicks::Now()),
       beep_duration_in_buffers_(kBeepDurationMilliseconds *
@@ -239,8 +239,7 @@ BeepingSource::BeepingSource(const AudioParameters& params)
                                 params.frames_per_buffer() /
                                 1000),
       beep_generated_in_buffers_(0),
-      beep_period_in_frames_(params.sample_rate() / kBeepFrequency) {
-}
+      beep_period_in_frames_(params.sample_rate() / kBeepFrequency) {}
 
 BeepingSource::~BeepingSource() {
 }

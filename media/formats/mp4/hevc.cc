@@ -44,7 +44,7 @@ bool HEVCDecoderConfigurationRecord::Parse(BoxReader* reader) {
   return ParseInternal(reader, reader->media_log());
 }
 
-bool HEVCDecoderConfigurationRecord::Parse(const uint8* data, int data_size) {
+bool HEVCDecoderConfigurationRecord::Parse(const uint8_t* data, int data_size) {
   BufferReader reader(data, data_size);
   return ParseInternal(&reader, new MediaLog());
 }
@@ -57,10 +57,10 @@ HEVCDecoderConfigurationRecord::HVCCNALArray::~HVCCNALArray() {}
 bool HEVCDecoderConfigurationRecord::ParseInternal(
     BufferReader* reader,
     const scoped_refptr<MediaLog>& media_log) {
-  uint8 profile_indication = 0;
-  uint32 general_constraint_indicator_flags_hi = 0;
-  uint16 general_constraint_indicator_flags_lo = 0;
-  uint8 misc = 0;
+  uint8_t profile_indication = 0;
+  uint32_t general_constraint_indicator_flags_hi = 0;
+  uint16_t general_constraint_indicator_flags_lo = 0;
+  uint8_t misc = 0;
   RCHECK(reader->Read1(&configurationVersion) && configurationVersion == 1 &&
          reader->Read1(&profile_indication) &&
          reader->Read4(&general_profile_compatibility_flags) &&
@@ -97,13 +97,13 @@ bool HEVCDecoderConfigurationRecord::ParseInternal(
 
   DVLOG(2) << __FUNCTION__ << " numOfArrays=" << (int)numOfArrays;
   arrays.resize(numOfArrays);
-  for (uint32 j = 0; j < numOfArrays; j++) {
+  for (uint32_t j = 0; j < numOfArrays; j++) {
     RCHECK(reader->Read1(&arrays[j].first_byte));
-    uint16 numNalus = 0;
+    uint16_t numNalus = 0;
     RCHECK(reader->Read2(&numNalus));
     arrays[j].units.resize(numNalus);
-    for (uint32 i = 0; i < numNalus; ++i) {
-      uint16 naluLength = 0;
+    for (uint32_t i = 0; i < numNalus; ++i) {
+      uint16_t naluLength = 0;
       RCHECK(reader->Read2(&naluLength) &&
              reader->ReadVec(&arrays[j].units[i], naluLength));
       DVLOG(4) << __FUNCTION__ << " naluType="
@@ -119,24 +119,24 @@ bool HEVCDecoderConfigurationRecord::ParseInternal(
   return true;
 }
 
-static const uint8 kAnnexBStartCode[] = {0, 0, 0, 1};
+static const uint8_t kAnnexBStartCode[] = {0, 0, 0, 1};
 static const int kAnnexBStartCodeSize = 4;
 
 bool HEVC::InsertParamSetsAnnexB(
     const HEVCDecoderConfigurationRecord& hevc_config,
-    std::vector<uint8>* buffer,
+    std::vector<uint8_t>* buffer,
     std::vector<SubsampleEntry>* subsamples) {
   DCHECK(HEVC::IsValidAnnexB(*buffer, *subsamples));
 
   scoped_ptr<H265Parser> parser(new H265Parser());
-  const uint8* start = &(*buffer)[0];
+  const uint8_t* start = &(*buffer)[0];
   parser->SetEncryptedStream(start, buffer->size(), *subsamples);
 
   H265NALU nalu;
   if (parser->AdvanceToNextNALU(&nalu) != H265Parser::kOk)
     return false;
 
-  std::vector<uint8>::iterator config_insert_point = buffer->begin();
+  std::vector<uint8_t>::iterator config_insert_point = buffer->begin();
 
   if (nalu.nal_unit_type == H265NALU::AUD_NUT) {
     // Move insert point to just after the AUD.
@@ -148,7 +148,7 @@ bool HEVC::InsertParamSetsAnnexB(
   parser.reset();
   start = NULL;
 
-  std::vector<uint8> param_sets;
+  std::vector<uint8_t> param_sets;
   RCHECK(HEVC::ConvertConfigToAnnexB(hevc_config, &param_sets));
   DVLOG(4) << __FUNCTION__ << " converted hvcC to AnnexB "
            << " size=" << param_sets.size() << " inserted at "
@@ -170,12 +170,12 @@ bool HEVC::InsertParamSetsAnnexB(
 
 bool HEVC::ConvertConfigToAnnexB(
     const HEVCDecoderConfigurationRecord& hevc_config,
-    std::vector<uint8>* buffer) {
+    std::vector<uint8_t>* buffer) {
   DCHECK(buffer->empty());
   buffer->clear();
 
   for (size_t j = 0; j < hevc_config.arrays.size(); j++) {
-    uint8 naluType = hevc_config.arrays[j].first_byte & 0x3f;
+    uint8_t naluType = hevc_config.arrays[j].first_byte & 0x3f;
     for (size_t i = 0; i < hevc_config.arrays[j].units.size(); ++i) {
       DVLOG(3) << __FUNCTION__ << " naluType=" << (int)naluType
                << " size=" << hevc_config.arrays[j].units[i].size();
@@ -190,12 +190,13 @@ bool HEVC::ConvertConfigToAnnexB(
 }
 
 // Verifies AnnexB NALU order according to section 7.4.2.4.4 of ISO/IEC 23008-2.
-bool HEVC::IsValidAnnexB(const std::vector<uint8>& buffer,
+bool HEVC::IsValidAnnexB(const std::vector<uint8_t>& buffer,
                          const std::vector<SubsampleEntry>& subsamples) {
   return IsValidAnnexB(&buffer[0], buffer.size(), subsamples);
 }
 
-bool HEVC::IsValidAnnexB(const uint8* buffer, size_t size,
+bool HEVC::IsValidAnnexB(const uint8_t* buffer,
+                         size_t size,
                          const std::vector<SubsampleEntry>& subsamples) {
   DCHECK(buffer);
 
@@ -216,7 +217,7 @@ HEVCBitstreamConverter::~HEVCBitstreamConverter() {
 }
 
 bool HEVCBitstreamConverter::ConvertFrame(
-    std::vector<uint8>* frame_buf,
+    std::vector<uint8_t>* frame_buf,
     bool is_keyframe,
     std::vector<SubsampleEntry>* subsamples) const {
   RCHECK(AVC::ConvertFrameToAnnexB(hevc_config_->lengthSizeMinusOne + 1,

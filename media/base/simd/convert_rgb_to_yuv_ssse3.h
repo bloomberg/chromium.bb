@@ -5,6 +5,9 @@
 #ifndef MEDIA_BASE_SIMD_CONVERT_RGB_TO_YUV_SSSE3_H_
 #define MEDIA_BASE_SIMD_CONVERT_RGB_TO_YUV_SSSE3_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,17 +23,17 @@ extern "C" {
 // issue on at least Win64.
 
 // Convert a row of 24-bit RGB pixels to YV12 pixels.
-void ConvertRGBToYUVRow_SSSE3(const uint8* rgb,
-                              uint8* y,
-                              uint8* u,
-                              uint8* v,
+void ConvertRGBToYUVRow_SSSE3(const uint8_t* rgb,
+                              uint8_t* y,
+                              uint8_t* u,
+                              uint8_t* v,
                               ptrdiff_t width);
 
 // Convert a row of 32-bit RGB pixels to YV12 pixels.
-void ConvertARGBToYUVRow_SSSE3(const uint8* argb,
-                               uint8* y,
-                               uint8* u,
-                               uint8* v,
+void ConvertARGBToYUVRow_SSSE3(const uint8_t* argb,
+                               uint8_t* y,
+                               uint8_t* u,
+                               uint8_t* v,
                                ptrdiff_t width);
 
 #ifdef __cplusplus

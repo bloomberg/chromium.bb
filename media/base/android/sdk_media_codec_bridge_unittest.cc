@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/android/media_codec_util.h"
@@ -109,7 +108,7 @@ static inline const base::TimeDelta InfiniteTimeOut() {
 }
 
 void DecodeMediaFrame(VideoCodecBridge* media_codec,
-                      const uint8* data,
+                      const uint8_t* data,
                       size_t data_size,
                       const base::TimeDelta input_presentation_timestamp,
                       const base::TimeDelta initial_timestamp_lower_bound) {
@@ -166,7 +165,7 @@ TEST(SdkMediaCodecBridgeTest, DoNormal) {
   ASSERT_EQ(MEDIA_CODEC_OK, status);
   ASSERT_GE(input_buf_index, 0);
 
-  int64 input_pts = kPresentationTimeBase;
+  int64_t input_pts = kPresentationTimeBase;
   media_codec->QueueInputBuffer(input_buf_index, test_mp3, sizeof(test_mp3),
                                 base::TimeDelta::FromMicroseconds(++input_pts));
 
@@ -217,20 +216,20 @@ TEST(SdkMediaCodecBridgeTest, InvalidVorbisHeader) {
   media_codec.reset(AudioCodecBridge::Create(kCodecVorbis));
 
   // The first byte of the header is not 0x02.
-  uint8 invalid_first_byte[] = {0x00, 0xff, 0xff, 0xff, 0xff};
+  uint8_t invalid_first_byte[] = {0x00, 0xff, 0xff, 0xff, 0xff};
   EXPECT_FALSE(media_codec->ConfigureAndStart(
       kCodecVorbis, 44100, 2, invalid_first_byte, sizeof(invalid_first_byte), 0,
       0, false, nullptr));
 
   // Size of the header does not match with the data we passed in.
-  uint8 invalid_size[] = {0x02, 0x01, 0xff, 0x01, 0xff};
+  uint8_t invalid_size[] = {0x02, 0x01, 0xff, 0x01, 0xff};
   EXPECT_FALSE(media_codec->ConfigureAndStart(
       kCodecVorbis, 44100, 2, invalid_size, sizeof(invalid_size), 0, 0, false,
       nullptr));
 
   // Size of the header is too large.
   size_t large_size = 8 * 1024 * 1024 + 2;
-  uint8* very_large_header = new uint8[large_size];
+  uint8_t* very_large_header = new uint8_t[large_size];
   very_large_header[0] = 0x02;
   for (size_t i = 1; i < large_size - 1; ++i)
     very_large_header[i] = 0xff;
@@ -246,7 +245,7 @@ TEST(SdkMediaCodecBridgeTest, InvalidOpusHeader) {
 
   scoped_ptr<media::AudioCodecBridge> media_codec;
   media_codec.reset(AudioCodecBridge::Create(kCodecOpus));
-  uint8 dummy_extra_data[] = {0, 0};
+  uint8_t dummy_extra_data[] = {0, 0};
 
   // Extra Data is NULL.
   EXPECT_FALSE(media_codec->ConfigureAndStart(kCodecOpus, 48000, 2, nullptr, 0,
@@ -274,8 +273,8 @@ TEST(SdkMediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
                    base::TimeDelta(), base::TimeDelta());
 
   // Simulate a seek to 10 seconds, and each chunk has 2 I-frames.
-  std::vector<uint8> chunk(buffer->data(),
-                           buffer->data() + buffer->data_size());
+  std::vector<uint8_t> chunk(buffer->data(),
+                             buffer->data() + buffer->data_size());
   chunk.insert(chunk.end(), buffer->data(),
                buffer->data() + buffer->data_size());
   media_codec->Reset();

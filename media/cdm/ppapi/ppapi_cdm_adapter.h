@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "media/cdm/api/content_decryption_module.h"

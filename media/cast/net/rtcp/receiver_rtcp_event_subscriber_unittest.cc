@@ -18,7 +18,7 @@ namespace cast {
 namespace {
 
 const size_t kMaxEventEntries = 10u;
-const int64 kDelayMs = 20L;
+const int64_t kDelayMs = 20L;
 
 }  // namespace
 
@@ -152,7 +152,7 @@ TEST_F(ReceiverRtcpEventSubscriberTest, LogAudioEvents) {
 TEST_F(ReceiverRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
   Init(VIDEO_EVENT);
 
-  for (uint32 i = 1u; i <= 10u; ++i) {
+  for (uint32_t i = 1u; i <= 10u; ++i) {
     scoped_ptr<FrameEvent> decode_event(new FrameEvent());
     decode_event->timestamp = testing_clock_->NowTicks();
     decode_event->type = FRAME_DECODED;

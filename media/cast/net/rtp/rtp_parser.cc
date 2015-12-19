@@ -13,25 +13,26 @@ namespace media {
 namespace cast {
 
 // static
-bool RtpParser::ParseSsrc(const uint8* packet,
+bool RtpParser::ParseSsrc(const uint8_t* packet,
                           size_t length,
-                          uint32* ssrc) {
+                          uint32_t* ssrc) {
   base::BigEndianReader big_endian_reader(
       reinterpret_cast<const char*>(packet), length);
   return big_endian_reader.Skip(8) && big_endian_reader.ReadU32(ssrc);
 }
 
-RtpParser::RtpParser(uint32 expected_sender_ssrc, uint8 expected_payload_type)
+RtpParser::RtpParser(uint32_t expected_sender_ssrc,
+                     uint8_t expected_payload_type)
     : expected_sender_ssrc_(expected_sender_ssrc),
       expected_payload_type_(expected_payload_type),
       frame_id_wrap_helper_(kFirstFrameId - 1) {}
 
 RtpParser::~RtpParser() {}
 
-bool RtpParser::ParsePacket(const uint8* packet,
+bool RtpParser::ParsePacket(const uint8_t* packet,
                             size_t length,
                             RtpCastHeader* header,
-                            const uint8** payload_data,
+                            const uint8_t** payload_data,
                             size_t* payload_size) {
   DCHECK(packet);
   DCHECK(header);
@@ -46,10 +47,10 @@ bool RtpParser::ParsePacket(const uint8* packet,
   // Parse the RTP header.  See
   // http://en.wikipedia.org/wiki/Real-time_Transport_Protocol for an
   // explanation of the standard RTP packet header.
-  uint8 bits;
+  uint8_t bits;
   if (!reader.ReadU8(&bits))
     return false;
-  const uint8 version = bits >> 6;
+  const uint8_t version = bits >> 6;
   if (version != 2)
     return false;
   header->num_csrcs = bits & kRtpNumCsrcsMask;
@@ -76,7 +77,7 @@ bool RtpParser::ParsePacket(const uint8* packet,
     return false;
   header->is_key_frame = !!(bits & kCastKeyFrameBitMask);
   header->is_reference = !!(bits & kCastReferenceFrameIdBitMask);
-  uint8 truncated_frame_id;
+  uint8_t truncated_frame_id;
   if (!reader.ReadU8(&truncated_frame_id) ||
       !reader.ReadU16(&header->packet_id) ||
       !reader.ReadU16(&header->max_packet_id)) {
@@ -85,7 +86,7 @@ bool RtpParser::ParsePacket(const uint8* packet,
   // Sanity-check: Do the packet ID values make sense w.r.t. each other?
   if (header->max_packet_id < header->packet_id)
     return false;
-  uint8 truncated_reference_frame_id;
+  uint8_t truncated_reference_frame_id;
   if (!header->is_reference) {
     // By default, a key frame only references itself; and non-key frames
     // reference their direct predecessor.
@@ -98,7 +99,7 @@ bool RtpParser::ParsePacket(const uint8* packet,
 
   header->num_extensions = bits & kCastExtensionCountmask;
   for (int i = 0; i < header->num_extensions; i++) {
-    uint16 type_and_size;
+    uint16_t type_and_size;
     if (!reader.ReadU16(&type_and_size))
       return false;
     base::StringPiece tmp;
@@ -128,7 +129,7 @@ bool RtpParser::ParsePacket(const uint8* packet,
   header->reference_frame_id |= truncated_reference_frame_id;
 
   // All remaining data in the packet is the payload.
-  *payload_data = reinterpret_cast<const uint8*>(reader.ptr());
+  *payload_data = reinterpret_cast<const uint8_t*>(reader.ptr());
   *payload_size = reader.remaining();
 
   return true;

@@ -146,7 +146,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
 
   // Converts an FFmpeg stream timestamp into a base::TimeDelta.
   static base::TimeDelta ConvertStreamTimestamp(const AVRational& time_base,
-                                                int64 timestamp);
+                                                int64_t timestamp);
 
   // Resets any currently active bitstream converter.
   void ResetBitstreamConverter();

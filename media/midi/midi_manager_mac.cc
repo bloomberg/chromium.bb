@@ -135,10 +135,9 @@ void MidiManagerMac::Finalize() {
     MIDIClientDispose(midi_client_);
 }
 
-
 void MidiManagerMac::DispatchSendMidiData(MidiManagerClient* client,
-                                          uint32 port_index,
-                                          const std::vector<uint8>& data,
+                                          uint32_t port_index,
+                                          const std::vector<uint8_t>& data,
                                           double timestamp) {
   RunOnClientThread(
       base::Bind(&MidiManagerMac::SendMidiData,
@@ -187,9 +186,9 @@ void MidiManagerMac::InitializeCoreMIDI() {
 
   // Following loop may miss some newly attached devices, but such device will
   // be captured by ReceiveMidiNotifyDispatch callback.
-  uint32 destination_count = MIDIGetNumberOfDestinations();
+  uint32_t destination_count = MIDIGetNumberOfDestinations();
   destinations_.resize(destination_count);
-  for (uint32 i = 0; i < destination_count ; i++) {
+  for (uint32_t i = 0; i < destination_count; i++) {
     MIDIEndpointRef destination = MIDIGetDestination(i);
     if (destination == 0) {
       // One ore more devices may be detached.
@@ -206,8 +205,8 @@ void MidiManagerMac::InitializeCoreMIDI() {
   }
 
   // Open connections from all sources. This loop also may miss new devices.
-  uint32 source_count = MIDIGetNumberOfSources();
-  for (uint32 i = 0; i < source_count; ++i)  {
+  uint32_t source_count = MIDIGetNumberOfSources();
+  for (uint32_t i = 0; i < source_count; ++i) {
     // Receive from all sources.
     MIDIEndpointRef source = MIDIGetSource(i);
     if (source == 0)
@@ -257,7 +256,7 @@ void MidiManagerMac::ReceiveMidiNotify(const MIDINotification* message) {
         // On kMIDIMsgObjectRemoved, the entry will be ignored because it
         // will not be found in the pool.
         if (!info.id.empty()) {
-          uint32 index = source_map_.size();
+          uint32_t index = source_map_.size();
           source_map_[endpoint] = index;
           AddInputPort(info);
           MIDIPortConnectSource(
@@ -328,7 +327,7 @@ void MidiManagerMac::ReadMidi(MIDIEndpointRef source,
     return;
   // This is safe since MidiManagerMac does not remove any existing
   // MIDIEndpointRef, and the order is saved.
-  uint32 port_index = it->second;
+  uint32_t port_index = it->second;
 
   // Go through each packet and process separately.
   const MIDIPacket* packet = &packet_list->packet[0];
@@ -347,8 +346,8 @@ void MidiManagerMac::ReadMidi(MIDIEndpointRef source,
 }
 
 void MidiManagerMac::SendMidiData(MidiManagerClient* client,
-                                  uint32 port_index,
-                                  const std::vector<uint8>& data,
+                                  uint32_t port_index,
+                                  const std::vector<uint8_t>& data,
                                   double timestamp) {
   DCHECK(client_thread_.task_runner()->BelongsToCurrentThread());
 

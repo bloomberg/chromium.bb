@@ -81,7 +81,7 @@ bool FrameReceiver::ProcessPacket(scoped_ptr<Packet> packet) {
     rtcp_.IncomingRtcpPacket(&packet->front(), packet->size());
   } else {
     RtpCastHeader rtp_header;
-    const uint8* payload_data;
+    const uint8_t* payload_data;
     size_t payload_size;
     if (!packet_parser_.ParsePacket(&packet->front(),
                                     packet->size(),
@@ -105,7 +105,7 @@ bool FrameReceiver::ProcessPacket(scoped_ptr<Packet> packet) {
 }
 
 void FrameReceiver::ProcessParsedPacket(const RtpCastHeader& rtp_header,
-                                        const uint8* payload_data,
+                                        const uint8_t* payload_data,
                                         size_t payload_size) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
@@ -155,7 +155,7 @@ void FrameReceiver::ProcessParsedPacket(const RtpCastHeader& rtp_header,
       lip_sync_reference_time_ = fresh_sync_reference;
     } else {
       lip_sync_reference_time_ += RtpDeltaToTimeDelta(
-          static_cast<int32>(fresh_sync_rtp - lip_sync_rtp_timestamp_),
+          static_cast<int32_t>(fresh_sync_rtp - lip_sync_rtp_timestamp_),
           rtp_timebase_);
     }
     lip_sync_rtp_timestamp_ = fresh_sync_rtp;
@@ -302,12 +302,11 @@ base::TimeTicks FrameReceiver::GetPlayoutTime(const EncodedFrame& frame) const {
     target_playout_delay = base::TimeDelta::FromMilliseconds(
         frame.new_playout_delay_ms);
   }
-  return lip_sync_reference_time_ +
-      lip_sync_drift_.Current() +
-      RtpDeltaToTimeDelta(
-          static_cast<int32>(frame.rtp_timestamp - lip_sync_rtp_timestamp_),
-          rtp_timebase_) +
-      target_playout_delay;
+  return lip_sync_reference_time_ + lip_sync_drift_.Current() +
+         RtpDeltaToTimeDelta(static_cast<int32_t>(frame.rtp_timestamp -
+                                                  lip_sync_rtp_timestamp_),
+                             rtp_timebase_) +
+         target_playout_delay;
 }
 
 void FrameReceiver::ScheduleNextCastMessage() {

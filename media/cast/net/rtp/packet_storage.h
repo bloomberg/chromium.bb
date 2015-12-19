@@ -7,7 +7,6 @@
 
 #include <deque>
 
-#include "base/basictypes.h"
 #include "media/cast/net/pacing/paced_sender.h"
 
 namespace media {
@@ -19,22 +18,22 @@ class PacketStorage {
   virtual ~PacketStorage();
 
   // Store all of the packets for a frame.
-  void StoreFrame(uint32 frame_id, const SendPacketVector& packets);
+  void StoreFrame(uint32_t frame_id, const SendPacketVector& packets);
 
   // Release all of the packets for a frame.
-  void ReleaseFrame(uint32 frame_id);
+  void ReleaseFrame(uint32_t frame_id);
 
   // Returns a list of packets for a frame indexed by a 8-bits ID.
   // It is the lowest 8 bits of a frame ID.
   // Returns NULL if the frame cannot be found.
-  const SendPacketVector* GetFrame8(uint8 frame_id_8bits) const;
+  const SendPacketVector* GetFrame8(uint8_t frame_id_8bits) const;
 
   // Get the number of stored frames.
   size_t GetNumberOfStoredFrames() const;
 
  private:
   std::deque<SendPacketVector> frames_;
-  uint32 first_frame_id_in_list_;
+  uint32_t first_frame_id_in_list_;
 
   // The number of frames whose packets have been released, but the entry in the
   // |frames_| queue has not yet been popped.

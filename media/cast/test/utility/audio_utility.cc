@@ -4,7 +4,6 @@
 
 #include <cmath>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
@@ -93,7 +92,7 @@ const size_t kSamplesToAnalyze = kSamplingFrequency / kBaseFrequency;
 const double kSenseFrequency = kBaseFrequency * (kNumBits + 1);
 const double kMinSense = 1.5;
 
-bool EncodeTimestamp(uint16 timestamp,
+bool EncodeTimestamp(uint16_t timestamp,
                      size_t sample_offset,
                      size_t length,
                      float* samples) {
@@ -147,7 +146,7 @@ double DecodeOneFrequency(const float* samples,
 // each of the bits. Each frequency must have a strength that is similar to
 // the sense frequency or to zero, or the decoding fails. If it fails, we
 // move head by 60 samples and try again until we run out of samples.
-bool DecodeTimestamp(const float* samples, size_t length, uint16* timestamp) {
+bool DecodeTimestamp(const float* samples, size_t length, uint16_t* timestamp) {
   for (size_t start = 0;
        start + kSamplesToAnalyze <= length;
        start += kSamplesToAnalyze / 4) {
@@ -156,7 +155,7 @@ bool DecodeTimestamp(const float* samples, size_t length, uint16* timestamp) {
                                       kSenseFrequency);
     if (sense < kMinSense) continue;
     bool success = true;
-    uint16 gray_coded = 0;
+    uint16_t gray_coded = 0;
     for (size_t bit = 0; success && bit < kNumBits; bit++) {
       double signal_strength = DecodeOneFrequency(
           &samples[start],
@@ -174,7 +173,7 @@ bool DecodeTimestamp(const float* samples, size_t length, uint16* timestamp) {
     }
     if (success) {
       // Convert from gray-coded number to binary.
-      uint16 mask;
+      uint16_t mask;
       for (mask = gray_coded >> 1; mask != 0; mask = mask >> 1) {
         gray_coded = gray_coded ^ mask;
       }

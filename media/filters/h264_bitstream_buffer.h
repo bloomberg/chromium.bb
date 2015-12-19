@@ -33,7 +33,7 @@ class MEDIA_EXPORT H264BitstreamBuffer {
   // |val| is interpreted in the host endianness.
   template <typename T>
   void AppendBits(size_t num_bits, T val) {
-    AppendU64(num_bits, static_cast<uint64>(val));
+    AppendU64(num_bits, static_cast<uint64_t>(val));
   }
 
   void AppendBits(size_t num_bits, bool val) {
@@ -68,7 +68,7 @@ class MEDIA_EXPORT H264BitstreamBuffer {
   // Return a pointer to the stream. FinishNALU() must be called before
   // accessing the stream, otherwise some bits may still be cached and not
   // in the buffer.
-  uint8* data();
+  uint8_t* data();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(H264BitstreamBufferAppendBitsTest,
@@ -78,13 +78,13 @@ class MEDIA_EXPORT H264BitstreamBuffer {
   void Grow();
 
   // Append |num_bits| bits from U64 value |val| (in host endianness).
-  void AppendU64(size_t num_bits, uint64 val);
+  void AppendU64(size_t num_bits, uint64_t val);
 
   // Flush any cached bits in the reg with byte granularity, i.e. enough
   // bytes to flush all pending bits, but not more.
   void FlushReg();
 
-  typedef uint64 RegType;
+  typedef uint64_t RegType;
   enum {
     // Sizes of reg_.
     kRegByteSize = sizeof(RegType),
@@ -112,7 +112,7 @@ class MEDIA_EXPORT H264BitstreamBuffer {
   size_t pos_;
 
   // Buffer for stream data.
-  uint8* data_;
+  uint8_t* data_;
 };
 
 }  // namespace media

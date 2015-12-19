@@ -35,7 +35,6 @@
 
 #include <list>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
@@ -60,20 +59,20 @@ class MEDIA_EXPORT SeekableBuffer {
   // The current read position will advance by the amount of bytes read. If
   // reading caused backward_bytes() to exceed backward_capacity(), an eviction
   // of the backward buffer will be done internally.
-  int Read(uint8* data, int size);
+  int Read(uint8_t* data, int size);
 
   // Copies up to |size| bytes from current position to |data|. Returns
   // number of bytes copied. Doesn't advance current position. Optionally
   // starts at a |forward_offset| from current position.
-  int Peek(uint8* data, int size) { return Peek(data, size, 0); }
-  int Peek(uint8* data, int size, int forward_offset);
+  int Peek(uint8_t* data, int size) { return Peek(data, size, 0); }
+  int Peek(uint8_t* data, int size, int forward_offset);
 
   // Returns pointer to the current chunk of data that is being consumed.
   // If there is no data left in the buffer false is returned, otherwise
   // true is returned and |data| and |size| are updated. The returned
   // |data| value becomes invalid when Read(), Append() or Seek()
   // are called.
-  bool GetCurrentChunk(const uint8** data, int* size) const;
+  bool GetCurrentChunk(const uint8_t** data, int* size) const;
 
   // Appends |buffer_in| to this buffer. Returns false if forward_bytes() is
   // greater than or equals to forward_capacity(), true otherwise. The data
@@ -82,7 +81,7 @@ class MEDIA_EXPORT SeekableBuffer {
 
   // Appends |size| bytes of |data| to the buffer. Result is the same
   // as for Append(Buffer*).
-  bool Append(const uint8* data, int size);
+  bool Append(const uint8_t* data, int size);
 
   // Moves the read position by |offset| bytes. If |offset| is positive, the
   // current read position is moved forward. If negative, the current read
@@ -94,7 +93,7 @@ class MEDIA_EXPORT SeekableBuffer {
   // If the seek operation fails, the current read position will not be updated.
   // If a forward seeking caused backward_bytes() to exceed backward_capacity(),
   // this method call will cause an eviction of the backward buffer.
-  bool Seek(int32 offset);
+  bool Seek(int32_t offset);
 
   // Returns the number of bytes buffered beyond the current read position.
   int forward_bytes() const { return forward_bytes_; }
@@ -142,8 +141,10 @@ class MEDIA_EXPORT SeekableBuffer {
   // of bytes read. The current read position will be moved forward by the
   // number of bytes read. If |data| is NULL, only the current read position
   // will advance but no data will be copied.
-  int InternalRead(
-      uint8* data, int size, bool advance_position, int forward_offset);
+  int InternalRead(uint8_t* data,
+                   int size,
+                   bool advance_position,
+                   int forward_offset);
 
   // A helper method that moves the current read position forward by |size|
   // bytes.

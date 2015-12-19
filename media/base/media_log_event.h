@@ -95,7 +95,7 @@ struct MediaLogEvent {
     TYPE_LAST = PROPERTY_CHANGE
   };
 
-  int32 id;
+  int32_t id;
   Type type;
   base::DictionaryValue params;
   base::TimeTicks time;

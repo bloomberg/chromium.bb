@@ -142,7 +142,7 @@ bool WebMContentEncodingsClient::OnListEnd(int id) {
 
 // Multiple occurrence restriction and range are checked in this function.
 // Mandatory occurrence restriction is checked in OnListEnd.
-bool WebMContentEncodingsClient::OnUInt(int id, int64 val) {
+bool WebMContentEncodingsClient::OnUInt(int id, int64_t val) {
   DCHECK(cur_content_encoding_.get());
 
   if (id == kWebMIdContentEncodingOrder) {
@@ -152,7 +152,7 @@ bool WebMContentEncodingsClient::OnUInt(int id, int64 val) {
       return false;
     }
 
-    if (val != static_cast<int64>(content_encodings_.size())) {
+    if (val != static_cast<int64_t>(content_encodings_.size())) {
       // According to the spec, encoding order starts with 0 and counts upwards.
       MEDIA_LOG(ERROR, media_log_) << "Unexpected ContentEncodingOrder.";
       return false;
@@ -252,7 +252,9 @@ bool WebMContentEncodingsClient::OnUInt(int id, int64 val) {
 
 // Multiple occurrence restriction is checked in this function.  Mandatory
 // restriction is checked in OnListEnd.
-bool WebMContentEncodingsClient::OnBinary(int id, const uint8* data, int size) {
+bool WebMContentEncodingsClient::OnBinary(int id,
+                                          const uint8_t* data,
+                                          int size) {
   DCHECK(cur_content_encoding_.get());
   DCHECK(data);
   DCHECK_GT(size, 0);

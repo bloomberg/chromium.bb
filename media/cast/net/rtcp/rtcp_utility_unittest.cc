@@ -14,9 +14,9 @@
 namespace media {
 namespace cast {
 
-static const uint32 kSenderSsrc = 0x10203;
-static const uint32 kSourceSsrc = 0x40506;
-static const uint32 kUnknownSsrc = 0xDEAD;
+static const uint32_t kSenderSsrc = 0x10203;
+static const uint32_t kSourceSsrc = 0x40506;
+static const uint32_t kUnknownSsrc = 0xDEAD;
 static const base::TimeDelta kTargetDelay =
     base::TimeDelta::FromMilliseconds(100);
 
@@ -322,9 +322,9 @@ TEST_F(RtcpParserTest, InjectReceiverReportPacketWithCastFeedback) {
 }
 
 TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationBase) {
-  static const uint32 kTimeBaseMs = 12345678;
-  static const uint32 kTimeDelayMs = 10;
-  static const uint32 kDelayDeltaMs = 123;
+  static const uint32_t kTimeBaseMs = 12345678;
+  static const uint32_t kTimeDelayMs = 10;
+  static const uint32_t kDelayDeltaMs = 123;
   base::SimpleTestTickClock testing_clock;
   testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeBaseMs));
 
@@ -365,8 +365,8 @@ TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationBase) {
 }
 
 TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
-  static const uint32 kTimeBaseMs = 12345678;
-  static const uint32 kTimeDelayMs = 10;
+  static const uint32_t kTimeBaseMs = 12345678;
+  static const uint32_t kTimeDelayMs = 10;
   static const int kDelayDeltaMs = 123;  // To be varied for every frame.
   base::SimpleTestTickClock testing_clock;
   testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeBaseMs));
@@ -392,7 +392,7 @@ TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
   for (int i = 0; i < 100; ++i) {
     p.AddReceiverFrameLog(kRtpTimestamp, 1, kTimeBaseMs + i * kTimeDelayMs);
     const int delay = (i - 50) * kDelayDeltaMs;
-    p.AddReceiverEventLog(static_cast<uint16>(delay), FRAME_ACK_SENT, 0);
+    p.AddReceiverEventLog(static_cast<uint16_t>(delay), FRAME_ACK_SENT, 0);
   }
 
   RtcpParser parser(kSourceSsrc, kSenderSsrc);

@@ -43,7 +43,7 @@ class MEDIA_BLINK_EXPORT WebContentDecryptionModuleImpl
   blink::WebContentDecryptionModuleSession* createSession() override;
 
   void setServerCertificate(
-      const uint8* server_certificate,
+      const uint8_t* server_certificate,
       size_t server_certificate_length,
       blink::WebContentDecryptionModuleResult result) override;
 

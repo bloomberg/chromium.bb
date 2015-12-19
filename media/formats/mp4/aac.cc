@@ -22,7 +22,7 @@ AAC::AAC()
 AAC::~AAC() {
 }
 
-bool AAC::Parse(const std::vector<uint8>& data,
+bool AAC::Parse(const std::vector<uint8_t>& data,
                 const scoped_refptr<MediaLog>& media_log) {
 #if defined(OS_ANDROID)
   codec_specific_data_ = data;
@@ -31,9 +31,9 @@ bool AAC::Parse(const std::vector<uint8>& data,
     return false;
 
   BitReader reader(&data[0], data.size());
-  uint8 extension_type = 0;
+  uint8_t extension_type = 0;
   bool ps_present = false;
-  uint8 extension_frequency_index = 0xff;
+  uint8_t extension_frequency_index = 0xff;
 
   frequency_ = 0;
   extension_frequency_ = 0;
@@ -68,9 +68,9 @@ bool AAC::Parse(const std::vector<uint8>& data,
   // Read extension configuration again
   // Note: The check for 16 available bits comes from the AAC spec.
   if (extension_type != 5 && reader.bits_available() >= 16) {
-    uint16 sync_extension_type;
-    uint8 sbr_present_flag;
-    uint8 ps_present_flag;
+    uint16_t sync_extension_type;
+    uint8_t sbr_present_flag;
+    uint8_t ps_present_flag;
 
     if (reader.ReadBits(11, &sync_extension_type) &&
         sync_extension_type == 0x2b7) {
@@ -178,7 +178,7 @@ ChannelLayout AAC::GetChannelLayout(bool sbr_in_mimetype) const {
   return channel_layout_;
 }
 
-bool AAC::ConvertEsdsToADTS(std::vector<uint8>* buffer) const {
+bool AAC::ConvertEsdsToADTS(std::vector<uint8_t>* buffer) const {
   size_t size = buffer->size() + kADTSHeaderMinSize;
 
   DCHECK(profile_ >= 1 && profile_ <= 4 && frequency_index_ != 0xf &&
@@ -188,15 +188,15 @@ bool AAC::ConvertEsdsToADTS(std::vector<uint8>* buffer) const {
   if (size >= (1 << 13))
     return false;
 
-  std::vector<uint8>& adts = *buffer;
+  std::vector<uint8_t>& adts = *buffer;
 
   adts.insert(buffer->begin(), kADTSHeaderMinSize, 0);
   adts[0] = 0xff;
   adts[1] = 0xf1;
   adts[2] = ((profile_ - 1) << 6) + (frequency_index_ << 2) +
       (channel_config_ >> 2);
-  adts[3] = static_cast<uint8>(((channel_config_ & 0x3) << 6) + (size >> 11));
-  adts[4] = static_cast<uint8>((size & 0x7ff) >> 3);
+  adts[3] = static_cast<uint8_t>(((channel_config_ & 0x3) << 6) + (size >> 11));
+  adts[4] = static_cast<uint8_t>((size & 0x7ff) >> 3);
   adts[5] = ((size & 7) << 5) + 0x1f;
   adts[6] = 0xfc;
 
@@ -250,9 +250,9 @@ bool AAC::SkipErrorSpecificConfig() const {
 // The following code is written according to ISO 14496-3:2005 Table 4.1 -
 // GASpecificConfig.
 bool AAC::SkipGASpecificConfig(BitReader* bit_reader) const {
-  uint8 extension_flag = 0;
-  uint8 depends_on_core_coder;
-  uint16 dummy;
+  uint8_t extension_flag = 0;
+  uint8_t depends_on_core_coder;
+  uint16_t dummy;
 
   RCHECK(bit_reader->ReadBits(1, &dummy));  // frameLengthFlag
   RCHECK(bit_reader->ReadBits(1, &depends_on_core_coder));

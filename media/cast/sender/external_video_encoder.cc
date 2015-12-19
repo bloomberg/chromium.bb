@@ -102,7 +102,7 @@ class ExternalVideoEncoder::VEAClientImpl
   void Initialize(const gfx::Size& frame_size,
                   VideoCodecProfile codec_profile,
                   int start_bit_rate,
-                  uint32 first_frame_id) {
+                  uint32_t first_frame_id) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
     requested_bit_rate_ = start_bit_rate;
@@ -185,12 +185,12 @@ class ExternalVideoEncoder::VEAClientImpl
   // Encoder has encoded a frame and it's available in one of the output
   // buffers.  Package the result in a media::cast::EncodedFrame and post it
   // to the Cast MAIN thread via the supplied callback.
-  void BitstreamBufferReady(int32 bitstream_buffer_id,
+  void BitstreamBufferReady(int32_t bitstream_buffer_id,
                             size_t payload_size,
                             bool key_frame) final {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     if (bitstream_buffer_id < 0 ||
-        bitstream_buffer_id >= static_cast<int32>(output_buffers_.size())) {
+        bitstream_buffer_id >= static_cast<int32_t>(output_buffers_.size())) {
       NOTREACHED();
       VLOG(1) << "BitstreamBufferReady(): invalid bitstream_buffer_id="
               << bitstream_buffer_id;
@@ -263,11 +263,11 @@ class ExternalVideoEncoder::VEAClientImpl
         if (key_frame || key_frame_quantizer_parsable_) {
           if (codec_profile_ == media::VP8PROFILE_ANY) {
             quantizer = ParseVp8HeaderQuantizer(
-                reinterpret_cast<const uint8*>(encoded_frame->data.data()),
+                reinterpret_cast<const uint8_t*>(encoded_frame->data.data()),
                 encoded_frame->data.size());
           } else if (codec_profile_ == media::H264PROFILE_MAIN) {
             quantizer = GetH264FrameQuantizer(
-                reinterpret_cast<const uint8*>(encoded_frame->data.data()),
+                reinterpret_cast<const uint8_t*>(encoded_frame->data.data()),
                 encoded_frame->data.size());
           } else {
             NOTIMPLEMENTED();
@@ -375,7 +375,7 @@ class ExternalVideoEncoder::VEAClientImpl
     // Immediately provide all output buffers to the VEA.
     for (size_t i = 0; i < output_buffers_.size(); ++i) {
       video_encode_accelerator_->UseOutputBitstreamBuffer(
-          media::BitstreamBuffer(static_cast<int32>(i),
+          media::BitstreamBuffer(static_cast<int32_t>(i),
                                  output_buffers_[i]->handle(),
                                  output_buffers_[i]->mapped_size()));
     }
@@ -383,7 +383,7 @@ class ExternalVideoEncoder::VEAClientImpl
 
   // Parse H264 SPS, PPS, and Slice header, and return the averaged frame
   // quantizer in the range of [0, 51], or -1 on parse error.
-  double GetH264FrameQuantizer(const uint8* encoded_data, off_t size) {
+  double GetH264FrameQuantizer(const uint8_t* encoded_data, off_t size) {
     DCHECK(encoded_data);
     if (!size)
       return -1;
@@ -447,7 +447,7 @@ class ExternalVideoEncoder::VEAClientImpl
   const CreateVideoEncodeMemoryCallback create_video_encode_memory_cb_;
   scoped_ptr<media::VideoEncodeAccelerator> video_encode_accelerator_;
   bool encoder_active_;
-  uint32 next_frame_id_;
+  uint32_t next_frame_id_;
   bool key_frame_encountered_;
   std::string stream_header_;
   VideoCodecProfile codec_profile_;
@@ -491,7 +491,7 @@ ExternalVideoEncoder::ExternalVideoEncoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const VideoSenderConfig& video_config,
     const gfx::Size& frame_size,
-    uint32 first_frame_id,
+    uint32_t first_frame_id,
     const StatusChangeCallback& status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb)
@@ -559,7 +559,7 @@ void ExternalVideoEncoder::GenerateKeyFrame() {
 
 void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
     const VideoSenderConfig& video_config,
-    uint32 first_frame_id,
+    uint32_t first_frame_id,
     const StatusChangeCallback& status_change_cb,
     scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
     scoped_ptr<media::VideoEncodeAccelerator> vea) {
@@ -655,7 +655,7 @@ double QuantizerEstimator::EstimateForKeyFrame(const VideoFrame& frame) {
   const int rows_in_subset =
       std::max(1, size.height() * FRAME_SAMPLING_PERCENT / 100);
   if (last_frame_size_ != size || !last_frame_pixel_buffer_) {
-    last_frame_pixel_buffer_.reset(new uint8[size.width() * rows_in_subset]);
+    last_frame_pixel_buffer_.reset(new uint8_t[size.width() * rows_in_subset]);
     last_frame_size_ = size;
   }
 
@@ -667,11 +667,11 @@ double QuantizerEstimator::EstimateForKeyFrame(const VideoFrame& frame) {
   const int row_skip = size.height() / rows_in_subset;
   int y = 0;
   for (int i = 0; i < rows_in_subset; ++i, y += row_skip) {
-    const uint8* const row_begin = frame.visible_data(VideoFrame::kYPlane) +
-        y * frame.stride(VideoFrame::kYPlane);
-    const uint8* const row_end = row_begin + size.width();
+    const uint8_t* const row_begin = frame.visible_data(VideoFrame::kYPlane) +
+                                     y * frame.stride(VideoFrame::kYPlane);
+    const uint8_t* const row_end = row_begin + size.width();
     int left_hand_pixel_value = static_cast<int>(*row_begin);
-    for (const uint8* p = row_begin + 1; p < row_end; ++p) {
+    for (const uint8_t* p = row_begin + 1; p < row_end; ++p) {
       const int right_hand_pixel_value = static_cast<int>(*p);
       const int difference = right_hand_pixel_value - left_hand_pixel_value;
       const int histogram_index = difference + 255;
@@ -714,12 +714,12 @@ double QuantizerEstimator::EstimateForDeltaFrame(const VideoFrame& frame) {
   const int row_skip = size.height() / rows_in_subset;
   int y = 0;
   for (int i = 0; i < rows_in_subset; ++i, y += row_skip) {
-    const uint8* const row_begin = frame.visible_data(VideoFrame::kYPlane) +
-        y * frame.stride(VideoFrame::kYPlane);
-    const uint8* const row_end = row_begin + size.width();
-    uint8* const last_frame_row_begin =
+    const uint8_t* const row_begin = frame.visible_data(VideoFrame::kYPlane) +
+                                     y * frame.stride(VideoFrame::kYPlane);
+    const uint8_t* const row_end = row_begin + size.width();
+    uint8_t* const last_frame_row_begin =
         last_frame_pixel_buffer_.get() + i * size.width();
-    for (const uint8* p = row_begin, *q = last_frame_row_begin; p < row_end;
+    for (const uint8_t *p = row_begin, *q = last_frame_row_begin; p < row_end;
          ++p, ++q) {
       const int difference = static_cast<int>(*p) - static_cast<int>(*q);
       const int histogram_index = difference + 255;

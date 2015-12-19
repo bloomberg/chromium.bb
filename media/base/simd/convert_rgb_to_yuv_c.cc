@@ -15,10 +15,10 @@ static int clip_byte(int x) {
     return x;
 }
 
-void ConvertRGB32ToYUV_C(const uint8* rgbframe,
-                         uint8* yplane,
-                         uint8* uplane,
-                         uint8* vplane,
+void ConvertRGB32ToYUV_C(const uint8_t* rgbframe,
+                         uint8_t* yplane,
+                         uint8_t* uplane,
+                         uint8_t* vplane,
                          int width,
                          int height,
                          int rgbstride,
@@ -37,7 +37,7 @@ void ConvertRGB32ToYUV_C(const uint8* rgbframe,
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
       // Since the input pixel format is RGB32, there are 4 bytes per pixel.
-      const uint8* pixel = rgbframe + 4 * j;
+      const uint8_t* pixel = rgbframe + 4 * j;
       yplane[j] = clip_byte(((pixel[r] * 66 + pixel[g] * 129 +
                              pixel[b] * 25 + 128) >> 8) + 16);
       if (i % 2 == 0 && j % 2 == 0) {
@@ -56,10 +56,10 @@ void ConvertRGB32ToYUV_C(const uint8* rgbframe,
   }
 }
 
-void ConvertRGB24ToYUV_C(const uint8* rgbframe,
-                         uint8* yplane,
-                         uint8* uplane,
-                         uint8* vplane,
+void ConvertRGB24ToYUV_C(const uint8_t* rgbframe,
+                         uint8_t* yplane,
+                         uint8_t* uplane,
+                         uint8_t* vplane,
                          int width,
                          int height,
                          int rgbstride,
@@ -68,7 +68,7 @@ void ConvertRGB24ToYUV_C(const uint8* rgbframe,
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
       // Since the input pixel format is RGB24, there are 3 bytes per pixel.
-      const uint8* pixel = rgbframe + 3 * j;
+      const uint8_t* pixel = rgbframe + 3 * j;
       yplane[j] = clip_byte(((pixel[2] * 66 + pixel[1] * 129 +
                               pixel[0] * 25 + 128) >> 8) + 16);
       if (i % 2 == 0 && j % 2 == 0) {

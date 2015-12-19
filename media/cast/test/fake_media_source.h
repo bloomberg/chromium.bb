@@ -121,7 +121,7 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   base::TimeTicks next_frame_size_change_time_;
   scoped_refptr<AudioFrameInput> audio_frame_input_;
   scoped_refptr<VideoFrameInput> video_frame_input_;
-  uint8 synthetic_count_;
+  uint8_t synthetic_count_;
   base::TickClock* const clock_;  // Not owned by this class.
 
   // Time when the stream starts.
@@ -156,7 +156,7 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
 
   std::queue<scoped_refptr<VideoFrame> > video_frame_queue_;
   std::queue<scoped_refptr<VideoFrame> > inserted_video_frame_queue_;
-  int64 video_first_pts_;
+  int64_t video_first_pts_;
   bool video_first_pts_set_;
   base::TimeDelta last_video_frame_timestamp_;
 

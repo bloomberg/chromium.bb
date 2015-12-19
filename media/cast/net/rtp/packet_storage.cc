@@ -22,7 +22,7 @@ size_t PacketStorage::GetNumberOfStoredFrames() const {
   return frames_.size() - zombie_count_;
 }
 
-void PacketStorage::StoreFrame(uint32 frame_id,
+void PacketStorage::StoreFrame(uint32_t frame_id,
                                const SendPacketVector& packets) {
   if (packets.empty()) {
     NOTREACHED();
@@ -33,7 +33,7 @@ void PacketStorage::StoreFrame(uint32 frame_id,
     first_frame_id_in_list_ = frame_id;
   } else {
     // Make sure frame IDs are consecutive.
-    DCHECK_EQ(first_frame_id_in_list_ + static_cast<uint32>(frames_.size()),
+    DCHECK_EQ(first_frame_id_in_list_ + static_cast<uint32_t>(frames_.size()),
               frame_id);
     // Make sure we aren't being asked to store more frames than the system's
     // design limit.
@@ -44,9 +44,9 @@ void PacketStorage::StoreFrame(uint32 frame_id,
   frames_.push_back(packets);
 }
 
-void PacketStorage::ReleaseFrame(uint32 frame_id) {
-  const uint32 offset = frame_id - first_frame_id_in_list_;
-  if (static_cast<int32>(offset) < 0 || offset >= frames_.size() ||
+void PacketStorage::ReleaseFrame(uint32_t frame_id) {
+  const uint32_t offset = frame_id - first_frame_id_in_list_;
+  if (static_cast<int32_t>(offset) < 0 || offset >= frames_.size() ||
       frames_[offset].empty()) {
     return;
   }
@@ -62,10 +62,10 @@ void PacketStorage::ReleaseFrame(uint32 frame_id) {
   }
 }
 
-const SendPacketVector* PacketStorage::GetFrame8(uint8 frame_id_8bits) const {
+const SendPacketVector* PacketStorage::GetFrame8(uint8_t frame_id_8bits) const {
   // The requested frame ID has only 8-bits so convert the first frame ID
   // in list to match.
-  uint8 index_8bits = first_frame_id_in_list_ & 0xFF;
+  uint8_t index_8bits = first_frame_id_in_list_ & 0xFF;
   index_8bits = frame_id_8bits - index_8bits;
   if (index_8bits >= frames_.size())
     return NULL;

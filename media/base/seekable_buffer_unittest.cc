@@ -41,8 +41,8 @@ class SeekableBufferTest : public testing::Test {
   }
 
   SeekableBuffer buffer_;
-  uint8 data_[kDataSize];
-  uint8 write_buffer_[kDataSize];
+  uint8_t data_[kDataSize];
+  uint8_t write_buffer_[kDataSize];
 };
 
 TEST_F(SeekableBufferTest, RandomReadWrite) {
@@ -119,7 +119,7 @@ TEST_F(SeekableBufferTest, ReadWriteSeek) {
       read_position += kReadSize;
 
       // Seek backward.
-      EXPECT_TRUE(buffer_.Seek(-3 * static_cast<int32>(kReadSize)));
+      EXPECT_TRUE(buffer_.Seek(-3 * static_cast<int32_t>(kReadSize)));
       forward_bytes += 3 * kReadSize;
       read_position -= 3 * kReadSize;
       EXPECT_EQ(forward_bytes, buffer_.forward_bytes());
@@ -216,7 +216,7 @@ TEST_F(SeekableBufferTest, SeekBackward) {
   }
 
   // Seek backward.
-  EXPECT_TRUE(buffer_.Seek(-static_cast<int32>(kBufferSize)));
+  EXPECT_TRUE(buffer_.Seek(-static_cast<int32_t>(kBufferSize)));
   EXPECT_FALSE(buffer_.Seek(-1));
 
   // Read again.
@@ -231,7 +231,7 @@ TEST_F(SeekableBufferTest, GetCurrentChunk) {
 
   scoped_refptr<DataBuffer> buffer = DataBuffer::CopyFrom(data_, kWriteSize);
 
-  const uint8* data;
+  const uint8_t* data;
   int size;
   EXPECT_FALSE(buffer_.GetCurrentChunk(&data, &size));
 
@@ -292,12 +292,12 @@ TEST_F(SeekableBufferTest, AllMethods) {
 }
 
 TEST_F(SeekableBufferTest, GetTime) {
-  const int64 kNoTS = kNoTimestamp().ToInternalValue();
+  const int64_t kNoTS = kNoTimestamp().ToInternalValue();
   const struct {
-    int64 first_time_useconds;
-    int64 duration_useconds;
+    int64_t first_time_useconds;
+    int64_t duration_useconds;
     int consume_bytes;
-    int64 expected_time;
+    int64_t expected_time;
   } tests[] = {
     { kNoTS, 1000000, 0, kNoTS },
     { kNoTS, 4000000, 0, kNoTS },
@@ -342,7 +342,7 @@ TEST_F(SeekableBufferTest, GetTime) {
     buffer_.Append(buffer.get());
     EXPECT_TRUE(buffer_.Seek(tests[i].consume_bytes));
 
-    int64 actual = buffer_.current_time().ToInternalValue();
+    int64_t actual = buffer_.current_time().ToInternalValue();
 
     EXPECT_EQ(tests[i].expected_time, actual) << "With test = { start:"
         << tests[i].first_time_useconds << ", duration:"

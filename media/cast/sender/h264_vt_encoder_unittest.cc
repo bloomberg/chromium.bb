@@ -84,9 +84,9 @@ class MetadataRecorder : public base::RefCountedThreadSafe<MetadataRecorder> {
 
   int count_frames_delivered() const { return count_frames_delivered_; }
 
-  void PushExpectation(uint32 expected_frame_id,
-                       uint32 expected_last_referenced_frame_id,
-                       uint32 expected_rtp_timestamp,
+  void PushExpectation(uint32_t expected_frame_id,
+                       uint32_t expected_last_referenced_frame_id,
+                       uint32_t expected_rtp_timestamp,
                        const base::TimeTicks& expected_reference_time) {
     expectations_.push(Expectation{expected_frame_id,
                                    expected_last_referenced_frame_id,
@@ -120,9 +120,9 @@ class MetadataRecorder : public base::RefCountedThreadSafe<MetadataRecorder> {
   int count_frames_delivered_;
 
   struct Expectation {
-    uint32 expected_frame_id;
-    uint32 expected_last_referenced_frame_id;
-    uint32 expected_rtp_timestamp;
+    uint32_t expected_frame_id;
+    uint32_t expected_last_referenced_frame_id;
+    uint32_t expected_rtp_timestamp;
     base::TimeTicks expected_reference_time;
   };
   std::queue<Expectation> expectations_;
@@ -292,7 +292,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckFrameMetadataSequence) {
   EXPECT_TRUE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
   message_loop_.RunUntilIdle();
 
-  for (uint32 frame_id = 1; frame_id < 10; ++frame_id) {
+  for (uint32_t frame_id = 1; frame_id < 10; ++frame_id) {
     AdvanceClockAndVideoFrameTimestamp();
     metadata_recorder->PushExpectation(
         frame_id, frame_id - 1,
@@ -317,7 +317,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckFramesAreDecodable) {
 
   VideoEncoder::FrameEncodedCallback cb =
       base::Bind(&EndToEndFrameChecker::EncodeDone, checker.get());
-  for (uint32 frame_id = 0; frame_id < 6; ++frame_id) {
+  for (uint32_t frame_id = 0; frame_id < 6; ++frame_id) {
     checker->PushExpectation(frame_);
     EXPECT_TRUE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
     AdvanceClockAndVideoFrameTimestamp();

@@ -375,7 +375,7 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
   if (audio_preroll_buffer_.get()) {
     // We only want to use the preroll buffer if it directly precedes (less
     // than one sample apart) the current buffer.
-    const int64 delta =
+    const int64_t delta =
         (audio_preroll_buffer_->timestamp() +
          audio_preroll_buffer_->duration() - buffer->timestamp())
             .InMicroseconds();

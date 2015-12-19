@@ -76,7 +76,7 @@ void QuitLoopOnInitializationResult(media::cast::OperationalStatus result) {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-net::IPEndPoint CreateUDPAddress(const std::string& ip_str, uint16 port) {
+net::IPEndPoint CreateUDPAddress(const std::string& ip_str, uint16_t port) {
   net::IPAddressNumber ip_number;
   CHECK(net::ParseIPLiteralToNumber(ip_str, &ip_number));
   return net::IPEndPoint(ip_number, port);
@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
   // Running transport on the main thread.
   // Setting up transport config.
   net::IPEndPoint remote_endpoint =
-      CreateUDPAddress(remote_ip_address, static_cast<uint16>(remote_port));
+      CreateUDPAddress(remote_ip_address, static_cast<uint16_t>(remote_port));
 
   // Enable raw event and stats logging.
   // Running transport on the main thread.

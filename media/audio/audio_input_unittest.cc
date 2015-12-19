@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,7 +26,7 @@ class TestInputCallback : public AudioInputStream::AudioInputCallback {
   }
   void OnData(AudioInputStream* stream,
               const AudioBus* source,
-              uint32 hardware_delay_bytes,
+              uint32_t hardware_delay_bytes,
               double volume) override {
     ++callback_count_;
   }

@@ -47,7 +47,7 @@ namespace cast {
 
 namespace {
 
-static const int64 kStartMillisecond = INT64_C(1245);
+static const int64_t kStartMillisecond = INT64_C(1245);
 static const int kAudioChannels = 2;
 static const double kSoundFrequency = 314.15926535897;  // Freq of sine wave.
 static const float kSoundVolume = 0.5f;
@@ -87,7 +87,7 @@ std::string ConvertFromBase16String(const std::string& base_16) {
   DCHECK_EQ(base_16.size() % 2, 0u) << "Must be a multiple of 2";
   compressed.reserve(base_16.size() / 2);
 
-  std::vector<uint8> v;
+  std::vector<uint8_t> v;
   if (!base::HexStringToBytes(base_16, &v)) {
     NOTREACHED();
   }
@@ -135,13 +135,13 @@ std::map<RtpTimestamp, LoggingEventCounts> GetEventCountForFrameEvents(
 
 // Constructs a map from each packet (Packet ID) to counts of each event
 // type logged for that packet.
-std::map<uint16, LoggingEventCounts> GetEventCountForPacketEvents(
+std::map<uint16_t, LoggingEventCounts> GetEventCountForPacketEvents(
     const std::vector<PacketEvent>& packet_events) {
-  std::map<uint16, LoggingEventCounts> event_counter_for_packet;
+  std::map<uint16_t, LoggingEventCounts> event_counter_for_packet;
   for (std::vector<PacketEvent>::const_iterator it = packet_events.begin();
        it != packet_events.end();
        ++it) {
-    std::map<uint16, LoggingEventCounts>::iterator map_it =
+    std::map<uint16_t, LoggingEventCounts>::iterator map_it =
         event_counter_for_packet.find(it->packet_id);
     if (map_it == event_counter_for_packet.end()) {
       LoggingEventCounts new_counter;
@@ -210,7 +210,7 @@ class LoopBackTransport : public PacketSender {
 
     bytes_sent_ += packet->data.size();
     if (drop_packets_belonging_to_odd_frames_) {
-      uint32 frame_id = packet->data[13];
+      uint32_t frame_id = packet->data[13];
       if (frame_id % 2 == 1)
         return true;
     }
@@ -220,7 +220,7 @@ class LoopBackTransport : public PacketSender {
     return true;
   }
 
-  int64 GetBytesSent() final { return bytes_sent_; }
+  int64_t GetBytesSent() final { return bytes_sent_; }
 
   void SetSendPackets(bool send_packets) { send_packets_ = send_packets; }
 
@@ -239,7 +239,7 @@ class LoopBackTransport : public PacketSender {
   bool drop_packets_belonging_to_odd_frames_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<test::PacketPipe> packet_pipe_;
-  int64 bytes_sent_;
+  int64_t bytes_sent_;
 };
 
 // Class that verifies the audio frames coming out of the receiver.
@@ -316,20 +316,20 @@ class TestReceiverAudioCallback
     // Note: Just peeking here.  Will delegate to CheckAudioFrame() to pop.
 
     // We need to "decode" the encoded audio frame.  The codec is simply to
-    // swizzle the bytes of each int16 from host-->network-->host order to get
-    // interleaved int16 PCM.  Then, make an AudioBus out of that.
-    const int num_elements = audio_frame->data.size() / sizeof(int16);
+    // swizzle the bytes of each int16_t from host-->network-->host order to get
+    // interleaved int16_t PCM.  Then, make an AudioBus out of that.
+    const int num_elements = audio_frame->data.size() / sizeof(int16_t);
     ASSERT_EQ(expected_audio_frame.audio_bus->channels() *
                   expected_audio_frame.audio_bus->frames(),
               num_elements);
-    int16* const pcm_data =
-        reinterpret_cast<int16*>(audio_frame->mutable_bytes());
+    int16_t* const pcm_data =
+        reinterpret_cast<int16_t*>(audio_frame->mutable_bytes());
     for (int i = 0; i < num_elements; ++i)
-      pcm_data[i] = static_cast<int16>(base::NetToHost16(pcm_data[i]));
+      pcm_data[i] = static_cast<int16_t>(base::NetToHost16(pcm_data[i]));
     scoped_ptr<AudioBus> audio_bus(
         AudioBus::Create(expected_audio_frame.audio_bus->channels(),
                          expected_audio_frame.audio_bus->frames()));
-    audio_bus->FromInterleaved(pcm_data, audio_bus->frames(), sizeof(int16));
+    audio_bus->FromInterleaved(pcm_data, audio_bus->frames(), sizeof(int16_t));
 
     // Delegate the checking from here...
     CheckAudioFrame(audio_bus.Pass(), audio_frame->reference_time, true);
@@ -1129,14 +1129,13 @@ TEST_F(End2EndTest, VideoLogging) {
   // Packet logging.
   // Verify that all packet related events were logged.
   event_subscriber_sender_.GetPacketEventsAndReset(&packet_events_);
-  std::map<uint16, LoggingEventCounts> event_count_for_packet =
+  std::map<uint16_t, LoggingEventCounts> event_count_for_packet =
       GetEventCountForPacketEvents(packet_events_);
 
   // Verify that each packet have the expected types of events logged.
-  for (std::map<uint16, LoggingEventCounts>::iterator map_it =
+  for (std::map<uint16_t, LoggingEventCounts>::iterator map_it =
            event_count_for_packet.begin();
-       map_it != event_count_for_packet.end();
-       ++map_it) {
+       map_it != event_count_for_packet.end(); ++map_it) {
     int total_event_count_for_packet = 0;
     for (int i = 0; i <= kNumOfLoggingEvents; ++i) {
       total_event_count_for_packet += map_it->second.counter[i];
@@ -1432,8 +1431,8 @@ TEST_F(End2EndTest, TestSetPlayoutDelay) {
   RunTasks(100 * kFrameTimerMs + 1);  // Empty the pipeline.
   size_t jump = 0;
   for (size_t i = 1; i < video_ticks_.size(); i++) {
-    int64 delta = (video_ticks_[i].second -
-                   video_ticks_[i-1].second).InMilliseconds();
+    int64_t delta =
+        (video_ticks_[i].second - video_ticks_[i - 1].second).InMilliseconds();
     if (delta > 100) {
       EXPECT_EQ(kNewDelay - kTargetPlayoutDelayMs + kFrameTimerMs, delta);
       EXPECT_EQ(0u, jump);

@@ -26,14 +26,14 @@ bool FrameCENCInfo::Parse(int iv_size, BufferReader* reader) {
 
   if (!reader->HasBytes(1)) return true;
 
-  uint16 subsample_count;
+  uint16_t subsample_count;
   RCHECK(reader->Read2(&subsample_count) &&
          reader->HasBytes(subsample_count * kEntrySize));
 
   subsamples.resize(subsample_count);
   for (int i = 0; i < subsample_count; i++) {
-    uint16 clear_bytes;
-    uint32 cypher_bytes;
+    uint16_t clear_bytes;
+    uint32_t cypher_bytes;
     RCHECK(reader->Read2(&clear_bytes) &&
            reader->Read4(&cypher_bytes));
     subsamples[i].clear_bytes = clear_bytes;

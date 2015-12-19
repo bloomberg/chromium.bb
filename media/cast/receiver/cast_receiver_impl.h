@@ -62,8 +62,8 @@ class CastReceiverImpl : public CastReceiver {
   static void EmitDecodedAudioFrame(
       const scoped_refptr<CastEnvironment>& cast_environment,
       const AudioFrameDecodedCallback& callback,
-      uint32 frame_id,
-      uint32 rtp_timestamp,
+      uint32_t frame_id,
+      uint32_t rtp_timestamp,
       const base::TimeTicks& playout_time,
       scoped_ptr<AudioBus> audio_bus,
       bool is_continuous);
@@ -76,8 +76,8 @@ class CastReceiverImpl : public CastReceiver {
   static void EmitDecodedVideoFrame(
       const scoped_refptr<CastEnvironment>& cast_environment,
       const VideoFrameDecodedCallback& callback,
-      uint32 frame_id,
-      uint32 rtp_timestamp,
+      uint32_t frame_id,
+      uint32_t rtp_timestamp,
       const base::TimeTicks& playout_time,
       const scoped_refptr<VideoFrame>& video_frame,
       bool is_continuous);
@@ -88,8 +88,8 @@ class CastReceiverImpl : public CastReceiver {
 
   // Used by DispatchReceivedPacket() to direct packets to the appropriate frame
   // receiver.
-  const uint32 ssrc_of_audio_sender_;
-  const uint32 ssrc_of_video_sender_;
+  const uint32_t ssrc_of_audio_sender_;
+  const uint32_t ssrc_of_video_sender_;
 
   // Parameters for the decoders that are created on-demand.  The values here
   // might be nonsense if the client of CastReceiverImpl never intends to use

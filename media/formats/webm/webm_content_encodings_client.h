@@ -30,8 +30,8 @@ class MEDIA_EXPORT WebMContentEncodingsClient : public WebMParserClient {
   // WebMParserClient methods
   WebMParserClient* OnListStart(int id) override;
   bool OnListEnd(int id) override;
-  bool OnUInt(int id, int64 val) override;
-  bool OnBinary(int id, const uint8* data, int size) override;
+  bool OnUInt(int id, int64_t val) override;
+  bool OnBinary(int id, const uint8_t* data, int size) override;
 
  private:
   scoped_refptr<MediaLog> media_log_;

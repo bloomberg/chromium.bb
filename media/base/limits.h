@@ -7,8 +7,6 @@
 #ifndef MEDIA_BASE_LIMITS_H_
 #define MEDIA_BASE_LIMITS_H_
 
-#include "base/basictypes.h"
-
 namespace media {
 
 namespace limits {

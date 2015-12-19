@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_VIDEO_UTIL_H_
 #define MEDIA_BASE_VIDEO_UTIL_H_
 
-#include "base/basictypes.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -20,14 +19,14 @@ MEDIA_EXPORT gfx::Size GetNaturalSize(const gfx::Size& visible_size,
                                       int aspect_ratio_denominator);
 
 // Fills |frame| containing YUV data to the given color values.
-MEDIA_EXPORT void FillYUV(VideoFrame* frame, uint8 y, uint8 u, uint8 v);
+MEDIA_EXPORT void FillYUV(VideoFrame* frame, uint8_t y, uint8_t u, uint8_t v);
 
 // Fills |frame| containing YUVA data with the given color values.
 MEDIA_EXPORT void FillYUVA(VideoFrame* frame,
-                           uint8 y,
-                           uint8 u,
-                           uint8 v,
-                           uint8 a);
+                           uint8_t y,
+                           uint8_t u,
+                           uint8_t v,
+                           uint8_t a);
 
 // Creates a border in |frame| such that all pixels outside of
 // |view_area| are black. The size and position of |view_area|
@@ -47,14 +46,13 @@ MEDIA_EXPORT void LetterboxYUV(VideoFrame* frame,
 // from column 80 through 559. The leftmost and rightmost 80 columns are
 // ignored for both |src| and |dest|.
 // The caller is responsible for blanking out the margin area.
-MEDIA_EXPORT void RotatePlaneByPixels(
-    const uint8* src,
-    uint8* dest,
-    int width,
-    int height,
-    int rotation,  // Clockwise.
-    bool flip_vert,
-    bool flip_horiz);
+MEDIA_EXPORT void RotatePlaneByPixels(const uint8_t* src,
+                                      uint8_t* dest,
+                                      int width,
+                                      int height,
+                                      int rotation,  // Clockwise.
+                                      bool flip_vert,
+                                      bool flip_horiz);
 
 // Return the largest centered rectangle with the same aspect ratio of |content|
 // that fits entirely inside of |bounds|.  If |content| is empty, its aspect
@@ -87,7 +85,7 @@ MEDIA_EXPORT gfx::Size PadToMatchAspectRatio(const gfx::Size& size,
 
 // Copy an RGB bitmap into the specified |region_in_frame| of a YUV video frame.
 // Fills the regions outside |region_in_frame| with black.
-MEDIA_EXPORT void CopyRGBToVideoFrame(const uint8* source,
+MEDIA_EXPORT void CopyRGBToVideoFrame(const uint8_t* source,
                                       int stride,
                                       const gfx::Rect& region_in_frame,
                                       VideoFrame* frame);

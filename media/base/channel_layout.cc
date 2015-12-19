@@ -4,7 +4,6 @@
 
 #include "media/base/channel_layout.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace media {

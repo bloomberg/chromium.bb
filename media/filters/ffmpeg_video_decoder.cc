@@ -61,7 +61,7 @@ static int GetVideoBufferImpl(struct AVCodecContext* s,
   return decoder->GetVideoBuffer(s, frame, flags);
 }
 
-static void ReleaseVideoBufferImpl(void* opaque, uint8* data) {
+static void ReleaseVideoBufferImpl(void* opaque, uint8_t* data) {
   scoped_refptr<VideoFrame> video_frame;
   video_frame.swap(reinterpret_cast<VideoFrame**>(&opaque));
 }
@@ -286,7 +286,7 @@ bool FFmpegVideoDecoder::FFmpegDecode(
     packet.data = NULL;
     packet.size = 0;
   } else {
-    packet.data = const_cast<uint8*>(buffer->data());
+    packet.data = const_cast<uint8_t*>(buffer->data());
     packet.size = buffer->data_size();
 
     // Let FFmpeg handle presentation timestamp reordering.

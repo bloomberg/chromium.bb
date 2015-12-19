@@ -40,13 +40,13 @@ class JSONWebKeyTest : public testing::Test {
     }
   }
 
-  void CreateLicenseAndExpect(const uint8* key_id,
+  void CreateLicenseAndExpect(const uint8_t* key_id,
                               int key_id_length,
                               MediaKeys::SessionType session_type,
                               const std::string& expected_result) {
-    std::vector<uint8> result;
+    std::vector<uint8_t> result;
     KeyIdList key_ids;
-    key_ids.push_back(std::vector<uint8>(key_id, key_id + key_id_length));
+    key_ids.push_back(std::vector<uint8_t>(key_id, key_id + key_id_length));
     CreateLicenseRequest(key_ids, session_type, &result);
     std::string s(result.begin(), result.end());
     EXPECT_EQ(expected_result, s);
@@ -54,27 +54,27 @@ class JSONWebKeyTest : public testing::Test {
 
   void ExtractKeyFromLicenseAndExpect(const std::string& license,
                                       bool expected_result,
-                                      const uint8* expected_key,
+                                      const uint8_t* expected_key,
                                       int expected_key_length) {
-    std::vector<uint8> license_vector(license.begin(), license.end());
-    std::vector<uint8> key;
+    std::vector<uint8_t> license_vector(license.begin(), license.end());
+    std::vector<uint8_t> key;
     EXPECT_EQ(expected_result,
               ExtractFirstKeyIdFromLicenseRequest(license_vector, &key));
     if (expected_result)
       VerifyKeyId(key, expected_key, expected_key_length);
   }
 
-  void VerifyKeyId(std::vector<uint8> key,
-                   const uint8* expected_key,
+  void VerifyKeyId(std::vector<uint8_t> key,
+                   const uint8_t* expected_key,
                    int expected_key_length) {
-    std::vector<uint8> key_result(expected_key,
-                                  expected_key + expected_key_length);
+    std::vector<uint8_t> key_result(expected_key,
+                                    expected_key + expected_key_length);
     EXPECT_EQ(key_result, key);
   }
 
-  KeyIdAndKeyPair MakeKeyIdAndKeyPair(const uint8* key,
+  KeyIdAndKeyPair MakeKeyIdAndKeyPair(const uint8_t* key,
                                       int key_length,
-                                      const uint8* key_id,
+                                      const uint8_t* key_id,
                                       int key_id_length) {
     return std::make_pair(std::string(key_id, key_id + key_id_length),
                           std::string(key, key + key_length));
@@ -82,10 +82,10 @@ class JSONWebKeyTest : public testing::Test {
 };
 
 TEST_F(JSONWebKeyTest, GenerateJWKSet) {
-  const uint8 data1[] = { 0x01, 0x02 };
-  const uint8 data2[] = { 0x01, 0x02, 0x03, 0x04 };
-  const uint8 data3[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-                          0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
+  const uint8_t data1[] = {0x01, 0x02};
+  const uint8_t data2[] = {0x01, 0x02, 0x03, 0x04};
+  const uint8_t data3[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                           0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10};
 
   EXPECT_EQ("{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}]}",
             GenerateJWKSet(data1, arraysize(data1), data1, arraysize(data1)));
@@ -416,10 +416,10 @@ TEST_F(JSONWebKeyTest, SessionType) {
 }
 
 TEST_F(JSONWebKeyTest, CreateLicense) {
-  const uint8 data1[] = { 0x01, 0x02 };
-  const uint8 data2[] = { 0x01, 0x02, 0x03, 0x04 };
-  const uint8 data3[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-                          0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
+  const uint8_t data1[] = {0x01, 0x02};
+  const uint8_t data2[] = {0x01, 0x02, 0x03, 0x04};
+  const uint8_t data3[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                           0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10};
 
   CreateLicenseAndExpect(data1,
                          arraysize(data1),
@@ -442,10 +442,10 @@ TEST_F(JSONWebKeyTest, CreateLicense) {
 }
 
 TEST_F(JSONWebKeyTest, ExtractLicense) {
-  const uint8 data1[] = { 0x01, 0x02 };
-  const uint8 data2[] = { 0x01, 0x02, 0x03, 0x04 };
-  const uint8 data3[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-                          0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
+  const uint8_t data1[] = {0x01, 0x02};
+  const uint8_t data2[] = {0x01, 0x02, 0x03, 0x04};
+  const uint8_t data3[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                           0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10};
 
   ExtractKeyFromLicenseAndExpect(
       "{\"kids\":[\"AQI\"],\"type\":\"temporary\"}",
@@ -485,7 +485,7 @@ TEST_F(JSONWebKeyTest, ExtractLicense) {
 }
 
 TEST_F(JSONWebKeyTest, Base64UrlEncoding) {
-  const uint8 data1[] = { 0xfb, 0xfd, 0xfb, 0xfd, 0xfb, 0xfd, 0xfb };
+  const uint8_t data1[] = {0xfb, 0xfd, 0xfb, 0xfd, 0xfb, 0xfd, 0xfb};
 
   // Verify that |data1| contains invalid base64url characters '+' and '/'
   // and is padded with = when converted to base64.
@@ -511,16 +511,16 @@ TEST_F(JSONWebKeyTest, Base64UrlEncoding) {
 }
 
 TEST_F(JSONWebKeyTest, MultipleKeys) {
-  const uint8 data1[] = { 0x01, 0x02 };
-  const uint8 data2[] = { 0x01, 0x02, 0x03, 0x04 };
-  const uint8 data3[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-                          0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
+  const uint8_t data1[] = {0x01, 0x02};
+  const uint8_t data2[] = {0x01, 0x02, 0x03, 0x04};
+  const uint8_t data3[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                           0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10};
 
-  std::vector<uint8> result;
+  std::vector<uint8_t> result;
   KeyIdList key_ids;
-  key_ids.push_back(std::vector<uint8>(data1, data1 + arraysize(data1)));
-  key_ids.push_back(std::vector<uint8>(data2, data2 + arraysize(data2)));
-  key_ids.push_back(std::vector<uint8>(data3, data3 + arraysize(data3)));
+  key_ids.push_back(std::vector<uint8_t>(data1, data1 + arraysize(data1)));
+  key_ids.push_back(std::vector<uint8_t>(data2, data2 + arraysize(data2)));
+  key_ids.push_back(std::vector<uint8_t>(data3, data3 + arraysize(data3)));
   CreateLicenseRequest(key_ids, MediaKeys::TEMPORARY_SESSION, &result);
   std::string s(result.begin(), result.end());
   EXPECT_EQ(
@@ -530,10 +530,10 @@ TEST_F(JSONWebKeyTest, MultipleKeys) {
 }
 
 TEST_F(JSONWebKeyTest, ExtractKeyIds) {
-  const uint8 data1[] = { 0x01, 0x02 };
-  const uint8 data2[] = { 0x01, 0x02, 0x03, 0x04 };
-  const uint8 data3[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-                          0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
+  const uint8_t data1[] = {0x01, 0x02};
+  const uint8_t data2[] = {0x01, 0x02, 0x03, 0x04};
+  const uint8_t data3[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                           0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10};
 
   KeyIdList key_ids;
   std::string error_message;
@@ -608,28 +608,28 @@ TEST_F(JSONWebKeyTest, ExtractKeyIds) {
 }
 
 TEST_F(JSONWebKeyTest, CreateInitData) {
-  const uint8 data1[] = { 0x01, 0x02 };
-  const uint8 data2[] = { 0x01, 0x02, 0x03, 0x04 };
-  const uint8 data3[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-                          0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
+  const uint8_t data1[] = {0x01, 0x02};
+  const uint8_t data2[] = {0x01, 0x02, 0x03, 0x04};
+  const uint8_t data3[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                           0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10};
 
   KeyIdList key_ids;
   std::string error_message;
 
-  key_ids.push_back(std::vector<uint8>(data1, data1 + arraysize(data1)));
-  std::vector<uint8> init_data1;
+  key_ids.push_back(std::vector<uint8_t>(data1, data1 + arraysize(data1)));
+  std::vector<uint8_t> init_data1;
   CreateKeyIdsInitData(key_ids, &init_data1);
   std::string result1(init_data1.begin(), init_data1.end());
   EXPECT_EQ(result1, "{\"kids\":[\"AQI\"]}");
 
-  key_ids.push_back(std::vector<uint8>(data2, data2 + arraysize(data2)));
-  std::vector<uint8> init_data2;
+  key_ids.push_back(std::vector<uint8_t>(data2, data2 + arraysize(data2)));
+  std::vector<uint8_t> init_data2;
   CreateKeyIdsInitData(key_ids, &init_data2);
   std::string result2(init_data2.begin(), init_data2.end());
   EXPECT_EQ(result2, "{\"kids\":[\"AQI\",\"AQIDBA\"]}");
 
-  key_ids.push_back(std::vector<uint8>(data3, data3 + arraysize(data3)));
-  std::vector<uint8> init_data3;
+  key_ids.push_back(std::vector<uint8_t>(data3, data3 + arraysize(data3)));
+  std::vector<uint8_t> init_data3;
   CreateKeyIdsInitData(key_ids, &init_data3);
   std::string result3(init_data3.begin(), init_data3.end());
   EXPECT_EQ(result3,

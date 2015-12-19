@@ -8,7 +8,6 @@
 #include <list>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -57,12 +56,14 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
   // If found, |*stream_pos| corresponds to the position of the AUD start code
   // in the stream. Otherwise, |*stream_pos| corresponds to the last position
   // of the start code parser.
-  bool FindAUD(int64* stream_pos);
+  bool FindAUD(int64_t* stream_pos);
 
   // Emit a frame whose position in the ES queue starts at |access_unit_pos|.
   // Returns true if successful, false if no PTS is available for the frame.
-  bool EmitFrame(int64 access_unit_pos, int access_unit_size,
-                 bool is_key_frame, int pps_id);
+  bool EmitFrame(int64_t access_unit_pos,
+                 int access_unit_size,
+                 bool is_key_frame,
+                 int pps_id);
 
   // Update the video decoder config based on an H264 SPS.
   // Return true if successful.
@@ -74,8 +75,8 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
   // - |current_access_unit_pos_| is pointing to an annexB syncword
   // representing the first NALU of an H264 access unit.
   scoped_ptr<H264Parser> h264_parser_;
-  int64 current_access_unit_pos_;
-  int64 next_access_unit_pos_;
+  int64_t current_access_unit_pos_;
+  int64_t next_access_unit_pos_;
 
   // Last video decoder config.
   VideoDecoderConfig last_video_decoder_config_;

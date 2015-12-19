@@ -67,7 +67,7 @@ namespace cast {
 
 namespace {
 
-static const int64 kStartMillisecond = INT64_C(1245);
+static const int64_t kStartMillisecond = INT64_C(1245);
 static const int kTargetPlayoutDelayMs = 400;
 
 void UpdateCastTransportStatus(CastTransportStatus status) {
@@ -95,8 +95,8 @@ class CastTransportSenderWrapper : public CastTransportSender {
  public:
   // Takes ownership of |transport|.
   void Init(CastTransportSender* transport,
-            uint64* encoded_video_bytes,
-            uint64* encoded_audio_bytes) {
+            uint64_t* encoded_video_bytes,
+            uint64_t* encoded_audio_bytes) {
     transport_.reset(transport);
     encoded_video_bytes_ = encoded_video_bytes;
     encoded_audio_bytes_ = encoded_audio_bytes;
@@ -116,7 +116,7 @@ class CastTransportSenderWrapper : public CastTransportSender {
     transport_->InitializeVideo(config, cast_message_cb, rtt_cb);
   }
 
-  void InsertFrame(uint32 ssrc, const EncodedFrame& frame) final {
+  void InsertFrame(uint32_t ssrc, const EncodedFrame& frame) final {
     if (ssrc == audio_ssrc_) {
       *encoded_audio_bytes_ += frame.data.size();
     } else if (ssrc == video_ssrc_) {
@@ -125,20 +125,20 @@ class CastTransportSenderWrapper : public CastTransportSender {
     transport_->InsertFrame(ssrc, frame);
   }
 
-  void SendSenderReport(uint32 ssrc,
+  void SendSenderReport(uint32_t ssrc,
                         base::TimeTicks current_time,
-                        uint32 current_time_as_rtp_timestamp) final {
+                        uint32_t current_time_as_rtp_timestamp) final {
     transport_->SendSenderReport(ssrc,
                                  current_time,
                                  current_time_as_rtp_timestamp);
   }
 
-  void CancelSendingFrames(uint32 ssrc,
-                           const std::vector<uint32>& frame_ids) final {
+  void CancelSendingFrames(uint32_t ssrc,
+                           const std::vector<uint32_t>& frame_ids) final {
     transport_->CancelSendingFrames(ssrc, frame_ids);
   }
 
-  void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) final {
+  void ResendFrameForKickstart(uint32_t ssrc, uint32_t frame_id) final {
     transport_->ResendFrameForKickstart(ssrc, frame_id);
   }
 
@@ -146,13 +146,13 @@ class CastTransportSenderWrapper : public CastTransportSender {
     return transport_->PacketReceiverForTesting();
   }
 
-  void AddValidSsrc(uint32 ssrc) final {
+  void AddValidSsrc(uint32_t ssrc) final {
     return transport_->AddValidSsrc(ssrc);
   }
 
   void SendRtcpFromRtpReceiver(
-      uint32 ssrc,
-      uint32 sender_ssrc,
+      uint32_t ssrc,
+      uint32_t sender_ssrc,
       const RtcpTimeData& time_data,
       const RtcpCastMessage* cast_message,
       base::TimeDelta target_delay,
@@ -169,9 +169,9 @@ class CastTransportSenderWrapper : public CastTransportSender {
 
  private:
   scoped_ptr<CastTransportSender> transport_;
-  uint32 audio_ssrc_, video_ssrc_;
-  uint64* encoded_video_bytes_;
-  uint64* encoded_audio_bytes_;
+  uint32_t audio_ssrc_, video_ssrc_;
+  uint64_t* encoded_video_bytes_;
+  uint64_t* encoded_audio_bytes_;
 };
 
 struct MeasuringPoint {
@@ -490,8 +490,8 @@ class RunOneBenchmark {
   LoopBackTransport sender_to_receiver_;
   CastTransportSenderWrapper transport_sender_;
   scoped_ptr<CastTransportSender> transport_receiver_;
-  uint64 video_bytes_encoded_;
-  uint64 audio_bytes_encoded_;
+  uint64_t video_bytes_encoded_;
+  uint64_t audio_bytes_encoded_;
 
   scoped_ptr<CastReceiver> cast_receiver_;
   scoped_ptr<CastSender> cast_sender_;

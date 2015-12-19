@@ -27,11 +27,11 @@ TEST(DecoderBufferTest, CreateEOSBuffer) {
 }
 
 TEST(DecoderBufferTest, CopyFrom) {
-  const uint8 kData[] = "hello";
+  const uint8_t kData[] = "hello";
   const int kDataSize = arraysize(kData);
 
   scoped_refptr<DecoderBuffer> buffer2(DecoderBuffer::CopyFrom(
-      reinterpret_cast<const uint8*>(&kData), kDataSize));
+      reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   ASSERT_TRUE(buffer2.get());
   EXPECT_NE(kData, buffer2->data());
   EXPECT_EQ(buffer2->data_size(), kDataSize);
@@ -40,8 +40,8 @@ TEST(DecoderBufferTest, CopyFrom) {
   EXPECT_FALSE(buffer2->is_key_frame());
 
   scoped_refptr<DecoderBuffer> buffer3(DecoderBuffer::CopyFrom(
-      reinterpret_cast<const uint8*>(&kData), kDataSize,
-      reinterpret_cast<const uint8*>(&kData), kDataSize));
+      reinterpret_cast<const uint8_t*>(&kData), kDataSize,
+      reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   ASSERT_TRUE(buffer3.get());
   EXPECT_NE(kData, buffer3->data());
   EXPECT_EQ(buffer3->data_size(), kDataSize);
@@ -55,10 +55,10 @@ TEST(DecoderBufferTest, CopyFrom) {
 
 #if !defined(OS_ANDROID)
 TEST(DecoderBufferTest, PaddingAlignment) {
-  const uint8 kData[] = "hello";
+  const uint8_t kData[] = "hello";
   const int kDataSize = arraysize(kData);
   scoped_refptr<DecoderBuffer> buffer2(DecoderBuffer::CopyFrom(
-      reinterpret_cast<const uint8*>(&kData), kDataSize));
+      reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   ASSERT_TRUE(buffer2.get());
 
   // Padding data should always be zeroed.
@@ -68,7 +68,7 @@ TEST(DecoderBufferTest, PaddingAlignment) {
   // If the data is padded correctly we should be able to read and write past
   // the end of the data by DecoderBuffer::kPaddingSize bytes without crashing
   // or Valgrind/ASAN throwing errors.
-  const uint8 kFillChar = 0xFF;
+  const uint8_t kFillChar = 0xFF;
   memset(
       buffer2->writable_data() + kDataSize, kFillChar,
       DecoderBuffer::kPaddingSize);
@@ -89,11 +89,11 @@ TEST(DecoderBufferTest, ReadingWriting) {
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(kDataSize));
   ASSERT_TRUE(buffer.get());
 
-  uint8* data = buffer->writable_data();
+  uint8_t* data = buffer->writable_data();
   ASSERT_TRUE(data);
   ASSERT_EQ(kDataSize, buffer->data_size());
   memcpy(data, kData, kDataSize);
-  const uint8* read_only_data = buffer->data();
+  const uint8_t* read_only_data = buffer->data();
   ASSERT_EQ(data, read_only_data);
   ASSERT_EQ(0, memcmp(read_only_data, kData, kDataSize));
   EXPECT_FALSE(buffer->end_of_stream());

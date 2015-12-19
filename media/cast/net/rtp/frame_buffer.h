@@ -14,13 +14,13 @@
 namespace media {
 namespace cast {
 
-typedef std::map<uint16, std::vector<uint8> > PacketMap;
+typedef std::map<uint16_t, std::vector<uint8_t>> PacketMap;
 
 class FrameBuffer {
  public:
   FrameBuffer();
   ~FrameBuffer();
-  bool InsertPacket(const uint8* payload_data,
+  bool InsertPacket(const uint8_t* payload_data,
                     size_t payload_size,
                     const RtpCastHeader& rtp_header);
   bool Complete() const;
@@ -34,19 +34,21 @@ class FrameBuffer {
   bool AssembleEncodedFrame(EncodedFrame* frame) const;
 
   bool is_key_frame() const { return is_key_frame_; }
-  uint32 last_referenced_frame_id() const { return last_referenced_frame_id_; }
-  uint32 frame_id() const { return frame_id_; }
+  uint32_t last_referenced_frame_id() const {
+    return last_referenced_frame_id_;
+  }
+  uint32_t frame_id() const { return frame_id_; }
 
  private:
-  uint32 frame_id_;
-  uint16 max_packet_id_;
-  uint16 num_packets_received_;
-  uint16 max_seen_packet_id_;
-  uint16 new_playout_delay_ms_;
+  uint32_t frame_id_;
+  uint16_t max_packet_id_;
+  uint16_t num_packets_received_;
+  uint16_t max_seen_packet_id_;
+  uint16_t new_playout_delay_ms_;
   bool is_key_frame_;
   size_t total_data_size_;
-  uint32 last_referenced_frame_id_;
-  uint32 rtp_timestamp_;
+  uint32_t last_referenced_frame_id_;
+  uint32_t rtp_timestamp_;
   PacketMap packets_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameBuffer);

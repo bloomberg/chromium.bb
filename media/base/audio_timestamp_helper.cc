@@ -42,11 +42,11 @@ base::TimeDelta AudioTimestampHelper::GetFrameDuration(int frame_count) const {
   return end_timestamp - GetTimestamp();
 }
 
-int64 AudioTimestampHelper::GetFramesToTarget(base::TimeDelta target) const {
+int64_t AudioTimestampHelper::GetFramesToTarget(base::TimeDelta target) const {
   DCHECK(base_timestamp_ != kNoTimestamp());
   DCHECK(target >= base_timestamp_);
 
-  int64 delta_in_us = (target - GetTimestamp()).InMicroseconds();
+  int64_t delta_in_us = (target - GetTimestamp()).InMicroseconds();
   if (delta_in_us == 0)
     return 0;
 
@@ -59,13 +59,13 @@ int64 AudioTimestampHelper::GetFramesToTarget(base::TimeDelta target) const {
   // Compute frame count for the time delta. This computation rounds to
   // the nearest whole number of frames.
   double threshold = microseconds_per_frame_ / 2;
-  int64 target_frame_count =
+  int64_t target_frame_count =
       (delta_from_base.InMicroseconds() + threshold) / microseconds_per_frame_;
   return target_frame_count - frame_count_;
 }
 
 base::TimeDelta AudioTimestampHelper::ComputeTimestamp(
-    int64 frame_count) const {
+    int64_t frame_count) const {
   DCHECK_GE(frame_count, 0);
   DCHECK(base_timestamp_ != kNoTimestamp());
   double frames_us = microseconds_per_frame_ * frame_count;

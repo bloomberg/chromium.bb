@@ -33,7 +33,7 @@ class AudioOutputDevice::AudioThreadCallback
  private:
   AudioRendererSink::RenderCallback* render_callback_;
   scoped_ptr<AudioBus> output_bus_;
-  uint64 callback_num_;
+  uint64_t callback_num_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioThreadCallback);
 };

@@ -8,7 +8,6 @@
 #include <MMDeviceAPI.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"

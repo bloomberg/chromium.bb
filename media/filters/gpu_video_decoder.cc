@@ -52,11 +52,14 @@ GpuVideoDecoder::PendingDecoderBuffer::PendingDecoderBuffer(
 
 GpuVideoDecoder::PendingDecoderBuffer::~PendingDecoderBuffer() {}
 
-GpuVideoDecoder::BufferData::BufferData(
-    int32 bbid, base::TimeDelta ts, const gfx::Rect& vr, const gfx::Size& ns)
-    : bitstream_buffer_id(bbid), timestamp(ts), visible_rect(vr),
-      natural_size(ns) {
-}
+GpuVideoDecoder::BufferData::BufferData(int32_t bbid,
+                                        base::TimeDelta ts,
+                                        const gfx::Rect& vr,
+                                        const gfx::Size& ns)
+    : bitstream_buffer_id(bbid),
+      timestamp(ts),
+      visible_rect(vr),
+      natural_size(ns) {}
 
 GpuVideoDecoder::BufferData::~BufferData() {}
 
@@ -338,7 +341,8 @@ void GpuVideoDecoder::RecordBufferData(const BitstreamBuffer& bitstream_buffer,
     input_buffer_data_.pop_back();
 }
 
-void GpuVideoDecoder::GetBufferData(int32 id, base::TimeDelta* timestamp,
+void GpuVideoDecoder::GetBufferData(int32_t id,
+                                    base::TimeDelta* timestamp,
                                     gfx::Rect* visible_rect,
                                     gfx::Size* natural_size) {
   for (std::list<BufferData>::const_iterator it =
@@ -372,14 +376,14 @@ int GpuVideoDecoder::GetMaxDecodeRequests() const {
   return kMaxInFlightDecodes;
 }
 
-void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
+void GpuVideoDecoder::ProvidePictureBuffers(uint32_t count,
                                             const gfx::Size& size,
-                                            uint32 texture_target) {
+                                            uint32_t texture_target) {
   DVLOG(3) << "ProvidePictureBuffers(" << count << ", "
            << size.width() << "x" << size.height() << ")";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  std::vector<uint32> texture_ids;
+  std::vector<uint32_t> texture_ids;
   std::vector<gpu::Mailbox> texture_mailboxes;
   decoder_texture_target_ = texture_target;
   if (!factories_->CreateTextures(count,
@@ -410,7 +414,7 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
   vda_->AssignPictureBuffers(picture_buffers);
 }
 
-void GpuVideoDecoder::DismissPictureBuffer(int32 id) {
+void GpuVideoDecoder::DismissPictureBuffer(int32_t id) {
   DVLOG(3) << "DismissPictureBuffer(" << id << ")";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
@@ -511,8 +515,8 @@ void GpuVideoDecoder::DeliverFrame(
 void GpuVideoDecoder::ReleaseMailbox(
     base::WeakPtr<GpuVideoDecoder> decoder,
     media::GpuVideoAcceleratorFactories* factories,
-    int64 picture_buffer_id,
-    uint32 texture_id,
+    int64_t picture_buffer_id,
+    uint32_t texture_id,
     const gpu::SyncToken& release_sync_token) {
   DCHECK(factories->GetTaskRunner()->BelongsToCurrentThread());
   factories->WaitSyncToken(release_sync_token);
@@ -526,14 +530,14 @@ void GpuVideoDecoder::ReleaseMailbox(
   factories->DeleteTexture(texture_id);
 }
 
-void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
+void GpuVideoDecoder::ReusePictureBuffer(int64_t picture_buffer_id) {
   DVLOG(3) << "ReusePictureBuffer(" << picture_buffer_id << ")";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   DCHECK(!picture_buffers_at_display_.empty());
   PictureBufferTextureMap::iterator display_iterator =
       picture_buffers_at_display_.find(picture_buffer_id);
-  uint32 texture_id = display_iterator->second;
+  uint32_t texture_id = display_iterator->second;
   DCHECK(display_iterator != picture_buffers_at_display_.end());
   picture_buffers_at_display_.erase(display_iterator);
 
@@ -573,11 +577,11 @@ void GpuVideoDecoder::PutSHM(scoped_ptr<SHMBuffer> shm_buffer) {
   available_shm_segments_.push_back(shm_buffer.release());
 }
 
-void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
+void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
   DVLOG(3) << "NotifyEndOfBitstreamBuffer(" << id << ")";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  std::map<int32, PendingDecoderBuffer>::iterator it =
+  std::map<int32_t, PendingDecoderBuffer>::iterator it =
       bitstream_buffers_in_decoder_.find(id);
   if (it == bitstream_buffers_in_decoder_.end()) {
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
@@ -610,7 +614,7 @@ GpuVideoDecoder::~GpuVideoDecoder() {
   }
   available_shm_segments_.clear();
 
-  for (std::map<int32, PendingDecoderBuffer>::iterator it =
+  for (std::map<int32_t, PendingDecoderBuffer>::iterator it =
            bitstream_buffers_in_decoder_.begin();
        it != bitstream_buffers_in_decoder_.end(); ++it) {
     delete it->second.shm_buffer;

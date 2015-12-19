@@ -49,7 +49,7 @@ TEST_F(VideoFramePoolTest, FrameInitializedAndZeroed) {
 
 TEST_F(VideoFramePoolTest, SimpleFrameReuse) {
   scoped_refptr<VideoFrame> frame = CreateFrame(PIXEL_FORMAT_YV12, 10);
-  const uint8* old_y_data = frame->data(VideoFrame::kYPlane);
+  const uint8_t* old_y_data = frame->data(VideoFrame::kYPlane);
 
   // Clear frame reference to return the frame to the pool.
   frame = NULL;

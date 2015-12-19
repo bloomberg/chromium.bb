@@ -58,7 +58,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   static const char kPlugPrefix[];
 
   // The minimum latency that is accepted by the device.
-  static const uint32 kMinLatencyMicros;
+  static const uint32_t kMinLatencyMicros;
 
   // Create a PCM Output stream for the ALSA device identified by
   // |device_name|.  The AlsaPcmOutputStream uses |wrapper| to communicate with
@@ -128,13 +128,13 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
 
   // Utility functions for talking with the ALSA API.
   static base::TimeDelta FramesToTimeDelta(int frames, double sample_rate);
-  std::string FindDeviceForChannels(uint32 channels);
+  std::string FindDeviceForChannels(uint32_t channels);
   snd_pcm_sframes_t GetAvailableFrames();
   snd_pcm_sframes_t GetCurrentDelay();
 
   // Attempts to find the best matching linux audio device for the given number
   // of channels.  This function will set |device_name_| and |channel_mixer_|.
-  snd_pcm_t* AutoSelectDevice(uint32 latency);
+  snd_pcm_t* AutoSelectDevice(uint32_t latency);
 
   // Functions to safeguard state transitions.  All changes to the object state
   // should go through these functions.
@@ -154,7 +154,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   // is passed into the output stream, but ownership is not transfered which
   // requires a synchronization on access of the |source_callback_| to avoid
   // using a deleted callback.
-  int RunDataCallback(AudioBus* audio_bus, uint32 total_bytes_delay);
+  int RunDataCallback(AudioBus* audio_bus, uint32_t total_bytes_delay);
   void RunErrorCallback(int code);
 
   // Changes the AudioSourceCallback to proxy calls to.  Pass in NULL to
@@ -165,18 +165,18 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   // since they are constants.
   const std::string requested_device_name_;
   const snd_pcm_format_t pcm_format_;
-  const uint32 channels_;
+  const uint32_t channels_;
   const ChannelLayout channel_layout_;
-  const uint32 sample_rate_;
-  const uint32 bytes_per_sample_;
-  const uint32 bytes_per_frame_;
+  const uint32_t sample_rate_;
+  const uint32_t bytes_per_sample_;
+  const uint32_t bytes_per_frame_;
 
   // Device configuration data. Populated after OpenTask() completes.
   std::string device_name_;
-  uint32 packet_size_;
+  uint32_t packet_size_;
   base::TimeDelta latency_;
-  uint32 bytes_per_output_frame_;
-  uint32 alsa_buffer_frames_;
+  uint32_t bytes_per_output_frame_;
+  uint32_t alsa_buffer_frames_;
 
   // Flag indicating the code should stop reading from the data source or
   // writing to the ALSA device.  This is set because the device has entered
@@ -199,7 +199,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   snd_pcm_t* playback_handle_;
 
   scoped_ptr<media::SeekableBuffer> buffer_;
-  uint32 frames_per_packet_;
+  uint32_t frames_per_packet_;
 
   InternalState state_;
   float volume_;  // Volume level from 0.0 to 1.0.

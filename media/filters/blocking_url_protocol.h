@@ -5,7 +5,6 @@
 #ifndef MEDIA_FILTERS_BLOCKING_URL_PROTOCOL_H_
 #define MEDIA_FILTERS_BLOCKING_URL_PROTOCOL_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
 #include "media/filters/ffmpeg_glue.h"
@@ -31,10 +30,10 @@ class MEDIA_EXPORT BlockingUrlProtocol : public FFmpegURLProtocol {
   void Abort();
 
   // FFmpegURLProtocol implementation.
-  int Read(int size, uint8* data) override;
-  bool GetPosition(int64* position_out) override;
-  bool SetPosition(int64 position) override;
-  bool GetSize(int64* size_out) override;
+  int Read(int size, uint8_t* data) override;
+  bool GetPosition(int64_t* position_out) override;
+  bool SetPosition(int64_t position) override;
+  bool GetSize(int64_t* size_out) override;
   bool IsStreaming() override;
 
  private:
@@ -53,7 +52,7 @@ class MEDIA_EXPORT BlockingUrlProtocol : public FFmpegURLProtocol {
   int last_read_bytes_;
 
   // Cached position within the data source.
-  int64 read_position_;
+  int64_t read_position_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BlockingUrlProtocol);
 };

@@ -797,9 +797,11 @@ ChannelConfig CoreAudioUtil::GetChannelConfig(const std::string& device_id,
   return static_cast<ChannelConfig>(format.dwChannelMask);
 }
 
-HRESULT CoreAudioUtil::SharedModeInitialize(
-    IAudioClient* client, const WAVEFORMATPCMEX* format, HANDLE event_handle,
-    uint32* endpoint_buffer_size, const GUID* session_guid) {
+HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
+                                            const WAVEFORMATPCMEX* format,
+                                            HANDLE event_handle,
+                                            uint32_t* endpoint_buffer_size,
+                                            const GUID* session_guid) {
   DCHECK(IsSupported());
 
   // Use default flags (i.e, dont set AUDCLNT_STREAMFLAGS_NOPERSIST) to

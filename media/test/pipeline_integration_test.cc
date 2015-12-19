@@ -1252,7 +1252,7 @@ TEST_P(Mp3FastSeekIntegrationTest, FastSeekAccuracy_MP3) {
   //
   // Quick TOC design (not pretty!):
   // - All MP3 TOCs are 100 bytes
-  // - Each byte is read as a uint8; value between 0 - 255.
+  // - Each byte is read as a uint8_t; value between 0 - 255.
   // - The index into this array is the numerator in the ratio: index / 100.
   //   This fraction represents a playback time as a percentage of duration.
   // - The value at the given index is the numerator in the ratio: value / 256.

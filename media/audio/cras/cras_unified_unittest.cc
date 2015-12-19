@@ -72,7 +72,7 @@ class CrasUnifiedStreamTest : public testing::Test {
   }
 
   CrasUnifiedStream* CreateStream(ChannelLayout layout,
-                                 int32 samples_per_packet) {
+                                  int32_t samples_per_packet) {
     AudioParameters params(kTestFormat, layout, kTestSampleRate,
                            kTestBitsPerSample, samples_per_packet);
     return new CrasUnifiedStream(params, mock_manager_.get());
@@ -86,7 +86,7 @@ class CrasUnifiedStreamTest : public testing::Test {
   static const int kTestSampleRate;
   static const int kTestBitsPerSample;
   static const AudioParameters::Format kTestFormat;
-  static const uint32 kTestFramesPerPacket;
+  static const uint32_t kTestFramesPerPacket;
 
   scoped_ptr<StrictMock<MockAudioManagerCras> > mock_manager_;
 
@@ -101,7 +101,7 @@ const int CrasUnifiedStreamTest::kTestSampleRate =
 const int CrasUnifiedStreamTest::kTestBitsPerSample = 16;
 const AudioParameters::Format CrasUnifiedStreamTest::kTestFormat =
     AudioParameters::AUDIO_PCM_LINEAR;
-const uint32 CrasUnifiedStreamTest::kTestFramesPerPacket = 1000;
+const uint32_t CrasUnifiedStreamTest::kTestFramesPerPacket = 1000;
 
 TEST_F(CrasUnifiedStreamTest, ConstructedState) {
   CrasUnifiedStream* test_stream = CreateStream(kTestChannelLayout);

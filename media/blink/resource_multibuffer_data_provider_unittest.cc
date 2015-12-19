@@ -106,7 +106,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
     loader_->Start();
   }
 
-  void FullResponse(int64 instance_size, bool ok = true) {
+  void FullResponse(int64_t instance_size, bool ok = true) {
     WebURLResponse response(gurl_);
     response.setHTTPHeaderField(
         WebString::fromUTF8("Content-Length"),
@@ -122,15 +122,15 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
     EXPECT_FALSE(url_data_->range_supported());
   }
 
-  void PartialResponse(int64 first_position,
-                       int64 last_position,
-                       int64 instance_size) {
+  void PartialResponse(int64_t first_position,
+                       int64_t last_position,
+                       int64_t instance_size) {
     PartialResponse(first_position, last_position, instance_size, false, true);
   }
 
-  void PartialResponse(int64 first_position,
-                       int64 last_position,
-                       int64 instance_size,
+  void PartialResponse(int64_t first_position,
+                       int64_t last_position,
+                       int64_t instance_size,
                        bool chunked,
                        bool accept_ranges) {
     WebURLResponse response(gurl_);
@@ -142,7 +142,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
                                first_position, last_position, instance_size)));
 
     // HTTP 1.1 doesn't permit Content-Length with Transfer-Encoding: chunked.
-    int64 content_length = -1;
+    int64_t content_length = -1;
     if (chunked) {
       response.setHTTPHeaderField(WebString::fromUTF8("Transfer-Encoding"),
                                   WebString::fromUTF8("chunked"));
@@ -199,7 +199,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
   }
 
   // Verifies that data in buffer[0...size] is equal to data_[pos...pos+size].
-  void VerifyBuffer(uint8* buffer, int pos, int size) {
+  void VerifyBuffer(uint8_t* buffer, int pos, int size) {
     EXPECT_EQ(0, memcmp(buffer, data_ + pos, size));
   }
 
@@ -212,7 +212,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
  protected:
   GURL gurl_;
-  int64 first_position_;
+  int64_t first_position_;
 
   scoped_ptr<UrlIndex> url_index_;
   scoped_refptr<UrlData> url_data_;
@@ -227,7 +227,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
   base::MessageLoop message_loop_;
 
-  uint8 data_[kDataSize];
+  uint8_t data_[kDataSize];
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceMultiBufferDataProviderTest);

@@ -327,7 +327,7 @@ void OpenSLESInputStream::SetupAudioBuffer() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!audio_data_[0]);
   for (int i = 0; i < kMaxNumOfBuffersInQueue; ++i) {
-    audio_data_[i] = new uint8[buffer_size_bytes_];
+    audio_data_[i] = new uint8_t[buffer_size_bytes_];
   }
 }
 

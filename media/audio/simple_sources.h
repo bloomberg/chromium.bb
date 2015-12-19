@@ -99,7 +99,7 @@ class BeepingSource : public AudioOutputStream::AudioSourceCallback {
   static void BeepOnce();
  private:
   int buffer_size_;
-  scoped_ptr<uint8[]> buffer_;
+  scoped_ptr<uint8_t[]> buffer_;
   AudioParameters params_;
   base::TimeTicks last_callback_time_;
   base::TimeDelta interval_from_last_beep_;

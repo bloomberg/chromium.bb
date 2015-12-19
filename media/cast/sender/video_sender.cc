@@ -288,7 +288,7 @@ int VideoSender::GetNumberOfFramesInEncoder() const {
 
 base::TimeDelta VideoSender::GetInFlightMediaDuration() const {
   if (GetUnacknowledgedFrameCount() > 0) {
-    const uint32 oldest_unacked_frame_id = latest_acked_frame_id_ + 1;
+    const uint32_t oldest_unacked_frame_id = latest_acked_frame_id_ + 1;
     return last_enqueued_frame_reference_time_ -
         GetRecordedReferenceTime(oldest_unacked_frame_id);
   } else {
@@ -328,7 +328,7 @@ int VideoSender::GetMaximumTargetBitrateForFrame(
           static_cast<int>(sqrt(resolution.GetArea() * 9.0 / 16.0));
 
   // Linearly translate from |lines_of_resolution| to a maximum target bitrate.
-  int64 result = lines_of_resolution - STANDARD_RESOLUTION_LINES;
+  int64_t result = lines_of_resolution - STANDARD_RESOLUTION_LINES;
   result *= BITRATE_FOR_HIGH_RESOLUTION - BITRATE_FOR_STANDARD_RESOLUTION;
   result /= HIGH_RESOLUTION_LINES - STANDARD_RESOLUTION_LINES;
   result += BITRATE_FOR_STANDARD_RESOLUTION;

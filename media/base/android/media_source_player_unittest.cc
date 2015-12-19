@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
@@ -247,9 +246,8 @@ class MediaSourcePlayerTest : public testing::Test {
       configs.audio_sampling_rate = use_low_sample_rate ? 11025 : 44100;
       scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(
           "vorbis-extradata");
-      configs.audio_extra_data = std::vector<uint8>(
-          buffer->data(),
-          buffer->data() + buffer->data_size());
+      configs.audio_extra_data = std::vector<uint8_t>(
+          buffer->data(), buffer->data() + buffer->data_size());
       return configs;
     }
 
@@ -257,10 +255,9 @@ class MediaSourcePlayerTest : public testing::Test {
     EXPECT_EQ(audio_codec, kCodecAAC);
 
     configs.audio_sampling_rate = 48000;
-    uint8 aac_extra_data[] = { 0x13, 0x10 };
-    configs.audio_extra_data = std::vector<uint8>(
-        aac_extra_data,
-        aac_extra_data + 2);
+    uint8_t aac_extra_data[] = {0x13, 0x10};
+    configs.audio_extra_data =
+        std::vector<uint8_t>(aac_extra_data, aac_extra_data + 2);
     return configs;
   }
 
@@ -375,13 +372,13 @@ class MediaSourcePlayerTest : public testing::Test {
       buffer = ReadTestDataFile(
           use_large_size_video ? "vp8-I-frame-640x240" : "vp8-I-frame-320x240");
     }
-    unit.data = std::vector<uint8>(
-        buffer->data(), buffer->data() + buffer->data_size());
+    unit.data = std::vector<uint8_t>(buffer->data(),
+                                     buffer->data() + buffer->data_size());
 
     if (is_audio) {
       // Vorbis needs 4 extra bytes padding on Android to decode properly. Check
       // NuMediaExtractor.cpp in Android source code.
-      uint8 padding[4] = { 0xff , 0xff , 0xff , 0xff };
+      uint8_t padding[4] = {0xff, 0xff, 0xff, 0xff};
       unit.data.insert(unit.data.end(), padding, padding + 4);
     }
 
@@ -872,7 +869,7 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithInvalidConfig) {
   DemuxerConfigs configs = CreateAudioDemuxerConfigs(kCodecVorbis, false);
   // Replace with invalid |audio_extra_data|
   configs.audio_extra_data.clear();
-  uint8 invalid_codec_data[] = { 0x00, 0xff, 0xff, 0xff, 0xff };
+  uint8_t invalid_codec_data[] = {0x00, 0xff, 0xff, 0xff, 0xff};
   configs.audio_extra_data.insert(configs.audio_extra_data.begin(),
                                  invalid_codec_data, invalid_codec_data + 4);
   Start(configs);

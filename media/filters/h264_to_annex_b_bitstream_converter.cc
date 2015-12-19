@@ -10,8 +10,8 @@
 
 namespace media {
 
-static const uint8 kStartCodePrefix[3] = {0, 0, 1};
-static const uint32 kParamSetStartCodeSize = 1 + sizeof(kStartCodePrefix);
+static const uint8_t kStartCodePrefix[3] = {0, 0, 1};
+static const uint32_t kParamSetStartCodeSize = 1 + sizeof(kStartCodePrefix);
 
 // Helper function which determines whether NAL unit of given type marks
 // access unit boundary.
@@ -37,7 +37,7 @@ H264ToAnnexBBitstreamConverter::H264ToAnnexBBitstreamConverter()
 H264ToAnnexBBitstreamConverter::~H264ToAnnexBBitstreamConverter() {}
 
 bool H264ToAnnexBBitstreamConverter::ParseConfiguration(
-    const uint8* configuration_record,
+    const uint8_t* configuration_record,
     int configuration_record_size,
     mp4::AVCDecoderConfigurationRecord* avc_config) {
   DCHECK(configuration_record);
@@ -54,9 +54,9 @@ bool H264ToAnnexBBitstreamConverter::ParseConfiguration(
   return true;
 }
 
-uint32 H264ToAnnexBBitstreamConverter::GetConfigSize(
+uint32_t H264ToAnnexBBitstreamConverter::GetConfigSize(
     const mp4::AVCDecoderConfigurationRecord& avc_config) const {
-  uint32 config_size = 0;
+  uint32_t config_size = 0;
 
   for (size_t i = 0; i < avc_config.sps_list.size(); ++i)
     config_size += kParamSetStartCodeSize + avc_config.sps_list[i].size();
@@ -67,12 +67,12 @@ uint32 H264ToAnnexBBitstreamConverter::GetConfigSize(
   return config_size;
 }
 
-uint32 H264ToAnnexBBitstreamConverter::CalculateNeededOutputBufferSize(
-    const uint8* input,
-    uint32 input_size,
+uint32_t H264ToAnnexBBitstreamConverter::CalculateNeededOutputBufferSize(
+    const uint8_t* input,
+    uint32_t input_size,
     const mp4::AVCDecoderConfigurationRecord* avc_config) const {
-  uint32 output_size = 0;
-  uint32 data_left = input_size;
+  uint32_t output_size = 0;
+  uint32_t data_left = input_size;
   bool first_nal_in_this_access_unit = first_nal_unit_in_access_unit_;
 
   if (input_size == 0)
@@ -96,8 +96,8 @@ uint32 H264ToAnnexBBitstreamConverter::CalculateNeededOutputBufferSize(
     }
 
     // Read the next NAL unit length from the input buffer
-    uint8 size_of_len_field;
-    uint32 nal_unit_length;
+    uint8_t size_of_len_field;
+    uint32_t nal_unit_length;
     for (nal_unit_length = 0, size_of_len_field = nal_unit_length_field_width_;
          size_of_len_field > 0;
          input++, size_of_len_field--, data_left--) {
@@ -131,10 +131,10 @@ uint32 H264ToAnnexBBitstreamConverter::CalculateNeededOutputBufferSize(
 
 bool H264ToAnnexBBitstreamConverter::ConvertAVCDecoderConfigToByteStream(
     const mp4::AVCDecoderConfigurationRecord& avc_config,
-    uint8* output,
-    uint32* output_size) {
-  uint8* out = output;
-  uint32 out_size = *output_size;
+    uint8_t* output,
+    uint32_t* output_size) {
+  uint8_t* out = output;
+  uint32_t out_size = *output_size;
   *output_size = 0;
   for (size_t i = 0; i < avc_config.sps_list.size(); ++i) {
     if (!WriteParamSet(avc_config.sps_list[i], &out, &out_size))
@@ -153,12 +153,14 @@ bool H264ToAnnexBBitstreamConverter::ConvertAVCDecoderConfigToByteStream(
 }
 
 bool H264ToAnnexBBitstreamConverter::ConvertNalUnitStreamToByteStream(
-    const uint8* input, uint32 input_size,
+    const uint8_t* input,
+    uint32_t input_size,
     const mp4::AVCDecoderConfigurationRecord* avc_config,
-    uint8* output, uint32* output_size) {
-  const uint8* inscan = input;  // We read the input from here progressively
-  uint8* outscan = output;  // We write the output to here progressively
-  uint32 data_left = input_size;
+    uint8_t* output,
+    uint32_t* output_size) {
+  const uint8_t* inscan = input;  // We read the input from here progressively
+  uint8_t* outscan = output;      // We write the output to here progressively
+  uint32_t data_left = input_size;
 
   if (input_size == 0 || *output_size == 0) {
     *output_size = 0;
@@ -173,8 +175,8 @@ bool H264ToAnnexBBitstreamConverter::ConvertNalUnitStreamToByteStream(
   // Do the actual conversion for the actual input packet
   int nal_unit_count = 0;
   while (data_left > 0) {
-    uint8 i;
-    uint32 nal_unit_length;
+    uint8_t i;
+    uint32_t nal_unit_length;
 
     // Read the next NAL unit length from the input buffer by scanning
     // the input stream with the specific length field width
@@ -201,11 +203,11 @@ bool H264ToAnnexBBitstreamConverter::ConvertNalUnitStreamToByteStream(
     // before all NAL units if the first one isn't an AUD.
     if (avc_config &&
         (nal_unit_type != H264NALU::kAUD ||  nal_unit_count > 1)) {
-      uint32 output_bytes_used = outscan - output;
+      uint32_t output_bytes_used = outscan - output;
 
       DCHECK_GE(*output_size, output_bytes_used);
 
-      uint32 config_size = *output_size - output_bytes_used;
+      uint32_t config_size = *output_size - output_bytes_used;
       if (!ConvertAVCDecoderConfigToByteStream(*avc_config,
                                                outscan,
                                                &config_size)) {
@@ -216,12 +218,13 @@ bool H264ToAnnexBBitstreamConverter::ConvertNalUnitStreamToByteStream(
       outscan += config_size;
       avc_config = NULL;
     }
-    uint32 start_code_len;
+    uint32_t start_code_len;
     first_nal_unit_in_access_unit_ ?
         start_code_len = sizeof(kStartCodePrefix) + 1 :
         start_code_len = sizeof(kStartCodePrefix);
-    if (static_cast<uint32>(outscan - output) +
-        start_code_len + nal_unit_length > *output_size) {
+    if (static_cast<uint32_t>(outscan - output) + start_code_len +
+            nal_unit_length >
+        *output_size) {
       *output_size = 0;
       return false;  // Error: too small output buffer
     }
@@ -252,22 +255,22 @@ bool H264ToAnnexBBitstreamConverter::ConvertNalUnitStreamToByteStream(
     // No need for trailing zero bits.
   }
   // Successful conversion, output the freshly allocated bitstream buffer.
-  *output_size = static_cast<uint32>(outscan - output);
+  *output_size = static_cast<uint32_t>(outscan - output);
   return true;
 }
 
 bool H264ToAnnexBBitstreamConverter::WriteParamSet(
-    const std::vector<uint8>& param_set,
-    uint8** out,
-    uint32* out_size) const {
-  uint32 bytes_left = *out_size;
+    const std::vector<uint8_t>& param_set,
+    uint8_t** out,
+    uint32_t* out_size) const {
+  uint32_t bytes_left = *out_size;
   if (bytes_left < kParamSetStartCodeSize ||
       bytes_left - kParamSetStartCodeSize < param_set.size()) {
     return false;
   }
 
-  uint8* start = *out;
-  uint8* buf = start;
+  uint8_t* start = *out;
+  uint8_t* buf = start;
 
   // Write the 4 byte Annex B start code.
   *buf++ = 0;  // zero byte

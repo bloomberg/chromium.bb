@@ -30,15 +30,15 @@ class WebMAudioClient : public WebMParserClient {
   // Returns false if there was unexpected values in the provided parameters or
   // audio track element fields.
   bool InitializeConfig(const std::string& codec_id,
-                        const std::vector<uint8>& codec_private,
-                        const int64 seek_preroll,
-                        const int64 codec_delay,
+                        const std::vector<uint8_t>& codec_private,
+                        const int64_t seek_preroll,
+                        const int64_t codec_delay,
                         bool is_encrypted,
                         AudioDecoderConfig* config);
 
  private:
   // WebMParserClient implementation.
-  bool OnUInt(int id, int64 val) override;
+  bool OnUInt(int id, int64_t val) override;
   bool OnFloat(int id, double val) override;
 
   scoped_refptr<MediaLog> media_log_;

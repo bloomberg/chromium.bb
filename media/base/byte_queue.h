@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_BYTE_QUEUE_H_
 #define MEDIA_BASE_BYTE_QUEUE_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
@@ -25,21 +24,21 @@ class MEDIA_EXPORT ByteQueue {
   void Reset();
 
   // Appends new bytes onto the end of the queue.
-  void Push(const uint8* data, int size);
+  void Push(const uint8_t* data, int size);
 
   // Get a pointer to the front of the queue and the queue size.
   // These values are only valid until the next Push() or
   // Pop() call.
-  void Peek(const uint8** data, int* size) const;
+  void Peek(const uint8_t** data, int* size) const;
 
   // Remove |count| bytes from the front of the queue.
   void Pop(int count);
 
  private:
   // Returns a pointer to the front of the queue.
-  uint8* front() const;
+  uint8_t* front() const;
 
-  scoped_ptr<uint8[]> buffer_;
+  scoped_ptr<uint8_t[]> buffer_;
 
   // Size of |buffer_|.
   size_t size_;

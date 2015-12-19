@@ -4,7 +4,6 @@
 
 #include "media/cdm/supported_cdm_versions.h"
 
-#include "base/basictypes.h"
 #include "media/cdm/api/content_decryption_module.h"
 
 namespace media {

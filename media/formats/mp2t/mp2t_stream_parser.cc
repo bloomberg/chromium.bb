@@ -239,14 +239,14 @@ void Mp2tStreamParser::Flush() {
   timestamp_unroller_.Reset();
 }
 
-bool Mp2tStreamParser::Parse(const uint8* buf, int size) {
+bool Mp2tStreamParser::Parse(const uint8_t* buf, int size) {
   DVLOG(1) << "Mp2tStreamParser::Parse size=" << size;
 
   // Add the data to the parser state.
   ts_byte_queue_.Push(buf, size);
 
   while (true) {
-    const uint8* ts_buffer;
+    const uint8_t* ts_buffer;
     int ts_buffer_size;
     ts_byte_queue_.Peek(&ts_buffer, &ts_buffer_size);
     if (ts_buffer_size < TsPacket::kPacketSize)

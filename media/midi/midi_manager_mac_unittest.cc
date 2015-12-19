@@ -46,8 +46,8 @@ class FakeMidiManagerClient : public MidiManagerClient {
     info_ = info;
     wait_for_port_ = false;
   }
-  void SetInputPortState(uint32 port_index, MidiPortState state) override {}
-  void SetOutputPortState(uint32 port_index, MidiPortState state) override {}
+  void SetInputPortState(uint32_t port_index, MidiPortState state) override {}
+  void SetOutputPortState(uint32_t port_index, MidiPortState state) override {}
 
   void CompleteStartSession(Result result) override {
     base::AutoLock lock(lock_);
@@ -58,7 +58,9 @@ class FakeMidiManagerClient : public MidiManagerClient {
     wait_for_result_ = false;
   }
 
-  void ReceiveMidiData(uint32 port_index, const uint8* data, size_t size,
+  void ReceiveMidiData(uint32_t port_index,
+                       const uint8_t* data,
+                       size_t size,
                        double timestamp) override {}
   void AccumulateMidiBytesSent(size_t size) override {}
   void Detach() override {}

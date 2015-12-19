@@ -39,7 +39,7 @@ std::string GetURLQueryString(const base::StringPairs& query_params) {
 scoped_refptr<DecoderBuffer> ReadTestDataFile(const std::string& name) {
   base::FilePath file_path = GetTestDataFilePath(name);
 
-  int64 tmp = 0;
+  int64_t tmp = 0;
   CHECK(base::GetFileSize(file_path, &tmp))
       << "Failed to get file size for '" << name << "'";
 

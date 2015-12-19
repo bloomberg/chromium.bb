@@ -4,19 +4,20 @@
 
 #include "media/midi/midi_message_util.h"
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 namespace midi {
 namespace {
 
-const uint8 kGMOn[] = { 0xf0, 0x7e, 0x7f, 0x09, 0x01, 0xf7 };
-const uint8 kNoteOn[] = { 0x90, 0x3c, 0x7f };
-const uint8 kSystemCommonMessageReserved1[] = { 0xf4 };
-const uint8 kSystemCommonMessageReserved2[] = { 0xf5 };
-const uint8 kSystemCommonMessageTuneRequest[] = { 0xf6 };
-const uint8 kChannelPressure[] = { 0xd0, 0x01 };
-const uint8 kTimingClock[] = { 0xf8 };
+const uint8_t kGMOn[] = {0xf0, 0x7e, 0x7f, 0x09, 0x01, 0xf7};
+const uint8_t kNoteOn[] = {0x90, 0x3c, 0x7f};
+const uint8_t kSystemCommonMessageReserved1[] = {0xf4};
+const uint8_t kSystemCommonMessageReserved2[] = {0xf5};
+const uint8_t kSystemCommonMessageTuneRequest[] = {0xf6};
+const uint8_t kChannelPressure[] = {0xd0, 0x01};
+const uint8_t kTimingClock[] = {0xf8};
 
 TEST(MidiMessageUtilTest, GetMidiMessageLength) {
   // Check basic functionarity

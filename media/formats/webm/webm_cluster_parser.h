@@ -149,13 +149,13 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   typedef std::map<int, Track> TextTrackMap;
 
  public:
-  WebMClusterParser(int64 timecode_scale,
+  WebMClusterParser(int64_t timecode_scale,
                     int audio_track_num,
                     base::TimeDelta audio_default_duration,
                     int video_track_num,
                     base::TimeDelta video_default_duration,
                     const WebMTracksParser::TextTracks& text_tracks,
-                    const std::set<int64>& ignored_tracks,
+                    const std::set<int64_t>& ignored_tracks,
                     const std::string& audio_encryption_key_id,
                     const std::string& video_encryption_key_id,
                     const AudioCodec audio_codec,
@@ -209,7 +209,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   // WebMParserClient methods.
   WebMParserClient* OnListStart(int id) override;
   bool OnListEnd(int id) override;
-  bool OnUInt(int id, int64 val) override;
+  bool OnUInt(int id, int64_t val) override;
   bool OnBinary(int id, const uint8_t* data, int size) override;
 
   bool ParseBlock(bool is_simple_block,
@@ -218,7 +218,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
                   const uint8_t* additional,
                   int additional_size,
                   int duration,
-                  int64 discard_padding);
+                  int64_t discard_padding);
   bool OnBlock(bool is_simple_block,
                int track_num,
                int timecode,
@@ -228,7 +228,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
                int size,
                const uint8_t* additional,
                int additional_size,
-               int64 discard_padding);
+               int64_t discard_padding);
 
   // Resets the Track objects associated with each text track.
   void ResetTextTracks();
@@ -273,28 +273,28 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
 
   double timecode_multiplier_;  // Multiplier used to convert timecodes into
                                 // microseconds.
-  std::set<int64> ignored_tracks_;
+  std::set<int64_t> ignored_tracks_;
   std::string audio_encryption_key_id_;
   std::string video_encryption_key_id_;
   const AudioCodec audio_codec_;
 
   WebMListParser parser_;
 
-  int64 last_block_timecode_ = -1;
+  int64_t last_block_timecode_ = -1;
   scoped_ptr<uint8_t[]> block_data_;
   int block_data_size_ = -1;
-  int64 block_duration_ = -1;
-  int64 block_add_id_ = -1;
+  int64_t block_duration_ = -1;
+  int64_t block_add_id_ = -1;
 
   scoped_ptr<uint8_t[]> block_additional_data_;
   // Must be 0 if |block_additional_data_| is null. Must be > 0 if
   // |block_additional_data_| is NOT null.
   int block_additional_data_size_ = 0;
 
-  int64 discard_padding_ = -1;
+  int64_t discard_padding_ = -1;
   bool discard_padding_set_ = false;
 
-  int64 cluster_timecode_ = -1;
+  int64_t cluster_timecode_ = -1;
   base::TimeDelta cluster_start_time_;
   bool cluster_ended_ = false;
 

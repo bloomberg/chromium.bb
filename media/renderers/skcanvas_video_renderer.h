@@ -44,7 +44,7 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   void Paint(const scoped_refptr<VideoFrame>& video_frame,
              SkCanvas* canvas,
              const gfx::RectF& dest_rect,
-             uint8 alpha,
+             uint8_t alpha,
              SkXfermode::Mode mode,
              VideoRotation video_rotation,
              const Context3D& context_3d);

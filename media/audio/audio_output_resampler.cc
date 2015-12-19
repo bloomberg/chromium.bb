@@ -58,7 +58,7 @@ class OnMoreDataConverter
 
   // Last |total_bytes_delay| received via OnMoreData(), used to correct
   // playback delay by ProvideInput() and passed on to |source_callback_|.
-  uint32 current_total_bytes_delay_;
+  uint32_t current_total_bytes_delay_;
 
   const int input_bytes_per_second_;
 
@@ -387,7 +387,7 @@ double OnMoreDataConverter::ProvideInput(AudioBus* dest,
   // Adjust playback delay to include |buffer_delay|.
   // TODO(dalecurtis): Stop passing bytes around, it doesn't make sense since
   // AudioBus is just float data.  Use TimeDelta instead.
-  uint32 new_total_bytes_delay = base::saturated_cast<uint32>(
+  uint32_t new_total_bytes_delay = base::saturated_cast<uint32_t>(
       io_ratio_ * (current_total_bytes_delay_ +
                    buffer_delay.InSecondsF() * input_bytes_per_second_));
 

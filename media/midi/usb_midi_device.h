@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
@@ -28,7 +27,7 @@ class USB_MIDI_EXPORT UsbMidiDeviceDelegate {
   // Called when USB-MIDI data arrives at |device|.
   virtual void ReceiveUsbMidiData(UsbMidiDevice* device,
                                   int endpoint_number,
-                                  const uint8* data,
+                                  const uint8_t* data,
                                   size_t size,
                                   base::TimeTicks time) = 0;
 
@@ -68,7 +67,7 @@ class USB_MIDI_EXPORT UsbMidiDevice {
   virtual ~UsbMidiDevice() {}
 
   // Returns the descriptors of this device.
-  virtual std::vector<uint8> GetDescriptors() = 0;
+  virtual std::vector<uint8_t> GetDescriptors() = 0;
 
   // Return the name of the manufacturer.
   virtual std::string GetManufacturer() = 0;
@@ -80,7 +79,7 @@ class USB_MIDI_EXPORT UsbMidiDevice {
   virtual std::string GetDeviceVersion() = 0;
 
   // Sends |data| to the given USB endpoint of this device.
-  virtual void Send(int endpoint_number, const std::vector<uint8>& data) = 0;
+  virtual void Send(int endpoint_number, const std::vector<uint8_t>& data) = 0;
 };
 
 }  // namespace midi

@@ -10,13 +10,13 @@ using ::testing::InSequence;
 
 namespace media {
 
-typedef std::vector<uint8> Cue;
+typedef std::vector<uint8_t> Cue;
 
 static Cue EncodeCue(const std::string& id,
                      const std::string& settings,
                      const std::string& content) {
   const std::string result = id + '\n' + settings + '\n' + content;
-  const uint8* const buf = reinterpret_cast<const uint8*>(result.data());
+  const uint8_t* const buf = reinterpret_cast<const uint8_t*>(result.data());
   return Cue(buf, buf + result.length());
 }
 

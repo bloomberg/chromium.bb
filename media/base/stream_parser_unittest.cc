@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <sstream>
 
-#include "base/basictypes.h"
 #include "media/base/stream_parser.h"
 #include "media/base/stream_parser_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +16,7 @@ typedef StreamParser::BufferQueue BufferQueue;
 typedef StreamParser::TextBufferQueueMap TextBufferQueueMap;
 
 const int kEnd = -1;
-const uint8 kFakeData[] = { 0xFF };
+const uint8_t kFakeData[] = {0xFF};
 const TrackId kAudioTrackId = 0;
 const TrackId kVideoTrackId = 1;
 const TrackId kTextTrackIdA = 2;

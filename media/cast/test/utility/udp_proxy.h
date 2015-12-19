@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -54,11 +53,10 @@ class PacketPipe {
 // The rate above is the average rate of a poisson distribution.
 class InterruptedPoissonProcess {
  public:
-  InterruptedPoissonProcess(
-      const std::vector<double>& average_rates,
-      double coef_burstiness,
-      double coef_variance,
-      uint32 rand_seed);
+  InterruptedPoissonProcess(const std::vector<double>& average_rates,
+                            double coef_burstiness,
+                            double coef_variance,
+                            uint32_t rand_seed);
   ~InterruptedPoissonProcess();
 
   scoped_ptr<PacketPipe> NewBuffer(size_t size);

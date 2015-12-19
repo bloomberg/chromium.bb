@@ -50,7 +50,7 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin : public base::NonThreadSafe,
   void StopAndDeAllocate() override;
 
   // Captured new video data.
-  void OnIncomingCapturedData(const uint8* data,
+  void OnIncomingCapturedData(const uint8_t* data,
                               int length,
                               int rotation,
                               const base::TimeTicks& time_stamp);

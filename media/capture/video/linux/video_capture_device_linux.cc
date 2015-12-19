@@ -43,8 +43,8 @@ static bool ReadIdFile(const std::string& path, std::string* id) {
 
 // Translates Video4Linux pixel formats to Chromium pixel formats.
 // static
-VideoPixelFormat
-VideoCaptureDeviceLinux::V4l2FourCcToChromiumPixelFormat(uint32 v4l2_fourcc) {
+VideoPixelFormat VideoCaptureDeviceLinux::V4l2FourCcToChromiumPixelFormat(
+    uint32_t v4l2_fourcc) {
   return V4L2CaptureDelegate::V4l2FourCcToChromiumPixelFormat(v4l2_fourcc);
 }
 

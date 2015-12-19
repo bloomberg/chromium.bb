@@ -15,7 +15,7 @@
 
 namespace media {
 
-static const int64 kMaxCheckTimeInSeconds = 5;
+static const int64_t kMaxCheckTimeInSeconds = 5;
 
 static void OnError(bool* called) {
   *called = false;

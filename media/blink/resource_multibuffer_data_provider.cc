@@ -217,7 +217,7 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
   destination_url_data->set_valid_until(base::Time::Now() +
                                         GetCacheValidUntil(response));
 
-  uint32 reasons = GetReasonsForUncacheability(response);
+  uint32_t reasons = GetReasonsForUncacheability(response);
   destination_url_data->set_cacheable(reasons == 0);
   UMA_HISTOGRAM_BOOLEAN("Media.CacheUseful", reasons == 0);
   int shift = 0;
@@ -235,7 +235,7 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
 
   // Expected content length can be |kPositionNotSpecified|, in that case
   // |content_length_| is not specified and this is a streaming response.
-  int64 content_length = response.expectedContentLength();
+  int64_t content_length = response.expectedContentLength();
 
   // We make a strong assumption that when we reach here we have either
   // received a response from HTTP/HTTPS protocol or the request was
@@ -420,9 +420,9 @@ void ResourceMultiBufferDataProvider::didFail(WebURLLoader* loader,
 
 bool ResourceMultiBufferDataProvider::ParseContentRange(
     const std::string& content_range_str,
-    int64* first_byte_position,
-    int64* last_byte_position,
-    int64* instance_size) {
+    int64_t* first_byte_position,
+    int64_t* last_byte_position,
+    int64_t* instance_size) {
   const std::string kUpThroughBytesUnit = "bytes ";
   if (content_range_str.find(kUpThroughBytesUnit) != 0)
     return false;
@@ -477,7 +477,7 @@ int64_t ResourceMultiBufferDataProvider::block_size() const {
 
 bool ResourceMultiBufferDataProvider::VerifyPartialResponse(
     const WebURLResponse& response) {
-  int64 first_byte_position, last_byte_position, instance_size;
+  int64_t first_byte_position, last_byte_position, instance_size;
   if (!ParseContentRange(response.httpHeaderField("Content-Range").utf8(),
                          &first_byte_position, &last_byte_position,
                          &instance_size)) {

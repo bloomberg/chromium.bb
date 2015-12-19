@@ -8,7 +8,7 @@
 namespace media {
 namespace midi {
 
-size_t GetMidiMessageLength(uint8 status_byte) {
+size_t GetMidiMessageLength(uint8_t status_byte) {
   if (status_byte < 0x80)
     return 0;
   if (0x80 <= status_byte && status_byte <= 0xbf)

@@ -9,7 +9,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/barrier_closure.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -117,7 +116,7 @@ bool MediaSourcePlayer::Seekable() {
   // 2^31 is the bound due to java player using 32-bit integer for time
   // values at millisecond resolution.
   return duration_ <
-         base::TimeDelta::FromMilliseconds(std::numeric_limits<int32>::max());
+         base::TimeDelta::FromMilliseconds(std::numeric_limits<int32_t>::max());
 }
 
 void MediaSourcePlayer::Start() {

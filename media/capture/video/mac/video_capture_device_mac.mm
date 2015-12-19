@@ -465,7 +465,7 @@ bool VideoCaptureDeviceMac::Init(
   return true;
 }
 
-void VideoCaptureDeviceMac::ReceiveFrame(const uint8* video_frame,
+void VideoCaptureDeviceMac::ReceiveFrame(const uint8_t* video_frame,
                                          int video_frame_length,
                                          const VideoCaptureFormat& frame_format,
                                          int aspect_numerator,

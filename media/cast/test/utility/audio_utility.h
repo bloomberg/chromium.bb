@@ -67,14 +67,14 @@ int CountZeroCrossings(const float* samples, int length);
 // contain how many samples has been encoded so far, so that we can make smooth
 // transitions between encoded chunks.
 // See audio_utility.cc for details on how the encoding is done.
-bool EncodeTimestamp(uint16 timestamp,
+bool EncodeTimestamp(uint16_t timestamp,
                      size_t sample_offset,
                      size_t length,
                      float* samples);
 
 // Decode a timestamp encoded with EncodeTimestamp. Returns true if a
 // timestamp was found in |samples|.
-bool DecodeTimestamp(const float* samples, size_t length, uint16* timestamp);
+bool DecodeTimestamp(const float* samples, size_t length, uint16_t* timestamp);
 
 }  // namespace cast
 }  // namespace media

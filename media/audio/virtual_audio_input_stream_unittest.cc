@@ -41,7 +41,7 @@ class MockInputCallback : public AudioInputStream::AudioInputCallback {
   MOCK_METHOD4(OnData,
                void(AudioInputStream* stream,
                     const AudioBus* source,
-                    uint32 hardware_delay_bytes,
+                    uint32_t hardware_delay_bytes,
                     double volume));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
 

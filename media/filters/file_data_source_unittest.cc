@@ -45,8 +45,8 @@ base::FilePath TestFileURL() {
 
 // Use the mock filter host to directly call the Read and GetPosition methods.
 TEST(FileDataSourceTest, ReadData) {
-  int64 size;
-  uint8 ten_bytes[10];
+  int64_t size;
+  uint8_t ten_bytes[10];
 
   // Create our mock filter host and initialize the data source.
   FileDataSource data_source;

@@ -165,8 +165,8 @@ class VideoEncoderTest
   // encoder rejected the request.
   bool EncodeAndCheckDelivery(
       const scoped_refptr<media::VideoFrame>& video_frame,
-      uint32 frame_id,
-      uint32 reference_frame_id) {
+      uint32_t frame_id,
+      uint32_t reference_frame_id) {
     return video_encoder_->EncodeVideoFrame(
         video_frame,
         Now(),
@@ -213,12 +213,11 @@ class VideoEncoderTest
 
   // Checks that |encoded_frame| matches expected values.  This is the method
   // bound in the callback returned from EncodeAndCheckDelivery().
-  void DeliverEncodedVideoFrame(
-      uint32 expected_frame_id,
-      uint32 expected_last_referenced_frame_id,
-      uint32 expected_rtp_timestamp,
-      const base::TimeTicks& expected_reference_time,
-      scoped_ptr<SenderEncodedFrame> encoded_frame) {
+  void DeliverEncodedVideoFrame(uint32_t expected_frame_id,
+                                uint32_t expected_last_referenced_frame_id,
+                                uint32_t expected_rtp_timestamp,
+                                const base::TimeTicks& expected_reference_time,
+                                scoped_ptr<SenderEncodedFrame> encoded_frame) {
     EXPECT_TRUE(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
     EXPECT_EQ(expected_frame_id, encoded_frame->frame_id);
@@ -285,8 +284,8 @@ TEST_P(VideoEncoderTest, GeneratesKeyFrameThenOnlyDeltaFrames) {
   EXPECT_EQ(0, count_frames_delivered());
   ExpectVEAResponsesForExternalVideoEncoder(0, 0);
 
-  uint32 frame_id = 0;
-  uint32 reference_frame_id = 0;
+  uint32_t frame_id = 0;
+  uint32_t reference_frame_id = 0;
   const gfx::Size frame_size(1280, 720);
 
   // Some encoders drop one or more frames initially while the encoder
@@ -337,7 +336,7 @@ TEST_P(VideoEncoderTest, EncodesVariedFrameSizes) {
   frame_sizes.push_back(gfx::Size(322, 182));  // Grow the other dimension.
   frame_sizes.push_back(gfx::Size(1920, 1080));  // Grow both dimensions again.
 
-  uint32 frame_id = 0;
+  uint32_t frame_id = 0;
 
   // Encode one frame at each size. For encoders with a resize delay, except no
   // frames to be delivered since each frame size change will sprun

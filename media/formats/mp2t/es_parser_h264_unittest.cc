@@ -104,10 +104,10 @@ void EsParserH264Test::GetAccessUnits() {
 }
 
 void EsParserH264Test::InsertAUD() {
-  uint8 aud[] = { 0x00, 0x00, 0x01, 0x09 };
+  uint8_t aud[] = {0x00, 0x00, 0x01, 0x09};
 
-  std::vector<uint8> stream_with_aud(
-      stream_.size() + access_units_.size() * sizeof(aud));
+  std::vector<uint8_t> stream_with_aud(stream_.size() +
+                                       access_units_.size() * sizeof(aud));
   std::vector<EsParserTestBase::Packet> access_units_with_aud(
       access_units_.size());
 

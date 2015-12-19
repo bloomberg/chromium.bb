@@ -4,7 +4,6 @@
 
 #include "media/cast/test/utility/net_utility.h"
 
-#include "base/basictypes.h"
 #include "net/base/net_errors.h"
 #include "net/udp/udp_server_socket.h"
 

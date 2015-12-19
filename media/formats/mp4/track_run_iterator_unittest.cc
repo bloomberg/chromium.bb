@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
@@ -22,33 +21,27 @@ static const int kSumAscending1 = 45;
 static const int kAudioScale = 48000;
 static const int kVideoScale = 25;
 
-static const uint8 kAuxInfo[] = {
-  0x41, 0x54, 0x65, 0x73, 0x74, 0x49, 0x76, 0x31,
-  0x41, 0x54, 0x65, 0x73, 0x74, 0x49, 0x76, 0x32,
-  0x00, 0x02,
-  0x00, 0x01, 0x00, 0x00, 0x00, 0x02,
-  0x00, 0x03, 0x00, 0x00, 0x00, 0x04
-};
+static const uint8_t kAuxInfo[] = {
+    0x41, 0x54, 0x65, 0x73, 0x74, 0x49, 0x76, 0x31, 0x41, 0x54,
+    0x65, 0x73, 0x74, 0x49, 0x76, 0x32, 0x00, 0x02, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x02, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04};
 
 static const char kIv1[] = {
   0x41, 0x54, 0x65, 0x73, 0x74, 0x49, 0x76, 0x31,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static const uint8 kKeyId[] = {
-  0x41, 0x47, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x54,
-  0x65, 0x73, 0x74, 0x4b, 0x65, 0x79, 0x49, 0x44
-};
+static const uint8_t kKeyId[] = {0x41, 0x47, 0x6f, 0x6f, 0x67, 0x6c,
+                                 0x65, 0x54, 0x65, 0x73, 0x74, 0x4b,
+                                 0x65, 0x79, 0x49, 0x44};
 
-static const uint8 kTrackCencSampleGroupKeyId[] = {
-  0x46, 0x72, 0x61, 0x67, 0x53, 0x61, 0x6d, 0x70,
-  0x6c, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x4b
-};
+static const uint8_t kTrackCencSampleGroupKeyId[] = {
+    0x46, 0x72, 0x61, 0x67, 0x53, 0x61, 0x6d, 0x70,
+    0x6c, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x4b};
 
-static const uint8 kFragmentCencSampleGroupKeyId[] = {
-  0x6b, 0x46, 0x72, 0x61, 0x67, 0x6d, 0x65, 0x6e,
-  0x74, 0x43, 0x65, 0x6e, 0x63, 0x53, 0x61, 0x6d
-};
+static const uint8_t kFragmentCencSampleGroupKeyId[] = {
+    0x6b, 0x46, 0x72, 0x61, 0x67, 0x6d, 0x65, 0x6e,
+    0x74, 0x43, 0x65, 0x6e, 0x63, 0x53, 0x61, 0x6d};
 
 namespace media {
 namespace mp4 {
@@ -99,7 +92,7 @@ class TrackRunIteratorTest : public testing::Test {
     moov_.tracks[2].media.information.sample_table.description.type = kHint;
   }
 
-  uint32 ToSampleFlags(const std::string& str) {
+  uint32_t ToSampleFlags(const std::string& str) {
     CHECK_EQ(str.length(), 2u);
 
     SampleDependsOn sample_depends_on = kSampleDependsOnReserved;
@@ -135,7 +128,7 @@ class TrackRunIteratorTest : public testing::Test {
                      << str[1] << "'";
         break;
     }
-    uint32 flags = static_cast<uint32>(sample_depends_on) << 24;
+    uint32_t flags = static_cast<uint32_t>(sample_depends_on) << 24;
     if (is_non_sync_sample)
       flags |= kSampleIsNonSyncSample;
     return flags;
@@ -272,19 +265,19 @@ class TrackRunIteratorTest : public testing::Test {
 
   bool InitMoofWithArbitraryAuxInfo(MovieFragment* moof) {
     // Add aux info header (equal sized aux info for every sample).
-    for (uint32 i = 0; i < moof->tracks.size(); ++i) {
+    for (uint32_t i = 0; i < moof->tracks.size(); ++i) {
       moof->tracks[i].auxiliary_offset.offsets.push_back(50);
       moof->tracks[i].auxiliary_size.sample_count = 10;
       moof->tracks[i].auxiliary_size.default_sample_info_size = 8;
     }
 
     // We don't care about the actual data in aux.
-    std::vector<uint8> aux_info(1000);
+    std::vector<uint8_t> aux_info(1000);
     return iter_->Init(*moof) &&
            iter_->CacheAuxInfo(&aux_info[0], aux_info.size());
   }
 
-  void SetAscending(std::vector<uint32>* vec) {
+  void SetAscending(std::vector<uint32_t>* vec) {
     vec->resize(10);
     for (size_t i = 0; i < vec->size(); i++)
       (*vec)[i] = i+1;
@@ -335,7 +328,7 @@ TEST_F(TrackRunIteratorTest, BasicOperationTest) {
   EXPECT_EQ(iter_->track_id(), 2u);
   EXPECT_EQ(iter_->sample_offset(), 200 + kSumAscending1);
   EXPECT_EQ(iter_->sample_size(), 10);
-  int64 base_dts = kSumAscending1 + moof.tracks[1].decode_time.decode_time;
+  int64_t base_dts = kSumAscending1 + moof.tracks[1].decode_time.decode_time;
   EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(base_dts, kVideoScale));
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(10, kVideoScale));
   EXPECT_FALSE(iter_->is_keyframe());
@@ -438,8 +431,8 @@ TEST_F(TrackRunIteratorTest, ReorderingTest) {
   // maximum compatibility, these values are biased up to [2, 5, 0], and the
   // extra 80ms is removed via the edit list.
   MovieFragment moof = CreateFragment();
-  std::vector<int32>& cts_offsets =
-    moof.tracks[1].runs[0].sample_composition_time_offsets;
+  std::vector<int32_t>& cts_offsets =
+      moof.tracks[1].runs[0].sample_composition_time_offsets;
   cts_offsets.resize(10);
   cts_offsets[0] = 2;
   cts_offsets[1] = 5;
@@ -487,7 +480,7 @@ TEST_F(TrackRunIteratorTest, DecryptConfigTest) {
   EXPECT_EQ(iter_->track_id(), 2u);
   EXPECT_TRUE(iter_->is_encrypted());
   EXPECT_TRUE(iter_->AuxInfoNeedsToBeCached());
-  EXPECT_EQ(static_cast<uint32>(iter_->aux_info_size()), arraysize(kAuxInfo));
+  EXPECT_EQ(static_cast<uint32_t>(iter_->aux_info_size()), arraysize(kAuxInfo));
   EXPECT_EQ(iter_->aux_info_offset(), 50);
   EXPECT_EQ(iter_->GetMaxClearOffset(), 50);
   EXPECT_FALSE(iter_->CacheAuxInfo(NULL, 0));

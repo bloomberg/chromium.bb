@@ -103,12 +103,13 @@ void EncodingEventSubscriber::OnReceiveFrameEvent(
   } else if (frame_event.type == FRAME_ENCODED) {
     event_proto->set_encoded_frame_size(frame_event.size);
     if (frame_event.encoder_cpu_utilization >= 0.0) {
-      event_proto->set_encoder_cpu_percent_utilized(base::saturated_cast<int32>(
+      event_proto->set_encoder_cpu_percent_utilized(
+          base::saturated_cast<int32_t>(
               frame_event.encoder_cpu_utilization * 100.0 + 0.5));
     }
     if (frame_event.idealized_bitrate_utilization >= 0.0) {
       event_proto->set_idealized_bitrate_percent_utilized(
-          base::saturated_cast<int32>(
+          base::saturated_cast<int32_t>(
               frame_event.idealized_bitrate_utilization * 100.0 + 0.5));
     }
     if (frame_event.media_type == VIDEO_EVENT) {

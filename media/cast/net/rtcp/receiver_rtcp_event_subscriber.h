@@ -74,21 +74,21 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
   std::deque<RtcpEventPair> rtcp_events_;
 
   // Counts how many events have been removed from rtcp_events_.
-  uint64 popped_events_;
+  uint64_t popped_events_;
 
   // Events greater than send_ptrs_[0] have not been sent yet.
   // Events greater than send_ptrs_[1] have been transmit once.
   // Note that these counters use absolute numbers, so you need
   // to subtract popped_events_ before looking up the events in
   // rtcp_events_.
-  uint64 send_ptrs_[kNumResends];
+  uint64_t send_ptrs_[kNumResends];
 
   // For each frame, we push how many events have been added to
   // rtcp_events_ so far. We use this to make sure that
   // send_ptrs_[N+1] is always at least kResendDelay frames behind
   // send_ptrs_[N]. Old information is removed so that information
   // for (kNumResends + 1) * kResendDelay frames remain.
-  std::deque<uint64> event_levels_for_past_frames_;
+  std::deque<uint64_t> event_levels_for_past_frames_;
 
   // Ensures methods are only called on the main thread.
   base::ThreadChecker thread_checker_;

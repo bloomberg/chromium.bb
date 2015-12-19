@@ -162,8 +162,8 @@ class MockBufferedDataSourceHost : public BufferedDataSourceHost {
   MockBufferedDataSourceHost() {}
   virtual ~MockBufferedDataSourceHost() {}
 
-  MOCK_METHOD1(SetTotalBytes, void(int64 total_bytes));
-  MOCK_METHOD2(AddBufferedByteRange, void(int64 start, int64 end));
+  MOCK_METHOD1(SetTotalBytes, void(int64_t total_bytes));
+  MOCK_METHOD2(AddBufferedByteRange, void(int64_t start, int64_t end));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBufferedDataSourceHost);
@@ -203,8 +203,8 @@ class MockMultibufferDataSource : public MultibufferDataSource {
   DISALLOW_COPY_AND_ASSIGN(MockMultibufferDataSource);
 };
 
-static const int64 kFileSize = 5000000;
-static const int64 kFarReadPosition = 3997696;
+static const int64_t kFileSize = 5000000;
+static const int64_t kFarReadPosition = 3997696;
 static const int kDataSize = 32 << 10;
 
 static const char kHttpUrl[] = "http://localhost/foo.webm";
@@ -331,7 +331,7 @@ class MultibufferDataSourceTest : public testing::Test {
 
   MOCK_METHOD1(ReadCallback, void(int size));
 
-  void ReadAt(int64 position, int64 howmuch = kDataSize) {
+  void ReadAt(int64_t position, int64_t howmuch = kDataSize) {
     data_source_->Read(position, howmuch, buffer_,
                        base::Bind(&MultibufferDataSourceTest::ReadCallback,
                                   base::Unretained(this)));
@@ -429,11 +429,11 @@ class MultibufferDataSourceTest : public testing::Test {
   void set_preload(MultibufferDataSource::Preload preload) {
     preload_ = preload;
   }
-  int64 preload_high() {
+  int64_t preload_high() {
     CHECK(loader());
     return loader()->preload_high();
   }
-  int64 preload_low() {
+  int64_t preload_low() {
     CHECK(loader());
     return loader()->preload_low();
   }
@@ -459,7 +459,7 @@ class MultibufferDataSourceTest : public testing::Test {
   base::MessageLoop message_loop_;
 
   // Used for calling MultibufferDataSource::Read().
-  uint8 buffer_[kDataSize * 2];
+  uint8_t buffer_[kDataSize * 2];
 
   DISALLOW_COPY_AND_ASSIGN(MultibufferDataSourceTest);
 };
@@ -863,7 +863,7 @@ TEST_F(MultibufferDataSourceTest, File_Successful) {
 TEST_F(MultibufferDataSourceTest, StopDuringRead) {
   InitializeWith206Response();
 
-  uint8 buffer[256];
+  uint8_t buffer[256];
   data_source_->Read(0, arraysize(buffer), buffer,
                      base::Bind(&MultibufferDataSourceTest::ReadCallback,
                                 base::Unretained(this)));

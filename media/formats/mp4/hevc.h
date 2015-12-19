@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/formats/mp4/bitstream_converter.h"
@@ -27,32 +26,32 @@ struct MEDIA_EXPORT HEVCDecoderConfigurationRecord : Box {
   //       context and therefore the box header is not expected to be present
   //       in |data|.
   // Returns true if |data| was successfully parsed.
-  bool Parse(const uint8* data, int data_size);
+  bool Parse(const uint8_t* data, int data_size);
 
-  uint8 configurationVersion;
-  uint8 general_profile_space;
-  uint8 general_tier_flag;
-  uint8 general_profile_idc;
-  uint32 general_profile_compatibility_flags;
-  uint64 general_constraint_indicator_flags;
-  uint8 general_level_idc;
-  uint16 min_spatial_segmentation_idc;
-  uint8 parallelismType;
-  uint8 chromaFormat;
-  uint8 bitDepthLumaMinus8;
-  uint8 bitDepthChromaMinus8;
-  uint16 avgFrameRate;
-  uint8 constantFrameRate;
-  uint8 numTemporalLayers;
-  uint8 temporalIdNested;
-  uint8 lengthSizeMinusOne;
-  uint8 numOfArrays;
+  uint8_t configurationVersion;
+  uint8_t general_profile_space;
+  uint8_t general_tier_flag;
+  uint8_t general_profile_idc;
+  uint32_t general_profile_compatibility_flags;
+  uint64_t general_constraint_indicator_flags;
+  uint8_t general_level_idc;
+  uint16_t min_spatial_segmentation_idc;
+  uint8_t parallelismType;
+  uint8_t chromaFormat;
+  uint8_t bitDepthLumaMinus8;
+  uint8_t bitDepthChromaMinus8;
+  uint16_t avgFrameRate;
+  uint8_t constantFrameRate;
+  uint8_t numTemporalLayers;
+  uint8_t temporalIdNested;
+  uint8_t lengthSizeMinusOne;
+  uint8_t numOfArrays;
 
-  typedef std::vector<uint8> HVCCNALUnit;
+  typedef std::vector<uint8_t> HVCCNALUnit;
   struct HVCCNALArray {
     HVCCNALArray();
     ~HVCCNALArray();
-    uint8 first_byte;
+    uint8_t first_byte;
     std::vector<HVCCNALUnit> units;
   };
   std::vector<HVCCNALArray> arrays;
@@ -66,11 +65,11 @@ class MEDIA_EXPORT HEVC {
  public:
   static bool ConvertConfigToAnnexB(
       const HEVCDecoderConfigurationRecord& hevc_config,
-      std::vector<uint8>* buffer);
+      std::vector<uint8_t>* buffer);
 
   static bool InsertParamSetsAnnexB(
       const HEVCDecoderConfigurationRecord& hevc_config,
-      std::vector<uint8>* buffer,
+      std::vector<uint8_t>* buffer,
       std::vector<SubsampleEntry>* subsamples);
 
   // Verifies that the contents of |buffer| conform to
@@ -80,9 +79,10 @@ class MEDIA_EXPORT HEVC {
   // Returns true if |buffer| contains conformant Annex B data
   // TODO(servolk): Remove the std::vector version when we can use,
   // C++11's std::vector<T>::data() method.
-  static bool IsValidAnnexB(const std::vector<uint8>& buffer,
+  static bool IsValidAnnexB(const std::vector<uint8_t>& buffer,
                             const std::vector<SubsampleEntry>& subsamples);
-  static bool IsValidAnnexB(const uint8* buffer, size_t size,
+  static bool IsValidAnnexB(const uint8_t* buffer,
+                            size_t size,
                             const std::vector<SubsampleEntry>& subsamples);
 };
 
@@ -92,9 +92,10 @@ class HEVCBitstreamConverter : public BitstreamConverter {
       scoped_ptr<HEVCDecoderConfigurationRecord> hevc_config);
 
   // BitstreamConverter interface
-  bool ConvertFrame(std::vector<uint8>* frame_buf,
+  bool ConvertFrame(std::vector<uint8_t>* frame_buf,
                     bool is_keyframe,
                     std::vector<SubsampleEntry>* subsamples) const override;
+
  private:
   ~HEVCBitstreamConverter() override;
   scoped_ptr<HEVCDecoderConfigurationRecord> hevc_config_;

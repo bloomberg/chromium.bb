@@ -5,7 +5,6 @@
 #ifndef MEDIA_BLINK_CDM_RESULT_PROMISE_H_
 #define MEDIA_BLINK_CDM_RESULT_PROMISE_H_
 
-#include "base/basictypes.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/media_keys.h"
 #include "media/blink/cdm_result_promise_helper.h"
@@ -31,7 +30,7 @@ class CdmResultPromise : public media::CdmPromiseTemplate<T...> {
   // CdmPromiseTemplate<T> implementation.
   void resolve(const T&... result) override;
   void reject(media::MediaKeys::Exception exception_code,
-              uint32 system_code,
+              uint32_t system_code,
               const std::string& error_message) override;
 
  private:
@@ -67,7 +66,7 @@ inline void CdmResultPromise<>::resolve() {
 
 template <typename... T>
 void CdmResultPromise<T...>::reject(media::MediaKeys::Exception exception_code,
-                                    uint32 system_code,
+                                    uint32_t system_code,
                                     const std::string& error_message) {
   MarkPromiseSettled();
   ReportCdmResultUMA(uma_name_,

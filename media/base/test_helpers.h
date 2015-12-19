@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_TEST_HELPERS_H_
 #define MEDIA_BASE_TEST_HELPERS_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_log.h"

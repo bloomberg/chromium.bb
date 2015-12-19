@@ -16,24 +16,24 @@ namespace cast {
 // RFC 3550 page 44, including end null.
 static const size_t kRtcpCnameSize = 256;
 
-static const uint32 kCast = ('C' << 24) + ('A' << 16) + ('S' << 8) + 'T';
+static const uint32_t kCast = ('C' << 24) + ('A' << 16) + ('S' << 8) + 'T';
 
-static const uint8 kReceiverLogSubtype = 2;
+static const uint8_t kReceiverLogSubtype = 2;
 
 static const size_t kRtcpMaxReceiverLogMessages = 256;
 static const size_t kRtcpMaxCastLossFields = 100;
 
 struct RtcpCommonHeader {
-  uint8 V;   // Version.
+  uint8_t V;   // Version.
   bool P;    // Padding.
-  uint8 IC;  // Item count / subtype.
-  uint8 PT;  // Packet Type.
+  uint8_t IC;  // Item count / subtype.
+  uint8_t PT;  // Packet Type.
   size_t length_in_octets;
 };
 
 class RtcpParser {
  public:
-  RtcpParser(uint32 local_ssrc, uint32 remote_ssrc);
+  RtcpParser(uint32_t local_ssrc, uint32_t remote_ssrc);
   ~RtcpParser();
 
   bool Parse(base::BigEndianReader* reader);
@@ -44,8 +44,8 @@ class RtcpParser {
   }
 
   bool has_last_report() const { return has_last_report_; }
-  uint32 last_report() const { return last_report_; }
-  uint32 delay_since_last_report() const { return delay_since_last_report_; }
+  uint32_t last_report() const { return last_report_; }
+  uint32_t delay_since_last_report() const { return delay_since_last_report_; }
 
   bool has_receiver_log() const { return !receiver_log_.empty(); }
   const RtcpReceiverLogMessage& receiver_log() const { return receiver_log_; }
@@ -80,18 +80,18 @@ class RtcpParser {
                            const RtcpCommonHeader& header);
   bool ParseExtendedReportReceiverReferenceTimeReport(
       base::BigEndianReader* reader,
-      uint32 remote_ssrc);
+      uint32_t remote_ssrc);
   bool ParseExtendedReportDelaySinceLastReceiverReport(
       base::BigEndianReader* reader);
 
-  uint32 local_ssrc_;
-  uint32 remote_ssrc_;
+  uint32_t local_ssrc_;
+  uint32_t remote_ssrc_;
 
   bool has_sender_report_;
   RtcpSenderInfo sender_report_;
 
-  uint32 last_report_;
-  uint32 delay_since_last_report_;
+  uint32_t last_report_;
+  uint32_t delay_since_last_report_;
   bool has_last_report_;
 
   // |receiver_log_| is a vector vector, no need for has_*.
@@ -109,10 +109,10 @@ class RtcpParser {
 // Converts a log event type to an integer value.
 // NOTE: We have only allocated 4 bits to represent the type of event over the
 // wire. Therefore, this function can only return values from 0 to 15.
-uint8 ConvertEventTypeToWireFormat(CastLoggingEvent event);
+uint8_t ConvertEventTypeToWireFormat(CastLoggingEvent event);
 
 // The inverse of |ConvertEventTypeToWireFormat()|.
-CastLoggingEvent TranslateToLogEventFromWireFormat(uint8 event);
+CastLoggingEvent TranslateToLogEventFromWireFormat(uint8_t event);
 
 // Splits an NTP timestamp having a microsecond timebase into the standard two
 // 32-bit integer wire format.

@@ -12,7 +12,7 @@ namespace cast {
 
 // Partially parse / skip data in the header and the first partition,
 // and return the base quantizer in the range [0,63], or -1 on parse error.
-int ParseVp8HeaderQuantizer(const uint8* data, size_t size);
+int ParseVp8HeaderQuantizer(const uint8_t* data, size_t size);
 
 }  // namespace cast
 }  // namespace media

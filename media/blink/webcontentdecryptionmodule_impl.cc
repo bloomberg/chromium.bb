@@ -4,7 +4,6 @@
 
 #include "webcontentdecryptionmodule_impl.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
@@ -87,13 +86,13 @@ WebContentDecryptionModuleImpl::createSession() {
 }
 
 void WebContentDecryptionModuleImpl::setServerCertificate(
-    const uint8* server_certificate,
+    const uint8_t* server_certificate,
     size_t server_certificate_length,
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(server_certificate);
   adapter_->SetServerCertificate(
-      std::vector<uint8>(server_certificate,
-                         server_certificate + server_certificate_length),
+      std::vector<uint8_t>(server_certificate,
+                           server_certificate + server_certificate_length),
       scoped_ptr<SimpleCdmPromise>(
           new CdmResultPromise<>(result, std::string())));
 }

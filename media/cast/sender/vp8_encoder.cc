@@ -229,8 +229,8 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
         TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency);
     encoded_frame->reference_time = reference_time;
     encoded_frame->data.assign(
-        static_cast<const uint8*>(pkt->data.frame.buf),
-        static_cast<const uint8*>(pkt->data.frame.buf) + pkt->data.frame.sz);
+        static_cast<const uint8_t*>(pkt->data.frame.buf),
+        static_cast<const uint8_t*>(pkt->data.frame.buf) + pkt->data.frame.sz);
     break;  // Done, since all data is provided in one CX_FRAME_PKT packet.
   }
   DCHECK(!encoded_frame->data.empty())
@@ -291,13 +291,13 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   }
 }
 
-void Vp8Encoder::UpdateRates(uint32 new_bitrate) {
+void Vp8Encoder::UpdateRates(uint32_t new_bitrate) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!is_initialized())
     return;
 
-  uint32 new_bitrate_kbit = new_bitrate / 1000;
+  uint32_t new_bitrate_kbit = new_bitrate / 1000;
   if (config_.rc_target_bitrate == new_bitrate_kbit)
     return;
 

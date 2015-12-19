@@ -16,13 +16,11 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/basictypes.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "jni/WebAudioMediaCodecBridge_jni.h"
 #include "media/base/android/webaudio_media_codec_info.h"
-
 
 using base::android::AttachCurrentThread;
 

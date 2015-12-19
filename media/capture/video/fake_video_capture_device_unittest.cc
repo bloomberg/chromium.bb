@@ -32,7 +32,7 @@ class MockBuffer : public VideoCaptureDevice::Client::Buffer {
   MockBuffer(int buffer_id, size_t mapped_size)
       : id_(buffer_id),
         mapped_size_(mapped_size),
-        data_(new uint8[mapped_size]) {}
+        data_(new uint8_t[mapped_size]) {}
   ~MockBuffer() override { delete[] data_; }
 
   int id() const override { return id_; }
@@ -49,7 +49,7 @@ class MockBuffer : public VideoCaptureDevice::Client::Buffer {
  private:
   const int id_;
   const size_t mapped_size_;
-  uint8* const data_;
+  uint8_t* const data_;
 };
 
 class MockClient : public VideoCaptureDevice::Client {
@@ -62,16 +62,16 @@ class MockClient : public VideoCaptureDevice::Client {
       : frame_cb_(frame_cb) {}
 
   // Client virtual methods for capturing using Device Buffers.
-  void OnIncomingCapturedData(const uint8* data,
+  void OnIncomingCapturedData(const uint8_t* data,
                               int length,
                               const VideoCaptureFormat& format,
                               int rotation,
                               const base::TimeTicks& timestamp) {
     frame_cb_.Run(format);
   }
-  void OnIncomingCapturedYuvData(const uint8* y_data,
-                                 const uint8* u_data,
-                                 const uint8* v_data,
+  void OnIncomingCapturedYuvData(const uint8_t* y_data,
+                                 const uint8_t* u_data,
+                                 const uint8_t* v_data,
                                  size_t y_stride,
                                  size_t u_stride,
                                  size_t v_stride,

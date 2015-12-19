@@ -8,7 +8,6 @@
 #include <list>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -31,7 +30,8 @@ class MEDIA_EXPORT EsParser {
 
   // ES parsing.
   // Should use kNoTimestamp when a timestamp is not valid.
-  bool Parse(const uint8* buf, int size,
+  bool Parse(const uint8_t* buf,
+             int size,
              base::TimeDelta pts,
              DecodeTimestamp dts);
 
@@ -62,7 +62,7 @@ class MEDIA_EXPORT EsParser {
   // This timing descriptor and all the ones that come before (in stream order)
   // are removed from list |timing_desc_list_|.
   // If no timing descriptor is found, then the default TimingDesc is returned.
-  TimingDesc GetTimingDescriptor(int64 es_byte_count);
+  TimingDesc GetTimingDescriptor(int64_t es_byte_count);
 
   // Bytes of the ES stream that have not been emitted yet.
   scoped_ptr<media::OffsetByteQueue> es_queue_;
@@ -79,7 +79,7 @@ class MEDIA_EXPORT EsParser {
   // in Annex A of Rec. ITU-T H.264 | ISO/IEC 14496-10 video, if a PTS is
   // present in the PES packet header, it shall refer to the first AVC access
   // unit that commences in this PES packet.
-  std::list<std::pair<int64, TimingDesc> > timing_desc_list_;
+  std::list<std::pair<int64_t, TimingDesc>> timing_desc_list_;
 
   DISALLOW_COPY_AND_ASSIGN(EsParser);
 };

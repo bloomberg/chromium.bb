@@ -188,7 +188,7 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
 
 HRESULT SinkInputPin::Receive(IMediaSample* sample) {
   const int length = sample->GetActualDataLength();
-  uint8* buffer = NULL;
+  uint8_t* buffer = NULL;
 
   if (length <= 0) {
     DLOG(WARNING) << "Media sample length is 0 or less.";

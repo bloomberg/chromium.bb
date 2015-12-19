@@ -603,7 +603,7 @@ TEST_P(AnimatedContentSamplerParameterizedTest, FrameTimestampsAreSmooth) {
   // of 30 Hz content on a 60 Hz v-sync interval should result in
   // display_counts[2] == 10.  Quit early if any one frame was obviously
   // repeated too many times.
-  const int64 max_expected_repeats_per_frame =
+  const int64_t max_expected_repeats_per_frame =
       1 + ComputeExpectedSamplingPeriod() / GetParam().vsync_interval;
   std::vector<size_t> display_counts(max_expected_repeats_per_frame + 1, 0);
   base::TimeTicks last_present_time = frame_timestamps.front();

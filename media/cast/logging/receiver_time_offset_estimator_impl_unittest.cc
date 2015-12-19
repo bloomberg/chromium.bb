@@ -50,7 +50,7 @@ class ReceiverTimeOffsetEstimatorImplTest : public ::testing::Test {
 // Event C occurred at sender time 60ms.
 // Then the bound after all 3 events have arrived is [130-60=70, 130-20=110].
 TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
-  int64 true_offset_ms = 100;
+  int64_t true_offset_ms = 100;
   receiver_clock_.Advance(base::TimeDelta::FromMilliseconds(true_offset_ms));
 
   base::TimeDelta lower_bound;
@@ -59,7 +59,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
   RtpTimestamp rtp_timestamp = 0;
-  uint32 frame_id = 0;
+  uint32_t frame_id = 0;
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
 
@@ -122,8 +122,8 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
 
   EXPECT_TRUE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
-  int64 lower_bound_ms = lower_bound.InMilliseconds();
-  int64 upper_bound_ms = upper_bound.InMilliseconds();
+  int64_t lower_bound_ms = lower_bound.InMilliseconds();
+  int64_t upper_bound_ms = upper_bound.InMilliseconds();
   EXPECT_EQ(70, lower_bound_ms);
   EXPECT_EQ(110, upper_bound_ms);
   EXPECT_GE(true_offset_ms, lower_bound_ms);
@@ -133,7 +133,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
 // Same scenario as above, but event C arrives before event B. It doesn't mean
 // event C occurred before event B.
 TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
-  int64 true_offset_ms = 100;
+  int64_t true_offset_ms = 100;
   receiver_clock_.Advance(base::TimeDelta::FromMilliseconds(true_offset_ms));
 
   base::TimeDelta lower_bound;
@@ -142,7 +142,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
   RtpTimestamp rtp_timestamp = 0;
-  uint32 frame_id = 0;
+  uint32_t frame_id = 0;
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
 
@@ -208,8 +208,8 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
 
   EXPECT_TRUE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
-  int64 lower_bound_ms = lower_bound.InMilliseconds();
-  int64 upper_bound_ms = upper_bound.InMilliseconds();
+  int64_t lower_bound_ms = lower_bound.InMilliseconds();
+  int64_t upper_bound_ms = upper_bound.InMilliseconds();
   EXPECT_EQ(70, lower_bound_ms);
   EXPECT_EQ(110, upper_bound_ms);
   EXPECT_GE(true_offset_ms, lower_bound_ms);
@@ -217,7 +217,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
 }
 
 TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
-  int64 true_offset_ms = 100;
+  int64_t true_offset_ms = 100;
   receiver_clock_.Advance(base::TimeDelta::FromMilliseconds(true_offset_ms));
 
   base::TimeDelta lower_bound;
@@ -387,8 +387,8 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
   cast_environment_->logger()->DispatchFrameEvent(ack_event.Pass());
 
   EXPECT_TRUE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
-  int64 lower_bound_ms = lower_bound.InMilliseconds();
-  int64 upper_bound_ms = upper_bound.InMilliseconds();
+  int64_t lower_bound_ms = lower_bound.InMilliseconds();
+  int64_t upper_bound_ms = upper_bound.InMilliseconds();
   EXPECT_GT(lower_bound_ms, 90);
   EXPECT_LE(lower_bound_ms, true_offset_ms);
   EXPECT_LT(upper_bound_ms, 150);

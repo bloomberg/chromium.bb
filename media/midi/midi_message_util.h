@@ -5,10 +5,12 @@
 #ifndef MEDIA_MIDI_MIDI_MESSAGE_UTIL_H_
 #define MEDIA_MIDI_MIDI_MESSAGE_UTIL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "media/midi/midi_export.h"
 
 namespace media {
@@ -20,15 +22,15 @@ namespace midi {
 // - MIDI System Exclusive message.
 // - End of System Exclusive message.
 // - Reserved System Common Message (0xf4, 0xf5)
-MIDI_EXPORT size_t GetMidiMessageLength(uint8 status_byte);
+MIDI_EXPORT size_t GetMidiMessageLength(uint8_t status_byte);
 
-const uint8 kSysExByte = 0xf0;
-const uint8 kEndOfSysExByte = 0xf7;
+const uint8_t kSysExByte = 0xf0;
+const uint8_t kEndOfSysExByte = 0xf7;
 
-const uint8 kSysMessageBitMask = 0xf0;
-const uint8 kSysMessageBitPattern = 0xf0;
-const uint8 kSysRTMessageBitMask = 0xf8;
-const uint8 kSysRTMessageBitPattern = 0xf8;
+const uint8_t kSysMessageBitMask = 0xf0;
+const uint8_t kSysMessageBitPattern = 0xf0;
+const uint8_t kSysRTMessageBitMask = 0xf8;
+const uint8_t kSysRTMessageBitPattern = 0xf8;
 
 }  // namespace midi
 }  // namespace media

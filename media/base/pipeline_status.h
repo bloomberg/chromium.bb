@@ -39,10 +39,10 @@ enum PipelineStatus {
 typedef base::Callback<void(PipelineStatus)> PipelineStatusCB;
 
 struct PipelineStatistics {
-  uint64_t audio_bytes_decoded = 0;  // Should be uint64?
-  uint32 video_bytes_decoded = 0;    // Should be uint64?
-  uint32 video_frames_decoded = 0;
-  uint32 video_frames_dropped = 0;
+  uint64_t audio_bytes_decoded = 0;  // Should be uint64_t?
+  uint32_t video_bytes_decoded = 0;  // Should be uint64_t?
+  uint32_t video_frames_decoded = 0;
+  uint32_t video_frames_dropped = 0;
   int64_t audio_memory_usage = 0;
   int64_t video_memory_usage = 0;
 };

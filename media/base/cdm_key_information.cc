@@ -11,23 +11,23 @@ CdmKeyInformation::CdmKeyInformation()
     : status(INTERNAL_ERROR), system_code(0) {
 }
 
-CdmKeyInformation::CdmKeyInformation(const std::vector<uint8>& key_id,
+CdmKeyInformation::CdmKeyInformation(const std::vector<uint8_t>& key_id,
                                      KeyStatus status,
-                                     uint32 system_code)
+                                     uint32_t system_code)
     : key_id(key_id), status(status), system_code(system_code) {}
 
 CdmKeyInformation::CdmKeyInformation(const std::string& key_id,
                                      KeyStatus status,
-                                     uint32 system_code)
-    : CdmKeyInformation(reinterpret_cast<const uint8*>(key_id.data()),
+                                     uint32_t system_code)
+    : CdmKeyInformation(reinterpret_cast<const uint8_t*>(key_id.data()),
                         key_id.size(),
                         status,
                         system_code) {}
 
-CdmKeyInformation::CdmKeyInformation(const uint8* key_id_data,
+CdmKeyInformation::CdmKeyInformation(const uint8_t* key_id_data,
                                      size_t key_id_length,
                                      KeyStatus status,
-                                     uint32 system_code)
+                                     uint32_t system_code)
     : key_id(key_id_data, key_id_data + key_id_length),
       status(status),
       system_code(system_code) {}

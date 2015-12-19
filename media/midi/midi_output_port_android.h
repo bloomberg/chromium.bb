@@ -22,7 +22,7 @@ class MidiOutputPortAndroid final {
   // Returns the when the operation succeeds or the port is already open.
   bool Open();
   void Close();
-  void Send(const std::vector<uint8>& data);
+  void Send(const std::vector<uint8_t>& data);
 
   static bool Register(JNIEnv* env);
 
