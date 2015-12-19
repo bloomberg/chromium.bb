@@ -209,7 +209,6 @@ crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ P
 crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure ]
 crbug.com/248938 [ Win ] virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
-crbug.com/503874 http/tests/inspector/sources/debugger/worker-debugging-script-mapping.html [ Pass Failure ]
 crbug.com/513143 virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/display-none-terminates-animation.html  [ Pass Failure ]
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
