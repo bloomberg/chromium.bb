@@ -2521,6 +2521,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>TBD.</summary>
 </histogram>
 
+<histogram name="Autofill.SaveCreditCardPrompt"
+    enum="AutofillSaveCreditCardPrompt">
+  <owner>jdonnelly@chromium.org</owner>
+  <summary>
+    The relative frequency with which users accept or deny the Autofill save
+    credit card prompt.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.ScanCreditCard.Completed" enum="BooleanCompleted">
   <owner>rouslan@chromium.org</owner>
   <summary>Whether a credit card scan was completed or cancelled.</summary>
@@ -56356,6 +56365,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="Response improves local (empty)"/>
 </enum>
 
+<enum name="AutofillSaveCreditCardPrompt" type="int">
+  <int value="0" label="Show requested"/>
+  <int value="1" label="Shown"/>
+  <int value="2" label="Ended, invalid legal message"/>
+  <int value="3" label="Ended, user explicitly accepted prompt"/>
+  <int value="4" label="Ended, user explicitly denied prompt"/>
+  <int value="5" label="Ended, navigated away from page while prompt showing"/>
+  <int value="6" label="Ended, navigated away from page while prompt hidden"/>
+  <int value="7" label="Dismissed, user clicked Learn More link"/>
+  <int value="8" label="Dismissed, user clicked a legal message link"/>
+</enum>
+
 <enum name="AutofillScanCreditCardPrompt" type="int">
   <int value="0" label="Scan card shown"/>
   <int value="1" label="Scan card selected"/>
@@ -79895,6 +79916,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Success" label="Success"/>
   <affected-histogram name="Autofill.UnmaskPrompt.GetRealPanDuration"/>
   <affected-histogram name="Autofill.UnmaskPrompt.UnmaskingDuration"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AutofillSaveCreditCardPromptDestination"
+    separator=".">
+  <suffix name="Local" label="to local storage"/>
+  <suffix name="Upload" label="to upload"/>
+  <affected-histogram name="Autofill.SaveCreditCardPrompt"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AutofillSaveCreditCardPromptShow" separator=".">
+  <suffix name="FirstShow"
+      label="first time prompt is shown for a single credit card submit"/>
+  <suffix name="Reshows" label="all shows after the first one, combined"/>
+  <affected-histogram name="Autofill.SaveCreditCardPrompt.Local"/>
+  <affected-histogram name="Autofill.SaveCreditCardPrompt.Upload"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AutofillServerExperiments">

@@ -78,23 +78,28 @@ class SaveCardBubbleControllerImpl
 
   const LegalMessageLines& GetLegalMessageLines() const override;
 
- private:
-  friend class content::WebContentsUserData<SaveCardBubbleControllerImpl>;
-
+ protected:
   explicit SaveCardBubbleControllerImpl(content::WebContents* web_contents);
   ~SaveCardBubbleControllerImpl() override;
 
-  void ShowBubble(bool user_action);
-
-  // Update the visibility and toggled state of the Omnibox save card icon.
-  void UpdateIcon();
-
-  void OpenUrl(const GURL& url);
+  // Returns the time elapsed since |timer_| was initialized.
+  // Exists for testing.
+  virtual base::TimeDelta Elapsed() const;
 
   // content::WebContentsObserver:
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
+
+ private:
+  friend class content::WebContentsUserData<SaveCardBubbleControllerImpl>;
+
+  void ShowBubble();
+
+  // Update the visibility and toggled state of the Omnibox save card icon.
+  void UpdateIcon();
+
+  void OpenUrl(const GURL& url);
 
   // Weak reference. Will be nullptr if no bubble is currently shown.
   SaveCardBubbleView* save_card_bubble_view_;
@@ -106,6 +111,9 @@ class SaveCardBubbleControllerImpl
 
   // Governs whether the upload or local save version of the UI should be shown.
   bool is_uploading_;
+
+  // Whether ReshowBubble() has been called since ShowBubbleFor*() was called.
+  bool is_reshow_;
 
   // If no legal message should be shown then this variable is an empty vector.
   LegalMessageLines legal_message_lines_;

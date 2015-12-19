@@ -6,17 +6,45 @@
 
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
+#include "content/public/browser/navigation_details.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::Bucket;
+using testing::ElementsAre;
 
 namespace autofill {
 
 typedef SaveCardBubbleController::LegalMessageLine LegalMessageLine;
 typedef SaveCardBubbleController::LegalMessageLines LegalMessageLines;
+
+class TestSaveCardBubbleControllerImpl : public SaveCardBubbleControllerImpl {
+ public:
+  static void CreateForTesting(content::WebContents* web_contents) {
+    web_contents->SetUserData(
+        UserDataKey(), new TestSaveCardBubbleControllerImpl(web_contents));
+  }
+
+  explicit TestSaveCardBubbleControllerImpl(content::WebContents* web_contents)
+      : SaveCardBubbleControllerImpl(web_contents) {}
+
+  void set_elapsed(base::TimeDelta elapsed) { elapsed_ = elapsed; }
+
+  using SaveCardBubbleControllerImpl::DidNavigateMainFrame;
+
+ protected:
+  base::TimeDelta Elapsed() const override { return elapsed_; }
+
+ private:
+  base::TimeDelta elapsed_;
+};
 
 class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
  public:
@@ -25,7 +53,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     AddTab(browser(), GURL("about:blank"));
-    SaveCardBubbleControllerImpl::CreateForWebContents(
+    TestSaveCardBubbleControllerImpl::CreateForTesting(
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 
@@ -72,10 +100,29 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     return true;
   }
 
+  void ShowLocalBubble() {
+    controller()->ShowBubbleForLocalSave(base::Bind(&SaveCardCallback));
+  }
+
+  void ShowUploadBubble() {
+    SetLegalMessage(
+        "{"
+        "  \"line\" : [ {"
+        "     \"template\": \"This is the entire message.\""
+        "  } ]"
+        "}");
+  }
+
+  void CloseAndReshowBubble() {
+    controller()->OnBubbleClosed();
+    controller()->ReshowBubble();
+  }
+
  protected:
-  SaveCardBubbleControllerImpl* controller() {
-    return SaveCardBubbleControllerImpl::FromWebContents(
-        browser()->tab_strip_model()->GetActiveWebContents());
+  TestSaveCardBubbleControllerImpl* controller() {
+    return static_cast<TestSaveCardBubbleControllerImpl*>(
+        TestSaveCardBubbleControllerImpl::FromWebContents(
+            browser()->tab_strip_model()->GetActiveWebContents()));
   }
 
  private:
@@ -103,7 +150,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleControllerImplTest);
 };
 
-TEST_F(SaveCardBubbleControllerImplTest, NoParameters) {
+TEST_F(SaveCardBubbleControllerImplTest, LegalMessage_NoParameters) {
   SetLegalMessage(
       "{"
       "  \"line\" : [ {"
@@ -118,7 +165,7 @@ TEST_F(SaveCardBubbleControllerImplTest, NoParameters) {
       CompareLegalMessages(expected, controller()->GetLegalMessageLines()));
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, SingleParameter) {
+TEST_F(SaveCardBubbleControllerImplTest, LegalMessage_SingleParameter) {
   SetLegalMessage(
       "{"
       "  \"line\" : [ {"
@@ -140,7 +187,7 @@ TEST_F(SaveCardBubbleControllerImplTest, SingleParameter) {
       CompareLegalMessages(expected, controller()->GetLegalMessageLines()));
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, MissingUrl) {
+TEST_F(SaveCardBubbleControllerImplTest, LegalMessage_MissingUrl) {
   SetLegalMessage(
       "{"
       "  \"line\" : [ {"
@@ -155,7 +202,7 @@ TEST_F(SaveCardBubbleControllerImplTest, MissingUrl) {
                                    controller()->GetLegalMessageLines()));
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, MissingDisplayText) {
+TEST_F(SaveCardBubbleControllerImplTest, LegalMessage_MissingDisplayText) {
   SetLegalMessage(
       "{"
       "  \"line\" : [ {"
@@ -170,7 +217,7 @@ TEST_F(SaveCardBubbleControllerImplTest, MissingDisplayText) {
                                    controller()->GetLegalMessageLines()));
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, EscapeCharacters) {
+TEST_F(SaveCardBubbleControllerImplTest, LegalMessage_EscapeCharacters) {
   SetLegalMessage(
       "{"
       "  \"line\" : [ {"
@@ -192,7 +239,7 @@ TEST_F(SaveCardBubbleControllerImplTest, EscapeCharacters) {
       CompareLegalMessages(expected, controller()->GetLegalMessageLines()));
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, ConsecutiveDollarSigns) {
+TEST_F(SaveCardBubbleControllerImplTest, LegalMessage_ConsecutiveDollarSigns) {
   SetLegalMessage(
       "{"
       "  \"line\" : [ {"
@@ -213,7 +260,7 @@ TEST_F(SaveCardBubbleControllerImplTest, ConsecutiveDollarSigns) {
       CompareLegalMessages(expected, controller()->GetLegalMessageLines()));
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, DollarAndParenthesis) {
+TEST_F(SaveCardBubbleControllerImplTest, LegalMessage_DollarAndParenthesis) {
   // "${" does not expand correctly (see comment in
   // ReplaceTemplatePlaceholders() in save_card_bubble_controller_impl.cc).
   // If this is fixed and this test starts to fail, please update the
@@ -234,7 +281,7 @@ TEST_F(SaveCardBubbleControllerImplTest, DollarAndParenthesis) {
                                    controller()->GetLegalMessageLines()));
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, MultipleParameters) {
+TEST_F(SaveCardBubbleControllerImplTest, LegalMessage_MultipleParameters) {
   SetLegalMessage(
       "{"
       "  \"line\" : [ {"
@@ -264,7 +311,7 @@ TEST_F(SaveCardBubbleControllerImplTest, MultipleParameters) {
       CompareLegalMessages(expected, controller()->GetLegalMessageLines()));
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, MultipleLineElements) {
+TEST_F(SaveCardBubbleControllerImplTest, LegalMessage_MultipleLineElements) {
   SetLegalMessage(
       "{"
       "  \"line\" : [ {"
@@ -319,7 +366,7 @@ TEST_F(SaveCardBubbleControllerImplTest, MultipleLineElements) {
       CompareLegalMessages(expected, controller()->GetLegalMessageLines()));
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, EmbeddedNewlines) {
+TEST_F(SaveCardBubbleControllerImplTest, LegalMessage_EmbeddedNewlines) {
   SetLegalMessage(
       "{"
       "  \"line\" : [ {"
@@ -354,7 +401,7 @@ TEST_F(SaveCardBubbleControllerImplTest, EmbeddedNewlines) {
       CompareLegalMessages(expected, controller()->GetLegalMessageLines()));
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, MaximumPlaceholders) {
+TEST_F(SaveCardBubbleControllerImplTest, LegalMessage_MaximumPlaceholders) {
   SetLegalMessage(
       "{"
       "  \"line\" : [ {"
@@ -398,6 +445,242 @@ TEST_F(SaveCardBubbleControllerImplTest, MaximumPlaceholders) {
   LegalMessageLines expected = {expected_line};
   EXPECT_TRUE(
       CompareLegalMessages(expected, controller()->GetLegalMessageLines()));
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_FirstShow_ShowBubble) {
+  base::HistogramTester histogram_tester;
+  ShowLocalBubble();
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Local.FirstShow"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_Reshows_ShowBubble) {
+  ShowLocalBubble();
+
+  base::HistogramTester histogram_tester;
+  CloseAndReshowBubble();
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Local.Reshows"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_FirstShow_ShowBubble) {
+  base::HistogramTester histogram_tester;
+  ShowUploadBubble();
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Upload.FirstShow"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_Reshows_ShowBubble) {
+  ShowUploadBubble();
+
+  base::HistogramTester histogram_tester;
+  CloseAndReshowBubble();
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Upload.Reshows"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_FirstShow_SaveButton) {
+  ShowLocalBubble();
+
+  base::HistogramTester histogram_tester;
+  controller()->OnSaveButton();
+  controller()->OnBubbleClosed();
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_Reshows_SaveButton) {
+  ShowLocalBubble();
+  CloseAndReshowBubble();
+
+  base::HistogramTester histogram_tester;
+  controller()->OnSaveButton();
+  controller()->OnBubbleClosed();
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.Reshows",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_FirstShow_CancelButton) {
+  ShowLocalBubble();
+
+  base::HistogramTester histogram_tester;
+  controller()->OnCancelButton();
+  controller()->OnBubbleClosed();
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_Reshows_CancelButton) {
+  ShowLocalBubble();
+  CloseAndReshowBubble();
+
+  base::HistogramTester histogram_tester;
+  controller()->OnCancelButton();
+  controller()->OnBubbleClosed();
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.Reshows",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Metrics_Local_FirstShow_NavigateWhileShowing) {
+  ShowLocalBubble();
+
+  base::HistogramTester histogram_tester;
+  // Fake-navigate after bubble has been visible for a long time.
+  controller()->set_elapsed(base::TimeDelta::FromMinutes(1));
+  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
+                                     content::FrameNavigateParams());
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Metrics_Local_Reshows_NavigateWhileShowing) {
+  ShowLocalBubble();
+  CloseAndReshowBubble();
+
+  base::HistogramTester histogram_tester;
+  // Fake-navigate after bubble has been visible for a long time.
+  controller()->set_elapsed(base::TimeDelta::FromMinutes(1));
+  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
+                                     content::FrameNavigateParams());
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.Reshows",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Metrics_Local_FirstShow_NavigateWhileHidden) {
+  ShowLocalBubble();
+
+  base::HistogramTester histogram_tester;
+  controller()->OnBubbleClosed();
+  // Fake-navigate after bubble has been visible for a long time.
+  controller()->set_elapsed(base::TimeDelta::FromMinutes(1));
+  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
+                                     content::FrameNavigateParams());
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_HIDDEN, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Metrics_Local_Reshows_NavigateWhileHidden) {
+  ShowLocalBubble();
+  CloseAndReshowBubble();
+
+  base::HistogramTester histogram_tester;
+  controller()->OnBubbleClosed();
+  // Fake-navigate after bubble has been visible for a long time.
+  controller()->set_elapsed(base::TimeDelta::FromMinutes(1));
+  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
+                                     content::FrameNavigateParams());
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.Reshows",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_HIDDEN, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_FirstShow_LearnMore) {
+  ShowUploadBubble();
+
+  base::HistogramTester histogram_tester;
+  controller()->OnLearnMoreClicked();
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEARN_MORE, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_Reshows_LearnMore) {
+  ShowUploadBubble();
+  CloseAndReshowBubble();
+
+  base::HistogramTester histogram_tester;
+  controller()->OnLearnMoreClicked();
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Upload.Reshows",
+      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEARN_MORE, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Metrics_Upload_FirstShow_LegalMessageLink) {
+  ShowUploadBubble();
+
+  base::HistogramTester histogram_tester;
+  controller()->OnLegalMessageLinkClicked(GURL("http://www.example.com"));
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Metrics_Upload_Reshows_LegalMessageLink) {
+  ShowUploadBubble();
+  CloseAndReshowBubble();
+
+  base::HistogramTester histogram_tester;
+  controller()->OnLegalMessageLinkClicked(GURL("http://www.example.com"));
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Upload.Reshows",
+      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE, 1);
+}
+
+// SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE is only possible for
+// Upload.FirstShow.
+TEST_F(SaveCardBubbleControllerImplTest,
+       Metrics_Upload_FirstShow_InvalidLegalMessage) {
+  base::HistogramTester histogram_tester;
+
+  // Legal message is invalid because it's missing the url.
+  SetLegalMessage(
+      "{"
+      "  \"line\" : [ {"
+      "     \"template\": \"Panda {0}.\","
+      "     \"template_parameter\": [ {"
+      "        \"display_text\": \"bear\""
+      "     } ]"
+      "  } ]"
+      "}");
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Upload.FirstShow"),
+      ElementsAre(
+          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
+                 1)));
 }
 
 }  // namespace autofill

@@ -282,6 +282,18 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) {
 }
 
 // static
+void AutofillMetrics::LogSaveCardPromptMetric(SaveCardPromptMetric metric,
+                                              bool is_uploading,
+                                              bool is_reshow) {
+  DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_METRICS);
+  std::string destination = is_uploading ? ".Upload" : ".Local";
+  std::string show = is_reshow ? ".Reshows" : ".FirstShow";
+  LogUMAHistogramEnumeration(
+      "Autofill.SaveCreditCardPrompt" + destination + show, metric,
+      NUM_SAVE_CARD_PROMPT_METRICS);
+}
+
+// static
 void AutofillMetrics::LogScanCreditCardPromptMetric(
     ScanCreditCardPromptMetric metric) {
   DCHECK_LT(metric, NUM_SCAN_CREDIT_CARD_PROMPT_METRICS);

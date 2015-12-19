@@ -199,6 +199,39 @@ class AutofillMetrics {
     NUM_INFO_BAR_METRICS,
   };
 
+  // Metrics to measure user interaction with the save credit card prompt.
+  //
+  // SAVE_CARD_PROMPT_DISMISS_FOCUS is not stored explicitly, but can be
+  // inferred from the other metrics:
+  // SAVE_CARD_PROMPT_DISMISS_FOCUS = SHOW_REQUESTED - END_* - DISMISS_*
+  enum SaveCardPromptMetric {
+    // Prompt was requested to be shown due to:
+    // CC info being submitted (first show), or
+    // location bar icon being clicked while bubble is hidden (reshows).
+    SAVE_CARD_PROMPT_SHOW_REQUESTED,
+    // The prompt was shown successfully.
+    SAVE_CARD_PROMPT_SHOWN,
+    // The prompt was not shown because the legal message was invalid.
+    SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
+    // The user explicitly accepted the prompt.
+    SAVE_CARD_PROMPT_END_ACCEPTED,
+    // The user explicitly denied the prompt.
+    SAVE_CARD_PROMPT_END_DENIED,
+    // The prompt and icon were removed because of navigation away from the
+    // page that caused the prompt to be shown. The navigation occurred while
+    // the prompt was showing.
+    SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING,
+    // The prompt and icon were removed  because of navigation away from the
+    // page that caused the prompt to be shown. The navigation occurred while
+    // the prompt was hidden.
+    SAVE_CARD_PROMPT_END_NAVIGATION_HIDDEN,
+    // The prompt was dismissed because the user clicked the "Learn more" link.
+    SAVE_CARD_PROMPT_DISMISS_CLICK_LEARN_MORE,
+    // The prompt was dismissed because the user clicked a legal message link.
+    SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE,
+    NUM_SAVE_CARD_PROMPT_METRICS,
+  };
+
   // Metrics measuring how well we predict field types.  Exactly three such
   // metrics are logged for each fillable field in a submitted form: for
   // the heuristic prediction, for the crowd-sourced prediction, and for the
@@ -456,6 +489,9 @@ class AutofillMetrics {
 
   static void LogCardUploadDecisionMetric(CardUploadDecisionMetric metric);
   static void LogCreditCardInfoBarMetric(InfoBarMetric metric);
+  static void LogSaveCardPromptMetric(SaveCardPromptMetric metric,
+                                      bool is_uploading,
+                                      bool is_reshow);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
 
   // Should be called when credit card scan is finished. |duration| should be
