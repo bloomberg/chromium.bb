@@ -27,7 +27,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -49,7 +48,7 @@
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "net/base/net_util.h"
 
@@ -93,8 +92,7 @@ static void DownloadFileCancel(scoped_ptr<DownloadFile> download_file) {
 }
 
 bool IsDownloadResumptionEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDownloadResumption);
+  return base::FeatureList::IsEnabled(features::kDownloadResumption);
 }
 
 }  // namespace
@@ -1672,12 +1670,7 @@ void DownloadItemImpl::AutoResumeIfValid() {
 
 void DownloadItemImpl::ResumeInterruptedDownload() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // If the flag for downloads resumption isn't enabled, ignore
-  // this request.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kEnableDownloadResumption))
+  if (!IsDownloadResumptionEnabled())
     return;
 
   // If we're not interrupted, ignore the request; our caller is drunk.

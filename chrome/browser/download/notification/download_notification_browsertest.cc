@@ -668,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, InterruptDownload) {
   // Installs observers before requesting.
   NotificationUpdateObserver
       download_notification_update_observer(notification_id());
-  content::DownloadTestObserverTerminal download_terminal_observer(
+  content::DownloadTestObserverInterrupted download_terminal_observer(
       GetDownloadManager(browser()),
       1u, /* wait_count */
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
@@ -722,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
 
   // Installs observers before requesting the completion.
   NotificationAddObserver download_notification_add_observer;
-  content::DownloadTestObserverTerminal download_terminal_observer(
+  content::DownloadTestObserverInterrupted download_terminal_observer(
       download_manager,
       1u, /* wait_count */
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);

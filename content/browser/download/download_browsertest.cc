@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -26,7 +26,7 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/power_save_blocker.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -709,8 +709,12 @@ class DownloadResumptionContentTest
       public ::testing::WithParamInterface<DownloadResumptionTestType> {
  public:
   void SetUpOnMainThread() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableDownloadResumption);
+    base::FeatureList::ClearInstanceForTesting();
+    scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine(
+        features::kDownloadResumption.name, std::string());
+    base::FeatureList::SetInstance(std::move(feature_list));
+
     DownloadContentTest::SetUpOnMainThread();
 
     if (GetParam() == DownloadResumptionTestType::RESUME_WITHOUT_RENDERER)

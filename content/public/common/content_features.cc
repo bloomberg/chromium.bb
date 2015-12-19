@@ -8,6 +8,11 @@ namespace features {
 
 // All features in alphabetical order.
 
+// Downloads resumption will be controllable via a flag until it's enabled
+// permanently. See https://crbug.com/7648
+const base::Feature kDownloadResumption{"DownloadResumption",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
 // The Experimental Framework for controlling access to API experiments.
 const base::Feature kExperimentalFramework{"ExperimentalFramework",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
@@ -17,7 +17,7 @@
 #include "content/public/browser/download_destination_observer.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
@@ -192,6 +192,11 @@ class DownloadItemTest : public testing::Test {
   }
 
   virtual void SetUp() {
+    base::FeatureList::ClearInstanceForTesting();
+    scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine(features::kDownloadResumption.name,
+                                            std::string());
+    base::FeatureList::SetInstance(std::move(feature_list));
   }
 
   virtual void TearDown() {
@@ -399,9 +404,6 @@ TEST_F(DownloadItemTest, NotificationAfterDestroyed) {
 }
 
 TEST_F(DownloadItemTest, ContinueAfterInterrupted) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDownloadResumption);
-
   TestBrowserContext test_browser_context;
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
@@ -432,9 +434,6 @@ TEST_F(DownloadItemTest, ContinueAfterInterrupted) {
 
 // Same as above, but with a non-continuable interrupt.
 TEST_F(DownloadItemTest, RestartAfterInterrupted) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDownloadResumption);
-
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
   MockDownloadFile* download_file =
@@ -455,9 +454,6 @@ TEST_F(DownloadItemTest, RestartAfterInterrupted) {
 
 // Check we do correct cleanup for RESUME_MODE_INVALID interrupts.
 TEST_F(DownloadItemTest, UnresumableInterrupt) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDownloadResumption);
-
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
   MockDownloadFile* download_file =
@@ -484,9 +480,6 @@ TEST_F(DownloadItemTest, UnresumableInterrupt) {
 }
 
 TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDownloadResumption);
-
   TestBrowserContext test_browser_context;
   DownloadItemImpl* item = CreateDownloadItem();
   base::WeakPtr<DownloadDestinationObserver> as_observer(
@@ -546,9 +539,6 @@ TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
 
 // Test that resumption uses the final URL in a URL chain when resuming.
 TEST_F(DownloadItemTest, ResumeUsingFinalURL) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDownloadResumption);
-
   TestBrowserContext test_browser_context;
   scoped_ptr<DownloadCreateInfo> create_info(new DownloadCreateInfo);
   create_info->save_info = scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo());
@@ -847,8 +837,6 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Restart) {
 // intermediate path should be retained when the download is interrupted after
 // the intermediate rename succeeds.
 TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Continue) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDownloadResumption);
   DownloadItemImpl* item = CreateDownloadItem();
   DownloadItemImplDelegate::DownloadTargetCallback callback;
   MockDownloadFile* download_file =
@@ -882,8 +870,6 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Continue) {
 // As above. If the intermediate rename fails, then the interrupt reason should
 // be set to the destination error and the intermediate path should be empty.
 TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Failed) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDownloadResumption);
   DownloadItemImpl* item = CreateDownloadItem();
   DownloadItemImplDelegate::DownloadTargetCallback callback;
   MockDownloadFile* download_file =
@@ -1282,8 +1268,6 @@ TEST_F(DownloadItemTest, StealDangerousDownload) {
 }
 
 TEST_F(DownloadItemTest, StealInterruptedDangerousDownload) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDownloadResumption);
   base::FilePath returned_path;
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
@@ -1308,8 +1292,6 @@ TEST_F(DownloadItemTest, StealInterruptedDangerousDownload) {
 }
 
 TEST_F(DownloadItemTest, StealInterruptedNonResumableDangerousDownload) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDownloadResumption);
   base::FilePath returned_path;
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =

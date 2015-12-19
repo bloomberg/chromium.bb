@@ -8,14 +8,15 @@
 #ifndef CONTENT_PUBLIC_COMMON_CONTENT_FEATURES_H_
 #define CONTENT_PUBLIC_COMMON_CONTENT_FEATURES_H_
 
-#include "build/build_config.h"
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 
 namespace features {
 
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
+CONTENT_EXPORT extern const base::Feature kDownloadResumption;
 CONTENT_EXPORT extern const base::Feature kExperimentalFramework;
 
 #if defined(OS_ANDROID)

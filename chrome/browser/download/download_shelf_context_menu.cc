@@ -4,10 +4,9 @@
 
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -21,8 +20,7 @@ namespace {
 
 // Returns true if downloads resumption is enabled.
 bool IsDownloadResumptionEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDownloadResumption);
+  return base::FeatureList::IsEnabled(features::kDownloadResumption);
 }
 
 }  // namespace

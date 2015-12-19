@@ -804,7 +804,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_DOWNLOAD_RESUMPTION_NAME,
      IDS_FLAGS_DOWNLOAD_RESUMPTION_DESCRIPTION,
      kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableDownloadResumption)},
+     FEATURE_VALUE_TYPE(features::kDownloadResumption)},
 #if defined(OS_CHROMEOS)
     {"download-notification",
      IDS_FLAGS_DOWNLOAD_NOTIFICATION_NAME,
