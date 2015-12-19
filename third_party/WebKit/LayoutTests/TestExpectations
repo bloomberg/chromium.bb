@@ -265,7 +265,6 @@ crbug.com/498539 inspector/elements/styles-3/styles-change-node-while-editing.ht
 crbug.com/498539 [ Mac10.7 ] inspector/sources/debugger/js-with-inline-stylesheets.html [ Pass Timeout ]
 crbug.com/498539 [ Mac10.7 Mac10.8 Retina Mac10.9 Mac10.10 Mac10.6 ] inspector/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
 crbug.com/498539 [ Mac10.8 Mac10.10 ] inspector/sources/debugger/debug-inlined-scripts-fragment-id.html [ Pass Timeout ]
-crbug.com/498539 [ Precise ] inspector/sources/debugger-pause/pause-in-inline-script.html [ Pass Timeout ]
 crbug.com/498539 [ Precise ] inspector/sources/debugger-step/debugger-step-over-inlined-scripts.html [ Pass Timeout ]
 crbug.com/498539 [ Precise Win7 Mac10.10 ] inspector/sources/debugger-breakpoints/dynamic-scripts-breakpoints.html [ Pass Timeout ]
 crbug.com/498539 [ Precise Mac10.10 ] inspector/sources/debugger-breakpoints/set-breakpoint.html [ Pass Timeout ]
