@@ -48,7 +48,7 @@ Testing file system mapping.
          - {"fileSystemPath":"/www/site1","urlPrefix":"http://localhost/","pathPrefix":"/","configurable":true}
          - {"fileSystemPath":"/www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/","configurable":true}
 
-Adding file mapping for resource (http://www.bar.com/foo/folder/42.js, /home/username/projects/foo, baz/folder/42.js)
+Adding file mapping for resource (http://www.bar.com/foo/folder/42.js, /home/username/projects/foo, file:///home/username/projects/foo/baz/folder/42.js)
 Testing file system mapping.
     file system paths:
      - /home/username/projects/foo

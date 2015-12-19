@@ -16,8 +16,8 @@ Emulate reloading inspector.
 Workspace event: UISourceCodeAdded: file:///var/www/html/foo.js.
 Workspace event: UISourceCodeAdded: file:///var/www/bar.js.
 UISourceCode uri to url mappings:
-    file:///var/www/html/foo.js -> 
-    file:///var/www/bar.js -> 
+    file:///var/www/html/foo.js -> http://localhost/html/foo.js
+    file:///var/www/bar.js -> http://localhost/bar.js
 Removing mapping between network and file system resources.
 Emulate reloading inspector.
 Workspace event: UISourceCodeAdded: file:///var/www/html/foo.js.
