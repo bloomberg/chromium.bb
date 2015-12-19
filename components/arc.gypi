@@ -47,6 +47,8 @@
         'arc',
       ],
       'sources': [
+        'arc/test/fake_app_instance.cc',
+        'arc/test/fake_app_instance.h',
         'arc/test/fake_arc_bridge_instance.cc',
         'arc/test/fake_arc_bridge_instance.h',
         'arc/test/fake_arc_bridge_service.cc',
@@ -61,7 +63,13 @@
         '../third_party/mojo/mojom_bindings_generator.gypi',
       ],
       'sources': [
+        'arc/common/app.mojom',
         'arc/common/arc_bridge.mojom',
+        'arc/common/input.mojom',
+        'arc/common/notifications.mojom',
+        'arc/common/power.mojom',
+        'arc/common/process.mojom',
+        'arc/common/settings.mojom',
       ],
     },
   ],

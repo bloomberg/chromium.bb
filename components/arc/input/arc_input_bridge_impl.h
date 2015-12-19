@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_EXO_ARC_INPUT_ARC_INPUT_BRIDGE_IMPL_H_
-#define COMPONENTS_EXO_ARC_INPUT_ARC_INPUT_BRIDGE_IMPL_H_
+#ifndef COMPONENTS_ARC_INPUT_ARC_INPUT_BRIDGE_IMPL_H_
+#define COMPONENTS_ARC_INPUT_ARC_INPUT_BRIDGE_IMPL_H_
+
+#include <stdint.h>
+#include <string>
+#include <vector>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -45,7 +49,7 @@ class ArcInputBridgeImpl : public ArcInputBridge,
   void OnWindowInitialized(aura::Window* new_window) override;
 
   // Overridden from ArcBridgeService::Observer:
-  void OnInstanceBootPhase(InstanceBootPhase phase) override;
+  void OnInputInstanceReady() override;
 
  private:
   // Specialized method to translate and send events to the right file
@@ -66,8 +70,8 @@ class ArcInputBridgeImpl : public ArcInputBridge,
   //         as in 0 (released), 1 (pressed) or 2 (repeated press).
   void SendKernelEvent(const base::ScopedFD& fd,
                        base::TimeDelta timestamp,
-                       unsigned short type,
-                       unsigned short code,
+                       uint16_t type,
+                       uint16_t code,
                        int value);
 
   // Shorthand for sending EV_SYN/SYN_REPORT
@@ -80,8 +84,7 @@ class ArcInputBridgeImpl : public ArcInputBridge,
   int FindTouchSlot(int tracking_id);
 
   // Maps DOM key codes to evdev key codes
-  unsigned short DomCodeToEvdevCode(ui::DomCode dom_code);
-
+  uint16_t DomCodeToEvdevCode(ui::DomCode dom_code);
 
   // Setup bridge devices on the instance side. This needs to be called after
   // the InstanceBootPhase::SYSTEM_SERVICES_READY has been reached.
@@ -130,4 +133,4 @@ class ArcInputBridgeImpl : public ArcInputBridge,
 
 }  // namespace arc
 
-#endif  // COMPONENTS_EXO_ARC_INPUT_ARC_INPUT_BRIDGE_IMPL_H_
+#endif  // COMPONENTS_ARC_INPUT_ARC_INPUT_BRIDGE_IMPL_H_

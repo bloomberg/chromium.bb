@@ -56,35 +56,42 @@ void ArcBridgeService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void ArcBridgeService::AddNotificationObserver(NotificationObserver* observer) {
+void ArcBridgeService::OnAppInstanceReady(AppInstancePtr app_ptr) {
   DCHECK(CalledOnValidThread());
-  notification_observer_list_.AddObserver(observer);
+  app_ptr_ = std::move(app_ptr);
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnAppInstanceReady());
 }
 
-void ArcBridgeService::RemoveNotificationObserver(
-    NotificationObserver* observer) {
+void ArcBridgeService::OnInputInstanceReady(InputInstancePtr input_ptr) {
   DCHECK(CalledOnValidThread());
-  notification_observer_list_.RemoveObserver(observer);
+  input_ptr_ = std::move(input_ptr);
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnInputInstanceReady());
 }
 
-void ArcBridgeService::AddAppObserver(AppObserver* observer) {
+void ArcBridgeService::OnNotificationsInstanceReady(
+    NotificationsInstancePtr notifications_ptr) {
   DCHECK(CalledOnValidThread());
-  app_observer_list_.AddObserver(observer);
+  notifications_ptr_ = std::move(notifications_ptr);
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnNotificationsInstanceReady());
 }
 
-void ArcBridgeService::RemoveAppObserver(AppObserver* observer) {
+void ArcBridgeService::OnPowerInstanceReady(PowerInstancePtr power_ptr) {
   DCHECK(CalledOnValidThread());
-  app_observer_list_.RemoveObserver(observer);
+  power_ptr_ = std::move(power_ptr);
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnPowerInstanceReady());
 }
 
-void ArcBridgeService::AddProcessObserver(ProcessObserver* observer) {
+void ArcBridgeService::OnProcessInstanceReady(ProcessInstancePtr process_ptr) {
   DCHECK(CalledOnValidThread());
-  process_observer_list_.AddObserver(observer);
+  process_ptr_ = std::move(process_ptr);
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnProcessInstanceReady());
 }
 
-void ArcBridgeService::RemoveProcessObserver(ProcessObserver* observer) {
+void ArcBridgeService::OnSettingsInstanceReady(
+    SettingsInstancePtr settings_ptr) {
   DCHECK(CalledOnValidThread());
-  process_observer_list_.RemoveObserver(observer);
+  settings_ptr_ = std::move(settings_ptr);
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnSettingsInstanceReady());
 }
 
 void ArcBridgeService::SetState(State state) {

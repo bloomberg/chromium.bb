@@ -13,32 +13,7 @@ FakeArcBridgeInstance::~FakeArcBridgeInstance() {}
 
 void FakeArcBridgeInstance::Init(ArcBridgeHostPtr host) {
   host_ptr_ = std::move(host);
-  host_ptr_->OnInstanceBootPhase(INSTANCE_BOOT_PHASE_BRIDGE_READY);
-  host_ptr_->OnInstanceBootPhase(INSTANCE_BOOT_PHASE_BOOT_COMPLETED);
 }
-
-void FakeArcBridgeInstance::RegisterInputDevice(const mojo::String& name,
-                                                const mojo::String& device_type,
-                                                mojo::ScopedHandle fd) {}
-
-void FakeArcBridgeInstance::SendNotificationEventToAndroid(
-    const mojo::String& key,
-    ArcNotificationEvent event) {}
-
-void FakeArcBridgeInstance::RefreshAppList() {}
-
-void FakeArcBridgeInstance::LaunchApp(const mojo::String& package,
-                                      const mojo::String& activity) {}
-
-void FakeArcBridgeInstance::RequestAppIcon(const mojo::String& package,
-                                           const mojo::String& activity,
-                                           ScaleFactor scale_factor) {}
-void FakeArcBridgeInstance::SendBroadcast(const mojo::String& action,
-                                          const mojo::String& package,
-                                          const mojo::String& clazz,
-                                          const mojo::String& extras) {}
-
-void FakeArcBridgeInstance::RequestProcessList() {}
 
 void FakeArcBridgeInstance::Bind(
     mojo::InterfaceRequest<ArcBridgeInstance> interface_request) {
