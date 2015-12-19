@@ -35,6 +35,23 @@ class AvSettings {
     LPCM = 1 << 4,
   };
 
+  // Defines the type of audio volume control of the device.
+  enum AudioVolumeControlType {
+    UNKNOWN_VOLUME,
+
+    // MASTER_VOLUME: Devices of CEC audio controls is a master volume system,
+    // i.e the system volume is changed, but not attenuated,
+    // e.g. normal TVs, audio devices.
+    MASTER_VOLUME,
+
+    // ATTENUATION_VOLUME: Devices which do not do CEC audio controls,
+    // e.g. Chromecast.
+    ATTENUATION_VOLUME,
+
+    // FIXED_VOLUME: Devices which have fixed volume, e.g. Nexus Player.
+    FIXED_VOLUME,
+  };
+
   enum Event {
     // This event shall be fired whenever the active state is changed including
     // when the screen turned on, when the cast receiver (or the device where
@@ -69,6 +86,11 @@ class AvSettings {
     // device outputs change. On this event, GetOutputRestrictions() will be
     // called on the thread where Initialize() was called.
     OUTPUT_RESTRICTIONS_CHANGED = 4,
+
+    // This event shall be fired whenever the type of volume control provided
+    // by the device is changed, for e.g., when the device is connected or
+    // disconnected to HDMI sinks
+    AUDIO_VOLUME_CONTROL_TYPE_CHANGED = 5,
 
     // This event should be fired when the device is connected to HDMI sinks.
     HDMI_CONNECTED = 100,
@@ -133,12 +155,12 @@ class AvSettings {
   // Returns true if successful.
   virtual bool KeepSystemAwake(int time_ms) = 0;
 
-  // Whether or not the device is a master volume system, i.e the system volume
-  // is changed, but not attenuated. For example, normal TVs, devices of CEC
-  // audio controls, and audio devices are master volume systems.
-  // The counter examples are Chromecast (which doesn't do CEC audio controls)
-  // and Nexus Player (which has volume fixed).
-  virtual bool IsMasterVolumeDevice() = 0;
+  // Returns the type of volume control, i.e. MASTER_VOLUME, FIXED_VOLUME or
+  // ATTENUATION_VOLUME. For example, normal TVs, devices of CEC audio
+  // controls, and audio devices are master volume systems. The counter
+  // examples are Chromecast (which doesn't do CEC audio controls) and
+  // Nexus Player which is fixed volume.
+  virtual AudioVolumeControlType GetAudioVolumeControlType() = 0;
 
   // Returns the current volume level, which must be from 0.0 (inclusive) to
   // 1.0 (inclusive).
