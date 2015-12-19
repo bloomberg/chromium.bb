@@ -183,6 +183,8 @@ void DisplayItemList::Finalize() {
         SkPictureUtils::ApproximateBytesUsed(picture_.get());
     recorder_.reset();
     canvas_.clear();
+    is_suitable_for_gpu_rasterization_ =
+        picture_->suitableForGpuRasterization(nullptr);
   }
 }
 
