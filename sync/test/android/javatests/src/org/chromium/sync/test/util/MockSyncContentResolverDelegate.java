@@ -182,6 +182,18 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
         mDisableObserverNotifications = true;
     }
 
+   /**
+     * Simulate an account rename, which copies settings to the new account.
+     */
+    public void renameAccounts(Account oldAccount, Account newAccount, String authority) {
+        int oldIsSyncable = getIsSyncable(oldAccount, authority);
+        setIsSyncable(newAccount, authority, oldIsSyncable);
+        if (oldIsSyncable == 1) {
+            setSyncAutomatically(
+                    newAccount, authority, getSyncAutomatically(oldAccount, authority));
+        }
+    }
+
     private static class AsyncSyncStatusObserver {
 
         private final SyncStatusObserver mSyncStatusObserver;

@@ -235,11 +235,7 @@ public class SigninHelper {
         // TODO(acleung): I think most of the operations need to run on the main
         // thread. May be we should have a progress Dialog?
 
-        // Before signing out, remember the current sync state and data types.
-        final boolean isSyncWanted = AndroidSyncSettings.isChromeSyncEnabled(mContext);
-
         // TODO(acleung): Deal with passphrase or just prompt user to re-enter it?
-
         // Perform a sign-out with a callback to sign-in again.
         mSigninManager.signOut(new Runnable() {
             @Override
@@ -249,12 +245,12 @@ public class SigninHelper {
                 // Otherwise, if re-sign-in fails, we'll just leave chrome
                 // signed-out.
                 clearNewSignedInAccountName(mContext);
-                performResignin(newName, isSyncWanted);
+                performResignin(newName);
             }
         });
     }
 
-    private void performResignin(String newName, final boolean isSyncWanted) {
+    private void performResignin(String newName) {
         // This is the correct account now.
         final Account account = AccountManagerHelper.createAccountFromName(newName);
 
@@ -263,13 +259,7 @@ public class SigninHelper {
             public void onSigninComplete() {
                 if (mProfileSyncService != null) {
                     mProfileSyncService.setSetupInProgress(false);
-                    if (isSyncWanted) {
-                        mProfileSyncService.requestStart();
-                    } else {
-                        mProfileSyncService.requestStop();
-                    }
                 }
-
                 validateAccountSettings(true);
             }
 

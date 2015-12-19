@@ -123,6 +123,7 @@ public class AndroidSyncSettings {
      *
      * @return true if sync is on, false otherwise
      */
+    @VisibleForTesting
     public static boolean isChromeSyncEnabled(Context context) {
         ensureInitialized(context);
         return sInstance.mChromeSyncEnabled;

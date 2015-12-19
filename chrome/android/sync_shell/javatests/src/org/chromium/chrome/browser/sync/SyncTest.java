@@ -10,11 +10,20 @@ import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.signin.AccountIdProvider;
+import org.chromium.chrome.browser.signin.AccountTrackerService;
+import org.chromium.chrome.browser.signin.SigninHelper;
+import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * Test suite for Sync.
@@ -50,6 +59,51 @@ public class SyncTest extends SyncTestBase {
         // Signing back in should re-enable sync.
         signIn(account);
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
+    }
+
+    @LargeTest
+    @Feature({"Sync"})
+    public void testRename() throws InterruptedException {
+        // The two accounts object that would represent the account rename.
+        final Account oldAccount = setUpTestAccountAndSignInToSync();
+        final Account newAccount = SigninTestUtil.get().addTestAccount("test2@gmail.com");
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // First, we force a call to updateAccountRenameData. In the real world,
+                // this should be called by one of our broadcast listener that listens to
+                // real account rename events instead of the mocks.
+                MockChangeEventChecker eventChecker = new MockChangeEventChecker();
+                eventChecker.insertRenameEvent(oldAccount.name, newAccount.name);
+                SigninHelper.updateAccountRenameData(mContext, eventChecker);
+
+                // Tell the fake content resolver that a rename had happen and copy over the sync
+                // settings. This would normally be done by the SystemSyncContentResolver.
+                mSyncContentResolver.renameAccounts(
+                        oldAccount, newAccount, AndroidSyncSettings.getContractAuthority(mContext));
+
+                // Inform the AccountTracker, these would normally be done by account validation
+                // or signin. We will only be calling the testing versions of it.
+                AccountIdProvider provider = AccountIdProvider.getInstance();
+                String[] accountNames = {newAccount.name};
+                String[] accountIds = {provider.getAccountId(mContext, accountNames[0])};
+                AccountTrackerService.get(mContext).syncForceRefreshForTest(
+                        accountIds, accountNames);
+
+                // Starts the rename process. Normally, this is triggered by the broadcast
+                // listener as well.
+                SigninHelper.get(mContext).validateAccountSettings(true);
+            }
+        });
+
+        CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return newAccount.equals(ChromeSigninController.get(mContext).getSignedInUser());
+            }
+        });
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, newAccount);
     }
 
     @LargeTest

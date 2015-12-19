@@ -64,7 +64,14 @@ public final class SigninTestUtil {
      * Add an account with the default name.
      */
     public Account addTestAccount() {
-        Account account = createTestAccount(DEFAULT_ACCOUNT);
+        return addTestAccount(DEFAULT_ACCOUNT);
+    }
+
+    /**
+     * Add an account with a given name.
+     */
+    public Account addTestAccount(String name) {
+        Account account = createTestAccount(name);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

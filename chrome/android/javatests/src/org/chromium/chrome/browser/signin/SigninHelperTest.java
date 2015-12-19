@@ -5,21 +5,16 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
-import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.AccountHolder;
 import org.chromium.sync.test.util.MockAccountManager;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Instrumentation tests for {@link SigninHelper}.
@@ -142,32 +137,5 @@ public class SigninHelperTest extends InstrumentationTestCase {
 
     private String getNewSignedInAccountName() {
         return SigninHelper.getNewSignedInAccountName(mContext);
-    }
-
-    private static final class MockChangeEventChecker
-            implements SigninHelper.AccountChangeEventChecker {
-        private Map<String, List<String>> mEvents =
-                new HashMap<String, List<String>>();
-
-        @Override
-        public List<String> getAccountChangeEvents(
-                Context context, int index, String accountName) {
-            List<String> eventsList = getEventList(accountName);
-            return eventsList.subList(index, eventsList.size());
-        }
-
-        private void insertRenameEvent(String from, String to) {
-            List<String> eventsList = getEventList(from);
-            eventsList.add(to);
-        }
-
-        private List<String> getEventList(String account) {
-            List<String> eventsList = mEvents.get(account);
-            if (eventsList == null) {
-                eventsList = new ArrayList<String>();
-                mEvents.put(account, eventsList);
-            }
-            return eventsList;
-        }
     }
 }
