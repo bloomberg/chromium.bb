@@ -67,7 +67,7 @@ void MockBlimpMessageProcessor::ProcessMessage(
 
 std::string EncodeHeader(size_t size) {
   scoped_ptr<char[]> serialized(new char[kPacketHeaderSizeBytes]);
-  uint32 net_size = base::HostToNet32(size);
+  uint32_t net_size = base::HostToNet32(size);
   memcpy(serialized.get(), &net_size, sizeof(net_size));
   return std::string(serialized.get(), kPacketHeaderSizeBytes);
 }

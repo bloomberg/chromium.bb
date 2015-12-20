@@ -111,7 +111,7 @@ int StreamPacketReader::DoReadHeader(int result) {
 
   // Finished reading the header. Parse the size and prepare for payload read.
   payload_size_ = base::NetToHost32(
-      *reinterpret_cast<uint32*>(header_buffer_->StartOfBuffer()));
+      *reinterpret_cast<uint32_t*>(header_buffer_->StartOfBuffer()));
   if (payload_size_ > static_cast<size_t>(payload_buffer_->capacity()) ||
       payload_size_ == 0) {
     DLOG(ERROR) << "Illegal payload size: " << payload_size_;

@@ -76,7 +76,7 @@ void BlimpMessageOutputBuffer::ProcessMessage(
 
 // Flushes acknowledged messages from the buffer and invokes their
 // |callbacks|, if any.
-void BlimpMessageOutputBuffer::OnMessageCheckpoint(int64 message_id) {
+void BlimpMessageOutputBuffer::OnMessageCheckpoint(int64_t message_id) {
   VLOG(2) << "OnMessageCheckpoint (message_id=" << message_id << ")";
   if (ack_buffer_.empty()) {
     LOG(WARNING) << "Checkpoint called while buffer is empty.";

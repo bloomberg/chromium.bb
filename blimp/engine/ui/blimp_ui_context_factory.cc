@@ -48,8 +48,8 @@ bool BlimpUiContextFactory::DoesCreateTestContexts() {
   return false;
 }
 
-uint32 BlimpUiContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
-                                                    gfx::BufferUsage usage) {
+uint32_t BlimpUiContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
+                                                      gfx::BufferUsage usage) {
   // No GpuMemoryBuffer support, so just return GL_TEXTURE_2D.
   return GL_TEXTURE_2D;
 }

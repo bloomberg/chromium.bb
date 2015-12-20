@@ -46,7 +46,7 @@ class BlimpMessageOutputBufferTest : public testing::Test {
         .RetiresOnSaturation();
   }
 
-  BlimpMessage WithMessageId(const BlimpMessage& message, int64 message_id) {
+  BlimpMessage WithMessageId(const BlimpMessage& message, int64_t message_id) {
     BlimpMessage output = message;
     output.set_message_id(message_id);
     return output;

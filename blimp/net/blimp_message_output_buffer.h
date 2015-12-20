@@ -5,6 +5,8 @@
 #ifndef BLIMP_NET_BLIMP_MESSAGE_OUTPUT_BUFFER_H_
 #define BLIMP_NET_BLIMP_MESSAGE_OUTPUT_BUFFER_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <queue>
 #include <utility>
@@ -46,7 +48,7 @@ class BLIMP_NET_EXPORT BlimpMessageOutputBuffer
                       const net::CompletionCallback& callback) override;
 
   // MessageCheckpointObserver implementation.
-  void OnMessageCheckpoint(int64 message_id) override;
+  void OnMessageCheckpoint(int64_t message_id) override;
 
   int GetBufferByteSizeForTest() const;
   int GetUnacknowledgedMessageCountForTest() const;
@@ -81,7 +83,7 @@ class BLIMP_NET_EXPORT BlimpMessageOutputBuffer
   int current_buffer_size_bytes_ = 0;
 
   // The ID used by the last outgoing message.
-  int64 prev_message_id_ = 0;
+  int64_t prev_message_id_ = 0;
 
   // List of unsent messages.
   MessageBuffer write_buffer_;

@@ -5,6 +5,8 @@
 #ifndef BLIMP_NET_BLIMP_MESSAGE_CHECKPOINTER_H_
 #define BLIMP_NET_BLIMP_MESSAGE_CHECKPOINTER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "blimp/net/blimp_message_processor.h"
@@ -42,7 +44,7 @@ class BLIMP_NET_EXPORT BlimpMessageCheckpointer : public BlimpMessageProcessor {
   BlimpMessageCheckpointObserver* checkpoint_observer_;
 
   // Holds the Id of the message that most recently completed processing.
-  int64 checkpoint_id_ = 0;
+  int64_t checkpoint_id_ = 0;
 
   // Used to batch multiple processed messages into a single ACK.
   base::OneShotTimer defer_timer_;

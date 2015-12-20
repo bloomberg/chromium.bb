@@ -5,6 +5,9 @@
 #ifndef BLIMP_NET_TEST_COMMON_H_
 #define BLIMP_NET_TEST_COMMON_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -101,8 +104,8 @@ class MockStreamSocket : public net::StreamSocket {
 
   MOCK_METHOD3(Read, int(net::IOBuffer*, int, const net::CompletionCallback&));
   MOCK_METHOD3(Write, int(net::IOBuffer*, int, const net::CompletionCallback&));
-  MOCK_METHOD1(SetReceiveBufferSize, int(int32));
-  MOCK_METHOD1(SetSendBufferSize, int(int32));
+  MOCK_METHOD1(SetReceiveBufferSize, int(int32_t));
+  MOCK_METHOD1(SetSendBufferSize, int(int32_t));
   MOCK_METHOD1(Connect, int(const net::CompletionCallback&));
   MOCK_METHOD0(Disconnect, void());
   MOCK_CONST_METHOD0(IsConnected, bool());
@@ -114,7 +117,7 @@ class MockStreamSocket : public net::StreamSocket {
   MOCK_METHOD0(SetOmniboxSpeculation, void());
   MOCK_CONST_METHOD0(WasEverUsed, bool());
   MOCK_CONST_METHOD0(UsingTCPFastOpen, bool());
-  MOCK_CONST_METHOD0(NumBytesRead, int64());
+  MOCK_CONST_METHOD0(NumBytesRead, int64_t());
   MOCK_CONST_METHOD0(GetConnectTimeMicros, base::TimeDelta());
   MOCK_CONST_METHOD0(WasNpnNegotiated, bool());
   MOCK_CONST_METHOD0(GetNegotiatedProtocol, net::NextProto());

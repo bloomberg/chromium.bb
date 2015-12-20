@@ -5,6 +5,8 @@
 #ifndef BLIMP_ENGINE_BROWSER_BLIMP_ENGINE_SESSION_H_
 #define BLIMP_ENGINE_BROWSER_BLIMP_ENGINE_SESSION_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "blimp/engine/browser/engine_render_widget_message_processor.h"

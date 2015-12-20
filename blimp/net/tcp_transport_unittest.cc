@@ -42,7 +42,7 @@ class TCPTransportTest : public testing::Test {
   }
 
   void ParseAddress(const std::string& ip_str,
-                    uint16 port,
+                    uint16_t port,
                     net::IPEndPoint* address) {
     net::IPAddressNumber ip_number;
     bool rv = net::ParseIPLiteralToNumber(ip_str, &ip_number);

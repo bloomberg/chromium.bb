@@ -5,6 +5,8 @@
 #ifndef BLIMP_ENGINE_UI_BLIMP_UI_CONTEXT_FACTORY_H_
 #define BLIMP_ENGINE_UI_BLIMP_UI_CONTEXT_FACTORY_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "ui/compositor/compositor.h"
@@ -27,8 +29,8 @@ class BlimpUiContextFactory : public ui::ContextFactory {
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
   void RemoveCompositor(ui::Compositor* compositor) override;
   bool DoesCreateTestContexts() override;
-  uint32 GetImageTextureTarget(gfx::BufferFormat format,
-                               gfx::BufferUsage usage) override;
+  uint32_t GetImageTextureTarget(gfx::BufferFormat format,
+                                 gfx::BufferUsage usage) override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;

@@ -5,6 +5,8 @@
 #ifndef BLIMP_CLIENT_SESSION_RENDER_WIDGET_FEATURE_H_
 #define BLIMP_CLIENT_SESSION_RENDER_WIDGET_FEATURE_H_
 
+#include <stdint.h>
+
 #include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

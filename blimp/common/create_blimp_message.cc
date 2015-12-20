@@ -91,7 +91,7 @@ scoped_ptr<BlimpMessage> CreateStartConnectionMessage(
   return output;
 }
 
-scoped_ptr<BlimpMessage> CreateCheckpointAckMessage(int64 checkpoint_id) {
+scoped_ptr<BlimpMessage> CreateCheckpointAckMessage(int64_t checkpoint_id) {
   scoped_ptr<BlimpMessage> output(new BlimpMessage);
   output->set_type(BlimpMessage::PROTOCOL_CONTROL);
 

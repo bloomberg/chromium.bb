@@ -9,7 +9,7 @@ namespace engine {
 
 namespace {
 
-const int64 kDisplayId = 1;
+const int64_t kDisplayId = 1;
 const int kNumDisplays = 1;
 
 }  // namespace

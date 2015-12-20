@@ -5,6 +5,8 @@
 #ifndef BLIMP_NET_STREAM_PACKET_READER_H_
 #define BLIMP_NET_STREAM_PACKET_READER_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

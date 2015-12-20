@@ -28,12 +28,12 @@ class MockCheckpointObserver : public BlimpMessageCheckpointObserver {
   MockCheckpointObserver() {}
   ~MockCheckpointObserver() override {}
 
-  MOCK_METHOD1(OnMessageCheckpoint, void(int64));
+  MOCK_METHOD1(OnMessageCheckpoint, void(int64_t));
 };
 
 }  // namespace
 
-static scoped_ptr<BlimpMessage> CreateExpectedAckMessage(int64 id) {
+static scoped_ptr<BlimpMessage> CreateExpectedAckMessage(int64_t id) {
   scoped_ptr<BlimpMessage> message = make_scoped_ptr(new BlimpMessage);
   message->set_type(BlimpMessage::PROTOCOL_CONTROL);
   ProtocolControlMessage* protocol_control =
@@ -52,7 +52,7 @@ class BlimpMessageCheckpointerTest : public testing::Test {
 
   ~BlimpMessageCheckpointerTest() override {}
 
-  int64 SimulateIncomingMessage() {
+  int64_t SimulateIncomingMessage() {
     scoped_ptr<BlimpMessage> message(new BlimpMessage);
     message->set_message_id(++message_id_);
     message->set_type(BlimpMessage::INPUT);
@@ -75,7 +75,7 @@ class BlimpMessageCheckpointerTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> runner_;
   base::ThreadTaskRunnerHandle runner_handle_;
 
-  int64 message_id_ = 0;
+  int64_t message_id_ = 0;
 
   testing::StrictMock<MockBlimpMessageProcessor> incoming_processor_;
   testing::StrictMock<MockBlimpMessageProcessor> outgoing_processor_;

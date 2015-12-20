@@ -5,6 +5,8 @@
 #ifndef BLIMP_ENGINE_BROWSER_ENGINE_RENDER_WIDGET_MESSAGE_PROCESSOR_H_
 #define BLIMP_ENGINE_BROWSER_ENGINE_RENDER_WIDGET_MESSAGE_PROCESSOR_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/containers/small_map.h"

@@ -55,7 +55,7 @@ void StreamPacketWriter::WritePacket(scoped_refptr<net::DrainableIOBuffer> data,
 
   write_state_ = WriteState::HEADER;
   header_buffer_->SetOffset(0);
-  *reinterpret_cast<uint32*>(header_buffer_->data()) =
+  *reinterpret_cast<uint32_t*>(header_buffer_->data()) =
       base::HostToNet32(data->BytesRemaining());
   payload_buffer_ = data;
 

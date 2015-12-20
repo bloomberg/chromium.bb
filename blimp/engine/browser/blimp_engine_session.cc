@@ -49,7 +49,7 @@ const int kDummyTabId = 0;
 const float kDefaultScaleFactor = 1.f;
 const int kDefaultDisplayWidth = 800;
 const int kDefaultDisplayHeight = 600;
-const uint16 kDefaultPortNumber = 25467;
+const uint16_t kDefaultPortNumber = 25467;
 
 base::LazyInstance<blimp::NullBlimpMessageProcessor> g_blimp_message_processor =
     LAZY_INSTANCE_INITIALIZER;

@@ -5,6 +5,8 @@
 #ifndef BLIMP_COMMON_CREATE_BLIMP_MESSAGE_H_
 #define BLIMP_COMMON_CREATE_BLIMP_MESSAGE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -59,7 +61,7 @@ BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateStartConnectionMessage(
     int protocol_version);
 
 BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateCheckpointAckMessage(
-    int64 checkpoint_id);
+    int64_t checkpoint_id);
 
 }  // namespace blimp
 

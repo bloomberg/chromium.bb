@@ -5,6 +5,8 @@
 #ifndef BLIMP_NET_COMMON_H_
 #define BLIMP_NET_COMMON_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "blimp/net/blimp_net_export.h"
