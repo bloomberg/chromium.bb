@@ -262,7 +262,8 @@ create_window(struct display *display, int width, int height,
 		exit(1);
 	}
 
-	if (display->compositor_version < 4 &&
+	if (display->compositor_version <
+	    WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION &&
 	    (flags & WINDOW_FLAG_USE_DAMAGE_BUFFER)) {
 		fprintf(stderr, "wl_surface.damage_buffer unsupported in "
 				"wl_surface version %d\n",
