@@ -5,8 +5,9 @@
 #ifndef ASH_ROOT_WINDOW_SETTINGS_H_
 #define ASH_ROOT_WINDOW_SETTINGS_H_
 
+#include <stdint.h>
+
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 
 namespace aura {
 class Window;
@@ -23,7 +24,7 @@ struct RootWindowSettings {
   RootWindowSettings();
 
   // ID of the display associated with the root window.
-  int64 display_id;
+  int64_t display_id;
 
   // RootWindowController for the root window. This may be NULL
   // for the root window used for mirroring.

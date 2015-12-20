@@ -5,8 +5,11 @@
 #ifndef ASH_DISPLAY_SCREEN_ASH_H_
 #define ASH_DISPLAY_SCREEN_ASH_H_
 
+#include <stdint.h>
+
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/screen.h"

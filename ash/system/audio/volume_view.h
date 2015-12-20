@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_AUDIO_VOLUME_VIEW_H_
 
 #include "ash/system/tray/actionable_view.h"
+#include "base/macros.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/slider.h"

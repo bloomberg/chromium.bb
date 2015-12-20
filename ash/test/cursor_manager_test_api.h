@@ -5,7 +5,7 @@
 #ifndef ASH_TEST_CURSOR_MANAGER_TEST_API_H_
 #define ASH_TEST_CURSOR_MANAGER_TEST_API_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"

@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/sticky_keys/sticky_keys_state.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"

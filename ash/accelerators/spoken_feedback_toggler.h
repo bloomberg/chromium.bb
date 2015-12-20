@@ -7,6 +7,7 @@
 
 #include "ash/accelerators/key_hold_detector.h"
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 

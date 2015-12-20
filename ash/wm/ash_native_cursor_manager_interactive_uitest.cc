@@ -25,7 +25,7 @@ using AshNativeCursorManagerTest = test::AshInteractiveUITestBase;
 
 namespace {
 
-DisplayInfo CreateDisplayInfo(int64 id,
+DisplayInfo CreateDisplayInfo(int64_t id,
                               const gfx::Rect& bounds,
                               float device_scale_factor) {
   DisplayInfo info(id, "", false);

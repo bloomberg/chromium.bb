@@ -42,7 +42,7 @@ const int kRotationDurationInMs = 250;
 
 // Gets the current display rotation for the display with the specified
 // |display_id|.
-gfx::Display::Rotation GetCurrentRotation(int64 display_id) {
+gfx::Display::Rotation GetCurrentRotation(int64_t display_id) {
   return Shell::GetInstance()
       ->display_manager()
       ->GetDisplayInfo(display_id)
@@ -145,7 +145,7 @@ void LayerCleanupObserver::AbortAnimations(ui::Layer* layer) {
 // layer towards the new orientation through |rotation_degrees| while fading
 // out, and the new orientation's layer will be rotated in to the
 // |new_orientation| through |rotation_degrees| arc.
-void RotateScreen(int64 display_id,
+void RotateScreen(int64_t display_id,
                   gfx::Display::Rotation new_rotation,
                   gfx::Display::RotationSource source) {
   aura::Window* root_window = Shell::GetInstance()
@@ -243,9 +243,8 @@ void RotateScreen(int64 display_id,
 
 }  // namespace
 
-ScreenRotationAnimator::ScreenRotationAnimator(int64 display_id)
-    : display_id_(display_id) {
-}
+ScreenRotationAnimator::ScreenRotationAnimator(int64_t display_id)
+    : display_id_(display_id) {}
 
 ScreenRotationAnimator::~ScreenRotationAnimator() {
 }

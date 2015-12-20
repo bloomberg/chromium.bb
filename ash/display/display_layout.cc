@@ -55,7 +55,7 @@ std::string GetStringFromPosition(DisplayLayout::Position position) {
   return iter != map->end() ? iter->second : std::string("unknown");
 }
 
-bool GetDisplayIdFromString(const base::StringPiece& position, int64* field) {
+bool GetDisplayIdFromString(const base::StringPiece& position, int64_t* field) {
   return base::StringToInt64(position, field);
 }
 
@@ -166,7 +166,7 @@ void DisplayLayout::RegisterJSONConverter(
   converter->RegisterBoolField(kMirroredKey, &DisplayLayout::mirrored);
   converter->RegisterBoolField(kDefaultUnifiedKey,
                                &DisplayLayout::default_unified);
-  converter->RegisterCustomField<int64>(
+  converter->RegisterCustomField<int64_t>(
       kPrimaryIdKey, &DisplayLayout::primary_id, &GetDisplayIdFromString);
 }
 

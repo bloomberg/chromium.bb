@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_CHROMEOS_SETTINGS_TRAY_SETTINGS_H_
 
 #include "ash/system/tray/system_tray_item.h"
+#include "base/macros.h"
 
 namespace ash {
 namespace tray {

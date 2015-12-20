@@ -5,10 +5,13 @@
 #ifndef ASH_TOUCH_TOUCH_HUD_DEBUG_H_
 #define ASH_TOUCH_TOUCH_HUD_DEBUG_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "ash/ash_export.h"
 #include "ash/touch/touch_observer_hud.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 

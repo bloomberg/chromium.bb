@@ -41,12 +41,12 @@ DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
 
-base::string16 GetDisplayName(int64 display_id) {
+base::string16 GetDisplayName(int64_t display_id) {
   return base::UTF8ToUTF16(
       GetDisplayManager()->GetDisplayNameForId(display_id));
 }
 
-base::string16 GetDisplaySize(int64 display_id) {
+base::string16 GetDisplaySize(int64_t display_id) {
   DisplayManager* display_manager = GetDisplayManager();
 
   const gfx::Display* display = &display_manager->GetDisplayForId(display_id);
@@ -64,7 +64,7 @@ base::string16 GetDisplaySize(int64 display_id) {
 
 // Returns 1-line information for the specified display, like
 // "InternalDisplay: 1280x750"
-base::string16 GetDisplayInfoLine(int64 display_id) {
+base::string16 GetDisplayInfoLine(int64_t display_id) {
   const DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display_id);
   if (GetDisplayManager()->mirroring_display_id() == display_id)
@@ -91,7 +91,7 @@ base::string16 GetDisplayInfoLine(int64 display_id) {
 base::string16 GetAllDisplayInfo() {
   DisplayManager* display_manager = GetDisplayManager();
   std::vector<base::string16> lines;
-  int64 internal_id = gfx::Display::kInvalidDisplayID;
+  int64_t internal_id = gfx::Display::kInvalidDisplayID;
   // Make sure to show the internal display first.
   if (!display_manager->IsInUnifiedMode() &&
       gfx::Display::IsInternalDisplayId(display_manager->first_display_id())) {
@@ -100,7 +100,7 @@ base::string16 GetAllDisplayInfo() {
   }
 
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-    int64 id = display_manager->GetDisplayAt(i).id();
+    int64_t id = display_manager->GetDisplayAt(i).id();
     if (id == internal_id)
       continue;
     lines.push_back(GetDisplayInfoLine(id));
@@ -188,9 +188,9 @@ class DisplayView : public ActionableView {
     DisplayManager* display_manager = GetDisplayManager();
     DCHECK(!display_manager->IsInMirrorMode());
 
-    int64 external_id = gfx::Display::kInvalidDisplayID;
+    int64_t external_id = gfx::Display::kInvalidDisplayID;
     for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-      int64 id = display_manager->GetDisplayAt(i).id();
+      int64_t id = display_manager->GetDisplayAt(i).id();
       if (!gfx::Display::IsInternalDisplayId(id)) {
         external_id = id;
         break;
@@ -249,7 +249,7 @@ class DisplayView : public ActionableView {
     if (display_manager->IsInUnifiedMode())
       return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED);
 
-    int64 primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+    int64_t primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
     if (gfx::Display::HasInternalDisplay() &&
         !(gfx::Display::IsInternalDisplayId(primary_id))) {
       if (additional_message_out) {
@@ -308,7 +308,7 @@ void TrayDisplay::UpdateDisplayInfo(TrayDisplay::DisplayInfoMap* old_info) {
 
   DisplayManager* display_manager = GetDisplayManager();
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-    int64 id = display_manager->GetDisplayAt(i).id();
+    int64_t id = display_manager->GetDisplayAt(i).id();
     display_info_[id] = display_manager->GetDisplayInfo(id);
   }
 }

@@ -5,10 +5,13 @@
 #ifndef ASH_UTILITY_PARTIAL_SCREENSHOT_CONTROLLER_H_
 #define ASH_UTILITY_PARTIAL_SCREENSHOT_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/display_observer.h"

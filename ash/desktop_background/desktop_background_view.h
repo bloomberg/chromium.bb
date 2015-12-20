@@ -5,6 +5,7 @@
 #ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_
 
+#include "base/macros.h"
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/context_menu_controller.h"

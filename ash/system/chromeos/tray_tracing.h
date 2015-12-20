@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/tray_image_item.h"
+#include "base/macros.h"
 
 namespace views {
 class View;

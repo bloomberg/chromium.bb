@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEW_H_
 
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/slide_out_view.h"

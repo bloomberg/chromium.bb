@@ -5,11 +5,13 @@
 #ifndef ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H_
 #define ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
@@ -41,7 +43,7 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
   // ui::DisplayConfigurator::StateController overrides:
   ui::MultipleDisplayState GetStateForDisplayIds(
       const ui::DisplayConfigurator::DisplayStateList& outputs) const override;
-  bool GetResolutionForDisplayId(int64 display_id,
+  bool GetResolutionForDisplayId(int64_t display_id,
                                  gfx::Size* size) const override;
 
   // Overriden from ui::DisplayConfigurator::Observer:

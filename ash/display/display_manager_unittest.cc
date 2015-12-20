@@ -41,7 +41,7 @@ using base::StringPrintf;
 
 namespace {
 
-std::string ToDisplayName(int64 id) {
+std::string ToDisplayName(int64_t id) {
   return "x-" + base::Int64ToString(id);
 }
 
@@ -101,11 +101,11 @@ class DisplayManagerTest : public test::AshTestBase,
     return GetDisplayInfo(display_manager()->GetDisplayAt(index));
   }
 
-  const gfx::Display& GetDisplayForId(int64 id) {
+  const gfx::Display& GetDisplayForId(int64_t id) {
     return display_manager()->GetDisplayForId(id);
   }
 
-  const DisplayInfo& GetDisplayInfoForId(int64 id) {
+  const DisplayInfo& GetDisplayInfoForId(int64_t id) {
     return GetDisplayInfo(display_manager()->GetDisplayForId(id));
   }
 
@@ -411,7 +411,7 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
 
   // Make sure just moving the overscan area should property notify observers.
   UpdateDisplay("0+0-500x500");
-  int64 primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
   display_manager()->SetOverscanInsets(primary_id, gfx::Insets(0, 0, 20, 20));
   EXPECT_EQ("0,0 480x480",
             Shell::GetScreen()->GetPrimaryDisplay().bounds().ToString());
@@ -438,7 +438,7 @@ TEST_F(DisplayManagerTest, ZeroOverscanInsets) {
   // Make sure the display change events is emitted for overscan inset changes.
   UpdateDisplay("0+0-500x500,0+501-400x400");
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
-  int64 display2_id = display_manager()->GetDisplayAt(1).id();
+  int64_t display2_id = display_manager()->GetDisplayAt(1).id();
 
   reset();
   display_manager()->SetOverscanInsets(display2_id, gfx::Insets(0, 0, 0, 0));
@@ -473,18 +473,18 @@ TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
 }
 
-DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
+DisplayInfo CreateDisplayInfo(int64_t id, const gfx::Rect& bounds) {
   DisplayInfo info(id, ToDisplayName(id), false);
   info.SetBounds(bounds);
   return info;
 }
 
 TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
-  const int64 internal_display_id =
+  const int64_t internal_display_id =
       test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   const int external_id = 10;
   const int mirror_id = 11;
-  const int64 invalid_id = gfx::Display::kInvalidDisplayID;
+  const int64_t invalid_id = gfx::Display::kInvalidDisplayID;
   const DisplayInfo internal_display_info =
       CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 500, 500));
   const DisplayInfo external_display_info =
@@ -651,14 +651,14 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
 
   UpdateDisplay("100+0-500x500,0+501-400x400");
 
-  const int64 primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
-  const int64 secondary_id = ScreenUtil::GetSecondaryDisplay().id();
+  const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
+  const int64_t secondary_id = ScreenUtil::GetSecondaryDisplay().id();
 
   DisplayInfo primary_info = display_manager()->GetDisplayInfo(primary_id);
   DisplayInfo secondary_info = display_manager()->GetDisplayInfo(secondary_id);
 
   // An id which is different from primary and secondary.
-  const int64 third_id = secondary_id + 1;
+  const int64_t third_id = secondary_id + 1;
 
   DisplayInfo third_info =
       CreateDisplayInfo(third_id, gfx::Rect(0, 0, 600, 600));
@@ -708,7 +708,7 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
   if (!SupportsMultipleDisplays())
     return;
 
-  const int64 internal_display_id =
+  const int64_t internal_display_id =
       test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   const DisplayInfo native_display_info =
       CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 500, 500));
@@ -908,7 +908,7 @@ TEST_F(DisplayManagerTest, Rotate) {
   // Having the internal display deactivated should restore user rotation. Newly
   // set rotations should be applied.
   UpdateDisplay("200x200, 200x200");
-  const int64 internal_display_id =
+  const int64_t internal_display_id =
       test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
 
   display_manager()->SetDisplayRotation(internal_display_id,
@@ -944,7 +944,7 @@ TEST_F(DisplayManagerTest, UIScale) {
   test::ScopedDisable125DSFForUIScaling disable;
 
   UpdateDisplay("1280x800");
-  int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
   SetDisplayUIScale(display_id, 1.125f);
   EXPECT_EQ(1.0, GetDisplayInfoAt(0).configured_ui_scale());
   SetDisplayUIScale(display_id, 0.8f);
@@ -1094,7 +1094,7 @@ TEST_F(DisplayManagerTest, UIScaleWithDisplayMode) {
 }
 
 TEST_F(DisplayManagerTest, Use125DSFForUIScaling) {
-  int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
   test::ScopedSetInternalDisplayId set_internal(display_id);
 
   UpdateDisplay("1920x1080*1.25");
@@ -1128,7 +1128,7 @@ TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
 
   UpdateDisplay("200x200, 400x400");
 
-  int64 unified_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t unified_id = Shell::GetScreen()->GetPrimaryDisplay().id();
   DisplayInfo info = display_manager->GetDisplayInfo(unified_id);
   ASSERT_EQ(2u, info.display_modes().size());
   EXPECT_EQ("400x200", info.display_modes()[0].size.ToString());
@@ -1795,8 +1795,8 @@ TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
 TEST_F(DisplayManagerTest, DockMode) {
   if (!SupportsMultipleDisplays())
     return;
-  const int64 internal_id = 1;
-  const int64 external_id = 2;
+  const int64_t internal_id = 1;
+  const int64_t external_id = 2;
 
   const DisplayInfo internal_display_info =
       CreateDisplayInfo(internal_id, gfx::Rect(0, 0, 500, 500));
@@ -1808,7 +1808,7 @@ TEST_F(DisplayManagerTest, DockMode) {
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
-  const int64 internal_display_id =
+  const int64_t internal_display_id =
       test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   EXPECT_EQ(internal_id, internal_display_id);
 

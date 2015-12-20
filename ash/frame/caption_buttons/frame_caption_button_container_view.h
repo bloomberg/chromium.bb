@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/frame_size_button_delegate.h"
+#include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"

@@ -34,7 +34,7 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
  protected:
   bool FindMirrroingDisplayIdContainingNativePoint(
       const gfx::Point& point_in_native,
-      int64* display_id,
+      int64_t* display_id,
       gfx::Point* point_in_mirroring_host,
       gfx::Point* point_in_unified_host) {
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
@@ -68,7 +68,7 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
             ->mouse_warp_controller_for_test())
         ->update_location_for_test();
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-    int64 orig_mirroring_display_id;
+    int64_t orig_mirroring_display_id;
     gfx::Point point_in_unified_host;
     gfx::Point point_in_mirroring_host;
     if (!FindMirrroingDisplayIdContainingNativePoint(

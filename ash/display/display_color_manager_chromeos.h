@@ -5,12 +5,14 @@
 #ifndef ASH_DISPLAY_DISPLAY_COLOR_MANAGER_CHROMEOS_H_
 #define ASH_DISPLAY_DISPLAY_COLOR_MANAGER_CHROMEOS_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/gfx/display.h"

@@ -5,6 +5,7 @@
 #ifndef ASH_SHELF_APP_LIST_BUTTON_H_
 #define ASH_SHELF_APP_LIST_BUTTON_H_
 
+#include "base/macros.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {

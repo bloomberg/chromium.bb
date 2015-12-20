@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"

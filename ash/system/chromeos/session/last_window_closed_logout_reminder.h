@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_CHROMEOS_SESSION_LAST_WINDOW_CLOSED_LOGOUT_REMINDER_H_
 
 #include "ash/system/chromeos/session/last_window_closed_observer.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace ash {
 

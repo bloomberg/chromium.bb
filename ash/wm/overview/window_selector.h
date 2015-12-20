@@ -5,11 +5,15 @@
 #ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
 #define ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"

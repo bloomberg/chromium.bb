@@ -6,7 +6,7 @@
 #define ASH_WM_WINDOW_STATE_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace ash {
 namespace wm {

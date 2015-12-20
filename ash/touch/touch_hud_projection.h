@@ -8,6 +8,7 @@
 #include <map>
 
 #include "ash/touch/touch_observer_hud.h"
+#include "base/macros.h"
 
 namespace ash {
 class TouchPointView;

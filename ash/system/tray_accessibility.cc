@@ -41,10 +41,10 @@ enum AccessibilityState {
   A11Y_BRAILLE_DISPLAY_CONNECTED = 1 << 6,
 };
 
-uint32 GetAccessibilityState() {
+uint32_t GetAccessibilityState() {
   AccessibilityDelegate* delegate =
       Shell::GetInstance()->accessibility_delegate();
-  uint32 state = A11Y_NONE;
+  uint32_t state = A11Y_NONE;
   if (delegate->IsSpokenFeedbackEnabled())
     state |= A11Y_SPOKEN_FEEDBACK;
   if (delegate->IsHighContrastEnabled())
@@ -94,13 +94,13 @@ class DefaultAccessibilityView : public TrayItemMore {
 // ash::tray::AccessibilityPopupView
 
 AccessibilityPopupView::AccessibilityPopupView(SystemTrayItem* owner,
-                                               uint32 enabled_state_bits)
+                                               uint32_t enabled_state_bits)
     : TrayNotificationView(owner, IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK),
       label_(CreateLabel(enabled_state_bits)) {
   InitView(label_);
 }
 
-views::Label* AccessibilityPopupView::CreateLabel(uint32 enabled_state_bits) {
+views::Label* AccessibilityPopupView::CreateLabel(uint32_t enabled_state_bits) {
   DCHECK((enabled_state_bits &
           (A11Y_SPOKEN_FEEDBACK | A11Y_BRAILLE_DISPLAY_CONNECTED)) != 0);
   base::string16 text;
@@ -403,7 +403,7 @@ void TrayAccessibility::OnAccessibilityModeChanged(
     ui::AccessibilityNotificationVisibility notify) {
   SetTrayIconVisible(GetInitialVisibility());
 
-  uint32 accessibility_state = GetAccessibilityState();
+  uint32_t accessibility_state = GetAccessibilityState();
   // We'll get an extra notification if a braille display is connected when
   // spoken feedback wasn't already enabled.  This is because the braille
   // connection state is already updated when spoken feedback is enabled so
@@ -413,7 +413,7 @@ void TrayAccessibility::OnAccessibilityModeChanged(
     return;
   // Contains bits for spoken feedback and braille display connected currently
   // being enabled.
-  uint32 being_enabled =
+  uint32_t being_enabled =
       (accessibility_state & ~previous_accessibility_state_) &
       (A11Y_SPOKEN_FEEDBACK | A11Y_BRAILLE_DISPLAY_CONNECTED);
   if ((notify == ui::A11Y_NOTIFICATION_SHOW) && being_enabled != A11Y_NONE) {

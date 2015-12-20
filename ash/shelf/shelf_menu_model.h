@@ -6,6 +6,7 @@
 #define ASH_SHELF_SHELF_MENU_MODEL_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace ash {

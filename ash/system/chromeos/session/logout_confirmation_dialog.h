@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_DIALOG_H_
 #define ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_DIALOG_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/views/window/dialog_delegate.h"

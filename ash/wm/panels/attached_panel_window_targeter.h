@@ -6,6 +6,7 @@
 #define ASH_WM_PANELS_ATTACHED_PANEL_WINDOW_TARGETER_H_
 
 #include "ash/shell_observer.h"
+#include "base/macros.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
 namespace ash {

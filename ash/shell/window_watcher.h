@@ -5,11 +5,14 @@
 #ifndef ASH_SHELL_WINDOW_WATCHER_H_
 #define ASH_SHELL_WINDOW_WATCHER_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "ash/shelf/shelf_item_types.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/display_observer.h"

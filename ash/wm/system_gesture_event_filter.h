@@ -5,6 +5,7 @@
 #ifndef ASH_WM_SYSTEM_GESTURE_EVENT_FILTER_H_
 #define ASH_WM_SYSTEM_GESTURE_EVENT_FILTER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 

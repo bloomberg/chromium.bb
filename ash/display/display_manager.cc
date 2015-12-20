@@ -101,7 +101,7 @@ void SetInternalDisplayModeList(DisplayInfo* info) {
 }
 
 void MaybeInitInternalDisplay(DisplayInfo* info) {
-  int64 id = info->id();
+  int64_t id = info->id();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal)) {
     gfx::Display::SetInternalDisplayId(id);
@@ -124,7 +124,7 @@ using std::string;
 using std::vector;
 
 // static
-int64 DisplayManager::kUnifiedDisplayId = -10;
+int64_t DisplayManager::kUnifiedDisplayId = -10;
 
 DisplayManager::DisplayManager()
     : delegate_(NULL),
@@ -284,7 +284,7 @@ void DisplayManager::SetLayoutForCurrentDisplays(
   }
 }
 
-const gfx::Display& DisplayManager::GetDisplayForId(int64 id) const {
+const gfx::Display& DisplayManager::GetDisplayForId(int64_t id) const {
   gfx::Display* display =
       const_cast<DisplayManager*>(this)->FindDisplayForId(id);
   return display ? *display : GetInvalidDisplay();
@@ -297,7 +297,7 @@ const gfx::Display& DisplayManager::FindDisplayContainingPoint(
   return index < 0 ? GetInvalidDisplay() : active_display_list_[index];
 }
 
-bool DisplayManager::UpdateWorkAreaOfDisplay(int64 display_id,
+bool DisplayManager::UpdateWorkAreaOfDisplay(int64_t display_id,
                                              const gfx::Insets& insets) {
   gfx::Display* display = FindDisplayForId(display_id);
   DCHECK(display);
@@ -306,7 +306,7 @@ bool DisplayManager::UpdateWorkAreaOfDisplay(int64 display_id,
   return old_work_area != display->work_area();
 }
 
-void DisplayManager::SetOverscanInsets(int64 display_id,
+void DisplayManager::SetOverscanInsets(int64_t display_id,
                                        const gfx::Insets& insets_in_dip) {
   bool update = false;
   DisplayInfoList display_info_list;
@@ -331,7 +331,7 @@ void DisplayManager::SetOverscanInsets(int64 display_id,
   }
 }
 
-void DisplayManager::SetDisplayRotation(int64 display_id,
+void DisplayManager::SetDisplayRotation(int64_t display_id,
                                         gfx::Display::Rotation rotation,
                                         gfx::Display::RotationSource source) {
   if (IsInUnifiedMode())
@@ -360,7 +360,7 @@ void DisplayManager::SetDisplayRotation(int64 display_id,
   }
 }
 
-bool DisplayManager::SetDisplayMode(int64 display_id,
+bool DisplayManager::SetDisplayMode(int64_t display_id,
                                     const DisplayMode& display_mode) {
   bool change_ui_scale = GetDisplayIdForUIScaling() == display_id;
 
@@ -411,7 +411,7 @@ bool DisplayManager::SetDisplayMode(int64 display_id,
 }
 
 void DisplayManager::RegisterDisplayProperty(
-    int64 display_id,
+    int64_t display_id,
     gfx::Display::Rotation rotation,
     float ui_scale,
     const gfx::Insets* overscan_insets,
@@ -447,7 +447,8 @@ void DisplayManager::RegisterDisplayProperty(
   }
 }
 
-DisplayMode DisplayManager::GetActiveModeForDisplayId(int64 display_id) const {
+DisplayMode DisplayManager::GetActiveModeForDisplayId(
+    int64_t display_id) const {
   DisplayMode selected_mode;
   if (GetSelectedModeForDisplayId(display_id, &selected_mode))
     return selected_mode;
@@ -480,9 +481,9 @@ void DisplayManager::RegisterDisplayRotationProperties(bool rotation_lock,
     delegate_->PostDisplayConfigurationChange();
 }
 
-bool DisplayManager::GetSelectedModeForDisplayId(int64 id,
+bool DisplayManager::GetSelectedModeForDisplayId(int64_t id,
                                                  DisplayMode* mode_out) const {
-  std::map<int64, DisplayMode>::const_iterator iter = display_modes_.find(id);
+  std::map<int64_t, DisplayMode>::const_iterator iter = display_modes_.find(id);
   if (iter == display_modes_.end())
     return false;
   *mode_out = iter->second;
@@ -493,15 +494,15 @@ bool DisplayManager::IsDisplayUIScalingEnabled() const {
   return GetDisplayIdForUIScaling() != gfx::Display::kInvalidDisplayID;
 }
 
-gfx::Insets DisplayManager::GetOverscanInsets(int64 display_id) const {
-  std::map<int64, DisplayInfo>::const_iterator it =
+gfx::Insets DisplayManager::GetOverscanInsets(int64_t display_id) const {
+  std::map<int64_t, DisplayInfo>::const_iterator it =
       display_info_.find(display_id);
   return (it != display_info_.end()) ?
       it->second.overscan_insets_in_dip() : gfx::Insets();
 }
 
 void DisplayManager::SetColorCalibrationProfile(
-    int64 display_id,
+    int64_t display_id,
     ui::ColorCalibrationProfile profile) {
 #if defined(OS_CHROMEOS)
   if (!display_info_[display_id].IsColorProfileAvailable(profile))
@@ -870,7 +871,7 @@ size_t DisplayManager::GetNumDisplays() const {
   return active_display_list_.size();
 }
 
-bool DisplayManager::IsActiveDisplayId(int64 display_id) const {
+bool DisplayManager::IsActiveDisplayId(int64_t display_id) const {
   return std::find_if(active_display_list_.begin(), active_display_list_.end(),
                       [display_id](const gfx::Display& display) {
                         return display.id() == display_id;
@@ -895,17 +896,17 @@ bool DisplayManager::IsInUnifiedMode() const {
          !software_mirroring_display_list_.empty();
 }
 
-const DisplayInfo& DisplayManager::GetDisplayInfo(int64 display_id) const {
+const DisplayInfo& DisplayManager::GetDisplayInfo(int64_t display_id) const {
   DCHECK_NE(gfx::Display::kInvalidDisplayID, display_id);
 
-  std::map<int64, DisplayInfo>::const_iterator iter =
+  std::map<int64_t, DisplayInfo>::const_iterator iter =
       display_info_.find(display_id);
   CHECK(iter != display_info_.end()) << display_id;
   return iter->second;
 }
 
 const gfx::Display DisplayManager::GetMirroringDisplayById(
-    int64 display_id) const {
+    int64_t display_id) const {
   auto iter = std::find_if(software_mirroring_display_list_.begin(),
                            software_mirroring_display_list_.end(),
                            [display_id](const gfx::Display& display) {
@@ -915,18 +916,18 @@ const gfx::Display DisplayManager::GetMirroringDisplayById(
                                                         : *iter;
 }
 
-std::string DisplayManager::GetDisplayNameForId(int64 id) {
+std::string DisplayManager::GetDisplayNameForId(int64_t id) {
   if (id == gfx::Display::kInvalidDisplayID)
     return l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 
-  std::map<int64, DisplayInfo>::const_iterator iter = display_info_.find(id);
+  std::map<int64_t, DisplayInfo>::const_iterator iter = display_info_.find(id);
   if (iter != display_info_.end() && !iter->second.name().empty())
     return iter->second.name();
 
   return base::StringPrintf("Display %d", static_cast<int>(id));
 }
 
-int64 DisplayManager::GetDisplayIdForUIScaling() const {
+int64_t DisplayManager::GetDisplayIdForUIScaling() const {
   // UI Scaling is effective on internal display.
   return gfx::Display::HasInternalDisplay() ? gfx::Display::InternalDisplayId()
                                             : gfx::Display::kInvalidDisplayID;
@@ -1038,7 +1039,7 @@ void DisplayManager::ReconfigureDisplays() {
   UpdateDisplays(display_info_list);
 }
 
-bool DisplayManager::UpdateDisplayBounds(int64 display_id,
+bool DisplayManager::UpdateDisplayBounds(int64_t display_id,
                                          const gfx::Rect& new_bounds) {
   if (change_display_upon_host_resize_) {
     display_info_[display_id].SetBounds(new_bounds);
@@ -1114,7 +1115,7 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
         mirroring_display_id_ =
             (*display_info_list)[zero_is_source ? 1 : 0].id();
 
-        int64 display_id = mirroring_display_id_;
+        int64_t display_id = mirroring_display_id_;
         auto iter =
             std::find_if(display_info_list->begin(), display_info_list->end(),
                          [display_id](const DisplayInfo& info) {
@@ -1230,7 +1231,7 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
   }
 }
 
-gfx::Display* DisplayManager::FindDisplayForId(int64 id) {
+gfx::Display* DisplayManager::FindDisplayForId(int64_t id) {
   auto iter = std::find_if(
       active_display_list_.begin(), active_display_list_.end(),
       [id](const gfx::Display& display) { return display.id() == id; });
@@ -1250,7 +1251,7 @@ void DisplayManager::AddMirrorDisplayInfoIfAny(
 }
 
 void DisplayManager::InsertAndUpdateDisplayInfo(const DisplayInfo& new_info) {
-  std::map<int64, DisplayInfo>::iterator info =
+  std::map<int64_t, DisplayInfo>::iterator info =
       display_info_.find(new_info.id());
   if (info != display_info_.end()) {
     info->second.Copy(new_info);
@@ -1272,7 +1273,7 @@ void DisplayManager::OnDisplayInfoUpdated(const DisplayInfo& display_info) {
 #endif
 }
 
-gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
+gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   DCHECK(display_info_.find(id) != display_info_.end()) << "id=" << id;
   const DisplayInfo& display_info = display_info_[id];
 
@@ -1291,7 +1292,7 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
 }
 
 gfx::Display DisplayManager::CreateMirroringDisplayFromDisplayInfoById(
-    int64 id,
+    int64_t id,
     const gfx::Point& origin,
     float scale) {
   DCHECK(display_info_.find(id) != display_info_.end()) << "id=" << id;

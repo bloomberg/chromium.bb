@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace ash {

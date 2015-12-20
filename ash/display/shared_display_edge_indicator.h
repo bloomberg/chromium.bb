@@ -6,7 +6,7 @@
 #define ASH_DISPLAY_SHARED_DISPLAY_EDGE_INDICATOR_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/display.h"

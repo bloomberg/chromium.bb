@@ -25,9 +25,9 @@ namespace ash {
 namespace {
 
 // Use larger than max int to catch overflow early.
-const int64 kSynthesizedDisplayIdStart = 2200000000LL;
+const int64_t kSynthesizedDisplayIdStart = 2200000000LL;
 
-int64 synthesized_display_id = kSynthesizedDisplayIdStart;
+int64_t synthesized_display_id = kSynthesizedDisplayIdStart;
 
 const float kDpi96 = 96.0;
 bool use_125_dsf_for_ui_scaling = true;
@@ -112,7 +112,7 @@ DisplayInfo DisplayInfo::CreateFromSpec(const std::string& spec) {
 
 // static
 DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
-                                              int64 id) {
+                                              int64_t id) {
 #if defined(OS_WIN)
   gfx::Rect bounds_in_native(
       gfx::Size(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)));
@@ -247,7 +247,7 @@ DisplayInfo::DisplayInfo()
       clear_overscan_insets_(false),
       color_profile_(ui::COLOR_PROFILE_STANDARD) {}
 
-DisplayInfo::DisplayInfo(int64 id, const std::string& name, bool has_overscan)
+DisplayInfo::DisplayInfo(int64_t id, const std::string& name, bool has_overscan)
     : id_(id),
       name_(name),
       has_overscan_(has_overscan),

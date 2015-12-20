@@ -5,8 +5,8 @@
 #ifndef ASH_ACCELERATORS_FOCUS_MANAGER_FACTORY_H_
 #define ASH_ACCELERATORS_FOCUS_MANAGER_FACTORY_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/focus/focus_manager_delegate.h"
 #include "ui/views/focus/focus_manager_factory.h"
 

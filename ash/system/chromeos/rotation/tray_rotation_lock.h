@@ -8,6 +8,7 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_image_item.h"
+#include "base/macros.h"
 
 namespace ash {
 

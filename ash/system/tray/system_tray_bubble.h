@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
 
 #include "ash/system/user/login_status.h"
-#include "base/base_export.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/views/bubble/tray_bubble_view.h"

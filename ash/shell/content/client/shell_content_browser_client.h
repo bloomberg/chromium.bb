@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
 
 namespace content {

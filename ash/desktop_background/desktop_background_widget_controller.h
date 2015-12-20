@@ -6,6 +6,7 @@
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_WIDGET_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"

@@ -7,7 +7,7 @@
 
 #include "ash/shelf/shelf_alignment_menu.h"
 #include "ash/shelf/shelf_types.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace aura {

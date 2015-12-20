@@ -185,12 +185,14 @@ void ReorderItemsGreedyLeastMovement(std::vector<aura::Window*>* items,
         bounding_rect.y() + row * item_size.height() + item_size.height() / 2);
     // Find the nearest window for this position.
     size_t swap_index = i;
-    int64 shortest_distance = std::numeric_limits<int64>::max();
+    int64_t shortest_distance = std::numeric_limits<int64_t>::max();
     for (size_t j = i; j < items->size(); ++j) {
       aura::Window* window = (*items)[j];
-      int64 distance = (ScreenUtil::ConvertRectToScreen(
-                            window, window->GetTargetBounds()).CenterPoint() -
-                        overview_item_center).LengthSquared();
+      int64_t distance =
+          (ScreenUtil::ConvertRectToScreen(window, window->GetTargetBounds())
+               .CenterPoint() -
+           overview_item_center)
+              .LengthSquared();
       // We compare raw pointers to create a stable ordering given two windows
       // with the same center point.
       if (distance < shortest_distance ||

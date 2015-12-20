@@ -93,14 +93,14 @@ const char ResolutionNotificationController::kNotificationId[] =
     "chrome://settings/display/resolution";
 
 struct ResolutionNotificationController::ResolutionChangeInfo {
-  ResolutionChangeInfo(int64 display_id,
+  ResolutionChangeInfo(int64_t display_id,
                        const DisplayMode& old_resolution,
                        const DisplayMode& new_resolution,
                        const base::Closure& accept_callback);
   ~ResolutionChangeInfo();
 
   // The id of the display where the resolution change happens.
-  int64 display_id;
+  int64_t display_id;
 
   // The resolution before the change.
   DisplayMode old_resolution;
@@ -116,7 +116,7 @@ struct ResolutionNotificationController::ResolutionChangeInfo {
   base::Closure accept_callback;
 
   // The remaining timeout in seconds. 0 if the change does not time out.
-  uint8 timeout_count;
+  uint8_t timeout_count;
 
   // The timer to invoke OnTimerTick() every second. This cannot be
   // OneShotTimer since the message contains text "automatically closed in xx
@@ -128,7 +128,7 @@ struct ResolutionNotificationController::ResolutionChangeInfo {
 };
 
 ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
-    int64 display_id,
+    int64_t display_id,
     const DisplayMode& old_resolution,
     const DisplayMode& new_resolution,
     const base::Closure& accept_callback)
@@ -159,7 +159,7 @@ ResolutionNotificationController::~ResolutionNotificationController() {
 }
 
 void ResolutionNotificationController::PrepareNotification(
-    int64 display_id,
+    int64_t display_id,
     const DisplayMode& old_resolution,
     const DisplayMode& new_resolution,
     const base::Closure& accept_callback) {
@@ -267,7 +267,7 @@ void ResolutionNotificationController::RevertResolutionChange() {
       kNotificationId, false /* by_user */);
   if (!change_info_)
     return;
-  int64 display_id = change_info_->display_id;
+  int64_t display_id = change_info_->display_id;
   DisplayMode old_resolution = change_info_->old_resolution;
   change_info_.reset();
   Shell::GetInstance()->display_manager()->SetDisplayMode(

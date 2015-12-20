@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_POPUP_LABEL_BUTTON_H_
 #define ASH_SYSTEM_TRAY_TRAY_POPUP_LABEL_BUTTON_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/views/controls/button/label_button.h"
 

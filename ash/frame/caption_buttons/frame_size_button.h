@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_size_button_delegate.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 
 namespace views {

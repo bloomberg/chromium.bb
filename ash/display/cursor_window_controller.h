@@ -6,6 +6,7 @@
 #define ASH_DISPLAY_CURSOR_WINDOW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/display.h"

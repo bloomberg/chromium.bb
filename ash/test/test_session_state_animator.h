@@ -5,12 +5,14 @@
 #ifndef ASH_TEST_TEST_SESSION_STATE_ANIMATOR_H_
 #define ASH_TEST_TEST_SESSION_STATE_ANIMATOR_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/wm/session_state_animator.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace ash {

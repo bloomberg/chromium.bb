@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/test/ash_test_base.h"
+#include "base/macros.h"
 
 namespace ash {
 namespace test {

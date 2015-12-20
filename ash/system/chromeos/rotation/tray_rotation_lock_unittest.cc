@@ -243,7 +243,7 @@ TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
 // Tests that when the tray is created without the internal display being known,
 // that it will still display correctly once the internal display is known.
 TEST_F(TrayRotationLockTest, InternalDisplayNotAvailableAtCreation) {
-  int64 internal_display_id = gfx::Display::InternalDisplayId();
+  int64_t internal_display_id = gfx::Display::InternalDisplayId();
   TearDownViews();
   gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
 

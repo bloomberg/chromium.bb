@@ -11,6 +11,7 @@
 
 #include "ash/shelf/shelf_delegate.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/aura/window_observer.h"
 
 namespace ash {

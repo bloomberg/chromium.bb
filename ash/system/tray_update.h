@@ -8,6 +8,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "ash/system/user/update_observer.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace views {

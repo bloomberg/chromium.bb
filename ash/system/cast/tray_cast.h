@@ -8,6 +8,7 @@
 #include "ash/cast_config_delegate.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 namespace ash {

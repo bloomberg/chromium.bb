@@ -6,6 +6,7 @@
 #define ASH_WM_WORKSPACE_CONTROLLER_TEST_HELPER_H_
 
 #include "ash/wm/workspace_controller.h"
+#include "base/macros.h"
 
 namespace ash {
 class MultiWindowResizeController;

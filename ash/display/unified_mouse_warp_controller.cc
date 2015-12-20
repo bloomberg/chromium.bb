@@ -24,7 +24,8 @@ namespace ash {
 
 namespace {
 
-AshWindowTreeHost* GetMirroringAshWindowTreeHostForDisplayId(int64 display_id) {
+AshWindowTreeHost* GetMirroringAshWindowTreeHostForDisplayId(
+    int64_t display_id) {
   return Shell::GetInstance()
       ->window_tree_host_manager()
       ->mirror_window_controller()

@@ -5,6 +5,7 @@
 #ifndef ASH_TEST_TEST_KEYBOARD_UI_H_
 #define ASH_TEST_TEST_KEYBOARD_UI_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/keyboard/keyboard_ui.h"

@@ -20,7 +20,7 @@
 namespace ash {
 namespace {
 
-base::string16 ExpectedNotificationMessage(int64 display_id,
+base::string16 ExpectedNotificationMessage(int64_t display_id,
                                            const gfx::Size& new_resolution) {
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
@@ -31,7 +31,7 @@ base::string16 ExpectedNotificationMessage(int64 display_id,
 }
 
 base::string16 ExpectedFallbackNotificationMessage(
-    int64 display_id,
+    int64_t display_id,
     const gfx::Size& specified_resolution,
     const gfx::Size& fallback_resolution) {
   return l10n_util::GetStringFUTF16(
@@ -86,7 +86,7 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
     // so invoke UpdateDisplay() to emit that event explicitly.
     std::vector<DisplayInfo> info_list;
     for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-      int64 id = display_manager->GetDisplayAt(i).id();
+      int64_t id = display_manager->GetDisplayAt(i).id();
       DisplayInfo info = display_manager->GetDisplayInfo(id);
       if (display.id() == id) {
         gfx::Rect bounds = info.bounds_in_native();
@@ -166,7 +166,7 @@ TEST_F(ResolutionNotificationControllerTest, Basic) {
     return;
 
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
-  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
+  int64_t id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ASSERT_EQ(0, accept_count());
@@ -199,7 +199,7 @@ TEST_F(ResolutionNotificationControllerTest, ClickMeansAccept) {
     return;
 
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
-  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
+  int64_t id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ASSERT_EQ(0, accept_count());
@@ -269,7 +269,7 @@ TEST_F(ResolutionNotificationControllerTest, Close) {
     return;
 
   UpdateDisplay("100x100,150x150#150x150%59|200x200%60");
-  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
+  int64_t id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ASSERT_EQ(0, accept_count());
@@ -324,7 +324,7 @@ TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
 
   UpdateDisplay("300x300#300x300%56|200x200%57,"
                 "200x200#250x250%58|200x200%59|100x100%60");
-  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
+  int64_t id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   SetDisplayResolutionAndNotify(
@@ -349,7 +349,7 @@ TEST_F(ResolutionNotificationControllerTest, MultipleResolutionChange) {
 
   UpdateDisplay("300x300#300x300%56|200x200%57,"
                 "250x250#250x250%58|200x200%59");
-  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
+  int64_t id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
@@ -388,7 +388,7 @@ TEST_F(ResolutionNotificationControllerTest, Fallback) {
 
   UpdateDisplay("300x300#300x300%56|200x200%57,"
                 "250x250#250x250%58|220x220%59|200x200%60");
-  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
+  int64_t id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ASSERT_EQ(0, accept_count());

@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_CHROMEOS_SYSTEM_CLOCK_OBSERVER_H_
 #define ASH_SYSTEM_CHROMEOS_SYSTEM_CLOCK_OBSERVER_H_
 
+#include "base/macros.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
 

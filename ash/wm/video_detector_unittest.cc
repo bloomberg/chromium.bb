@@ -266,7 +266,7 @@ TEST_F(VideoDetectorTest, RepeatedNotifications) {
   // Let enough time pass that a second notification should be sent.
   observer_->reset_stats();
   AdvanceTime(base::TimeDelta::FromSeconds(
-      static_cast<int64>(VideoDetector::kNotifyIntervalSec + 1)));
+      static_cast<int64_t>(VideoDetector::kNotifyIntervalSec + 1)));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(1, observer_->num_invocations());

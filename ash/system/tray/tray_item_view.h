@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_TRAY_TRAY_ITEM_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/view.h"
 

@@ -5,12 +5,15 @@
 #ifndef ASH_DISPLAY_MIRROR_WINDOW_CONTROLLER_H_
 #define ASH_DISPLAY_MIRROR_WINDOW_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/display/display_manager.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
@@ -72,7 +75,7 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
   gfx::Display GetDisplayForRootWindow(const aura::Window* root) const;
 
   // Returns the AshWindwoTreeHost created for |display_id|.
-  AshWindowTreeHost* GetAshWindowTreeHostForDisplayId(int64 display_id);
+  AshWindowTreeHost* GetAshWindowTreeHostForDisplayId(int64_t display_id);
 
   // Returns all root windows hosting mirroring displays.
   aura::Window::Windows GetAllRootWindows() const;

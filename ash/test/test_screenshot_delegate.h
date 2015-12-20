@@ -6,8 +6,8 @@
 #define ASH_TEST_TEST_SCREENSHOT_DELEGATE_H_
 
 #include "ash/screenshot_delegate.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {

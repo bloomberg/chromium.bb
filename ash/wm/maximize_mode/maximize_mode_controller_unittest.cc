@@ -447,7 +447,7 @@ TEST_F(MaximizeModeControllerTest, DisplayDisconnectionDuringOverview) {
 TEST_F(MaximizeModeControllerTest, NoMaximizeModeWithDisabledInternalDisplay) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   UpdateDisplay("200x200, 200x200");
-  const int64 internal_display_id =
+  const int64_t internal_display_id =
       test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   ASSERT_FALSE(IsMaximizeModeStarted());
 

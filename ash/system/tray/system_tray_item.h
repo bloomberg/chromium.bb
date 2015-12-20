@@ -8,8 +8,8 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/system/user/login_status.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace views {
 class View;

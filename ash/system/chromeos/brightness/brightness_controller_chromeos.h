@@ -7,8 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/brightness_control_delegate.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace ash {
 namespace system {

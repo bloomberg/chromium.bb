@@ -6,6 +6,7 @@
 #define ASH_FRAME_CUSTOM_FRAME_VIEW_ASH_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/window/non_client_view.h"

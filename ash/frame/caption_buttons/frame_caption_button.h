@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/caption_button_types.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"

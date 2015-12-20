@@ -6,6 +6,7 @@
 #define ASH_TEST_TEST_VOLUME_CONTROL_DELEGATE_H_
 
 #include "ash/volume_control_delegate.h"
+#include "base/macros.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace ash {

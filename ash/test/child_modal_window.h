@@ -5,6 +5,7 @@
 #ifndef ASH_TEST_CHILD_MODAL_WINDOW_H_
 #define ASH_TEST_CHILD_MODAL_WINDOW_H_
 
+#include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"

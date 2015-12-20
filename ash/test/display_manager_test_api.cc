@@ -45,8 +45,8 @@ std::vector<DisplayInfo> CreateDisplayInfoListFromString(
 
   for (std::vector<std::string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter, ++index) {
-    int64 id = (index < list.size()) ? list[index].id()
-                                     : gfx::Display::kInvalidDisplayID;
+    int64_t id = (index < list.size()) ? list[index].id()
+                                       : gfx::Display::kInvalidDisplayID;
     display_info_list.push_back(
         DisplayInfo::CreateFromSpecWithID(*iter, id));
   }
@@ -117,13 +117,13 @@ void DisplayManagerTestApi::UpdateDisplay(
   display_manager_->RunPendingTasksForTest();
 }
 
-int64 DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
+int64_t DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
   const gfx::Display& internal = display_manager_->active_display_list_[0];
   SetInternalDisplayId(internal.id());
   return gfx::Display::InternalDisplayId();
 }
 
-void DisplayManagerTestApi::SetInternalDisplayId(int64 id) {
+void DisplayManagerTestApi::SetInternalDisplayId(int64_t id) {
   gfx::Display::SetInternalDisplayId(id);
   display_manager_->UpdateInternalDisplayModeListForTest();
 }
@@ -133,7 +133,7 @@ void DisplayManagerTestApi::DisableChangeDisplayUponHostResize() {
 }
 
 void DisplayManagerTestApi::SetAvailableColorProfiles(
-    int64 display_id,
+    int64_t display_id,
     const std::vector<ui::ColorCalibrationProfile>& profiles) {
   display_manager_->display_info_[display_id].set_available_color_profiles(
       profiles);
@@ -147,7 +147,7 @@ ScopedDisable125DSFForUIScaling::~ScopedDisable125DSFForUIScaling() {
   DisplayInfo::SetUse125DSFForUIScalingForTest(true);
 }
 
-ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(int64 id) {
+ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(int64_t id) {
   DisplayManagerTestApi().SetInternalDisplayId(id);
 }
 
@@ -155,7 +155,7 @@ ScopedSetInternalDisplayId::~ScopedSetInternalDisplayId() {
   gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
 }
 
-bool SetDisplayResolution(int64 display_id, const gfx::Size& resolution) {
+bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   const DisplayInfo& info = display_manager->GetDisplayInfo(display_id);
   DisplayMode mode;

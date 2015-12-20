@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/wm_types.h"
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"

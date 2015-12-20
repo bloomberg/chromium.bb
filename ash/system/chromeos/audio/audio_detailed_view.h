@@ -7,8 +7,8 @@
 
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/view_click_listener.h"
+#include "base/macros.h"
 #include "chromeos/audio/audio_device.h"
-
 #include "ui/gfx/font.h"
 
 namespace views {

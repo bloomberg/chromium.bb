@@ -108,7 +108,7 @@ class TestEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
-float GetStoredUIScale(int64 id) {
+float GetStoredUIScale(int64_t id) {
   return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).
       GetEffectiveUIScale();
 }
@@ -152,7 +152,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
 
   UpdateDisplay("120x200,300x400*2");
   gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
-  int64 display2_id = ScreenUtil::GetSecondaryDisplay().id();
+  int64_t display2_id = ScreenUtil::GetSecondaryDisplay().id();
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ui::test::EventGenerator generator1(root_windows[0]);

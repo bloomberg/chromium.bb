@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/dim_window.h"
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 //#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/test/test_windows.h"

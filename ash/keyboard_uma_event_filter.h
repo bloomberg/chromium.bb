@@ -6,6 +6,7 @@
 #define ASH_KEYBOARD_UMA_EVENT_FILTER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/events/event_handler.h"
 

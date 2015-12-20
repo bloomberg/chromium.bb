@@ -8,6 +8,7 @@
 #include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/view_click_listener.h"
+#include "base/macros.h"
 
 namespace views {
 class View;

@@ -72,9 +72,9 @@ bool ZoomInternalDisplay(bool up) {
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-  int64 display_id = display_manager->IsInUnifiedMode()
-                         ? DisplayManager::kUnifiedDisplayId
-                         : display_manager->GetDisplayIdForUIScaling();
+  int64_t display_id = display_manager->IsInUnifiedMode()
+                           ? DisplayManager::kUnifiedDisplayId
+                           : display_manager->GetDisplayIdForUIScaling();
   const DisplayInfo& display_info = display_manager->GetDisplayInfo(display_id);
   DisplayMode mode;
 

@@ -8,7 +8,7 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/user/login_status.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 
 namespace views {

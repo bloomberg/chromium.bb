@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/system/user/login_status.h"
+#include "base/macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {

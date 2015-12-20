@@ -5,9 +5,12 @@
 #ifndef ASH_TEST_ASH_TEST_BASE_H_
 #define ASH_TEST_ASH_TEST_BASE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -101,7 +104,7 @@ class AshTestBase : public testing::Test {
   };
 
   // Returns the rotation currentl active for the display |id|.
-  static gfx::Display::Rotation GetActiveDisplayRotation(int64 id);
+  static gfx::Display::Rotation GetActiveDisplayRotation(int64_t id);
 
   // Returns the rotation currently active for the internal display.
   static gfx::Display::Rotation GetCurrentInternalDisplayRotation();

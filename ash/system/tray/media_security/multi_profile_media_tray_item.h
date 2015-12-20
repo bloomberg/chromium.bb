@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_CHROMEOS_MULTI_PROFILE_MEDIA_TRAY_ITEM_H_
 
 #include "ash/system/tray/system_tray_item.h"
+#include "base/macros.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/views/view.h"
 

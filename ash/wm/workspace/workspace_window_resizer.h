@@ -5,11 +5,14 @@
 #ifndef ASH_WM_WORKSPACE_WORKSPACE_WINDOW_RESIZER_H_
 #define ASH_WM_WORKSPACE_WORKSPACE_WINDOW_RESIZER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window_tracker.h"
@@ -112,7 +115,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // |magnetism_window_| and |magnetism_edge_| appropriately. |edges| is a
   // bitmask of the MagnetismEdges to match again. Returns true if a match is
   // found.
-  bool UpdateMagnetismWindow(const gfx::Rect& bounds, uint32 edges);
+  bool UpdateMagnetismWindow(const gfx::Rect& bounds, uint32_t edges);
 
   // Adjusts the bounds of the window: magnetically snapping, ensuring the
   // window has enough on screen... |snap_size| is the distance from an edge of

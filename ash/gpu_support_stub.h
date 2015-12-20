@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/gpu_support.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace ash {
 

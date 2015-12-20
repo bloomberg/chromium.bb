@@ -20,7 +20,7 @@ bool IsCloseEnough(int a, int b) {
 // MagnetismEdges.
 bool CanMatchSecondaryEdge(MagnetismEdge primary,
                            SecondaryMagnetismEdge secondary,
-                           uint32 edges) {
+                           uint32_t edges) {
   // Convert |secondary| to a MagnetismEdge so we can compare it to |edges|.
   MagnetismEdge secondary_as_magnetism_edge = MAGNETISM_EDGE_TOP;
   switch (primary) {
@@ -120,7 +120,7 @@ void MagnetismEdgeMatcher::UpdateRanges(const Range& range) {
 // static
 const int MagnetismMatcher::kMagneticDistance = 8;
 
-MagnetismMatcher::MagnetismMatcher(const gfx::Rect& bounds, uint32 edges)
+MagnetismMatcher::MagnetismMatcher(const gfx::Rect& bounds, uint32_t edges)
     : edges_(edges) {
   if (edges & MAGNETISM_EDGE_TOP)
     matchers_.push_back(new MagnetismEdgeMatcher(bounds, MAGNETISM_EDGE_TOP));

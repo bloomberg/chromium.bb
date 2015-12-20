@@ -5,10 +5,13 @@
 #ifndef ASH_DISPLAY_RESOLUTION_NOTIFICATION_CONTROLLER_H_
 #define ASH_DISPLAY_RESOLUTION_NOTIFICATION_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/geometry/size.h"
@@ -47,7 +50,7 @@ class ASH_EXPORT ResolutionNotificationController
   // asynchronously after the resolution change is requested. So typically this
   // method will be combined with resolution change methods like
   // DisplayManager::SetDisplayMode().
-  void PrepareNotification(int64 display_id,
+  void PrepareNotification(int64_t display_id,
                            const DisplayMode& old_resolution,
                            const DisplayMode& new_resolution,
                            const base::Closure& accept_callback);

@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/display/chromeos/display_configurator.h"

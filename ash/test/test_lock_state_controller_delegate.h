@@ -6,6 +6,7 @@
 #define ASH_TEST_TEST_LOCK_STATE_CONTROLLER_DELEGATE_H_
 
 #include "ash/wm/lock_state_controller.h"
+#include "base/macros.h"
 
 namespace ash {
 namespace test {

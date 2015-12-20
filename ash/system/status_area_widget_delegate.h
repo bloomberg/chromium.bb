@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
+#include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget_delegate.h"

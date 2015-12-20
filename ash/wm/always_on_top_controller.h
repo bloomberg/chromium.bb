@@ -6,8 +6,8 @@
 #define ASH_WM_ALWAYS_ON_TOP_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {

@@ -6,7 +6,7 @@
 #define ASH_WINDOW_ROTATION_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/gfx/geometry/point.h"

@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_BAR_BUTTON_WITH_TITLE_H_
 #define ASH_SYSTEM_TRAY_TRAY_BAR_BUTTON_WITH_TITLE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/controls/button/custom_button.h"
 
 namespace views {

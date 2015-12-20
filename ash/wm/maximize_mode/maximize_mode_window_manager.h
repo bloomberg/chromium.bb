@@ -5,14 +5,16 @@
 #ifndef ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_MANAGER_H_
 #define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/window_state.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/display_observer.h"

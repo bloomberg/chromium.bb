@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/wm_types.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {

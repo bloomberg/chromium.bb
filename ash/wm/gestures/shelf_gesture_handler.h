@@ -5,7 +5,7 @@
 #ifndef ASH_WM_GESTURES_SHELF_GESTURE_HANDLER_H_
 #define ASH_WM_GESTURES_SHELF_GESTURE_HANDLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace aura {

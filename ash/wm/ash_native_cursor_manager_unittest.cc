@@ -159,7 +159,7 @@ TEST_F(AshNativeCursorManagerTest, FractionalScale) {
 #endif
 
 TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
-  int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
   gfx::Display::SetInternalDisplayId(display_id);
 
   ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();

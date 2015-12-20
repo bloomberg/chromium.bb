@@ -10,6 +10,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/user/user_observer.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace gfx {
 class Rect;

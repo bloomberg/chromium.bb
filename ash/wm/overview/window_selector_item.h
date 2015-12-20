@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_observer.h"

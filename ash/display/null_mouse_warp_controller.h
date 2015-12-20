@@ -7,6 +7,8 @@
 
 #include "ash/display/mouse_warp_controller.h"
 
+#include "base/macros.h"
+
 namespace ash {
 
 // A MouseWarpController when there is one desktop display

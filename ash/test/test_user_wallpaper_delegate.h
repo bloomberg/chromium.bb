@@ -7,6 +7,7 @@
 
 #include "ash/default_user_wallpaper_delegate.h"
 
+#include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {

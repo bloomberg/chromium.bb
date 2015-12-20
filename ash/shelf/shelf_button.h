@@ -6,6 +6,7 @@
 #define ASH_SHELF_SHELF_BUTTON_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"

@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_CHROMEOS_POWER_VIDEO_ACTIVITY_NOTIFIER_H_
 
 #include "ash/wm/video_detector.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace ash {

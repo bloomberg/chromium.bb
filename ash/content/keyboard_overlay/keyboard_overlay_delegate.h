@@ -6,9 +6,9 @@
 #define ASH_KEYBOARD_OVERLAY_KEYBOARD_OVERLAY_DELEGATE_H_
 
 #include "ash/content/ash_with_content_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "url/gurl.h"
 

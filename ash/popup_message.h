@@ -6,8 +6,8 @@
 #define ASH_POPUP_MESSAGE_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/bubble/bubble_border.h"

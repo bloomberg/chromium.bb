@@ -6,8 +6,8 @@
 #define ASH_WM_STATUS_AREA_LAYOUT_MANAGER_H_
 
 #include "ash/snap_to_pixel_layout_manager.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/aura/layout_manager.h"
 
 namespace ash {

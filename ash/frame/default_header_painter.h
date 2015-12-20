@@ -7,9 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/frame/header_painter.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"  // override
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"

@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 

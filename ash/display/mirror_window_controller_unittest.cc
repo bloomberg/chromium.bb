@@ -26,7 +26,7 @@
 namespace ash {
 
 namespace {
-DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
+DisplayInfo CreateDisplayInfo(int64_t id, const gfx::Rect& bounds) {
   DisplayInfo info(id, base::StringPrintf("x-%d", static_cast<int>(id)), false);
   info.SetBounds(bounds);
   return info;
@@ -221,8 +221,8 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
       shell->window_tree_host_manager();
 
   UpdateDisplay("400x400*2/r,400x400");
-  int64 primary_display_id = window_tree_host_manager->GetPrimaryDisplayId();
-  int64 secondary_display_id = ScreenUtil::GetSecondaryDisplay().id();
+  int64_t primary_display_id = window_tree_host_manager->GetPrimaryDisplayId();
+  int64_t secondary_display_id = ScreenUtil::GetSecondaryDisplay().id();
   test::ScopedSetInternalDisplayId set_internal(primary_display_id);
 
   // Chrome uses the internal display as the source display for software mirror
@@ -261,8 +261,8 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
 // from/to dock mode.
 TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  const int64 internal_id = 1;
-  const int64 external_id = 2;
+  const int64_t internal_id = 1;
+  const int64_t external_id = 2;
 
   const DisplayInfo internal_display_info =
       CreateDisplayInfo(internal_id, gfx::Rect(0, 0, 500, 500));
@@ -276,7 +276,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
   display_manager->OnNativeDisplaysChanged(display_info_list);
-  const int64 internal_display_id =
+  const int64_t internal_display_id =
       test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   EXPECT_EQ(internal_id, internal_display_id);
 

@@ -11,6 +11,7 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_popup_label_button.h"
+#include "base/macros.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"

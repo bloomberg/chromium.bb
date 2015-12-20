@@ -7,8 +7,8 @@
 
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 
 // ScopedObserverWithDuplicatedSources is used to keep track of the set of
 // sources an object has attached itself to as an observer. When

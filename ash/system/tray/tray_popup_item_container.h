@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_POPUP_ITEM_CONTAINER_H_
 #define ASH_SYSTEM_TRAY_TRAY_POPUP_ITEM_CONTAINER_H_
 
+#include "base/macros.h"
 #include "ui/views/view.h"
 
 namespace ash {

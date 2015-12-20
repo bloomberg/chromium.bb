@@ -9,6 +9,7 @@
 #include "ash/system/date/tray_date.h"
 #include "ash/system/tray/actionable_view.h"
 #include "base/i18n/time_formatting.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/views/view.h"

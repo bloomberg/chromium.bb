@@ -5,14 +5,16 @@
 #ifndef ASH_DISPLAY_DISPLAY_CONTROLLER_H_
 #define ASH_DISPLAY_DISPLAY_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/display/display_manager.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -89,7 +91,7 @@ class ASH_EXPORT WindowTreeHostManager
 
   // Returns primary display's ID.
   // TODO(oshima): Move this out from WindowTreeHostManager;
-  static int64 GetPrimaryDisplayId();
+  static int64_t GetPrimaryDisplayId();
 
   CursorWindowController* cursor_window_controller() {
     return cursor_window_controller_.get();
@@ -114,11 +116,11 @@ class ASH_EXPORT WindowTreeHostManager
   aura::Window* GetPrimaryRootWindow();
 
   // Returns the root window for |display_id|.
-  aura::Window* GetRootWindowForDisplayId(int64 id);
+  aura::Window* GetRootWindowForDisplayId(int64_t id);
 
   // Returns AshWTH for given display |id|. Call results in CHECK failure
   // if the WTH does not exist.
-  AshWindowTreeHost* GetAshWindowTreeHostForDisplayId(int64 id);
+  AshWindowTreeHost* GetAshWindowTreeHostForDisplayId(int64_t id);
 
   // Toggle mirror mode.
   void ToggleMirrorMode();
@@ -128,7 +130,7 @@ class ASH_EXPORT WindowTreeHostManager
 
   // Sets the ID of the primary display.  If the display is not connected, it
   // will switch the primary display when connected.
-  void SetPrimaryDisplayId(int64 id);
+  void SetPrimaryDisplayId(int64_t id);
 
   // Sets primary display. This re-assigns the current root
   // window to given |display|.
@@ -147,8 +149,8 @@ class ASH_EXPORT WindowTreeHostManager
 
   // Gets/Sets/Clears the overscan insets for the specified |display_id|. See
   // display_manager.h for the details.
-  gfx::Insets GetOverscanInsets(int64 display_id) const;
-  void SetOverscanInsets(int64 display_id, const gfx::Insets& insets_in_dip);
+  gfx::Insets GetOverscanInsets(int64_t display_id) const;
+  void SetOverscanInsets(int64_t display_id, const gfx::Insets& insets_in_dip);
 
   // Checks if the mouse pointer is on one of displays, and moves to
   // the center of the nearest display if it's outside of all displays.
@@ -209,7 +211,7 @@ class ASH_EXPORT WindowTreeHostManager
     DisplayChangeLimiter();
 
     // Sets how long the throttling should last.
-    void SetThrottleTimeout(int64 throttle_ms);
+    void SetThrottleTimeout(int64_t throttle_ms);
 
     bool IsThrottled() const;
 
@@ -224,7 +226,7 @@ class ASH_EXPORT WindowTreeHostManager
   // change the display configuration.
   scoped_ptr<DisplayChangeLimiter> limiter_;
 
-  typedef std::map<int64, AshWindowTreeHost*> WindowTreeHostMap;
+  typedef std::map<int64_t, AshWindowTreeHost*> WindowTreeHostMap;
   // The mapping from display ID to its window tree host.
   WindowTreeHostMap window_tree_hosts_;
 
@@ -251,7 +253,7 @@ class ASH_EXPORT WindowTreeHostManager
 
   // Stores the cursor's display. The id is used to determine whether the mouse
   // should be moved after a display configuration change.
-  int64 cursor_display_id_for_restore_;
+  int64_t cursor_display_id_for_restore_;
 
   base::WeakPtrFactory<WindowTreeHostManager> weak_ptr_factory_;
 

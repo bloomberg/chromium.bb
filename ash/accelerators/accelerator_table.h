@@ -5,8 +5,9 @@
 #ifndef ASH_ACCELERATORS_ACCELERATOR_TABLE_H_
 #define ASH_ACCELERATORS_ACCELERATOR_TABLE_H_
 
+#include <stddef.h>
+
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 

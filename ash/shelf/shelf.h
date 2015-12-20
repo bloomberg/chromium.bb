@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_types.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget_observer.h"

@@ -6,6 +6,7 @@
 #define ASH_TEST_TEST_OVERLAY_DELEGATE_H_
 
 #include "ash/wm/overlay_event_filter.h"
+#include "base/macros.h"
 
 namespace ash {
 namespace test {

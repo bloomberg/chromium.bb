@@ -28,7 +28,7 @@
 namespace ash {
 namespace {
 
-const int64 kTimeOutMilliseconds = 2000;
+const int64_t kTimeOutMilliseconds = 2000;
 // Color of the text of the warning message.
 const SkColor kTextColor = SK_ColorWHITE;
 // Color of the window background.

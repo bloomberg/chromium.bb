@@ -7,6 +7,9 @@
 
 #include "ash/display/mouse_warp_controller.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
@@ -52,7 +55,7 @@ class ASH_EXPORT UnifiedMouseWarpController : public MouseWarpController {
   gfx::Rect first_edge_bounds_in_native_;
   gfx::Rect second_edge_bounds_in_native_;
 
-  int64 current_cursor_display_id_;
+  int64_t current_cursor_display_id_;
 
   bool update_location_for_test_;
 

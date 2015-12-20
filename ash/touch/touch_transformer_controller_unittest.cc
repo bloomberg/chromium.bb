@@ -14,7 +14,7 @@ namespace ash {
 
 namespace {
 
-DisplayInfo CreateDisplayInfo(int64 id,
+DisplayInfo CreateDisplayInfo(int64_t id,
                               unsigned int touch_device_id,
                               const gfx::Rect& bounds) {
   DisplayInfo info(id, std::string(), false);

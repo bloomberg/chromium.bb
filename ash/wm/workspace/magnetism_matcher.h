@@ -5,12 +5,15 @@
 #ifndef ASH_WM_WORKSPACE_MAGNETISM_MATCHER_H_
 #define ASH_WM_WORKSPACE_MAGNETISM_MATCHER_H_
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -23,9 +26,9 @@ enum MagnetismEdge {
   MAGNETISM_EDGE_RIGHT  = 1 << 3,
 };
 
-const uint32 kAllMagnetismEdges =
-    MAGNETISM_EDGE_TOP | MAGNETISM_EDGE_LEFT | MAGNETISM_EDGE_BOTTOM |
-    MAGNETISM_EDGE_RIGHT;
+const uint32_t kAllMagnetismEdges = MAGNETISM_EDGE_TOP | MAGNETISM_EDGE_LEFT |
+                                    MAGNETISM_EDGE_BOTTOM |
+                                    MAGNETISM_EDGE_RIGHT;
 
 // MagnetismEdgeMatcher is used for matching a particular edge of a window. You
 // shouldn't need to use this directly, instead use MagnetismMatcher which takes
@@ -159,7 +162,7 @@ class ASH_EXPORT MagnetismMatcher {
   static const int kMagneticDistance;
 
   // |edges| is a bitmask of MagnetismEdges to match against.
-  MagnetismMatcher(const gfx::Rect& bounds, uint32 edges);
+  MagnetismMatcher(const gfx::Rect& bounds, uint32_t edges);
   ~MagnetismMatcher();
 
   // Returns true if |bounds| is close enough to the initial bounds that the two
@@ -177,7 +180,7 @@ class ASH_EXPORT MagnetismMatcher {
                              SecondaryMagnetismEdge* secondary_edge) const;
 
   // The edges to match against.
-  const int32 edges_;
+  const int32_t edges_;
 
   ScopedVector<MagnetismEdgeMatcher> matchers_;
 

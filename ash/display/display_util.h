@@ -5,6 +5,8 @@
 #ifndef ASH_DISPLAY_DISPLAY_UTIL_H_
 #define ASH_DISPLAY_DISPLAY_UTIL_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <utility>
 #include <vector>
@@ -55,7 +57,7 @@ ASH_EXPORT bool GetDisplayModeForNextResolution(const DisplayInfo& info,
 
 // Sets the UI scale for the |display_id|. Returns false if the
 // display_id is not an internal display.
-ASH_EXPORT bool SetDisplayUIScale(int64 display_id, float scale);
+ASH_EXPORT bool SetDisplayUIScale(int64_t display_id, float scale);
 
 // Tests if the |info| has display mode that matches |ui_scale|.
 bool HasDisplayModeForUIScale(const DisplayInfo& info, float ui_scale);
@@ -89,12 +91,12 @@ ASH_EXPORT int FindDisplayIndexContainingPoint(
 
 // Creates the DisplayIdPair where ids are sorted using |CompareDisplayIds|
 // below.
-ASH_EXPORT DisplayIdPair CreateDisplayIdPair(int64 id1, int64 id2);
+ASH_EXPORT DisplayIdPair CreateDisplayIdPair(int64_t id1, int64_t id2);
 
 // Returns true if one of following conditinos is met.
 // 1) id1 is internal.
 // 2) output index of id1 < output index of id2 and id2 isn't internal.
-ASH_EXPORT bool CompareDisplayIds(int64 id1, int64 id2);
+ASH_EXPORT bool CompareDisplayIds(int64_t id1, int64_t id2);
 
 }  // namespace ash
 

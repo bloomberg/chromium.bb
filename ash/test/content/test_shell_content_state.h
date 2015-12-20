@@ -6,6 +6,7 @@
 #define ASH_TEST_CONTENT_TEST_SHELL_CONTENT_STATE_H_
 
 #include "ash/content/shell_content_state.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace content {

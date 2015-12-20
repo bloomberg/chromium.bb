@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_NOTIFIER_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_NOTIFIER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -18,6 +20,7 @@
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 
 #if defined(OS_CHROMEOS)

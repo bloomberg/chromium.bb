@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/tray_accessibility.h"
+#include "base/macros.h"
 #include "ui/chromeos/touch_exploration_controller.h"
 
 namespace chromeos {

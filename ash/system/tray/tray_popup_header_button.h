@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_TRAY_TRAY_POPUP_HEADER_BUTTON_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {

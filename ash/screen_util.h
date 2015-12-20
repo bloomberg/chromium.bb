@@ -6,7 +6,7 @@
 #define ASH_SCREEN_UTIL_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace aura {
 class Window;

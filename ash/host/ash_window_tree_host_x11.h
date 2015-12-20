@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/transformer_helper.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_tree_host_x11.h"

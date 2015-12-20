@@ -6,6 +6,7 @@
 #define ASH_SHELL_CONTENT_SHELL_CONTENT_STATE_IMPL_H_
 
 #include "ash/content/shell_content_state.h"
+#include "base/macros.h"
 
 namespace ash {
 

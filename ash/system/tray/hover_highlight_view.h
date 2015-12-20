@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_TRAY_HOVER_HIGHLIGHT_VIEW_H_
 
 #include "ash/system/tray/actionable_view.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/text_constants.h"
 

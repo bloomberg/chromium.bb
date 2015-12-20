@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/session/session_state_delegate.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 class AccountId;
 

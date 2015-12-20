@@ -7,8 +7,8 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace ash {
 

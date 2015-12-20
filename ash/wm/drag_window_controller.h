@@ -6,8 +6,8 @@
 #define ASH_WM_DRAG_WINDOW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"

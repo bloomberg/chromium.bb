@@ -6,7 +6,7 @@
 #define ASH_WM_IMMERSIVE_REVEALED_LOCK_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 namespace ash {

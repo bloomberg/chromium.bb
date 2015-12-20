@@ -40,7 +40,7 @@ namespace {
 const float kDegreesToRadians = 3.1415926f / 180.0f;
 const float kMeanGravity = -9.8066f;
 
-DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
+DisplayInfo CreateDisplayInfo(int64_t id, const gfx::Rect& bounds) {
   DisplayInfo info(id, "dummy", false);
   info.SetBounds(bounds);
   return info;
@@ -58,7 +58,8 @@ bool RotationLocked() {
       ->rotation_locked();
 }
 
-void SetDisplayRotationById(int64 display_id, gfx::Display::Rotation rotation) {
+void SetDisplayRotationById(int64_t display_id,
+                            gfx::Display::Rotation rotation) {
   Shell::GetInstance()->display_manager()->SetDisplayRotation(
       display_id, rotation, gfx::Display::ROTATION_SOURCE_USER);
 }
@@ -596,7 +597,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
 TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
   test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
 
-  int64 internal_display_id = gfx::Display::InternalDisplayId();
+  int64_t internal_display_id = gfx::Display::InternalDisplayId();
   gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
 
   EnableMaximizeMode(true);
@@ -618,8 +619,8 @@ TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
 
 // Verifies rotating an inactive Display is successful.
 TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
-  const int64 kInternalDisplayId = 9;
-  const int64 kExternalDisplayId = 10;
+  const int64_t kInternalDisplayId = 9;
+  const int64_t kExternalDisplayId = 10;
   const gfx::Display::Rotation kNewRotation = gfx::Display::ROTATE_180;
 
   const DisplayInfo internal_display_info =

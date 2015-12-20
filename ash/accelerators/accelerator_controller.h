@@ -5,15 +5,17 @@
 #ifndef ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
 #define ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accelerators/exit_warning_handler.h"
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_history.h"

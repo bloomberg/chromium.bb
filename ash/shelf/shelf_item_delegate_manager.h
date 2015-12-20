@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_model_observer.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 

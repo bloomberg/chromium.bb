@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_TRAY_ACTIONABLE_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/view.h"
 
 namespace ash {

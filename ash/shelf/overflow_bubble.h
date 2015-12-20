@@ -5,8 +5,8 @@
 #ifndef ASH_SHELF_OVERFLOW_BUBBLE_H_
 #define ASH_SHELF_OVERFLOW_BUBBLE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/widget/widget_observer.h"
 

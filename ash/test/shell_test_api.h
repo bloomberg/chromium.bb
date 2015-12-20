@@ -5,7 +5,7 @@
 #ifndef ASH_TEST_SHELL_TEST_API_H_
 #define ASH_TEST_SHELL_TEST_API_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace ash {
 class AppListController;

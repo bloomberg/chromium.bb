@@ -129,24 +129,24 @@ class TestObserver : public WindowTreeHostManager::Observer,
     return Resetter<int>(&changing_count_).value();
   }
 
-  int64 GetBoundsChangedCountAndReset() {
+  int64_t GetBoundsChangedCountAndReset() {
     return Resetter<int>(&bounds_changed_count_).value();
   }
 
-  int64 GetRotationChangedCountAndReset() {
+  int64_t GetRotationChangedCountAndReset() {
     return Resetter<int>(&rotation_changed_count_).value();
   }
 
-  int64 GetWorkareaChangedCountAndReset() {
+  int64_t GetWorkareaChangedCountAndReset() {
     return Resetter<int>(&workarea_changed_count_).value();
   }
 
-  int64 GetPrimaryChangedCountAndReset() {
+  int64_t GetPrimaryChangedCountAndReset() {
     return Resetter<int>(&primary_changed_count_).value();
   }
 
-  int64 GetChangedDisplayIdAndReset() {
-    return Resetter<int64>(&changed_display_id_).value();
+  int64_t GetChangedDisplayIdAndReset() {
+    return Resetter<int64_t>(&changed_display_id_).value();
   }
 
   int GetFocusChangedCountAndReset() {
@@ -165,7 +165,7 @@ class TestObserver : public WindowTreeHostManager::Observer,
   int rotation_changed_count_;
   int workarea_changed_count_;
   int primary_changed_count_;
-  int64 changed_display_id_;
+  int64_t changed_display_id_;
 
   int focus_changed_count_;
   int activation_changed_count_;
@@ -349,7 +349,7 @@ class TestEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
-float GetStoredUIScale(int64 id) {
+float GetStoredUIScale(int64_t id) {
   return Shell::GetInstance()
       ->display_manager()
       ->GetDisplayInfo(id)
@@ -401,7 +401,7 @@ TEST_F(WindowTreeHostManagerTest, SecondaryDisplayLayout) {
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   gfx::Insets insets(5, 5, 5, 5);
-  int64 secondary_display_id = ScreenUtil::GetSecondaryDisplay().id();
+  int64_t secondary_display_id = ScreenUtil::GetSecondaryDisplay().id();
   Shell::GetInstance()->display_manager()->UpdateWorkAreaOfDisplay(
       secondary_display_id, insets);
 
@@ -530,7 +530,7 @@ TEST_F(WindowTreeHostManagerTest, SecondaryDisplayLayout) {
 
 namespace {
 
-DisplayInfo CreateDisplayInfo(int64 id,
+DisplayInfo CreateDisplayInfo(int64_t id,
                               int y,
                               gfx::Display::Rotation rotation) {
   DisplayInfo info(id, "", false);
@@ -539,7 +539,7 @@ DisplayInfo CreateDisplayInfo(int64 id,
   return info;
 }
 
-DisplayInfo CreateMirroredDisplayInfo(int64 id, float device_scale_factor) {
+DisplayInfo CreateMirroredDisplayInfo(int64_t id, float device_scale_factor) {
   DisplayInfo info = CreateDisplayInfo(id, 0, gfx::Display::ROTATE_0);
   info.set_device_scale_factor(device_scale_factor);
   return info;
@@ -566,7 +566,7 @@ TEST_F(WindowTreeHostManagerTest, MirrorToDockedWithFullscreen) {
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
   display_manager->OnNativeDisplaysChanged(display_info_list);
-  const int64 internal_display_id =
+  const int64_t internal_display_id =
       test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   EXPECT_EQ(1, internal_display_id);
   EXPECT_EQ(2U, display_manager->num_connected_displays());
@@ -659,7 +659,7 @@ TEST_F(WindowTreeHostManagerTest, BoundsUpdated) {
 
   // Rotation
   observer.GetRotationChangedCountAndReset();  // we only want to reset.
-  int64 primary_id = GetPrimaryDisplay().id();
+  int64_t primary_id = GetPrimaryDisplay().id();
   display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_90,
                                       gfx::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
@@ -674,7 +674,7 @@ TEST_F(WindowTreeHostManagerTest, BoundsUpdated) {
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
 
   // UI scale is eanbled only on internal display.
-  int64 secondary_id = GetSecondaryDisplay().id();
+  int64_t secondary_id = GetSecondaryDisplay().id();
   test::ScopedSetInternalDisplayId set_internal(secondary_id);
   // Changing internal ID display changes the DisplayIdPair (it comes
   // first), which also changes the primary display candidate.  Update
@@ -1021,7 +1021,7 @@ TEST_F(WindowTreeHostManagerTest, Rotate) {
 
   UpdateDisplay("120x200,300x400*2");
   gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
-  int64 display2_id = ScreenUtil::GetSecondaryDisplay().id();
+  int64_t display2_id = ScreenUtil::GetSecondaryDisplay().id();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ui::test::EventGenerator generator1(root_windows[0]);
 
@@ -1222,7 +1222,7 @@ TEST_F(WindowTreeHostManagerTest, DockToSingle) {
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-  const int64 internal_id = 1;
+  const int64_t internal_id = 1;
 
   const DisplayInfo internal_display_info =
       CreateDisplayInfo(internal_id, 0, gfx::Display::ROTATE_0);
@@ -1234,7 +1234,7 @@ TEST_F(WindowTreeHostManagerTest, DockToSingle) {
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
   display_manager->OnNativeDisplaysChanged(display_info_list);
-  const int64 internal_display_id =
+  const int64_t internal_display_id =
       test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   EXPECT_EQ(internal_id, internal_display_id);
   EXPECT_EQ(2U, display_manager->GetNumDisplays());
@@ -1343,7 +1343,7 @@ TEST_F(WindowTreeHostManagerTest, ReplacePrimary) {
   display_manager->OnNativeDisplaysChanged(display_info_list);
   aura::Window* primary_root = Shell::GetAllRootWindows()[0];
 
-  int64 new_display_id = 20;
+  int64_t new_display_id = 20;
   RootWindowTestObserver test_observer;
   primary_root->AddObserver(&test_observer);
 

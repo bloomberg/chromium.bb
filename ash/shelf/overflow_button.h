@@ -6,8 +6,8 @@
 #define ASH_SHELF_OVERFLOW_BUTTON_H_
 
 #include "ash/shelf/shelf_types.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
 

@@ -9,6 +9,7 @@
 #include "ash/first_run/desktop_cleaner.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace ash {
 

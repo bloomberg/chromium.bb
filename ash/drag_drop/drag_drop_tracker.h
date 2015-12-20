@@ -6,7 +6,7 @@
 #define ASH_DRAG_DROP_DRAG_DROP_TRACKER_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event.h"
 

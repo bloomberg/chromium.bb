@@ -202,7 +202,7 @@ bool GetDisplayModeForNextResolution(const DisplayInfo& info,
   return true;
 }
 
-bool SetDisplayUIScale(int64 id, float ui_scale) {
+bool SetDisplayUIScale(int64_t id, float ui_scale) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   if (!display_manager->IsActiveDisplayId(id) ||
       !gfx::Display::IsInternalDisplayId(id)) {
@@ -348,12 +348,12 @@ int FindDisplayIndexContainingPoint(const std::vector<gfx::Display>& displays,
   return iter == displays.end() ? -1 : (iter - displays.begin());
 }
 
-DisplayIdPair CreateDisplayIdPair(int64 id1, int64 id2) {
+DisplayIdPair CreateDisplayIdPair(int64_t id1, int64_t id2) {
   return CompareDisplayIds(id1, id2) ? std::make_pair(id1, id2)
                                      : std::make_pair(id2, id1);
 }
 
-bool CompareDisplayIds(int64 id1, int64 id2) {
+bool CompareDisplayIds(int64_t id1, int64_t id2) {
   DCHECK_NE(id1, id2);
   // Output index is stored in the first 8 bits. See GetDisplayIdFromEDID
   // in edid_parser.cc.

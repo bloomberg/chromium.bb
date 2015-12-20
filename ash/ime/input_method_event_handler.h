@@ -6,6 +6,7 @@
 #define ASH_IME_INPUT_METHOD_EVENT_HANDLER_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "ui/events/event_handler.h"
 
 namespace ui {

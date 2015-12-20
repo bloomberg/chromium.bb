@@ -6,6 +6,7 @@
 #define ASH_SHELF_SHELF_BEZEL_EVENT_FILTER_H_
 
 #include "ash/wm/gestures/shelf_gesture_handler.h"
+#include "base/macros.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/rect.h"
 

@@ -7,6 +7,7 @@
 
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace ash {

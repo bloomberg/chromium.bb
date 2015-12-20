@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "ash/system/locale/locale_observer.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace ash {
 

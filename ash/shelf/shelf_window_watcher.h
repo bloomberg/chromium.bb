@@ -5,9 +5,11 @@
 #ifndef ASH_SHELF_SHELF_WINDOW_WATCHER_H_
 #define ASH_SHELF_SHELF_WINDOW_WATCHER_H_
 
+#include <stdint.h>
+
 #include "ash/shelf/scoped_observer_with_duplicated_sources.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/window_observer.h"

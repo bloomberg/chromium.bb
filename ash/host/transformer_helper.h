@@ -5,6 +5,7 @@
 #ifndef ASH_HOST_TRANSFORMER_HELPER_H_
 #define ASH_HOST_TRANSFORMER_HELPER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace gfx {

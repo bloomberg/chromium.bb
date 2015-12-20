@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/transformer_helper.h"
+#include "base/macros.h"
 #include "ui/aura/remote_window_tree_host_win.h"
 
 namespace ash {

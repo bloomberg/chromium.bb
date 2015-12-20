@@ -5,8 +5,11 @@
 #ifndef ASH_SYSTEM_AUDIO_TRAY_AUDIO_H_
 #define ASH_SYSTEM_AUDIO_TRAY_AUDIO_H_
 
+#include <stdint.h>
+
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/tray/tray_image_item.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/display_observer.h"
 

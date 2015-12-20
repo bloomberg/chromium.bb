@@ -12,6 +12,7 @@
 #include "ash/wm/wm_types.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"

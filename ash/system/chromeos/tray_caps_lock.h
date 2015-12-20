@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_CHROMEOS_TRAY_CAPS_LOCK_H_
 
 #include "ash/system/tray/tray_image_item.h"
+#include "base/macros.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/events/event_handler.h"
 

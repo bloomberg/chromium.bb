@@ -6,8 +6,8 @@
 #define ASH_WM_ASH_FOCUS_RULES_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/wm/core/base_focus_rules.h"
 
 namespace ash {

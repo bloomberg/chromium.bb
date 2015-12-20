@@ -10,6 +10,7 @@
 #include "ash/system/chromeos/network/network_detailed_view.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ash/system/user/login_status.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/chromeos/network/network_list_delegate.h"

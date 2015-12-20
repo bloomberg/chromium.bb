@@ -6,7 +6,7 @@
 #define ASH_SHELF_BACKGROUND_ANIMATOR_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 

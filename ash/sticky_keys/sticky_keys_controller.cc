@@ -5,7 +5,6 @@
 #include "ash/sticky_keys/sticky_keys_controller.h"
 
 #include "ash/sticky_keys/sticky_keys_overlay.h"
-#include "base/basictypes.h"
 #include "base/debug/stack_trace.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"

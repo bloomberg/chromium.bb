@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/screen_orientation_delegate.h"
-
 #ifndef ASH_CONTENT_SCREEN_ORIENTATION_DELEGATE_CHROMEOS_H_
 #define ASH_CONTENT_SCREEN_ORIENTATION_DELEGATE_CHROMEOS_H_
+
+#include "content/public/browser/screen_orientation_delegate.h"
+
+#include "base/macros.h"
 
 namespace ash {
 

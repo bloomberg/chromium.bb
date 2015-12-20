@@ -5,8 +5,11 @@
 #ifndef ASH_TOUCH_TOUCH_OBSERVER_HUD_H_
 #define ASH_TOUCH_TOUCH_OBSERVER_HUD_H_
 
+#include <stdint.h>
+
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "base/macros.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/views/widget/widget_observer.h"
@@ -38,7 +41,7 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
   // Removes the HUD from the screen.
   void Remove();
 
-  int64 display_id() const { return display_id_; }
+  int64_t display_id() const { return display_id_; }
 
  protected:
   explicit TouchObserverHUD(aura::Window* initial_root);
@@ -78,7 +81,7 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
  private:
   friend class TouchHudTestBase;
 
-  const int64 display_id_;
+  const int64_t display_id_;
   aura::Window* root_window_;
 
   views::Widget* widget_;

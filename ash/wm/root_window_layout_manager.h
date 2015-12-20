@@ -6,8 +6,8 @@
 #define ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_
 
 #include "ash/shell_window_ids.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/layout_manager.h"
 

@@ -6,7 +6,7 @@
 #define ASH_WM_WINDOW_POSITIONER_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 

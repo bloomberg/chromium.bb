@@ -6,6 +6,7 @@
 #define ASH_WM_DEFAULT_STATE_H_
 
 #include "ash/wm/window_state.h"
+#include "base/macros.h"
 #include "ui/gfx/display.h"
 
 namespace ash {

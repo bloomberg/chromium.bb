@@ -5,7 +5,7 @@
 #ifndef ASH_TEST_OVERFLOW_BUBBLE_VIEW_TEST_API_
 #define ASH_TEST_OVERFLOW_BUBBLE_VIEW_TEST_API_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace gfx {
 class Size;

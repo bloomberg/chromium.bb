@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/aura/client/screen_position_client.h"
 
 namespace ash {

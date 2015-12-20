@@ -5,6 +5,8 @@
 #ifndef ASH_SWITCHABLE_WINDOWS_H_
 #define ASH_SWITCHABLE_WINDOWS_H_
 
+#include <stddef.h>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 

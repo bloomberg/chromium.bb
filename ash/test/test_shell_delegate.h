@@ -11,6 +11,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 

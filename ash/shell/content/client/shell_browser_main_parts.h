@@ -5,7 +5,7 @@
 #ifndef ASH_SHELL_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
 #define ASH_SHELL_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 

@@ -5,6 +5,8 @@
 #ifndef ASH_WM_OVERVIEW_WINDOW_GRID_H_
 #define ASH_WM_OVERVIEW_WINDOW_GRID_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 

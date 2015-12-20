@@ -5,11 +5,12 @@
 #ifndef ASH_DISPLAY_DISPLAY_LAYOUT_H_
 #define ASH_DISPLAY_DISPLAY_LAYOUT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
 namespace base {
@@ -19,7 +20,7 @@ template <typename T> class JSONValueConverter;
 
 namespace ash {
 
-typedef std::pair<int64, int64> DisplayIdPair;
+typedef std::pair<int64_t, int64_t> DisplayIdPair;
 
 struct ASH_EXPORT DisplayLayout {
   // Layout options where the secondary display should be positioned.
@@ -63,7 +64,7 @@ struct ASH_EXPORT DisplayLayout {
   bool default_unified;
 
   // The id of the display used as a primary display.
-  int64 primary_id;
+  int64_t primary_id;
 
   // Returns string representation of the layout for debugging/testing.
   // This includes "unified" only if the unified desktop feature is enabled.

@@ -6,8 +6,8 @@
 #define ASH_WM_SESSION_STATE_ANIMATOR_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace ash {

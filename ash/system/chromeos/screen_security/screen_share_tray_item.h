@@ -7,6 +7,7 @@
 
 #include "ash/system/chromeos/screen_security/screen_share_observer.h"
 #include "ash/system/chromeos/screen_security/screen_tray_item.h"
+#include "base/macros.h"
 
 namespace views {
 class View;

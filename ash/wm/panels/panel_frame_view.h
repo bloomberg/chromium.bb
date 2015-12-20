@@ -6,7 +6,7 @@
 #define ASH_WM_PANELS_PANEL_FRAME_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {

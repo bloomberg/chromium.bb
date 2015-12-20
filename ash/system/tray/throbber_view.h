@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_THROBBER_VIEW_H_
 #define ASH_SYSTEM_TRAY_THROBBER_VIEW_H_
 
+#include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/view.h"

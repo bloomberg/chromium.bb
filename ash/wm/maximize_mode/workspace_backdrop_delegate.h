@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/wm/workspace/workspace_layout_manager_delegate.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {

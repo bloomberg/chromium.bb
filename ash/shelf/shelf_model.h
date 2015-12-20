@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_item_types.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 
 namespace ash {

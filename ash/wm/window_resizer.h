@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/wm/drag_details.h"
 #include "ash/wm/window_state.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"

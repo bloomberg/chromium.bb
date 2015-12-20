@@ -6,6 +6,7 @@
 #define ASH_ACCELERATOR_KEY_HOLD_DETECTOR_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 

@@ -46,8 +46,8 @@ void DisplayLayoutStore::SetDefaultDisplayLayout(const DisplayLayout& layout) {
 }
 
 void DisplayLayoutStore::RegisterLayoutForDisplayIdPair(
-    int64 id1,
-    int64 id2,
+    int64_t id1,
+    int64_t id2,
     const DisplayLayout& layout) {
   auto key = CreateDisplayIdPair(id1, id2);
   paired_layouts_[key] = layout;
@@ -81,7 +81,7 @@ void DisplayLayoutStore::UpdateMultiDisplayState(const DisplayIdPair& pair,
 }
 
 void DisplayLayoutStore::UpdatePrimaryDisplayId(const DisplayIdPair& pair,
-                                                int64 display_id) {
+                                                int64_t display_id) {
   if (paired_layouts_.find(pair) == paired_layouts_.end())
     CreateDisplayLayout(pair);
   paired_layouts_[pair].primary_id = display_id;

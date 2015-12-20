@@ -5,8 +5,11 @@
 #ifndef ASH_SYSTEM_CHROMEOS_POWER_DUAL_ROLE_NOTIFICATION_H_
 #define ASH_SYSTEM_CHROMEOS_POWER_DUAL_ROLE_NOTIFICATION_H_
 
+#include <stddef.h>
+
 #include "ash/ash_export.h"
 #include "ash/system/chromeos/power/power_status.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace message_center {

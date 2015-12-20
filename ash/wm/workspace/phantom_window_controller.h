@@ -6,7 +6,7 @@
 #define ASH_WM_WORKSPACE_PHANTOM_WINDOW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 

@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/special_popup_row.h"
+#include "base/macros.h"
 #include "ui/views/view.h"
 
 namespace views {

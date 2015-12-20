@@ -4,7 +4,6 @@
 
 #include "ash/shelf/background_animator.h"
 
-
 namespace ash {
 namespace {
 

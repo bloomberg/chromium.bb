@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/immersive_revealed_lock.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"

@@ -7,6 +7,7 @@
 
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "base/macros.h"
 
 class SkBitmap;
 

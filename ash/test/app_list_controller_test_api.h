@@ -5,7 +5,7 @@
 #ifndef ASH_TEST_APP_LIST_CONTROLLER_TEST_API_H_
 #define ASH_TEST_APP_LIST_CONTROLLER_TEST_API_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace app_list {
 class AppListView;

@@ -8,8 +8,8 @@
 #include <map>
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "ui/aura/window_observer.h"
 

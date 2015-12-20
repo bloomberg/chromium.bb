@@ -6,7 +6,7 @@
 #define ASH_FIRST_RUN_FIRST_RUN_HELPER_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 
 namespace gfx {

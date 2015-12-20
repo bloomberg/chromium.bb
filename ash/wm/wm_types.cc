@@ -4,7 +4,6 @@
 
 #include "ash/wm/wm_types.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace ash {

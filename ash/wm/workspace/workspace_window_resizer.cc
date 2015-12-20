@@ -224,7 +224,7 @@ gfx::Rect BoundsForMagneticResizeAttach(const gfx::Rect& src,
 }
 
 // Converts a window component edge to the magnetic edge to snap to.
-uint32 WindowComponentToMagneticEdge(int window_component) {
+uint32_t WindowComponentToMagneticEdge(int window_component) {
   switch (window_component) {
     case HTTOPLEFT:
       return MAGNETISM_EDGE_LEFT | MAGNETISM_EDGE_TOP;
@@ -717,8 +717,8 @@ void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
 
 void WorkspaceWindowResizer::MagneticallySnapResizeToOtherWindows(
     gfx::Rect* bounds) {
-  const uint32 edges = WindowComponentToMagneticEdge(
-      details().window_component);
+  const uint32_t edges =
+      WindowComponentToMagneticEdge(details().window_component);
   if (UpdateMagnetismWindow(*bounds, edges)) {
     *bounds = ScreenUtil::ConvertRectFromScreen(
         GetTarget()->parent(),
@@ -730,7 +730,7 @@ void WorkspaceWindowResizer::MagneticallySnapResizeToOtherWindows(
 }
 
 bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
-                                                   uint32 edges) {
+                                                   uint32_t edges) {
   // |bounds| are in coordinates of original window's parent.
   gfx::Rect bounds_in_screen =
       ScreenUtil::ConvertRectToScreen(GetTarget()->parent(), bounds);
@@ -865,8 +865,8 @@ void WorkspaceWindowResizer::StickToWorkAreaOnResize(
     const gfx::Rect& work_area,
     int sticky_size,
     gfx::Rect* bounds) const {
-  const uint32 edges = WindowComponentToMagneticEdge(
-      details().window_component);
+  const uint32_t edges =
+      WindowComponentToMagneticEdge(details().window_component);
   const int left_edge = work_area.x();
   const int right_edge = work_area.right();
   const int top_edge = work_area.y();

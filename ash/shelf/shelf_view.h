@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_model_observer.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
 #include "ui/views/animation/bounds_animator_observer.h"

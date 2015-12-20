@@ -62,8 +62,8 @@ const float kWindowAnimation_ShowOpacity = 1.f;
 const float kLayerScaleAboveSize = 1.1f;
 const float kLayerScaleBelowSize = .9f;
 
-int64 Round64(float f) {
-  return static_cast<int64>(f + 0.5f);
+int64_t Round64(float f) {
+  return static_cast<int64_t>(f + 0.5f);
 }
 
 base::TimeDelta GetCrossFadeDuration(aura::Window* window,

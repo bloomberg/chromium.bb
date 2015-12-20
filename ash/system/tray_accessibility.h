@@ -5,12 +5,15 @@
 #ifndef ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
 #define ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
 
+#include <stdint.h>
+
 #include "ash/accessibility_delegate.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/view_click_listener.h"
+#include "base/macros.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
 
@@ -43,12 +46,12 @@ namespace tray {
 
 class AccessibilityPopupView : public TrayNotificationView {
  public:
-  AccessibilityPopupView(SystemTrayItem* owner, uint32 enabled_state_bits);
+  AccessibilityPopupView(SystemTrayItem* owner, uint32_t enabled_state_bits);
 
   const views::Label* label_for_test() const { return label_; }
 
  private:
-  views::Label* CreateLabel(uint32 enabled_state_bits);
+  views::Label* CreateLabel(uint32_t enabled_state_bits);
 
   views::Label* label_;
 
@@ -130,13 +133,13 @@ class TrayAccessibility : public TrayImageItem,
 
   // Bitmap of fvalues from AccessibilityState.  Can contain any or
   // both of A11Y_SPOKEN_FEEDBACK A11Y_BRAILLE_DISPLAY_CONNECTED.
-  uint32 request_popup_view_state_;
+  uint32_t request_popup_view_state_;
 
   bool tray_icon_visible_;
   user::LoginStatus login_;
 
   // Bitmap of values from AccessibilityState enum.
-  uint32 previous_accessibility_state_;
+  uint32_t previous_accessibility_state_;
 
   // A11y feature status on just entering the lock screen.
   bool show_a11y_menu_on_lock_screen_;

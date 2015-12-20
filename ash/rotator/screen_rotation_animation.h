@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/compositor/layer_animation_element.h"

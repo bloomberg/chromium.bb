@@ -5,10 +5,13 @@
 #ifndef ASH_DISPLAY_DISPLAY_LAYOUT_STORE_H_
 #define ASH_DISPLAY_DISPLAY_LAYOUT_STORE_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "ash/ash_export.h"
 #include "ash/display/display_layout.h"
+#include "base/macros.h"
 
 namespace ash {
 
@@ -23,8 +26,8 @@ class ASH_EXPORT DisplayLayoutStore {
   void SetDefaultDisplayLayout(const DisplayLayout& layout);
 
   // Registeres the display layout info for the specified display(s).
-  void RegisterLayoutForDisplayIdPair(int64 id1,
-                                      int64 id2,
+  void RegisterLayoutForDisplayIdPair(int64_t id1,
+                                      int64_t id2,
                                       const DisplayLayout& layout);
 
   // If no layout is registered, it creatas new layout using
@@ -48,7 +51,7 @@ class ASH_EXPORT DisplayLayoutStore {
   // |display_pair|.  This creates new display layout if no layout is
   // registered for |display_pair|.
   void UpdatePrimaryDisplayId(const DisplayIdPair& display_pair,
-                              int64 display_id);
+                              int64_t display_id);
 
  private:
   // Creates new layout for display pair from |default_display_layout_|.

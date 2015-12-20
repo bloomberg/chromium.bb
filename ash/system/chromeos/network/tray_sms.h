@@ -5,9 +5,12 @@
 #ifndef ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_SMS_H
 #define ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_SMS_H
 
+#include <stddef.h>
+
 #include <string>
 
 #include "ash/system/tray/system_tray_item.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/network/network_sms_handler.h"
 

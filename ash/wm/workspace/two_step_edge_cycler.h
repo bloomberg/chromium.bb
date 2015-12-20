@@ -6,7 +6,7 @@
 #define ASH_WM_WORKSPACE_TWO_STEP_EDGE_CYCLER_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/point.h"
 

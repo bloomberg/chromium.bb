@@ -6,6 +6,7 @@
 #define ASH_TEST_ASH_TEST_HELPER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace aura {

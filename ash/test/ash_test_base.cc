@@ -180,7 +180,7 @@ ui::test::EventGenerator& AshTestBase::GetEventGenerator() {
   return *event_generator_.get();
 }
 
-gfx::Display::Rotation AshTestBase::GetActiveDisplayRotation(int64 id) {
+gfx::Display::Rotation AshTestBase::GetActiveDisplayRotation(int64_t id) {
   return Shell::GetInstance()
       ->display_manager()
       ->GetDisplayInfo(id)

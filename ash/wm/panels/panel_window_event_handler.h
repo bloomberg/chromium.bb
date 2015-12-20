@@ -7,6 +7,8 @@
 
 #include "ui/events/event_handler.h"
 
+#include "base/macros.h"
+
 namespace ash {
 
 // PanelWindowEventHandler minimizes panels when the user double clicks or

@@ -9,8 +9,8 @@
 #include "ash/system/chromeos/session/logout_button_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/user/login_status.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/views/controls/button/button.h"
 

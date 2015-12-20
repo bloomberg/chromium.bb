@@ -16,7 +16,6 @@
 #include "ash/host/ash_window_tree_host_unified.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/ime/input_method_event_handler.h"
-#include "base/basictypes.h"
 #include "base/sys_info.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -207,7 +206,7 @@ bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
     case ui::ET_TOUCH_RELEASED: {
 #if defined(OS_CHROMEOS)
       XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-      int64 touch_display_id =
+      int64_t touch_display_id =
           ui::DeviceDataManager::GetInstance()->GetTargetDisplayForTouchDevice(
               xiev->deviceid);
       // If we don't have record of display id for this touch device, check

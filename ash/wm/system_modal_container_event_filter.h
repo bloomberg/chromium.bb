@@ -6,8 +6,8 @@
 #define ASH_WM_SYSTEM_MODAL_CONTAINER_EVENT_FILTER_H_
 
 #include "ash/ash_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/events/event_handler.h"
 
 namespace ash {
