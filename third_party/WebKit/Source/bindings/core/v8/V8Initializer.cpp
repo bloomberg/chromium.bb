@@ -429,7 +429,7 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8:
 
         // If execution termination has been triggered as part of constructing
         // the error event from the v8::Message, quietly leave.
-        if (!v8::V8::IsExecutionTerminating(isolate)) {
+        if (!isolate->IsExecutionTerminating()) {
             V8ErrorHandler::storeExceptionOnErrorEventWrapper(scriptState, event.get(), data, scriptState->context()->Global());
             context->reportException(event.release(), scriptId, callStack, corsStatus);
         }
