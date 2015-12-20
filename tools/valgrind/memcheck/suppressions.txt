@@ -3353,7 +3353,7 @@
    bug_571272
    Memcheck:Overlap
    fun:memcpy*
-   fun:_ZN3net10QuicFramer14EncryptPayloadENS_15EncryptionLevelEmRKNS_10QuicPacketEPcm
+   fun:_ZN3net10QuicFramer14EncryptPayloadENS_15EncryptionLevel*
    fun:_ZN3net17QuicPacketCreator15SerializePacketEPcm
 }
 {

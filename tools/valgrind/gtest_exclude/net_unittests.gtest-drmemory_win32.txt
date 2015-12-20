@@ -33,5 +33,4 @@ MDnsTest.RefreshQuery
 
 # http://crbug.com/557993
 ProxyResolverV8TracingTest.*
-ProxyResolverV8TracingWrapperTest.Dns
-ProxyResolverV8TracingWrapperTest.Terminate
+ProxyResolverV8TracingWrapperTest.*
