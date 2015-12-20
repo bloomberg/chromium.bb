@@ -3349,3 +3349,10 @@
    fun:_ZN4base6Thread10ThreadMainEv
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
+{
+   bug_571272
+   Memcheck:Overlap
+   fun:memcpy*
+   fun:_ZN3net10QuicFramer14EncryptPayloadENS_15EncryptionLevelEmRKNS_10QuicPacketEPcm
+   fun:_ZN3net17QuicPacketCreator15SerializePacketEPcm
+}
