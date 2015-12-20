@@ -27,39 +27,39 @@ layer at (0,0) size 450x500
         LayoutSVGRect {rect} at (20,100) size 100x50 [fill={[type=LINEAR-GRADIENT] [id="tileFill"]}] [x=0.00] [y=0.00] [width=50.00] [height=25.00]
           [filter="tile_1"] LayoutSVGResourceFilter {filter} at (0,0) size 100x50
         LayoutSVGRect {rect} at (19,99) size 102x52 [stroke={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
-        LayoutSVGText {text} at (30,-29) size 40x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 39x17
+        LayoutSVGText {text} at (30,-29) size 40x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 39x18
             chunk 1 (middle anchor) text run 1 at (30.88,-15.00) startOffset 0 endOffset 6 width 38.25: "tile_1"
-        LayoutSVGText {text} at (-18,-17) size 136x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 135x17
+        LayoutSVGText {text} at (-18,-17) size 136x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 135x18
             chunk 1 (middle anchor) text run 1 at (-17.14,-3.00) startOffset 0 endOffset 21 width 134.28: "4 tiles, quarter size"
       LayoutSVGContainer {g} at (0,171) size 146x80 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,200.00)}]
         LayoutSVGRect {rect} at (20,200) size 100x50 [fill={[type=LINEAR-GRADIENT] [id="tileFill"]}] [x=25.00] [y=12.50] [width=50.00] [height=25.00]
           [filter="tile_2"] LayoutSVGResourceFilter {filter} at (0,0) size 100x50
         LayoutSVGRect {rect} at (19,199) size 102x52 [stroke={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
-        LayoutSVGText {text} at (-8,-29) size 116x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 116x17
+        LayoutSVGText {text} at (-8,-29) size 116x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 116x18
             chunk 1 (middle anchor) text run 1 at (-7.81,-15.00) startOffset 0 endOffset 17 width 115.62: "tile_2 (centered)"
-        LayoutSVGText {text} at (-26,-17) size 152x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 151x17
+        LayoutSVGText {text} at (-26,-17) size 152x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 151x18
             chunk 1 (middle anchor) text run 1 at (-25.15,-3.00) startOffset 0 endOffset 26 width 150.30: "9 tiles, 1 full, 8 partial"
       LayoutSVGContainer {g} at (0,271) size 146x80 [transform={m=((1.00,0.00)(0.00,1.00)) t=(32.50,307.25)}]
         LayoutSVGRect {rect} at (20,301) size 100x50 [fill={[type=LINEAR-GRADIENT] [id="tileFill"]}] [x=0.00] [y=0.00] [width=50.00] [height=25.00]
           [filter="tile_3"] LayoutSVGResourceFilter {filter} at (-12.50,-6.25) size 100x50
         LayoutSVGRect {rect} at (19,299) size 102x52 [stroke={[type=SOLID] [color=#000000]}] [x=-12.50] [y=-7.25] [width=100.00] [height=50.00]
-        LayoutSVGText {text} at (-35,-37) size 145x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 145x17
+        LayoutSVGText {text} at (-35,-37) size 145x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 145x18
             chunk 1 (middle anchor) text run 1 at (-34.84,-22.25) startOffset 0 endOffset 24 width 144.67: "tile_3 (top left offset)"
         LayoutSVGText {text} at (-38,-25) size 151x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 151x17
+          LayoutSVGInlineText {#text} at (0,0) size 151x18
             chunk 1 (middle anchor) text run 1 at (-37.65,-10.25) startOffset 0 endOffset 26 width 150.30: "9 tiles, 1 full, 8 partial"
       LayoutSVGContainer {g} at (244,99) size 131x52 [transform={m=((1.00,0.00)(0.58,1.00)) t=(245.00,100.00)}]
         LayoutSVGRect {rect} at (245,100) size 129x50 [fill={[type=LINEAR-GRADIENT] [id="tileFill"]}] [x=0.00] [y=0.00] [width=50.00] [height=25.00]
           [filter="tile_1"] LayoutSVGResourceFilter {filter} at (0,0) size 100x50
         LayoutSVGRect {rect} at (244,99) size 131x52 [stroke={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
       LayoutSVGContainer {g} at (260,71) size 70x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(245.00,100.00)}]
-        LayoutSVGText {text} at (30,-29) size 40x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 39x17
+        LayoutSVGText {text} at (30,-29) size 40x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 39x18
             chunk 1 (middle anchor) text run 1 at (30.88,-15.00) startOffset 0 endOffset 6 width 38.25: "tile_1"
         LayoutSVGText {text} at (15,-17) size 70x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 70x17
@@ -68,20 +68,20 @@ layer at (0,0) size 450x500
         LayoutSVGRect {rect} at (256,201) size 78x58 [fill={[type=LINEAR-GRADIENT] [id="tileFill"]}] [x=25.00] [y=12.50] [width=50.00] [height=25.00]
           [filter="tile_2"] LayoutSVGResourceFilter {filter} at (0,0) size 100x50
         LayoutSVGRect {rect} at (255,200) size 80x60 [stroke={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
-      LayoutSVGContainer {g} at (205,171) size 180x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(245.00,200.00)}]
-        LayoutSVGText {text} at (30,-29) size 40x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 39x17
+      LayoutSVGContainer {g} at (205,171) size 180x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(245.00,200.00)}]
+        LayoutSVGText {text} at (30,-29) size 40x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 39x18
             chunk 1 (middle anchor) text run 1 at (30.88,-15.00) startOffset 0 endOffset 6 width 38.25: "tile_2"
-        LayoutSVGText {text} at (-40,-17) size 180x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 180x17
+        LayoutSVGText {text} at (-40,-17) size 180x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 180x18
             chunk 1 (middle anchor) text run 1 at (-39.82,-3.00) startOffset 0 endOffset 26 width 179.64: "(centered, rotate & scale)"
       LayoutSVGContainer {g} at (244,300) size 102x79 [transform={m=((1.00,0.27)(0.00,1.00)) t=(257.50,310.60)}]
         LayoutSVGRect {rect} at (245,301) size 100x77 [fill={[type=LINEAR-GRADIENT] [id="tileFill"]}] [x=0.00] [y=0.00] [width=50.00] [height=25.00]
           [filter="tile_3"] LayoutSVGResourceFilter {filter} at (-12.50,-6.25) size 100x50
         LayoutSVGRect {rect} at (244,300) size 102x79 [stroke={[type=SOLID] [color=#000000]}] [x=-12.50] [y=-6.25] [width=100.00] [height=50.00]
       LayoutSVGContainer {g} at (222,271) size 146x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(257.50,307.25)}]
-        LayoutSVGText {text} at (-35,-37) size 145x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 145x17
+        LayoutSVGText {text} at (-35,-37) size 145x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 145x18
             chunk 1 (middle anchor) text run 1 at (-34.84,-22.25) startOffset 0 endOffset 24 width 144.67: "tile_3 (top left offset)"
         LayoutSVGText {text} at (2,-25) size 71x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 70x17

@@ -4,8 +4,8 @@ layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (9,9) size 462x292
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (60,9) size 323x44 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 323x44
+      LayoutSVGText {text} at (60,9) size 323x45 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 323x45
           chunk 1 text run 1 at (60.00,45.00) startOffset 0 endOffset 18 width 322.44: "Event bubbling - b"
       LayoutSVGContainer {g} at (9,59) size 462x242
         LayoutSVGRect {rect} at (9,59) size 462x122 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#EEEEEE]}] [x=10.00] [y=60.00] [width=460.00] [height=120.00]
@@ -23,8 +23,8 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (135,194) size 258x44 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 258x44
             chunk 1 text run 1 at (135.00,230.00) startOffset 0 endOffset 16 width 257.83: "Click on circle,"
-        LayoutSVGText {text} at (135,234) size 161x44 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 161x44
+        LayoutSVGText {text} at (135,234) size 161x45 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 161x45
             chunk 1 text run 1 at (135.00,270.00) startOffset 0 endOffset 9 width 160.08: "hyperlink"
     LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 264x46

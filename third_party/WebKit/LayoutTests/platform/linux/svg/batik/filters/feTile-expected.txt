@@ -83,8 +83,8 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (-33,-38) size 141x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 140x18
             chunk 1 (middle anchor) text run 1 at (-32.36,-22.25) startOffset 0 endOffset 24 width 139.71: "tile_3 (top left offset)"
-        LayoutSVGText {text} at (4,-26) size 67x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 67x18
+        LayoutSVGText {text} at (4,-26) size 69x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 69x18
             chunk 1 (middle anchor) text run 1 at (4.00,-10.25) startOffset 0 endOffset 8 width 67.00: "skewed Y"
     LayoutSVGContainer {a} at (20,460) size 152x19
       LayoutSVGText {text} at (20,460) size 152x19 contains 1 chunk(s)

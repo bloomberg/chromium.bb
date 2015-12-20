@@ -7,8 +7,8 @@ layer at (0,0) size 450x500
         LayoutSVGInlineText {#text} at (0,0) size 46x18
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 45.32: "sample"
     LayoutSVGContainer {g} at (90,36) size 250x437
-      LayoutSVGText {text} at (139,36) size 172x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 172x17
+      LayoutSVGText {text} at (139,36) size 172x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 172x18
           chunk 1 (middle anchor) text run 1 at (139.13,50.00) startOffset 0 endOffset 26 width 171.75: "Text Layout Properties (2)"
       LayoutSVGText {text} at (186,65) size 78x13 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 78x13

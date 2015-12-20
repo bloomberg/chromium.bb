@@ -38,8 +38,8 @@ layer at (0,0) size 480x360
         LayoutSVGPath {line} at (289,95) size 2x10 [stroke={[type=SOLID] [color=#FF8000]}] [fill={[type=SOLID] [color=#000000]}] [x1=250.00] [y1=15.00] [x2=250.00] [y2=25.00]
         LayoutSVGEllipse {circle} at (336,66) size 8x8 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFF00]}] [cx=300.00] [cy=-10.00] [r=3.00]
         LayoutSVGPath {line} at (339,73) size 2x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,0.00)}] [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-7.00] [x2=0.00] [y2=40.00]
-        LayoutSVGText {text} at (310,4) size 119x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 119x19
+        LayoutSVGText {text} at (310,4) size 119x20 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 119x20
             chunk 1 text run 1 at (310.00,20.00) startOffset 0 endOffset 14 width 118.55: "default (sRGB)"
       LayoutSVGContainer {g} at (36,146) size 357x55 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,160.00)}]
         LayoutSVGRect {rect} at (39,159) size 302x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=LINEAR-GRADIENT] [id="gradientSRGB"]}] [x=0.00] [y=0.00] [width=300.00] [height=40.00]

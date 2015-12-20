@@ -25,8 +25,8 @@ layer at (0,0) size 480x360
       LayoutSVGContainer {g} at (126,56) size 108x98 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,90.00)}]
         LayoutSVGRect {rect} at (153,73) size 54x34 [transform={m=((1.00,0.00)(0.58,1.00)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#808080] [stroke width=4.00]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (126,56) size 108x68 [transform={m=((1.15,2.00)(-2.00,0.00)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
-        LayoutSVGText {text} at (-40,45) size 80x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 80x19
+        LayoutSVGText {text} at (-40,45) size 81x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 81x19
             chunk 1 (middle anchor) text run 1 at (-40.00,60.00) startOffset 0 endOffset 12 width 80.00: "additive=sum"
       LayoutSVGContainer {g} at (247,56) size 106x113 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,90.00)}]
         LayoutSVGRect {rect} at (283,73) size 34x34 [stroke={[type=SOLID] [color=#808080] [stroke width=4.00]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
@@ -37,11 +37,11 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (-50,60) size 100x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 100x19
             chunk 1 (middle anchor) text run 1 at (-50.00,75.00) startOffset 0 endOffset 16 width 100.00: "additive=replace"
-      LayoutSVGContainer {g} at (370,56) size 100x113 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,90.00)}]
+      LayoutSVGContainer {g} at (370,56) size 101x113 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,90.00)}]
         LayoutSVGRect {rect} at (411,81) size 18x18 [stroke={[type=SOLID] [color=#808080] [stroke width=2.00]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-7.50] [y=-7.50] [width=15.00] [height=15.00]
         LayoutSVGRect {rect} at (386,56) size 68x68 [transform={m=((4.00,0.00)(0.00,4.00)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#FFB400] [stroke width=2.00]}] [x=-7.50] [y=-7.50] [width=15.00] [height=15.00]
-        LayoutSVGText {text} at (-50,45) size 100x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 100x19
+        LayoutSVGText {text} at (-50,45) size 101x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 101x19
             chunk 1 (middle anchor) text run 1 at (-50.00,60.00) startOffset 0 endOffset 14 width 100.00: "accumulate=sum"
         LayoutSVGText {text} at (-50,60) size 100x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 100x19
@@ -52,15 +52,15 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (-53,45) size 106x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 105x19
             chunk 1 (middle anchor) text run 1 at (-52.50,60.00) startOffset 0 endOffset 15 width 105.00: "accumulate=none"
-        LayoutSVGText {text} at (-40,60) size 80x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 80x19
+        LayoutSVGText {text} at (-40,60) size 81x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 81x19
             chunk 1 (middle anchor) text run 1 at (-40.00,75.00) startOffset 0 endOffset 12 width 80.00: "additive=sum"
       LayoutSVGContainer {g} at (366,186) size 108x113 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,220.00)}]
         LayoutSVGRect {rect} at (406,211) size 28x18 [transform={m=((1.00,0.00)(0.58,1.00)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#808080] [stroke width=2.00]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-7.50] [y=-7.50] [width=15.00] [height=15.00]
         LayoutSVGRect {rect} at (366,186) size 108x68 [transform={m=((4.00,0.00)(2.31,4.00)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#FFB400] [stroke width=2.00]}] [x=-7.50] [y=-7.50] [width=15.00] [height=15.00]
-        LayoutSVGText {text} at (-50,45) size 100x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 100x19
+        LayoutSVGText {text} at (-50,45) size 101x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 101x19
             chunk 1 (middle anchor) text run 1 at (-50.00,60.00) startOffset 0 endOffset 14 width 100.00: "accumulate=sum"
-        LayoutSVGText {text} at (-40,60) size 80x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 80x19
+        LayoutSVGText {text} at (-40,60) size 81x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 81x19
             chunk 1 (middle anchor) text run 1 at (-40.00,75.00) startOffset 0 endOffset 12 width 80.00: "additive=sum"

@@ -22,8 +22,8 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (30,185) size 103x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 103x19
           chunk 1 text run 1 at (30.00,200.00) startOffset 0 endOffset 18 width 103.00: "Entity references:"
-      LayoutSVGText {text} at (92,213) size 26x19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 26x19
+      LayoutSVGText {text} at (92,213) size 27x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 27x19
           chunk 1 (middle anchor) text run 1 at (92.00,228.00) startOffset 0 endOffset 4 width 26.00: "gray"
       LayoutSVGContainer {g} at (90,235) size 36x36 [transform={m=((0.20,0.00)(0.00,0.20)) t=(90.00,235.00)}]
         LayoutSVGPath {path} at (90,235) size 36x36 [fill={[type=SOLID] [color=#808080]}] [data="M 60 0 l 60 0 l 60 60 l 0 60 l -60 60 l -60 0 l -60 -60 l 0 -60 Z"]

@@ -23,14 +23,14 @@ layer at (0,0) size 480x360
       LayoutSVGContainer {g} at (0,0) size 0x0
       LayoutSVGContainer {g} at (311,116) size 68x68
         LayoutSVGEllipse {circle} at (311,116) size 68x68 [stroke={[type=SOLID] [color=#000000] [stroke width=5.00]}] [fill={[type=SOLID] [color=#00FFFF]}] [cx=230.00] [cy=100.00] [r=20.00]
-    LayoutSVGText {text} at (385,26) size 47x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 47x17
+    LayoutSVGText {text} at (385,26) size 47x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 47x18
         chunk 1 text run 1 at (385.00,40.00) startOffset 0 endOffset 7 width 46.22: "display"
     LayoutSVGText {text} at (385,134) size 64x20 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 64x20
         chunk 1 text run 1 at (385.00,150.00) startOffset 0 endOffset 10 width 64.01: "visibility"
-    LayoutSVGText {text} at (5,210) size 391x31 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 391x31
+    LayoutSVGText {text} at (5,210) size 391x32 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 391x32
         chunk 1 text run 1 at (5.00,235.00) startOffset 0 endOffset 36 width 390.73: "Test of display attribute animation."
     LayoutSVGText {text} at (5,249) size 397x20 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 397x20

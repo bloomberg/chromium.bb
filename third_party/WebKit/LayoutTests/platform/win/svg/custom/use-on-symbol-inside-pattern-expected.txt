@@ -37,7 +37,7 @@ layer at (0,0) size 225x425
       LayoutSVGContainer {use} at (8,8) size 205x94
         LayoutSVGPath {path} at (8,8) size 205x94 [stroke={[type=SOLID] [color=#B42D25] [stroke width=2.00]}] [fill={[type=PATTERN] [id="pat00"]}] [data="M 0 50 l 100 -50 l 100 20 l -50 50 l -100 20 Z"]
     LayoutSVGContainer {g} at (8,106) size 205x96 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,110.00)}]
-      LayoutSVGText {text} at (0,-4) size 76x17 contains 1 chunk(s)
+      LayoutSVGText {text} at (-1,-4) size 77x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 76x17
           chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 10 width 75.51: "broadLeave"
       LayoutSVGContainer {use} at (8,108) size 205x94

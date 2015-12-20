@@ -2,8 +2,8 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (29,26) size 421x455
-    LayoutSVGText {text} at (107,26) size 236x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 236x17
+    LayoutSVGText {text} at (107,26) size 236x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 236x18
         chunk 1 (middle anchor) text run 1 at (107.15,40.00) startOffset 0 endOffset 34 width 235.70: "Text on Path with trailing <tspan>"
     LayoutSVGRect {rect} at (29,49) size 392x22 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#000000]}] [x=30.00] [y=50.00] [width=390.00] [height=20.00]
     LayoutSVGRect {rect} at (29,69) size 392x122 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=30.00] [y=70.00] [width=390.00] [height=120.00]

@@ -607,8 +607,8 @@ layer at (0,0) size 450x500
             LayoutSVGRect {rect} at (0,0) size 21x121 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=20.00] [height=120.00]
           LayoutSVGContainer {use} at (19,0) size 22x41
             LayoutSVGRect {rect} at (19,0) size 22x41 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFAD2]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
-          LayoutSVGText {text} at (19,5) size 32x19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 31x19
+          LayoutSVGText {text} at (19,5) size 33x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 32x19
               chunk 1 (middle anchor) text run 1 at (19.50,20.00) startOffset 0 endOffset 4 width 31.00: "yMin"
           LayoutSVGContainer {use} at (19,39) size 22x42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
             LayoutSVGRect {rect} at (19,39) size 22x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFF096]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
@@ -617,8 +617,8 @@ layer at (0,0) size 450x500
               chunk 1 (middle anchor) text run 1 at (19.00,60.00) startOffset 0 endOffset 4 width 32.00: "yMid"
           LayoutSVGContainer {use} at (19,79) size 22x42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,80.00)}]
             LayoutSVGRect {rect} at (19,79) size 22x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFEB78]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
-          LayoutSVGText {text} at (17,85) size 36x19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 35x19
+          LayoutSVGText {text} at (17,85) size 37x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 36x19
               chunk 1 (middle anchor) text run 1 at (17.50,100.00) startOffset 0 endOffset 4 width 35.00: "yMax"
         LayoutSVGContainer {g} at (39,0) size 102x401
           LayoutSVGContainer {use} at (39,0) size 102x41
@@ -649,8 +649,8 @@ layer at (0,0) size 450x500
               LayoutSVGRect {rect} at (49,79) size 22x122 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFAD2]}] [x=0.00] [y=0.00] [width=20.00] [height=120.00]
             LayoutSVGContainer {g} at (69,79) size 22x42
               LayoutSVGRect {rect} at (69,79) size 22x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFAD2]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
-            LayoutSVGText {text} at (19,5) size 32x19 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 31x19
+            LayoutSVGText {text} at (19,5) size 33x19 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 32x19
                 chunk 1 (middle anchor) text run 1 at (19.50,20.00) startOffset 0 endOffset 4 width 31.00: "yMin"
             LayoutSVGContainer {g} at (69,119) size 22x42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
               LayoutSVGRect {rect} at (69,119) size 22x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFF096]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
@@ -659,11 +659,11 @@ layer at (0,0) size 450x500
                 chunk 1 (middle anchor) text run 1 at (19.00,60.00) startOffset 0 endOffset 4 width 32.00: "yMid"
             LayoutSVGContainer {g} at (69,159) size 22x42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,80.00)}]
               LayoutSVGRect {rect} at (69,159) size 22x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFEB78]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
-            LayoutSVGText {text} at (17,85) size 36x19 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 35x19
+            LayoutSVGText {text} at (17,85) size 37x19 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 36x19
                 chunk 1 (middle anchor) text run 1 at (17.50,100.00) startOffset 0 endOffset 4 width 35.00: "yMax"
-        LayoutSVGText {text} at (-1,45) size 32x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 31x19
+        LayoutSVGText {text} at (-1,45) size 33x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 32x19
             chunk 1 (middle anchor) text run 1 at (-0.50,60.00) startOffset 0 endOffset 4 width 31.00: "xMin"
         LayoutSVGContainer {use} at (49,199) size 42x122 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
           LayoutSVGContainer {g} at (49,199) size 42x122
@@ -671,8 +671,8 @@ layer at (0,0) size 450x500
               LayoutSVGRect {rect} at (49,199) size 22x122 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFF096]}] [x=0.00] [y=0.00] [width=20.00] [height=120.00]
             LayoutSVGContainer {g} at (69,199) size 22x42
               LayoutSVGRect {rect} at (69,199) size 22x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFAD2]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
-            LayoutSVGText {text} at (19,5) size 32x19 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 31x19
+            LayoutSVGText {text} at (19,5) size 33x19 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 32x19
                 chunk 1 (middle anchor) text run 1 at (19.50,20.00) startOffset 0 endOffset 4 width 31.00: "yMin"
             LayoutSVGContainer {g} at (69,239) size 22x42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
               LayoutSVGRect {rect} at (69,239) size 22x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFF096]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
@@ -681,8 +681,8 @@ layer at (0,0) size 450x500
                 chunk 1 (middle anchor) text run 1 at (19.00,60.00) startOffset 0 endOffset 4 width 32.00: "yMid"
             LayoutSVGContainer {g} at (69,279) size 22x42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,80.00)}]
               LayoutSVGRect {rect} at (69,279) size 22x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFEB78]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
-            LayoutSVGText {text} at (17,85) size 36x19 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 35x19
+            LayoutSVGText {text} at (17,85) size 37x19 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 36x19
                 chunk 1 (middle anchor) text run 1 at (17.50,100.00) startOffset 0 endOffset 4 width 35.00: "yMax"
         LayoutSVGText {text} at (-1,165) size 32x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 32x19
@@ -693,8 +693,8 @@ layer at (0,0) size 450x500
               LayoutSVGRect {rect} at (49,319) size 22x122 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFEB78]}] [x=0.00] [y=0.00] [width=20.00] [height=120.00]
             LayoutSVGContainer {g} at (69,319) size 22x42
               LayoutSVGRect {rect} at (69,319) size 22x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFAD2]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
-            LayoutSVGText {text} at (19,5) size 32x19 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 31x19
+            LayoutSVGText {text} at (19,5) size 33x19 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 32x19
                 chunk 1 (middle anchor) text run 1 at (19.50,20.00) startOffset 0 endOffset 4 width 31.00: "yMin"
             LayoutSVGContainer {g} at (69,359) size 22x42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
               LayoutSVGRect {rect} at (69,359) size 22x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFF096]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
@@ -703,11 +703,11 @@ layer at (0,0) size 450x500
                 chunk 1 (middle anchor) text run 1 at (19.00,60.00) startOffset 0 endOffset 4 width 32.00: "yMid"
             LayoutSVGContainer {g} at (69,399) size 22x42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,80.00)}]
               LayoutSVGRect {rect} at (69,399) size 22x42 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFEB78]}] [x=20.00] [y=0.00] [width=20.00] [height=40.00]
-            LayoutSVGText {text} at (17,85) size 36x19 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 35x19
+            LayoutSVGText {text} at (17,85) size 37x19 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 36x19
                 chunk 1 (middle anchor) text run 1 at (17.50,100.00) startOffset 0 endOffset 4 width 35.00: "yMax"
-        LayoutSVGText {text} at (-3,285) size 36x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 35x19
+        LayoutSVGText {text} at (-3,285) size 37x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 36x19
             chunk 1 (middle anchor) text run 1 at (-2.50,300.00) startOffset 0 endOffset 4 width 35.00: "xMax"
         LayoutSVGContainer {use} at (89,79) size 102x402
           LayoutSVGContainer {g} at (89,79) size 102x402

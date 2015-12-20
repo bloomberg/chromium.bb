@@ -10,13 +10,13 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (25,43) size 123x27 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 123x27
             chunk 1 text run 1 at (25.00,65.00) startOffset 0 endOffset 11 width 122.70: "Normal text"
-        LayoutSVGText {text} at (25,113) size 227x27 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 227x27
+        LayoutSVGText {text} at (25,113) size 227x28 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 227x28
             chunk 1 text run 1 at (25.00,135.00) startOffset 0 endOffset 22 width 226.78: "Text with line-through"
         LayoutSVGText {text} at (25,183) size 162x27 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 162x27
             chunk 1 text run 1 at (25.00,205.00) startOffset 0 endOffset 15 width 161.43: "Underlined text"
-        LayoutSVGText {text} at (25,253) size 367x27 contains 1 chunk(s)
+        LayoutSVGText {text} at (25,253) size 367x28 contains 1 chunk(s)
           LayoutSVGTSpan {tspan} at (0,0) size 46x27
             LayoutSVGInlineText {#text} at (0,0) size 46x27
               chunk 1 text run 1 at (25.00,275.00) startOffset 0 endOffset 3 width 45.36: "One"
@@ -37,8 +37,8 @@ layer at (0,0) size 480x360
               chunk 1 text run 1 at (181.08,275.00) startOffset 0 endOffset 9 width 86.29: "different"
           LayoutSVGInlineText {#text} at (242,0) size 7x27
             chunk 1 text run 1 at (267.37,275.00) startOffset 0 endOffset 1 width 6.67: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 118x27
-            LayoutSVGInlineText {#text} at (249,0) size 118x27
+          LayoutSVGTSpan {tspan} at (0,0) size 118x28
+            LayoutSVGInlineText {#text} at (249,0) size 118x28
               chunk 1 text run 1 at (274.04,275.00) startOffset 0 endOffset 11 width 117.42: "underlining"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
     LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)

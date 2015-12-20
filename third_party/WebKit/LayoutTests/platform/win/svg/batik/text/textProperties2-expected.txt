@@ -7,11 +7,11 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (145,26) size 160x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 160x17
           chunk 1 (middle anchor) text run 1 at (145.39,40.00) startOffset 0 endOffset 28 width 159.22: "Text display and visibility."
-      LayoutSVGText {text} at (141,60) size 168x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 168x17
+      LayoutSVGText {text} at (141,60) size 168x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 168x18
           chunk 1 (middle anchor) text run 1 at (141.04,74.00) startOffset 0 endOffset 27 width 167.93: "Visibility on text & tspans"
-      LayoutSVGText {text} at (145,186) size 160x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 159x17
+      LayoutSVGText {text} at (145,186) size 160x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 159x18
           chunk 1 (middle anchor) text run 1 at (145.89,200.00) startOffset 0 endOffset 24 width 158.21: "Display on text & tspans"
       LayoutSVGContainer {g} at (12,81) size 426x252
         LayoutSVGRect {rect} at (12,81) size 426x27 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#EEEEEE]}] [x=12.50] [y=82.00] [width=425.00] [height=25.00]
@@ -52,7 +52,7 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (360,309) size 115x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 115x17
           chunk 1 text run 1 at (360.00,323.00) startOffset 0 endOffset 18 width 114.64: "none, inline, none"
-      LayoutSVGContainer {g} at (25,82) size 348x223 [transform={m=((1.25,0.00)(0.00,1.25)) t=(0.00,12.50)}]
+      LayoutSVGContainer {g} at (25,82) size 349x223 [transform={m=((1.25,0.00)(0.00,1.25)) t=(0.00,12.50)}]
         LayoutSVGText {text} at (20,55) size 279x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 33x18
             chunk 1 text run 1 at (20.00,70.00) startOffset 0 endOffset 5 width 32.20: "Text "

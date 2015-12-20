@@ -5,8 +5,8 @@ layer at (0,0) size 800x600
     LayoutSVGText {text} at (110,5) size 95x19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 95x19
         chunk 1 text run 1 at (110.00,20.00) startOffset 0 endOffset 19 width 94.04: "Visibility: visible"
-    LayoutSVGText {text} at (340,5) size 98x19 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 98x19
+    LayoutSVGText {text} at (340,5) size 99x19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 99x19
         chunk 1 text run 1 at (340.00,20.00) startOffset 0 endOffset 18 width 97.04: "Visibility: hidden"
     LayoutSVGContainer {g} at (0,30) size 549x563
       LayoutSVGText {text} at (0,45) size 26x19 contains 1 chunk(s)
@@ -79,8 +79,8 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (504,92) size 26x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 26x19
           chunk 1 text run 1 at (504.00,107.00) startOffset 0 endOffset 4 width 26.00: "miss"
-      LayoutSVGText {text} at (0,159) size 55x19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 55x19
+      LayoutSVGText {text} at (0,159) size 56x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 56x19
           chunk 1 text run 1 at (0.00,174.00) startOffset 0 endOffset 11 width 55.00: "visibleFill"
       LayoutSVGImage {image} at (100,144) size 50x50 [transform={m=((2.00,0.00)(0.00,2.00)) t=(0.00,0.00)}]
       LayoutSVGText {text} at (105,149) size 25x19 contains 1 chunk(s)
@@ -219,8 +219,8 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (504,320) size 25x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 25x19
           chunk 1 text run 1 at (504.00,335.00) startOffset 0 endOffset 3 width 25.00: "HIT"
-      LayoutSVGText {text} at (0,387) size 13x19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 13x19
+      LayoutSVGText {text} at (0,387) size 14x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 14x19
           chunk 1 text run 1 at (0.00,402.00) startOffset 0 endOffset 4 width 13.00: "fill"
       LayoutSVGImage {image} at (100,372) size 50x50 [transform={m=((2.00,0.00)(0.00,2.00)) t=(0.00,0.00)}]
       LayoutSVGText {text} at (105,377) size 25x19 contains 1 chunk(s)
@@ -289,8 +289,8 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (504,434) size 25x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 25x19
           chunk 1 text run 1 at (504.00,449.00) startOffset 0 endOffset 3 width 25.00: "HIT"
-      LayoutSVGText {text} at (0,501) size 13x19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 13x19
+      LayoutSVGText {text} at (0,501) size 14x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 14x19
           chunk 1 text run 1 at (0.00,516.00) startOffset 0 endOffset 3 width 13.00: "all"
       LayoutSVGImage {image} at (100,486) size 50x50 [transform={m=((2.00,0.00)(0.00,2.00)) t=(0.00,0.00)}]
       LayoutSVGText {text} at (105,491) size 25x19 contains 1 chunk(s)

@@ -7,8 +7,8 @@ layer at (0,0) size 480x360
         LayoutSVGInlineText {#text} at (0,0) size 345x44
           chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 21 width 344.32: "Test of 'text-anchor'"
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-        LayoutSVGText {text} at (0,-14) size 78x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 78x18
+        LayoutSVGText {text} at (0,-14) size 79x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 79x18
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 13 width 77.30: "end text tref"
         LayoutSVGPath {path} at (0,0) size 0x0 [fill={[type=SOLID] [color=#000000]}] [data="M -5 260 L 220 260"]
       LayoutSVGText {text} at (20,53) size 216x33 contains 1 chunk(s)

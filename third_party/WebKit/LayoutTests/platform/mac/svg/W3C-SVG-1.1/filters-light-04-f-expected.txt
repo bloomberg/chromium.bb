@@ -5,8 +5,8 @@ layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (70,36) size 335x219
-      LayoutSVGText {text} at (127,36) size 226x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 226x17
+      LayoutSVGText {text} at (127,36) size 226x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 226x18
           chunk 1 (middle anchor) text run 1 at (127.29,50.00) startOffset 0 endOffset 31 width 225.41: "feSpotLight's limitingConeAngle"
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="spotLightA"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
@@ -41,7 +41,7 @@ layer at (0,0) size 480x360
           LayoutSVGText {text} at (165,22) size 10x10 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 10x10
               chunk 1 text run 1 at (165.00,30.00) startOffset 0 endOffset 2 width 10.01: "20"
-          LayoutSVGText {text} at (260,22) size 67x10 contains 1 chunk(s)
+          LayoutSVGText {text} at (259,22) size 68x10 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 67x10
               chunk 1 text run 1 at (260.00,30.00) startOffset 0 endOffset 16 width 66.53: "Animated (0..50)"
           LayoutSVGText {text} at (355,22) size 5x10 contains 1 chunk(s)
@@ -54,7 +54,7 @@ layer at (0,0) size 480x360
             LayoutSVGText {text} at (165,22) size 13x10 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 13x10
                 chunk 1 text run 1 at (165.00,30.00) startOffset 0 endOffset 3 width 13.01: "-20"
-            LayoutSVGText {text} at (260,22) size 70x10 contains 1 chunk(s)
+            LayoutSVGText {text} at (259,22) size 71x10 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 70x10
                 chunk 1 text run 1 at (260.00,30.00) startOffset 0 endOffset 17 width 69.53: "Animated (0..-50)"
             LayoutSVGText {text} at (355,22) size 8x10 contains 1 chunk(s)

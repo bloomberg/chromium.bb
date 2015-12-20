@@ -58,8 +58,8 @@ layer at (0,0) size 480x360
         LayoutSVGImage {image} at (320,50) size 50x30
           [filter="surfaceScaleC"] LayoutSVGResourceFilter {filter} at (320,30) size 50x30
       LayoutSVGContainer {g} at (90,101) size 309x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,90.00)}]
-        LayoutSVGText {text} at (90,11) size 309x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 309x17
+        LayoutSVGText {text} at (90,11) size 309x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 309x18
             chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 48 width 308.38: "Various values for specularConstants: 0, 1 and 2"
         LayoutSVGContainer {g} at (90,120) size 280x30
           LayoutSVGRect {rect} at (90,120) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=90.00] [y=30.00] [width=50.00] [height=30.00]
@@ -72,8 +72,8 @@ layer at (0,0) size 480x360
         LayoutSVGImage {image} at (320,120) size 50x30
           [filter="specularConstantC"] LayoutSVGResourceFilter {filter} at (320,30) size 50x30
       LayoutSVGContainer {g} at (90,171) size 313x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,160.00)}]
-        LayoutSVGText {text} at (90,11) size 313x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 313x17
+        LayoutSVGText {text} at (90,11) size 313x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 313x18
             chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 48 width 312.81: "Various values for specularExponents: 1, 2 and 4"
         LayoutSVGContainer {g} at (90,190) size 280x30
           LayoutSVGRect {rect} at (90,190) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=90.00] [y=30.00] [width=50.00] [height=30.00]
@@ -86,8 +86,8 @@ layer at (0,0) size 480x360
         LayoutSVGImage {image} at (320,190) size 50x30
           [filter="specularExponentC"] LayoutSVGResourceFilter {filter} at (320,30) size 50x30
       LayoutSVGContainer {g} at (90,241) size 347x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,230.00)}]
-        LayoutSVGText {text} at (90,11) size 347x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 347x17
+        LayoutSVGText {text} at (90,11) size 347x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 347x18
             chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 55 width 346.14: "Various values for lighting color: red, yellow and blue"
         LayoutSVGContainer {g} at (90,260) size 280x30
           LayoutSVGRect {rect} at (90,260) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=90.00] [y=30.00] [width=50.00] [height=30.00]

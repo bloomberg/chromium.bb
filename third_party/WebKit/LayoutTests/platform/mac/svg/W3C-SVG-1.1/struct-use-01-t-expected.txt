@@ -74,9 +74,9 @@ layer at (0,0) size 480x360
           LayoutSVGPath {path} at (150,205) size 20x20 [fill={[type=SOLID] [color=#00FF00]}] [data="M 0 0 L 20 0 L 20 20 L 0 20 Z"]
         LayoutSVGContainer {use} at (150,235) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
           LayoutSVGImage {image} at (150,235) size 20x20
-        LayoutSVGContainer {use} at (150,262) size 44x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,260.00)}]
-          LayoutSVGText {text} at (0,-23) size 44x29 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 44x29
+        LayoutSVGContainer {use} at (150,262) size 45x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,260.00)}]
+          LayoutSVGText {text} at (0,-23) size 45x29 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 45x29
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 4 width 43.52: "Text"
         LayoutSVGContainer {use} at (330,25) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,0.00)}]
           LayoutSVGContainer {g} at (330,25) size 20x20

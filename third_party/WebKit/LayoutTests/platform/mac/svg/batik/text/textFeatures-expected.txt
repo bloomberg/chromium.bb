@@ -45,8 +45,8 @@ layer at (0,0) size 450x500
               chunk 1 text run 1 at (191.21,175.00) startOffset 0 endOffset 7 width 46.25: "weight,"
           LayoutSVGInlineText {#text} at (192,0) size 4x17
             chunk 1 text run 1 at (237.46,175.00) startOffset 0 endOffset 1 width 3.75: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 49x17
-            LayoutSVGInlineText {#text} at (196,0) size 49x17
+          LayoutSVGTSpan {tspan} at (0,0) size 50x17
+            LayoutSVGInlineText {#text} at (195,0) size 50x17
               chunk 1 text run 1 at (241.21,175.00) startOffset 0 endOffset 8 width 48.20: "posture,"
           LayoutSVGInlineText {#text} at (244,0) size 30x17
             chunk 1 text run 1 at (289.41,175.00) startOffset 0 endOffset 5 width 29.16: " and "

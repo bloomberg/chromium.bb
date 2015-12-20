@@ -17,11 +17,11 @@ layer at (0,0) size 480x360
           LayoutSVGEllipse {circle} at (29,109) size 62x62 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [cx=0.00] [cy=0.00] [r=30.00]
           LayoutSVGPath {line} at (0,0) size 0x0 [fill={[type=SOLID] [color=#000000]}] [x1=-30.00] [y1=0.00] [x2=30.00] [y2=0.00]
           LayoutSVGPath {line} at (0,0) size 0x0 [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-30.00] [x2=0.00] [y2=30.00]
-      LayoutSVGContainer {g} at (50,182) size 205x96
-        LayoutSVGContainer {g} at (50,182) size 205x96 [transform={m=((1.00,0.00)(0.00,1.00)) t=(65.00,190.00)}]
-          LayoutSVGContainer {g} at (75,182) size 180x96
-            LayoutSVGText {text} at (10,-8) size 180x36 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 180x36
+      LayoutSVGContainer {g} at (50,182) size 206x96
+        LayoutSVGContainer {g} at (50,182) size 206x96 [transform={m=((1.00,0.00)(0.00,1.00)) t=(65.00,190.00)}]
+          LayoutSVGContainer {g} at (75,182) size 181x96
+            LayoutSVGText {text} at (10,-8) size 181x36 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 181x36
                 chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 11 width 180.00: "onmousedown"
             LayoutSVGText {text} at (10,22) size 141x36 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 141x36

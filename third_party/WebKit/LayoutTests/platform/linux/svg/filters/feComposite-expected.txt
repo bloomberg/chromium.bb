@@ -38,8 +38,8 @@ layer at (0,0) size 400x400
         chunk 1 text run 1 at (10.00,90.00) startOffset 0 endOffset 4 width 27.00: "over"
     LayoutSVGRect {rect} at (70,10) size 50x50 [fill={[type=SOLID] [color=#000000]}] [x=70.00] [y=10.00] [width=50.00] [height=50.00]
       [filter="in"] LayoutSVGResourceFilter {filter} at (70,10) size 50x50
-    LayoutSVGText {text} at (70,75) size 10x19 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 10x19
+    LayoutSVGText {text} at (70,75) size 11x19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 11x19
         chunk 1 text run 1 at (70.00,90.00) startOffset 0 endOffset 2 width 10.00: "in"
     LayoutSVGRect {rect} at (130,10) size 50x50 [fill={[type=SOLID] [color=#000000]}] [x=130.00] [y=10.00] [width=50.00] [height=50.00]
       [filter="out"] LayoutSVGResourceFilter {filter} at (130,10) size 50x50

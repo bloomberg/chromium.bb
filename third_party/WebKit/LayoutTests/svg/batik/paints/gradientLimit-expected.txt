@@ -24,8 +24,8 @@ layer at (0,0) size 450x500
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (185,80) size 80x40 [fill={[type=LINEAR-GRADIENT] [id="closeOffsetsLinearGradient2"]}] [x=35.00] [y=80.00] [width=80.00] [height=40.00]
-        LayoutSVGText {text} at (-4,121) size 158x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 158x17
+        LayoutSVGText {text} at (-4,121) size 158x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 158x18
             chunk 1 (middle anchor) text run 1 at (-3.55,135.00) startOffset 0 endOffset 22 width 157.10: "Two very close offsets"
         LayoutSVGText {text} at (15,136) size 120x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 120x17
@@ -48,8 +48,8 @@ layer at (0,0) size 450x500
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (185,180) size 80x40 [fill={[type=RADIAL-GRADIENT] [id="closeOffsetsRadialGradient2"]}] [x=35.00] [y=80.00] [width=80.00] [height=40.00]
-        LayoutSVGText {text} at (-4,121) size 158x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 158x17
+        LayoutSVGText {text} at (-4,121) size 158x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 158x18
             chunk 1 (middle anchor) text run 1 at (-3.55,135.00) startOffset 0 endOffset 22 width 157.10: "Two very close offsets"
         LayoutSVGText {text} at (15,136) size 120x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 120x17
@@ -59,8 +59,8 @@ layer at (0,0) size 450x500
           LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFD700]
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (335,80) size 80x41 [transform={m=((100.00,0.00)(0.00,100.00)) t=(0.00,0.00)}] [fill={[type=LINEAR-GRADIENT] [id="closeControlsLinearGradient"]}] [x=0.35] [y=0.80] [width=0.80] [height=0.40]
-        LayoutSVGText {text} at (4,121) size 142x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 141x17
+        LayoutSVGText {text} at (4,121) size 142x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 141x18
             chunk 1 (middle anchor) text run 1 at (4.74,135.00) startOffset 0 endOffset 20 width 140.52: "Close control points"
         LayoutSVGText {text} at (15,136) size 120x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 120x17

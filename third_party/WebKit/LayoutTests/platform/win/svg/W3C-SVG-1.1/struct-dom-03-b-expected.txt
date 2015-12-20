@@ -31,8 +31,8 @@ layer at (0,0) size 480x360
     LayoutSVGText {text} at (370,173) size 47x33 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 47x33
         chunk 1 text run 1 at (370.00,200.00) startOffset 0 endOffset 4 width 46.64: "true"
-    LayoutSVGText {text} at (10,223) size 147x33 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 147x33
+    LayoutSVGText {text} at (10,223) size 147x34 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 147x34
         chunk 1 text run 1 at (10.00,250.00) startOffset 0 endOffset 11 width 146.10: "org.w3c.svg"
     LayoutSVGText {text} at (370,223) size 47x33 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 47x33

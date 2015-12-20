@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
         chunk 1 text run 1 at (30.00,30.00) startOffset 0 endOffset 19 width 129.99: "This is for filter "
       LayoutSVGTSpan {tspan} at (0,0) size 64x23
         LayoutSVGInlineText {#text} at (129,0) size 63x23
-          [filter="filter"] LayoutSVGResourceFilter {filter} at (153.71,9.70) size 75.32x27.60
+          [filter="filter"] LayoutSVGResourceFilter {filter} at (153.70,9.70) size 75.39x27.60
           chunk 1 text run 1 at (159.99,30.00) startOffset 0 endOffset 9 width 62.77: "on filter"
       LayoutSVGInlineText {#text} at (192,0) size 5x23
         [filter="filter"] LayoutSVGResourceFilter {filter} at (222.25,9.70) size 6x27.60

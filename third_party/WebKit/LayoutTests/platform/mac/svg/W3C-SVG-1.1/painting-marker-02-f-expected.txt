@@ -11,11 +11,11 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (125,17) size 180x16 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 180x16
           chunk 1 text run 1 at (125.00,30.00) startOffset 0 endOffset 27 width 179.74: "Marker Rendering Properties"
-      LayoutSVGContainer {g} at (22,52) size 186x90
+      LayoutSVGContainer {g} at (22,52) size 186x91
         LayoutSVGResourceMarker {marker} [id="marker1"] [markerUnits=strokeWidth] [ref at (5,5)] [angle=0.00]
           LayoutSVGRect {rect} at (0,0) size 2x2 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
-        LayoutSVGText {text} at (100,131) size 54x11 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 54x11
+        LayoutSVGText {text} at (100,131) size 54x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 54x12
             chunk 1 text run 1 at (100.00,140.00) startOffset 0 endOffset 13 width 53.34: "Fill Property"
         LayoutSVGPath {path} at (22,52) size 66x66 [fill={[type=SOLID] [color=#000000]}] [start marker=marker1] [middle marker=marker1] [end marker=marker1] [data="M 30 60 L 80 60 L 80 110 Z"]
         LayoutSVGContainer {g} at (142,52) size 66x66 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,0.00)}]
@@ -35,11 +35,11 @@ layer at (0,0) size 480x360
               [clipPath="overflowHiddenClip1"] LayoutSVGResourceClipper {clipPath} at (0,0) size 2x2
               LayoutSVGContainer {g} at (192,102) size 16x16 [transform={m=((0.20,0.00)(0.00,0.20)) t=(0.00,0.00)}]
                 LayoutSVGRect {rect} at (192,102) size 16x16 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
-      LayoutSVGContainer {g} at (260,50) size 188x92
+      LayoutSVGContainer {g} at (260,50) size 188x93
         LayoutSVGResourceMarker {marker} [id="marker2"] [markerUnits=strokeWidth] [ref at (10,10)] [angle=0.00]
           LayoutSVGRect {rect} at (0,0) size 5x5 [stroke={[type=SOLID] [color=#000000] [stroke width=4.00]}] [x=0.00] [y=0.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (340,131) size 70x11 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 70x11
+        LayoutSVGText {text} at (340,131) size 70x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 70x12
             chunk 1 text run 1 at (340.00,140.00) startOffset 0 endOffset 15 width 69.47: "Stroke Property"
         LayoutSVGPath {path} at (260,50) size 70x70 [stroke={[type=SOLID] [color=#000000] [stroke width=4.00]}] [start marker=marker2] [middle marker=marker2] [end marker=marker2] [data="M 270 60 L 320 60 L 320 110 Z"]
         LayoutSVGContainer {g} at (382,52) size 66x66 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,0.00)}]

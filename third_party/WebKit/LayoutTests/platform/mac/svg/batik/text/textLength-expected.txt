@@ -2,8 +2,8 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 448x498
-    LayoutSVGText {text} at (143,6) size 164x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 163x17
+    LayoutSVGText {text} at (143,6) size 164x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 163x18
         chunk 1 (middle anchor) text run 1 at (143.62,20.00) startOffset 0 endOffset 22 width 162.77: "textLength with Anchor"
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGContainer {g} at (200,3) size 50x24

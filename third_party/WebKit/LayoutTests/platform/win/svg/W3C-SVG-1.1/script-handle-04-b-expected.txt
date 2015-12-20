@@ -10,8 +10,8 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (-40,-79) size 81x36 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 81x36
             chunk 1 text run 1 at (-40.00,-50.00) startOffset 0 endOffset 6 width 80.69: "Target"
-        LayoutSVGText {text} at (60,-14) size 295x26 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 295x26
+        LayoutSVGText {text} at (60,-14) size 295x27 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 295x27
             chunk 1 text run 1 at (60.00,7.00) startOffset 0 endOffset 32 width 294.80: "Use the target to trigger events"
         LayoutSVGContainer {g} at (29,109) size 62x62
           LayoutSVGEllipse {circle} at (29,109) size 62x62 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [cx=0.00] [cy=0.00] [r=30.00]

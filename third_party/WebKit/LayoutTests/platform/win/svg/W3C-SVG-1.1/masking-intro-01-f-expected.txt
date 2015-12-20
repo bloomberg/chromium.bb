@@ -11,8 +11,8 @@ layer at (0,0) size 480x360
         LayoutSVGEllipse {circle} at (0,0) size 1x1 [cx=0.70] [cy=0.50] [r=0.20]
     LayoutSVGRect {rect} at (155,45) size 175x110 [fill={[type=SOLID] [color=#00008B]}] [x=150.00] [y=0.00] [width=200.00] [height=200.00]
       [clipPath="one"] LayoutSVGResourceClipper {clipPath} at (155,45) size 175x110
-    LayoutSVGText {text} at (50,96) size 114x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 114x17
+    LayoutSVGText {text} at (50,96) size 114x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 114x18
         chunk 1 text run 1 at (50.00,110.00) startOffset 0 endOffset 19 width 113.53: "With a 'clip-path':"
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceMasker {mask} [id="two"] [maskUnits=objectBoundingBox] [maskContentUnits=objectBoundingBox]

@@ -20,8 +20,8 @@ layer at (0,0) size 480x360
       LayoutSVGContainer {g} at (50,182) size 162x96
         LayoutSVGContainer {g} at (50,182) size 162x96 [transform={m=((1.00,0.00)(0.00,1.00)) t=(65.00,190.00)}]
           LayoutSVGContainer {g} at (75,182) size 137x96
-            LayoutSVGText {text} at (10,-8) size 121x36 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 121x36
+            LayoutSVGText {text} at (10,-8) size 122x36 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 122x36
                 chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 9 width 121.00: "onfocusin"
             LayoutSVGText {text} at (10,22) size 137x36 contains 1 chunk(s)
               LayoutSVGInlineText {#text} at (0,0) size 137x36

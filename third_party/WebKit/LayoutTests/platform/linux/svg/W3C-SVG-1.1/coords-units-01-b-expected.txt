@@ -24,8 +24,8 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (60,0) size 67x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 67x19
             chunk 1 text run 1 at (60.00,15.00) startOffset 0 endOffset 10 width 67.00: "Percentage"
-        LayoutSVGText {text} at (60,20) size 50x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 50x19
+        LayoutSVGText {text} at (60,20) size 51x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 51x19
             chunk 1 text run 1 at (60.00,35.00) startOffset 0 endOffset 8 width 50.00: "Fraction"
         LayoutSVGText {text} at (60,40) size 71x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 71x19
@@ -49,8 +49,8 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (0,55) size 50x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 50x19
             chunk 1 text run 1 at (0.00,70.00) startOffset 0 endOffset 8 width 50.00: "Percent."
-        LayoutSVGText {text} at (61,55) size 50x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 50x19
+        LayoutSVGText {text} at (61,55) size 51x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 51x19
             chunk 1 text run 1 at (61.00,70.00) startOffset 0 endOffset 8 width 50.00: "Fraction"
         LayoutSVGText {text} at (122,55) size 71x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 71x19
@@ -74,8 +74,8 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (60,5) size 67x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 67x19
             chunk 1 text run 1 at (60.00,20.00) startOffset 0 endOffset 10 width 67.00: "Percentage"
-        LayoutSVGText {text} at (210,5) size 50x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 50x19
+        LayoutSVGText {text} at (210,5) size 51x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 51x19
             chunk 1 text run 1 at (210.00,20.00) startOffset 0 endOffset 8 width 50.00: "Fraction"
         LayoutSVGText {text} at (360,5) size 71x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 71x19

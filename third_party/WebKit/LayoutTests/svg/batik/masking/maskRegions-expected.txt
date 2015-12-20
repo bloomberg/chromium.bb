@@ -3,8 +3,8 @@ layer at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 448x498
     LayoutSVGContainer {g} at (90,36) size 265x368
-      LayoutSVGText {text} at (174,36) size 102x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 102x17
+      LayoutSVGText {text} at (174,36) size 102x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 102x18
           chunk 1 (middle anchor) text run 1 at (174.31,50.00) startOffset 0 endOffset 12 width 101.38: "Mask Regions"
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceLinearGradient {linearGradient} [id="maskedGradient"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,1)]

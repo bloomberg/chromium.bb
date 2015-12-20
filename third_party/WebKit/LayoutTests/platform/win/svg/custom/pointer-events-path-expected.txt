@@ -2,8 +2,8 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,4) size 730x592
-    LayoutSVGText {text} at (610,4) size 62x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 62x17
+    LayoutSVGText {text} at (610,4) size 62x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 62x18
         chunk 1 text run 1 at (610.00,18.00) startOffset 0 endOffset 8 width 61.31: "Example:"
     LayoutSVGText {text} at (605,26) size 52x17 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 52x17
@@ -11,11 +11,11 @@ layer at (0,0) size 800x600
     LayoutSVGText {text} at (605,46) size 71x17 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 71x17
         chunk 1 text run 1 at (605.00,60.00) startOffset 0 endOffset 11 width 70.66: "Hit Stroke:"
-    LayoutSVGText {text} at (110,6) size 111x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 111x17
+    LayoutSVGText {text} at (110,6) size 111x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 111x18
         chunk 1 text run 1 at (110.00,20.00) startOffset 0 endOffset 19 width 110.60: "Visibility: visible"
-    LayoutSVGText {text} at (340,6) size 112x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 112x17
+    LayoutSVGText {text} at (340,6) size 112x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 112x18
         chunk 1 text run 1 at (340.00,20.00) startOffset 0 endOffset 18 width 111.48: "Visibility: hidden"
     LayoutSVGContainer {g} at (0,20) size 730x576
       LayoutSVGRect {rect} at (680,20) size 50x50 [fill={[type=SOLID] [color=#FFA500]}] [x=680.00] [y=20.00] [width=50.00] [height=50.00]
@@ -320,8 +320,8 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (504,284) size 30x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 30x17
           chunk 1 text run 1 at (504.00,298.00) startOffset 0 endOffset 4 width 29.34: "miss"
-      LayoutSVGText {text} at (0,331) size 48x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 48x17
+      LayoutSVGText {text} at (-1,331) size 49x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 48x18
           chunk 1 text run 1 at (0.00,345.00) startOffset 0 endOffset 7 width 47.09: "painted"
       LayoutSVGRect {rect} at (100,315) size 50x50 [x=100.00] [y=315.00] [width=50.00] [height=50.00]
       LayoutSVGText {text} at (105,321) size 30x17 contains 1 chunk(s)

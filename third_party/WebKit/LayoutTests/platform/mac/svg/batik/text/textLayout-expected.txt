@@ -7,8 +7,8 @@ layer at (0,0) size 450x500
         LayoutSVGInlineText {#text} at (0,0) size 46x18
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 45.32: "sample"
     LayoutSVGContainer {g} at (40,36) size 410x421
-      LayoutSVGText {text} at (150,36) size 150x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 150x17
+      LayoutSVGText {text} at (150,36) size 150x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 150x18
           chunk 1 (middle anchor) text run 1 at (150.38,50.00) startOffset 0 endOffset 22 width 149.25: "Text Layout Properties"
       LayoutSVGText {text} at (171,65) size 108x13 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 108x13
@@ -106,8 +106,8 @@ layer at (0,0) size 450x500
           LayoutSVGInlineText {#text} at (0,0) size 75x9
             chunk 1 text run 1 at (40.00,290.00) startOffset 0 endOffset 22 width 74.20: "letter-spacing=\"0.3em\""
       LayoutSVGContainer {g} at (185,253) size 62x39
-        LayoutSVGText {text} at (185,253) size 35x28 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 35x28
+        LayoutSVGText {text} at (185,253) size 38x28 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 38x28
             chunk 1 text run 1 at (185.00,275.00) startOffset 0 endOffset 1 width 6.34: "s"
             chunk 1 text run 2 at (188.34,275.00) startOffset 1 endOffset 2 width 7.65: "a"
             chunk 1 text run 3 at (192.99,275.00) startOffset 2 endOffset 3 width 15.67: "m"

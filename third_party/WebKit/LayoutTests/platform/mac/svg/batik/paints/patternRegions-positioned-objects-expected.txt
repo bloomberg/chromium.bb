@@ -2,11 +2,11 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 448x498
-    LayoutSVGText {text} at (104,36) size 242x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 242x17
+    LayoutSVGText {text} at (104,36) size 242x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 242x18
         chunk 1 (middle anchor) text run 1 at (104.05,50.00) startOffset 0 endOffset 34 width 241.91: "patternUnits / patternContentUnits"
-    LayoutSVGText {text} at (168,61) size 114x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 114x17
+    LayoutSVGText {text} at (168,61) size 114x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 114x18
         chunk 1 (middle anchor) text run 1 at (168.08,75.00) startOffset 0 endOffset 15 width 113.84: "pattern viewBox"
     LayoutSVGContainer {g} at (14,108) size 412x293
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0

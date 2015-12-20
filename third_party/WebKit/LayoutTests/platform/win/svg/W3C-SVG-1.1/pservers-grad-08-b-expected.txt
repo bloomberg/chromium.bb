@@ -13,11 +13,11 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (20,111) size 410x61 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 410x61
           chunk 1 text run 1 at (20.00,160.00) startOffset 0 endOffset 18 width 409.32: "Gradient on stroke"
-    LayoutSVGText {text} at (40,118) size 345x33 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 345x33
+    LayoutSVGText {text} at (40,118) size 345x34 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 345x34
         chunk 1 text run 1 at (40.00,145.00) startOffset 0 endOffset 30 width 344.87: "Linear gradient on filled text"
-    LayoutSVGText {text} at (30,253) size 388x33 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 388x33
+    LayoutSVGText {text} at (30,253) size 388x34 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 388x34
         chunk 1 text run 1 at (30.00,280.00) startOffset 0 endOffset 33 width 387.36: "Linear gradient on stroke of text"
     LayoutSVGText {text} at (10,295) size 330x56 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 330x56

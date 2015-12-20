@@ -55,8 +55,8 @@ layer at (0,0) size 480x360
         LayoutSVGImage {image} at (230,150) size 50x30
           [filter="diffuseConstantC"] LayoutSVGResourceFilter {filter} at (230,30) size 50x30
       LayoutSVGContainer {g} at (90,201) size 347x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,190.00)}]
-        LayoutSVGText {text} at (90,11) size 347x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 347x17
+        LayoutSVGText {text} at (90,11) size 347x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 347x18
             chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 55 width 346.14: "Various values for lighting color: red, yellow and blue"
         LayoutSVGImage {image} at (90,220) size 50x30
           [filter="lightingColorA"] LayoutSVGResourceFilter {filter} at (90,30) size 50x30

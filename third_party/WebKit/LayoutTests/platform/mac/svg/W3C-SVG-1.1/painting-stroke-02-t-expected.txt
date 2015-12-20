@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (10,7) size 470x291
+    LayoutSVGContainer {g} at (10,7) size 470x292
       LayoutSVGText {text} at (10,7) size 475x41 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 475x41
           chunk 1 text run 1 at (10.00,40.00) startOffset 0 endOffset 31 width 474.22: "Basic paint: stroke properties."
@@ -11,8 +11,8 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (120,124) size 312x44 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 312x44
           chunk 1 text run 1 at (120.00,160.00) startOffset 0 endOffset 17 width 311.88: "stroke-width=\"20\""
-      LayoutSVGText {text} at (58,254) size 401x44 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 401x44
+      LayoutSVGText {text} at (58,254) size 401x45 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 401x45
           chunk 1 text run 1 at (58.00,290.00) startOffset 0 endOffset 23 width 400.84: "stroke-linejoin=\"round\""
     LayoutSVGText {text} at (10,304) size 284x46 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 284x46
