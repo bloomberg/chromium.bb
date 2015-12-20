@@ -12,12 +12,12 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (0,0) size 124x20
             chunk 1 text run 1 at (10.00,80.00) startOffset 0 endOffset 12 width 72.76 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}"
             chunk 1 text run 1 at (82.76,80.00) startOffset 0 endOffset 5 width 50.74: "\x{60C} W3C"
-      LayoutSVGText {text} at (10,93) size 124x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (78,0) size 45x20
+      LayoutSVGText {text} at (9,93) size 125x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (79,0) size 45x20
           chunk 1 (end anchor) text run 1 at (88.50,110.00) startOffset 0 endOffset 1 width 5.00 RTL: " "
           chunk 1 (end anchor) text run 1 at (93.50,110.00) startOffset 0 endOffset 3 width 40.00: "W3C"
-        LayoutSVGTSpan {tspan} at (0,0) size 79x20
-          LayoutSVGInlineText {#text} at (0,0) size 79x20
+        LayoutSVGTSpan {tspan} at (0,0) size 80x20
+          LayoutSVGInlineText {#text} at (0,0) size 80x20
             chunk 1 (end anchor) text run 1 at (10.00,110.00) startOffset 0 endOffset 13 width 78.50 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}\x{60C}"
       LayoutSVGContainer {g} at (14,56) size 214x143
         LayoutSVGRect {rect} at (16,56) size 17x34 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=10.00] [y=33.80] [width=9.47] [height=19.80]

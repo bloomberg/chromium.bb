@@ -68,14 +68,10 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-isolate-00
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-override-005.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-001.html [ Failure ]
 crbug.com/418091 [ Mac10.6 ] fast/text/aat-morx.html [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/463358 [ Linux Mac ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-html-background.html [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-nonzero.html [ Failure ]
 crbug.com/463358 [ Mac Linux ] fast/transforms/transformed-caret.html [ Pass Failure ]
 crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-background.html [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/463358 [ Mac Linux Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ Failure ]
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
@@ -131,8 +127,6 @@ crbug.com/520614 http/tests/w3c/webperf/submission/Intel/resource-timing/test_re
 crbug.com/520619 [ Android Mac Linux XP Win7 ] webexposed/global-interface-listing.html [ Pass Timeout ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 crbug.com/520199 [ Mac ] plugins/plugin-initiate-popup-window.html [ Failure Pass ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/520200 [ XP ] svg/batik/text/smallFonts.svg [ Failure Timeout ]
 crbug.com/518967 [ Win7 ] http/tests/htmlimports/csp-import-block-but-nonce-nested.html [ Failure Pass Timeout ]
 crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass Timeout ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
@@ -848,14 +842,6 @@ crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-r
 crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
 
 # TODO(pdr): These tests need manual rebaselines due to conflicts with other test expectation entries.
-crbug.com/566285 svg/W3C-SVG-1.1/paths-data-02-t.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-SVG-1.1/text-align-08-b.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-SVG-1.1/animate-elem-46-t.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-SVG-1.1/animate-elem-52-t.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/tspan-dirRTL-ubNone-in-ltr-context.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-SVG-1.1-SE/text-intro-05-t.svg [ NeedsManualRebaseline ]
 crbug.com/566285 svg/W3C-I18N/text-anchor-dirLTR-anchorEnd.svg [ NeedsManualRebaseline ]
 crbug.com/566285 svg/W3C-I18N/text-anchor-dirLTR-anchorMiddle.svg [ NeedsManualRebaseline ]
 crbug.com/566285 svg/W3C-I18N/text-anchor-dirLTR-anchorStart.svg [ NeedsManualRebaseline ]
@@ -883,15 +869,7 @@ crbug.com/566285 svg/W3C-I18N/tspan-dirRTL-ubOverride-in-rtl-context.svg [ Needs
 crbug.com/566285 svg/W3C-I18N/tspan-direction-rtl.svg [ NeedsManualRebaseline ]
 crbug.com/566285 svg/W3C-SVG-1.1/text-fonts-01-t.svg [ NeedsManualRebaseline ]
 crbug.com/566285 svg/W3C-SVG-1.1/text-intro-01-t.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/text/bidi-text-query.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/text/bidi-tspans.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/text/text-selection-fonts-01-t.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/text/text-selection-intro-05-t.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/batik/text/smallFonts.svg [ NeedsManualRebaseline ]
 crbug.com/566285 fast/writing-mode/english-lr-text.html [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-SVG-1.1/animate-elem-41-t.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/carto.net/combobox.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-SVG-1.1/text-intro-04-t.svg [ NeedsManualRebaseline ]
 crbug.com/566285 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-match-highlight.html [ NeedsManualRebaseline ]
 
 crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-change-color.html [ Failure ]
@@ -921,8 +899,6 @@ crbug.com/498021 [ Linux ] fast/text/international/danda-space.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-whitespace.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/thai-line-breaks.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/selection-multiple-runs.html [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/text-align-08-b.svg [ Failure ]
 crbug.com/498021 [ Linux ] editing/pasteboard/4944770-2.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
@@ -989,11 +965,6 @@ crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]
 # Temporary, until WebAXObjectProxy support lands.
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
 
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/486962 [ Linux Win ] svg/W3C-SVG-1.1/animate-elem-41-t.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-46-t.svg [ Failure ]
-
 # Disabled briefly until test runner support lands.
 crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
@@ -1024,11 +995,6 @@ crbug.com/321237 [ Win ] fast/selectors/004.html [ Failure ]
 # Rebaselines that got missed in the first pass
 crbug.com/321237 [ Mac ] fast/text/international/complex-text-leading-space-wrapping.html [ Failure ]
 crbug.com/321237 [ Win ] fast/text/international/complex-text-leading-space-wrapping.html [ Failure ]
-
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 crbug.com/501659 http/tests/xmlviewer/dumpAsText/svg.xml [ Failure ]
@@ -1155,11 +1121,7 @@ crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-dirLTR-ubNone.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-dirLTR-ubOverride.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirLTR-ubOverride-in-ltr-context.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubEmbed-in-default-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubNone-in-ltr-context.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1/text-intro-03-b.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/carto.net/combobox.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/css/text-gradient-shadow.svg [ Failure ]
 crbug.com/521730 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
 crbug.com/521730 [ Win10 ] printing/iframe-print.html [ Failure ]
@@ -1190,10 +1152,6 @@ crbug.com/521730 [ Win10 ] fast/text/justify-ideograph-leading-expansion.html [ 
 crbug.com/521730 [ Win10 ] fast/writing-mode/border-vertical-lr.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/writing-mode/japanese-ruby-vertical-lr.html [ Failure ]
 crbug.com/521730 [ Win10 ] media/track/track-cue-rendering-vertical.html [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1-SE/text-intro-05-t.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1/text-align-08-b.svg [ Failure ]
 crbug.com/521730 [ Win10 ] fast/css/line-height-determined-by-primary-font.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/forms/month/month-appearance-l10n.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/forms/month/month-appearance-pseudo-elements.html [ Failure ]
@@ -1316,19 +1274,9 @@ crbug.com/521730 [ Win10 ] svg/W3C-I18N/g-dirRTL-ubOverride.svg [ Failure ]
 # crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1/text-fonts-01-t.svg [ Failure ]
 # TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
 # crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1/text-intro-01-t.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/as-image/svg-canvas-xhtml-tainted.html [ Failure ]
 crbug.com/521730 [ Win10 ] svg/css/text-shadow-multiple.xhtml [ Failure ]
 crbug.com/521730 [ Win10 ] svg/custom/textPath-change-id2-pattern.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/text/bidi-text-query.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/text/bidi-tspans.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/text/text-selection-fonts-01-t.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/text/text-selection-intro-05-t.svg [ Failure ]
 
 crbug.com/571233 compositing/background-color/background-color-outside-document.html [ Skip ]
 

@@ -32,8 +32,8 @@ layer at (58,84) size 402x402
       LayoutSVGText {text} at (25,174) size 292x57 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 292x57
           chunk 1 text run 1 at (25.00,220.00) startOffset 0 endOffset 15 width 291.77: "Pattern on fill"
-      LayoutSVGText {text} at (25,223) size 212x16 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 212x16
+      LayoutSVGText {text} at (25,223) size 213x16 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 213x16
           chunk 1 text run 1 at (25.00,235.00) startOffset 0 endOffset 38 width 211.20: "Pattern consists of red and green rows"
       LayoutSVGResourcePattern {pattern} [id="pat4"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (166,58) size 12x13 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
@@ -41,8 +41,8 @@ layer at (58,84) size 402x402
       LayoutSVGText {text} at (25,239) size 305x45 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 305x45
           chunk 1 text run 1 at (25.00,275.00) startOffset 0 endOffset 17 width 304.58: "Pattern on stroke"
-      LayoutSVGText {text} at (25,278) size 227x16 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 227x16
+      LayoutSVGText {text} at (25,278) size 228x16 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 228x16
           chunk 1 text run 1 at (25.00,290.00) startOffset 0 endOffset 40 width 226.80: "Pattern consists of red and blue columns"
       LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 264x45

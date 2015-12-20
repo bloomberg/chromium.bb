@@ -8,8 +8,8 @@ layer at (0,0) size 480x360
         LayoutSVGInlineText {#text} at (0,0) size 138x17
           chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 21 width 137.84: "Test horizontal text."
       LayoutSVGContainer {g} at (10,44) size 437x200
-        LayoutSVGText {text} at (10,44) size 283x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 283x20
+        LayoutSVGText {text} at (10,44) size 283x21 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 283x21
             chunk 1 text run 1 at (10.00,60.00) startOffset 0 endOffset 42 width 282.83: "Polish: Mog\x{119} je\x{15B}\x{107} szk\x{142}o, i mi nie szkodzi."
         LayoutSVGText {text} at (10,74) size 341x20 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 341x20
@@ -22,8 +22,8 @@ layer at (0,0) size 480x360
             chunk 1 text run 1 at (10.00,150.00) startOffset 0 endOffset 6 width 41.16: "Text \""
             chunk 1 text run 1 at (51.16,150.00) startOffset 0 endOffset 36 width 266.94 RTL: "\x{5D0}\x{5E0}\x{5D9} \x{5D9}\x{5DB}\x{5D5}\x{5DC} \x{5DC}\x{5D0}\x{5DB}\x{5D5}\x{5DC} \x{5D6}\x{5DB}\x{5D5}\x{5DB}\x{5D9}\x{5EA} \x{5D5}\x{5D6}\x{5D4} \x{5DC}\x{5D0} \x{5DE}\x{5D6}\x{5D9}\x{5E7} \x{5DC}\x{5D9}"
             chunk 1 text run 1 at (318.09,150.00) startOffset 0 endOffset 14 width 98.06: "\" is in Hebrew"
-        LayoutSVGText {text} at (10,164) size 369x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 369x20
+        LayoutSVGText {text} at (10,164) size 369x21 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 369x21
             chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 9 width 61.88: "Yiddish: "
             chunk 1 text run 1 at (71.88,180.00) startOffset 0 endOffset 40 width 302.84 RTL: "\x{5D0}\x{5D9}\x{5DA} \x{5E7}\x{5E2}\x{5DF} \x{5E2}\x{5E1}\x{5DF} \x{5D2}\x{5DC}\x{5D0}\x{5B8}\x{5D6} \x{5D0}\x{5D5}\x{5DF} \x{5E2}\x{5E1} \x{5D8}\x{5D5}\x{5D8} \x{5DE}\x{5D9}\x{5E8} \x{5E0}\x{5D9}\x{5E9}\x{5D8} \x{5F0}\x{5F2}"
             chunk 1 text run 1 at (374.72,180.00) startOffset 0 endOffset 1 width 4.25: "."

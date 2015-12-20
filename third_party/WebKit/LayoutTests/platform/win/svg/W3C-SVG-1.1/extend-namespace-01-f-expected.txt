@@ -3,10 +3,10 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (63,16) size 354x264
-      LayoutSVGContainer {g} at (63,16) size 354x17
+      LayoutSVGContainer {g} at (63,16) size 354x18
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-        LayoutSVGText {text} at (63,16) size 354x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 353x17
+        LayoutSVGText {text} at (63,16) size 354x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 353x18
             chunk 1 (middle anchor) text run 1 at (63.61,30.00) startOffset 0 endOffset 51 width 352.79: "Pie chart built from data in a different namespace."
       LayoutSVGContainer {g} at (127,62) size 242x218
         LayoutSVGPath {path} at (263,76) size 106x83 [transform={m=((1.00,0.00)(0.00,1.00)) t=(27.00,-13.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF8888]}] [data="M 240 170 L 340 170 A 100 100 0 0 0 303 92 Z"]

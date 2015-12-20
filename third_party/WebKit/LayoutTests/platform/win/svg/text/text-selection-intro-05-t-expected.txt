@@ -2,15 +2,15 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (73,78) size 694x333
-      LayoutSVGText {text} at (114,47) size 346x46 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 346x46
-          chunk 1 (end anchor) text run 1 at (114.55,80.00) startOffset 0 endOffset 37 width 345.45 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
-      LayoutSVGText {text} at (43,128) size 417x40 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 417x40
+    LayoutSVGContainer {g} at (73,84) size 694x327
+      LayoutSVGText {text} at (113,50) size 347x37 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 347x36
+          chunk 1 (end anchor) text run 1 at (113.24,80.00) startOffset 0 endOffset 37 width 346.76 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
+      LayoutSVGText {text} at (43,124) size 417x44 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 417x44
           chunk 1 (end anchor) text run 1 at (43.89,160.00) startOffset 0 endOffset 37 width 416.11 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
-      LayoutSVGText {text} at (113,213) size 347x34 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 347x34
+      LayoutSVGText {text} at (113,210) size 347x37 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 347x36
           chunk 1 (end anchor) text run 1 at (113.24,240.00) startOffset 0 endOffset 37 width 346.76 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
     LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 264x44
