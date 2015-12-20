@@ -1,4 +1,4 @@
-PASS Width of text element is the sum of the width of all characters.
+PASS Width of text element is similar to the sum of the width of all characters.
 PASS successfullyParsed is true
 
 TEST COMPLETE

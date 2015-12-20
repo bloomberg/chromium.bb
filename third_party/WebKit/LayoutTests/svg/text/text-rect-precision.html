@@ -12,17 +12,6 @@
         </g>
     </svg>
 <script>
-    
-    var hasSubpixelPrecision = false;
-    
-    function subpixelTolerance(testElement)
-    {
-        // Due to fixed-point rounding, each single-character measurement may differ by up to
-        // one LayoutUnit (i.e., 0.16 pixel) from the same character's measurement in the full
-        // string.
-        var str = testElement.firstChild.nodeValue;
-        return str.length * 0.16;
-    }
 
     function measureText(testElement)
     {
@@ -39,7 +28,6 @@
                 measureElement.firstChild.nodeValue = c;
                 w = measureElement.getBoundingClientRect().width;
                 characterWidths[c] = w;
-                hasSubpixelPrecision = hasSubpixelPrecision || w.toFixed(2) != Math.round(w);
             }
             width += w;
         }
@@ -49,11 +37,20 @@
     var el = document.getElementById('test');
     var elementWidth = el.getBoundingClientRect().width;
     var textWidth = measureText(el);
-    var tolerance = hasSubpixelPrecision ? subpixelTolerance(el) : 2; // enclosing may expand up to one pixel in each direction.
-    if (Math.abs(elementWidth - textWidth) <= tolerance)
-        testPassed('Width of text element is the sum of the width of all characters.');
-    else
-        testFailed('Width of text element is ' + elementWidth + ', expected ' + textWidth);
+    // This tolerance value is made up but our goal is to ensure that the
+    // sum of individual glyph widths is roughly similar to the total element
+    // width.
+    var glyphOverflowTolerance = Math.min(elementWidth, textWidth) / 2;
+    if (elementWidth > textWidth) {
+        // The sum of individual character widths will include the glyph
+        // overflow of each character separately and therefore the total element
+        // width should be smaller.
+        testFailed('Width of text element is ' + elementWidth + ', expected the sum of individual character widths, ' + textWidth + ', to be larger.');
+    } else if (Math.abs(elementWidth - textWidth) > glyphOverflowTolerance) {
+        testFailed('Width of text element is ' + elementWidth + ', expected the sum of individal character widths, ' + textWidth + ', to be similar.');
+    } else {
+        testPassed('Width of text element is similar to the sum of the width of all characters.');
+    }
 </script>
 </body>
 </html>

@@ -70,6 +70,13 @@ struct SVGTextFragment {
     float width;
     float height;
 
+    // Top and bottom are the amounts of glyph overflows exceeding the font metrics' ascent and descent, respectively.
+    float glyphOverflowTop;
+    float glyphOverflowBottom;
+    // Left and right are the amounts of glyph overflows exceeding the left and right edge of normal layout boundary, respectively.
+    float glyphOverflowLeft;
+    float glyphOverflowRight;
+
     // Includes rotation/glyph-orientation-(horizontal|vertical) transforms, as well as orientation related shifts
     // (see SVGTextLayoutEngine, which builds this transformation).
     AffineTransform transform;

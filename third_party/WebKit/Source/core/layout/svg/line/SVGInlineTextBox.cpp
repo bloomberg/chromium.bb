@@ -240,7 +240,12 @@ LayoutRect SVGInlineTextBox::calculateBoundaries() const
     unsigned textFragmentsSize = m_textFragments.size();
     for (unsigned i = 0; i < textFragmentsSize; ++i) {
         const SVGTextFragment& fragment = m_textFragments.at(i);
-        FloatRect fragmentRect(fragment.x, fragment.y - baseline, fragment.width, fragment.height);
+
+        FloatRect fragmentRect(
+            fragment.x - fragment.glyphOverflowLeft,
+            fragment.y - baseline - fragment.glyphOverflowTop,
+            fragment.width + fragment.glyphOverflowLeft + fragment.glyphOverflowRight,
+            fragment.height + fragment.glyphOverflowTop + fragment.glyphOverflowBottom);
         fragment.buildFragmentTransform(fragmentTransform);
         fragmentRect = fragmentTransform.mapRect(fragmentRect);
 

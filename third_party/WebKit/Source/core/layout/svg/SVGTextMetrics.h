@@ -49,6 +49,7 @@ public:
     void setWidth(float width) { m_width = width; }
 
     float height() const { return m_height; }
+
     // TODO(kojii): We should store logical width (advance) and height instead
     // of storing physical and calculate logical. crbug.com/544767
     float advance(FontOrientation) const;
