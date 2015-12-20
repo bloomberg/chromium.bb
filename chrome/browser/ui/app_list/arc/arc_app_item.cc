@@ -59,19 +59,14 @@ void ArcAppItem::Activate(int event_flags) {
   }
 
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
-    VLOG(2) << "Request to launch app when bridge service is not ready: "
-            << id() << ".";
-    return;
-  }
-  arc::AppInstance* app_instance = bridge_service->app_instance();
-  if (!app_instance) {
-    VLOG(2) << "Request to launch app when bridge service is not ready: "
-            << id() << ".";
+  if (!bridge_service ||
+      bridge_service->state() != arc::ArcBridgeService::State::READY) {
+    VLOG(2) << "Cannot launch app: " << app_info->package
+            << ". Bridge service is not ready.";
     return;
   }
 
-  app_instance->LaunchApp(app_info->package, app_info->activity);
+  bridge_service->LaunchApp(app_info->package, app_info->activity);
 }
 
 void ArcAppItem::SetReady(bool ready) {

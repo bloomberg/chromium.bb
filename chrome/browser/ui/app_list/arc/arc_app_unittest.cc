@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,11 +60,6 @@ class ArcAppModelBuilderTest : public AppListTestBase {
     }
 
     bridge_service_.reset(new arc::FakeArcBridgeService());
-    app_instance_.reset(
-        new arc::FakeAppInstance(ArcAppListPrefs::Get(profile_.get())));
-    arc::AppInstancePtr instance;
-    app_instance_->Bind(mojo::GetProxy(&instance));
-    bridge_service_->OnAppInstanceReady(std::move(instance));
 
     // Check initial conditions.
     EXPECT_EQ(bridge_service_.get(), arc::ArcBridgeService::Get());
@@ -195,13 +189,12 @@ class ArcAppModelBuilderTest : public AppListTestBase {
       ASSERT_NE(nullptr, app_item);
       EXPECT_NE(ready, app_item->ready());
     }
+
   }
 
   AppListControllerDelegate* controller() { return controller_.get(); }
 
   arc::FakeArcBridgeService* bridge_service() { return bridge_service_.get(); }
-
-  arc::FakeAppInstance* app_instance() { return app_instance_.get(); }
 
   const std::vector<arc::AppInfo>& fake_apps() const { return fake_apps_; }
 
@@ -210,53 +203,49 @@ class ArcAppModelBuilderTest : public AppListTestBase {
   scoped_ptr<test::TestAppListControllerDelegate> controller_;
   scoped_ptr<ArcAppModelBuilder> builder_;
   scoped_ptr<arc::FakeArcBridgeService> bridge_service_;
-  scoped_ptr<arc::FakeAppInstance> app_instance_;
   std::vector<arc::AppInfo> fake_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppModelBuilderTest);
 };
 
 TEST_F(ArcAppModelBuilderTest, RefreshAllOnReady) {
-  EXPECT_EQ(0, app_instance()->refresh_app_list_count());
+  EXPECT_EQ(0, bridge_service()->refresh_app_list_count());
   bridge_service()->SetReady();
-  app_instance()->RefreshAppList();
-  EXPECT_EQ(1, app_instance()->refresh_app_list_count());
+  EXPECT_EQ(1, bridge_service()->refresh_app_list_count());
 }
 
 TEST_F(ArcAppModelBuilderTest, RefreshAllFillsContent) {
   ValidateHaveApps(std::vector<arc::AppInfo>());
   bridge_service()->SetReady();
-  app_instance()->RefreshAppList();
-  app_instance()->SendRefreshAppList(fake_apps());
+  bridge_service()->SendRefreshAppList(fake_apps());
   ValidateHaveApps(fake_apps());
 }
 
 TEST_F(ArcAppModelBuilderTest, MultipleRefreshAll) {
   ValidateHaveApps(std::vector<arc::AppInfo>());
   bridge_service()->SetReady();
-  app_instance()->RefreshAppList();
   // Send info about all fake apps except last.
   std::vector<arc::AppInfo> apps1(fake_apps().begin(), fake_apps().end() - 1);
-  app_instance()->SendRefreshAppList(apps1);
+  bridge_service()->SendRefreshAppList(apps1);
   // At this point all apps (except last) should exist and be ready.
   ValidateHaveApps(apps1);
   ValidateAppReadyState(apps1, true);
 
   // Send info about all fake apps except first.
   std::vector<arc::AppInfo> apps2(fake_apps().begin() + 1, fake_apps().end());
-  app_instance()->SendRefreshAppList(apps2);
+  bridge_service()->SendRefreshAppList(apps2);
   // At this point all apps should exist but first one should be non-ready.
   ValidateHaveApps(fake_apps());
   ValidateAppReadyState(apps2, true);
 
   // Send info about all fake apps.
-  app_instance()->SendRefreshAppList(fake_apps());
+  bridge_service()->SendRefreshAppList(fake_apps());
   // At this point all apps should exist and be ready.
   ValidateHaveApps(fake_apps());
   ValidateAppReadyState(fake_apps(), true);
 
   // Send info no app available.
-  app_instance()->SendRefreshAppList(std::vector<arc::AppInfo>());
+  bridge_service()->SendRefreshAppList(std::vector<arc::AppInfo>());
   // At this point all apps should exist and be non-ready.
   ValidateHaveApps(fake_apps());
   ValidateAppReadyState(fake_apps(), false);
@@ -267,11 +256,10 @@ TEST_F(ArcAppModelBuilderTest, StopServiceDisablesApps) {
   ASSERT_NE(nullptr, prefs);
 
   bridge_service()->SetReady();
-  app_instance()->RefreshAppList();
   EXPECT_EQ(static_cast<size_t>(0), GetArcItemCount());
   EXPECT_EQ(static_cast<size_t>(0), prefs->GetAppIds().size());
 
-  app_instance()->SendRefreshAppList(fake_apps());
+  bridge_service()->SendRefreshAppList(fake_apps());
   std::vector<std::string> ids = prefs->GetAppIds();
   EXPECT_EQ(fake_apps().size(), ids.size());
   ValidateAppReadyState(fake_apps(), true);
@@ -288,8 +276,7 @@ TEST_F(ArcAppModelBuilderTest, LaunchApps) {
   ChromeAppListItem::OverrideAppListControllerDelegateForTesting(controller());
 
   bridge_service()->SetReady();
-  app_instance()->RefreshAppList();
-  app_instance()->SendRefreshAppList(fake_apps());
+  bridge_service()->SendRefreshAppList(fake_apps());
 
   // Simulate item activate.
   const arc::AppInfo& app_first = fake_apps()[0];
@@ -302,25 +289,23 @@ TEST_F(ArcAppModelBuilderTest, LaunchApps) {
   item_last->Activate(0);
   item_first->Activate(0);
 
-  // Process pending tasks.
-  base::RunLoop().RunUntilIdle();
-
-  const ScopedVector<arc::FakeAppInstance::Request>& launch_requests =
-      app_instance()->launch_requests();
-  ASSERT_EQ(static_cast<size_t>(3), launch_requests.size());
+  const ScopedVector<arc::FakeArcBridgeService::Request>& launch_requests =
+      bridge_service()->launch_requests();
+  EXPECT_EQ(static_cast<size_t>(3), launch_requests.size());
   EXPECT_EQ(true, launch_requests[0]->IsForApp(app_first));
   EXPECT_EQ(true, launch_requests[1]->IsForApp(app_last));
   EXPECT_EQ(true, launch_requests[2]->IsForApp(app_first));
 
   // Test an attempt to launch of a not-ready app.
-  app_instance()->SendRefreshAppList(std::vector<arc::AppInfo>());
+  bridge_service()->SendRefreshAppList(std::vector<arc::AppInfo>());
   item_first = FindArcItem(GetAppId(app_first));
   ASSERT_NE(nullptr, item_first);
-  size_t launch_request_count_before = app_instance()->launch_requests().size();
+  size_t launch_request_count_before =
+      bridge_service()->launch_requests().size();
   item_first->Activate(0);
   // Number of launch requests must not change.
   EXPECT_EQ(launch_request_count_before,
-            app_instance()->launch_requests().size());
+            bridge_service()->launch_requests().size());
 }
 
 TEST_F(ArcAppModelBuilderTest, RequestIcons) {
@@ -329,8 +314,7 @@ TEST_F(ArcAppModelBuilderTest, RequestIcons) {
             content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   bridge_service()->SetReady();
-  app_instance()->RefreshAppList();
-  app_instance()->SendRefreshAppList(fake_apps());
+  bridge_service()->SendRefreshAppList(fake_apps());
 
   // Validate that no icon exists at the beginning and request icon for
   // each supported scale factor. This will start asynchronous loading.
@@ -352,12 +336,13 @@ TEST_F(ArcAppModelBuilderTest, RequestIcons) {
   base::RunLoop().RunUntilIdle();
 
   // At this moment we should receive all requests for icon loading.
-  const ScopedVector<arc::FakeAppInstance::IconRequest>& icon_requests =
-      app_instance()->icon_requests();
+  const ScopedVector<arc::FakeArcBridgeService::IconRequest>& icon_requests =
+      bridge_service()->icon_requests();
   EXPECT_EQ(scale_factors.size() * fake_apps().size(), icon_requests.size());
   std::map<std::string, uint32_t> app_masks;
   for (size_t i = 0; i < icon_requests.size(); ++i) {
-    const arc::FakeAppInstance::IconRequest* icon_request = icon_requests[i];
+    const arc::FakeArcBridgeService::IconRequest* icon_request =
+        icon_requests[i];
     const std::string id = ArcAppListPrefs::GetAppId(icon_request->package(),
                                                      icon_request->activity());
     // Make sure no double requests.
@@ -383,9 +368,8 @@ TEST_F(ArcAppModelBuilderTest, InstallIcon) {
 
 
   bridge_service()->SetReady();
-  app_instance()->RefreshAppList();
-  app_instance()->SendRefreshAppList(
-      std::vector<arc::AppInfo>(fake_apps().begin(), fake_apps().begin() + 1));
+  bridge_service()->SendRefreshAppList(std::vector<arc::AppInfo>(
+      fake_apps().begin(), fake_apps().begin() + 1));
   const arc::AppInfo& app = fake_apps()[0];
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
@@ -411,9 +395,10 @@ TEST_F(ArcAppModelBuilderTest, InstallIcon) {
 
   // Now send generated icon for the app.
   std::string png_data;
-  EXPECT_EQ(true,
-            app_instance()->GenerateAndSendIcon(
-                app, static_cast<arc::ScaleFactor>(scale_factor), &png_data));
+  EXPECT_EQ(true, bridge_service()->GenerateAndSendIcon(
+      app,
+      static_cast<arc::ScaleFactor>(scale_factor),
+      &png_data));
 
   // Process pending tasks.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();

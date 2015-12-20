@@ -68,7 +68,12 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
     }
   }
 
+  void OnInstanceBootPhase(InstanceBootPhase boot_phase) override {
+    boot_phase_ = boot_phase;
+  }
+
   bool ready() const { return ready_; }
+  InstanceBootPhase boot_phase() const { return boot_phase_; }
   ArcBridgeService::State state() const { return state_; }
 
  protected:
@@ -81,6 +86,7 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
 
     ready_ = false;
     state_ = ArcBridgeService::State::STOPPED;
+    boot_phase_ = INSTANCE_BOOT_PHASE_NOT_RUNNING;
 
     ipc_support_.reset(new IPC::ScopedIPCSupport(message_loop_.task_runner()));
     instance_.reset(new FakeArcBridgeInstance());
@@ -100,6 +106,7 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
   }
 
   bool ready_;
+  InstanceBootPhase boot_phase_;
   ArcBridgeService::State state_;
   scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
   base::MessageLoopForUI message_loop_;
@@ -108,17 +115,17 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
 };
 
 // Shuts down the instance reports booted.
-class ScopedShutdownWhenReady : public ArcBridgeService::Observer {
+class ScopedShutdownWhenBooted : public ArcBridgeService::Observer {
  public:
-  explicit ScopedShutdownWhenReady(ArcBridgeService* service)
+  explicit ScopedShutdownWhenBooted(ArcBridgeService* service)
       : service_(service) {
     service_->AddObserver(this);
   }
 
-  ~ScopedShutdownWhenReady() override { service_->RemoveObserver(this); }
+  ~ScopedShutdownWhenBooted() override { service_->RemoveObserver(this); }
 
-  void OnStateChanged(ArcBridgeService::State state) override {
-    if (state == ArcBridgeService::State::READY) {
+  void OnInstanceBootPhase(InstanceBootPhase boot_phase) override {
+    if (boot_phase == INSTANCE_BOOT_PHASE_BOOT_COMPLETED) {
       service_->Shutdown();
     }
   }
@@ -126,7 +133,7 @@ class ScopedShutdownWhenReady : public ArcBridgeService::Observer {
  private:
   ArcBridgeService* service_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedShutdownWhenReady);
+  DISALLOW_COPY_AND_ASSIGN(ScopedShutdownWhenBooted);
 };
 
 // Exercises the basic functionality of the ARC Bridge Service.  A message from
@@ -135,17 +142,18 @@ TEST_F(ArcBridgeTest, Basic) {
   ASSERT_FALSE(ready());
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 
-  ScopedShutdownWhenReady shutdown(service_.get());
+  ScopedShutdownWhenBooted shutdown(service_.get());
 
   service_->SetAvailable(true);
   service_->HandleStartup();
 
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
+  ASSERT_EQ(ArcBridgeService::State::CONNECTED, state());
 
   base::RunLoop run_loop;
   run_loop.Run();
 
   EXPECT_TRUE(ready());
+  ASSERT_EQ(INSTANCE_BOOT_PHASE_BOOT_COMPLETED, boot_phase());
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 }
 
@@ -168,7 +176,7 @@ TEST_F(ArcBridgeTest, ShutdownMidStartup) {
   service_->SetAvailable(true);
   service_->HandleStartup();
 
-  ASSERT_EQ(ArcBridgeService::State::READY, state());
+  ASSERT_EQ(ArcBridgeService::State::CONNECTED, state());
   service_->Shutdown();
   // Some machines can reach the STOPPED state immediately.
   ASSERT_TRUE(state() == ArcBridgeService::State::STOPPING ||

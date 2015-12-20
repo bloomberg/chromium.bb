@@ -7,14 +7,11 @@
 #include <linux/input.h>
 #include <fcntl.h>
 
-#include <string>
-
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/arc/arc_bridge_service.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
@@ -69,9 +66,8 @@ ArcInputBridgeImpl::ArcInputBridgeImpl(ArcBridgeService* arc_bridge_service)
       current_slot_tracking_ids_(kMaxSlots, kEmptySlot),
       origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
+  DCHECK(arc_bridge_service->state() == ArcBridgeService::State::STOPPED);
   arc_bridge_service->AddObserver(this);
-  if (arc_bridge_service->input_instance())
-    OnInputInstanceReady();
 
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
@@ -91,8 +87,10 @@ ArcInputBridgeImpl::~ArcInputBridgeImpl() {
   }
 }
 
-void ArcInputBridgeImpl::OnInputInstanceReady() {
+void ArcInputBridgeImpl::OnInstanceBootPhase(InstanceBootPhase phase) {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  if (phase != INSTANCE_BOOT_PHASE_SYSTEM_SERVICES_READY)
+    return;
 
   keyboard_fd_ = CreateBridgeInputDevice("ChromeOS Keyboard", "keyboard");
   mouse_fd_ = CreateBridgeInputDevice("ChromeOS Mouse", "mouse");
@@ -128,7 +126,7 @@ void ArcInputBridgeImpl::SendKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
-  uint16_t evdev_code = DomCodeToEvdevCode(event->code());
+  unsigned short evdev_code = DomCodeToEvdevCode(event->code());
   int evdev_value = 0;
   if (event->type() == ui::ET_KEY_PRESSED) {
     if (event->flags() & ui::EF_IS_REPEAT) {
@@ -250,8 +248,8 @@ void ArcInputBridgeImpl::SendMouseEvent(ui::MouseEvent* event) {
 
 void ArcInputBridgeImpl::SendKernelEvent(const base::ScopedFD& fd,
                                          base::TimeDelta time_stamp,
-                                         uint16_t type,
-                                         uint16_t code,
+                                         unsigned short type,
+                                         unsigned short code,
                                          int value) {
   DCHECK(fd.is_valid());
 
@@ -305,7 +303,7 @@ int ArcInputBridgeImpl::FindTouchSlot(int tracking_id) {
   return -1;
 }
 
-uint16_t ArcInputBridgeImpl::DomCodeToEvdevCode(ui::DomCode dom_code) {
+unsigned short ArcInputBridgeImpl::DomCodeToEvdevCode(ui::DomCode dom_code) {
   int native_code = ui::KeycodeConverter::DomCodeToNativeKeycode(dom_code);
   if (native_code == ui::KeycodeConverter::InvalidNativeKeycode())
     return KEY_RESERVED;
@@ -332,22 +330,11 @@ base::ScopedFD ArcInputBridgeImpl::CreateBridgeInputDevice(
   base::ScopedFD write_fd(fd[1]);
 
   // The read end is sent to the instance, ownership of fd transfers.
-  InputInstance* input_instance = arc_bridge_service_->input_instance();
-  if (!input_instance) {
-    VLOG(1) << "ArcBridgeService InputInstance disappeared.";
+  if (!arc_bridge_service_->RegisterInputDevice(name, device_type,
+                                                std::move(read_fd))) {
+    VLOG(1) << "Cannot create bridge input device";
     return base::ScopedFD();
   }
-  MojoHandle wrapped_handle;
-  MojoResult wrap_result = mojo::embedder::CreatePlatformHandleWrapper(
-      mojo::embedder::ScopedPlatformHandle(
-          mojo::embedder::PlatformHandle(read_fd.release())),
-      &wrapped_handle);
-  if (wrap_result != MOJO_RESULT_OK) {
-    LOG(WARNING) << "Pipe failed to wrap handles. Closing: " << wrap_result;
-    return base::ScopedFD();
-  }
-  input_instance->RegisterInputDevice(
-      name, device_type, mojo::ScopedHandle(mojo::Handle(wrapped_handle)));
 
   // setup write end as non blocking
   int flags = HANDLE_EINTR(fcntl(write_fd.get(), F_GETFL, 0));
