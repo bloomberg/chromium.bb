@@ -5,8 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_COOKIE_ACCESS_POLICY_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_COOKIE_ACCESS_POLICY_H_
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "net/base/static_cookie_policy.h"
 #include "net/cookies/canonical_cookie.h"

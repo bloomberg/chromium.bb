@@ -5,8 +5,12 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_ICON_HELPER_H_
 #define ANDROID_WEBVIEW_BROWSER_ICON_HELPER_H_
 
+#include <stdint.h>
+
 #include <string>
+
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -62,7 +66,7 @@ class IconHelper : public content::WebContentsObserver {
 
   Listener* listener_;
 
-  typedef uint32 MissingFaviconURLHash;
+  typedef uint32_t MissingFaviconURLHash;
   base::hash_set<MissingFaviconURLHash> missing_favicon_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(IconHelper);

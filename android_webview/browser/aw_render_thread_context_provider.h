@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_RENDER_THREAD_CONTEXT_PROVIDER_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_RENDER_THREAD_CONTEXT_PROVIDER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"

@@ -5,9 +5,12 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_INPUT_STREAM_H_
 #define ANDROID_WEBVIEW_NATIVE_INPUT_STREAM_H_
 
+#include <stdint.h>
+
 #include "android_webview/browser/input_stream.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace net {
 class IOBuffer;

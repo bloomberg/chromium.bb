@@ -8,6 +8,7 @@
 #include "android_webview/browser/net/aw_web_resource_response.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace net {

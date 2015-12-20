@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "net/base/hash_value.h"
 #include "net/cert/cert_status_flags.h"

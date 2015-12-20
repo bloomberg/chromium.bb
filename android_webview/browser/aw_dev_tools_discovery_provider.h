@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_DEV_TOOLS_DISCOVERY_PROVIDER_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_DEV_TOOLS_DISCOVERY_PROVIDER_H_
 
+#include "base/macros.h"
 #include "components/devtools_discovery/devtools_discovery_manager.h"
 
 namespace android_webview {

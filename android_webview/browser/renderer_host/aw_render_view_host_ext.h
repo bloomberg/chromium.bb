@@ -9,6 +9,7 @@
 
 #include "android_webview/common/aw_hit_test_data.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point_f.h"

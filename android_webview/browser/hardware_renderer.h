@@ -6,6 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_HARDWARE_RENDERER_H_
 
 #include "android_webview/browser/shared_renderer_state.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory_client.h"

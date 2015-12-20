@@ -10,6 +10,7 @@
 #include "android_webview/browser/gl_view_renderer_manager.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"

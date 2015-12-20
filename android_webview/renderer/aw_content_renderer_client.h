@@ -7,6 +7,8 @@
 
 #include "content/public/renderer/content_renderer_client.h"
 
+#include <stddef.h>
+
 #include "android_webview/renderer/aw_render_process_observer.h"
 #include "base/compiler_specific.h"
 

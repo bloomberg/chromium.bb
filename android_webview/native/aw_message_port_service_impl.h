@@ -10,7 +10,7 @@
 
 #include "android_webview/browser/aw_message_port_service.h"
 #include "base/android/jni_weak_ref.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 

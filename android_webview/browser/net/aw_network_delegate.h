@@ -5,7 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NET_AW_NETWORK_DELEGATE_H_
 #define ANDROID_WEBVIEW_BROWSER_NET_AW_NETWORK_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "net/base/network_delegate_impl.h"
 
 namespace net {

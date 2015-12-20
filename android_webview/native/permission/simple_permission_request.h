@@ -5,8 +5,11 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_PERMISSION_SIMPLE_PERMISSION_REQUEST_H
 #define ANDROID_WEBVIEW_NATIVE_PERMISSION_SIMPLE_PERMISSION_REQUEST_H
 
+#include <stdint.h>
+
 #include "android_webview/native/permission/aw_permission_request_delegate.h"
 #include "base/callback.h"
+#include "base/macros.h"
 
 namespace android_webview {
 
@@ -15,18 +18,18 @@ namespace android_webview {
 class SimplePermissionRequest : public AwPermissionRequestDelegate {
  public:
   SimplePermissionRequest(const GURL& origin,
-                          int64 resources,
+                          int64_t resources,
                           const base::Callback<void(bool)>& callback);
   ~SimplePermissionRequest() override;
 
   // AwPermissionRequestDelegate implementation.
   const GURL& GetOrigin() override;
-  int64 GetResources() override;
+  int64_t GetResources() override;
   void NotifyRequestResult(bool allowed) override;
 
  private:
   const GURL origin_;
-  int64 resources_;
+  int64_t resources_;
   const base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SimplePermissionRequest);

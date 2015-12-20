@@ -30,7 +30,7 @@ namespace {
 
 const double kEpsilon = 1e-8;
 
-const int64 kFallbackTickTimeoutInMilliseconds = 100;
+const int64_t kFallbackTickTimeoutInMilliseconds = 100;
 
 // Used to calculate memory allocation. Determined experimentally.
 const size_t kMemoryMultiplier = 20;

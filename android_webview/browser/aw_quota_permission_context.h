@@ -6,6 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_AW_QUOTA_PERMISSION_CONTEXT_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/browser/quota_permission_context.h"
 
 namespace android_webview {

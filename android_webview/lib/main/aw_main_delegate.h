@@ -7,6 +7,7 @@
 
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/common/aw_content_client.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/app/content_main_delegate.h"

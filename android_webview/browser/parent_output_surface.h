@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_PARENT_OUTPUT_SURFACE_H_
 #define ANDROID_WEBVIEW_BROWSER_PARENT_OUTPUT_SURFACE_H_
 
+#include "base/macros.h"
 #include "cc/output/output_surface.h"
 
 namespace android_webview {

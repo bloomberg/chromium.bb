@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_RENDERER_PRINT_RENDER_FRAME_OBSERVER_H_
 #define ANDROID_WEBVIEW_RENDERER_PRINT_RENDER_FRAME_OBSERVER_H_
 
+#include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
 
 namespace android_webview {

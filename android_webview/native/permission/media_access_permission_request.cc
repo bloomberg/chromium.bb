@@ -81,7 +81,7 @@ const GURL& MediaAccessPermissionRequest::GetOrigin() {
   return request_.security_origin;
 }
 
-int64 MediaAccessPermissionRequest::GetResources() {
+int64_t MediaAccessPermissionRequest::GetResources() {
   return (request_.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE ?
           AwPermissionRequest::AudioCapture : 0) |
       (request_.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE ?

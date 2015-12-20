@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_RENDERER_AW_RENDER_FRAME_EXT_H_
 #define ANDROID_WEBVIEW_RENDERER_AW_RENDER_FRAME_EXT_H_
 
+#include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
 
 namespace android_webview {

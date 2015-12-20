@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
 namespace content {

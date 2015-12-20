@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_IO_THREAD_CLIENT_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_IO_THREAD_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback_forward.h"
@@ -98,7 +100,7 @@ class AwContentsIoThreadClient {
                            const std::string& user_agent,
                            const std::string& content_disposition,
                            const std::string& mime_type,
-                           int64 content_length) = 0;
+                           int64_t content_length) = 0;
 
   // Called when a new login request is detected. See the documentation for
   // WebViewClient.onReceivedLoginRequest for arguments. Note that |account|

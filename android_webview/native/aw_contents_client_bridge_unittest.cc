@@ -19,7 +19,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 using net::SSLCertRequestInfo;

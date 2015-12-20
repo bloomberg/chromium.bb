@@ -6,13 +6,15 @@
 #define ANDROID_WEBVIEW_NATIVE_AW_QUOTA_MANAGER_BRIDGE_IMPL_H_
 
 #include <jni.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "android_webview/browser/aw_quota_manager_bridge.h"
 #include "base/android/jni_weak_ref.h"
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -53,12 +55,12 @@ class AwQuotaManagerBridgeImpl : public AwQuotaManagerBridge {
       jint callback_id,
       bool is_quota);
 
-  typedef base::Callback<
-      void(const std::vector<std::string>& /* origin */,
-           const std::vector<int64>& /* usage */,
-           const std::vector<int64>& /* quota */)> GetOriginsCallback;
-  typedef base::Callback<void(int64 /* usage */,
-                              int64 /* quota */)> QuotaUsageCallback;
+  typedef base::Callback<void(const std::vector<std::string>& /* origin */,
+                              const std::vector<int64_t>& /* usage */,
+                              const std::vector<int64_t>& /* quota */)>
+      GetOriginsCallback;
+  typedef base::Callback<void(int64_t /* usage */, int64_t /* quota */)>
+      QuotaUsageCallback;
 
  private:
   explicit AwQuotaManagerBridgeImpl(AwBrowserContext* browser_context);
@@ -75,13 +77,14 @@ class AwQuotaManagerBridgeImpl : public AwQuotaManagerBridge {
                                            jint callback_id,
                                            bool is_quota);
 
-  void GetOriginsCallbackImpl(
-      int jcallback_id,
-      const std::vector<std::string>& origin,
-      const std::vector<int64>& usage,
-      const std::vector<int64>& quota);
-  void QuotaUsageCallbackImpl(
-      int jcallback_id, bool is_quota, int64 usage, int64 quota);
+  void GetOriginsCallbackImpl(int jcallback_id,
+                              const std::vector<std::string>& origin,
+                              const std::vector<int64_t>& usage,
+                              const std::vector<int64_t>& quota);
+  void QuotaUsageCallbackImpl(int jcallback_id,
+                              bool is_quota,
+                              int64_t usage,
+                              int64_t quota);
 
   AwBrowserContext* browser_context_;
   JavaObjectWeakGlobalRef java_ref_;

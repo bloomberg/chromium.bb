@@ -79,7 +79,7 @@ const GURL& AwPermissionRequest::GetOrigin() {
   return delegate_->GetOrigin();
 }
 
-int64 AwPermissionRequest::GetResources() {
+int64_t AwPermissionRequest::GetResources() {
   return delegate_->GetResources();
 }
 

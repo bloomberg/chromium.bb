@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_PRINT_MANAGER_H_
 #define ANDROID_WEBVIEW_BROWSER_PRINT_MANAGER_H_
 
+#include "base/macros.h"
 #include "components/printing/browser/print_manager.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "printing/print_settings.h"

@@ -7,6 +7,7 @@
 
 #include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/test/fake_window.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"

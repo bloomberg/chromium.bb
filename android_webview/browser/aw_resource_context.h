@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/resource_context.h"
 

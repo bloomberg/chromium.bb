@@ -6,6 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_AW_BROWSER_MAIN_PARTS_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 

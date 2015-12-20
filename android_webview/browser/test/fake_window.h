@@ -8,6 +8,7 @@
 #include <map>
 
 #include "android_webview/public/browser/draw_gl.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"

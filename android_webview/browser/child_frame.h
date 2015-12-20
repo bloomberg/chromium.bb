@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_CHILD_FRAME_H_
 #define ANDROID_WEBVIEW_BROWSER_CHILD_FRAME_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

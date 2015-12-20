@@ -5,9 +5,12 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_PERMISSION_PERMISSION_REQUEST_HANDLER_H
 #define ANDROID_WEBVIEW_NATIVE_PERMISSION_PERMISSION_REQUEST_HANDLER_H
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -33,10 +36,10 @@ class PermissionRequestHandler : public content::WebContentsObserver {
   void SendRequest(scoped_ptr<AwPermissionRequestDelegate> request);
 
   // Cancel the ongoing request initiated by |origin| for accessing |resources|.
-  void CancelRequest(const GURL& origin, int64 resources);
+  void CancelRequest(const GURL& origin, int64_t resources);
 
   // Allow |origin| to access the |resources|.
-  void PreauthorizePermission(const GURL& origin, int64 resources);
+  void PreauthorizePermission(const GURL& origin, int64_t resources);
 
   // WebContentsObserver
   void NavigationEntryCommitted(
@@ -49,7 +52,7 @@ class PermissionRequestHandler : public content::WebContentsObserver {
       RequestIterator;
 
   // Return the request initiated by |origin| for accessing |resources|.
-  RequestIterator FindRequest(const GURL& origin, int64 resources);
+  RequestIterator FindRequest(const GURL& origin, int64_t resources);
 
   // Cancel the given request.
   void CancelRequestInternal(RequestIterator i);
@@ -60,14 +63,14 @@ class PermissionRequestHandler : public content::WebContentsObserver {
   void PruneRequests();
 
   // Return true if |origin| were preauthorized to access |resources|.
-  bool Preauthorized(const GURL& origin, int64 resources);
+  bool Preauthorized(const GURL& origin, int64_t resources);
 
   PermissionRequestHandlerClient* client_;
 
   // A list of ongoing requests.
   std::vector<base::WeakPtr<AwPermissionRequest> > requests_;
 
-  std::map<std::string, int64> preauthorized_permission_;
+  std::map<std::string, int64_t> preauthorized_permission_;
 
   // The unique id of the active NavigationEntry of the WebContents that we were
   // opened for. Used to help expire on requests.

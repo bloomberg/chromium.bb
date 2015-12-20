@@ -7,9 +7,11 @@
 
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 
+#include <stdint.h>
+
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 class GURL;
@@ -58,7 +60,7 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
                    const std::string& user_agent,
                    const std::string& content_disposition,
                    const std::string& mime_type,
-                   int64 content_length) override;
+                   int64_t content_length) override;
   void NewLoginRequest(const std::string& realm,
                        const std::string& account,
                        const std::string& args) override;

@@ -22,6 +22,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 class SkBitmap;

@@ -7,8 +7,8 @@
 
 #include <list>
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 

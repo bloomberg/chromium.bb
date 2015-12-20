@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_FIND_HELPER_H_
 #define ANDROID_WEBVIEW_BROWSER_FIND_HELPER_H_
 
+#include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace android_webview {

@@ -5,8 +5,11 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_PERMISSION_AW_PERMISSION_REQUEST_H
 #define ANDROID_WEBVIEW_NATIVE_PERMISSION_AW_PERMISSION_REQUEST_H
 
+#include <stdint.h>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "url/gurl.h"
 
@@ -50,7 +53,7 @@ class AwPermissionRequest {
   const GURL& GetOrigin();
 
   // Return the resources origin requested.
-  int64 GetResources();
+  int64_t GetResources();
 
   // Cancel this request. Guarantee that
   // AwPermissionRequestDelegate::NotifyRequestResult will not be called after

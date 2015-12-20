@@ -5,7 +5,8 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_PERMISSION_AW_PERMISSION_REQUEST_DELEGATE_H
 #define ANDROID_WEBVIEW_NATIVE_PERMISSION_AW_PERMISSION_REQUEST_DELEGATE_H
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "url/gurl.h"
 
@@ -21,7 +22,7 @@ class AwPermissionRequestDelegate {
   virtual const GURL& GetOrigin() = 0;
 
   // Get the resources the origin wanted to access.
-  virtual int64 GetResources() = 0;
+  virtual int64_t GetResources() = 0;
 
   // Notify the permission request is allowed or not.
   virtual void NotifyRequestResult(bool allowed) = 0;

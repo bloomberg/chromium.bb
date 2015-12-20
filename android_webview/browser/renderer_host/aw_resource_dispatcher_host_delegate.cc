@@ -264,7 +264,7 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
   std::string user_agent;
   std::string content_disposition;
   std::string mime_type;
-  int64 content_length = request->GetExpectedContentSize();
+  int64_t content_length = request->GetExpectedContentSize();
 
   request->extra_request_headers().GetHeader(
       net::HttpRequestHeaders::kUserAgent, &user_agent);

@@ -5,7 +5,7 @@
 #ifndef ANDROID_WEBVIEW_AW_BROWSER_DELEGATE_H_
 #define ANDROID_WEBVIEW_AW_BROWSER_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace content {
 class BrowserContext;

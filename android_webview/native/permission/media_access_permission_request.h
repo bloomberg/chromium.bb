@@ -5,8 +5,11 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_PERMISSION_MEDIA_ACCESS_PERMISSION_REQUEST_H
 #define ANDROID_WEBVIEW_NATIVE_PERMISSION_MEDIA_ACCESS_PERMISSION_REQUEST_H
 
+#include <stdint.h>
+
 #include "android_webview/native/permission/aw_permission_request_delegate.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "content/public/common/media_stream_request.h"
 
 namespace android_webview {
@@ -21,7 +24,7 @@ class MediaAccessPermissionRequest : public AwPermissionRequestDelegate {
 
   // AwPermissionRequestDelegate implementation.
   const GURL& GetOrigin() override;
-  int64 GetResources() override;
+  int64_t GetResources() override;
   void NotifyRequestResult(bool allowed) override;
 
  private:

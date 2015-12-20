@@ -5,7 +5,6 @@
 #include "android_webview/common/aw_content_client.h"
 
 #include "android_webview/common/aw_version_info_values.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"

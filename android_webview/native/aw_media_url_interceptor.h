@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_AW_MEDIA_URL_INTERCEPTOR_H_
 #define ANDROID_WEBVIEW_NATIVE_AW_MEDIA_URL_INTERCEPTOR_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/android/jni_android.h"
@@ -17,8 +19,8 @@ class AwMediaUrlInterceptor : public media::MediaUrlInterceptor {
  public:
   bool Intercept(const std::string& url,
                  int* fd,
-                 int64* offset,
-                 int64* size) const override;
+                 int64_t* offset,
+                 int64_t* size) const override;
 };
 
 }  // namespace android_webview

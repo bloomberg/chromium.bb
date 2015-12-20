@@ -91,8 +91,7 @@ void AwContentsClientBridge::AllowCertificateError(
   std::string der_string;
   net::X509Certificate::GetDEREncoded(cert->os_cert_handle(), &der_string);
   ScopedJavaLocalRef<jbyteArray> jcert = base::android::ToJavaByteArray(
-      env,
-      reinterpret_cast<const uint8*>(der_string.data()),
+      env, reinterpret_cast<const uint8_t*>(der_string.data()),
       der_string.length());
   ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(
       env, request_url.spec()));

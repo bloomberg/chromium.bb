@@ -5,8 +5,10 @@
 #ifndef ANDROID_WEBVIEW_RENDERER_AW_RENDER_VIEW_EXT_H_
 #define ANDROID_WEBVIEW_RENDERER_AW_RENDER_VIEW_EXT_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/skia/include/core/SkColor.h"

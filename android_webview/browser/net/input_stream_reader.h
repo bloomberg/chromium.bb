@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_INPUT_STREAM_READER_H_
 #define ANDROID_WEBVIEW_NATIVE_INPUT_STREAM_READER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace net {

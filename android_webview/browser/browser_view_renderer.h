@@ -5,12 +5,15 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_BROWSER_VIEW_RENDERER_H_
 #define ANDROID_WEBVIEW_BROWSER_BROWSER_VIEW_RENDERER_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"

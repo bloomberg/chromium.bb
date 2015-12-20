@@ -26,8 +26,8 @@ class AwMediaUrlInterceptorTest : public Test {
    }
  protected:
    int fd_;
-   int64 offset_;
-   int64 size_;
+   int64_t offset_;
+   int64_t size_;
    scoped_ptr<AwMediaUrlInterceptor> url_interceptor_;
 };
 

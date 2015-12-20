@@ -5,7 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_INPUT_STREAM_H_
 #define ANDROID_WEBVIEW_BROWSER_INPUT_STREAM_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace net {
 class IOBuffer;

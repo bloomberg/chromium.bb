@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/android/jni_weak_ref.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service_factory.h"
 #include "components/autofill/core/browser/autofill_client.h"

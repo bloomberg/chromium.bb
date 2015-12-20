@@ -5,7 +5,6 @@
 // Multiply-included file, no traditional include guard.
 #include <vector>
 
-#include "base/basictypes.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START AwMessagePortMsgStart

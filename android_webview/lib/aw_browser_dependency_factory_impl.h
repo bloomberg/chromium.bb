@@ -8,6 +8,7 @@
 #include "android_webview/native/aw_browser_dependency_factory.h"
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace net {
