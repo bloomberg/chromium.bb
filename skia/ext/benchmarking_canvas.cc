@@ -274,14 +274,12 @@ scoped_ptr<base::Value> AsValue(const SkPaint& paint) {
 }
 
 WARN_UNUSED_RESULT
-scoped_ptr<base::Value> AsValue(SkCanvas::SaveFlags flags) {
+scoped_ptr<base::Value> SaveLayerFlagsAsValue(SkCanvas::SaveLayerFlags flags) {
   FlagsBuilder builder('|');
-  builder.addFlag(flags & SkCanvas::kHasAlphaLayer_SaveFlag,
-                  "kHasAlphaLayer");
-  builder.addFlag(flags & SkCanvas::kFullColorLayer_SaveFlag,
-                  "kFullColorLayer");
-  builder.addFlag(flags & SkCanvas::kClipToLayer_SaveFlag,
-                  "kClipToLayer");
+  builder.addFlag(flags & SkCanvas::kIsOpaque_SaveLayerFlag,
+                  "kIsOpaque");
+  builder.addFlag(flags & SkCanvas::kPreserveLCDText_SaveLayerFlag,
+                  "kPreserveLCDText");
 
   scoped_ptr<base::StringValue> val(new base::StringValue(builder.str()));
 
@@ -550,7 +548,7 @@ SkCanvas::SaveLayerStrategy BenchmarkingCanvas::getSaveLayerStrategy(
   if (rec.fBounds)
     op.addParam("bounds", AsValue(*rec.fBounds));
   if (rec.fSaveLayerFlags)
-    op.addParam("flags", AsValue(rec.fSaveLayerFlags));
+    op.addParam("flags", SaveLayerFlagsAsValue(rec.fSaveLayerFlags));
 
   return INHERITED::getSaveLayerStrategy(rec);
 }
