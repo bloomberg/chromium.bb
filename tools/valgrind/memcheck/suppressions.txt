@@ -3356,3 +3356,17 @@
    fun:_ZN3net10QuicFramer14EncryptPayloadENS_15EncryptionLevelEmRKNS_10QuicPacketEPcm
    fun:_ZN3net17QuicPacketCreator15SerializePacketEPcm
 }
+{
+   bug_571278
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net13DnsSocketPool10CreateNullEPNS_19ClientSocketFactoryE
+   fun:_ZN3net12_GLOBAL__N_113DnsClientImpl9SetConfigERKNS_9DnsConfigE
+   fun:_ZN18chrome_browser_net15DnsProbeService32SetPublicClientToGooglePublicDnsEv
+   fun:_ZN18chrome_browser_net15DnsProbeServiceC1Ev
+   fun:_ZN8IOThread4InitEv
+   fun:_ZN7content17BrowserThreadImpl4InitEv
+   fun:_ZN7content21TestBrowserThreadImpl4InitEv
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+}

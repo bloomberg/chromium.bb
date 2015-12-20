@@ -2063,3 +2063,23 @@ content.dll!content::PPB_ImageData_Impl::Create
 content.dll!content::ResourceCreationImpl::CreateImageData
 ppapi_proxy.dll!ppapi::proxy::PPB_ImageData_Proxy::CreateImageData
 ppapi_proxy.dll!ppapi::proxy::PPB_ImageData_Proxy::OnHostMsgCreatePlatform
+
+UNINITIALIZED READ
+name=bug_571279
+skia.dll!SkUnPreMultiply::UnPreMultiplyPreservingByteOrder
+skia.dll!convert32_row<>
+skia.dll!SkSrcPixelInfo::convertPixelsTo
+skia.dll!SkPixelInfo::CopyPixels
+skia.dll!SkPixmap::readPixels
+skia.dll!SkBitmap::readPixels
+content.dll!content::WebCursor::CreateCustomData
+content.dll!content::WebCursor::SetCustomData
+content.dll!content::WebCursor::InitFromCursorInfo
+
+UNINITIALIZED READ
+name=bug_571280
+content.dll!CopyRow_AVX
+content.dll!CopyPlane
+content.dll!I420Copy
+content.dll!content::`anonymous namespace'::CopyFrameToI420
+content.dll!content::WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy
