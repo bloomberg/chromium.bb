@@ -62,3 +62,6 @@ IndexedDBBrowserTest.DiskFullOnCommit
 
 # https://crbug.com/569752
 SitePerProcessBrowserTest.*
+
+# https://crbug.com/571264
+WebRtcMediaRecorderTest.MediaRecorderPausePreventsDataavailableFromBeingFired

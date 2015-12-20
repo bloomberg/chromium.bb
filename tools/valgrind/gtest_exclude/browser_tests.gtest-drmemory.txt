@@ -90,3 +90,7 @@ CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled.ExtensionManagerSplit
 
 # https://crbug.com/562434
 AppearanceSettingsBrowserTest.uiTests
+
+# https://crbug.com/571263
+DistillablePageUtilsBrowserTestAlways.TestDelegate
+DistillablePageUtilsBrowserTestOG.TestDelegate
