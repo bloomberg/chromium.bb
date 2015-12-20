@@ -2,10 +2,10 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (227,183) size 312x213
-      LayoutSVGContainer {g} at (227,251) size 312x145
+    LayoutSVGContainer {g} at (227,183) size 313x213
+      LayoutSVGContainer {g} at (227,251) size 313x145
         LayoutSVGText {text} at (136,151) size 188x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 187x12
+          LayoutSVGInlineText {#text} at (0,0) size 188x12
             chunk 1 (middle anchor) text run 1 at (136.70,160.00) startOffset 0 endOffset 42 width 186.60: "Making the world wide web truly world wide"
         LayoutSVGText {text} at (155,186) size 150x12 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 149x12

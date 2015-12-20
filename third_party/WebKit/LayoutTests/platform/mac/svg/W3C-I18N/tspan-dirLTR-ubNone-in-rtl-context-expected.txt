@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (33,223) size 651x142
       LayoutSVGText {text} at (99,133) size 262x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (177,0) size 85x20
+        LayoutSVGInlineText {#text} at (176,0) size 85x20
           chunk 1 (middle anchor) text run 1 at (276.48,150.00) startOffset 0 endOffset 14 width 84.15 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
         LayoutSVGTSpan {tspan} at (0,0) size 167x20
           LayoutSVGInlineText {#text} at (11,0) size 166x20

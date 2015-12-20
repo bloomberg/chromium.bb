@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (82,133) size 295x21 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 160x20
           chunk 1 (middle anchor) text run 1 at (83.00,150.00) startOffset 0 endOffset 19 width 159.12: "dirRTL ubOverride \""
-        LayoutSVGTSpan {tspan} at (0,0) size 124x20
-          LayoutSVGInlineText {#text} at (159,0) size 124x20
+        LayoutSVGTSpan {tspan} at (0,0) size 125x20
+          LayoutSVGInlineText {#text} at (158,0) size 125x20
             chunk 1 (middle anchor) text run 1 at (242.12,150.00) startOffset 0 endOffset 17 width 123.50 RTL override: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}\x{60C} W3C"
         LayoutSVGInlineText {#text} at (282,0) size 12x20
           chunk 1 (middle anchor) text run 1 at (365.61,150.00) startOffset 0 endOffset 2 width 11.39: "\"!"

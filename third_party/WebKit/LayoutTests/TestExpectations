@@ -841,37 +841,6 @@ crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-root-frame-animate
 crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
 
-# TODO(pdr): These tests need manual rebaselines due to conflicts with other test expectation entries.
-crbug.com/566285 svg/W3C-I18N/text-anchor-dirLTR-anchorEnd.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-dirLTR-anchorMiddle.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-dirLTR-anchorStart.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-dirNone-anchorEnd.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-dirNone-anchorMiddle.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-dirNone-anchorStart.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-dirRTL-anchorEnd.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-dirRTL-anchorMiddle.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-dirRTL-anchorStart.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorEnd.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorMiddle.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorStart.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorEnd.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorMiddle.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorStart.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/text-anchor-no-markup.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/tspan-dirLTR-ubEmbed-in-rtl-context.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/tspan-dirLTR-ubNone-in-rtl-context.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/tspan-dirLTR-ubOverride-in-rtl-context.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/tspan-dirNone-ubOverride-in-rtl-context.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/tspan-dirRTL-ubNone-in-default-context.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/tspan-dirRTL-ubOverride-in-default-context.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/tspan-dirRTL-ubOverride-in-ltr-context.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/tspan-dirRTL-ubOverride-in-rtl-context.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-I18N/tspan-direction-rtl.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-SVG-1.1/text-fonts-01-t.svg [ NeedsManualRebaseline ]
-crbug.com/566285 svg/W3C-SVG-1.1/text-intro-01-t.svg [ NeedsManualRebaseline ]
-crbug.com/566285 fast/writing-mode/english-lr-text.html [ NeedsManualRebaseline ]
-crbug.com/566285 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-match-highlight.html [ NeedsManualRebaseline ]
-
 crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-change-color.html [ Failure ]
 crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-move.html [ Failure ]
 crbug.com/524596 paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Failure ]
@@ -1206,74 +1175,13 @@ crbug.com/521730 [ Win10 ] svg/W3C-I18N/g-dirLTR-ubNone.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/W3C-I18N/g-dirLTR-ubOverride.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/W3C-I18N/g-dirRTL-ubNone.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/W3C-I18N/g-dirRTL-ubOverride.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-dirLTR-anchorEnd.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-dirLTR-anchorMiddle.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-dirLTR-anchorStart.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-dirNone-anchorEnd.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-dirNone-anchorMiddle.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-dirNone-anchorStart.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-dirRTL-anchorEnd.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-dirRTL-anchorMiddle.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-dirRTL-anchorStart.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorEnd.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorMiddle.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorStart.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorEnd.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorMiddle.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorStart.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-anchor-no-markup.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-dirRTL-ubNone.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-dirRTL-ubOverride.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirLTR-ubEmbed-in-rtl-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirLTR-ubNone-in-rtl-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirLTR-ubOverride-in-default-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirLTR-ubOverride-in-rtl-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirNone-ubOverride-in-default-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirNone-ubOverride-in-ltr-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirNone-ubOverride-in-rtl-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubEmbed-in-ltr-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubNone-in-default-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubOverride-in-default-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubOverride-in-ltr-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubOverride-in-rtl-context.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-direction-ltr.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-direction-rtl.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1/text-fonts-01-t.svg [ Failure ]
-# TODO(pdr): Uncomment this once the manual rebaseline for crbug.com/566285 lands.
-# crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1/text-intro-01-t.svg [ Failure ]
+crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-dirRTL-ubNone.svg [ Failure ]
+crbug.com/521730 [ Win10 ] svg/W3C-I18N/text-dirRTL-ubOverride.svg [ Failure ]
+crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirLTR-ubOverride-in-default-context.svg [ Failure ]
+crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirNone-ubOverride-in-default-context.svg [ Failure ]
+crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirNone-ubOverride-in-ltr-context.svg [ Failure ]
+crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubEmbed-in-ltr-context.svg [ Failure ]
+crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-direction-ltr.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/as-image/svg-canvas-xhtml-tainted.html [ Failure ]
 crbug.com/521730 [ Win10 ] svg/css/text-shadow-multiple.xhtml [ Failure ]
 crbug.com/521730 [ Win10 ] svg/custom/textPath-change-id2-pattern.svg [ Failure ]

@@ -4,8 +4,8 @@ layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (5,4) size 363x285
-      LayoutSVGText {text} at (5,4) size 363x44 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 363x44
+      LayoutSVGText {text} at (5,4) size 363x45 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 363x45
           chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 24 width 362.34: "Test left-to-right text."
       LayoutSVGContainer {g} at (10,60) size 222x159
         LayoutSVGText {text} at (10,60) size 215x19 contains 1 chunk(s)
