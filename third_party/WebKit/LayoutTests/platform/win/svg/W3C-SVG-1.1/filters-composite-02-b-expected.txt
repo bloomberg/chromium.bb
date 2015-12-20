@@ -103,8 +103,8 @@ layer at (0,0) size 480x360
         LayoutSVGContainer {g} at (314,102) size 60x165 [transform={m=((1.00,0.00)(0.00,1.00)) t=(735.00,230.00)}]
           LayoutSVGRect {rect} at (314,102) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
             [filter="xor"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
-          LayoutSVGText {text} at (10,340) size 97x73 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 97x73
+          LayoutSVGText {text} at (10,340) size 98x73 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 98x73
               chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 3 width 96.83: "xor"
         LayoutSVGContainer {g} at (314,182) size 60x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(735.00,430.00)}]
           LayoutSVGRect {rect} at (314,182) size 60x60 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
