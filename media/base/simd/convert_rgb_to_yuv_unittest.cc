@@ -10,19 +10,19 @@
 namespace {
 
 // Reference code that converts RGB pixels to YUV pixels.
-int ConvertRGBToY(const uint8_t* rgb) {
+int ConvertRGBToY(const uint8* rgb) {
   int y = 25 * rgb[0] + 129 * rgb[1] + 66 * rgb[2];
   y = ((y + 128) >> 8) + 16;
   return std::max(0, std::min(255, y));
 }
 
-int ConvertRGBToU(const uint8_t* rgb, int size) {
+int ConvertRGBToU(const uint8* rgb, int size) {
   int u = 112 * rgb[0] - 74 * rgb[1] - 38 * rgb[2];
   u = ((u + 128) >> 8) + 128;
   return std::max(0, std::min(255, u));
 }
 
-int ConvertRGBToV(const uint8_t* rgb, int size) {
+int ConvertRGBToV(const uint8* rgb, int size) {
   int v = -18 * rgb[0] - 94 * rgb[1] + 112 * rgb[2];
   v = ((v + 128) >> 8) + 128;
   return std::max(0, std::min(255, v));
@@ -56,14 +56,14 @@ TEST(YUVConvertTest, MAYBE_SideBySideRGB) {
 
   for (int size = 3; size <= 4; ++size) {
     // Create the output buffers.
-    scoped_ptr<uint8_t[]> rgb(new uint8_t[kWidth * size]);
-    scoped_ptr<uint8_t[]> y(new uint8_t[kWidth]);
-    scoped_ptr<uint8_t[]> u(new uint8_t[kWidth / 2]);
-    scoped_ptr<uint8_t[]> v(new uint8_t[kWidth / 2]);
+    scoped_ptr<uint8[]> rgb(new uint8[kWidth * size]);
+    scoped_ptr<uint8[]> y(new uint8[kWidth]);
+    scoped_ptr<uint8[]> u(new uint8[kWidth / 2]);
+    scoped_ptr<uint8[]> v(new uint8[kWidth / 2]);
 
     // Choose the function that converts from RGB pixels to YUV ones.
-    void (*convert)(const uint8_t*, uint8_t*, uint8_t*, uint8_t*, int, int, int,
-                    int, int) = NULL;
+    void (*convert)(const uint8*, uint8*, uint8*, uint8*,
+                    int, int, int, int, int) = NULL;
     if (size == 3)
       convert = media::ConvertRGB24ToYUV_SSSE3;
     else
@@ -88,21 +88,21 @@ TEST(YUVConvertTest, MAYBE_SideBySideRGB) {
 
         // Check the output Y pixels.
         for (int i = 0; i < kWidth; ++i) {
-          const uint8_t* p = &rgb[i * size];
+          const uint8* p = &rgb[i * size];
           int error = ConvertRGBToY(p) - y[i];
           total_error += error > 0 ? error : -error;
         }
 
         // Check the output U pixels.
         for (int i = 0; i < kWidth / 2; ++i) {
-          const uint8_t* p = &rgb[i * 2 * size];
+          const uint8* p = &rgb[i * 2 * size];
           int error = ConvertRGBToU(p, size) - u[i];
           total_error += error > 0 ? error : -error;
         }
 
         // Check the output V pixels.
         for (int i = 0; i < kWidth / 2; ++i) {
-          const uint8_t* p = &rgb[i * 2 * size];
+          const uint8* p = &rgb[i * 2 * size];
           int error = ConvertRGBToV(p, size) - v[i];
           total_error += error > 0 ? error : -error;
         }

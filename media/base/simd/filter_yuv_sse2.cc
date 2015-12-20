@@ -13,11 +13,11 @@
 
 namespace media {
 
-void FilterYUVRows_SSE2(uint8_t* dest,
-                        const uint8_t* src0,
-                        const uint8_t* src1,
+void FilterYUVRows_SSE2(uint8* dest,
+                        const uint8* src0,
+                        const uint8* src1,
                         int width,
-                        uint8_t fraction) {
+                        uint8 fraction) {
   int pixel = 0;
 
   // Process the unaligned bytes first.

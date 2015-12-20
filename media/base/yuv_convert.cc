@@ -44,23 +44,26 @@ extern "C" { void EmptyRegisterState_MMX(); }  // extern "C"
 
 namespace media {
 
-typedef void (
-    *FilterYUVRowsProc)(uint8_t*, const uint8_t*, const uint8_t*, int, uint8_t);
+typedef void (*FilterYUVRowsProc)(uint8*,
+                                  const uint8*,
+                                  const uint8*,
+                                  int,
+                                  uint8);
 
-typedef void (*ConvertRGBToYUVProc)(const uint8_t*,
-                                    uint8_t*,
-                                    uint8_t*,
-                                    uint8_t*,
+typedef void (*ConvertRGBToYUVProc)(const uint8*,
+                                    uint8*,
+                                    uint8*,
+                                    uint8*,
                                     int,
                                     int,
                                     int,
                                     int,
                                     int);
 
-typedef void (*ConvertYUVToRGB32Proc)(const uint8_t*,
-                                      const uint8_t*,
-                                      const uint8_t*,
-                                      uint8_t*,
+typedef void (*ConvertYUVToRGB32Proc)(const uint8*,
+                                      const uint8*,
+                                      const uint8*,
+                                      uint8*,
                                       int,
                                       int,
                                       int,
@@ -68,11 +71,11 @@ typedef void (*ConvertYUVToRGB32Proc)(const uint8_t*,
                                       int,
                                       YUVType);
 
-typedef void (*ConvertYUVAToARGBProc)(const uint8_t*,
-                                      const uint8_t*,
-                                      const uint8_t*,
-                                      const uint8_t*,
-                                      uint8_t*,
+typedef void (*ConvertYUVAToARGBProc)(const uint8*,
+                                      const uint8*,
+                                      const uint8*,
+                                      const uint8*,
+                                      uint8*,
                                       int,
                                       int,
                                       int,
@@ -81,28 +84,28 @@ typedef void (*ConvertYUVAToARGBProc)(const uint8_t*,
                                       int,
                                       YUVType);
 
-typedef void (*ConvertYUVToRGB32RowProc)(const uint8_t*,
-                                         const uint8_t*,
-                                         const uint8_t*,
-                                         uint8_t*,
+typedef void (*ConvertYUVToRGB32RowProc)(const uint8*,
+                                         const uint8*,
+                                         const uint8*,
+                                         uint8*,
                                          ptrdiff_t,
-                                         const int16_t*);
+                                         const int16*);
 
-typedef void (*ConvertYUVAToARGBRowProc)(const uint8_t*,
-                                         const uint8_t*,
-                                         const uint8_t*,
-                                         const uint8_t*,
-                                         uint8_t*,
+typedef void (*ConvertYUVAToARGBRowProc)(const uint8*,
+                                         const uint8*,
+                                         const uint8*,
+                                         const uint8*,
+                                         uint8*,
                                          ptrdiff_t,
-                                         const int16_t*);
+                                         const int16*);
 
-typedef void (*ScaleYUVToRGB32RowProc)(const uint8_t*,
-                                       const uint8_t*,
-                                       const uint8_t*,
-                                       uint8_t*,
+typedef void (*ScaleYUVToRGB32RowProc)(const uint8*,
+                                       const uint8*,
+                                       const uint8*,
+                                       uint8*,
                                        ptrdiff_t,
                                        ptrdiff_t,
-                                       const int16_t*);
+                                       const int16*);
 
 static FilterYUVRowsProc g_filter_yuv_rows_proc_ = NULL;
 static ConvertYUVToRGB32RowProc g_convert_yuv_to_rgb32_row_proc_ = NULL;
@@ -113,7 +116,7 @@ static ConvertRGBToYUVProc g_convert_rgb24_to_yuv_proc_ = NULL;
 static ConvertYUVToRGB32Proc g_convert_yuv_to_rgb32_proc_ = NULL;
 static ConvertYUVAToARGBProc g_convert_yuva_to_argb_proc_ = NULL;
 
-static const int kYUVToRGBTableSize = 256 * 4 * 4 * sizeof(int16_t);
+static const int kYUVToRGBTableSize = 256 * 4 * 4 * sizeof(int16);
 
 // base::AlignedMemory has a private operator new(), so wrap it in a struct so
 // that we can put it in a LazyInstance::Leaky.
@@ -126,9 +129,9 @@ typedef base::LazyInstance<YUVToRGBTableWrapper>::Leaky
 static YUVToRGBTable g_table_rec601 = LAZY_INSTANCE_INITIALIZER;
 static YUVToRGBTable g_table_jpeg = LAZY_INSTANCE_INITIALIZER;
 static YUVToRGBTable g_table_rec709 = LAZY_INSTANCE_INITIALIZER;
-static const int16_t* g_table_rec601_ptr = NULL;
-static const int16_t* g_table_jpeg_ptr = NULL;
-static const int16_t* g_table_rec709_ptr = NULL;
+static const int16* g_table_rec601_ptr = NULL;
+static const int16* g_table_jpeg_ptr = NULL;
+static const int16* g_table_rec709_ptr = NULL;
 
 // Empty SIMD registers state after using them.
 void EmptyRegisterStateStub() {}
@@ -152,7 +155,7 @@ int GetVerticalShift(YUVType type) {
   return 0;
 }
 
-const int16_t* GetLookupTable(YUVType type) {
+const int16* GetLookupTable(YUVType type) {
   switch (type) {
     case YV12:
     case YV16:
@@ -167,9 +170,9 @@ const int16_t* GetLookupTable(YUVType type) {
 }
 
 // Populates a pre-allocated lookup table from a YUV->RGB matrix.
-const int16_t* PopulateYUVToRGBTable(const double matrix[3][3],
-                                     bool full_range,
-                                     int16_t* table) {
+const int16* PopulateYUVToRGBTable(const double matrix[3][3],
+                                   bool full_range,
+                                   int16* table) {
   // We'll have 4 sub-tables that lie contiguous in memory, one for each of Y,
   // U, V and A.
   const int kNumTables = 4;
@@ -178,7 +181,7 @@ const int16_t* PopulateYUVToRGBTable(const double matrix[3][3],
   // Each row has 4 columns, for contributions to each of R, G, B and A.
   const int kNumColumns = 4;
   // Each element is a fixed-point (10.6) 16-bit signed value.
-  const int kElementSize = sizeof(int16_t);
+  const int kElementSize = sizeof(int16);
 
   // Sanity check that our constants here match the size of the statically
   // allocated tables.
@@ -301,14 +304,14 @@ void InitializeCPUSpecificYUVConversions() {
   };
 
   PopulateYUVToRGBTable(kRec601ConvertMatrix, false,
-                        g_table_rec601.Get().table.data_as<int16_t>());
+                        g_table_rec601.Get().table.data_as<int16>());
   PopulateYUVToRGBTable(kJPEGConvertMatrix, true,
-                        g_table_jpeg.Get().table.data_as<int16_t>());
+                        g_table_jpeg.Get().table.data_as<int16>());
   PopulateYUVToRGBTable(kRec709ConvertMatrix, false,
-                        g_table_rec709.Get().table.data_as<int16_t>());
-  g_table_rec601_ptr = g_table_rec601.Get().table.data_as<int16_t>();
-  g_table_rec709_ptr = g_table_rec709.Get().table.data_as<int16_t>();
-  g_table_jpeg_ptr = g_table_jpeg.Get().table.data_as<int16_t>();
+                        g_table_rec709.Get().table.data_as<int16>());
+  g_table_rec601_ptr = g_table_rec601.Get().table.data_as<int16>();
+  g_table_rec709_ptr = g_table_rec709.Get().table.data_as<int16>();
+  g_table_jpeg_ptr = g_table_jpeg.Get().table.data_as<int16>();
 }
 
 // Empty SIMD registers state after using them.
@@ -320,10 +323,10 @@ const int kFractionMax = 1 << kFractionBits;
 const int kFractionMask = ((1 << kFractionBits) - 1);
 
 // Scale a frame of YUV to 32 bit ARGB.
-void ScaleYUVToRGB32(const uint8_t* y_buf,
-                     const uint8_t* u_buf,
-                     const uint8_t* v_buf,
-                     uint8_t* rgb_buf,
+void ScaleYUVToRGB32(const uint8* y_buf,
+                     const uint8* u_buf,
+                     const uint8* v_buf,
+                     uint8* rgb_buf,
                      int source_width,
                      int source_height,
                      int width,
@@ -340,7 +343,7 @@ void ScaleYUVToRGB32(const uint8_t* y_buf,
       width == 0 || height == 0)
     return;
 
-  const int16_t* lookup_table = GetLookupTable(yuv_type);
+  const int16* lookup_table = GetLookupTable(yuv_type);
 
   // 4096 allows 3 buffers to fit in 12k.
   // Helps performance on CPU with 16K L1 cache.
@@ -400,11 +403,11 @@ void ScaleYUVToRGB32(const uint8_t* y_buf,
 
   // Need padding because FilterRows() will write 1 to 16 extra pixels
   // after the end for SSE2 version.
-  uint8_t yuvbuf[16 + kFilterBufferSize * 3 + 16];
-  uint8_t* ybuf = reinterpret_cast<uint8_t*>(
-      reinterpret_cast<uintptr_t>(yuvbuf + 15) & ~15);
-  uint8_t* ubuf = ybuf + kFilterBufferSize;
-  uint8_t* vbuf = ubuf + kFilterBufferSize;
+  uint8 yuvbuf[16 + kFilterBufferSize * 3 + 16];
+  uint8* ybuf =
+      reinterpret_cast<uint8*>(reinterpret_cast<uintptr_t>(yuvbuf + 15) & ~15);
+  uint8* ubuf = ybuf + kFilterBufferSize;
+  uint8* vbuf = ubuf + kFilterBufferSize;
 
   // TODO(fbarchard): Fixed point math is off by 1 on negatives.
 
@@ -423,7 +426,7 @@ void ScaleYUVToRGB32(const uint8_t* y_buf,
 
   // TODO(fbarchard): Split this into separate function for better efficiency.
   for (int y = 0; y < height; ++y) {
-    uint8_t* dest_pixel = rgb_buf + y * rgb_pitch;
+    uint8* dest_pixel = rgb_buf + y * rgb_pitch;
     int source_y_subpixel = source_y_subpixel_accum;
     source_y_subpixel_accum += source_y_subpixel_delta;
     if (source_y_subpixel < 0)
@@ -431,9 +434,9 @@ void ScaleYUVToRGB32(const uint8_t* y_buf,
     else if (source_y_subpixel > ((source_height - 1) << kFractionBits))
       source_y_subpixel = (source_height - 1) << kFractionBits;
 
-    const uint8_t* y_ptr = NULL;
-    const uint8_t* u_ptr = NULL;
-    const uint8_t* v_ptr = NULL;
+    const uint8* y_ptr = NULL;
+    const uint8* u_ptr = NULL;
+    const uint8* v_ptr = NULL;
     // Apply vertical filtering if necessary.
     // TODO(fbarchard): Remove memcpy when not necessary.
     if (filter & media::FILTER_BILINEAR_V) {
@@ -443,7 +446,7 @@ void ScaleYUVToRGB32(const uint8_t* y_buf,
       v_ptr = v_buf + (source_y >> y_shift) * uv_pitch;
 
       // Vertical scaler uses 16.8 fixed point.
-      uint8_t source_y_fraction = (source_y_subpixel & kFractionMask) >> 8;
+      uint8 source_y_fraction = (source_y_subpixel & kFractionMask) >> 8;
       if (source_y_fraction != 0) {
         g_filter_yuv_rows_proc_(
             ybuf, y_ptr, y_ptr + y_pitch, source_width, source_y_fraction);
@@ -454,7 +457,7 @@ void ScaleYUVToRGB32(const uint8_t* y_buf,
       ybuf[source_width] = ybuf[source_width - 1];
 
       int uv_source_width = (source_width + 1) / 2;
-      uint8_t source_uv_fraction;
+      uint8 source_uv_fraction;
 
       // For formats with half-height UV planes, each even-numbered pixel row
       // should not interpolate, since the next row to interpolate from should
@@ -503,10 +506,10 @@ void ScaleYUVToRGB32(const uint8_t* y_buf,
 }
 
 // Scale a frame of YV12 to 32 bit ARGB for a specific rectangle.
-void ScaleYUVToRGB32WithRect(const uint8_t* y_buf,
-                             const uint8_t* u_buf,
-                             const uint8_t* v_buf,
-                             uint8_t* rgb_buf,
+void ScaleYUVToRGB32WithRect(const uint8* y_buf,
+                             const uint8* u_buf,
+                             const uint8* v_buf,
+                             uint8* rgb_buf,
                              int source_width,
                              int source_height,
                              int dest_width,
@@ -528,7 +531,7 @@ void ScaleYUVToRGB32WithRect(const uint8_t* y_buf,
   DCHECK(dest_rect_right > dest_rect_left);
   DCHECK(dest_rect_bottom > dest_rect_top);
 
-  const int16_t* lookup_table = GetLookupTable(YV12);
+  const int16* lookup_table = GetLookupTable(YV12);
 
   // Fixed-point value of vertical and horizontal scale down factor.
   // Values are in the format 16.16.
@@ -579,14 +582,14 @@ void ScaleYUVToRGB32WithRect(const uint8_t* y_buf,
   // write up to 16 bytes past the end of the buffer.
   const int kFilterBufferSize = 4096;
   const bool kAvoidUsingOptimizedFilter = source_width > kFilterBufferSize;
-  uint8_t yuv_temp[16 + kFilterBufferSize * 3 + 16];
+  uint8 yuv_temp[16 + kFilterBufferSize * 3 + 16];
   // memset() yuv_temp to 0 to avoid bogus warnings when running on Valgrind.
   if (RunningOnValgrind())
     memset(yuv_temp, 0, sizeof(yuv_temp));
-  uint8_t* y_temp = reinterpret_cast<uint8_t*>(
+  uint8* y_temp = reinterpret_cast<uint8*>(
       reinterpret_cast<uintptr_t>(yuv_temp + 15) & ~15);
-  uint8_t* u_temp = y_temp + kFilterBufferSize;
-  uint8_t* v_temp = u_temp + kFilterBufferSize;
+  uint8* u_temp = y_temp + kFilterBufferSize;
+  uint8* v_temp = u_temp + kFilterBufferSize;
 
   // Move to the top-left pixel of output.
   rgb_buf += dest_rect_top * rgb_pitch;
@@ -601,12 +604,12 @@ void ScaleYUVToRGB32WithRect(const uint8_t* y_buf,
     DCHECK(source_row < source_height);
 
     // Locate the first row for each plane for interpolation.
-    const uint8_t* y0_ptr = y_buf + y_pitch * source_row + source_y_left;
-    const uint8_t* u0_ptr = u_buf + uv_pitch * source_uv_row + source_uv_left;
-    const uint8_t* v0_ptr = v_buf + uv_pitch * source_uv_row + source_uv_left;
-    const uint8_t* y1_ptr = NULL;
-    const uint8_t* u1_ptr = NULL;
-    const uint8_t* v1_ptr = NULL;
+    const uint8* y0_ptr = y_buf + y_pitch * source_row + source_y_left;
+    const uint8* u0_ptr = u_buf + uv_pitch * source_uv_row + source_uv_left;
+    const uint8* v0_ptr = v_buf + uv_pitch * source_uv_row + source_uv_left;
+    const uint8* y1_ptr = NULL;
+    const uint8* u1_ptr = NULL;
+    const uint8* v1_ptr = NULL;
 
     // Locate the second row for interpolation, being careful not to overrun.
     if (source_row + 1 >= source_height) {
@@ -624,7 +627,7 @@ void ScaleYUVToRGB32WithRect(const uint8_t* y_buf,
 
     if (!kAvoidUsingOptimizedFilter) {
       // Vertical scaler uses 16.8 fixed point.
-      uint8_t fraction = (source_top & kFractionMask) >> 8;
+      uint8 fraction = (source_top & kFractionMask) >> 8;
       g_filter_yuv_rows_proc_(
           y_temp + source_y_left, y0_ptr, y1_ptr, source_y_width, fraction);
       g_filter_yuv_rows_proc_(
@@ -652,10 +655,10 @@ void ScaleYUVToRGB32WithRect(const uint8_t* y_buf,
   g_empty_register_state_proc_();
 }
 
-void ConvertRGB32ToYUV(const uint8_t* rgbframe,
-                       uint8_t* yplane,
-                       uint8_t* uplane,
-                       uint8_t* vplane,
+void ConvertRGB32ToYUV(const uint8* rgbframe,
+                       uint8* yplane,
+                       uint8* uplane,
+                       uint8* vplane,
                        int width,
                        int height,
                        int rgbstride,
@@ -672,10 +675,10 @@ void ConvertRGB32ToYUV(const uint8_t* rgbframe,
                                uvstride);
 }
 
-void ConvertRGB24ToYUV(const uint8_t* rgbframe,
-                       uint8_t* yplane,
-                       uint8_t* uplane,
-                       uint8_t* vplane,
+void ConvertRGB24ToYUV(const uint8* rgbframe,
+                       uint8* yplane,
+                       uint8* uplane,
+                       uint8* vplane,
                        int width,
                        int height,
                        int rgbstride,
@@ -692,10 +695,10 @@ void ConvertRGB24ToYUV(const uint8_t* rgbframe,
                                uvstride);
 }
 
-void ConvertYUVToRGB32(const uint8_t* yplane,
-                       const uint8_t* uplane,
-                       const uint8_t* vplane,
-                       uint8_t* rgbframe,
+void ConvertYUVToRGB32(const uint8* yplane,
+                       const uint8* uplane,
+                       const uint8* vplane,
+                       uint8* rgbframe,
                        int width,
                        int height,
                        int ystride,
@@ -714,11 +717,11 @@ void ConvertYUVToRGB32(const uint8_t* yplane,
                                yuv_type);
 }
 
-void ConvertYUVAToARGB(const uint8_t* yplane,
-                       const uint8_t* uplane,
-                       const uint8_t* vplane,
-                       const uint8_t* aplane,
-                       uint8_t* rgbframe,
+void ConvertYUVAToARGB(const uint8* yplane,
+                       const uint8* uplane,
+                       const uint8* vplane,
+                       const uint8* aplane,
+                       uint8* rgbframe,
                        int width,
                        int height,
                        int ystride,

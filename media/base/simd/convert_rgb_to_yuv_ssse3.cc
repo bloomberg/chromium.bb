@@ -9,10 +9,10 @@
 
 namespace media {
 
-void ConvertRGB32ToYUV_SSSE3(const uint8_t* rgbframe,
-                             uint8_t* yplane,
-                             uint8_t* uplane,
-                             uint8_t* vplane,
+void ConvertRGB32ToYUV_SSSE3(const uint8* rgbframe,
+                             uint8* yplane,
+                             uint8* uplane,
+                             uint8* vplane,
                              int width,
                              int height,
                              int rgbstride,
@@ -35,10 +35,10 @@ void ConvertRGB32ToYUV_SSSE3(const uint8_t* rgbframe,
     ConvertARGBToYUVRow_SSSE3(rgbframe, yplane, uplane, vplane, width);
 }
 
-void ConvertRGB24ToYUV_SSSE3(const uint8_t* rgbframe,
-                             uint8_t* yplane,
-                             uint8_t* uplane,
-                             uint8_t* vplane,
+void ConvertRGB24ToYUV_SSSE3(const uint8* rgbframe,
+                             uint8* yplane,
+                             uint8* uplane,
+                             uint8* vplane,
                              int width,
                              int height,
                              int rgbstride,
