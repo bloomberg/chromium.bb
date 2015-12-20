@@ -9,23 +9,23 @@ layer at (0,0) size 450x500
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGPath {path} at (14,0) size 122x46 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGPath {path} at (29,0) size 92x51 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 100 C 100 0 400 0 400 100"]
-      LayoutSVGContainer {g} at (12,56) size 117x86 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,70.00)}]
+      LayoutSVGContainer {g} at (12,55) size 118x87 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,70.00)}]
         LayoutSVGContainer {use} at (29,70) size 92x50
           LayoutSVGPath {path} at (29,69) size 92x52 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 100 C 100 0 400 0 400 100"]
-        LayoutSVGText {text} at (12,-14) size 117x65 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 116x65
+        LayoutSVGText {text} at (12,-15) size 118x66 contains 1 chunk(s)
+          LayoutSVGTextPath {textPath} at (0,0) size 117x65
             LayoutSVGInlineText {#text} at (0,17) size 41x48
               chunk 1 text run 1 at (30.47,43.91) startOffset 0 endOffset 1 width 12.00: "T"
               chunk 1 text run 2 at (33.65,34.02) startOffset 1 endOffset 2 width 9.00: "e"
               chunk 1 text run 3 at (38.76,26.64) startOffset 2 endOffset 3 width 9.00: "x"
               chunk 1 text run 4 at (43.97,21.95) startOffset 3 endOffset 4 width 5.00: "t"
               chunk 1 text run 5 at (48.14,19.22) startOffset 4 endOffset 5 width 5.00: " "
-            LayoutSVGTSpan {tspan} at (0,0) size 28x27
-              LayoutSVGInlineText {#text} at (27,0) size 27x27
+            LayoutSVGTSpan {tspan} at (0,0) size 29x28
+              LayoutSVGInlineText {#text} at (27,0) size 28x28
                 chunk 1 text run 1 at (54.93,16.03) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 text run 2 at (64.09,13.50) startOffset 1 endOffset 2 width 9.00: "n"
-            LayoutSVGTSpan {tspan} at (0,0) size 62x40
-              LayoutSVGInlineText {#text} at (54,9) size 62x40
+            LayoutSVGTSpan {tspan} at (0,0) size 63x41
+              LayoutSVGInlineText {#text} at (54,9) size 62x41
                 chunk 1 text run 1 at (71.05,12.63) startOffset 0 endOffset 1 width 5.00: " "
                 chunk 1 text run 2 at (78.06,12.58) startOffset 1 endOffset 2 width 9.00: "a"
                 chunk 1 text run 3 at (85.02,13.34) startOffset 2 endOffset 3 width 5.00: " "
@@ -43,13 +43,13 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (163,66) size 108x76 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,70.00)}]
         LayoutSVGContainer {use} at (179,70) size 92x50
           LayoutSVGPath {path} at (179,69) size 92x52 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 100 C 100 0 400 0 400 100"]
-        LayoutSVGText {text} at (13,-4) size 54x52 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 54x52
+        LayoutSVGText {text} at (13,-4) size 55x52 contains 1 chunk(s)
+          LayoutSVGTextPath {textPath} at (0,0) size 55x52
             LayoutSVGInlineText {#text} at (-13,3) size 0x0
             LayoutSVGTSpan {tspan} at (0,0) size 1x1
               LayoutSVGInlineText {#text} at (-13,3) size 0x0
-            LayoutSVGTSpan {tspan} at (0,0) size 54x52
-              LayoutSVGInlineText {#text} at (0,0) size 54x52
+            LayoutSVGTSpan {tspan} at (0,0) size 55x52
+              LayoutSVGInlineText {#text} at (0,0) size 55x52
                 chunk 1 (middle anchor) text run 1 at (30.40,44.40) startOffset 0 endOffset 1 width 5.00: " "
                 chunk 1 (middle anchor) text run 2 at (32.08,37.65) startOffset 1 endOffset 2 width 9.00: "a"
                 chunk 1 (middle anchor) text run 3 at (35.13,31.39) startOffset 2 endOffset 3 width 5.00: " "
@@ -67,14 +67,14 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (303,65) size 118x77 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,70.00)}]
         LayoutSVGContainer {use} at (329,70) size 92x50
           LayoutSVGPath {path} at (329,69) size 92x52 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 100 C 100 0 400 0 400 100"]
-        LayoutSVGText {text} at (3,-5) size 73x51 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 72x50
+        LayoutSVGText {text} at (3,-5) size 74x51 contains 1 chunk(s)
+          LayoutSVGTextPath {textPath} at (0,0) size 73x51
             LayoutSVGInlineText {#text} at (-3,4) size 0x0
-            LayoutSVGTSpan {tspan} at (0,0) size 24x14
-              LayoutSVGInlineText {#text} at (0,36) size 24x14
+            LayoutSVGTSpan {tspan} at (0,0) size 24x16
+              LayoutSVGInlineText {#text} at (0,35) size 24x15
                 chunk 1 (end anchor) text run 1 at (30.82,42.06) startOffset 1 endOffset 2 width 9.00: "n"
-            LayoutSVGTSpan {tspan} at (0,0) size 60x45
-              LayoutSVGInlineText {#text} at (12,0) size 59x45
+            LayoutSVGTSpan {tspan} at (0,0) size 61x45
+              LayoutSVGInlineText {#text} at (12,0) size 60x45
                 chunk 1 (end anchor) text run 1 at (32.99,35.39) startOffset 0 endOffset 1 width 5.00: " "
                 chunk 1 (end anchor) text run 2 at (36.51,29.37) startOffset 1 endOffset 2 width 9.00: "a"
                 chunk 1 (end anchor) text run 3 at (41.21,24.21) startOffset 2 endOffset 3 width 5.00: " "
@@ -93,15 +93,15 @@ layer at (0,0) size 450x500
         LayoutSVGContainer {use} at (29,170) size 92x50
           LayoutSVGPath {path} at (29,169) size 92x52 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 100 C 100 0 400 0 400 100"]
         LayoutSVGText {text} at (74,-5) size 72x54 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 71x54
+          LayoutSVGTextPath {textPath} at (0,0) size 72x54
             LayoutSVGInlineText {#text} at (0,0) size 49x35
               chunk 1 text run 1 at (81.00,12.80) startOffset 0 endOffset 1 width 12.00: "T"
               chunk 1 text run 2 at (91.30,14.78) startOffset 1 endOffset 2 width 9.00: "e"
               chunk 1 text run 3 at (99.69,18.05) startOffset 2 endOffset 3 width 9.00: "x"
               chunk 1 text run 4 at (105.67,21.68) startOffset 3 endOffset 4 width 5.00: "t"
               chunk 1 text run 5 at (109.52,24.89) startOffset 4 endOffset 5 width 5.00: " "
-            LayoutSVGTSpan {tspan} at (0,0) size 30x31
-              LayoutSVGInlineText {#text} at (41,16) size 30x31
+            LayoutSVGTSpan {tspan} at (0,0) size 31x32
+              LayoutSVGInlineText {#text} at (41,16) size 31x32
                 chunk 1 text run 1 at (114.35,30.60) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 text run 2 at (118.42,39.13) startOffset 1 endOffset 2 width 9.00: "n"
             LayoutSVGTSpan {tspan} at (0,0) size 23x8
@@ -114,10 +114,10 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (35,60) size 75x12 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 75x12
             chunk 1 text run 1 at (35.00,70.00) startOffset 0 endOffset 19 width 75.00: "text-anchor=\"start\""
-      LayoutSVGContainer {g} at (165,155) size 120x87 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,170.00)}]
+      LayoutSVGContainer {g} at (165,155) size 121x87 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,170.00)}]
         LayoutSVGContainer {use} at (179,170) size 92x50
           LayoutSVGPath {path} at (179,169) size 92x52 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 100 C 100 0 400 0 400 100"]
-        LayoutSVGText {text} at (15,-15) size 120x58 contains 1 chunk(s)
+        LayoutSVGText {text} at (15,-15) size 121x59 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 120x58
             LayoutSVGInlineText {#text} at (0,13) size 46x45
               chunk 1 (middle anchor) text run 1 at (33.20,34.95) startOffset 0 endOffset 1 width 12.00: "T"
@@ -125,12 +125,12 @@ layer at (0,0) size 450x500
               chunk 1 (middle anchor) text run 3 at (45.96,20.55) startOffset 2 endOffset 3 width 9.00: "x"
               chunk 1 (middle anchor) text run 4 at (52.11,17.20) startOffset 3 endOffset 4 width 5.00: "t"
               chunk 1 (middle anchor) text run 5 at (56.77,15.38) startOffset 4 endOffset 5 width 5.00: " "
-            LayoutSVGTSpan {tspan} at (0,0) size 25x25
-              LayoutSVGInlineText {#text} at (38,0) size 24x25
+            LayoutSVGTSpan {tspan} at (0,0) size 26x25
+              LayoutSVGInlineText {#text} at (38,0) size 25x25
                 chunk 1 (middle anchor) text run 1 at (64.04,13.51) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 (middle anchor) text run 2 at (73.49,12.52) startOffset 1 endOffset 2 width 9.00: "n"
-            LayoutSVGTSpan {tspan} at (0,0) size 58x47
-              LayoutSVGInlineText {#text} at (62,10) size 58x47
+            LayoutSVGTSpan {tspan} at (0,0) size 58x48
+              LayoutSVGInlineText {#text} at (62,10) size 58x48
                 chunk 1 (middle anchor) text run 1 at (80.50,12.75) startOffset 0 endOffset 1 width 5.00: " "
                 chunk 1 (middle anchor) text run 2 at (87.43,13.80) startOffset 1 endOffset 2 width 9.00: "a"
                 chunk 1 (middle anchor) text run 3 at (94.18,15.71) startOffset 2 endOffset 3 width 5.00: " "
@@ -148,20 +148,20 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (321,155) size 117x87 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,170.00)}]
         LayoutSVGContainer {use} at (329,170) size 92x50
           LayoutSVGPath {path} at (329,169) size 92x52 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 100 C 100 0 400 0 400 100"]
-        LayoutSVGText {text} at (21,-15) size 117x66 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 116x66
+        LayoutSVGText {text} at (21,-15) size 117x67 contains 1 chunk(s)
+          LayoutSVGTextPath {textPath} at (0,0) size 116x67
             LayoutSVGInlineText {#text} at (0,10) size 48x39
               chunk 1 (end anchor) text run 1 at (38.36,27.09) startOffset 0 endOffset 1 width 12.00: "T"
               chunk 1 (end anchor) text run 2 at (46.33,20.31) startOffset 1 endOffset 2 width 9.00: "e"
               chunk 1 (end anchor) text run 3 at (54.36,16.25) startOffset 2 endOffset 3 width 9.00: "x"
               chunk 1 (end anchor) text run 4 at (61.05,14.15) startOffset 3 endOffset 4 width 5.00: "t"
               chunk 1 (end anchor) text run 5 at (65.97,13.18) startOffset 4 endOffset 5 width 5.00: " "
-            LayoutSVGTSpan {tspan} at (0,0) size 24x24
-              LayoutSVGInlineText {#text} at (46,0) size 24x24
+            LayoutSVGTSpan {tspan} at (0,0) size 25x24
+              LayoutSVGInlineText {#text} at (46,0) size 25x24
                 chunk 1 (end anchor) text run 1 at (73.44,12.52) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 (end anchor) text run 2 at (82.93,13.02) startOffset 1 endOffset 2 width 9.00: "n"
-            LayoutSVGTSpan {tspan} at (0,0) size 52x55
-              LayoutSVGInlineText {#text} at (64,11) size 51x54
+            LayoutSVGTSpan {tspan} at (0,0) size 52x56
+              LayoutSVGInlineText {#text} at (64,11) size 52x55
                 chunk 1 (end anchor) text run 1 at (89.81,14.37) startOffset 0 endOffset 1 width 5.00: " "
                 chunk 1 (end anchor) text run 2 at (96.46,16.58) startOffset 1 endOffset 2 width 9.00: "a"
                 chunk 1 (end anchor) text run 3 at (102.72,19.72) startOffset 2 endOffset 3 width 5.00: " "
@@ -187,8 +187,8 @@ layer at (0,0) size 450x500
               chunk 1 text run 3 at (70.05,12.70) startOffset 2 endOffset 3 width 9.00: "x"
               chunk 1 text run 4 at (77.06,12.53) startOffset 3 endOffset 4 width 5.00: "t"
               chunk 1 text run 5 at (82.05,12.91) startOffset 4 endOffset 5 width 5.00: " "
-            LayoutSVGTSpan {tspan} at (0,0) size 29x28
-              LayoutSVGInlineText {#text} at (47,0) size 28x28
+            LayoutSVGTSpan {tspan} at (0,0) size 30x29
+              LayoutSVGInlineText {#text} at (47,0) size 29x29
                 chunk 1 text run 1 at (89.43,14.27) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 text run 2 at (98.39,17.42) startOffset 1 endOffset 2 width 9.00: "n"
             LayoutSVGTSpan {tspan} at (0,0) size 38x48
@@ -208,18 +208,18 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (162,265) size 109x77 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,270.00)}]
         LayoutSVGContainer {use} at (179,270) size 92x50
           LayoutSVGPath {path} at (179,269) size 92x52 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 100 C 100 0 400 0 400 100"]
-        LayoutSVGText {text} at (12,-5) size 94x56 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 94x56
+        LayoutSVGText {text} at (12,-5) size 95x56 contains 1 chunk(s)
+          LayoutSVGTextPath {textPath} at (0,0) size 95x56
             LayoutSVGInlineText {#text} at (0,28) size 27x27
               chunk 1 (middle anchor) text run 1 at (30.27,45.39) startOffset 2 endOffset 3 width 9.00: "x"
               chunk 1 (middle anchor) text run 2 at (31.75,38.60) startOffset 3 endOffset 4 width 5.00: "t"
               chunk 1 (middle anchor) text run 3 at (33.65,34.02) startOffset 4 endOffset 5 width 5.00: " "
-            LayoutSVGTSpan {tspan} at (0,0) size 32x33
-              LayoutSVGInlineText {#text} at (1,1) size 32x32
+            LayoutSVGTSpan {tspan} at (0,0) size 33x34
+              LayoutSVGInlineText {#text} at (1,0) size 33x33
                 chunk 1 (middle anchor) text run 1 at (37.78,27.76) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 (middle anchor) text run 2 at (44.77,21.36) startOffset 1 endOffset 2 width 9.00: "n"
-            LayoutSVGTSpan {tspan} at (0,0) size 66x29
-              LayoutSVGInlineText {#text} at (28,0) size 65x29
+            LayoutSVGTSpan {tspan} at (0,0) size 67x29
+              LayoutSVGInlineText {#text} at (28,0) size 66x29
                 chunk 1 (middle anchor) text run 1 at (50.81,17.80) startOffset 0 endOffset 1 width 5.00: " "
                 chunk 1 (middle anchor) text run 2 at (57.30,15.21) startOffset 1 endOffset 2 width 9.00: "a"
                 chunk 1 (middle anchor) text run 3 at (64.09,13.50) startOffset 2 endOffset 3 width 5.00: " "
@@ -237,13 +237,13 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {g} at (312,270) size 109x72 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,270.00)}]
         LayoutSVGContainer {use} at (329,270) size 92x50
           LayoutSVGPath {path} at (329,269) size 92x52 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 100 C 100 0 400 0 400 100"]
-        LayoutSVGText {text} at (12,7) size 38x43 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 37x43
-            LayoutSVGInlineText {#text} at (-12,-7) size 0x0
+        LayoutSVGText {text} at (12,6) size 38x44 contains 1 chunk(s)
+          LayoutSVGTextPath {textPath} at (0,0) size 37x44
+            LayoutSVGInlineText {#text} at (-12,-6) size 0x0
             LayoutSVGTSpan {tspan} at (0,0) size 1x1
-              LayoutSVGInlineText {#text} at (-12,-7) size 0x0
-            LayoutSVGTSpan {tspan} at (0,0) size 37x43
-              LayoutSVGInlineText {#text} at (0,0) size 37x43
+              LayoutSVGInlineText {#text} at (-12,-6) size 0x0
+            LayoutSVGTSpan {tspan} at (0,0) size 37x44
+              LayoutSVGInlineText {#text} at (0,0) size 37x44
                 chunk 1 (end anchor) text run 1 at (30.55,43.43) startOffset 3 endOffset 4 width 11.00: "P"
                 chunk 1 (end anchor) text run 2 at (33.65,34.02) startOffset 4 endOffset 5 width 9.00: "a"
                 chunk 1 (end anchor) text run 3 at (37.46,28.15) startOffset 5 endOffset 6 width 5.00: "t"

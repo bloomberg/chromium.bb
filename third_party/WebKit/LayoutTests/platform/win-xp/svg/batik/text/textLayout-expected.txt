@@ -106,8 +106,8 @@ layer at (0,0) size 450x500
           LayoutSVGInlineText {#text} at (0,0) size 77x10
             chunk 1 text run 1 at (40.00,290.00) startOffset 0 endOffset 22 width 77.00: "letter-spacing=\"0.3em\""
       LayoutSVGContainer {g} at (185,254) size 63x38
-        LayoutSVGText {text} at (185,254) size 34x27 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 34x27
+        LayoutSVGText {text} at (185,254) size 36x27 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 36x27
             chunk 1 text run 1 at (185.00,275.00) startOffset 0 endOffset 1 width 6.00: "s"
             chunk 1 text run 2 at (188.00,275.00) startOffset 1 endOffset 2 width 8.00: "a"
             chunk 1 text run 3 at (193.00,275.00) startOffset 2 endOffset 3 width 15.00: "m"
