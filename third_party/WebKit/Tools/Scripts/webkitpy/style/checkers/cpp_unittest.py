@@ -2702,10 +2702,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
         os.path.abspath = self.os_path_abspath_orig
         os.path.isfile = self.os_path_isfile_orig
 
-    def test_check_next_include_order__no_config(self):
-        self.assertEqual('Header file should not contain WebCore config.h.',
-                         self.include_state.check_next_include_order(cpp_style._CONFIG_HEADER, True, True))
-
     def test_check_next_include_order__no_self(self):
         self.assertEqual('Header file should not contain itself.',
                          self.include_state.check_next_include_order(cpp_style._PRIMARY_HEADER, True, True))
@@ -2719,19 +2715,14 @@ class OrderOfIncludesTest(CppStyleTestBase):
                                          '')
 
     def test_check_next_include_order__likely_then_config(self):
-        self.assertEqual('Found header this file implements before WebCore config.h.',
+        self.assertEqual('',
                          self.include_state.check_next_include_order(cpp_style._PRIMARY_HEADER, False, True))
-        self.assertEqual('Found WebCore config.h after a header this file implements.',
-                         self.include_state.check_next_include_order(cpp_style._CONFIG_HEADER, False, True))
 
     def test_check_next_include_order__other_then_config(self):
-        self.assertEqual('Found other header before WebCore config.h.',
+        self.assertEqual('Found other header before a header this file implements.',
                          self.include_state.check_next_include_order(cpp_style._OTHER_HEADER, False, True))
-        self.assertEqual('Found WebCore config.h after other header.',
-                         self.include_state.check_next_include_order(cpp_style._CONFIG_HEADER, False, True))
 
     def test_check_next_include_order__config_then_other_then_likely(self):
-        self.assertEqual('', self.include_state.check_next_include_order(cpp_style._CONFIG_HEADER, False, True))
         self.assertEqual('Found other header before a header this file implements.',
                          self.include_state.check_next_include_order(cpp_style._OTHER_HEADER, False, True))
         self.assertEqual('Found header this file implements after other header.',
@@ -2786,13 +2777,11 @@ class OrderOfIncludesTest(CppStyleTestBase):
 
     def test_check_line_break_after_own_header(self):
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '#include "foo.h"\n'
                                          '#include "bar.h"\n',
                                          'You should add a blank line after implementation file\'s own header.  [build/include_order] [4]')
 
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#include "bar.h"\n',
@@ -2800,7 +2789,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
 
     def test_check_preprocessor_in_include_section(self):
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#ifdef BAZ\n'
@@ -2812,7 +2800,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
                                          '')
 
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#ifdef BAZ\n'
@@ -2823,7 +2810,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
                                          'Alphabetical sorting problem.  [build/include_order] [4]')
 
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#ifdef BAZ\n'
@@ -2833,7 +2819,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
                                          'Alphabetical sorting problem.  [build/include_order] [4]')
 
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#ifdef BAZ\n'
@@ -2848,17 +2833,15 @@ class OrderOfIncludesTest(CppStyleTestBase):
 
         # Check that after an already included error, the sorting rules still work.
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#include "foo.h"\n'
                                          '#include "g.h"\n',
-                                         '"foo.h" already included at foo.cpp:2  [build/include] [4]')
+                                         '"foo.h" already included at foo.cpp:1  [build/include] [4]')
 
     def test_primary_header(self):
         # File with non-existing primary header should not produce errors.
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '\n'
                                          '#include "bar.h"\n',
                                          '')
@@ -2866,15 +2849,24 @@ class OrderOfIncludesTest(CppStyleTestBase):
         os.path.isfile = lambda filename: True
         # Missing include for existing primary header -> error.
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '\n'
                                          '#include "bar.h"\n',
                                          'Found other header before a header this file implements. '
-                                         'Should be: config.h, primary header, blank line, and then '
+                                         'Should be: primary header, blank line, and then '
                                          'alphabetically sorted.  [build/include_order] [4]')
-        # Having include for existing primary header -> no error.
         self.assert_language_rules_check('foo.cpp',
                                          '#include "config.h"\n'
+                                         '#include "foo.h"\n'
+                                         '\n'
+                                         '#include "bar.h"\n',
+                                         ['Found other header before a header this file implements. '
+                                          'Should be: primary header, blank line, and then '
+                                          'alphabetically sorted.  [build/include_order] [4]',
+                                          'Found header this file implements after other header. '
+                                          'Should be: primary header, blank line, and then '
+                                          'alphabetically sorted.  [build/include_order] [4]'])
+        # Having include for existing primary header -> no error.
+        self.assert_language_rules_check('foo.cpp',
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#include "bar.h"\n',
@@ -2893,7 +2885,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
 
         # ...except that it starts with public/.
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '#include <public/foo.h>\n'
                                          '\n'
                                          '#include "a.h"\n',
@@ -2909,14 +2900,12 @@ class OrderOfIncludesTest(CppStyleTestBase):
 
     def test_check_wtf_includes(self):
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#include <wtf/Assertions.h>\n',
                                          'wtf includes should be "wtf/file.h" instead of <wtf/file.h>.'
                                          '  [build/include] [4]')
         self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#include "wtf/Assertions.h"\n',
@@ -2924,7 +2913,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
 
     def test_check_cc_includes(self):
         self.assert_language_rules_check('bar/chromium/foo.cpp',
-                                         '#include "config.h"\n'
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#include "cc/CCProxy.h"\n',
@@ -2934,7 +2922,7 @@ class OrderOfIncludesTest(CppStyleTestBase):
     def test_classify_include(self):
         classify_include = cpp_style._classify_include
         include_state = cpp_style._IncludeState()
-        self.assertEqual(cpp_style._CONFIG_HEADER,
+        self.assertEqual(cpp_style._OTHER_HEADER,
                          classify_include('foo/foo.cpp',
                                           'config.h',
                                           False, include_state))
@@ -2990,21 +2978,18 @@ class OrderOfIncludesTest(CppStyleTestBase):
                                           False, include_state))
         # Tricky example where both includes might be classified as primary.
         self.assert_language_rules_check('ScrollbarThemeWince.cpp',
-                                         '#include "config.h"\n'
                                          '#include "ScrollbarThemeWince.h"\n'
                                          '\n'
                                          '#include "Scrollbar.h"\n',
                                          '')
         self.assert_language_rules_check('ScrollbarThemeWince.cpp',
-                                         '#include "config.h"\n'
                                          '#include "Scrollbar.h"\n'
                                          '\n'
                                          '#include "ScrollbarThemeWince.h"\n',
                                          'Found header this file implements after a header this file implements.'
-                                         ' Should be: config.h, primary header, blank line, and then alphabetically sorted.'
+                                         ' Should be: primary header, blank line, and then alphabetically sorted.'
                                          '  [build/include_order] [4]')
         self.assert_language_rules_check('ResourceHandleWin.cpp',
-                                         '#include "config.h"\n'
                                          '#include "ResourceHandle.h"\n'
                                          '\n'
                                          '#include "ResourceHandleWin.h"\n',
