@@ -22,15 +22,15 @@ namespace {
 // use the same approach.
 const char kExportPassword[] = "";
 
-// Convert StringPiece to vector of uint8.
-static vector<uint8> StringPieceToVector(StringPiece piece) {
-  return vector<uint8>(piece.data(), piece.data() + piece.length());
+// Convert StringPiece to vector of uint8_t.
+static vector<uint8_t> StringPieceToVector(StringPiece piece) {
+  return vector<uint8_t>(piece.data(), piece.data() + piece.length());
 }
 
 }  // namespace
 
 P256KeyExchange::P256KeyExchange(crypto::ECPrivateKey* key_pair,
-                                 const uint8* public_key)
+                                 const uint8_t* public_key)
     : key_pair_(key_pair) {
   memcpy(public_key_, public_key, sizeof(public_key_));
 }
@@ -44,7 +44,7 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
     return nullptr;
   }
 
-  const uint8* data = reinterpret_cast<const uint8*>(key.data());
+  const uint8_t* data = reinterpret_cast<const uint8_t*>(key.data());
   size_t size =
       static_cast<size_t>(data[0]) | (static_cast<size_t>(data[1]) << 8);
   key.remove_prefix(2);
@@ -113,7 +113,7 @@ string P256KeyExchange::NewPrivateKey() {
     return string();
   }
 
-  vector<uint8> private_key;
+  vector<uint8_t> private_key;
   if (!key_pair->ExportEncryptedPrivateKey(kExportPassword, 1 /* iteration */,
                                            &private_key)) {
     DVLOG(1) << "Can't export private key.";
@@ -123,14 +123,14 @@ string P256KeyExchange::NewPrivateKey() {
   // NSS lacks the ability to import an ECC private key without
   // also importing the public key, so it is necessary to also
   // store the public key.
-  vector<uint8> public_key;
+  vector<uint8_t> public_key;
   if (!key_pair->ExportPublicKey(&public_key)) {
     DVLOG(1) << "Can't export public key.";
     return string();
   }
 
   // TODO(thaidn): determine how large encrypted private key can be
-  uint16 private_key_size = base::checked_cast<uint16>(private_key.size());
+  uint16_t private_key_size = base::checked_cast<uint16_t>(private_key.size());
   const size_t result_size =
       sizeof(private_key_size) + private_key_size + public_key.size();
   vector<char> result(result_size);
@@ -176,7 +176,7 @@ bool P256KeyExchange::CalculateSharedKey(const StringPiece& peer_public_value,
 
   peer_public_key.u.ec.publicValue.type = siBuffer;
   peer_public_key.u.ec.publicValue.data =
-      reinterpret_cast<uint8*>(const_cast<char*>(peer_public_value.data()));
+      reinterpret_cast<uint8_t*>(const_cast<char*>(peer_public_value.data()));
   peer_public_key.u.ec.publicValue.len = peer_public_value.size();
 
   // The NSS function performing ECDH key exchange is PK11_PubDeriveWithKDF.

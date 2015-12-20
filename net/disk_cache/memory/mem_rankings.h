@@ -7,7 +7,7 @@
 #ifndef NET_DISK_CACHE_MEMORY_MEM_RANKINGS_H_
 #define NET_DISK_CACHE_MEMORY_MEM_RANKINGS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace disk_cache {
 

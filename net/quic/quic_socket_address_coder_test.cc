@@ -99,7 +99,7 @@ TEST(QuicSocketAddressCoderTest, DecodeBad) {
 TEST(QuicSocketAddressCoderTest, EncodeAndDecode) {
   struct {
     const char* ip_literal;
-    uint16 port;
+    uint16_t port;
   } test_case[] = {
       {"93.184.216.119", 0x1234},
       {"199.204.44.194", 80},

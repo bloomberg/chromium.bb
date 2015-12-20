@@ -19,7 +19,7 @@ namespace net {
 namespace test {
 
 // Receive window auto-tuning uses RTT in its logic.
-const int64 kRtt = 100;
+const int64_t kRtt = 100;
 
 class QuicFlowControllerTest : public ::testing::Test {
  public:

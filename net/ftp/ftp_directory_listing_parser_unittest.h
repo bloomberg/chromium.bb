@@ -5,6 +5,8 @@
 #ifndef NET_FTP_FTP_DIRECTORY_LISTING_PARSER_UNITTEST_H_
 #define NET_FTP_FTP_DIRECTORY_LISTING_PARSER_UNITTEST_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -19,7 +21,7 @@ class FtpDirectoryListingParserTest : public testing::Test {
     const char* input;
     FtpDirectoryListingEntry::Type type;
     const char* filename;
-    int64 size;
+    int64_t size;
     int year;
     int month;
     int day_of_month;

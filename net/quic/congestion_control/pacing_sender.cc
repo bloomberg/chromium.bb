@@ -10,7 +10,7 @@ namespace net {
 
 PacingSender::PacingSender(SendAlgorithmInterface* sender,
                            QuicTime::Delta alarm_granularity,
-                           uint32 initial_packet_burst)
+                           uint32_t initial_packet_burst)
     : sender_(sender),
       alarm_granularity_(alarm_granularity),
       initial_packet_burst_(initial_packet_burst),
@@ -68,7 +68,7 @@ bool PacingSender::OnPacketSent(
     // current CWND in packets.
     burst_tokens_ = min(
         initial_packet_burst_,
-        static_cast<uint32>(sender_->GetCongestionWindow() / kDefaultTCPMSS));
+        static_cast<uint32_t>(sender_->GetCongestionWindow() / kDefaultTCPMSS));
   }
   if (burst_tokens_ > 0) {
     --burst_tokens_;

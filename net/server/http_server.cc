@@ -123,13 +123,13 @@ int HttpServer::GetLocalAddress(IPEndPoint* address) {
   return server_socket_->GetLocalAddress(address);
 }
 
-void HttpServer::SetReceiveBufferSize(int connection_id, int32 size) {
+void HttpServer::SetReceiveBufferSize(int connection_id, int32_t size) {
   HttpConnection* connection = FindConnection(connection_id);
   if (connection)
     connection->read_buf()->set_max_buffer_size(size);
 }
 
-void HttpServer::SetSendBufferSize(int connection_id, int32 size) {
+void HttpServer::SetSendBufferSize(int connection_id, int32_t size) {
   HttpConnection* connection = FindConnection(connection_id);
   if (connection)
     connection->write_buf()->set_max_buffer_size(size);

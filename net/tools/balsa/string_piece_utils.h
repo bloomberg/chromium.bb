@@ -5,6 +5,8 @@
 #ifndef NET_TOOLS_BALSA_STRING_PIECE_UTILS_H_
 #define NET_TOOLS_BALSA_STRING_PIECE_UTILS_H_
 
+#include <stddef.h>
+
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 

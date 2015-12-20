@@ -109,8 +109,8 @@ scoped_ptr<base::Value> NetLogSSLVersionFallbackCallback(
     const GURL* url,
     int net_error,
     SSLFailureState ssl_failure_state,
-    uint16 version_before,
-    uint16 version_after,
+    uint16_t version_before,
+    uint16_t version_after,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host_and_port", GetHostAndPort(*url));
@@ -1323,7 +1323,7 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
   }
 
   bool should_fallback = false;
-  uint16 version_max = server_ssl_config_.version_max;
+  uint16_t version_max = server_ssl_config_.version_max;
 
   switch (error) {
     case ERR_CONNECTION_CLOSED:

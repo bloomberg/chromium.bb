@@ -179,7 +179,7 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
   }
 
   // Read request-time
-  int64 time_val;
+  int64_t time_val;
   if (!iter.ReadInt64(&time_val))
     return false;
   request_time = Time::FromInternalValue(time_val);
@@ -229,7 +229,7 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
     for (int i = 0; i < num_scts; ++i) {
       scoped_refptr<ct::SignedCertificateTimestamp> sct(
           ct::SignedCertificateTimestamp::CreateFromPickle(&iter));
-      uint16 status;
+      uint16_t status;
       if (!sct.get() || !iter.ReadUInt16(&status))
         return false;
       ssl_info.signed_certificate_timestamps.push_back(
@@ -248,7 +248,7 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
   std::string socket_address_host;
   if (iter.ReadString(&socket_address_host)) {
     // If the host was written, we always expect the port to follow.
-    uint16 socket_address_port;
+    uint16_t socket_address_port;
     if (!iter.ReadUInt16(&socket_address_port))
       return false;
     socket_address = HostPortPair(socket_address_host, socket_address_port);
@@ -365,7 +365,7 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
            ssl_info.signed_certificate_timestamps.begin(); it !=
            ssl_info.signed_certificate_timestamps.end(); ++it) {
         it->sct->Persist(pickle);
-        pickle->WriteUInt16(static_cast<uint16>(it->status));
+        pickle->WriteUInt16(static_cast<uint16_t>(it->status));
       }
     }
   }

@@ -5,6 +5,7 @@
 #ifndef NET_TOOLS_QUIC_TEST_TOOLS_SERVER_THREAD_H_
 #define NET_TOOLS_QUIC_TEST_TOOLS_SERVER_THREAD_H_
 
+#include "base/macros.h"
 #include "base/threading/simple_thread.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_config.h"

@@ -37,7 +37,7 @@ namespace {
 // |to_remove| and sets every instance of them in |ciphers| to zero. It returns
 // true if it found and removed every element of |to_remove|. It assumes that
 // there are no duplicates in |ciphers| nor in |to_remove|.
-bool CiphersRemove(const uint16* to_remove, uint16* ciphers, size_t num) {
+bool CiphersRemove(const uint16_t* to_remove, uint16_t* ciphers, size_t num) {
   size_t i, found = 0;
 
   for (i = 0; ; i++) {
@@ -59,7 +59,7 @@ bool CiphersRemove(const uint16* to_remove, uint16* ciphers, size_t num) {
 // CiphersCompact takes an array of cipher suite ids in |ciphers|, where some
 // entries are zero, and moves the entries so that all the non-zero elements
 // are compacted at the end of the array.
-void CiphersCompact(uint16* ciphers, size_t num) {
+void CiphersCompact(uint16_t* ciphers, size_t num) {
   size_t j = num - 1;
 
   for (size_t i = num - 1; i < num; i--) {
@@ -71,7 +71,7 @@ void CiphersCompact(uint16* ciphers, size_t num) {
 
 // CiphersCopy copies the zero-terminated array |in| to |out|. It returns the
 // number of cipher suite ids copied.
-size_t CiphersCopy(const uint16* in, uint16* out) {
+size_t CiphersCopy(const uint16_t* in, uint16_t* out) {
   for (size_t i = 0; ; i++) {
     if (in[i] == 0)
       return i;
@@ -146,26 +146,24 @@ class NSSSSLInitSingleton {
     // forward-secret ChaCha20-Poly1305. If the local machine has AES-NI then
     // we prefer AES-GCM, otherwise ChaCha20. The remainder of the cipher suite
     // preference is inheriented from NSS. */
-    static const uint16 chacha_ciphers[] = {
-      TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
-      TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
-      0,
+    static const uint16_t chacha_ciphers[] = {
+        TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+        TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305, 0,
     };
-    static const uint16 aes_gcm_ciphers[] = {
-      TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-      TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-      TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,
-      0,
+    static const uint16_t aes_gcm_ciphers[] = {
+        TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+        TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+        TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, 0,
     };
-    scoped_ptr<uint16[]> ciphers(new uint16[num_ciphers]);
-    memcpy(ciphers.get(), ssl_ciphers, sizeof(uint16)*num_ciphers);
+    scoped_ptr<uint16_t[]> ciphers(new uint16_t[num_ciphers]);
+    memcpy(ciphers.get(), ssl_ciphers, sizeof(uint16_t) * num_ciphers);
 
     if (CiphersRemove(chacha_ciphers, ciphers.get(), num_ciphers) &&
         CiphersRemove(aes_gcm_ciphers, ciphers.get(), num_ciphers)) {
       CiphersCompact(ciphers.get(), num_ciphers);
 
-      const uint16* preference_ciphers = chacha_ciphers;
-      const uint16* other_ciphers = aes_gcm_ciphers;
+      const uint16_t* preference_ciphers = chacha_ciphers;
+      const uint16_t* other_ciphers = aes_gcm_ciphers;
       base::CPU cpu;
 
       if (cpu.has_aesni() && cpu.has_avx()) {

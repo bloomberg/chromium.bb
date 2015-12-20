@@ -6,6 +6,7 @@
 #define NET_TOOLS_FLIP_SERVER_SM_CONNECTION_H_
 
 #include <arpa/inet.h>  // in_addr_t
+#include <stddef.h>
 #include <time.h>
 
 #include <list>

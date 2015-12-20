@@ -4,7 +4,6 @@
 
 #include "net/base/upload_bytes_element_reader.h"
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

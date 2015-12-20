@@ -18,6 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -1882,7 +1883,7 @@ int HttpCache::Transaction::DoCacheWriteDataComplete(int result) {
     result = write_len_;
   } else if (!done_reading_ && entry_ && (!partial_ || truncated_)) {
     int current_size = entry_->disk_entry->GetDataSize(kResponseContentIndex);
-    int64 body_size = response_.headers->GetContentLength();
+    int64_t body_size = response_.headers->GetContentLength();
     if (body_size >= 0 && body_size <= current_size)
       done_reading_ = true;
   }
@@ -2901,8 +2902,9 @@ void HttpCache::Transaction::RecordHistograms() {
   }
 
   TimeDelta before_send_time = send_request_since_ - first_cache_access_since_;
-  int64 before_send_percent = (total_time.ToInternalValue() == 0) ?
-      0 : before_send_time * 100 / total_time;
+  int64_t before_send_percent = (total_time.ToInternalValue() == 0)
+                                    ? 0
+                                    : before_send_time * 100 / total_time;
   DCHECK_GE(before_send_percent, 0);
   DCHECK_LE(before_send_percent, 100);
   base::HistogramBase::Sample before_send_sample =

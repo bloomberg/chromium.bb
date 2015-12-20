@@ -329,7 +329,7 @@ TEST_F(DiskCacheTest, AllocationMap) {
   // 10 bits per each four entries, so 250 bits total.
   BlockFileHeader* header =
       reinterpret_cast<BlockFileHeader*>(files.GetFile(address[0])->buffer());
-  uint8* buffer = reinterpret_cast<uint8*>(&header->allocation_map);
+  uint8_t* buffer = reinterpret_cast<uint8_t*>(&header->allocation_map);
   for (int i =0; i < 29; i++) {
     SCOPED_TRACE(i);
     EXPECT_EQ(0xff, buffer[i]);

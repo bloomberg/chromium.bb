@@ -4,6 +4,7 @@
 
 #include "net/tools/quic/quic_server_session.h"
 
+#include "base/macros.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
@@ -345,9 +346,9 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
   EXPECT_TRUE(
       QuicServerSessionPeer::IsBandwidthResumptionEnabled(session_.get()));
 
-  int32 bandwidth_estimate_kbytes_per_second = 123;
-  int32 max_bandwidth_estimate_kbytes_per_second = 134;
-  int32 max_bandwidth_estimate_timestamp = 1122334455;
+  int32_t bandwidth_estimate_kbytes_per_second = 123;
+  int32_t max_bandwidth_estimate_kbytes_per_second = 134;
+  int32_t max_bandwidth_estimate_timestamp = 1122334455;
   const string serving_region = "not a real region";
   session_->set_serving_region(serving_region);
 
@@ -388,7 +389,7 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
 
   // Bandwidth estimate has now changed sufficiently and enough time has passed,
   // but not enough packets have been sent.
-  int64 srtt_ms =
+  int64_t srtt_ms =
       sent_packet_manager->GetRttStats()->smoothed_rtt().ToMilliseconds();
   now = now.Add(QuicTime::Delta::FromMilliseconds(
       kMinIntervalBetweenServerConfigUpdatesRTTs * srtt_ms));

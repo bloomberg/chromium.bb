@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/interfaces/proxy_resolver_service.mojom.h"
 

@@ -5,7 +5,6 @@
 #ifndef NET_PROXY_PROXY_SERVICE_V8_H_
 #define NET_PROXY_PROXY_SERVICE_V8_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"

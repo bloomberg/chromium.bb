@@ -10,6 +10,7 @@
 // including quic_protocol.h.
 
 #include <stddef.h>
+
 #include <ostream>
 
 #include "net/base/net_export.h"

@@ -6,6 +6,7 @@
 #define NET_WEBSOCKETS_WEBSOCKET_DEFLATE_STREAM_H_
 
 #include <stddef.h>
+
 #include <string>
 #include <vector>
 

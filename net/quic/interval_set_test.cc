@@ -417,8 +417,8 @@ TEST_F(IntervalSetTest, IntervalSetIntersectionMineBeforeTheirs) {
 #if 0
 TEST_F(IntervalSetTest,
        IntervalSetIntersectionTheirsBeforeMineInt64Singletons) {
-  IntervalSet<int64> mine({{10, 15}});
-  IntervalSet<int64> theirs({{-20, -5}});
+  IntervalSet<int64_t> mine({{10, 15}});
+  IntervalSet<int64_t> theirs({{-20, -5}});
   EXPECT_FALSE(mine.Intersects(theirs));
   EXPECT_FALSE(theirs.Intersects(mine));
   mine.Intersection(theirs);
@@ -439,8 +439,8 @@ TEST_F(IntervalSetTest, IntervalSetIntersectionMineBeforeTheirsIntSingletons) {
 }
 
 TEST_F(IntervalSetTest, IntervalSetIntersectionTheirsBetweenMine) {
-  IntervalSet<int64> mine({{0, 5}, {40, 50}});
-  IntervalSet<int64> theirs({{10, 15}});
+  IntervalSet<int64_t> mine({{0, 5}, {40, 50}});
+  IntervalSet<int64_t> theirs({{10, 15}});
   EXPECT_FALSE(mine.Intersects(theirs));
   EXPECT_FALSE(theirs.Intersects(mine));
   mine.Intersection(theirs);
@@ -489,18 +489,18 @@ TEST_F(IntervalSetTest,
   result1.Intersection(y1);
   EXPECT_TRUE(result1.Empty()) << result1;
 
-  const IntervalSet<int16> x2({{0, 10}, {20, 30}, {40, 90}});
-  const IntervalSet<int16> y2(
+  const IntervalSet<int16_t> x2({{0, 10}, {20, 30}, {40, 90}});
+  const IntervalSet<int16_t> y2(
       {{-50, -40}, {-2, 0}, {10, 20}, {32, 40}, {90, 95}});
 
-  IntervalSet<int16> result2 = x2;
+  IntervalSet<int16_t> result2 = x2;
   result2.Intersection(y2);
   EXPECT_TRUE(result2.Empty()) << result2;
 
-  const IntervalSet<int64> x3({{-1, 5}, {5, 10}});
-  const IntervalSet<int64> y3({{-10, -1}, {10, 95}});
+  const IntervalSet<int64_t> x3({{-1, 5}, {5, 10}});
+  const IntervalSet<int64_t> y3({{-10, -1}, {10, 95}});
 
-  IntervalSet<int64> result3 = x3;
+  IntervalSet<int64_t> result3 = x3;
   result3.Intersection(y3);
   EXPECT_TRUE(result3.Empty()) << result3;
 }
@@ -515,21 +515,21 @@ TEST_F(IntervalSetTest,
   result1.Intersection(y1);
   EXPECT_EQ(result1, expected_result1);
 
-  const IntervalSet<int16> x2({{0, 10}, {20, 30}, {40, 90}});
-  const IntervalSet<int16> y2(
+  const IntervalSet<int16_t> x2({{0, 10}, {20, 30}, {40, 90}});
+  const IntervalSet<int16_t> y2(
       {{-50, -40}, {-2, 2}, {9, 21}, {32, 41}, {85, 95}});
-  const IntervalSet<int16> expected_result2(
+  const IntervalSet<int16_t> expected_result2(
       {{0, 2}, {9, 10}, {20, 21}, {40, 41}, {85, 90}});
 
-  IntervalSet<int16> result2 = x2;
+  IntervalSet<int16_t> result2 = x2;
   result2.Intersection(y2);
   EXPECT_EQ(result2, expected_result2);
 
-  const IntervalSet<int64> x3({{-1, 5}, {5, 10}});
-  const IntervalSet<int64> y3({{-10, 3}, {4, 95}});
-  const IntervalSet<int64> expected_result3({{-1, 3}, {4, 10}});
+  const IntervalSet<int64_t> x3({{-1, 5}, {5, 10}});
+  const IntervalSet<int64_t> y3({{-10, 3}, {4, 95}});
+  const IntervalSet<int64_t> expected_result3({{-1, 3}, {4, 10}});
 
-  IntervalSet<int64> result3 = x3;
+  IntervalSet<int64_t> result3 = x3;
   result3.Intersection(y3);
   EXPECT_EQ(result3, expected_result3);
 }

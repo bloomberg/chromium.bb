@@ -47,7 +47,7 @@ SECURITY_STATUS MockSSPILibrary::InitializeSecurityContext(
   // Fill in the outbound buffer with garbage data.
   PSecBuffer out_buffer = pOutput->pBuffers;
   out_buffer->cbBuffer = 2;
-  uint8* buf = reinterpret_cast<uint8 *>(out_buffer->pvBuffer);
+  uint8_t* buf = reinterpret_cast<uint8_t*>(out_buffer->pvBuffer);
   buf[0] = 0xAB;
   buf[1] = 0xBA;
 

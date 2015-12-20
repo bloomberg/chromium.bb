@@ -5,6 +5,8 @@
 #ifndef NET_CERT_INTERNAL_TEST_HELPERS_H_
 #define NET_CERT_INTERNAL_TEST_HELPERS_H_
 
+#include <stddef.h>
+
 #include <ostream>
 #include <string>
 #include <vector>

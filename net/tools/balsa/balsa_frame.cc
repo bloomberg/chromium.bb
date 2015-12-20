@@ -405,7 +405,7 @@ bool ParseHTTPFirstLine(const char* begin,
           return false;
         }
         size_t status_code_x_10 = headers->parsed_response_code_ * 10;
-        uint8 c = *parsed_response_code_current - '0';
+        uint8_t c = *parsed_response_code_current - '0';
         if ((headers->parsed_response_code_ > kMaxDiv10) ||
             (std::numeric_limits<size_t>::max() - status_code_x_10) < c) {
           // overflow.

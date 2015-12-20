@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/containers/linked_list.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"

@@ -27,8 +27,8 @@ namespace test {
 // TODO(ianswett): A number of theses tests were written with the assumption of
 // an initial CWND of 10. They have carefully calculated values which should be
 // updated to be based on kInitialCongestionWindowInsecure.
-const uint32 kInitialCongestionWindowPackets = 10;
-const uint32 kDefaultWindowTCP =
+const uint32_t kInitialCongestionWindowPackets = 10;
+const uint32_t kDefaultWindowTCP =
     kInitialCongestionWindowPackets * kDefaultTCPMSS;
 const float kRenoBeta = 0.7f;  // Reno backoff factor.
 
@@ -381,8 +381,8 @@ TEST_F(TcpCubicSenderTest, RTOCongestionWindowNoRetransmission) {
 }
 
 TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
-  const int64 kRttMs = 10;
-  const int64 kDeviationMs = 3;
+  const int64_t kRttMs = 10;
+  const int64_t kDeviationMs = 3;
   EXPECT_EQ(QuicTime::Delta::Zero(), sender_->RetransmissionDelay());
 
   sender_->rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(kRttMs),
@@ -409,10 +409,10 @@ TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
   EXPECT_NEAR(kRttMs, sender_->rtt_stats_.smoothed_rtt().ToMilliseconds(), 1);
   EXPECT_NEAR(expected_delay.ToMilliseconds(),
               sender_->RetransmissionDelay().ToMilliseconds(), 1);
-  EXPECT_EQ(
-      static_cast<int64>(sender_->GetCongestionWindow() * kNumMicrosPerSecond /
-                         sender_->rtt_stats_.smoothed_rtt().ToMicroseconds()),
-      sender_->BandwidthEstimate().ToBytesPerSecond());
+  EXPECT_EQ(static_cast<int64_t>(
+                sender_->GetCongestionWindow() * kNumMicrosPerSecond /
+                sender_->rtt_stats_.smoothed_rtt().ToMicroseconds()),
+            sender_->BandwidthEstimate().ToBytesPerSecond());
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartMaxSendWindow) {
@@ -713,7 +713,7 @@ TEST_F(TcpCubicSenderTest, 1ConnectionCongestionAvoidanceAtEndOfRecovery) {
   EXPECT_FALSE(sender_->InRecovery());
 
   // Out of recovery now. Congestion window should not grow during RTT.
-  for (uint64 i = 0; i < expected_send_window / kDefaultTCPMSS - 2; i += 2) {
+  for (uint64_t i = 0; i < expected_send_window / kDefaultTCPMSS - 2; i += 2) {
     // Send our full send window.
     SendAvailableSendWindow();
     AckNPackets(2);

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <limits>
 #include <list>
 #include <map>
@@ -16,9 +17,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
@@ -37,20 +38,20 @@ namespace net {
 class QuicPacket;
 struct QuicPacketHeader;
 
-typedef uint64 QuicConnectionId;
-typedef uint32 QuicStreamId;
-typedef uint64 QuicStreamOffset;
-typedef uint64 QuicPacketNumber;
-typedef uint8 QuicPathId;
+typedef uint64_t QuicConnectionId;
+typedef uint32_t QuicStreamId;
+typedef uint64_t QuicStreamOffset;
+typedef uint64_t QuicPacketNumber;
+typedef uint8_t QuicPathId;
 typedef QuicPacketNumber QuicFecGroupNumber;
-typedef uint64 QuicPublicResetNonceProof;
-typedef uint8 QuicPacketEntropyHash;
-typedef uint32 QuicHeaderId;
+typedef uint64_t QuicPublicResetNonceProof;
+typedef uint8_t QuicPacketEntropyHash;
+typedef uint32_t QuicHeaderId;
 // QuicTag is the type of a tag in the wire protocol.
-typedef uint32 QuicTag;
+typedef uint32_t QuicTag;
 typedef std::vector<QuicTag> QuicTagVector;
 typedef std::map<QuicTag, std::string> QuicTagValueMap;
-typedef uint16 QuicPacketLength;
+typedef uint16_t QuicPacketLength;
 
 // Default initial maximum size in bytes of a QUIC packet.
 const QuicByteCount kDefaultMaxPacketSize = 1350;
@@ -69,7 +70,7 @@ const QuicByteCount kDefaultTCPMSS = 1460;
 const QuicPacketCount kInitialCongestionWindow = 32;
 
 // Minimum size of initial flow control window, for both stream and session.
-const uint32 kMinimumFlowControlSendWindow = 16 * 1024;  // 16 KB
+const uint32_t kMinimumFlowControlSendWindow = 16 * 1024;  // 16 KB
 
 // Maximum flow control receive window limits for connection and stream.
 const QuicByteCount kStreamReceiveWindowLimit = 16 * 1024 * 1024;   // 16 MB
@@ -99,10 +100,10 @@ static const float kUsableRecieveBufferFraction = 0.95f;
 static const float kConservativeReceiveBufferFraction = 0.6f;
 
 // Don't allow a client to suggest an RTT shorter than 10ms.
-const uint32 kMinInitialRoundTripTimeUs = 10 * kNumMicrosPerMilli;
+const uint32_t kMinInitialRoundTripTimeUs = 10 * kNumMicrosPerMilli;
 
 // Don't allow a client to suggest an RTT longer than 15 seconds.
-const uint32 kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
+const uint32_t kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
 
 // Maximum number of open streams per connection.
 const size_t kDefaultMaxStreamsPerConnection = 100;
@@ -134,23 +135,23 @@ const QuicStreamId kHeadersStreamId = 3;
 NET_EXPORT_PRIVATE extern const char* const kFinalOffsetHeaderKey;
 
 // Maximum delayed ack time, in ms.
-const int64 kMaxDelayedAckTimeMs = 25;
+const int64_t kMaxDelayedAckTimeMs = 25;
 
 // The timeout before the handshake succeeds.
-const int64 kInitialIdleTimeoutSecs = 5;
+const int64_t kInitialIdleTimeoutSecs = 5;
 // The default idle timeout.
-const int64 kDefaultIdleTimeoutSecs = 30;
+const int64_t kDefaultIdleTimeoutSecs = 30;
 // The maximum idle timeout that can be negotiated.
-const int64 kMaximumIdleTimeoutSecs = 60 * 10;  // 10 minutes.
+const int64_t kMaximumIdleTimeoutSecs = 60 * 10;  // 10 minutes.
 // The default timeout for a connection until the crypto handshake succeeds.
-const int64 kMaxTimeForCryptoHandshakeSecs = 10;  // 10 secs.
+const int64_t kMaxTimeForCryptoHandshakeSecs = 10;  // 10 secs.
 
 // Default limit on the number of undecryptable packets the connection buffers
 // before the CHLO/SHLO arrive.
 const size_t kDefaultMaxUndecryptablePackets = 10;
 
 // Default ping timeout.
-const int64 kPingTimeoutSecs = 15;  // 15 secs.
+const int64_t kPingTimeoutSecs = 15;  // 15 secs.
 
 // Minimum number of RTTs between Server Config Updates (SCUP) sent to client.
 const int kMinIntervalBetweenServerConfigUpdatesRTTs = 10;
@@ -181,14 +182,14 @@ const int kMaxAvailableStreamsMultiplier = 10;
 // bit) and denormals, but without signs, transfinites or fractions. Wire format
 // 16 bits (little-endian byte order) are split into exponent (high 5) and
 // mantissa (low 11) and decoded as:
-//   uint64 value;
+//   uint64_t value;
 //   if (exponent == 0) value = mantissa;
 //   else value = (mantissa | 1 << 11) << (exponent - 1)
 const int kUFloat16ExponentBits = 5;
 const int kUFloat16MaxExponent = (1 << kUFloat16ExponentBits) - 2;     // 30
 const int kUFloat16MantissaBits = 16 - kUFloat16ExponentBits;          // 11
 const int kUFloat16MantissaEffectiveBits = kUFloat16MantissaBits + 1;  // 12
-const uint64 kUFloat16MaxValue =  // 0x3FFC0000000
+const uint64_t kUFloat16MaxValue =  // 0x3FFC0000000
     ((UINT64_C(1) << kUFloat16MantissaEffectiveBits) - 1)
     << kUFloat16MaxExponent;
 
@@ -399,7 +400,7 @@ NET_EXPORT_PRIVATE std::string QuicVersionVectorToString(
 // representation of the name of the tag.  For example
 // the client hello tag (CHLO) will be written as the
 // following 4 bytes: 'C' 'H' 'L' 'O'.  Since it is
-// stored in memory as a little endian uint32, we need
+// stored in memory as a little endian uint32_t, we need
 // to reverse the order of the bytes.
 
 // MakeQuicTag returns a value given the four bytes. For example:
@@ -1249,7 +1250,7 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   EncryptionLevel encryption_level;
   QuicPacketNumberLength packet_number_length;
   QuicPacketLength bytes_sent;
-  uint16 nack_count;
+  uint16_t nack_count;
   QuicTime sent_time;
   // Reason why this packet was transmitted.
   TransmissionType transmission_type;

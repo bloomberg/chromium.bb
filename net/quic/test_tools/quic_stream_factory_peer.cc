@@ -64,12 +64,12 @@ void QuicStreamFactoryPeer::SetTaskRunner(QuicStreamFactory* factory,
 
 int QuicStreamFactoryPeer::GetNumberOfLossyConnections(
     QuicStreamFactory* factory,
-    uint16 port) {
+    uint16_t port) {
   return factory->number_of_lossy_connections_[port];
 }
 
 bool QuicStreamFactoryPeer::IsQuicDisabled(QuicStreamFactory* factory,
-                                           uint16 port) {
+                                           uint16_t port) {
   return factory->IsQuicDisabled(port);
 }
 

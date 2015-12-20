@@ -87,7 +87,8 @@ void HttpSM::AddToOutputOrder(const MemCacheIter& mci) {
   output_ordering_.AddToOutputOrder(mci);
 }
 
-void HttpSM::InitSMInterface(SMInterface* sm_spdy_interface, int32 server_idx) {
+void HttpSM::InitSMInterface(SMInterface* sm_spdy_interface,
+                             int32_t server_idx) {
   sm_spdy_interface_ = sm_spdy_interface;
   server_idx_ = server_idx;
 }
@@ -135,7 +136,9 @@ bool HttpSM::MessageFullyRead() const {
   return http_framer_->MessageFullyRead();
 }
 
-void HttpSM::SetStreamID(uint32 stream_id) { stream_id_ = stream_id; }
+void HttpSM::SetStreamID(uint32_t stream_id) {
+  stream_id_ = stream_id;
+}
 
 bool HttpSM::Error() const { return http_framer_->Error(); }
 
@@ -177,8 +180,8 @@ void HttpSM::Cleanup() {
 
 int HttpSM::PostAcceptHook() { return 1; }
 
-void HttpSM::NewStream(uint32 stream_id,
-                       uint32 priority,
+void HttpSM::NewStream(uint32_t stream_id,
+                       uint32_t priority,
                        const std::string& filename) {
   MemCacheIter mci;
   mci.stream_id = stream_id;
@@ -192,34 +195,34 @@ void HttpSM::NewStream(uint32 stream_id,
   }
 }
 
-void HttpSM::SendEOF(uint32 stream_id) {
+void HttpSM::SendEOF(uint32_t stream_id) {
   SendEOFImpl(stream_id);
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
     sm_spdy_interface_->ResetForNewInterface(server_idx_);
   }
 }
 
-void HttpSM::SendErrorNotFound(uint32 stream_id) {
+void HttpSM::SendErrorNotFound(uint32_t stream_id) {
   SendErrorNotFoundImpl(stream_id);
 }
 
-size_t HttpSM::SendSynStream(uint32 stream_id, const BalsaHeaders& headers) {
+size_t HttpSM::SendSynStream(uint32_t stream_id, const BalsaHeaders& headers) {
   return 0;
 }
 
-size_t HttpSM::SendSynReply(uint32 stream_id, const BalsaHeaders& headers) {
+size_t HttpSM::SendSynReply(uint32_t stream_id, const BalsaHeaders& headers) {
   return SendSynReplyImpl(stream_id, headers);
 }
 
-void HttpSM::SendDataFrame(uint32 stream_id,
+void HttpSM::SendDataFrame(uint32_t stream_id,
                            const char* data,
-                           int64 len,
-                           uint32 flags,
+                           int64_t len,
+                           uint32_t flags,
                            bool compress) {
   SendDataFrameImpl(stream_id, data, len, flags, compress);
 }
 
-void HttpSM::SendEOFImpl(uint32 stream_id) {
+void HttpSM::SendEOFImpl(uint32_t stream_id) {
   DataFrame* df = new DataFrame;
   df->data = "0\r\n\r\n";
   df->size = 5;
@@ -230,7 +233,7 @@ void HttpSM::SendEOFImpl(uint32 stream_id) {
   }
 }
 
-void HttpSM::SendErrorNotFoundImpl(uint32 stream_id) {
+void HttpSM::SendErrorNotFoundImpl(uint32_t stream_id) {
   BalsaHeaders my_headers;
   my_headers.SetFirstlineFromStringPieces("HTTP/1.1", "404", "Not Found");
   my_headers.RemoveAllOfHeader("content-length");
@@ -241,7 +244,8 @@ void HttpSM::SendErrorNotFoundImpl(uint32 stream_id) {
   output_ordering_.RemoveStreamId(stream_id);
 }
 
-size_t HttpSM::SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
+size_t HttpSM::SendSynReplyImpl(uint32_t stream_id,
+                                const BalsaHeaders& headers) {
   SimpleBuffer sb;
   headers.WriteHeaderAndEndingToBuffer(&sb);
   DataFrame* df = new DataFrame;
@@ -257,7 +261,7 @@ size_t HttpSM::SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
   return df_size;
 }
 
-size_t HttpSM::SendSynStreamImpl(uint32 stream_id,
+size_t HttpSM::SendSynStreamImpl(uint32_t stream_id,
                                  const BalsaHeaders& headers) {
   SimpleBuffer sb;
   headers.WriteHeaderAndEndingToBuffer(&sb);
@@ -274,10 +278,10 @@ size_t HttpSM::SendSynStreamImpl(uint32 stream_id,
   return df_size;
 }
 
-void HttpSM::SendDataFrameImpl(uint32 stream_id,
+void HttpSM::SendDataFrameImpl(uint32_t stream_id,
                                const char* data,
-                               int64 len,
-                               uint32 flags,
+                               int64_t len,
+                               uint32_t flags,
                                bool compress) {
   char chunk_buf[128];
   snprintf(chunk_buf, sizeof(chunk_buf), "%x\r\n", (unsigned int)len);

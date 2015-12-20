@@ -18,6 +18,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -73,13 +74,13 @@ void DumpStats(const base::FilePath& path, disk_cache::CacheAddr addr) {
   if (!file)
     return;
 
-  size_t length = (2 + disk_cache::Stats::kDataSizesLength) * sizeof(int32) +
-                  disk_cache::Stats::MAX_COUNTER * sizeof(int64);
+  size_t length = (2 + disk_cache::Stats::kDataSizesLength) * sizeof(int32_t) +
+                  disk_cache::Stats::MAX_COUNTER * sizeof(int64_t);
 
   size_t offset = address.start_block() * address.BlockSize() +
                   disk_cache::kBlockHeaderSize;
 
-  scoped_ptr<int32[]> buffer(new int32[length]);
+  scoped_ptr<int32_t[]> buffer(new int32_t[length]);
   if (!file->Read(buffer.get(), length, offset))
     return;
 
@@ -88,8 +89,8 @@ void DumpStats(const base::FilePath& path, disk_cache::CacheAddr addr) {
   for (int i = 0; i < disk_cache::Stats::kDataSizesLength; i++)
     printf("Size(%d): %d\n", i, buffer[i + 2]);
 
-  int64* counters = reinterpret_cast<int64*>(
-                        buffer.get() + 2 + disk_cache::Stats::kDataSizesLength);
+  int64_t* counters = reinterpret_cast<int64_t*>(
+      buffer.get() + 2 + disk_cache::Stats::kDataSizesLength);
   for (int i = 0; i < disk_cache::Stats::MAX_COUNTER; i++)
     printf("Count(%d): %" PRId64 "\n", i, *counters++);
   printf("-------------------------\n\n");
@@ -306,7 +307,7 @@ bool CacheDumper::HexDump(disk_cache::CacheAddr addr, std::string* out) {
   return true;
 }
 
-std::string ToLocalTime(int64 time_us) {
+std::string ToLocalTime(int64_t time_us) {
   base::Time time = base::Time::FromInternalValue(time_us);
   base::Time::Exploded e;
   time.LocalExplode(&e);
@@ -490,7 +491,7 @@ int DumpLists(const base::FilePath& input_path) {
 
   const int kMaxLength = 1 * 1000 * 1000;
   for (int i = 0; i < 5; i++) {
-    int32 size = header.lru.sizes[i];
+    int32_t size = header.lru.sizes[i];
     if (size < 0 || size > kMaxLength) {
       printf("Wrong size %d\n", size);
       size = kMaxLength;

@@ -7,6 +7,8 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_FILE_BLOCK_H_
 #define NET_DISK_CACHE_BLOCKFILE_FILE_BLOCK_H_
 
+#include <stddef.h>
+
 namespace disk_cache {
 
 // This interface exposes common functionality for a single block of data

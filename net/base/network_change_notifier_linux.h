@@ -5,8 +5,8 @@
 #ifndef NET_BASE_NETWORK_CHANGE_NOTIFIER_LINUX_H_
 #define NET_BASE_NETWORK_CHANGE_NOTIFIER_LINUX_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"

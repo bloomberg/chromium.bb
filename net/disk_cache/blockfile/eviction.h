@@ -5,7 +5,7 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_EVICTION_H_
 #define NET_DISK_CACHE_BLOCKFILE_EVICTION_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/disk_cache/blockfile/rankings.h"
 

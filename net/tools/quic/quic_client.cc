@@ -88,8 +88,8 @@ bool QuicClient::Initialize() {
 
   // If an initial flow control window has not explicitly been set, then use the
   // same values that Chrome uses.
-  const uint32 kSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
-  const uint32 kStreamMaxRecvWindowSize = 6 * 1024 * 1024;    //  6 MB
+  const uint32_t kSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
+  const uint32_t kStreamMaxRecvWindowSize = 6 * 1024 * 1024;    //  6 MB
   if (config()->GetInitialStreamFlowControlWindowToSend() ==
       kMinimumFlowControlSendWindow) {
     config()->SetInitialStreamFlowControlWindowToSend(kStreamMaxRecvWindowSize);

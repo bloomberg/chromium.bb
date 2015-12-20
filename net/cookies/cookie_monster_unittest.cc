@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -1936,11 +1935,11 @@ TEST_F(CookieMonsterTest, UniqueCreationTime) {
   // Now we check
   CookieList cookie_list(GetAllCookies(cm.get()));
   EXPECT_EQ(9u, cookie_list.size());
-  typedef std::map<int64, CanonicalCookie> TimeCookieMap;
+  typedef std::map<int64_t, CanonicalCookie> TimeCookieMap;
   TimeCookieMap check_map;
   for (CookieList::const_iterator it = cookie_list.begin();
        it != cookie_list.end(); it++) {
-    const int64 creation_date = it->CreationDate().ToInternalValue();
+    const int64_t creation_date = it->CreationDate().ToInternalValue();
     TimeCookieMap::const_iterator existing_cookie_it(
         check_map.find(creation_date));
     EXPECT_TRUE(existing_cookie_it == check_map.end())

@@ -5,6 +5,9 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_SUSTAINED_BANDWIDTH_RECORDER_PEER_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_SUSTAINED_BANDWIDTH_RECORDER_PEER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -17,12 +20,12 @@ class QuicSustainedBandwidthRecorderPeer {
  public:
   static void SetBandwidthEstimate(
       QuicSustainedBandwidthRecorder* bandwidth_recorder,
-      int32 bandwidth_estimate_kbytes_per_second);
+      int32_t bandwidth_estimate_kbytes_per_second);
 
   static void SetMaxBandwidthEstimate(
       QuicSustainedBandwidthRecorder* bandwidth_recorder,
-      int32 max_bandwidth_estimate_kbytes_per_second,
-      int32 max_bandwidth_timestamp);
+      int32_t max_bandwidth_estimate_kbytes_per_second,
+      int32_t max_bandwidth_timestamp);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSustainedBandwidthRecorderPeer);

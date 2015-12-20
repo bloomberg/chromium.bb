@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 
+#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
 #include "net/proxy/proxy_bypass_rules.h"

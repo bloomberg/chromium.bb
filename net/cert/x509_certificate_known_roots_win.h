@@ -5,6 +5,8 @@
 #ifndef NET_CERT_X509_CERTIFICATE_KNOWN_ROOTS_WIN_H_
 #define NET_CERT_X509_CERTIFICATE_KNOWN_ROOTS_WIN_H_
 
+#include <stdint.h>
+
 // This is a union of Microsoft trust roots over time, from 29 April
 // 2013 through 15 May 2015.
 //

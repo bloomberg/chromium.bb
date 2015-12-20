@@ -26,12 +26,12 @@ const int kMaxSparseEntryBits = 12;
 const int kMaxSparseEntrySize = 1 << kMaxSparseEntryBits;
 
 // Convert global offset to child index.
-inline int ToChildIndex(int64 offset) {
+inline int ToChildIndex(int64_t offset) {
   return static_cast<int>(offset >> kMaxSparseEntryBits);
 }
 
 // Convert global offset to offset in child entry.
-inline int ToChildOffset(int64 offset) {
+inline int ToChildOffset(int64_t offset) {
   return static_cast<int>(offset & (kMaxSparseEntrySize - 1));
 }
 
@@ -88,7 +88,7 @@ bool MemEntryImpl::CreateEntry(const std::string& key, net::NetLog* net_log) {
       CreateNetLogEntryCreationCallback(this, true));
 
   Open();
-  backend_->ModifyStorageSize(0, static_cast<int32>(key.size()));
+  backend_->ModifyStorageSize(0, static_cast<int32_t>(key.size()));
   return true;
 }
 
@@ -177,7 +177,7 @@ Time MemEntryImpl::GetLastModified() const {
   return last_modified_;
 }
 
-int32 MemEntryImpl::GetDataSize(int index) const {
+int32_t MemEntryImpl::GetDataSize(int index) const {
   if (index < 0 || index >= NUM_STREAMS)
     return 0;
   return data_size_[index];
@@ -219,7 +219,9 @@ int MemEntryImpl::WriteData(int index, int offset, IOBuffer* buf, int buf_len,
   return result;
 }
 
-int MemEntryImpl::ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
+int MemEntryImpl::ReadSparseData(int64_t offset,
+                                 IOBuffer* buf,
+                                 int buf_len,
                                  const CompletionCallback& callback) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(
@@ -232,7 +234,9 @@ int MemEntryImpl::ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
   return result;
 }
 
-int MemEntryImpl::WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
+int MemEntryImpl::WriteSparseData(int64_t offset,
+                                  IOBuffer* buf,
+                                  int buf_len,
                                   const CompletionCallback& callback) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(
@@ -245,7 +249,9 @@ int MemEntryImpl::WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
   return result;
 }
 
-int MemEntryImpl::GetAvailableRange(int64 offset, int len, int64* start,
+int MemEntryImpl::GetAvailableRange(int64_t offset,
+                                    int len,
+                                    int64_t* start,
                                     const CompletionCallback& callback) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(
@@ -275,7 +281,7 @@ int MemEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
 MemEntryImpl::~MemEntryImpl() {
   for (int i = 0; i < NUM_STREAMS; i++)
     backend_->ModifyStorageSize(data_size_[i], 0);
-  backend_->ModifyStorageSize(static_cast<int32>(key_.size()), 0);
+  backend_->ModifyStorageSize(static_cast<int32_t>(key_.size()), 0);
   net_log_.EndEvent(net::NetLog::TYPE_DISK_CACHE_MEM_ENTRY_IMPL);
 }
 
@@ -344,7 +350,8 @@ int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
   return buf_len;
 }
 
-int MemEntryImpl::InternalReadSparseData(int64 offset, IOBuffer* buf,
+int MemEntryImpl::InternalReadSparseData(int64_t offset,
+                                         IOBuffer* buf,
                                          int buf_len) {
   DCHECK(type() == kParentEntry);
 
@@ -401,7 +408,8 @@ int MemEntryImpl::InternalReadSparseData(int64 offset, IOBuffer* buf,
   return io_buf->BytesConsumed();
 }
 
-int MemEntryImpl::InternalWriteSparseData(int64 offset, IOBuffer* buf,
+int MemEntryImpl::InternalWriteSparseData(int64_t offset,
+                                          IOBuffer* buf,
                                           int buf_len) {
   DCHECK(type() == kParentEntry);
 
@@ -467,7 +475,7 @@ int MemEntryImpl::InternalWriteSparseData(int64 offset, IOBuffer* buf,
   return io_buf->BytesConsumed();
 }
 
-int MemEntryImpl::GetAvailableRange(int64 offset, int len, int64* start) {
+int MemEntryImpl::GetAvailableRange(int64_t offset, int len, int64_t* start) {
   DCHECK(type() == kParentEntry);
   DCHECK(start);
 
@@ -577,7 +585,7 @@ bool MemEntryImpl::InitChildEntry(MemEntryImpl* parent, int child_id,
   return true;
 }
 
-MemEntryImpl* MemEntryImpl::OpenChild(int64 offset, bool create) {
+MemEntryImpl* MemEntryImpl::OpenChild(int64_t offset, bool create) {
   DCHECK(type() == kParentEntry);
   int index = ToChildIndex(offset);
   EntryMap::iterator i = children_->find(index);
@@ -592,7 +600,7 @@ MemEntryImpl* MemEntryImpl::OpenChild(int64 offset, bool create) {
   return NULL;
 }
 
-int MemEntryImpl::FindNextChild(int64 offset, int len, MemEntryImpl** child) {
+int MemEntryImpl::FindNextChild(int64_t offset, int len, MemEntryImpl** child) {
   DCHECK(child);
   *child = NULL;
   int scanned_len = 0;

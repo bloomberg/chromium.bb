@@ -48,7 +48,9 @@ MockFilterContext::SdchDictionariesAdvertised() const {
   return dictionaries_handle_.get();
 }
 
-int64 MockFilterContext::GetByteReadCount() const { return 0; }
+int64_t MockFilterContext::GetByteReadCount() const {
+  return 0;
+}
 
 int MockFilterContext::GetResponseCode() const { return response_code_; }
 

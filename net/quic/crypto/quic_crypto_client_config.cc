@@ -83,7 +83,7 @@ bool QuicCryptoClientConfig::CachedState::IsComplete(QuicWallTime now) const {
     return false;
   }
 
-  uint64 expiry_seconds;
+  uint64_t expiry_seconds;
   if (scfg->GetUint64(kEXPY, &expiry_seconds) != QUIC_NO_ERROR) {
     RecordInchoateClientHelloReason(SERVER_CONFIG_INVALID_EXPIRY);
     return false;
@@ -159,7 +159,7 @@ QuicCryptoClientConfig::CachedState::SetServerConfig(StringPiece server_config,
     return SERVER_CONFIG_INVALID;
   }
 
-  uint64 expiry_seconds;
+  uint64_t expiry_seconds;
   if (new_scfg->GetUint64(kEXPY, &expiry_seconds) != QUIC_NO_ERROR) {
     *error_details = "SCFG missing EXPY";
     return SERVER_CONFIG_INVALID_EXPIRY;
@@ -296,7 +296,7 @@ bool QuicCryptoClientConfig::CachedState::proof_valid() const {
   return server_config_valid_;
 }
 
-uint64 QuicCryptoClientConfig::CachedState::generation_counter() const {
+uint64_t QuicCryptoClientConfig::CachedState::generation_counter() const {
   return generation_counter_;
 }
 
@@ -451,7 +451,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   // process the server's compressed certificate chain.
   out_params->cached_certs = certs;
   if (!certs.empty()) {
-    vector<uint64> hashes;
+    vector<uint64_t> hashes;
     hashes.reserve(certs.size());
     for (vector<string>::const_iterator i = certs.begin(); i != certs.end();
          ++i) {

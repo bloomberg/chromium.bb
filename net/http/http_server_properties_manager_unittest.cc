@@ -4,9 +4,9 @@
 
 #include "net/http/http_server_properties_manager.h"
 
-#include "base/basictypes.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
@@ -467,7 +467,7 @@ TEST_F(HttpServerPropertiesManagerTest, SetSpdySetting) {
   HostPortPair spdy_server_mail("mail.google.com", 443);
   const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
   const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
-  const uint32 value1 = 31337;
+  const uint32_t value1 = 31337;
   http_server_props_manager_->SetSpdySetting(
       spdy_server_mail, id1, flags1, value1);
 
@@ -494,7 +494,7 @@ TEST_F(HttpServerPropertiesManagerTest, ClearSpdySetting) {
   HostPortPair spdy_server_mail("mail.google.com", 443);
   const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
   const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
-  const uint32 value1 = 31337;
+  const uint32_t value1 = 31337;
   http_server_props_manager_->SetSpdySetting(
       spdy_server_mail, id1, flags1, value1);
 
@@ -533,7 +533,7 @@ TEST_F(HttpServerPropertiesManagerTest, ClearAllSpdySetting) {
   HostPortPair spdy_server_mail("mail.google.com", 443);
   const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
   const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
-  const uint32 value1 = 31337;
+  const uint32_t value1 = 31337;
   http_server_props_manager_->SetSpdySetting(
       spdy_server_mail, id1, flags1, value1);
 
@@ -790,7 +790,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
   const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
-  const uint32 value1 = 31337;
+  const uint32_t value1 = 31337;
   http_server_props_manager_->SetSpdySetting(spdy_server_mail, id1, flags1,
                                              value1);
 
@@ -1021,7 +1021,7 @@ TEST_F(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
   EXPECT_EQ("", alternative_service_info_vector[1].alternative_service.host);
   EXPECT_EQ(123, alternative_service_info_vector[1].alternative_service.port);
   EXPECT_DOUBLE_EQ(0.7, alternative_service_info_vector[1].probability);
-  // numeric_limits<int64>::max() represents base::Time::Max().
+  // numeric_limits<int64_t>::max() represents base::Time::Max().
   EXPECT_EQ(base::Time::Max(), alternative_service_info_vector[1].expiration);
 
   EXPECT_EQ(NPN_HTTP_2,

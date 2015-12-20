@@ -763,7 +763,7 @@ class StreamSequencerBufferRandomIOTest : public StreamSequencerBufferTest {
     bytes_to_buffer_ = 2 * max_capacity_bytes_;
     Initialize();
 
-    uint32 seed = base::RandInt(0, std::numeric_limits<int32>::max());
+    uint32_t seed = base::RandInt(0, std::numeric_limits<int32_t>::max());
     LOG(INFO) << "RandomWriteAndProcessInPlace test seed is " << seed;
     rng_.set_seed(seed);
   }
@@ -855,8 +855,8 @@ TEST_F(StreamSequencerBufferRandomIOTest, RandomWriteAndReadv) {
 
   while ((!shuffled_buf_.empty() || total_bytes_read_ < bytes_to_buffer_) &&
          iterations <= 2 * bytes_to_buffer_) {
-    uint8 next_action =
-        shuffled_buf_.empty() ? uint8{1} : rng_.RandUint64() % 2;
+    uint8_t next_action =
+        shuffled_buf_.empty() ? uint8_t{1} : rng_.RandUint64() % 2;
     DVLOG(1) << "iteration: " << iterations;
     switch (next_action) {
       case 0: {  // write
@@ -913,8 +913,8 @@ TEST_F(StreamSequencerBufferRandomIOTest, RandomWriteAndConsumeInPlace) {
 
   while ((!shuffled_buf_.empty() || total_bytes_read_ < bytes_to_buffer_) &&
          iterations <= 2 * bytes_to_buffer_) {
-    uint8 next_action =
-        shuffled_buf_.empty() ? uint8{1} : rng_.RandUint64() % 2;
+    uint8_t next_action =
+        shuffled_buf_.empty() ? uint8_t{1} : rng_.RandUint64() % 2;
     DVLOG(1) << "iteration: " << iterations;
     switch (next_action) {
       case 0: {  // write

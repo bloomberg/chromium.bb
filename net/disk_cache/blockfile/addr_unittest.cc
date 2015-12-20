@@ -13,7 +13,7 @@ TEST_F(DiskCacheTest, CacheAddr_Size) {
   EXPECT_FALSE(addr1.is_initialized());
 
   // The object should not be more expensive than the actual address.
-  EXPECT_EQ(sizeof(uint32), sizeof(addr1));
+  EXPECT_EQ(sizeof(uint32_t), sizeof(addr1));
 }
 
 TEST_F(DiskCacheTest, CacheAddr_ValidValues) {

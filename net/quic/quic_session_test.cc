@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -940,8 +939,8 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingFinAfterRst) {
 
   // Connection starts with some non-zero highest received byte offset,
   // due to other active streams.
-  const uint64 kInitialConnectionBytesConsumed = 567;
-  const uint64 kInitialConnectionHighestReceivedOffset = 1234;
+  const uint64_t kInitialConnectionBytesConsumed = 567;
+  const uint64_t kInitialConnectionHighestReceivedOffset = 1234;
   EXPECT_LT(kInitialConnectionBytesConsumed,
             kInitialConnectionHighestReceivedOffset);
   session_.flow_controller()->UpdateHighestReceivedOffset(
@@ -977,8 +976,8 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstAfterRst) {
 
   // Connection starts with some non-zero highest received byte offset,
   // due to other active streams.
-  const uint64 kInitialConnectionBytesConsumed = 567;
-  const uint64 kInitialConnectionHighestReceivedOffset = 1234;
+  const uint64_t kInitialConnectionBytesConsumed = 567;
+  const uint64_t kInitialConnectionHighestReceivedOffset = 1234;
   EXPECT_LT(kInitialConnectionBytesConsumed,
             kInitialConnectionHighestReceivedOffset);
   session_.flow_controller()->UpdateHighestReceivedOffset(
@@ -1008,7 +1007,7 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstAfterRst) {
 TEST_P(QuicSessionTestServer, InvalidStreamFlowControlWindowInHandshake) {
   // Test that receipt of an invalid (< default) stream flow control window from
   // the peer results in the connection being torn down.
-  const uint32 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
+  const uint32_t kInvalidWindow = kMinimumFlowControlSendWindow - 1;
   QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(session_.config(),
                                                             kInvalidWindow);
 
@@ -1020,7 +1019,7 @@ TEST_P(QuicSessionTestServer, InvalidStreamFlowControlWindowInHandshake) {
 TEST_P(QuicSessionTestServer, InvalidSessionFlowControlWindowInHandshake) {
   // Test that receipt of an invalid (< default) session flow control window
   // from the peer results in the connection being torn down.
-  const uint32 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
+  const uint32_t kInvalidWindow = kMinimumFlowControlSendWindow - 1;
   QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(session_.config(),
                                                              kInvalidWindow);
 
@@ -1032,7 +1031,7 @@ TEST_P(QuicSessionTestServer, InvalidSessionFlowControlWindowInHandshake) {
 TEST_P(QuicSessionTestServer, FlowControlWithInvalidFinalOffset) {
   // Test that if we receive a stream RST with a highest byte offset that
   // violates flow control, that we close the connection.
-  const uint64 kLargeOffset = kInitialSessionFlowControlWindowForTest + 1;
+  const uint64_t kLargeOffset = kInitialSessionFlowControlWindowForTest + 1;
   EXPECT_CALL(*connection_,
               SendConnectionClose(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA))
       .Times(2);

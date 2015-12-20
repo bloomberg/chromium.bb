@@ -47,7 +47,7 @@ int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
   // GenerateType1Msg, and GenerateType3Msg, and perhaps further.
   const void* in_buf;
   void* out_buf;
-  uint32 in_buf_len, out_buf_len;
+  uint32_t in_buf_len, out_buf_len;
   std::string decoded_auth_data;
 
   // The username may be in the form "DOMAIN\user".  Parse it into the two

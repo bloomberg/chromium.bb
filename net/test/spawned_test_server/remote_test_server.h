@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "net/test/spawned_test_server/base_test_server.h"
 
 namespace net {

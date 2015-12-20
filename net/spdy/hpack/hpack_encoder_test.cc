@@ -132,7 +132,7 @@ class HpackEncoderTest : public ::testing::Test {
     expected_.AppendUint32(value.size());
     expected_.AppendBytes(value);
   }
-  void ExpectHeaderTableSizeUpdate(uint32 size) {
+  void ExpectHeaderTableSizeUpdate(uint32_t size) {
     expected_.AppendPrefix(kHeaderTableSizeUpdateOpcode);
     expected_.AppendUint32(size);
   }

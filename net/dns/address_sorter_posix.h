@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address_number.h"

@@ -5,9 +5,12 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_IN_FLIGHT_BACKEND_IO_H_
 #define NET_DISK_CACHE_BLOCKFILE_IN_FLIGHT_BACKEND_IO_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -68,11 +71,18 @@ class BackendIO : public BackgroundIO {
                 int buf_len);
   void WriteData(EntryImpl* entry, int index, int offset, net::IOBuffer* buf,
                  int buf_len, bool truncate);
-  void ReadSparseData(EntryImpl* entry, int64 offset, net::IOBuffer* buf,
+  void ReadSparseData(EntryImpl* entry,
+                      int64_t offset,
+                      net::IOBuffer* buf,
                       int buf_len);
-  void WriteSparseData(EntryImpl* entry, int64 offset, net::IOBuffer* buf,
+  void WriteSparseData(EntryImpl* entry,
+                       int64_t offset,
+                       net::IOBuffer* buf,
                        int buf_len);
-  void GetAvailableRange(EntryImpl* entry, int64 offset, int len, int64* start);
+  void GetAvailableRange(EntryImpl* entry,
+                         int64_t offset,
+                         int len,
+                         int64_t* start);
   void CancelSparseIO(EntryImpl* entry);
   void ReadyForSparseIO(EntryImpl* entry);
 
@@ -137,8 +147,8 @@ class BackendIO : public BackgroundIO {
   scoped_refptr<net::IOBuffer> buf_;
   int buf_len_;
   bool truncate_;
-  int64 offset64_;
-  int64* start_;
+  int64_t offset64_;
+  int64_t* start_;
   base::TimeTicks start_time_;
   base::Closure task_;
 
@@ -182,11 +192,20 @@ class InFlightBackendIO : public InFlightIO {
   void WriteData(
       EntryImpl* entry, int index, int offset, net::IOBuffer* buf,
       int buf_len, bool truncate, const net::CompletionCallback& callback);
-  void ReadSparseData(EntryImpl* entry, int64 offset, net::IOBuffer* buf,
-                      int buf_len, const net::CompletionCallback& callback);
-  void WriteSparseData(EntryImpl* entry, int64 offset, net::IOBuffer* buf,
-                       int buf_len, const net::CompletionCallback& callback);
-  void GetAvailableRange(EntryImpl* entry, int64 offset, int len, int64* start,
+  void ReadSparseData(EntryImpl* entry,
+                      int64_t offset,
+                      net::IOBuffer* buf,
+                      int buf_len,
+                      const net::CompletionCallback& callback);
+  void WriteSparseData(EntryImpl* entry,
+                       int64_t offset,
+                       net::IOBuffer* buf,
+                       int buf_len,
+                       const net::CompletionCallback& callback);
+  void GetAvailableRange(EntryImpl* entry,
+                         int64_t offset,
+                         int len,
+                         int64_t* start,
                          const net::CompletionCallback& callback);
   void CancelSparseIO(EntryImpl* entry);
   void ReadyForSparseIO(EntryImpl* entry,

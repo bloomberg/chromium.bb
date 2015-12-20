@@ -10,11 +10,11 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
@@ -68,8 +68,8 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
                      const std::string& upload_content);
   void SetUploadFilePath(const std::string& upload_content_type,
                          const base::FilePath& file_path,
-                         uint64 range_offset,
-                         uint64 range_length,
+                         uint64_t range_offset,
+                         uint64_t range_length,
                          scoped_refptr<base::TaskRunner> file_task_runner);
   void SetUploadStreamFactory(
       const std::string& upload_content_type,
@@ -215,10 +215,11 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
 
   // Notify Delegate about the progress of upload/download.
   void InformDelegateUploadProgress();
-  void InformDelegateUploadProgressInDelegateThread(int64 current, int64 total);
+  void InformDelegateUploadProgressInDelegateThread(int64_t current,
+                                                    int64_t total);
   void InformDelegateDownloadProgress();
-  void InformDelegateDownloadProgressInDelegateThread(int64 current,
-                                                      int64 total);
+  void InformDelegateDownloadProgressInDelegateThread(int64_t current,
+                                                      int64_t total);
 
   // Check if any upload data is set or not.
   void AssertHasNoUploadData() const;
@@ -258,9 +259,9 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   bool upload_content_set_;          // SetUploadData has been called
   std::string upload_content_;       // HTTP POST payload
   base::FilePath upload_file_path_;  // Path to file containing POST payload
-  uint64 upload_range_offset_;       // Offset from the beginning of the file
+  uint64_t upload_range_offset_;     // Offset from the beginning of the file
                                      // to be uploaded.
-  uint64 upload_range_length_;       // The length of the part of file to be
+  uint64_t upload_range_length_;     // The length of the part of file to be
                                      // uploaded.
   URLFetcher::CreateUploadStreamCallback
       upload_stream_factory_;        // Callback to create HTTP POST payload.
@@ -328,11 +329,11 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   // When crbug.com/119629 is fixed, scoped_ptr is not necessary here.
   scoped_ptr<base::RepeatingTimer> upload_progress_checker_timer_;
   // Number of bytes sent so far.
-  int64 current_upload_bytes_;
+  int64_t current_upload_bytes_;
   // Number of bytes received so far.
-  int64 current_response_bytes_;
+  int64_t current_response_bytes_;
   // Total expected bytes to receive (-1 if it cannot be determined).
-  int64 total_response_bytes_;
+  int64_t total_response_bytes_;
 
   // TODO(willchan): Get rid of this after debugging crbug.com/90971.
   base::debug::StackTrace stack_trace_;

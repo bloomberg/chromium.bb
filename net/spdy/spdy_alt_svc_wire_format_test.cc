@@ -30,17 +30,17 @@ class SpdyAltSvcWireFormatPeer {
   static bool ParseAltAuthority(StringPiece::const_iterator c,
                                 StringPiece::const_iterator end,
                                 std::string* host,
-                                uint16* port) {
+                                uint16_t* port) {
     return SpdyAltSvcWireFormat::ParseAltAuthority(c, end, host, port);
   }
   static bool ParsePositiveInteger16(StringPiece::const_iterator c,
                                      StringPiece::const_iterator end,
-                                     uint16* max_age) {
+                                     uint16_t* max_age) {
     return SpdyAltSvcWireFormat::ParsePositiveInteger16(c, end, max_age);
   }
   static bool ParsePositiveInteger32(StringPiece::const_iterator c,
                                      StringPiece::const_iterator end,
-                                     uint32* max_age) {
+                                     uint32_t* max_age) {
     return SpdyAltSvcWireFormat::ParsePositiveInteger32(c, end, max_age);
   }
   static bool ParseProbability(StringPiece::const_iterator c,
@@ -431,7 +431,7 @@ TEST(SpdyAltSvcWireFormatTest, PercentDecodeInvalid) {
 TEST(SpdyAltSvcWireFormatTest, ParseAltAuthorityValid) {
   StringPiece input(":42");
   std::string host;
-  uint16 port;
+  uint16_t port;
   ASSERT_TRUE(test::SpdyAltSvcWireFormatPeer::ParseAltAuthority(
       input.begin(), input.end(), &host, &port));
   EXPECT_TRUE(host.empty());
@@ -452,7 +452,7 @@ TEST(SpdyAltSvcWireFormatTest, ParseAltAuthorityInvalid) {
   for (const char* invalid_input : invalid_input_array) {
     StringPiece input(invalid_input);
     std::string host;
-    uint16 port;
+    uint16_t port;
     EXPECT_FALSE(test::SpdyAltSvcWireFormatPeer::ParseAltAuthority(
         input.begin(), input.end(), &host, &port))
         << input;
@@ -462,7 +462,7 @@ TEST(SpdyAltSvcWireFormatTest, ParseAltAuthorityInvalid) {
 // Test ParseInteger() on valid input.
 TEST(SpdyAltSvcWireFormatTest, ParseIntegerValid) {
   StringPiece input("3");
-  uint16 value;
+  uint16_t value;
   ASSERT_TRUE(test::SpdyAltSvcWireFormatPeer::ParsePositiveInteger16(
       input.begin(), input.end(), &value));
   EXPECT_EQ(3, value);
@@ -479,7 +479,7 @@ TEST(SpdyAltSvcWireFormatTest, ParseIntegerInvalid) {
   const char* invalid_input_array[] = {"", " ", "a", "0", "00", "1 ", "12b"};
   for (const char* invalid_input : invalid_input_array) {
     StringPiece input(invalid_input);
-    uint16 value;
+    uint16_t value;
     EXPECT_FALSE(test::SpdyAltSvcWireFormatPeer::ParsePositiveInteger16(
         input.begin(), input.end(), &value))
         << input;
@@ -488,14 +488,14 @@ TEST(SpdyAltSvcWireFormatTest, ParseIntegerInvalid) {
 
 // Test ParseIntegerValid() around overflow limit.
 TEST(SpdyAltSvcWireFormatTest, ParseIntegerOverflow) {
-  // Largest possible uint16 value.
+  // Largest possible uint16_t value.
   StringPiece input("65535");
-  uint16 value16;
+  uint16_t value16;
   ASSERT_TRUE(test::SpdyAltSvcWireFormatPeer::ParsePositiveInteger16(
       input.begin(), input.end(), &value16));
   EXPECT_EQ(65535, value16);
 
-  // Overflow uint16, ParsePositiveInteger16() should return false.
+  // Overflow uint16_t, ParsePositiveInteger16() should return false.
   input = StringPiece("65536");
   ASSERT_FALSE(test::SpdyAltSvcWireFormatPeer::ParsePositiveInteger16(
       input.begin(), input.end(), &value16));
@@ -506,14 +506,14 @@ TEST(SpdyAltSvcWireFormatTest, ParseIntegerOverflow) {
   ASSERT_FALSE(test::SpdyAltSvcWireFormatPeer::ParsePositiveInteger16(
       input.begin(), input.end(), &value16));
 
-  // Largest possible uint32 value.
+  // Largest possible uint32_t value.
   input = StringPiece("4294967295");
-  uint32 value32;
+  uint32_t value32;
   ASSERT_TRUE(test::SpdyAltSvcWireFormatPeer::ParsePositiveInteger32(
       input.begin(), input.end(), &value32));
   EXPECT_EQ(4294967295, value32);
 
-  // Overflow uint32, ParsePositiveInteger32() should return false.
+  // Overflow uint32_t, ParsePositiveInteger32() should return false.
   input = StringPiece("4294967296");
   ASSERT_FALSE(test::SpdyAltSvcWireFormatPeer::ParsePositiveInteger32(
       input.begin(), input.end(), &value32));

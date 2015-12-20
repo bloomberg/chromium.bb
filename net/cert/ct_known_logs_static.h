@@ -6,6 +6,8 @@
 #ifndef NET_CERT_CT_KNOWN_LOGS_STATIC_H_
 #define NET_CERT_CT_KNOWN_LOGS_STATIC_H_
 
+#include <stddef.h>
+
 struct CTLogInfo {
   const char* const log_key;
   const size_t log_key_length;

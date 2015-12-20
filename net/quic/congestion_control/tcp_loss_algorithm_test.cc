@@ -20,7 +20,7 @@ namespace test {
 namespace {
 
 // Default packet length.
-const uint32 kDefaultLength = 1000;
+const uint32_t kDefaultLength = 1000;
 
 class TcpLossAlgorithmTest : public ::testing::Test {
  protected:
@@ -151,7 +151,7 @@ TEST_F(TcpLossAlgorithmTest, EarlyRetransmitAllPackets) {
   unacked_packets_.RemoveFromInFlight(kNumSentPackets);
   // This simulates a single ack following multiple missing packets with FACK.
   for (size_t i = 1; i < kNumSentPackets; ++i) {
-    unacked_packets_.NackPacket(i, static_cast<uint16>(kNumSentPackets - i));
+    unacked_packets_.NackPacket(i, static_cast<uint16_t>(kNumSentPackets - i));
   }
   QuicPacketNumber lost[] = {1, 2};
   VerifyLosses(kNumSentPackets, lost, arraysize(lost));

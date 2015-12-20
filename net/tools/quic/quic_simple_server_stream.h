@@ -5,9 +5,11 @@
 #ifndef NET_TOOLS_QUIC_QUIC_SIMPLE_SERVER_STREAM_H_
 #define NET_TOOLS_QUIC_QUIC_SIMPLE_SERVER_STREAM_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_spdy_stream.h"
 #include "net/spdy/spdy_framer.h"

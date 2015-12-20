@@ -13,14 +13,14 @@ namespace net {
 
 // Note(pwestin): the magic clamping numbers come from the original code in
 // tcp_cubic.c.
-const int64 kHybridStartLowWindow = 16;
+const int64_t kHybridStartLowWindow = 16;
 // Number of delay samples for detecting the increase of delay.
-const uint32 kHybridStartMinSamples = 8;
+const uint32_t kHybridStartMinSamples = 8;
 // Exit slow start if the min rtt has increased by more than 1/8th.
 const int kHybridStartDelayFactorExp = 3;  // 2^3 = 8
 // The original paper specifies 2 and 8ms, but those have changed over time.
-const int64 kHybridStartDelayMinThresholdUs = 4000;
-const int64 kHybridStartDelayMaxThresholdUs = 16000;
+const int64_t kHybridStartDelayMinThresholdUs = 4000;
+const int64_t kHybridStartDelayMaxThresholdUs = 16000;
 
 HybridSlowStart::HybridSlowStart()
     : started_(false),
@@ -86,7 +86,7 @@ bool HybridSlowStart::ShouldExitSlowStart(QuicTime::Delta latest_rtt,
   // We only need to check this once per round.
   if (rtt_sample_count_ == kHybridStartMinSamples) {
     // Divide min_rtt by 8 to get a rtt increase threshold for exiting.
-    int64 min_rtt_increase_threshold_us =
+    int64_t min_rtt_increase_threshold_us =
         min_rtt.ToMicroseconds() >> kHybridStartDelayFactorExp;
     // Ensure the rtt threshold is never less than 2ms or more than 16ms.
     min_rtt_increase_threshold_us =

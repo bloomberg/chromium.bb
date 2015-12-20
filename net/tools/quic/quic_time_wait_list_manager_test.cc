@@ -89,7 +89,7 @@ namespace {
 class MockFakeTimeEpollServer : public FakeTimeEpollServer {
  public:
   MOCK_METHOD2(RegisterAlarm,
-               void(int64 timeout_in_us, EpollAlarmCallbackInterface* alarm));
+               void(int64_t timeout_in_us, EpollAlarmCallbackInterface* alarm));
 };
 
 class QuicTimeWaitListManagerTest : public ::testing::Test {
@@ -331,8 +331,8 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
   epoll_server_.set_now_in_usec(time_wait_period.Add(offset).ToMicroseconds());
   // After all the old connection_ids are cleaned up, check the next alarm
   // interval.
-  int64 next_alarm_time = epoll_server_.ApproximateNowInUsec() +
-                          time_wait_period.Subtract(offset).ToMicroseconds();
+  int64_t next_alarm_time = epoll_server_.ApproximateNowInUsec() +
+                            time_wait_period.Subtract(offset).ToMicroseconds();
   EXPECT_CALL(epoll_server_, RegisterAlarm(next_alarm_time, _));
 
   for (size_t connection_id = 1; connection_id <= kConnectionIdCount;
@@ -461,7 +461,7 @@ TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {
   // Now set the current time as time_wait_period + offset usecs.
   epoll_server_.set_now_in_usec(time_wait_period.Add(offset).ToMicroseconds());
   // After the connection_ids are cleaned up, check the next alarm interval.
-  int64 next_alarm_time =
+  int64_t next_alarm_time =
       epoll_server_.ApproximateNowInUsec() + time_wait_period.ToMicroseconds();
 
   EXPECT_CALL(epoll_server_, RegisterAlarm(next_alarm_time, _));
@@ -510,7 +510,7 @@ TEST_F(QuicTimeWaitListManagerTest, MaxConnectionsTest) {
 
   QuicConnectionId current_connection_id = 0;
   // Add exactly the maximum number of connections
-  for (int64 i = 0; i < FLAGS_quic_time_wait_list_max_connections; ++i) {
+  for (int64_t i = 0; i < FLAGS_quic_time_wait_list_max_connections; ++i) {
     ++current_connection_id;
     EXPECT_FALSE(IsConnectionIdInTimeWait(current_connection_id));
     EXPECT_CALL(visitor_,
@@ -522,7 +522,7 @@ TEST_F(QuicTimeWaitListManagerTest, MaxConnectionsTest) {
 
   // Now keep adding.  Since we're already at the max, every new connection-id
   // will evict the oldest one.
-  for (int64 i = 0; i < FLAGS_quic_time_wait_list_max_connections; ++i) {
+  for (int64_t i = 0; i < FLAGS_quic_time_wait_list_max_connections; ++i) {
     ++current_connection_id;
     const QuicConnectionId id_to_evict =
         current_connection_id - FLAGS_quic_time_wait_list_max_connections;

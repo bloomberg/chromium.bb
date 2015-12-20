@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/macros.h"
 #include "net/quic/crypto/channel_id.h"
 
 namespace crypto {

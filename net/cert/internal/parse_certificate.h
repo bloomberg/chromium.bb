@@ -5,9 +5,10 @@
 #ifndef NET_CERT_INTERNAL_PARSE_CERTIFICATE_H_
 #define NET_CERT_INTERNAL_PARSE_CERTIFICATE_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
 #include "net/der/input.h"

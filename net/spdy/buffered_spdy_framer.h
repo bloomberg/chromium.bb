@@ -5,9 +5,12 @@
 #ifndef NET_SPDY_BUFFERED_SPDY_FRAMER_H_
 #define NET_SPDY_BUFFERED_SPDY_FRAMER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/socket/next_proto.h"
@@ -97,7 +100,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
 
   // Called when an individual setting within a SETTINGS frame has been parsed
   // and validated.
-  virtual void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) = 0;
+  virtual void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) = 0;
 
   // Called when a SETTINGS frame is received with the ACK flag set.
   virtual void OnSettingsAck() {}
@@ -184,7 +187,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
       SpdyStreamId stream_id) override;
   void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override;
   void OnSettings(bool clear_persisted) override;
-  void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override;
+  void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) override;
   void OnSettingsAck() override;
   void OnSettingsEnd() override;
   void OnPing(SpdyPingId unique_id, bool is_ack) override;
@@ -229,12 +232,11 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                            SpdyControlFlags flags,
                            SpdyPriority priority,
                            const SpdyHeaderBlock* headers);
-  SpdyFrame* CreateWindowUpdate(
-      SpdyStreamId stream_id,
-      uint32 delta_window_size) const;
+  SpdyFrame* CreateWindowUpdate(SpdyStreamId stream_id,
+                                uint32_t delta_window_size) const;
   SpdyFrame* CreateDataFrame(SpdyStreamId stream_id,
                              const char* data,
-                             uint32 len,
+                             uint32_t len,
                              SpdyDataFlags flags);
   SpdyFrame* CreatePushPromise(SpdyStreamId stream_id,
                                SpdyStreamId promised_stream_id,

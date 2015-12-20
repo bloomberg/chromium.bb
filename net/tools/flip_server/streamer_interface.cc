@@ -43,7 +43,7 @@ void StreamerSM::set_is_request() {
 }
 
 void StreamerSM::InitSMInterface(SMInterface* sm_other_interface,
-                                 int32 server_idx) {
+                                 int32_t server_idx) {
   sm_other_interface_ = sm_other_interface;
 }
 
@@ -143,12 +143,13 @@ int StreamerSM::PostAcceptHook() {
   return 1;
 }
 
-size_t StreamerSM::SendSynStream(uint32 stream_id,
+size_t StreamerSM::SendSynStream(uint32_t stream_id,
                                  const BalsaHeaders& headers) {
   return 0;
 }
 
-size_t StreamerSM::SendSynReply(uint32 stream_id, const BalsaHeaders& headers) {
+size_t StreamerSM::SendSynReply(uint32_t stream_id,
+                                const BalsaHeaders& headers) {
   return 0;
 }
 

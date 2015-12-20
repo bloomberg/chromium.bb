@@ -6,9 +6,9 @@
 #define NET_SSL_SSL_SERVER_CONFIG_H_
 
 #include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "net/base/net_export.h"
 #include "net/ssl/ssl_config.h"
 
@@ -43,9 +43,9 @@ struct NET_EXPORT SSLServerConfig {
   // The ciphers listed in |disabled_cipher_suites| will be removed in addition
   // to the above list.
   //
-  // Though cipher suites are sent in TLS as "uint8 CipherSuite[2]", in
+  // Though cipher suites are sent in TLS as "uint8_t CipherSuite[2]", in
   // big-endian form, they should be declared in host byte order, with the
-  // first uint8 occupying the most significant byte.
+  // first uint8_t occupying the most significant byte.
   // Ex: To disable TLS_RSA_WITH_RC4_128_MD5, specify 0x0004, while to
   // disable TLS_ECDH_ECDSA_WITH_RC4_128_SHA, specify 0xC002.
   std::vector<uint16_t> disabled_cipher_suites;

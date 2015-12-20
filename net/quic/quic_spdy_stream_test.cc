@@ -349,7 +349,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlBlocked) {
   Initialize(kShouldProcessData);
 
   // Set a small flow control limit.
-  const uint64 kWindow = 36;
+  const uint64_t kWindow = 36;
   QuicFlowControllerPeer::SetSendWindowOffset(stream_->flow_controller(),
                                               kWindow);
   EXPECT_EQ(kWindow, QuicFlowControllerPeer::SendWindowOffset(
@@ -358,7 +358,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlBlocked) {
   // Try to send more data than the flow control limit allows.
   string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   string body;
-  const uint64 kOverflow = 15;
+  const uint64_t kOverflow = 15;
   GenerateBody(&body, kWindow + kOverflow);
 
   EXPECT_CALL(*connection_, SendBlocked(kClientDataStreamId1));
@@ -387,7 +387,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
   EXPECT_CALL(*connection_, SendWindowUpdate(_, _)).Times(0);
 
   // Set a small flow control receive window.
-  const uint64 kWindow = 36;
+  const uint64_t kWindow = 36;
   QuicFlowControllerPeer::SetReceiveWindowOffset(stream_->flow_controller(),
                                                  kWindow);
   QuicFlowControllerPeer::SetMaxReceiveWindow(stream_->flow_controller(),
@@ -425,7 +425,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlWindowUpdate) {
   Initialize(kShouldProcessData);
 
   // Set a small flow control limit.
-  const uint64 kWindow = 36;
+  const uint64_t kWindow = 36;
   QuicFlowControllerPeer::SetReceiveWindowOffset(stream_->flow_controller(),
                                                  kWindow);
   QuicFlowControllerPeer::SetMaxReceiveWindow(stream_->flow_controller(),
@@ -469,7 +469,7 @@ TEST_P(QuicSpdyStreamTest, ConnectionFlowControlWindowUpdate) {
   Initialize(kShouldProcessData);
 
   // Set a small flow control limit for streams and connection.
-  const uint64 kWindow = 36;
+  const uint64_t kWindow = 36;
   QuicFlowControllerPeer::SetReceiveWindowOffset(stream_->flow_controller(),
                                                  kWindow);
   QuicFlowControllerPeer::SetMaxReceiveWindow(stream_->flow_controller(),
@@ -524,7 +524,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlViolation) {
   Initialize(!kShouldProcessData);
 
   // Set a small flow control limit.
-  const uint64 kWindow = 50;
+  const uint64_t kWindow = 50;
   QuicFlowControllerPeer::SetReceiveWindowOffset(stream_->flow_controller(),
                                                  kWindow);
 
@@ -570,8 +570,8 @@ TEST_P(QuicSpdyStreamTest, ConnectionFlowControlViolation) {
   Initialize(!kShouldProcessData);
 
   // Set a small flow control window on streams, and connection.
-  const uint64 kStreamWindow = 50;
-  const uint64 kConnectionWindow = 10;
+  const uint64_t kStreamWindow = 50;
+  const uint64_t kConnectionWindow = 10;
   QuicFlowControllerPeer::SetReceiveWindowOffset(stream_->flow_controller(),
                                                  kStreamWindow);
   QuicFlowControllerPeer::SetReceiveWindowOffset(session_->flow_controller(),

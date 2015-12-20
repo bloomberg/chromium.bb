@@ -6,6 +6,7 @@
 #define NET_PROXY_POLLING_PROXY_CONFIG_SERVICE_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/proxy/proxy_config_service.h"

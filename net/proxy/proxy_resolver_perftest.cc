@@ -5,6 +5,7 @@
 #include "base/base_paths.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"

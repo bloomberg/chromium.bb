@@ -319,7 +319,7 @@ LoadState FtpNetworkTransaction::GetLoadState() const {
   return LOAD_STATE_IDLE;
 }
 
-uint64 FtpNetworkTransaction::GetUploadProgress() const {
+uint64_t FtpNetworkTransaction::GetUploadProgress() const {
   return 0;
 }
 
@@ -961,7 +961,7 @@ int FtpNetworkTransaction::ProcessResponseEPSV(
           !IsPortAllowedForScheme(port, url::kFtpScheme)) {
         return Stop(ERR_UNSAFE_PORT);
       }
-      data_connection_port_ = static_cast<uint16>(port);
+      data_connection_port_ = static_cast<uint16_t>(port);
       next_state_ = STATE_DATA_CONNECT;
       break;
     }
@@ -999,7 +999,7 @@ int FtpNetworkTransaction::ProcessResponsePASV(
           !IsPortAllowedForScheme(port, url::kFtpScheme)) {
         return Stop(ERR_UNSAFE_PORT);
       }
-      data_connection_port_ = static_cast<uint16>(port);
+      data_connection_port_ = static_cast<uint16_t>(port);
       next_state_ = STATE_DATA_CONNECT;
       break;
     }
@@ -1068,7 +1068,7 @@ int FtpNetworkTransaction::ProcessResponseSIZE(
     case ERROR_CLASS_OK:
       if (response.lines.size() != 1)
         return Stop(ERR_INVALID_RESPONSE);
-      int64 size;
+      int64_t size;
       if (!base::StringToInt64(response.lines[0], &size))
         return Stop(ERR_INVALID_RESPONSE);
       if (size < 0)

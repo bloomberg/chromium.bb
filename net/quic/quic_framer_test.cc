@@ -189,7 +189,7 @@ class TestDecrypter : public QuicDecrypter {
   StringPiece GetNoncePrefix() const override { return StringPiece(); }
   const char* cipher_name() const override { return "Test"; }
   // Use a distinct value starting with 0xFFFFFF, which is never used by TLS.
-  uint32 cipher_id() const override { return 0xFFFFFFF2; }
+  uint32_t cipher_id() const override { return 0xFFFFFFF2; }
   QuicPacketNumber packet_number_;
   string associated_data_;
   string ciphertext_;
@@ -514,14 +514,14 @@ TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearEpochStart) {
   CheckCalculatePacketNumber(kEpoch, kMask);
 
   // Cases where the last number was close to the start of the range.
-  for (uint64 last = 0; last < 10; last++) {
+  for (uint64_t last = 0; last < 10; last++) {
     // Small numbers should not wrap (even if they're out of order).
-    for (uint64 j = 0; j < 10; j++) {
+    for (uint64_t j = 0; j < 10; j++) {
       CheckCalculatePacketNumber(j, last);
     }
 
     // Large numbers should not wrap either (because we're near 0 already).
-    for (uint64 j = 0; j < 10; j++) {
+    for (uint64_t j = 0; j < 10; j++) {
       CheckCalculatePacketNumber(kEpoch - 1 - j, last);
     }
   }
@@ -529,16 +529,16 @@ TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearEpochStart) {
 
 TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearEpochEnd) {
   // Cases where the last number was close to the end of the range
-  for (uint64 i = 0; i < 10; i++) {
+  for (uint64_t i = 0; i < 10; i++) {
     QuicPacketNumber last = kEpoch - i;
 
     // Small numbers should wrap.
-    for (uint64 j = 0; j < 10; j++) {
+    for (uint64_t j = 0; j < 10; j++) {
       CheckCalculatePacketNumber(kEpoch + j, last);
     }
 
     // Large numbers should not (even if they're out of order).
-    for (uint64 j = 0; j < 10; j++) {
+    for (uint64_t j = 0; j < 10; j++) {
       CheckCalculatePacketNumber(kEpoch - 1 - j, last);
     }
   }
@@ -547,62 +547,62 @@ TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearEpochEnd) {
 // Next check where we're in a non-zero epoch to verify we handle
 // reverse wrapping, too.
 TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearPrevEpoch) {
-  const uint64 prev_epoch = 1 * kEpoch;
-  const uint64 cur_epoch = 2 * kEpoch;
+  const uint64_t prev_epoch = 1 * kEpoch;
+  const uint64_t cur_epoch = 2 * kEpoch;
   // Cases where the last number was close to the start of the range
-  for (uint64 i = 0; i < 10; i++) {
-    uint64 last = cur_epoch + i;
+  for (uint64_t i = 0; i < 10; i++) {
+    uint64_t last = cur_epoch + i;
     // Small number should not wrap (even if they're out of order).
-    for (uint64 j = 0; j < 10; j++) {
+    for (uint64_t j = 0; j < 10; j++) {
       CheckCalculatePacketNumber(cur_epoch + j, last);
     }
 
     // But large numbers should reverse wrap.
-    for (uint64 j = 0; j < 10; j++) {
-      uint64 num = kEpoch - 1 - j;
+    for (uint64_t j = 0; j < 10; j++) {
+      uint64_t num = kEpoch - 1 - j;
       CheckCalculatePacketNumber(prev_epoch + num, last);
     }
   }
 }
 
 TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearNextEpoch) {
-  const uint64 cur_epoch = 2 * kEpoch;
-  const uint64 next_epoch = 3 * kEpoch;
+  const uint64_t cur_epoch = 2 * kEpoch;
+  const uint64_t next_epoch = 3 * kEpoch;
   // Cases where the last number was close to the end of the range
-  for (uint64 i = 0; i < 10; i++) {
+  for (uint64_t i = 0; i < 10; i++) {
     QuicPacketNumber last = next_epoch - 1 - i;
 
     // Small numbers should wrap.
-    for (uint64 j = 0; j < 10; j++) {
+    for (uint64_t j = 0; j < 10; j++) {
       CheckCalculatePacketNumber(next_epoch + j, last);
     }
 
     // but large numbers should not (even if they're out of order).
-    for (uint64 j = 0; j < 10; j++) {
-      uint64 num = kEpoch - 1 - j;
+    for (uint64_t j = 0; j < 10; j++) {
+      uint64_t num = kEpoch - 1 - j;
       CheckCalculatePacketNumber(cur_epoch + num, last);
     }
   }
 }
 
 TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearNextMax) {
-  const uint64 max_number = numeric_limits<uint64>::max();
-  const uint64 max_epoch = max_number & ~kMask;
+  const uint64_t max_number = numeric_limits<uint64_t>::max();
+  const uint64_t max_epoch = max_number & ~kMask;
 
   // Cases where the last number was close to the end of the range
-  for (uint64 i = 0; i < 10; i++) {
+  for (uint64_t i = 0; i < 10; i++) {
     // Subtract 1, because the expected next packet number is 1 more than the
     // last packet number.
     QuicPacketNumber last = max_number - i - 1;
 
     // Small numbers should not wrap, because they have nowhere to go.
-    for (uint64 j = 0; j < 10; j++) {
+    for (uint64_t j = 0; j < 10; j++) {
       CheckCalculatePacketNumber(max_epoch + j, last);
     }
 
     // Large numbers should not wrap either.
-    for (uint64 j = 0; j < 10; j++) {
-      uint64 num = kEpoch - 1 - j;
+    for (uint64_t j = 0; j < 10; j++) {
+      uint64_t num = kEpoch - 1 - j;
       CheckCalculatePacketNumber(max_epoch + num, last);
     }
   }
@@ -3001,7 +3001,7 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
   };
   // clang-format on
 
-  uint64 header_size = GetPacketHeaderSize(
+  uint64_t header_size = GetPacketHeaderSize(
       PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
       PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
   memset(packet + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
@@ -3048,7 +3048,7 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
   };
   // clang-format on
 
-  uint64 header_size = GetPacketHeaderSize(
+  uint64_t header_size = GetPacketHeaderSize(
       PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
       PACKET_4BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
   memset(packet + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
@@ -3095,7 +3095,7 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
   };
   // clang-format on
 
-  uint64 header_size = GetPacketHeaderSize(
+  uint64_t header_size = GetPacketHeaderSize(
       PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
       PACKET_2BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
   memset(packet + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
@@ -3142,7 +3142,7 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
   };
   // clang-format on
 
-  uint64 header_size = GetPacketHeaderSize(
+  uint64_t header_size = GetPacketHeaderSize(
       PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
       PACKET_1BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
   memset(packet + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);

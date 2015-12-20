@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "crypto/ec_private_key.h"
@@ -31,15 +32,15 @@ bool ChannelIDKeyChromium::Sign(base::StringPiece signed_data,
   }
   const size_t len1 = strlen(ChannelIDVerifier::kContextStr) + 1;
   const size_t len2 = strlen(ChannelIDVerifier::kClientToServerStr) + 1;
-  std::vector<uint8> data(len1 + len2 + signed_data.size());
+  std::vector<uint8_t> data(len1 + len2 + signed_data.size());
   memcpy(&data[0], ChannelIDVerifier::kContextStr, len1);
   memcpy(&data[len1], ChannelIDVerifier::kClientToServerStr, len2);
   memcpy(&data[len1 + len2], signed_data.data(), signed_data.size());
-  std::vector<uint8> der_signature;
+  std::vector<uint8_t> der_signature;
   if (!sig_creator->Sign(&data[0], data.size(), &der_signature)) {
     return false;
   }
-  std::vector<uint8> raw_signature;
+  std::vector<uint8_t> raw_signature;
   if (!sig_creator->DecodeSignature(der_signature, &raw_signature)) {
     return false;
   }

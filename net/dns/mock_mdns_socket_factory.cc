@@ -89,7 +89,7 @@ void MockMDnsSocketFactory::CreateSocket(
   sockets->push_back(new_socket.Pass());
 }
 
-void MockMDnsSocketFactory::SimulateReceive(const uint8* packet, int size) {
+void MockMDnsSocketFactory::SimulateReceive(const uint8_t* packet, int size) {
   DCHECK(recv_buffer_size_ >= size);
   DCHECK(recv_buffer_.get());
   DCHECK(!recv_callback_.is_null());

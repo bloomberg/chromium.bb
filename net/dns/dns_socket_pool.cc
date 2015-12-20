@@ -5,6 +5,7 @@
 #include "net/dns/dns_socket_pool.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "net/base/address_list.h"

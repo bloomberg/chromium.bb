@@ -6,6 +6,7 @@
 #define NET_PROXY_PROXY_RESOLVER_MAC_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/proxy/proxy_resolver_factory.h"
 #include "url/gurl.h"

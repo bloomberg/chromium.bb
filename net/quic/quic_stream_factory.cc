@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -71,11 +72,11 @@ enum CreateSessionFailure {
 };
 
 // The maximum receive window sizes for QUIC sessions and streams.
-const int32 kQuicSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
-const int32 kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
+const int32_t kQuicSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
+const int32_t kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
 
 // Set the maximum number of undecryptable packets the connection will store.
-const int32 kMaxUndecryptablePackets = 100;
+const int32_t kMaxUndecryptablePackets = 100;
 
 void HistogramCreateSessionFailure(enum CreateSessionFailure error) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.CreationError", error,
@@ -373,7 +374,7 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
   if (factory_->load_server_info_timeout_srtt_multiplier_ > 0) {
     const int kMaxLoadServerInfoTimeoutMs = 50;
     // Wait for DiskCache a maximum of 50ms.
-    int64 load_server_info_timeout_ms =
+    int64_t load_server_info_timeout_ms =
         min(static_cast<int>(
                 (factory_->load_server_info_timeout_srtt_multiplier_ *
                  factory_->GetServerNetworkStatsSmoothedRttInMicroseconds(
@@ -693,7 +694,8 @@ base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
     const QuicServerId& server_id) {
   if (!delay_tcp_race_ || require_confirmation_)
     return base::TimeDelta();
-  int64 srtt = 1.5 * GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
+  int64_t srtt =
+      1.5 * GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
   // Picked 300ms based on mean time from
   // Net.QuicSession.HostResolution.HandshakeConfirmedTime histogram.
   const int kDefaultRTT = 300 * kNumMicrosPerMilli;
@@ -888,7 +890,7 @@ scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateFromSession(
 }
 
 QuicChromiumClientSession::QuicDisabledReason
-QuicStreamFactory::QuicDisabledReason(uint16 port) const {
+QuicStreamFactory::QuicDisabledReason(uint16_t port) const {
   if (max_number_of_lossy_connections_ > 0 &&
       number_of_lossy_connections_.find(port) !=
           number_of_lossy_connections_.end() &&
@@ -911,7 +913,7 @@ QuicStreamFactory::QuicDisabledReason(uint16 port) const {
 
 const char* QuicStreamFactory::QuicDisabledReasonString() const {
   // TODO(ckrasic) - better solution for port/lossy connections?
-  const uint16 port = 443;
+  const uint16_t port = 443;
   switch (QuicDisabledReason(port)) {
     case QuicChromiumClientSession::QUIC_DISABLED_BAD_PACKET_LOSS_RATE:
       return "Bad packet loss rate.";
@@ -924,7 +926,7 @@ const char* QuicStreamFactory::QuicDisabledReasonString() const {
   }
 }
 
-bool QuicStreamFactory::IsQuicDisabled(uint16 port) {
+bool QuicStreamFactory::IsQuicDisabled(uint16_t port) {
   return QuicDisabledReason(port) !=
          QuicChromiumClientSession::QUIC_DISABLED_NOT;
 }
@@ -932,7 +934,7 @@ bool QuicStreamFactory::IsQuicDisabled(uint16 port) {
 bool QuicStreamFactory::OnHandshakeConfirmed(QuicChromiumClientSession* session,
                                              float packet_loss_rate) {
   DCHECK(session);
-  uint16 port = session->server_id().port();
+  uint16_t port = session->server_id().port();
   if (packet_loss_rate < packet_loss_threshold_) {
     number_of_lossy_connections_[port] = 0;
     return false;
@@ -998,7 +1000,7 @@ void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
 
 void QuicStreamFactory::MaybeDisableQuic(QuicChromiumClientSession* session) {
   DCHECK(session);
-  uint16 port = session->server_id().port();
+  uint16_t port = session->server_id().port();
   if (IsQuicDisabled(port))
     return;
 
@@ -1271,9 +1273,9 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
   config.SetInitialSessionFlowControlWindowToSend(
       kQuicSessionMaxRecvWindowSize);
   config.SetInitialStreamFlowControlWindowToSend(kQuicStreamMaxRecvWindowSize);
-  int64 srtt = GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
+  int64_t srtt = GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
   if (srtt > 0)
-    config.SetInitialRoundTripTimeUsToSend(static_cast<uint32>(srtt));
+    config.SetInitialRoundTripTimeUsToSend(static_cast<uint32_t>(srtt));
   config.SetBytesForConnectionIdToSend(0);
 
   if (quic_server_info_factory_.get() && !server_info) {
@@ -1327,7 +1329,7 @@ void QuicStreamFactory::ActivateSession(const QuicServerId& server_id,
   ip_aliases_[peer_address].insert(session);
 }
 
-int64 QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
+int64_t QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
     const QuicServerId& server_id) const {
   const ServerNetworkStats* stats =
       http_server_properties_->GetServerNetworkStats(

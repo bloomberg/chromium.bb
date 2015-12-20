@@ -5,11 +5,11 @@
 #ifndef NET_SOCKET_UNIX_DOMAIN_SERVER_SOCKET_POSIX_H_
 #define NET_SOCKET_UNIX_DOMAIN_SERVER_SOCKET_POSIX_H_
 
+#include <stdint.h>
 #include <sys/types.h>
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -53,7 +53,7 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
   // ServerSocket implementation.
   int Listen(const IPEndPoint& address, int backlog) override;
   int ListenWithAddressAndPort(const std::string& unix_domain_path,
-                               uint16 port_unused,
+                               uint16_t port_unused,
                                int backlog) override;
   int GetLocalAddress(IPEndPoint* address) const override;
   int Accept(scoped_ptr<StreamSocket>* socket,

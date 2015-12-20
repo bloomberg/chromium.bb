@@ -5,7 +5,7 @@
 #ifndef NET_HTTP_HTTP_RESPONSE_BODY_DRAINER_H_
 #define NET_HTTP_HTTP_RESPONSE_BODY_DRAINER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"

@@ -59,7 +59,7 @@ void HttpStreamFactory::ProcessAlternativeService(
     if (protocol == QUIC && !alternative_service_entry.version.empty()) {
       bool match_found = false;
       for (QuicVersion supported : session.params().quic_supported_versions) {
-        for (uint16 advertised : alternative_service_entry.version) {
+        for (uint16_t advertised : alternative_service_entry.version) {
           if (supported == advertised) {
             match_found = true;
             break;
@@ -152,8 +152,8 @@ void HttpStreamFactory::ProcessAlternateProtocol(
 
   http_server_properties->SetAlternativeService(
       RewriteHost(http_host_port_pair),
-      AlternativeService(protocol, "", static_cast<uint16>(port)), probability,
-      base::Time::Now() + base::TimeDelta::FromDays(30));
+      AlternativeService(protocol, "", static_cast<uint16_t>(port)),
+      probability, base::Time::Now() + base::TimeDelta::FromDays(30));
 }
 
 GURL HttpStreamFactory::ApplyHostMappingRules(const GURL& url,

@@ -9,6 +9,9 @@
 #ifndef NET_TOOLS_BALSA_NOOP_BALSA_VISITOR_H_
 #define NET_TOOLS_BALSA_NOOP_BALSA_VISITOR_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "net/tools/balsa/balsa_visitor_interface.h"
 
 namespace net {

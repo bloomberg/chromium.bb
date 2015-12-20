@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "net/http/http_byte_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -11,9 +12,9 @@ namespace {
 
 TEST(HttpByteRangeTest, ValidRanges) {
   const struct {
-    int64 first_byte_position;
-    int64 last_byte_position;
-    int64 suffix_length;
+    int64_t first_byte_position;
+    int64_t last_byte_position;
+    int64_t suffix_length;
     bool valid;
   } tests[] = {
     {  -1, -1,  0, false },
@@ -38,13 +39,13 @@ TEST(HttpByteRangeTest, ValidRanges) {
 
 TEST(HttpByteRangeTest, SetInstanceSize) {
   const struct {
-    int64 first_byte_position;
-    int64 last_byte_position;
-    int64 suffix_length;
-    int64 instance_size;
+    int64_t first_byte_position;
+    int64_t last_byte_position;
+    int64_t suffix_length;
+    int64_t instance_size;
     bool expected_return_value;
-    int64 expected_lower_bound;
-    int64 expected_upper_bound;
+    int64_t expected_lower_bound;
+    int64_t expected_upper_bound;
   } tests[] = {
     { -10,  0,  -1,   0, false,  -1,  -1 },
     {  10,  0,  -1,   0, false,  -1,  -1 },

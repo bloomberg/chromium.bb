@@ -5,6 +5,7 @@
 #ifndef NET_DNS_DNS_RESPONSE_H_
 #define NET_DNS_DNS_RESPONSE_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>

@@ -177,12 +177,12 @@ static bool SendLM() {
 #define SWAP16(x) ((((x) & 0xff) << 8) | (((x) >> 8) & 0xff))
 #define SWAP32(x) ((SWAP16((x) & 0xffff) << 16) | (SWAP16((x) >> 16)))
 
-static void* WriteBytes(void* buf, const void* data, uint32 data_len) {
+static void* WriteBytes(void* buf, const void* data, uint32_t data_len) {
   memcpy(buf, data, data_len);
   return static_cast<char*>(buf) + data_len;
 }
 
-static void* WriteDWORD(void* buf, uint32 dword) {
+static void* WriteDWORD(void* buf, uint32_t dword) {
 #ifdef IS_BIG_ENDIAN
   // NTLM uses little endian on the wire.
   dword = SWAP32(dword);
@@ -190,7 +190,7 @@ static void* WriteDWORD(void* buf, uint32 dword) {
   return WriteBytes(buf, &dword, sizeof(dword));
 }
 
-static void* WriteSecBuf(void* buf, uint16 length, uint32 offset) {
+static void* WriteSecBuf(void* buf, uint16_t length, uint32_t offset) {
 #ifdef IS_BIG_ENDIAN
   length = SWAP16(length);
   offset = SWAP32(offset);
@@ -213,14 +213,15 @@ static void* WriteSecBuf(void* buf, uint16 length, uint32 offset) {
  * to pass the same buffer as both input and output, which is a handy way to
  * convert the unicode buffer to little-endian on big-endian platforms.
  */
-static void* WriteUnicodeLE(
-    void* buf, const base::char16* str, uint32 str_len) {
+static void* WriteUnicodeLE(void* buf,
+                            const base::char16* str,
+                            uint32_t str_len) {
   // Convert input string from BE to LE.
-  uint8* cursor = static_cast<uint8*>(buf);
-  const uint8* input  = reinterpret_cast<const uint8*>(str);
-  for (uint32 i = 0; i < str_len; ++i, input += 2, cursor += 2) {
+  uint8_t* cursor = static_cast<uint8_t*>(buf);
+  const uint8_t* input = reinterpret_cast<const uint8_t*>(str);
+  for (uint32_t i = 0; i < str_len; ++i, input += 2, cursor += 2) {
     // Allow for the case where |buf == str|.
-    uint8 temp = input[0];
+    uint8_t temp = input[0];
     cursor[0] = input[1];
     cursor[1] = temp;
   }
@@ -228,18 +229,18 @@ static void* WriteUnicodeLE(
 }
 #endif
 
-static uint16 ReadUint16(const uint8*& buf) {
-  uint16 x = (static_cast<uint16>(buf[0]))      |
-             (static_cast<uint16>(buf[1]) << 8);
+static uint16_t ReadUint16(const uint8_t*& buf) {
+  uint16_t x =
+      (static_cast<uint16_t>(buf[0])) | (static_cast<uint16_t>(buf[1]) << 8);
   buf += sizeof(x);
   return x;
 }
 
-static uint32 ReadUint32(const uint8*& buf) {
-  uint32 x = (static_cast<uint32>(buf[0]))       |
-             (static_cast<uint32>(buf[1]) << 8)  |
-             (static_cast<uint32>(buf[2]) << 16) |
-             (static_cast<uint32>(buf[3]) << 24);
+static uint32_t ReadUint32(const uint8_t*& buf) {
+  uint32_t x = (static_cast<uint32_t>(buf[0])) |
+               (static_cast<uint32_t>(buf[1]) << 8) |
+               (static_cast<uint32_t>(buf[2]) << 16) |
+               (static_cast<uint32_t>(buf[3]) << 24);
   buf += sizeof(x);
   return x;
 }
@@ -255,8 +256,8 @@ static uint32 ReadUint32(const uint8*& buf) {
 //
 // Note: This function is not being used because our SendLM() function always
 // returns false.
-static void LM_Hash(const base::string16& password, uint8* hash) {
-  static const uint8 LM_MAGIC[] = "KGS!@#$%";
+static void LM_Hash(const base::string16& password, uint8_t* hash) {
+  static const uint8_t LM_MAGIC[] = "KGS!@#$%";
 
   // Convert password to OEM character set.  We'll just use the native
   // filesystem charset.
@@ -264,9 +265,9 @@ static void LM_Hash(const base::string16& password, uint8* hash) {
   passbuf = base::ToUpperASCII(passbuf);
   passbuf.resize(14, '\0');
 
-  uint8 k1[8], k2[8];
-  DESMakeKey(reinterpret_cast<const uint8*>(passbuf.data())    , k1);
-  DESMakeKey(reinterpret_cast<const uint8*>(passbuf.data()) + 7, k2);
+  uint8_t k1[8], k2[8];
+  DESMakeKey(reinterpret_cast<const uint8_t*>(passbuf.data()), k1);
+  DESMakeKey(reinterpret_cast<const uint8_t*>(passbuf.data()) + 7, k2);
   ZapString(&passbuf);
 
   // Use password keys to hash LM magic string twice.
@@ -280,19 +281,19 @@ static void LM_Hash(const base::string16& password, uint8* hash) {
 //       null-terminated unicode password.
 // param hash
 //       16-byte result buffer
-static void NTLM_Hash(const base::string16& password, uint8* hash) {
+static void NTLM_Hash(const base::string16& password, uint8_t* hash) {
 #ifdef IS_BIG_ENDIAN
-  uint32 len = password.length();
-  uint8* passbuf;
+  uint32_t len = password.length();
+  uint8_t* passbuf;
 
-  passbuf = static_cast<uint8*>(malloc(len * 2));
+  passbuf = static_cast<uint8_t*>(malloc(len * 2));
   WriteUnicodeLE(passbuf, password.data(), len);
   weak_crypto::MD4Sum(passbuf, len * 2, hash);
 
   ZapBuf(passbuf, len * 2);
   free(passbuf);
 #else
-  weak_crypto::MD4Sum(reinterpret_cast<const uint8*>(password.data()),
+  weak_crypto::MD4Sum(reinterpret_cast<const uint8_t*>(password.data()),
                       password.length() * 2, hash);
 #endif
 }
@@ -308,10 +309,10 @@ static void NTLM_Hash(const base::string16& password, uint8* hash) {
 //       8-byte challenge from Type-2 message
 // param response
 //       24-byte buffer to contain the LM response upon return
-static void LM_Response(const uint8* hash,
-                        const uint8* challenge,
-                        uint8* response) {
-  uint8 keybytes[21], k1[8], k2[8], k3[8];
+static void LM_Response(const uint8_t* hash,
+                        const uint8_t* challenge,
+                        uint8_t* response) {
+  uint8_t keybytes[21], k1[8], k2[8], k3[8];
 
   memcpy(keybytes, hash, 16);
   ZapBuf(keybytes + 16, 5);
@@ -328,7 +329,7 @@ static void LM_Response(const uint8* hash,
 //-----------------------------------------------------------------------------
 
 // Returns OK or a network error code.
-static int GenerateType1Msg(void** out_buf, uint32* out_len) {
+static int GenerateType1Msg(void** out_buf, uint32_t* out_len) {
   //
   // Verify that buf_len is sufficient.
   //
@@ -369,16 +370,16 @@ static int GenerateType1Msg(void** out_buf, uint32* out_len) {
 }
 
 struct Type2Msg {
-  uint32      flags;         // NTLM_Xxx bitwise combination
-  uint8       challenge[8];  // 8 byte challenge
+  uint32_t flags;            // NTLM_Xxx bitwise combination
+  uint8_t challenge[8];      // 8 byte challenge
   const void* target;        // target string (type depends on flags)
-  uint32      target_len;    // target length in bytes
+  uint32_t target_len;       // target length in bytes
 };
 
 // Returns OK or a network error code.
 // TODO(wtc): This function returns ERR_UNEXPECTED when the input message is
 // invalid.  We should return a better error code.
-static int ParseType2Msg(const void* in_buf, uint32 in_len, Type2Msg* msg) {
+static int ParseType2Msg(const void* in_buf, uint32_t in_len, Type2Msg* msg) {
   // Make sure in_buf is long enough to contain a meaningful type2 msg.
   //
   // 0  NTLMSSP Signature
@@ -391,7 +392,7 @@ static int ParseType2Msg(const void* in_buf, uint32 in_len, Type2Msg* msg) {
   if (in_len < NTLM_TYPE2_HEADER_LEN)
     return ERR_UNEXPECTED;
 
-  const uint8* cursor = (const uint8*) in_buf;
+  const uint8_t* cursor = (const uint8_t*)in_buf;
 
   // verify NTLMSSP signature
   if (memcmp(cursor, NTLM_SIGNATURE, sizeof(NTLM_SIGNATURE)) != 0)
@@ -404,16 +405,16 @@ static int ParseType2Msg(const void* in_buf, uint32 in_len, Type2Msg* msg) {
   cursor += sizeof(NTLM_TYPE2_MARKER);
 
   // read target name security buffer
-  uint32 target_len = ReadUint16(cursor);
+  uint32_t target_len = ReadUint16(cursor);
   ReadUint16(cursor);  // discard next 16-bit value
-  uint32 offset = ReadUint32(cursor);  // get offset from in_buf
+  uint32_t offset = ReadUint32(cursor);  // get offset from in_buf
   msg->target_len = 0;
   msg->target = NULL;
   // Check the offset / length combo is in range of the input buffer, including
   // integer overflow checking.
   if (offset + target_len > offset && offset + target_len <= in_len) {
     msg->target_len = target_len;
-    msg->target = ((const uint8*) in_buf) + offset;
+    msg->target = ((const uint8_t*)in_buf) + offset;
   }
 
   // read flags
@@ -424,8 +425,8 @@ static int ParseType2Msg(const void* in_buf, uint32 in_len, Type2Msg* msg) {
   cursor += sizeof(msg->challenge);
 
   NTLM_LOG(("NTLM type 2 message:\n"));
-  LogBuf("target", (const uint8*) msg->target, msg->target_len);
-  LogBuf("flags", (const uint8*) &msg->flags, 4);
+  LogBuf("target", (const uint8_t*)msg->target, msg->target_len);
+  LogBuf("flags", (const uint8_t*)&msg->flags, 4);
   LogFlags(msg->flags);
   LogBuf("challenge", msg->challenge, sizeof(msg->challenge));
 
@@ -435,7 +436,7 @@ static int ParseType2Msg(const void* in_buf, uint32 in_len, Type2Msg* msg) {
   return OK;
 }
 
-static void GenerateRandom(uint8* output, size_t n) {
+static void GenerateRandom(uint8_t* output, size_t n) {
   for (size_t i = 0; i < n; ++i)
     output[i] = base::RandInt(0, 255);
 }
@@ -447,9 +448,9 @@ static int GenerateType3Msg(const base::string16& domain,
                             const std::string& hostname,
                             const void* rand_8_bytes,
                             const void* in_buf,
-                            uint32 in_len,
+                            uint32_t in_len,
                             void** out_buf,
-                            uint32* out_len) {
+                            uint32_t* out_len) {
   // in_buf contains Type-2 msg (the challenge) from server.
 
   int rv;
@@ -473,7 +474,7 @@ static int GenerateType3Msg(const base::string16& domain,
   const void* domain_ptr;
   const void* user_ptr;
   const void* host_ptr;
-  uint32 domain_len, user_len, host_len;
+  uint32_t domain_len, user_len, host_len;
 
   //
   // Get domain name.
@@ -545,13 +546,13 @@ static int GenerateType3Msg(const base::string16& domain,
   //
   // Next, we compute the LM and NTLM responses.
   //
-  uint8 lm_resp[LM_RESP_LEN];
-  uint8 ntlm_resp[NTLM_RESP_LEN];
-  uint8 ntlm_hash[NTLM_HASH_LEN];
+  uint8_t lm_resp[LM_RESP_LEN];
+  uint8_t ntlm_resp[NTLM_RESP_LEN];
+  uint8_t ntlm_hash[NTLM_HASH_LEN];
   if (msg.flags & NTLM_NegotiateNTLM2Key) {
     // compute NTLM2 session response
     base::MD5Digest session_hash;
-    uint8 temp[16];
+    uint8_t temp[16];
 
     memcpy(lm_resp, rand_8_bytes, 8);
     memset(lm_resp + 8, 0, LM_RESP_LEN - 8);
@@ -567,7 +568,7 @@ static int GenerateType3Msg(const base::string16& domain,
     LM_Response(ntlm_hash, msg.challenge, ntlm_resp);
 
     if (SendLM()) {
-      uint8 lm_hash[LM_HASH_LEN];
+      uint8_t lm_hash[LM_HASH_LEN];
       LM_Hash(password, lm_hash);
       LM_Response(lm_hash, msg.challenge, lm_resp);
     } else {
@@ -582,7 +583,7 @@ static int GenerateType3Msg(const base::string16& domain,
   // Finally, we assemble the Type-3 msg :-)
   //
   void* cursor = *out_buf;
-  uint32 offset;
+  uint32_t offset;
 
   // 0 : signature
   cursor = WriteBytes(cursor, NTLM_SIGNATURE, sizeof(NTLM_SIGNATURE));
@@ -593,27 +594,27 @@ static int GenerateType3Msg(const base::string16& domain,
   // 12 : LM response sec buf
   offset = NTLM_TYPE3_HEADER_LEN + domain_len + user_len + host_len;
   cursor = WriteSecBuf(cursor, LM_RESP_LEN, offset);
-  memcpy(static_cast<uint8*>(*out_buf) + offset, lm_resp, LM_RESP_LEN);
+  memcpy(static_cast<uint8_t*>(*out_buf) + offset, lm_resp, LM_RESP_LEN);
 
   // 20 : NTLM response sec buf
   offset += LM_RESP_LEN;
   cursor = WriteSecBuf(cursor, NTLM_RESP_LEN, offset);
-  memcpy(static_cast<uint8*>(*out_buf) + offset, ntlm_resp, NTLM_RESP_LEN);
+  memcpy(static_cast<uint8_t*>(*out_buf) + offset, ntlm_resp, NTLM_RESP_LEN);
 
   // 28 : domain name sec buf
   offset = NTLM_TYPE3_HEADER_LEN;
   cursor = WriteSecBuf(cursor, domain_len, offset);
-  memcpy(static_cast<uint8*>(*out_buf) + offset, domain_ptr, domain_len);
+  memcpy(static_cast<uint8_t*>(*out_buf) + offset, domain_ptr, domain_len);
 
   // 36 : user name sec buf
   offset += domain_len;
   cursor = WriteSecBuf(cursor, user_len, offset);
-  memcpy(static_cast<uint8*>(*out_buf) + offset, user_ptr, user_len);
+  memcpy(static_cast<uint8_t*>(*out_buf) + offset, user_ptr, user_len);
 
   // 44 : workstation (host) name sec buf
   offset += user_len;
   cursor = WriteSecBuf(cursor, host_len, offset);
-  memcpy(static_cast<uint8*>(*out_buf) + offset, host_ptr, host_len);
+  memcpy(static_cast<uint8_t*>(*out_buf) + offset, host_ptr, host_len);
 
   // 52 : session key sec buf (not used)
   cursor = WriteSecBuf(cursor, 0, 0);
@@ -683,9 +684,9 @@ HttpAuthHandlerNTLM::Factory::~Factory() {
 }
 
 int HttpAuthHandlerNTLM::GetNextToken(const void* in_token,
-                                      uint32 in_token_len,
+                                      uint32_t in_token_len,
                                       void** out_token,
-                                      uint32* out_token_len) {
+                                      uint32_t* out_token_len) {
   int rv = 0;
 
   // If in_token is non-null, then assume it contains a type 2 message...
@@ -694,7 +695,7 @@ int HttpAuthHandlerNTLM::GetNextToken(const void* in_token,
     std::string hostname = get_host_name_proc_();
     if (hostname.empty())
       return ERR_UNEXPECTED;
-    uint8 rand_buf[8];
+    uint8_t rand_buf[8];
     generate_random_proc_(rand_buf, 8);
     rv = GenerateType3Msg(domain_,
                           credentials_.username(), credentials_.password(),

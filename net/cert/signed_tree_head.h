@@ -5,6 +5,8 @@
 #ifndef NET_CERT_SIGNED_TREE_HEAD_H_
 #define NET_CERT_SIGNED_TREE_HEAD_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

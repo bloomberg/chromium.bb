@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -186,8 +187,9 @@ class MockHostResolverProc : public HostResolverProc {
   DISALLOW_COPY_AND_ASSIGN(MockHostResolverProc);
 };
 
-bool AddressListContains(const AddressList& list, const std::string& address,
-                         uint16 port) {
+bool AddressListContains(const AddressList& list,
+                         const std::string& address,
+                         uint16_t port) {
   IPAddressNumber ip;
   bool rv = ParseIPLiteralToNumber(address, &ip);
   DCHECK(rv);
@@ -255,7 +257,7 @@ class Request {
   bool completed() const { return result_ != ERR_IO_PENDING; }
   bool pending() const { return handle_ != NULL; }
 
-  bool HasAddress(const std::string& address, uint16 port) const {
+  bool HasAddress(const std::string& address, uint16_t port) const {
     return AddressListContains(list_, address, port);
   }
 
@@ -264,7 +266,7 @@ class Request {
     return list_.size();
   }
 
-  bool HasOneAddress(const std::string& address, uint16 port) const {
+  bool HasOneAddress(const std::string& address, uint16_t port) const {
     return HasAddress(address, port) && (NumberOfAddresses() == 1u);
   }
 
@@ -1474,7 +1476,7 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
 
   // Adds a rule to |dns_rules_|. Must be followed by |CreateResolver| to apply.
   void AddDnsRule(const std::string& prefix,
-                  uint16 qtype,
+                  uint16_t qtype,
                   MockDnsClientRule::Result result,
                   bool delay) {
     dns_rules_.push_back(MockDnsClientRule(prefix, qtype, result, delay));

@@ -7,6 +7,9 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_MAPPED_FILE_H_
 #define NET_DISK_CACHE_BLOCKFILE_MAPPED_FILE_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/blockfile/file.h"
 #include "net/disk_cache/blockfile/file_block.h"

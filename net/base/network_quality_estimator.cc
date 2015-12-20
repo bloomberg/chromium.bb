@@ -402,7 +402,7 @@ void NetworkQualityEstimator::RecordRTTUMA(int32_t estimated_value_msec,
   if (actual_value_msec == 0)
     return;
 
-  int32 ratio = (estimated_value_msec * 100) / actual_value_msec;
+  int32_t ratio = (estimated_value_msec * 100) / actual_value_msec;
 
   // Record the accuracy of estimation by recording the ratio of estimated
   // value to the actual value.

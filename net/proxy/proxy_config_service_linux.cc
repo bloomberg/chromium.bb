@@ -24,6 +24,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/nix/xdg_util.h"
 #include "base/single_thread_task_runner.h"

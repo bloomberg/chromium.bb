@@ -5,6 +5,7 @@
 #ifndef NET_CERT_X509_CERT_TYPES_H_
 #define NET_CERT_X509_CERT_TYPES_H_
 
+#include <stddef.h>
 #include <string.h>
 
 #include <map>

@@ -26,8 +26,8 @@ TEST(QuicDataWriterTest, SanityCheckUFloat16Consts) {
 
 TEST(QuicDataWriterTest, WriteUFloat16) {
   struct TestCase {
-    uint64 decoded;
-    uint16 encoded;
+    uint64_t decoded;
+    uint16_t encoded;
   };
   TestCase test_cases[] = {
       // Small numbers represent themselves.
@@ -98,14 +98,15 @@ TEST(QuicDataWriterTest, WriteUFloat16) {
     char buffer[2];
     QuicDataWriter writer(2, buffer);
     EXPECT_TRUE(writer.WriteUFloat16(test_cases[i].decoded));
-    EXPECT_EQ(test_cases[i].encoded, *reinterpret_cast<uint16*>(writer.data()));
+    EXPECT_EQ(test_cases[i].encoded,
+              *reinterpret_cast<uint16_t*>(writer.data()));
   }
 }
 
 TEST(QuicDataWriterTest, ReadUFloat16) {
   struct TestCase {
-    uint64 decoded;
-    uint16 encoded;
+    uint64_t decoded;
+    uint16_t encoded;
   };
   TestCase test_cases[] = {
       // There are fewer decoding test cases because encoding truncates, and
@@ -156,7 +157,7 @@ TEST(QuicDataWriterTest, ReadUFloat16) {
 
   for (int i = 0; i < num_test_cases; ++i) {
     QuicDataReader reader(reinterpret_cast<char*>(&test_cases[i].encoded), 2);
-    uint64 value;
+    uint64_t value;
     EXPECT_TRUE(reader.ReadUFloat16(&value));
     EXPECT_EQ(test_cases[i].decoded, value);
   }
@@ -164,11 +165,11 @@ TEST(QuicDataWriterTest, ReadUFloat16) {
 
 TEST(QuicDataWriterTest, RoundTripUFloat16) {
   // Just test all 16-bit encoded values. 0 and max already tested above.
-  uint64 previous_value = 0;
-  for (uint16 i = 1; i < 0xFFFF; ++i) {
+  uint64_t previous_value = 0;
+  for (uint16_t i = 1; i < 0xFFFF; ++i) {
     // Read the two bytes.
     QuicDataReader reader(reinterpret_cast<char*>(&i), 2);
-    uint64 value;
+    uint64_t value;
     // All values must be decodable.
     EXPECT_TRUE(reader.ReadUFloat16(&value));
     // Check that small numbers represent themselves
@@ -188,12 +189,12 @@ TEST(QuicDataWriterTest, RoundTripUFloat16) {
     EXPECT_TRUE(writer.WriteUFloat16(value));
     EXPECT_TRUE(writer.WriteUFloat16(value + 1));
     // Check minimal decoding (previous decoding has previous encoding).
-    EXPECT_EQ(i - 1, *reinterpret_cast<uint16*>(writer.data()));
+    EXPECT_EQ(i - 1, *reinterpret_cast<uint16_t*>(writer.data()));
     // Check roundtrip.
-    EXPECT_EQ(i, *reinterpret_cast<uint16*>(writer.data() + 2));
+    EXPECT_EQ(i, *reinterpret_cast<uint16_t*>(writer.data() + 2));
     // Check next decoding.
     EXPECT_EQ(i < 4096 ? i + 1 : i,
-              *reinterpret_cast<uint16*>(writer.data() + 4));
+              *reinterpret_cast<uint16_t*>(writer.data() + 4));
   }
 }
 

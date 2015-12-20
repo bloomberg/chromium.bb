@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_simple_job.h"
 

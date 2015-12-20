@@ -326,7 +326,7 @@ int DiskCacheBasedQuicServerInfo::DoOpen() {
 }
 
 int DiskCacheBasedQuicServerInfo::DoRead() {
-  const int32 size = entry_->GetDataSize(0 /* index */);
+  const int32_t size = entry_->GetDataSize(0 /* index */);
   if (!size) {
     state_ = WAIT_FOR_DATA_READY_DONE;
     return OK;

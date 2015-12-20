@@ -32,7 +32,7 @@ RttStats::RttStats()
       num_min_rtt_samples_remaining_(0),
       recent_min_rtt_window_(QuicTime::Delta::Infinite()) {}
 
-void RttStats::SampleNewRecentMinRtt(uint32 num_samples) {
+void RttStats::SampleNewRecentMinRtt(uint32_t num_samples) {
   num_min_rtt_samples_remaining_ = num_samples;
   new_min_rtt_ = RttSample();
 }
@@ -79,7 +79,7 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
     mean_deviation_ =
         QuicTime::Delta::FromMicroseconds(rtt_sample.ToMicroseconds() / 2);
   } else {
-    mean_deviation_ = QuicTime::Delta::FromMicroseconds(static_cast<int64>(
+    mean_deviation_ = QuicTime::Delta::FromMicroseconds(static_cast<int64_t>(
         kOneMinusBeta * mean_deviation_.ToMicroseconds() +
         kBeta * std::abs(smoothed_rtt_.Subtract(rtt_sample).ToMicroseconds())));
     smoothed_rtt_ =

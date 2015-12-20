@@ -53,8 +53,12 @@
 #ifndef NET_QUIC_QUIC_PACKET_GENERATOR_H_
 #define NET_QUIC_QUIC_PACKET_GENERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 
+#include "base/macros.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_types.h"
@@ -156,7 +160,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
                                   QuicPacketCount max_packets_in_flight);
 
   // Set the minimum number of bytes for the connection id length;
-  void SetConnectionIdLength(uint32 length);
+  void SetConnectionIdLength(uint32_t length);
 
   // Called when the FEC alarm fires.
   void OnFecTimeout();

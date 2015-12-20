@@ -9,12 +9,12 @@
 #include "base/android/context_utils.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
@@ -60,8 +60,7 @@ ProxyServer ConstructProxyServer(ProxyServer::Scheme scheme,
     return ProxyServer();
   DCHECK(port_as_int > 0);
   return ProxyServer(
-      scheme,
-      HostPortPair(proxy_host, static_cast<uint16>(port_as_int)));
+      scheme, HostPortPair(proxy_host, static_cast<uint16_t>(port_as_int)));
 }
 
 ProxyServer LookupProxy(const std::string& prefix,

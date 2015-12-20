@@ -5,6 +5,8 @@
 #ifndef NET_HTTP_HTTP_UTIL_H_
 #define NET_HTTP_HTTP_UTIL_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

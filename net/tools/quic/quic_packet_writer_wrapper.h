@@ -5,6 +5,9 @@
 #ifndef NET_TOOLS_QUIC_QUIC_PACKET_WRITER_WRAPPER_H_
 #define NET_TOOLS_QUIC_QUIC_PACKET_WRITER_WRAPPER_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_packet_writer.h"
 

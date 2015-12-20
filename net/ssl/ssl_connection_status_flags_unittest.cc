@@ -21,7 +21,7 @@ TEST(SSLConnectionStatusTest, SetCipherSuite) {
 
 TEST(SSLConnectionStatusTest, SetVersion) {
   int connection_status = 0xDEADBEEF;
-  uint16 expected_cipher_suite =
+  uint16_t expected_cipher_suite =
       SSLConnectionStatusToCipherSuite(connection_status);
 
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2,

@@ -7,6 +7,10 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_STORAGE_BLOCK_H_
 #define NET_DISK_CACHE_BLOCKFILE_STORAGE_BLOCK_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "net/disk_cache/blockfile/addr.h"
 #include "net/disk_cache/blockfile/mapped_file.h"
 
@@ -80,7 +84,7 @@ class StorageBlock : public FileBlock {
  private:
   void AllocateData();
   void DeleteData();
-  uint32 CalculateHash() const;
+  uint32_t CalculateHash() const;
 
   T* data_;
   MappedFile* file_;

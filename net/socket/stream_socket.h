@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "net/log/net_log.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/next_proto.h"

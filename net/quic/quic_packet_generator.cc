@@ -4,7 +4,6 @@
 
 #include "net/quic/quic_packet_generator.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_flags.h"
@@ -348,7 +347,7 @@ void QuicPacketGenerator::UpdateSequenceNumberLength(
                                                   max_packets_in_flight);
 }
 
-void QuicPacketGenerator::SetConnectionIdLength(uint32 length) {
+void QuicPacketGenerator::SetConnectionIdLength(uint32_t length) {
   if (length == 0) {
     packet_creator_.set_connection_id_length(PACKET_0BYTE_CONNECTION_ID);
   } else if (length == 1) {

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_version_info.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
@@ -68,7 +69,7 @@ class URLRequestHttpJob::HttpFilterContext : public FilterContext {
   base::Time GetRequestTime() const override;
   bool IsCachedContent() const override;
   SdchManager::DictionarySet* SdchDictionariesAdvertised() const override;
-  int64 GetByteReadCount() const override;
+  int64_t GetByteReadCount() const override;
   int GetResponseCode() const override;
   const URLRequestContext* GetURLRequestContext() const override;
   void RecordPacketStats(StatisticSelector statistic) const override;
@@ -117,7 +118,7 @@ URLRequestHttpJob::HttpFilterContext::SdchDictionariesAdvertised() const {
   return job_->dictionaries_advertised_.get();
 }
 
-int64 URLRequestHttpJob::HttpFilterContext::GetByteReadCount() const {
+int64_t URLRequestHttpJob::HttpFilterContext::GetByteReadCount() const {
   return job_->prefilter_bytes_read();
 }
 
@@ -1323,7 +1324,8 @@ bool URLRequestHttpJob::ShouldFixMismatchedContentLength(int rv) const {
   if (rv == ERR_CONTENT_LENGTH_MISMATCH ||
       rv == ERR_INCOMPLETE_CHUNKED_ENCODING) {
     if (request_ && request_->response_headers()) {
-      int64 expected_length = request_->response_headers()->GetContentLength();
+      int64_t expected_length =
+          request_->response_headers()->GetContentLength();
       VLOG(1) << __FUNCTION__ << "() "
               << "\"" << request_->url().spec() << "\""
               << " content-length = " << expected_length
@@ -1371,7 +1373,7 @@ bool URLRequestHttpJob::GetFullRequestHeaders(
   return transaction_->GetFullRequestHeaders(headers);
 }
 
-int64 URLRequestHttpJob::GetTotalReceivedBytes() const {
+int64_t URLRequestHttpJob::GetTotalReceivedBytes() const {
   int64_t total_received_bytes =
       total_received_bytes_from_previous_transactions_;
   if (transaction_)

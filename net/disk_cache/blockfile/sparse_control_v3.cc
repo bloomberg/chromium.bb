@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -42,8 +43,9 @@ const int kBlockSize = 1024;
 // If the entry is called entry_name, child entries will be named something
 // like Range_entry_name:XXX:YYY where XXX is the entry signature and YYY is the
 // number of the particular child.
-std::string GenerateChildName(const std::string& base_name, int64 signature,
-                              int64 child_id) {
+std::string GenerateChildName(const std::string& base_name,
+                              int64_t signature,
+                              int64_t child_id) {
   return base::StringPrintf("Range_%s:%" PRIx64 ":%" PRIx64, base_name.c_str(),
                             signature, child_id);
 }
@@ -72,7 +74,7 @@ class ChildrenDeleter
   base::WeakPtr<disk_cache::BackendImpl> backend_;
   std::string name_;
   disk_cache::Bitmap children_map_;
-  int64 signature_;
+  int64_t signature_;
   scoped_ptr<char[]> buffer_;
   DISALLOW_COPY_AND_ASSIGN(ChildrenDeleter);
 };
@@ -222,8 +224,11 @@ bool SparseControl::CouldBeSparse() const {
   return (entry_->GetDataSize(kSparseIndex) != 0);
 }
 
-int SparseControl::StartIO(SparseOperation op, int64 offset, net::IOBuffer* buf,
-                           int buf_len, const CompletionCallback& callback) {
+int SparseControl::StartIO(SparseOperation op,
+                           int64_t offset,
+                           net::IOBuffer* buf,
+                           int buf_len,
+                           const CompletionCallback& callback) {
   DCHECK(init_);
   // We don't support simultaneous IO for sparse data.
   if (operation_ != kNoOperation)
@@ -272,7 +277,7 @@ int SparseControl::StartIO(SparseOperation op, int64 offset, net::IOBuffer* buf,
   return net::ERR_IO_PENDING;
 }
 
-int SparseControl::GetAvailableRange(int64 offset, int len, int64* start) {
+int SparseControl::GetAvailableRange(int64_t offset, int len, int64_t* start) {
   DCHECK(init_);
   // We don't support simultaneous IO for sparse data.
   if (operation_ != kNoOperation)
@@ -439,7 +444,7 @@ int SparseControl::OpenSparseEntry(int data_len) {
 
   // Grow the bitmap to the current size and copy the bits.
   children_map_.Resize(map_len * 8, false);
-  children_map_.SetMap(reinterpret_cast<uint32*>(buf->data()), map_len);
+  children_map_.SetMap(reinterpret_cast<uint32_t*>(buf->data()), map_len);
   return net::OK;
 }
 

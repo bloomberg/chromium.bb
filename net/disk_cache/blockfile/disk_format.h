@@ -45,44 +45,47 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_DISK_FORMAT_H_
 #define NET_DISK_CACHE_BLOCKFILE_DISK_FORMAT_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "net/base/net_export.h"
 #include "net/disk_cache/blockfile/disk_format_base.h"
 
 namespace disk_cache {
 
 const int kIndexTablesize = 0x10000;
-const uint32 kIndexMagic = 0xC103CAC3;
-const uint32 kCurrentVersion = 0x20000;  // Version 2.0.
+const uint32_t kIndexMagic = 0xC103CAC3;
+const uint32_t kCurrentVersion = 0x20000;  // Version 2.0.
 
 struct LruData {
-  int32     pad1[2];
-  int32     filled;          // Flag to tell when we filled the cache.
-  int32     sizes[5];
+  int32_t pad1[2];
+  int32_t filled;  // Flag to tell when we filled the cache.
+  int32_t sizes[5];
   CacheAddr heads[5];
   CacheAddr tails[5];
   CacheAddr transaction;     // In-flight operation target.
-  int32     operation;       // Actual in-flight operation.
-  int32     operation_list;  // In-flight operation list.
-  int32     pad2[7];
+  int32_t operation;         // Actual in-flight operation.
+  int32_t operation_list;    // In-flight operation list.
+  int32_t pad2[7];
 };
 
 // Header for the master index file.
 struct NET_EXPORT_PRIVATE IndexHeader {
   IndexHeader();
 
-  uint32      magic;
-  uint32      version;
-  int32       num_entries;   // Number of entries currently stored.
-  int32       num_bytes;     // Total size of the stored data.
-  int32       last_file;     // Last external file created.
-  int32       this_id;       // Id for all entries being changed (dirty flag).
+  uint32_t magic;
+  uint32_t version;
+  int32_t num_entries;       // Number of entries currently stored.
+  int32_t num_bytes;         // Total size of the stored data.
+  int32_t last_file;         // Last external file created.
+  int32_t this_id;           // Id for all entries being changed (dirty flag).
   CacheAddr   stats;         // Storage for usage data.
-  int32       table_len;     // Actual size of the table (0 == kIndexTablesize).
-  int32       crash;         // Signals a previous crash.
-  int32       experiment;    // Id of an ongoing test.
-  uint64      create_time;   // Creation time for this set of files.
-  int32       pad[52];
+  int32_t table_len;         // Actual size of the table (0 == kIndexTablesize).
+  int32_t crash;             // Signals a previous crash.
+  int32_t experiment;        // Id of an ongoing test.
+  uint64_t create_time;      // Creation time for this set of files.
+  int32_t pad[52];
   LruData     lru;           // Eviction control data.
 };
 
@@ -99,20 +102,20 @@ struct Index {
 // After that point, the whole key will be stored as a data block or external
 // file.
 struct EntryStore {
-  uint32      hash;               // Full hash of the key.
+  uint32_t hash;                  // Full hash of the key.
   CacheAddr   next;               // Next entry with the same hash or bucket.
   CacheAddr   rankings_node;      // Rankings node for this entry.
-  int32       reuse_count;        // How often is this entry used.
-  int32       refetch_count;      // How often is this fetched from the net.
-  int32       state;              // Current state.
-  uint64      creation_time;
-  int32       key_len;
+  int32_t reuse_count;            // How often is this entry used.
+  int32_t refetch_count;          // How often is this fetched from the net.
+  int32_t state;                  // Current state.
+  uint64_t creation_time;
+  int32_t key_len;
   CacheAddr   long_key;           // Optional address of a long key.
-  int32       data_size[4];       // We can store up to 4 data streams for each
+  int32_t data_size[4];           // We can store up to 4 data streams for each
   CacheAddr   data_addr[4];       // entry.
-  uint32      flags;              // Any combination of EntryFlags.
-  int32       pad[4];
-  uint32      self_hash;          // The hash of EntryStore up to this point.
+  uint32_t flags;                 // Any combination of EntryFlags.
+  int32_t pad[4];
+  uint32_t self_hash;             // The hash of EntryStore up to this point.
   char        key[256 - 24 * 4];  // null terminated
 };
 
@@ -136,13 +139,13 @@ enum EntryFlags {
 #pragma pack(push, 4)
 // Rankings information for a given entry.
 struct RankingsNode {
-  uint64      last_used;        // LRU info.
-  uint64      last_modified;    // LRU info.
+  uint64_t last_used;           // LRU info.
+  uint64_t last_modified;       // LRU info.
   CacheAddr   next;             // LRU list.
   CacheAddr   prev;             // LRU list.
   CacheAddr   contents;         // Address of the EntryStore.
-  int32       dirty;            // The entry is being modifyied.
-  uint32      self_hash;        // RankingsNode's hash.
+  int32_t dirty;                // The entry is being modifyied.
+  uint32_t self_hash;           // RankingsNode's hash.
 };
 #pragma pack(pop)
 

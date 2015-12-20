@@ -33,7 +33,7 @@ class TestURLRequestFileJob : public URLRequestFileJob {
                         NetworkDelegate* network_delegate,
                         const base::FilePath& file_path,
                         const scoped_refptr<base::TaskRunner>& file_task_runner,
-                        int64* seek_position,
+                        int64_t* seek_position,
                         std::string* observed_content)
       : URLRequestFileJob(request,
                           network_delegate,
@@ -48,7 +48,7 @@ class TestURLRequestFileJob : public URLRequestFileJob {
   ~TestURLRequestFileJob() override {}
 
  protected:
-  void OnSeekComplete(int64 result) override {
+  void OnSeekComplete(int64_t result) override {
     ASSERT_EQ(*seek_position_, 0);
     *seek_position_ = result;
   }
@@ -57,7 +57,7 @@ class TestURLRequestFileJob : public URLRequestFileJob {
     observed_content_->append(std::string(buf->data(), result));
   }
 
-  int64* const seek_position_;
+  int64_t* const seek_position_;
   std::string* const observed_content_;
 };
 
@@ -66,7 +66,7 @@ class TestURLRequestFileJob : public URLRequestFileJob {
 class TestJobFactory : public URLRequestJobFactory {
  public:
   TestJobFactory(const base::FilePath& path,
-                 int64* seek_position,
+                 int64_t* seek_position,
                  std::string* observed_content)
       : path_(path),
         seek_position_(seek_position),
@@ -119,7 +119,7 @@ class TestJobFactory : public URLRequestJobFactory {
   const base::FilePath path_;
 
   // These are mutable because MaybeCreateJobWithProtocolHandler is const.
-  mutable int64* seek_position_;
+  mutable int64_t* seek_position_;
   mutable std::string* observed_content_;
 };
 
@@ -183,7 +183,7 @@ void URLRequestFileJobEventsTest::RunRequest(const std::string& content,
   ASSERT_TRUE(CreateTempFileWithContent(content, directory, &path));
 
   {
-    int64 seek_position;
+    int64_t seek_position;
     std::string observed_content;
     TestJobFactory factory(path, &seek_position, &observed_content);
     context_.set_job_factory(&factory);

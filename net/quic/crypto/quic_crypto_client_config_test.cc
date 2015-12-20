@@ -192,7 +192,7 @@ TEST(QuicCryptoClientConfigTest, InchoateChloSecureWithSCID) {
   QuicCryptoClientConfig::CachedState state;
   CryptoHandshakeMessage scfg;
   scfg.set_tag(kSCFG);
-  uint64 future = 1;
+  uint64_t future = 1;
   scfg.SetValue(kEXPY, future);
   scfg.SetStringPiece(kSCID, "12345678");
   string details;

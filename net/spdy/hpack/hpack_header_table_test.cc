@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "net/spdy/hpack/hpack_constants.h"
 #include "net/spdy/hpack/hpack_entry.h"
@@ -75,7 +74,7 @@ class HpackHeaderTableTest : public ::testing::Test {
   HpackHeaderTableTest() : table_(), peer_(&table_) {}
 
   // Returns an entry whose Size() is equal to the given one.
-  static HpackEntry MakeEntryOfSize(uint32 size) {
+  static HpackEntry MakeEntryOfSize(uint32_t size) {
     EXPECT_GE(size, HpackEntry::kSizeOverhead);
     string name((size - HpackEntry::kSizeOverhead) / 2, 'n');
     string value(size - HpackEntry::kSizeOverhead - name.size(), 'v');
@@ -86,10 +85,10 @@ class HpackHeaderTableTest : public ::testing::Test {
 
   // Returns a vector of entries whose total size is equal to the given
   // one.
-  static HpackEntryVector MakeEntriesOfTotalSize(uint32 total_size) {
+  static HpackEntryVector MakeEntriesOfTotalSize(uint32_t total_size) {
     EXPECT_GE(total_size, HpackEntry::kSizeOverhead);
-    uint32 entry_size = HpackEntry::kSizeOverhead;
-    uint32 remaining_size = total_size;
+    uint32_t entry_size = HpackEntry::kSizeOverhead;
+    uint32_t remaining_size = total_size;
     HpackEntryVector entries;
     while (remaining_size > 0) {
       EXPECT_LE(entry_size, remaining_size);

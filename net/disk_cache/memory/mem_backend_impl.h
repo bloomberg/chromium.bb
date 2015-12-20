@@ -7,8 +7,11 @@
 #ifndef NET_DISK_CACHE_MEMORY_MEM_BACKEND_IMPL_H_
 #define NET_DISK_CACHE_MEMORY_MEM_BACKEND_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
 #include "net/disk_cache/disk_cache.h"
@@ -49,7 +52,7 @@ class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
   void UpdateRank(MemEntryImpl* node);
 
   // A user data block is being created, extended or truncated.
-  void ModifyStorageSize(int32 old_size, int32 new_size);
+  void ModifyStorageSize(int32_t old_size, int32_t new_size);
 
   // Returns the maximum size for a file to reside on the cache.
   int MaxFileSize() const;
@@ -65,7 +68,7 @@ class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
 
   // Backend interface.
   net::CacheType GetCacheType() const override;
-  int32 GetEntryCount() const override;
+  int32_t GetEntryCount() const override;
   int OpenEntry(const std::string& key,
                 Entry** entry,
                 const CompletionCallback& callback) override;
@@ -106,13 +109,13 @@ class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
   void TrimCache(bool empty);
 
   // Handles the used storage count.
-  void AddStorageSize(int32 bytes);
-  void SubstractStorageSize(int32 bytes);
+  void AddStorageSize(int32_t bytes);
+  void SubstractStorageSize(int32_t bytes);
 
   EntryMap entries_;
   MemRankings rankings_;  // Rankings to be able to trim the cache.
-  int32 max_size_;        // Maximum data size for this instance.
-  int32 current_size_;
+  int32_t max_size_;      // Maximum data size for this instance.
+  int32_t current_size_;
 
   net::NetLog* net_log_;
 

@@ -7,7 +7,6 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "net/spdy/hpack/hpack_encoder.h"

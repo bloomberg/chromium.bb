@@ -5,9 +5,11 @@
 #ifndef NET_DISK_CACHE_DISK_CACHE_TEST_BASE_H_
 #define NET_DISK_CACHE_DISK_CACHE_TEST_BASE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "net/base/cache_type.h"
@@ -72,7 +74,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   DiskCacheTestWithCache();
   ~DiskCacheTestWithCache() override;
 
-  void CreateBackend(uint32 flags, base::Thread* thread);
+  void CreateBackend(uint32_t flags, base::Thread* thread);
 
   void InitCache();
   void SimulateCrash();
@@ -86,9 +88,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
     simple_cache_mode_ = true;
   }
 
-  void SetMask(uint32 mask) {
-    mask_ = mask;
-  }
+  void SetMask(uint32_t mask) { mask_ = mask; }
 
   void SetMaxSize(int size);
 
@@ -137,10 +137,14 @@ class DiskCacheTestWithCache : public DiskCacheTest {
                net::IOBuffer* buf, int len);
   int WriteData(disk_cache::Entry* entry, int index, int offset,
                 net::IOBuffer* buf, int len, bool truncate);
-  int ReadSparseData(disk_cache::Entry* entry, int64 offset, net::IOBuffer* buf,
+  int ReadSparseData(disk_cache::Entry* entry,
+                     int64_t offset,
+                     net::IOBuffer* buf,
                      int len);
-  int WriteSparseData(disk_cache::Entry* entry, int64 offset,
-                      net::IOBuffer* buf, int len);
+  int WriteSparseData(disk_cache::Entry* entry,
+                      int64_t offset,
+                      net::IOBuffer* buf,
+                      int len);
 
   // Asks the cache to trim an entry. If |empty| is true, the whole cache is
   // deleted.
@@ -164,7 +168,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   disk_cache::SimpleBackendImpl* simple_cache_impl_;
   disk_cache::MemBackendImpl* mem_cache_;
 
-  uint32 mask_;
+  uint32_t mask_;
   int size_;
   net::CacheType type_;
   bool memory_only_;

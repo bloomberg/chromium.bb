@@ -314,7 +314,7 @@ int QuicTestClient::response_header_size() const {
   return response_header_size_;
 }
 
-int64 QuicTestClient::response_body_size() const {
+int64_t QuicTestClient::response_body_size() const {
   return response_body_size_;
 }
 
@@ -450,8 +450,8 @@ void QuicTestClient::ClearPerRequestState() {
 }
 
 void QuicTestClient::WaitForResponseForMs(int timeout_ms) {
-  int64 timeout_us = timeout_ms * base::Time::kMicrosecondsPerMillisecond;
-  int64 old_timeout_us = epoll_server()->timeout_in_us();
+  int64_t timeout_us = timeout_ms * base::Time::kMicrosecondsPerMillisecond;
+  int64_t old_timeout_us = epoll_server()->timeout_in_us();
   if (timeout_us > 0) {
     epoll_server()->set_timeout_in_us(timeout_us);
   }
@@ -471,8 +471,8 @@ void QuicTestClient::WaitForResponseForMs(int timeout_ms) {
 }
 
 void QuicTestClient::WaitForInitialResponseForMs(int timeout_ms) {
-  int64 timeout_us = timeout_ms * base::Time::kMicrosecondsPerMillisecond;
-  int64 old_timeout_us = epoll_server()->timeout_in_us();
+  int64_t timeout_us = timeout_ms * base::Time::kMicrosecondsPerMillisecond;
+  int64_t old_timeout_us = epoll_server()->timeout_in_us();
   if (timeout_us > 0) {
     epoll_server()->set_timeout_in_us(timeout_us);
   }
@@ -516,7 +516,7 @@ const SpdyHeaderBlock& QuicTestClient::response_trailers() const {
   return response_trailers_;
 }
 
-int64 QuicTestClient::response_size() const {
+int64_t QuicTestClient::response_size() const {
   return bytes_read_;
 }
 

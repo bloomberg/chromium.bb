@@ -89,8 +89,8 @@ void QuicSimpleServer::Initialize() {
 
   // If an initial flow control window has not explicitly been set, then use a
   // sensible value for a server: 1 MB for session, 64 KB for each stream.
-  const uint32 kInitialSessionFlowControlWindow = 1 * 1024 * 1024;  // 1 MB
-  const uint32 kInitialStreamFlowControlWindow = 64 * 1024;         // 64 KB
+  const uint32_t kInitialSessionFlowControlWindow = 1 * 1024 * 1024;  // 1 MB
+  const uint32_t kInitialStreamFlowControlWindow = 64 * 1024;         // 64 KB
   if (config_.GetInitialStreamFlowControlWindowToSend() ==
       kMinimumFlowControlSendWindow) {
     config_.SetInitialStreamFlowControlWindowToSend(
@@ -125,7 +125,7 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
   // because the default usage of QuicSimpleServer is as a test server with
   // one or two clients.  Adjust higher for use with many clients.
   rc = socket->SetReceiveBufferSize(
-      static_cast<int32>(kDefaultSocketReceiveBuffer));
+      static_cast<int32_t>(kDefaultSocketReceiveBuffer));
   if (rc < 0) {
     LOG(ERROR) << "SetReceiveBufferSize() failed: " << ErrorToString(rc);
     return rc;

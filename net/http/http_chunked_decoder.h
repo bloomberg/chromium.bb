@@ -45,6 +45,8 @@
 #ifndef NET_HTTP_HTTP_CHUNKED_DECODER_H_
 #define NET_HTTP_HTTP_CHUNKED_DECODER_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "net/base/net_export.h"

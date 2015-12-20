@@ -20,7 +20,7 @@ namespace test {
 namespace {
 
 // Default packet length.
-const uint32 kDefaultLength = 1000;
+const uint32_t kDefaultLength = 1000;
 
 class TimeLossAlgorithmTest : public ::testing::Test {
  protected:
@@ -65,7 +65,7 @@ TEST_F(TimeLossAlgorithmTest, NoLossFor500Nacks) {
     SendDataPacket(i);
   }
   unacked_packets_.RemoveFromInFlight(2);
-  for (uint16 i = 1; i < 500; ++i) {
+  for (uint16_t i = 1; i < 500; ++i) {
     unacked_packets_.NackPacket(1, i);
     VerifyLosses(2, nullptr, 0);
   }

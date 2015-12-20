@@ -20,7 +20,7 @@ namespace {
 
 // It is not possible to upgrade cache structures on disk that are of version
 // below this, the entire cache should be dropped for them.
-const uint32 kMinVersionAbleToUpgrade = 5;
+const uint32_t kMinVersionAbleToUpgrade = 5;
 
 const char kFakeIndexFileName[] = "index";
 const char kIndexFileName[] = "the-real-index";
@@ -155,7 +155,7 @@ bool UpgradeSimpleCacheOnDisk(const base::FilePath& path) {
   }
   fake_index_file.Close();
 
-  uint32 version_from = file_header.version;
+  uint32_t version_from = file_header.version;
   if (version_from < kMinVersionAbleToUpgrade ||
       version_from > kSimpleVersion) {
     LOG(ERROR) << "Inconsistent cache version.";

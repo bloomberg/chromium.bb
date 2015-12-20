@@ -12,17 +12,16 @@ namespace net {
 // This test vector comes from the NSS FIPS power-up self-test.
 TEST(DESTest, KnownAnswerTest1) {
   // DES known key (56-bits).
-  static const uint8 des_known_key[] = "ANSI DES";
+  static const uint8_t des_known_key[] = "ANSI DES";
 
   // DES known plaintext (64-bits).
-  static const uint8 des_ecb_known_plaintext[] = "Netscape";
+  static const uint8_t des_ecb_known_plaintext[] = "Netscape";
 
   // DES known ciphertext (64-bits).
-  static const uint8 des_ecb_known_ciphertext[] = {
-    0x26, 0x14, 0xe9, 0xc3, 0x28, 0x80, 0x50, 0xb0
-  };
+  static const uint8_t des_ecb_known_ciphertext[] = {0x26, 0x14, 0xe9, 0xc3,
+                                                     0x28, 0x80, 0x50, 0xb0};
 
-  uint8 ciphertext[8];
+  uint8_t ciphertext[8];
   memset(ciphertext, 0xaf, sizeof(ciphertext));
 
   DESEncrypt(des_known_key, des_ecb_known_plaintext, ciphertext);
@@ -33,14 +32,11 @@ TEST(DESTest, KnownAnswerTest1) {
 // Operation Validation System (MOVS): Requirements and Procedures, Appendix
 // A, page 124.
 TEST(DESTest, KnownAnswerTest2) {
-  static const uint8 key[] = {
-    0x10, 0x31, 0x6e, 0x02, 0x8c, 0x8f, 0x3b, 0x4a
-  };
-  static const uint8 plaintext[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-  static const uint8 known_ciphertext[] = {
-    0x82, 0xdc, 0xba, 0xfb, 0xde, 0xab, 0x66, 0x02
-  };
-  uint8 ciphertext[8];
+  static const uint8_t key[] = {0x10, 0x31, 0x6e, 0x02, 0x8c, 0x8f, 0x3b, 0x4a};
+  static const uint8_t plaintext[] = {0, 0, 0, 0, 0, 0, 0, 0};
+  static const uint8_t known_ciphertext[] = {0x82, 0xdc, 0xba, 0xfb,
+                                             0xde, 0xab, 0x66, 0x02};
+  uint8_t ciphertext[8];
   memset(ciphertext, 0xaf, sizeof(ciphertext));
 
   DESEncrypt(key, plaintext, ciphertext);

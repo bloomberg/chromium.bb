@@ -42,7 +42,7 @@ const int kDefaultCacheSize = 80 * 1024 * 1024;
 // Avoid trimming the cache for the first 5 minutes (10 timer ticks).
 const int kTrimDelay = 10;
 
-int DesiredIndexTableLen(int32 storage_size) {
+int DesiredIndexTableLen(int32_t storage_size) {
   if (storage_size <= k64kEntriesStore)
     return kBaseTableLen;
   if (storage_size <= k64kEntriesStore * 2)
@@ -52,7 +52,7 @@ int DesiredIndexTableLen(int32 storage_size) {
   if (storage_size <= k64kEntriesStore * 8)
     return kBaseTableLen * 8;
 
-  // The biggest storage_size for int32 requires a 4 MB table.
+  // The biggest storage_size for int32_t requires a 4 MB table.
   return kBaseTableLen * 16;
 }
 

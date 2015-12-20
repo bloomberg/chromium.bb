@@ -5,12 +5,15 @@
 #ifndef NET_TEST_SPAWNED_TEST_SERVER_BASE_TEST_SERVER_H_
 #define NET_TEST_SPAWNED_TEST_SERVER_BASE_TEST_SERVER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/host_port_pair.h"
@@ -156,7 +159,7 @@ class BaseTestServer {
 
     // If not zero, |cert_serial| will be the serial number of the
     // auto-generated leaf certificate when |server_certificate==CERT_AUTO|.
-    uint64 cert_serial;
+    uint64_t cert_serial;
 
     // True if a CertificateRequest should be sent to the client during
     // handshaking.
@@ -297,10 +300,10 @@ class BaseTestServer {
 
   // Gets port currently assigned to host_port_pair_ without checking
   // whether it's available (server started) or not.
-  uint16 GetPort();
+  uint16_t GetPort();
 
   // Sets |port| as the actual port used by Python based test server.
-  void SetPort(uint16 port);
+  void SetPort(uint16_t port);
 
   // Set up internal status when the server is started.
   bool SetupWhenServerStarted() WARN_UNUSED_RESULT;

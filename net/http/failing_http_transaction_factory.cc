@@ -127,7 +127,7 @@ bool FailingHttpTransaction::GetFullRequestHeaders(
   return false;
 }
 
-int64 FailingHttpTransaction::GetTotalReceivedBytes() const  {
+int64_t FailingHttpTransaction::GetTotalReceivedBytes() const {
   return 0;
 }
 

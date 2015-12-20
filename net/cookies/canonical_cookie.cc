@@ -44,7 +44,6 @@
 
 #include "net/cookies/canonical_cookie.h"
 
-#include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -194,7 +193,7 @@ Time CanonicalCookie::CanonExpiration(const ParsedCookie& pc,
                                       const Time& current,
                                       const Time& server_time) {
   // First, try the Max-Age attribute.
-  uint64 max_age = 0;
+  uint64_t max_age = 0;
   if (pc.HasMaxAge() &&
 #ifdef COMPILER_MSVC
       sscanf_s(
@@ -432,11 +431,9 @@ bool CanonicalCookie::IncludeForRequestURL(const GURL& url,
 
 std::string CanonicalCookie::DebugString() const {
   return base::StringPrintf(
-      "name: %s value: %s domain: %s path: %s creation: %"
-      PRId64,
-      name_.c_str(), value_.c_str(),
-      domain_.c_str(), path_.c_str(),
-      static_cast<int64>(creation_date_.ToTimeT()));
+      "name: %s value: %s domain: %s path: %s creation: %" PRId64,
+      name_.c_str(), value_.c_str(), domain_.c_str(), path_.c_str(),
+      static_cast<int64_t>(creation_date_.ToTimeT()));
 }
 
 bool CanonicalCookie::PartialCompare(const CanonicalCookie& other) const {

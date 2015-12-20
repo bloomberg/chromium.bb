@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_P2P_QUIC_P2P_STREAM_H_
 #define NET_QUIC_P2P_QUIC_P2P_STREAM_H_
 
+#include "base/macros.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/quic/reliable_quic_stream.h"

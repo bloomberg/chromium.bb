@@ -4,6 +4,7 @@
 
 #include "net/proxy/mojo_proxy_resolver_impl.h"
 
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "mojo/common/url_type_converters.h"
 #include "net/base/net_errors.h"

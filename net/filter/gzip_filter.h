@@ -15,7 +15,7 @@
 #ifndef NET_FILTER_GZIP_FILTER_H_
 #define NET_FILTER_GZIP_FILTER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/filter/filter.h"
 

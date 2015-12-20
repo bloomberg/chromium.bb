@@ -239,11 +239,11 @@ void QuicCryptoServerStream::OnServerHelloAcked() {
   session()->connection()->OnHandshakeComplete();
 }
 
-uint8 QuicCryptoServerStream::NumHandshakeMessages() const {
+uint8_t QuicCryptoServerStream::NumHandshakeMessages() const {
   return num_handshake_messages_;
 }
 
-uint8 QuicCryptoServerStream::NumHandshakeMessagesWithServerNonces() const {
+uint8_t QuicCryptoServerStream::NumHandshakeMessagesWithServerNonces() const {
   return num_handshake_messages_with_server_nonces_;
 }
 
@@ -286,7 +286,7 @@ bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(
   scoped_ptr<crypto::SecureHash> hash(
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
   hash->Update(channel_id.data(), channel_id.size());
-  uint8 digest[32];
+  uint8_t digest[32];
   hash->Finish(digest, sizeof(digest));
 
   base::Base64Encode(

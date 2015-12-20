@@ -65,9 +65,8 @@ int main(int argc, char** argv) {
   StringPiece block;
   while (HpackFuzzUtil::NextHeaderBlock(&input, &block)) {
     HpackFuzzUtil::FlipBits(
-        reinterpret_cast<uint8*>(const_cast<char*>(block.data())),
-        block.size(),
-        flip_ratio);
+        reinterpret_cast<uint8_t*>(const_cast<char*>(block.data())),
+        block.size(), flip_ratio);
 
     string prefix = HpackFuzzUtil::HeaderBlockPrefix(block.size());
 

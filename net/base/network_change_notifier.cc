@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"

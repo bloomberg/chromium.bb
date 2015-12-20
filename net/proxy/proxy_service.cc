@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -74,7 +75,7 @@ namespace {
 // set up. Network failures can happen at any time though, so we additionally
 // poll the PAC script for changes, which will allow us to recover from these
 // sorts of problems.
-const int64 kDelayAfterNetworkChangesMs = 2000;
+const int64_t kDelayAfterNetworkChangesMs = 2000;
 
 // This is the default policy for polling the PAC script.
 //

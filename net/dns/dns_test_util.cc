@@ -41,7 +41,7 @@ class MockTransaction : public DnsTransaction,
  public:
   MockTransaction(const MockDnsClientRuleList& rules,
                   const std::string& hostname,
-                  uint16 qtype,
+                  uint16_t qtype,
                   const DnsTransactionFactory::CallbackType& callback)
       : result_(MockDnsClientRule::FAIL),
         hostname_(hostname),
@@ -64,7 +64,7 @@ class MockTransaction : public DnsTransaction,
 
   const std::string& GetHostname() const override { return hostname_; }
 
-  uint16 GetType() const override { return qtype_; }
+  uint16_t GetType() const override { return qtype_; }
 
   void Start() override {
     EXPECT_FALSE(started_);
@@ -102,10 +102,10 @@ class MockTransaction : public DnsTransaction,
         header->flags |= dns_protocol::kFlagResponse;
 
         if (MockDnsClientRule::OK == result_) {
-          const uint16 kPointerToQueryName =
-              static_cast<uint16>(0xc000 | sizeof(*header));
+          const uint16_t kPointerToQueryName =
+              static_cast<uint16_t>(0xc000 | sizeof(*header));
 
-          const uint32 kTTL = 86400;  // One day.
+          const uint32_t kTTL = 86400;  // One day.
 
           // Size of RDATA which is a IPv4 or IPv6 address.
           size_t rdata_size = qtype_ == dns_protocol::kTypeA ? kIPv4AddressSize
@@ -122,7 +122,7 @@ class MockTransaction : public DnsTransaction,
           writer.WriteU16(qtype_);
           writer.WriteU16(dns_protocol::kClassIN);
           writer.WriteU32(kTTL);
-          writer.WriteU16(static_cast<uint16>(rdata_size));
+          writer.WriteU16(static_cast<uint16_t>(rdata_size));
           if (qtype_ == dns_protocol::kTypeA) {
             char kIPv4Loopback[] = { 0x7f, 0, 0, 1 };
             writer.WriteBytes(kIPv4Loopback, sizeof(kIPv4Loopback));
@@ -150,7 +150,7 @@ class MockTransaction : public DnsTransaction,
 
   MockDnsClientRule::Result result_;
   const std::string hostname_;
-  const uint16 qtype_;
+  const uint16_t qtype_;
   DnsTransactionFactory::CallbackType callback_;
   bool started_;
   bool delayed_;
@@ -168,7 +168,7 @@ class MockTransactionFactory : public DnsTransactionFactory {
 
   scoped_ptr<DnsTransaction> CreateTransaction(
       const std::string& hostname,
-      uint16 qtype,
+      uint16_t qtype,
       const DnsTransactionFactory::CallbackType& callback,
       const BoundNetLog&) override {
     MockTransaction* transaction =

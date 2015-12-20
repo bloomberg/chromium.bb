@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "net/log/net_log.h"

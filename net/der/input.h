@@ -5,7 +5,9 @@
 #ifndef NET_DER_INPUT_H_
 #define NET_DER_INPUT_H_
 
+#include <stddef.h>
 #include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"

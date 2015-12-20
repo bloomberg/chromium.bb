@@ -296,7 +296,7 @@ void LoopTask() {
 // to know which instance of the application wrote them.
 void StressTheCache(int iteration) {
   int cache_size = 0x2000000;  // 32MB.
-  uint32 mask = 0xfff;  // 4096 entries.
+  uint32_t mask = 0xfff;       // 4096 entries.
 
   base::FilePath path;
   PathService::Get(base::DIR_TEMP, &path);

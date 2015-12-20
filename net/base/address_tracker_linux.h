@@ -10,13 +10,14 @@
 #define net net_kernel
 #include <linux/rtnetlink.h>
 #undef net
+#include <stddef.h>
 
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"

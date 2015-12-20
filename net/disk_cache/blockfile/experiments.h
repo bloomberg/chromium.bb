@@ -5,7 +5,6 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_EXPERIMENTS_H_
 #define NET_DISK_CACHE_BLOCKFILE_EXPERIMENTS_H_
 
-
 namespace disk_cache {
 
 // This lists the experiment groups that we care about. Only add new groups at

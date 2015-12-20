@@ -19,7 +19,7 @@ TEST(DiskCacheBlockBitmaps, V3AllocationMap) {
     memset(&headers[i], 0, sizeof(headers[i]));
     headers[i].magic = disk_cache::kBlockMagic;
     headers[i].version = disk_cache::kBlockCurrentVersion;
-    headers[i].this_file = static_cast<int16>(i);
+    headers[i].this_file = static_cast<int16_t>(i);
     headers[i].empty[3] = 200;
     headers[i].max_entries = 800;
     bitmaps.push_back(disk_cache::BlockHeader(&headers[i]));
@@ -51,7 +51,7 @@ TEST(DiskCacheBlockBitmaps, V3AllocationMap) {
   // The first part of the allocation map should be completely filled. We used
   // 10 bits per each of four entries, so 250 bits total. All entries should go
   // to the third file.
-  uint8* buffer = reinterpret_cast<uint8*>(&headers[2].allocation_map);
+  uint8_t* buffer = reinterpret_cast<uint8_t*>(&headers[2].allocation_map);
   for (int i = 0; i < 29; i++) {
     SCOPED_TRACE(i);
     EXPECT_EQ(0xff, buffer[i]);

@@ -62,7 +62,7 @@ scoped_ptr<base::Value> NetLogIntCallback(
 
 scoped_ptr<base::Value> NetLogInt64Callback(
     const char* name,
-    int64 value,
+    int64_t value,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
   event_params->SetString(name, base::Int64ToString(value));
@@ -90,13 +90,12 @@ scoped_ptr<base::Value> NetLogString16Callback(
 }  // namespace
 
 // LoadTimingInfo requires this be 0.
-const uint32 NetLog::Source::kInvalidId = 0;
+const uint32_t NetLog::Source::kInvalidId = 0;
 
 NetLog::Source::Source() : type(SOURCE_NONE), id(kInvalidId) {
 }
 
-NetLog::Source::Source(SourceType type, uint32 id) : type(type), id(id) {
-}
+NetLog::Source::Source(SourceType type, uint32_t id) : type(type), id(id) {}
 
 bool NetLog::Source::IsValid() const {
   return id != kInvalidId;
@@ -230,7 +229,7 @@ void NetLog::AddGlobalEntry(
            &parameters_callback);
 }
 
-uint32 NetLog::NextID() {
+uint32_t NetLog::NextID() {
   return base::subtle::NoBarrier_AtomicIncrement(&last_id_, 1);
 }
 
@@ -277,7 +276,7 @@ void NetLog::UpdateIsCapturing() {
 
 // static
 std::string NetLog::TickCountToString(const base::TimeTicks& time) {
-  int64 delta_time = (time - base::TimeTicks()).InMilliseconds();
+  int64_t delta_time = (time - base::TimeTicks()).InMilliseconds();
   return base::Int64ToString(delta_time);
 }
 
@@ -353,7 +352,7 @@ NetLog::ParametersCallback NetLog::IntCallback(const char* name, int value) {
 
 // static
 NetLog::ParametersCallback NetLog::Int64Callback(const char* name,
-                                                 int64 value) {
+                                                 int64_t value) {
   return base::Bind(&NetLogInt64Callback, name, value);
 }
 

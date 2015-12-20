@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/spdy/hpack/hpack_constants.h"
 #include "net/spdy/mock_spdy_framer_visitor.h"
@@ -159,7 +160,7 @@ class SpdyFramerTestUtil {
                      SpdyRstStreamStatus status) override {
       LOG(FATAL);
     }
-    void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override {
+    void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) override {
       LOG(FATAL);
     }
     void OnPing(SpdyPingId unique_id, bool is_ack) override { LOG(FATAL); }
@@ -213,7 +214,7 @@ class SpdyFramerTestUtil {
 
     void OnPriority(SpdyStreamId stream_id,
                     SpdyStreamId parent_stream_id,
-                    uint8 weight,
+                    uint8_t weight,
                     bool exclusive) override {
       // Do nothing.
     }
@@ -403,7 +404,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     return true;
   }
 
-  void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override {
+  void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) override {
     ++setting_count_;
   }
 
@@ -476,7 +477,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   void OnPriority(SpdyStreamId stream_id,
                   SpdyStreamId parent_stream_id,
-                  uint8 weight,
+                  uint8_t weight,
                   bool exclusive) override {
     ++priority_count_;
   }
@@ -622,18 +623,18 @@ StringPiece GetSerializedHeaders(const SpdyFrame* frame,
   }
   SpdyFrameType frame_type;
   if (framer.protocol_version() > SPDY3) {
-    uint8 serialized_type;
+    uint8_t serialized_type;
     reader.ReadUInt8(&serialized_type);
     frame_type = SpdyConstants::ParseFrameType(framer.protocol_version(),
                                                serialized_type);
     DCHECK_EQ(HEADERS, frame_type);
-    uint8 flags;
+    uint8_t flags;
     reader.ReadUInt8(&flags);
     if (flags & HEADERS_FLAG_PRIORITY) {
       frame_type = SYN_STREAM;
     }
   } else {
-    uint16 serialized_type;
+    uint16_t serialized_type;
     reader.ReadUInt16(&serialized_type);
     frame_type = SpdyConstants::ParseFrameType(framer.protocol_version(),
                                                serialized_type);
@@ -2540,7 +2541,7 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x0b, 0x0c, 0x0d,
     };
 
-    uint32 kValue = 0x0a0b0c0d;
+    uint32_t kValue = 0x0a0b0c0d;
     SpdySettingsIR settings_ir;
 
     SpdySettingsFlags kFlags = static_cast<SpdySettingsFlags>(0x01);
@@ -4897,7 +4898,7 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV2V3) {
     return;
   }
 
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -4938,10 +4939,10 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
     return;
   }
 
-  uint8 valid_data_flags = DATA_FLAG_FIN | DATA_FLAG_END_SEGMENT |
-      DATA_FLAG_PADDED;
+  uint8_t valid_data_flags =
+      DATA_FLAG_FIN | DATA_FLAG_END_SEGMENT | DATA_FLAG_PADDED;
 
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -4988,7 +4989,7 @@ TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
     // SYN_STREAM not supported in SPDY>3
     return;
   }
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -5042,7 +5043,7 @@ TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
     // SYN_REPLY not supported in SPDY>3
     return;
   }
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -5081,7 +5082,7 @@ TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
 }
 
 TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -5115,7 +5116,7 @@ TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
 
 TEST_P(SpdyFramerTest, SettingsFrameFlagsOldFormat) {
   if (spdy_version_ > SPDY3) { return; }
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -5157,7 +5158,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlagsOldFormat) {
 
 TEST_P(SpdyFramerTest, SettingsFrameFlags) {
   if (spdy_version_ <= SPDY3) { return; }
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -5199,7 +5200,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
 }
 
 TEST_P(SpdyFramerTest, GoawayFrameFlags) {
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -5232,7 +5233,7 @@ TEST_P(SpdyFramerTest, GoawayFrameFlags) {
 }
 
 TEST_P(SpdyFramerTest, HeadersFrameFlags) {
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -5249,7 +5250,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
     }
     headers_ir.SetHeader("foo", "bar");
     scoped_ptr<SpdyFrame> frame(framer.SerializeHeaders(headers_ir));
-    uint8 set_flags = flags;
+    uint8_t set_flags = flags;
     if (IsHttp2()) {
       // TODO(jgraettinger): Add padding to SpdyHeadersIR,
       // and implement framing.
@@ -5321,7 +5322,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
 }
 
 TEST_P(SpdyFramerTest, PingFrameFlags) {
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -5357,7 +5358,7 @@ TEST_P(SpdyFramerTest, PingFrameFlags) {
 }
 
 TEST_P(SpdyFramerTest, WindowUpdateFrameFlags) {
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -5394,7 +5395,7 @@ TEST_P(SpdyFramerTest, PushPromiseFrameFlags) {
     return;
   }
 
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -5443,7 +5444,7 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
     return;
   }
 
-  uint8 flags = 0;
+  uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -5532,9 +5533,9 @@ TEST_P(SpdyFramerTest, EmptySynStream) {
 }
 
 TEST_P(SpdyFramerTest, SettingsFlagsAndId) {
-  const uint32 kId = 0x020304;
-  const uint32 kFlags = 0x01;
-  const uint32 kWireFormat =
+  const uint32_t kId = 0x020304;
+  const uint32_t kFlags = 0x01;
+  const uint32_t kWireFormat =
       base::HostToNet32(IsSpdy2() ? 0x04030201 : 0x01020304);
 
   SettingsFlagsAndId id_and_flags =

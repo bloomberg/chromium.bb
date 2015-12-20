@@ -4,7 +4,6 @@
 
 #include "net/dns/mojo_host_resolver_impl.h"
 
-#include "base/basictypes.h"
 #include "base/stl_util.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"

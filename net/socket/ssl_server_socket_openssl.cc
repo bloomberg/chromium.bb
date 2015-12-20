@@ -54,7 +54,7 @@ SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
       next_handshake_state_(STATE_NONE),
       completed_handshake_(false) {
   // TODO(byungchul): Need a better way to clone a key.
-  std::vector<uint8> key_bytes;
+  std::vector<uint8_t> key_bytes;
   CHECK(key->ExportPrivateKey(&key_bytes));
   key_.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes));
   CHECK(key_.get());
@@ -174,11 +174,11 @@ int SSLServerSocketOpenSSL::Write(IOBuffer* buf, int buf_len,
   return rv;
 }
 
-int SSLServerSocketOpenSSL::SetReceiveBufferSize(int32 size) {
+int SSLServerSocketOpenSSL::SetReceiveBufferSize(int32_t size) {
   return transport_socket_->SetReceiveBufferSize(size);
 }
 
-int SSLServerSocketOpenSSL::SetSendBufferSize(int32 size) {
+int SSLServerSocketOpenSSL::SetSendBufferSize(int32_t size) {
   return transport_socket_->SetSendBufferSize(size);
 }
 

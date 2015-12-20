@@ -58,11 +58,11 @@ class SQLiteChannelIDStoreTest : public testing::Test {
         GetTestCertsDirectory().AppendASCII("unittest.originbound.der");
     ASSERT_TRUE(base::ReadFileToString(key_path, key_data));
     ASSERT_TRUE(base::ReadFileToString(cert_path, cert_data));
-    std::vector<uint8> private_key(key_data->size());
+    std::vector<uint8_t> private_key(key_data->size());
     memcpy(private_key.data(), key_data->data(), key_data->size());
     base::StringPiece spki;
     ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(*cert_data, &spki));
-    std::vector<uint8> public_key(spki.size());
+    std::vector<uint8_t> public_key(spki.size());
     memcpy(public_key.data(), spki.data(), spki.size());
     key->reset(crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
         ChannelIDService::kEPKIPassword, private_key, public_key));

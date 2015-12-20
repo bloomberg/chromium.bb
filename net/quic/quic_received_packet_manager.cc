@@ -163,7 +163,7 @@ void QuicReceivedPacketManager::RecordPacketReceived(
     stats_->max_sequence_reordering =
         max(stats_->max_sequence_reordering,
             ack_frame_.largest_observed - packet_number);
-    int64 reordering_time_us =
+    int64_t reordering_time_us =
         receipt_time.Subtract(time_largest_observed_).ToMicroseconds();
     stats_->max_time_reordering_us =
         max(stats_->max_time_reordering_us, reordering_time_us);
@@ -206,7 +206,7 @@ struct isTooLarge {
   // Return true if the packet in p is too different from largest_observed_
   // to express.
   bool operator()(const std::pair<QuicPacketNumber, QuicTime>& p) const {
-    return largest_observed_ - p.first >= numeric_limits<uint8>::max();
+    return largest_observed_ - p.first >= numeric_limits<uint8_t>::max();
   }
 };
 }  // namespace
@@ -235,7 +235,7 @@ void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
   for (PacketTimeVector::iterator it = ack_frame_.received_packet_times.begin();
        it != ack_frame_.received_packet_times.end();) {
     if (ack_frame_.largest_observed - it->first >=
-        numeric_limits<uint8>::max()) {
+        numeric_limits<uint8_t>::max()) {
       it = ack_frame_.received_packet_times.erase(it);
     } else {
       ++it;

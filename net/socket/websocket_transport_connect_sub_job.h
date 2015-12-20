@@ -5,6 +5,8 @@
 #ifndef NET_SOCKET_WEBSOCKET_TRANSPORT_CONNECT_SUB_JOB_H_
 #define NET_SOCKET_WEBSOCKET_TRANSPORT_CONNECT_SUB_JOB_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

@@ -5,6 +5,9 @@
 #ifndef NET_SPDY_FUZZING_HPACK_FUZZ_UTIL_H_
 #define NET_SPDY_FUZZING_HPACK_FUZZ_UTIL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -82,7 +85,7 @@ class NET_EXPORT_PRIVATE HpackFuzzUtil {
   // Flips random bits within |buffer|. The total number of flips is
   // |flip_per_thousand| bits for every 1,024 bytes of |buffer_length|,
   // rounding up.
-  static void FlipBits(uint8* buffer,
+  static void FlipBits(uint8_t* buffer,
                        size_t buffer_length,
                        size_t flip_per_thousand);
 };

@@ -5,9 +5,11 @@
 #ifndef NET_HTTP_HTTP_STATUS_LINE_VALIDATOR_H_
 #define NET_HTTP_HTTP_STATUS_LINE_VALIDATOR_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 

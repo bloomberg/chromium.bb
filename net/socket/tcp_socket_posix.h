@@ -5,9 +5,11 @@
 #ifndef NET_SOCKET_TCP_SOCKET_POSIX_H_
 #define NET_SOCKET_TCP_SOCKET_POSIX_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/address_family.h"
@@ -59,8 +61,8 @@ class NET_EXPORT TCPSocketPosix {
   // - SetKeepAlive(true, 45).
   void SetDefaultOptionsForClient();
   int SetAddressReuse(bool allow);
-  int SetReceiveBufferSize(int32 size);
-  int SetSendBufferSize(int32 size);
+  int SetReceiveBufferSize(int32_t size);
+  int SetSendBufferSize(int32_t size);
   bool SetKeepAlive(bool enable, int delay);
   bool SetNoDelay(bool no_delay);
 

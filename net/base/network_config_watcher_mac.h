@@ -7,8 +7,8 @@
 
 #include <SystemConfiguration/SCDynamicStore.h>
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {

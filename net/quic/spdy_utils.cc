@@ -32,7 +32,7 @@ string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers) {
 
 // static
 bool SpdyUtils::ParseHeaders(const char* data,
-                             uint32 data_len,
+                             uint32_t data_len,
                              int* content_length,
                              SpdyHeaderBlock* headers) {
   SpdyFramer framer(HTTP2);
@@ -67,7 +67,7 @@ bool SpdyUtils::ParseHeaders(const char* data,
 
 // static
 bool SpdyUtils::ParseTrailers(const char* data,
-                              uint32 data_len,
+                              uint32_t data_len,
                               size_t* final_byte_offset,
                               SpdyHeaderBlock* trailers) {
   SpdyFramer framer(HTTP2);

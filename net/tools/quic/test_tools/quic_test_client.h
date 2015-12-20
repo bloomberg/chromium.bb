@@ -5,9 +5,12 @@
 #ifndef NET_TOOLS_QUIC_TEST_TOOLS_QUIC_TEST_CLIENT_H_
 #define NET_TOOLS_QUIC_TEST_TOOLS_QUIC_TEST_CLIENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
@@ -110,9 +113,9 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
   bool response_complete() const override;
   bool response_headers_complete() const override;
   const BalsaHeaders* response_headers() const override;
-  int64 response_size() const override;
+  int64_t response_size() const override;
   int response_header_size() const override;
-  int64 response_body_size() const override;
+  int64_t response_body_size() const override;
   size_t bytes_read() const override;
   size_t bytes_written() const override;
   bool buffer_body() const override;
@@ -235,12 +238,12 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
 
   SpdyPriority priority_;
   std::string response_;
-  uint64 bytes_read_;
-  uint64 bytes_written_;
+  uint64_t bytes_read_;
+  uint64_t bytes_written_;
   // The number of uncompressed HTTP header bytes received.
   int response_header_size_;
   // The number of HTTP body bytes received.
-  int64 response_body_size_;
+  int64_t response_body_size_;
   // True if we tried to connect already since the last call to Disconnect().
   bool connect_attempted_;
   // The client will auto-connect exactly once before sending data.  If

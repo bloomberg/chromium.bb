@@ -214,8 +214,8 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   bool is_done() const { return done_; }
 
   // Get/Set expected content size
-  int64 expected_content_size() const { return expected_content_size_; }
-  void set_expected_content_size(const int64& size) {
+  int64_t expected_content_size() const { return expected_content_size_; }
+  void set_expected_content_size(const int64_t& size) {
     expected_content_size_ = size;
   }
 
@@ -345,11 +345,11 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
 
   // The number of bytes read before passing to the filter. This value reflects
   // bytes read even when there is no filter.
-  int64 prefilter_bytes_read() const { return prefilter_bytes_read_; }
+  int64_t prefilter_bytes_read() const { return prefilter_bytes_read_; }
 
   // The number of bytes read after passing through the filter. This value
   // reflects bytes read even when there is no filter.
-  int64 postfilter_bytes_read() const { return postfilter_bytes_read_; }
+  int64_t postfilter_bytes_read() const { return postfilter_bytes_read_; }
 
   // Turns an integer result code into an Error and a count of bytes read.
   // The semantics are:
@@ -426,8 +426,8 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // NotifyDone so that it is kept in sync with the request.
   bool done_;
 
-  int64 prefilter_bytes_read_;
-  int64 postfilter_bytes_read_;
+  int64_t prefilter_bytes_read_;
+  int64_t postfilter_bytes_read_;
 
   // The data stream filter which is enabled on demand.
   scoped_ptr<Filter> filter_;
@@ -452,7 +452,7 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   bool has_handled_response_;
 
   // Expected content size
-  int64 expected_content_size_;
+  int64_t expected_content_size_;
 
   // Set when a redirect is deferred.
   RedirectInfo deferred_redirect_info_;

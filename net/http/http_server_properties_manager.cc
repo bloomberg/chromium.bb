@@ -23,12 +23,12 @@ namespace {
 // Time to wait before starting an update the http_server_properties_impl_ cache
 // from preferences. Scheduling another update during this period will reset the
 // timer.
-const int64 kUpdateCacheDelayMs = 1000;
+const int64_t kUpdateCacheDelayMs = 1000;
 
 // Time to wait before starting an update the preferences from the
 // http_server_properties_impl_ cache. Scheduling another update during this
 // period will reset the timer.
-const int64 kUpdatePrefsDelayMs = 60000;
+const int64_t kUpdatePrefsDelayMs = 60000;
 
 // "version" 0 indicates, http_server_properties doesn't have "version"
 // property.
@@ -310,7 +310,7 @@ bool HttpServerPropertiesManager::SetSpdySetting(
     const HostPortPair& host_port_pair,
     SpdySettingsIds id,
     SpdySettingsFlags flags,
-    uint32 value) {
+    uint32_t value) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   bool persist = http_server_properties_impl_->SetSpdySetting(
       host_port_pair, id, flags, value);
@@ -594,7 +594,7 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
     return false;
   }
   alternative_service_info->alternative_service.port =
-      static_cast<uint32>(port);
+      static_cast<uint32_t>(port);
 
   // Probability is optional, defaults to 1.0.
   alternative_service_info->probability = 1.0;
@@ -617,7 +617,7 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
   std::string expiration_string;
   if (alternative_service_dict.GetStringWithoutPathExpansion(
           kExpirationKey, &expiration_string)) {
-    int64 expiration_int64 = 0;
+    int64_t expiration_int64 = 0;
     if (!base::StringToInt64(expiration_string, &expiration_int64)) {
       DVLOG(1) << "Malformed alternative service expiration for server: "
                << server_str;
@@ -1069,7 +1069,7 @@ void HttpServerPropertiesManager::SaveSpdySettingsToServerPrefs(
   for (SettingsMap::const_iterator it = settings_map->begin();
        it != settings_map->end(); ++it) {
     SpdySettingsIds id = it->first;
-    uint32 value = it->second.second;
+    uint32_t value = it->second.second;
     std::string key = base::StringPrintf("%u", id);
     spdy_settings_dict->SetInteger(key, value);
   }
@@ -1098,7 +1098,7 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
         kProtocolKey, AlternateProtocolToString(alternative_service.protocol));
     alternative_service_dict->SetDouble(kProbabilityKey,
                                         alternative_service_info.probability);
-    // JSON cannot store int64, so expiration is converted to a string.
+    // JSON cannot store int64_t, so expiration is converted to a string.
     alternative_service_dict->SetString(
         kExpirationKey,
         base::Int64ToString(
@@ -1132,7 +1132,7 @@ void HttpServerPropertiesManager::SaveNetworkStatsToServerPrefs(
     return;
 
   base::DictionaryValue* server_network_stats_dict = new base::DictionaryValue;
-  // Becasue JSON doesn't support int64, persist int64 as a string.
+  // Becasue JSON doesn't support int64_t, persist int64_t as a string.
   server_network_stats_dict->SetInteger(
       kSrttKey, static_cast<int>(server_network_stats->srtt.ToInternalValue()));
   // TODO(rtenneti): When QUIC starts using bandwidth_estimate, then persist

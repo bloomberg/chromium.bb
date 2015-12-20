@@ -6,6 +6,7 @@
 #define NET_SSL_SSL_CLIENT_SESSION_CACHE_OPENSSL_H
 
 #include <openssl/ssl.h>
+#include <stddef.h>
 
 #include <string>
 

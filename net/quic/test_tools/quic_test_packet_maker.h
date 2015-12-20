@@ -7,6 +7,9 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_TEST_PACKET_MAKER_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_TEST_PACKET_MAKER_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/request_priority.h"
 #include "net/quic/quic_protocol.h"

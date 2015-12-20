@@ -6,6 +6,7 @@
 #define NET_CERT_NSS_CERT_DATABASE_H_
 
 #include <stdint.h>
+
 #include <string>
 #include <vector>
 

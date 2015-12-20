@@ -10,6 +10,7 @@
 #include <secoid.h>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/sha1.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/sha2.h"

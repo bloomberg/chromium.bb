@@ -4,6 +4,7 @@
 
 #include "net/url_request/url_request_filter.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"

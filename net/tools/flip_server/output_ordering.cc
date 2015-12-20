@@ -41,7 +41,7 @@ void OutputOrdering::Reset() {
   first_data_senders_.clear();
 }
 
-bool OutputOrdering::ExistsInPriorityMaps(uint32 stream_id) const {
+bool OutputOrdering::ExistsInPriorityMaps(uint32_t stream_id) const {
   StreamIdToPriorityMap::const_iterator sitpmi = stream_ids_.find(stream_id);
   return sitpmi != stream_ids_.end();
 }
@@ -57,7 +57,7 @@ OutputOrdering::BeginOutputtingAlarm::~BeginOutputtingAlarm() {
     epoll_server_->UnregisterAlarm(pmp_->alarm_token);
 }
 
-int64 OutputOrdering::BeginOutputtingAlarm::OnAlarm() {
+int64_t OutputOrdering::BeginOutputtingAlarm::OnAlarm() {
   OnUnregistration();
   output_ordering_->MoveToActive(pmp_, mci_);
   VLOG(2) << "ON ALARM! Should now start to output...";
@@ -110,8 +110,9 @@ void OutputOrdering::AddToOutputOrder(const MemCacheIter& mci) {
     }
   }
   StreamIdToPriorityMap::iterator sitpmi;
-  sitpmi = stream_ids_.insert(std::pair<uint32, PriorityMapPointer>(
-                                  mci.stream_id, PriorityMapPointer())).first;
+  sitpmi = stream_ids_.insert(std::pair<uint32_t, PriorityMapPointer>(
+                                  mci.stream_id, PriorityMapPointer()))
+               .first;
   PriorityMapPointer& pmp = sitpmi->second;
 
   BeginOutputtingAlarm* boa = new BeginOutputtingAlarm(this, &pmp, mci);
@@ -123,8 +124,9 @@ void OutputOrdering::SpliceToPriorityRing(PriorityRing::iterator pri) {
   MemCacheIter& mci = *pri;
   PriorityMap::iterator pmi = priority_map_.find(mci.priority);
   if (pmi == priority_map_.end()) {
-    pmi = priority_map_.insert(std::pair<uint32, PriorityRing>(
-                                   mci.priority, PriorityRing())).first;
+    pmi = priority_map_.insert(std::pair<uint32_t, PriorityRing>(
+                                   mci.priority, PriorityRing()))
+              .first;
   }
 
   pmi->second.splice(pmi->second.end(), first_data_senders_, pri);
@@ -159,7 +161,7 @@ MemCacheIter* OutputOrdering::GetIter() {
   return NULL;
 }
 
-void OutputOrdering::RemoveStreamId(uint32 stream_id) {
+void OutputOrdering::RemoveStreamId(uint32_t stream_id) {
   StreamIdToPriorityMap::iterator sitpmi = stream_ids_.find(stream_id);
   if (sitpmi == stream_ids_.end())
     return;

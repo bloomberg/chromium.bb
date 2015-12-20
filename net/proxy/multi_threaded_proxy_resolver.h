@@ -5,9 +5,10 @@
 #ifndef NET_PROXY_MULTI_THREADED_PROXY_RESOLVER_H_
 #define NET_PROXY_MULTI_THREADED_PROXY_RESOLVER_H_
 
+#include <stddef.h>
+
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"

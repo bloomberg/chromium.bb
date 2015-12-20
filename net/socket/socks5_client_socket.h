@@ -5,11 +5,12 @@
 #ifndef NET_SOCKET_SOCKS5_CLIENT_SOCKET_H_
 #define NET_SOCKET_SOCKS5_CLIENT_SOCKET_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
@@ -69,8 +70,8 @@ class NET_EXPORT_PRIVATE SOCKS5ClientSocket : public StreamSocket {
             int buf_len,
             const CompletionCallback& callback) override;
 
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
+  int SetReceiveBufferSize(int32_t size) override;
+  int SetSendBufferSize(int32_t size) override;
 
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
@@ -98,9 +99,9 @@ class NET_EXPORT_PRIVATE SOCKS5ClientSocket : public StreamSocket {
   static const unsigned int kGreetReadHeaderSize;
   static const unsigned int kWriteHeaderSize;
   static const unsigned int kReadHeaderSize;
-  static const uint8 kSOCKS5Version;
-  static const uint8 kTunnelCommand;
-  static const uint8 kNullByte;
+  static const uint8_t kSOCKS5Version;
+  static const uint8_t kTunnelCommand;
+  static const uint8_t kNullByte;
 
   void DoCallback(int result);
   void OnIOComplete(int result);

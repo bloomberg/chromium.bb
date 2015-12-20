@@ -26,7 +26,7 @@ namespace test {
 namespace {
 
 const char kServerHostname[] = "test.example.com";
-const uint16 kServerPort = 443;
+const uint16_t kServerPort = 443;
 
 class QuicCryptoClientStreamTest : public ::testing::Test {
  public:

@@ -6,7 +6,6 @@
 #include <string>
 
 #include "base/at_exit.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
@@ -57,7 +56,7 @@ bool StringToIPEndPoint(const std::string& ip_address_and_port,
   if (!net::ParseIPLiteralToNumber(ip, &ip_number))
     return false;
 
-  *ip_end_point = net::IPEndPoint(ip_number, static_cast<uint16>(port));
+  *ip_end_point = net::IPEndPoint(ip_number, static_cast<uint16_t>(port));
   return true;
 }
 
@@ -152,7 +151,7 @@ bool LoadReplayLog(const base::FilePath& file_path, ReplayLog* replay_log) {
       continue;
     }
 
-    int64 delta_in_milliseconds;
+    int64_t delta_in_milliseconds;
     if (!base::StringToInt64(time_and_name[0], &delta_in_milliseconds)) {
       fprintf(
           stderr,

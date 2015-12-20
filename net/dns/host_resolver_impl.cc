@@ -14,13 +14,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -217,7 +217,7 @@ bool IsGloballyReachable(const IPAddressNumber& dest,
   bool is_link_local = (address[0] == 0xFE) && ((address[1] & 0xC0) == 0x80);
   if (is_link_local)
     return false;
-  const uint8 kTeredoPrefix[] = { 0x20, 0x01, 0, 0 };
+  const uint8_t kTeredoPrefix[] = {0x20, 0x01, 0, 0};
   bool is_teredo = std::equal(kTeredoPrefix,
                               kTeredoPrefix + arraysize(kTeredoPrefix),
                               address.begin());
@@ -288,7 +288,7 @@ bool ConfigureAsyncDnsNoFallbackFieldTrial() {
 
 //-----------------------------------------------------------------------------
 
-AddressList EnsurePortOnAddressList(const AddressList& list, uint16 port) {
+AddressList EnsurePortOnAddressList(const AddressList& list, uint16_t port) {
   if (list.empty() || list.front().port() == port)
     return list;
   return AddressList::CopyWithPort(list, port);
@@ -315,7 +315,7 @@ bool IsAllIPv4Loopback(const AddressList& addresses) {
 
 // Creates NetLog parameters when the resolve failed.
 scoped_ptr<base::Value> NetLogProcTaskFailedCallback(
-    uint32 attempt_number,
+    uint32_t attempt_number,
     int net_error,
     int os_error,
     NetLogCaptureMode /* capture_mode */) {
@@ -696,7 +696,7 @@ class HostResolverImpl::ProcTask
   // may no longer exist. Multiple DoLookups() could be running in parallel, so
   // any state inside of |this| must not mutate .
   void DoLookup(const base::TimeTicks& start_time,
-                const uint32 attempt_number) {
+                const uint32_t attempt_number) {
     AddressList results;
     int os_error = 0;
     // Running on the worker thread
@@ -742,7 +742,7 @@ class HostResolverImpl::ProcTask
   // Callback for when DoLookup() completes (runs on task runner thread).
   void OnLookupComplete(const AddressList& results,
                         const base::TimeTicks& start_time,
-                        const uint32 attempt_number,
+                        const uint32_t attempt_number,
                         int error,
                         const int os_error) {
     DCHECK(task_runner_->BelongsToCurrentThread());
@@ -875,7 +875,7 @@ class HostResolverImpl::ProcTask
   }
 
   void RecordAttemptHistograms(const base::TimeTicks& start_time,
-                               const uint32 attempt_number,
+                               const uint32_t attempt_number,
                                const int error,
                                const int os_error) const {
     DCHECK(task_runner_->BelongsToCurrentThread());
@@ -943,11 +943,11 @@ class HostResolverImpl::ProcTask
   // Keeps track of the number of attempts we have made so far to resolve the
   // host. Whenever we start an attempt to resolve the host, we increase this
   // number.
-  uint32 attempt_number_;
+  uint32_t attempt_number_;
 
   // The index of the attempt which finished first (or 0 if the job is still in
   // progress).
-  uint32 completed_attempt_number_;
+  uint32_t completed_attempt_number_;
 
   // The result (a net error code) from the first attempt to complete.
   int completed_attempt_error_;

@@ -5,8 +5,8 @@
 #ifndef NET_DNS_ADDRESS_SORTER_H_
 #define NET_DNS_ADDRESS_SORTER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 

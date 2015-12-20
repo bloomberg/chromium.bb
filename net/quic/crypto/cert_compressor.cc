@@ -166,9 +166,9 @@ struct CertEntry {
   };
 
   Type type;
-  uint64 hash;
-  uint64 set_hash;
-  uint32 index;
+  uint64_t hash;
+  uint64_t set_hash;
+  uint32_t index;
 };
 
 // MatchCerts returns a vector of CertEntries describing how to most
@@ -183,7 +183,7 @@ vector<CertEntry> MatchCerts(const vector<string>& certs,
   entries.reserve(certs.size());
 
   const bool cached_valid =
-      client_cached_cert_hashes.size() % sizeof(uint64) == 0 &&
+      client_cached_cert_hashes.size() % sizeof(uint64_t) == 0 &&
       !client_cached_cert_hashes.empty();
 
   for (vector<string>::const_iterator i = certs.begin(); i != certs.end();
@@ -193,13 +193,13 @@ vector<CertEntry> MatchCerts(const vector<string>& certs,
     if (cached_valid) {
       bool cached = false;
 
-      uint64 hash = QuicUtils::FNV1a_64_Hash(i->data(), i->size());
+      uint64_t hash = QuicUtils::FNV1a_64_Hash(i->data(), i->size());
       // This assumes that the machine is little-endian.
       for (size_t j = 0; j < client_cached_cert_hashes.size();
-           j += sizeof(uint64)) {
-        uint64 cached_hash;
+           j += sizeof(uint64_t)) {
+        uint64_t cached_hash;
         memcpy(&cached_hash, client_cached_cert_hashes.data() + j,
-               sizeof(uint64));
+               sizeof(uint64_t));
         if (hash != cached_hash) {
           continue;
         }
@@ -243,10 +243,10 @@ size_t CertEntriesSize(const vector<CertEntry>& entries) {
       case CertEntry::COMPRESSED:
         break;
       case CertEntry::CACHED:
-        entries_size += sizeof(uint64);
+        entries_size += sizeof(uint64_t);
         break;
       case CertEntry::COMMON:
-        entries_size += sizeof(uint64) + sizeof(uint32);
+        entries_size += sizeof(uint64_t) + sizeof(uint32_t);
         break;
     }
   }
@@ -258,23 +258,23 @@ size_t CertEntriesSize(const vector<CertEntry>& entries) {
 
 // SerializeCertEntries serialises |entries| to |out|, which must have enough
 // space to contain them.
-void SerializeCertEntries(uint8* out, const vector<CertEntry>& entries) {
+void SerializeCertEntries(uint8_t* out, const vector<CertEntry>& entries) {
   for (vector<CertEntry>::const_iterator i = entries.begin();
        i != entries.end(); ++i) {
-    *out++ = static_cast<uint8>(i->type);
+    *out++ = static_cast<uint8_t>(i->type);
     switch (i->type) {
       case CertEntry::COMPRESSED:
         break;
       case CertEntry::CACHED:
         memcpy(out, &i->hash, sizeof(i->hash));
-        out += sizeof(uint64);
+        out += sizeof(uint64_t);
         break;
       case CertEntry::COMMON:
         // Assumes a little-endian machine.
         memcpy(out, &i->set_hash, sizeof(i->set_hash));
         out += sizeof(i->set_hash);
-        memcpy(out, &i->index, sizeof(uint32));
-        out += sizeof(uint32);
+        memcpy(out, &i->index, sizeof(uint32_t));
+        out += sizeof(uint32_t);
         break;
     }
   }
@@ -318,8 +318,8 @@ string ZlibDictForEntries(const vector<CertEntry>& entries,
 }
 
 // HashCerts returns the FNV-1a hashes of |certs|.
-vector<uint64> HashCerts(const vector<string>& certs) {
-  vector<uint64> ret;
+vector<uint64_t> HashCerts(const vector<string>& certs) {
+  vector<uint64_t> ret;
   ret.reserve(certs.size());
 
   for (vector<string>::const_iterator i = certs.begin(); i != certs.end();
@@ -340,7 +340,7 @@ bool ParseEntries(StringPiece* in_out,
                   vector<CertEntry>* out_entries,
                   vector<string>* out_certs) {
   StringPiece in = *in_out;
-  vector<uint64> cached_hashes;
+  vector<uint64_t> cached_hashes;
 
   out_entries->clear();
   out_certs->clear();
@@ -350,7 +350,7 @@ bool ParseEntries(StringPiece* in_out,
       return false;
     }
     CertEntry entry;
-    const uint8 type_byte = in[0];
+    const uint8_t type_byte = in[0];
     in.remove_prefix(1);
 
     if (type_byte == 0) {
@@ -364,11 +364,11 @@ bool ParseEntries(StringPiece* in_out,
         out_certs->push_back(string());
         break;
       case CertEntry::CACHED: {
-        if (in.size() < sizeof(uint64)) {
+        if (in.size() < sizeof(uint64_t)) {
           return false;
         }
-        memcpy(&entry.hash, in.data(), sizeof(uint64));
-        in.remove_prefix(sizeof(uint64));
+        memcpy(&entry.hash, in.data(), sizeof(uint64_t));
+        in.remove_prefix(sizeof(uint64_t));
 
         if (cached_hashes.size() != cached_certs.size()) {
           cached_hashes = HashCerts(cached_certs);
@@ -390,13 +390,13 @@ bool ParseEntries(StringPiece* in_out,
         if (!common_sets) {
           return false;
         }
-        if (in.size() < sizeof(uint64) + sizeof(uint32)) {
+        if (in.size() < sizeof(uint64_t) + sizeof(uint32_t)) {
           return false;
         }
-        memcpy(&entry.set_hash, in.data(), sizeof(uint64));
-        in.remove_prefix(sizeof(uint64));
-        memcpy(&entry.index, in.data(), sizeof(uint32));
-        in.remove_prefix(sizeof(uint32));
+        memcpy(&entry.set_hash, in.data(), sizeof(uint64_t));
+        in.remove_prefix(sizeof(uint64_t));
+        memcpy(&entry.index, in.data(), sizeof(uint32_t));
+        in.remove_prefix(sizeof(uint32_t));
 
         StringPiece cert = common_sets->GetCert(entry.set_hash, entry.index);
         if (cert.empty()) {
@@ -464,7 +464,7 @@ string CertCompressor::CompressChain(const vector<string>& certs,
   size_t uncompressed_size = 0;
   for (size_t i = 0; i < entries.size(); i++) {
     if (entries[i].type == CertEntry::COMPRESSED) {
-      uncompressed_size += 4 /* uint32 length */ + certs[i].size();
+      uncompressed_size += 4 /* uint32_t length */ + certs[i].size();
     }
   }
 
@@ -483,8 +483,8 @@ string CertCompressor::CompressChain(const vector<string>& certs,
 
     string zlib_dict = ZlibDictForEntries(entries, certs);
 
-    rv = deflateSetDictionary(&z, reinterpret_cast<const uint8*>(&zlib_dict[0]),
-                              zlib_dict.size());
+    rv = deflateSetDictionary(
+        &z, reinterpret_cast<const uint8_t*>(&zlib_dict[0]), zlib_dict.size());
     DCHECK_EQ(Z_OK, rv);
     if (rv != Z_OK) {
       return "";
@@ -499,7 +499,7 @@ string CertCompressor::CompressChain(const vector<string>& certs,
   result.resize(entries_size + (uncompressed_size > 0 ? 4 : 0) +
                 compressed_size);
 
-  uint8* j = reinterpret_cast<uint8*>(&result[0]);
+  uint8_t* j = reinterpret_cast<uint8_t*>(&result[0]);
   SerializeCertEntries(j, entries);
   j += entries_size;
 
@@ -507,9 +507,9 @@ string CertCompressor::CompressChain(const vector<string>& certs,
     return result;
   }
 
-  uint32 uncompressed_size_32 = uncompressed_size;
-  memcpy(j, &uncompressed_size_32, sizeof(uint32));
-  j += sizeof(uint32);
+  uint32_t uncompressed_size_32 = uncompressed_size;
+  memcpy(j, &uncompressed_size_32, sizeof(uint32_t));
+  j += sizeof(uint32_t);
 
   int rv;
 
@@ -521,8 +521,8 @@ string CertCompressor::CompressChain(const vector<string>& certs,
       continue;
     }
 
-    uint32 length32 = certs[i].size();
-    z.next_in = reinterpret_cast<uint8*>(&length32);
+    uint32_t length32 = certs[i].size();
+    z.next_in = reinterpret_cast<uint8_t*>(&length32);
     z.avail_in = sizeof(length32);
     rv = deflate(&z, Z_NO_FLUSH);
     DCHECK_EQ(Z_OK, rv);
@@ -532,7 +532,7 @@ string CertCompressor::CompressChain(const vector<string>& certs,
     }
 
     z.next_in =
-        const_cast<uint8*>(reinterpret_cast<const uint8*>(certs[i].data()));
+        const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(certs[i].data()));
     z.avail_in = certs[i].size();
     rv = deflate(&z, Z_NO_FLUSH);
     DCHECK_EQ(Z_OK, rv);
@@ -564,30 +564,31 @@ bool CertCompressor::DecompressChain(StringPiece in,
   }
   DCHECK_EQ(entries.size(), out_certs->size());
 
-  scoped_ptr<uint8[]> uncompressed_data;
+  scoped_ptr<uint8_t[]> uncompressed_data;
   StringPiece uncompressed;
 
   if (!in.empty()) {
-    if (in.size() < sizeof(uint32)) {
+    if (in.size() < sizeof(uint32_t)) {
       return false;
     }
 
-    uint32 uncompressed_size;
+    uint32_t uncompressed_size;
     memcpy(&uncompressed_size, in.data(), sizeof(uncompressed_size));
-    in.remove_prefix(sizeof(uint32));
+    in.remove_prefix(sizeof(uint32_t));
 
     if (uncompressed_size > 128 * 1024) {
       return false;
     }
 
-    uncompressed_data.reset(new uint8[uncompressed_size]);
+    uncompressed_data.reset(new uint8_t[uncompressed_size]);
     z_stream z;
     ScopedZLib scoped_z(ScopedZLib::INFLATE);
 
     memset(&z, 0, sizeof(z));
     z.next_out = uncompressed_data.get();
     z.avail_out = uncompressed_size;
-    z.next_in = const_cast<uint8*>(reinterpret_cast<const uint8*>(in.data()));
+    z.next_in =
+        const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(in.data()));
     z.avail_in = in.size();
 
     if (Z_OK != inflateInit(&z)) {
@@ -598,7 +599,7 @@ bool CertCompressor::DecompressChain(StringPiece in,
     int rv = inflate(&z, Z_FINISH);
     if (rv == Z_NEED_DICT) {
       string zlib_dict = ZlibDictForEntries(entries, *out_certs);
-      const uint8* dict = reinterpret_cast<const uint8*>(zlib_dict.data());
+      const uint8_t* dict = reinterpret_cast<const uint8_t*>(zlib_dict.data());
       if (Z_OK != inflateSetDictionary(&z, dict, zlib_dict.size())) {
         return false;
       }
@@ -616,12 +617,12 @@ bool CertCompressor::DecompressChain(StringPiece in,
   for (size_t i = 0; i < entries.size(); i++) {
     switch (entries[i].type) {
       case CertEntry::COMPRESSED:
-        if (uncompressed.size() < sizeof(uint32)) {
+        if (uncompressed.size() < sizeof(uint32_t)) {
           return false;
         }
-        uint32 cert_len;
+        uint32_t cert_len;
         memcpy(&cert_len, uncompressed.data(), sizeof(cert_len));
-        uncompressed.remove_prefix(sizeof(uint32));
+        uncompressed.remove_prefix(sizeof(uint32_t));
         if (uncompressed.size() < cert_len) {
           return false;
         }

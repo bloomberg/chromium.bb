@@ -11,6 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"

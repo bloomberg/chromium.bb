@@ -5,9 +5,12 @@
 #ifndef NET_QUIC_TEST_TOOLS_DELAYED_VERIFY_STRIKE_REGISTER_CLIENT_H_
 #define NET_QUIC_TEST_TOOLS_DELAYED_VERIFY_STRIKE_REGISTER_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/crypto/local_strike_register_client.h"
 
@@ -19,9 +22,9 @@ namespace test {
 class DelayedVerifyStrikeRegisterClient : public LocalStrikeRegisterClient {
  public:
   DelayedVerifyStrikeRegisterClient(unsigned max_entries,
-                                    uint32 current_time_external,
-                                    uint32 window_secs,
-                                    const uint8 orbit[8],
+                                    uint32_t current_time_external,
+                                    uint32_t window_secs,
+                                    const uint8_t orbit[8],
                                     StrikeRegister::StartupType startup);
   ~DelayedVerifyStrikeRegisterClient() override;
 

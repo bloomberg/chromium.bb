@@ -5,6 +5,9 @@
 #ifndef NET_QUIC_CRYPTO_CRYPTO_PROTOCOL_H_
 #define NET_QUIC_CRYPTO_CRYPTO_PROTOCOL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "net/base/net_export.h"
@@ -14,7 +17,7 @@
 // representation of the name of the tag.  For example
 // the client hello tag (CHLO) will be written as the
 // following 4 bytes: 'C' 'H' 'L' 'O'.  Since it is
-// stored in memory as a little endian uint32, we need
+// stored in memory as a little endian uint32_t, we need
 // to reverse the order of the bytes.
 //
 // We use a macro to ensure that no static initialisers are created. Use the

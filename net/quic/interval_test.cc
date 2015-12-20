@@ -14,7 +14,6 @@
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/test/gtest_util.h"
@@ -34,12 +33,12 @@ class IntervalTest : public ::testing::Test {
   // i1.IntersectWith(i2) and vice versa. The intersection should change i1 iff
   // changes_i1 is true, and the same for changes_i2.  The resulting
   // intersection should be result.
-  void TestIntersect(const Interval<int64>& i1,
-                     const Interval<int64>& i2,
+  void TestIntersect(const Interval<int64_t>& i1,
+                     const Interval<int64_t>& i2,
                      bool changes_i1,
                      bool changes_i2,
-                     const Interval<int64>& result) {
-    Interval<int64> i;
+                     const Interval<int64_t>& result) {
+    Interval<int64_t> i;
     i.CopyFrom(i1);
     EXPECT_TRUE(i.IntersectWith(i2) == changes_i1 && i.Equals(result));
     i.CopyFrom(i2);
@@ -48,14 +47,14 @@ class IntervalTest : public ::testing::Test {
 };
 
 TEST_F(IntervalTest, ConstructorsCopyAndClear) {
-  Interval<int32> empty;
+  Interval<int32_t> empty;
   EXPECT_TRUE(empty.Empty());
 
-  Interval<int32> d2(0, 100);
+  Interval<int32_t> d2(0, 100);
   EXPECT_EQ(0, d2.min());
   EXPECT_EQ(100, d2.max());
-  EXPECT_EQ(Interval<int32>(0, 100), d2);
-  EXPECT_NE(Interval<int32>(0, 99), d2);
+  EXPECT_EQ(Interval<int32_t>(0, 100), d2);
+  EXPECT_NE(Interval<int32_t>(0, 99), d2);
 
   empty.CopyFrom(d2);
   EXPECT_EQ(0, d2.min());
@@ -65,7 +64,7 @@ TEST_F(IntervalTest, ConstructorsCopyAndClear) {
   EXPECT_TRUE(d2.Equals(empty));
   EXPECT_EQ(d2, empty);
 
-  Interval<int32> max_less_than_min(40, 20);
+  Interval<int32_t> max_less_than_min(40, 20);
   EXPECT_TRUE(max_less_than_min.Empty());
   EXPECT_EQ(40, max_less_than_min.min());
   EXPECT_EQ(20, max_less_than_min.max());
@@ -76,7 +75,7 @@ TEST_F(IntervalTest, ConstructorsCopyAndClear) {
 }
 
 TEST_F(IntervalTest, GettersSetters) {
-  Interval<int32> d1(100, 200);
+  Interval<int32_t> d1(100, 200);
 
   // SetMin:
   d1.SetMin(30);
@@ -95,7 +94,7 @@ TEST_F(IntervalTest, GettersSetters) {
   EXPECT_EQ(220, d1.max());
 
   // SpanningUnion:
-  Interval<int32> d2;
+  Interval<int32_t> d2;
   EXPECT_TRUE(!d1.SpanningUnion(d2));
   EXPECT_EQ(30, d1.min());
   EXPECT_EQ(220, d1.max());
@@ -139,16 +138,16 @@ TEST_F(IntervalTest, GettersSetters) {
 }
 
 TEST_F(IntervalTest, CoveringOps) {
-  const Interval<int64> empty;
-  const Interval<int64> d(100, 200);
-  const Interval<int64> d1(0, 50);
-  const Interval<int64> d2(50, 110);
-  const Interval<int64> d3(110, 180);
-  const Interval<int64> d4(180, 220);
-  const Interval<int64> d5(220, 300);
-  const Interval<int64> d6(100, 150);
-  const Interval<int64> d7(150, 200);
-  const Interval<int64> d8(0, 300);
+  const Interval<int64_t> empty;
+  const Interval<int64_t> d(100, 200);
+  const Interval<int64_t> d1(0, 50);
+  const Interval<int64_t> d2(50, 110);
+  const Interval<int64_t> d3(110, 180);
+  const Interval<int64_t> d4(180, 220);
+  const Interval<int64_t> d5(220, 300);
+  const Interval<int64_t> d6(100, 150);
+  const Interval<int64_t> d7(150, 200);
+  const Interval<int64_t> d8(0, 300);
 
   // Intersection:
   EXPECT_TRUE(d.Intersects(d));
@@ -162,16 +161,16 @@ TEST_F(IntervalTest, CoveringOps) {
   EXPECT_TRUE(d.Intersects(d7) && d7.Intersects(d));
   EXPECT_TRUE(d.Intersects(d8) && d8.Intersects(d));
 
-  Interval<int64> i;
+  Interval<int64_t> i;
   EXPECT_TRUE(d.Intersects(d, &i) && d.Equals(i));
   EXPECT_TRUE(!empty.Intersects(d, NULL) && !d.Intersects(empty, NULL));
   EXPECT_TRUE(!d.Intersects(d1, NULL) && !d1.Intersects(d, NULL));
-  EXPECT_TRUE(d.Intersects(d2, &i) && i.Equals(Interval<int64>(100, 110)));
-  EXPECT_TRUE(d2.Intersects(d, &i) && i.Equals(Interval<int64>(100, 110)));
+  EXPECT_TRUE(d.Intersects(d2, &i) && i.Equals(Interval<int64_t>(100, 110)));
+  EXPECT_TRUE(d2.Intersects(d, &i) && i.Equals(Interval<int64_t>(100, 110)));
   EXPECT_TRUE(d.Intersects(d3, &i) && i.Equals(d3));
   EXPECT_TRUE(d3.Intersects(d, &i) && i.Equals(d3));
-  EXPECT_TRUE(d.Intersects(d4, &i) && i.Equals(Interval<int64>(180, 200)));
-  EXPECT_TRUE(d4.Intersects(d, &i) && i.Equals(Interval<int64>(180, 200)));
+  EXPECT_TRUE(d.Intersects(d4, &i) && i.Equals(Interval<int64_t>(180, 200)));
+  EXPECT_TRUE(d4.Intersects(d, &i) && i.Equals(Interval<int64_t>(180, 200)));
   EXPECT_TRUE(!d.Intersects(d5, NULL) && !d5.Intersects(d, NULL));
   EXPECT_TRUE(d.Intersects(d6, &i) && i.Equals(d6));
   EXPECT_TRUE(d6.Intersects(d, &i) && i.Equals(d6));
@@ -185,7 +184,7 @@ TEST_F(IntervalTest, CoveringOps) {
   TestIntersect(empty, d, false, true, empty);
   TestIntersect(d, d1, true, true, empty);
   TestIntersect(d1, d2, true, true, empty);
-  TestIntersect(d, d2, true, true, Interval<int64>(100, 110));
+  TestIntersect(d, d2, true, true, Interval<int64_t>(100, 110));
   TestIntersect(d8, d, true, false, d);
   TestIntersect(d8, d1, true, false, d1);
   TestIntersect(d8, d5, true, false, d5);
@@ -209,7 +208,7 @@ TEST_F(IntervalTest, CoveringOps) {
   EXPECT_TRUE(!d.Contains(201));
 
   // Difference:
-  vector<Interval<int64>*> diff;
+  vector<Interval<int64_t>*> diff;
 
   EXPECT_TRUE(!d.Difference(empty, &diff));
   EXPECT_EQ(1u, diff.size());
@@ -225,8 +224,8 @@ TEST_F(IntervalTest, CoveringOps) {
   EXPECT_EQ(200u, diff[0]->max());
   STLDeleteElements(&diff);
 
-  Interval<int64> lo;
-  Interval<int64> hi;
+  Interval<int64_t> lo;
+  Interval<int64_t> hi;
 
   EXPECT_TRUE(d.Difference(d2, &lo, &hi));
   EXPECT_TRUE(lo.Empty());

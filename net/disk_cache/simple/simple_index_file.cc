@@ -32,9 +32,9 @@ namespace {
 const int kEntryFilesHashLength = 16;
 const int kEntryFilesSuffixLength = 2;
 
-const uint64 kMaxEntiresInIndex = 100000000;
+const uint64_t kMaxEntiresInIndex = 100000000;
 
-uint32 CalculatePickleCRC(const base::Pickle& pickle) {
+uint32_t CalculatePickleCRC(const base::Pickle& pickle) {
   return crc32(crc32(0, Z_NULL, 0),
                reinterpret_cast<const Bytef*>(pickle.payload()),
                pickle.payload_size());
@@ -98,7 +98,7 @@ void ProcessEntryFile(SimpleIndex::EntrySet* entries,
     return;
   const base::StringPiece hash_string(
       file_name.begin(), file_name.begin() + kEntryFilesHashLength);
-  uint64 hash_key = 0;
+  uint64_t hash_key = 0;
   if (!simple_util::GetEntryHashKeyFromHexString(hash_string, &hash_key)) {
     LOG(WARNING) << "Invalid entry hash key filename while restoring index from"
                  << " disk: " << file_name;
@@ -119,7 +119,7 @@ void ProcessEntryFile(SimpleIndex::EntrySet* entries,
   if (last_used_time.is_null())
     last_used_time = file_info.last_modified;
 
-  int64 file_size = file_info.size;
+  int64_t file_size = file_info.size;
   SimpleIndex::EntrySet::iterator it = entries->find(hash_key);
   if (it == entries->end()) {
     SimpleIndex::InsertInEntrySet(
@@ -160,8 +160,8 @@ SimpleIndexFile::IndexMetadata::IndexMetadata()
       number_of_entries_(0),
       cache_size_(0) {}
 
-SimpleIndexFile::IndexMetadata::IndexMetadata(
-    uint64 number_of_entries, uint64 cache_size)
+SimpleIndexFile::IndexMetadata::IndexMetadata(uint64_t number_of_entries,
+                                              uint64_t cache_size)
     : magic_number_(kSimpleIndexMagicNumber),
       version_(kSimpleVersion),
       number_of_entries_(number_of_entries),
@@ -277,7 +277,7 @@ void SimpleIndexFile::LoadIndexEntries(base::Time cache_last_modified,
 }
 
 void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
-                                  uint64 cache_size,
+                                  uint64_t cache_size,
                                   const base::TimeTicks& start,
                                   bool app_on_background,
                                   const base::Closure& callback) {
@@ -403,8 +403,8 @@ void SimpleIndexFile::Deserialize(const char* data, int data_len,
   base::PickleIterator pickle_it(pickle);
   SimpleIndexFile::PickleHeader* header_p =
       pickle.headerT<SimpleIndexFile::PickleHeader>();
-  const uint32 crc_read = header_p->crc;
-  const uint32 crc_calculated = CalculatePickleCRC(pickle);
+  const uint32_t crc_read = header_p->crc;
+  const uint32_t crc_calculated = CalculatePickleCRC(pickle);
 
   if (crc_read != crc_calculated) {
     LOG(WARNING) << "Invalid CRC in Simple Index file.";
@@ -427,7 +427,7 @@ void SimpleIndexFile::Deserialize(const char* data, int data_len,
   entries->resize(index_metadata.GetNumberOfEntries() + kExtraSizeForMerge);
 #endif
   while (entries->size() < index_metadata.GetNumberOfEntries()) {
-    uint64 hash_key;
+    uint64_t hash_key;
     EntryMetadata entry_metadata;
     if (!pickle_it.ReadUInt64(&hash_key) ||
         !entry_metadata.Deserialize(&pickle_it)) {
@@ -438,7 +438,7 @@ void SimpleIndexFile::Deserialize(const char* data, int data_len,
     SimpleIndex::InsertInEntrySet(hash_key, entry_metadata, entries);
   }
 
-  int64 cache_last_modified;
+  int64_t cache_last_modified;
   if (!pickle_it.ReadInt64(&cache_last_modified)) {
     entries->clear();
     return;

@@ -23,8 +23,8 @@ TEST(QuicRandomTest, RandBytes) {
 
 TEST(QuicRandomTest, RandUint64) {
   QuicRandom* rng = QuicRandom::GetInstance();
-  uint64 value1 = rng->RandUint64();
-  uint64 value2 = rng->RandUint64();
+  uint64_t value1 = rng->RandUint64();
+  uint64_t value2 = rng->RandUint64();
   EXPECT_NE(value1, value2);
 }
 

@@ -5,7 +5,7 @@
 #ifndef NET_SOCKET_MOCK_CLIENT_SOCKET_POOL_MANAGER_H_
 #define NET_SOCKET_MOCK_CLIENT_SOCKET_POOL_MANAGER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/client_socket_pool_manager_impl.h"
 

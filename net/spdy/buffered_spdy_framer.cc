@@ -217,8 +217,8 @@ void BufferedSpdyFramer::OnSettings(bool clear_persisted) {
 }
 
 void BufferedSpdyFramer::OnSetting(SpdySettingsIds id,
-                                   uint8 flags,
-                                   uint32 value) {
+                                   uint8_t flags,
+                                   uint32_t value) {
   visitor_->OnSetting(id, flags, value);
 }
 
@@ -411,7 +411,7 @@ SpdyFrame* BufferedSpdyFramer::CreateHeaders(
 // SpdyWindowUpdateIR).
 SpdyFrame* BufferedSpdyFramer::CreateWindowUpdate(
     SpdyStreamId stream_id,
-    uint32 delta_window_size) const {
+    uint32_t delta_window_size) const {
   SpdyWindowUpdateIR update_ir(stream_id, delta_window_size);
   return spdy_framer_.SerializeWindowUpdate(update_ir);
 }
@@ -419,7 +419,7 @@ SpdyFrame* BufferedSpdyFramer::CreateWindowUpdate(
 // TODO(jgraettinger): Eliminate uses of this method (prefer SpdyDataIR).
 SpdyFrame* BufferedSpdyFramer::CreateDataFrame(SpdyStreamId stream_id,
                                                const char* data,
-                                               uint32 len,
+                                               uint32_t len,
                                                SpdyDataFlags flags) {
   SpdyDataIR data_ir(stream_id,
                      base::StringPiece(data, len));

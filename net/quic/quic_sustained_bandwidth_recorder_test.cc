@@ -61,7 +61,7 @@ TEST(QuicSustainedBandwidthRecorderTest, BandwidthEstimates) {
   EXPECT_EQ(recorder.BandwidthEstimate(), bandwidth);
 
   estimate_time = estimate_time.Add(srtt.Multiply(3));
-  const int64 kSeconds = 556677;
+  const int64_t kSeconds = 556677;
   QuicWallTime second_bandwidth_wall_time =
       QuicWallTime::FromUNIXSeconds(kSeconds);
   recorder.RecordEstimate(in_recovery, in_slow_start, second_bandwidth,

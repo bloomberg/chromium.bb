@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -51,7 +50,7 @@ const SpdySettingsFlags kSpdySettingsFlags = SETTINGS_FLAG_PERSISTED;
 
 struct SpdySettingsDataToVerify {
   HostPortPair spdy_server;
-  uint32 value;
+  uint32_t value;
 };
 
 class HttpServerPropertiesImplTest : public testing::Test {
@@ -73,7 +72,7 @@ class HttpServerPropertiesImplTest : public testing::Test {
 
   void InitializeSpdySettingsUploadBandwidth(SpdySettingsMap* spdy_settings_map,
                                              const HostPortPair& spdy_server,
-                                             uint32 value) {
+                                             uint32_t value) {
     SettingsMap settings_map;
     settings_map[kSpdySettingsId] =
         SettingsFlagsAndValue(kSpdySettingsFlags, value);
@@ -1109,7 +1108,7 @@ TEST_F(SpdySettingsServerPropertiesTest, SetSpdySetting) {
   HostPortPair spdy_server_google("www.google.com", 443);
   const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
   const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
-  const uint32 value1 = 31337;
+  const uint32_t value1 = 31337;
   EXPECT_TRUE(impl_.SetSpdySetting(spdy_server_google, id1, flags1, value1));
   // Check the values.
   const SettingsMap& settings_map1_ret =
@@ -1125,7 +1124,7 @@ TEST_F(SpdySettingsServerPropertiesTest, SetSpdySetting) {
   HostPortPair spdy_server_mail("mail.google.com", 443);
   const SpdySettingsIds id2 = SETTINGS_DOWNLOAD_BANDWIDTH;
   const SpdySettingsFlags flags2 = SETTINGS_FLAG_NONE;
-  const uint32 value2 = 62667;
+  const uint32_t value2 = 62667;
   EXPECT_FALSE(impl_.SetSpdySetting(spdy_server_mail, id2, flags2, value2));
   const SettingsMap& settings_map2_ret =
       impl_.GetSpdySettings(spdy_server_mail);
@@ -1135,7 +1134,7 @@ TEST_F(SpdySettingsServerPropertiesTest, SetSpdySetting) {
   HostPortPair spdy_server_docs("docs.google.com", 443);
   const SpdySettingsIds id3 = SETTINGS_ROUND_TRIP_TIME;
   const SpdySettingsFlags flags3 = SETTINGS_FLAG_PLEASE_PERSIST;
-  const uint32 value3 = 93997;
+  const uint32_t value3 = 93997;
   SettingsFlagsAndValue flags_and_value3(flags3, value3);
   EXPECT_TRUE(impl_.SetSpdySetting(spdy_server_docs, id3, flags3, value3));
   // Check the values.
@@ -1176,7 +1175,7 @@ TEST_F(SpdySettingsServerPropertiesTest, Clear) {
   HostPortPair spdy_server_google("www.google.com", 443);
   const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
   const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
-  const uint32 value1 = 31337;
+  const uint32_t value1 = 31337;
   EXPECT_TRUE(impl_.SetSpdySetting(spdy_server_google, id1, flags1, value1));
   // Check the values.
   const SettingsMap& settings_map1_ret =
@@ -1192,7 +1191,7 @@ TEST_F(SpdySettingsServerPropertiesTest, Clear) {
   HostPortPair spdy_server_docs("docs.google.com", 443);
   const SpdySettingsIds id3 = SETTINGS_ROUND_TRIP_TIME;
   const SpdySettingsFlags flags3 = SETTINGS_FLAG_PLEASE_PERSIST;
-  const uint32 value3 = 93997;
+  const uint32_t value3 = 93997;
   EXPECT_TRUE(impl_.SetSpdySetting(spdy_server_docs, id3, flags3, value3));
   // Check the values.
   const SettingsMap& settings_map3_ret =
@@ -1214,14 +1213,14 @@ TEST_F(SpdySettingsServerPropertiesTest, MRUOfGetSpdySettings) {
   HostPortPair spdy_server_google("www.google.com", 443);
   const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
   const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
-  const uint32 value1 = 31337;
+  const uint32_t value1 = 31337;
   EXPECT_TRUE(impl_.SetSpdySetting(spdy_server_google, id1, flags1, value1));
 
   // Add docs.google.com:443 as persisting
   HostPortPair spdy_server_docs("docs.google.com", 443);
   const SpdySettingsIds id2 = SETTINGS_ROUND_TRIP_TIME;
   const SpdySettingsFlags flags2 = SETTINGS_FLAG_PLEASE_PERSIST;
-  const uint32 value2 = 93997;
+  const uint32_t value2 = 93997;
   EXPECT_TRUE(impl_.SetSpdySetting(spdy_server_docs, id2, flags2, value2));
 
   // Verify the first element is docs.google.com:443.

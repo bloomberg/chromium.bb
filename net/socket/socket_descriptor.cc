@@ -9,8 +9,6 @@
 #include <sys/socket.h>
 #endif
 
-#include "base/basictypes.h"
-
 #if defined(OS_WIN)
 #include <ws2tcpip.h>
 #include "base/win/windows_version.h"
@@ -19,7 +17,7 @@
 
 namespace net {
 
-PlatformSocketFactory* g_socket_factory = NULL;
+PlatformSocketFactory* g_socket_factory = nullptr;
 
 PlatformSocketFactory::PlatformSocketFactory() {
 }
@@ -34,7 +32,7 @@ void PlatformSocketFactory::SetInstance(PlatformSocketFactory* factory) {
 SocketDescriptor CreateSocketDefault(int family, int type, int protocol) {
 #if defined(OS_WIN)
   EnsureWinsockInit();
-  SocketDescriptor result = ::WSASocket(family, type, protocol, NULL, 0,
+  SocketDescriptor result = ::WSASocket(family, type, protocol, nullptr, 0,
                                         WSA_FLAG_OVERLAPPED);
   if (result != kInvalidSocket && family == AF_INET6 &&
       base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_VISTA) {

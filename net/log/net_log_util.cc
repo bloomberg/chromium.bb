@@ -275,7 +275,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
   // actual system times.  Time ticks are used throughout since they are stable
   // across system clock changes.
   {
-    int64 tick_to_unix_time_ms =
+    int64_t tick_to_unix_time_ms =
         (base::TimeTicks() - base::TimeTicks::UnixEpoch()).InMilliseconds();
 
     // Pass it as a string, since it may be too large to fit in an integer.

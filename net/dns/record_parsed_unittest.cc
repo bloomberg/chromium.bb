@@ -12,23 +12,16 @@
 
 namespace net {
 
-static const uint8 kT1ResponseWithCacheFlushBit[] = {
-  0x0a, 'c', 'o', 'd', 'e', 'r', 'e', 'v', 'i', 'e', 'w',
-  0x08, 'c', 'h', 'r', 'o', 'm', 'i', 'u', 'm',
-  0x03, 'o', 'r', 'g',
-  0x00,
-  0x00, 0x05,        // TYPE is CNAME.
-  0x80, 0x01,        // CLASS is IN with cache flush bit set.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  0x24, 0x74,
-  0x00, 0x12,        // RDLENGTH is 18 bytes.
-  // ghs.l.google.com in DNS format.
-  0x03, 'g', 'h', 's',
-  0x01, 'l',
-  0x06, 'g', 'o', 'o', 'g', 'l', 'e',
-  0x03, 'c', 'o', 'm',
-  0x00
-};
+static const uint8_t kT1ResponseWithCacheFlushBit[] = {
+    0x0a, 'c', 'o', 'd', 'e', 'r', 'e', 'v', 'i', 'e', 'w', 0x08, 'c', 'h', 'r',
+    'o', 'm', 'i', 'u', 'm', 0x03, 'o', 'r', 'g', 0x00, 0x00,
+    0x05,        // TYPE is CNAME.
+    0x80, 0x01,  // CLASS is IN with cache flush bit set.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+    0x24, 0x74, 0x00, 0x12,  // RDLENGTH is 18 bytes.
+    // ghs.l.google.com in DNS format.
+    0x03, 'g', 'h', 's', 0x01, 'l', 0x06, 'g', 'o', 'o', 'g', 'l', 'e', 0x03,
+    'c', 'o', 'm', 0x00};
 
 TEST(RecordParsedTest, ParseSingleRecord) {
   DnsRecordParser parser(kT1ResponseDatagram, sizeof(kT1ResponseDatagram),

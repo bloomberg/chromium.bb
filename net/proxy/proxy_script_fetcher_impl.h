@@ -5,10 +5,12 @@
 #ifndef NET_PROXY_PROXY_SCRIPT_FETCHER_IMPL_H_
 #define NET_PROXY_PROXY_SCRIPT_FETCHER_IMPL_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

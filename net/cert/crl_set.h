@@ -5,6 +5,9 @@
 #ifndef NET_CERT_CRL_SET_H_
 #define NET_CERT_CRL_SET_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>

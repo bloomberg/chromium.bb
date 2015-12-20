@@ -15,7 +15,9 @@
 #ifndef NET_FILTER_GZIP_HEADER_H_
 #define NET_FILTER_GZIP_HEADER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 
 namespace net {
 
@@ -80,11 +82,11 @@ class GZipHeader {
     IN_DONE,
   };
 
-  static const uint8 magic[];  // gzip magic header
+  static const uint8_t magic[];  // gzip magic header
 
   int    state_;  // our current State in the parsing FSM: an int so we can ++
-  uint8  flags_;         // the flags byte of the header ("FLG" in the RFC)
-  uint16 extra_length_;  // how much of the "extra field" we have yet to read
+  uint8_t flags_;  // the flags byte of the header ("FLG" in the RFC)
+  uint16_t extra_length_;  // how much of the "extra field" we have yet to read
 
   DISALLOW_COPY_AND_ASSIGN(GZipHeader);
 };

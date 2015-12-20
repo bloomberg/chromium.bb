@@ -5,7 +5,10 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_STREAM_FACTORY_PEER_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_STREAM_FACTORY_PEER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/task_runner.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/privacy_mode.h"
@@ -47,9 +50,9 @@ class QuicStreamFactoryPeer {
                             base::TaskRunner* task_runner);
 
   static int GetNumberOfLossyConnections(QuicStreamFactory* factory,
-                                         uint16 port);
+                                         uint16_t port);
 
-  static bool IsQuicDisabled(QuicStreamFactory* factory, uint16 port);
+  static bool IsQuicDisabled(QuicStreamFactory* factory, uint16_t port);
 
   static bool GetDelayTcpRace(QuicStreamFactory* factory);
 

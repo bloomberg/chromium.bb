@@ -7,7 +7,6 @@
 #include <dirent.h>
 #include <stdio.h>
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -38,7 +37,7 @@ int NumOpenFDs() {
 
 // Creates a new QuicClient and Initializes it. Caller is responsible for
 // deletion.
-QuicClient* CreateAndInitializeQuicClient(EpollServer* eps, uint16 port) {
+QuicClient* CreateAndInitializeQuicClient(EpollServer* eps, uint16_t port) {
   IPEndPoint server_address(IPEndPoint(net::test::Loopback4(), port));
   QuicServerId server_id("hostname", server_address.port(),
                          PRIVACY_MODE_DISABLED);

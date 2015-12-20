@@ -14,8 +14,11 @@
 #ifndef NET_FILTER_SDCH_FILTER_H_
 #define NET_FILTER_SDCH_FILTER_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/base/sdch_dictionary.h"

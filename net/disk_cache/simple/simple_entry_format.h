@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/basictypes.h"
 #include "net/base/net_export.h"
 
 namespace base {
@@ -16,9 +15,9 @@ class Time;
 
 namespace disk_cache {
 
-const uint64 kSimpleInitialMagicNumber = UINT64_C(0xfcfb6d1ba7725c30);
-const uint64 kSimpleFinalMagicNumber = UINT64_C(0xf4fa6f45970d41d8);
-const uint64 kSimpleSparseRangeMagicNumber = UINT64_C(0xeb97bf016553676b);
+const uint64_t kSimpleInitialMagicNumber = UINT64_C(0xfcfb6d1ba7725c30);
+const uint64_t kSimpleFinalMagicNumber = UINT64_C(0xf4fa6f45970d41d8);
+const uint64_t kSimpleSparseRangeMagicNumber = UINT64_C(0xeb97bf016553676b);
 
 // A file containing stream 0 and stream 1 in the Simple cache consists of:
 //   - a SimpleFileHeader.
@@ -39,10 +38,10 @@ static const int kSimpleEntryStreamCount = 3;
 struct NET_EXPORT_PRIVATE SimpleFileHeader {
   SimpleFileHeader();
 
-  uint64 initial_magic_number;
-  uint32 version;
-  uint32 key_length;
-  uint32 key_hash;
+  uint64_t initial_magic_number;
+  uint32_t version;
+  uint32_t key_length;
+  uint32_t key_hash;
 };
 
 struct NET_EXPORT_PRIVATE SimpleFileEOF {
@@ -52,20 +51,20 @@ struct NET_EXPORT_PRIVATE SimpleFileEOF {
 
   SimpleFileEOF();
 
-  uint64 final_magic_number;
-  uint32 flags;
-  uint32 data_crc32;
+  uint64_t final_magic_number;
+  uint32_t flags;
+  uint32_t data_crc32;
   // |stream_size| is only used in the EOF record for stream 0.
-  uint32 stream_size;
+  uint32_t stream_size;
 };
 
 struct SimpleFileSparseRangeHeader {
   SimpleFileSparseRangeHeader();
 
-  uint64 sparse_range_magic_number;
-  int64 offset;
-  int64 length;
-  uint32 data_crc32;
+  uint64_t sparse_range_magic_number;
+  int64_t offset;
+  int64_t length;
+  uint32_t data_crc32;
 };
 
 }  // namespace disk_cache

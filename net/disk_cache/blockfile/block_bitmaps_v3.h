@@ -8,6 +8,7 @@
 #define NET_DISK_CACHE_BLOCKFILE_BLOCK_BITMAPS_V3_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/blockfile/addr.h"
 #include "net/disk_cache/blockfile/block_files.h"

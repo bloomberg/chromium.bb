@@ -6,6 +6,7 @@
 #define NET_WEBSOCKETS_WEBSOCKET_DEFLATE_PARAMETERS_H_
 
 #include <stdint.h>
+
 #include <string>
 
 #include "base/logging.h"

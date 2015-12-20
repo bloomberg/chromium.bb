@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
@@ -1249,7 +1250,7 @@ TEST_P(QuicPacketCreatorTest, EntropyFlag) {
           (mock_random_.RandUint64() & (UINT64_C(1) << j)) != 0;
       bool observed_rand_bool =
           (serialized.entropy_hash & (1 << ((j + 1) % 8))) != 0;
-      uint8 rest_of_hash = serialized.entropy_hash & ~(1 << ((j + 1) % 8));
+      uint8_t rest_of_hash = serialized.entropy_hash & ~(1 << ((j + 1) % 8));
       EXPECT_EQ(expected_rand_bool, observed_rand_bool);
       EXPECT_EQ(0, rest_of_hash);
       delete serialized.packet;

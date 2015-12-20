@@ -5,10 +5,12 @@
 #ifndef NET_BASE_IP_ADDRESS_NUMBER_H_
 #define NET_BASE_IP_ADDRESS_NUMBER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 

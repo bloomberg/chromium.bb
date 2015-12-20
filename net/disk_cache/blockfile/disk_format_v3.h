@@ -45,14 +45,15 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_DISK_FORMAT_V3_H_
 #define NET_DISK_CACHE_BLOCKFILE_DISK_FORMAT_V3_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "net/disk_cache/blockfile/disk_format_base.h"
 
 namespace disk_cache {
 
 const int kBaseTableLen = 0x400;
-const uint32 kIndexMagicV3 = 0xC103CAC3;
-const uint32 kVersion3 = 0x30000;  // Version 3.0.
+const uint32_t kIndexMagicV3 = 0xC103CAC3;
+const uint32_t kVersion3 = 0x30000;  // Version 3.0.
 
 // Flags for a given cache.
 enum CacheFlags {
@@ -63,30 +64,30 @@ enum CacheFlags {
 
 // Header for the master index file.
 struct IndexHeaderV3 {
-  uint32      magic;
-  uint32      version;
-  int32       num_entries;   // Number of entries currently stored.
-  int32       num_bytes;     // Total size of the stored data.
-  int32       last_file;     // Last external file created.
-  int32       reserved1;
+  uint32_t magic;
+  uint32_t version;
+  int32_t num_entries;  // Number of entries currently stored.
+  int32_t num_bytes;    // Total size of the stored data.
+  int32_t last_file;    // Last external file created.
+  int32_t reserved1;
   CacheAddr   stats;         // Storage for usage data.
-  int32       table_len;     // Actual size of the table.
-  int32       crash;         // Signals a previous crash.
-  int32       experiment;    // Id of an ongoing test.
-  int32       max_bytes;     // Total maximum size of the stored data.
-  uint32      flags;
-  int32       used_cells;
-  int32       max_bucket;
-  uint64      create_time;   // Creation time for this set of files.
-  uint64      base_time;     // Current base for timestamps.
-  uint64      old_time;      // Previous time used for timestamps.
-  int32       max_block_file;
-  int32       num_no_use_entries;
-  int32       num_low_use_entries;
-  int32       num_high_use_entries;
-  int32       reserved;
-  int32       num_evicted_entries;
-  int32       pad[6];
+  int32_t table_len;         // Actual size of the table.
+  int32_t crash;             // Signals a previous crash.
+  int32_t experiment;        // Id of an ongoing test.
+  int32_t max_bytes;         // Total maximum size of the stored data.
+  uint32_t flags;
+  int32_t used_cells;
+  int32_t max_bucket;
+  uint64_t create_time;  // Creation time for this set of files.
+  uint64_t base_time;    // Current base for timestamps.
+  uint64_t old_time;     // Previous time used for timestamps.
+  int32_t max_block_file;
+  int32_t num_no_use_entries;
+  int32_t num_low_use_entries;
+  int32_t num_high_use_entries;
+  int32_t reserved;
+  int32_t num_evicted_entries;
+  int32_t pad[6];
 };
 
 const int kBaseBitmapBytes = 3968;
@@ -95,7 +96,7 @@ const int kBaseBitmapBytes = 3968;
 // given time. The required file size can be computed from header.table_len.
 struct IndexBitmap {
   IndexHeaderV3   header;
-  uint32          bitmap[kBaseBitmapBytes / 4];  // First page of the bitmap.
+  uint32_t bitmap[kBaseBitmapBytes / 4];  // First page of the bitmap.
 };
 static_assert(sizeof(IndexBitmap) == 4096, "bad IndexHeader");
 
@@ -180,16 +181,16 @@ struct IndexCell {
   // If that same Addr is stored on a large table, the location field would be
   // 0x61234
 
-  uint64      first_part;
-  uint8       last_part;
+  uint64_t first_part;
+  uint8_t last_part;
 };
 static_assert(sizeof(IndexCell) == 9, "bad IndexCell");
 
 const int kCellsPerBucket = 4;
 struct IndexBucket {
   IndexCell   cells[kCellsPerBucket];
-  int32       next;
-  uint32      hash;  // The high order byte is reserved (should be zero).
+  int32_t next;
+  uint32_t hash;  // The high order byte is reserved (should be zero).
 };
 static_assert(sizeof(IndexBucket) == 44, "bad IndexBucket");
 const int kBytesPerCell = 44 / kCellsPerBucket;
@@ -209,35 +210,35 @@ enum EntryFlags {
 };
 
 struct EntryRecord {
-  uint32      hash;
-  uint32      pad1;
-  uint8       reuse_count;
-  uint8       refetch_count;
-  int8        state;              // Current EntryState.
-  uint8       flags;              // Any combination of EntryFlags.
-  int32       key_len;
-  int32       data_size[4];       // We can store up to 4 data streams for each
+  uint32_t hash;
+  uint32_t pad1;
+  uint8_t reuse_count;
+  uint8_t refetch_count;
+  int8_t state;   // Current EntryState.
+  uint8_t flags;  // Any combination of EntryFlags.
+  int32_t key_len;
+  int32_t data_size[4];           // We can store up to 4 data streams for each
   CacheAddr   data_addr[4];       // entry.
-  uint32      data_hash[4];
-  uint64      creation_time;
-  uint64      last_modified_time;
-  uint64      last_access_time;
-  int32       pad[3];
-  uint32      self_hash;
+  uint32_t data_hash[4];
+  uint64_t creation_time;
+  uint64_t last_modified_time;
+  uint64_t last_access_time;
+  int32_t pad[3];
+  uint32_t self_hash;
 };
 static_assert(sizeof(EntryRecord) == 104, "bad EntryRecord");
 
 struct ShortEntryRecord {
-  uint32      hash;
-  uint32      pad1;
-  uint8       reuse_count;
-  uint8       refetch_count;
-  int8        state;              // Current EntryState.
-  uint8       flags;
-  int32       key_len;
-  uint64      last_access_time;
-  uint32      long_hash[5];
-  uint32      self_hash;
+  uint32_t hash;
+  uint32_t pad1;
+  uint8_t reuse_count;
+  uint8_t refetch_count;
+  int8_t state;  // Current EntryState.
+  uint8_t flags;
+  int32_t key_len;
+  uint64_t last_access_time;
+  uint32_t long_hash[5];
+  uint32_t self_hash;
 };
 static_assert(sizeof(ShortEntryRecord) == 48, "bad ShortEntryRecord");
 

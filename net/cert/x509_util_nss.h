@@ -5,6 +5,8 @@
 #ifndef NET_CERT_X509_UTIL_NSS_H_
 #define NET_CERT_X509_UTIL_NSS_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

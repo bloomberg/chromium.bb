@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/task_runner.h"
 #include "base/test/test_pending_task.h"
 

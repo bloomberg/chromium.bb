@@ -12,6 +12,7 @@
 
 #include "base/debug/leak_tracker.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
@@ -521,7 +522,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   const URLRequestStatus& status() const { return status_; }
 
   // Returns a globally unique identifier for this request.
-  uint64 identifier() const { return identifier_; }
+  uint64_t identifier() const { return identifier_; }
 
   // This method is called to start the request.  The delegate will receive
   // a OnResponseStarted callback when the request is started.  The request

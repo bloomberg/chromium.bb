@@ -5,10 +5,12 @@
 #ifndef NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_STREAM_H_
 #define NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_STREAM_H_
 
+#include <stddef.h>
 #include <sys/types.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_spdy_stream.h"

@@ -4,7 +4,6 @@
 
 #include <ostream>
 
-
 #include "base/memory/scoped_ptr.h"
 #include "net/http/http_auth_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -8,7 +8,6 @@
 #include <iostream>
 
 #include "base/at_exit.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -20,7 +19,7 @@
 #include "net/tools/quic/quic_simple_server.h"
 
 // The port the quic server will listen on.
-int32 FLAGS_port = 6121;
+int32_t FLAGS_port = 6121;
 
 net::ProofSource* CreateProofSource(const base::FilePath& cert_path,
                                     const base::FilePath& key_path) {

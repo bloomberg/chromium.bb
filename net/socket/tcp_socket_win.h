@@ -5,10 +5,11 @@
 #ifndef NET_SOCKET_TCP_SOCKET_WIN_H_
 #define NET_SOCKET_TCP_SOCKET_WIN_H_
 
+#include <stdint.h>
 #include <winsock2.h>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -68,8 +69,8 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // - SetKeepAlive(true, 45).
   void SetDefaultOptionsForClient();
   int SetExclusiveAddrUse();
-  int SetReceiveBufferSize(int32 size);
-  int SetSendBufferSize(int32 size);
+  int SetReceiveBufferSize(int32_t size);
+  int SetSendBufferSize(int32_t size);
   bool SetKeepAlive(bool enable, int delay);
   bool SetNoDelay(bool no_delay);
 

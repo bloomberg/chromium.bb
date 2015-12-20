@@ -42,7 +42,7 @@ scoped_ptr<SrvRecordRdata> SrvRecordRdata::Create(
   return rdata.Pass();
 }
 
-uint16 SrvRecordRdata::Type() const {
+uint16_t SrvRecordRdata::Type() const {
   return SrvRecordRdata::kType;
 }
 
@@ -78,7 +78,7 @@ scoped_ptr<ARecordRdata> ARecordRdata::Create(
   return rdata.Pass();
 }
 
-uint16 ARecordRdata::Type() const {
+uint16_t ARecordRdata::Type() const {
   return ARecordRdata::kType;
 }
 
@@ -111,7 +111,7 @@ scoped_ptr<AAAARecordRdata> AAAARecordRdata::Create(
   return rdata.Pass();
 }
 
-uint16 AAAARecordRdata::Type() const {
+uint16_t AAAARecordRdata::Type() const {
   return AAAARecordRdata::kType;
 }
 
@@ -139,7 +139,7 @@ scoped_ptr<CnameRecordRdata> CnameRecordRdata::Create(
   return rdata.Pass();
 }
 
-uint16 CnameRecordRdata::Type() const {
+uint16_t CnameRecordRdata::Type() const {
   return CnameRecordRdata::kType;
 }
 
@@ -168,7 +168,7 @@ scoped_ptr<PtrRecordRdata> PtrRecordRdata::Create(
   return rdata.Pass();
 }
 
-uint16 PtrRecordRdata::Type() const {
+uint16_t PtrRecordRdata::Type() const {
   return PtrRecordRdata::kType;
 }
 
@@ -191,7 +191,7 @@ scoped_ptr<TxtRecordRdata> TxtRecordRdata::Create(
   scoped_ptr<TxtRecordRdata> rdata(new TxtRecordRdata);
 
   for (size_t i = 0; i < data.size(); ) {
-    uint8 length = data[i];
+    uint8_t length = data[i];
 
     if (i + length >= data.size())
       return scoped_ptr<TxtRecordRdata>();
@@ -205,7 +205,7 @@ scoped_ptr<TxtRecordRdata> TxtRecordRdata::Create(
   return rdata.Pass();
 }
 
-uint16 TxtRecordRdata::Type() const {
+uint16_t TxtRecordRdata::Type() const {
   return TxtRecordRdata::kType;
 }
 
@@ -237,8 +237,8 @@ scoped_ptr<NsecRecordRdata> NsecRecordRdata::Create(
     return scoped_ptr<NsecRecordRdata>();
 
   struct BitmapHeader {
-    uint8 block_number;  // The block number should be zero.
-    uint8 length;  // Bitmap length in bytes. Between 1 and 32.
+    uint8_t block_number;  // The block number should be zero.
+    uint8_t length;        // Bitmap length in bytes. Between 1 and 32.
   };
 
   const BitmapHeader* header = reinterpret_cast<const BitmapHeader*>(
@@ -263,7 +263,7 @@ scoped_ptr<NsecRecordRdata> NsecRecordRdata::Create(
   return rdata.Pass();
 }
 
-uint16 NsecRecordRdata::Type() const {
+uint16_t NsecRecordRdata::Type() const {
   return NsecRecordRdata::kType;
 }
 

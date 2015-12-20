@@ -355,7 +355,7 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
           base::Bind(&NetLogQuicAckFrameCallback, frame.ack_frame));
       const PacketNumberQueue& missing_packets =
           frame.ack_frame->missing_packets;
-      const uint8 max_ranges = std::numeric_limits<uint8>::max();
+      const uint8_t max_ranges = std::numeric_limits<uint8_t>::max();
       // Compute an upper bound on the number of NACK ranges. If the bound
       // is below the max, then it clearly isn't truncated.
       if (missing_packets.NumPacketsSlow() < max_ranges ||

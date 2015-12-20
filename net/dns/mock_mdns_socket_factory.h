@@ -5,6 +5,8 @@
 #ifndef NET_DNS_MOCK_MDNS_SOCKET_FACTORY_H_
 #define NET_DNS_MOCK_MDNS_SOCKET_FACTORY_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -37,8 +39,8 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
                                    const std::string address,
                                    const CompletionCallback& callback));
 
-  MOCK_METHOD1(SetReceiveBufferSize, int(int32 size));
-  MOCK_METHOD1(SetSendBufferSize, int(int32 size));
+  MOCK_METHOD1(SetReceiveBufferSize, int(int32_t size));
+  MOCK_METHOD1(SetSendBufferSize, int(int32_t size));
 
   MOCK_METHOD0(Close, void());
 
@@ -52,7 +54,7 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
   MOCK_CONST_METHOD1(JoinGroup, int(const IPAddressNumber& group_address));
   MOCK_CONST_METHOD1(LeaveGroup, int(const IPAddressNumber& address));
 
-  MOCK_METHOD1(SetMulticastInterface, int(uint32 interface_index));
+  MOCK_METHOD1(SetMulticastInterface, int(uint32_t interface_index));
   MOCK_METHOD1(SetMulticastTimeToLive, int(int ttl));
   MOCK_METHOD1(SetMulticastLoopbackMode, int(bool loopback));
 
@@ -81,7 +83,7 @@ class MockMDnsSocketFactory : public MDnsSocketFactory {
   void CreateSockets(
       std::vector<scoped_ptr<DatagramServerSocket>>* sockets) override;
 
-  void SimulateReceive(const uint8* packet, int size);
+  void SimulateReceive(const uint8_t* packet, int size);
 
   MOCK_METHOD1(OnSendTo, void(const std::string&));
 

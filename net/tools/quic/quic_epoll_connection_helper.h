@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <set>
 
+#include "base/macros.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_protocol.h"

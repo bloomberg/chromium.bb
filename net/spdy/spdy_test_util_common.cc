@@ -226,7 +226,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   }
   void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override {}
   void OnSettings(bool clear_persisted) override {}
-  void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override {}
+  void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) override {}
   void OnPing(SpdyPingId unique_id, bool is_ack) override {}
   void OnRstStream(SpdyStreamId stream_id,
                    SpdyRstStreamStatus status) override {}
@@ -296,10 +296,10 @@ MockECSignatureCreator::MockECSignatureCreator(crypto::ECPrivateKey* key)
     : key_(key) {
 }
 
-bool MockECSignatureCreator::Sign(const uint8* data,
+bool MockECSignatureCreator::Sign(const uint8_t* data,
                                   int data_len,
-                                  std::vector<uint8>* signature) {
-  std::vector<uint8> private_key_value;
+                                  std::vector<uint8_t>* signature) {
+  std::vector<uint8_t> private_key_value;
   key_->ExportValue(&private_key_value);
   std::string head = "fakesignature";
   std::string tail = "/fakesignature";
@@ -315,8 +315,8 @@ bool MockECSignatureCreator::Sign(const uint8* data,
 }
 
 bool MockECSignatureCreator::DecodeSignature(
-    const std::vector<uint8>& signature,
-    std::vector<uint8>* out_raw_sig) {
+    const std::vector<uint8_t>& signature,
+    std::vector<uint8_t>* out_raw_sig) {
   *out_raw_sig = signature;
   return true;
 }
@@ -726,19 +726,19 @@ scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlockForProxy(
 
 scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructHeadHeaderBlock(
     base::StringPiece url,
-    int64 content_length) const {
+    int64_t content_length) const {
   return ConstructHeaderBlock("HEAD", url, nullptr);
 }
 
 scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructPostHeaderBlock(
     base::StringPiece url,
-    int64 content_length) const {
+    int64_t content_length) const {
   return ConstructHeaderBlock("POST", url, &content_length);
 }
 
 scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructPutHeaderBlock(
     base::StringPiece url,
-    int64 content_length) const {
+    int64_t content_length) const {
   return ConstructHeaderBlock("PUT", url, &content_length);
 }
 
@@ -885,7 +885,8 @@ SpdyFrame* SpdyTestUtil::ConstructSpdySettingsAck() const {
   return new SpdyFrame(kEmptyWrite, 0, false);
 }
 
-SpdyFrame* SpdyTestUtil::ConstructSpdyPing(uint32 ping_id, bool is_ack) const {
+SpdyFrame* SpdyTestUtil::ConstructSpdyPing(uint32_t ping_id,
+                                           bool is_ack) const {
   SpdyPingIR ping_ir(ping_id);
   ping_ir.set_is_ack(is_ack);
   return CreateFramer(false)->SerializeFrame(ping_ir);
@@ -909,7 +910,8 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGoAway(SpdyStreamId last_good_stream_id,
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyWindowUpdate(
-    const SpdyStreamId stream_id, uint32 delta_window_size) const {
+    const SpdyStreamId stream_id,
+    uint32_t delta_window_size) const {
   SpdyWindowUpdateIR update_ir(stream_id, delta_window_size);
   return CreateFramer(false)->SerializeFrame(update_ir);
 }
@@ -1185,7 +1187,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGetSynReply(
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyPost(const char* url,
                                            SpdyStreamId stream_id,
-                                           int64 content_length,
+                                           int64_t content_length,
                                            RequestPriority priority,
                                            const char* const extra_headers[],
                                            int extra_header_count) {
@@ -1223,7 +1225,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyBodyFrame(int stream_id, bool fin) {
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyBodyFrame(int stream_id,
                                                 const char* data,
-                                                uint32 len,
+                                                uint32_t len,
                                                 bool fin) {
   SpdyFramer framer(spdy_version_);
   SpdyDataIR data_ir(stream_id, base::StringPiece(data, len));
@@ -1233,7 +1235,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyBodyFrame(int stream_id,
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyBodyFrame(int stream_id,
                                                 const char* data,
-                                                uint32 len,
+                                                uint32_t len,
                                                 bool fin,
                                                 int padding_length) {
   SpdyFramer framer(spdy_version_);
@@ -1300,7 +1302,7 @@ const char* SpdyTestUtil::GetPathKey() const {
 scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructHeaderBlock(
     base::StringPiece method,
     base::StringPiece url,
-    int64* content_length) const {
+    int64_t* content_length) const {
   std::string scheme, host, path;
   ParseUrl(url.data(), &scheme, &host, &path);
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());

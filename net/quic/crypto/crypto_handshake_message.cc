@@ -165,19 +165,19 @@ QuicErrorCode CryptoHandshakeMessage::GetNthValue24(QuicTag tag,
 }
 
 QuicErrorCode CryptoHandshakeMessage::GetUint32(QuicTag tag,
-                                                uint32* out) const {
-  return GetPOD(tag, out, sizeof(uint32));
+                                                uint32_t* out) const {
+  return GetPOD(tag, out, sizeof(uint32_t));
 }
 
 QuicErrorCode CryptoHandshakeMessage::GetUint64(QuicTag tag,
-                                                uint64* out) const {
-  return GetPOD(tag, out, sizeof(uint64));
+                                                uint64_t* out) const {
+  return GetPOD(tag, out, sizeof(uint64_t));
 }
 
 size_t CryptoHandshakeMessage::size() const {
-  size_t ret = sizeof(QuicTag) + sizeof(uint16) /* number of entries */ +
-               sizeof(uint16) /* padding */;
-  ret += (sizeof(QuicTag) + sizeof(uint32) /* end offset */) *
+  size_t ret = sizeof(QuicTag) + sizeof(uint16_t) /* number of entries */ +
+               sizeof(uint16_t) /* padding */;
+  ret += (sizeof(QuicTag) + sizeof(uint32_t) /* end offset */) *
          tag_value_map_.size();
   for (QuicTagValueMap::const_iterator i = tag_value_map_.begin();
        i != tag_value_map_.end(); ++i) {
@@ -240,9 +240,9 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
       case kMSPC:
       case kSRBF:
       case kSWND:
-        // uint32 value
+        // uint32_t value
         if (it->second.size() == 4) {
-          uint32 value;
+          uint32_t value;
           memcpy(&value, it->second.data(), sizeof(value));
           ret += base::UintToString(value);
           done = true;
@@ -268,10 +268,10 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
         }
         break;
       case kRREJ:
-        // uint32 lists
-        if (it->second.size() % sizeof(uint32) == 0) {
-          for (size_t j = 0; j < it->second.size(); j += sizeof(uint32)) {
-            uint32 value;
+        // uint32_t lists
+        if (it->second.size() % sizeof(uint32_t) == 0) {
+          for (size_t j = 0; j < it->second.size(); j += sizeof(uint32_t)) {
+            uint32_t value;
             memcpy(&value, it->second.data() + j, sizeof(value));
             if (j > 0) {
               ret += ",";

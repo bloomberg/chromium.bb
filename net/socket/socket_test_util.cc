@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -708,7 +707,8 @@ MockClientSocketFactory::CreateDatagramClientSocket(
   scoped_ptr<MockUDPClientSocket> socket(
       new MockUDPClientSocket(data_provider, net_log));
   if (bind_type == DatagramSocket::RANDOM_BIND)
-    socket->set_source_port(static_cast<uint16>(rand_int_cb.Run(1025, 65535)));
+    socket->set_source_port(
+        static_cast<uint16_t>(rand_int_cb.Run(1025, 65535)));
   udp_client_socket_ports_.push_back(socket->source_port());
   return socket.Pass();
 }
@@ -755,11 +755,11 @@ MockClientSocket::MockClientSocket(const BoundNetLog& net_log)
   peer_addr_ = IPEndPoint(ip, 0);
 }
 
-int MockClientSocket::SetReceiveBufferSize(int32 size) {
+int MockClientSocket::SetReceiveBufferSize(int32_t size) {
   return OK;
 }
 
-int MockClientSocket::SetSendBufferSize(int32 size) {
+int MockClientSocket::SetSendBufferSize(int32_t size) {
   return OK;
 }
 
@@ -1310,11 +1310,11 @@ int MockUDPClientSocket::Write(IOBuffer* buf, int buf_len,
   return write_result.result;
 }
 
-int MockUDPClientSocket::SetReceiveBufferSize(int32 size) {
+int MockUDPClientSocket::SetReceiveBufferSize(int32_t size) {
   return OK;
 }
 
-int MockUDPClientSocket::SetSendBufferSize(int32 size) {
+int MockUDPClientSocket::SetSendBufferSize(int32_t size) {
   return OK;
 }
 

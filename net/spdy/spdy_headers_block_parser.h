@@ -5,6 +5,9 @@
 #ifndef NET_SPDY_SPDY_HEADERS_BLOCK_PARSER_H_
 #define NET_SPDY_SPDY_HEADERS_BLOCK_PARSER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"

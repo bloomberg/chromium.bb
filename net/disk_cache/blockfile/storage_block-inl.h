@@ -7,6 +7,9 @@
 
 #include "net/disk_cache/blockfile/storage_block.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/hash.h"
 #include "base/logging.h"
 #include "net/disk_cache/blockfile/trace.h"
@@ -103,7 +106,7 @@ template<typename T> bool StorageBlock<T>::HasData() const {
 }
 
 template<typename T> bool StorageBlock<T>::VerifyHash() const {
-  uint32 hash = CalculateHash();
+  uint32_t hash = CalculateHash();
   return (!data_->self_hash || data_->self_hash == hash);
 }
 
@@ -196,7 +199,8 @@ template<typename T> void StorageBlock<T>::DeleteData() {
   }
 }
 
-template<typename T> uint32 StorageBlock<T>::CalculateHash() const {
+template <typename T>
+uint32_t StorageBlock<T>::CalculateHash() const {
   return base::Hash(reinterpret_cast<char*>(data_), offsetof(T, self_hash));
 }
 

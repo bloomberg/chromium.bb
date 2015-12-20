@@ -5,11 +5,14 @@
 #ifndef NET_HTTP_HTTP_RESPONSE_HEADERS_H_
 #define NET_HTTP_HTTP_RESPONSE_HEADERS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -104,7 +107,7 @@ class NET_EXPORT HttpResponseHeaders
   // |byte_range| must have a valid, bounded range (i.e. coming from a valid
   // response or should be usable for a response).
   void UpdateWithNewRange(const HttpByteRange& byte_range,
-                          int64 resource_size,
+                          int64_t resource_size,
                           bool replace_status_line);
 
   // Creates a normalized header string.  The output will be formatted exactly
@@ -257,11 +260,11 @@ class NET_EXPORT HttpResponseHeaders
 
   // Extracts the value of the Content-Length header or returns -1 if there is
   // no such header in the response.
-  int64 GetContentLength() const;
+  int64_t GetContentLength() const;
 
   // Extracts the value of the specified header or returns -1 if there is no
   // such header in the response.
-  int64 GetInt64HeaderValue(const std::string& header) const;
+  int64_t GetInt64HeaderValue(const std::string& header) const;
 
   // Extracts the values in a Content-Range header and returns true if they are
   // valid for a 206 response; otherwise returns false.
@@ -270,9 +273,9 @@ class NET_EXPORT HttpResponseHeaders
   // |*last_byte_position| = inclusive position of the last byte of the range
   // |*instance_length| = size in bytes of the object requested
   // If any of the above values is unknown, its value will be -1.
-  bool GetContentRange(int64* first_byte_position,
-                       int64* last_byte_position,
-                       int64* instance_length) const;
+  bool GetContentRange(int64_t* first_byte_position,
+                       int64_t* last_byte_position,
+                       int64_t* instance_length) const;
 
   // Returns true if the response is chunk-encoded.
   bool IsChunkEncoded() const;

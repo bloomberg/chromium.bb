@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_protocol.h"
@@ -88,9 +89,9 @@ TEST_F(QuicCryptoStreamTest, ProcessRawData) {
 
 TEST_F(QuicCryptoStreamTest, ProcessBadData) {
   string bad(message_data_->data(), message_data_->length());
-  const int kFirstTagIndex = sizeof(uint32) +  // message tag
-                             sizeof(uint16) +  // number of tag-value pairs
-                             sizeof(uint16);   // padding
+  const int kFirstTagIndex = sizeof(uint32_t) +  // message tag
+                             sizeof(uint16_t) +  // number of tag-value pairs
+                             sizeof(uint16_t);   // padding
   EXPECT_EQ(1, bad[kFirstTagIndex]);
   bad[kFirstTagIndex] = 0x7F;  // out of order tag
 

@@ -10,7 +10,10 @@
 #ifndef NET_BASE_FILE_STREAM_H_
 #define NET_BASE_FILE_STREAM_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 

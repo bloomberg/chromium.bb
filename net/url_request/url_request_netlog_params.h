@@ -5,6 +5,8 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_NETLOG_PARAMS_H_
 #define NET_URL_REQUEST_URL_REQUEST_NETLOG_PARAMS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "net/base/net_export.h"
@@ -25,7 +27,7 @@ NET_EXPORT scoped_ptr<base::Value> NetLogURLRequestStartCallback(
     const std::string* method,
     int load_flags,
     RequestPriority priority,
-    int64 upload_id,
+    int64_t upload_id,
     NetLogCaptureMode /* capture_mode */);
 
 }  // namespace net

@@ -5,8 +5,8 @@
 #ifndef NET_TEST_EMBEDDED_TEST_SERVER_HTTP_CONNECTION_H_
 #define NET_TEST_EMBEDDED_TEST_SERVER_HTTP_CONNECTION_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

@@ -5,6 +5,7 @@
 #ifndef NET_SSL_THREADED_SSL_PRIVATE_KEY_H_
 #define NET_SSL_THREADED_SSL_PRIVATE_KEY_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>

@@ -6,6 +6,7 @@
 #define NET_WEBSOCKETS_WEBSOCKET_DEFLATE_PREDICTOR_IMPL_H_
 
 #include <stddef.h>
+
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"

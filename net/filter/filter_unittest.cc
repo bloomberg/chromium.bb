@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "net/base/io_buffer.h"
 #include "net/filter/filter.h"
 #include "net/filter/mock_filter_context.h"

@@ -7,10 +7,13 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
@@ -34,10 +37,10 @@ namespace net {
 namespace test {
 
 static const QuicConnectionId kTestConnectionId = 42;
-static const uint16 kTestPort = 123;
-static const uint32 kInitialStreamFlowControlWindowForTest =
+static const uint16_t kTestPort = 123;
+static const uint32_t kInitialStreamFlowControlWindowForTest =
     1024 * 1024;  // 1 MB
-static const uint32 kInitialSessionFlowControlWindowForTest =
+static const uint32_t kInitialSessionFlowControlWindowForTest =
     1536 * 1024;  // 1.5 MB
 // Data stream IDs start at 5: the crypto stream is 1, headers stream is 3.
 static const QuicStreamId kClientDataStreamId1 = 5;
@@ -184,12 +187,12 @@ class SimpleRandom {
   SimpleRandom() : seed_(0) {}
 
   // Returns a random number in the range [0, kuint64max].
-  uint64 RandUint64();
+  uint64_t RandUint64();
 
-  void set_seed(uint64 seed) { seed_ = seed; }
+  void set_seed(uint64_t seed) { seed_ = seed; }
 
  private:
-  uint64 seed_;
+  uint64_t seed_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleRandom);
 };

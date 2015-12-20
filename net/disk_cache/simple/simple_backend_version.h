@@ -5,6 +5,8 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_BACKEND_VERSION_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_BACKEND_VERSION_H_
 
+#include <stdint.h>
+
 namespace disk_cache {
 
 // Short rules helping to think about data upgrades within Simple Cache:
@@ -16,11 +18,11 @@ namespace disk_cache {
 //     |kSimpleVersion - 1| then the whole cache directory will be cleared.
 //   * Dropping cache data on disk or some of its parts can be a valid way to
 //     Upgrade.
-const uint32 kSimpleVersion = 6;
+const uint32_t kSimpleVersion = 6;
 
 // The version of the entry file(s) as written to disk. Must be updated iff the
 // entry format changes with the overall backend version update.
-const uint32 kSimpleEntryVersionOnDisk = 5;
+const uint32_t kSimpleEntryVersionOnDisk = 5;
 
 }  // namespace disk_cache
 

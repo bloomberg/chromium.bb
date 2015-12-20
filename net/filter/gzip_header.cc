@@ -11,7 +11,7 @@
 
 namespace net {
 
-const uint8 GZipHeader::magic[] = { 0x1f, 0x8b };
+const uint8_t GZipHeader::magic[] = {0x1f, 0x8b};
 
 GZipHeader::GZipHeader() {
   Reset();
@@ -29,8 +29,8 @@ void GZipHeader::Reset() {
 GZipHeader::Status GZipHeader::ReadMore(const char* inbuf, int inbuf_len,
                                         const char** header_end) {
   DCHECK_GE(inbuf_len, 0);
-  const uint8* pos = reinterpret_cast<const uint8*>(inbuf);
-  const uint8* const end = pos + inbuf_len;
+  const uint8_t* pos = reinterpret_cast<const uint8_t*>(inbuf);
+  const uint8_t* const end = pos + inbuf_len;
 
   while ( pos < end ) {
     switch ( state_ ) {
@@ -105,9 +105,8 @@ GZipHeader::Status GZipHeader::ReadMore(const char* inbuf, int inbuf_len,
       case IN_FEXTRA: {
         // Grab the rest of the bytes in the extra field, or as many
         // of them as are actually present so far.
-        const uint16 num_extra_bytes = static_cast<uint16>(std::min(
-            static_cast<ptrdiff_t>(extra_length_),
-            (end - pos)));
+        const uint16_t num_extra_bytes = static_cast<uint16_t>(
+            std::min(static_cast<ptrdiff_t>(extra_length_), (end - pos)));
         pos += num_extra_bytes;
         extra_length_ -= num_extra_bytes;
         if ( extra_length_ == 0 ) {
@@ -123,7 +122,7 @@ GZipHeader::Status GZipHeader::ReadMore(const char* inbuf, int inbuf_len,
           break;
         }
         // See if we can find the end of the \0-terminated FNAME field.
-        pos = reinterpret_cast<const uint8*>(memchr(pos, '\0', (end - pos)));
+        pos = reinterpret_cast<const uint8_t*>(memchr(pos, '\0', (end - pos)));
         if ( pos != NULL ) {
           pos++;  // advance past the '\0'
           flags_ &= ~FLAG_FNAME;   // we're done with the FNAME stuff
@@ -139,7 +138,7 @@ GZipHeader::Status GZipHeader::ReadMore(const char* inbuf, int inbuf_len,
           break;
         }
         // See if we can find the end of the \0-terminated FCOMMENT field.
-        pos = reinterpret_cast<const uint8*>(memchr(pos, '\0', (end - pos)));
+        pos = reinterpret_cast<const uint8_t*>(memchr(pos, '\0', (end - pos)));
         if ( pos != NULL ) {
           pos++;  // advance past the '\0'
           flags_ &= ~FLAG_FCOMMENT;   // we're done with the FCOMMENT stuff

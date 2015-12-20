@@ -79,6 +79,8 @@
 #ifndef NET_TOOLS_FLIP_SERVER_URL_TO_FILENAME_ENCODER_H_
 #define NET_TOOLS_FLIP_SERVER_URL_TO_FILENAME_ENCODER_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/strings/string_util.h"

@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_TEST_TOOLS_MOCK_QUIC_DISPATCHER_H_
 #define NET_QUIC_TEST_TOOLS_MOCK_QUIC_DISPATCHER_H_
 
+#include "base/macros.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/quic_config.h"

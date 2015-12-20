@@ -26,7 +26,7 @@ namespace {
 void CopyData(const scoped_refptr<IOBuffer>& buf,
               int buf_size,
               const scoped_refptr<base::RefCountedMemory>& data,
-              int64 data_offset) {
+              int64_t data_offset) {
   memcpy(buf->data(), data->front() + data_offset, buf_size);
 }
 
@@ -66,7 +66,7 @@ bool URLRequestSimpleJob::GetCharset(std::string* charset) {
 URLRequestSimpleJob::~URLRequestSimpleJob() {}
 
 int URLRequestSimpleJob::ReadRawData(IOBuffer* buf, int buf_size) {
-  buf_size = std::min(static_cast<int64>(buf_size),
+  buf_size = std::min(static_cast<int64_t>(buf_size),
                       byte_range_.last_byte_position() - next_data_offset_ + 1);
   if (buf_size == 0)
     return 0;

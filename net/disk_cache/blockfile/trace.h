@@ -9,7 +9,7 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_TRACE_H_
 #define NET_DISK_CACHE_BLOCKFILE_TRACE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 

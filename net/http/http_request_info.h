@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
 #include "net/http/http_request_headers.h"

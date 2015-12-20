@@ -6,6 +6,8 @@
 #define NET_HTTP_HTTP_STREAM_FACTORY_IMPL_REQUEST_H_
 
 #include <set>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/http/http_stream_factory_impl.h"
 #include "net/log/net_log.h"

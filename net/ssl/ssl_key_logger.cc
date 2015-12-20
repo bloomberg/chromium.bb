@@ -11,6 +11,7 @@
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 

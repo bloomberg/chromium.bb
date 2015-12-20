@@ -5,9 +5,10 @@
 #ifndef NET_SPDY_SPDY_SESSION_TEST_UTIL_H_
 #define NET_SPDY_SPDY_SESSION_TEST_UTIL_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 
@@ -33,10 +34,10 @@ class SpdySessionTestTaskObserver : public base::MessageLoop::TaskObserver {
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
   // Returns the number of tasks posted by the given function and file.
-  uint16 executed_count() const { return executed_count_; }
+  uint16_t executed_count() const { return executed_count_; }
 
  private:
-  uint16 executed_count_;
+  uint16_t executed_count_;
   std::string file_name_;
   std::string function_name_;
 };

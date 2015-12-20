@@ -48,11 +48,11 @@
 #include <functional>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -1573,7 +1573,7 @@ void CookieMonster::StoreLoadedCookies(
 
   for (std::vector<CanonicalCookie*>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    int64 cookie_creation_time = (*it)->CreationDate().ToInternalValue();
+    int64_t cookie_creation_time = (*it)->CreationDate().ToInternalValue();
 
     if (creation_times_.insert(cookie_creation_time).second) {
       CookieMap::iterator inserted =

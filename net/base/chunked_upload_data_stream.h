@@ -5,6 +5,9 @@
 #ifndef NET_BASE_CHUNKED_UPLOAD_DATA_STREAM_H_
 #define NET_BASE_CHUNKED_UPLOAD_DATA_STREAM_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

@@ -13,7 +13,6 @@
 #include "net/http/http_server_properties.h"
 #include "net/spdy/spdy_session.h"
 
-
 namespace net {
 
 namespace {

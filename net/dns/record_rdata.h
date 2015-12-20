@@ -5,11 +5,13 @@
 #ifndef NET_DNS_RECORD_RDATA_H_
 #define NET_DNS_RECORD_RDATA_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_address_number.h"
@@ -27,7 +29,7 @@ class NET_EXPORT_PRIVATE RecordRdata {
   virtual ~RecordRdata() {}
 
   virtual bool IsEqual(const RecordRdata* other) const = 0;
-  virtual uint16 Type() const = 0;
+  virtual uint16_t Type() const = 0;
 
  protected:
   RecordRdata();
@@ -42,27 +44,27 @@ class NET_EXPORT_PRIVATE RecordRdata {
 // target: domain name (on-the-wire representation)
 class NET_EXPORT_PRIVATE SrvRecordRdata : public RecordRdata {
  public:
-  static const uint16 kType = dns_protocol::kTypeSRV;
+  static const uint16_t kType = dns_protocol::kTypeSRV;
 
   ~SrvRecordRdata() override;
   static scoped_ptr<SrvRecordRdata> Create(const base::StringPiece& data,
                                            const DnsRecordParser& parser);
 
   bool IsEqual(const RecordRdata* other) const override;
-  uint16 Type() const override;
+  uint16_t Type() const override;
 
-  uint16 priority() const { return priority_; }
-  uint16 weight() const { return weight_; }
-  uint16 port() const { return port_; }
+  uint16_t priority() const { return priority_; }
+  uint16_t weight() const { return weight_; }
+  uint16_t port() const { return port_; }
 
   const std::string& target() const { return target_; }
 
  private:
   SrvRecordRdata();
 
-  uint16 priority_;
-  uint16 weight_;
-  uint16 port_;
+  uint16_t priority_;
+  uint16_t weight_;
+  uint16_t port_;
 
   std::string target_;
 
@@ -73,13 +75,13 @@ class NET_EXPORT_PRIVATE SrvRecordRdata : public RecordRdata {
 // 4 bytes for IP address.
 class NET_EXPORT_PRIVATE ARecordRdata : public RecordRdata {
  public:
-  static const uint16 kType = dns_protocol::kTypeA;
+  static const uint16_t kType = dns_protocol::kTypeA;
 
   ~ARecordRdata() override;
   static scoped_ptr<ARecordRdata> Create(const base::StringPiece& data,
                                          const DnsRecordParser& parser);
   bool IsEqual(const RecordRdata* other) const override;
-  uint16 Type() const override;
+  uint16_t Type() const override;
 
   const IPAddressNumber& address() const { return address_; }
 
@@ -95,13 +97,13 @@ class NET_EXPORT_PRIVATE ARecordRdata : public RecordRdata {
 // 16 bytes for IP address.
 class NET_EXPORT_PRIVATE AAAARecordRdata : public RecordRdata {
  public:
-  static const uint16 kType = dns_protocol::kTypeAAAA;
+  static const uint16_t kType = dns_protocol::kTypeAAAA;
 
   ~AAAARecordRdata() override;
   static scoped_ptr<AAAARecordRdata> Create(const base::StringPiece& data,
                                          const DnsRecordParser& parser);
   bool IsEqual(const RecordRdata* other) const override;
-  uint16 Type() const override;
+  uint16_t Type() const override;
 
   const IPAddressNumber& address() const { return address_; }
 
@@ -117,13 +119,13 @@ class NET_EXPORT_PRIVATE AAAARecordRdata : public RecordRdata {
 // cname: On the wire representation of domain name.
 class NET_EXPORT_PRIVATE CnameRecordRdata : public RecordRdata {
  public:
-  static const uint16 kType = dns_protocol::kTypeCNAME;
+  static const uint16_t kType = dns_protocol::kTypeCNAME;
 
   ~CnameRecordRdata() override;
   static scoped_ptr<CnameRecordRdata> Create(const base::StringPiece& data,
                                              const DnsRecordParser& parser);
   bool IsEqual(const RecordRdata* other) const override;
-  uint16 Type() const override;
+  uint16_t Type() const override;
 
   std::string cname() const { return cname_; }
 
@@ -139,13 +141,13 @@ class NET_EXPORT_PRIVATE CnameRecordRdata : public RecordRdata {
 // domain: On the wire representation of domain name.
 class NET_EXPORT_PRIVATE PtrRecordRdata : public RecordRdata {
  public:
-  static const uint16 kType = dns_protocol::kTypePTR;
+  static const uint16_t kType = dns_protocol::kTypePTR;
 
   ~PtrRecordRdata() override;
   static scoped_ptr<PtrRecordRdata> Create(const base::StringPiece& data,
                                            const DnsRecordParser& parser);
   bool IsEqual(const RecordRdata* other) const override;
-  uint16 Type() const override;
+  uint16_t Type() const override;
 
   std::string ptrdomain() const { return ptrdomain_; }
 
@@ -162,13 +164,13 @@ class NET_EXPORT_PRIVATE PtrRecordRdata : public RecordRdata {
 // a <character-string> is a length octet followed by as many characters.
 class NET_EXPORT_PRIVATE TxtRecordRdata : public RecordRdata {
  public:
-  static const uint16 kType = dns_protocol::kTypeTXT;
+  static const uint16_t kType = dns_protocol::kTypeTXT;
 
   ~TxtRecordRdata() override;
   static scoped_ptr<TxtRecordRdata> Create(const base::StringPiece& data,
                                            const DnsRecordParser& parser);
   bool IsEqual(const RecordRdata* other) const override;
-  uint16 Type() const override;
+  uint16_t Type() const override;
 
   const std::vector<std::string>& texts() const { return texts_; }
 
@@ -186,13 +188,13 @@ class NET_EXPORT_PRIVATE TxtRecordRdata : public RecordRdata {
 // http://www.rfc-editor.org/rfc/rfc6762.txt Section 6.1.
 class NET_EXPORT_PRIVATE NsecRecordRdata : public RecordRdata {
  public:
-  static const uint16 kType = dns_protocol::kTypeNSEC;
+  static const uint16_t kType = dns_protocol::kTypeNSEC;
 
   ~NsecRecordRdata() override;
   static scoped_ptr<NsecRecordRdata> Create(const base::StringPiece& data,
                                             const DnsRecordParser& parser);
   bool IsEqual(const RecordRdata* other) const override;
-  uint16 Type() const override;
+  uint16_t Type() const override;
 
   // Length of the bitmap in bits.
   unsigned bitmap_length() const { return bitmap_.size() * 8; }
@@ -205,7 +207,7 @@ class NET_EXPORT_PRIVATE NsecRecordRdata : public RecordRdata {
  private:
   NsecRecordRdata();
 
-  std::vector<uint8> bitmap_;
+  std::vector<uint8_t> bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(NsecRecordRdata);
 };

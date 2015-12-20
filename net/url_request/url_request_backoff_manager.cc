@@ -12,9 +12,9 @@
 
 namespace net {
 
-const uint16 URLRequestBackoffManager::kMinimumBackoffInSeconds = 1;
-const uint16 URLRequestBackoffManager::kMaximumBackoffInSeconds = 50000;
-const uint16 URLRequestBackoffManager::kNewEntriesBetweenCollecting = 200;
+const uint16_t URLRequestBackoffManager::kMinimumBackoffInSeconds = 1;
+const uint16_t URLRequestBackoffManager::kMaximumBackoffInSeconds = 50000;
+const uint16_t URLRequestBackoffManager::kNewEntriesBetweenCollecting = 200;
 
 URLRequestBackoffManager::URLRequestBackoffManager()
     : new_entries_since_last_gc_(0) {
@@ -113,7 +113,7 @@ bool URLRequestBackoffManager::GetBackoffTime(HttpResponseHeaders* headers,
   std::string value;
   void* iter = NULL;
   while (headers->EnumerateHeader(&iter, name, &value)) {
-    int64 seconds;
+    int64_t seconds;
     base::StringToInt64(value, &seconds);
     if (seconds >= kMinimumBackoffInSeconds &&
         seconds <= kMaximumBackoffInSeconds) {

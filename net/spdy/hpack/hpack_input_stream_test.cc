@@ -45,30 +45,30 @@ const char kEncodedHuffmanFixture[] =
 const char kDecodedHuffmanFixture[] =
     "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";
 
-// Utility function to decode an assumed-valid uint32 with an N-bit
+// Utility function to decode an assumed-valid uint32_t with an N-bit
 // prefix.
-uint32 DecodeValidUint32(uint8 N, StringPiece str) {
+uint32_t DecodeValidUint32(uint8_t N, StringPiece str) {
   EXPECT_GT(N, 0);
   EXPECT_LE(N, 8);
   HpackInputStream input_stream(kLiteralBound, str);
   input_stream.SetBitOffsetForTest(8 - N);
-  uint32 I;
+  uint32_t I;
   EXPECT_TRUE(input_stream.DecodeNextUint32(&I));
   return I;
 }
 
-// Utility function to decode an assumed-invalid uint32 with an N-bit
+// Utility function to decode an assumed-invalid uint32_t with an N-bit
 // prefix.
-void ExpectDecodeUint32Invalid(uint8 N, StringPiece str) {
+void ExpectDecodeUint32Invalid(uint8_t N, StringPiece str) {
   EXPECT_GT(N, 0);
   EXPECT_LE(N, 8);
   HpackInputStream input_stream(kLiteralBound, str);
   input_stream.SetBitOffsetForTest(8 - N);
-  uint32 I;
+  uint32_t I;
   EXPECT_FALSE(input_stream.DecodeNextUint32(&I));
 }
 
-uint32 bits32(const string& bitstring) {
+uint32_t bits32(const string& bitstring) {
   return std::bitset<32>(bitstring).to_ulong();
 }
 
@@ -147,7 +147,7 @@ TEST_F(HpackInputStreamTest, SixByteIntegersEightBitPrefix) {
   ExpectDecodeUint32Invalid(8, "\xff\xff\xff\xff\xff\xff");
 }
 
-// There are no valid uint32 encodings that are greater than six
+// There are no valid uint32_t encodings that are greater than six
 // bytes.
 TEST_F(HpackInputStreamTest, SevenByteIntegersEightBitPrefix) {
   ExpectDecodeUint32Invalid(8, "\xff\x80\x80\x80\x80\x80\x00");
@@ -459,7 +459,7 @@ TEST_F(HpackInputStreamTest, SixByteIntegersOneToSevenBitPrefixes) {
   ExpectDecodeUint32Invalid(1, "\xff\xfe\xff\xff\xff\xff");
 }
 
-// There are no valid uint32 encodings that are greater than six
+// There are no valid uint32_t encodings that are greater than six
 // bytes.
 TEST_F(HpackInputStreamTest, SevenByteIntegersOneToSevenBitPrefixes) {
   ExpectDecodeUint32Invalid(7, "\x7f\x80\x80\x80\x80\x80\x00");
@@ -550,7 +550,7 @@ TEST_F(HpackInputStreamTest, DecodeNextHuffmanStringNotEnoughInput) {
 TEST_F(HpackInputStreamTest, PeekBitsAndConsume) {
   HpackInputStream input_stream(kLiteralBound, "\xad\xab\xad\xab\xad");
 
-  uint32 bits = 0;
+  uint32_t bits = 0;
   size_t peeked_count = 0;
 
   // Read 0xad.

@@ -5,8 +5,11 @@
 #ifndef NET_URL_REQUEST_VIEW_CACHE_HELPER_H_
 #define NET_URL_REQUEST_VIEW_CACHE_HELPER_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"

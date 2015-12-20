@@ -19,6 +19,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -99,7 +100,7 @@ void FreeX509Stack(STACK_OF(X509)* ptr) {
 using ScopedX509Stack = crypto::ScopedOpenSSL<STACK_OF(X509), FreeX509Stack>;
 
 // Used for encoding the |connection_status| field of an SSLInfo object.
-int EncodeSSLConnectionStatus(uint16 cipher_suite,
+int EncodeSSLConnectionStatus(uint16_t cipher_suite,
                               int compression,
                               int version) {
   return cipher_suite |
@@ -765,7 +766,7 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
       SSL_SESSION_get_key_exchange_info(SSL_get_session(ssl_));
 
   ssl_info->connection_status = EncodeSSLConnectionStatus(
-      static_cast<uint16>(SSL_CIPHER_get_id(cipher)), 0 /* no compression */,
+      static_cast<uint16_t>(SSL_CIPHER_get_id(cipher)), 0 /* no compression */,
       GetNetSSLVersion(ssl_));
 
   if (!SSL_get_secure_renegotiation_support(ssl_))
@@ -833,11 +834,11 @@ int SSLClientSocketOpenSSL::Write(IOBuffer* buf,
   return rv;
 }
 
-int SSLClientSocketOpenSSL::SetReceiveBufferSize(int32 size) {
+int SSLClientSocketOpenSSL::SetReceiveBufferSize(int32_t size) {
   return transport_->socket()->SetReceiveBufferSize(size);
 }
 
-int SSLClientSocketOpenSSL::SetSendBufferSize(int32 size) {
+int SSLClientSocketOpenSSL::SetSendBufferSize(int32_t size) {
   return transport_->socket()->SetSendBufferSize(size);
 }
 
@@ -987,10 +988,10 @@ int SSLClientSocketOpenSSL::Init() {
     // Get list of ciphers that are enabled.
     STACK_OF(SSL_CIPHER)* enabled_ciphers = SSL_get_ciphers(ssl_);
     DCHECK(enabled_ciphers);
-    std::vector<uint16> enabled_ciphers_vector;
+    std::vector<uint16_t> enabled_ciphers_vector;
     for (size_t i = 0; i < sk_SSL_CIPHER_num(enabled_ciphers); ++i) {
       const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(enabled_ciphers, i);
-      const uint16 id = static_cast<uint16>(SSL_CIPHER_get_id(cipher));
+      const uint16_t id = static_cast<uint16_t>(SSL_CIPHER_get_id(cipher));
       enabled_ciphers_vector.push_back(id);
     }
 
@@ -1938,7 +1939,7 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
                                                     const unsigned char* in,
                                                     unsigned int inlen) {
   if (ssl_config_.npn_protos.empty()) {
-    *out = reinterpret_cast<uint8*>(
+    *out = reinterpret_cast<uint8_t*>(
         const_cast<char*>(kDefaultSupportedNPNProtocol));
     *outlen = arraysize(kDefaultSupportedNPNProtocol) - 1;
     npn_status_ = kNextProtoUnsupported;

@@ -42,7 +42,7 @@ namespace test {
 namespace {
 
 const char kServerHostname[] = "test.example.com";
-const uint16 kServerPort = 443;
+const uint16_t kServerPort = 443;
 
 class QuicChromiumClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {
@@ -228,9 +228,9 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithTlsChannelId) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
-  uint8 primary_pin = 1;
-  uint8 backup_pin = 2;
-  uint8 bad_pin = 3;
+  uint8_t primary_pin = 1;
+  uint8_t backup_pin = 2;
+  uint8_t bad_pin = 3;
   AddPin(&transport_security_state_, "mail.example.org", primary_pin,
          backup_pin);
 
@@ -252,8 +252,8 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
-  uint8 primary_pin = 1;
-  uint8 backup_pin = 2;
+  uint8_t primary_pin = 1;
+  uint8_t backup_pin = 2;
   AddPin(&transport_security_state_, "mail.example.org", primary_pin,
          backup_pin);
 

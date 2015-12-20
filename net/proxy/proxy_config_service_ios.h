@@ -5,6 +5,7 @@
 #ifndef NET_PROXY_PROXY_CONFIG_SERVICE_IOS_H_
 #define NET_PROXY_PROXY_CONFIG_SERVICE_IOS_H_
 
+#include "base/macros.h"
 #include "net/proxy/polling_proxy_config_service.h"
 
 namespace net {

@@ -5,10 +5,14 @@
 #ifndef NET_QUIC_CRYPTO_CRYPTO_SERVER_CONFIG_PROTOBUF_H_
 #define NET_QUIC_CRYPTO_CRYPTO_SERVER_CONFIG_PROTOBUF_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -59,15 +63,15 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
 
   bool has_primary_time() const { return primary_time_ > 0; }
 
-  int64 primary_time() const { return primary_time_; }
+  int64_t primary_time() const { return primary_time_; }
 
-  void set_primary_time(int64 primary_time) { primary_time_ = primary_time; }
+  void set_primary_time(int64_t primary_time) { primary_time_ = primary_time; }
 
   bool has_priority() const { return priority_ > 0; }
 
-  uint64 priority() const { return priority_; }
+  uint64_t priority() const { return priority_; }
 
-  void set_priority(int64 priority) { priority_ = priority; }
+  void set_priority(int64_t priority) { priority_ = priority; }
 
   bool has_source_address_token_secret_override() const {
     return !source_address_token_secret_override_.empty();
@@ -91,12 +95,12 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
 
   // primary_time_ contains a UNIX epoch seconds value that indicates when this
   // config should become primary.
-  int64 primary_time_;
+  int64_t primary_time_;
 
   // Relative priority of this config vs other configs with the same
   // primary time.  For use as a secondary sort key when selecting the
   // primary config.
-  uint64 priority_;
+  uint64_t priority_;
 
   // Optional override to the secret used to box/unbox source address
   // tokens when talking to clients that select this server config.

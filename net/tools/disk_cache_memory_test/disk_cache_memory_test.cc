@@ -161,7 +161,7 @@ bool ParseRangeLine(const std::string& line,
 // only if parsing succeeded.
 bool ParseRangeProperty(const std::string& line,
                         std::vector<std::string>* tokens,
-                        uint64* size,
+                        uint64_t* size,
                         bool* is_private_dirty) {
   *tokens = base::SplitString(line, base::kWhitespaceASCII,
                               base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -182,7 +182,7 @@ bool ParseRangeProperty(const std::string& line,
     return true;
   }
   const std::string& size_str = (*tokens)[1];
-  uint64 map_size = 0;
+  uint64_t map_size = 0;
   if (!base::StringToUint64(size_str, &map_size))
     return true;
   *is_private_dirty = true;
@@ -190,7 +190,7 @@ bool ParseRangeProperty(const std::string& line,
   return true;
 }
 
-uint64 GetMemoryConsumption() {
+uint64_t GetMemoryConsumption() {
   std::ifstream maps_file(
       base::StringPrintf("/proc/%d/smaps", getpid()).c_str());
   if (!maps_file.good()) {
@@ -199,7 +199,7 @@ uint64 GetMemoryConsumption() {
   }
   std::string line;
   std::vector<std::string> tokens;
-  uint64 total_size = 0;
+  uint64_t total_size = 0;
   if (!std::getline(maps_file, line) || line.empty())
     return total_size;
   while (true) {
@@ -210,7 +210,7 @@ uint64 GetMemoryConsumption() {
     if (!std::getline(maps_file, line) || line.empty())
       return total_size;
     bool is_private_dirty = false;
-    uint64 size = 0;
+    uint64_t size = 0;
     while (ParseRangeProperty(line, &tokens, &size, &is_private_dirty)) {
       if (is_anonymous_read_write && is_private_dirty) {
         total_size += size;
@@ -233,7 +233,7 @@ bool CacheMemTest(const std::vector<scoped_ptr<CacheSpec>>& specs) {
               << backend->GetEntryCount() << std::endl;
     backends.push_back(std::move(backend));
   }
-  const uint64 memory_consumption = GetMemoryConsumption();
+  const uint64_t memory_consumption = GetMemoryConsumption();
   std::cout << "Private dirty memory: " << memory_consumption << " kB"
             << std::endl;
   return true;

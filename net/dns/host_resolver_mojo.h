@@ -5,6 +5,7 @@
 #ifndef NET_DNS_HOST_RESOLVER_MOJO_H_
 #define NET_DNS_HOST_RESOLVER_MOJO_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/dns/host_cache.h"

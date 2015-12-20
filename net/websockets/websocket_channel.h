@@ -6,6 +6,7 @@
 #define NET_WEBSOCKETS_WEBSOCKET_CHANNEL_H_
 
 #include <stdint.h>
+
 #include <queue>
 #include <string>
 #include <vector>

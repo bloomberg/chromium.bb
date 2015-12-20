@@ -361,23 +361,23 @@ void EpollServer::WaitForEventsAndExecuteCallbacks() {
   // long-running alarms might install other long-running
   // alarms, etc. By storing it here now, we ensure that
   // a more reasonable amount of work is done here.
-  int64 now_in_us  = NowInUsec();
+  int64_t now_in_us = NowInUsec();
 
   // Get the first timeout from the alarm_map where it is
   // stored in absolute time.
-  int64 next_alarm_time_in_us =  alarm_map_.begin()->first;
+  int64_t next_alarm_time_in_us = alarm_map_.begin()->first;
   VLOG(4) << "next_alarm_time = " << next_alarm_time_in_us
           << " now             = " << now_in_us
           << " timeout_in_us = " << timeout_in_us_;
 
-  int64 wait_time_in_us;
-  int64 alarm_timeout_in_us = next_alarm_time_in_us - now_in_us;
+  int64_t wait_time_in_us;
+  int64_t alarm_timeout_in_us = next_alarm_time_in_us - now_in_us;
 
   // If the next alarm is sooner than the default timeout, or if there is no
   // timeout (timeout_in_us_ == -1), wake up when the alarm should fire.
   // Otherwise use the default timeout.
   if (alarm_timeout_in_us < timeout_in_us_ || timeout_in_us_ < 0) {
-    wait_time_in_us = std::max(alarm_timeout_in_us, static_cast<int64>(0));
+    wait_time_in_us = std::max(alarm_timeout_in_us, static_cast<int64_t>(0));
   } else {
     wait_time_in_us = timeout_in_us_;
   }
@@ -440,7 +440,7 @@ void EpollServer::VerifyReadyList() const {
   CHECK_EQ(ready_list_size_, count) << "Ready list size does not match count";
 }
 
-void EpollServer::RegisterAlarm(int64 timeout_time_in_us, AlarmCB* ac) {
+void EpollServer::RegisterAlarm(int64_t timeout_time_in_us, AlarmCB* ac) {
   CHECK(ac);
   if (ContainsKey(all_alarms_, ac)) {
     LOG(FATAL) << "Alarm already exists " << ac;
@@ -476,11 +476,11 @@ void EpollServer::Wake() {
   DCHECK_EQ(rv, 1);
 }
 
-int64 EpollServer::NowInUsec() const {
+int64_t EpollServer::NowInUsec() const {
   return (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
 }
 
-int64 EpollServer::ApproximateNowInUsec() const {
+int64_t EpollServer::ApproximateNowInUsec() const {
   if (recorded_now_in_us_ != 0) {
     return recorded_now_in_us_;
   }
@@ -612,7 +612,7 @@ void EpollServer::ModifyFD(int fd, int remove_event, int add_event) {
   }
 }
 
-void EpollServer::WaitForEventsAndCallHandleEvents(int64 timeout_in_us,
+void EpollServer::WaitForEventsAndCallHandleEvents(int64_t timeout_in_us,
                                                    struct epoll_event events[],
                                                    int events_size) {
   if (timeout_in_us == 0 || ready_list_.lh_first != NULL) {
@@ -716,7 +716,7 @@ void EpollServer::CallReadyListCallbacks() {
 }
 
 void EpollServer::CallAndReregisterAlarmEvents() {
-  int64 now_in_us = recorded_now_in_us_;
+  int64_t now_in_us = recorded_now_in_us_;
   DCHECK_NE(0, recorded_now_in_us_);
 
   TimeToAlarmCBMap::iterator erase_it;
@@ -739,7 +739,7 @@ void EpollServer::CallAndReregisterAlarmEvents() {
       continue;
     }
     all_alarms_.erase(cb);
-    const int64 new_timeout_time_in_us = cb->OnAlarm();
+    const int64_t new_timeout_time_in_us = cb->OnAlarm();
 
     erase_it = i;
     ++i;
@@ -770,7 +770,7 @@ EpollAlarm::~EpollAlarm() {
   UnregisterIfRegistered();
 }
 
-int64 EpollAlarm::OnAlarm() {
+int64_t EpollAlarm::OnAlarm() {
   registered_ = false;
   return 0;
 }

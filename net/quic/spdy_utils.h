@@ -5,9 +5,13 @@
 #ifndef NET_QUIC_SPDY_UTILS_H_
 #define NET_QUIC_SPDY_UTILS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_protocol.h"
 #include "net/spdy/spdy_framer.h"
@@ -25,7 +29,7 @@ class NET_EXPORT_PRIVATE SpdyUtils {
   // header if one or more are present.
   // Returns true on success, false if parsing fails, or invalid keys are found.
   static bool ParseHeaders(const char* data,
-                           uint32 data_len,
+                           uint32_t data_len,
                            int* content_length,
                            SpdyHeaderBlock* headers);
 
@@ -35,7 +39,7 @@ class NET_EXPORT_PRIVATE SpdyUtils {
   // value will be copied to |final_byte_offset|.
   // Returns true on success, false if parsing fails, or invalid keys are found.
   static bool ParseTrailers(const char* data,
-                            uint32 data_len,
+                            uint32_t data_len,
                             size_t* final_byte_offset,
                             SpdyHeaderBlock* trailers);
 

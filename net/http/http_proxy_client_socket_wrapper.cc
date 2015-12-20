@@ -294,7 +294,7 @@ int HttpProxyClientSocketWrapper::Write(IOBuffer* buf,
   return ERR_SOCKET_NOT_CONNECTED;
 }
 
-int HttpProxyClientSocketWrapper::SetReceiveBufferSize(int32 size) {
+int HttpProxyClientSocketWrapper::SetReceiveBufferSize(int32_t size) {
   // TODO(mmenke):  Should this persist across reconnects?  Seems a little
   //     weird, and not done for normal reconnects.
   if (transport_socket_)
@@ -302,7 +302,7 @@ int HttpProxyClientSocketWrapper::SetReceiveBufferSize(int32 size) {
   return ERR_SOCKET_NOT_CONNECTED;
 }
 
-int HttpProxyClientSocketWrapper::SetSendBufferSize(int32 size) {
+int HttpProxyClientSocketWrapper::SetSendBufferSize(int32_t size) {
   if (transport_socket_)
     return transport_socket_->SetSendBufferSize(size);
   return ERR_SOCKET_NOT_CONNECTED;

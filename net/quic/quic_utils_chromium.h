@@ -7,7 +7,6 @@
 #ifndef NET_QUIC_QUIC_UTILS_CHROMIUM_H_
 #define NET_QUIC_QUIC_UTILS_CHROMIUM_H_
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace net {

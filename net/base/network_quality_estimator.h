@@ -5,6 +5,7 @@
 #ifndef NET_BASE_NETWORK_QUALITY_ESTIMATOR_H_
 #define NET_BASE_NETWORK_QUALITY_ESTIMATOR_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <deque>

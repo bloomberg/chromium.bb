@@ -5,7 +5,11 @@
 #ifndef NET_QUIC_TEST_TOOLS_MOCK_RANDOM_H_
 #define NET_QUIC_TEST_TOOLS_MOCK_RANDOM_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "net/quic/crypto/quic_random.h"
 
 namespace net {
@@ -15,13 +19,13 @@ class MockRandom : public QuicRandom {
  public:
   // Initializes base_ to 0xDEADBEEF.
   MockRandom();
-  explicit MockRandom(uint32 base);
+  explicit MockRandom(uint32_t base);
 
   // QuicRandom:
   // Fills the |data| buffer with a repeating byte, initially 'r'.
   void RandBytes(void* data, size_t len) override;
   // Returns base + the current increment.
-  uint64 RandUint64() override;
+  uint64_t RandUint64() override;
   // Does nothing.
   void Reseed(const void* additional_entropy, size_t entropy_len) override;
 
@@ -30,8 +34,8 @@ class MockRandom : public QuicRandom {
   void ChangeValue();
 
  private:
-  uint32 base_;
-  uint8 increment_;
+  uint32_t base_;
+  uint8_t increment_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRandom);
 };

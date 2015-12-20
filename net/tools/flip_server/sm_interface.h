@@ -7,6 +7,9 @@
 
 // State Machine Interfaces
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "net/tools/balsa/balsa_headers.h"
@@ -20,7 +23,7 @@ class SMConnection;
 class SMInterface {
  public:
   virtual void InitSMInterface(SMInterface* sm_other_interface,
-                               int32 server_idx) = 0;
+                               int32_t server_idx) = 0;
   virtual void InitSMConnection(SMConnectionPoolInterface* connection_pool,
                                 SMInterface* sm_interface,
                                 EpollServer* epoll_server,
@@ -31,12 +34,12 @@ class SMInterface {
                                 bool use_ssl) = 0;
   virtual size_t ProcessReadInput(const char* data, size_t len) = 0;
   virtual size_t ProcessWriteInput(const char* data, size_t len) = 0;
-  virtual void SetStreamID(uint32 stream_id) = 0;
+  virtual void SetStreamID(uint32_t stream_id) = 0;
   virtual bool MessageFullyRead() const = 0;
   virtual bool Error() const = 0;
   virtual const char* ErrorAsString() const = 0;
   virtual void Reset() = 0;
-  virtual void ResetForNewInterface(int32 server_idx) = 0;
+  virtual void ResetForNewInterface(int32_t server_idx) = 0;
   // ResetForNewConnection is used for interfaces which control SMConnection
   // objects. When called an interface may put its connection object into
   // a reusable instance pool. Currently this is what the HttpSM interface
@@ -46,19 +49,19 @@ class SMInterface {
 
   virtual int PostAcceptHook() = 0;
 
-  virtual void NewStream(uint32 stream_id,
-                         uint32 priority,
+  virtual void NewStream(uint32_t stream_id,
+                         uint32_t priority,
                          const std::string& filename) = 0;
-  virtual void SendEOF(uint32 stream_id) = 0;
-  virtual void SendErrorNotFound(uint32 stream_id) = 0;
-  virtual size_t SendSynStream(uint32 stream_id,
+  virtual void SendEOF(uint32_t stream_id) = 0;
+  virtual void SendErrorNotFound(uint32_t stream_id) = 0;
+  virtual size_t SendSynStream(uint32_t stream_id,
                                const BalsaHeaders& headers) = 0;
-  virtual size_t SendSynReply(uint32 stream_id,
+  virtual size_t SendSynReply(uint32_t stream_id,
                               const BalsaHeaders& headers) = 0;
-  virtual void SendDataFrame(uint32 stream_id,
+  virtual void SendDataFrame(uint32_t stream_id,
                              const char* data,
-                             int64 len,
-                             uint32 flags,
+                             int64_t len,
+                             uint32_t flags,
                              bool compress) = 0;
   virtual void GetOutput() = 0;
   virtual void set_is_request() = 0;

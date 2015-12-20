@@ -21,9 +21,9 @@ namespace {
 // A simple parser for long long values. Returns the parsed value if a
 // valid integer is found; else returns deflt
 // UInt64 and Int64 cannot handle decimal numbers with leading 0s.
-uint64 ParseLeadingHex64Value(const char* str, uint64 deflt) {
+uint64_t ParseLeadingHex64Value(const char* str, uint64_t deflt) {
   char* error = NULL;
-  const uint64 value = strtoull(str, &error, 16);
+  const uint64_t value = strtoull(str, &error, 16);
   return (error == str) ? deflt : value;
 }
 
@@ -196,7 +196,7 @@ bool UrlToFilenameEncoder::Decode(const string& encoded_filename,
       case kFirstDigit:
         if (base::IsHexDigit(ch)) {
           hex_buffer[1] = ch;
-          uint64 hex_value = ParseLeadingHex64Value(hex_buffer, 0);
+          uint64_t hex_value = ParseLeadingHex64Value(hex_buffer, 0);
           decoded_url->append(1, static_cast<char>(hex_value));
           state = kStart;
         } else {

@@ -6,8 +6,8 @@
 
 #include <ostream>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "net/base/net_errors.h"
@@ -72,7 +72,7 @@ const IPEndPoint kSelfAddress = IPEndPoint(Loopback6(), /*port=*/443);
 // TaggingEncrypter appends kTagSize bytes of |tag| to the end of each message.
 class TaggingEncrypter : public QuicEncrypter {
  public:
-  explicit TaggingEncrypter(uint8 tag) : tag_(tag) {}
+  explicit TaggingEncrypter(uint8_t tag) : tag_(tag) {}
 
   ~TaggingEncrypter() override {}
 
@@ -118,7 +118,7 @@ class TaggingEncrypter : public QuicEncrypter {
     kTagSize = 12,
   };
 
-  const uint8 tag_;
+  const uint8_t tag_;
 
   DISALLOW_COPY_AND_ASSIGN(TaggingEncrypter);
 };
@@ -155,10 +155,10 @@ class TaggingDecrypter : public QuicDecrypter {
   StringPiece GetNoncePrefix() const override { return StringPiece(); }
   const char* cipher_name() const override { return "Tagging"; }
   // Use a distinct value starting with 0xFFFFFF, which is never used by TLS.
-  uint32 cipher_id() const override { return 0xFFFFFFF0; }
+  uint32_t cipher_id() const override { return 0xFFFFFFF0; }
 
  protected:
-  virtual uint8 GetTag(StringPiece ciphertext) {
+  virtual uint8_t GetTag(StringPiece ciphertext) {
     return ciphertext.data()[ciphertext.size() - 1];
   }
 
@@ -167,7 +167,7 @@ class TaggingDecrypter : public QuicDecrypter {
     kTagSize = 12,
   };
 
-  bool CheckTag(StringPiece ciphertext, uint8 tag) {
+  bool CheckTag(StringPiece ciphertext, uint8_t tag) {
     for (size_t i = ciphertext.size() - kTagSize; i < ciphertext.size(); i++) {
       if (ciphertext.data()[i] != tag) {
         return false;
@@ -182,18 +182,18 @@ class TaggingDecrypter : public QuicDecrypter {
 // match the expected value.
 class StrictTaggingDecrypter : public TaggingDecrypter {
  public:
-  explicit StrictTaggingDecrypter(uint8 tag) : tag_(tag) {}
+  explicit StrictTaggingDecrypter(uint8_t tag) : tag_(tag) {}
   ~StrictTaggingDecrypter() override {}
 
   // TaggingQuicDecrypter
-  uint8 GetTag(StringPiece ciphertext) override { return tag_; }
+  uint8_t GetTag(StringPiece ciphertext) override { return tag_; }
 
   const char* cipher_name() const override { return "StrictTagging"; }
   // Use a distinct value starting with 0xFFFFFF, which is never used by TLS.
-  uint32 cipher_id() const override { return 0xFFFFFFF1; }
+  uint32_t cipher_id() const override { return 0xFFFFFFF1; }
 
  private:
-  const uint8 tag_;
+  const uint8_t tag_;
 };
 
 class TestConnectionHelper : public QuicConnectionHelperInterface {
@@ -356,19 +356,19 @@ class TestPacketWriter : public QuicPacketWriter {
   }
 
   // final_bytes_of_last_packet_ returns the last four bytes of the previous
-  // packet as a little-endian, uint32. This is intended to be used with a
+  // packet as a little-endian, uint32_t. This is intended to be used with a
   // TaggingEncrypter so that tests can determine which encrypter was used for
   // a given packet.
-  uint32 final_bytes_of_last_packet() { return final_bytes_of_last_packet_; }
+  uint32_t final_bytes_of_last_packet() { return final_bytes_of_last_packet_; }
 
   // Returns the final bytes of the second to last packet.
-  uint32 final_bytes_of_previous_packet() {
+  uint32_t final_bytes_of_previous_packet() {
     return final_bytes_of_previous_packet_;
   }
 
   void use_tagging_decrypter() { use_tagging_decrypter_ = true; }
 
-  uint32 packets_write_attempts() { return packets_write_attempts_; }
+  uint32_t packets_write_attempts() { return packets_write_attempts_; }
 
   void Reset() { framer_.Reset(); }
 
@@ -388,10 +388,10 @@ class TestPacketWriter : public QuicPacketWriter {
   bool write_should_fail_;
   bool block_on_next_write_;
   bool is_write_blocked_data_buffered_;
-  uint32 final_bytes_of_last_packet_;
-  uint32 final_bytes_of_previous_packet_;
+  uint32_t final_bytes_of_last_packet_;
+  uint32_t final_bytes_of_previous_packet_;
   bool use_tagging_decrypter_;
-  uint32 packets_write_attempts_;
+  uint32_t packets_write_attempts_;
   MockClock* clock_;
   // If non-zero, the clock will pause during WritePacket for this amount of
   // time.
@@ -3292,7 +3292,7 @@ TEST_P(QuicConnectionTest, DelayForwardSecureEncryptionUntilManyPacketSent) {
 
   // Now send a packet "Far enough" after the encrypter was set and verify that
   // the forward-secure encrypter is now used.
-  for (uint64 i = 0; i < 3 * congestion_window - 1; ++i) {
+  for (uint64_t i = 0; i < 3 * congestion_window - 1; ++i) {
     EXPECT_EQ(0x02020202u, writer_->final_bytes_of_last_packet());
     SendAckPacketToPeer();
   }
@@ -3307,7 +3307,7 @@ TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   use_tagging_decrypter();
 
-  const uint8 tag = 0x07;
+  const uint8_t tag = 0x07;
   framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
 
   // Process an encrypted packet which can not yet be decrypted which should
@@ -3337,7 +3337,7 @@ TEST_P(QuicConnectionTest, ProcessBufferedFECGroup) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   use_tagging_decrypter();
 
-  const uint8 tag = 0x07;
+  const uint8_t tag = 0x07;
   framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
 
   // Don't send packet 1 and buffer initially encrypted packets.
@@ -3374,7 +3374,7 @@ TEST_P(QuicConnectionTest, Buffer100NonDecryptablePackets) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   use_tagging_decrypter();
 
-  const uint8 tag = 0x07;
+  const uint8_t tag = 0x07;
   framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
 
   // Process an encrypted packet which can not yet be decrypted which should
@@ -4288,7 +4288,7 @@ TEST_P(QuicConnectionTest, SendDelayedAck) {
   QuicTime ack_time = clock_.ApproximateNow().Add(DefaultDelayedAckTime());
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
-  const uint8 tag = 0x07;
+  const uint8_t tag = 0x07;
   connection_.SetDecrypter(ENCRYPTION_INITIAL, new StrictTaggingDecrypter(tag));
   framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
   // Process a packet from the non-crypto stream.
@@ -4324,7 +4324,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimation) {
       QuicTime::Delta::FromMilliseconds(kMinRttMs / 4));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
-  const uint8 tag = 0x07;
+  const uint8_t tag = 0x07;
   connection_.SetDecrypter(ENCRYPTION_INITIAL, new StrictTaggingDecrypter(tag));
   framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
   // Process a packet from the non-crypto stream.

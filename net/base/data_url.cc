@@ -9,7 +9,6 @@
 #include "net/base/data_url.h"
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"

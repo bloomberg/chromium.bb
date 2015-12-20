@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "net/disk_cache/blockfile/file_block.h"

@@ -51,7 +51,7 @@ class TestStream : public ReliableQuicStream {
 
   void OnDataAvailable() override {}
 
-  uint32 ProcessRawData(const char* data, uint32 data_len) {
+  uint32_t ProcessRawData(const char* data, uint32_t data_len) {
     EXPECT_NE(0u, data_len);
     DVLOG(1) << "ProcessData data_len: " << data_len;
     data_ += string(data, data_len);
@@ -129,7 +129,7 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   bool fin_sent() { return ReliableQuicStreamPeer::FinSent(stream_); }
   bool rst_sent() { return ReliableQuicStreamPeer::RstSent(stream_); }
 
-  void set_initial_flow_control_window_bytes(uint32 val) {
+  void set_initial_flow_control_window_bytes(uint32_t val) {
     initial_flow_control_window_bytes_ = val;
   }
 
@@ -156,7 +156,7 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   TestStream* stream_;
   SpdyHeaderBlock headers_;
   QuicWriteBlockedList* write_blocked_list_;
-  uint32 initial_flow_control_window_bytes_;
+  uint32_t initial_flow_control_window_bytes_;
   QuicTime::Delta zero_;
   QuicVersionVector supported_versions_;
   const QuicStreamId kTestStreamId = 5u;

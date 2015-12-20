@@ -372,7 +372,7 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
                                                     ssl_info.connection_status),
                               SSL_CONNECTION_VERSION_MAX);
 
-    uint16 cipher_suite =
+    uint16_t cipher_suite =
         SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_CipherSuite", cipher_suite);
 

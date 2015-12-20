@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
@@ -333,7 +334,7 @@ class RegistryWatcher : public base::NonThreadSafe {
 bool IsStatelessDiscoveryAddress(const IPAddressNumber& address) {
   if (address.size() != kIPv6AddressSize)
     return false;
-  const uint8 kPrefix[] = {
+  const uint8_t kPrefix[] = {
       0xfe, 0xc0, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   };

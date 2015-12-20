@@ -5,6 +5,8 @@
 #ifndef NET_SSL_OPENSSL_SSL_UTIL_H_
 #define NET_SSL_OPENSSL_SSL_UTIL_H_
 
+#include <stdint.h>
+
 #include "net/log/net_log.h"
 
 namespace crypto {

@@ -54,7 +54,7 @@ class CryptoFramerVisitor : public CryptoFramerVisitorInterface {
 
 // HexChar parses |c| as a hex character. If valid, it sets |*value| to the
 // value of the hex character and returns true. Otherwise it returns false.
-bool HexChar(char c, uint8* value) {
+bool HexChar(char c, uint8_t* value) {
   if (c >= '0' && c <= '9') {
     *value = c - '0';
     return true;
@@ -288,7 +288,7 @@ string CryptoTestUtils::GetValueForTag(const CryptoHandshakeMessage& message,
 
 class MockCommonCertSets : public CommonCertSets {
  public:
-  MockCommonCertSets(StringPiece cert, uint64 hash, uint32 index)
+  MockCommonCertSets(StringPiece cert, uint64_t hash, uint32_t index)
       : cert_(cert.as_string()), hash_(hash), index_(index) {}
 
   StringPiece GetCommonHashes() const override {
@@ -296,7 +296,7 @@ class MockCommonCertSets : public CommonCertSets {
     return StringPiece();
   }
 
-  StringPiece GetCert(uint64 hash, uint32 index) const override {
+  StringPiece GetCert(uint64_t hash, uint32_t index) const override {
     if (hash == hash_ && index == index_) {
       return cert_;
     }
@@ -305,18 +305,18 @@ class MockCommonCertSets : public CommonCertSets {
 
   bool MatchCert(StringPiece cert,
                  StringPiece common_set_hashes,
-                 uint64* out_hash,
-                 uint32* out_index) const override {
+                 uint64_t* out_hash,
+                 uint32_t* out_index) const override {
     if (cert != cert_) {
       return false;
     }
 
-    if (common_set_hashes.size() % sizeof(uint64) != 0) {
+    if (common_set_hashes.size() % sizeof(uint64_t) != 0) {
       return false;
     }
     bool client_has_set = false;
-    for (size_t i = 0; i < common_set_hashes.size(); i += sizeof(uint64)) {
-      uint64 hash;
+    for (size_t i = 0; i < common_set_hashes.size(); i += sizeof(uint64_t)) {
+      uint64_t hash;
       memcpy(&hash, common_set_hashes.data() + i, sizeof(hash));
       if (hash == hash_) {
         client_has_set = true;
@@ -335,13 +335,13 @@ class MockCommonCertSets : public CommonCertSets {
 
  private:
   const string cert_;
-  const uint64 hash_;
-  const uint32 index_;
+  const uint64_t hash_;
+  const uint32_t index_;
 };
 
 CommonCertSets* CryptoTestUtils::MockCommonCertSets(StringPiece cert,
-                                                    uint64 hash,
-                                                    uint32 index) {
+                                                    uint64_t hash,
+                                                    uint32_t index) {
   return new class MockCommonCertSets(cert, hash, index);
 }
 
@@ -505,7 +505,7 @@ QuicTag CryptoTestUtils::ParseTag(const char* tagstr) {
     for (size_t i = 0; i < 8; i++) {
       tag <<= 4;
 
-      uint8 v = 0;
+      uint8_t v = 0;
       CHECK(HexChar(tagstr[i], &v));
       tag |= v;
     }
@@ -517,7 +517,7 @@ QuicTag CryptoTestUtils::ParseTag(const char* tagstr) {
   for (size_t i = 0; i < 4; i++) {
     tag >>= 8;
     if (i < len) {
-      tag |= static_cast<uint32>(tagstr[i]) << 24;
+      tag |= static_cast<uint32_t>(tagstr[i]) << 24;
     }
   }
 
@@ -560,10 +560,10 @@ CryptoHandshakeMessage CryptoTestUtils::Message(const char* message_tag, ...) {
       len--;
 
       CHECK_EQ(0u, len % 2);
-      scoped_ptr<uint8[]> buf(new uint8[len / 2]);
+      scoped_ptr<uint8_t[]> buf(new uint8_t[len / 2]);
 
       for (size_t i = 0; i < len / 2; i++) {
-        uint8 v = 0;
+        uint8_t v = 0;
         CHECK(HexChar(valuestr[i * 2], &v));
         buf[i] = v << 4;
         CHECK(HexChar(valuestr[i * 2 + 1], &v));

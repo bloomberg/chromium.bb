@@ -5,7 +5,10 @@
 #ifndef NET_BASE_ZAP_H_
 #define NET_BASE_ZAP_H_
 
+#include <stddef.h>
+
 #include <string>
+
 #include "base/strings/string16.h"
 
 namespace net {

@@ -93,7 +93,7 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
                         header.public_header.packet_number_length);
 }
 
-uint64 SimpleRandom::RandUint64() {
+uint64_t SimpleRandom::RandUint64() {
   unsigned char hash[base::kSHA1Length];
   base::SHA1HashBytes(reinterpret_cast<unsigned char*>(&seed_), sizeof(seed_),
                       hash);
@@ -602,7 +602,7 @@ bool DecodeHexString(const base::StringPiece& hex, std::string* bytes) {
   bytes->clear();
   if (hex.empty())
     return true;
-  std::vector<uint8> v;
+  std::vector<uint8_t> v;
   if (!base::HexStringToBytes(hex.as_string(), &v))
     return false;
   if (!v.empty())
@@ -803,7 +803,7 @@ void CreateServerSessionForTest(QuicServerId server_id,
       *server_connection, DefaultQuicConfig(), server_crypto_config);
 
   // We advance the clock initially because the default time is zero and the
-  // strike register worries that we've just overflowed a uint32 time.
+  // strike register worries that we've just overflowed a uint32_t time.
   (*server_connection)->AdvanceTime(connection_start_time);
 }
 

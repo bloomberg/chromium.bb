@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_data_writer.h"
 #include "net/quic/quic_fec_group.h"
@@ -42,7 +42,7 @@ const float kRttMultiplierForFecTimeout = 0.5;
 
 // Minimum timeout for FEC alarm, set to half the minimum Tail Loss Probe
 // timeout of 10ms.
-const int64 kMinFecTimeoutMs = 5u;
+const int64_t kMinFecTimeoutMs = 5u;
 
 }  // namespace
 
@@ -72,9 +72,9 @@ class QuicRandomBoolSource {
   // Source of entropy.
   QuicRandom* random_;
   // Stored random bits.
-  uint64 bit_bucket_;
+  uint64_t bit_bucket_;
   // The next available bit has "1" in the mask. Zero means empty bucket.
-  uint64 bit_mask_;
+  uint64_t bit_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicRandomBoolSource);
 };
@@ -242,7 +242,7 @@ void QuicPacketCreator::UpdatePacketNumberLength(
   const QuicPacketNumber current_delta = max_packets_per_fec_group_ +
                                          packet_number_ + 1 -
                                          least_packet_awaited_by_peer;
-  const uint64 delta = max(current_delta, max_packets_in_flight);
+  const uint64_t delta = max(current_delta, max_packets_in_flight);
   next_packet_number_length_ =
       QuicFramer::GetMinSequenceNumberLength(delta * 4);
 }

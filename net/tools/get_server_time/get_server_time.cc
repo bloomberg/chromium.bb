@@ -14,13 +14,13 @@
 #include <string>
 
 #include "base/at_exit.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -54,17 +54,17 @@ namespace {
 
 // base::TimeTicks::Now() is documented to have a resolution of
 // ~1-15ms.
-const int64 kTicksResolutionMs = 15;
+const int64_t kTicksResolutionMs = 15;
 
 // For the sources that are supported (HTTP date headers, TLS
 // handshake), the resolution of the server time is 1 second.
-const int64 kServerTimeResolutionMs = 1000;
+const int64_t kServerTimeResolutionMs = 1000;
 
 // Assume base::Time::Now() has the same resolution as
 // base::TimeTicks::Now().
 //
 // TODO(akalin): Figure out the real resolution.
-const int64 kTimeResolutionMs = kTicksResolutionMs;
+const int64_t kTimeResolutionMs = kTicksResolutionMs;
 
 // Simply quits the current message loop when finished.  Used to make
 // URLFetcher synchronous.
@@ -80,14 +80,14 @@ class QuitDelegate : public net::URLFetcherDelegate {
   }
 
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64 current,
-                                  int64 total) override {
+                                  int64_t current,
+                                  int64_t total) override {
     NOTREACHED();
   }
 
   void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                int64 current,
-                                int64 total) override {
+                                int64_t current,
+                                int64_t total) override {
     NOTREACHED();
   }
 
@@ -261,7 +261,7 @@ int main(int argc, char* argv[]) {
       UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(end_time)).c_str(),
       end_ticks.ToInternalValue());
 
-  const int64 delta_ticks_internal =
+  const int64_t delta_ticks_internal =
       end_ticks.ToInternalValue() - start_ticks.ToInternalValue();
   const base::TimeDelta delta_ticks = end_ticks - start_ticks;
 

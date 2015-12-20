@@ -5,9 +5,10 @@
 #ifndef NET_SSL_SSL_CIPHER_SUITE_NAMES_H_
 #define NET_SSL_SSL_CIPHER_SUITE_NAMES_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -23,7 +24,7 @@ NET_EXPORT void SSLCipherSuiteToStrings(const char** key_exchange_str,
                                         const char** cipher_str,
                                         const char** mac_str,
                                         bool* is_aead,
-                                        uint16 cipher_suite);
+                                        uint16_t cipher_suite);
 
 // SSLVersionToString returns the name of the SSL protocol version
 // specified by |ssl_version|, which is defined in
@@ -44,7 +45,7 @@ NET_EXPORT void SSLVersionToString(const char** name, int ssl_version);
 // TODO(rsleevi): Support the full strings defined in the IANA TLS parameters
 // list.
 NET_EXPORT bool ParseSSLCipherString(const std::string& cipher_string,
-                                     uint16* cipher_suite);
+                                     uint16_t* cipher_suite);
 
 // |cipher_suite| is the IANA id for the cipher suite. What a "secure"
 // cipher suite is arbitrarily determined here. The intent is to indicate what
@@ -54,16 +55,17 @@ NET_EXPORT bool ParseSSLCipherString(const std::string& cipher_string,
 // Currently, this function follows these criteria:
 // 1) Only uses ECDHE-based key exchanges authenticated by a certificate
 // 2) Only uses AEADs
-NET_EXPORT bool IsSecureTLSCipherSuite(uint16 cipher_suite);
+NET_EXPORT bool IsSecureTLSCipherSuite(uint16_t cipher_suite);
 
 // Returns true if |cipher_suite| is suitable for use with HTTP/2. See
 // https://http2.github.io/http2-spec/#rfc.section.9.2.2.
-NET_EXPORT bool IsTLSCipherSuiteAllowedByHTTP2(uint16 cipher_suite);
+NET_EXPORT bool IsTLSCipherSuiteAllowedByHTTP2(uint16_t cipher_suite);
 
 // Returns the static curve name of |key_exchange_info| if the |cipher_suite|
 // is an elliptic curve, and a name is known. Returns nullptr otherwise.
 // Only defined for OpenSSL, returns nullptr otherwise.
-NET_EXPORT const char* ECCurveName(uint16 cipher_suite, int key_exchange_info);
+NET_EXPORT const char* ECCurveName(uint16_t cipher_suite,
+                                   int key_exchange_info);
 
 }  // namespace net
 

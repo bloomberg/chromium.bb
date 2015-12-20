@@ -5,6 +5,8 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_OPERATION_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_OPERATION_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "net/base/completion_callback.h"
 #include "net/log/net_log.h"
@@ -68,21 +70,21 @@ class SimpleEntryOperation {
       const CompletionCallback& callback);
   static SimpleEntryOperation ReadSparseOperation(
       SimpleEntryImpl* entry,
-      int64 sparse_offset,
+      int64_t sparse_offset,
       int length,
       net::IOBuffer* buf,
       const CompletionCallback& callback);
   static SimpleEntryOperation WriteSparseOperation(
       SimpleEntryImpl* entry,
-      int64 sparse_offset,
+      int64_t sparse_offset,
       int length,
       net::IOBuffer* buf,
       const CompletionCallback& callback);
   static SimpleEntryOperation GetAvailableRangeOperation(
       SimpleEntryImpl* entry,
-      int64 sparse_offset,
+      int64_t sparse_offset,
       int length,
-      int64* out_start,
+      int64_t* out_start,
       const CompletionCallback& callback);
   static SimpleEntryOperation DoomOperation(
       SimpleEntryImpl* entry,
@@ -101,9 +103,9 @@ class SimpleEntryOperation {
   bool have_index() const { return have_index_; }
   int index() const { return index_; }
   int offset() const { return offset_; }
-  int64 sparse_offset() const { return sparse_offset_; }
+  int64_t sparse_offset() const { return sparse_offset_; }
   int length() const { return length_; }
-  int64* out_start() { return out_start_; }
+  int64_t* out_start() { return out_start_; }
   net::IOBuffer* buf() { return buf_.get(); }
   bool truncate() const { return truncate_; }
   bool optimistic() const { return optimistic_; }
@@ -115,9 +117,9 @@ class SimpleEntryOperation {
                        const CompletionCallback& callback,
                        Entry** out_entry,
                        int offset,
-                       int64 sparse_offset,
+                       int64_t sparse_offset,
                        int length,
-                       int64* out_start,
+                       int64_t* out_start,
                        EntryOperationType type,
                        bool have_index,
                        int index,
@@ -135,11 +137,11 @@ class SimpleEntryOperation {
 
   // Used in write and read operations.
   const int offset_;
-  const int64 sparse_offset_;
+  const int64_t sparse_offset_;
   const int length_;
 
   // Used in get available range operations.
-  int64* const out_start_;
+  int64_t* const out_start_;
 
   const EntryOperationType type_;
   // Used in open and create operations.

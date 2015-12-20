@@ -5,6 +5,8 @@
 #ifndef NET_TOOLS_BALSA_BALSA_HEADERS_H_
 #define NET_TOOLS_BALSA_BALSA_HEADERS_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iosfwd>
 #include <iterator>

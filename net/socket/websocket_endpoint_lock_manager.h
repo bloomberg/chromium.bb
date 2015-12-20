@@ -5,6 +5,8 @@
 #ifndef NET_SOCKET_WEBSOCKET_ENDPOINT_LOCK_MANAGER_H_
 #define NET_SOCKET_WEBSOCKET_ENDPOINT_LOCK_MANAGER_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/containers/linked_list.h"

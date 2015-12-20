@@ -6,6 +6,7 @@
 #define NET_CERT_X509_UTIL_H_
 
 #include <stdint.h>
+
 #include <string>
 
 #include "base/memory/ref_counted.h"

@@ -9,9 +9,10 @@
 
 #include <stddef.h>
 #include <sys/socket.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_types.h"

@@ -5,9 +5,11 @@
 #ifndef NET_QUIC_TEST_TOOLS_SIMPLE_QUIC_FRAMER_H_
 #define NET_QUIC_TEST_TOOLS_SIMPLE_QUIC_FRAMER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/quic_framer.h"

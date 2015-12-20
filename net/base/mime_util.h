@@ -17,6 +17,8 @@
 // All constants in mime_util.cc must be written in lower case, except parameter
 // values, which can be any case.
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

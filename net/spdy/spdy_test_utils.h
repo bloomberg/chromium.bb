@@ -5,6 +5,7 @@
 #ifndef NET_SPDY_TEST_UTILS_H_
 #define NET_SPDY_TEST_UTILS_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>
@@ -35,7 +36,7 @@ void CompareCharArraysWithHexError(
     const int expected_len);
 
 void SetFrameFlags(SpdyFrame* frame,
-                   uint8 flags,
+                   uint8_t flags,
                    SpdyMajorVersion spdy_version);
 
 void SetFrameLength(SpdyFrame* frame,

@@ -5,6 +5,7 @@
 #ifndef NET_PROXY_PROXY_RESOLVER_FACTORY_MOJO_H_
 #define NET_PROXY_PROXY_RESOLVER_FACTORY_MOJO_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"

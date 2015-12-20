@@ -5,6 +5,9 @@
 #ifndef NET_QUIC_QUIC_STREAM_FACTORY_H_
 #define NET_QUIC_QUIC_STREAM_FACTORY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <string>
@@ -12,6 +15,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
@@ -171,11 +175,11 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                             float packet_loss_rate);
 
   // Returns true if QUIC is disabled for this port.
-  bool IsQuicDisabled(uint16 port);
+  bool IsQuicDisabled(uint16_t port);
 
   // Returns reason QUIC is disabled for this port, or QUIC_DISABLED_NOT if not.
   QuicChromiumClientSession::QuicDisabledReason QuicDisabledReason(
-      uint16 port) const;
+      uint16_t port) const;
 
   // Returns reason QUIC is disabled as string for net-internals, or
   // returns empty string if QUIC is not disabled.
@@ -305,7 +309,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Returns |srtt| in micro seconds from ServerNetworkStats. Returns 0 if there
   // is no |http_server_properties_| or if |http_server_properties_| doesn't
   // have ServerNetworkStats for the given |server_id|.
-  int64 GetServerNetworkStatsSmoothedRttInMicroseconds(
+  int64_t GetServerNetworkStatsSmoothedRttInMicroseconds(
       const QuicServerId& server_id) const;
 
   // Helper methods.
@@ -413,7 +417,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // and is considered as a lossy connection.
   float packet_loss_threshold_;
   // Count number of lossy connections by port.
-  std::map<uint16, int> number_of_lossy_connections_;
+  std::map<uint16_t, int> number_of_lossy_connections_;
 
   // Keep track of stats for recently closed connections, using a
   // bounded queue.
@@ -454,7 +458,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // port when we re-connect to any given server/port.  The differences between
   // profiles (probablistically) prevent two profiles from colliding in their
   // ephemeral port requests.
-  uint64 port_seed_;
+  uint64_t port_seed_;
 
   // Local address of socket that was created in CreateSession.
   IPEndPoint local_address_;

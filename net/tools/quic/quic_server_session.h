@@ -7,12 +7,14 @@
 #ifndef NET_TOOLS_QUIC_QUIC_SERVER_SESSION_H_
 #define NET_TOOLS_QUIC_QUIC_SERVER_SESSION_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_protocol.h"
@@ -138,7 +140,7 @@ class QuicServerSession : public QuicSpdySession {
   QuicTime last_scup_time_;
 
   // Number of packets sent to the peer, at the time we last sent a SCUP.
-  int64 last_scup_packet_number_;
+  int64_t last_scup_packet_number_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServerSession);
 };

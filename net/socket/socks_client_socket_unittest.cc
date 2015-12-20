@@ -4,6 +4,7 @@
 
 #include "net/socket/socks_client_socket.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/test_completion_callback.h"

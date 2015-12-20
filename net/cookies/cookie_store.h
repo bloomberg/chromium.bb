@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/memory/ref_counted.h"

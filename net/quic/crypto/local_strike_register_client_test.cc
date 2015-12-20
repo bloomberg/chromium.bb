@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/sys_byteorder.h"
@@ -50,10 +51,10 @@ class RecordResultCallback : public StrikeRegisterClient::ResultCallback {
   DISALLOW_COPY_AND_ASSIGN(RecordResultCallback);
 };
 
-const uint8 kOrbit[] = "\x12\x34\x56\x78\x9A\xBC\xDE\xF0";
-const uint32 kCurrentTimeExternalSecs = 12345678;
+const uint8_t kOrbit[] = "\x12\x34\x56\x78\x9A\xBC\xDE\xF0";
+const uint32_t kCurrentTimeExternalSecs = 12345678;
 size_t kMaxEntries = 100;
-uint32 kWindowSecs = 60;
+uint32_t kWindowSecs = 60;
 
 class LocalStrikeRegisterClientTest : public ::testing::Test {
  protected:
@@ -81,7 +82,7 @@ TEST_F(LocalStrikeRegisterClientTest, CheckOrbit) {
 
 TEST_F(LocalStrikeRegisterClientTest, IncorrectNonceLength) {
   string valid_nonce;
-  uint32 norder = htonl(kCurrentTimeExternalSecs);
+  uint32_t norder = htonl(kCurrentTimeExternalSecs);
   valid_nonce.assign(reinterpret_cast<const char*>(&norder), sizeof(norder));
   valid_nonce.append(string(reinterpret_cast<const char*>(kOrbit), kOrbitSize));
   valid_nonce.append(string(20, '\x17'));  // 20 'random' bytes.

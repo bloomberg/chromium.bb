@@ -52,7 +52,7 @@ scoped_ptr<base::Value> NetLogReadWriteCompleteCallback(
 }
 
 scoped_ptr<base::Value> NetLogSparseOperationCallback(
-    int64 offset,
+    int64_t offset,
     int buf_len,
     net::NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -74,7 +74,7 @@ scoped_ptr<base::Value> NetLogSparseReadWriteCallback(
 }
 
 scoped_ptr<base::Value> NetLogGetAvailableRangeResultCallback(
-    int64 start,
+    int64_t start,
     int result,
     net::NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -113,7 +113,7 @@ net::NetLog::ParametersCallback CreateNetLogReadWriteCompleteCallback(
 }
 
 net::NetLog::ParametersCallback CreateNetLogSparseOperationCallback(
-    int64 offset,
+    int64_t offset,
     int buf_len) {
   return base::Bind(&NetLogSparseOperationCallback, offset, buf_len);
 }
@@ -125,7 +125,7 @@ net::NetLog::ParametersCallback CreateNetLogSparseReadWriteCallback(
 }
 
 net::NetLog::ParametersCallback CreateNetLogGetAvailableRangeResultCallback(
-    int64 start,
+    int64_t start,
     int result) {
   return base::Bind(&NetLogGetAvailableRangeResultCallback, start, result);
 }

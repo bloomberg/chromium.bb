@@ -4,7 +4,6 @@
 
 #include "net/http/http_basic_state.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_request_info.h"

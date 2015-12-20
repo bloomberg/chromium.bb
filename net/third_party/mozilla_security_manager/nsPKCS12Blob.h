@@ -38,6 +38,8 @@
 #ifndef NET_THIRD_PARTY_MOZILLA_SECURITY_MANAGER_NSPKCS12BLOB_H_
 #define NET_THIRD_PARTY_MOZILLA_SECURITY_MANAGER_NSPKCS12BLOB_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

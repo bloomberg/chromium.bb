@@ -5,7 +5,8 @@
 #ifndef NET_HTTP_DES_H_
 #define NET_HTTP_DES_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "net/base/net_export.h"
 
 namespace net {
@@ -16,13 +17,14 @@ namespace net {
 // TODO(wtc): Turn this into a C++ API and move it to the base module.
 
 // Build a 64-bit DES key from a 56-bit raw key.
-NET_EXPORT_PRIVATE void DESMakeKey(const uint8* raw, uint8* key);
+NET_EXPORT_PRIVATE void DESMakeKey(const uint8_t* raw, uint8_t* key);
 
 // Run the DES encryption algorithm in ECB mode on one block (8 bytes) of
 // data.  |key| is a DES key (8 bytes), |src| is the input plaintext (8
 // bytes), and |hash| is an 8-byte buffer receiving the output ciphertext.
-NET_EXPORT_PRIVATE void DESEncrypt(const uint8* key, const uint8* src,
-                                   uint8* hash);
+NET_EXPORT_PRIVATE void DESEncrypt(const uint8_t* key,
+                                   const uint8_t* src,
+                                   uint8_t* hash);
 
 }  // namespace net
 

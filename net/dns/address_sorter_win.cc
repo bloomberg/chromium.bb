@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/threading/worker_pool.h"
 #include "base/win/windows_version.h"
 #include "net/base/address_list.h"

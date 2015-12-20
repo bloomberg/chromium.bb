@@ -7,7 +7,6 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/rand_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,11 +19,11 @@ using std::pair;
 using std::set;
 using std::string;
 
-const uint8 kOrbit[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+const uint8_t kOrbit[8] = {1, 2, 3, 4, 5, 6, 7, 8};
 
 // StrikeRegisterTests don't look at the random bytes so this function can
 // simply set the random bytes to 0.
-void SetNonce(uint8 nonce[32], unsigned time, const uint8 orbit[8]) {
+void SetNonce(uint8_t nonce[32], unsigned time, const uint8_t orbit[8]) {
   nonce[0] = time >> 24;
   nonce[1] = time >> 16;
   nonce[2] = time >> 8;
@@ -38,7 +37,7 @@ TEST(StrikeRegisterTest, SimpleHorizon) {
   StrikeRegister set(10 /* max size */, 1000 /* current time */,
                      100 /* window secs */, kOrbit,
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
-  uint8 nonce[32];
+  uint8_t nonce[32];
   SetNonce(nonce, 999, kOrbit);
   EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1000));
   SetNonce(nonce, 1000, kOrbit);
@@ -58,7 +57,7 @@ TEST(StrikeRegisterTest, NoStartupMode) {
   StrikeRegister set(10 /* max size */, 1000 /* current time */,
                      100 /* window secs */, kOrbit,
                      StrikeRegister::NO_STARTUP_PERIOD_NEEDED);
-  uint8 nonce[32];
+  uint8_t nonce[32];
   SetNonce(nonce, 1000, kOrbit);
   EXPECT_EQ(NONCE_OK, set.Insert(nonce, 1000));
   EXPECT_EQ(NONCE_NOT_UNIQUE_FAILURE, set.Insert(nonce, 1000));
@@ -75,7 +74,7 @@ TEST(StrikeRegisterTest, WindowFuture) {
   StrikeRegister set(10 /* max size */, 1000 /* current time */,
                      100 /* window secs */, kOrbit,
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
-  uint8 nonce[32];
+  uint8_t nonce[32];
   SetNonce(nonce, 1101, kOrbit);
   EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1000));
   SetNonce(nonce, 999, kOrbit);
@@ -87,8 +86,8 @@ TEST(StrikeRegisterTest, BadOrbit) {
   StrikeRegister set(10 /* max size */, 1000 /* current time */,
                      100 /* window secs */, kOrbit,
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
-  uint8 nonce[32];
-  static const uint8 kBadOrbit[8] = {0, 0, 0, 0, 1, 1, 1, 1};
+  uint8_t nonce[32];
+  static const uint8_t kBadOrbit[8] = {0, 0, 0, 0, 1, 1, 1, 1};
   SetNonce(nonce, 1101, kBadOrbit);
   EXPECT_EQ(NONCE_INVALID_ORBIT_FAILURE, set.Insert(nonce, 1100));
 }
@@ -97,7 +96,7 @@ TEST(StrikeRegisterTest, OneValue) {
   StrikeRegister set(10 /* max size */, 1000 /* current time */,
                      100 /* window secs */, kOrbit,
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
-  uint8 nonce[32];
+  uint8_t nonce[32];
   SetNonce(nonce, 1101, kOrbit);
   EXPECT_EQ(NONCE_OK, set.Insert(nonce, 1101));
 }
@@ -107,7 +106,7 @@ TEST(StrikeRegisterTest, RejectDuplicate) {
   StrikeRegister set(10 /* max size */, 1000 /* current time */,
                      100 /* window secs */, kOrbit,
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
-  uint8 nonce[32];
+  uint8_t nonce[32];
   SetNonce(nonce, 1101, kOrbit);
   EXPECT_EQ(NONCE_OK, set.Insert(nonce, 1101));
   EXPECT_EQ(NONCE_NOT_UNIQUE_FAILURE, set.Insert(nonce, 1101));
@@ -121,7 +120,7 @@ TEST(StrikeRegisterTest, HorizonUpdating) {
   for (size_t type_idx = 0; type_idx < arraysize(startup_types); ++type_idx) {
     StrikeRegister set(5 /* max size */, 500 /* current time */,
                        100 /* window secs */, kOrbit, startup_types[type_idx]);
-    uint8 nonce[6][32];
+    uint8_t nonce[6][32];
     for (unsigned i = 0; i < 5; i++) {
       SetNonce(nonce[i], 1101 + i, kOrbit);
       nonce[i][31] = i;
@@ -170,7 +169,7 @@ TEST(StrikeRegisterTest, InsertMany) {
                      500 /* window secs */, kOrbit,
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
 
-  uint8 nonce[32];
+  uint8_t nonce[32];
   SetNonce(nonce, 1101, kOrbit);
   for (unsigned i = 0; i < 100000; i++) {
     SetNonce(nonce, 1101 + i / 500, kOrbit);
@@ -190,9 +189,9 @@ TEST(StrikeRegisterTest, InsertMany) {
 class SlowStrikeRegister {
  public:
   SlowStrikeRegister(unsigned max_entries,
-                     uint32 current_time,
-                     uint32 window_secs,
-                     const uint8 orbit[8])
+                     uint32_t current_time,
+                     uint32_t window_secs,
+                     const uint8_t orbit[8])
       : max_entries_(max_entries),
         window_secs_(window_secs),
         creation_time_(current_time),
@@ -200,20 +199,20 @@ class SlowStrikeRegister {
     memcpy(orbit_, orbit, sizeof(orbit_));
   }
 
-  InsertStatus Insert(const uint8 nonce_bytes[32],
-                      const uint32 nonce_time_external,
-                      const uint32 current_time_external) {
+  InsertStatus Insert(const uint8_t nonce_bytes[32],
+                      const uint32_t nonce_time_external,
+                      const uint32_t current_time_external) {
     if (nonces_.size() == max_entries_) {
       DropOldestEntry();
     }
 
-    const uint32 current_time = ExternalTimeToInternal(current_time_external);
+    const uint32_t current_time = ExternalTimeToInternal(current_time_external);
 
     // Check to see if the orbit is correct.
     if (memcmp(nonce_bytes + 4, orbit_, sizeof(orbit_))) {
       return NONCE_INVALID_ORBIT_FAILURE;
     }
-    const uint32 nonce_time =
+    const uint32_t nonce_time =
         ExternalTimeToInternal(TimeFromBytes(nonce_bytes));
     EXPECT_EQ(ExternalTimeToInternal(nonce_time_external), nonce_time);
     // We have dropped one or more nonces with a time value of |horizon_ - 1|,
@@ -230,10 +229,10 @@ class SlowStrikeRegister {
       return NONCE_INVALID_TIME_FAILURE;
     }
 
-    pair<uint32, string> nonce = std::make_pair(
+    pair<uint32_t, string> nonce = std::make_pair(
         nonce_time, string(reinterpret_cast<const char*>(nonce_bytes), 32));
 
-    set<pair<uint32, string>>::const_iterator it = nonces_.find(nonce);
+    set<pair<uint32_t, string>>::const_iterator it = nonces_.find(nonce);
     if (it != nonces_.end()) {
       return NONCE_NOT_UNIQUE_FAILURE;
     }
@@ -242,8 +241,9 @@ class SlowStrikeRegister {
     return NONCE_OK;
   }
 
-  uint32 GetCurrentValidWindowSecs(const uint32 current_time_external) const {
-    const uint32 current_time = ExternalTimeToInternal(current_time_external);
+  uint32_t GetCurrentValidWindowSecs(
+      const uint32_t current_time_external) const {
+    const uint32_t current_time = ExternalTimeToInternal(current_time_external);
     if (horizon_ > current_time) {
       return 0;
     }
@@ -251,15 +251,16 @@ class SlowStrikeRegister {
   }
 
  private:
-  // TimeFromBytes returns a big-endian uint32 from |d|.
-  static uint32 TimeFromBytes(const uint8 d[4]) {
-    return static_cast<uint32>(d[0]) << 24 | static_cast<uint32>(d[1]) << 16 |
-           static_cast<uint32>(d[2]) << 8 | static_cast<uint32>(d[3]);
+  // TimeFromBytes returns a big-endian uint32_t from |d|.
+  static uint32_t TimeFromBytes(const uint8_t d[4]) {
+    return static_cast<uint32_t>(d[0]) << 24 |
+           static_cast<uint32_t>(d[1]) << 16 |
+           static_cast<uint32_t>(d[2]) << 8 | static_cast<uint32_t>(d[3]);
   }
 
-  uint32 ExternalTimeToInternal(uint32 external_time) const {
-    static const uint32 kCreationTimeFromInternalEpoch = 63115200.0;
-    uint32 internal_epoch = 0;
+  uint32_t ExternalTimeToInternal(uint32_t external_time) const {
+    static const uint32_t kCreationTimeFromInternalEpoch = 63115200.0;
+    uint32_t internal_epoch = 0;
     if (creation_time_ > kCreationTimeFromInternalEpoch) {
       internal_epoch = creation_time_ - kCreationTimeFromInternalEpoch;
     }
@@ -268,18 +269,18 @@ class SlowStrikeRegister {
   }
 
   void DropOldestEntry() {
-    set<pair<uint32, string>>::iterator oldest = nonces_.begin();
+    set<pair<uint32_t, string>>::iterator oldest = nonces_.begin();
     horizon_ = oldest->first + 1;
     nonces_.erase(oldest);
   }
 
   const unsigned max_entries_;
   const unsigned window_secs_;
-  const uint32 creation_time_;
-  uint8 orbit_[8];
-  uint32 horizon_;
+  const uint32_t creation_time_;
+  uint8_t orbit_[8];
+  uint32_t horizon_;
 
-  set<pair<uint32, string>> nonces_;
+  set<pair<uint32_t, string>> nonces_;
 };
 
 class StrikeRegisterStressTest : public ::testing::Test {};
@@ -289,23 +290,23 @@ TEST_F(StrikeRegisterStressTest, InOrderInsertion) {
   srand(42);
 
   unsigned max_entries = 64;
-  uint32 current_time = 10000, window = 200;
+  uint32_t current_time = 10000, window = 200;
   scoped_ptr<StrikeRegister> s1(
       new StrikeRegister(max_entries, current_time, window, kOrbit,
                          StrikeRegister::DENY_REQUESTS_AT_STARTUP));
   scoped_ptr<SlowStrikeRegister> s2(
       new SlowStrikeRegister(max_entries, current_time, window, kOrbit));
 
-  uint64 i;
-  const uint64 kMaxIterations = 10000;
+  uint64_t i;
+  const uint64_t kMaxIterations = 10000;
   for (i = 0; i < kMaxIterations; i++) {
-    const uint32 time = current_time + i;
+    const uint32_t time = current_time + i;
 
-    uint8 nonce[32];
+    uint8_t nonce[32];
     SetNonce(nonce, time, kOrbit);
 
     // There are 2048 possible nonce values:
-    const uint32 v = rand() % 2048;
+    const uint32_t v = rand() % 2048;
     nonce[30] = v >> 8;
     nonce[31] = v;
 
@@ -340,18 +341,18 @@ TEST_F(StrikeRegisterStressTest, Stress) {
   // Fixed seed gives reproducibility for this test.
   srand(42);
   unsigned max_entries = 64;
-  uint32 current_time = 10000, window = 200;
+  uint32_t current_time = 10000, window = 200;
   scoped_ptr<StrikeRegister> s1(
       new StrikeRegister(max_entries, current_time, window, kOrbit,
                          StrikeRegister::DENY_REQUESTS_AT_STARTUP));
   scoped_ptr<SlowStrikeRegister> s2(
       new SlowStrikeRegister(max_entries, current_time, window, kOrbit));
-  uint64 i;
+  uint64_t i;
 
   // When making changes it's worth removing the limit on this test and running
   // it for a while. For the initial development an opt binary was left running
   // for 10 minutes.
-  const uint64 kMaxIterations = 10000;
+  const uint64_t kMaxIterations = 10000;
   for (i = 0; i < kMaxIterations; i++) {
     if (rand() % 1000 == 0) {
       // 0.1% chance of resetting the sets.
@@ -364,18 +365,18 @@ TEST_F(StrikeRegisterStressTest, Stress) {
           new SlowStrikeRegister(max_entries, current_time, window, kOrbit));
     }
 
-    int32 time_delta = rand() % (window * 4);
+    int32_t time_delta = rand() % (window * 4);
     time_delta -= window * 2;
-    const uint32 time = current_time + time_delta;
+    const uint32_t time = current_time + time_delta;
     if (time_delta < 0 && time > current_time) {
       continue;  // overflow
     }
 
-    uint8 nonce[32];
+    uint8_t nonce[32];
     SetNonce(nonce, time, kOrbit);
 
     // There are 2048 possible nonce values:
-    const uint32 v = rand() % 2048;
+    const uint32_t v = rand() % 2048;
     nonce[30] = v >> 8;
     nonce[31] = v;
 

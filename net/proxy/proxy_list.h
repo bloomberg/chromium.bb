@@ -5,6 +5,8 @@
 #ifndef NET_PROXY_PROXY_LIST_H_
 #define NET_PROXY_PROXY_LIST_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

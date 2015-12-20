@@ -51,7 +51,7 @@ class TCPServerSocketTest : public PlatformTest {
   }
 
   void ParseAddress(const std::string& ip_str,
-                    uint16 port,
+                    uint16_t port,
                     IPEndPoint* address) {
     IPAddressNumber ip_number;
     bool rv = ParseIPLiteralToNumber(ip_str, &ip_number);

@@ -4,7 +4,6 @@
 
 #include "net/dns/dns_config_service_win.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/win/windows_version.h"
 #include "net/dns/dns_protocol.h"
@@ -52,7 +51,7 @@ struct AdapterInfo {
   IF_OPER_STATUS oper_status;
   const WCHAR* dns_suffix;
   std::string dns_server_addresses[4];  // Empty string indicates end.
-  uint16 ports[4];
+  uint16_t ports[4];
 };
 
 scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> CreateAdapterAddresses(
@@ -117,7 +116,7 @@ TEST(DnsConfigServiceWinTest, ConvertAdapterAddresses) {
     AdapterInfo input_adapters[4];        // |if_type| == 0 indicates end.
     std::string expected_nameservers[4];  // Empty string indicates end.
     std::string expected_suffix;
-    uint16 expected_ports[4];
+    uint16_t expected_ports[4];
   } cases[] = {
     {  // Ignore loopback and inactive adapters.
       {
@@ -176,7 +175,7 @@ TEST(DnsConfigServiceWinTest, ConvertAdapterAddresses) {
     for (size_t j = 0; !t.expected_nameservers[j].empty(); ++j) {
       IPAddressNumber ip;
       ASSERT_TRUE(ParseIPLiteralToNumber(t.expected_nameservers[j], &ip));
-      uint16 port = t.expected_ports[j];
+      uint16_t port = t.expected_ports[j];
       if (!port)
         port = dns_protocol::kDefaultPort;
       expected_nameservers.push_back(IPEndPoint(ip, port));

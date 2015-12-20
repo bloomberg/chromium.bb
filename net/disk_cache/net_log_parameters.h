@@ -5,6 +5,8 @@
 #ifndef NET_DISK_CACHE_NET_LOG_PARAMETERS_H_
 #define NET_DISK_CACHE_NET_LOG_PARAMETERS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "net/log/net_log.h"
@@ -42,7 +44,7 @@ net::NetLog::ParametersCallback CreateNetLogReadWriteCompleteCallback(
 // Creates a NetLog callback that returns parameters for when a sparse
 // operation is started.
 net::NetLog::ParametersCallback CreateNetLogSparseOperationCallback(
-    int64 offset,
+    int64_t offset,
     int buf_len);
 
 // Creates a NetLog callback that returns parameters for when a read or write
@@ -54,7 +56,7 @@ net::NetLog::ParametersCallback CreateNetLogSparseReadWriteCallback(
 // Creates a NetLog callback that returns parameters for when a call to
 // GetAvailableRange returns.
 net::NetLog::ParametersCallback CreateNetLogGetAvailableRangeResultCallback(
-    int64 start,
+    int64_t start,
     int result);
 
 }  // namespace disk_cache

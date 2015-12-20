@@ -7,9 +7,9 @@
 
 #include <SystemConfiguration/SystemConfiguration.h>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"

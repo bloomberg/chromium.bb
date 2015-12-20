@@ -58,7 +58,7 @@ namespace {
 
 const char kUploadData[] = "Really nifty data!";
 const char kDefaultServerHostName[] = "www.google.com";
-const uint16 kDefaultServerPort = 80;
+const uint16_t kDefaultServerPort = 80;
 
 class TestQuicConnection : public QuicConnection {
  public:

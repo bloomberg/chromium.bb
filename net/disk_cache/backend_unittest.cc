@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -521,7 +520,7 @@ TEST_F(DiskCacheBackendTest, ExternalFiles) {
 // Tests that we deal with file-level pending operations at destruction time.
 void DiskCacheBackendTest::BackendShutdownWithPendingFileIO(bool fast) {
   ASSERT_TRUE(CleanupCacheDir());
-  uint32 flags = disk_cache::kNoBuffering;
+  uint32_t flags = disk_cache::kNoBuffering;
   if (!fast)
     flags |= disk_cache::kNoRandom;
 
@@ -623,7 +622,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingIO(bool fast) {
     ASSERT_TRUE(cache_thread.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
-    uint32 flags = disk_cache::kNoBuffering;
+    uint32_t flags = disk_cache::kNoBuffering;
     if (!fast)
       flags |= disk_cache::kNoRandom;
 
@@ -1774,7 +1773,7 @@ void DiskCacheBackendTest::BackendTransaction(const std::string& name,
   ASSERT_TRUE(CopyTestCache(name));
   DisableFirstCleanup();
 
-  uint32 mask;
+  uint32_t mask;
   if (load) {
     mask = 0xf;
     SetMaxSize(0x100000);
@@ -3075,7 +3074,7 @@ TEST_F(DiskCacheTest, MultipleInstances) {
 // Test the six regions of the curve that determines the max cache size.
 TEST_F(DiskCacheTest, AutomaticMaxSize) {
   using disk_cache::kDefaultCacheSize;
-  int64 large_size = kDefaultCacheSize;
+  int64_t large_size = kDefaultCacheSize;
 
   // Region 1: expected = available * 0.8
   EXPECT_EQ((kDefaultCacheSize - 1) * 8 / 10,
@@ -3108,7 +3107,7 @@ TEST_F(DiskCacheTest, AutomaticMaxSize) {
             disk_cache::PreferredCacheSize(large_size * 250 - 1));
 
   // Region 5: expected = available * 0.1
-  int64 largest_size = kDefaultCacheSize * 4;
+  int64_t largest_size = kDefaultCacheSize * 4;
   EXPECT_EQ(kDefaultCacheSize * 25 / 10,
             disk_cache::PreferredCacheSize(large_size * 250));
   EXPECT_EQ(largest_size - 1,

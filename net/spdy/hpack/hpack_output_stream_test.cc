@@ -6,7 +6,6 @@
 
 #include <cstddef>
 
-#include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -47,7 +46,7 @@ TEST(HpackOutputStreamTest, AppendBits) {
 
 // Utility function to return I as a string encoded with an N-bit
 // prefix.
-string EncodeUint32(uint8 N, uint32 I) {
+string EncodeUint32(uint8_t N, uint32_t I) {
   HpackOutputStream output_stream;
   if (N < 8) {
     output_stream.AppendBits(0x00, 8 - N);

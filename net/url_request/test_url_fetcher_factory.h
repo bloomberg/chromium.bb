@@ -12,10 +12,10 @@
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -94,8 +94,8 @@ class TestURLFetcher : public URLFetcher {
   void SetUploadFilePath(
       const std::string& upload_content_type,
       const base::FilePath& file_path,
-      uint64 range_offset,
-      uint64 range_length,
+      uint64_t range_offset,
+      uint64_t range_length,
       scoped_refptr<base::TaskRunner> file_task_runner) override;
   void SetUploadStreamFactory(
       const std::string& upload_content_type,
@@ -232,7 +232,7 @@ class TestURLFetcher : public URLFetcher {
   bool write_response_file_;
   bool fake_was_fetched_via_proxy_;
   bool fake_was_cached_;
-  int64 fake_response_bytes_;
+  int64_t fake_response_bytes_;
   scoped_refptr<HttpResponseHeaders> fake_response_headers_;
   HttpRequestHeaders fake_extra_request_headers_;
   int fake_max_retries_;

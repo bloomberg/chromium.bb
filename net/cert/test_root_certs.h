@@ -6,6 +6,7 @@
 #define NET_CERT_TEST_ROOT_CERTS_H_
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"

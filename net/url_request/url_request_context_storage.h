@@ -5,7 +5,7 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_CONTEXT_STORAGE_H_
 #define NET_URL_REQUEST_URL_REQUEST_CONTEXT_STORAGE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"

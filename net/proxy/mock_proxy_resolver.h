@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_resolver.h"

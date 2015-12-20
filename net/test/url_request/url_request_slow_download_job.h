@@ -8,6 +8,8 @@
 #ifndef NET_TEST_URL_REQUEST_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
 #define NET_TEST_URL_REQUEST_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 

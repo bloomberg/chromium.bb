@@ -167,7 +167,7 @@ bool URLRequestThrottlerEntry::ShouldRejectRequest(
   return reject_request;
 }
 
-int64 URLRequestThrottlerEntry::ReserveSendingTimeForNextRequest(
+int64_t URLRequestThrottlerEntry::ReserveSendingTimeForNextRequest(
     const base::TimeTicks& earliest_time) {
   base::TimeTicks now = ImplGetTimeNow();
 

@@ -5,6 +5,8 @@
 #ifndef NET_FTP_FTP_TRANSACTION_H_
 #define NET_FTP_FTP_TRANSACTION_H_
 
+#include <stdint.h>
+
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_states.h"
@@ -72,7 +74,7 @@ class NET_EXPORT_PRIVATE FtpTransaction {
 
   // Returns the upload progress in bytes.  If there is no upload data,
   // zero will be returned.
-  virtual uint64 GetUploadProgress() const = 0;
+  virtual uint64_t GetUploadProgress() const = 0;
 };
 
 }  // namespace net

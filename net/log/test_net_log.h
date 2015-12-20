@@ -5,11 +5,13 @@
 #ifndef NET_LOG_TEST_NET_LOG_H_
 #define NET_LOG_TEST_NET_LOG_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "net/log/net_log.h"
 #include "net/log/test_net_log_entry.h"
 

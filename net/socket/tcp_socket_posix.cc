@@ -404,14 +404,14 @@ int TCPSocketPosix::SetAddressReuse(bool allow) {
   return OK;
 }
 
-int TCPSocketPosix::SetReceiveBufferSize(int32 size) {
+int TCPSocketPosix::SetReceiveBufferSize(int32_t size) {
   DCHECK(socket_);
   int rv = setsockopt(socket_->socket_fd(), SOL_SOCKET, SO_RCVBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));
   return (rv == 0) ? OK : MapSystemError(errno);
 }
 
-int TCPSocketPosix::SetSendBufferSize(int32 size) {
+int TCPSocketPosix::SetSendBufferSize(int32_t size) {
   DCHECK(socket_);
   int rv = setsockopt(socket_->socket_fd(), SOL_SOCKET, SO_SNDBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));

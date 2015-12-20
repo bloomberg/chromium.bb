@@ -4,7 +4,6 @@
 
 #include "net/proxy/proxy_config_source.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace net {

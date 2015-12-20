@@ -6,6 +6,7 @@
 #define NET_ANDROID_NETWORK_LIBRARY_H_
 
 #include <jni.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>

@@ -419,7 +419,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
   base::FilePath path = temp_dir_.path().Append(kCookieFilename);
   base::File::Info info;
   ASSERT_TRUE(base::GetFileInfo(path, &info));
-  int64 base_size = info.size;
+  int64_t base_size = info.size;
 
   // Write some large cookies, so the DB will have to expand by several KB.
   for (char c = 'a'; c < 'z'; ++c) {

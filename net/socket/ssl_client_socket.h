@@ -5,6 +5,8 @@
 #ifndef NET_SOCKET_SSL_CLIENT_SOCKET_H_
 #define NET_SOCKET_SSL_CLIENT_SOCKET_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -181,7 +183,7 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // Section 9.2 of the HTTP/2 specification.  Note that the server might still
   // pick an inadequate cipher suite.
   static bool HasCipherAdequateForHTTP2(
-      const std::vector<uint16>& cipher_suites);
+      const std::vector<uint16_t>& cipher_suites);
 
   // Determine if the TLS version required by Section 9.2 of the HTTP/2
   // specification is enabled.  Note that the server might still pick an

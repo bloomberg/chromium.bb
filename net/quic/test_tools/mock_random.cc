@@ -9,13 +9,13 @@ namespace test {
 
 MockRandom::MockRandom() : base_(0xDEADBEEF), increment_(0) {}
 
-MockRandom::MockRandom(uint32 base) : base_(base), increment_(0) {}
+MockRandom::MockRandom(uint32_t base) : base_(base), increment_(0) {}
 
 void MockRandom::RandBytes(void* data, size_t len) {
   memset(data, 'r' + increment_, len);
 }
 
-uint64 MockRandom::RandUint64() {
+uint64_t MockRandom::RandUint64() {
   return base_ + increment_;
 }
 

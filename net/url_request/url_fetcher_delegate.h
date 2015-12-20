@@ -5,9 +5,10 @@
 #ifndef NET_URL_REQUEST_URL_FETCHER_DELEGATE_H_
 #define NET_URL_REQUEST_URL_FETCHER_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 
@@ -26,13 +27,15 @@ class NET_EXPORT URLFetcherDelegate {
   // denotes the number of bytes received up to the call, and |total| is the
   // expected total size of the response (or -1 if not determined).
   virtual void OnURLFetchDownloadProgress(const URLFetcher* source,
-                                          int64 current, int64 total);
+                                          int64_t current,
+                                          int64_t total);
 
   // This will be called when uploading of POST or PUT requests proceeded.
   // |current| denotes the number of bytes sent so far, and |total| is the
   // total size of uploading data (or -1 if chunked upload is enabled).
   virtual void OnURLFetchUploadProgress(const URLFetcher* source,
-                                        int64 current, int64 total);
+                                        int64_t current,
+                                        int64_t total);
 
  protected:
   virtual ~URLFetcherDelegate();

@@ -5,6 +5,7 @@
 #include "net/websockets/websocket_stream_create_test_base.h"
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"

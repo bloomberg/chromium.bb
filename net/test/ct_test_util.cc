@@ -25,7 +25,7 @@ namespace ct {
 namespace {
 
 std::string HexToBytes(const char* hex_data) {
-  std::vector<uint8> output;
+  std::vector<uint8_t> output;
   std::string result;
   if (base::HexStringToBytes(hex_data, &output))
     result.assign(reinterpret_cast<const char*>(&output[0]), output.size());

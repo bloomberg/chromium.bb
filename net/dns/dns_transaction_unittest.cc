@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/sys_byteorder.h"

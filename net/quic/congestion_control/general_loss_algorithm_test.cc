@@ -20,7 +20,7 @@ namespace test {
 namespace {
 
 // Default packet length.
-const uint32 kDefaultLength = 1000;
+const uint32_t kDefaultLength = 1000;
 
 class GeneralLossAlgorithmTest : public ::testing::Test {
  protected:

@@ -18,11 +18,11 @@ namespace net {
 // For details, see RFC 1035 section 4.1.1.  This header template sets RD
 // bit, which directs the name server to pursue query recursively, and sets
 // the QDCOUNT to 1, meaning the question section has a single entry.
-DnsQuery::DnsQuery(uint16 id, const base::StringPiece& qname, uint16 qtype)
+DnsQuery::DnsQuery(uint16_t id, const base::StringPiece& qname, uint16_t qtype)
     : qname_size_(qname.size()) {
   DCHECK(!DNSDomainToString(qname).empty());
   // QNAME + QTYPE + QCLASS
-  size_t question_size = qname_size_ + sizeof(uint16) + sizeof(uint16);
+  size_t question_size = qname_size_ + sizeof(uint16_t) + sizeof(uint16_t);
   io_buffer_ = new IOBufferWithSize(sizeof(dns_protocol::Header) +
                                     question_size);
   dns_protocol::Header* header =
@@ -43,11 +43,11 @@ DnsQuery::DnsQuery(uint16 id, const base::StringPiece& qname, uint16 qtype)
 DnsQuery::~DnsQuery() {
 }
 
-scoped_ptr<DnsQuery> DnsQuery::CloneWithNewId(uint16 id) const {
+scoped_ptr<DnsQuery> DnsQuery::CloneWithNewId(uint16_t id) const {
   return make_scoped_ptr(new DnsQuery(*this, id));
 }
 
-uint16 DnsQuery::id() const {
+uint16_t DnsQuery::id() const {
   const dns_protocol::Header* header =
       reinterpret_cast<const dns_protocol::Header*>(io_buffer_->data());
   return base::NetToHost16(header->id);
@@ -58,19 +58,19 @@ base::StringPiece DnsQuery::qname() const {
                            qname_size_);
 }
 
-uint16 DnsQuery::qtype() const {
-  uint16 type;
-  base::ReadBigEndian<uint16>(
+uint16_t DnsQuery::qtype() const {
+  uint16_t type;
+  base::ReadBigEndian<uint16_t>(
       io_buffer_->data() + sizeof(dns_protocol::Header) + qname_size_, &type);
   return type;
 }
 
 base::StringPiece DnsQuery::question() const {
   return base::StringPiece(io_buffer_->data() + sizeof(dns_protocol::Header),
-                           qname_size_ + sizeof(uint16) + sizeof(uint16));
+                           qname_size_ + sizeof(uint16_t) + sizeof(uint16_t));
 }
 
-DnsQuery::DnsQuery(const DnsQuery& orig, uint16 id) {
+DnsQuery::DnsQuery(const DnsQuery& orig, uint16_t id) {
   qname_size_ = orig.qname_size_;
   io_buffer_ = new IOBufferWithSize(orig.io_buffer()->size());
   memcpy(io_buffer_.get()->data(), orig.io_buffer()->data(),
@@ -80,7 +80,7 @@ DnsQuery::DnsQuery(const DnsQuery& orig, uint16 id) {
   header->id = base::HostToNet16(id);
 }
 
-void DnsQuery::set_flags(uint16 flags) {
+void DnsQuery::set_flags(uint16_t flags) {
   dns_protocol::Header* header =
       reinterpret_cast<dns_protocol::Header*>(io_buffer_->data());
   header->flags = flags;

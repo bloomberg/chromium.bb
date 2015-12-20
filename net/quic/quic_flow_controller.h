@@ -5,7 +5,7 @@
 #ifndef NET_QUIC_QUIC_FLOW_CONTROLLER_H_
 #define NET_QUIC_QUIC_FLOW_CONTROLLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_protocol.h"
 

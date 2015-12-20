@@ -10,6 +10,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -95,8 +96,8 @@ class MockConnectClientSocket : public StreamSocket {
             const CompletionCallback& callback) override {
     return ERR_FAILED;
   }
-  int SetReceiveBufferSize(int32 size) override { return OK; }
-  int SetSendBufferSize(int32 size) override { return OK; }
+  int SetReceiveBufferSize(int32_t size) override { return OK; }
+  int SetSendBufferSize(int32_t size) override { return OK; }
 
  private:
   bool connected_;
@@ -163,8 +164,8 @@ class MockFailingClientSocket : public StreamSocket {
             const CompletionCallback& callback) override {
     return ERR_FAILED;
   }
-  int SetReceiveBufferSize(int32 size) override { return OK; }
-  int SetSendBufferSize(int32 size) override { return OK; }
+  int SetReceiveBufferSize(int32_t size) override { return OK; }
+  int SetSendBufferSize(int32_t size) override { return OK; }
 
  private:
   const AddressList addrlist_;
@@ -293,8 +294,8 @@ class MockTriggerableClientSocket : public StreamSocket {
             const CompletionCallback& callback) override {
     return ERR_FAILED;
   }
-  int SetReceiveBufferSize(int32 size) override { return OK; }
-  int SetSendBufferSize(int32 size) override { return OK; }
+  int SetReceiveBufferSize(int32_t size) override { return OK; }
+  int SetSendBufferSize(int32_t size) override { return OK; }
 
  private:
   void DoCallback() {

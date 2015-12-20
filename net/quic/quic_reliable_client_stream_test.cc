@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_reliable_client_stream.h"
 
+#include "base/macros.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/quic/quic_chromium_client_session.h"

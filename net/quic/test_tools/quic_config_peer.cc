@@ -12,14 +12,14 @@ namespace test {
 // static
 void QuicConfigPeer::SetReceivedSocketReceiveBuffer(
     QuicConfig* config,
-    uint32 receive_buffer_bytes) {
+    uint32_t receive_buffer_bytes) {
   config->socket_receive_buffer_.SetReceivedValue(receive_buffer_bytes);
 }
 
 // static
 void QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(
     QuicConfig* config,
-    uint32 window_bytes) {
+    uint32_t window_bytes) {
   config->initial_stream_flow_control_window_bytes_.SetReceivedValue(
       window_bytes);
 }
@@ -27,7 +27,7 @@ void QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(
 // static
 void QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(
     QuicConfig* config,
-    uint32 window_bytes) {
+    uint32_t window_bytes) {
   config->initial_session_flow_control_window_bytes_.SetReceivedValue(
       window_bytes);
 }
@@ -41,7 +41,7 @@ void QuicConfigPeer::SetReceivedConnectionOptions(
 
 // static
 void QuicConfigPeer::SetReceivedBytesForConnectionId(QuicConfig* config,
-                                                     uint32 bytes) {
+                                                     uint32_t bytes) {
   config->bytes_for_connection_id_.SetReceivedValue(bytes);
 }
 

@@ -49,8 +49,8 @@
 
 #include <string.h>
 
-typedef uint32 Uint32;
-typedef uint8 Uint8;
+typedef uint32_t Uint32;
+typedef uint8_t Uint8;
 
 /* the "conditional" function */
 #define F(x,y,z) (((x) & (y)) | (~(x) & (z)))

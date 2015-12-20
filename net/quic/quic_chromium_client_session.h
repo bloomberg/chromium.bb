@@ -10,10 +10,12 @@
 #ifndef NET_QUIC_QUIC_CHROMIUM_CLIENT_SESSION_H_
 #define NET_QUIC_QUIC_CHROMIUM_CLIENT_SESSION_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"

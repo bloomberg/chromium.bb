@@ -753,8 +753,8 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
 
   HostPortPair server1("www.example.org", 443);
   HostPortPair server2("mail.example.org", 443);
-  uint8 primary_pin = 1;
-  uint8 backup_pin = 2;
+  uint8_t primary_pin = 1;
+  uint8_t backup_pin = 2;
   test::AddPin(&transport_security_state_, "mail.example.org", primary_pin,
                backup_pin);
 
@@ -801,8 +801,8 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
 
   HostPortPair server1("www.example.org", 443);
   HostPortPair server2("mail.example.org", 443);
-  uint8 primary_pin = 1;
-  uint8 backup_pin = 2;
+  uint8_t primary_pin = 1;
+  uint8_t backup_pin = 2;
   test::AddPin(&transport_security_state_, "mail.example.org", primary_pin,
                backup_pin);
 
@@ -849,9 +849,9 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
 
   HostPortPair server1("www.example.org", 443);
   HostPortPair server2("mail.example.org", 443);
-  uint8 primary_pin = 1;
-  uint8 backup_pin = 2;
-  uint8 bad_pin = 3;
+  uint8_t primary_pin = 1;
+  uint8_t backup_pin = 2;
+  uint8_t bad_pin = 3;
   test::AddPin(&transport_security_state_, "mail.example.org", primary_pin,
                backup_pin);
 

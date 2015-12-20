@@ -19,8 +19,8 @@
 
 namespace {
 
-// Size of the uint64 hash_key number in Hex format in a string.
-const size_t kEntryHashKeyAsHexStringSize = 2 * sizeof(uint64);
+// Size of the uint64_t hash_key number in Hex format in a string.
+const size_t kEntryHashKeyAsHexStringSize = 2 * sizeof(uint64_t);
 
 #if defined(OS_POSIX)
 // TODO(clamy, gavinp): this should go in base
@@ -51,7 +51,7 @@ namespace disk_cache {
 
 namespace simple_util {
 
-std::string ConvertEntryHashKeyToHexString(uint64 hash_key) {
+std::string ConvertEntryHashKeyToHexString(uint64_t hash_key) {
   const std::string hash_key_str = base::StringPrintf("%016" PRIx64, hash_key);
   DCHECK_EQ(kEntryHashKeyAsHexStringSize, hash_key_str.size());
   return hash_key_str;
@@ -65,29 +65,29 @@ std::string GetEntryHashKeyAsHexString(const std::string& key) {
 }
 
 bool GetEntryHashKeyFromHexString(const base::StringPiece& hash_key,
-                                  uint64* hash_key_out) {
+                                  uint64_t* hash_key_out) {
   if (hash_key.size() != kEntryHashKeyAsHexStringSize) {
     return false;
   }
   return base::HexStringToUInt64(hash_key, hash_key_out);
 }
 
-uint64 GetEntryHashKey(const std::string& key) {
+uint64_t GetEntryHashKey(const std::string& key) {
   union {
     unsigned char sha_hash[base::kSHA1Length];
-    uint64 key_hash;
+    uint64_t key_hash;
   } u;
   base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(key.data()),
                       key.size(), u.sha_hash);
   return u.key_hash;
 }
 
-std::string GetFilenameFromEntryHashAndFileIndex(uint64 entry_hash,
+std::string GetFilenameFromEntryHashAndFileIndex(uint64_t entry_hash,
                                                  int file_index) {
   return base::StringPrintf("%016" PRIx64 "_%1d", entry_hash, file_index);
 }
 
-std::string GetSparseFilenameFromEntryHash(uint64 entry_hash) {
+std::string GetSparseFilenameFromEntryHash(uint64_t entry_hash) {
   return base::StringPrintf("%016" PRIx64 "_s", entry_hash);
 }
 
@@ -97,13 +97,15 @@ std::string GetFilenameFromKeyAndFileIndex(const std::string& key,
          base::StringPrintf("_%1d", file_index);
 }
 
-int32 GetDataSizeFromKeyAndFileSize(const std::string& key, int64 file_size) {
-  int64 data_size = file_size - key.size() - sizeof(SimpleFileHeader) -
-                    sizeof(SimpleFileEOF);
-  return base::checked_cast<int32>(data_size);
+int32_t GetDataSizeFromKeyAndFileSize(const std::string& key,
+                                      int64_t file_size) {
+  int64_t data_size =
+      file_size - key.size() - sizeof(SimpleFileHeader) - sizeof(SimpleFileEOF);
+  return base::checked_cast<int32_t>(data_size);
 }
 
-int64 GetFileSizeFromKeyAndDataSize(const std::string& key, int32 data_size) {
+int64_t GetFileSizeFromKeyAndDataSize(const std::string& key,
+                                      int32_t data_size) {
   return data_size + key.size() + sizeof(SimpleFileHeader) +
       sizeof(SimpleFileEOF);
 }
@@ -123,7 +125,7 @@ bool GetMTime(const base::FilePath& path, base::Time* out_mtime) {
   time_t sec;
   long nsec;
   if (GetNanoSecsFromStat(file_stat, &sec, &nsec)) {
-    int64 usec = (nsec / base::Time::kNanosecondsPerMicrosecond);
+    int64_t usec = (nsec / base::Time::kNanosecondsPerMicrosecond);
     *out_mtime = base::Time::FromTimeT(sec)
         + base::TimeDelta::FromMicroseconds(usec);
     return true;

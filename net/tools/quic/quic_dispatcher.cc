@@ -8,6 +8,7 @@
 
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"

@@ -91,7 +91,7 @@ WebSocket::ParseResult DecodeFrameHybi17(const base::StringPiece& frame,
   if (client_frame && !masked)  // In Hybi-17 spec client MUST mask its frame.
     return WebSocket::FRAME_ERROR;
 
-  uint64 payload_length64 = second_byte & kPayloadLengthMask;
+  uint64_t payload_length64 = second_byte & kPayloadLengthMask;
   if (payload_length64 > kMaxSingleBytePayloadLength) {
     int extended_payload_length_size;
     if (payload_length64 == kTwoBytePayloadLengthField)
@@ -110,7 +110,7 @@ WebSocket::ParseResult DecodeFrameHybi17(const base::StringPiece& frame,
   }
 
   size_t actual_masking_key_length = masked ? kMaskingKeyWidthInBytes : 0;
-  static const uint64 max_payload_length = 0x7FFFFFFFFFFFFFFFull;
+  static const uint64_t max_payload_length = 0x7FFFFFFFFFFFFFFFull;
   static size_t max_length = std::numeric_limits<size_t>::max();
   if (payload_length64 > max_payload_length ||
       payload_length64 + actual_masking_key_length > max_length) {

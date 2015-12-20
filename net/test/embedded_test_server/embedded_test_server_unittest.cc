@@ -4,6 +4,7 @@
 
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"

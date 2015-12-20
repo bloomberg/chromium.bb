@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef NET_FTP_FTP_CTRL_RESPONSE_BUFFER_H_
 #define NET_FTP_FTP_CTRL_RESPONSE_BUFFER_H_
 
@@ -10,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log.h"
 

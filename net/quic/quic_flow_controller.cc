@@ -4,7 +4,6 @@
 
 #include "net/quic/quic_flow_controller.h"
 
-#include "base/basictypes.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
@@ -228,7 +227,7 @@ bool QuicFlowController::IsBlocked() const {
   return SendWindowSize() == 0;
 }
 
-uint64 QuicFlowController::SendWindowSize() const {
+uint64_t QuicFlowController::SendWindowSize() const {
   if (bytes_sent_ > send_window_offset_) {
     return 0;
   }

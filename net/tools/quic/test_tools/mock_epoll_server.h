@@ -5,7 +5,11 @@
 #ifndef NET_TOOLS_QUIC_TEST_TOOLS_MOCK_EPOLL_SERVER_H_
 #define NET_TOOLS_QUIC_TEST_TOOLS_MOCK_EPOLL_SERVER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -22,12 +26,12 @@ class FakeTimeEpollServer : public EpollServer {
   ~FakeTimeEpollServer() override;
 
   // Replaces the EpollServer NowInUsec.
-  int64 NowInUsec() const override;
+  int64_t NowInUsec() const override;
 
-  void set_now_in_usec(int64 nius) { now_in_usec_ = nius; }
+  void set_now_in_usec(int64_t nius) { now_in_usec_ = nius; }
 
   // Advances the virtual 'now' by advancement_usec.
-  void AdvanceBy(int64 advancement_usec) {
+  void AdvanceBy(int64_t advancement_usec) {
     set_now_in_usec(NowInUsec() + advancement_usec);
   }
 
@@ -36,20 +40,20 @@ class FakeTimeEpollServer : public EpollServer {
   // Note that the WaitForEventsAndExecuteCallbacks invocation
   // may cause NowInUs to advance beyond what was specified here.
   // If that is not desired, use the AdvanceByExactly calls.
-  void AdvanceByAndWaitForEventsAndExecuteCallbacks(int64 advancement_usec) {
+  void AdvanceByAndWaitForEventsAndExecuteCallbacks(int64_t advancement_usec) {
     AdvanceBy(advancement_usec);
     WaitForEventsAndExecuteCallbacks();
   }
 
  private:
-  int64 now_in_usec_;
+  int64_t now_in_usec_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTimeEpollServer);
 };
 
 class MockEpollServer : public FakeTimeEpollServer {
  public:  // type definitions
-  typedef base::hash_multimap<int64, struct epoll_event> EventQueue;
+  typedef base::hash_multimap<int64_t, struct epoll_event> EventQueue;
 
   MockEpollServer();
   ~MockEpollServer() override;
@@ -59,7 +63,7 @@ class MockEpollServer : public FakeTimeEpollServer {
   // to add an event for a time which has already been passed..
   // .. upon the next time that the callbacks are invoked,
   // all events which are in the 'past' will be delivered.
-  void AddEvent(int64 time_in_usec, const struct epoll_event& ee) {
+  void AddEvent(int64_t time_in_usec, const struct epoll_event& ee) {
     event_queue_.insert(std::make_pair(time_in_usec, ee));
   }
 
@@ -67,13 +71,13 @@ class MockEpollServer : public FakeTimeEpollServer {
   // and ensure that the next invocation of
   // WaitForEventsAndExecuteCallbacks goes no farther than
   // advancement_usec from the current time.
-  void AdvanceByExactly(int64 advancement_usec) {
+  void AdvanceByExactly(int64_t advancement_usec) {
     until_in_usec_ = NowInUsec() + advancement_usec;
     set_now_in_usec(NowInUsec() + advancement_usec);
   }
 
   // As above, except calls WaitForEventsAndExecuteCallbacks.
-  void AdvanceByExactlyAndCallCallbacks(int64 advancement_usec) {
+  void AdvanceByExactlyAndCallCallbacks(int64_t advancement_usec) {
     AdvanceByExactly(advancement_usec);
     WaitForEventsAndExecuteCallbacks();
   }
@@ -98,7 +102,7 @@ class MockEpollServer : public FakeTimeEpollServer {
 
  private:  // members
   EventQueue event_queue_;
-  int64 until_in_usec_;
+  int64_t until_in_usec_;
 
   DISALLOW_COPY_AND_ASSIGN(MockEpollServer);
 };

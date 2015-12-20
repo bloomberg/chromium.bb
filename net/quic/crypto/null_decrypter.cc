@@ -63,13 +63,13 @@ const char* NullDecrypter::cipher_name() const {
   return "NULL";
 }
 
-uint32 NullDecrypter::cipher_id() const {
+uint32_t NullDecrypter::cipher_id() const {
   return 0;
 }
 
 bool NullDecrypter::ReadHash(QuicDataReader* reader, uint128* hash) {
-  uint64 lo;
-  uint32 hi;
+  uint64_t lo;
+  uint32_t hi;
   if (!reader->ReadUInt64(&lo) || !reader->ReadUInt32(&hi)) {
     return false;
   }

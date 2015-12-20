@@ -46,7 +46,7 @@ TEST(CertCompressor, Compressed) {
 TEST(CertCompressor, Common) {
   vector<string> chain;
   chain.push_back("testcert");
-  static const uint64 set_hash = 42;
+  static const uint64_t set_hash = 42;
   scoped_ptr<CommonCertSets> common_sets(
       CryptoTestUtils::MockCommonCertSets(chain[0], set_hash, 1));
   const string compressed = CertCompressor::CompressChain(
@@ -71,7 +71,7 @@ TEST(CertCompressor, Common) {
 TEST(CertCompressor, Cached) {
   vector<string> chain;
   chain.push_back("testcert");
-  uint64 hash = QuicUtils::FNV1a_64_Hash(chain[0].data(), chain[0].size());
+  uint64_t hash = QuicUtils::FNV1a_64_Hash(chain[0].data(), chain[0].size());
   StringPiece hash_bytes(reinterpret_cast<char*>(&hash), sizeof(hash));
   const string compressed =
       CertCompressor::CompressChain(chain, StringPiece(), hash_bytes, nullptr);

@@ -87,7 +87,7 @@ bool AeadBaseDecrypter::DecryptPacket(QuicPacketNumber packet_number,
     return false;
   }
 
-  uint8 nonce[sizeof(nonce_prefix_) + sizeof(packet_number)];
+  uint8_t nonce[sizeof(nonce_prefix_) + sizeof(packet_number)];
   const size_t nonce_size = nonce_prefix_size_ + sizeof(packet_number);
   memcpy(nonce, nonce_prefix_, nonce_prefix_size_);
   memcpy(nonce + nonce_prefix_size_, &packet_number, sizeof(packet_number));

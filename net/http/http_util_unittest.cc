@@ -4,7 +4,6 @@
 
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "net/http/http_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -766,9 +765,9 @@ TEST(HttpUtilTest, ParseRanges) {
     bool expected_return_value;
     size_t expected_ranges_size;
     const struct {
-      int64 expected_first_byte_position;
-      int64 expected_last_byte_position;
-      int64 expected_suffix_length;
+      int64_t expected_first_byte_position;
+      int64_t expected_last_byte_position;
+      int64_t expected_suffix_length;
     } expected_ranges[10];
   } tests[] = {
     { "Range: bytes=0-10",

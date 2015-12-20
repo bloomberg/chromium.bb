@@ -7,6 +7,9 @@
 #ifndef NET_COOKIES_COOKIE_MONSTER_H_
 #define NET_COOKIES_COOKIE_MONSTER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <queue>
@@ -15,9 +18,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -787,7 +790,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // avoid ever letting cookies with duplicate creation times into the store;
   // that way we don't have to worry about what sections of code are safe
   // to call while it's in that state.
-  std::set<int64> creation_times_;
+  std::set<int64_t> creation_times_;
 
   std::vector<std::string> cookieable_schemes_;
 

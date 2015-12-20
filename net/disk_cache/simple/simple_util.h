@@ -5,9 +5,10 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_UTIL_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_UTIL_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
@@ -20,22 +21,23 @@ namespace disk_cache {
 
 namespace simple_util {
 
-NET_EXPORT_PRIVATE std::string ConvertEntryHashKeyToHexString(uint64 hash_key);
+NET_EXPORT_PRIVATE std::string ConvertEntryHashKeyToHexString(
+    uint64_t hash_key);
 
 // |key| is the regular cache key, such as an URL.
-// Returns the Hex ascii representation of the uint64 hash_key.
+// Returns the Hex ascii representation of the uint64_t hash_key.
 NET_EXPORT_PRIVATE std::string GetEntryHashKeyAsHexString(
     const std::string& key);
 
 // |key| is the regular HTTP Cache key, which is a URL.
-// Returns the hash of the key as uint64.
-NET_EXPORT_PRIVATE uint64 GetEntryHashKey(const std::string& key);
+// Returns the hash of the key as uint64_t.
+NET_EXPORT_PRIVATE uint64_t GetEntryHashKey(const std::string& key);
 
-// Parses the |hash_key| string into a uint64 buffer.
+// Parses the |hash_key| string into a uint64_t buffer.
 // |hash_key| string must be of the form: FFFFFFFFFFFFFFFF .
 NET_EXPORT_PRIVATE bool GetEntryHashKeyFromHexString(
     const base::StringPiece& hash_key,
-    uint64* hash_key_out);
+    uint64_t* hash_key_out);
 
 // Given a |key| for a (potential) entry in the simple backend and the |index|
 // of a stream on that entry, returns the filename in which that stream would be
@@ -45,21 +47,21 @@ NET_EXPORT_PRIVATE std::string GetFilenameFromKeyAndFileIndex(
     int file_index);
 
 // Same as |GetFilenameFromKeyAndIndex| above, but using a hex string.
-std::string GetFilenameFromEntryHashAndFileIndex(uint64 entry_hash,
+std::string GetFilenameFromEntryHashAndFileIndex(uint64_t entry_hash,
                                                  int file_index);
 
 // Given a |key| for an entry, returns the name of the sparse data file.
-std::string GetSparseFilenameFromEntryHash(uint64 entry_hash);
+std::string GetSparseFilenameFromEntryHash(uint64_t entry_hash);
 
 // Given the size of a file holding a stream in the simple backend and the key
 // to an entry, returns the number of bytes in the stream.
-NET_EXPORT_PRIVATE int32 GetDataSizeFromKeyAndFileSize(const std::string& key,
-                                                       int64 file_size);
+NET_EXPORT_PRIVATE int32_t GetDataSizeFromKeyAndFileSize(const std::string& key,
+                                                         int64_t file_size);
 
 // Given the size of a stream in the simple backend and the key to an entry,
 // returns the number of bytes in the file.
-NET_EXPORT_PRIVATE int64 GetFileSizeFromKeyAndDataSize(const std::string& key,
-                                                       int32 data_size);
+NET_EXPORT_PRIVATE int64_t GetFileSizeFromKeyAndDataSize(const std::string& key,
+                                                         int32_t data_size);
 
 // Given the stream index, returns the number of the file the stream is stored
 // in.

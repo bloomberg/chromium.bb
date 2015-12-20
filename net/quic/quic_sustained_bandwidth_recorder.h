@@ -5,7 +5,10 @@
 #ifndef NET_QUIC_QUIC_SUSTAINED_BANDWIDTH_RECORDER_H_
 #define NET_QUIC_QUIC_SUSTAINED_BANDWIDTH_RECORDER_H_
 
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_time.h"
 
@@ -46,7 +49,7 @@ class NET_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
     return max_bandwidth_estimate_;
   }
 
-  int64 MaxBandwidthTimestamp() const {
+  int64_t MaxBandwidthTimestamp() const {
     DCHECK(has_estimate_);
     return max_bandwidth_timestamp_;
   }
@@ -77,7 +80,7 @@ class NET_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
   QuicBandwidth max_bandwidth_estimate_;
 
   // Timestamp indicating when the max_bandwidth_estimate_ was seen.
-  int64 max_bandwidth_timestamp_;
+  int64_t max_bandwidth_timestamp_;
 
   // Timestamp marking the beginning of the latest recording period.
   QuicTime start_time_;

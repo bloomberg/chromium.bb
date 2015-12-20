@@ -5,6 +5,8 @@
 #ifndef NET_SPDY_SPDY_PREFIXED_BUFFER_READER_H_
 #define NET_SPDY_SPDY_PREFIXED_BUFFER_READER_H_
 
+#include <stddef.h>
+
 #include "net/base/net_export.h"
 #include "net/spdy/spdy_pinnable_buffer_piece.h"
 

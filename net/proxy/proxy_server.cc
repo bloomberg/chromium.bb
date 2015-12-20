@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
@@ -236,7 +235,7 @@ ProxyServer ProxyServer::FromSchemeHostAndPort(
     if (port == -1)
       port = GetDefaultPortForScheme(scheme);
 
-    host_port_pair = HostPortPair(host, static_cast<uint16>(port));
+    host_port_pair = HostPortPair(host, static_cast<uint16_t>(port));
   }
 
   return ProxyServer(scheme, host_port_pair);

@@ -44,7 +44,7 @@ void RecordHeaderParserEvent(HttpHeaderParserEvent header_event) {
                             NUM_HEADER_EVENTS);
 }
 
-const uint64 kMaxMergedHeaderAndBodySize = 1400;
+const uint64_t kMaxMergedHeaderAndBodySize = 1400;
 const size_t kRequestBodyBufferSize = 1 << 14;  // 16KB
 
 std::string GetResponseHeaderLines(const HttpResponseHeaders& headers) {
@@ -79,7 +79,7 @@ bool HeadersContainMultipleCopiesOfField(const HttpResponseHeaders& headers,
 }
 
 scoped_ptr<base::Value> NetLogSendRequestBodyCallback(
-    uint64 length,
+    uint64_t length,
     bool is_chunked,
     bool did_merge,
     NetLogCaptureMode /* capture_mode */) {
@@ -287,7 +287,7 @@ int HttpStreamParser::SendRequest(const std::string& request_line,
     memcpy(request_headers_->data(), request.data(), request_headers_length_);
     request_headers_->DidConsume(request_headers_length_);
 
-    uint64 todo = request_->upload_data_stream->size();
+    uint64_t todo = request_->upload_data_stream->size();
     while (todo) {
       int consumed = request_->upload_data_stream->Read(
           request_headers_.get(), static_cast<int>(todo), CompletionCallback());
@@ -735,7 +735,7 @@ int HttpStreamParser::DoReadBodyComplete(int result) {
     if (chunked_decoder_.get()) {
       save_amount = chunked_decoder_->bytes_after_eof();
     } else if (response_body_length_ >= 0) {
-      int64 extra_data_read = response_body_read_ - response_body_length_;
+      int64_t extra_data_read = response_body_read_ - response_body_length_;
       if (extra_data_read > 0) {
         save_amount = static_cast<int>(extra_data_read);
         if (result > 0)
@@ -1130,7 +1130,7 @@ bool HttpStreamParser::ShouldMergeRequestHeadersAndBody(
       // IsInMemory() ensures that the request body is not chunked.
       request_body->IsInMemory() &&
       request_body->size() > 0) {
-    uint64 merged_size = request_headers.size() + request_body->size();
+    uint64_t merged_size = request_headers.size() + request_body->size();
     if (merged_size <= kMaxMergedHeaderAndBodySize)
       return true;
   }

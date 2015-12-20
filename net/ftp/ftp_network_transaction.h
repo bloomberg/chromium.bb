@@ -5,10 +5,11 @@
 #ifndef NET_FTP_FTP_NETWORK_TRANSACTION_H_
 #define NET_FTP_FTP_NETWORK_TRANSACTION_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -46,7 +47,7 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
            const CompletionCallback& callback) override;
   const FtpResponseInfo* GetResponseInfo() const override;
   LoadState GetLoadState() const override;
-  uint64 GetUploadProgress() const override;
+  uint64_t GetUploadProgress() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FtpNetworkTransactionTest,
@@ -244,7 +245,7 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
   // with any trailing slash removed.
   std::string current_remote_directory_;
 
-  uint16 data_connection_port_;
+  uint16_t data_connection_port_;
 
   ClientSocketFactory* socket_factory_;
 

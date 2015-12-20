@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_FLOW_CONTROLLER_PEER_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_FLOW_CONTROLLER_PEER_H_
 
+#include "base/macros.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {

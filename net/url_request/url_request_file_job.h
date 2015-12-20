@@ -5,10 +5,13 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_FILE_JOB_H_
 #define NET_URL_REQUEST_URL_REQUEST_FILE_JOB_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_errors.h"
@@ -46,13 +49,13 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   void SetExtraRequestHeaders(const HttpRequestHeaders& headers) override;
 
   // An interface for subclasses who wish to monitor read operations.
-  virtual void OnSeekComplete(int64 result);
+  virtual void OnSeekComplete(int64_t result);
   virtual void OnReadComplete(IOBuffer* buf, int result);
 
  protected:
   ~URLRequestFileJob() override;
 
-  int64 remaining_bytes() const { return remaining_bytes_; }
+  int64_t remaining_bytes() const { return remaining_bytes_; }
 
   // The OS-specific full path name of the file
   base::FilePath file_path_;
@@ -65,7 +68,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
     FileMetaInfo();
 
     // Size of the file.
-    int64 file_size;
+    int64_t file_size;
     // Mime type associated with the file.
     std::string mime_type;
     // Result returned from GetMimeTypeFromFile(), i.e. flag showing whether
@@ -89,7 +92,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
 
   // Callback after seeking to the beginning of |byte_range_| in the file
   // on a background thread.
-  void DidSeek(int64 result);
+  void DidSeek(int64_t result);
 
   // Callback after data is asynchronously read from the file into |buf|.
   void DidRead(scoped_refptr<IOBuffer> buf, int result);
@@ -100,7 +103,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
 
   std::vector<HttpByteRange> byte_ranges_;
   HttpByteRange byte_range_;
-  int64 remaining_bytes_;
+  int64_t remaining_bytes_;
 
   Error range_parse_result_;
 

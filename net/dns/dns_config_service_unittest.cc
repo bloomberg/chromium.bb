@@ -4,7 +4,6 @@
 
 #include "net/dns/dns_config_service.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/location.h"

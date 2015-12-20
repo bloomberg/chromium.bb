@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "net/tools/balsa/buffer_interface.h"
 
 namespace net {

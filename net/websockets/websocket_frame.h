@@ -6,6 +6,7 @@
 #define NET_WEBSOCKETS_WEBSOCKET_FRAME_H_
 
 #include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

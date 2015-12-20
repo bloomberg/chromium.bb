@@ -5,7 +5,7 @@
 #ifndef NET_TOOLS_QUIC_TEST_TOOLS_QUIC_CLIENT_PEER_H_
 #define NET_TOOLS_QUIC_TEST_TOOLS_QUIC_CLIENT_PEER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace net {
 

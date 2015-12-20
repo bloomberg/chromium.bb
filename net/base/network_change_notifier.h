@@ -5,9 +5,10 @@
 #ifndef NET_BASE_NETWORK_CHANGE_NOTIFIER_H_
 #define NET_BASE_NETWORK_CHANGE_NOTIFIER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/time/time.h"

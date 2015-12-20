@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -26,7 +27,7 @@ class CacheCreator {
                int max_bytes,
                net::CacheType type,
                net::BackendType backend_type,
-               uint32 flags,
+               uint32_t flags,
                const scoped_refptr<base::SingleThreadTaskRunner>& thread,
                net::NetLog* net_log,
                scoped_ptr<disk_cache::Backend>* backend,
@@ -48,7 +49,7 @@ class CacheCreator {
   int max_bytes_;
   net::CacheType type_;
   net::BackendType backend_type_;
-  uint32 flags_;
+  uint32_t flags_;
   scoped_refptr<base::SingleThreadTaskRunner> thread_;
   scoped_ptr<disk_cache::Backend>* backend_;
   net::CompletionCallback callback_;
@@ -64,7 +65,7 @@ CacheCreator::CacheCreator(
     int max_bytes,
     net::CacheType type,
     net::BackendType backend_type,
-    uint32 flags,
+    uint32_t flags,
     const scoped_refptr<base::SingleThreadTaskRunner>& thread,
     net::NetLog* net_log,
     scoped_ptr<disk_cache::Backend>* backend,
@@ -79,8 +80,7 @@ CacheCreator::CacheCreator(
       thread_(thread),
       backend_(backend),
       callback_(callback),
-      net_log_(net_log) {
-}
+      net_log_(net_log) {}
 
 CacheCreator::~CacheCreator() {
 }

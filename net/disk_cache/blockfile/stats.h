@@ -5,9 +5,12 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_STATS_H_
 #define NET_DISK_CACHE_BLOCKFILE_STATS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/blockfile/addr.h"
@@ -64,12 +67,12 @@ class NET_EXPORT_PRIVATE Stats {
   int StorageSize();
 
   // Tracks changes to the stoage space used by an entry.
-  void ModifyStorageStats(int32 old_size, int32 new_size);
+  void ModifyStorageStats(int32_t old_size, int32_t new_size);
 
   // Tracks general events.
   void OnEvent(Counters an_event);
-  void SetCounter(Counters counter, int64 value);
-  int64 GetCounter(Counters counter) const;
+  void SetCounter(Counters counter, int64_t value);
+  int64_t GetCounter(Counters counter) const;
 
   void GetItems(StatsItems* items);
   int GetHitRatio() const;
@@ -86,12 +89,12 @@ class NET_EXPORT_PRIVATE Stats {
  private:
   // Supports generation of SizeStats histogram data.
   int GetBucketRange(size_t i) const;
-  int GetStatsBucket(int32 size);
+  int GetStatsBucket(int32_t size);
   int GetRatio(Counters hit, Counters miss) const;
 
   Addr storage_addr_;
   int data_sizes_[kDataSizesLength];
-  int64 counters_[MAX_COUNTER];
+  int64_t counters_[MAX_COUNTER];
 
   DISALLOW_COPY_AND_ASSIGN(Stats);
 };

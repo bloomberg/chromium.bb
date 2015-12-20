@@ -28,7 +28,7 @@ namespace test {
 namespace {
 
 // Default packet length.
-const uint32 kDefaultLength = 1000;
+const uint32_t kDefaultLength = 1000;
 
 // Stream ID for data sent in CreatePacket().
 const QuicStreamId kStreamId = 7;
@@ -1654,7 +1654,7 @@ TEST_F(QuicSentPacketManagerTest, ReceiveWindowLimited) {
 }
 
 TEST_F(QuicSentPacketManagerTest, UseInitialRoundTripTimeToSend) {
-  uint32 initial_rtt_us = 325000;
+  uint32_t initial_rtt_us = 325000;
   EXPECT_NE(initial_rtt_us,
             manager_.GetRttStats()->smoothed_rtt().ToMicroseconds());
 
@@ -1679,7 +1679,7 @@ TEST_F(QuicSentPacketManagerTest, ResumeConnectionState) {
   EXPECT_CALL(*send_algorithm_, ResumeConnectionState(_, false));
   manager_.ResumeConnectionState(cached_network_params, false);
   EXPECT_EQ(kRttMs * kNumMicrosPerMilli,
-            static_cast<uint64>(manager_.GetRttStats()->initial_rtt_us()));
+            static_cast<uint64_t>(manager_.GetRttStats()->initial_rtt_us()));
 }
 
 }  // namespace

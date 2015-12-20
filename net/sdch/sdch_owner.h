@@ -5,9 +5,13 @@
 #ifndef NET_SDCH_SDCH_OWNER_H_
 #define NET_SDCH_SDCH_OWNER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_store.h"
@@ -203,7 +207,7 @@ class NET_EXPORT SdchOwner : public SdchObserver, public PrefStore::Observer {
 
   // Byte-seconds consumed by dictionaries that have been unloaded. These are
   // stored for later uploading in the SdchOwner destructor.
-  std::vector<int64> consumed_byte_seconds_;
+  std::vector<int64_t> consumed_byte_seconds_;
 
   // Creation time for this SdchOwner object, used for reporting temporal memory
   // pressure.

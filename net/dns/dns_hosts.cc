@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 
@@ -190,7 +191,7 @@ bool ParseHostsFile(const base::FilePath& path, DnsHosts* dns_hosts) {
   if (!base::PathExists(path))
     return true;
 
-  int64 size;
+  int64_t size;
   if (!base::GetFileSize(path, &size))
     return false;
 
@@ -198,7 +199,7 @@ bool ParseHostsFile(const base::FilePath& path, DnsHosts* dns_hosts) {
                        static_cast<base::HistogramBase::Sample>(size));
 
   // Reject HOSTS files larger than |kMaxHostsSize| bytes.
-  const int64 kMaxHostsSize = 1 << 25;  // 32MB
+  const int64_t kMaxHostsSize = 1 << 25;  // 32MB
   if (size > kMaxHostsSize)
     return false;
 

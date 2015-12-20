@@ -44,9 +44,9 @@ bool ChannelIDVerifier::VerifyRaw(StringPiece key,
   sig.r = r.get();
   sig.s = s.get();
 
-  const uint8* key_bytes = reinterpret_cast<const uint8*>(key.data());
-  const uint8* signature_bytes =
-      reinterpret_cast<const uint8*>(signature.data());
+  const uint8_t* key_bytes = reinterpret_cast<const uint8_t*>(key.data());
+  const uint8_t* signature_bytes =
+      reinterpret_cast<const uint8_t*>(signature.data());
 
   if (BN_bin2bn(key_bytes + 0, 32, x.get()) == nullptr ||
       BN_bin2bn(key_bytes + 32, 32, y.get()) == nullptr ||

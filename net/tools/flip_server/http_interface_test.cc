@@ -95,7 +95,7 @@ class FlipHttpSMTest : public ::testing::Test {
     STLDeleteElements(connection_->output_list());
   }
 
-  bool HasStream(uint32 stream_id) {
+  bool HasStream(uint32_t stream_id) {
     return interface_->output_ordering().ExistsInPriorityMaps(stream_id);
   }
 
@@ -131,7 +131,7 @@ TEST_F(FlipHttpSMTest, Construct) {
 }
 
 TEST_F(FlipHttpSMTest, AddToOutputOrder) {
-  uint32 stream_id = 13;
+  uint32_t stream_id = 13;
   MemCacheIter mci;
   mci.stream_id = stream_id;
 
@@ -254,7 +254,7 @@ TEST_F(FlipHttpSMTest, ResetForNewConnection) {
 }
 
 TEST_F(FlipHttpSMTest, NewStream) {
-  uint32 stream_id = 4;
+  uint32_t stream_id = 4;
   {
     BalsaHeaders headers;
     std::string filename = "foobar";
@@ -270,7 +270,7 @@ TEST_F(FlipHttpSMTest, NewStreamError) {
       "HTTP/1.1 404 Not Found\r\n"
       "transfer-encoding: chunked\r\n\r\n";
   std::string body = "e\r\npage not found\r\n";
-  uint32 stream_id = 4;
+  uint32_t stream_id = 4;
 
   ASSERT_FALSE(HasStream(stream_id));
   interface_->NewStream(stream_id, 1, "foobar");
@@ -291,7 +291,7 @@ TEST_F(FlipHttpSMTest, SendErrorNotFound) {
       "HTTP/1.1 404 Not Found\r\n"
       "transfer-encoding: chunked\r\n\r\n";
   std::string body = "e\r\npage not found\r\n";
-  uint32 stream_id = 13;
+  uint32_t stream_id = 13;
   MemCacheIter mci;
   mci.stream_id = stream_id;
 
@@ -416,7 +416,7 @@ TEST_F(FlipHttpSMHttpTest, ProcessHeaders) {
   BalsaHeaders headers;
   headers.AppendHeader("Host", "example.com");
   headers.SetRequestFirstlineFromStringPieces("GET", "/path/file", "HTTP/1.0");
-  uint32 stream_id = 133;
+  uint32_t stream_id = 133;
   interface_->SetStreamID(stream_id);
   ASSERT_FALSE(HasStream(stream_id));
   visitor->ProcessHeaders(headers);

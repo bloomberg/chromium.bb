@@ -4,6 +4,7 @@
 
 #include "net/ssl/ssl_client_auth_cache.h"
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_private_key.h"

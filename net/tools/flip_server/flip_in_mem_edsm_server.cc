@@ -33,10 +33,10 @@ bool FLAGS_disable_nagle = true;
 //  alarm goes off when the accept_using_alarm flag is set to true.
 //  If set to 0, accept() will be performed until the accept queue
 //  is completely drained and the accept() call returns an error);
-int32 FLAGS_accepts_per_wake = 0;
+int32_t FLAGS_accepts_per_wake = 0;
 
 // The size of the TCP accept backlog);
-int32 FLAGS_accept_backlog_size = 1024;
+int32_t FLAGS_accept_backlog_size = 1024;
 
 // If set to false a single socket will be used. If set to true
 //  then a new socket will be created for each accept thread.

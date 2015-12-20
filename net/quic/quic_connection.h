@@ -17,6 +17,8 @@
 #define NET_QUIC_QUIC_CONNECTION_H_
 
 #include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <list>
 #include <map>
@@ -24,8 +26,8 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"
@@ -622,7 +624,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Return the name of the cipher of the primary decrypter of the framer.
   const char* cipher_name() const { return framer_.decrypter()->cipher_name(); }
   // Return the id of the cipher of the primary decrypter of the framer.
-  uint32 cipher_id() const { return framer_.decrypter()->cipher_id(); }
+  uint32_t cipher_id() const { return framer_.decrypter()->cipher_id(); }
 
   std::vector<QuicEncryptedPacket*>* termination_packets() {
     return termination_packets_.get();
@@ -807,7 +809,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Used to store latest peer IP address for IP address migration.
   IPAddressNumber migrating_peer_ip_;
   // Used to store latest peer port to possibly migrate to later.
-  uint16 migrating_peer_port_;
+  uint16_t migrating_peer_port_;
 
   // True if the last packet has gotten far enough in the framer to be
   // decrypted.

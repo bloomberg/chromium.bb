@@ -4,7 +4,7 @@
 
 #include "net/ssl/ssl_cipher_suite_names.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -48,7 +48,7 @@ TEST(CipherSuiteNamesTest, Basic) {
 }
 
 TEST(CipherSuiteNamesTest, ParseSSLCipherString) {
-  uint16 cipher_suite = 0;
+  uint16_t cipher_suite = 0;
   EXPECT_TRUE(ParseSSLCipherString("0x0004", &cipher_suite));
   EXPECT_EQ(0x00004u, cipher_suite);
 
@@ -64,7 +64,7 @@ TEST(CipherSuiteNamesTest, ParseSSLCipherStringFails) {
   };
 
   for (size_t i = 0; i < arraysize(cipher_strings); ++i) {
-    uint16 cipher_suite = 0;
+    uint16_t cipher_suite = 0;
     EXPECT_FALSE(ParseSSLCipherString(cipher_strings[i], &cipher_suite));
   }
 }

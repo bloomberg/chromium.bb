@@ -13,7 +13,7 @@ namespace test {
 // static
 void QuicSustainedBandwidthRecorderPeer::SetBandwidthEstimate(
     QuicSustainedBandwidthRecorder* bandwidth_recorder,
-    int32 bandwidth_estimate_kbytes_per_second) {
+    int32_t bandwidth_estimate_kbytes_per_second) {
   bandwidth_recorder->has_estimate_ = true;
   bandwidth_recorder->bandwidth_estimate_ =
       QuicBandwidth::FromKBytesPerSecond(bandwidth_estimate_kbytes_per_second);
@@ -22,8 +22,8 @@ void QuicSustainedBandwidthRecorderPeer::SetBandwidthEstimate(
 // static
 void QuicSustainedBandwidthRecorderPeer::SetMaxBandwidthEstimate(
     QuicSustainedBandwidthRecorder* bandwidth_recorder,
-    int32 max_bandwidth_estimate_kbytes_per_second,
-    int32 max_bandwidth_timestamp) {
+    int32_t max_bandwidth_estimate_kbytes_per_second,
+    int32_t max_bandwidth_timestamp) {
   bandwidth_recorder->max_bandwidth_estimate_ =
       QuicBandwidth::FromKBytesPerSecond(
           max_bandwidth_estimate_kbytes_per_second);

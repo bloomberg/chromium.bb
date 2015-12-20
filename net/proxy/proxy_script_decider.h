@@ -5,9 +5,12 @@
 #ifndef NET_PROXY_PROXY_SCRIPT_DECIDER_H_
 #define NET_PROXY_PROXY_SCRIPT_DECIDER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"

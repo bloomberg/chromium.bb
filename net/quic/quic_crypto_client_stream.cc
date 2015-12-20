@@ -388,12 +388,12 @@ void QuicCryptoClientStream::DoReceiveREJ(
     return;
   }
 
-  const uint32* reject_reasons;
+  const uint32_t* reject_reasons;
   size_t num_reject_reasons;
-  static_assert(sizeof(QuicTag) == sizeof(uint32), "header out of sync");
+  static_assert(sizeof(QuicTag) == sizeof(uint32_t), "header out of sync");
   if (in->GetTaglist(kRREJ, &reject_reasons, &num_reject_reasons) ==
       QUIC_NO_ERROR) {
-    uint32 packed_error = 0;
+    uint32_t packed_error = 0;
     for (size_t i = 0; i < num_reject_reasons; ++i) {
       // HANDSHAKE_OK is 0 and don't report that as error.
       if (reject_reasons[i] == HANDSHAKE_OK || reject_reasons[i] >= 32) {

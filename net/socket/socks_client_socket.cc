@@ -4,7 +4,6 @@
 
 #include "net/socket/socks_client_socket.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
@@ -27,31 +26,31 @@ static const unsigned int kWriteHeaderSize = 8;
 static const unsigned int kReadHeaderSize = 8;
 
 // Server Response codes for SOCKS.
-static const uint8 kServerResponseOk  = 0x5A;
-static const uint8 kServerResponseRejected = 0x5B;
-static const uint8 kServerResponseNotReachable = 0x5C;
-static const uint8 kServerResponseMismatchedUserId = 0x5D;
+static const uint8_t kServerResponseOk = 0x5A;
+static const uint8_t kServerResponseRejected = 0x5B;
+static const uint8_t kServerResponseNotReachable = 0x5C;
+static const uint8_t kServerResponseMismatchedUserId = 0x5D;
 
-static const uint8 kSOCKSVersion4 = 0x04;
-static const uint8 kSOCKSStreamRequest = 0x01;
+static const uint8_t kSOCKSVersion4 = 0x04;
+static const uint8_t kSOCKSStreamRequest = 0x01;
 
 // A struct holding the essential details of the SOCKS4 Server Request.
 // The port in the header is stored in network byte order.
 struct SOCKS4ServerRequest {
-  uint8 version;
-  uint8 command;
-  uint16 nw_port;
-  uint8 ip[4];
+  uint8_t version;
+  uint8_t command;
+  uint16_t nw_port;
+  uint8_t ip[4];
 };
 static_assert(sizeof(SOCKS4ServerRequest) == kWriteHeaderSize,
               "socks4 server request struct has incorrect size");
 
 // A struct holding details of the SOCKS4 Server Response.
 struct SOCKS4ServerResponse {
-  uint8 reserved_null;
-  uint8 code;
-  uint16 port;
-  uint8 ip[4];
+  uint8_t reserved_null;
+  uint8_t code;
+  uint16_t port;
+  uint8_t ip[4];
 };
 static_assert(sizeof(SOCKS4ServerResponse) == kReadHeaderSize,
               "socks4 server response struct has incorrect size");
@@ -218,11 +217,11 @@ int SOCKSClientSocket::Write(IOBuffer* buf, int buf_len,
   return rv;
 }
 
-int SOCKSClientSocket::SetReceiveBufferSize(int32 size) {
+int SOCKSClientSocket::SetReceiveBufferSize(int32_t size) {
   return transport_->socket()->SetReceiveBufferSize(size);
 }
 
-int SOCKSClientSocket::SetSendBufferSize(int32 size) {
+int SOCKSClientSocket::SetSendBufferSize(int32_t size) {
   return transport_->socket()->SetSendBufferSize(size);
 }
 

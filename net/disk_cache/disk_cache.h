@@ -8,10 +8,11 @@
 #ifndef NET_DISK_CACHE_DISK_CACHE_H_
 #define NET_DISK_CACHE_DISK_CACHE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
@@ -98,7 +99,7 @@ class NET_EXPORT Backend {
   virtual net::CacheType GetCacheType() const = 0;
 
   // Returns the number of entries in the cache.
-  virtual int32 GetEntryCount() const = 0;
+  virtual int32_t GetEntryCount() const = 0;
 
   // Opens an existing entry. Upon success, |entry| holds a pointer to an Entry
   // object representing the specified disk cache entry. When the entry pointer
@@ -187,7 +188,7 @@ class NET_EXPORT Entry {
   virtual base::Time GetLastModified() const = 0;
 
   // Returns the size of the cache data with the given index.
-  virtual int32 GetDataSize(int index) const = 0;
+  virtual int32_t GetDataSize(int index) const = 0;
 
   // Copies cached data into the given buffer of length |buf_len|. Returns the
   // number of bytes read or a network error code. If this function returns
@@ -260,7 +261,9 @@ class NET_EXPORT Entry {
 
   // Behaves like ReadData() except that this method is used to access sparse
   // entries.
-  virtual int ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
+  virtual int ReadSparseData(int64_t offset,
+                             IOBuffer* buf,
+                             int buf_len,
                              const CompletionCallback& callback) = 0;
 
   // Behaves like WriteData() except that this method is used to access sparse
@@ -269,7 +272,9 @@ class NET_EXPORT Entry {
   // start again, or to reduce the total size of the stream data (which implies
   // that the content has changed), the whole entry should be doomed and
   // re-created.
-  virtual int WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
+  virtual int WriteSparseData(int64_t offset,
+                              IOBuffer* buf,
+                              int buf_len,
                               const CompletionCallback& callback) = 0;
 
   // Returns information about the currently stored portion of a sparse entry.
@@ -281,7 +286,9 @@ class NET_EXPORT Entry {
   // net error code whenever the request cannot be completed successfully. If
   // this method returns ERR_IO_PENDING, the |callback| will be invoked when the
   // operation completes, and |start| must remain valid until that point.
-  virtual int GetAvailableRange(int64 offset, int len, int64* start,
+  virtual int GetAvailableRange(int64_t offset,
+                                int len,
+                                int64_t* start,
                                 const CompletionCallback& callback) = 0;
 
   // Returns true if this entry could be a sparse entry or false otherwise. This

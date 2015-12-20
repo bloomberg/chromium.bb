@@ -5,9 +5,13 @@
 #ifndef NET_DISK_CACHE_DISK_CACHE_TEST_UTIL_H_
 #define NET_DISK_CACHE_DISK_CACHE_TEST_UTIL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -25,8 +29,9 @@ void CacheTestFillBuffer(char* buffer, size_t len, bool no_nulls);
 std::string GenerateKey(bool same_length);
 
 // Returns true if the cache is not corrupt.
-bool CheckCacheIntegrity(const base::FilePath& path, bool new_eviction,
-                         uint32 mask);
+bool CheckCacheIntegrity(const base::FilePath& path,
+                         bool new_eviction,
+                         uint32_t mask);
 
 // -----------------------------------------------------------------------
 

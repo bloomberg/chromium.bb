@@ -25,7 +25,7 @@ bool FLAGS_quic_allow_bbr = false;
 
 // Time period for which a given connection_id should live in the time-wait
 // state.
-int64 FLAGS_quic_time_wait_list_seconds = 200;
+int64_t FLAGS_quic_time_wait_list_seconds = 200;
 
 // Currently, this number is quite conservative.  The max QPS limit for an
 // individual server silo is currently set to 1000 qps, though the actual max
@@ -36,7 +36,7 @@ int64 FLAGS_quic_time_wait_list_seconds = 200;
 //
 // Maximum number of connections on the time-wait list. A negative value implies
 // no configured limit.
-int64 FLAGS_quic_time_wait_list_max_connections = 600000;
+int64_t FLAGS_quic_time_wait_list_max_connections = 600000;
 
 // Enables server-side support for QUIC stateless rejects.
 bool FLAGS_enable_quic_stateless_reject_support = true;

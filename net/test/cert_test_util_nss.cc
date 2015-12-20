@@ -27,10 +27,10 @@ bool ImportSensitiveKeyFromFile(const base::FilePath& dir,
     return false;
   }
 
-  const uint8* key_pkcs8_begin =
-      reinterpret_cast<const uint8*>(key_pkcs8.data());
-  std::vector<uint8> key_vector(key_pkcs8_begin,
-                                key_pkcs8_begin + key_pkcs8.length());
+  const uint8_t* key_pkcs8_begin =
+      reinterpret_cast<const uint8_t*>(key_pkcs8.data());
+  std::vector<uint8_t> key_vector(key_pkcs8_begin,
+                                  key_pkcs8_begin + key_pkcs8.length());
 
   crypto::ScopedSECKEYPrivateKey private_key(
       crypto::ImportNSSKeyFromPrivateKeyInfo(slot, key_vector,

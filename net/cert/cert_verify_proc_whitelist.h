@@ -5,6 +5,7 @@
 #ifndef NET_CERT_CERT_VERIFY_PROC_WHITELIST_H_
 #define NET_CERT_CERT_VERIFY_PROC_WHITELIST_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "crypto/sha2.h"

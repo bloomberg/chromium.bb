@@ -12,10 +12,10 @@ namespace {
 // alive.
 // TODO(ziadh): Change this timeout after getting histogram data on how long it
 // should be.
-int64 g_unused_idle_socket_timeout_s = 10;
+int64_t g_unused_idle_socket_timeout_s = 10;
 
 // The maximum duration, in seconds, to keep used idle persistent sockets alive.
-int64 g_used_idle_socket_timeout_s = 300;  // 5 minutes
+int64_t g_used_idle_socket_timeout_s = 300;  // 5 minutes
 
 }  // namespace
 

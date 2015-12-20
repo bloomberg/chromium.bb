@@ -22,7 +22,7 @@ namespace net {
 
 namespace {
 
-const uint64 kBrokenAlternativeProtocolDelaySecs = 300;
+const uint64_t kBrokenAlternativeProtocolDelaySecs = 300;
 
 }  // namespace
 
@@ -71,7 +71,7 @@ void HttpServerPropertiesImpl::InitializeSpdyServers(
 
 void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
     AlternativeServiceMap* alternative_service_map) {
-  int32 size_diff =
+  int32_t size_diff =
       alternative_service_map->size() - alternative_service_map_.size();
   if (size_diff > 0) {
     UMA_HISTOGRAM_COUNTS("Net.AlternativeServiceServers.MorePrefsEntries",
@@ -104,7 +104,7 @@ void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
   }
 
   // Attempt to find canonical servers.
-  uint16 canonical_ports[] = { 80, 443 };
+  uint16_t canonical_ports[] = {80, 443};
   for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
     std::string canonical_suffix = canonical_suffixes_[i];
     for (size_t j = 0; j < arraysize(canonical_ports); ++j) {
@@ -580,7 +580,7 @@ bool HttpServerPropertiesImpl::SetSpdySetting(
     const HostPortPair& host_port_pair,
     SpdySettingsIds id,
     SpdySettingsFlags flags,
-    uint32 value) {
+    uint32_t value) {
   if (!(flags & SETTINGS_FLAG_PLEASE_PERSIST))
       return false;
 

@@ -8,10 +8,12 @@
 #ifndef NET_TOOLS_QUIC_QUIC_CLIENT_H_
 #define NET_TOOLS_QUIC_QUIC_CLIENT_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"

@@ -222,7 +222,7 @@ std::string CanonicalizeHost(const std::string& host) {
 // BitReader is a class that allows a bytestring to be read bit-by-bit.
 class BitReader {
  public:
-  BitReader(const uint8* bytes, size_t num_bits)
+  BitReader(const uint8_t* bytes, size_t num_bits)
       : bytes_(bytes),
         num_bits_(num_bits),
         num_bytes_((num_bits + 7) / 8),
@@ -248,16 +248,16 @@ class BitReader {
   // Read sets the |num_bits| least-significant bits of |*out| to the value of
   // the next |num_bits| bits from the input. It returns false if there are
   // insufficient bits in the input or true otherwise.
-  bool Read(unsigned num_bits, uint32* out) {
+  bool Read(unsigned num_bits, uint32_t* out) {
     DCHECK_LE(num_bits, 32u);
 
-    uint32 ret = 0;
+    uint32_t ret = 0;
     for (unsigned i = 0; i < num_bits; ++i) {
       bool bit;
       if (!Next(&bit)) {
         return false;
       }
-      ret |= static_cast<uint32>(bit) << (num_bits - 1 - i);
+      ret |= static_cast<uint32_t>(bit) << (num_bits - 1 - i);
     }
 
     *out = ret;
@@ -299,13 +299,13 @@ class BitReader {
   }
 
  private:
-  const uint8* const bytes_;
+  const uint8_t* const bytes_;
   const size_t num_bits_;
   const size_t num_bytes_;
   // current_byte_index_ contains the current byte offset in |bytes_|.
   size_t current_byte_index_;
   // current_byte_ contains the current byte of the input.
-  uint8 current_byte_;
+  uint8_t current_byte_;
   // num_bits_used_ contains the number of bits of |current_byte_| that have
   // been read.
   unsigned num_bits_used_;
@@ -320,11 +320,11 @@ class BitReader {
 // The tree is decoded by walking rather than a table-driven approach.
 class HuffmanDecoder {
  public:
-  HuffmanDecoder(const uint8* tree, size_t tree_bytes)
+  HuffmanDecoder(const uint8_t* tree, size_t tree_bytes)
       : tree_(tree), tree_bytes_(tree_bytes) {}
 
   bool Decode(BitReader* reader, char* out) {
-    const uint8* current = &tree_[tree_bytes_ - 2];
+    const uint8_t* current = &tree_[tree_bytes_ - 2];
 
     for (;;) {
       bool bit;
@@ -332,7 +332,7 @@ class HuffmanDecoder {
         return false;
       }
 
-      uint8 b = current[bit];
+      uint8_t b = current[bit];
       if (b & 0x80) {
         *out = static_cast<char>(b & 0x7f);
         return true;
@@ -349,15 +349,15 @@ class HuffmanDecoder {
   }
 
  private:
-  const uint8* const tree_;
+  const uint8_t* const tree_;
   const size_t tree_bytes_;
 };
 
 // PreloadResult is the result of resolving a specific name in the preloaded
 // data.
 struct PreloadResult {
-  uint32 pinset_id;
-  uint32 domain_id;
+  uint32_t pinset_id;
+  uint32_t domain_id;
   // hostname_offset contains the number of bytes from the start of the given
   // hostname where the name of the matching entry starts.
   size_t hostname_offset;
@@ -366,7 +366,7 @@ struct PreloadResult {
   bool force_https;
   bool has_pins;
   bool expect_ct;
-  uint32 expect_ct_report_uri_id;
+  uint32_t expect_ct_report_uri_id;
 };
 
 // DecodeHSTSPreloadRaw resolves |hostname| in the preloaded data. It returns
@@ -527,8 +527,8 @@ bool DecodeHSTSPreloadRaw(const std::string& search_hostname,
 
       if (is_first_offset) {
         // The first offset is backwards from the current position.
-        uint32 jump_delta_bits;
-        uint32 jump_delta;
+        uint32_t jump_delta_bits;
+        uint32_t jump_delta;
         if (!reader.Read(5, &jump_delta_bits) ||
             !reader.Read(jump_delta_bits, &jump_delta)) {
           return false;
@@ -542,18 +542,18 @@ bool DecodeHSTSPreloadRaw(const std::string& search_hostname,
         is_first_offset = false;
       } else {
         // Subsequent offsets are forward from the target of the first offset.
-        uint32 is_long_jump;
+        uint32_t is_long_jump;
         if (!reader.Read(1, &is_long_jump)) {
           return false;
         }
 
-        uint32 jump_delta;
+        uint32_t jump_delta;
         if (!is_long_jump) {
           if (!reader.Read(7, &jump_delta)) {
             return false;
           }
         } else {
-          uint32 jump_delta_bits;
+          uint32_t jump_delta_bits;
           if (!reader.Read(4, &jump_delta_bits) ||
               !reader.Read(jump_delta_bits + 8, &jump_delta)) {
             return false;

@@ -5,11 +5,14 @@
 #ifndef NET_DNS_HOST_CACHE_H_
 #define NET_DNS_HOST_CACHE_H_
 
+#include <stddef.h>
+
 #include <functional>
 #include <string>
 #include <tuple>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"

@@ -5,6 +5,8 @@
 #ifndef NET_FTP_FTP_RESPONSE_INFO_H_
 #define NET_FTP_FTP_RESPONSE_INFO_H_
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 
@@ -29,7 +31,7 @@ class FtpResponseInfo {
 
   // Expected content size, in bytes, as reported by SIZE command. Only valid
   // for file downloads. -1 means unknown size.
-  int64 expected_content_size;
+  int64_t expected_content_size;
 
   // True if the response data is of a directory listing.
   bool is_directory_listing;

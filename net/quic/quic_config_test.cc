@@ -38,7 +38,7 @@ TEST_F(QuicConfigTest, ToHandshakeMessage) {
   CryptoHandshakeMessage msg;
   config_.ToHandshakeMessage(&msg);
 
-  uint32 value;
+  uint32_t value;
   QuicErrorCode error = msg.GetUint32(kICSL, &value);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_EQ(5u, value);
@@ -216,7 +216,7 @@ TEST_F(QuicConfigTest, InvalidFlowControlWindow) {
   // QuicConfig should not accept an invalid flow control window to send to the
   // peer: the receive window must be at least the default of 16 Kb.
   QuicConfig config;
-  const uint64 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
+  const uint64_t kInvalidWindow = kMinimumFlowControlSendWindow - 1;
   EXPECT_DFATAL(config.SetInitialStreamFlowControlWindowToSend(kInvalidWindow),
                 "Initial stream flow control receive window");
 

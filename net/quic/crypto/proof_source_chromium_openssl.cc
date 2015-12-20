@@ -93,12 +93,14 @@ bool ProofSourceChromium::GetProof(const IPAddressNumber& server_ip,
                           private_key_->key()) ||
       !EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, RSA_PKCS1_PSS_PADDING) ||
       !EVP_PKEY_CTX_set_rsa_pss_saltlen(pkey_ctx, -1) ||
-      !EVP_DigestSignUpdate(sign_context.get(), reinterpret_cast<const uint8*>(
-                                                    kProofSignatureLabel),
-                            sizeof(kProofSignatureLabel)) ||
-      !EVP_DigestSignUpdate(sign_context.get(), reinterpret_cast<const uint8*>(
-                                                    server_config.data()),
-                            server_config.size())) {
+      !EVP_DigestSignUpdate(
+          sign_context.get(),
+          reinterpret_cast<const uint8_t*>(kProofSignatureLabel),
+          sizeof(kProofSignatureLabel)) ||
+      !EVP_DigestSignUpdate(
+          sign_context.get(),
+          reinterpret_cast<const uint8_t*>(server_config.data()),
+          server_config.size())) {
     return false;
   }
 

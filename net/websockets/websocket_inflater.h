@@ -6,6 +6,7 @@
 #define NET_WEBSOCKETS_WEBSOCKET_INFLATER_H_
 
 #include <stddef.h>
+
 #include <deque>
 #include <utility>
 #include <vector>

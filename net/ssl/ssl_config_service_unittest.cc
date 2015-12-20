@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -94,7 +93,7 @@ TEST(SSLConfigServiceTest, ConfigUpdatesNotifyObservers) {
   mock_service->SetSSLConfig(initial_config);
 
   // Test that disabling certain cipher suites triggers an update.
-  std::vector<uint16> disabled_ciphers;
+  std::vector<uint16_t> disabled_ciphers;
   disabled_ciphers.push_back(0x0004u);
   disabled_ciphers.push_back(0xBEEFu);
   disabled_ciphers.push_back(0xDEADu);

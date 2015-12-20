@@ -5,6 +5,9 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_CONFIG_PEER_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_CONFIG_PEER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_protocol.h"
 
@@ -17,18 +20,19 @@ namespace test {
 class QuicConfigPeer {
  public:
   static void SetReceivedSocketReceiveBuffer(QuicConfig* config,
-                                             uint32 receive_buffer_bytes);
+                                             uint32_t receive_buffer_bytes);
 
   static void SetReceivedInitialStreamFlowControlWindow(QuicConfig* config,
-                                                        uint32 window_bytes);
+                                                        uint32_t window_bytes);
 
   static void SetReceivedInitialSessionFlowControlWindow(QuicConfig* config,
-                                                         uint32 window_bytes);
+                                                         uint32_t window_bytes);
 
   static void SetReceivedConnectionOptions(QuicConfig* config,
                                            const QuicTagVector& options);
 
-  static void SetReceivedBytesForConnectionId(QuicConfig* config, uint32 bytes);
+  static void SetReceivedBytesForConnectionId(QuicConfig* config,
+                                              uint32_t bytes);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConfigPeer);

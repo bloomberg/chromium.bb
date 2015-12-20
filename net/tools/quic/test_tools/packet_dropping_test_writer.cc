@@ -55,7 +55,7 @@ PacketDroppingTestWriter::PacketDroppingTestWriter()
       fake_packet_delay_(QuicTime::Delta::Zero()),
       fake_bandwidth_(QuicBandwidth::Zero()),
       buffer_size_(0) {
-  uint32 seed = base::RandInt(0, std::numeric_limits<int32>::max());
+  uint32_t seed = base::RandInt(0, std::numeric_limits<int32_t>::max());
   VLOG(1) << "Seeding packet loss with " << seed;
   simple_random_.set_seed(seed);
 }
@@ -81,20 +81,21 @@ WriteResult PacketDroppingTestWriter::WritePacket(
 
   base::AutoLock locked(config_mutex_);
   if (fake_drop_first_n_packets_ > 0 &&
-      num_calls_to_write_ <= static_cast<uint64>(fake_drop_first_n_packets_)) {
+      num_calls_to_write_ <=
+          static_cast<uint64_t>(fake_drop_first_n_packets_)) {
     DVLOG(1) << "Dropping first " << fake_drop_first_n_packets_
              << " packets (packet number " << num_calls_to_write_ << ")";
     return WriteResult(WRITE_STATUS_OK, buf_len);
   }
   if (fake_packet_loss_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
-          static_cast<uint64>(fake_packet_loss_percentage_)) {
+          static_cast<uint64_t>(fake_packet_loss_percentage_)) {
     DVLOG(1) << "Dropping packet.";
     return WriteResult(WRITE_STATUS_OK, buf_len);
   }
   if (fake_blocked_socket_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
-          static_cast<uint64>(fake_blocked_socket_percentage_)) {
+          static_cast<uint64_t>(fake_blocked_socket_percentage_)) {
     CHECK(on_can_write_.get() != nullptr);
     DVLOG(1) << "Blocking socket.";
     if (!write_unblocked_alarm_->IsSet()) {
@@ -162,7 +163,7 @@ QuicTime PacketDroppingTestWriter::ReleaseNextPacket() {
   // Determine if we should re-order.
   if (delayed_packets_.size() > 1 && fake_packet_reorder_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
-          static_cast<uint64>(fake_packet_reorder_percentage_)) {
+          static_cast<uint64_t>(fake_packet_reorder_percentage_)) {
     DVLOG(1) << "Reordering packets.";
     ++iter;
     // Swap the send times when re-ordering packets.

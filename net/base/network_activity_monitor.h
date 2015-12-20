@@ -5,8 +5,10 @@
 #ifndef NET_BASE_NETWORK_ACTIVITY_MONITOR_H_
 #define NET_BASE_NETWORK_ACTIVITY_MONITOR_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
@@ -43,8 +44,8 @@ class TestUDPClientSocket : public DatagramClientSocket {
     NOTIMPLEMENTED();
     return OK;
   }
-  int SetReceiveBufferSize(int32) override { return OK; }
-  int SetSendBufferSize(int32) override { return OK; }
+  int SetReceiveBufferSize(int32_t) override { return OK; }
+  int SetSendBufferSize(int32_t) override { return OK; }
 
   void Close() override {}
   int GetPeerAddress(IPEndPoint* address) const override {

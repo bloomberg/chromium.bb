@@ -5,8 +5,8 @@
 #ifndef NET_URL_REQUEST_FTP_PROTOCOL_HANDLER_H_
 #define NET_URL_REQUEST_FTP_PROTOCOL_HANDLER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_job_factory.h"
 

@@ -4,7 +4,6 @@
 
 #include "net/quic/congestion_control/cubic.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -14,7 +13,7 @@ namespace net {
 namespace test {
 
 const float kBeta = 0.7f;  // Default Cubic backoff factor.
-const uint32 kNumConnections = 2;
+const uint32_t kNumConnections = 2;
 const float kNConnectionBeta = (kNumConnections - 1 + kBeta) / kNumConnections;
 const float kNConnectionAlpha = 3 * kNumConnections * kNumConnections *
                                 (1 - kNConnectionBeta) / (1 + kNConnectionBeta);

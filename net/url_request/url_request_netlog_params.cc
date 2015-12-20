@@ -15,7 +15,7 @@ scoped_ptr<base::Value> NetLogURLRequestStartCallback(
     const std::string* method,
     int load_flags,
     RequestPriority priority,
-    int64 upload_id,
+    int64_t upload_id,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("url", url->possibly_invalid_spec());

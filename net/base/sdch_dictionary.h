@@ -5,6 +5,8 @@
 #ifndef NET_BASE_SDCH_DICTIONARY_H_
 #define NET_BASE_SDCH_DICTIONARY_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 

@@ -5,6 +5,9 @@
 #ifndef NET_TOOLS_FLIP_SERVER_HTTP_INTERFACE_H_
 #define NET_TOOLS_FLIP_SERVER_HTTP_INTERFACE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -72,7 +75,7 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
 
   // SMInterface:
   void InitSMInterface(SMInterface* sm_spdy_interface,
-                       int32 server_idx) override;
+                       int32_t server_idx) override;
   void InitSMConnection(SMConnectionPoolInterface* connection_pool,
                         SMInterface* sm_interface,
                         EpollServer* epoll_server,
@@ -84,38 +87,39 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
   size_t ProcessReadInput(const char* data, size_t len) override;
   size_t ProcessWriteInput(const char* data, size_t len) override;
   bool MessageFullyRead() const override;
-  void SetStreamID(uint32 stream_id) override;
+  void SetStreamID(uint32_t stream_id) override;
   bool Error() const override;
   const char* ErrorAsString() const override;
   void Reset() override;
-  void ResetForNewInterface(int32 server_idx) override {}
+  void ResetForNewInterface(int32_t server_idx) override {}
   void ResetForNewConnection() override;
   void Cleanup() override;
   int PostAcceptHook() override;
 
-  void NewStream(uint32 stream_id,
-                 uint32 priority,
+  void NewStream(uint32_t stream_id,
+                 uint32_t priority,
                  const std::string& filename) override;
-  void SendEOF(uint32 stream_id) override;
-  void SendErrorNotFound(uint32 stream_id) override;
-  size_t SendSynStream(uint32 stream_id, const BalsaHeaders& headers) override;
-  size_t SendSynReply(uint32 stream_id, const BalsaHeaders& headers) override;
-  void SendDataFrame(uint32 stream_id,
+  void SendEOF(uint32_t stream_id) override;
+  void SendErrorNotFound(uint32_t stream_id) override;
+  size_t SendSynStream(uint32_t stream_id,
+                       const BalsaHeaders& headers) override;
+  size_t SendSynReply(uint32_t stream_id, const BalsaHeaders& headers) override;
+  void SendDataFrame(uint32_t stream_id,
                      const char* data,
-                     int64 len,
-                     uint32 flags,
+                     int64_t len,
+                     uint32_t flags,
                      bool compress) override;
 
  private:
-  void SendEOFImpl(uint32 stream_id);
-  void SendErrorNotFoundImpl(uint32 stream_id);
-  void SendOKResponseImpl(uint32 stream_id, const std::string& output);
-  size_t SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers);
-  size_t SendSynStreamImpl(uint32 stream_id, const BalsaHeaders& headers);
-  void SendDataFrameImpl(uint32 stream_id,
+  void SendEOFImpl(uint32_t stream_id);
+  void SendErrorNotFoundImpl(uint32_t stream_id);
+  void SendOKResponseImpl(uint32_t stream_id, const std::string& output);
+  size_t SendSynReplyImpl(uint32_t stream_id, const BalsaHeaders& headers);
+  size_t SendSynStreamImpl(uint32_t stream_id, const BalsaHeaders& headers);
+  void SendDataFrameImpl(uint32_t stream_id,
                          const char* data,
-                         int64 len,
-                         uint32 flags,
+                         int64_t len,
+                         uint32_t flags,
                          bool compress);
   void EnqueueDataFrame(DataFrame* df);
   void GetOutput() override;
@@ -123,8 +127,8 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
  private:
   BalsaFrame* http_framer_;
   BalsaHeaders headers_;
-  uint32 stream_id_;
-  int32 server_idx_;
+  uint32_t stream_id_;
+  int32_t server_idx_;
 
   SMConnection* connection_;
   SMInterface* sm_spdy_interface_;

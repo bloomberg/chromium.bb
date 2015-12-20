@@ -11,6 +11,7 @@
 #include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -61,7 +62,7 @@ bool IsIPLiteral(const std::string& hostname) {
 
 scoped_ptr<base::Value> NetLogStartCallback(
     const std::string* hostname,
-    uint16 qtype,
+    uint16_t qtype,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("hostname", *hostname);
@@ -304,7 +305,7 @@ class DnsTCPAttempt : public DnsAttempt {
         next_state_(STATE_NONE),
         socket_(socket.Pass()),
         query_(query.Pass()),
-        length_buffer_(new IOBufferWithSize(sizeof(uint16))),
+        length_buffer_(new IOBufferWithSize(sizeof(uint16_t))),
         response_length_(0) {}
 
   // DnsAttempt:
@@ -401,10 +402,10 @@ class DnsTCPAttempt : public DnsAttempt {
     if (rv < 0)
       return rv;
 
-    uint16 query_size = static_cast<uint16>(query_->io_buffer()->size());
+    uint16_t query_size = static_cast<uint16_t>(query_->io_buffer()->size());
     if (static_cast<int>(query_size) != query_->io_buffer()->size())
       return ERR_FAILED;
-    base::WriteBigEndian<uint16>(length_buffer_->data(), query_size);
+    base::WriteBigEndian<uint16_t>(length_buffer_->data(), query_size);
     buffer_ =
         new DrainableIOBuffer(length_buffer_.get(), length_buffer_->size());
     next_state_ = STATE_SEND_LENGTH;
@@ -469,7 +470,7 @@ class DnsTCPAttempt : public DnsAttempt {
       return OK;
     }
 
-    base::ReadBigEndian<uint16>(length_buffer_->data(), &response_length_);
+    base::ReadBigEndian<uint16_t>(length_buffer_->data(), &response_length_);
     // Check if advertised response is too short. (Optimization only.)
     if (response_length_ < query_->io_buffer()->size())
       return ERR_DNS_MALFORMED_RESPONSE;
@@ -534,7 +535,7 @@ class DnsTCPAttempt : public DnsAttempt {
   scoped_refptr<IOBufferWithSize> length_buffer_;
   scoped_refptr<DrainableIOBuffer> buffer_;
 
-  uint16 response_length_;
+  uint16_t response_length_;
   scoped_ptr<DnsResponse> response_;
 
   CompletionCallback callback_;
@@ -556,18 +557,18 @@ class DnsTransactionImpl : public DnsTransaction,
  public:
   DnsTransactionImpl(DnsSession* session,
                      const std::string& hostname,
-                     uint16 qtype,
+                     uint16_t qtype,
                      const DnsTransactionFactory::CallbackType& callback,
                      const BoundNetLog& net_log)
-    : session_(session),
-      hostname_(hostname),
-      qtype_(qtype),
-      callback_(callback),
-      net_log_(net_log),
-      qnames_initial_size_(0),
-      attempts_count_(0),
-      had_tcp_attempt_(false),
-      first_server_index_(0) {
+      : session_(session),
+        hostname_(hostname),
+        qtype_(qtype),
+        callback_(callback),
+        net_log_(net_log),
+        qnames_initial_size_(0),
+        attempts_count_(0),
+        had_tcp_attempt_(false),
+        first_server_index_(0) {
     DCHECK(session_.get());
     DCHECK(!hostname_.empty());
     DCHECK(!callback_.is_null());
@@ -586,7 +587,7 @@ class DnsTransactionImpl : public DnsTransaction,
     return hostname_;
   }
 
-  uint16 GetType() const override {
+  uint16_t GetType() const override {
     DCHECK(CalledOnValidThread());
     return qtype_;
   }
@@ -702,7 +703,7 @@ class DnsTransactionImpl : public DnsTransaction,
   AttemptResult MakeAttempt() {
     unsigned attempt_number = attempts_.size();
 
-    uint16 id = session_->NextQueryId();
+    uint16_t id = session_->NextQueryId();
     scoped_ptr<DnsQuery> query;
     if (attempts_.empty()) {
       query.reset(new DnsQuery(id, qnames_.front(), qtype_));
@@ -757,7 +758,7 @@ class DnsTransactionImpl : public DnsTransaction,
         session_->CreateTCPSocket(server_index, net_log_.source()));
 
     // TODO(szym): Reuse the same id to help the server?
-    uint16 id = session_->NextQueryId();
+    uint16_t id = session_->NextQueryId();
     scoped_ptr<DnsQuery> query =
         previous_attempt->GetQuery()->CloneWithNewId(id);
 
@@ -941,7 +942,7 @@ class DnsTransactionImpl : public DnsTransaction,
 
   scoped_refptr<DnsSession> session_;
   std::string hostname_;
-  uint16 qtype_;
+  uint16_t qtype_;
   // Cleared in DoCallback.
   DnsTransactionFactory::CallbackType callback_;
 
@@ -977,7 +978,7 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
 
   scoped_ptr<DnsTransaction> CreateTransaction(
       const std::string& hostname,
-      uint16 qtype,
+      uint16_t qtype,
       const CallbackType& callback,
       const BoundNetLog& net_log) override {
     return scoped_ptr<DnsTransaction>(new DnsTransactionImpl(

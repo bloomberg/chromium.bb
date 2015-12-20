@@ -5,13 +5,15 @@
 #ifndef NET_HTTP_HTTP_SERVER_PROPERTIES_H_
 #define NET_HTTP_HTTP_SERVER_PROPERTIES_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <tuple>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/mru_cache.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
@@ -101,7 +103,7 @@ struct NET_EXPORT AlternativeService {
 
   AlternativeService(AlternateProtocol protocol,
                      const std::string& host,
-                     uint16 port)
+                     uint16_t port)
       : protocol(protocol), host(host), port(port) {}
 
   AlternativeService(AlternateProtocol protocol,
@@ -134,7 +136,7 @@ struct NET_EXPORT AlternativeService {
 
   AlternateProtocol protocol;
   std::string host;
-  uint16 port;
+  uint16_t port;
 };
 
 struct NET_EXPORT AlternativeServiceInfo {
@@ -149,7 +151,7 @@ struct NET_EXPORT AlternativeServiceInfo {
 
   AlternativeServiceInfo(AlternateProtocol protocol,
                          const std::string& host,
-                         uint16 port,
+                         uint16_t port,
                          double probability,
                          base::Time expiration)
       : alternative_service(protocol, host, port),
@@ -342,7 +344,7 @@ class NET_EXPORT HttpServerProperties {
   virtual bool SetSpdySetting(const HostPortPair& host_port_pair,
                               SpdySettingsIds id,
                               SpdySettingsFlags flags,
-                              uint32 value) = 0;
+                              uint32_t value) = 0;
 
   // Clears all SPDY settings for a host.
   virtual void ClearSpdySettings(const HostPortPair& host_port_pair) = 0;

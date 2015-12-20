@@ -5,6 +5,8 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_DELEGATE_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "net/base/completion_callback.h"
@@ -19,7 +21,7 @@ class NET_EXPORT_PRIVATE SimpleIndexDelegate {
   // Dooms all entries in |entries|, calling |callback| with the result
   // asynchronously. |entries| is mutated in an undefined way by this call,
   // for efficiency.
-  virtual void DoomEntries(std::vector<uint64>* entry_hashes,
+  virtual void DoomEntries(std::vector<uint64_t>* entry_hashes,
                            const net::CompletionCallback& callback) = 0;
 };
 

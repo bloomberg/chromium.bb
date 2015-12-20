@@ -5,11 +5,13 @@
 #ifndef NET_SSL_CHANNEL_ID_SERVICE_H_
 #define NET_SSL_CHANNEL_ID_SERVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -129,10 +131,10 @@ class NET_EXPORT ChannelIDService
 
   // Public only for unit testing.
   int channel_id_count();
-  uint64 requests() const { return requests_; }
-  uint64 key_store_hits() const { return key_store_hits_; }
-  uint64 inflight_joins() const { return inflight_joins_; }
-  uint64 workers_created() const { return workers_created_; }
+  uint64_t requests() const { return requests_; }
+  uint64_t key_store_hits() const { return key_store_hits_; }
+  uint64_t inflight_joins() const { return inflight_joins_; }
+  uint64_t workers_created() const { return workers_created_; }
 
  private:
   void GotChannelID(int err,
@@ -174,10 +176,10 @@ class NET_EXPORT ChannelIDService
   // place.
   std::map<std::string, ChannelIDServiceJob*> inflight_;
 
-  uint64 requests_;
-  uint64 key_store_hits_;
-  uint64 inflight_joins_;
-  uint64 workers_created_;
+  uint64_t requests_;
+  uint64_t key_store_hits_;
+  uint64_t inflight_joins_;
+  uint64_t workers_created_;
 
   base::WeakPtrFactory<ChannelIDService> weak_ptr_factory_;
 

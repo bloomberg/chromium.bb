@@ -5,6 +5,8 @@
 #ifndef NET_SPDY_SPDY_PINNABLE_BUFFER_PIECE_H_
 #define NET_SPDY_SPDY_PINNABLE_BUFFER_PIECE_H_
 
+#include <stddef.h>
+
 #include <memory>
 
 #include "base/memory/scoped_ptr.h"

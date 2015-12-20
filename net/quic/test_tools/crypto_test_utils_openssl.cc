@@ -49,21 +49,21 @@ class TestChannelIDKey : public ChannelIDKey {
       return false;
     }
 
-    scoped_ptr<uint8[]> der_sig(new uint8[sig_len]);
+    scoped_ptr<uint8_t[]> der_sig(new uint8_t[sig_len]);
     if (!EVP_DigestSignFinal(md_ctx.get(), der_sig.get(), &sig_len)) {
       return false;
     }
 
-    uint8* derp = der_sig.get();
+    uint8_t* derp = der_sig.get();
     crypto::ScopedECDSA_SIG sig(
-        d2i_ECDSA_SIG(nullptr, const_cast<const uint8**>(&derp), sig_len));
+        d2i_ECDSA_SIG(nullptr, const_cast<const uint8_t**>(&derp), sig_len));
     if (sig.get() == nullptr) {
       return false;
     }
 
     // The signature consists of a pair of 32-byte numbers.
     static const size_t kSignatureLength = 32 * 2;
-    scoped_ptr<uint8[]> signature(new uint8[kSignatureLength]);
+    scoped_ptr<uint8_t[]> signature(new uint8_t[kSignatureLength]);
     if (!BN_bn2bin_padded(&signature[0], 32, sig->r) ||
         !BN_bn2bin_padded(&signature[32], 32, sig->s)) {
       return false;
@@ -86,8 +86,8 @@ class TestChannelIDKey : public ChannelIDKey {
       return "";
     }
 
-    uint8 buf[kExpectedKeyLength];
-    uint8* derp = buf;
+    uint8_t buf[kExpectedKeyLength];
+    uint8_t* derp = buf;
     i2d_PublicKey(ecdsa_key_.get(), &derp);
 
     return string(reinterpret_cast<char*>(buf + 1), kExpectedKeyLength - 1);

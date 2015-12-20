@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/spdy_utils.h"

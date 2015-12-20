@@ -5,7 +5,10 @@
 #ifndef NET_DISK_CACHE_MEMORY_MEM_ENTRY_IMPL_H_
 #define NET_DISK_CACHE_MEMORY_MEM_ENTRY_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/log/net_log.h"
@@ -91,7 +94,7 @@ class MemEntryImpl : public Entry {
   std::string GetKey() const override;
   base::Time GetLastUsed() const override;
   base::Time GetLastModified() const override;
-  int32 GetDataSize(int index) const override;
+  int32_t GetDataSize(int index) const override;
   int ReadData(int index,
                int offset,
                IOBuffer* buf,
@@ -103,17 +106,17 @@ class MemEntryImpl : public Entry {
                 int buf_len,
                 const CompletionCallback& callback,
                 bool truncate) override;
-  int ReadSparseData(int64 offset,
+  int ReadSparseData(int64_t offset,
                      IOBuffer* buf,
                      int buf_len,
                      const CompletionCallback& callback) override;
-  int WriteSparseData(int64 offset,
+  int WriteSparseData(int64_t offset,
                       IOBuffer* buf,
                       int buf_len,
                       const CompletionCallback& callback) override;
-  int GetAvailableRange(int64 offset,
+  int GetAvailableRange(int64_t offset,
                         int len,
-                        int64* start,
+                        int64_t* start,
                         const CompletionCallback& callback) override;
   bool CouldBeSparse() const override;
   void CancelSparseIO() override {}
@@ -133,11 +136,11 @@ class MemEntryImpl : public Entry {
   int InternalReadData(int index, int offset, IOBuffer* buf, int buf_len);
   int InternalWriteData(int index, int offset, IOBuffer* buf, int buf_len,
                         bool truncate);
-  int InternalReadSparseData(int64 offset, IOBuffer* buf, int buf_len);
-  int InternalWriteSparseData(int64 offset, IOBuffer* buf, int buf_len);
+  int InternalReadSparseData(int64_t offset, IOBuffer* buf, int buf_len);
+  int InternalWriteSparseData(int64_t offset, IOBuffer* buf, int buf_len);
 
   // Old Entry interface.
-  int GetAvailableRange(int64 offset, int len, int64* start);
+  int GetAvailableRange(int64_t offset, int len, int64_t* start);
 
   // Grows and cleans up the data buffer.
   void PrepareTarget(int index, int offset, int buf_len);
@@ -158,19 +161,19 @@ class MemEntryImpl : public Entry {
   // child entry or this entry itself if |offset| points to the first range.
   // If such entry does not exist and |create| is true, a new child entry is
   // created.
-  MemEntryImpl* OpenChild(int64 offset, bool create);
+  MemEntryImpl* OpenChild(int64_t offset, bool create);
 
   // Finds the first child located within the range [|offset|, |offset + len|).
   // Returns the number of bytes ahead of |offset| to reach the first available
   // bytes in the entry. The first child found is output to |child|.
-  int FindNextChild(int64 offset, int len, MemEntryImpl** child);
+  int FindNextChild(int64_t offset, int len, MemEntryImpl** child);
 
   // Removes child indexed by |child_id| from the children map.
   void DetachChild(int child_id);
 
   std::string key_;
   std::vector<char> data_[NUM_STREAMS];  // User data.
-  int32 data_size_[NUM_STREAMS];
+  int32_t data_size_[NUM_STREAMS];
   int ref_count_;
 
   int child_id_;              // The ID of a child entry.

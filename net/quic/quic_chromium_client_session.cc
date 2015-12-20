@@ -470,7 +470,7 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   // Report the TLS cipher suite that most closely resembles the crypto
   // parameters of the QUIC connection.
   QuicTag aead = crypto_stream_->crypto_negotiated_params().aead;
-  uint16 cipher_suite;
+  uint16_t cipher_suite;
   int security_bits;
   switch (aead) {
     case kAESG:

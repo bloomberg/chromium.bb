@@ -176,8 +176,10 @@ void BackendIO::WriteData(EntryImpl* entry, int index, int offset,
   truncate_ = truncate;
 }
 
-void BackendIO::ReadSparseData(EntryImpl* entry, int64 offset,
-                               net::IOBuffer* buf, int buf_len) {
+void BackendIO::ReadSparseData(EntryImpl* entry,
+                               int64_t offset,
+                               net::IOBuffer* buf,
+                               int buf_len) {
   operation_ = OP_READ_SPARSE;
   entry_ = entry;
   offset64_ = offset;
@@ -185,8 +187,10 @@ void BackendIO::ReadSparseData(EntryImpl* entry, int64 offset,
   buf_len_ = buf_len;
 }
 
-void BackendIO::WriteSparseData(EntryImpl* entry, int64 offset,
-                                net::IOBuffer* buf, int buf_len) {
+void BackendIO::WriteSparseData(EntryImpl* entry,
+                                int64_t offset,
+                                net::IOBuffer* buf,
+                                int buf_len) {
   operation_ = OP_WRITE_SPARSE;
   entry_ = entry;
   offset64_ = offset;
@@ -194,8 +198,10 @@ void BackendIO::WriteSparseData(EntryImpl* entry, int64 offset,
   buf_len_ = buf_len;
 }
 
-void BackendIO::GetAvailableRange(EntryImpl* entry, int64 offset, int len,
-                                  int64* start) {
+void BackendIO::GetAvailableRange(EntryImpl* entry,
+                                  int64_t offset,
+                                  int len,
+                                  int64_t* start) {
   operation_ = OP_GET_RANGE;
   entry_ = entry;
   offset64_ = offset;
@@ -464,7 +470,10 @@ void InFlightBackendIO::WriteData(EntryImpl* entry, int index, int offset,
 }
 
 void InFlightBackendIO::ReadSparseData(
-    EntryImpl* entry, int64 offset, net::IOBuffer* buf, int buf_len,
+    EntryImpl* entry,
+    int64_t offset,
+    net::IOBuffer* buf,
+    int buf_len,
     const net::CompletionCallback& callback) {
   scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
   operation->ReadSparseData(entry, offset, buf, buf_len);
@@ -472,7 +481,10 @@ void InFlightBackendIO::ReadSparseData(
 }
 
 void InFlightBackendIO::WriteSparseData(
-    EntryImpl* entry, int64 offset, net::IOBuffer* buf, int buf_len,
+    EntryImpl* entry,
+    int64_t offset,
+    net::IOBuffer* buf,
+    int buf_len,
     const net::CompletionCallback& callback) {
   scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
   operation->WriteSparseData(entry, offset, buf, buf_len);
@@ -480,7 +492,10 @@ void InFlightBackendIO::WriteSparseData(
 }
 
 void InFlightBackendIO::GetAvailableRange(
-    EntryImpl* entry, int64 offset, int len, int64* start,
+    EntryImpl* entry,
+    int64_t offset,
+    int len,
+    int64_t* start,
     const net::CompletionCallback& callback) {
   scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
   operation->GetAvailableRange(entry, offset, len, start);

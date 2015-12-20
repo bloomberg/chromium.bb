@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process_iterator.h"
@@ -60,7 +61,9 @@ class OrphanedTestServerFilter : public base::ProcessFilter {
 // Given a file descriptor, reads into |buffer| until |bytes_max|
 // bytes has been read or an error has been encountered.  Returns true
 // if the read was successful.  |remaining_time| is used as a timeout.
-bool ReadData(int fd, ssize_t bytes_max, uint8* buffer,
+bool ReadData(int fd,
+              ssize_t bytes_max,
+              uint8_t* buffer,
               base::TimeDelta* remaining_time) {
   ssize_t bytes_read = 0;
   base::TimeTicks previous_time = base::TimeTicks::Now();
@@ -153,17 +156,16 @@ bool LocalTestServer::WaitToStart() {
 
   base::TimeDelta remaining_time = TestTimeouts::action_timeout();
 
-  uint32 server_data_len = 0;
+  uint32_t server_data_len = 0;
   if (!ReadData(our_fd.get(), sizeof(server_data_len),
-                reinterpret_cast<uint8*>(&server_data_len),
+                reinterpret_cast<uint8_t*>(&server_data_len),
                 &remaining_time)) {
     LOG(ERROR) << "Could not read server_data_len";
     return false;
   }
   std::string server_data(server_data_len, '\0');
   if (!ReadData(our_fd.get(), server_data_len,
-                reinterpret_cast<uint8*>(&server_data[0]),
-                &remaining_time)) {
+                reinterpret_cast<uint8_t*>(&server_data[0]), &remaining_time)) {
     LOG(ERROR) << "Could not read server_data (" << server_data_len
                << " bytes)";
     return false;

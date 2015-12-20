@@ -282,7 +282,7 @@ int TransportConnectJob::DoTransportConnect() {
   if (last_connect_time.is_null()) {
     interval_between_connects_ = CONNECT_INTERVAL_GT_20MS;
   } else {
-    int64 interval = (now - last_connect_time).InMilliseconds();
+    int64_t interval = (now - last_connect_time).InMilliseconds();
     if (interval <= 10)
       interval_between_connects_ = CONNECT_INTERVAL_LE_10MS;
     else if (interval <= 20)

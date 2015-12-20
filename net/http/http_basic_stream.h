@@ -13,7 +13,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "net/http/http_basic_state.h"
 #include "net/http/http_stream.h"
 

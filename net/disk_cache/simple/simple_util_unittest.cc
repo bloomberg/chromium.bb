@@ -47,7 +47,7 @@ TEST_F(SimpleUtilTest, GetEntryHashKey) {
 }
 
 TEST_F(SimpleUtilTest, GetEntryHashKeyFromHexString) {
-  uint64 hash_key = 0;
+  uint64_t hash_key = 0;
   EXPECT_TRUE(GetEntryHashKeyFromHexString("0000000005f5e0ff", &hash_key));
   EXPECT_EQ(UINT64_C(99999999), hash_key);
 

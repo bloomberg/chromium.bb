@@ -46,11 +46,13 @@
 #ifndef NET_FILTER_FILTER_H__
 #define NET_FILTER_FILTER_H__
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -113,7 +115,7 @@ class NET_EXPORT_PRIVATE FilterContext {
 
   // How many bytes were read from the net or cache so far (and potentially
   // pushed into a filter for processing)?
-  virtual int64 GetByteReadCount() const = 0;
+  virtual int64_t GetByteReadCount() const = 0;
 
   // What response code was received with the associated network transaction?
   // For example: 200 is ok.  4xx are error codes. etc.

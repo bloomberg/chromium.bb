@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "base/basictypes.h"
 #include "net/base/host_port_pair.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +19,7 @@ class PortSuggesterTest : public ::testing::Test {
         min_ephemeral_port_(1025),
         max_ephemeral_port_(65535) {}
 
-  uint64 entropy_;
+  uint64_t entropy_;
   int min_ephemeral_port_;
   int max_ephemeral_port_;
 };
@@ -43,7 +42,7 @@ TEST_F(PortSuggesterTest, SuggestAllPorts) {
   scoped_refptr<PortSuggester> port_suggester =
       new PortSuggester(HostPortPair("www.example.com", 443), entropy_);
   std::set<int> ports;
-  const uint32 port_range = 20;
+  const uint32_t port_range = 20;
   const int insertion_limit = 200;  // We should be done by then.
   for (int i = 0; i < insertion_limit; ++i) {
     ports.insert(port_suggester->SuggestPort(

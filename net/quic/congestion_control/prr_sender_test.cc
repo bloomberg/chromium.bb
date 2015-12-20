@@ -46,7 +46,7 @@ TEST_F(PrrSenderTest, SingleLossResultsInSendOnEveryOtherAck) {
   // One packet is lost, and one ack was consumed above. PRR now paces
   // transmissions through the remaining 48 acks. PRR will alternatively
   // disallow and allow a packet to be sent in response to an ack.
-  for (uint64 i = 0; i < ssthresh_after_loss - 1; ++i) {
+  for (uint64_t i = 0; i < ssthresh_after_loss - 1; ++i) {
     // Ack a packet. PRR shouldn't allow sending a packet in response.
     prr.OnPacketAcked(kMaxSegmentSize);
     bytes_in_flight -= kMaxSegmentSize;

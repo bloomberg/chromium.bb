@@ -5,6 +5,8 @@
 #ifndef NET_CERT_INTERNAL_SIGNATURE_POLICY_H_
 #define NET_CERT_INTERNAL_SIGNATURE_POLICY_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
 #include "net/cert/internal/signature_algorithm.h"

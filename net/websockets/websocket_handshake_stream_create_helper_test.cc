@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"

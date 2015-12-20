@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -120,10 +121,10 @@ class WrappedStreamSocket : public StreamSocket {
             const CompletionCallback& callback) override {
     return transport_->Write(buf, buf_len, callback);
   }
-  int SetReceiveBufferSize(int32 size) override {
+  int SetReceiveBufferSize(int32_t size) override {
     return transport_->SetReceiveBufferSize(size);
   }
-  int SetSendBufferSize(int32 size) override {
+  int SetSendBufferSize(int32_t size) override {
     return transport_->SetSendBufferSize(size);
   }
 
@@ -1917,7 +1918,7 @@ TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
   // Rather than exhaustively disabling every AES_128_CBC ciphersuite defined at
   // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml, only
   // disabling those cipher suites that the test server actually implements.
-  const uint16 kCiphersToDisable[] = {
+  const uint16_t kCiphersToDisable[] = {
       0x002f,  // TLS_RSA_WITH_AES_128_CBC_SHA
       0x0033,  // TLS_DHE_RSA_WITH_AES_128_CBC_SHA
       0xc013,  // TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA

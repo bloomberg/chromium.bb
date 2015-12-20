@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -58,8 +57,8 @@ class TransportClientSocketTest
   }
 
   int DrainClientSocket(IOBuffer* buf,
-                        uint32 buf_len,
-                        uint32 bytes_to_read,
+                        uint32_t buf_len,
+                        uint32_t bytes_to_read,
                         TestCompletionCallback* callback);
 
   // Establishes a connection to the server.
@@ -82,7 +81,7 @@ class TransportClientSocketTest
 
  protected:
   base::RunLoop connect_loop_;
-  uint16 listen_port_;
+  uint16_t listen_port_;
   TestNetLog net_log_;
   ClientSocketFactory* const socket_factory_;
   scoped_ptr<StreamSocket> sock_;
@@ -125,11 +124,11 @@ void TransportClientSocketTest::SetUp() {
 
 int TransportClientSocketTest::DrainClientSocket(
     IOBuffer* buf,
-    uint32 buf_len,
-    uint32 bytes_to_read,
+    uint32_t buf_len,
+    uint32_t bytes_to_read,
     TestCompletionCallback* callback) {
   int rv = OK;
-  uint32 bytes_read = 0;
+  uint32_t bytes_read = 0;
 
   while (bytes_read < bytes_to_read) {
     rv = sock_->Read(buf, buf_len, callback->callback());
@@ -260,7 +259,7 @@ TEST_P(TransportClientSocketTest, Connect) {
 TEST_P(TransportClientSocketTest, IsConnected) {
   scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
   TestCompletionCallback callback;
-  uint32 bytes_read;
+  uint32_t bytes_read;
 
   EXPECT_FALSE(sock_->IsConnected());
   EXPECT_FALSE(sock_->IsConnectedAndIdle());
@@ -325,7 +324,7 @@ TEST_P(TransportClientSocketTest, Read) {
   SendRequestAndResponse();
 
   scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
-  uint32 bytes_read =
+  uint32_t bytes_read =
       DrainClientSocket(buf.get(), 4096, strlen(kServerReply), &callback);
   ASSERT_EQ(bytes_read, strlen(kServerReply));
   ASSERT_EQ(std::string(kServerReply), std::string(buf->data(), bytes_read));
@@ -346,7 +345,7 @@ TEST_P(TransportClientSocketTest, Read_SmallChunks) {
   SendRequestAndResponse();
 
   scoped_refptr<IOBuffer> buf(new IOBuffer(1));
-  uint32 bytes_read = 0;
+  uint32_t bytes_read = 0;
   while (bytes_read < strlen(kServerReply)) {
     int rv = sock_->Read(buf.get(), 1, callback.callback());
     EXPECT_TRUE(rv >= 0 || rv == ERR_IO_PENDING);

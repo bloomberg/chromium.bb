@@ -5,8 +5,8 @@
 #ifndef NET_PROXY_DHCP_SCRIPT_FETCHER_H_
 #define NET_PROXY_DHCP_SCRIPT_FETCHER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"

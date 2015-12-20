@@ -5,6 +5,8 @@
 #ifndef NET_CERT_INTERNAL_NAME_CONSTRAINTS_H_
 #define NET_CERT_INTERNAL_NAME_CONSTRAINTS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"

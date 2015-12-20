@@ -11,7 +11,6 @@
 #include <sys/uio.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/quic/quic_protocol.h"
 
@@ -27,15 +26,15 @@ IPAddressNumber QuicSocketUtils::GetAddressFromMsghdr(struct msghdr* hdr) {
   if (hdr->msg_controllen > 0) {
     for (cmsghdr* cmsg = CMSG_FIRSTHDR(hdr); cmsg != nullptr;
          cmsg = CMSG_NXTHDR(hdr, cmsg)) {
-      const uint8* addr_data = nullptr;
+      const uint8_t* addr_data = nullptr;
       int len = 0;
       if (cmsg->cmsg_type == IPV6_PKTINFO) {
         in6_pktinfo* info = reinterpret_cast<in6_pktinfo*> CMSG_DATA(cmsg);
-        addr_data = reinterpret_cast<const uint8*>(&info->ipi6_addr);
+        addr_data = reinterpret_cast<const uint8_t*>(&info->ipi6_addr);
         len = sizeof(in6_addr);
       } else if (cmsg->cmsg_type == IP_PKTINFO) {
         in_pktinfo* info = reinterpret_cast<in_pktinfo*> CMSG_DATA(cmsg);
-        addr_data = reinterpret_cast<const uint8*>(&info->ipi_addr);
+        addr_data = reinterpret_cast<const uint8_t*>(&info->ipi_addr);
         len = sizeof(in_addr);
       } else {
         continue;

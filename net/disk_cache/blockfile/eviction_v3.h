@@ -5,7 +5,7 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_EVICTION_V3_H_
 #define NET_DISK_CACHE_BLOCKFILE_EVICTION_V3_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/disk_cache/blockfile/disk_format_v3.h"
 #include "net/disk_cache/blockfile/index_table_v3.h"

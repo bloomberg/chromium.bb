@@ -5,9 +5,12 @@
 #ifndef NET_CERT_CERT_NET_FETCHER_H_
 #define NET_CERT_CERT_NET_FETCHER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 

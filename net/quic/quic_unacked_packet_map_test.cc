@@ -18,8 +18,8 @@ namespace test {
 namespace {
 
 // Default packet length.
-const uint32 kDefaultAckLength = 50;
-const uint32 kDefaultLength = 1000;
+const uint32_t kDefaultAckLength = 50;
+const uint32_t kDefaultLength = 1000;
 
 class QuicUnackedPacketMapTest : public ::testing::Test {
  protected:

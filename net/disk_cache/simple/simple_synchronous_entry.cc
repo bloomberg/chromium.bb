@@ -9,7 +9,6 @@
 #include <functional>
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/hash.h"

@@ -5,6 +5,8 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_MOCK_DATA_JOB_H_
 #define NET_URL_REQUEST_URL_REQUEST_MOCK_DATA_JOB_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/memory/weak_ptr.h"

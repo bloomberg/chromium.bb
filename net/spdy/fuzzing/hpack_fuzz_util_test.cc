@@ -140,9 +140,8 @@ TEST(HpackFuzzUtilTest, FlipBitsMutatesBuffer) {
   string unmodified(buffer, arraysize(buffer) - 1);
 
   EXPECT_EQ(unmodified, buffer);
-  HpackFuzzUtil::FlipBits(reinterpret_cast<uint8*>(buffer),
-                          arraysize(buffer) - 1,
-                          1);
+  HpackFuzzUtil::FlipBits(reinterpret_cast<uint8_t*>(buffer),
+                          arraysize(buffer) - 1, 1);
   EXPECT_NE(unmodified, buffer);
 }
 

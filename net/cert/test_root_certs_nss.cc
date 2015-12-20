@@ -7,6 +7,7 @@
 #include <cert.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "crypto/nss_util.h"
 #include "net/cert/x509_certificate.h"

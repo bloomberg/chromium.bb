@@ -9,6 +9,7 @@
 
 #include <list>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/disk_cache/blockfile/addr.h"
 #include "net/disk_cache/blockfile/mapped_file.h"

@@ -5,11 +5,12 @@
 #ifndef NET_TOOLS_FLIP_SERVER_OUTPUT_ORDERING_H_
 #define NET_TOOLS_FLIP_SERVER_OUTPUT_ORDERING_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/flip_server/constants.h"
@@ -22,7 +23,7 @@ class SMConnectionInterface;
 class OutputOrdering {
  public:
   typedef std::list<MemCacheIter> PriorityRing;
-  typedef std::map<uint32, PriorityRing> PriorityMap;
+  typedef std::map<uint32_t, PriorityRing> PriorityMap;
 
   struct PriorityMapPointer {
     PriorityMapPointer();
@@ -33,20 +34,20 @@ class OutputOrdering {
     EpollServer::AlarmRegToken alarm_token;
   };
 
-  typedef std::map<uint32, PriorityMapPointer> StreamIdToPriorityMap;
+  typedef std::map<uint32_t, PriorityMapPointer> StreamIdToPriorityMap;
 
   StreamIdToPriorityMap stream_ids_;
   PriorityMap priority_map_;
   PriorityRing first_data_senders_;
-  uint32 first_data_senders_threshold_;  // when you've passed this, you're no
-                                         // longer a first_data_sender...
+  uint32_t first_data_senders_threshold_;  // when you've passed this, you're no
+                                           // longer a first_data_sender...
   SMConnectionInterface* connection_;
   EpollServer* epoll_server_;
 
   explicit OutputOrdering(SMConnectionInterface* connection);
   ~OutputOrdering();
   void Reset();
-  bool ExistsInPriorityMaps(uint32 stream_id) const;
+  bool ExistsInPriorityMaps(uint32_t stream_id) const;
 
   struct BeginOutputtingAlarm : public EpollAlarmCallbackInterface {
    public:
@@ -56,7 +57,7 @@ class OutputOrdering {
     ~BeginOutputtingAlarm() override;
 
     // EpollAlarmCallbackInterface:
-    int64 OnAlarm() override;
+    int64_t OnAlarm() override;
     void OnRegistration(const EpollServer::AlarmRegToken& tok,
                         EpollServer* eps) override;
     void OnUnregistration() override;
@@ -73,7 +74,7 @@ class OutputOrdering {
   void AddToOutputOrder(const MemCacheIter& mci);
   void SpliceToPriorityRing(PriorityRing::iterator pri);
   MemCacheIter* GetIter();
-  void RemoveStreamId(uint32 stream_id);
+  void RemoveStreamId(uint32_t stream_id);
 
   static double server_think_time_in_s() { return server_think_time_in_s_; }
   static void set_server_think_time_in_s(double value) {

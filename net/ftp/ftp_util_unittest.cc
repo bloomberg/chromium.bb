@@ -4,7 +4,6 @@
 
 #include "net/ftp/ftp_util.h"
 
-#include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

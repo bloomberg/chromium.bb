@@ -7,6 +7,9 @@
 #ifndef NET_QUIC_QUIC_RELIABLE_CLIENT_STREAM_H_
 #define NET_QUIC_QUIC_RELIABLE_CLIENT_STREAM_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_request_info.h"

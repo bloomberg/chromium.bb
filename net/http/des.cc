@@ -56,7 +56,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 // Set odd parity bit (in least significant bit position).
-static uint8 DESSetKeyParity(uint8 x) {
+static uint8_t DESSetKeyParity(uint8_t x) {
   if ((((x >> 7) ^ (x >> 6) ^ (x >> 5) ^
         (x >> 4) ^ (x >> 3) ^ (x >> 2) ^
         (x >> 1)) & 0x01) == 0) {
@@ -69,7 +69,7 @@ static uint8 DESSetKeyParity(uint8 x) {
 
 namespace net {
 
-void DESMakeKey(const uint8* raw, uint8* key) {
+void DESMakeKey(const uint8_t* raw, uint8_t* key) {
   key[0] = DESSetKeyParity(raw[0]);
   key[1] = DESSetKeyParity((raw[0] << 7) | (raw[1] >> 1));
   key[2] = DESSetKeyParity((raw[1] << 6) | (raw[2] >> 2));
@@ -82,7 +82,7 @@ void DESMakeKey(const uint8* raw, uint8* key) {
 
 #if defined(USE_OPENSSL)
 
-void DESEncrypt(const uint8* key, const uint8* src, uint8* hash) {
+void DESEncrypt(const uint8_t* key, const uint8_t* src, uint8_t* hash) {
   crypto::EnsureOpenSSLInit();
 
   DES_key_schedule ks;
@@ -95,7 +95,7 @@ void DESEncrypt(const uint8* key, const uint8* src, uint8* hash) {
 
 #elif defined(OS_IOS)
 
-void DESEncrypt(const uint8* key, const uint8* src, uint8* hash) {
+void DESEncrypt(const uint8_t* key, const uint8_t* src, uint8_t* hash) {
   CCCryptorStatus status;
   size_t data_out_moved = 0;
   status = CCCrypt(kCCEncrypt, kCCAlgorithmDES, kCCOptionECBMode,

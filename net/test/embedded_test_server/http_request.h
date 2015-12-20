@@ -5,10 +5,12 @@
 #ifndef NET_TEST_EMBEDDED_TEST_SERVER_HTTP_REQUEST_H_
 #define NET_TEST_EMBEDDED_TEST_SERVER_HTTP_REQUEST_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "url/gurl.h"

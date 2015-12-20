@@ -194,9 +194,9 @@ TEST(CommonCertSets, FindGIA_1) {
 
   const CommonCertSets* sets(CommonCertSets::GetInstanceQUIC());
   // Common Cert Set 1's hash.
-  const uint64 in_hash = UINT64_C(0xff715ce4e7e9267b);
-  uint64 hash;
-  uint32 index;
+  const uint64_t in_hash = UINT64_C(0xff715ce4e7e9267b);
+  uint64_t hash;
+  uint32_t index;
   ASSERT_TRUE(sets->MatchCert(
       gia,
       StringPiece(reinterpret_cast<const char*>(&in_hash), sizeof(in_hash)),
@@ -215,9 +215,9 @@ TEST(CommonCertSets, FindGIA_2) {
 
   const CommonCertSets* sets(CommonCertSets::GetInstanceQUIC());
   // Common Cert Set 2's hash.
-  const uint64 in_hash = UINT64_C(0xe81a92926081e801);
-  uint64 hash;
-  uint32 index;
+  const uint64_t in_hash = UINT64_C(0xe81a92926081e801);
+  uint64_t hash;
+  uint32_t index;
   ASSERT_TRUE(sets->MatchCert(
       gia,
       StringPiece(reinterpret_cast<const char*>(&in_hash), sizeof(in_hash)),
@@ -233,9 +233,9 @@ TEST(CommonCertSets, FindGIA_2) {
 TEST(CommonCertSets, NonMatch) {
   const CommonCertSets* sets(CommonCertSets::GetInstanceQUIC());
   StringPiece not_a_cert("hello");
-  const uint64 in_hash = UINT64_C(0xc9fef74053f99f39);
-  uint64 hash;
-  uint32 index;
+  const uint64_t in_hash = UINT64_C(0xc9fef74053f99f39);
+  uint64_t hash;
+  uint32_t index;
   EXPECT_FALSE(sets->MatchCert(
       not_a_cert,
       StringPiece(reinterpret_cast<const char*>(&in_hash), sizeof(in_hash)),

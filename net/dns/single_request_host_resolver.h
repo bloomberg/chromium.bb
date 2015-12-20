@@ -5,8 +5,7 @@
 #ifndef NET_DNS_SINGLE_REQUEST_HOST_RESOLVER_H_
 #define NET_DNS_SINGLE_REQUEST_HOST_RESOLVER_H_
 
-#include "base/basictypes.h"
-
+#include "base/macros.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"

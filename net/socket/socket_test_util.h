@@ -5,6 +5,7 @@
 #ifndef NET_SOCKET_SOCKET_TEST_UTIL_H_
 #define NET_SOCKET_SOCKET_TEST_UTIL_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <cstring>
@@ -12,9 +13,9 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -517,14 +518,14 @@ class MockClientSocketFactory : public ClientSocketFactory {
       const SSLClientSocketContext& context) override;
   void ClearSSLSessionCache() override;
 
-  const std::vector<uint16>& udp_client_socket_ports() const {
+  const std::vector<uint16_t>& udp_client_socket_ports() const {
     return udp_client_socket_ports_;
   }
 
  private:
   SocketDataProviderArray<SocketDataProvider> mock_data_;
   SocketDataProviderArray<SSLSocketDataProvider> mock_ssl_data_;
-  std::vector<uint16> udp_client_socket_ports_;
+  std::vector<uint16_t> udp_client_socket_ports_;
 
   DISALLOW_COPY_AND_ASSIGN(MockClientSocketFactory);
 };
@@ -545,8 +546,8 @@ class MockClientSocket : public SSLClientSocket {
   int Write(IOBuffer* buf,
             int buf_len,
             const CompletionCallback& callback) override = 0;
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
+  int SetReceiveBufferSize(int32_t size) override;
+  int SetSendBufferSize(int32_t size) override;
 
   // StreamSocket implementation.
   int Connect(const CompletionCallback& callback) override = 0;
@@ -723,8 +724,8 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   int Write(IOBuffer* buf,
             int buf_len,
             const CompletionCallback& callback) override;
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
+  int SetReceiveBufferSize(int32_t size) override;
+  int SetSendBufferSize(int32_t size) override;
 
   // DatagramSocket implementation.
   void Close() override;
@@ -744,8 +745,8 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   void OnConnectComplete(const MockConnect& data) override;
   void OnDataProviderDestroyed() override;
 
-  void set_source_port(uint16 port) { source_port_ = port;}
-  uint16 source_port() const { return source_port_; }
+  void set_source_port(uint16_t port) { source_port_ = port; }
+  uint16_t source_port() const { return source_port_; }
 
  private:
   int CompleteRead();
@@ -758,7 +759,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   int read_offset_;
   MockRead read_data_;
   bool need_read_data_;
-  uint16 source_port_;  // Ephemeral source port.
+  uint16_t source_port_;  // Ephemeral source port.
 
   // Address of the "remote" peer we're connected to.
   IPEndPoint peer_addr_;

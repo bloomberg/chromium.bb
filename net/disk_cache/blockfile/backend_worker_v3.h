@@ -9,6 +9,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/disk_cache/blockfile/addr.h"
 #include "net/disk_cache/blockfile/backend_impl_v3.h"

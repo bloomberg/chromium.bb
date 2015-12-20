@@ -145,7 +145,7 @@ bool ParseFtpDirectoryListingLs(
       // Some FTP servers incorrectly return a negative integer for "n". Since
       // this value is ignored anyway, just check any valid integer was
       // provided.
-      int64 total_number;
+      int64_t total_number;
       if (!base::StringToInt64(columns[1], &total_number))
         return false;
 

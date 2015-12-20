@@ -5,6 +5,9 @@
 #ifndef NET_TOOLS_FLIP_SERVER_SPDY_INTERFACE_H_
 #define NET_TOOLS_FLIP_SERVER_SPDY_INTERFACE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -35,7 +38,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   ~SpdySM() override;
 
   void InitSMInterface(SMInterface* sm_http_interface,
-                       int32 server_idx) override {}
+                       int32_t server_idx) override {}
 
   void InitSMConnection(SMConnectionPoolInterface* connection_pool,
                         SMInterface* sm_interface,
@@ -129,7 +132,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
 
   // Called when an individual setting within a SETTINGS frame has been parsed
   // and validated.
-  void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override {}
+  void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) override {}
 
   // Called when a PING frame has been parsed.
   void OnPing(SpdyPingId unique_id, bool is_ack) override {}
@@ -156,11 +159,11 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   size_t ProcessReadInput(const char* data, size_t len) override;
   size_t ProcessWriteInput(const char* data, size_t len) override;
   bool MessageFullyRead() const override;
-  void SetStreamID(uint32 stream_id) override {}
+  void SetStreamID(uint32_t stream_id) override {}
   bool Error() const override;
   const char* ErrorAsString() const override;
   void Reset() override {}
-  void ResetForNewInterface(int32 server_idx) override;
+  void ResetForNewInterface(int32_t server_idx) override;
   void ResetForNewConnection() override;
   // SMInterface's Cleanup is currently only called by SMConnection after a
   // protocol message as been fully read. Spdy's SMInterface does not need
@@ -170,18 +173,19 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   void Cleanup() override {}
   // Send a settings frame
   int PostAcceptHook() override;
-  void NewStream(uint32 stream_id,
-                 uint32 priority,
+  void NewStream(uint32_t stream_id,
+                 uint32_t priority,
                  const std::string& filename) override;
   void AddToOutputOrder(const MemCacheIter& mci);
-  void SendEOF(uint32 stream_id) override;
-  void SendErrorNotFound(uint32 stream_id) override;
-  size_t SendSynStream(uint32 stream_id, const BalsaHeaders& headers) override;
-  size_t SendSynReply(uint32 stream_id, const BalsaHeaders& headers) override;
-  void SendDataFrame(uint32 stream_id,
+  void SendEOF(uint32_t stream_id) override;
+  void SendErrorNotFound(uint32_t stream_id) override;
+  size_t SendSynStream(uint32_t stream_id,
+                       const BalsaHeaders& headers) override;
+  size_t SendSynReply(uint32_t stream_id, const BalsaHeaders& headers) override;
+  void SendDataFrame(uint32_t stream_id,
                      const char* data,
-                     int64 len,
-                     uint32 flags,
+                     int64_t len,
+                     uint32_t flags,
                      bool compress) override;
   BufferedSpdyFramer* spdy_framer() { return buffered_spdy_framer_.get(); }
 
@@ -199,15 +203,15 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   }
 
  private:
-  void SendEOFImpl(uint32 stream_id);
-  void SendErrorNotFoundImpl(uint32 stream_id);
-  void KillStream(uint32 stream_id);
+  void SendEOFImpl(uint32_t stream_id);
+  void SendErrorNotFoundImpl(uint32_t stream_id);
+  void KillStream(uint32_t stream_id);
   void CopyHeaders(SpdyHeaderBlock& dest, const BalsaHeaders& headers);
-  size_t SendSynStreamImpl(uint32 stream_id, const BalsaHeaders& headers);
-  size_t SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers);
-  void SendDataFrameImpl(uint32 stream_id,
+  size_t SendSynStreamImpl(uint32_t stream_id, const BalsaHeaders& headers);
+  size_t SendSynReplyImpl(uint32_t stream_id, const BalsaHeaders& headers);
+  void SendDataFrameImpl(uint32_t stream_id,
                          const char* data,
-                         int64 len,
+                         int64_t len,
                          SpdyDataFlags flags,
                          bool compress);
   void EnqueueDataFrame(DataFrame* df);
@@ -222,13 +226,13 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   SMConnection* connection_;
   OutputList* client_output_list_;
   OutputOrdering client_output_ordering_;
-  uint32 next_outgoing_stream_id_;
+  uint32_t next_outgoing_stream_id_;
   EpollServer* epoll_server_;
   FlipAcceptor* acceptor_;
   MemoryCache* memory_cache_;
   std::vector<SMInterface*> server_interface_list;
-  std::vector<int32> unused_server_interface_list;
-  typedef std::map<uint32, SMInterface*> StreamToSmif;
+  std::vector<int32_t> unused_server_interface_list;
+  typedef std::map<uint32_t, SMInterface*> StreamToSmif;
   StreamToSmif stream_to_smif_;
   bool close_on_error_;
 

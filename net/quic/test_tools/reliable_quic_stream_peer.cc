@@ -67,8 +67,8 @@ bool ReliableQuicStreamPeer::WriteSideClosed(ReliableQuicStream* stream) {
 }
 
 // static
-uint32 ReliableQuicStreamPeer::SizeOfQueuedData(ReliableQuicStream* stream) {
-  uint32 total = 0;
+uint32_t ReliableQuicStreamPeer::SizeOfQueuedData(ReliableQuicStream* stream) {
+  uint32_t total = 0;
   std::list<ReliableQuicStream::PendingData>::iterator it =
       stream->queued_data_.begin();
   while (it != stream->queued_data_.end()) {

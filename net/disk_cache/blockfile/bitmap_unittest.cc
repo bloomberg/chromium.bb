@@ -24,7 +24,7 @@ TEST(BitmapTest, DefaultConstructor) {
 
 TEST(BitmapTest, Basics) {
   disk_cache::Bitmap bitmap(80, true);
-  const uint32 kValue = 0x74f10060;
+  const uint32_t kValue = 0x74f10060;
 
   // Test proper allocation size.
   EXPECT_EQ(80, bitmap.Size());
@@ -94,7 +94,7 @@ TEST(BitmapTest, Map) {
     local_map[i] = static_cast<char>(i);
 
   disk_cache::Bitmap bitmap(kMapSize * 8, false);
-  bitmap.SetMap(reinterpret_cast<uint32*>(local_map), kMapSize / 4);
+  bitmap.SetMap(reinterpret_cast<uint32_t*>(local_map), kMapSize / 4);
   for (int i = 0; i < kMapSize; i++) {
     if (i % 2)
       EXPECT_TRUE(bitmap.Get(i * 8));
@@ -105,7 +105,7 @@ TEST(BitmapTest, Map) {
   EXPECT_EQ(0, memcmp(local_map, bitmap.GetMap(), kMapSize));
 
   // Now let's create a bitmap that shares local_map as storage.
-  disk_cache::Bitmap bitmap2(reinterpret_cast<uint32*>(local_map),
+  disk_cache::Bitmap bitmap2(reinterpret_cast<uint32_t*>(local_map),
                              kMapSize * 8, kMapSize / 4);
   EXPECT_EQ(0, memcmp(local_map, bitmap2.GetMap(), kMapSize));
 

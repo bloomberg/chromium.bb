@@ -5,9 +5,12 @@
 #ifndef NET_DNS_HOST_RESOLVER_IMPL_H_
 #define NET_DNS_HOST_RESOLVER_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -92,7 +95,7 @@ class NET_EXPORT HostResolverImpl
     base::TimeDelta unresponsive_delay;
 
     // Factor to grow |unresponsive_delay| when we re-re-try.
-    uint32 retry_factor;
+    uint32_t retry_factor;
   };
 
   // Creates a HostResolver as specified by |options|.

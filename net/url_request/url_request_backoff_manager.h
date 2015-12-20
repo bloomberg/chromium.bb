@@ -5,10 +5,12 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_BACKOFF_MANAGER_H_
 #define NET_URL_REQUEST_URL_REQUEST_BACKOFF_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -40,11 +42,11 @@ class NET_EXPORT URLRequestBackoffManager
       public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   // Minimum number of seconds that a Backoff header can specify.
-  static const uint16 kMinimumBackoffInSeconds;
+  static const uint16_t kMinimumBackoffInSeconds;
   // Maximum number of seconds that a Backoff header can specify.
-  static const uint16 kMaximumBackoffInSeconds;
+  static const uint16_t kMaximumBackoffInSeconds;
   // Number of throttled requests that will be made between garbage collection.
-  static const uint16 kNewEntriesBetweenCollecting;
+  static const uint16_t kNewEntriesBetweenCollecting;
 
   URLRequestBackoffManager();
   ~URLRequestBackoffManager() override;

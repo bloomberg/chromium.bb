@@ -12,7 +12,7 @@ FakeTimeEpollServer::FakeTimeEpollServer() : now_in_usec_(0) {}
 
 FakeTimeEpollServer::~FakeTimeEpollServer() {}
 
-int64 FakeTimeEpollServer::NowInUsec() const {
+int64_t FakeTimeEpollServer::NowInUsec() const {
   return now_in_usec_;
 }
 
@@ -29,7 +29,7 @@ int MockEpollServer::epoll_wait_impl(int epfd,
          event_queue_.begin()->first <= NowInUsec() &&
          ((until_in_usec_ == -1) ||
           (event_queue_.begin()->first < until_in_usec_))) {
-    int64 event_time_in_usec = event_queue_.begin()->first;
+    int64_t event_time_in_usec = event_queue_.begin()->first;
     events[num_events] = event_queue_.begin()->second;
     if (event_time_in_usec > NowInUsec()) {
       set_now_in_usec(event_time_in_usec);

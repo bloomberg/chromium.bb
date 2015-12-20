@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "net/base/net_export.h"

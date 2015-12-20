@@ -5,6 +5,7 @@
 #include "net/url_request/test_url_request_interceptor.h"
 
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/url_request/url_request.h"

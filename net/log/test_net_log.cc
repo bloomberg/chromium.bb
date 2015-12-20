@@ -4,6 +4,7 @@
 
 #include "net/log/test_net_log.h"
 
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 

@@ -7,6 +7,7 @@
 
 #include "net/tools/quic/quic_dispatcher.h"
 
+#include "base/macros.h"
 #include "net/base/ip_endpoint.h"
 
 namespace net {

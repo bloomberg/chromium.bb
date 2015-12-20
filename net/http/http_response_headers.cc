@@ -361,10 +361,9 @@ void HttpResponseHeaders::ReplaceStatusLine(const std::string& new_status) {
   MergeWithHeaders(new_raw_headers, empty_to_remove);
 }
 
-void HttpResponseHeaders::UpdateWithNewRange(
-    const HttpByteRange& byte_range,
-    int64 resource_size,
-    bool replace_status_line) {
+void HttpResponseHeaders::UpdateWithNewRange(const HttpByteRange& byte_range,
+                                             int64_t resource_size,
+                                             bool replace_status_line) {
   DCHECK(byte_range.IsValid());
   DCHECK(byte_range.HasFirstBytePosition());
   DCHECK(byte_range.HasLastBytePosition());
@@ -375,9 +374,9 @@ void HttpResponseHeaders::UpdateWithNewRange(
   RemoveHeader(kLengthHeader);
   RemoveHeader(kRangeHeader);
 
-  int64 start = byte_range.first_byte_position();
-  int64 end = byte_range.last_byte_position();
-  int64 range_len = end - start + 1;
+  int64_t start = byte_range.first_byte_position();
+  int64_t end = byte_range.last_byte_position();
+  int64_t range_len = end - start + 1;
 
   if (replace_status_line)
     ReplaceStatusLine("HTTP/1.1 206 Partial Content");
@@ -659,8 +658,8 @@ HttpVersion HttpResponseHeaders::ParseVersion(
     return HttpVersion();
   }
 
-  uint16 major = *p - '0';
-  uint16 minor = *dot - '0';
+  uint16_t major = *p - '0';
+  uint16_t minor = *dot - '0';
 
   return HttpVersion(major, minor);
 }
@@ -763,7 +762,7 @@ bool HttpResponseHeaders::GetCacheControlDirective(const StringPiece& directive,
         base::StartsWith(value, directive,
                          base::CompareCase::INSENSITIVE_ASCII) &&
         value[directive_size] == '=') {
-      int64 seconds;
+      int64_t seconds;
       base::StringToInt64(
           StringPiece(value.begin() + directive_size + 1, value.end()),
           &seconds);
@@ -1155,7 +1154,7 @@ bool HttpResponseHeaders::GetAgeValue(TimeDelta* result) const {
   if (!EnumerateHeader(NULL, "Age", &value))
     return false;
 
-  int64 seconds;
+  int64_t seconds;
   base::StringToInt64(value, &seconds);
   *result = TimeDelta::FromSeconds(seconds);
   return true;
@@ -1250,11 +1249,11 @@ bool HttpResponseHeaders::HasStrongValidators() const {
 
 // From RFC 2616:
 // Content-Length = "Content-Length" ":" 1*DIGIT
-int64 HttpResponseHeaders::GetContentLength() const {
+int64_t HttpResponseHeaders::GetContentLength() const {
   return GetInt64HeaderValue("content-length");
 }
 
-int64 HttpResponseHeaders::GetInt64HeaderValue(
+int64_t HttpResponseHeaders::GetInt64HeaderValue(
     const std::string& header) const {
   void* iter = NULL;
   std::string content_length_val;
@@ -1267,7 +1266,7 @@ int64 HttpResponseHeaders::GetInt64HeaderValue(
   if (content_length_val[0] == '+')
     return -1;
 
-  int64 result;
+  int64_t result;
   bool ok = base::StringToInt64(content_length_val, &result);
   if (!ok || result < 0)
     return -1;
@@ -1281,9 +1280,9 @@ int64 HttpResponseHeaders::GetInt64HeaderValue(
 // byte-range-resp-spec = (first-byte-pos "-" last-byte-pos) | "*"
 // instance-length = 1*DIGIT
 // bytes-unit = "bytes"
-bool HttpResponseHeaders::GetContentRange(int64* first_byte_position,
-                                          int64* last_byte_position,
-                                          int64* instance_length) const {
+bool HttpResponseHeaders::GetContentRange(int64_t* first_byte_position,
+                                          int64_t* last_byte_position,
+                                          int64_t* instance_length) const {
   void* iter = NULL;
   std::string content_range_spec;
   *first_byte_position = *last_byte_position = *instance_length = -1;

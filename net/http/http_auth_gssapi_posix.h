@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/native_library.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"

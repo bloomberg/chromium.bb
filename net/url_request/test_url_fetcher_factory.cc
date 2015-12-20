@@ -72,8 +72,8 @@ void TestURLFetcher::SetUploadData(const std::string& upload_content_type,
 void TestURLFetcher::SetUploadFilePath(
     const std::string& upload_content_type,
     const base::FilePath& file_path,
-    uint64 range_offset,
-    uint64 range_length,
+    uint64_t range_offset,
+    uint64_t range_length,
     scoped_refptr<base::TaskRunner> file_task_runner) {
   upload_file_path_ = file_path;
 }

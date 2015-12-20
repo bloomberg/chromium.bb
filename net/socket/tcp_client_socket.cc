@@ -292,11 +292,11 @@ int TCPClientSocket::Write(IOBuffer* buf,
   return result;
 }
 
-int TCPClientSocket::SetReceiveBufferSize(int32 size) {
+int TCPClientSocket::SetReceiveBufferSize(int32_t size) {
   return socket_->SetReceiveBufferSize(size);
 }
 
-int TCPClientSocket::SetSendBufferSize(int32 size) {
+int TCPClientSocket::SetSendBufferSize(int32_t size) {
     return socket_->SetSendBufferSize(size);
 }
 

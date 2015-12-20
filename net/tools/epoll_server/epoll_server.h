@@ -6,7 +6,10 @@
 #define NET_TOOLS_EPOLL_SERVER_EPOLL_SERVER_H_
 
 #include <fcntl.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/queue.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -30,9 +33,9 @@
 #include "base/logging.h"
 #endif
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include <sys/epoll.h>
 
@@ -120,7 +123,7 @@ class EpollServer {
   typedef EpollAlarmCallbackInterface AlarmCB;
   typedef EpollCallbackInterface CB;
 
-  typedef std::multimap<int64, AlarmCB*> TimeToAlarmCBMap;
+  typedef std::multimap<int64_t, AlarmCB*> TimeToAlarmCBMap;
   typedef TimeToAlarmCBMap::iterator AlarmRegToken;
 
   // Summary:
@@ -359,7 +362,7 @@ class EpollServer {
   // Args:
   //   timeout_time_in_us - the absolute time at which the alarm should go off
   //   ac - the alarm which will be called.
-  virtual void RegisterAlarm(int64 timeout_time_in_us, AlarmCB* ac);
+  virtual void RegisterAlarm(int64_t timeout_time_in_us, AlarmCB* ac);
 
   // Summary:
   //   Registers an alarm 'ac' to go off at time: (ApproximateNowInUs() +
@@ -381,7 +384,7 @@ class EpollServer {
   //   delta_in_us - the delta in microseconds from the ApproximateTimeInUs() at
   //                 which point the alarm should go off.
   //   ac - the alarm which will be called.
-  void RegisterAlarmApproximateDelta(int64 delta_in_us, AlarmCB* ac) {
+  void RegisterAlarmApproximateDelta(int64_t delta_in_us, AlarmCB* ac) {
     RegisterAlarm(ApproximateNowInUsec() + delta_in_us, ac);
   }
 
@@ -414,7 +417,7 @@ class EpollServer {
   //   that would ensue)
   // Returns:
   //   the current time as number of microseconds since the Unix epoch.
-  virtual int64 NowInUsec() const;
+  virtual int64_t NowInUsec() const;
 
   // Summary:
   //   Since calling NowInUsec() many thousands of times per
@@ -437,7 +440,7 @@ class EpollServer {
   // Returns:
   //   the "approximate" current time as number of microseconds since the Unix
   //   epoch.
-  virtual int64 ApproximateNowInUsec() const;
+  virtual int64_t ApproximateNowInUsec() const;
 
   static std::string EventMaskToString(int event_mask);
 
@@ -459,7 +462,7 @@ class EpollServer {
   //  Args:
   //    timeout_in_us - value specified depending on behaviour desired.
   //                    See above.
-  void set_timeout_in_us(int64 timeout_in_us) {
+  void set_timeout_in_us(int64_t timeout_in_us) {
     timeout_in_us_ = timeout_in_us;
   }
 
@@ -622,11 +625,9 @@ class EpollServer {
   //   another callback (A) has closed a file-descriptor N, and
   //   the callback (B) has a newly opened file-descriptor, which
   //   also happens to be N.
-  virtual void WaitForEventsAndCallHandleEvents(int64 timeout_in_us,
+  virtual void WaitForEventsAndCallHandleEvents(int64_t timeout_in_us,
                                                 struct epoll_event events[],
                                                 int events_size);
-
-
 
   // Summary:
   //   An internal function for implementing the ready list. It adds a fd's
@@ -673,14 +674,14 @@ class EpollServer {
   // If this is positive, wait that many microseconds.
   // If this is negative, wait forever, or for the first event that occurs
   // If this is zero, never wait for an event.
-  int64 timeout_in_us_;
+  int64_t timeout_in_us_;
 
   // This is nonzero only after the invocation of epoll_wait_impl within
   // WaitForEventsAndCallHandleEvents and before the function
   // WaitForEventsAndExecuteCallbacks returns.  At all other times, this is
   // zero. This enables us to have relatively accurate time returned from the
   // ApproximateNowInUs() function. See that function for more details.
-  int64 recorded_now_in_us_;
+  int64_t recorded_now_in_us_;
 
   // This is used to implement CallAndReregisterAlarmEvents. This stores
   // all alarms that were reregistered because OnAlarm() returned a
@@ -717,7 +718,7 @@ class EpollServer {
     // Note that the definition of an 'event' is a bit 'hazy',
     // as it includes the 'Unregistration' event, and perhaps
     // others.
-    void set_record_threshold(int64 new_threshold) {
+    void set_record_threshold(int64_t new_threshold) {
       record_threshold_ = new_threshold;
     }
 
@@ -916,8 +917,8 @@ class EpollServer {
     std::vector<Events> unregistered_fds_;
     typedef base::hash_map<int, Events> EventCountsMap;
     EventCountsMap event_counts_;
-    int64 num_records_;
-    int64 record_threshold_;
+    int64_t num_records_;
+    int64_t record_threshold_;
   };
 
   void ClearEventRecords() {
@@ -968,7 +969,7 @@ class EpollAlarmCallbackInterface {
   // Returns:
   //   the unix time (in microseconds) at which this alarm should be signaled
   //   again, or 0 if the alarm should be removed.
-  virtual int64 OnAlarm() = 0;
+  virtual int64_t OnAlarm() = 0;
 
   // Summary:
   //   Called when the an alarm is registered. Invalidates an AlarmRegToken.
@@ -1012,7 +1013,7 @@ class EpollAlarm : public EpollAlarmCallbackInterface {
 
   // Marks the alarm as unregistered and returns 0.  The return value may be
   // safely ignored by subclasses.
-  int64 OnAlarm() override;
+  int64_t OnAlarm() override;
 
   // Marks the alarm as registered, and stores the token.
   void OnRegistration(const EpollServer::AlarmRegToken& token,

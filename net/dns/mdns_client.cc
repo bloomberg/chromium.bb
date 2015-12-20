@@ -27,7 +27,7 @@ IPEndPoint GetMDnsIPEndPoint(const char* address) {
 }
 
 int Bind(const IPEndPoint& multicast_addr,
-         uint32 interface_index,
+         uint32_t interface_index,
          DatagramServerSocket* socket) {
   IPAddressNumber address_any(multicast_addr.address().size());
   IPEndPoint bind_endpoint(address_any, multicast_addr.port());
@@ -87,7 +87,7 @@ InterfaceIndexFamilyList GetMDnsInterfacesToBind() {
 
 scoped_ptr<DatagramServerSocket> CreateAndBindMDnsSocket(
     AddressFamily address_family,
-    uint32 interface_index) {
+    uint32_t interface_index) {
   scoped_ptr<DatagramServerSocket> socket(
       new UDPServerSocket(NULL, NetLog::Source()));
 

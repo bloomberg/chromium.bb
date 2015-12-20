@@ -8,8 +8,11 @@
 #ifndef NET_QUIC_QUIC_RECEIVED_PACKET_MANAGER_H_
 #define NET_QUIC_QUIC_RECEIVED_PACKET_MANAGER_H_
 
+#include <stddef.h>
+
 #include <deque>
 
+#include "base/macros.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"

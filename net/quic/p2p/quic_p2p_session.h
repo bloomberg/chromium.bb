@@ -5,7 +5,7 @@
 #ifndef NET_QUIC_P2P_QUIC_P2P_SESSION_H_
 #define NET_QUIC_P2P_QUIC_P2P_SESSION_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/p2p/quic_p2p_stream.h"

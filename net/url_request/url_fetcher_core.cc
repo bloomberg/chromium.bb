@@ -155,8 +155,8 @@ void URLFetcherCore::SetUploadData(const std::string& upload_content_type,
 void URLFetcherCore::SetUploadFilePath(
     const std::string& upload_content_type,
     const base::FilePath& file_path,
-    uint64 range_offset,
-    uint64 range_length,
+    uint64_t range_offset,
+    uint64_t range_length,
     scoped_refptr<base::TaskRunner> file_task_runner) {
   AssertHasNoUploadData();
   DCHECK(!is_chunked_upload_);
@@ -659,7 +659,7 @@ void URLFetcherCore::StartURLRequestWhenAppropriate() {
     }
 
     if (original_url_throttler_entry_.get()) {
-      int64 delay =
+      int64_t delay =
           original_url_throttler_entry_->ReserveSendingTimeForNextRequest(
               GetBackoffReleaseTime());
       if (delay != 0) {
@@ -899,12 +899,12 @@ void URLFetcherCore::ReadResponse() {
 void URLFetcherCore::InformDelegateUploadProgress() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   if (request_.get()) {
-    int64 current = request_->GetUploadProgress().position();
+    int64_t current = request_->GetUploadProgress().position();
     if (current_upload_bytes_ != current) {
       current_upload_bytes_ = current;
-      int64 total = -1;
+      int64_t total = -1;
       if (!is_chunked_upload_) {
-        total = static_cast<int64>(request_->GetUploadProgress().size());
+        total = static_cast<int64_t>(request_->GetUploadProgress().size());
         // Total may be zero if the UploadDataStream::Init has not been called
         // yet. Don't send the upload progress until the size is initialized.
         if (!total)
@@ -920,7 +920,8 @@ void URLFetcherCore::InformDelegateUploadProgress() {
 }
 
 void URLFetcherCore::InformDelegateUploadProgressInDelegateThread(
-    int64 current, int64 total) {
+    int64_t current,
+    int64_t total) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnURLFetchUploadProgress(fetcher_, current, total);
@@ -942,7 +943,8 @@ void URLFetcherCore::InformDelegateDownloadProgress() {
 }
 
 void URLFetcherCore::InformDelegateDownloadProgressInDelegateThread(
-    int64 current, int64 total) {
+    int64_t current,
+    int64_t total) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnURLFetchDownloadProgress(fetcher_, current, total);

@@ -6,6 +6,7 @@
 #define NET_WEBSOCKETS_WEBSOCKET_TEST_UTIL_H_
 
 #include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

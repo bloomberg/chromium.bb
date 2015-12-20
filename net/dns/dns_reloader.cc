@@ -9,9 +9,9 @@
 
 #include <resolv.h>
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local_storage.h"

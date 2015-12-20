@@ -5,6 +5,9 @@
 #ifndef NET_TOOLS_BALSA_BALSA_FRAME_H_
 #define NET_TOOLS_BALSA_BALSA_FRAME_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
@@ -34,16 +37,10 @@ class BalsaFrame {
   // TODO(fenix): get rid of the 'kValidTerm*' stuff by using the 'since last
   // index' strategy.  Note that this implies getting rid of the HeaderFramed()
 
-  static const uint32 kValidTerm1  = '\n' << 16 |
-                                     '\r' <<  8 |
-                                     '\n';
-  static const uint32 kValidTerm1Mask = 0xFF << 16 |
-                                        0xFF <<  8 |
-                                        0xFF;
-  static const uint32 kValidTerm2      = '\n' << 8 |
-                                         '\n';
-  static const uint32 kValidTerm2Mask = 0xFF << 8 |
-                                        0xFF;
+  static const uint32_t kValidTerm1 = '\n' << 16 | '\r' << 8 | '\n';
+  static const uint32_t kValidTerm1Mask = 0xFF << 16 | 0xFF << 8 | 0xFF;
+  static const uint32_t kValidTerm2 = '\n' << 8 | '\n';
+  static const uint32_t kValidTerm2Mask = 0xFF << 8 | 0xFF;
   BalsaFrame();
   ~BalsaFrame();
 
@@ -245,7 +242,7 @@ class BalsaFrame {
   const char* last_slash_n_loc_;
   const char* last_recorded_slash_n_loc_;
   size_t last_slash_n_idx_;
-  uint32 term_chars_;
+  uint32_t term_chars_;
   BalsaFrameEnums::ParseState parse_state_;
   BalsaFrameEnums::ErrorCode last_error_;
 

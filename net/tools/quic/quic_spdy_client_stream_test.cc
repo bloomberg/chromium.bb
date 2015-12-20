@@ -4,6 +4,7 @@
 
 #include "net/tools/quic/quic_spdy_client_stream.h"
 
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"

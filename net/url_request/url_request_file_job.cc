@@ -184,8 +184,7 @@ void URLRequestFileJob::SetExtraRequestHeaders(
   }
 }
 
-void URLRequestFileJob::OnSeekComplete(int64 result) {
-}
+void URLRequestFileJob::OnSeekComplete(int64_t result) {}
 
 void URLRequestFileJob::OnReadComplete(IOBuffer* buf, int result) {
 }
@@ -276,7 +275,7 @@ void URLRequestFileJob::DidOpen(int result) {
   }
 }
 
-void URLRequestFileJob::DidSeek(int64 result) {
+void URLRequestFileJob::DidSeek(int64_t result) {
   OnSeekComplete(result);
   if (result != byte_range_.first_byte_position()) {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED,

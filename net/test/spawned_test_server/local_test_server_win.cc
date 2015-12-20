@@ -41,8 +41,10 @@ void UnblockPipe(HANDLE handle, DWORD size, bool* unblocked) {
 // Given a file handle, reads into |buffer| until |bytes_max| bytes
 // has been read or an error has been encountered.  Returns
 // true if the read was successful.
-bool ReadData(HANDLE read_fd, HANDLE write_fd,
-              DWORD bytes_max, uint8* buffer) {
+bool ReadData(HANDLE read_fd,
+              HANDLE write_fd,
+              DWORD bytes_max,
+              uint8_t* buffer) {
   base::Thread thread("test_server_watcher");
   if (!thread.Start())
     return false;
@@ -138,15 +140,15 @@ bool LocalTestServer::WaitToStart() {
   base::win::ScopedHandle read_fd(child_read_fd_.Take());
   base::win::ScopedHandle write_fd(child_write_fd_.Take());
 
-  uint32 server_data_len = 0;
+  uint32_t server_data_len = 0;
   if (!ReadData(read_fd.Get(), write_fd.Get(), sizeof(server_data_len),
-                reinterpret_cast<uint8*>(&server_data_len))) {
+                reinterpret_cast<uint8_t*>(&server_data_len))) {
     LOG(ERROR) << "Could not read server_data_len";
     return false;
   }
   std::string server_data(server_data_len, '\0');
   if (!ReadData(read_fd.Get(), write_fd.Get(), server_data_len,
-                reinterpret_cast<uint8*>(&server_data[0]))) {
+                reinterpret_cast<uint8_t*>(&server_data[0]))) {
     LOG(ERROR) << "Could not read server_data (" << server_data_len
                << " bytes)";
     return false;

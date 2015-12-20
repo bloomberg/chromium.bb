@@ -5,11 +5,13 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_SPARSE_CONTROL_H_
 #define NET_DISK_CACHE_BLOCKFILE_SPARSE_CONTROL_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "net/base/completion_callback.h"
 #include "net/disk_cache/blockfile/bitmap.h"
 #include "net/disk_cache/blockfile/disk_format.h"
@@ -59,11 +61,14 @@ class SparseControl {
   // to use for asynchronous operations. See the description of the Read /
   // WriteSparseData for details about the arguments. The return value is the
   // number of bytes read or written, or a net error code.
-  int StartIO(SparseOperation op, int64 offset, net::IOBuffer* buf,
-              int buf_len, const CompletionCallback& callback);
+  int StartIO(SparseOperation op,
+              int64_t offset,
+              net::IOBuffer* buf,
+              int buf_len,
+              const CompletionCallback& callback);
 
   // Implements Entry::GetAvailableRange().
-  int GetAvailableRange(int64 offset, int len, int64* start);
+  int GetAvailableRange(int64_t offset, int len, int64_t* start);
 
   // Cancels the current sparse operation (if any).
   void CancelIO();
@@ -162,7 +167,7 @@ class SparseControl {
 
   CompletionCallback user_callback_;
   std::vector<CompletionCallback> abort_callbacks_;
-  int64 offset_;  // Current sparse offset.
+  int64_t offset_;  // Current sparse offset.
   scoped_refptr<net::DrainableIOBuffer> user_buf_;
   int buf_len_;  // Bytes to read or write.
   int child_offset_;  // Offset to use for the current child.

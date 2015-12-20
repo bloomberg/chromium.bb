@@ -13,9 +13,9 @@ namespace net {
 
 LocalStrikeRegisterClient::LocalStrikeRegisterClient(
     unsigned max_entries,
-    uint32 current_time_external,
-    uint32 window_secs,
-    const uint8 orbit[8],
+    uint32_t current_time_external,
+    uint32_t window_secs,
+    const uint8_t orbit[8],
     StrikeRegister::StartupType startup)
     : strike_register_(max_entries,
                        current_time_external,
@@ -41,8 +41,8 @@ void LocalStrikeRegisterClient::VerifyNonceIsValidAndUnique(
   } else {
     base::AutoLock lock(m_);
     nonce_error =
-        strike_register_.Insert(reinterpret_cast<const uint8*>(nonce.data()),
-                                static_cast<uint32>(now.ToUNIXSeconds()));
+        strike_register_.Insert(reinterpret_cast<const uint8_t*>(nonce.data()),
+                                static_cast<uint32_t>(now.ToUNIXSeconds()));
   }
 
   // m_ must not be held when the ResultCallback runs.

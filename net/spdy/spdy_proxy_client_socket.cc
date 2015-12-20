@@ -244,13 +244,13 @@ int SpdyProxyClientSocket::Write(IOBuffer* buf, int buf_len,
   return ERR_IO_PENDING;
 }
 
-int SpdyProxyClientSocket::SetReceiveBufferSize(int32 size) {
+int SpdyProxyClientSocket::SetReceiveBufferSize(int32_t size) {
   // Since this StreamSocket sits on top of a shared SpdySession, it
   // is not safe for callers to change this underlying socket.
   return ERR_NOT_IMPLEMENTED;
 }
 
-int SpdyProxyClientSocket::SetSendBufferSize(int32 size) {
+int SpdyProxyClientSocket::SetSendBufferSize(int32_t size) {
   // Since this StreamSocket sits on top of a shared SpdySession, it
   // is not safe for callers to change this underlying socket.
   return ERR_NOT_IMPLEMENTED;

@@ -5,10 +5,11 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
@@ -42,13 +43,13 @@ struct SimpleIndexLoadResult;
 class NET_EXPORT_PRIVATE EntryMetadata {
  public:
   EntryMetadata();
-  EntryMetadata(base::Time last_used_time, uint64 entry_size);
+  EntryMetadata(base::Time last_used_time, uint64_t entry_size);
 
   base::Time GetLastUsedTime() const;
   void SetLastUsedTime(const base::Time& last_used_time);
 
-  uint64 GetEntrySize() const;
-  void SetEntrySize(uint64 entry_size);
+  uint64_t GetEntrySize() const;
+  void SetEntrySize(uint64_t entry_size);
 
   // Serialize the data into the provided pickle.
   void Serialize(base::Pickle* pickle) const;
@@ -68,8 +69,8 @@ class NET_EXPORT_PRIVATE EntryMetadata {
   // size of each entry matters.  Even when the values used to set these members
   // are originally calculated as >32-bit types, the actual necessary size for
   // each shouldn't exceed 32 bits, so we use 32-bit types here.
-  uint32 last_used_time_seconds_since_epoch_;
-  int32 entry_size_;  // Storage size in bytes.
+  uint32_t last_used_time_seconds_since_epoch_;
+  int32_t entry_size_;  // Storage size in bytes.
 };
 static_assert(sizeof(EntryMetadata) == 8, "incorrect metadata size");
 
@@ -77,7 +78,7 @@ static_assert(sizeof(EntryMetadata) == 8, "incorrect metadata size");
 class NET_EXPORT_PRIVATE SimpleIndex
     : public base::SupportsWeakPtr<SimpleIndex> {
  public:
-  typedef std::vector<uint64> HashList;
+  typedef std::vector<uint64_t> HashList;
 
   SimpleIndex(const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
               SimpleIndexDelegate* delegate,
@@ -88,29 +89,29 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   void Initialize(base::Time cache_mtime);
 
-  void SetMaxSize(uint64 max_bytes);
-  uint64 max_size() const { return max_size_; }
+  void SetMaxSize(uint64_t max_bytes);
+  uint64_t max_size() const { return max_size_; }
 
-  void Insert(uint64 entry_hash);
-  void Remove(uint64 entry_hash);
+  void Insert(uint64_t entry_hash);
+  void Remove(uint64_t entry_hash);
 
   // Check whether the index has the entry given the hash of its key.
-  bool Has(uint64 entry_hash) const;
+  bool Has(uint64_t entry_hash) const;
 
   // Update the last used time of the entry with the given key and return true
   // iff the entry exist in the index.
-  bool UseIfExists(uint64 entry_hash);
+  bool UseIfExists(uint64_t entry_hash);
 
   void WriteToDisk();
 
   // Update the size (in bytes) of an entry, in the metadata stored in the
   // index. This should be the total disk-file size including all streams of the
   // entry.
-  bool UpdateEntrySize(uint64 entry_hash, int64 entry_size);
+  bool UpdateEntrySize(uint64_t entry_hash, int64_t entry_size);
 
-  typedef base::hash_map<uint64, EntryMetadata> EntrySet;
+  typedef base::hash_map<uint64_t, EntryMetadata> EntrySet;
 
-  static void InsertInEntrySet(uint64 entry_hash,
+  static void InsertInEntrySet(uint64_t entry_hash,
                                const EntryMetadata& entry_metadata,
                                EntrySet* entry_set);
 
@@ -128,11 +129,11 @@ class NET_EXPORT_PRIVATE SimpleIndex
   scoped_ptr<HashList> GetAllHashes();
 
   // Returns number of indexed entries.
-  int32 GetEntryCount() const;
+  int32_t GetEntryCount() const;
 
   // Returns the size of the entire cache in bytes. Can only be called after the
   // index has been initialized.
-  uint64 GetCacheSize() const;
+  uint64_t GetCacheSize() const;
 
   // Returns whether the index has been initialized yet.
   bool initialized() const { return initialized_; }
@@ -149,7 +150,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   void PostponeWritingToDisk();
 
-  void UpdateEntryIteratorSize(EntrySet::iterator* it, int64 entry_size);
+  void UpdateEntryIteratorSize(EntrySet::iterator* it, int64_t entry_size);
 
   // Must run on IO Thread.
   void MergeInitializingSet(scoped_ptr<SimpleIndexLoadResult> load_result);
@@ -166,16 +167,16 @@ class NET_EXPORT_PRIVATE SimpleIndex
   EntrySet entries_set_;
 
   const net::CacheType cache_type_;
-  uint64 cache_size_;  // Total cache storage size in bytes.
-  uint64 max_size_;
-  uint64 high_watermark_;
-  uint64 low_watermark_;
+  uint64_t cache_size_;  // Total cache storage size in bytes.
+  uint64_t max_size_;
+  uint64_t high_watermark_;
+  uint64_t low_watermark_;
   bool eviction_in_progress_;
   base::TimeTicks eviction_start_time_;
 
   // This stores all the entry_hash of entries that are removed during
   // initialization.
-  base::hash_set<uint64> removed_entries_;
+  base::hash_set<uint64_t> removed_entries_;
   bool initialized_;
 
   scoped_ptr<SimpleIndexFile> index_file_;

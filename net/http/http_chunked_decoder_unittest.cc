@@ -4,7 +4,6 @@
 
 #include "net/http/http_chunked_decoder.h"
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"

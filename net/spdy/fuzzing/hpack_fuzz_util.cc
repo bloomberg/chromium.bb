@@ -117,13 +117,13 @@ bool HpackFuzzUtil::NextHeaderBlock(Input* input,
   // ClusterFuzz may truncate input files if the fuzzer ran out of allocated
   // disk space. Be tolerant of these.
   CHECK_LE(input->offset, input->input.size());
-  if (input->remaining() < sizeof(uint32)) {
+  if (input->remaining() < sizeof(uint32_t)) {
     return false;
   }
 
   size_t length =
-      base::NetToHost32(*reinterpret_cast<const uint32*>(input->ptr()));
-  input->offset += sizeof(uint32);
+      base::NetToHost32(*reinterpret_cast<const uint32_t*>(input->ptr()));
+  input->offset += sizeof(uint32_t);
 
   if (input->remaining() < length) {
     return false;
@@ -135,8 +135,8 @@ bool HpackFuzzUtil::NextHeaderBlock(Input* input,
 
 // static
 string HpackFuzzUtil::HeaderBlockPrefix(size_t block_size) {
-  uint32 length = base::HostToNet32(static_cast<uint32>(block_size));
-  return string(reinterpret_cast<char*>(&length), sizeof(uint32));
+  uint32_t length = base::HostToNet32(static_cast<uint32_t>(block_size));
+  return string(reinterpret_cast<char*>(&length), sizeof(uint32_t));
 }
 
 // static
@@ -176,14 +176,15 @@ bool HpackFuzzUtil::RunHeaderBlockThroughFuzzerStages(FuzzerContext* context,
 }
 
 // static
-void HpackFuzzUtil::FlipBits(uint8* buffer, size_t buffer_length,
+void HpackFuzzUtil::FlipBits(uint8_t* buffer,
+                             size_t buffer_length,
                              size_t flip_per_thousand) {
-  uint64 buffer_bit_length = buffer_length * 8u;
-  uint64 bits_to_flip = flip_per_thousand * (1 + buffer_bit_length / 1024);
+  uint64_t buffer_bit_length = buffer_length * 8u;
+  uint64_t bits_to_flip = flip_per_thousand * (1 + buffer_bit_length / 1024);
 
   // Iteratively identify & flip offsets in the buffer bit-sequence.
-  for (uint64 i = 0; i != bits_to_flip; ++i) {
-    uint64 bit_offset = base::RandUint64() % buffer_bit_length;
+  for (uint64_t i = 0; i != bits_to_flip; ++i) {
+    uint64_t bit_offset = base::RandUint64() % buffer_bit_length;
     buffer[bit_offset / 8u] ^= (1 << (bit_offset % 8u));
   }
 }

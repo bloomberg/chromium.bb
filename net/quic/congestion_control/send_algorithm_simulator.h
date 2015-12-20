@@ -7,12 +7,14 @@
 #ifndef NET_QUIC_CONGESTION_CONTROL_SEND_ALGORITHM_SIMULATOR_H_
 #define NET_QUIC_CONGESTION_CONTROL_SEND_ALGORITHM_SIMULATOR_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_protocol.h"

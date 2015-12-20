@@ -4,7 +4,6 @@
 
 #include "net/spdy/spdy_priority_tree.h"
 
-#include "base/basictypes.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,7 +43,7 @@ class SpdyPriorityTreePeer {
 
 class SpdyPriorityTreeTest : public ::testing::Test {
  protected:
-  typedef uint32 SpdyStreamId;
+  typedef uint32_t SpdyStreamId;
   typedef std::pair<SpdyStreamId, float> PriorityNode;
   typedef std::vector<PriorityNode> PriorityList;
 

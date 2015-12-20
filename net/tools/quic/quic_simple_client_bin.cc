@@ -81,7 +81,7 @@ using std::endl;
 // The IP or hostname the quic client will connect to.
 string FLAGS_host = "";
 // The port to connect to.
-int32 FLAGS_port = 0;
+int32_t FLAGS_port = 0;
 // If set, send a POST with this body.
 string FLAGS_body = "";
 // If set, contents are converted from hex to ascii, before sending as body of
@@ -93,7 +93,7 @@ string FLAGS_headers = "";
 bool FLAGS_quiet = false;
 // QUIC version to speak, e.g. 21. If not set, then all available versions are
 // offered in the handshake.
-int32 FLAGS_quic_version = -1;
+int32_t FLAGS_quic_version = -1;
 // If true, a version mismatch in the handshake is not considered a failure.
 // Useful for probing a server to determine if it speaks any version of QUIC.
 bool FLAGS_version_mismatch_ok = false;
@@ -101,7 +101,7 @@ bool FLAGS_version_mismatch_ok = false;
 // response, otherwise a failure.
 bool FLAGS_redirect_is_success = true;
 // Initial MTU of the connection.
-int32 FLAGS_initial_mtu = 0;
+int32_t FLAGS_initial_mtu = 0;
 
 class FakeCertVerifier : public net::CertVerifier {
  public:
@@ -125,7 +125,7 @@ static bool DecodeHexString(const base::StringPiece& hex, std::string* bytes) {
   bytes->clear();
   if (hex.empty())
     return true;
-  std::vector<uint8> v;
+  std::vector<uint8_t> v;
   if (!base::HexStringToBytes(hex.as_string(), &v))
     return false;
   if (!v.empty())

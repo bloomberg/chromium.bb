@@ -11,7 +11,7 @@
 namespace {
 
 // Returns the number of trailing zeros.
-int FindLSBSetNonZero(uint32 word) {
+int FindLSBSetNonZero(uint32_t word) {
   // Get the LSB, put it on the exponent of a 32 bit float and remove the
   // mantisa and the bias. This code requires IEEE 32 bit float compliance.
   float f = static_cast<float>(word & -static_cast<int>(word));
@@ -19,7 +19,7 @@ int FindLSBSetNonZero(uint32 word) {
   // We use a union to go around strict-aliasing complains.
   union {
     float ieee_float;
-    uint32 as_uint;
+    uint32_t as_uint;
   } x;
 
   x.ieee_float = f;
@@ -28,7 +28,7 @@ int FindLSBSetNonZero(uint32 word) {
 
 // Returns the index of the first bit set to |value| from |word|. This code
 // assumes that we'll be able to find that bit.
-int FindLSBNonEmpty(uint32 word, bool value) {
+int FindLSBNonEmpty(uint32_t word, bool value) {
   // If we are looking for 0, negate |word| and look for 1.
   if (!value)
     word = ~word;
@@ -44,21 +44,20 @@ Bitmap::Bitmap(int num_bits, bool clear_bits)
     : num_bits_(num_bits),
       array_size_(RequiredArraySize(num_bits)),
       alloc_(true) {
-  map_ = new uint32[array_size_];
+  map_ = new uint32_t[array_size_];
 
   // Initialize all of the bits.
   if (clear_bits)
     Clear();
 }
 
-Bitmap::Bitmap(uint32* map, int num_bits, int num_words)
+Bitmap::Bitmap(uint32_t* map, int num_bits, int num_words)
     : map_(map),
       num_bits_(num_bits),
       // If size is larger than necessary, trim because array_size_ is used
       // as a bound by various methods.
       array_size_(std::min(RequiredArraySize(num_bits), num_words)),
-      alloc_(false) {
-}
+      alloc_(false) {}
 
 Bitmap::~Bitmap() {
   if (alloc_)
@@ -72,7 +71,7 @@ void Bitmap::Resize(int num_bits, bool clear_bits) {
   array_size_ = RequiredArraySize(num_bits);
 
   if (array_size_ != old_array_size) {
-    uint32* new_map = new uint32[array_size_];
+    uint32_t* new_map = new uint32_t[array_size_];
     // Always clear the unused bits in the last word.
     new_map[array_size_ - 1] = 0;
     memcpy(new_map, map_,
@@ -116,19 +115,19 @@ void Bitmap::Toggle(int index) {
   map_[j] ^= (1 << i);
 }
 
-void Bitmap::SetMapElement(int array_index, uint32 value) {
+void Bitmap::SetMapElement(int array_index, uint32_t value) {
   DCHECK_LT(array_index, array_size_);
   DCHECK_GE(array_index, 0);
   map_[array_index] = value;
 }
 
-uint32 Bitmap::GetMapElement(int array_index) const {
+uint32_t Bitmap::GetMapElement(int array_index) const {
   DCHECK_LT(array_index, array_size_);
   DCHECK_GE(array_index, 0);
   return map_[array_index];
 }
 
-void Bitmap::SetMap(const uint32* map, int size) {
+void Bitmap::SetMap(const uint32_t* map, int size) {
   memcpy(map_, map, std::min(size, array_size_) * sizeof(*map_));
 }
 
@@ -176,7 +175,7 @@ bool Bitmap::TestRange(int begin, int end, bool value) const {
   int last_offset = (end - 1) & (kIntBits - 1);
 
   // If we are looking for zeros, negate the data from the map.
-  uint32 this_word = map_[word];
+  uint32_t this_word = map_[word];
   if (!value)
     this_word = ~this_word;
 
@@ -200,7 +199,7 @@ bool Bitmap::TestRange(int begin, int end, bool value) const {
 
   // Test the portion of the last word that lies within the range. (This logic
   // also handles the case where the entire range lies within a single word.)
-  const uint32 mask = ((2 << (last_offset - offset)) - 1) << offset;
+  const uint32_t mask = ((2 << (last_offset - offset)) - 1) << offset;
 
   this_word = map_[last_word];
   if (!value)
@@ -222,7 +221,7 @@ bool Bitmap::FindNextBit(int* index, int limit, bool value) const {
 
   // From now on limit != 0, since if it was we would have returned false.
   int word_index = bit_index >> kLogIntBits;
-  uint32 one_word = map_[word_index];
+  uint32_t one_word = map_[word_index];
 
   // Simple optimization where we can immediately return true if the first
   // bit is set.  This helps for cases where many bits are set, and doesn't
@@ -233,14 +232,14 @@ bool Bitmap::FindNextBit(int* index, int limit, bool value) const {
   const int first_bit_offset = bit_index & (kIntBits - 1);
 
   // First word is special - we need to mask off leading bits.
-  uint32 mask = 0xFFFFFFFF << first_bit_offset;
+  uint32_t mask = 0xFFFFFFFF << first_bit_offset;
   if (value) {
     one_word &= mask;
   } else {
     one_word |= ~mask;
   }
 
-  uint32 empty_value = value ? 0 : 0xFFFFFFFF;
+  uint32_t empty_value = value ? 0 : 0xFFFFFFFF;
 
   // Loop through all but the last word.  Note that 'limit' is one
   // past the last bit we want to check, and we don't want to read
@@ -299,7 +298,7 @@ void Bitmap::SetWordBits(int start, int len, bool value) {
   int word = start / kIntBits;
   int offset = start % kIntBits;
 
-  uint32 to_add = 0xffffffff << len;
+  uint32_t to_add = 0xffffffff << len;
   to_add = (~to_add) << offset;
   if (value) {
     map_[word] |= to_add;

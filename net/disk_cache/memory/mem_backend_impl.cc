@@ -57,7 +57,7 @@ bool MemBackendImpl::Init() {
   if (max_size_)
     return true;
 
-  int64 total_memory = base::SysInfo::AmountOfPhysicalMemory();
+  int64_t total_memory = base::SysInfo::AmountOfPhysicalMemory();
 
   if (total_memory <= 0) {
     max_size_ = kDefaultInMemoryCacheSize;
@@ -70,7 +70,7 @@ bool MemBackendImpl::Init() {
   if (total_memory > kDefaultInMemoryCacheSize * 5)
     max_size_ = kDefaultInMemoryCacheSize * 5;
   else
-    max_size_ = static_cast<int32>(total_memory);
+    max_size_ = static_cast<int32_t>(total_memory);
 
   return true;
 }
@@ -107,7 +107,7 @@ void MemBackendImpl::UpdateRank(MemEntryImpl* node) {
   rankings_.UpdateRank(node);
 }
 
-void MemBackendImpl::ModifyStorageSize(int32 old_size, int32 new_size) {
+void MemBackendImpl::ModifyStorageSize(int32_t old_size, int32_t new_size) {
   if (old_size >= new_size)
     SubstractStorageSize(old_size - new_size);
   else
@@ -130,8 +130,8 @@ net::CacheType MemBackendImpl::GetCacheType() const {
   return net::MEMORY_CACHE;
 }
 
-int32 MemBackendImpl::GetEntryCount() const {
-  return static_cast<int32>(entries_.size());
+int32_t MemBackendImpl::GetEntryCount() const {
+  return static_cast<int32_t>(entries_.size());
 }
 
 int MemBackendImpl::OpenEntry(const std::string& key, Entry** entry,
@@ -335,7 +335,7 @@ void MemBackendImpl::TrimCache(bool empty) {
   return;
 }
 
-void MemBackendImpl::AddStorageSize(int32 bytes) {
+void MemBackendImpl::AddStorageSize(int32_t bytes) {
   current_size_ += bytes;
   DCHECK_GE(current_size_, 0);
 
@@ -343,7 +343,7 @@ void MemBackendImpl::AddStorageSize(int32 bytes) {
     TrimCache(false);
 }
 
-void MemBackendImpl::SubstractStorageSize(int32 bytes) {
+void MemBackendImpl::SubstractStorageSize(int32_t bytes) {
   current_size_ -= bytes;
   DCHECK_GE(current_size_, 0);
 }

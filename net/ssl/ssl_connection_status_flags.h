@@ -5,6 +5,8 @@
 #ifndef NET_SSL_SSL_CONNECTION_STATUS_FLAGS_H_
 #define NET_SSL_SSL_CONNECTION_STATUS_FLAGS_H_
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 
@@ -53,8 +55,8 @@ enum {
 static_assert(SSL_CONNECTION_VERSION_MAX - 1 <= SSL_CONNECTION_VERSION_MASK,
               "SSL_CONNECTION_VERSION_MASK too small");
 
-inline uint16 SSLConnectionStatusToCipherSuite(int connection_status) {
-  return static_cast<uint16>(connection_status);
+inline uint16_t SSLConnectionStatusToCipherSuite(int connection_status) {
+  return static_cast<uint16_t>(connection_status);
 }
 
 inline int SSLConnectionStatusToVersion(int connection_status) {
@@ -62,7 +64,7 @@ inline int SSLConnectionStatusToVersion(int connection_status) {
          SSL_CONNECTION_VERSION_MASK;
 }
 
-inline void SSLConnectionStatusSetCipherSuite(uint16 cipher_suite,
+inline void SSLConnectionStatusSetCipherSuite(uint16_t cipher_suite,
                                               int* connection_status) {
   // Clear out the old ciphersuite.
   *connection_status &= ~SSL_CONNECTION_CIPHERSUITE_MASK;

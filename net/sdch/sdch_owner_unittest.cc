@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/run_loop.h"

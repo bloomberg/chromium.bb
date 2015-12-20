@@ -6,14 +6,15 @@
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_FILE_H_
 
 #include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "net/base/cache_type.h"
@@ -27,7 +28,7 @@ class TaskRunner;
 
 namespace disk_cache {
 
-const uint64 kSimpleIndexMagicNumber = UINT64_C(0x656e74657220796f);
+const uint64_t kSimpleIndexMagicNumber = UINT64_C(0x656e74657220796f);
 
 struct NET_EXPORT_PRIVATE SimpleIndexLoadResult {
   SimpleIndexLoadResult();
@@ -55,23 +56,23 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   class NET_EXPORT_PRIVATE IndexMetadata {
    public:
     IndexMetadata();
-    IndexMetadata(uint64 number_of_entries, uint64 cache_size);
+    IndexMetadata(uint64_t number_of_entries, uint64_t cache_size);
 
     void Serialize(base::Pickle* pickle) const;
     bool Deserialize(base::PickleIterator* it);
 
     bool CheckIndexMetadata();
 
-    uint64 GetNumberOfEntries() { return number_of_entries_; }
+    uint64_t GetNumberOfEntries() { return number_of_entries_; }
 
    private:
     FRIEND_TEST_ALL_PREFIXES(IndexMetadataTest, Basics);
     FRIEND_TEST_ALL_PREFIXES(IndexMetadataTest, Serialize);
 
-    uint64 magic_number_;
-    uint32 version_;
-    uint64 number_of_entries_;
-    uint64 cache_size_;  // Total cache storage size in bytes.
+    uint64_t magic_number_;
+    uint32_t version_;
+    uint64_t number_of_entries_;
+    uint64_t cache_size_;  // Total cache storage size in bytes.
   };
 
   SimpleIndexFile(
@@ -88,7 +89,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
 
   // Write the specified set of entries to disk.
   virtual void WriteToDisk(const SimpleIndex::EntrySet& entry_set,
-                           uint64 cache_size,
+                           uint64_t cache_size,
                            const base::TimeTicks& start,
                            bool app_on_background,
                            const base::Closure& callback);
@@ -169,7 +170,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                                      const base::FilePath& index_file_path);
 
   struct PickleHeader : public base::Pickle::Header {
-    uint32 crc;
+    uint32_t crc;
   };
 
   const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;

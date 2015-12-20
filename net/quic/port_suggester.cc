@@ -9,7 +9,7 @@
 
 namespace net {
 
-PortSuggester::PortSuggester(const HostPortPair& server, uint64 seed)
+PortSuggester::PortSuggester(const HostPortPair& server, uint64_t seed)
     : call_count_(0), previous_suggestion_(-1) {
   unsigned char hash_bytes[base::kSHA1Length];
   base::SHA1HashBytes(

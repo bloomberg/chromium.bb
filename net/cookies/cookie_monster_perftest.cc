@@ -284,7 +284,7 @@ TEST_F(CookieMonsterTest, TestImport) {
 
   // We want to setup a fairly large backing store, with 300 domains of 50
   // cookies each.  Creation times must be unique.
-  int64 time_tick(base::Time::Now().ToInternalValue());
+  int64_t time_tick(base::Time::Now().ToInternalValue());
 
   for (int domain_num = 0; domain_num < 300; domain_num++) {
     std::string domain_name(base::StringPrintf(".Domain_%d.com", domain_num));

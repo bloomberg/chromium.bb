@@ -31,7 +31,7 @@ int SimpleClient::response_header_size() const {
   return 0;
 }
 
-int64 SimpleClient::response_body_size() const {
+int64_t SimpleClient::response_body_size() const {
   return 0;
 }
 

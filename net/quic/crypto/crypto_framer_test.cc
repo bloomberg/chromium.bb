@@ -159,7 +159,7 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageZeroLength) {
 TEST(CryptoFramerTest, ConstructHandshakeMessageTooManyEntries) {
   CryptoHandshakeMessage message;
   message.set_tag(0xFFAA7733);
-  for (uint32 key = 1; key <= kMaxEntries + 1; ++key) {
+  for (uint32_t key = 1; key <= kMaxEntries + 1; ++key) {
     message.SetStringPiece(key, "abcdef");
   }
 

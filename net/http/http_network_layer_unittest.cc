@@ -4,7 +4,6 @@
 
 #include "net/http/http_network_layer.h"
 
-#include "base/basictypes.h"
 #include "base/strings/stringprintf.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"

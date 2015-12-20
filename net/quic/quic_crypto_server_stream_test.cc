@@ -62,7 +62,7 @@ class QuicCryptoServerStreamPeer {
 namespace {
 
 const char kServerHostname[] = "test.example.com";
-const uint16 kServerPort = 443;
+const uint16_t kServerPort = 443;
 
 class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
  public:
@@ -84,10 +84,10 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
           QuicCryptoServerConfigPeer::GetPrimaryOrbit(server_crypto_config_);
       strike_register_client_ = new DelayedVerifyStrikeRegisterClient(
           10000,  // strike_register_max_entries
-          static_cast<uint32>(
+          static_cast<uint32_t>(
               server_connection_->clock()->WallNow().ToUNIXSeconds()),
           60,  // strike_register_window_secs
-          reinterpret_cast<const uint8*>(orbit.data()),
+          reinterpret_cast<const uint8_t*>(orbit.data()),
           StrikeRegister::NO_STARTUP_PERIOD_NEEDED);
       strike_register_client_->StartDelayingVerification();
       server_crypto_config_.SetStrikeRegisterClient(strike_register_client_);

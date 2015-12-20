@@ -18,6 +18,7 @@
 // re-initialized with the new structures. Note that the IndexTable instance is
 // still functional while the backend performs file IO.
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>

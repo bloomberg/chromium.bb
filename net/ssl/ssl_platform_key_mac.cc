@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "base/memory/scoped_policy.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"

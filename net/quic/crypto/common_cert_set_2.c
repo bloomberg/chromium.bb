@@ -124,4 +124,4 @@ static const size_t kLens[] = {
   1770,
 };
 
-static const uint64 kHash = UINT64_C(0xe81a92926081e801);
+static const uint64_t kHash = UINT64_C(0xe81a92926081e801);

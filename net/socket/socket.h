@@ -5,6 +5,8 @@
 #ifndef NET_SOCKET_SOCKET_H_
 #define NET_SOCKET_SOCKET_H_
 
+#include <stdint.h>
+
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
@@ -49,12 +51,12 @@ class NET_EXPORT Socket {
   // Set the receive buffer size (in bytes) for the socket.
   // Note: changing this value can affect the TCP window size on some platforms.
   // Returns a net error code.
-  virtual int SetReceiveBufferSize(int32 size) = 0;
+  virtual int SetReceiveBufferSize(int32_t size) = 0;
 
   // Set the send buffer size (in bytes) for the socket.
   // Note: changing this value can affect the TCP window size on some platforms.
   // Returns a net error code.
-  virtual int SetSendBufferSize(int32 size) = 0;
+  virtual int SetSendBufferSize(int32_t size) = 0;
 };
 
 }  // namespace net

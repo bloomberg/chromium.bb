@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {

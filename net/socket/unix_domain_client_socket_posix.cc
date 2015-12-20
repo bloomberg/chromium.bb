@@ -169,12 +169,12 @@ int UnixDomainClientSocket::Write(IOBuffer* buf, int buf_len,
   return socket_->Write(buf, buf_len, callback);
 }
 
-int UnixDomainClientSocket::SetReceiveBufferSize(int32 size) {
+int UnixDomainClientSocket::SetReceiveBufferSize(int32_t size) {
   NOTIMPLEMENTED();
   return ERR_NOT_IMPLEMENTED;
 }
 
-int UnixDomainClientSocket::SetSendBufferSize(int32 size) {
+int UnixDomainClientSocket::SetSendBufferSize(int32_t size) {
   NOTIMPLEMENTED();
   return ERR_NOT_IMPLEMENTED;
 }

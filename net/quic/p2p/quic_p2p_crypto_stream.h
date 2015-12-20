@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_P2P_QUIC_P2P_CRYPTO_STREAM_H_
 #define NET_QUIC_P2P_QUIC_P2P_CRYPTO_STREAM_H_
 
+#include "base/macros.h"
 #include "net/quic/p2p/quic_p2p_crypto_config.h"
 #include "net/quic/quic_crypto_stream.h"
 

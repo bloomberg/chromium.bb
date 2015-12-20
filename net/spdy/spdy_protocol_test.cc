@@ -6,7 +6,6 @@
 
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/spdy/spdy_bitmasks.h"
 #include "net/spdy/spdy_framer.h"

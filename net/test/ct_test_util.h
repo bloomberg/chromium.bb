@@ -5,6 +5,9 @@
 #ifndef NET_CERT_CT_TEST_UTIL_H_
 #define NET_CERT_CT_TEST_UTIL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

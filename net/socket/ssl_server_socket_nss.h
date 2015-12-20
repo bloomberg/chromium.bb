@@ -11,6 +11,7 @@
 #include <nss.h>
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
@@ -49,8 +50,8 @@ class SSLServerSocketNSS : public SSLServerSocket {
   int Write(IOBuffer* buf,
             int buf_len,
             const CompletionCallback& callback) override;
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
+  int SetReceiveBufferSize(int32_t size) override;
+  int SetSendBufferSize(int32_t size) override;
 
   // StreamSocket implementation.
   int Connect(const CompletionCallback& callback) override;

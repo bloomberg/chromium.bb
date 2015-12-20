@@ -6,6 +6,7 @@
 #define NET_WEBSOCKETS_WEBSOCKET_EVENT_INTERFACE_H_
 
 #include <stdint.h>
+
 #include <string>
 #include <vector>
 

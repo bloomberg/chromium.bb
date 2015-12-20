@@ -5,7 +5,9 @@
 #ifndef NET_BASE_UPLOAD_ELEMENT_READER_H_
 #define NET_BASE_UPLOAD_ELEMENT_READER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 

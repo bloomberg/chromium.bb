@@ -158,9 +158,9 @@ QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
 
 QuicStreamFrame::~QuicStreamFrame() {}
 
-uint32 MakeQuicTag(char a, char b, char c, char d) {
-  return static_cast<uint32>(a) | static_cast<uint32>(b) << 8 |
-         static_cast<uint32>(c) << 16 | static_cast<uint32>(d) << 24;
+uint32_t MakeQuicTag(char a, char b, char c, char d) {
+  return static_cast<uint32_t>(a) | static_cast<uint32_t>(b) << 8 |
+         static_cast<uint32_t>(c) << 16 | static_cast<uint32_t>(d) << 24;
 }
 
 bool ContainsQuicTag(const QuicTagVector& tag_vector, QuicTag tag) {
@@ -303,7 +303,7 @@ QuicRstStreamFrame::QuicRstStreamFrame(QuicStreamId stream_id,
                                        QuicRstStreamErrorCode error_code,
                                        QuicStreamOffset bytes_written)
     : stream_id(stream_id), error_code(error_code), byte_offset(bytes_written) {
-  DCHECK_LE(error_code, numeric_limits<uint8>::max());
+  DCHECK_LE(error_code, numeric_limits<uint8_t>::max());
 }
 
 QuicConnectionCloseFrame::QuicConnectionCloseFrame()
@@ -632,7 +632,7 @@ QuicGoAwayFrame::QuicGoAwayFrame(QuicErrorCode error_code,
     : error_code(error_code),
       last_good_stream_id(last_good_stream_id),
       reason_phrase(reason) {
-  DCHECK_LE(error_code, numeric_limits<uint8>::max());
+  DCHECK_LE(error_code, numeric_limits<uint8_t>::max());
 }
 
 QuicData::QuicData(const char* buffer, size_t length)

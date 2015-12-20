@@ -22,6 +22,9 @@
 #ifndef NET_SOCKET_CLIENT_SOCKET_POOL_BASE_H_
 #define NET_SOCKET_CLIENT_SOCKET_POOL_BASE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cstddef>
 #include <deque>
 #include <list>
@@ -30,7 +33,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -157,7 +160,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     : public ConnectJob::Delegate,
       public NetworkChangeNotifier::IPAddressObserver {
  public:
-  typedef uint32 Flags;
+  typedef uint32_t Flags;
 
   // Used to specify specific behavior for the ClientSocketPool.
   enum Flag {

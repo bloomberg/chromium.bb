@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -24,13 +23,13 @@ using std::string;
 namespace net {
 
 // static
-uint64 QuicUtils::FNV1a_64_Hash(const char* data, int len) {
-  static const uint64 kOffset = UINT64_C(14695981039346656037);
-  static const uint64 kPrime = UINT64_C(1099511628211);
+uint64_t QuicUtils::FNV1a_64_Hash(const char* data, int len) {
+  static const uint64_t kOffset = UINT64_C(14695981039346656037);
+  static const uint64_t kPrime = UINT64_C(1099511628211);
 
-  const uint8* octets = reinterpret_cast<const uint8*>(data);
+  const uint8_t* octets = reinterpret_cast<const uint8_t*>(data);
 
-  uint64 hash = kOffset;
+  uint64_t hash = kOffset;
 
   for (int i = 0; i < len; ++i) {
     hash = hash ^ octets[i];
@@ -67,7 +66,7 @@ uint128 QuicUtils::FNV1a_128_Hash_Two(const char* data1,
 uint128 QuicUtils::IncrementalHash(uint128 hash, const char* data, size_t len) {
   // 309485009821345068724781371
   const uint128 kPrime(16777216, 315);
-  const uint8* octets = reinterpret_cast<const uint8*>(data);
+  const uint8_t* octets = reinterpret_cast<const uint8_t*>(data);
   for (size_t i = 0; i < len; ++i) {
     hash = hash ^ uint128(0, octets[i]);
     hash = hash * kPrime;
@@ -123,9 +122,9 @@ bool QuicUtils::FindMutualTag(const QuicTagVector& our_tags_vector,
 }
 
 // static
-void QuicUtils::SerializeUint128Short(uint128 v, uint8* out) {
-  const uint64 lo = Uint128Low64(v);
-  const uint64 hi = Uint128High64(v);
+void QuicUtils::SerializeUint128Short(uint128 v, uint8_t* out) {
+  const uint64_t lo = Uint128Low64(v);
+  const uint64_t hi = Uint128High64(v);
   // This assumes that the system is little-endian.
   memcpy(out, &lo, sizeof(lo));
   memcpy(out + sizeof(lo), &hi, sizeof(hi) / 2);
@@ -300,7 +299,7 @@ QuicTagVector QuicUtils::ParseQuicConnectionOptions(
   for (const base::StringPiece& token :
        base::SplitStringPiece(connection_options, ",", base::TRIM_WHITESPACE,
                               base::SPLIT_WANT_ALL)) {
-    uint32 option = 0;
+    uint32_t option = 0;
     for (char token_char : base::Reversed(token)) {
       option <<= 8;
       option |= static_cast<unsigned char>(token_char);

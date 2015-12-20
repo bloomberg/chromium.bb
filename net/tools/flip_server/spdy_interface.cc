@@ -93,7 +93,7 @@ SMInterface* SpdySM::FindOrMakeNewSMConnectionInterface(
     const std::string& server_ip,
     const std::string& server_port) {
   SMInterface* sm_http_interface;
-  int32 server_idx;
+  int32_t server_idx;
   if (unused_server_interface_list.empty()) {
     sm_http_interface = NewConnectionInterface();
     server_idx = server_interface_list.size();
@@ -343,7 +343,7 @@ const char* SpdySM::ErrorAsString() const {
   return SpdyFramer::ErrorCodeToString(buffered_spdy_framer_->error_code());
 }
 
-void SpdySM::ResetForNewInterface(int32 server_idx) {
+void SpdySM::ResetForNewInterface(int32_t server_idx) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Reset for new interface: "
           << "server_idx: " << server_idx;
   unused_server_interface_list.push_back(server_idx);
@@ -371,8 +371,8 @@ int SpdySM::PostAcceptHook() {
   return 1;
 }
 
-void SpdySM::NewStream(uint32 stream_id,
-                       uint32 priority,
+void SpdySM::NewStream(uint32_t stream_id,
+                       uint32_t priority,
                        const std::string& filename) {
   MemCacheIter mci;
   mci.stream_id = stream_id;
@@ -397,37 +397,39 @@ void SpdySM::AddToOutputOrder(const MemCacheIter& mci) {
   client_output_ordering_.AddToOutputOrder(mci);
 }
 
-void SpdySM::SendEOF(uint32 stream_id) { SendEOFImpl(stream_id); }
+void SpdySM::SendEOF(uint32_t stream_id) {
+  SendEOFImpl(stream_id);
+}
 
-void SpdySM::SendErrorNotFound(uint32 stream_id) {
+void SpdySM::SendErrorNotFound(uint32_t stream_id) {
   SendErrorNotFoundImpl(stream_id);
 }
 
-size_t SpdySM::SendSynStream(uint32 stream_id, const BalsaHeaders& headers) {
+size_t SpdySM::SendSynStream(uint32_t stream_id, const BalsaHeaders& headers) {
   return SendSynStreamImpl(stream_id, headers);
 }
 
-size_t SpdySM::SendSynReply(uint32 stream_id, const BalsaHeaders& headers) {
+size_t SpdySM::SendSynReply(uint32_t stream_id, const BalsaHeaders& headers) {
   return SendSynReplyImpl(stream_id, headers);
 }
 
-void SpdySM::SendDataFrame(uint32 stream_id,
+void SpdySM::SendDataFrame(uint32_t stream_id,
                            const char* data,
-                           int64 len,
-                           uint32 flags,
+                           int64_t len,
+                           uint32_t flags,
                            bool compress) {
   SpdyDataFlags spdy_flags = static_cast<SpdyDataFlags>(flags);
   SendDataFrameImpl(stream_id, data, len, spdy_flags, compress);
 }
 
-void SpdySM::SendEOFImpl(uint32 stream_id) {
+void SpdySM::SendEOFImpl(uint32_t stream_id) {
   SendDataFrame(stream_id, NULL, 0, DATA_FLAG_FIN, false);
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Sending EOF: " << stream_id;
   KillStream(stream_id);
   stream_to_smif_.erase(stream_id);
 }
 
-void SpdySM::SendErrorNotFoundImpl(uint32 stream_id) {
+void SpdySM::SendErrorNotFoundImpl(uint32_t stream_id) {
   BalsaHeaders my_headers;
   my_headers.SetFirstlineFromStringPieces("HTTP/1.1", "404", "Not Found");
   SendSynReplyImpl(stream_id, my_headers);
@@ -435,7 +437,7 @@ void SpdySM::SendErrorNotFoundImpl(uint32 stream_id) {
   client_output_ordering_.RemoveStreamId(stream_id);
 }
 
-void SpdySM::KillStream(uint32 stream_id) {
+void SpdySM::KillStream(uint32_t stream_id) {
   client_output_ordering_.RemoveStreamId(stream_id);
 }
 
@@ -466,7 +468,7 @@ void SpdySM::CopyHeaders(SpdyHeaderBlock& dest, const BalsaHeaders& headers) {
   dest.erase("X-Original-Url");        // TODO(mbelshe): case-sensitive
 }
 
-size_t SpdySM::SendSynStreamImpl(uint32 stream_id,
+size_t SpdySM::SendSynStreamImpl(uint32_t stream_id,
                                  const BalsaHeaders& headers) {
   SpdyHeaderBlock block;
   CopyHeaders(block, headers);
@@ -509,7 +511,8 @@ size_t SpdySM::SendSynStreamImpl(uint32 stream_id,
   return df_size;
 }
 
-size_t SpdySM::SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
+size_t SpdySM::SendSynReplyImpl(uint32_t stream_id,
+                                const BalsaHeaders& headers) {
   SpdyHeaderBlock block;
   CopyHeaders(block, headers);
   if (spdy_version() == SPDY2) {
@@ -533,9 +536,9 @@ size_t SpdySM::SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
   return df_size;
 }
 
-void SpdySM::SendDataFrameImpl(uint32 stream_id,
+void SpdySM::SendDataFrameImpl(uint32_t stream_id,
                                const char* data,
-                               int64 len,
+                               int64_t len,
                                SpdyDataFlags flags,
                                bool compress) {
   DCHECK(buffered_spdy_framer_);
@@ -552,7 +555,7 @@ void SpdySM::SendDataFrameImpl(uint32 stream_id,
   // Chop data frames into chunks so that one stream can't monopolize the
   // output channel.
   while (len > 0) {
-    int64 size = std::min(len, static_cast<int64>(kSpdySegmentSize));
+    int64_t size = std::min(len, static_cast<int64_t>(kSpdySegmentSize));
     SpdyDataFlags chunk_flags = flags;
 
     // If we chunked this block, and the FIN flag was set, there is more

@@ -5,10 +5,11 @@
 #ifndef NET_FTP_FTP_DIRECTORY_LISTING_PARSER_H_
 #define NET_FTP_FTP_DIRECTORY_LISTING_PARSER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -28,7 +29,7 @@ struct FtpDirectoryListingEntry {
   Type type;
   base::string16 name;  // Name (UTF-16-encoded).
   std::string raw_name;  // Name in original character encoding.
-  int64 size;  // File size, in bytes. -1 if not applicable.
+  int64_t size;          // File size, in bytes. -1 if not applicable.
 
   // Last modified time, in local time zone.
   base::Time last_modified;

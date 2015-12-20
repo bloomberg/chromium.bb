@@ -4,8 +4,8 @@
 
 #include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "net/disk_cache/blockfile/addr.h"
 #include "net/disk_cache/blockfile/disk_format_v3.h"
 #include "net/disk_cache/blockfile/index_table_v3.h"
@@ -61,7 +61,7 @@ class TestCacheTables {
   base::Time start_time() const { return start_time_; }
 
  private:
-  scoped_ptr<uint64[]> main_bitmap_;
+  scoped_ptr<uint64_t[]> main_bitmap_;
   scoped_ptr<disk_cache::IndexBucket[]> main_table_;
   scoped_ptr<disk_cache::IndexBucket[]> extra_table_;
   base::Time start_time_;
@@ -82,7 +82,7 @@ TestCacheTables::TestCacheTables(int num_entries) {
   // depend on that.
   num_bitmap_bytes_ = (num_entries + num_entries / 2) / 8;
   size_t required_size = sizeof(disk_cache::IndexHeaderV3) + num_bitmap_bytes_;
-  main_bitmap_.reset(new uint64[required_size / sizeof(uint64)]);
+  main_bitmap_.reset(new uint64_t[required_size / sizeof(uint64_t)]);
   memset(main_bitmap_.get(), 0, required_size);
 
   disk_cache::IndexHeaderV3* header =
@@ -113,7 +113,8 @@ void TestCacheTables::GetInitData(IndexTableInitData* result) {
   memcpy(result->backup_header.get(), result->index_bitmap,
          sizeof(result->index_bitmap->header));
 
-  result->backup_bitmap.reset(new uint32[num_bitmap_bytes_ / sizeof(uint32)]);
+  result->backup_bitmap.reset(
+      new uint32_t[num_bitmap_bytes_ / sizeof(uint32_t)]);
   memcpy(result->backup_bitmap.get(), result->index_bitmap->bitmap,
          num_bitmap_bytes_);
 }
@@ -148,7 +149,7 @@ void TestCacheTables::CopyFrom(const TestCacheTables& other) {
 }  // namespace
 
 TEST(DiskCacheIndexTable, EntryCell) {
-  uint32 hash = 0x55aa6699;
+  uint32_t hash = 0x55aa6699;
   disk_cache::Addr addr(disk_cache::BLOCK_ENTRIES, 1, 5, 0x4531);
   bool small_table = true;
   int cell_num = 88;
@@ -277,7 +278,7 @@ TEST(DiskCacheIndexTable, Basics) {
   disk_cache::CellList entries;
   for (int i = 0; i < 250; i++) {
     SCOPED_TRACE(i);
-    uint32 hash = i * i * 1111 + i * 11;
+    uint32_t hash = i * i * 1111 + i * 11;
     disk_cache::Addr addr(disk_cache::BLOCK_ENTRIES, 1, 5, i * 13 + 1);
     EntryCell entry = index.CreateEntryCell(hash, addr);
     EXPECT_TRUE(entry.IsValid());
@@ -289,7 +290,7 @@ TEST(DiskCacheIndexTable, Basics) {
   // Read them back.
   for (size_t i = 0; i < entries.size(); i++) {
     SCOPED_TRACE(i);
-    uint32 hash = entries[i].hash;
+    uint32_t hash = entries[i].hash;
     disk_cache::Addr addr = entries[i].address;
 
     disk_cache::EntrySet found_entries = index.LookupEntries(hash);
@@ -311,7 +312,7 @@ TEST(DiskCacheIndexTable, Basics) {
   // See what we have now.
   for (size_t i = 0; i < entries.size(); i++) {
     SCOPED_TRACE(i);
-    uint32 hash = entries[i].hash;
+    uint32_t hash = entries[i].hash;
     disk_cache::Addr addr = entries[i].address;
 
     disk_cache::EntrySet found_entries = index.LookupEntries(hash);
@@ -336,7 +337,7 @@ TEST(DiskCacheIndexTable, SameHash) {
   index.Init(&init_data);
 
   disk_cache::CellList entries;
-  uint32 hash = 0x55aa55bb;
+  uint32_t hash = 0x55aa55bb;
   for (int i = 0; i < 6; i++) {
     SCOPED_TRACE(i);
     disk_cache::Addr addr(disk_cache::BLOCK_ENTRIES, 1, 5, i * 13 + 1);
@@ -476,7 +477,7 @@ TEST(DiskCacheIndexTable, Iterations) {
   disk_cache::CellList entries;
   for (int i = 0; i < 44; i++) {
     SCOPED_TRACE(i);
-    uint32 hash = i;  // The entries will be ordered on the table.
+    uint32_t hash = i;  // The entries will be ordered on the table.
     disk_cache::Addr addr(disk_cache::BLOCK_ENTRIES, 1, 5, i * 13 + 1);
     if (i < 10 || i == 40)
       addr = disk_cache::Addr(disk_cache::BLOCK_EVICTED, 1, 6, i * 13 + 1);
@@ -594,7 +595,7 @@ TEST(DiskCacheIndexTable, Doubling) {
     // Write some entries.
     for (int i = 0; i < 250; i++, entry_id++) {
       SCOPED_TRACE(entry_id);
-      uint32 hash = entry_id * i * 321 + entry_id * 13;
+      uint32_t hash = entry_id * i * 321 + entry_id * 13;
       disk_cache::Addr addr(disk_cache::BLOCK_ENTRIES, 1, 5, entry_id * 17 + 1);
       EntryCell entry = index.CreateEntryCell(hash, addr);
       EXPECT_TRUE(entry.IsValid());
@@ -628,7 +629,7 @@ TEST(DiskCacheIndexTable, BucketChains) {
   // Write some entries.
   for (int i = 0; i < 8; i++) {
     SCOPED_TRACE(i);
-    uint32 hash = i * 256;
+    uint32_t hash = i * 256;
     disk_cache::Addr addr(disk_cache::BLOCK_ENTRIES, 1, 5, i * 7 + 1);
     EntryCell entry = index.CreateEntryCell(hash, addr);
     EXPECT_TRUE(entry.IsValid());
@@ -648,7 +649,7 @@ TEST(DiskCacheIndexTable, BucketChains) {
   // Write more entries, starting with the upper half of the table.
   for (int i = 9; i < 11; i++) {
     SCOPED_TRACE(i);
-    uint32 hash = i * 256;
+    uint32_t hash = i * 256;
     disk_cache::Addr addr(disk_cache::BLOCK_ENTRIES, 1, 5, i * 7 + 1);
     EntryCell entry = index.CreateEntryCell(hash, addr);
     EXPECT_TRUE(entry.IsValid());
@@ -679,7 +680,7 @@ TEST(DiskCacheIndexTable, GrowIndex) {
   // Write some entries.
   for (int i = 0; i < 512; i++) {
     SCOPED_TRACE(i);
-    uint32 hash = 0;
+    uint32_t hash = 0;
     disk_cache::Addr addr(disk_cache::BLOCK_ENTRIES, 1, 5, i + 1);
     EntryCell entry = index.CreateEntryCell(hash, addr);
     EXPECT_TRUE(entry.IsValid());
@@ -697,7 +698,7 @@ TEST(DiskCacheIndexTable, SaveIndex) {
   IndexTable index(&backend);
   index.Init(&init_data);
 
-  uint32 hash = 0;
+  uint32_t hash = 0;
   disk_cache::Addr addr(disk_cache::BLOCK_ENTRIES, 1, 5, 6);
   EntryCell entry = index.CreateEntryCell(hash, addr);
   EXPECT_TRUE(entry.IsValid());

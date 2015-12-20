@@ -57,18 +57,18 @@ ClientSocketPoolManager* CreateSocketPoolManager(
 }  // unnamed namespace
 
 // The maximum receive window sizes for HTTP/2 sessions and streams.
-const int32 kSpdySessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
-const int32 kSpdyStreamMaxRecvWindowSize = 6 * 1024 * 1024;    //  6 MB
+const int32_t kSpdySessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
+const int32_t kSpdyStreamMaxRecvWindowSize = 6 * 1024 * 1024;    //  6 MB
 // QUIC's socket receive buffer size.
 // We should adaptively set this buffer size, but for now, we'll use a size
 // that seems large enough to receive data at line rate for most connections,
 // and does not consume "too much" memory.
-const int32 kQuicSocketReceiveBufferSize = 1024 * 1024;  // 1MB
+const int32_t kQuicSocketReceiveBufferSize = 1024 * 1024;  // 1MB
 
 // Number of recent connections to consider for certain thresholds
 // that trigger disabling QUIC.  E.g. disable QUIC if PUBLIC_RESET was
 // received post handshake for at least 2 of 20 recent connections.
-const int32 kQuicMaxRecentDisabledReasons = 20;
+const int32_t kQuicMaxRecentDisabledReasons = 20;
 
 HttpNetworkSession::Params::Params()
     : client_socket_factory(NULL),

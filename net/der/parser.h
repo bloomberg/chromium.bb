@@ -5,7 +5,10 @@
 #ifndef NET_DER_PARSER_H_
 #define NET_DER_PARSER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/der/input.h"
@@ -146,7 +149,7 @@ class NET_EXPORT Parser {
   // Expects the current tag to be kInteger, and calls ParseUint64 on the
   // current value. Note that DER-encoded integers are arbitrary precision,
   // so this method will fail for valid input that represents an integer
-  // outside the range of an int64.
+  // outside the range of an int64_t.
   //
   // Note that on failure the Parser is left in an undefined state (the
   // input may or may not have been advanced).

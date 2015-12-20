@@ -60,6 +60,7 @@
 #include "net/android/network_change_notifier_android.h"
 
 #include "base/android/build_info.h"
+#include "base/macros.h"
 #include "base/threading/thread.h"
 #include "net/base/address_tracker_linux.h"
 #include "net/dns/dns_config_service_posix.h"

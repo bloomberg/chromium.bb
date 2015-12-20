@@ -13,6 +13,7 @@
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"

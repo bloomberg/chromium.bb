@@ -5,8 +5,11 @@
 #ifndef NET_BASE_PRIORITIZED_DISPATCHER_H_
 #define NET_BASE_PRIORITIZED_DISPATCHER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/base/priority_queue.h"
 

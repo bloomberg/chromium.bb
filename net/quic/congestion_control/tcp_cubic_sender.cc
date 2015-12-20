@@ -25,7 +25,7 @@ namespace {
 const QuicPacketCount kDefaultMinimumCongestionWindow = 2;
 const QuicByteCount kMaxBurstBytes = 3 * kDefaultTCPMSS;
 const float kRenoBeta = 0.7f;             // Reno backoff factor.
-const uint32 kDefaultNumConnections = 2;  // N-connection emulation.
+const uint32_t kDefaultNumConnections = 2;  // N-connection emulation.
 }  // namespace
 
 TcpCubicSender::TcpCubicSender(const QuicClock* clock,

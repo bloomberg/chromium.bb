@@ -1126,7 +1126,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
   scoped_ptr<SpdyFrame> fbody3(spdy_util_.ConstructSpdyBodyFrame(5, true));
 
   SettingsMap settings;
-  const uint32 max_concurrent_streams = 1;
+  const uint32_t max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
   scoped_ptr<SpdyFrame> settings_frame(
@@ -1262,7 +1262,7 @@ TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
   scoped_ptr<SpdyFrame> fbody3(spdy_util_.ConstructSpdyBodyFrame(7, true));
 
   SettingsMap settings;
-  const uint32 max_concurrent_streams = 1;
+  const uint32_t max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
   scoped_ptr<SpdyFrame> settings_frame(
@@ -1401,7 +1401,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentDelete) {
   scoped_ptr<SpdyFrame> fbody2(spdy_util_.ConstructSpdyBodyFrame(3, true));
 
   SettingsMap settings;
-  const uint32 max_concurrent_streams = 1;
+  const uint32_t max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
   scoped_ptr<SpdyFrame> settings_frame(
@@ -1531,7 +1531,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
   scoped_ptr<SpdyFrame> resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
 
   SettingsMap settings;
-  const uint32 max_concurrent_streams = 1;
+  const uint32_t max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
   scoped_ptr<SpdyFrame> settings_frame(
@@ -1915,7 +1915,7 @@ TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
   request.url = GURL(GetDefaultUrl());
   request.upload_data_stream = &stream;
 
-  const uint64 kContentLength = 0;
+  const uint64_t kContentLength = 0;
 
   scoped_ptr<SpdyHeaderBlock> req_block(
       spdy_util_.ConstructPostHeaderBlock(GetDefaultUrl(), kContentLength));
@@ -2255,10 +2255,9 @@ TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
   // The indicated length of this frame is longer than its actual length. When
   // the session receives an empty frame after this one, it shuts down the
   // session, and calls the read callback with the incomplete data.
-  const uint8 kGetBodyFrame2[] = {
-    0x00, 0x00, 0x00, 0x01,
-    0x01, 0x00, 0x00, 0x07,
-    'h', 'e', 'l', 'l', 'o', '!',
+  const uint8_t kGetBodyFrame2[] = {
+      0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00,
+      0x07, 'h',  'e',  'l',  'l',  'o',  '!',
   };
 
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -5752,7 +5751,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
     CreateMockWrite(*body_end, 2),
   };
 
-  static const int32 kDeltaWindowSize = 0xff;
+  static const int32_t kDeltaWindowSize = 0xff;
   static const int kDeltaCount = 4;
   scoped_ptr<SpdyFrame> window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, kDeltaWindowSize));
@@ -5822,33 +5821,33 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
 // Test that received data frames and sent WINDOW_UPDATE frames change
 // the recv_window_size_ correctly.
 TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
-  const int32 default_initial_window_size =
+  const int32_t default_initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
   // Session level maximum window size that is more than twice the default
   // initial window size so that an initial window update is sent.
-  const int32 session_max_recv_window_size = 5 * 64 * 1024;
+  const int32_t session_max_recv_window_size = 5 * 64 * 1024;
   ASSERT_LT(2 * default_initial_window_size, session_max_recv_window_size);
   // Stream level maximum window size that is less than the session level
   // maximum window size so that we test for confusion between the two.
-  const int32 stream_max_recv_window_size = 4 * 64 * 1024;
+  const int32_t stream_max_recv_window_size = 4 * 64 * 1024;
   ASSERT_GT(session_max_recv_window_size, stream_max_recv_window_size);
   // Size of body to be sent.  Has to be less than or equal to both window sizes
   // so that we do not run out of receiving window.  Also has to be greater than
   // half of them so that it triggers both a session level and a stream level
   // window update frame.
-  const int32 kTargetSize = 3 * 64 * 1024;
+  const int32_t kTargetSize = 3 * 64 * 1024;
   ASSERT_GE(session_max_recv_window_size, kTargetSize);
   ASSERT_GE(stream_max_recv_window_size, kTargetSize);
   ASSERT_LT(session_max_recv_window_size / 2, kTargetSize);
   ASSERT_LT(stream_max_recv_window_size / 2, kTargetSize);
   // Size of each DATA frame.
-  const int32 kChunkSize = 4096;
+  const int32_t kChunkSize = 4096;
   // Size of window updates.
   ASSERT_EQ(0, session_max_recv_window_size / 2 % kChunkSize);
-  const int32 session_window_update_delta =
+  const int32_t session_window_update_delta =
       session_max_recv_window_size / 2 + kChunkSize;
   ASSERT_EQ(0, stream_max_recv_window_size / 2 % kChunkSize);
-  const int32 stream_window_update_delta =
+  const int32_t stream_window_update_delta =
       stream_max_recv_window_size / 2 + kChunkSize;
 
   SettingsMap initial_settings;
@@ -5978,7 +5977,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
     CreateMockWrite(*rst, 3),
   };
 
-  static const int32 kDeltaWindowSize = 0x7fffffff;  // cause an overflow
+  static const int32_t kDeltaWindowSize = 0x7fffffff;  // cause an overflow
   scoped_ptr<SpdyFrame> window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, kDeltaWindowSize));
   MockRead reads[] = {
@@ -6033,7 +6032,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
 // After that, next read is artifically enforced, which causes a
 // WINDOW_UPDATE to be read and I/O process resumes.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
-  const int32 initial_window_size =
+  const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
   // Number of frames we need to send to zero out the window size: data
   // frames plus SYN_STREAM plus the last data frame; also we need another
@@ -6139,7 +6138,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
 // Test we correctly handle the case where the SETTINGS frame results in
 // unstalling the send window.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
-  const int32 initial_window_size =
+  const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
 
   // Number of frames we need to send to zero out the window size: data
@@ -6263,7 +6262,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
 // Test we correctly handle the case where the SETTINGS frame results in a
 // negative send window size.
 TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
-  const int32 initial_window_size =
+  const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
   // Number of frames we need to send to zero out the window size: data
   // frames plus SYN_STREAM plus the last data frame; also we need another

@@ -44,7 +44,7 @@ class QuicEpollAlarm : public QuicAlarm {
    public:
     explicit EpollAlarmImpl(QuicEpollAlarm* alarm) : alarm_(alarm) {}
 
-    int64 OnAlarm() override {
+    int64_t OnAlarm() override {
       EpollAlarm::OnAlarm();
       alarm_->Fire();
       // Fire will take care of registering the alarm, if needed.

@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "base/environment.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"

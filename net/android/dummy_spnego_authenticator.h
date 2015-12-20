@@ -6,6 +6,8 @@
 #define NET_ANDROID_DUMMY_SPNEGO_AUTHENTICATOR_H_
 
 #include <jni.h>
+#include <stdint.h>
+
 #include <cstdint>
 #include <list>
 #include <string>

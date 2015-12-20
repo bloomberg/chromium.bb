@@ -5,7 +5,6 @@
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/strings/string_split.h"
 #include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

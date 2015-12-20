@@ -8,11 +8,11 @@
 #include <cstdio>
 
 #include "base/auto_reset.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/debug/leak_annotations.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -97,7 +97,7 @@ class V8ExternalStringFromScriptData
       : script_data_(script_data) {}
 
   const uint16_t* data() const override {
-    return reinterpret_cast<const uint16*>(script_data_->utf16().data());
+    return reinterpret_cast<const uint16_t*>(script_data_->utf16().data());
   }
 
   size_t length() const override { return script_data_->utf16().size(); }

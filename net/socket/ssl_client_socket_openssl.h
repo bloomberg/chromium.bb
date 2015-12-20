@@ -7,6 +7,7 @@
 
 #include <openssl/base.h>
 #include <openssl/ssl.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>
@@ -106,8 +107,8 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   int Write(IOBuffer* buf,
             int buf_len,
             const CompletionCallback& callback) override;
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
+  int SetReceiveBufferSize(int32_t size) override;
+  int SetSendBufferSize(int32_t size) override;
 
  private:
   class PeerCertificateChain;

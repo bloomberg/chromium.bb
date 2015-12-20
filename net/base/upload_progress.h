@@ -5,7 +5,7 @@
 #ifndef NET_BASE_UPLOAD_PROGRESS_H_
 #define NET_BASE_UPLOAD_PROGRESS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace net {
 

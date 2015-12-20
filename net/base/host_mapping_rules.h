@@ -7,7 +7,8 @@
 
 #include <string>
 #include <vector>
-#include "base/basictypes.h"
+
+#include "base/macros.h"
 #include "net/base/net_export.h"
 
 namespace net {

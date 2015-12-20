@@ -5,8 +5,11 @@
 #ifndef NET_PROXY_DHCP_PROXY_SCRIPT_ADAPTER_FETCHER_WIN_H_
 #define NET_PROXY_DHCP_PROXY_SCRIPT_ADAPTER_FETCHER_WIN_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

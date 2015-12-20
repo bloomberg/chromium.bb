@@ -10,10 +10,14 @@
 #ifndef NET_COOKIES_COOKIE_MONSTER_STORE_TEST_H_
 #define NET_COOKIES_COOKIE_MONSTER_STORE_TEST_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "base/macros.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 
@@ -166,7 +170,7 @@ class MockSimplePersistentCookieStore
   ~MockSimplePersistentCookieStore() override;
 
  private:
-  typedef std::map<int64, CanonicalCookie> CanonicalCookieMap;
+  typedef std::map<int64_t, CanonicalCookie> CanonicalCookieMap;
 
   CanonicalCookieMap cookies_;
 

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,7 +53,7 @@ class QuicFecGroupTest : public ::testing::Test {
     // XOR in the packets.
     for (size_t packet = 1; packet <= num_packets; ++packet) {
       for (size_t i = 0; i < kDataMaxLen; i++) {
-        uint8 byte = i > strlen(kData[packet]) ? 0x00 : kData[packet][i];
+        uint8_t byte = i > strlen(kData[packet]) ? 0x00 : kData[packet][i];
         redundancy[i] = redundancy[i] ^ byte;
       }
     }

@@ -5,7 +5,9 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_BITMAP_H_
 #define NET_DISK_CACHE_BLOCKFILE_BITMAP_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "net/base/net_export.h"
 
 namespace disk_cache {
@@ -15,14 +17,14 @@ class NET_EXPORT_PRIVATE Bitmap {
  public:
   Bitmap() : map_(NULL), num_bits_(0), array_size_(0), alloc_(false) {}
 
-  // This constructor will allocate on a uint32 boundary. If |clear_bits| is
+  // This constructor will allocate on a uint32_t boundary. If |clear_bits| is
   // false, the bitmap bits will not be initialized.
   Bitmap(int num_bits, bool clear_bits);
 
   // Constructs a Bitmap with the actual storage provided by the caller. |map|
   // has to be valid until this object destruction. |num_bits| is the number of
   // bits in the bitmap, and |num_words| is the size of |map| in 32-bit words.
-  Bitmap(uint32* map, int num_bits, int num_words);
+  Bitmap(uint32_t* map, int num_bits, int num_words);
 
   ~Bitmap();
 
@@ -54,18 +56,18 @@ class NET_EXPORT_PRIVATE Bitmap {
 
   // Directly sets an element of the internal map. Requires |array_index| <
   // ArraySize();
-  void SetMapElement(int array_index, uint32 value);
+  void SetMapElement(int array_index, uint32_t value);
 
   // Gets an entry of the internal map. Requires array_index <
   // ArraySize()
-  uint32 GetMapElement(int array_index) const;
+  uint32_t GetMapElement(int array_index) const;
 
   // Directly sets the whole internal map. |size| is the number of 32-bit words
   // to set from |map|. If  |size| > array_size(), it ignores the end of |map|.
-  void SetMap(const uint32* map, int size);
+  void SetMap(const uint32_t* map, int size);
 
   // Gets a pointer to the internal map.
-  const uint32* GetMap() const { return map_; }
+  const uint32_t* GetMap() const { return map_; }
 
   // Sets a range of bits to |value|.
   void SetRange(int begin, int end, bool value);
@@ -116,14 +118,14 @@ class NET_EXPORT_PRIVATE Bitmap {
   }
 
  private:
-  static const int kIntBits = sizeof(uint32) * 8;
+  static const int kIntBits = sizeof(uint32_t) * 8;
   static const int kLogIntBits = 5;  // 2^5 == 32 bits per word.
 
   // Sets |len| bits from |start| to |value|. All the bits to be set should be
   // stored in the same word, and len < kIntBits.
   void SetWordBits(int start, int len, bool value);
 
-  uint32* map_;           // The bitmap.
+  uint32_t* map_;         // The bitmap.
   int num_bits_;          // The upper bound of the bitmap.
   int array_size_;        // The physical size (in uint32s) of the bitmap.
   bool alloc_;            // Whether or not we allocated the memory.

@@ -15,24 +15,19 @@ namespace {
 TEST(DnsQueryTest, Constructor) {
   // This includes \0 at the end.
   const char qname_data[] = "\x03""www""\x07""example""\x03""com";
-  const uint8 query_data[] = {
-    // Header
-    0xbe, 0xef,
-    0x01, 0x00,               // Flags -- set RD (recursion desired) bit.
-    0x00, 0x01,               // Set QDCOUNT (question count) to 1, all the
-                              // rest are 0 for a query.
-    0x00, 0x00,
-    0x00, 0x00,
-    0x00, 0x00,
+  const uint8_t query_data[] = {
+      // Header
+      0xbe, 0xef, 0x01, 0x00,  // Flags -- set RD (recursion desired) bit.
+      0x00, 0x01,              // Set QDCOUNT (question count) to 1, all the
+                               // rest are 0 for a query.
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
-    // Question
-    0x03, 'w', 'w', 'w',      // QNAME: www.example.com in DNS format.
-    0x07, 'e', 'x', 'a', 'm', 'p', 'l', 'e',
-    0x03, 'c', 'o', 'm',
-    0x00,
+      // Question
+      0x03, 'w', 'w', 'w',  // QNAME: www.example.com in DNS format.
+      0x07, 'e', 'x', 'a', 'm', 'p', 'l', 'e', 0x03, 'c', 'o', 'm', 0x00,
 
-    0x00, 0x01,               // QTYPE: A query.
-    0x00, 0x01,               // QCLASS: IN class.
+      0x00, 0x01,  // QTYPE: A query.
+      0x00, 0x01,  // QCLASS: IN class.
   };
 
   base::StringPiece qname(qname_data, sizeof(qname_data));

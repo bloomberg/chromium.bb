@@ -9,7 +9,8 @@
 // Backend on disk. Assumes no backend operations are running simultaneously.
 // Hence must be run at cache initialization step.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "net/base/net_export.h"
 
 namespace base {
@@ -33,13 +34,13 @@ struct NET_EXPORT_PRIVATE FakeIndexData {
   FakeIndexData();
 
   // Must be equal to simplecache_v4::kSimpleInitialMagicNumber.
-  uint64 initial_magic_number;
+  uint64_t initial_magic_number;
 
   // Must be equal kSimpleVersion when the cache backend is instantiated.
-  uint32 version;
+  uint32_t version;
 
-  uint32 unused_must_be_zero1;
-  uint32 unused_must_be_zero2;
+  uint32_t unused_must_be_zero1;
+  uint32_t unused_must_be_zero2;
 };
 
 // Exposed for testing.

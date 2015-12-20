@@ -48,7 +48,7 @@ const char* Aes128Gcm12Decrypter::cipher_name() const {
   return "ECDHE-RSA-AES128-GCM-SHA256";
 }
 
-uint32 Aes128Gcm12Decrypter::cipher_id() const {
+uint32_t Aes128Gcm12Decrypter::cipher_id() const {
   // TODO(rtenneti): when Chromium requires NSS 3.15.2 or later, use
   // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 instead of 0xC02F.
   // Or'ed with 0x03000000 to match OpenSSL/BoringSSL implementations.

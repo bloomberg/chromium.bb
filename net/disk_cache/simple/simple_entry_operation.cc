@@ -168,7 +168,7 @@ SimpleEntryOperation SimpleEntryOperation::WriteOperation(
 // static
 SimpleEntryOperation SimpleEntryOperation::ReadSparseOperation(
     SimpleEntryImpl* entry,
-    int64 sparse_offset,
+    int64_t sparse_offset,
     int length,
     net::IOBuffer* buf,
     const CompletionCallback& callback) {
@@ -191,7 +191,7 @@ SimpleEntryOperation SimpleEntryOperation::ReadSparseOperation(
 // static
 SimpleEntryOperation SimpleEntryOperation::WriteSparseOperation(
     SimpleEntryImpl* entry,
-    int64 sparse_offset,
+    int64_t sparse_offset,
     int length,
     net::IOBuffer* buf,
     const CompletionCallback& callback) {
@@ -214,9 +214,9 @@ SimpleEntryOperation SimpleEntryOperation::WriteSparseOperation(
 // static
 SimpleEntryOperation SimpleEntryOperation::GetAvailableRangeOperation(
     SimpleEntryImpl* entry,
-    int64 sparse_offset,
+    int64_t sparse_offset,
     int length,
-    int64* out_start,
+    int64_t* out_start,
     const CompletionCallback& callback) {
   return SimpleEntryOperation(entry,
                               NULL,
@@ -241,9 +241,9 @@ SimpleEntryOperation SimpleEntryOperation::DoomOperation(
   net::IOBuffer* const buf = NULL;
   Entry** const out_entry = NULL;
   const int offset = 0;
-  const int64 sparse_offset = 0;
+  const int64_t sparse_offset = 0;
   const int length = 0;
-  int64* const out_start = NULL;
+  int64_t* const out_start = NULL;
   const bool have_index = false;
   const int index = 0;
   const bool truncate = false;
@@ -287,8 +287,8 @@ bool SimpleEntryOperation::ConflictsWith(
   // and offsets to see whether they overlap.
 
   if (IsSparseType(type_)) {
-    int64 end = sparse_offset_ + length_;
-    int64 other_op_end = other_op.sparse_offset() + other_op.length();
+    int64_t end = sparse_offset_ + length_;
+    int64_t other_op_end = other_op.sparse_offset() + other_op.length();
     return sparse_offset_ < other_op_end && other_op.sparse_offset() < end;
   }
 
@@ -312,9 +312,9 @@ SimpleEntryOperation::SimpleEntryOperation(SimpleEntryImpl* entry,
                                            const CompletionCallback& callback,
                                            Entry** out_entry,
                                            int offset,
-                                           int64 sparse_offset,
+                                           int64_t sparse_offset,
                                            int length,
-                                           int64* out_start,
+                                           int64_t* out_start,
                                            EntryOperationType type,
                                            bool have_index,
                                            int index,
@@ -334,7 +334,6 @@ SimpleEntryOperation::SimpleEntryOperation(SimpleEntryImpl* entry,
       index_(index),
       truncate_(truncate),
       optimistic_(optimistic),
-      alone_in_queue_(alone_in_queue) {
-}
+      alone_in_queue_(alone_in_queue) {}
 
 }  // namespace disk_cache

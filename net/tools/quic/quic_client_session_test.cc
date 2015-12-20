@@ -42,7 +42,7 @@ namespace test {
 namespace {
 
 const char kServerHostname[] = "test.example.com";
-const uint16 kPort = 80;
+const uint16_t kPort = 80;
 
 class ToolsQuicClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {

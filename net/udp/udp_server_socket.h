@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "net/base/completion_callback.h"
 #include "net/base/ip_address_number.h"
 #include "net/udp/datagram_server_socket.h"

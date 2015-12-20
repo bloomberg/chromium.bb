@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
@@ -32,7 +33,7 @@ namespace net {
 namespace test {
 namespace {
 
-const int64 kMinFecTimeoutMs = 5u;
+const int64_t kMinFecTimeoutMs = 5u;
 
 static const FecSendPolicy kFecSendPolicyList[] = {
     FEC_ANY_TRIGGER, FEC_ALARM_TRIGGER,

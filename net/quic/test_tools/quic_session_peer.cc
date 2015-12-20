@@ -26,7 +26,7 @@ void QuicSessionPeer::SetNextOutgoingStreamId(QuicSession* session,
 
 // static
 void QuicSessionPeer::SetMaxOpenStreams(QuicSession* session,
-                                        uint32 max_streams) {
+                                        uint32_t max_streams) {
   session->max_open_streams_ = max_streams;
 }
 

@@ -6,8 +6,8 @@
 #define NET_SOCKET_CLIENT_SOCKET_POOL_MANAGER_IMPL_H_
 
 #include <map>
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"

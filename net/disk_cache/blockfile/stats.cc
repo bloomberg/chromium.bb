@@ -16,18 +16,18 @@
 
 namespace {
 
-const int32 kDiskSignature = 0xF01427E0;
+const int32_t kDiskSignature = 0xF01427E0;
 
 struct OnDiskStats {
-  int32 signature;
+  int32_t signature;
   int size;
   int data_sizes[disk_cache::Stats::kDataSizesLength];
-  int64 counters[disk_cache::Stats::MAX_COUNTER];
+  int64_t counters[disk_cache::Stats::MAX_COUNTER];
 };
 static_assert(sizeof(OnDiskStats) < 512, "needs more than 2 blocks");
 
 // Returns the "floor" (as opposed to "ceiling") of log base 2 of number.
-int LogBase2(int32 number) {
+int LogBase2(int32_t number) {
   unsigned int value = static_cast<unsigned int>(number);
   const unsigned int mask[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
   const unsigned int s[] = {1, 2, 4, 8, 16};
@@ -169,7 +169,7 @@ int Stats::StorageSize() {
   return 256 * 2;
 }
 
-void Stats::ModifyStorageStats(int32 old_size, int32 new_size) {
+void Stats::ModifyStorageStats(int32_t old_size, int32_t new_size) {
   // We keep a counter of the data block size on an array where each entry is
   // the adjusted log base 2 of the size. The first entry counts blocks of 256
   // bytes, the second blocks up to 512 bytes, etc. With 20 entries, the last
@@ -189,12 +189,12 @@ void Stats::OnEvent(Counters an_event) {
   counters_[an_event]++;
 }
 
-void Stats::SetCounter(Counters counter, int64 value) {
+void Stats::SetCounter(Counters counter, int64_t value) {
   DCHECK(counter >= MIN_COUNTER && counter < MAX_COUNTER);
   counters_[counter] = value;
 }
 
-int64 Stats::GetCounter(Counters counter) const {
+int64_t Stats::GetCounter(Counters counter) const {
   DCHECK(counter >= MIN_COUNTER && counter < MAX_COUNTER);
   return counters_[counter];
 }
@@ -295,7 +295,7 @@ int Stats::GetBucketRange(size_t i) const {
 //   25     [16M, 32M)
 //   26     [32M, 64M)
 //   27     [64M, ...)
-int Stats::GetStatsBucket(int32 size) {
+int Stats::GetStatsBucket(int32_t size) {
   if (size < 1024)
     return 0;
 
@@ -318,7 +318,7 @@ int Stats::GetStatsBucket(int32 size) {
 }
 
 int Stats::GetRatio(Counters hit, Counters miss) const {
-  int64 ratio = GetCounter(hit) * 100;
+  int64_t ratio = GetCounter(hit) * 100;
   if (!ratio)
     return 0;
 

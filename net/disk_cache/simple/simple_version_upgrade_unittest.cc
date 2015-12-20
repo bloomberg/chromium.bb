@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -24,7 +23,7 @@
 namespace {
 
 // Same as |disk_cache::kSimpleInitialMagicNumber|.
-const uint64 kSimpleInitialMagicNumber = UINT64_C(0xfcfb6d1ba7725c30);
+const uint64_t kSimpleInitialMagicNumber = UINT64_C(0xfcfb6d1ba7725c30);
 
 // The "fake index" file that cache backends use to distinguish whether the
 // cache belongs to one backend or another.
@@ -102,14 +101,14 @@ TEST(SimpleVersionUpgradeTest, UpgradeV5V6IndexMustDisappear) {
       base::WriteFile(index_file, file_contents.data(), file_contents.size()));
 
   // Create a few entry-like files.
-  const uint64 kEntries = 5;
-  for (uint64 entry_hash = 0; entry_hash < kEntries; ++entry_hash) {
+  const uint64_t kEntries = 5;
+  for (uint64_t entry_hash = 0; entry_hash < kEntries; ++entry_hash) {
     for (int index = 0; index < 3; ++index) {
       std::string file_name =
           base::StringPrintf("%016" PRIx64 "_%1d", entry_hash, index);
       std::string entry_contents =
           file_contents +
-          base::StringPrintf(" %" PRIx64, static_cast<uint64>(entry_hash));
+          base::StringPrintf(" %" PRIx64, static_cast<uint64_t>(entry_hash));
       ASSERT_EQ(static_cast<int>(entry_contents.size()),
                 base::WriteFile(cache_path.AppendASCII(file_name),
                                 entry_contents.data(), entry_contents.size()));
@@ -121,13 +120,13 @@ TEST(SimpleVersionUpgradeTest, UpgradeV5V6IndexMustDisappear) {
 
   // Check that the old index disappeared but the files remain unchanged.
   EXPECT_FALSE(base::PathExists(index_file));
-  for (uint64 entry_hash = 0; entry_hash < kEntries; ++entry_hash) {
+  for (uint64_t entry_hash = 0; entry_hash < kEntries; ++entry_hash) {
     for (int index = 0; index < 3; ++index) {
       std::string file_name =
           base::StringPrintf("%016" PRIx64 "_%1d", entry_hash, index);
       std::string expected_contents =
           file_contents +
-          base::StringPrintf(" %" PRIx64, static_cast<uint64>(entry_hash));
+          base::StringPrintf(" %" PRIx64, static_cast<uint64_t>(entry_hash));
       std::string real_contents;
       EXPECT_TRUE(base::ReadFileToString(cache_path.AppendASCII(file_name),
                                          &real_contents));

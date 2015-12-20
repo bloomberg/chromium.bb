@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/persistent_pref_store.h"
 #include "base/prefs/value_map_pref_store.h"
@@ -280,8 +281,7 @@ SdchOwner::~SdchOwner() {
   if (external_pref_store_)
     external_pref_store_->RemoveObserver(this);
 
-  int64 object_lifetime =
-      (clock_->Now() - creation_time_).InMilliseconds();
+  int64_t object_lifetime = (clock_->Now() - creation_time_).InMilliseconds();
   for (const auto& val : consumed_byte_seconds_) {
     if (object_lifetime > 0) {
       // Objects that are created and immediately destroyed don't add any memory

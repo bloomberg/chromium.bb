@@ -8,6 +8,7 @@
 #include <iterator>
 #include <map>
 
+#include "base/macros.h"
 #include "base/sys_byteorder.h"
 #include "net/base/address_list.h"
 #include "net/base/test_completion_callback.h"
@@ -45,7 +46,7 @@ class SOCKS5ClientSocketTest : public PlatformTest {
   void SetUp() override;
 
  protected:
-  const uint16 kNwPort;
+  const uint16_t kNwPort;
   TestNetLog net_log_;
   scoped_ptr<SOCKS5ClientSocket> user_sock_;
   AddressList address_list_;

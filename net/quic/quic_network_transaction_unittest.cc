@@ -4,8 +4,8 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -351,7 +351,7 @@ class QuicNetworkTransactionTest
   }
 
   void CheckResponsePort(const scoped_ptr<HttpNetworkTransaction>& trans,
-                         uint16 port) {
+                         uint16_t port) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != nullptr);
     EXPECT_EQ(port, response->socket_address.port());
@@ -395,13 +395,13 @@ class QuicNetworkTransactionTest
   }
 
   void SendRequestAndExpectQuicResponseOnPort(const std::string& expected,
-                                              uint16 port) {
+                                              uint16_t port) {
     SendRequestAndExpectQuicResponseMaybeFromProxy(expected, false, port);
   }
 
   void SendRequestAndExpectQuicResponseFromProxyOnPort(
       const std::string& expected,
-      uint16 port) {
+      uint16_t port) {
     SendRequestAndExpectQuicResponseMaybeFromProxy(expected, true, port);
   }
 
@@ -466,7 +466,7 @@ class QuicNetworkTransactionTest
   void SendRequestAndExpectQuicResponseMaybeFromProxy(
       const std::string& expected,
       bool used_proxy,
-      uint16 port) {
+      uint16_t port) {
     scoped_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     ProxyHeadersHandler proxy_headers_handler;

@@ -13,9 +13,9 @@ namespace test {
 
 DelayedVerifyStrikeRegisterClient::DelayedVerifyStrikeRegisterClient(
     unsigned max_entries,
-    uint32 current_time_external,
-    uint32 window_secs,
-    const uint8 orbit[8],
+    uint32_t current_time_external,
+    uint32_t window_secs,
+    const uint8_t orbit[8],
     StrikeRegister::StartupType startup)
     : LocalStrikeRegisterClient(max_entries,
                                 current_time_external,

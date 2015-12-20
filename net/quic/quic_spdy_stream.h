@@ -9,12 +9,13 @@
 #ifndef NET_QUIC_QUIC_SPDY_STREAM_H_
 #define NET_QUIC_QUIC_SPDY_STREAM_H_
 
+#include <stddef.h>
 #include <sys/types.h>
 
 #include <list>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/iovec.h"
 #include "net/base/ip_endpoint.h"

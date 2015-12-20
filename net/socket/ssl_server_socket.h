@@ -5,7 +5,6 @@
 #ifndef NET_SOCKET_SSL_SERVER_SOCKET_H_
 #define NET_SOCKET_SSL_SERVER_SOCKET_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"

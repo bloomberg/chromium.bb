@@ -5,12 +5,14 @@
 #ifndef NET_PROXY_PROXY_CONFIG_SERVICE_LINUX_H_
 #define NET_PROXY_PROXY_CONFIG_SERVICE_LINUX_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"

@@ -22,8 +22,8 @@ namespace net {
 QuicErrorCode ReadUint32(const CryptoHandshakeMessage& msg,
                          QuicTag tag,
                          QuicConfigPresence presence,
-                         uint32 default_value,
-                         uint32* out,
+                         uint32_t default_value,
+                         uint32_t* out,
                          string* error_details) {
   DCHECK(error_details != nullptr);
   QuicErrorCode error = msg.GetUint32(tag, out);
@@ -62,13 +62,13 @@ QuicNegotiableUint32::QuicNegotiableUint32(QuicTag tag,
       negotiated_value_(0) {}
 QuicNegotiableUint32::~QuicNegotiableUint32() {}
 
-void QuicNegotiableUint32::set(uint32 max, uint32 default_value) {
+void QuicNegotiableUint32::set(uint32_t max, uint32_t default_value) {
   DCHECK_LE(default_value, max);
   max_value_ = max;
   default_value_ = default_value;
 }
 
-uint32 QuicNegotiableUint32::GetUint32() const {
+uint32_t QuicNegotiableUint32::GetUint32() const {
   if (negotiated()) {
     return negotiated_value_;
   }
@@ -90,7 +90,7 @@ QuicErrorCode QuicNegotiableUint32::ProcessPeerHello(
     string* error_details) {
   DCHECK(!negotiated());
   DCHECK(error_details != nullptr);
-  uint32 value;
+  uint32_t value;
   QuicErrorCode error = ReadUint32(peer_hello, tag_, presence_, default_value_,
                                    &value, error_details);
   if (error != QUIC_NO_ERROR) {
@@ -202,13 +202,13 @@ bool QuicFixedUint32::HasSendValue() const {
   return has_send_value_;
 }
 
-uint32 QuicFixedUint32::GetSendValue() const {
+uint32_t QuicFixedUint32::GetSendValue() const {
   LOG_IF(DFATAL, !has_send_value_) << "No send value to get for tag:"
                                    << QuicUtils::TagToString(tag_);
   return send_value_;
 }
 
-void QuicFixedUint32::SetSendValue(uint32 value) {
+void QuicFixedUint32::SetSendValue(uint32_t value) {
   has_send_value_ = true;
   send_value_ = value;
 }
@@ -217,13 +217,13 @@ bool QuicFixedUint32::HasReceivedValue() const {
   return has_receive_value_;
 }
 
-uint32 QuicFixedUint32::GetReceivedValue() const {
+uint32_t QuicFixedUint32::GetReceivedValue() const {
   LOG_IF(DFATAL, !has_receive_value_) << "No receive value to get for tag:"
                                       << QuicUtils::TagToString(tag_);
   return receive_value_;
 }
 
-void QuicFixedUint32::SetReceivedValue(uint32 value) {
+void QuicFixedUint32::SetReceivedValue(uint32_t value) {
   has_receive_value_ = true;
   receive_value_ = value;
 }
@@ -399,8 +399,8 @@ void QuicConfig::SetIdleConnectionStateLifetime(
     QuicTime::Delta max_idle_connection_state_lifetime,
     QuicTime::Delta default_idle_conection_state_lifetime) {
   idle_connection_state_lifetime_seconds_.set(
-      static_cast<uint32>(max_idle_connection_state_lifetime.ToSeconds()),
-      static_cast<uint32>(default_idle_conection_state_lifetime.ToSeconds()));
+      static_cast<uint32_t>(max_idle_connection_state_lifetime.ToSeconds()),
+      static_cast<uint32_t>(default_idle_conection_state_lifetime.ToSeconds()));
 }
 
 QuicTime::Delta QuicConfig::IdleConnectionStateLifetime() const {
@@ -422,7 +422,7 @@ void QuicConfig::SetMaxStreamsPerConnection(size_t max_streams,
   max_streams_per_connection_.set(max_streams, default_streams);
 }
 
-uint32 QuicConfig::MaxStreamsPerConnection() const {
+uint32_t QuicConfig::MaxStreamsPerConnection() const {
   return max_streams_per_connection_.GetUint32();
 }
 
@@ -430,7 +430,7 @@ bool QuicConfig::HasSetBytesForConnectionIdToSend() const {
   return bytes_for_connection_id_.HasSendValue();
 }
 
-void QuicConfig::SetBytesForConnectionIdToSend(uint32 bytes) {
+void QuicConfig::SetBytesForConnectionIdToSend(uint32_t bytes) {
   bytes_for_connection_id_.SetSendValue(bytes);
 }
 
@@ -438,11 +438,11 @@ bool QuicConfig::HasReceivedBytesForConnectionId() const {
   return bytes_for_connection_id_.HasReceivedValue();
 }
 
-uint32 QuicConfig::ReceivedBytesForConnectionId() const {
+uint32_t QuicConfig::ReceivedBytesForConnectionId() const {
   return bytes_for_connection_id_.GetReceivedValue();
 }
 
-void QuicConfig::SetInitialRoundTripTimeUsToSend(uint32 rtt) {
+void QuicConfig::SetInitialRoundTripTimeUsToSend(uint32_t rtt) {
   initial_round_trip_time_us_.SetSendValue(rtt);
 }
 
@@ -450,7 +450,7 @@ bool QuicConfig::HasReceivedInitialRoundTripTimeUs() const {
   return initial_round_trip_time_us_.HasReceivedValue();
 }
 
-uint32 QuicConfig::ReceivedInitialRoundTripTimeUs() const {
+uint32_t QuicConfig::ReceivedInitialRoundTripTimeUs() const {
   return initial_round_trip_time_us_.GetReceivedValue();
 }
 
@@ -458,11 +458,12 @@ bool QuicConfig::HasInitialRoundTripTimeUsToSend() const {
   return initial_round_trip_time_us_.HasSendValue();
 }
 
-uint32 QuicConfig::GetInitialRoundTripTimeUsToSend() const {
+uint32_t QuicConfig::GetInitialRoundTripTimeUsToSend() const {
   return initial_round_trip_time_us_.GetSendValue();
 }
 
-void QuicConfig::SetInitialStreamFlowControlWindowToSend(uint32 window_bytes) {
+void QuicConfig::SetInitialStreamFlowControlWindowToSend(
+    uint32_t window_bytes) {
   if (window_bytes < kMinimumFlowControlSendWindow) {
     LOG(DFATAL) << "Initial stream flow control receive window ("
                 << window_bytes << ") cannot be set lower than default ("
@@ -472,7 +473,7 @@ void QuicConfig::SetInitialStreamFlowControlWindowToSend(uint32 window_bytes) {
   initial_stream_flow_control_window_bytes_.SetSendValue(window_bytes);
 }
 
-uint32 QuicConfig::GetInitialStreamFlowControlWindowToSend() const {
+uint32_t QuicConfig::GetInitialStreamFlowControlWindowToSend() const {
   return initial_stream_flow_control_window_bytes_.GetSendValue();
 }
 
@@ -480,11 +481,12 @@ bool QuicConfig::HasReceivedInitialStreamFlowControlWindowBytes() const {
   return initial_stream_flow_control_window_bytes_.HasReceivedValue();
 }
 
-uint32 QuicConfig::ReceivedInitialStreamFlowControlWindowBytes() const {
+uint32_t QuicConfig::ReceivedInitialStreamFlowControlWindowBytes() const {
   return initial_stream_flow_control_window_bytes_.GetReceivedValue();
 }
 
-void QuicConfig::SetInitialSessionFlowControlWindowToSend(uint32 window_bytes) {
+void QuicConfig::SetInitialSessionFlowControlWindowToSend(
+    uint32_t window_bytes) {
   if (window_bytes < kMinimumFlowControlSendWindow) {
     LOG(DFATAL) << "Initial session flow control receive window ("
                 << window_bytes << ") cannot be set lower than default ("
@@ -494,7 +496,7 @@ void QuicConfig::SetInitialSessionFlowControlWindowToSend(uint32 window_bytes) {
   initial_session_flow_control_window_bytes_.SetSendValue(window_bytes);
 }
 
-uint32 QuicConfig::GetInitialSessionFlowControlWindowToSend() const {
+uint32_t QuicConfig::GetInitialSessionFlowControlWindowToSend() const {
   return initial_session_flow_control_window_bytes_.GetSendValue();
 }
 
@@ -502,11 +504,11 @@ bool QuicConfig::HasReceivedInitialSessionFlowControlWindowBytes() const {
   return initial_session_flow_control_window_bytes_.HasReceivedValue();
 }
 
-uint32 QuicConfig::ReceivedInitialSessionFlowControlWindowBytes() const {
+uint32_t QuicConfig::ReceivedInitialSessionFlowControlWindowBytes() const {
   return initial_session_flow_control_window_bytes_.GetReceivedValue();
 }
 
-void QuicConfig::SetSocketReceiveBufferToSend(uint32 tcp_receive_window) {
+void QuicConfig::SetSocketReceiveBufferToSend(uint32_t tcp_receive_window) {
   socket_receive_buffer_.SetSendValue(tcp_receive_window);
 }
 
@@ -514,7 +516,7 @@ bool QuicConfig::HasReceivedSocketReceiveBuffer() const {
   return socket_receive_buffer_.HasReceivedValue();
 }
 
-uint32 QuicConfig::ReceivedSocketReceiveBuffer() const {
+uint32_t QuicConfig::ReceivedSocketReceiveBuffer() const {
   return socket_receive_buffer_.GetReceivedValue();
 }
 

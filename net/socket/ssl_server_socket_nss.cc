@@ -108,7 +108,7 @@ SSLServerSocketNSS::SSLServerSocketNSS(
       next_handshake_state_(STATE_NONE),
       completed_handshake_(false) {
   // TODO(hclam): Need a better way to clone a key.
-  std::vector<uint8> key_bytes;
+  std::vector<uint8_t> key_bytes;
   CHECK(key->ExportPrivateKey(&key_bytes));
   key_.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes));
   CHECK(key_.get());
@@ -239,11 +239,11 @@ int SSLServerSocketNSS::Write(IOBuffer* buf, int buf_len,
   return rv;
 }
 
-int SSLServerSocketNSS::SetReceiveBufferSize(int32 size) {
+int SSLServerSocketNSS::SetReceiveBufferSize(int32_t size) {
   return transport_socket_->SetReceiveBufferSize(size);
 }
 
-int SSLServerSocketNSS::SetSendBufferSize(int32 size) {
+int SSLServerSocketNSS::SetSendBufferSize(int32_t size) {
   return transport_socket_->SetSendBufferSize(size);
 }
 
@@ -384,7 +384,7 @@ int SSLServerSocketNSS::InitializeSSLOptions() {
     }
   }
 
-  for (std::vector<uint16>::const_iterator it =
+  for (std::vector<uint16_t>::const_iterator it =
            ssl_config_.disabled_cipher_suites.begin();
        it != ssl_config_.disabled_cipher_suites.end(); ++it) {
     // This will fail if the specified cipher is not implemented by NSS, but
@@ -456,7 +456,7 @@ int SSLServerSocketNSS::InitializeSSLOptions() {
   }
 
   // Get a key of SECKEYPrivateKey* structure.
-  std::vector<uint8> key_vector;
+  std::vector<uint8_t> key_vector;
   if (!key_->ExportPrivateKey(&key_vector)) {
     CERT_DestroyCertificate(cert);
     return ERR_UNEXPECTED;

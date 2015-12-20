@@ -90,20 +90,20 @@ class SpdySessionTest : public PlatformTest,
     StallSessionSend();
   }
 
-  void UnstallSessionOnly(SpdyStream* stream, int32 delta_window_size) {
+  void UnstallSessionOnly(SpdyStream* stream, int32_t delta_window_size) {
     UnstallSessionSend(delta_window_size);
   }
 
-  void UnstallStreamOnly(SpdyStream* stream, int32 delta_window_size) {
+  void UnstallStreamOnly(SpdyStream* stream, int32_t delta_window_size) {
     UnstallStreamSend(stream, delta_window_size);
   }
 
-  void UnstallSessionStream(SpdyStream* stream, int32 delta_window_size) {
+  void UnstallSessionStream(SpdyStream* stream, int32_t delta_window_size) {
     UnstallSessionSend(delta_window_size);
     UnstallStreamSend(stream, delta_window_size);
   }
 
-  void UnstallStreamSession(SpdyStream* stream, int32 delta_window_size) {
+  void UnstallStreamSession(SpdyStream* stream, int32_t delta_window_size) {
     UnstallStreamSend(stream, delta_window_size);
     UnstallSessionSend(delta_window_size);
   }
@@ -172,7 +172,7 @@ class SpdySessionTest : public PlatformTest,
     }
   }
 
-  void UnstallSessionSend(int32 delta_window_size) {
+  void UnstallSessionSend(int32_t delta_window_size) {
     session_->IncreaseSendWindowSize(delta_window_size);
   }
 
@@ -184,13 +184,13 @@ class SpdySessionTest : public PlatformTest,
     }
   }
 
-  void UnstallStreamSend(SpdyStream* stream, int32 delta_window_size) {
+  void UnstallStreamSend(SpdyStream* stream, int32_t delta_window_size) {
     stream->IncreaseSendWindowSize(delta_window_size);
   }
 
   void RunResumeAfterUnstallTest(
       const base::Callback<void(SpdyStream*)>& stall_function,
-      const base::Callback<void(SpdyStream*, int32)>& unstall_function);
+      const base::Callback<void(SpdyStream*, int32_t)>& unstall_function);
 
   // Original socket limits.  Some tests set these.  Safest to always restore
   // them once each test has been run.
@@ -1346,7 +1346,7 @@ TEST_P(SpdySessionTest, OnSettings) {
   }
 
   SettingsMap new_settings;
-  const uint32 max_concurrent_streams = kInitialMaxConcurrentStreams + 1;
+  const uint32_t max_concurrent_streams = kInitialMaxConcurrentStreams + 1;
   new_settings[kSpdySettingsIds] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
   scoped_ptr<SpdyFrame> settings_frame(
@@ -1403,12 +1403,12 @@ TEST_P(SpdySessionTest, ClearSettings) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   SettingsMap new_settings;
-  const uint32 max_concurrent_streams = kInitialMaxConcurrentStreams + 1;
+  const uint32_t max_concurrent_streams = kInitialMaxConcurrentStreams + 1;
   new_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(new_settings));
-  uint8 flags = SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS;
+  uint8_t flags = SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS;
   test::SetFrameFlags(settings_frame.get(), flags, spdy_util_.spdy_version());
   MockRead reads[] = {
       CreateMockRead(*settings_frame, 0),
@@ -1547,7 +1547,7 @@ TEST_P(SpdySessionTest, SendInitialDataOnNewSession) {
   writes.push_back(CreateMockWrite(*settings_frame));
 
   SettingsMap server_settings;
-  const uint32 initial_max_concurrent_streams = 1;
+  const uint32_t initial_max_concurrent_streams = 1;
   server_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_PERSISTED,
                             initial_max_concurrent_streams);
@@ -2335,7 +2335,7 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
   // this file.
   SettingsMap new_settings;
   const SpdySettingsIds kSpdySettingsIds1 = SETTINGS_MAX_CONCURRENT_STREAMS;
-  const uint32 max_concurrent_streams = 1;
+  const uint32_t max_concurrent_streams = 1;
   new_settings[kSpdySettingsIds1] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
 
@@ -3388,7 +3388,7 @@ TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
   // Set SETTINGS_INITIAL_WINDOW_SIZE to a small number so that WINDOW_UPDATE
   // gets sent.
   SettingsMap new_settings;
-  int32 window_size = 1;
+  int32_t window_size = 1;
   new_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, window_size);
 
@@ -3449,9 +3449,9 @@ TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
 TEST_P(SpdySessionTest, AdjustRecvWindowSize) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  const int32 initial_window_size =
+  const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetProtocol());
-  const int32 delta_window_size = 100;
+  const int32_t delta_window_size = 100;
 
   MockRead reads[] = {
       MockRead(ASYNC, ERR_IO_PENDING, 1), MockRead(ASYNC, 0, 2)  // EOF
@@ -3516,9 +3516,9 @@ TEST_P(SpdySessionTest, AdjustSendWindowSize) {
   EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
             session_->flow_control_state());
 
-  const int32 initial_window_size =
+  const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetProtocol());
-  const int32 delta_window_size = 100;
+  const int32_t delta_window_size = 100;
 
   EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
 
@@ -3609,8 +3609,8 @@ TEST_P(SpdySessionTest, SessionFlowControlPadding) {
 
 // Peer sends more data than stream level receiving flow control window.
 TEST_P(SpdySessionTest, StreamFlowControlTooMuchData) {
-  const int32 stream_max_recv_window_size = 1024;
-  const int32 data_frame_size = 2 * stream_max_recv_window_size;
+  const int32_t stream_max_recv_window_size = 1024;
+  const int32_t data_frame_size = 2 * stream_max_recv_window_size;
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, false, 1, LOWEST, true));
@@ -3673,9 +3673,9 @@ TEST_P(SpdySessionTest, StreamFlowControlTooMuchData) {
 // deltas in the receiving window size when checking incoming frames for flow
 // control errors at session level.
 TEST_P(SpdySessionTest, SessionFlowControlTooMuchDataTwoDataFrames) {
-  const int32 session_max_recv_window_size = 500;
-  const int32 first_data_frame_size = 200;
-  const int32 second_data_frame_size = 400;
+  const int32_t session_max_recv_window_size = 500;
+  const int32_t first_data_frame_size = 200;
+  const int32_t second_data_frame_size = 400;
 
   // First data frame should not trigger a WINDOW_UPDATE.
   ASSERT_GT(session_max_recv_window_size / 2, first_data_frame_size);
@@ -3737,9 +3737,9 @@ TEST_P(SpdySessionTest, SessionFlowControlTooMuchDataTwoDataFrames) {
 // deltas in the receiving window size when checking incoming data frames for
 // flow control errors at stream level.
 TEST_P(SpdySessionTest, StreamFlowControlTooMuchDataTwoDataFrames) {
-  const int32 stream_max_recv_window_size = 500;
-  const int32 first_data_frame_size = 200;
-  const int32 second_data_frame_size = 400;
+  const int32_t stream_max_recv_window_size = 500;
+  const int32_t first_data_frame_size = 200;
+  const int32_t second_data_frame_size = 400;
 
   // First data frame should not trigger a WINDOW_UPDATE.
   ASSERT_GT(stream_max_recv_window_size / 2, first_data_frame_size);
@@ -3841,7 +3841,7 @@ class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
 // data. The receive window should still increase to its original
 // value, i.e. we shouldn't "leak" receive window bytes.
 TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
-  const int32 kMsgDataSize = 100;
+  const int32_t kMsgDataSize = 100;
   const std::string msg_data(kMsgDataSize, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
@@ -3888,7 +3888,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
 
-  const int32 initial_window_size =
+  const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetProtocol());
   EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
   EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
@@ -3915,7 +3915,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
 // can be written to the socket. The send window should then increase
 // to its original value, i.e. we shouldn't "leak" send window bytes.
 TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
-  const int32 kMsgDataSize = 100;
+  const int32_t kMsgDataSize = 100;
   const std::string msg_data(kMsgDataSize, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
@@ -3954,7 +3954,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
 
-  const int32 initial_window_size =
+  const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetProtocol());
   EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
 
@@ -3988,7 +3988,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
 // Send data back and forth; the send and receive windows should
 // change appropriately.
 TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
-  const int32 kMsgDataSize = 100;
+  const int32_t kMsgDataSize = 100;
   const std::string msg_data(kMsgDataSize, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
@@ -4038,7 +4038,7 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
 
-  const int32 initial_window_size =
+  const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetProtocol());
   EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
   EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
@@ -4097,8 +4097,7 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
 // sure that a stream resumes after unstall.
 void SpdySessionTest::RunResumeAfterUnstallTest(
     const base::Callback<void(SpdyStream*)>& stall_function,
-    const base::Callback<void(SpdyStream*, int32)>& unstall_function) {
-
+    const base::Callback<void(SpdyStream*, int32_t)>& unstall_function) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
@@ -5183,9 +5182,9 @@ TEST(CanPoolTest, CanNotPoolAcrossETLDsWithChannelID) {
 }
 
 TEST(CanPoolTest, CanNotPoolWithBadPins) {
-  uint8 primary_pin = 1;
-  uint8 backup_pin = 2;
-  uint8 bad_pin = 3;
+  uint8_t primary_pin = 1;
+  uint8_t backup_pin = 2;
+  uint8_t bad_pin = 3;
   TransportSecurityState tss;
   test::AddPin(&tss, "mail.example.org", primary_pin, backup_pin);
 
@@ -5200,8 +5199,8 @@ TEST(CanPoolTest, CanNotPoolWithBadPins) {
 }
 
 TEST(CanPoolTest, CanPoolWithAcceptablePins) {
-  uint8 primary_pin = 1;
-  uint8 backup_pin = 2;
+  uint8_t primary_pin = 1;
+  uint8_t backup_pin = 2;
   TransportSecurityState tss;
   test::AddPin(&tss, "mail.example.org", primary_pin, backup_pin);
 

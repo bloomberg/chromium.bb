@@ -5,6 +5,8 @@
 #ifndef NET_DNS_MDNS_CLIENT_H_
 #define NET_DNS_MDNS_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -76,7 +78,7 @@ class NET_EXPORT MDnsTransaction {
   virtual const std::string& GetName() const = 0;
 
   // Get the type for this transaction (SRV, TXT, A, AAA, etc)
-  virtual uint16 GetType() const = 0;
+  virtual uint16_t GetType() const = 0;
 };
 
 // A listener listens for updates regarding a specific record or set of records.
@@ -122,7 +124,7 @@ class NET_EXPORT MDnsListener {
   virtual const std::string& GetName() const = 0;
 
   // Get the type for this query (SRV, TXT, A, AAA, etc)
-  virtual uint16 GetType() const = 0;
+  virtual uint16_t GetType() const = 0;
 };
 
 // Creates bound datagram sockets ready to use by MDnsClient.
@@ -146,7 +148,7 @@ class NET_EXPORT MDnsClient {
 
   // Create listener object for RRType |rrtype| and name |name|.
   virtual scoped_ptr<MDnsListener> CreateListener(
-      uint16 rrtype,
+      uint16_t rrtype,
       const std::string& name,
       MDnsListener::Delegate* delegate) = 0;
 
@@ -154,7 +156,7 @@ class NET_EXPORT MDnsClient {
   // network, or both for records of type |rrtype| and name |name|. |flags| is
   // defined by MDnsTransactionFlags.
   virtual scoped_ptr<MDnsTransaction> CreateTransaction(
-      uint16 rrtype,
+      uint16_t rrtype,
       const std::string& name,
       int flags,
       const MDnsTransaction::ResultCallback& callback) = 0;
@@ -172,7 +174,8 @@ class NET_EXPORT MDnsClient {
 
 NET_EXPORT IPEndPoint GetMDnsIPEndPoint(AddressFamily address_family);
 
-typedef std::vector<std::pair<uint32, AddressFamily> > InterfaceIndexFamilyList;
+typedef std::vector<std::pair<uint32_t, AddressFamily>>
+    InterfaceIndexFamilyList;
 // Returns pairs of interface and address family to bind. Current
 // implementation returns unique list of all available interfaces.
 NET_EXPORT InterfaceIndexFamilyList GetMDnsInterfacesToBind();
@@ -182,7 +185,7 @@ NET_EXPORT InterfaceIndexFamilyList GetMDnsInterfacesToBind();
 // Returns NULL if failed.
 NET_EXPORT scoped_ptr<DatagramServerSocket> CreateAndBindMDnsSocket(
     AddressFamily address_family,
-    uint32 interface_index);
+    uint32_t interface_index);
 
 }  // namespace net
 

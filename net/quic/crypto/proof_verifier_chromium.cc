@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -326,8 +327,8 @@ bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
 
     bool ok = verifier.VerifyInitRSAPSS(
         hash_alg, mask_hash_alg, hash_len,
-        reinterpret_cast<const uint8*>(signature.data()), signature.size(),
-        reinterpret_cast<const uint8*>(spki.data()), spki.size());
+        reinterpret_cast<const uint8_t*>(signature.data()), signature.size(),
+        reinterpret_cast<const uint8_t*>(spki.data()), spki.size());
     if (!ok) {
       DLOG(WARNING) << "VerifyInitRSAPSS failed";
       return false;
@@ -345,14 +346,15 @@ bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
     //   component, the OID ecdsa-with-SHA224, ecdsa-with-SHA256, ecdsa-with-
     //   SHA384, or ecdsa-with-SHA512.
     // See also RFC 5480, Appendix A.
-    static const uint8 kECDSAWithSHA256AlgorithmID[] = {
+    static const uint8_t kECDSAWithSHA256AlgorithmID[] = {
         0x30, 0x0a, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02,
     };
 
     if (!verifier.VerifyInit(
             kECDSAWithSHA256AlgorithmID, sizeof(kECDSAWithSHA256AlgorithmID),
-            reinterpret_cast<const uint8*>(signature.data()), signature.size(),
-            reinterpret_cast<const uint8*>(spki.data()), spki.size())) {
+            reinterpret_cast<const uint8_t*>(signature.data()),
+            signature.size(), reinterpret_cast<const uint8_t*>(spki.data()),
+            spki.size())) {
       DLOG(WARNING) << "VerifyInit failed";
       return false;
     }
@@ -361,9 +363,9 @@ bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
     return false;
   }
 
-  verifier.VerifyUpdate(reinterpret_cast<const uint8*>(kProofSignatureLabel),
+  verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(kProofSignatureLabel),
                         sizeof(kProofSignatureLabel));
-  verifier.VerifyUpdate(reinterpret_cast<const uint8*>(signed_data.data()),
+  verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(signed_data.data()),
                         signed_data.size());
 
   if (!verifier.VerifyFinal()) {

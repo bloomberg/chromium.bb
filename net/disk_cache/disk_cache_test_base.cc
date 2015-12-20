@@ -214,7 +214,8 @@ int DiskCacheTestWithCache::WriteData(disk_cache::Entry* entry, int index,
 }
 
 int DiskCacheTestWithCache::ReadSparseData(disk_cache::Entry* entry,
-                                           int64 offset, net::IOBuffer* buf,
+                                           int64_t offset,
+                                           net::IOBuffer* buf,
                                            int len) {
   net::TestCompletionCallback cb;
   int rv = entry->ReadSparseData(offset, buf, len, cb.callback());
@@ -222,8 +223,9 @@ int DiskCacheTestWithCache::ReadSparseData(disk_cache::Entry* entry,
 }
 
 int DiskCacheTestWithCache::WriteSparseData(disk_cache::Entry* entry,
-                                            int64 offset,
-                                            net::IOBuffer* buf, int len) {
+                                            int64_t offset,
+                                            net::IOBuffer* buf,
+                                            int len) {
   net::TestCompletionCallback cb;
   int rv = entry->WriteSparseData(offset, buf, len, cb.callback());
   return cb.GetResult(rv);
@@ -299,7 +301,8 @@ void DiskCacheTestWithCache::InitDiskCache() {
   CreateBackend(disk_cache::kNoRandom, &cache_thread_);
 }
 
-void DiskCacheTestWithCache::CreateBackend(uint32 flags, base::Thread* thread) {
+void DiskCacheTestWithCache::CreateBackend(uint32_t flags,
+                                           base::Thread* thread) {
   scoped_refptr<base::SingleThreadTaskRunner> runner;
   if (use_current_thread_)
     runner = base::ThreadTaskRunnerHandle::Get();

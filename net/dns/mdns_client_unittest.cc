@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -36,201 +37,7 @@ namespace net {
 
 namespace {
 
-const uint8 kSamplePacket1[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x81, 0x80,               // Standard query response, RA, no error
-  0x00, 0x00,               // No questions (for simplicity)
-  0x00, 0x02,               // 2 RRs (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
-
-  // Answer 1
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x00,        // TTL (4 bytes) is 1 second;
-  0x00, 0x01,
-  0x00, 0x08,        // RDLENGTH is 8 bytes.
-  0x05, 'h', 'e', 'l', 'l', 'o',
-  0xc0, 0x0c,
-
-  // Answer 2
-  0x08, '_', 'p', 'r', 'i', 'n', 't', 'e', 'r',
-  0xc0, 0x14,         // Pointer to "._tcp.local"
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 49 seconds.
-  0x24, 0x75,
-  0x00, 0x08,        // RDLENGTH is 8 bytes.
-  0x05, 'h', 'e', 'l', 'l', 'o',
-  0xc0, 0x32
-};
-
-const uint8 kCorruptedPacketBadQuestion[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x81, 0x80,               // Standard query response, RA, no error
-  0x00, 0x01,               // One question
-  0x00, 0x02,               // 2 RRs (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
-
-  // Question is corrupted and cannot be read.
-  0x99, 'h', 'e', 'l', 'l', 'o',
-  0x00,
-  0x00, 0x00,
-  0x00, 0x00,
-
-  // Answer 1
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  0x24, 0x74,
-  0x00, 0x99,        // RDLENGTH is impossible
-  0x05, 'h', 'e', 'l', 'l', 'o',
-  0xc0, 0x0c,
-
-  // Answer 2
-  0x08, '_', 'p', 'r',  // Useless trailing data.
-};
-
-const uint8 kCorruptedPacketUnsalvagable[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x81, 0x80,               // Standard query response, RA, no error
-  0x00, 0x00,               // No questions (for simplicity)
-  0x00, 0x02,               // 2 RRs (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
-
-  // Answer 1
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  0x24, 0x74,
-  0x00, 0x99,        // RDLENGTH is impossible
-  0x05, 'h', 'e', 'l', 'l', 'o',
-  0xc0, 0x0c,
-
-  // Answer 2
-  0x08, '_', 'p', 'r',  // Useless trailing data.
-};
-
-const uint8 kCorruptedPacketDoubleRecord[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x81, 0x80,               // Standard query response, RA, no error
-  0x00, 0x00,               // No questions (for simplicity)
-  0x00, 0x02,               // 2 RRs (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
-
-  // Answer 1
-  0x06, 'p', 'r', 'i', 'v', 'e', 't',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x01,        // TYPE is A.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  0x24, 0x74,
-  0x00, 0x04,        // RDLENGTH is 4
-  0x05, 0x03,
-  0xc0, 0x0c,
-
-  // Answer 2 -- Same key
-  0x06, 'p', 'r', 'i', 'v', 'e', 't',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x01,        // TYPE is A.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  0x24, 0x74,
-  0x00, 0x04,        // RDLENGTH is 4
-  0x02, 0x03,
-  0x04, 0x05,
-};
-
-const uint8 kCorruptedPacketSalvagable[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x81, 0x80,               // Standard query response, RA, no error
-  0x00, 0x00,               // No questions (for simplicity)
-  0x00, 0x02,               // 2 RRs (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
-
-  // Answer 1
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  0x24, 0x74,
-  0x00, 0x08,        // RDLENGTH is 8 bytes.
-  0x99, 'h', 'e', 'l', 'l', 'o',   // Bad RDATA format.
-  0xc0, 0x0c,
-
-  // Answer 2
-  0x08, '_', 'p', 'r', 'i', 'n', 't', 'e', 'r',
-  0xc0, 0x14,         // Pointer to "._tcp.local"
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 49 seconds.
-  0x24, 0x75,
-  0x00, 0x08,        // RDLENGTH is 8 bytes.
-  0x05, 'h', 'e', 'l', 'l', 'o',
-  0xc0, 0x32
-};
-
-const uint8 kSamplePacket2[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x81, 0x80,               // Standard query response, RA, no error
-  0x00, 0x00,               // No questions (for simplicity)
-  0x00, 0x02,               // 2 RRs (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
-
-  // Answer 1
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  0x24, 0x74,
-  0x00, 0x08,        // RDLENGTH is 8 bytes.
-  0x05, 'z', 'z', 'z', 'z', 'z',
-  0xc0, 0x0c,
-
-  // Answer 2
-  0x08, '_', 'p', 'r', 'i', 'n', 't', 'e', 'r',
-  0xc0, 0x14,         // Pointer to "._tcp.local"
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  0x24, 0x74,
-  0x00, 0x08,        // RDLENGTH is 8 bytes.
-  0x05, 'z', 'z', 'z', 'z', 'z',
-  0xc0, 0x32
-};
-
-const uint8 kSamplePacket3[] = {
+const uint8_t kSamplePacket1[] = {
     // Header
     0x00, 0x00,  // ID is zeroed out
     0x81, 0x80,  // Standard query response, RA, no error
@@ -240,159 +47,283 @@ const uint8 kSamplePacket3[] = {
     0x00, 0x00,  // 0 additional RRs
 
     // Answer 1
-    0x07, '_',  'p',  'r', 'i', 'v', 'e', 't',  //
-    0x04, '_',  't',  'c', 'p',                 //
-    0x05, 'l',  'o',  'c', 'a', 'l',            //
-    0x00, 0x00, 0x0c,                           // TYPE is PTR.
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
     0x00, 0x01,                                 // CLASS is IN.
     0x00, 0x00,                                 // TTL (4 bytes) is 1 second;
-    0x00, 0x01,                                 //
-    0x00, 0x08,                                 // RDLENGTH is 8 bytes.
-    0x05, 'h',  'e',  'l', 'l', 'o',            //
-    0xc0, 0x0c,                                 //
+    0x00, 0x01, 0x00, 0x08,                     // RDLENGTH is 8 bytes.
+    0x05, 'h', 'e', 'l', 'l', 'o', 0xc0, 0x0c,
 
     // Answer 2
-    0x08, '_',  'p',  'r', 'i', 'n', 't', 'e', 'r',  //
-    0xc0, 0x14,                                      // Pointer to "._tcp.local"
-    0x00, 0x0c,                                      // TYPE is PTR.
-    0x00, 0x01,                                      // CLASS is IN.
-    0x00, 0x00,                       // TTL (4 bytes) is 3 seconds.
-    0x00, 0x03,                       //
-    0x00, 0x08,                       // RDLENGTH is 8 bytes.
-    0x05, 'h',  'e',  'l', 'l', 'o',  //
+    0x08, '_', 'p', 'r', 'i', 'n', 't', 'e', 'r', 0xc0,
+    0x14,        // Pointer to "._tcp.local"
+    0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,  // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 49 seconds.
+    0x24, 0x75, 0x00, 0x08,  // RDLENGTH is 8 bytes.
+    0x05, 'h', 'e', 'l', 'l', 'o', 0xc0, 0x32};
+
+const uint8_t kCorruptedPacketBadQuestion[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x01,  // One question
+    0x00, 0x02,  // 2 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // Question is corrupted and cannot be read.
+    0x99, 'h', 'e', 'l', 'l', 'o', 0x00, 0x00, 0x00, 0x00, 0x00,
+
+    // Answer 1
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,                                 // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+    0x24, 0x74, 0x00, 0x99,  // RDLENGTH is impossible
+    0x05, 'h', 'e', 'l', 'l', 'o', 0xc0, 0x0c,
+
+    // Answer 2
+    0x08, '_', 'p', 'r',  // Useless trailing data.
+};
+
+const uint8_t kCorruptedPacketUnsalvagable[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x02,  // 2 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // Answer 1
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,                                 // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+    0x24, 0x74, 0x00, 0x99,  // RDLENGTH is impossible
+    0x05, 'h', 'e', 'l', 'l', 'o', 0xc0, 0x0c,
+
+    // Answer 2
+    0x08, '_', 'p', 'r',  // Useless trailing data.
+};
+
+const uint8_t kCorruptedPacketDoubleRecord[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x02,  // 2 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // Answer 1
+    0x06, 'p', 'r', 'i', 'v', 'e', 't', 0x05, 'l', 'o', 'c', 'a', 'l', 0x00,
+    0x00, 0x01,  // TYPE is A.
+    0x00, 0x01,  // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+    0x24, 0x74, 0x00, 0x04,  // RDLENGTH is 4
+    0x05, 0x03, 0xc0, 0x0c,
+
+    // Answer 2 -- Same key
+    0x06, 'p', 'r', 'i', 'v', 'e', 't', 0x05, 'l', 'o', 'c', 'a', 'l', 0x00,
+    0x00, 0x01,  // TYPE is A.
+    0x00, 0x01,  // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+    0x24, 0x74, 0x00, 0x04,  // RDLENGTH is 4
+    0x02, 0x03, 0x04, 0x05,
+};
+
+const uint8_t kCorruptedPacketSalvagable[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x02,  // 2 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // Answer 1
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,                                 // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+    0x24, 0x74, 0x00, 0x08,         // RDLENGTH is 8 bytes.
+    0x99, 'h', 'e', 'l', 'l', 'o',  // Bad RDATA format.
+    0xc0, 0x0c,
+
+    // Answer 2
+    0x08, '_', 'p', 'r', 'i', 'n', 't', 'e', 'r', 0xc0,
+    0x14,        // Pointer to "._tcp.local"
+    0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,  // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 49 seconds.
+    0x24, 0x75, 0x00, 0x08,  // RDLENGTH is 8 bytes.
+    0x05, 'h', 'e', 'l', 'l', 'o', 0xc0, 0x32};
+
+const uint8_t kSamplePacket2[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x02,  // 2 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // Answer 1
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,                                 // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+    0x24, 0x74, 0x00, 0x08,  // RDLENGTH is 8 bytes.
+    0x05, 'z', 'z', 'z', 'z', 'z', 0xc0, 0x0c,
+
+    // Answer 2
+    0x08, '_', 'p', 'r', 'i', 'n', 't', 'e', 'r', 0xc0,
+    0x14,        // Pointer to "._tcp.local"
+    0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,  // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+    0x24, 0x74, 0x00, 0x08,  // RDLENGTH is 8 bytes.
+    0x05, 'z', 'z', 'z', 'z', 'z', 0xc0, 0x32};
+
+const uint8_t kSamplePacket3[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x02,  // 2 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // Answer 1
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',  //
+    0x04, '_', 't', 'c', 'p',                 //
+    0x05, 'l', 'o', 'c', 'a', 'l',            //
+    0x00, 0x00, 0x0c,                         // TYPE is PTR.
+    0x00, 0x01,                               // CLASS is IN.
+    0x00, 0x00,                               // TTL (4 bytes) is 1 second;
+    0x00, 0x01,                               //
+    0x00, 0x08,                               // RDLENGTH is 8 bytes.
+    0x05, 'h', 'e', 'l', 'l', 'o',            //
+    0xc0, 0x0c,                               //
+
+    // Answer 2
+    0x08, '_', 'p', 'r', 'i', 'n', 't', 'e', 'r',  //
+    0xc0, 0x14,                                    // Pointer to "._tcp.local"
+    0x00, 0x0c,                                    // TYPE is PTR.
+    0x00, 0x01,                                    // CLASS is IN.
+    0x00, 0x00,                     // TTL (4 bytes) is 3 seconds.
+    0x00, 0x03,                     //
+    0x00, 0x08,                     // RDLENGTH is 8 bytes.
+    0x05, 'h', 'e', 'l', 'l', 'o',  //
     0xc0, 0x32};
 
-const uint8 kQueryPacketPrivet[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x00, 0x00,               // No flags.
-  0x00, 0x01,               // One question.
-  0x00, 0x00,               // 0 RRs (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
+const uint8_t kQueryPacketPrivet[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x00, 0x00,  // No flags.
+    0x00, 0x01,  // One question.
+    0x00, 0x00,  // 0 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
 
-  // Question
-  // This part is echoed back from the respective query.
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
+    // Question
+    // This part is echoed back from the respective query.
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,                                 // CLASS is IN.
 };
 
-const uint8 kQueryPacketPrivetA[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x00, 0x00,               // No flags.
-  0x00, 0x01,               // One question.
-  0x00, 0x00,               // 0 RRs (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
+const uint8_t kQueryPacketPrivetA[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x00, 0x00,  // No flags.
+    0x00, 0x01,  // One question.
+    0x00, 0x00,  // 0 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
 
-  // Question
-  // This part is echoed back from the respective query.
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x01,        // TYPE is A.
-  0x00, 0x01,        // CLASS is IN.
+    // Question
+    // This part is echoed back from the respective query.
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x01,  // TYPE is A.
+    0x00, 0x01,                                 // CLASS is IN.
 };
 
-const uint8 kSamplePacketAdditionalOnly[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x81, 0x80,               // Standard query response, RA, no error
-  0x00, 0x00,               // No questions (for simplicity)
-  0x00, 0x00,               // 2 RRs (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x01,               // 0 additional RRs
+const uint8_t kSamplePacketAdditionalOnly[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x00,  // 2 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x01,  // 0 additional RRs
 
-  // Answer 1
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  0x24, 0x74,
-  0x00, 0x08,        // RDLENGTH is 8 bytes.
-  0x05, 'h', 'e', 'l', 'l', 'o',
-  0xc0, 0x0c,
+    // Answer 1
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,                                 // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+    0x24, 0x74, 0x00, 0x08,  // RDLENGTH is 8 bytes.
+    0x05, 'h', 'e', 'l', 'l', 'o', 0xc0, 0x0c,
 };
 
-const uint8 kSamplePacketNsec[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x81, 0x80,               // Standard query response, RA, no error
-  0x00, 0x00,               // No questions (for simplicity)
-  0x00, 0x01,               // 1 RR (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
+const uint8_t kSamplePacketNsec[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
 
-  // Answer 1
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x2f,        // TYPE is NSEC.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  0x24, 0x74,
-  0x00, 0x06,        // RDLENGTH is 6 bytes.
-  0xc0, 0x0c,
-  0x00, 0x02, 0x00, 0x08  // Only A record present
+    // Answer 1
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x2f,  // TYPE is NSEC.
+    0x00, 0x01,                                 // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+    0x24, 0x74, 0x00, 0x06,             // RDLENGTH is 6 bytes.
+    0xc0, 0x0c, 0x00, 0x02, 0x00, 0x08  // Only A record present
 };
 
-const uint8 kSamplePacketAPrivet[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x81, 0x80,               // Standard query response, RA, no error
-  0x00, 0x00,               // No questions (for simplicity)
-  0x00, 0x01,               // 1 RR (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
+const uint8_t kSamplePacketAPrivet[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
 
-  // Answer 1
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x01,        // TYPE is A.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x00,        // TTL (4 bytes) is 5 seconds
-  0x00, 0x05,
-  0x00, 0x04,        // RDLENGTH is 4 bytes.
-  0xc0, 0x0c,
-  0x00, 0x02,
+    // Answer 1
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x01,  // TYPE is A.
+    0x00, 0x01,                                 // CLASS is IN.
+    0x00, 0x00,                                 // TTL (4 bytes) is 5 seconds
+    0x00, 0x05, 0x00, 0x04,                     // RDLENGTH is 4 bytes.
+    0xc0, 0x0c, 0x00, 0x02,
 };
 
-const uint8 kSamplePacketGoodbye[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x81, 0x80,               // Standard query response, RA, no error
-  0x00, 0x00,               // No questions (for simplicity)
-  0x00, 0x01,               // 2 RRs (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
+const uint8_t kSamplePacketGoodbye[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 2 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
 
-  // Answer 1
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x00,        // TTL (4 bytes) is zero;
-  0x00, 0x00,
-  0x00, 0x08,        // RDLENGTH is 8 bytes.
-  0x05, 'z', 'z', 'z', 'z', 'z',
-  0xc0, 0x0c,
+    // Answer 1
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,                                 // CLASS is IN.
+    0x00, 0x00,                                 // TTL (4 bytes) is zero;
+    0x00, 0x00, 0x00, 0x08,                     // RDLENGTH is 8 bytes.
+    0x05, 'z', 'z', 'z', 'z', 'z', 0xc0, 0x0c,
 };
 
-std::string MakeString(const uint8* data, unsigned size) {
+std::string MakeString(const uint8_t* data, unsigned size) {
   return std::string(reinterpret_cast<const char*>(data), size);
 }
 
@@ -480,8 +411,8 @@ class MDnsTest : public ::testing::Test {
                                              const RecordParsed* record));
 
  protected:
-  void ExpectPacket(const uint8* packet, unsigned size);
-  void SimulatePacketReceive(const uint8* packet, unsigned size);
+  void ExpectPacket(const uint8_t* packet, unsigned size);
+  void SimulatePacketReceive(const uint8_t* packet, unsigned size);
 
   scoped_ptr<MDnsClientImpl> test_client_;
   IPEndPoint mdns_ipv4_endpoint_;
@@ -508,11 +439,11 @@ void MDnsTest::SetUp() {
   test_client_->StartListening(&socket_factory_);
 }
 
-void MDnsTest::SimulatePacketReceive(const uint8* packet, unsigned size) {
+void MDnsTest::SimulatePacketReceive(const uint8_t* packet, unsigned size) {
   socket_factory_.SimulateReceive(packet, size);
 }
 
-void MDnsTest::ExpectPacket(const uint8* packet, unsigned size) {
+void MDnsTest::ExpectPacket(const uint8_t* packet, unsigned size) {
   EXPECT_CALL(socket_factory_, OnSendTo(MakeString(packet, size)))
       .Times(2);
 }

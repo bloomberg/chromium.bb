@@ -5,11 +5,14 @@
 #ifndef NET_HTTP_DISK_BASED_CERT_CACHE_H
 #define NET_HTTP_DISK_BASED_CERT_CACHE_H
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
 #include "net/cert/x509_certificate.h"

@@ -428,15 +428,16 @@ bool QuicSession::IsCryptoHandshakeConfirmed() {
 void QuicSession::OnConfigNegotiated() {
   connection_->SetFromConfig(config_);
 
-  uint32 max_streams = config_.MaxStreamsPerConnection();
+  uint32_t max_streams = config_.MaxStreamsPerConnection();
   if (perspective() == Perspective::IS_SERVER) {
     // A server should accept a small number of additional streams beyond the
     // limit sent to the client. This helps avoid early connection termination
     // when FIN/RSTs for old streams are lost or arrive out of order.
     // Use a minimum number of additional streams, or a percentage increase,
     // whichever is larger.
-    max_streams = max(max_streams + kMaxStreamsMinimumIncrement,
-                      static_cast<uint32>(max_streams * kMaxStreamsMultiplier));
+    max_streams =
+        max(max_streams + kMaxStreamsMinimumIncrement,
+            static_cast<uint32_t>(max_streams * kMaxStreamsMultiplier));
 
     if (config_.HasReceivedConnectionOptions()) {
       if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kAFCW)) {

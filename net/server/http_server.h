@@ -5,10 +5,12 @@
 #ifndef NET_SERVER_HTTP_SERVER_H_
 #define NET_SERVER_HTTP_SERVER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -71,8 +73,8 @@ class HttpServer {
 
   void Close(int connection_id);
 
-  void SetReceiveBufferSize(int connection_id, int32 size);
-  void SetSendBufferSize(int connection_id, int32 size);
+  void SetReceiveBufferSize(int connection_id, int32_t size);
+  void SetSendBufferSize(int connection_id, int32_t size);
 
   // Copies the local address to |address|. Returns a network error code.
   int GetLocalAddress(IPEndPoint* address);

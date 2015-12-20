@@ -8,7 +8,7 @@
 #ifndef NET_QUIC_TOOLS_QUIC_SIMPLE_SERVER_H_
 #define NET_QUIC_TOOLS_QUIC_SIMPLE_SERVER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"

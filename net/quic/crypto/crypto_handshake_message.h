@@ -5,6 +5,9 @@
 #ifndef NET_QUIC_CRYPTO_CRYPTO_HANDSHAKE_MESSAGE_H_
 #define NET_QUIC_CRYPTO_CRYPTO_HANDSHAKE_MESSAGE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -88,10 +91,10 @@ class NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   QuicErrorCode GetNthValue24(QuicTag tag,
                               unsigned index,
                               base::StringPiece* out) const;
-  QuicErrorCode GetUint32(QuicTag tag, uint32* out) const;
-  QuicErrorCode GetUint64(QuicTag tag, uint64* out) const;
+  QuicErrorCode GetUint32(QuicTag tag, uint32_t* out) const;
+  QuicErrorCode GetUint64(QuicTag tag, uint64_t* out) const;
 
-  // size returns 4 (message tag) + 2 (uint16, number of entries) +
+  // size returns 4 (message tag) + 2 (uint16_t, number of entries) +
   // (4 (tag) + 4 (end offset))*tag_value_map_.size() + ∑ value sizes.
   size_t size() const;
 

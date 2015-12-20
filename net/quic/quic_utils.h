@@ -7,8 +7,12 @@
 #ifndef NET_QUIC_QUIC_UTILS_H_
 #define NET_QUIC_QUIC_UTILS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/int128.h"
 #include "net/base/net_export.h"
@@ -25,7 +29,7 @@ class NET_EXPORT_PRIVATE QuicUtils {
 
   // Returns the 64 bit FNV1a hash of the data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
-  static uint64 FNV1a_64_Hash(const char* data, int len);
+  static uint64_t FNV1a_64_Hash(const char* data, int len);
 
   // returns the 128 bit FNV1a hash of the data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
@@ -59,7 +63,7 @@ class NET_EXPORT_PRIVATE QuicUtils {
 
   // SerializeUint128 writes the first 96 bits of |v| in little-endian form
   // to |out|.
-  static void SerializeUint128Short(uint128 v, uint8* out);
+  static void SerializeUint128Short(uint128 v, uint8_t* out);
 
   // Returns the name of the QuicRstStreamErrorCode as a char*
   static const char* StreamErrorToString(QuicRstStreamErrorCode error);

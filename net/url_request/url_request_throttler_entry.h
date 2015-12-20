@@ -5,10 +5,12 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_THROTTLER_ENTRY_H_
 #define NET_URL_REQUEST_URL_REQUEST_THROTTLER_ENTRY_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
 #include "net/log/net_log.h"
@@ -86,7 +88,7 @@ class NET_EXPORT URLRequestThrottlerEntry
 
   // Implementation of URLRequestThrottlerEntryInterface.
   bool ShouldRejectRequest(const URLRequest& request) const override;
-  int64 ReserveSendingTimeForNextRequest(
+  int64_t ReserveSendingTimeForNextRequest(
       const base::TimeTicks& earliest_time) override;
   base::TimeTicks GetExponentialBackoffReleaseTime() const override;
   void UpdateWithResponse(int status_code) override;

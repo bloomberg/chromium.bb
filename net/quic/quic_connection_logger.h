@@ -5,8 +5,11 @@
 #ifndef NET_QUIC_QUIC_CONNECTION_LOGGER_H_
 #define NET_QUIC_QUIC_CONNECTION_LOGGER_H_
 
+#include <stddef.h>
+
 #include <bitset>
 
+#include "base/macros.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/socket_performance_watcher.h"

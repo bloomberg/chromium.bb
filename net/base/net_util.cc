@@ -24,7 +24,6 @@
 #include <unistd.h>
 #endif  // defined(OS_POSIX)
 
-#include "base/basictypes.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"

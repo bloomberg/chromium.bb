@@ -5,7 +5,6 @@
 #include <ostream>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/secure_hash.h"
 #include "net/quic/crypto/cert_compressor.h"
@@ -324,9 +323,9 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   void CheckRejectReasons(
       const HandshakeFailureReason* expected_handshake_failures,
       size_t expected_count) {
-    const uint32* reject_reasons;
+    const uint32_t* reject_reasons;
     size_t num_reject_reasons;
-    static_assert(sizeof(QuicTag) == sizeof(uint32), "header_out_of_sync");
+    static_assert(sizeof(QuicTag) == sizeof(uint32_t), "header_out_of_sync");
     QuicErrorCode error_code =
         out_.GetTaglist(kRREJ, &reject_reasons, &num_reject_reasons);
     ASSERT_EQ(QUIC_NO_ERROR, error_code);
@@ -385,7 +384,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     }
 
     std::ostringstream xlct_stream;
-    uint64 xlct =
+    uint64_t xlct =
         QuicUtils::FNV1a_64_Hash(certs->at(0).c_str(), certs->at(0).length());
     return "#" + base::HexEncode(reinterpret_cast<char*>(&xlct), sizeof(xlct));
   }
@@ -403,7 +402,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   QuicCryptoNegotiatedParameters params_;
   QuicCryptoProof crypto_proof_;
   CryptoHandshakeMessage out_;
-  uint8 orbit_[kOrbitSize];
+  uint8_t orbit_[kOrbitSize];
   bool use_stateless_rejects_;
 
   // These strings contain hex escaped values from the server suitable for using
@@ -1012,7 +1011,7 @@ TEST(CryptoServerConfigGenerationTest, SCIDIsHashOfServerConfig) {
   scoped_ptr<crypto::SecureHash> hash(
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
   hash->Update(serialized.data(), serialized.length());
-  uint8 digest[16];
+  uint8_t digest[16];
   hash->Finish(digest, sizeof(digest));
 
   ASSERT_EQ(scid.size(), sizeof(digest));
@@ -1107,9 +1106,9 @@ class AsyncStrikeServerVerificationTest : public CryptoServerTest {
     config_options_.orbit = kOrbit;
     strike_register_client_ = new DelayedVerifyStrikeRegisterClient(
         10000,  // strike_register_max_entries
-        static_cast<uint32>(clock_.WallNow().ToUNIXSeconds()),
+        static_cast<uint32_t>(clock_.WallNow().ToUNIXSeconds()),
         60,  // strike_register_window_secs
-        reinterpret_cast<const uint8*>(kOrbit.c_str()),
+        reinterpret_cast<const uint8_t*>(kOrbit.c_str()),
         StrikeRegister::NO_STARTUP_PERIOD_NEEDED);
     config_.SetStrikeRegisterClient(strike_register_client_);
     CryptoServerTest::SetUp();

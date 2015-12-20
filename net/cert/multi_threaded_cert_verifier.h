@@ -5,7 +5,9 @@
 #ifndef NET_CERT_MULTI_THREADED_CERT_VERIFIER_H_
 #define NET_CERT_MULTI_THREADED_CERT_VERIFIER_H_
 
+#include <stddef.h>
 #include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>

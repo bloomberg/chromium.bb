@@ -22,15 +22,15 @@ namespace net {
 
 // The length of the recent min rtt window in seconds. Windowing is disabled for
 // values less than or equal to 0.
-int32 FLAGS_quic_recent_min_rtt_window_s = 60;
+int32_t FLAGS_quic_recent_min_rtt_window_s = 60;
 
 namespace {
-static const int64 kDefaultRetransmissionTimeMs = 500;
+static const int64_t kDefaultRetransmissionTimeMs = 500;
 // TCP RFC calls for 1 second RTO however Linux differs from this default and
 // define the minimum RTO to 200ms, we will use the same until we have data to
 // support a higher or lower value.
-static const int64 kMinRetransmissionTimeMs = 200;
-static const int64 kMaxRetransmissionTimeMs = 60000;
+static const int64_t kMinRetransmissionTimeMs = 200;
+static const int64_t kMaxRetransmissionTimeMs = 60000;
 // Maximum number of exponential backoffs used for RTO timeouts.
 static const size_t kMaxRetransmissions = 10;
 // Maximum number of packets retransmitted upon an RTO.
@@ -38,12 +38,12 @@ static const size_t kMaxRetransmissionsOnTimeout = 2;
 
 // Ensure the handshake timer isnt't faster than 10ms.
 // This limits the tenth retransmitted packet to 10s after the initial CHLO.
-static const int64 kMinHandshakeTimeoutMs = 10;
+static const int64_t kMinHandshakeTimeoutMs = 10;
 
 // Sends up to two tail loss probes before firing an RTO,
 // per draft RFC draft-dukkipati-tcpm-tcp-loss-probe.
 static const size_t kDefaultMaxTailLossProbes = 2;
-static const int64 kMinTailLossProbeTimeoutMs = 10;
+static const int64_t kMinTailLossProbeTimeoutMs = 10;
 
 // Number of unpaced packets to send after quiescence.
 static const size_t kInitialUnpacedBurst = 10;
@@ -186,7 +186,7 @@ void QuicSentPacketManager::ResumeConnectionState(
     const CachedNetworkParameters& cached_network_params,
     bool max_bandwidth_resumption) {
   if (cached_network_params.has_min_rtt_ms()) {
-    uint32 initial_rtt_us =
+    uint32_t initial_rtt_us =
         kNumMicrosPerMilli * cached_network_params.min_rtt_ms();
     rtt_stats_.set_initial_rtt_us(
         max(kMinInitialRoundTripTimeUs,
@@ -876,8 +876,8 @@ const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
   if (srtt.IsZero()) {
     srtt = QuicTime::Delta::FromMicroseconds(rtt_stats_.initial_rtt_us());
   }
-  int64 delay_ms = max(kMinHandshakeTimeoutMs,
-                       static_cast<int64>(1.5 * srtt.ToMilliseconds()));
+  int64_t delay_ms = max(kMinHandshakeTimeoutMs,
+                         static_cast<int64_t>(1.5 * srtt.ToMilliseconds()));
   return QuicTime::Delta::FromMilliseconds(
       delay_ms << consecutive_crypto_retransmission_count_);
 }
@@ -890,7 +890,7 @@ const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
   if (enable_half_rtt_tail_loss_probe_ && consecutive_tlp_count_ == 0u) {
     return QuicTime::Delta::FromMilliseconds(
         max(kMinTailLossProbeTimeoutMs,
-            static_cast<int64>(0.5 * srtt.ToMilliseconds())));
+            static_cast<int64_t>(0.5 * srtt.ToMilliseconds())));
   }
   if (!unacked_packets_.HasMultipleInFlightPackets()) {
     return QuicTime::Delta::Max(
@@ -900,7 +900,7 @@ const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
   }
   return QuicTime::Delta::FromMilliseconds(
       max(kMinTailLossProbeTimeoutMs,
-          static_cast<int64>(2 * srtt.ToMilliseconds())));
+          static_cast<int64_t>(2 * srtt.ToMilliseconds())));
 }
 
 const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {

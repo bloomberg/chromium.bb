@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 #include <resolv.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/dns/dns_config_service.h"

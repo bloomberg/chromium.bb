@@ -5,9 +5,12 @@
 #ifndef NET_DNS_HOST_RESOLVER_H_
 #define NET_DNS_HOST_RESOLVER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_callback.h"
@@ -67,7 +70,7 @@ class NET_EXPORT HostResolver {
       host_port_pair_ = host_port_pair;
     }
 
-    uint16 port() const { return host_port_pair_.port(); }
+    uint16_t port() const { return host_port_pair_.port(); }
     const std::string& hostname() const { return host_port_pair_.host(); }
 
     AddressFamily address_family() const { return address_family_; }

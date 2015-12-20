@@ -10,12 +10,18 @@
 
 namespace net {
 
-RecordParsed::RecordParsed(const std::string& name, uint16 type, uint16 klass,
-                           uint32 ttl, scoped_ptr<const RecordRdata> rdata,
+RecordParsed::RecordParsed(const std::string& name,
+                           uint16_t type,
+                           uint16_t klass,
+                           uint32_t ttl,
+                           scoped_ptr<const RecordRdata> rdata,
                            base::Time time_created)
-    : name_(name), type_(type), klass_(klass), ttl_(ttl), rdata_(rdata.Pass()),
-      time_created_(time_created) {
-}
+    : name_(name),
+      type_(type),
+      klass_(klass),
+      ttl_(ttl),
+      rdata_(rdata.Pass()),
+      time_created_(time_created) {}
 
 RecordParsed::~RecordParsed() {
 }
@@ -70,8 +76,8 @@ scoped_ptr<const RecordParsed> RecordParsed::CreateFrom(
 
 bool RecordParsed::IsEqual(const RecordParsed* other, bool is_mdns) const {
   DCHECK(other);
-  uint16 klass = klass_;
-  uint16 other_klass = other->klass_;
+  uint16_t klass = klass_;
+  uint16_t other_klass = other->klass_;
 
   if (is_mdns) {
     klass &= dns_protocol::kMDnsClassMask;

@@ -81,7 +81,7 @@ TEST_P(FtpDirectoryListingParserTest, Parse) {
   for (size_t i = 0; i < lines.size() / 9; i++) {
     std::string type(lines[9 * i]);
     std::string name(lines[9 * i + 1]);
-    int64 size;
+    int64_t size;
     base::StringToInt64(lines[9 * i + 2], &size);
 
     SCOPED_TRACE(base::StringPrintf("Filename: %s", name.c_str()));

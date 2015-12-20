@@ -5,11 +5,14 @@
 #ifndef NET_QUIC_CRYPTO_QUIC_CRYPTO_CLIENT_CONFIG_H_
 #define NET_QUIC_CRYPTO_QUIC_CRYPTO_CLIENT_CONFIG_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -107,7 +110,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     const std::string& cert_sct() const;
     const std::string& signature() const;
     bool proof_valid() const;
-    uint64 generation_counter() const;
+    uint64_t generation_counter() const;
     const ProofVerifyDetails* proof_verify_details() const;
 
     void set_source_address_token(base::StringPiece token);
@@ -171,7 +174,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // Generation counter associated with the |server_config_|, |certs_| and
     // |server_config_sig_| combination. It is incremented whenever we set
     // server_config_valid_ to false.
-    uint64 generation_counter_;
+    uint64_t generation_counter_;
 
     scoped_ptr<ProofVerifyDetails> proof_verify_details_;
 
