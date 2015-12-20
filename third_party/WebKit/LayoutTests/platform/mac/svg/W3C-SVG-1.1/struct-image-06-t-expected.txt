@@ -4,8 +4,8 @@ layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (10,22) size 422x228
       LayoutSVGContainer {g} at (10,22) size 422x228
-        LayoutSVGText {text} at (10,22) size 37x10 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 37x10
+        LayoutSVGText {text} at (10,22) size 38x10 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 38x10
             chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 10 width 37.01: "SVG to fit"
         LayoutSVGContainer {g} at (20,40) size 50x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,40.00)}]
           LayoutSVGImage {image} at (20,40) size 50x50

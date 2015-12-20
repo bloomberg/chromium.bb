@@ -90,7 +90,7 @@ layer at (0,0) size 450x500
         LayoutSVGPath {path} at (139,350) size 142x125 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 0 c 0 -125 140 -125 140 0"]
       LayoutSVGText {text} at (84,-109) size 159x110 contains 1 chunk(s)
         LayoutSVGTextPath {textPath} at (0,0) size 158x110
-          LayoutSVGInlineText {#text} at (0,104) size 20x5
+          LayoutSVGInlineText {#text} at (0,105) size 20x5
             chunk 1 (middle anchor) text run 1 at (100.01,-1.73) startOffset 9 endOffset 10 width 4.00: " "
           LayoutSVGTSpan {tspan} at (0,0) size 115x59
             LayoutSVGInlineText {#text} at (43,0) size 115x59

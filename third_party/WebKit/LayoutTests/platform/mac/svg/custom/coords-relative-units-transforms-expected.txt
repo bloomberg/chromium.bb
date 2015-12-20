@@ -21,8 +21,8 @@ layer at (0,0) size 400x200
         LayoutSVGContainer {g} at (156,116) size 83x46 [transform={m=((2.00,0.00)(0.00,2.00)) t=(0.00,0.00)}]
           LayoutSVGRect {rect} at (156,116) size 83x46 [stroke={[type=SOLID] [color=#FF0000] [stroke width=37.50]}] [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=600.00] [width=375.00] [height=187.50]
       LayoutSVGContainer {g} at (275,15) size 99x149 [transform={m=((1.00,0.00)(0.00,1.00)) t=(2800.00,0.00)}]
-        LayoutSVGText {text} at (-50,150) size 985x180 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 985x180
+        LayoutSVGText {text} at (-50,150) size 985x181 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 985x181
             chunk 1 text run 1 at (-50.00,300.00) startOffset 0 endOffset 12 width 984.52: "Percentages:"
         LayoutSVGRect {rect} at (278,38) size 44x24 [stroke={[type=SOLID] [color=#FF0000] [stroke width=31.62]}] [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=400.00] [width=400.00] [height=200.00]
         LayoutSVGRect {rect} at (278,73) size 44x24 [stroke={[type=SOLID] [color=#FF0000] [stroke width=31.62]}] [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=750.00] [width=400.00] [height=200.00]

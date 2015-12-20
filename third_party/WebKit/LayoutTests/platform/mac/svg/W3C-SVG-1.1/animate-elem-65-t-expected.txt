@@ -11,20 +11,20 @@ layer at (0,0) size 480x360
       LayoutSVGInlineText {#text} at (0,0) size 32x23
         chunk 1 (middle anchor) text run 1 at (224.44,30.00) startOffset 0 endOffset 3 width 31.11: "min"
     LayoutSVGContainer {g} at (78,62) size 279x217 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,50.00)}]
-      LayoutSVGContainer {g} at (78,82) size 142x197 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,45.00)}]
+      LayoutSVGContainer {g} at (78,82) size 143x197 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,45.00)}]
         LayoutSVGText {text} at (-85,-13) size 85x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 85x17
             chunk 1 (end anchor) text run 1 at (-84.38,0.00) startOffset 0 endOffset 14 width 84.38: "no min / media"
         LayoutSVGText {text} at (-65,12) size 65x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 65x17
             chunk 1 (end anchor) text run 1 at (-64.16,25.00) startOffset 0 endOffset 11 width 64.16: "invalid min"
-        LayoutSVGText {text} at (-93,37) size 93x17 contains 1 chunk(s)
+        LayoutSVGText {text} at (-93,37) size 94x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 93x17
             chunk 1 (end anchor) text run 1 at (-92.26,50.00) startOffset 0 endOffset 16 width 92.26: "min < active dur"
-        LayoutSVGText {text} at (-93,62) size 93x17 contains 1 chunk(s)
+        LayoutSVGText {text} at (-93,62) size 94x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 93x17
             chunk 1 (end anchor) text run 1 at (-92.26,75.00) startOffset 0 endOffset 16 width 92.26: "min > active dur"
-        LayoutSVGText {text} at (-94,87) size 94x17 contains 1 chunk(s)
+        LayoutSVGText {text} at (-94,87) size 95x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 94x17
             chunk 1 (end anchor) text run 1 at (-93.03,100.00) startOffset 0 endOffset 16 width 93.03: "min < repeat dur"
         LayoutSVGText {text} at (-142,112) size 142x17 contains 1 chunk(s)

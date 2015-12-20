@@ -34,8 +34,8 @@ layer at (0,0) size 933x1037 backgroundClip at (0,0) size 785x585 clip at (0,0) 
       LayoutSVGContainer {g} at (362,172) size 209x202 [transform={m=((1.00,0.00)(0.00,1.00)) t=(175.00,100.00)}]
         LayoutSVGContainer {use} at (362,207) size 209x167
           LayoutSVGRect {rect} at (362,207) size 209x167 [fill={[type=LINEAR-GRADIENT] [id="maskedGradient"]}] [x=0.00] [y=0.00] [width=100.00] [height=80.00]
-        LayoutSVGText {text} at (25,-17) size 50x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 50x18
+        LayoutSVGText {text} at (25,-17) size 51x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 51x18
             chunk 1 (middle anchor) text run 1 at (25.16,-3.00) startOffset 0 endOffset 6 width 49.67: "Masked"
       LayoutSVGContainer {g} at (186,420) size 188x203 [transform={m=((1.00,0.00)(0.00,1.00)) t=(85.00,220.00)}]
         LayoutSVGContainer {use} at (186,456) size 188x167

@@ -11,11 +11,11 @@ layer at (0,0) size 480x360
       LayoutSVGInlineText {#text} at (0,0) size 29x23
         chunk 1 (middle anchor) text run 1 at (225.56,30.00) startOffset 0 endOffset 3 width 28.88: "end"
     LayoutSVGContainer {g} at (111,58) size 239x212 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,80.00)}]
-      LayoutSVGContainer {g} at (111,72) size 69x192 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,5.00)}]
+      LayoutSVGContainer {g} at (111,72) size 70x192 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,5.00)}]
         LayoutSVGText {text} at (-64,-13) size 64x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 64x17
             chunk 1 (end anchor) text run 1 at (-63.77,0.00) startOffset 0 endOffset 11 width 63.77: "unspecified"
-        LayoutSVGText {text} at (-32,12) size 32x17 contains 1 chunk(s)
+        LayoutSVGText {text} at (-32,12) size 33x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 32x17
             chunk 1 (end anchor) text run 1 at (-31.63,25.00) startOffset 0 endOffset 6 width 31.63: "offset"
         LayoutSVGText {text} at (-59,37) size 59x17 contains 1 chunk(s)

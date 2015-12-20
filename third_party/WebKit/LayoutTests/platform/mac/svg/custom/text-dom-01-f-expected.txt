@@ -2,8 +2,8 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (30,15) size 416x268
-      LayoutSVGContainer {g} at (30,15) size 416x268
+    LayoutSVGContainer {g} at (30,15) size 416x269
+      LayoutSVGContainer {g} at (30,15) size 416x269
         LayoutSVGRect {rect} at (122,16) size 10x17 [fill={[type=SOLID] [color=#ADD8E6]}] [x=122.85] [y=16.00] [width=8.34] [height=17.00]
         LayoutSVGRect {rect} at (89,20) size 15x15 [fill={[type=SOLID] [color=#ADD8E6]}] [x=89.05] [y=20.10] [width=14.38] [height=14.38]
         LayoutSVGPath {line} at (58,29) size 364x2 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=58.66] [y1=30.00] [x2=421.34] [y2=30.00]
@@ -19,41 +19,41 @@ layer at (0,0) size 480x360
               chunk 1 (middle anchor) text run 2 at (94.50,30.00) startOffset 1 endOffset 2 width 7.50: "s"
           LayoutSVGInlineText {#text} at (43,0) size 320x17
             chunk 1 (middle anchor) text run 1 at (102.00,30.00) startOffset 0 endOffset 47 width 319.34: " a test of the interface SVGTextContentElement."
-        LayoutSVGText {text} at (30,46) size 233x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 233x17
+        LayoutSVGText {text} at (30,46) size 233x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 233x18
             chunk 1 text run 1 at (30.00,60.00) startOffset 0 endOffset 34 width 232.60: ".getCharNumAtPosition() result: 30"
-        LayoutSVGText {text} at (30,66) size 252x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 252x17
+        LayoutSVGText {text} at (30,66) size 252x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 252x18
             chunk 1 text run 1 at (30.00,80.00) startOffset 0 endOffset 36 width 251.81: ".getComputedTextLength() result: 363"
-        LayoutSVGText {text} at (30,86) size 303x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 303x17
+        LayoutSVGText {text} at (30,86) size 303x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 303x18
             chunk 1 text run 1 at (30.00,100.00) startOffset 0 endOffset 46 width 302.27: ".getEndPositionOfChar(11) result ('e'): 131,30"
-        LayoutSVGText {text} at (30,106) size 299x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 299x17
+        LayoutSVGText {text} at (30,106) size 299x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 299x18
             chunk 1 text run 1 at (30.00,120.00) startOffset 0 endOffset 46 width 298.10: ".getExtentOfChar(11) result ('e'): 123,16,8,17"
-        LayoutSVGText {text} at (30,126) size 211x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 211x17
+        LayoutSVGText {text} at (30,126) size 211x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 211x18
             chunk 1 text run 1 at (30.00,140.00) startOffset 0 endOffset 30 width 210.07: ".getNumberOfChars() result: 54"
-        LayoutSVGText {text} at (30,146) size 214x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 214x17
+        LayoutSVGText {text} at (30,146) size 214x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 214x18
             chunk 1 text run 1 at (30.00,160.00) startOffset 0 endOffset 32 width 213.44: ".getRotationOfChar(5) result: 45"
-        LayoutSVGText {text} at (30,166) size 308x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 308x17
+        LayoutSVGText {text} at (30,166) size 308x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 308x18
             chunk 1 text run 1 at (30.00,180.00) startOffset 0 endOffset 48 width 307.26: ".getStartPositionOfChar(11) result ('e'): 123,30"
-        LayoutSVGText {text} at (30,186) size 320x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 320x17
+        LayoutSVGText {text} at (30,186) size 320x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 320x18
             chunk 1 text run 1 at (30.00,200.00) startOffset 0 endOffset 50 width 319.24: ".getSubStringLength(22,9) result ('interface'): 58"
-        LayoutSVGText {text} at (30,206) size 416x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 416x17
+        LayoutSVGText {text} at (30,206) size 416x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 416x18
             chunk 1 text run 1 at (30.00,220.00) startOffset 0 endOffset 64 width 415.13: ".selectSubString(18,3) result: the word 'the' should be selected"
-        LayoutSVGText {text} at (30,226) size 246x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 246x17
+        LayoutSVGText {text} at (30,226) size 246x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 246x18
             chunk 1 text run 1 at (30.00,240.00) startOffset 0 endOffset 37 width 245.72: ".textLength.baseVal.value result: 363"
-        LayoutSVGText {text} at (30,246) size 246x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 246x17
+        LayoutSVGText {text} at (30,246) size 246x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 246x18
             chunk 1 text run 1 at (30.00,260.00) startOffset 0 endOffset 37 width 245.71: ".textLength.animVal.value result: 363"
-        LayoutSVGText {text} at (30,266) size 392x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 392x17
+        LayoutSVGText {text} at (30,266) size 392x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 392x18
             chunk 1 text run 1 at (30.00,280.00) startOffset 0 endOffset 59 width 391.35: ".lengthAdjust.baseVal and .lengthAdjust.animVal result: 1,1"
     LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 264x46

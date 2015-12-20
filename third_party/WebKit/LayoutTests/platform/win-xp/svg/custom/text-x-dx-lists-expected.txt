@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
         chunk 1 text run 1 at (50.00,40.00) startOffset 0 endOffset 1 width 10.50: "B"
         chunk 1 text run 1 at (70.00,40.00) startOffset 0 endOffset 1 width 10.50: "C"
     LayoutSVGText {text} at (10,46) size 71x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 11x18
+      LayoutSVGInlineText {#text} at (0,0) size 12x18
         chunk 1 text run 1 at (10.00,60.00) startOffset 0 endOffset 1 width 11.00: "A"
       LayoutSVGTSpan {tspan} at (0,0) size 11x18
         LayoutSVGInlineText {#text} at (40,0) size 11x18
@@ -21,7 +21,7 @@ layer at (0,0) size 800x600
       LayoutSVGInlineText {#text} at (60,0) size 11x18
         chunk 1 text run 1 at (70.00,60.00) startOffset 0 endOffset 1 width 10.50: "C"
     LayoutSVGText {text} at (10,66) size 71x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 11x18
+      LayoutSVGInlineText {#text} at (0,0) size 12x18
         chunk 1 text run 1 at (10.00,80.00) startOffset 0 endOffset 1 width 11.00: "A"
       LayoutSVGTSpan {tspan} at (0,0) size 11x18
         LayoutSVGInlineText {#text} at (40,0) size 11x18
@@ -35,7 +35,7 @@ layer at (0,0) size 800x600
           chunk 1 text run 1 at (55.00,120.00) startOffset 0 endOffset 1 width 10.50: "B"
           chunk 1 text run 1 at (75.00,120.00) startOffset 0 endOffset 1 width 10.50: "C"
       LayoutSVGText {text} at (15,126) size 71x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 11x18
+        LayoutSVGInlineText {#text} at (0,0) size 12x18
           chunk 1 text run 1 at (15.00,140.00) startOffset 0 endOffset 1 width 11.00: "A"
         LayoutSVGTSpan {tspan} at (0,0) size 11x18
           LayoutSVGInlineText {#text} at (40,0) size 11x18
@@ -48,7 +48,7 @@ layer at (0,0) size 800x600
           chunk 1 text run 1 at (55.00,160.00) startOffset 0 endOffset 1 width 10.50: "B"
           chunk 1 text run 1 at (75.00,160.00) startOffset 0 endOffset 1 width 10.50: "C"
       LayoutSVGText {text} at (15,166) size 71x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 11x18
+        LayoutSVGInlineText {#text} at (0,0) size 12x18
           chunk 1 text run 1 at (15.00,180.00) startOffset 0 endOffset 1 width 11.00: "A"
         LayoutSVGTSpan {tspan} at (0,0) size 11x18
           LayoutSVGInlineText {#text} at (40,0) size 11x18

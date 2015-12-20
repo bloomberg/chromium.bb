@@ -14,17 +14,17 @@ layer at (0,0) size 480x360
       LayoutSVGInlineText {#text} at (0,0) size 92x23
         chunk 1 (middle anchor) text run 1 at (194.45,190.00) startOffset 0 endOffset 9 width 91.10: "min & max"
     LayoutSVGContainer {g} at (75,42) size 282x237 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,30.00)}]
-      LayoutSVGContainer {g} at (75,62) size 145x217 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,45.00)}]
+      LayoutSVGContainer {g} at (75,62) size 146x217 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,45.00)}]
         LayoutSVGText {text} at (-87,-13) size 87x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 87x17
             chunk 1 (end anchor) text run 1 at (-86.70,0.00) startOffset 0 endOffset 14 width 86.70: "no max / media"
         LayoutSVGText {text} at (-106,12) size 106x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 106x17
             chunk 1 (end anchor) text run 1 at (-105.75,25.00) startOffset 0 endOffset 18 width 105.75: "invalid max values"
-        LayoutSVGText {text} at (-95,37) size 95x17 contains 1 chunk(s)
+        LayoutSVGText {text} at (-95,37) size 96x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 95x17
             chunk 1 (end anchor) text run 1 at (-94.58,50.00) startOffset 0 endOffset 16 width 94.58: "max < active dur"
-        LayoutSVGText {text} at (-95,62) size 95x17 contains 1 chunk(s)
+        LayoutSVGText {text} at (-95,62) size 96x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 95x17
             chunk 1 (end anchor) text run 1 at (-94.58,75.00) startOffset 0 endOffset 16 width 94.58: "max > active dur"
         LayoutSVGText {text} at (-61,137) size 61x17 contains 1 chunk(s)

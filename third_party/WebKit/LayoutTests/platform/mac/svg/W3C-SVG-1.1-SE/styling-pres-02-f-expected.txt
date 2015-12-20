@@ -28,8 +28,8 @@ layer at (0,0) size 480x360
         LayoutSVGResourceClipper {clipPath} [id="clipPath"] [clipPathUnits=userSpaceOnUse]
       LayoutSVGContainer {g} at (10,25) size 430x200
         LayoutSVGRect {rect} at (10,25) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=25.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (40,27) size 75x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 75x16
+        LayoutSVGText {text} at (40,27) size 75x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 75x17
             chunk 1 text run 1 at (40.00,40.00) startOffset 0 endOffset 13 width 74.70: "fill on image"
         LayoutSVGRect {rect} at (10,55) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=55.00] [width=20.00] [height=20.00]
         LayoutSVGText {text} at (40,57) size 134x16 contains 1 chunk(s)
@@ -52,8 +52,8 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 134x16
             chunk 1 text run 1 at (40.00,190.00) startOffset 0 endOffset 23 width 133.08: "font-variant on ellipse"
         LayoutSVGRect {rect} at (10,205) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=205.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (40,207) size 155x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 155x16
+        LayoutSVGText {text} at (40,207) size 155x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 155x17
             chunk 1 text run 1 at (40.00,220.00) startOffset 0 endOffset 26 width 154.87: "letter-spacing on polyline"
         LayoutSVGRect {rect} at (250,25) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=250.00] [y=25.00] [width=20.00] [height=20.00]
         LayoutSVGText {text} at (280,27) size 109x16 contains 1 chunk(s)
@@ -80,8 +80,8 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 160x16
             chunk 1 text run 1 at (280.00,190.00) startOffset 0 endOffset 28 width 159.52: "visibility on radialGradient"
         LayoutSVGRect {rect} at (250,205) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=250.00] [y=205.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (280,207) size 153x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 153x16
+        LayoutSVGText {text} at (280,207) size 153x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 153x17
             chunk 1 text run 1 at (280.00,220.00) startOffset 0 endOffset 26 width 152.53: "lighting-color on clipPath"
     LayoutSVGContainer {g} at (10,310) size 230x37
       LayoutSVGText {text} at (10,310) size 230x37 contains 1 chunk(s)

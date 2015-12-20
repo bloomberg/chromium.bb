@@ -2,12 +2,12 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (1,46) size 779x439
+    LayoutSVGContainer {g} at (1,46) size 781x439
       LayoutSVGText {text} at (19,28) size 77x40 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 77x39
           chunk 1 text run 1 at (19.00,61.00) startOffset 0 endOffset 5 width 76.80: "Plain"
-      LayoutSVGText {text} at (142,28) size 80x40 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 80x39
+      LayoutSVGText {text} at (142,28) size 81x40 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 81x39
           chunk 1 text run 1 at (142.00,61.00) startOffset 0 endOffset 6 width 79.80: "Italic"
       LayoutSVGText {text} at (257,27) size 79x40 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 79x39
@@ -18,8 +18,8 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (39,114) size 205x40 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 205x39
           chunk 1 text run 1 at (39.00,147.00) startOffset 0 endOffset 12 width 204.60: "Line through"
-      LayoutSVGText {text} at (1,167) size 467x40 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 467x39
+      LayoutSVGText {text} at (1,167) size 468x40 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 468x39
           chunk 1 text run 1 at (1.00,200.00) startOffset 0 endOffset 27 width 466.80: "Bold, italic and underlined"
       LayoutSVGContainer {g} at (81,372) size 638x113
         LayoutSVGRect {rect} at (81,373) size 638x111 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [x=50.00] [y=225.00] [width=380.00] [height=64.00]

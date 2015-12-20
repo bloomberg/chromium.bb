@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (10,55) size 179x20 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 179x19
             chunk 1 text run 1 at (10.00,70.00) startOffset 0 endOffset 26 width 178.20: "StartIndex: 0. NumChars: 9"
-        LayoutSVGText {text} at (10,85) size 367x55 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 367x54
+        LayoutSVGText {text} at (10,85) size 372x55 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 372x54
             chunk 1 text run 1 at (10.00,128.00) startOffset 0 endOffset 4 width 79.20: "abc "
             chunk 1 text run 1 at (89.20,128.00) startOffset 0 endOffset 4 width 68.40 RTL: " \x{5D3}\x{5D4}\x{5D5}"
             chunk 1 text run 1 at (157.60,128.00) startOffset 0 endOffset 3 width 72.00: "123"
