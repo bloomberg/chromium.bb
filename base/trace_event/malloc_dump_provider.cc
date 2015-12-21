@@ -36,13 +36,7 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   size_t total_virtual_size = 0;
   size_t resident_size = 0;
   size_t allocated_objects_size = 0;
-#if defined(OS_MACOSX) || defined(OS_IOS)
-  malloc_statistics_t stats = {0};
-  malloc_zone_statistics(nullptr, &stats);
-  total_virtual_size = stats.size_allocated;
-  resident_size = stats.size_in_use;
-  allocated_objects_size = stats.size_in_use;
-#elif defined(USE_TCMALLOC)
+#if defined(USE_TCMALLOC)
   bool res =
       allocator::GetNumericProperty("generic.heap_size", &total_virtual_size);
   DCHECK(res);
@@ -52,6 +46,18 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   res = allocator::GetNumericProperty("generic.current_allocated_bytes",
                                       &allocated_objects_size);
   DCHECK(res);
+#elif defined(OS_MACOSX) || defined(OS_IOS)
+  malloc_statistics_t stats = {0};
+  malloc_zone_statistics(nullptr, &stats);
+  total_virtual_size = stats.size_allocated;
+  allocated_objects_size = stats.size_in_use;
+
+  // The resident size is approximated to the max size in use, which would count
+  // the total size of all regions other than the free bytes at the end of each
+  // region. In each allocation region the allocations are rounded off to a
+  // fixed quantum, so the excess region will not be resident.
+  // See crrev.com/1531463004 for detailed explanation.
+  resident_size = stats.max_size_in_use;
 #else
   struct mallinfo info = mallinfo();
   DCHECK_GE(info.arena + info.hblkhd, info.uordblks);
@@ -75,6 +81,17 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   inner_dump->AddScalar(MemoryAllocatorDump::kNameSize,
                         MemoryAllocatorDump::kUnitsBytes,
                         allocated_objects_size);
+
+  if (resident_size - allocated_objects_size > 0) {
+    // Explicitly specify why is extra memory resident. In tcmalloc it accounts
+    // for free lists and caches. In mac and ios it accounts for the
+    // fragmentation and metadata.
+    MemoryAllocatorDump* other_dump =
+        pmd->CreateAllocatorDump("malloc/metadata_fragmentation_caches");
+    other_dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                          MemoryAllocatorDump::kUnitsBytes,
+                          resident_size - allocated_objects_size);
+  }
 
   return true;
 }
