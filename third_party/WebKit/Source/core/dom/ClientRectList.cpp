@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/ClientRectList.h"
 
 namespace blink {

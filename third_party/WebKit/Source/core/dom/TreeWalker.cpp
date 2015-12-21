@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/TreeWalker.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"

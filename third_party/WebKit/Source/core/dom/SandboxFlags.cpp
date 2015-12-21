@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/SandboxFlags.h"
 
 #include "core/html/parser/HTMLParserIdioms.h"

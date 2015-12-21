@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/NodeIterator.h"
 
 #include "bindings/core/v8/ExceptionState.h"

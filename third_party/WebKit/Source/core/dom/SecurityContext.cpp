@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/SecurityContext.h"
 
 #include "core/frame/csp/ContentSecurityPolicy.h"

@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/NodeFilter.h"
 
 namespace blink {

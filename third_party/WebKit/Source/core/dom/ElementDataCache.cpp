@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/ElementDataCache.h"
 
 #include "core/dom/ElementData.h"

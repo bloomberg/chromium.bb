@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/MessageChannel.h"
 
 #include "core/dom/MessagePort.h"

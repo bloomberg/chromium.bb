@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/MainThreadTaskRunner.h"
 
 #include "core/dom/ExecutionContext.h"

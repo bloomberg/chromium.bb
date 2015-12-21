@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/NodeTraversal.h"
 
 #include "core/dom/ContainerNode.h"

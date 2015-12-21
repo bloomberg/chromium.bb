@@ -23,7 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/dom/DatasetDOMStringMap.h"
 
 #include "bindings/core/v8/ExceptionState.h"

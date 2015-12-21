@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/Fullscreen.h"
 
 #include "core/HTMLNames.h"

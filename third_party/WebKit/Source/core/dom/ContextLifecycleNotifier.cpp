@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 
 #include "core/dom/ActiveDOMObject.h"

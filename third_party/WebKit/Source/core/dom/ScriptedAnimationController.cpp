@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/ScriptedAnimationController.h"
 
 #include "core/css/MediaQueryListListener.h"

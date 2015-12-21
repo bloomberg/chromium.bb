@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/MessagePort.h"
 
 #include "bindings/core/v8/ExceptionState.h"

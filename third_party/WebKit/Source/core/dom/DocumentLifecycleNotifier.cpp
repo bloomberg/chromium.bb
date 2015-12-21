@@ -24,7 +24,6 @@
  */
 
 
-#include "config.h"
 #include "core/dom/DocumentLifecycleNotifier.h"
 
 #include "core/dom/DocumentLifecycleObserver.h"

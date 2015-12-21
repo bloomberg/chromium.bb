@@ -22,7 +22,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/dom/Node.h"
 
 #include "bindings/core/v8/DOMDataStore.h"

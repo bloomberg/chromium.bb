@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/ViewportDescription.h"
 
 #include "core/dom/Document.h"

@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "core/dom/LayoutTreeBuilder.h"
 
 #include "core/HTMLNames.h"

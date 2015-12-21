@@ -23,7 +23,6 @@
  * DAMAGE.
  */
 
-#include "config.h"
 #include "core/dom/DocumentFullscreen.h"
 
 #include "core/dom/Fullscreen.h"
