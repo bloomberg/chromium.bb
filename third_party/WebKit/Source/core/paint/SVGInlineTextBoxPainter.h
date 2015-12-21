@@ -22,13 +22,26 @@ struct SVGTextFragment;
 class TextRun;
 class DocumentMarker;
 
+struct SVGTextFragmentWithRange {
+    SVGTextFragmentWithRange(const SVGTextFragment& fragment, int startPosition, int endPosition)
+        : fragment(fragment)
+        , startPosition(startPosition)
+        , endPosition(endPosition)
+    {
+    }
+    const SVGTextFragment& fragment;
+    int startPosition;
+    int endPosition;
+};
+
 class SVGInlineTextBoxPainter {
     STACK_ALLOCATED();
 public:
     SVGInlineTextBoxPainter(const SVGInlineTextBox& svgInlineTextBox) : m_svgInlineTextBox(svgInlineTextBox) { }
     void paint(const PaintInfo&, const LayoutPoint&);
     void paintSelectionBackground(const PaintInfo&);
-    virtual void paintTextMatchMarker(GraphicsContext&, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&);
+    void paintTextMatchMarkerForeground(const PaintInfo&, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&);
+    void paintTextMatchMarkerBackground(const PaintInfo&, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&);
 
 private:
     bool shouldPaintSelection(const PaintInfo&) const;
@@ -37,6 +50,8 @@ private:
     bool setupTextPaint(const PaintInfo&, const ComputedStyle&, LayoutSVGResourceMode, SkPaint&);
     void paintText(const PaintInfo&, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, const SkPaint&);
     void paintText(const PaintInfo&, const ComputedStyle&, const ComputedStyle& selectionStyle, const SVGTextFragment&, LayoutSVGResourceMode, bool shouldPaintSelection);
+    Vector<SVGTextFragmentWithRange> collectTextMatches(DocumentMarker*) const;
+    Vector<SVGTextFragmentWithRange> collectFragmentsInRange(int startPosition, int endPosition) const;
 
     const SVGInlineTextBox& m_svgInlineTextBox;
 };

@@ -1,52 +1,53 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x401
-  LayoutBlockFlow {HTML} at (0,0) size 800x401
-    LayoutBlockFlow {BODY} at (8,8) size 784x385
-      LayoutText {#text} at (0,0) size 425x19
-        text run at (0,0) width 425: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
-      LayoutInline {SPAN} at (0,0) size 40x19
-        LayoutText {#text} at (425,0) size 40x19
-          text run at (425,0) width 40: "findme"
-      LayoutText {#text} at (465,0) size 276x19
-        text run at (465,0) width 123: "\". The 6th higlighted "
-        text run at (588,0) width 153: "instance should be active."
-      LayoutBR {BR} at (741,0) size 0x19
-      LayoutBR {BR} at (0,20) size 0x19
-      LayoutText {#text} at (0,40) size 83x19
-        text run at (0,40) width 83: "Lorum ipsum "
-      LayoutInline {SPAN} at (0,0) size 40x19
-        LayoutText {#text} at (83,40) size 40x19
-          text run at (83,40) width 40: "findme"
-      LayoutText {#text} at (123,40) size 81x19
-        text run at (123,40) width 81: " lorum ipsum "
-      LayoutInline {SPAN} at (0,0) size 40x19
-        LayoutText {#text} at (204,40) size 40x19
-          text run at (204,40) width 40: "findme"
-      LayoutInline {SPAN} at (0,0) size 40x19
-        LayoutText {#text} at (244,40) size 40x19
-          text run at (244,40) width 40: "findme"
-      LayoutText {#text} at (284,40) size 42x19
-        text run at (284,40) width 42: " lorum."
-      LayoutBR {BR} at (326,40) size 0x19
-      LayoutText {#text} at (0,60) size 47x19
-        text run at (0,60) width 47: "longtext"
-      LayoutInline {SPAN} at (0,0) size 40x19
-        LayoutText {#text} at (47,60) size 40x19
-          text run at (47,60) width 40: "findme"
-      LayoutText {#text} at (87,60) size 41x19
-        text run at (87,60) width 41: "noyou."
-      LayoutBR {BR} at (128,60) size 0x19
-      LayoutSVGRoot {svg} at (18,123) size 212x161
+layer at (0,0) size 800x410
+  LayoutBlockFlow {HTML} at (0,0) size 800x410
+    LayoutBlockFlow {BODY} at (8,8) size 784x394
+      LayoutText {#text} at (0,0) size 457x17
+        text run at (0,0) width 457: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
+      LayoutInline {SPAN} at (0,0) size 46x17
+        LayoutText {#text} at (456,0) size 46x17
+          text run at (456,0) width 46: "findme"
+      LayoutText {#text} at (501,0) size 757x35
+        text run at (501,0) width 138: "\". The 6th higlighted "
+        text run at (638,0) width 119: "instance should be"
+        text run at (0,18) width 43: "active."
+      LayoutBR {BR} at (42,18) size 1x17
+      LayoutBR {BR} at (0,36) size 0x17
+      LayoutText {#text} at (0,54) size 91x17
+        text run at (0,54) width 91: "Lorum ipsum "
+      LayoutInline {SPAN} at (0,0) size 46x17
+        LayoutText {#text} at (90,54) size 46x17
+          text run at (90,54) width 46: "findme"
+      LayoutText {#text} at (135,54) size 91x17
+        text run at (135,54) width 91: " lorum ipsum "
+      LayoutInline {SPAN} at (0,0) size 46x17
+        LayoutText {#text} at (225,54) size 46x17
+          text run at (225,54) width 46: "findme"
+      LayoutInline {SPAN} at (0,0) size 46x17
+        LayoutText {#text} at (270,54) size 46x17
+          text run at (270,54) width 46: "findme"
+      LayoutText {#text} at (315,54) size 48x17
+        text run at (315,54) width 48: " lorum."
+      LayoutBR {BR} at (362,54) size 1x17
+      LayoutText {#text} at (0,72) size 53x17
+        text run at (0,72) width 53: "longtext"
+      LayoutInline {SPAN} at (0,0) size 46x17
+        LayoutText {#text} at (52,72) size 46x17
+          text run at (52,72) width 46: "findme"
+      LayoutText {#text} at (97,72) size 45x17
+        text run at (97,72) width 45: "noyou."
+      LayoutBR {BR} at (141,72) size 1x17
+      LayoutSVGRoot {svg} at (17,133) size 235x161
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-          LayoutSVGPath {path} at (108,88) size 350x300 [fill={[type=SOLID] [color=#000000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
-        LayoutSVGText {text} at (10,35) size 208x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 208x19
-            chunk 1 text run 1 at (10.00,50.00) startOffset 0 endOffset 35 width 208.00: "Can you findme in this boring text?"
+          LayoutSVGPath {path} at (108,98) size 350x300 [fill={[type=SOLID] [color=#000000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+        LayoutSVGText {text} at (10,36) size 233x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 233x18
+            chunk 1 text run 1 at (10.00,50.00) startOffset 0 endOffset 36 width 232.85: "Can you findme in this stroked text?"
         LayoutSVGText {text} at (10,91) size 138x12 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 138x12
             chunk 1 text run 1 at (10.00,100.00) startOffset 0 endOffset 23 width 138.00: "Findme in a typewriter!"
-        LayoutSVGContainer {g} at (28,212) size 202x72 [transform={m=((0.30,0.00)(0.00,0.30)) t=(0.00,120.00)}]
+        LayoutSVGContainer {g} at (28,222) size 202x72 [transform={m=((0.30,0.00)(0.00,0.30)) t=(0.00,120.00)}]
           LayoutSVGText {text} at (69,14) size 669x239 contains 1 chunk(s)
             LayoutSVGTextPath {textPath} at (0,0) size 669x238
               LayoutSVGInlineText {#text} at (0,0) size 669x238

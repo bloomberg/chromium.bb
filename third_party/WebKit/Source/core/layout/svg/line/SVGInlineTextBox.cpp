@@ -219,9 +219,14 @@ void SVGInlineTextBox::paintDocumentMarker(GraphicsContext&, const LayoutPoint&,
     // SVG does not have support for generic document markers (e.g., spellchecking, etc).
 }
 
-void SVGInlineTextBox::paintTextMatchMarker(GraphicsContext& context, const LayoutPoint& point, DocumentMarker* marker, const ComputedStyle& style, const Font& font) const
+void SVGInlineTextBox::paintTextMatchMarkerForeground(const PaintInfo& paintInfo, const LayoutPoint& point, DocumentMarker* marker, const ComputedStyle& style, const Font& font) const
 {
-    SVGInlineTextBoxPainter(*this).paintTextMatchMarker(context, point, marker, style, font);
+    SVGInlineTextBoxPainter(*this).paintTextMatchMarkerForeground(paintInfo, point, marker, style, font);
+}
+
+void SVGInlineTextBox::paintTextMatchMarkerBackground(const PaintInfo& paintInfo, const LayoutPoint& point, DocumentMarker* marker, const ComputedStyle& style, const Font& font) const
+{
+    SVGInlineTextBoxPainter(*this).paintTextMatchMarkerBackground(paintInfo, point, marker, style, font);
 }
 
 LayoutRect SVGInlineTextBox::calculateBoundaries() const

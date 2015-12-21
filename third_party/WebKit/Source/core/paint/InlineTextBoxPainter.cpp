@@ -155,7 +155,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     // 1. Paint backgrounds behind text if needed. Examples of such backgrounds include selection
     // and composition highlights.
     if (paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseTextClip && !isPrinting) {
-        paintDocumentMarkers(context, boxOrigin, styleToUse, font, true);
+        paintDocumentMarkers(paintInfo, boxOrigin, styleToUse, font, DocumentMarkerPaintPhase::Background);
 
         if (haveSelection && !paintsCompositionMarkers(textBoxLayoutObject)) {
             if (combinedText)
@@ -242,7 +242,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     }
 
     if (paintInfo.phase == PaintPhaseForeground)
-        paintDocumentMarkers(context, boxOrigin, styleToUse, font, false);
+        paintDocumentMarkers(paintInfo, boxOrigin, styleToUse, font, DocumentMarkerPaintPhase::Foreground);
 
     if (shouldRotate)
         context.concatCTM(TextPainter::rotation(boxRect, TextPainter::Counterclockwise));
@@ -297,7 +297,7 @@ void InlineTextBoxPainter::paintSingleCompositionBackgroundRun(GraphicsContext& 
     context.drawHighlightForText(font, m_inlineTextBox.constructTextRun(style, font), localOrigin, selHeight, backgroundColor, sPos, ePos);
 }
 
-void InlineTextBoxPainter::paintDocumentMarkers(GraphicsContext& context, const LayoutPoint& boxOrigin, const ComputedStyle& style, const Font& font, bool background)
+void InlineTextBoxPainter::paintDocumentMarkers(const PaintInfo& paintInfo, const LayoutPoint& boxOrigin, const ComputedStyle& style, const Font& font, DocumentMarkerPaintPhase markerPaintPhase)
 {
     if (!m_inlineTextBox.lineLayoutItem().node())
         return;
@@ -314,13 +314,10 @@ void InlineTextBoxPainter::paintDocumentMarkers(GraphicsContext& context, const 
         switch (marker->type()) {
         case DocumentMarker::Grammar:
         case DocumentMarker::Spelling:
-            if (background)
+            if (markerPaintPhase == DocumentMarkerPaintPhase::Background)
                 continue;
             break;
         case DocumentMarker::TextMatch:
-            if (!background)
-                continue;
-            break;
         case DocumentMarker::Composition:
             break;
         default:
@@ -340,21 +337,24 @@ void InlineTextBoxPainter::paintDocumentMarkers(GraphicsContext& context, const 
         // marker intersects this run.  Paint it.
         switch (marker->type()) {
         case DocumentMarker::Spelling:
-            m_inlineTextBox.paintDocumentMarker(context, boxOrigin, marker, style, font, false);
+            m_inlineTextBox.paintDocumentMarker(paintInfo.context, boxOrigin, marker, style, font, false);
             break;
         case DocumentMarker::Grammar:
-            m_inlineTextBox.paintDocumentMarker(context, boxOrigin, marker, style, font, true);
+            m_inlineTextBox.paintDocumentMarker(paintInfo.context, boxOrigin, marker, style, font, true);
             break;
         case DocumentMarker::TextMatch:
-            m_inlineTextBox.paintTextMatchMarker(context, boxOrigin, marker, style, font);
+            if (markerPaintPhase == DocumentMarkerPaintPhase::Background)
+                m_inlineTextBox.paintTextMatchMarkerBackground(paintInfo, boxOrigin, marker, style, font);
+            else
+                m_inlineTextBox.paintTextMatchMarkerForeground(paintInfo, boxOrigin, marker, style, font);
             break;
         case DocumentMarker::Composition:
             {
                 CompositionUnderline underline(marker->startOffset(), marker->endOffset(), marker->underlineColor(), marker->thick(), marker->backgroundColor());
-                if (background)
-                    paintSingleCompositionBackgroundRun(context, boxOrigin, style, font, underline.backgroundColor, underlinePaintStart(underline), underlinePaintEnd(underline));
+                if (markerPaintPhase == DocumentMarkerPaintPhase::Background)
+                    paintSingleCompositionBackgroundRun(paintInfo.context, boxOrigin, style, font, underline.backgroundColor, underlinePaintStart(underline), underlinePaintEnd(underline));
                 else
-                    paintCompositionUnderline(context, boxOrigin, underline);
+                    paintCompositionUnderline(paintInfo.context, boxOrigin, underline);
             }
             break;
         default:
@@ -829,8 +829,36 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext& context, c
     context.drawLineForText(FloatPoint(boxOrigin.x() + start, (boxOrigin.y() + m_inlineTextBox.logicalHeight() - lineThickness).toFloat()), width, m_inlineTextBox.lineLayoutItem().document().printing());
 }
 
-void InlineTextBoxPainter::paintTextMatchMarker(GraphicsContext& context, const LayoutPoint& boxOrigin, DocumentMarker* marker, const ComputedStyle& style, const Font& font)
+void InlineTextBoxPainter::paintTextMatchMarkerForeground(const PaintInfo& paintInfo, const LayoutPoint& boxOrigin, DocumentMarker* marker, const ComputedStyle& style, const Font& font)
 {
+    if (!LineLayoutPaintShim::layoutObjectFrom(m_inlineTextBox.lineLayoutItem())->frame()->editor().markedTextMatchesAreHighlighted())
+        return;
+
+    // TODO(ramya.v): Extract this into a helper function and share many copies of this code.
+    int sPos = std::max(marker->startOffset() - m_inlineTextBox.start(), (unsigned)0);
+    int ePos = std::min(marker->endOffset() - m_inlineTextBox.start(), m_inlineTextBox.len());
+    TextRun run = m_inlineTextBox.constructTextRun(style, font);
+
+    Color textColor = LayoutTheme::theme().platformTextSearchColor(marker->activeMatch());
+    if (style.visitedDependentColor(CSSPropertyColor) == textColor)
+        return;
+    TextPainter::Style textStyle;
+    textStyle.currentColor = textStyle.fillColor = textStyle.strokeColor = textStyle.emphasisMarkColor = textColor;
+    textStyle.strokeWidth = style.textStrokeWidth();
+    textStyle.shadow = 0;
+
+    LayoutRect boxRect(boxOrigin, LayoutSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
+    LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
+    TextPainter textPainter(paintInfo.context, font, run, textOrigin, boxRect, m_inlineTextBox.isHorizontal());
+
+    textPainter.paint(sPos, ePos, m_inlineTextBox.len(), textStyle, 0);
+}
+
+void InlineTextBoxPainter::paintTextMatchMarkerBackground(const PaintInfo& paintInfo, const LayoutPoint& boxOrigin, DocumentMarker* marker, const ComputedStyle& style, const Font& font)
+{
+    if (!LineLayoutPaintShim::layoutObjectFrom(m_inlineTextBox.lineLayoutItem())->frame()->editor().markedTextMatchesAreHighlighted())
+        return;
+
     // Use same y positioning and height as for selection, so that when the selection and this highlight are on
     // the same word there are no pieces sticking out.
     int deltaY = m_inlineTextBox.lineLayoutItem().style()->isFlippedLinesWritingMode() ? m_inlineTextBox.root().selectionBottom() - m_inlineTextBox.logicalBottom() : m_inlineTextBox.logicalTop() - m_inlineTextBox.root().selectionTop();
@@ -840,31 +868,11 @@ void InlineTextBoxPainter::paintTextMatchMarker(GraphicsContext& context, const 
     int ePos = std::min(marker->endOffset() - m_inlineTextBox.start(), m_inlineTextBox.len());
     TextRun run = m_inlineTextBox.constructTextRun(style, font);
 
-    // Optionally highlight the text
-    if (LineLayoutPaintShim::layoutObjectFrom(m_inlineTextBox.lineLayoutItem())->frame()->editor().markedTextMatchesAreHighlighted()) {
-        Color color = marker->activeMatch() ?
-            LayoutTheme::theme().platformActiveTextSearchHighlightColor() :
-            LayoutTheme::theme().platformInactiveTextSearchHighlightColor();
-        GraphicsContextStateSaver stateSaver(context);
-        context.clip(FloatRect(boxOrigin.x().toFloat(), (boxOrigin.y() - deltaY).toFloat(), m_inlineTextBox.logicalWidth().toFloat(), selHeight));
-        context.drawHighlightForText(font, run, FloatPoint(boxOrigin.x().toFloat(), (boxOrigin.y() - deltaY).toFloat()), selHeight, color, sPos, ePos);
-
-        // Also Highlight the text with color:transparent
-        if (style.visitedDependentColor(CSSPropertyColor) == Color::transparent) {
-            int length = m_inlineTextBox.len();
-            TextPainter::Style textStyle;
-            // When we use the text as a clip, we only care about the alpha, thus we make all the colors black.
-            textStyle.currentColor = textStyle.fillColor = textStyle.strokeColor = textStyle.emphasisMarkColor = Color::black;
-            textStyle.strokeWidth = style.textStrokeWidth();
-            textStyle.shadow = 0;
-
-            LayoutRect boxRect(boxOrigin, LayoutSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
-            LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
-            TextPainter textPainter(context, font, run, textOrigin, boxRect, m_inlineTextBox.isHorizontal());
-
-            textPainter.paint(sPos, ePos, length, textStyle, 0);
-        }
-    }
+    Color color = LayoutTheme::theme().platformTextSearchHighlightColor(marker->activeMatch());
+    GraphicsContext& context = paintInfo.context;
+    GraphicsContextStateSaver stateSaver(context);
+    context.clip(FloatRect(boxOrigin.x().toFloat(), (boxOrigin.y() - deltaY).toFloat(), m_inlineTextBox.logicalWidth().toFloat(), selHeight));
+    context.drawHighlightForText(font, run, FloatPoint(boxOrigin.x().toFloat(), (boxOrigin.y() - deltaY).toFloat()), selHeight, color, sPos, ePos);
 }
 
 

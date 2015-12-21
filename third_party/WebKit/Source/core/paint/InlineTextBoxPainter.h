@@ -25,15 +25,18 @@ class InlineTextBox;
 class LayoutPoint;
 class LayoutTextCombine;
 
+enum class DocumentMarkerPaintPhase { Foreground, Background };
+
 class InlineTextBoxPainter {
     STACK_ALLOCATED();
 public:
     InlineTextBoxPainter(const InlineTextBox& inlineTextBox) : m_inlineTextBox(inlineTextBox) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
-    void paintDocumentMarkers(GraphicsContext&, const LayoutPoint& boxOrigin, const ComputedStyle&, const Font&, bool background);
+    void paintDocumentMarkers(const PaintInfo&, const LayoutPoint& boxOrigin, const ComputedStyle&, const Font&, DocumentMarkerPaintPhase);
     void paintDocumentMarker(GraphicsContext&, const LayoutPoint& boxOrigin, DocumentMarker*, const ComputedStyle&, const Font&, bool grammar);
-    void paintTextMatchMarker(GraphicsContext&, const LayoutPoint& boxOrigin, DocumentMarker*, const ComputedStyle&, const Font&);
+    void paintTextMatchMarkerForeground(const PaintInfo&, const LayoutPoint& boxOrigin, DocumentMarker*, const ComputedStyle&, const Font&);
+    void paintTextMatchMarkerBackground(const PaintInfo&, const LayoutPoint& boxOrigin, DocumentMarker*, const ComputedStyle&, const Font&);
 
     static void removeFromTextBlobCache(const InlineTextBox&);
 

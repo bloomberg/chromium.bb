@@ -64,11 +64,15 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         // TODO(chrishtr): passing the cull rect is incorrect.
         DrawingRecorder recorder(paintInfo.context, m_svgInlineTextBox, displayItemType, FloatRect(paintInfo.cullRect().m_rect));
         InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
-            paintInfo.context, paintOffset, style,
-            textLayoutObject.scaledFont(), true);
+            paintInfo, paintOffset, style,
+            textLayoutObject.scaledFont(), DocumentMarkerPaintPhase::Background);
 
         if (!m_svgInlineTextBox.textFragments().isEmpty())
             paintTextFragments(paintInfo, parentLayoutObject);
+
+        InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
+            paintInfo, paintOffset, style,
+            textLayoutObject.scaledFont(), DocumentMarkerPaintPhase::Foreground);
     }
 }
 
@@ -168,25 +172,17 @@ void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInf
     int startPosition, endPosition;
     m_svgInlineTextBox.selectionStartEnd(startPosition, endPosition);
 
-    int fragmentStartPosition = 0;
-    int fragmentEndPosition = 0;
     AffineTransform fragmentTransform;
-    unsigned textFragmentsSize = m_svgInlineTextBox.textFragments().size();
-    for (unsigned i = 0; i < textFragmentsSize; ++i) {
-        const SVGTextFragment& fragment = m_svgInlineTextBox.textFragments().at(i);
-
-        fragmentStartPosition = startPosition;
-        fragmentEndPosition = endPosition;
-        if (!m_svgInlineTextBox.mapStartEndPositionsIntoFragmentCoordinates(fragment, fragmentStartPosition, fragmentEndPosition))
-            continue;
-
+    const Vector<SVGTextFragmentWithRange> fragmentInfoList = collectFragmentsInRange(startPosition, endPosition);
+    for (const SVGTextFragmentWithRange& fragmentWithRange : fragmentInfoList) {
+        const SVGTextFragment& fragment = fragmentWithRange.fragment;
         GraphicsContextStateSaver stateSaver(paintInfo.context);
         fragment.buildFragmentTransform(fragmentTransform);
         if (!fragmentTransform.isIdentity())
             paintInfo.context.concatCTM(fragmentTransform);
 
         paintInfo.context.setFillColor(backgroundColor);
-        paintInfo.context.fillRect(m_svgInlineTextBox.selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style), backgroundColor);
+        paintInfo.context.fillRect(m_svgInlineTextBox.selectionRectForTextFragment(fragment, fragmentWithRange.startPosition, fragmentWithRange.endPosition, style), backgroundColor);
     }
 }
 
@@ -421,52 +417,97 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, const Comput
     }
 }
 
-void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext& context, const LayoutPoint&, DocumentMarker* marker, const ComputedStyle& style, const Font& font)
+Vector<SVGTextFragmentWithRange> SVGInlineTextBoxPainter::collectTextMatches(DocumentMarker* marker) const
 {
-    // SVG is only interested in the TextMatch markers.
+    const Vector<SVGTextFragmentWithRange> emptyTextMatchList;
+
+    // SVG does not support grammar or spellcheck markers, so skip anything but TextMatch.
     if (marker->type() != DocumentMarker::TextMatch)
+        return emptyTextMatchList;
+
+    if (!LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem())->frame()->editor().markedTextMatchesAreHighlighted())
+        return emptyTextMatchList;
+
+    int markerStartPosition = std::max<int>(marker->startOffset() - m_svgInlineTextBox.start(), 0);
+    int markerEndPosition = std::min<int>(marker->endOffset() - m_svgInlineTextBox.start(), m_svgInlineTextBox.len());
+
+    if (markerStartPosition >= markerEndPosition)
+        return emptyTextMatchList;
+
+    return collectFragmentsInRange(markerStartPosition, markerEndPosition);
+}
+
+Vector<SVGTextFragmentWithRange> SVGInlineTextBoxPainter::collectFragmentsInRange(int startPosition, int endPosition) const
+{
+    Vector<SVGTextFragmentWithRange> fragmentInfoList;
+    const Vector<SVGTextFragment>& fragments = m_svgInlineTextBox.textFragments();
+    for (const SVGTextFragment& fragment : fragments) {
+        // TODO(ramya.v): If these can't be negative we should use unsigned.
+        int fragmentStartPosition = startPosition;
+        int fragmentEndPosition = endPosition;
+        if (!m_svgInlineTextBox.mapStartEndPositionsIntoFragmentCoordinates(fragment, fragmentStartPosition, fragmentEndPosition))
+            continue;
+
+        fragmentInfoList.append(SVGTextFragmentWithRange(fragment, fragmentStartPosition, fragmentEndPosition));
+    }
+    return fragmentInfoList;
+}
+
+void SVGInlineTextBoxPainter::paintTextMatchMarkerForeground(const PaintInfo& paintInfo, const LayoutPoint& point, DocumentMarker* marker, const ComputedStyle& style, const Font& font)
+{
+    const Vector<SVGTextFragmentWithRange> textMatchInfoList = collectTextMatches(marker);
+    if (textMatchInfoList.isEmpty())
         return;
 
-    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(*LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem()));
+    Color textColor = LayoutTheme::theme().platformTextSearchColor(marker->activeMatch());
+
+    SkPaint fillPaint;
+    fillPaint.setColor(textColor.rgb());
+    fillPaint.setAntiAlias(true);
+
+    SkPaint strokePaint;
+    bool shouldPaintStroke  = false;
+    if (setupTextPaint(paintInfo, style, ApplyToStrokeMode, strokePaint)) {
+        shouldPaintStroke = true;
+        strokePaint.setLooper(nullptr);
+        strokePaint.setColor(textColor.rgb());
+    }
 
     AffineTransform fragmentTransform;
-    for (InlineTextBox* box = textLayoutObject.firstTextBox(); box; box = box->nextTextBox()) {
-        if (!box->isSVGInlineTextBox())
-            continue;
+    for (const SVGTextFragmentWithRange& textMatchInfo : textMatchInfoList) {
+        const SVGTextFragment& fragment = textMatchInfo.fragment;
+        GraphicsContextStateSaver stateSaver(paintInfo.context);
+        fragment.buildFragmentTransform(fragmentTransform);
+        if (!fragmentTransform.isIdentity())
+            paintInfo.context.concatCTM(fragmentTransform);
 
-        SVGInlineTextBox* textBox = toSVGInlineTextBox(box);
+        TextRun textRun = m_svgInlineTextBox.constructTextRun(style, fragment);
+        paintText(paintInfo, textRun, fragment, textMatchInfo.startPosition, textMatchInfo.endPosition, fillPaint);
+        if (shouldPaintStroke)
+            paintText(paintInfo, textRun, fragment, textMatchInfo.startPosition, textMatchInfo.endPosition, strokePaint);
+    }
+}
 
-        int markerStartPosition = std::max<int>(marker->startOffset() - textBox->start(), 0);
-        int markerEndPosition = std::min<int>(marker->endOffset() - textBox->start(), textBox->len());
+void SVGInlineTextBoxPainter::paintTextMatchMarkerBackground(const PaintInfo& paintInfo, const LayoutPoint& point, DocumentMarker* marker, const ComputedStyle& style, const Font& font)
+{
+    const Vector<SVGTextFragmentWithRange> textMatchInfoList = collectTextMatches(marker);
+    if (textMatchInfoList.isEmpty())
+        return;
 
-        if (markerStartPosition >= markerEndPosition)
-            continue;
+    Color color = LayoutTheme::theme().platformTextSearchHighlightColor(marker->activeMatch());
+    AffineTransform fragmentTransform;
+    for (const SVGTextFragmentWithRange& textMatchInfo : textMatchInfoList) {
+        const SVGTextFragment& fragment = textMatchInfo.fragment;
 
-        const Vector<SVGTextFragment>& fragments = textBox->textFragments();
-        unsigned textFragmentsSize = fragments.size();
-        for (unsigned i = 0; i < textFragmentsSize; ++i) {
-            const SVGTextFragment& fragment = fragments.at(i);
-
-            int fragmentStartPosition = markerStartPosition;
-            int fragmentEndPosition = markerEndPosition;
-            if (!textBox->mapStartEndPositionsIntoFragmentCoordinates(fragment, fragmentStartPosition, fragmentEndPosition))
-                continue;
-
-            FloatRect fragmentRect = textBox->selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style);
-            fragment.buildFragmentTransform(fragmentTransform);
-
-            // Draw the marker highlight.
-            if (LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem())->frame()->editor().markedTextMatchesAreHighlighted()) {
-                Color color = marker->activeMatch() ?
-                    LayoutTheme::theme().platformActiveTextSearchHighlightColor() :
-                    LayoutTheme::theme().platformInactiveTextSearchHighlightColor();
-                GraphicsContextStateSaver stateSaver(context);
-                if (!fragmentTransform.isIdentity())
-                    context.concatCTM(fragmentTransform);
-                context.setFillColor(color);
-                context.fillRect(fragmentRect, color);
-            }
+        GraphicsContextStateSaver stateSaver(paintInfo.context, false);
+        fragment.buildFragmentTransform(fragmentTransform);
+        if (!fragmentTransform.isIdentity()) {
+            stateSaver.save();
+            paintInfo.context.concatCTM(fragmentTransform);
         }
+        FloatRect fragmentRect = m_svgInlineTextBox.selectionRectForTextFragment(fragment, textMatchInfo.startPosition, textMatchInfo.endPosition, style);
+        paintInfo.context.setFillColor(color);
+        paintInfo.context.fillRect(fragmentRect);
     }
 }
 
