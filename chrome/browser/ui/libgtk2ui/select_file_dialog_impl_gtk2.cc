@@ -165,11 +165,13 @@ void SelectFileDialogImplGTK::SelectFileImpl(
 
   params_map_[dialog] = params;
 
-  // Disable input events handling in the host window to make this dialog modal.
-  views::DesktopWindowTreeHostX11* host =
-      views::DesktopWindowTreeHostX11::GetHostForXID(
-      owning_window->GetHost()->GetAcceleratedWidget());
-  host->DisableEventListening(GDK_WINDOW_XID(gtk_widget_get_window(dialog)));
+  if (owning_window && owning_window->GetHost()) {
+    // Disable input events handling in the host to make this dialog modal.
+    views::DesktopWindowTreeHostX11* host =
+        views::DesktopWindowTreeHostX11::GetHostForXID(
+        owning_window->GetHost()->GetAcceleratedWidget());
+    host->DisableEventListening(GDK_WINDOW_XID(gtk_widget_get_window(dialog)));
+  }
 
   gtk_widget_show_all(dialog);
 
