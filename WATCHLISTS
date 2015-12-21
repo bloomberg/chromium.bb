@@ -1040,6 +1040,9 @@
                   '|third_party/WebKit/Source/modules/push_messaging' \
                   '|third_party/WebKit/public/platform/modules/push_messaging'
     },
+    'blink_platform': {
+      'filepath': 'third_party/WebKit/Source/platform'
+    },
     'blink_platform_graphics': {
       'filepath': 'third_party/WebKit/Source/platform/fonts' \
                   '|third_party/WebKit/Source/platform/geometry' \
@@ -1584,6 +1587,7 @@
                       'tyoshino+watch@chromium.org',
                       'loading-reviews@chromium.org' ],
     'blink_owners': [ 'abarth@chromium.org'],
+    'blink_platform': [ 'kinuko+watch@chromium.org' ],
     'blink_platform_graphics': [ 'schenney@chromium.org',
                                  'danakj@chromium.org',
                                  'pdr+graphicswatchlist@chromium.org',
