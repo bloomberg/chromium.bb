@@ -52,11 +52,12 @@ void GCMEncryptionProvider::Init(
       new GCMKeyStore(encryption_store_path, blocking_task_runner));
 }
 
-void GCMEncryptionProvider::GetPublicKey(const std::string& app_id,
-                                         const PublicKeyCallback& callback) {
+void GCMEncryptionProvider::GetEncryptionInfo(
+    const std::string& app_id,
+    const EncryptionInfoCallback& callback) {
   DCHECK(key_store_);
   key_store_->GetKeys(
-      app_id, base::Bind(&GCMEncryptionProvider::DidGetPublicKey,
+      app_id, base::Bind(&GCMEncryptionProvider::DidGetEncryptionInfo,
                          weak_ptr_factory_.GetWeakPtr(), app_id, callback));
 }
 
@@ -125,13 +126,14 @@ void GCMEncryptionProvider::DecryptMessage(
                          encryption_header_values[0].rs));
 }
 
-void GCMEncryptionProvider::DidGetPublicKey(const std::string& app_id,
-                                            const PublicKeyCallback& callback,
-                                            const KeyPair& pair,
-                                            const std::string& auth_secret) {
+void GCMEncryptionProvider::DidGetEncryptionInfo(
+    const std::string& app_id,
+    const EncryptionInfoCallback& callback,
+    const KeyPair& pair,
+    const std::string& auth_secret) {
   if (!pair.IsInitialized()) {
     key_store_->CreateKeys(
-        app_id, base::Bind(&GCMEncryptionProvider::DidCreatePublicKey,
+        app_id, base::Bind(&GCMEncryptionProvider::DidCreateEncryptionInfo,
                            weak_ptr_factory_.GetWeakPtr(), callback));
     return;
   }
@@ -140,12 +142,12 @@ void GCMEncryptionProvider::DidGetPublicKey(const std::string& app_id,
   callback.Run(pair.public_key(), auth_secret);
 }
 
-void GCMEncryptionProvider::DidCreatePublicKey(
-    const PublicKeyCallback& callback,
+void GCMEncryptionProvider::DidCreateEncryptionInfo(
+    const EncryptionInfoCallback& callback,
     const KeyPair& pair,
     const std::string& auth_secret) {
   if (!pair.IsInitialized()) {
-    callback.Run(std::string() /* public_key */,
+    callback.Run(std::string() /* p256dh */,
                  std::string() /* auth_secret */);
     return;
   }

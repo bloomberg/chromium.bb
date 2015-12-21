@@ -311,7 +311,7 @@ void PushMessagingServiceImpl::SetMessageCallbackForTesting(
   message_callback_for_testing_ = callback;
 }
 
-// Other gcm::GCMAppHandler methods -------------------------------------------
+// Other gcm::GCMAppHandler methods --------------------------------------------
 
 void PushMessagingServiceImpl::OnMessagesDeleted(const std::string& app_id) {
   // TODO(mvanouwerkerk): Fire push error event on the Service Worker
@@ -464,18 +464,18 @@ void PushMessagingServiceImpl::DidSubscribe(
     case gcm::GCMClient::SUCCESS:
       // Do not get a certificate if message payloads have not been enabled.
       if (!AreMessagePayloadsEnabled()) {
-        DidSubscribeWithPublicKey(app_identifier, callback, subscription_id,
-                                  std::string() /* public_key */,
-                                  std::string() /* auth_secret */);
+        DidSubscribeWithEncryptionInfo(
+            app_identifier, callback, subscription_id,
+            std::string() /* p256dh */, std::string() /* auth_secret */);
         return;
       }
 
       // Make sure that this subscription has associated encryption keys prior
       // to returning it to the developer - they'll need this information in
       // order to send payloads to the user.
-      GetGCMDriver()->GetPublicKey(
+      GetGCMDriver()->GetEncryptionInfo(
           app_identifier.app_id(),
-          base::Bind(&PushMessagingServiceImpl::DidSubscribeWithPublicKey,
+          base::Bind(&PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo,
                      weak_factory_.GetWeakPtr(), app_identifier, callback,
                      subscription_id));
 
@@ -496,13 +496,13 @@ void PushMessagingServiceImpl::DidSubscribe(
   SubscribeEndWithError(callback, status);
 }
 
-void PushMessagingServiceImpl::DidSubscribeWithPublicKey(
+void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
     const PushMessagingAppIdentifier& app_identifier,
     const content::PushMessagingService::RegisterCallback& callback,
     const std::string& subscription_id,
-    const std::string& public_key,
+    const std::string& p256dh,
     const std::string& auth_secret) {
-  if (!public_key.size() && AreMessagePayloadsEnabled()) {
+  if (!p256dh.size() && AreMessagePayloadsEnabled()) {
     SubscribeEndWithError(
         callback, content::PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE);
     return;
@@ -513,7 +513,7 @@ void PushMessagingServiceImpl::DidSubscribeWithPublicKey(
   IncreasePushSubscriptionCount(1, false /* is_pending */);
 
   SubscribeEnd(callback, subscription_id,
-               std::vector<uint8_t>(public_key.begin(), public_key.end()),
+               std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
                std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()),
                content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE);
 }
@@ -537,16 +537,15 @@ void PushMessagingServiceImpl::DidRequestPermission(
                                       app_identifier, register_callback));
 }
 
-// GetPublicEncryptionKey methods ----------------------------------------------
+// GetEncryptionInfo methods ---------------------------------------------------
 
-void PushMessagingServiceImpl::GetPublicEncryptionKey(
+void PushMessagingServiceImpl::GetEncryptionInfo(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    const PushMessagingService::PublicKeyCallback& callback) {
+    const PushMessagingService::EncryptionInfoCallback& callback) {
   // An empty public key will be returned if payloads are not enabled.
   if (!AreMessagePayloadsEnabled()) {
-    callback.Run(true /* success */,
-                 std::vector<uint8_t>() /* public_key */,
+    callback.Run(true /* success */, std::vector<uint8_t>() /* p256dh */,
                  std::vector<uint8_t>() /* auth */);
     return;
   }
@@ -557,21 +556,20 @@ void PushMessagingServiceImpl::GetPublicEncryptionKey(
 
   DCHECK(!app_identifier.is_null());
 
-  GetGCMDriver()->GetPublicKey(
+  GetGCMDriver()->GetEncryptionInfo(
       app_identifier.app_id(),
-      base::Bind(&PushMessagingServiceImpl::DidGetPublicKey,
+      base::Bind(&PushMessagingServiceImpl::DidGetEncryptionInfo,
                  weak_factory_.GetWeakPtr(), callback));
 }
 
-void PushMessagingServiceImpl::DidGetPublicKey(
-    const PushMessagingService::PublicKeyCallback& callback,
-    const std::string& public_key,
+void PushMessagingServiceImpl::DidGetEncryptionInfo(
+    const PushMessagingService::EncryptionInfoCallback& callback,
+    const std::string& p256dh,
     const std::string& auth_secret) const {
   // I/O errors might prevent the GCM Driver from retrieving a key-pair.
-  const bool success = !!public_key.size();
+  const bool success = !!p256dh.size();
 
-  callback.Run(success,
-               std::vector<uint8_t>(public_key.begin(), public_key.end()),
+  callback.Run(success, std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
                std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()));
 }
 

@@ -29,8 +29,8 @@ class KeyPair;
 class GCMEncryptionProvider {
  public:
   // Callback to be invoked when the public key and auth secret are available.
-  using PublicKeyCallback = base::Callback<void(const std::string&,
-                                                const std::string&)>;
+  using EncryptionInfoCallback = base::Callback<void(const std::string&,
+                                                     const std::string&)>;
 
   // Callback to be invoked when a message has been decrypted.
   using MessageDecryptedCallback = base::Callback<void(const IncomingMessage&)>;
@@ -70,8 +70,8 @@ class GCMEncryptionProvider {
 
   // Retrieves the public key and authentication secret associated with the
   // |app_id|. If none have been associated yet, they will be created.
-  void GetPublicKey(const std::string& app_id,
-                    const PublicKeyCallback& callback);
+  void GetEncryptionInfo(const std::string& app_id,
+                         const EncryptionInfoCallback& callback);
 
   // Determines whether |message| contains encrypted content.
   bool IsEncryptedMessage(const IncomingMessage& message) const;
@@ -88,14 +88,14 @@ class GCMEncryptionProvider {
  private:
   FRIEND_TEST_ALL_PREFIXES(GCMEncryptionProviderTest, EncryptionRoundTrip);
 
-  void DidGetPublicKey(const std::string& app_id,
-                       const PublicKeyCallback& callback,
-                       const KeyPair& pair,
-                       const std::string& auth_secret);
+  void DidGetEncryptionInfo(const std::string& app_id,
+                            const EncryptionInfoCallback& callback,
+                            const KeyPair& pair,
+                            const std::string& auth_secret);
 
-  void DidCreatePublicKey(const PublicKeyCallback& callback,
-                          const KeyPair& pair,
-                          const std::string& auth_secret);
+  void DidCreateEncryptionInfo(const EncryptionInfoCallback& callback,
+                               const KeyPair& pair,
+                               const std::string& auth_secret);
 
   void DecryptMessageWithKey(const IncomingMessage& message,
                              const MessageDecryptedCallback& success_callback,

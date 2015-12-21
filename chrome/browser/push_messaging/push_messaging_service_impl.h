@@ -83,10 +83,10 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& sender_id,
       bool user_visible,
       const content::PushMessagingService::RegisterCallback& callback) override;
-  void GetPublicEncryptionKey(
+  void GetEncryptionInfo(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const content::PushMessagingService::PublicKeyCallback& callback)
+      const content::PushMessagingService::EncryptionInfoCallback& callback)
       override;
   void Unsubscribe(
       const GURL& requesting_origin,
@@ -155,11 +155,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& subscription_id,
       gcm::GCMClient::Result result);
 
-  void DidSubscribeWithPublicKey(
+  void DidSubscribeWithEncryptionInfo(
       const PushMessagingAppIdentifier& app_identifier,
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& subscription_id,
-      const std::string& public_key,
+      const std::string& p256dh,
       const std::string& auth_secret);
 
   void DidRequestPermission(
@@ -168,11 +168,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const content::PushMessagingService::RegisterCallback& callback,
       content::PermissionStatus permission_status);
 
-  // GetPublicEncryptionKey method ---------------------------------------------
+  // GetEncryptionInfo method --------------------------------------------------
 
-  void DidGetPublicKey(const PushMessagingService::PublicKeyCallback& callback,
-                       const std::string& public_key,
-                       const std::string& auth_secret) const;
+  void DidGetEncryptionInfo(
+      const PushMessagingService::EncryptionInfoCallback& callback,
+      const std::string& p256dh,
+      const std::string& auth_secret) const;
 
   // Unsubscribe methods -------------------------------------------------------
 

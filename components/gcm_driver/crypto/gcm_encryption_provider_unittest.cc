@@ -57,12 +57,12 @@ class GCMEncryptionProviderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  // To be used as a callback for GCMEncryptionProvider::GetPublicKey().
-  void DidGetPublicKey(std::string* key_out,
-                       std::string* auth_secret_out,
-                       const std::string& key,
-                       const std::string& auth_secret) {
-    *key_out = key;
+  // To be used as a callback for GCMEncryptionProvider::GetEncryptionInfo().
+  void DidGetEncryptionInfo(std::string* p256dh_out,
+                            std::string* auth_secret_out,
+                            const std::string& p256dh,
+                            const std::string& auth_secret) {
+    *p256dh_out = p256dh;
     *auth_secret_out = auth_secret;
   }
 
@@ -220,9 +220,9 @@ TEST_F(GCMEncryptionProviderTest, VerifiesExistingKeys) {
             failure_reason());
 
   std::string public_key, auth_secret;
-  encryption_provider()->GetPublicKey(
+  encryption_provider()->GetEncryptionInfo(
       kExampleAppId,
-      base::Bind(&GCMEncryptionProviderTest::DidGetPublicKey,
+      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
                  base::Unretained(this), &public_key, &auth_secret));
 
   // Getting (or creating) the public key will be done asynchronously.

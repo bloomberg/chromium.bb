@@ -31,7 +31,7 @@ class CONTENT_EXPORT PushMessagingService {
                           PushRegistrationStatus status)>;
   using UnregisterCallback = base::Callback<void(PushUnregistrationStatus)>;
 
-  using PublicKeyCallback = base::Callback<void(
+  using EncryptionInfoCallback = base::Callback<void(
       bool success,
       const std::vector<uint8_t>& p256dh,
       const std::vector<uint8_t>& auth)>;
@@ -69,12 +69,11 @@ class CONTENT_EXPORT PushMessagingService {
                                    bool user_visible,
                                    const RegisterCallback& callback) = 0;
 
-  // Retrieves the public encryption key associated with |origin| and
-  // |service_worker_registration_id|, and invokes |callback| with the result
-  // when it is available.
-  virtual void GetPublicEncryptionKey(const GURL& origin,
-                                      int64_t service_worker_registration_id,
-                                      const PublicKeyCallback& callback) = 0;
+  // Retrieves the encryption information associated with the subscription
+  // associated to |origin| and |service_worker_registration_id|.
+  virtual void GetEncryptionInfo(const GURL& origin,
+                                 int64_t service_worker_registration_id,
+                                 const EncryptionInfoCallback& callback) = 0;
 
   // Unsubscribe the given |sender_id| from the push messaging service. The
   // subscription will be synchronously deactivated locally, and asynchronously

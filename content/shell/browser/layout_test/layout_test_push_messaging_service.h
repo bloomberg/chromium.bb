@@ -35,10 +35,10 @@ class LayoutTestPushMessagingService : public PushMessagingService {
       const std::string& sender_id,
       bool user_visible,
       const PushMessagingService::RegisterCallback& callback) override;
-  void GetPublicEncryptionKey(
+  void GetEncryptionInfo(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const PushMessagingService::PublicKeyCallback& callback) override;
+      const PushMessagingService::EncryptionInfoCallback& callback) override;
   blink::WebPushPermissionStatus GetPermissionStatus(
       const GURL& requesting_origin,
       const GURL& embedding_origin,

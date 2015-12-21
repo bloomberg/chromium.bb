@@ -63,8 +63,8 @@ void RecordGetRegistrationStatus(PushGetRegistrationStatus status) {
 
 // Curries the |success| and |p256dh| parameters over to |callback| and
 // posts a task to invoke |callback| on the IO thread.
-void ForwardPublicEncryptionKeysToIOThreadProxy(
-    const PushMessagingService::PublicKeyCallback& callback,
+void ForwardEncryptionInfoToIOThreadProxy(
+    const PushMessagingService::EncryptionInfoCallback& callback,
     bool success,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth) {
@@ -124,10 +124,10 @@ class PushMessagingMessageFilter::Core {
 
   // Called via PostTask from IO thread. The |io_thread_callback| callback
   // will be invoked on the IO thread.
-  void GetPublicEncryptionKeyOnUI(
+  void GetEncryptionInfoOnUI(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const PushMessagingService::PublicKeyCallback& io_thread_callback);
+      const PushMessagingService::EncryptionInfoCallback& io_thread_callback);
 
   // Called (directly) from both the UI and IO threads.
   bool is_incognito() const { return is_incognito_; }
@@ -328,7 +328,7 @@ void PushMessagingMessageFilter::DidCheckForExistingRegistration(
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&Core::GetPublicEncryptionKeyOnUI,
+        base::Bind(&Core::GetEncryptionInfoOnUI,
                    base::Unretained(ui_core_.get()), data.requesting_origin,
                    data.service_worker_registration_id, callback));
     return;
@@ -787,7 +787,7 @@ void PushMessagingMessageFilter::DidGetSubscription(
 
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&Core::GetPublicEncryptionKeyOnUI,
+          base::Bind(&Core::GetEncryptionInfoOnUI,
                      base::Unretained(ui_core_.get()), origin,
                      service_worker_registration_id, callback));
 
@@ -907,23 +907,22 @@ void PushMessagingMessageFilter::Core::GetPermissionStatusOnUI(
 // PushMessagingMessageFilter and Core.
 // -----------------------------------------------------------------------------
 
-void PushMessagingMessageFilter::Core::GetPublicEncryptionKeyOnUI(
+void PushMessagingMessageFilter::Core::GetEncryptionInfoOnUI(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    const PushMessagingService::PublicKeyCallback& io_thread_callback) {
+    const PushMessagingService::EncryptionInfoCallback& io_thread_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PushMessagingService* push_service = service();
   if (push_service) {
-    push_service->GetPublicEncryptionKey(
+    push_service->GetEncryptionInfo(
         origin, service_worker_registration_id,
-        base::Bind(&ForwardPublicEncryptionKeysToIOThreadProxy,
-                   io_thread_callback));
+        base::Bind(&ForwardEncryptionInfoToIOThreadProxy, io_thread_callback));
     return;
   }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(io_thread_callback, false /* success */,
-                                     std::vector<uint8_t>() /* public_key */,
+                                     std::vector<uint8_t>() /* p256dh */,
                                      std::vector<uint8_t>() /* auth */));
 }
 
