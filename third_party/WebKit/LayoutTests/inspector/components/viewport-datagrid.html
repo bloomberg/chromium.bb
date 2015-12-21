@@ -101,8 +101,19 @@ function test()
     dumpNodes();
     attach(ab, aac);
     expand(ab);
+    aac.select();
     dumpNodes();
     detach(ab, aac);
+    dumpNodes();
+    attach(ab, aac);
+    aac.revealAndSelect();
+    aa.removeChildren();
+    dumpNodes();
+    attach(ab, aac);
+    aac.revealAndSelect();
+    detach(a, aa);
+    dumpNodes();
+    detach(a, ab);
     dumpNodes();
 
     // crbug.com/542553 -- the below should not produce exceptions.

@@ -7,8 +7,9 @@ InspectorTest.dumpDataGrid = function(root, descentIntoCollapsed, prefix)
 {
     if (!prefix)
         prefix = "";
+    var suffix = root.selected ? " <- selected" : "";
     if (root.data.id)
-        InspectorTest.addResult(prefix + root.data.id);
+        InspectorTest.addResult(prefix + root.data.id + suffix);
     if (!descentIntoCollapsed && !root.expanded)
         return;
     for (var child of root.children)
@@ -29,6 +30,12 @@ InspectorTest.validateDataGrid = function(root)
         if (child.parent && !child.parent._isRoot && child.depth !== root.depth + 1)
             throw "Wrong depth for " + child.data.id + " expected " + (root.depth + 1) + " but got " + child.depth;
         InspectorTest.validateDataGrid(child);
+    }
+    var selectedNode = root.dataGrid.selectedNode;
+    if (!root.parent && selectedNode) {
+        for (var node = selectedNode; node && node !== root; node = node.parent) { }
+        if (!node)
+            throw "Selected node (" + selectedNode.data.id + ") is not within the DataGrid";
     }
 }
 
