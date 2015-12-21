@@ -65,6 +65,7 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   base::scoped_nsobject<NSTableView> tableView_;
   base::scoped_nsobject<NSButton> connectButton_;
   base::scoped_nsobject<NSButton> cancelButton_;
+  bool buttonPressed_;
 
   Browser* browser_;                                // Weak.
   ChooserBubbleDelegate* chooserBubbleDelegate_;    // Weak.
@@ -168,6 +169,8 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
       removeObserver:self
                 name:NSWindowDidMoveNotification
               object:nil];
+  if (!buttonPressed_)
+    chooserBubbleDelegate_->Close();
   bridge_->OnBubbleClosing();
   [super windowWillClose:notification];
 }
@@ -444,12 +447,14 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 }
 
 - (void)onConnect:(id)sender {
+  buttonPressed_ = true;
   NSInteger row = [tableView_ selectedRow];
   chooserBubbleDelegate_->Select(row);
   [self close];
 }
 
 - (void)onCancel:(id)sender {
+  buttonPressed_ = true;
   chooserBubbleDelegate_->Cancel();
   [self close];
 }
