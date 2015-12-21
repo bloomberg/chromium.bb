@@ -12,13 +12,17 @@ cr.define('gcmInternals', function() {
    * element to the value of this property. Otherwise clear the content.
    * @param {!Object} info A dictionary of device infos to be displayed.
    * @param {string} prop Name of the property.
-   * @param {string} element The id of a HTML element.
+   * @param {string} elementId The id of a HTML element.
    */
-  function setIfExists(info, prop, element) {
+  function setIfExists(info, prop, elementId) {
+    var element = $(elementId);
+    if (!element)
+      return;
+
     if (info[prop] !== undefined) {
-      $(element).textContent = info[prop];
+      element.textContent = info[prop];
     } else {
-      $(element).textContent = '';
+      element.textContent = '';
     }
   }
 
@@ -106,14 +110,17 @@ cr.define('gcmInternals', function() {
   /**
    * Refresh the log html table by clearing it first. If data is not empty, then
    * it will be used to populate the table.
-   * @param {string} id ID of the log html table.
+   * @param {string} tableId ID of the log html table.
    * @param {!Object} data A list of list of data items.
    */
-  function refreshLogTable(id, data) {
-    removeAllChildNodes($(id));
-    if (data !== undefined) {
-      addRows($(id), data);
-    }
+  function refreshLogTable(tableId, data) {
+    var element = $(tableId);
+    if (!element)
+      return;
+
+    removeAllChildNodes(element);
+    if (data !== undefined)
+      addRows(element, data);
   }
 
   /**

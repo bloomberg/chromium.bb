@@ -80,7 +80,7 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
   void Send(const std::string& app_id,
             const std::string& receiver_id,
             const OutgoingMessage& message);
-  void GetGCMStatistics(bool clear_logs);
+  void GetGCMStatistics(GCMDriver::ClearActivityLogs clear_logs);
   void SetGCMRecording(bool recording);
 
   void SetAccountTokens(
@@ -284,7 +284,7 @@ void GCMDriverDesktop::IOWorker::OnActivityRecorded() {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
   // When an activity is recorded, get all the stats and refresh the UI of
   // gcm-internals page.
-  GetGCMStatistics(false);
+  GetGCMStatistics(GCMDriver::KEEP_LOGS);
 }
 
 void GCMDriverDesktop::IOWorker::OnConnected(
@@ -343,12 +343,13 @@ void GCMDriverDesktop::IOWorker::Send(const std::string& app_id,
   gcm_client_->Send(app_id, receiver_id, message);
 }
 
-void GCMDriverDesktop::IOWorker::GetGCMStatistics(bool clear_logs) {
+void GCMDriverDesktop::IOWorker::GetGCMStatistics(
+    ClearActivityLogs clear_logs) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
   gcm::GCMClient::GCMStatistics stats;
 
   if (gcm_client_.get()) {
-    if (clear_logs)
+    if (clear_logs == GCMDriver::CLEAR_LOGS)
       gcm_client_->ClearActivityLogs();
     stats = gcm_client_->GetStatistics();
   }
@@ -735,7 +736,7 @@ bool GCMDriverDesktop::IsConnected() const {
 
 void GCMDriverDesktop::GetGCMStatistics(
     const GetGCMStatisticsCallback& callback,
-    bool clear_logs) {
+    ClearActivityLogs clear_logs) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
   DCHECK(!callback.is_null());
 

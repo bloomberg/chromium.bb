@@ -85,6 +85,13 @@ class GCMDriver {
   typedef base::Callback<void(const GCMClient::GCMStatistics& stats)>
       GetGCMStatisticsCallback;
 
+  // Enumeration to be used with GetGCMStatistics() for indicating whether the
+  // existing logs should be cleared or kept.
+  enum ClearActivityLogs {
+    CLEAR_LOGS,
+    KEEP_LOGS
+  };
+
   GCMDriver(
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
@@ -172,11 +179,10 @@ class GCMDriver {
   // Returns true if the gcm client has an open and active connection.
   virtual bool IsConnected() const = 0;
 
-  // Get GCM client internal states and statistics.
-  // If clear_logs is true then activity logs will be cleared before the stats
-  // are returned.
+  // Get GCM client internal states and statistics. The activity logs will be
+  // cleared before returning the stats when |clear_logs| is set to CLEAR_LOGS.
   virtual void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
-                                bool clear_logs) = 0;
+                                ClearActivityLogs clear_logs) = 0;
 
   // Enables/disables GCM activity recording, and then returns the stats.
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,

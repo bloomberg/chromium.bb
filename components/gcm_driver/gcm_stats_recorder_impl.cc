@@ -153,10 +153,6 @@ GCMStatsRecorderImpl::GCMStatsRecorderImpl()
 GCMStatsRecorderImpl::~GCMStatsRecorderImpl() {
 }
 
-void GCMStatsRecorderImpl::SetRecording(bool recording) {
-  is_recording_ = recording;
-}
-
 void GCMStatsRecorderImpl::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
@@ -442,25 +438,25 @@ void GCMStatsRecorderImpl::RecordDataMessageReceived(
 }
 
 void GCMStatsRecorderImpl::CollectActivities(
-    RecordedActivities* recorder_activities) const {
-  recorder_activities->checkin_activities.insert(
-      recorder_activities->checkin_activities.begin(),
+    RecordedActivities* recorded_activities) const {
+  recorded_activities->checkin_activities.insert(
+      recorded_activities->checkin_activities.begin(),
       checkin_activities_.begin(),
       checkin_activities_.end());
-  recorder_activities->connection_activities.insert(
-      recorder_activities->connection_activities.begin(),
+  recorded_activities->connection_activities.insert(
+      recorded_activities->connection_activities.begin(),
       connection_activities_.begin(),
       connection_activities_.end());
-  recorder_activities->registration_activities.insert(
-      recorder_activities->registration_activities.begin(),
+  recorded_activities->registration_activities.insert(
+      recorded_activities->registration_activities.begin(),
       registration_activities_.begin(),
       registration_activities_.end());
-  recorder_activities->receiving_activities.insert(
-      recorder_activities->receiving_activities.begin(),
+  recorded_activities->receiving_activities.insert(
+      recorded_activities->receiving_activities.begin(),
       receiving_activities_.begin(),
       receiving_activities_.end());
-  recorder_activities->sending_activities.insert(
-      recorder_activities->sending_activities.begin(),
+  recorded_activities->sending_activities.insert(
+      recorded_activities->sending_activities.begin(),
       sending_activities_.begin(),
       sending_activities_.end());
 }

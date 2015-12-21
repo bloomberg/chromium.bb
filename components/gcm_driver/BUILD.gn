@@ -49,6 +49,8 @@ static_library("gcm_driver") {
     "gcm_internals_helper.h",
     "gcm_profile_service.cc",
     "gcm_profile_service.h",
+    "gcm_stats_recorder_android.cc",
+    "gcm_stats_recorder_android.h",
     "gcm_stats_recorder_impl.cc",
     "gcm_stats_recorder_impl.h",
     "registration_info.cc",
@@ -143,7 +145,14 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "gcm_account_mapper_unittest.cc",
     "gcm_account_tracker_unittest.cc",
+    "gcm_channel_status_request_unittest.cc",
+    "gcm_client_impl_unittest.cc",
+    "gcm_delayed_task_controller_unittest.cc",
+    "gcm_driver_desktop_unittest.cc",
+    "gcm_stats_recorder_android_unittest.cc",
+    "gcm_stats_recorder_impl_unittest.cc",
   ]
 
   deps = [
@@ -160,12 +169,11 @@ source_set("unit_tests") {
     "//third_party/protobuf:protobuf_lite",
   ]
 
-  if (!is_android) {
-    sources += [
+  if (is_android) {
+    sources -= [
       "gcm_account_mapper_unittest.cc",
       "gcm_channel_status_request_unittest.cc",
       "gcm_client_impl_unittest.cc",
-      "gcm_delayed_task_controller_unittest.cc",
       "gcm_driver_desktop_unittest.cc",
       "gcm_stats_recorder_impl_unittest.cc",
     ]

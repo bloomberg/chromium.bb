@@ -85,6 +85,9 @@ void GcmInternalsUIMessageHandler::RequestAllInfo(
     return;
   }
 
+  gcm::GCMDriver::ClearActivityLogs clear_activity_logs =
+      clear_logs ? gcm::GCMDriver::CLEAR_LOGS : gcm::GCMDriver::KEEP_LOGS;
+
   Profile* profile = Profile::FromWebUI(web_ui());
   gcm::GCMProfileService* profile_service =
     gcm::GCMProfileServiceFactory::GetForProfile(profile);
@@ -95,7 +98,7 @@ void GcmInternalsUIMessageHandler::RequestAllInfo(
     profile_service->driver()->GetGCMStatistics(
         base::Bind(&GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished,
                    weak_ptr_factory_.GetWeakPtr()),
-        clear_logs);
+        clear_activity_logs);
   }
 }
 

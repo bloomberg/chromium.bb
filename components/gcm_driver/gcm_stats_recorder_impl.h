@@ -20,22 +20,14 @@
 namespace gcm {
 
 // Records GCM internal stats and activities for debugging purpose. Recording
-// can be turned on/off by calling SetRecording(...) function. It is turned off
-// by default.
+// can be turned on/off by calling set_is_recording(...) function. It is turned
+// off by default.
 // This class is not thread safe. It is meant to be owned by a gcm client
 // instance.
 class GCMStatsRecorderImpl : public GCMStatsRecorder {
  public:
   GCMStatsRecorderImpl();
   ~GCMStatsRecorderImpl() override;
-
-  // Indicates whether the recorder is currently recording activities or not.
-  bool is_recording() const {
-    return is_recording_;
-  }
-
-  // Turns recording on/off.
-  void SetRecording(bool recording);
 
   // Set a delegate to receive callback from the recorder.
   void SetDelegate(Delegate* delegate);
@@ -94,8 +86,11 @@ class GCMStatsRecorderImpl : public GCMStatsRecorder {
                                const std::string& receiver_id,
                                const std::string& message_id) override;
 
-  // Collect all recorded activities into the struct.
-  void CollectActivities(RecordedActivities* recorder_activities) const;
+  // Collect all recorded activities into |*recorded_activities|.
+  void CollectActivities(RecordedActivities* recorded_activities) const;
+
+  bool is_recording() const { return is_recording_; }
+  void set_is_recording(bool recording) { is_recording_ = recording; }
 
   const std::deque<CheckinActivity>& checkin_activities() const {
     return checkin_activities_;

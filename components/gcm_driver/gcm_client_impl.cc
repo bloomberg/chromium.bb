@@ -1154,7 +1154,7 @@ std::string GCMClientImpl::GetStateString() const {
 }
 
 void GCMClientImpl::SetRecording(bool recording) {
-  recorder_.SetRecording(recording);
+  recorder_.set_is_recording(recording);
 }
 
 void GCMClientImpl::ClearActivityLogs() {

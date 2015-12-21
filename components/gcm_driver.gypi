@@ -85,6 +85,8 @@
         'gcm_driver/gcm_internals_helper.h',
         'gcm_driver/gcm_profile_service.cc',
         'gcm_driver/gcm_profile_service.h',
+        'gcm_driver/gcm_stats_recorder_android.cc',
+        'gcm_driver/gcm_stats_recorder_android.h',
         'gcm_driver/gcm_stats_recorder_impl.cc',
         'gcm_driver/gcm_stats_recorder_impl.h',
         'gcm_driver/registration_info.cc',

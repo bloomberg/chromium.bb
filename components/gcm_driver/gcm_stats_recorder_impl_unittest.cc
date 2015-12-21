@@ -350,7 +350,7 @@ GCMStatsRecorderImplTest::~GCMStatsRecorderImplTest() {}
 
 void GCMStatsRecorderImplTest::SetUp(){
   source_ = "s1,s2";
-  recorder_.SetRecording(true);
+  recorder_.set_is_recording(true);
 }
 
 TEST_F(GCMStatsRecorderImplTest, StartStopRecordingTest) {
@@ -359,7 +359,7 @@ TEST_F(GCMStatsRecorderImplTest, StartStopRecordingTest) {
   VerifyRecordedSendingCount(1);
   VerifyDataSentToWire("1st call");
 
-  recorder_.SetRecording(false);
+  recorder_.set_is_recording(false);
   EXPECT_FALSE(recorder_.is_recording());
   recorder_.Clear();
   VerifyAllActivityQueueEmpty("all cleared");

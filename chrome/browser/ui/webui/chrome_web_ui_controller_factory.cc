@@ -337,6 +337,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<DomainReliabilityInternalsUI>;
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
+  if (url.host() == chrome::kChromeUIGCMInternalsHost)
+    return &NewWebUI<GCMInternalsUI>;
   if (url.host() == chrome::kChromeUIHistoryFrameHost)
     return &NewWebUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIInstantHost)
@@ -398,8 +400,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       return &NewWebUI<MdDownloadsUI>;
     return &NewWebUI<DownloadsUI>;
   }
-  if (url.host() == chrome::kChromeUIGCMInternalsHost)
-    return &NewWebUI<GCMInternalsUI>;
   // Help is implemented with native UI elements on Android.
   if (url.host() == chrome::kChromeUIHelpFrameHost)
     return &NewWebUI<HelpUI>;

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "components/gcm_driver/gcm_stats_recorder_android.h"
 
 namespace base {
 class FilePath;
@@ -21,7 +22,8 @@ class SequencedTaskRunner;
 namespace gcm {
 
 // GCMDriver implementation for Android, using Android GCM APIs.
-class GCMDriverAndroid : public GCMDriver {
+class GCMDriverAndroid : public GCMDriver,
+                         public GCMStatsRecorderAndroid::Delegate {
  public:
   GCMDriverAndroid(
       const base::FilePath& store_path,
@@ -65,7 +67,7 @@ class GCMDriverAndroid : public GCMDriver {
   bool IsStarted() const override;
   bool IsConnected() const override;
   void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
-                        bool clear_logs) override;
+                        ClearActivityLogs clear_logs) override;
   void SetGCMRecording(const GetGCMStatisticsCallback& callback,
                        bool recording) override;
   void SetAccountTokens(
@@ -78,6 +80,9 @@ class GCMDriverAndroid : public GCMDriver {
   InstanceIDHandler* GetInstanceIDHandler() override;
   void AddHeartbeatInterval(const std::string& scope, int interval_ms) override;
   void RemoveHeartbeatInterval(const std::string& scope) override;
+
+  // GCMStatsRecorder::Delegate implementation:
+  void OnActivityRecorded() override;
 
  protected:
   // GCMDriver implementation:
@@ -93,6 +98,12 @@ class GCMDriverAndroid : public GCMDriver {
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
+
+  // Callback for GetGCMStatistics.
+  GetGCMStatisticsCallback get_gcm_statistics_callback_;
+
+  // Recorder that logs GCM activities.
+  GCMStatsRecorderAndroid recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMDriverAndroid);
 };

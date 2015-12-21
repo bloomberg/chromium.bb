@@ -30,7 +30,7 @@ class FakeGCMDriver : public GCMDriver {
   bool IsStarted() const override;
   bool IsConnected() const override;
   void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
-                        bool clear_logs) override;
+                        ClearActivityLogs clear_logs) override;
   void SetGCMRecording(const GetGCMStatisticsCallback& callback,
                        bool recording) override;
   void SetAccountTokens(

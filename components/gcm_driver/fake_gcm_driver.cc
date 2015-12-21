@@ -50,7 +50,7 @@ bool FakeGCMDriver::IsConnected() const {
 }
 
 void FakeGCMDriver::GetGCMStatistics(const GetGCMStatisticsCallback& callback,
-                                     bool clear_logs) {
+                                     ClearActivityLogs clear_logs) {
 }
 
 void FakeGCMDriver::SetGCMRecording(const GetGCMStatisticsCallback& callback,

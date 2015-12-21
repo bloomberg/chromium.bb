@@ -259,6 +259,7 @@
       'gcm_driver/gcm_client_impl_unittest.cc',
       'gcm_driver/gcm_delayed_task_controller_unittest.cc',
       'gcm_driver/gcm_driver_desktop_unittest.cc',
+      'gcm_driver/gcm_stats_recorder_android_unittest.cc',
       'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
     ],
     'gcm_driver_crypto_unittest_sources': [
@@ -1333,7 +1334,6 @@
             'gcm_driver/gcm_account_mapper_unittest.cc',
             'gcm_driver/gcm_channel_status_request_unittest.cc',
             'gcm_driver/gcm_client_impl_unittest.cc',
-            'gcm_driver/gcm_delayed_task_controller_unittest.cc',
             'gcm_driver/gcm_driver_desktop_unittest.cc',
             'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
             'gcm_driver/instance_id/instance_id_driver_unittest.cc',
