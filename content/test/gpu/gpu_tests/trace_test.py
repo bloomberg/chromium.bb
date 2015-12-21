@@ -7,8 +7,7 @@ import page_sets
 
 from telemetry.page import page_test
 from telemetry.timeline import model as model_module
-from telemetry.timeline import tracing_category_filter
-from telemetry.timeline import tracing_options
+from telemetry.timeline import tracing_config
 
 TOPLEVEL_GL_CATEGORY = 'gpu_toplevel'
 TOPLEVEL_SERVICE_CATEGORY = 'disabled-by-default-gpu.service'
@@ -52,11 +51,11 @@ class TraceValidatorBase(gpu_test_base.ValidatorBase):
     options.AppendExtraBrowserArgs('--enable-logging')
 
   def WillNavigateToPage(self, page, tab):
-    cat_string = ','.join(TOPLEVEL_CATEGORIES)
-    cat_filter = tracing_category_filter.TracingCategoryFilter(cat_string)
-    options = tracing_options.TracingOptions()
-    options.enable_chrome_trace = True
-    tab.browser.platform.tracing_controller.Start(options, cat_filter, 60)
+    config = tracing_config.TracingConfig()
+    for cat in TOPLEVEL_CATEGORIES:
+      config.tracing_category_filter.AddIncludedCategory(cat)
+    config.tracing_options.enable_chrome_trace = True
+    tab.browser.platform.tracing_controller.Start(config, 60)
 
   def _FormatException(self, category):
     return 'Trace markers for GPU category was not found: %s' % category

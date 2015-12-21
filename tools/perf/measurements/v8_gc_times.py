@@ -4,8 +4,7 @@
 
 from telemetry.page import page_test
 from telemetry.timeline.model import TimelineModel
-from telemetry.timeline import tracing_category_filter
-from telemetry.timeline import tracing_options
+from telemetry.timeline import tracing_config
 from telemetry.util import statistics
 from telemetry.value import scalar
 
@@ -24,16 +23,12 @@ class V8GCTimes(page_test.PageTest):
     super(V8GCTimes, self).__init__()
 
   def WillNavigateToPage(self, page, tab):
-    category_filter = tracing_category_filter.TracingCategoryFilter()
-
+    config = tracing_config.TracingConfig()
     for category in self._CATEGORIES:
-      category_filter.AddIncludedCategory(category)
-
-    options = tracing_options.TracingOptions()
-    options.enable_chrome_trace = True
-
-    tab.browser.platform.tracing_controller.Start(
-        options, category_filter, self._TIME_OUT_IN_SECONDS)
+      config.tracing_category_filter.AddIncludedCategory(category)
+    config.tracing_options.enable_chrome_trace = True
+    tab.browser.platform.tracing_controller.Start(config,
+                                                  self._TIME_OUT_IN_SECONDS)
 
   def ValidateAndMeasurePage(self, page, tab, results):
     trace_data = tab.browser.platform.tracing_controller.Stop()

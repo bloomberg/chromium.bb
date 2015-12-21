@@ -18,10 +18,9 @@ import mock
 
 class FakeTracingController(object):
   def __init__(self):
-    self.category_filter = None
-  def Start(self, options, category_filter):
-    del options  # unused
-    self.category_filter = category_filter
+    self.config = None
+  def Start(self, config):
+    self.config = config  # unused
 
   def IsChromeTracingSupported(self):
     return True
@@ -95,7 +94,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
     ])
     tracing_controller = tab.browser.platform.tracing_controller
     actual_synthetic_delay = (
-      tracing_controller.category_filter.synthetic_delays)
+      tracing_controller.config.tracing_category_filter.synthetic_delays)
 
     if expected_synthetic_delay != actual_synthetic_delay:
       sys.stderr.write("Expected category filter: %s\n" %

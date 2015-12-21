@@ -4,8 +4,7 @@
 
 from telemetry.page import page_test
 from telemetry.timeline import model
-from telemetry.timeline import tracing_category_filter
-from telemetry.timeline import tracing_options
+from telemetry.timeline import tracing_config
 from telemetry.value import scalar
 
 from metrics import power
@@ -33,26 +32,19 @@ class ImageDecoding(page_test.PageTest):
     """)
     self._power_metric.Start(page, tab)
 
-    options = tracing_options.TracingOptions()
-    options.enable_chrome_trace = True
+    config = tracing_config.TracingConfig()
     # FIXME: Remove the timeline category when impl-side painting is on
     # everywhere.
-    category_filter = tracing_category_filter.TracingCategoryFilter(
-        'disabled-by-default-devtools.timeline')
-
     # FIXME: Remove webkit.console when blink.console lands in chromium and
     # the ref builds are updated. crbug.com/386847
     # FIXME: Remove the devtools.timeline category when impl-side painting is
     # on everywhere.
-    categories = [
-        'blink',
-        'devtools.timeline',
-        'webkit.console',
-        'blink.console'
-    ]
-    for c in categories:
-      category_filter.AddIncludedCategory(c)
-    tab.browser.platform.tracing_controller.Start(options, category_filter)
+    config.tracing_category_filter.AddDisabledByDefault(
+        'disabled-by-default-devtools.timeline')
+    for c in [ 'blink', 'devtools.timeline', 'webkit.console', 'blink.console']:
+      config.tracing_category_filter.AddIncludedCategory(c)
+    config.tracing_options.enable_chrome_trace = True
+    tab.browser.platform.tracing_controller.Start(config)
 
   def StopBrowserAfterPage(self, browser, page):
     return not browser.tabs[0].ExecuteJavaScript("""
