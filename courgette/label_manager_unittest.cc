@@ -4,6 +4,9 @@
 
 #include "courgette/label_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <iterator>
 #include <map>
 #include <utility>
@@ -42,7 +45,7 @@ class TestLabelManager : public LabelManager {
 };
 
 void CheckLabelManagerContent(TestLabelManager* label_manager,
-                              const std::map<RVA, int32>& expected) {
+                              const std::map<RVA, int32_t>& expected) {
   EXPECT_EQ(expected.size(), label_manager->LabelCount());
   for (const auto& rva_and_count : expected) {
     Label* label = label_manager->Find(rva_and_count.first);
@@ -75,16 +78,11 @@ TEST(LabelManagerTest, Basic) {
   TestLabelManager label_manager;
   label_manager.Read(&visitor);
 
-  static const std::pair<RVA, int32> kExpected1Raw[] = {
-    {0x00000110, 1},
-    {0x04000010, 3},
-    {0x04000020, 1},
-    {0x04000030, 2},
-    {0xABCD1234, 1},
-    {0xFEEDF00D, 2}
-  };
-  std::map<RVA, int32> expected1(std::begin(kExpected1Raw),
-                                 std::end(kExpected1Raw));
+  static const std::pair<RVA, int32_t> kExpected1Raw[] = {
+      {0x00000110, 1}, {0x04000010, 3}, {0x04000020, 1},
+      {0x04000030, 2}, {0xABCD1234, 1}, {0xFEEDF00D, 2}};
+  std::map<RVA, int32_t> expected1(std::begin(kExpected1Raw),
+                                   std::end(kExpected1Raw));
 
   CheckLabelManagerContent(&label_manager, expected1);
 
@@ -98,13 +96,10 @@ TEST(LabelManagerTest, Basic) {
 
   // Remove Labels with |count_| < 2.
   label_manager.RemoveUnderusedLabels(2);
-  static const std::pair<RVA, int32> kExpected2Raw[] = {
-    {0x04000010, 3},
-    {0x04000030, 2},
-    {0xFEEDF00D, 2}
-  };
-  std::map<RVA, int32> expected2(std::begin(kExpected2Raw),
-                                 std::end(kExpected2Raw));
+  static const std::pair<RVA, int32_t> kExpected2Raw[] = {
+      {0x04000010, 3}, {0x04000030, 2}, {0xFEEDF00D, 2}};
+  std::map<RVA, int32_t> expected2(std::begin(kExpected2Raw),
+                                   std::end(kExpected2Raw));
   CheckLabelManagerContent(&label_manager, expected2);
 }
 

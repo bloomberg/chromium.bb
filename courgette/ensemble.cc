@@ -4,7 +4,9 @@
 
 #include "courgette/ensemble.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/strings/string_number_conversions.h"
 
 #include "courgette/region.h"
@@ -33,7 +35,7 @@ std::string Element::Name() const {
 Status Ensemble::FindEmbeddedElements() {
 
   size_t length = region_.length();
-  const uint8* start = region_.start();
+  const uint8_t* start = region_.start();
 
   size_t position = 0;
   while (position < length) {

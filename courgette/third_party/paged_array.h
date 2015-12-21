@@ -11,7 +11,9 @@
 #ifndef COURGETTE_BSDIFF_PAGED_ARRAY_H_
 #define COURGETTE_BSDIFF_PAGED_ARRAY_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/process/memory.h"
 
 namespace courgette {

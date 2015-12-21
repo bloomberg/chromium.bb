@@ -4,6 +4,8 @@
 
 #include "courgette/consecutive_range_visitor.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"

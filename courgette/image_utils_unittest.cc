@@ -4,6 +4,8 @@
 
 #include "courgette/image_utils.h"
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace courgette {
@@ -11,7 +13,7 @@ namespace courgette {
 namespace {
 
 TEST(ImageUtilsTest, Read) {
-  uint8 test_data[] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 00};
+  uint8_t test_data[] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 00};
   EXPECT_EQ(0x2301U, Read16LittleEndian(test_data));
   EXPECT_EQ(0x67452301U, Read32LittleEndian(test_data));
   EXPECT_EQ(0xEFCDAB8967452301ULL, Read64LittleEndian(test_data));

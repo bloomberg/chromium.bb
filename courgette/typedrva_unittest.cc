@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "courgette/base_test_unittest.h"
 #include "courgette/disassembler_elf_32_arm.h"
 #include "courgette/disassembler_elf_32_x86.h"
@@ -14,12 +16,12 @@ class TypedRVATest : public BaseTest {
 
   void TestRelativeTargetARM(courgette::ARM_RVA arm_rva,
                              courgette::RVA rva,
-                             uint32 op,
+                             uint32_t op,
                              courgette::RVA expected) const;
 
   void TestARMOPEncode(courgette::ARM_RVA arm_rva,
                        courgette::RVA rva,
-                       uint32 op,
+                       uint32_t op,
                        courgette::RVA expected) const;
 };
 
@@ -27,7 +29,7 @@ void TypedRVATest::TestRelativeTargetX86(courgette::RVA word,
                                          courgette::RVA expected) const {
   courgette::DisassemblerElf32X86::TypedRVAX86* typed_rva
     = new courgette::DisassemblerElf32X86::TypedRVAX86(0);
-  const uint8* op_pointer = reinterpret_cast<const uint8*>(&word);
+  const uint8_t* op_pointer = reinterpret_cast<const uint8_t*>(&word);
 
   EXPECT_TRUE(typed_rva->ComputeRelativeTarget(op_pointer));
   EXPECT_EQ(typed_rva->relative_target(), expected);
@@ -35,17 +37,17 @@ void TypedRVATest::TestRelativeTargetX86(courgette::RVA word,
   delete typed_rva;
 }
 
-uint32 Read32LittleEndian(const void* address) {
-  return *reinterpret_cast<const uint32*>(address);
+uint32_t Read32LittleEndian(const void* address) {
+  return *reinterpret_cast<const uint32_t*>(address);
 }
 
 void TypedRVATest::TestRelativeTargetARM(courgette::ARM_RVA arm_rva,
                                          courgette::RVA rva,
-                                         uint32 op,
+                                         uint32_t op,
                                          courgette::RVA expected) const {
   courgette::DisassemblerElf32ARM::TypedRVAARM* typed_rva
     = new courgette::DisassemblerElf32ARM::TypedRVAARM(arm_rva, rva);
-  uint8* op_pointer = reinterpret_cast<uint8*>(&op);
+  uint8_t* op_pointer = reinterpret_cast<uint8_t*>(&op);
 
   EXPECT_TRUE(typed_rva->ComputeRelativeTarget(op_pointer));
   EXPECT_EQ(rva + typed_rva->relative_target(), expected);
@@ -54,16 +56,16 @@ void TypedRVATest::TestRelativeTargetARM(courgette::ARM_RVA arm_rva,
 }
 
 void TypedRVATest::TestARMOPEncode(courgette::ARM_RVA arm_rva,
-                             courgette::RVA rva,
-                             uint32 op,
-                             courgette::RVA expected) const {
-  uint16 c_op;
-  uint32 addr;
+                                   courgette::RVA rva,
+                                   uint32_t op,
+                                   courgette::RVA expected) const {
+  uint16_t c_op;
+  uint32_t addr;
   EXPECT_TRUE(courgette::DisassemblerElf32ARM::Compress(arm_rva, op, rva,
                                                         &c_op, &addr));
   EXPECT_EQ(rva + addr, expected);
 
-  uint32 new_op;
+  uint32_t new_op;
   EXPECT_TRUE(courgette::DisassemblerElf32ARM::Decompress(arm_rva, c_op, addr,
                                                           &new_op));
   EXPECT_EQ(new_op, op);

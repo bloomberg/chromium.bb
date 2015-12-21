@@ -5,7 +5,8 @@
 #ifndef COURGETTE_IMAGE_UTILS_H_
 #define COURGETTE_IMAGE_UTILS_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
 
 // COURGETTE_HISTOGRAM_TARGETS prints out a histogram of how frequently
 // different target addresses are referenced. Purely for debugging.
@@ -13,7 +14,7 @@
 
 namespace courgette {
 
-typedef uint32 RVA;
+typedef uint32_t RVA;
 
 // A Label is a symbolic reference to an address.  Unlike a conventional
 // assembly language, we always know the address.  The address will later be
@@ -32,32 +33,32 @@ class Label {
 
   RVA rva_ = 0;           // Address referred to by the label.
   int index_ = kNoIndex;  // Index of address in address table.
-  int32 count_ = 0;
+  int32_t count_ = 0;
 };
 
 // These helper functions avoid the need for casts in the main code.
-inline uint16 ReadU16(const uint8* address, size_t offset) {
-  return *reinterpret_cast<const uint16*>(address + offset);
+inline uint16_t ReadU16(const uint8_t* address, size_t offset) {
+  return *reinterpret_cast<const uint16_t*>(address + offset);
 }
 
-inline uint32 ReadU32(const uint8* address, size_t offset) {
-  return *reinterpret_cast<const uint32*>(address + offset);
+inline uint32_t ReadU32(const uint8_t* address, size_t offset) {
+  return *reinterpret_cast<const uint32_t*>(address + offset);
 }
 
-inline uint64 ReadU64(const uint8* address, size_t offset) {
-  return *reinterpret_cast<const uint64*>(address + offset);
+inline uint64_t ReadU64(const uint8_t* address, size_t offset) {
+  return *reinterpret_cast<const uint64_t*>(address + offset);
 }
 
-inline uint16 Read16LittleEndian(const void* address) {
-  return *reinterpret_cast<const uint16*>(address);
+inline uint16_t Read16LittleEndian(const void* address) {
+  return *reinterpret_cast<const uint16_t*>(address);
 }
 
-inline uint32 Read32LittleEndian(const void* address) {
-  return *reinterpret_cast<const uint32*>(address);
+inline uint32_t Read32LittleEndian(const void* address) {
+  return *reinterpret_cast<const uint32_t*>(address);
 }
 
-inline uint64 Read64LittleEndian(const void* address) {
-  return *reinterpret_cast<const uint64*>(address);
+inline uint64_t Read64LittleEndian(const void* address) {
+  return *reinterpret_cast<const uint64_t*>(address);
 }
 
 }  // namespace courgette

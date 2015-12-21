@@ -5,9 +5,12 @@
 #ifndef COURGETTE_ENCODED_PROGRAM_H_
 #define COURGETTE_ENCODED_PROGRAM_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "courgette/disassembler.h"
 #include "courgette/memory_allocator.h"
 #include "courgette/types_elf.h"
@@ -43,7 +46,7 @@ class EncodedProgram {
   // Generating an EncodedProgram:
   //
   // (1) The image base can be specified at any time.
-  void set_image_base(uint64 base) { image_base_ = base; }
+  void set_image_base(uint64_t base) { image_base_ = base; }
 
   // (2) Address tables and indexes defined first.
   CheckBool DefineRel32Label(int index, RVA address) WARN_UNUSED_RESULT;
@@ -56,7 +59,7 @@ class EncodedProgram {
   CheckBool AddOrigin(RVA rva) WARN_UNUSED_RESULT;
   CheckBool AddCopy(size_t count, const void* bytes) WARN_UNUSED_RESULT;
   CheckBool AddRel32(int label_index) WARN_UNUSED_RESULT;
-  CheckBool AddRel32ARM(uint16 op, int label_index) WARN_UNUSED_RESULT;
+  CheckBool AddRel32ARM(uint16_t op, int label_index) WARN_UNUSED_RESULT;
   CheckBool AddAbs32(int label_index) WARN_UNUSED_RESULT;
   CheckBool AddAbs64(int label_index) WARN_UNUSED_RESULT;
   CheckBool AddPeMakeRelocs(ExecutableType kind) WARN_UNUSED_RESULT;
@@ -104,13 +107,13 @@ class EncodedProgram {
 
   typedef NoThrowBuffer<RVA> RvaVector;
   typedef NoThrowBuffer<size_t> SizeTVector;
-  typedef NoThrowBuffer<uint32> UInt32Vector;
-  typedef NoThrowBuffer<uint8> UInt8Vector;
+  typedef NoThrowBuffer<uint32_t> UInt32Vector;
+  typedef NoThrowBuffer<uint8_t> UInt8Vector;
   typedef NoThrowBuffer<OP> OPVector;
 
   void DebuggingSummary();
-  CheckBool GeneratePeRelocations(SinkStream *buffer,
-                                  uint8 type) WARN_UNUSED_RESULT;
+  CheckBool GeneratePeRelocations(SinkStream* buffer,
+                                  uint8_t type) WARN_UNUSED_RESULT;
   CheckBool GenerateElfRelocations(Elf32_Word pending_elf_relocation_table,
                                    SinkStream *buffer) WARN_UNUSED_RESULT;
   CheckBool DefineLabelCommon(RvaVector*, int, RVA) WARN_UNUSED_RESULT;
@@ -121,7 +124,7 @@ class EncodedProgram {
                              SinkStream* output);
 
   // Binary assembly language tables.
-  uint64 image_base_;
+  uint64_t image_base_;
   RvaVector rel32_rva_;
   RvaVector abs32_rva_;
   OPVector ops_;

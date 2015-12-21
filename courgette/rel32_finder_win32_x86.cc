@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "courgette/rel32_finder_win32_x86.h"
 
 namespace courgette {
@@ -34,20 +36,19 @@ Rel32FinderWin32X86_Basic::Rel32FinderWin32X86_Basic(
 Rel32FinderWin32X86_Basic::~Rel32FinderWin32X86_Basic() {
 }
 
-void Rel32FinderWin32X86_Basic::Find(
-    const uint8* start_pointer,
-    const uint8* end_pointer,
-    RVA start_rva,
-    RVA end_rva,
-    const std::vector<RVA>& abs32_locations) {
+void Rel32FinderWin32X86_Basic::Find(const uint8_t* start_pointer,
+                                     const uint8_t* end_pointer,
+                                     RVA start_rva,
+                                     RVA end_rva,
+                                     const std::vector<RVA>& abs32_locations) {
   // Quick way to convert from Pointer to RVA within a single Section is to
   // subtract 'pointer_to_rva'.
-  const uint8* const adjust_pointer_to_rva = start_pointer - start_rva;
+  const uint8_t* const adjust_pointer_to_rva = start_pointer - start_rva;
 
   std::vector<RVA>::const_iterator abs32_pos = abs32_locations.begin();
 
   // Find the rel32 relocations.
-  const uint8* p = start_pointer;
+  const uint8_t* p = start_pointer;
   while (p < end_pointer) {
     RVA current_rva = static_cast<RVA>(p - adjust_pointer_to_rva);
     if (current_rva == relocs_start_rva_) {
@@ -63,7 +64,7 @@ void Rel32FinderWin32X86_Basic::Find(
     // Heuristic discovery of rel32 locations in instruction stream: are the
     // next few bytes the start of an instruction containing a rel32
     // addressing mode?
-    const uint8* rel32 = NULL;
+    const uint8_t* rel32 = NULL;
 
     if (p + 5 <= end_pointer) {
       if (*p == 0xE8 || *p == 0xE9) {  // jmp rel32 and call rel32

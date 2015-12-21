@@ -4,6 +4,8 @@
 
 #include "courgette/third_party/bsdiff.h"
 
+#include <stddef.h>
+
 #include "courgette/base_test_unittest.h"
 #include "courgette/courgette.h"
 #include "courgette/streams.h"

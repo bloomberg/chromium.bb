@@ -5,9 +5,11 @@
 #ifndef COURGETTE_REGION_H_
 #define COURGETTE_REGION_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 
 namespace courgette {
 
@@ -21,16 +23,13 @@ class Region {
 
   // Usual constructor for regions given a |start| address and |length|.
   Region(const void* start, size_t length)
-      : start_(static_cast<const uint8*>(start)),
-        length_(length) {
-  }
+      : start_(static_cast<const uint8_t*>(start)), length_(length) {}
 
   // String constructor.  Region is owned by the string, so the string should
   // have a lifetime greater than the region.
   explicit Region(const std::string& string)
-      : start_(reinterpret_cast<const uint8*>(string.c_str())),
-        length_(string.length()) {
-  }
+      : start_(reinterpret_cast<const uint8_t*>(string.c_str())),
+        length_(string.length()) {}
 
   // Copy constructor.
   Region(const Region& other) : start_(other.start_), length_(other.length_) {}
@@ -43,16 +42,16 @@ class Region {
   }
 
   // Returns the starting address of the region.
-  const uint8* start() const { return start_; }
+  const uint8_t* start() const { return start_; }
 
   // Returns the length of the region.
   size_t length() const { return length_; }
 
   // Returns the address after the last byte of the region.
-  const uint8* end() const { return start_ + length_; }
+  const uint8_t* end() const { return start_ + length_; }
 
  private:
-  const uint8* start_;
+  const uint8_t* start_;
   size_t length_;
 
   void operator=(const Region&);  // Disallow assignment operator.

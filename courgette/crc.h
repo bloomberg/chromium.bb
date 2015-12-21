@@ -5,13 +5,14 @@
 #ifndef COURGETTE_CRC_H_
 #define COURGETTE_CRC_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
 
 namespace courgette {
 
 // Calculates Crc of the given buffer by calling CRC method in LZMA SDK
 //
-uint32 CalculateCrc(const uint8* buffer, size_t size);
+uint32_t CalculateCrc(const uint8_t* buffer, size_t size);
 
 }  // namespace courgette
 #endif  // COURGETTE_CRC_H_

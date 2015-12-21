@@ -5,7 +5,10 @@
 #ifndef COURGETTE_DISASSEMBLER_WIN32_X86_H_
 #define COURGETTE_DISASSEMBLER_WIN32_X86_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "courgette/disassembler.h"
 #include "courgette/memory_allocator.h"
 #include "courgette/types_win_pe.h"
@@ -36,7 +39,7 @@ class DisassemblerWin32X86 : public Disassembler {
   //
 
   bool has_text_section() const { return has_text_section_; }
-  uint32 size_of_code() const { return size_of_code_; }
+  uint32_t size_of_code() const { return size_of_code_; }
   bool is_32bit() const { return !is_PE32_plus_; }
 
   // Returns 'true' if the base relocation table can be parsed.
@@ -53,7 +56,7 @@ class DisassemblerWin32X86 : public Disassembler {
 
   // Returns same as FileOffsetToPointer(RVAToFileOffset(rva)) except that NULL
   // is returned if there is no file offset corresponding to 'rva'.
-  const uint8* RVAToPointer(RVA rva) const;
+  const uint8_t* RVAToPointer(RVA rva) const;
 
   static std::string SectionName(const Section* section);
 
@@ -63,11 +66,14 @@ class DisassemblerWin32X86 : public Disassembler {
   void ParseRel32RelocsFromSections();
   void ParseRel32RelocsFromSection(const Section* section);
 
-  CheckBool ParseNonSectionFileRegion(uint32 start_file_offset,
-      uint32 end_file_offset, AssemblyProgram* program) WARN_UNUSED_RESULT;
+  CheckBool ParseNonSectionFileRegion(uint32_t start_file_offset,
+                                      uint32_t end_file_offset,
+                                      AssemblyProgram* program)
+      WARN_UNUSED_RESULT;
   CheckBool ParseFileRegion(const Section* section,
-      uint32 start_file_offset, uint32 end_file_offset,
-      AssemblyProgram* program) WARN_UNUSED_RESULT;
+                            uint32_t start_file_offset,
+                            uint32_t end_file_offset,
+                            AssemblyProgram* program) WARN_UNUSED_RESULT;
 
 #if COURGETTE_HISTOGRAM_TARGETS
   void HistogramTargets(const char* kind, const std::map<RVA, int>& map);
@@ -76,7 +82,7 @@ class DisassemblerWin32X86 : public Disassembler {
   // Most addresses are represented as 32-bit RVAs.  The one address we can't
   // do this with is the image base address.  'image_base' is valid only for
   // 32-bit executables. 'image_base_64' is valid for 32- and 64-bit executable.
-  uint32 image_base() const { return static_cast<uint32>(image_base_); }
+  uint32_t image_base() const { return static_cast<uint32_t>(image_base_); }
 
   const ImageDataDirectory& base_relocation_table() const {
     return base_relocation_table_;
@@ -87,15 +93,14 @@ class DisassemblerWin32X86 : public Disassembler {
 
   // Finds the first section at file_offset or above.  Does not return sections
   // that have no raw bytes in the file.
-  const Section* FindNextSection(uint32 file_offset) const;
+  const Section* FindNextSection(uint32_t file_offset) const;
 
   // There are 2 'coordinate systems' for reasoning about executables.
   //   FileOffset - the the offset within a single .EXE or .DLL *file*.
   //   RVA - relative virtual address (offset within *loaded image*)
   // FileOffsetToRVA and RVAToFileOffset convert between these representations.
 
-  RVA FileOffsetToRVA(uint32 offset) const;
-
+  RVA FileOffsetToRVA(uint32_t offset) const;
 
  private:
 
@@ -116,23 +121,23 @@ class DisassemblerWin32X86 : public Disassembler {
   bool is_PE32_plus_;   // PE32_plus is for 64 bit executables.
 
   // Location and size of IMAGE_OPTIONAL_HEADER in the buffer.
-  const uint8 *optional_header_;
-  uint16 size_of_optional_header_;
-  uint16 offset_of_data_directories_;
+  const uint8_t* optional_header_;
+  uint16_t size_of_optional_header_;
+  uint16_t offset_of_data_directories_;
 
-  uint16 machine_type_;
-  uint16 number_of_sections_;
+  uint16_t machine_type_;
+  uint16_t number_of_sections_;
   const Section *sections_;
   bool has_text_section_;
 
-  uint32 size_of_code_;
-  uint32 size_of_initialized_data_;
-  uint32 size_of_uninitialized_data_;
+  uint32_t size_of_code_;
+  uint32_t size_of_initialized_data_;
+  uint32_t size_of_uninitialized_data_;
   RVA base_of_code_;
   RVA base_of_data_;
 
-  uint64 image_base_;  // range limited to 32 bits for 32 bit executable
-  uint32 size_of_image_;
+  uint64_t image_base_;  // range limited to 32 bits for 32 bit executable
+  uint32_t size_of_image_;
   int number_of_data_directories_;
 
   ImageDataDirectory export_table_;

@@ -4,11 +4,13 @@
 
 #include "courgette/disassembler_elf_32_x86.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 #include "courgette/assembly_program.h"
@@ -29,7 +31,7 @@ CheckBool DisassemblerElf32X86::RelToRVA(Elf32_Rel rel, RVA* result) const {
       (elf32_rel_386_type_values)(unsigned char)rel.r_info;
 
   // The other 3 bytes of r_info are the symbol
-  uint32 symbol =  rel.r_info >> 8;
+  uint32_t symbol = rel.r_info >> 8;
 
   switch(type)
   {
@@ -88,8 +90,8 @@ CheckBool DisassemblerElf32X86::ParseRelocationSection(
   Elf32_Rel *section_relocs_iter =
       (Elf32_Rel *)OffsetToPointer(section_header->sh_offset);
 
-  uint32 section_relocs_count = section_header->sh_size /
-                                section_header->sh_entsize;
+  uint32_t section_relocs_count =
+      section_header->sh_size / section_header->sh_entsize;
 
   if (abs32_locations_.empty())
     match = false;
@@ -119,27 +121,26 @@ CheckBool DisassemblerElf32X86::ParseRelocationSection(
 
 CheckBool DisassemblerElf32X86::ParseRel32RelocsFromSection(
     const Elf32_Shdr* section_header) {
+  uint32_t start_file_offset = section_header->sh_offset;
+  uint32_t end_file_offset = start_file_offset + section_header->sh_size;
 
-  uint32 start_file_offset = section_header->sh_offset;
-  uint32 end_file_offset = start_file_offset + section_header->sh_size;
-
-  const uint8* start_pointer = OffsetToPointer(start_file_offset);
-  const uint8* end_pointer = OffsetToPointer(end_file_offset);
+  const uint8_t* start_pointer = OffsetToPointer(start_file_offset);
+  const uint8_t* end_pointer = OffsetToPointer(end_file_offset);
 
   // Quick way to convert from Pointer to RVA within a single Section is to
   // subtract 'pointer_to_rva'.
-  const uint8* const adjust_pointer_to_rva = start_pointer -
-                                             section_header->sh_addr;
+  const uint8_t* const adjust_pointer_to_rva =
+      start_pointer - section_header->sh_addr;
 
   // Find the rel32 relocations.
-  const uint8* p = start_pointer;
+  const uint8_t* p = start_pointer;
   while (p < end_pointer) {
     //RVA current_rva = static_cast<RVA>(p - adjust_pointer_to_rva);
 
     // Heuristic discovery of rel32 locations in instruction stream: are the
     // next few bytes the start of an instruction containing a rel32
     // addressing mode?
-    const uint8* rel32 = NULL;
+    const uint8_t* rel32 = NULL;
 
     if (p + 5 <= end_pointer) {
       if (*p == 0xE8 || *p == 0xE9) {  // jmp rel32 and call rel32

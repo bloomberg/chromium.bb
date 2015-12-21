@@ -4,6 +4,9 @@
 
 #include "courgette/crc.h"
 
+#include <stdint.h>
+#include <stddef.h>
+
 #ifdef COURGETTE_USE_CRC_LIB
 #  include "zlib.h"
 #else
@@ -12,12 +15,11 @@ extern "C" {
 }
 #endif
 
-#include "base/basictypes.h"
 
 namespace courgette {
 
-uint32 CalculateCrc(const uint8* buffer, size_t size) {
-  uint32 crc;
+uint32_t CalculateCrc(const uint8_t* buffer, size_t size) {
+  uint32_t crc;
 
 #ifdef COURGETTE_USE_CRC_LIB
   // Calculate Crc by calling CRC method in zlib

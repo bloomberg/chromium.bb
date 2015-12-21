@@ -4,6 +4,9 @@
 
 #include "courgette/encoded_program.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "courgette/disassembler.h"
@@ -15,7 +18,7 @@ namespace {
 using courgette::EncodedProgram;
 
 struct AddressSpec {
-  int32 index;
+  int32_t index;
   courgette::RVA rva;
 };
 
@@ -27,7 +30,7 @@ scoped_ptr<EncodedProgram> CreateTestProgram(AddressSpec* abs32_specs,
                                              size_t num_rel32_specs) {
   scoped_ptr<EncodedProgram> program(new EncodedProgram());
 
-  uint32 base = 0x00900000;
+  uint32_t base = 0x00900000;
   program->set_image_base(base);
 
   for (size_t i = 0; i < num_abs32_specs; ++i) {
@@ -48,13 +51,13 @@ scoped_ptr<EncodedProgram> CreateTestProgram(AddressSpec* abs32_specs,
   return program;
 }
 
-bool CompareSink(const uint8 expected[],
+bool CompareSink(const uint8_t expected[],
                  size_t num_expected,
                  courgette::SinkStream* ss) {
   size_t n = ss->Length();
   if (num_expected != n)
     return false;
-  const uint8* buffer = ss->Buffer();
+  const uint8_t* buffer = ss->Buffer();
   return memcmp(&expected[0], buffer, n) == 0;
 }
 
@@ -98,9 +101,11 @@ TEST(EncodedProgramTest, Test) {
   EXPECT_TRUE(can_assemble);
   encoded2.reset();
 
-  const uint8 golden[] = {
-    0x04, 0x00, 0x90, 0x00,  // ABS32 to base + 4
-    0xF8, 0xFF, 0xFF, 0xFF   // REL32 from next line to base + 2
+  const uint8_t golden[] = {
+      0x04, 0x00, 0x90,
+      0x00,  // ABS32 to base + 4
+      0xF8, 0xFF, 0xFF,
+      0xFF  // REL32 from next line to base + 2
   };
   EXPECT_TRUE(CompareSink(golden, arraysize(golden), &assembled));
 }
@@ -121,15 +126,15 @@ TEST(EncodedProgramTest, TestWriteAddress) {
   program.reset();
 
   // Check addresses in sinks.
-  const uint8 golden_abs32_indexes[] = {
-    0x03, 0x07, 0x03, 0x05  // 3 indexes: [7, 3, 5].
+  const uint8_t golden_abs32_indexes[] = {
+      0x03, 0x07, 0x03, 0x05  // 3 indexes: [7, 3, 5].
   };
   EXPECT_TRUE(CompareSink(golden_abs32_indexes,
                           arraysize(golden_abs32_indexes),
                           sinks.stream(courgette::kStreamAbs32Indexes)));
 
-  const uint8 golden_rel32_indexes[] = {
-    0x03, 0x00, 0x03, 0x01  // 3 indexes: [0, 3, 1].
+  const uint8_t golden_rel32_indexes[] = {
+      0x03, 0x00, 0x03, 0x01  // 3 indexes: [0, 3, 1].
   };
   EXPECT_TRUE(CompareSink(golden_rel32_indexes,
                           arraysize(golden_rel32_indexes),
@@ -141,9 +146,9 @@ TEST(EncodedProgramTest, TestWriteAddress) {
   // Hex:       [0, 0, 0, 0x02, 0, 0x15, 0, 0xFFFFFFF4].
   // Complement neg:  [0, 0, 0, 0x02, 0, 0x15, 0, (0x0B)].
   // Varint32 Signed: [0, 0, 0, 0x04, 0, 0x2A, 0, 0x17].
-  const uint8 golden_abs32_addresses[] = {
-    0x08,  // 8 address deltas.
-    0x00, 0x00, 0x00, 0x04, 0x00, 0x2A, 0x00, 0x17,
+  const uint8_t golden_abs32_addresses[] = {
+      0x08,  // 8 address deltas.
+      0x00, 0x00, 0x00, 0x04, 0x00, 0x2A, 0x00, 0x17,
   };
   EXPECT_TRUE(CompareSink(golden_abs32_addresses,
                           arraysize(golden_abs32_addresses),
@@ -155,9 +160,9 @@ TEST(EncodedProgramTest, TestWriteAddress) {
   // Hex:       [0x10, 0xFFFFFFF7, 0, 0x19].
   // Complement Neg:  [0x10, (0x08), 0, 0x19].
   // Varint32 Signed: [0x20, 0x11, 0, 0x32].
-  const uint8 golden_rel32_addresses[] = {
-    0x04,  // 4 address deltas.
-    0x20, 0x11, 0x00, 0x32,
+  const uint8_t golden_rel32_addresses[] = {
+      0x04,  // 4 address deltas.
+      0x20, 0x11, 0x00, 0x32,
   };
   EXPECT_TRUE(CompareSink(golden_rel32_addresses,
                           arraysize(golden_rel32_addresses),

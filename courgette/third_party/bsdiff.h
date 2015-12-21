@@ -37,7 +37,8 @@
 #ifndef COURGETTE_BSDIFF_H_
 #define COURGETTE_BSDIFF_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 
 namespace courgette {
@@ -79,9 +80,9 @@ BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_stream,
 // The patch stream starts with a MBSPatchHeader.
 typedef struct MBSPatchHeader_ {
   char tag[8];       // Contains MBS_PATCH_HEADER_TAG
-  uint32 slen;       // Length of the file to be patched.
-  uint32 scrc32;     // CRC32 of the file to be patched.
-  uint32 dlen;       // Length of the result file.
+  uint32_t slen;     // Length of the file to be patched.
+  uint32_t scrc32;   // CRC32 of the file to be patched.
+  uint32_t dlen;     // Length of the result file.
 } MBSPatchHeader;
 
 // This is the value for the tag field.  Must match length exactly, not counting

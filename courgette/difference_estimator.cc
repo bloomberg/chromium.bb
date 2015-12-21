@@ -8,7 +8,11 @@
 
 #include "courgette/difference_estimator.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 
 namespace courgette {
 
@@ -21,9 +25,9 @@ namespace {
 static_assert(kTupleSize >= 4 && kTupleSize <= 8,
               "kTupleSize should be between 4 and 8");
 
-size_t HashTuple(const uint8* source) {
-  size_t hash1 = *reinterpret_cast<const uint32*>(source);
-  size_t hash2 = *reinterpret_cast<const uint32*>(source + kTupleSize - 4);
+size_t HashTuple(const uint8_t* source) {
+  size_t hash1 = *reinterpret_cast<const uint32_t*>(source);
+  size_t hash2 = *reinterpret_cast<const uint32_t*>(source + kTupleSize - 4);
   size_t hash = ((hash1 * 17 + hash2 * 37) + (hash1 >> 17)) ^ (hash2 >> 23);
   return hash;
 }
@@ -43,9 +47,9 @@ class DifferenceEstimator::Base {
   void Init() {
     if (region_.length() < kTupleSize)
       return;
-    const uint8* start = region_.start();
-    const uint8* end = region_.end() - (kTupleSize - 1);
-    for (const uint8* p = start;  p < end;  ++p) {
+    const uint8_t* start = region_.start();
+    const uint8_t* end = region_.end() - (kTupleSize - 1);
+    for (const uint8_t* p = start; p < end; ++p) {
       size_t hash = HashTuple(p);
       hashes_.insert(hash);
     }
@@ -99,10 +103,10 @@ DifferenceEstimator::Subject* DifferenceEstimator::MakeSubject(
 size_t DifferenceEstimator::Measure(Base* base, Subject* subject) {
   size_t mismatches = 0;
   if (subject->region().length() >= kTupleSize) {
-    const uint8* start = subject->region().start();
-    const uint8* end = subject->region().end() - (kTupleSize - 1);
+    const uint8_t* start = subject->region().start();
+    const uint8_t* end = subject->region().end() - (kTupleSize - 1);
 
-    const uint8* p = start;
+    const uint8_t* p = start;
     while (p < end) {
       size_t hash = HashTuple(p);
       if (base->hashes_.find(hash) == base->hashes_.end()) {

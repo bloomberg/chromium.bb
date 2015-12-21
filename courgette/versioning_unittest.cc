@@ -4,9 +4,10 @@
 
 #include "courgette/base_test_unittest.h"
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "courgette/courgette.h"
 #include "courgette/streams.h"
 #include "courgette/third_party/bsdiff.h"

@@ -5,7 +5,7 @@
 #ifndef COURGETTE_ADJUSTMENT_METHOD_H_
 #define COURGETTE_ADJUSTMENT_METHOD_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace courgette {
 

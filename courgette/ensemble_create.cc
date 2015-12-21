@@ -14,10 +14,11 @@
 
 #include "courgette/ensemble.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 

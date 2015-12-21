@@ -5,12 +5,13 @@
 #ifndef COURGETTE_REL32_FINDER_WIN32_X86_H_
 #define COURGETTE_REL32_FINDER_WIN32_X86_H_
 
+#include <stdint.h>
+
 #if COURGETTE_HISTOGRAM_TARGETS
 #include <map>
 #endif
 #include <vector>
 
-#include "base/basictypes.h"
 #include "courgette/image_utils.h"
 
 namespace courgette {
@@ -38,8 +39,8 @@ class Rel32FinderWin32X86 {
   // - Do not collide with |base_relocation_table|'s RVA range,
   // - Whose targets are in [|start_rva|, |end_rva|).
   // The sorted results are written to |rel32_locations_|.
-  virtual void Find(const uint8* start_pointer,
-                    const uint8* end_pointer,
+  virtual void Find(const uint8_t* start_pointer,
+                    const uint8_t* end_pointer,
                     RVA start_rva,
                     RVA end_rva,
                     const std::vector<RVA>& abs32_locations) = 0;
@@ -65,8 +66,8 @@ class Rel32FinderWin32X86_Basic : public Rel32FinderWin32X86 {
   virtual ~Rel32FinderWin32X86_Basic();
 
   // Rel32FinderWin32X86 implementation.
-  void Find(const uint8* start_pointer,
-            const uint8* end_pointer,
+  void Find(const uint8_t* start_pointer,
+            const uint8_t* end_pointer,
             RVA start_rva,
             RVA end_rva,
             const std::vector<RVA>& abs32_locations) override;

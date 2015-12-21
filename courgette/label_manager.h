@@ -5,6 +5,9 @@
 #ifndef COURGETTE_LABEL_MANAGER_H_
 #define COURGETTE_LABEL_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"
@@ -43,7 +46,7 @@ class LabelManager {
   void Read(RvaVisitor* rva_visitor);
 
   // Removes |labels_| elements whose |count_| is less than |count_threshold|.
-  void RemoveUnderusedLabels(int32 count_threshold);
+  void RemoveUnderusedLabels(int32_t count_threshold);
 
   // Efficiently searches for a Label that targets |rva|. Returns the pointer to
   // the stored Label instance if found, or null otherwise.

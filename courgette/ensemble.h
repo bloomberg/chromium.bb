@@ -17,11 +17,13 @@
 #ifndef COURGETTE_ENSEMBLE_H_
 #define COURGETTE_ENSEMBLE_H_
 
-#include <vector>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
+#include <vector>
 
-#include "base/basictypes.h"
-
+#include "base/macros.h"
 #include "courgette/courgette.h"
 #include "courgette/region.h"
 #include "courgette/streams.h"
@@ -130,9 +132,9 @@ struct CourgettePatchFile {
   //        element-2
   //        ...
 
-  static const uint32 kMagic = 'C' | ('o' << 8) | ('u' << 16);
+  static const uint32_t kMagic = 'C' | ('o' << 8) | ('u' << 16);
 
-  static const uint32 kVersion = 20110216;
+  static const uint32_t kVersion = 20110216;
 };
 
 // For any transform you would implement both a TransformationPatcher and a

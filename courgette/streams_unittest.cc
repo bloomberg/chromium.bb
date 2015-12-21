@@ -4,6 +4,9 @@
 
 #include "courgette/streams.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +17,7 @@ TEST(StreamsTest, SimpleWriteRead) {
 
   EXPECT_TRUE(sink.WriteVarint32(kValue1));
 
-  const uint8* sink_buffer = sink.Buffer();
+  const uint8_t* sink_buffer = sink.Buffer();
   size_t length = sink.Length();
 
   courgette::SourceStream source;
@@ -32,7 +35,7 @@ TEST(StreamsTest, SimpleWriteRead2) {
 
   EXPECT_TRUE(sink.Write("Hello", 5));
 
-  const uint8* sink_buffer = sink.Buffer();
+  const uint8_t* sink_buffer = sink.Buffer();
   size_t sink_length = sink.Length();
 
   courgette::SourceStream source;
@@ -57,14 +60,14 @@ TEST(StreamsTest, StreamSetWriteRead) {
 
   EXPECT_TRUE(out.CopyTo(&collected));
 
-  const uint8* collected_buffer = collected.Buffer();
+  const uint8_t* collected_buffer = collected.Buffer();
   size_t collected_length = collected.Length();
 
   courgette::SourceStreamSet in;
   bool can_init = in.Init(collected_buffer, collected_length);
   EXPECT_TRUE(can_init);
 
-  uint32 value;
+  uint32_t value;
   bool can_read = in.stream(3)->ReadVarint32(&value);
   EXPECT_TRUE(can_read);
   EXPECT_EQ(kValue1, value);
@@ -104,7 +107,7 @@ TEST(StreamsTest, StreamSetWriteRead2) {
   for (size_t i = 0;  data[i] != kEnd;  i += 2) {
     size_t id = data[i];
     size_t datum = data[i + 1];
-    uint32 value = 77;
+    uint32_t value = 77;
     bool can_read = in.stream(id)->ReadVarint32(&value);
     EXPECT_TRUE(can_read);
     EXPECT_EQ(datum, value);
@@ -118,16 +121,13 @@ TEST(StreamsTest, StreamSetWriteRead2) {
 TEST(StreamsTest, SignedVarint32) {
   courgette::SinkStream out;
 
-  static const int32 data[] = {
-    0, 64, 128, 8192, 16384,
-    1 << 20, 1 << 21, 1 << 22,
-    1 << 27, 1 << 28,
-    0x7fffffff, -0x7fffffff
-  };
+  static const int32_t data[] = {0,       64,      128,        8192,
+                                 16384,   1 << 20, 1 << 21,    1 << 22,
+                                 1 << 27, 1 << 28, 0x7fffffff, -0x7fffffff};
 
-  std::vector<int32> values;
+  std::vector<int32_t> values;
   for (size_t i = 0;  i < sizeof(data)/sizeof(data[0]);  ++i) {
-    int32 basis = data[i];
+    int32_t basis = data[i];
     for (int delta = -4; delta <= 4; ++delta) {
       EXPECT_TRUE(out.WriteVarint32Signed(basis + delta));
       values.push_back(basis + delta);
@@ -141,7 +141,7 @@ TEST(StreamsTest, SignedVarint32) {
 
   for (size_t i = 0;  i < values.size();  ++i) {
     int written_value = values[i];
-    int32 datum;
+    int32_t datum;
     bool can_read = in.ReadVarint32Signed(&datum);
     EXPECT_TRUE(can_read);
     EXPECT_EQ(written_value, datum);
@@ -188,7 +188,7 @@ TEST(StreamsTest, StreamSetReadWrite) {
   EXPECT_FALSE(subset1.Empty());
   EXPECT_FALSE(subset1.Empty());
 
-  uint32 datum;
+  uint32_t datum;
   EXPECT_TRUE(subset1.stream(3)->ReadVarint32(&datum));
   EXPECT_EQ(30000U, datum);
   EXPECT_TRUE(subset1.stream(5)->ReadVarint32(&datum));

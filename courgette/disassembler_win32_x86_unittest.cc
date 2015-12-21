@@ -4,6 +4,8 @@
 
 #include "courgette/disassembler_win32_x86.h"
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "courgette/base_test_unittest.h"
@@ -44,13 +46,13 @@ void DisassemblerWin32X86Test::TestExe() const {
   EXPECT_TRUE(can_parse_relocs);
   EXPECT_TRUE(base::STLIsSorted(relocs));
 
-  const uint8* offset_p = disassembler->OffsetToPointer(0);
+  const uint8_t* offset_p = disassembler->OffsetToPointer(0);
   EXPECT_EQ(reinterpret_cast<const void*>(file1.c_str()),
             reinterpret_cast<const void*>(offset_p));
   EXPECT_EQ('M', offset_p[0]);
   EXPECT_EQ('Z', offset_p[1]);
 
-  const uint8* rva_p = disassembler->RVAToPointer(0);
+  const uint8_t* rva_p = disassembler->RVAToPointer(0);
   EXPECT_EQ(reinterpret_cast<const void*>(file1.c_str()),
             reinterpret_cast<const void*>(rva_p));
   EXPECT_EQ('M', rva_p[0]);

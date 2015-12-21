@@ -5,8 +5,10 @@
 #ifndef COURGETTE_DISASSEMBLER_H_
 #define COURGETTE_DISASSEMBLER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
 
+#include "base/macros.h"
 #include "courgette/courgette.h"
 #include "courgette/image_utils.h"
 
@@ -34,12 +36,12 @@ class Disassembler {
 
   // Returns the length of the source executable. May reduce after ParseHeader.
   size_t length() const { return length_; }
-  const uint8* start() const { return start_; }
-  const uint8* end() const { return end_; }
+  const uint8_t* start() const { return start_; }
+  const uint8_t* end() const { return end_; }
 
   // Returns a pointer into the memory copy of the file format.
   // FileOffsetToPointer(0) returns a pointer to the start of the file format.
-  const uint8* OffsetToPointer(size_t offset) const;
+  const uint8_t* OffsetToPointer(size_t offset) const;
 
  protected:
   Disassembler(const void* start, size_t length);
@@ -65,8 +67,8 @@ class Disassembler {
   // the total data.
   //
   size_t length_;         // In current memory.
-  const uint8* start_;    // In current memory, base for 'file offsets'.
-  const uint8* end_;      // In current memory.
+  const uint8_t* start_;  // In current memory, base for 'file offsets'.
+  const uint8_t* end_;    // In current memory.
 
   DISALLOW_COPY_AND_ASSIGN(Disassembler);
 };

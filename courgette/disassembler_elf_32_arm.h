@@ -5,7 +5,10 @@
 #ifndef COURGETTE_DISASSEMBLER_ELF_32_ARM_H_
 #define COURGETTE_DISASSEMBLER_ELF_32_ARM_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "courgette/disassembler_elf_32.h"
 #include "courgette/memory_allocator.h"
 #include "courgette/types_elf.h"
@@ -28,22 +31,20 @@ class DisassemblerElf32ARM : public DisassemblerElf32 {
    public:
     TypedRVAARM(ARM_RVA type, RVA rva) : TypedRVA(rva), type_(type) { }
 
-    uint16 c_op() const {
-      return c_op_;
-    }
+    uint16_t c_op() const { return c_op_; }
 
-    virtual CheckBool ComputeRelativeTarget(const uint8* op_pointer);
+    virtual CheckBool ComputeRelativeTarget(const uint8_t* op_pointer);
 
     virtual CheckBool EmitInstruction(AssemblyProgram* program,
                                       RVA target_rva);
 
-    virtual uint16 op_size() const;
+    virtual uint16_t op_size() const;
 
    private:
     ARM_RVA type_;
 
-    uint16 c_op_;  // set by ComputeRelativeTarget()
-    const uint8* arm_op_;
+    uint16_t c_op_;  // set by ComputeRelativeTarget()
+    const uint8_t* arm_op_;
   };
 
   explicit DisassemblerElf32ARM(const void* start, size_t length);
@@ -52,11 +53,16 @@ class DisassemblerElf32ARM : public DisassemblerElf32 {
 
   virtual e_machine_values ElfEM() { return EM_ARM; }
 
-  static CheckBool Compress(ARM_RVA type, uint32 arm_op, RVA rva,
-                            uint16* c_op /* out */, uint32* addr /* out */);
+  static CheckBool Compress(ARM_RVA type,
+                            uint32_t arm_op,
+                            RVA rva,
+                            uint16_t* c_op /* out */,
+                            uint32_t* addr /* out */);
 
-  static CheckBool Decompress(ARM_RVA type, uint16 c_op, uint32 addr,
-                              uint32* arm_op /* out */);
+  static CheckBool Decompress(ARM_RVA type,
+                              uint16_t c_op,
+                              uint32_t addr,
+                              uint32_t* arm_op /* out */);
 
  protected:
 

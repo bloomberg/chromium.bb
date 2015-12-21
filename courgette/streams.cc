@@ -19,8 +19,9 @@
 #include "courgette/streams.h"
 
 #include <memory.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace courgette {
@@ -35,19 +36,20 @@ static const unsigned int kStreamsSerializationFormatVersion = 20090218;
 //
 class Varint {
  public:
-  // Maximum lengths of varint encoding of uint32
+  // Maximum lengths of varint encoding of uint32_t
   static const int kMax32 = 5;
 
   // Parses a Varint32 encoded value from |source| and stores it in |output|,
   // and returns a pointer to the following byte.  Returns NULL if a valid
   // varint value was not found before |limit|.
-  static const uint8* Parse32WithLimit(const uint8* source, const uint8* limit,
-                                       uint32* output);
+  static const uint8_t* Parse32WithLimit(const uint8_t* source,
+                                         const uint8_t* limit,
+                                         uint32_t* output);
 
   // Writes the Varint32 encoded representation of |value| to buffer
   // |destination|.  |destination| must have sufficient length to hold kMax32
   // bytes.  Returns a pointer to the byte just past the last encoded byte.
-  static uint8* Encode32(uint8* destination, uint32 value);
+  static uint8_t* Encode32(uint8_t* destination, uint32_t value);
 };
 
 // Parses a Varint32 encoded unsigned number from |source|.  The Varint32
@@ -59,10 +61,10 @@ class Varint {
 //
 // The digit loop is unrolled for performance.  It usually exits after the first
 // one or two digits.
-const uint8* Varint::Parse32WithLimit(const uint8* source,
-                                      const uint8* limit,
-                                      uint32* output) {
-  uint32 digit, result;
+const uint8_t* Varint::Parse32WithLimit(const uint8_t* source,
+                                        const uint8_t* limit,
+                                        uint32_t* output) {
+  uint32_t digit, result;
   if (source >= limit)
     return NULL;
   digit = *(source++);
@@ -113,12 +115,12 @@ const uint8* Varint::Parse32WithLimit(const uint8* source,
 
 // Write the base-128 digits in little-endian order.  All except the last digit
 // have the high bit set to indicate more digits.
-inline uint8* Varint::Encode32(uint8* destination, uint32 value) {
+inline uint8_t* Varint::Encode32(uint8_t* destination, uint32_t value) {
   while (value >= 128) {
-    *(destination++) = static_cast<uint8>(value) | 128;
+    *(destination++) = static_cast<uint8_t>(value) | 128;
     value = value >> 7;
   }
-  *(destination++) = static_cast<uint8>(value);
+  *(destination++) = static_cast<uint8_t>(value);
   return destination;
 }
 
@@ -134,24 +136,24 @@ bool SourceStream::Read(void* destination, size_t count) {
   return true;
 }
 
-bool SourceStream::ReadVarint32(uint32* output_value) {
-  const uint8* after = Varint::Parse32WithLimit(current_, end_, output_value);
+bool SourceStream::ReadVarint32(uint32_t* output_value) {
+  const uint8_t* after = Varint::Parse32WithLimit(current_, end_, output_value);
   if (!after)
     return false;
   current_ = after;
   return true;
 }
 
-bool SourceStream::ReadVarint32Signed(int32* output_value) {
+bool SourceStream::ReadVarint32Signed(int32_t* output_value) {
   // Signed numbers are encoded as unsigned numbers so that numbers nearer zero
   // have shorter varint encoding.
   //  0000xxxx encoded as 000xxxx0.
   //  1111xxxx encoded as 000yyyy1 where yyyy is complement of xxxx.
-  uint32 unsigned_value;
+  uint32_t unsigned_value;
   if (!ReadVarint32(&unsigned_value))
     return false;
   if (unsigned_value & 1)
-    *output_value = ~static_cast<int32>(unsigned_value >> 1);
+    *output_value = ~static_cast<int32_t>(unsigned_value >> 1);
   else
     *output_value = (unsigned_value >> 1);
   return true;
@@ -185,13 +187,13 @@ CheckBool SinkStream::Write(const void* data, size_t byte_count) {
   return buffer_.append(static_cast<const char*>(data), byte_count);
 }
 
-CheckBool SinkStream::WriteVarint32(uint32 value) {
-  uint8 buffer[Varint::kMax32];
-  uint8* end = Varint::Encode32(buffer, value);
+CheckBool SinkStream::WriteVarint32(uint32_t value) {
+  uint8_t buffer[Varint::kMax32];
+  uint8_t* end = Varint::Encode32(buffer, value);
   return Write(buffer, end - buffer);
 }
 
-CheckBool SinkStream::WriteVarint32Signed(int32 value) {
+CheckBool SinkStream::WriteVarint32Signed(int32_t value) {
   // Encode signed numbers so that numbers nearer zero have shorter
   // varint encoding.
   //  0000xxxx encoded as 000xxxx0.
@@ -205,7 +207,7 @@ CheckBool SinkStream::WriteVarint32Signed(int32 value) {
 }
 
 CheckBool SinkStream::WriteSizeVarint32(size_t value) {
-  uint32 narrowed_value = static_cast<uint32>(value);
+  uint32_t narrowed_value = static_cast<uint32_t>(value);
   // On 32-bit, the compiler should figure out this test always fails.
   LOG_ASSERT(value == narrowed_value);
   return WriteVarint32(narrowed_value);
@@ -239,11 +241,11 @@ SourceStreamSet::~SourceStreamSet() {
 //   <bytes1><bytes2>...<bytesN>
 //
 bool SourceStreamSet::Init(const void* source, size_t byte_count) {
-  const uint8* start = static_cast<const uint8*>(source);
-  const uint8* end = start + byte_count;
+  const uint8_t* start = static_cast<const uint8_t*>(source);
+  const uint8_t* end = start + byte_count;
 
   unsigned int version;
-  const uint8* finger = Varint::Parse32WithLimit(start, end, &version);
+  const uint8_t* finger = Varint::Parse32WithLimit(start, end, &version);
   if (finger == NULL)
     return false;
   if (version != kStreamsSerializationFormatVersion)
@@ -287,12 +289,12 @@ bool SourceStreamSet::Init(SourceStream* source) {
 }
 
 bool SourceStreamSet::ReadSet(SourceStreamSet* set) {
-  uint32 stream_count = 0;
+  uint32_t stream_count = 0;
   SourceStream* control_stream = this->stream(0);
   if (!control_stream->ReadVarint32(&stream_count))
     return false;
 
-  uint32 lengths[kMaxStreams] = {};  // i.e. all zero.
+  uint32_t lengths[kMaxStreams] = {};  // i.e. all zero.
 
   for (size_t i = 0; i < stream_count; ++i) {
     if (!control_stream->ReadVarint32(&lengths[i]))
@@ -364,13 +366,13 @@ CheckBool SinkStreamSet::CopyTo(SinkStream *combined_stream) {
 }
 
 CheckBool SinkStreamSet::WriteSet(SinkStreamSet* set) {
-  uint32 lengths[kMaxStreams];
+  uint32_t lengths[kMaxStreams];
   // 'stream_count' includes all non-empty streams and all empty stream numbered
   // lower than a non-empty stream.
   size_t stream_count = 0;
   for (size_t i = 0; i < kMaxStreams; ++i) {
     SinkStream* stream = set->stream(i);
-    lengths[i] = static_cast<uint32>(stream->Length());
+    lengths[i] = static_cast<uint32_t>(stream->Length());
     if (lengths[i] > 0)
       stream_count = i + 1;
   }

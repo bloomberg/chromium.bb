@@ -5,6 +5,9 @@
 #ifndef COURGETTE_WIN32_X86_PATCHER_H_
 #define COURGETTE_WIN32_X86_PATCHER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "courgette/ensemble.h"
 
 namespace courgette {
@@ -90,8 +93,8 @@ class PatcherX86_32 : public TransformationPatcher {
  private:
   Region ensemble_region_;
 
-  uint32 base_offset_;
-  uint32 base_length_;
+  uint32_t base_offset_;
+  uint32_t base_length_;
 
   DISALLOW_COPY_AND_ASSIGN(PatcherX86_32);
 };

@@ -4,6 +4,9 @@
 
 #include "courgette/adjustment_method.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <list>
 #include <map>
@@ -11,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "courgette/assembly_program.h"
@@ -41,10 +44,10 @@ class LabelInfo {
   Label* label_;              // The label that this info a surrogate for.
 
   // Information used only in debugging messages.
-  uint32 is_model_ : 1;       // Is the label in the model?
-  uint32 debug_index_ : 31;   // An unique small number for naming the label.
+  uint32_t is_model_ : 1;      // Is the label in the model?
+  uint32_t debug_index_ : 31;  // An unique small number for naming the label.
 
-  uint32 refs_;               // Number of times this Label is referenced.
+  uint32_t refs_;  // Number of times this Label is referenced.
 
   LabelInfo* assignment_;     // Label from other program corresponding to this.
 
@@ -53,7 +56,7 @@ class LabelInfo {
   LabelInfo* next_addr_;      // Label(Info) at next highest address.
   LabelInfo* prev_addr_;      // Label(Info) at next lowest address.
 
-  std::vector<uint32> positions_;  // Offsets into the trace of references.
+  std::vector<uint32_t> positions_;  // Offsets into the trace of references.
 
   // Just a no-argument constructor and copy constructor.  Actual LabelInfo
   // objects are allocated in std::pair structs in a std::map.
@@ -149,9 +152,7 @@ struct Node {
   bool in_queue_;
   bool Extended() const { return !edges_.empty(); }
 
-  uint32 Weight() const {
-    return  edges_in_frequency_order.front()->count_;
-  }
+  uint32_t Weight() const { return edges_in_frequency_order.front()->count_; }
 };
 
 static std::string ToString(Node* node) {
@@ -190,8 +191,8 @@ struct OrderNodeByWeightDecreasing {
   bool operator()(Node* a, Node* b) const {
     // (Maybe tie-break on total count, followed by lowest assigned node indexes
     // in path.)
-    uint32 a_weight = a->Weight();
-    uint32 b_weight = b->Weight();
+    uint32_t a_weight = a->Weight();
+    uint32_t b_weight = b->Weight();
     if (a_weight != b_weight)
       return a_weight > b_weight;
     if (a->length_ != b->length_)
@@ -254,7 +255,7 @@ class AssignmentProblem {
 
   void SkipCommittedLabels(Node* node) {
     ExtendNode(node, p_trace_);
-    uint32 skipped = 0;
+    uint32_t skipped = 0;
     while (!node->edges_in_frequency_order.empty() &&
            node->edges_in_frequency_order.front()->in_edge_->assignment_) {
       ++skipped;
@@ -421,9 +422,9 @@ class AssignmentProblem {
     }
   }
 
-  uint32 TryExtendSequence(uint32 p_pos_start, uint32 m_pos_start) {
-    uint32 p_pos = p_pos_start + 1;
-    uint32 m_pos = m_pos_start + 1;
+  uint32_t TryExtendSequence(uint32_t p_pos_start, uint32_t m_pos_start) {
+    uint32_t p_pos = p_pos_start + 1;
+    uint32_t m_pos = m_pos_start + 1;
 
     while (p_pos < p_trace_.size()  &&  m_pos < m_trace_.size()) {
       LabelInfo* p_info = p_trace_[p_pos];
@@ -456,12 +457,13 @@ class AssignmentProblem {
     return p_pos - p_pos_start;
   }
 
-  uint32 TryExtendSequenceBackwards(uint32 p_pos_start, uint32 m_pos_start) {
+  uint32_t TryExtendSequenceBackwards(uint32_t p_pos_start,
+                                      uint32_t m_pos_start) {
     if (p_pos_start == 0  ||  m_pos_start == 0)
       return 0;
 
-    uint32 p_pos = p_pos_start - 1;
-    uint32 m_pos = m_pos_start - 1;
+    uint32_t p_pos = p_pos_start - 1;
+    uint32_t m_pos = m_pos_start - 1;
 
     while (p_pos > 0  &&  m_pos > 0) {
       LabelInfo* p_info = p_trace_[p_pos];
@@ -522,7 +524,7 @@ class AssignmentProblem {
   Node* MakeRootNode(const Trace& trace) {
     Node* node = new Node(NULL, NULL);
     all_nodes_.push_back(node);
-    for (uint32 i = 0;  i < trace.size();  ++i) {
+    for (uint32_t i = 0; i < trace.size(); ++i) {
       ++node->count_;
       node->places_.push_back(i);
     }
@@ -534,7 +536,7 @@ class AssignmentProblem {
     if (node->Extended())
       return;
     for (size_t i = 0; i < node->places_.size();  ++i) {
-      uint32 index = node->places_.at(i);
+      uint32_t index = node->places_.at(i);
       if (index < trace.size()) {
         LabelInfo* item = trace.at(index);
         Node*& slot = node->edges_[item];
@@ -633,11 +635,11 @@ class GraphAdjuster : public AdjustmentMethod {
   }
 
   void ReferenceLabel(Trace* trace, Label* label, bool is_model) {
-    trace->push_back(MakeLabelInfo(label, is_model,
-                                   static_cast<uint32>(trace->size())));
+    trace->push_back(
+        MakeLabelInfo(label, is_model, static_cast<uint32_t>(trace->size())));
   }
 
-  LabelInfo* MakeLabelInfo(Label* label, bool is_model, uint32 position) {
+  LabelInfo* MakeLabelInfo(Label* label, bool is_model, uint32_t position) {
     LabelInfo& slot = label_infos_[label];
     if (slot.label_ == NULL) {
       slot.label_ = label;

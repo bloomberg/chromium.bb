@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "courgette/assembly_program.h"
 #include "courgette/base_test_unittest.h"
 #include "courgette/disassembler_elf_32_x86.h"
@@ -30,7 +33,7 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   // real file, since trailing debug info is not included
   EXPECT_EQ(file1.length(), disassembler->length());
 
-  const uint8* offset_p = disassembler->OffsetToPointer(0);
+  const uint8_t* offset_p = disassembler->OffsetToPointer(0);
   EXPECT_EQ(reinterpret_cast<const void*>(file1.c_str()),
             reinterpret_cast<const void*>(offset_p));
   EXPECT_EQ(0x7F, offset_p[0]);

@@ -8,8 +8,11 @@
 #ifndef COURGETTE_DIFFERENCE_ESTIMATOR_H_
 #define COURGETTE_DIFFERENCE_ESTIMATOR_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "courgette/region.h"
 
 namespace courgette {

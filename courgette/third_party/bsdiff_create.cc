@@ -28,6 +28,8 @@
 
 #include "courgette/third_party/bsdiff.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <algorithm>
 
@@ -67,10 +69,10 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
   SinkStream* diff_bytes = patch_streams.stream(4);
   SinkStream* extra_bytes = patch_streams.stream(5);
 
-  const uint8* old = old_stream->Buffer();
+  const uint8_t* old = old_stream->Buffer();
   const int oldsize = static_cast<int>(old_stream->Remaining());
 
-  uint32 pending_diff_zeros = 0;
+  uint32_t pending_diff_zeros = 0;
 
   PagedArray<int> I;
   PagedArray<int> V;
@@ -93,7 +95,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
           << (base::Time::Now() - q_start_time).InSecondsF();
   V.clear();
 
-  const uint8* newbuf = new_stream->Buffer();
+  const uint8_t* newbuf = new_stream->Buffer();
   const int newsize = static_cast<int>(new_stream->Remaining());
 
   int control_length = 0;
@@ -224,7 +226,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
       };
 
       for (int i = 0;  i < lenf;  i++) {
-        uint8 diff_byte = newbuf[lastscan + i] - old[lastpos + i];
+        uint8_t diff_byte = newbuf[lastscan + i] - old[lastpos + i];
         if (diff_byte) {
           ++diff_bytes_nonzero;
           if (!diff_skips->WriteVarint32(pending_diff_zeros))
@@ -245,9 +247,9 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
       diff_bytes_length += lenf;
       extra_bytes_length += gap;
 
-      uint32 copy_count = lenf;
-      uint32 extra_count = gap;
-      int32 seek_adjustment = ((pos - lenb) - (lastpos + lenf));
+      uint32_t copy_count = lenf;
+      uint32_t extra_count = gap;
+      int32_t seek_adjustment = ((pos - lenb) - (lastpos + lenf));
 
       if (!control_stream_copy_counts->WriteVarint32(copy_count) ||
           !control_stream_extra_counts->WriteVarint32(extra_count) ||

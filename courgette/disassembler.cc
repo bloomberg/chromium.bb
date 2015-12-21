@@ -4,11 +4,13 @@
 
 #include "courgette/disassembler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 #include "courgette/assembly_program.h"
@@ -101,15 +103,14 @@ void DeleteAssemblyProgram(AssemblyProgram* program) {
 
 Disassembler::Disassembler(const void* start, size_t length)
   : failure_reason_("uninitialized") {
-
-  start_ = reinterpret_cast<const uint8*>(start);
+  start_ = reinterpret_cast<const uint8_t*>(start);
   length_ = length;
   end_ = start_ + length_;
 };
 
 Disassembler::~Disassembler() {};
 
-const uint8* Disassembler::OffsetToPointer(size_t offset) const {
+const uint8_t* Disassembler::OffsetToPointer(size_t offset) const {
   assert(start_ + offset <= end_);
   return start_ + offset;
 }

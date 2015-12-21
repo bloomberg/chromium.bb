@@ -6,10 +6,13 @@
 
 #include "courgette/ensemble.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "courgette/crc.h"
 #include "courgette/patcher_x86_32.h"
 #include "courgette/region.h"
@@ -61,9 +64,9 @@ class EnsemblePatchApplication {
 
   Region base_region_;       // Location of in-memory copy of 'old' version.
 
-  uint32 source_checksum_;
-  uint32 target_checksum_;
-  uint32 final_patch_input_size_prediction_;
+  uint32_t source_checksum_;
+  uint32_t target_checksum_;
+  uint32_t final_patch_input_size_prediction_;
 
   std::vector<TransformationPatcher*> patchers_;
 
@@ -85,14 +88,14 @@ EnsemblePatchApplication::~EnsemblePatchApplication() {
 }
 
 Status EnsemblePatchApplication::ReadHeader(SourceStream* header_stream) {
-  uint32 magic;
+  uint32_t magic;
   if (!header_stream->ReadVarint32(&magic))
     return C_BAD_ENSEMBLE_MAGIC;
 
   if (magic != CourgettePatchFile::kMagic)
     return C_BAD_ENSEMBLE_MAGIC;
 
-  uint32 version;
+  uint32_t version;
   if (!header_stream->ReadVarint32(&version))
     return C_BAD_ENSEMBLE_VERSION;
 
@@ -117,7 +120,7 @@ Status EnsemblePatchApplication::InitBase(const Region& region) {
 }
 
 Status EnsemblePatchApplication::ValidateBase() {
-  uint32 checksum = CalculateCrc(base_region_.start(), base_region_.length());
+  uint32_t checksum = CalculateCrc(base_region_.start(), base_region_.length());
   if (source_checksum_ != checksum)
     return C_BAD_ENSEMBLE_CRC;
 
@@ -126,12 +129,12 @@ Status EnsemblePatchApplication::ValidateBase() {
 
 Status EnsemblePatchApplication::ReadInitialParameters(
     SourceStream* transformation_parameters) {
-  uint32 number_of_transformations = 0;
+  uint32_t number_of_transformations = 0;
   if (!transformation_parameters->ReadVarint32(&number_of_transformations))
     return C_BAD_ENSEMBLE_HEADER;
 
   for (size_t i = 0;  i < number_of_transformations;  ++i) {
-    uint32 kind;
+    uint32_t kind;
     if (!transformation_parameters->ReadVarint32(&kind))
       return C_BAD_ENSEMBLE_HEADER;
 

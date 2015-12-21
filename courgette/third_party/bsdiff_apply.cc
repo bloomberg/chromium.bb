@@ -36,6 +36,9 @@
 
 #include "courgette/third_party/bsdiff.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/memory_mapped_file.h"
 #include "courgette/crc.h"
 #include "courgette/streams.h"
@@ -57,11 +60,12 @@ BSDiffStatus MBS_ReadHeader(SourceStream* stream, MBSPatchHeader* header) {
   return OK;
 }
 
-BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader *header,
+BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader* header,
                             SourceStream* patch_stream,
-                            const uint8* old_start, size_t old_size,
+                            const uint8_t* old_start,
+                            size_t old_size,
                             SinkStream* new_stream) {
-  const uint8* old_end = old_start + old_size;
+  const uint8_t* old_end = old_start + old_size;
 
   SourceStreamSet patch_streams;
   if (!patch_streams.Init(patch_stream))
@@ -74,22 +78,22 @@ BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader *header,
   SourceStream* diff_bytes = patch_streams.stream(4);
   SourceStream* extra_bytes = patch_streams.stream(5);
 
-  const uint8* extra_start = extra_bytes->Buffer();
-  const uint8* extra_end = extra_start + extra_bytes->Remaining();
-  const uint8* extra_position = extra_start;
+  const uint8_t* extra_start = extra_bytes->Buffer();
+  const uint8_t* extra_end = extra_start + extra_bytes->Remaining();
+  const uint8_t* extra_position = extra_start;
 
-  const uint8* old_position = old_start;
+  const uint8_t* old_position = old_start;
 
   if (header->dlen && !new_stream->Reserve(header->dlen))
     return MEM_ERROR;
 
-  uint32 pending_diff_zeros = 0;
+  uint32_t pending_diff_zeros = 0;
   if (!diff_skips->ReadVarint32(&pending_diff_zeros))
     return UNEXPECTED_ERROR;
 
   while (!control_stream_copy_counts->Empty()) {
-    uint32 copy_count, extra_count;
-    int32 seek_adjustment;
+    uint32_t copy_count, extra_count;
+    int32_t seek_adjustment;
     if (!control_stream_copy_counts->ReadVarint32(&copy_count))
       return UNEXPECTED_ERROR;
     if (!control_stream_extra_counts->ReadVarint32(&extra_count))
@@ -108,7 +112,7 @@ BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader *header,
 
     // Add together bytes from the 'old' file and the 'diff' stream.
     for (size_t i = 0;  i < copy_count;  ++i) {
-      uint8 diff_byte = 0;
+      uint8_t diff_byte = 0;
       if (pending_diff_zeros) {
         --pending_diff_zeros;
       } else {
@@ -117,7 +121,7 @@ BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader *header,
         if (!diff_bytes->Read(&diff_byte, 1))
           return UNEXPECTED_ERROR;
       }
-      uint8 byte = old_position[i] + diff_byte;
+      uint8_t byte = old_position[i] + diff_byte;
       if (!new_stream->Write(&byte, 1))
         return MEM_ERROR;
     }
@@ -158,7 +162,7 @@ BSDiffStatus ApplyBinaryPatch(SourceStream* old_stream,
   BSDiffStatus ret = MBS_ReadHeader(patch_stream, &header);
   if (ret != OK) return ret;
 
-  const uint8* old_start = old_stream->Buffer();
+  const uint8_t* old_start = old_stream->Buffer();
   size_t old_size = old_stream->Remaining();
 
   if (old_size != header.slen) return UNEXPECTED_ERROR;

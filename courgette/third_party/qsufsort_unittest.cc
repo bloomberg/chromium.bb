@@ -4,6 +4,8 @@
 
 #include "courgette/third_party/qsufsort.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cstring>
 #include <string>

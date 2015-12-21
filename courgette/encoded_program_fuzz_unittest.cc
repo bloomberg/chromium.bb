@@ -13,6 +13,8 @@
 
 #include "base/test/test_suite.h"
 
+#include <stddef.h>
+
 #include "courgette/base_test_unittest.h"
 #include "courgette/courgette.h"
 #include "courgette/streams.h"

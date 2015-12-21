@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/at_exit.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -48,7 +50,7 @@ void Problem(const char* format, ...) {
 }
 
 std::string ReadOrFail(const base::FilePath& file_name, const char* kind) {
-  int64 file_size = 0;
+  int64_t file_size = 0;
   if (!base::GetFileSize(file_name, &file_size))
     Problem("Can't read %s file.", kind);
   std::string buffer;

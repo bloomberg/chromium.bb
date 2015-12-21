@@ -4,6 +4,9 @@
 
 #include "courgette/label_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
@@ -47,12 +50,12 @@ void LabelManager::Read(RvaVisitor* rva_visitor) {
   labels_.reserve(num_distinct_rva);
   for (CRV it(rvas.begin(), rvas.end()); it.has_more(); it.advance()) {
     labels_.push_back(Label(*it.cur()));
-    base::CheckedNumeric<uint32> count = it.repeat();
+    base::CheckedNumeric<uint32_t> count = it.repeat();
     labels_.back().count_ = count.ValueOrDie();
   }
 }
 
-void LabelManager::RemoveUnderusedLabels(int32 count_threshold) {
+void LabelManager::RemoveUnderusedLabels(int32_t count_threshold) {
   if (count_threshold <= 0)
     return;
   labels_.erase(std::remove_if(labels_.begin(), labels_.end(),

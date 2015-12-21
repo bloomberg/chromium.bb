@@ -4,6 +4,9 @@
 
 #include "courgette/memory_allocator.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/files/file_util.h"
@@ -108,7 +111,7 @@ bool TempMapping::Initialize(size_t size) {
 }
 
 void* TempMapping::memory() const {
-  uint8* mem = reinterpret_cast<uint8*>(mapping_.view());
+  uint8_t* mem = reinterpret_cast<uint8_t*>(mapping_.view());
   // The 'this' pointer is written at the start of mapping_.view(), so
   // go past it. (See Initialize()).
   if (mem)

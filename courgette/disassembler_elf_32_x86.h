@@ -5,7 +5,10 @@
 #ifndef COURGETTE_DISASSEMBLER_ELF_32_X86_H_
 #define COURGETTE_DISASSEMBLER_ELF_32_X86_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "courgette/disassembler_elf_32.h"
 #include "courgette/memory_allocator.h"
 #include "courgette/types_elf.h"
@@ -21,7 +24,7 @@ class DisassemblerElf32X86 : public DisassemblerElf32 {
     explicit TypedRVAX86(RVA rva) : TypedRVA(rva) {
     }
 
-    CheckBool ComputeRelativeTarget(const uint8* op_pointer) override {
+    CheckBool ComputeRelativeTarget(const uint8_t* op_pointer) override {
       set_relative_target(Read32LittleEndian(op_pointer) + 4);
       return true;
     }
@@ -31,7 +34,7 @@ class DisassemblerElf32X86 : public DisassemblerElf32 {
       return program->EmitRel32(program->FindOrMakeRel32Label(target_rva));
     }
 
-    uint16 op_size() const override { return 4; }
+    uint16_t op_size() const override { return 4; }
   };
 
   explicit DisassemblerElf32X86(const void* start, size_t length);

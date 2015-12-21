@@ -5,17 +5,18 @@
 #ifndef COURGETTE_ELF_TYPES_H_
 #define COURGETTE_ELF_TYPES_H_
 
+#include <stdint.h>
+
 //
 // This header defines various types from the ELF file spec, but no code
 // related to using them.
 //
 
-typedef uint32 Elf32_Addr;  // Unsigned program address
-typedef uint16 Elf32_Half;  // Unsigned medium integer
-typedef uint32 Elf32_Off;  // Unsigned file offset
-typedef int32 Elf32_Sword;  // Signed large integer
-typedef uint32 Elf32_Word;  // Unsigned large integer
-
+typedef uint32_t Elf32_Addr;  // Unsigned program address
+typedef uint16_t Elf32_Half;  // Unsigned medium integer
+typedef uint32_t Elf32_Off;   // Unsigned file offset
+typedef int32_t Elf32_Sword;  // Signed large integer
+typedef uint32_t Elf32_Word;  // Unsigned large integer
 
 // The header at the top of the file
 struct Elf32_Ehdr {

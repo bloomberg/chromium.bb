@@ -4,11 +4,13 @@
 
 #include "courgette/disassembler_elf_32.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 
@@ -182,7 +184,7 @@ CheckBool DisassemblerElf32::RVAToFileOffset(Elf32_Addr addr,
 RVA DisassemblerElf32::FileOffsetToRVA(size_t offset) const {
   // File offsets can be 64 bit values, but we are dealing with 32
   // bit executables and so only need to support 32bit file sizes.
-  uint32 offset32 = (uint32)offset;
+  uint32_t offset32 = (uint32_t)offset;
 
   for (int i = 0; i < SectionHeaderCount(); i++) {
 
@@ -240,7 +242,7 @@ CheckBool DisassemblerElf32::RVAsToOffsets(ScopedVector<TypedRVA>* rvas) {
 
 CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program) {
   // Walk all the bytes in the file, whether or not in a section.
-  uint32 file_offset = 0;
+  uint32_t file_offset = 0;
 
   std::vector<size_t> abs_offsets;
 
@@ -370,8 +372,7 @@ CheckBool DisassemblerElf32::ParseProgbitsSection(
 
     if (*current_abs_offset != end_abs_offset &&
         file_offset == **current_abs_offset) {
-
-      const uint8* p = OffsetToPointer(file_offset);
+      const uint8_t* p = OffsetToPointer(file_offset);
       RVA target_rva = Read32LittleEndian(p);
 
       if (!program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva)))
@@ -383,8 +384,7 @@ CheckBool DisassemblerElf32::ParseProgbitsSection(
 
     if (*current_rel != end_rel &&
         file_offset == (**current_rel)->get_offset()) {
-
-      uint32 relative_target = (**current_rel)->relative_target();
+      uint32_t relative_target = (**current_rel)->relative_target();
       // This cast is for 64 bit systems, and is only safe because we
       // are working on 32 bit executables.
       RVA target_rva = (RVA)(origin + (file_offset - origin_offset) +

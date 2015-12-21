@@ -9,8 +9,8 @@
 #define COURGETTE_WIN32_X86_GENERATOR_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-
 #include "courgette/assembly_program.h"
 #include "courgette/ensemble.h"
 

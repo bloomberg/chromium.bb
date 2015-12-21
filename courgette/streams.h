@@ -10,15 +10,17 @@
 // writing.  Streams are aggregated into Sets which allows several streams to be
 // used at once.  Example: we can write A1, B1, A2, B2 but achieve the memory
 // layout A1 A2 B1 B2 by writing 'A's to one stream and 'B's to another.
+
 #ifndef COURGETTE_STREAMS_H_
 #define COURGETTE_STREAMS_H_
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>  // for FILE*
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
-
+#include "base/macros.h"
 #include "courgette/memory_allocator.h"
 #include "courgette/region.h"
 
@@ -41,7 +43,7 @@ class SourceStream {
   // still owns the memory at |pointer| and should free the memory only after
   // the last use of the stream.
   void Init(const void* pointer, size_t length) {
-    start_ = static_cast<const uint8*>(pointer);
+    start_ = static_cast<const uint8_t*>(pointer);
     end_ = start_ + length;
     current_ = start_;
   }
@@ -67,7 +69,7 @@ class SourceStream {
   // Returns initial length of stream before any data consumed by reading.
   size_t OriginalLength() const { return end_ - start_; }
 
-  const uint8* Buffer() const { return current_; }
+  const uint8_t* Buffer() const { return current_; }
   bool Empty() const { return current_ == end_; }
 
   // Copies bytes from stream to memory at |destination|.  Returns 'false' if
@@ -76,11 +78,11 @@ class SourceStream {
 
   // Reads a varint formatted unsigned integer from stream.  Returns 'false' if
   // the read failed due to insufficient data or malformed Varint32.
-  bool ReadVarint32(uint32* output_value);
+  bool ReadVarint32(uint32_t* output_value);
 
   // Reads a varint formatted signed integer from stream.  Returns 'false' if
   // the read failed due to insufficient data or malformed Varint32.
-  bool ReadVarint32Signed(int32* output_value);
+  bool ReadVarint32Signed(int32_t* output_value);
 
   // Initializes |substream| to yield |length| bytes from |this| stream,
   // starting at |offset| bytes from the current position.  Returns 'false' if
@@ -103,9 +105,9 @@ class SourceStream {
   bool Skip(size_t byte_count);
 
  private:
-  const uint8* start_;     // Points to start of buffer.
-  const uint8* end_;       // Points to first location after buffer.
-  const uint8* current_;   // Points into buffer at current read location.
+  const uint8_t* start_;    // Points to start of buffer.
+  const uint8_t* end_;      // Points to first location after buffer.
+  const uint8_t* current_;  // Points into buffer at current read location.
 
   DISALLOW_COPY_AND_ASSIGN(SourceStream);
 };
@@ -124,13 +126,13 @@ class SinkStream {
   CheckBool Write(const void* data, size_t byte_count) WARN_UNUSED_RESULT;
 
   // Appends the 'varint32' encoding of |value| to the stream.
-  CheckBool WriteVarint32(uint32 value) WARN_UNUSED_RESULT;
+  CheckBool WriteVarint32(uint32_t value) WARN_UNUSED_RESULT;
 
   // Appends the 'varint32' encoding of |value| to the stream.
-  CheckBool WriteVarint32Signed(int32 value) WARN_UNUSED_RESULT;
+  CheckBool WriteVarint32Signed(int32_t value) WARN_UNUSED_RESULT;
 
   // Appends the 'varint32' encoding of |value| to the stream.
-  // On platforms where sizeof(size_t) != sizeof(int32), do a safety check.
+  // On platforms where sizeof(size_t) != sizeof(int32_t), do a safety check.
   CheckBool WriteSizeVarint32(size_t value) WARN_UNUSED_RESULT;
 
   // Contents of |other| are appended to |this| stream.  The |other| stream
@@ -143,8 +145,8 @@ class SinkStream {
   // Returns a pointer to contiguously allocated Length() bytes in the stream.
   // Writing to the stream invalidates the pointer.  The SinkStream continues to
   // own the memory.
-  const uint8* Buffer() const {
-    return reinterpret_cast<const uint8*>(buffer_.data());
+  const uint8_t* Buffer() const {
+    return reinterpret_cast<const uint8_t*>(buffer_.data());
   }
 
   // Hints that the stream will grow by an additional |length| bytes.

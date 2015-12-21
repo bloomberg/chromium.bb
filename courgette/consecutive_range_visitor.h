@@ -5,6 +5,8 @@
 #ifndef COURGETTE_CONSECUTIVE_RANGE_VISITOR_H_
 #define COURGETTE_CONSECUTIVE_RANGE_VISITOR_H_
 
+#include <stddef.h>
+
 #include <iterator>
 
 #include "base/macros.h"

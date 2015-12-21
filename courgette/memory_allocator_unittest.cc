@@ -4,6 +4,8 @@
 
 #include "courgette/memory_allocator.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/macros.h"

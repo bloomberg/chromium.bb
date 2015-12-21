@@ -4,6 +4,9 @@
 
 #include "courgette/rel32_finder_win32_x86.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <sstream>
 #include <string>
@@ -47,7 +50,7 @@ class Rel32FinderWin32X86TestCase {
   RVA relocs_start_rva_;
   RVA relocs_end_rva_;
   RVA image_end_rva_;
-  std::vector<uint8> text_data_;
+  std::vector<uint8_t> text_data_;
   std::vector<RVA> abs32_locations_;
   std::vector<RVA> expected_rel32_locations_;
 
@@ -71,9 +74,9 @@ class Rel32FinderWin32X86TestCase {
     return true;
   }
 
-  // Scans |iss| for the next non-empty line, and reads (hex) uint32 into |v|.
+  // Scans |iss| for the next non-empty line, and reads (hex) uint32_t into |v|.
   // Returns true iff successful.
-  bool ReadHexUInt32(std::istringstream& iss, uint32* v) {
+  bool ReadHexUInt32(std::istringstream& iss, uint32_t* v) {
     std::string line;
     if (!ReadNonEmptyLine(iss, &line))
       return false;
@@ -103,11 +106,11 @@ class Rel32FinderWin32X86TestCase {
     ASSERT_EQ("Program:", line);
     while (ReadNonEmptyLine(iss, &line) && line != "Abs32:") {
       std::string toks = line.substr(kBytesBegin, kBytesEnd);
-      uint32 vals[6];
+      uint32_t vals[6];
       int num_read = sscanf(toks.c_str(), "%X %X %X %X %X %X", &vals[0],
           &vals[1], &vals[2], &vals[3], &vals[4], &vals[5]);
       for (int i = 0; i < num_read; ++i)
-        text_data_.push_back(static_cast<uint8>(vals[i] & 0xFF));
+        text_data_.push_back(static_cast<uint8_t>(vals[i] & 0xFF));
     }
     ASSERT_FALSE(text_data_.empty());
 
