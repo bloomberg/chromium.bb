@@ -459,6 +459,10 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MaximizeFullscreen) {
   if (base::mac::IsOSSnowLeopard())
     return;
 
+  // This test is flaky on 10.11. Disable it as per http://crbug.com/560602.
+  if (base::mac::IsOSElCapitan())
+    return;
+
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 
   SetUpAppWithWindows(1);
