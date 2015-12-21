@@ -226,16 +226,12 @@ bool FieldTrial::GetActiveGroup(ActiveGroup* active_group) const {
   return true;
 }
 
-bool FieldTrial::GetState(FieldTrialState* field_trial_state) const {
+bool FieldTrial::GetState(FieldTrialState* field_trial_state) {
   if (!enable_field_trial_)
     return false;
+  FinalizeGroupChoice();
   field_trial_state->trial_name = trial_name_;
-  // If the group name is empty (hasn't been finalized yet), use the default
-  // group name instead.
-  if (!group_name_.empty())
-    field_trial_state->group_name = group_name_;
-  else
-    field_trial_state->group_name = default_group_name_;
+  field_trial_state->group_name = group_name_;
   field_trial_state->activated = group_reported_;
   return true;
 }

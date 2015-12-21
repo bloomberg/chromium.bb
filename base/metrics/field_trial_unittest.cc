@@ -446,30 +446,34 @@ TEST_F(FieldTrialTest, SaveAll) {
   std::string save_string;
 
   scoped_refptr<FieldTrial> trial =
-      CreateFieldTrial("Some name", 10, "Default some name", NULL);
+      CreateFieldTrial("Some name", 10, "Default some name", nullptr);
   EXPECT_EQ("", trial->group_name_internal());
   FieldTrialList::AllStatesToString(&save_string);
   EXPECT_EQ("Some name/Default some name/", save_string);
+  // Getting all states should have finalized the trial.
+  EXPECT_EQ("Default some name", trial->group_name_internal());
   save_string.clear();
 
   // Create a winning group.
+  trial = CreateFieldTrial("trial2", 10, "Default some name", nullptr);
   trial->AppendGroup("Winner", 10);
   // Finalize the group selection by accessing the selected group.
   trial->group();
   FieldTrialList::AllStatesToString(&save_string);
-  EXPECT_EQ("*Some name/Winner/", save_string);
+  EXPECT_EQ("Some name/Default some name/*trial2/Winner/", save_string);
   save_string.clear();
 
   // Create a second trial and winning group.
   scoped_refptr<FieldTrial> trial2 =
-      CreateFieldTrial("xxx", 10, "Default xxx", NULL);
+      CreateFieldTrial("xxx", 10, "Default xxx", nullptr);
   trial2->AppendGroup("yyyy", 10);
   // Finalize the group selection by accessing the selected group.
   trial2->group();
 
   FieldTrialList::AllStatesToString(&save_string);
   // We assume names are alphabetized... though this is not critical.
-  EXPECT_EQ("*Some name/Winner/*xxx/yyyy/", save_string);
+  EXPECT_EQ("Some name/Default some name/*trial2/Winner/*xxx/yyyy/",
+            save_string);
   save_string.clear();
 
   // Create a third trial with only the default group.
@@ -477,7 +481,8 @@ TEST_F(FieldTrialTest, SaveAll) {
       CreateFieldTrial("zzz", 10, "default", NULL);
 
   FieldTrialList::AllStatesToString(&save_string);
-  EXPECT_EQ("*Some name/Winner/*xxx/yyyy/zzz/default/", save_string);
+  EXPECT_EQ("Some name/Default some name/*trial2/Winner/*xxx/yyyy/zzz/default/",
+            save_string);
 }
 
 TEST_F(FieldTrialTest, Restore) {

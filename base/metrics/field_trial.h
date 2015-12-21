@@ -250,7 +250,7 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // been disabled. In that case, true is returned and |field_trial_state| is
   // filled in; otherwise, the result is false and |field_trial_state| is left
   // untouched.
-  bool GetState(FieldTrialState* field_trial_state) const;
+  bool GetState(FieldTrialState* field_trial_state);
 
   // Returns the group_name. A winner need not have been chosen.
   std::string group_name_internal() const { return group_name_; }
