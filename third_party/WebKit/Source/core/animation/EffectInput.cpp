@@ -33,169 +33,19 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/UnionTypesCore.h"
-#include "core/HTMLNames.h"
-#include "core/SVGNames.h"
-#include "core/XLinkNames.h"
 #include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/StringKeyframe.h"
-#include "core/css/resolver/StyleResolver.h"
+#include "core/css/CSSStyleSheet.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/svg/animation/SVGSMILElement.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/HashSet.h"
 #include "wtf/NonCopyingSort.h"
 
 namespace blink {
-
-namespace {
-
-bool isSVGPrefixed(const String& property)
-{
-    return property.startsWith("svg-");
-}
-
-QualifiedName svgAttributeName(String property)
-{
-    // Replace 'svg-transform' with 'transform', etc.
-    ASSERT(isSVGPrefixed(property));
-    property.remove(0, 4);
-
-    if (property == "href")
-        return XLinkNames::hrefAttr;
-
-    return QualifiedName(nullAtom, AtomicString(property), SVGNames::amplitudeAttr.namespaceURI());
-}
-
-using AttributeNameMap = HashMap<QualifiedName, const QualifiedName*>;
-
-const AttributeNameMap& getSupportedAttributes()
-{
-    DEFINE_STATIC_LOCAL(AttributeNameMap, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        // Fill the set for the first use.
-        // Animatable attributes from http://www.w3.org/TR/SVG/attindex.html
-        const QualifiedName* attributes[] = {
-            &HTMLNames::classAttr,
-            &SVGNames::amplitudeAttr,
-            &SVGNames::azimuthAttr,
-            &SVGNames::baseFrequencyAttr,
-            &SVGNames::biasAttr,
-            &SVGNames::clipPathUnitsAttr,
-            &SVGNames::cxAttr,
-            &SVGNames::cyAttr,
-            &SVGNames::dAttr,
-            &SVGNames::diffuseConstantAttr,
-            &SVGNames::divisorAttr,
-            &SVGNames::dxAttr,
-            &SVGNames::dyAttr,
-            &SVGNames::edgeModeAttr,
-            &SVGNames::elevationAttr,
-            &SVGNames::exponentAttr,
-            &SVGNames::filterUnitsAttr,
-            &SVGNames::fxAttr,
-            &SVGNames::fyAttr,
-            &SVGNames::gradientTransformAttr,
-            &SVGNames::gradientUnitsAttr,
-            &SVGNames::heightAttr,
-            &SVGNames::in2Attr,
-            &SVGNames::inAttr,
-            &SVGNames::interceptAttr,
-            &SVGNames::k1Attr,
-            &SVGNames::k2Attr,
-            &SVGNames::k3Attr,
-            &SVGNames::k4Attr,
-            &SVGNames::kernelMatrixAttr,
-            &SVGNames::kernelUnitLengthAttr,
-            &SVGNames::lengthAdjustAttr,
-            &SVGNames::limitingConeAngleAttr,
-            &SVGNames::markerHeightAttr,
-            &SVGNames::markerUnitsAttr,
-            &SVGNames::markerWidthAttr,
-            &SVGNames::maskContentUnitsAttr,
-            &SVGNames::maskUnitsAttr,
-            &SVGNames::methodAttr,
-            &SVGNames::modeAttr,
-            &SVGNames::numOctavesAttr,
-            &SVGNames::offsetAttr,
-            &SVGNames::operatorAttr,
-            &SVGNames::orderAttr,
-            &SVGNames::orientAttr,
-            &SVGNames::pathLengthAttr,
-            &SVGNames::patternContentUnitsAttr,
-            &SVGNames::patternTransformAttr,
-            &SVGNames::patternUnitsAttr,
-            &SVGNames::pointsAtXAttr,
-            &SVGNames::pointsAtYAttr,
-            &SVGNames::pointsAtZAttr,
-            &SVGNames::pointsAttr,
-            &SVGNames::preserveAlphaAttr,
-            &SVGNames::preserveAspectRatioAttr,
-            &SVGNames::primitiveUnitsAttr,
-            &SVGNames::rAttr,
-            &SVGNames::radiusAttr,
-            &SVGNames::refXAttr,
-            &SVGNames::refYAttr,
-            &SVGNames::resultAttr,
-            &SVGNames::rotateAttr,
-            &SVGNames::rxAttr,
-            &SVGNames::ryAttr,
-            &SVGNames::scaleAttr,
-            &SVGNames::seedAttr,
-            &SVGNames::slopeAttr,
-            &SVGNames::spacingAttr,
-            &SVGNames::specularConstantAttr,
-            &SVGNames::specularExponentAttr,
-            &SVGNames::spreadMethodAttr,
-            &SVGNames::startOffsetAttr,
-            &SVGNames::stdDeviationAttr,
-            &SVGNames::stitchTilesAttr,
-            &SVGNames::surfaceScaleAttr,
-            &SVGNames::tableValuesAttr,
-            &SVGNames::targetAttr,
-            &SVGNames::targetXAttr,
-            &SVGNames::targetYAttr,
-            &SVGNames::textLengthAttr,
-            &SVGNames::transformAttr,
-            &SVGNames::typeAttr,
-            &SVGNames::valuesAttr,
-            &SVGNames::viewBoxAttr,
-            &SVGNames::widthAttr,
-            &SVGNames::x1Attr,
-            &SVGNames::x2Attr,
-            &SVGNames::xAttr,
-            &SVGNames::xChannelSelectorAttr,
-            &SVGNames::y1Attr,
-            &SVGNames::y2Attr,
-            &SVGNames::yAttr,
-            &SVGNames::yChannelSelectorAttr,
-            &SVGNames::zAttr,
-            &XLinkNames::hrefAttr,
-        };
-        for (size_t i = 0; i < WTF_ARRAY_LENGTH(attributes); i++)
-            supportedAttributes.set(*attributes[i], attributes[i]);
-    }
-    return supportedAttributes;
-}
-
-const QualifiedName* findSVGAttributeForProperty(const String& property, SVGElement* svgElement)
-{
-    if (isSVGSMILElement(*svgElement))
-        return nullptr;
-
-    QualifiedName attributeName = svgAttributeName(property);
-
-    const AttributeNameMap& supportedAttributes = getSupportedAttributes();
-    auto iter = supportedAttributes.find(attributeName);
-    if (iter == supportedAttributes.end() || !svgElement->propertyFromAttribute(*iter->value))
-        return nullptr;
-
-    return iter->value;
-}
-
-} // namespace
 
 EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
 {
@@ -258,7 +108,7 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
         for (const auto& property : keyframeProperties) {
             String value;
             DictionaryHelper::get(keyframeDictionary, property, value);
-            CSSPropertyID id = AnimationInputHelpers::keyframeAttributeToCSSPropertyID(property);
+            CSSPropertyID id = AnimationInputHelpers::keyframeAttributeToCSSPropertyID(property, *element);
             if (id != CSSPropertyInvalid) {
                 keyframe->setPropertyValue(id, value, element, styleSheetContents);
                 continue;
@@ -270,12 +120,10 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
                 continue;
             }
 
-            if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() || !element->isSVGElement() || !isSVGPrefixed(property))
-                continue;
-
-            const QualifiedName* qualifiedName = findSVGAttributeForProperty(property, toSVGElement(element));
-            if (qualifiedName)
+            const QualifiedName* qualifiedName = AnimationInputHelpers::keyframeAttributeToQualifiedName(property, *element);
+            if (qualifiedName) {
                 keyframe->setPropertyValue(*qualifiedName, value);
+            }
         }
     }
 
