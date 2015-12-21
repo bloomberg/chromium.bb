@@ -5,10 +5,13 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_FRAMEBUFFER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_FRAMEBUFFER_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -47,8 +50,8 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
         Renderbuffer* renderbuffer) const = 0;
     virtual bool CanRenderTo() const = 0;
     virtual void DetachFromFramebuffer(Framebuffer* framebuffer) const = 0;
-    virtual bool ValidForAttachmentType(
-        GLenum attachment_type, uint32 max_color_attachments) = 0;
+    virtual bool ValidForAttachmentType(GLenum attachment_type,
+                                        uint32_t max_color_attachments) = 0;
     virtual size_t GetSignatureSize(TextureManager* texture_manager) const = 0;
     virtual void AddToSignature(
         TextureManager* texture_manager, std::string* signature) const = 0;
@@ -236,8 +239,8 @@ struct DecoderFramebufferState {
 // so we can correctly clear them.
 class GPU_EXPORT FramebufferManager {
  public:
-  FramebufferManager(uint32 max_draw_buffers,
-                     uint32 max_color_attachments,
+  FramebufferManager(uint32_t max_draw_buffers,
+                     uint32_t max_color_attachments,
                      ContextType context_type,
                      const scoped_refptr<FramebufferCompletenessCache>&
                          framebuffer_combo_complete_cache);
@@ -300,8 +303,8 @@ class GPU_EXPORT FramebufferManager {
 
   bool have_context_;
 
-  uint32 max_draw_buffers_;
-  uint32 max_color_attachments_;
+  uint32_t max_draw_buffers_;
+  uint32_t max_color_attachments_;
 
   ContextType context_type_;
 

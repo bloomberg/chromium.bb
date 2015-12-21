@@ -6,6 +6,8 @@
 
 #include "gpu/command_buffer/client/ring_buffer.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
@@ -87,9 +89,7 @@ class BaseRingBufferTest : public testing::Test {
     helper_->Initialize(kBufferSize);
   }
 
-  int32 GetToken() {
-    return command_buffer_->GetLastState().token;
-  }
+  int32_t GetToken() { return command_buffer_->GetLastState().token; }
 
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
@@ -99,8 +99,8 @@ class BaseRingBufferTest : public testing::Test {
   std::vector<const void*> set_token_arguments_;
   bool delay_set_token_;
 
-  scoped_ptr<int8[]> buffer_;
-  int8* buffer_start_;
+  scoped_ptr<int8_t[]> buffer_;
+  int8_t* buffer_start_;
   base::MessageLoop message_loop_;
 };
 
@@ -118,7 +118,7 @@ class RingBufferTest : public BaseRingBufferTest {
   void SetUp() override {
     BaseRingBufferTest::SetUp();
 
-    buffer_.reset(new int8[kBufferSize + kBaseOffset]);
+    buffer_.reset(new int8_t[kBufferSize + kBaseOffset]);
     buffer_start_ = buffer_.get() + kBaseOffset;
     allocator_.reset(new RingBuffer(kAlignment, kBaseOffset, kBufferSize,
                                     helper_.get(), buffer_start_));
@@ -143,7 +143,7 @@ TEST_F(RingBufferTest, TestBasic) {
   EXPECT_GE(kBufferSize, allocator_->GetOffset(pointer) - kBaseOffset + kSize);
   EXPECT_EQ(kBufferSize, allocator_->GetLargestFreeOrPendingSize());
   EXPECT_EQ(kBufferSize - kSize, allocator_->GetLargestFreeSizeNoWaiting());
-  int32 token = helper_->InsertToken();
+  int32_t token = helper_->InsertToken();
   allocator_->FreePendingToken(pointer, token);
 }
 
@@ -155,7 +155,7 @@ TEST_F(RingBufferTest, TestFreePendingToken) {
 
   delay_set_token_ = true;
   // Allocate several buffers to fill in the memory.
-  int32 tokens[kAllocCount];
+  int32_t tokens[kAllocCount];
   for (unsigned int ii = 0; ii < kAllocCount; ++ii) {
     void* pointer = allocator_->Alloc(kSize);
     EXPECT_GE(kBufferSize,

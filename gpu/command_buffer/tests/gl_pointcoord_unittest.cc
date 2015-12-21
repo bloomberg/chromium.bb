@@ -4,6 +4,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -133,11 +134,9 @@ TEST_F(PointCoordTest, MAYBE_RenderTo) {
           GLint yf = s2p(point_y + v * point_width);
           GLfloat s = 0.5 + (xf + 0.5 - xw) / max_point_size;
           GLfloat t = 0.5 + (yf + 0.5 - yw) / max_point_size;
-          uint8 color[4] = {
-            static_cast<uint8>(s * 255),
-            static_cast<uint8>((1 - t) * 255),
-            0,
-            255,
+          uint8_t color[4] = {
+              static_cast<uint8_t>(s * 255),
+              static_cast<uint8_t>((1 - t) * 255), 0, 255,
           };
           GLTestHelper::CheckPixels(xf, yf, 1, 1, 4, color);
         }

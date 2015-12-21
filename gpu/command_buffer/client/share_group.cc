@@ -4,9 +4,10 @@
 
 #include "gpu/command_buffer/client/share_group.h"
 
+#include <stdint.h>
+
 #include <stack>
 #include <vector>
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -234,13 +235,13 @@ class StrictIdHandler : public IdHandlerInterface {
   enum IdState { kIdFree, kIdPendingFree, kIdInUse };
 
   void CollectPendingFreeIds(GLES2Implementation* gl_impl) {
-    uint32 flush_generation = gl_impl->helper()->flush_generation();
+    uint32_t flush_generation = gl_impl->helper()->flush_generation();
     ShareGroupContextData::IdHandlerData* ctxt_data =
         gl_impl->share_group_context_data()->id_handler_data(id_namespace_);
 
     if (ctxt_data->flush_generation_ != flush_generation) {
       ctxt_data->flush_generation_ = flush_generation;
-      for (uint32 ii = 0; ii < ctxt_data->freed_ids_.size(); ++ii) {
+      for (uint32_t ii = 0; ii < ctxt_data->freed_ids_.size(); ++ii) {
         const GLuint id = ctxt_data->freed_ids_[ii];
         DCHECK(id_states_[id - 1] == kIdPendingFree);
         id_states_[id - 1] = kIdFree;
@@ -253,8 +254,8 @@ class StrictIdHandler : public IdHandlerInterface {
   int id_namespace_;
 
   base::Lock lock_;
-  std::vector<uint8> id_states_;
-  std::stack<uint32> free_ids_;
+  std::vector<uint8_t> id_states_;
+  std::stack<uint32_t> free_ids_;
 };
 
 // An id handler for ids that are never reused.

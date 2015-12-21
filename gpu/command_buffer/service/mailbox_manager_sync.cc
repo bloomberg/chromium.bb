@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/mailbox_manager_sync.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <queue>
 

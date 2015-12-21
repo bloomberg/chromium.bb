@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 
@@ -20,7 +22,7 @@ namespace gles2 {
 
 class VertexArrayManagerTest : public GpuServiceTest {
  public:
-  static const uint32 kNumVertexAttribs = 8;
+  static const uint32_t kNumVertexAttribs = 8;
 
   VertexArrayManagerTest() {
   }
@@ -43,7 +45,7 @@ class VertexArrayManagerTest : public GpuServiceTest {
 
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
-const uint32 VertexArrayManagerTest::kNumVertexAttribs;
+const uint32_t VertexArrayManagerTest::kNumVertexAttribs;
 #endif
 
 TEST_F(VertexArrayManagerTest, Basic) {

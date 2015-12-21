@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/common/mailbox.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "base/logging.h"
@@ -27,7 +29,7 @@ void Mailbox::SetZero() {
   memset(name, 0, sizeof(name));
 }
 
-void Mailbox::SetName(const int8* n) {
+void Mailbox::SetName(const int8_t* n) {
   DCHECK(IsZero() || !memcmp(name, n, sizeof(name)));
   memcpy(name, n, sizeof(name));
 }
@@ -37,7 +39,7 @@ Mailbox Mailbox::Generate() {
   // Generates cryptographically-secure bytes.
   base::RandBytes(result.name, sizeof(result.name));
 #if !defined(NDEBUG)
-  int8 value = 1;
+  int8_t value = 1;
   for (size_t i = 1; i < sizeof(result.name); ++i)
     value ^= result.name[i];
   result.name[0] = value;
@@ -47,7 +49,7 @@ Mailbox Mailbox::Generate() {
 
 bool Mailbox::Verify() const {
 #if !defined(NDEBUG)
-  int8 value = 1;
+  int8_t value = 1;
   for (size_t i = 0; i < sizeof(name); ++i)
     value ^= name[i];
   return value == 0;

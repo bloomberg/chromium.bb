@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "gpu/config/gpu_control_list.h"
 
 namespace gpu {

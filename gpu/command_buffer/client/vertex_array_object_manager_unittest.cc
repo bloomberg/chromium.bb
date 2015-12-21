@@ -6,6 +6,8 @@
 
 #include <GLES2/gl2ext.h>
 #include <GLES3/gl3.h>
+#include <stddef.h>
+#include <stdint.h>
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -40,7 +42,7 @@ const GLuint VertexArrayObjectManagerTest::kClientSideElementArrayBuffer;
 TEST_F(VertexArrayObjectManagerTest, Basic) {
   EXPECT_FALSE(manager_->HaveEnabledClientSideBuffers());
   // Check out of bounds access.
-  uint32 param;
+  uint32_t param;
   void* ptr;
   EXPECT_FALSE(manager_->GetVertexAttrib(
       kMaxAttribs, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &param));
@@ -59,7 +61,7 @@ TEST_F(VertexArrayObjectManagerTest, Basic) {
     EXPECT_EQ(4u, param);
     EXPECT_TRUE(manager_->GetVertexAttrib(
         ii, GL_VERTEX_ATTRIB_ARRAY_TYPE, &param));
-    EXPECT_EQ(static_cast<uint32>(GL_FLOAT), param);
+    EXPECT_EQ(static_cast<uint32_t>(GL_FLOAT), param);
     EXPECT_TRUE(manager_->GetVertexAttrib(
         ii, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &param));
     EXPECT_EQ(0u, param);
@@ -100,9 +102,13 @@ TEST_F(VertexArrayObjectManagerTest, UnbindBuffer) {
   // The attribs are still enabled but their buffer is 0.
   EXPECT_TRUE(manager_->HaveEnabledClientSideBuffers());
   // Check the status of the bindings.
-  static const uint32 expected[][4] = {
-    { 0, kBufferToRemain, 0, kBufferToRemain, },
-    { kBufferToUnbind, kBufferToRemain, kBufferToUnbind, kBufferToRemain, },
+  static const uint32_t expected[][4] = {
+      {
+          0, kBufferToRemain, 0, kBufferToRemain,
+      },
+      {
+          kBufferToUnbind, kBufferToRemain, kBufferToUnbind, kBufferToRemain,
+      },
   };
   static const GLuint expected_element_array[] = {
     0, kElementArray,
@@ -110,7 +116,7 @@ TEST_F(VertexArrayObjectManagerTest, UnbindBuffer) {
   for (size_t ii = 0; ii < arraysize(ids); ++ii) {
     EXPECT_TRUE(manager_->BindVertexArray(ids[ii], &changed));
     for (size_t jj = 0; jj < 4; ++jj) {
-      uint32 param = 1;
+      uint32_t param = 1;
       EXPECT_TRUE(manager_->GetVertexAttrib(
           jj, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &param));
       EXPECT_EQ(expected[ii][jj], param)
@@ -137,7 +143,7 @@ TEST_F(VertexArrayObjectManagerTest, GetSet) {
   const void* p = reinterpret_cast<const void*>(dummy);
   manager_->SetAttribEnable(1, true);
   manager_->SetAttribPointer(123, 1, 3, GL_BYTE, true, 3, p, GL_TRUE);
-  uint32 param;
+  uint32_t param;
   void* ptr;
   EXPECT_TRUE(manager_->GetVertexAttrib(
       1, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &param));
@@ -150,7 +156,7 @@ TEST_F(VertexArrayObjectManagerTest, GetSet) {
   EXPECT_EQ(3u, param);
   EXPECT_TRUE(manager_->GetVertexAttrib(
       1, GL_VERTEX_ATTRIB_ARRAY_TYPE, &param));
-  EXPECT_EQ(static_cast<uint32>(GL_BYTE), param);
+  EXPECT_EQ(static_cast<uint32_t>(GL_BYTE), param);
   EXPECT_TRUE(manager_->GetVertexAttrib(
       1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &param));
   EXPECT_NE(0u, param);

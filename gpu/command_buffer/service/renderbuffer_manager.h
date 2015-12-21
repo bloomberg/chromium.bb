@@ -5,9 +5,12 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_RENDERBUFFER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_RENDERBUFFER_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -171,7 +174,7 @@ class GPU_EXPORT RenderbufferManager
                                         int height,
                                         int samples,
                                         int internal_format,
-                                        uint32* size) const;
+                                        uint32_t* size) const;
   GLenum InternalRenderbufferFormatToImplFormat(GLenum impl_format) const;
 
   // base::trace_event::MemoryDumpProvider implementation.

@@ -4,7 +4,11 @@
 
 #include "gpu/command_buffer/client/vertex_array_object_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
@@ -166,8 +170,7 @@ class GLES2_IMPL_EXPORT VertexArrayObject {
     GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
     const void* ptr, GLboolean integer);
 
-  bool GetVertexAttrib(
-      GLuint index, GLenum pname, uint32* param) const;
+  bool GetVertexAttrib(GLuint index, GLenum pname, uint32_t* param) const;
 
   void SetAttribDivisor(GLuint index, GLuint divisor);
 
@@ -266,8 +269,9 @@ void VertexArrayObject::SetAttribPointer(
   }
 }
 
-bool VertexArrayObject::GetVertexAttrib(
-    GLuint index, GLenum pname, uint32* param) const {
+bool VertexArrayObject::GetVertexAttrib(GLuint index,
+                                        GLenum pname,
+                                        uint32_t* param) const {
   const VertexAttrib* attrib = GetAttrib(index);
   if (!attrib) {
     return false;
@@ -424,8 +428,9 @@ void VertexArrayObjectManager::SetAttribEnable(GLuint index, bool enabled) {
   bound_vertex_array_object_->SetAttribEnable(index, enabled);
 }
 
-bool VertexArrayObjectManager::GetVertexAttrib(
-    GLuint index, GLenum pname, uint32* param) {
+bool VertexArrayObjectManager::GetVertexAttrib(GLuint index,
+                                               GLenum pname,
+                                               uint32_t* param) {
   return bound_vertex_array_object_->GetVertexAttrib(index, pname, param);
 }
 
@@ -465,12 +470,12 @@ GLsizei VertexArrayObjectManager::CollectData(
     GLsizei num_elements) {
   GLsizei bytes_needed = bytes_per_element * num_elements;
   if (collection_buffer_size_ < bytes_needed) {
-    collection_buffer_.reset(new int8[bytes_needed]);
+    collection_buffer_.reset(new int8_t[bytes_needed]);
     collection_buffer_size_ = bytes_needed;
   }
-  const int8* src = static_cast<const int8*>(data);
-  int8* dst = collection_buffer_.get();
-  int8* end = dst + bytes_per_element * num_elements;
+  const int8_t* src = static_cast<const int8_t*>(data);
+  int8_t* dst = collection_buffer_.get();
+  int8_t* end = dst + bytes_per_element * num_elements;
   for (; dst < end; src += real_stride, dst += bytes_per_element) {
     memcpy(dst, src, bytes_per_element);
   }
@@ -570,7 +575,7 @@ bool VertexArrayObjectManager::SetupSimulatedIndexAndClientSideBuffers(
     GLsizei max_index = -1;
     switch (type) {
       case GL_UNSIGNED_BYTE: {
-        const uint8* src = static_cast<const uint8*>(indices);
+        const uint8_t* src = static_cast<const uint8_t*>(indices);
         for (GLsizei ii = 0; ii < count; ++ii) {
           if (src[ii] > max_index) {
             max_index = src[ii];
@@ -579,7 +584,7 @@ bool VertexArrayObjectManager::SetupSimulatedIndexAndClientSideBuffers(
         break;
       }
       case GL_UNSIGNED_SHORT: {
-        const uint16* src = static_cast<const uint16*>(indices);
+        const uint16_t* src = static_cast<const uint16_t*>(indices);
         for (GLsizei ii = 0; ii < count; ++ii) {
           if (src[ii] > max_index) {
             max_index = src[ii];
@@ -588,9 +593,9 @@ bool VertexArrayObjectManager::SetupSimulatedIndexAndClientSideBuffers(
         break;
       }
       case GL_UNSIGNED_INT: {
-        uint32 max_glsizei = static_cast<uint32>(
-            std::numeric_limits<GLsizei>::max());
-        const uint32* src = static_cast<const uint32*>(indices);
+        uint32_t max_glsizei =
+            static_cast<uint32_t>(std::numeric_limits<GLsizei>::max());
+        const uint32_t* src = static_cast<const uint32_t*>(indices);
         for (GLsizei ii = 0; ii < count; ++ii) {
           // Other parts of the API use GLsizei (signed) to store limits.
           // As such, if we encounter a index that cannot be represented with

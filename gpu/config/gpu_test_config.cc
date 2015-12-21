@@ -4,6 +4,9 @@
 
 #include "gpu/config/gpu_test_config.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "gpu/config/gpu_info.h"
@@ -26,9 +29,9 @@ GPUTestConfig::OS GetCurrentOS() {
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return GPUTestConfig::kOsLinux;
 #elif defined(OS_WIN)
-  int32 major_version = 0;
-  int32 minor_version = 0;
-  int32 bugfix_version = 0;
+  int32_t major_version = 0;
+  int32_t minor_version = 0;
+  int32_t bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(
       &major_version, &minor_version, &bugfix_version);
   if (major_version == 5)
@@ -42,9 +45,9 @@ GPUTestConfig::OS GetCurrentOS() {
   if (major_version == 10)
     return GPUTestConfig::kOsWin10;
 #elif defined(OS_MACOSX)
-  int32 major_version = 0;
-  int32 minor_version = 0;
-  int32 bugfix_version = 0;
+  int32_t major_version = 0;
+  int32_t minor_version = 0;
+  int32_t bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(
       &major_version, &minor_version, &bugfix_version);
   if (major_version == 10) {
@@ -83,28 +86,28 @@ GPUTestConfig::GPUTestConfig()
 GPUTestConfig::~GPUTestConfig() {
 }
 
-void GPUTestConfig::set_os(int32 os) {
+void GPUTestConfig::set_os(int32_t os) {
   DCHECK_EQ(0, os & ~(kOsAndroid | kOsWin | kOsMac | kOsLinux | kOsChromeOS));
   os_ = os;
 }
 
-void GPUTestConfig::AddGPUVendor(uint32 gpu_vendor) {
+void GPUTestConfig::AddGPUVendor(uint32_t gpu_vendor) {
   DCHECK_NE(0u, gpu_vendor);
   for (size_t i = 0; i < gpu_vendor_.size(); ++i)
     DCHECK_NE(gpu_vendor_[i], gpu_vendor);
   gpu_vendor_.push_back(gpu_vendor);
 }
 
-void GPUTestConfig::set_gpu_device_id(uint32 id) {
+void GPUTestConfig::set_gpu_device_id(uint32_t id) {
   gpu_device_id_ = id;
 }
 
-void GPUTestConfig::set_build_type(int32 build_type) {
+void GPUTestConfig::set_build_type(int32_t build_type) {
   DCHECK_EQ(0, build_type & ~(kBuildTypeRelease | kBuildTypeDebug));
   build_type_ = build_type;
 }
 
-void GPUTestConfig::set_api(int32 api) {
+void GPUTestConfig::set_api(int32_t api) {
   DCHECK_EQ(0, api & ~(kAPID3D9 | kAPID3D11 | kAPIGLDesktop | kAPIGLES));
   api_ = api;
 }
@@ -157,7 +160,7 @@ void GPUTestConfig::ClearGPUVendor() {
 GPUTestBotConfig::~GPUTestBotConfig() {
 }
 
-void GPUTestBotConfig::AddGPUVendor(uint32 gpu_vendor) {
+void GPUTestBotConfig::AddGPUVendor(uint32_t gpu_vendor) {
   DCHECK_EQ(0u, GPUTestConfig::gpu_vendor().size());
   GPUTestConfig::AddGPUVendor(gpu_vendor);
 }

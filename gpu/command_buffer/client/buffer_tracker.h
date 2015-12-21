@@ -5,7 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_BUFFER_TRACKER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_BUFFER_TRACKER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "gles2_impl_export.h"
@@ -24,8 +25,8 @@ class GLES2_IMPL_EXPORT BufferTracker {
    public:
     Buffer(GLuint id,
            unsigned int size,
-           int32 shm_id,
-           uint32 shm_offset,
+           int32_t shm_id,
+           uint32_t shm_offset,
            void* address)
         : id_(id),
           size_(size),
@@ -34,8 +35,7 @@ class GLES2_IMPL_EXPORT BufferTracker {
           address_(address),
           mapped_(false),
           last_usage_token_(0),
-          last_async_upload_token_(0) {
-    }
+          last_async_upload_token_(0) {}
 
     GLenum id() const {
       return id_;
@@ -45,13 +45,9 @@ class GLES2_IMPL_EXPORT BufferTracker {
       return size_;
     }
 
-    int32 shm_id() const {
-      return shm_id_;
-    }
+    int32_t shm_id() const { return shm_id_; }
 
-    uint32 shm_offset() const {
-      return shm_offset_;
-    }
+    uint32_t shm_offset() const { return shm_offset_; }
 
     void* address() const {
       return address_;
@@ -73,7 +69,7 @@ class GLES2_IMPL_EXPORT BufferTracker {
       return last_usage_token_;
     }
 
-    void set_last_async_upload_token(uint32 async_token) {
+    void set_last_async_upload_token(uint32_t async_token) {
       last_async_upload_token_ = async_token;
     }
 
@@ -87,11 +83,11 @@ class GLES2_IMPL_EXPORT BufferTracker {
 
     GLuint id_;
     unsigned int size_;
-    int32 shm_id_;
-    uint32 shm_offset_;
+    int32_t shm_id_;
+    uint32_t shm_offset_;
     void* address_;
     bool mapped_;
-    int32 last_usage_token_;
+    int32_t last_usage_token_;
     GLuint last_async_upload_token_;
   };
 
@@ -104,7 +100,7 @@ class GLES2_IMPL_EXPORT BufferTracker {
 
   // Frees the block of memory associated with buffer, pending the passage
   // of a token.
-  void FreePendingToken(Buffer* buffer, int32 token);
+  void FreePendingToken(Buffer* buffer, int32_t token);
   void Unmanage(Buffer* buffer);
   void Free(Buffer* buffer);
 

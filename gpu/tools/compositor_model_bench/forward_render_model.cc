@@ -4,6 +4,8 @@
 
 #include "gpu/tools/compositor_model_bench/forward_render_model.h"
 
+#include <stddef.h>
+
 #include <cstdlib>
 #include <vector>
 

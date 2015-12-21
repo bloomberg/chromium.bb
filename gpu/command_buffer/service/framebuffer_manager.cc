@@ -3,7 +3,12 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/framebuffer_completeness_cache.h"
@@ -69,10 +74,10 @@ class RenderbufferAttachment
   }
 
   bool ValidForAttachmentType(GLenum attachment_type,
-                              uint32 max_color_attachments) override {
-    uint32 need = GLES2Util::GetChannelsNeededForAttachmentType(
+                              uint32_t max_color_attachments) override {
+    uint32_t need = GLES2Util::GetChannelsNeededForAttachmentType(
         attachment_type, max_color_attachments);
-    uint32 have = GLES2Util::GetChannelsForFormat(internal_format());
+    uint32_t have = GLES2Util::GetChannelsForFormat(internal_format());
     return (need & have) != 0;
   }
 
@@ -187,16 +192,16 @@ class TextureAttachment
   }
 
   bool ValidForAttachmentType(GLenum attachment_type,
-                              uint32 max_color_attachments) override {
+                              uint32_t max_color_attachments) override {
     GLenum type = 0;
     GLenum internal_format = 0;
     if (!texture_ref_->texture()->GetLevelType(
         target_, level_, &type, &internal_format)) {
       return false;
     }
-    uint32 need = GLES2Util::GetChannelsNeededForAttachmentType(
+    uint32_t need = GLES2Util::GetChannelsNeededForAttachmentType(
         attachment_type, max_color_attachments);
-    uint32 have = GLES2Util::GetChannelsForFormat(internal_format);
+    uint32_t have = GLES2Util::GetChannelsForFormat(internal_format);
 
     // Workaround for NVIDIA drivers that incorrectly expose these formats as
     // renderable:
@@ -236,8 +241,8 @@ class TextureAttachment
 };
 
 FramebufferManager::FramebufferManager(
-    uint32 max_draw_buffers,
-    uint32 max_color_attachments,
+    uint32_t max_draw_buffers,
+    uint32_t max_color_attachments,
     ContextType context_type,
     const scoped_refptr<FramebufferCompletenessCache>&
         framebuffer_combo_complete_cache)
@@ -306,7 +311,7 @@ Framebuffer::Framebuffer(
   DCHECK_GT(manager->max_draw_buffers_, 0u);
   draw_buffers_.reset(new GLenum[manager->max_draw_buffers_]);
   draw_buffers_[0] = GL_COLOR_ATTACHMENT0;
-  for (uint32 i = 1; i < manager->max_draw_buffers_; ++i)
+  for (uint32_t i = 1; i < manager->max_draw_buffers_; ++i)
     draw_buffers_[i] = GL_NONE;
 }
 
@@ -347,7 +352,7 @@ bool Framebuffer::HasUnclearedColorAttachments() const {
 
 void Framebuffer::ChangeDrawBuffersHelper(bool recover) const {
   scoped_ptr<GLenum[]> buffers(new GLenum[manager_->max_draw_buffers_]);
-  for (uint32 i = 0; i < manager_->max_draw_buffers_; ++i)
+  for (uint32_t i = 0; i < manager_->max_draw_buffers_; ++i)
     buffers[i] = GL_NONE;
   for (AttachmentMap::const_iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
@@ -358,7 +363,7 @@ void Framebuffer::ChangeDrawBuffersHelper(bool recover) const {
     }
   }
   bool different = false;
-  for (uint32 i = 0; i < manager_->max_draw_buffers_; ++i) {
+  for (uint32_t i = 0; i < manager_->max_draw_buffers_; ++i) {
     if (buffers[i] != draw_buffers_[i]) {
       different = true;
       break;
@@ -570,7 +575,7 @@ void Framebuffer::SetDrawBuffers(GLsizei n, const GLenum* bufs) {
 }
 
 bool Framebuffer::HasAlphaMRT() const {
-  for (uint32 i = 0; i < manager_->max_draw_buffers_; ++i) {
+  for (uint32_t i = 0; i < manager_->max_draw_buffers_; ++i) {
     if (draw_buffers_[i] != GL_NONE) {
       const Attachment* attachment = GetAttachment(draw_buffers_[i]);
       if (!attachment)
@@ -585,7 +590,7 @@ bool Framebuffer::HasAlphaMRT() const {
 
 bool Framebuffer::HasSameInternalFormatsMRT() const {
   GLenum internal_format = 0;
-  for (uint32 i = 0; i < manager_->max_draw_buffers_; ++i) {
+  for (uint32_t i = 0; i < manager_->max_draw_buffers_; ++i) {
     if (draw_buffers_[i] != GL_NONE) {
       const Attachment* attachment = GetAttachment(draw_buffers_[i]);
       if (!attachment)

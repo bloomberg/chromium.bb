@@ -4,9 +4,12 @@
 
 #include "gpu/blink/webgraphicscontext3d_impl.h"
 
+#include <stdint.h>
+
 #include "base/atomicops.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"

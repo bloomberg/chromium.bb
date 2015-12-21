@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SYNC_POINT_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SYNC_POINT_MANAGER_H_
 
+#include <stdint.h>
+
 #include <functional>
 #include <queue>
 #include <vector>
@@ -279,33 +281,33 @@ class GPU_EXPORT SyncPointManager {
 
   // Generates a sync point, returning its ID. This can me called on any thread.
   // IDs start at a random number. Never return 0.
-  uint32 GenerateSyncPoint();
+  uint32_t GenerateSyncPoint();
 
   // Retires a sync point. This will call all the registered callbacks for this
   // sync point. This can only be called on the main thread.
-  void RetireSyncPoint(uint32 sync_point);
+  void RetireSyncPoint(uint32_t sync_point);
 
   // Adds a callback to the sync point. The callback will be called when the
   // sync point is retired, or immediately (from within that function) if the
   // sync point was already retired (or not created yet). This can only be
   // called on the main thread.
-  void AddSyncPointCallback(uint32 sync_point, const base::Closure& callback);
+  void AddSyncPointCallback(uint32_t sync_point, const base::Closure& callback);
 
-  bool IsSyncPointRetired(uint32 sync_point);
+  bool IsSyncPointRetired(uint32_t sync_point);
 
   // Block and wait until a sync point is signaled. This is only useful when
   // the sync point is signaled on another thread.
-  void WaitSyncPoint(uint32 sync_point);
+  void WaitSyncPoint(uint32_t sync_point);
 
  private:
   friend class SyncPointClient;
   friend class SyncPointOrderData;
 
   typedef std::vector<base::Closure> ClosureList;
-  typedef base::hash_map<uint32, ClosureList> SyncPointMap;
+  typedef base::hash_map<uint32_t, ClosureList> SyncPointMap;
   typedef base::hash_map<uint64_t, SyncPointClient*> ClientMap;
 
-  bool IsSyncPointRetiredLocked(uint32 sync_point);
+  bool IsSyncPointRetiredLocked(uint32_t sync_point);
   uint32_t GenerateOrderNumber();
   void DestroySyncPointClient(CommandBufferNamespace namespace_id,
                               uint64_t client_id);
@@ -323,7 +325,7 @@ class GPU_EXPORT SyncPointManager {
   // held.
   base::Lock lock_;
   SyncPointMap sync_point_map_;
-  uint32 next_sync_point_;
+  uint32_t next_sync_point_;
   base::ConditionVariable retire_cond_var_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPointManager);

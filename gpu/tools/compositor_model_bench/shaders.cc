@@ -4,6 +4,8 @@
 
 #include "gpu/tools/compositor_model_bench/shaders.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "gpu/tools/compositor_model_bench/render_model_utils.h"

@@ -4,6 +4,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -63,8 +64,12 @@ GLuint SetupProgram() {
 TEST_F(GLStreamDrawTest, Basic) {
   static GLfloat float_red[4] = { 1.0f, 0.0f, 0.0f, 1.0f, };
   static GLfloat float_green[4] = { 0.0f, 1.0f, 0.0f, 1.0f, };
-  static uint8 expected_red[4] =  {255, 0, 0, 255, };
-  static uint8 expected_green[4] =  {0, 255, 0, 255, };
+  static uint8_t expected_red[4] = {
+      255, 0, 0, 255,
+  };
+  static uint8_t expected_green[4] = {
+      0, 255, 0, 255,
+  };
 
   GLuint program = SetupProgram();
   GLuint position_loc = glGetAttribLocation(program, "a_position");
@@ -85,8 +90,12 @@ TEST_F(GLStreamDrawTest, Basic) {
 TEST_F(GLStreamDrawTest, DrawElements) {
   static GLfloat float_red[4] = { 1.0f, 0.0f, 0.0f, 1.0f, };
   static GLfloat float_green[4] = { 0.0f, 1.0f, 0.0f, 1.0f, };
-  static uint8 expected_red[4] =  {255, 0, 0, 255, };
-  static uint8 expected_green[4] =  {0, 255, 0, 255, };
+  static uint8_t expected_red[4] = {
+      255, 0, 0, 255,
+  };
+  static uint8_t expected_green[4] = {
+      0, 255, 0, 255,
+  };
 
   GLuint program = SetupProgram();
   GLuint position_loc = glGetAttribLocation(program, "a_position");
@@ -120,8 +129,12 @@ TEST_F(GLStreamDrawTest, VertexArrayObjects) {
 
   static GLfloat float_red[4] = { 1.0f, 0.0f, 0.0f, 1.0f, };
   static GLfloat float_green[4] = { 0.0f, 1.0f, 0.0f, 1.0f, };
-  static uint8 expected_red[4] =  {255, 0, 0, 255, };
-  static uint8 expected_green[4] =  {0, 255, 0, 255, };
+  static uint8_t expected_red[4] = {
+      255, 0, 0, 255,
+  };
+  static uint8_t expected_green[4] = {
+      0, 255, 0, 255,
+  };
 
   GLuint program = SetupProgram();
   GLuint position_loc = glGetAttribLocation(program, "a_position");

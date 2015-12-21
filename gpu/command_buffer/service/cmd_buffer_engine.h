@@ -8,7 +8,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_CMD_BUFFER_ENGINE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_CMD_BUFFER_ENGINE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "gpu/command_buffer/common/buffer.h"
 
 namespace gpu {
@@ -24,19 +26,19 @@ class CommandBufferEngine {
   // Gets the base address and size of a registered shared memory buffer.
   // Parameters:
   //   shm_id: the identifier for the shared memory buffer.
-  virtual scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id) = 0;
+  virtual scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32_t shm_id) = 0;
 
   // Sets the token value.
-  virtual void set_token(int32 token) = 0;
+  virtual void set_token(int32_t token) = 0;
 
   // Sets the shared memory buffer used for commands.
-  virtual bool SetGetBuffer(int32 transfer_buffer_id) = 0;
+  virtual bool SetGetBuffer(int32_t transfer_buffer_id) = 0;
 
   // Sets the "get" pointer. Return false if offset is out of range.
-  virtual bool SetGetOffset(int32 offset) = 0;
+  virtual bool SetGetOffset(int32_t offset) = 0;
 
   // Gets the "get" pointer.
-  virtual int32 GetGetOffset() = 0;
+  virtual int32_t GetGetOffset() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CommandBufferEngine);

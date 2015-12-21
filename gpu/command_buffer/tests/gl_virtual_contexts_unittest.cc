@@ -5,6 +5,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -23,8 +24,8 @@ class GLVirtualContextsTest : public testing::Test {
 
   static const GLfloat kFloatRed[4];
   static const GLfloat kFloatGreen[4];
-  static const uint8 kExpectedRed[4];
-  static const uint8 kExpectedGreen[4];
+  static const uint8_t kExpectedRed[4];
+  static const uint8_t kExpectedGreen[4];
 
   void SetUp() override {
     GLManager::Options options;
@@ -91,16 +92,16 @@ const GLfloat GLVirtualContextsTest::kFloatRed[4] = {
 const GLfloat GLVirtualContextsTest::kFloatGreen[4] = {
     0.0f, 1.0f, 0.0f, 1.0f,
 };
-const uint8 GLVirtualContextsTest::kExpectedRed[4] = {
+const uint8_t GLVirtualContextsTest::kExpectedRed[4] = {
     255, 0, 0, 255,
 };
-const uint8 GLVirtualContextsTest::kExpectedGreen[4] = {
+const uint8_t GLVirtualContextsTest::kExpectedGreen[4] = {
     0, 255, 0, 255,
 };
 
 namespace {
 
-void SetupSimpleShader(const uint8* color) {
+void SetupSimpleShader(const uint8_t* color) {
   static const char* v_shader_str = SHADER(
       attribute vec4 a_Position;
       void main()
@@ -135,7 +136,9 @@ void SetupSimpleShader(const uint8* color) {
 }
 
 void TestDraw(int size) {
-  uint8 expected_clear[] = { 127, 0, 255, 0, };
+  uint8_t expected_clear[] = {
+      127, 0, 255, 0,
+  };
   glClearColor(0.5f, 0.0f, 1.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, size, size, 1, expected_clear));
@@ -148,7 +151,7 @@ void TestDraw(int size) {
 TEST_F(GLVirtualContextsTest, Basic) {
   struct TestInfo {
     int size;
-    uint8 color[4];
+    uint8_t color[4];
     GLManager* manager;
   };
   const int kNumTests = 3;

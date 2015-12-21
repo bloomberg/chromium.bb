@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 
+#include <stdint.h>
+
 #include <set>
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -191,8 +193,8 @@ TEST_F(RenderbufferManagerMemoryTrackerTest, Basic) {
   const GLsizei kWidth = 128;
   const GLsizei kHeight1 = 64;
   const GLsizei kHeight2 = 32;
-  uint32 expected_size_1 = 0;
-  uint32 expected_size_2 = 0;
+  uint32_t expected_size_1 = 0;
+  uint32_t expected_size_2 = 0;
   manager_->ComputeEstimatedRenderbufferSize(
       kWidth, kHeight1, kSamples, kFormat, &expected_size_1);
   manager_->ComputeEstimatedRenderbufferSize(

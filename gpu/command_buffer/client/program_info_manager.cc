@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "gpu/command_buffer/client/program_info_manager.h"
 
 namespace {
 
-template<typename T> static T LocalGetAs(
-    const std::vector<int8>& data, uint32 offset, size_t size) {
-  const int8* p = &data[0] + offset;
+template <typename T>
+static T LocalGetAs(const std::vector<int8_t>& data,
+                    uint32_t offset,
+                    size_t size) {
+  const int8_t* p = &data[0] + offset;
   if (offset + size > data.size()) {
     NOTREACHED();
     return NULL;
@@ -329,7 +334,7 @@ bool ProgramInfoManager::Program::GetUniformsiv(
   return false;
 }
 
-void ProgramInfoManager::Program::UpdateES2(const std::vector<int8>& result) {
+void ProgramInfoManager::Program::UpdateES2(const std::vector<int8_t>& result) {
   if (cached_es2_) {
     return;
   }
@@ -352,9 +357,9 @@ void ProgramInfoManager::Program::UpdateES2(const std::vector<int8>& result) {
       result, sizeof(*header),
       sizeof(ProgramInput) * (header->num_attribs + header->num_uniforms));
   const ProgramInput* input = inputs;
-  for (uint32 ii = 0; ii < header->num_attribs; ++ii) {
-    const int32* location = LocalGetAs<const int32*>(
-        result, input->location_offset, sizeof(int32));
+  for (uint32_t ii = 0; ii < header->num_attribs; ++ii) {
+    const int32_t* location = LocalGetAs<const int32_t*>(
+        result, input->location_offset, sizeof(int32_t));
     const char* name_buf = LocalGetAs<const char*>(
         result, input->name_offset, input->name_length);
     std::string name(name_buf, input->name_length);
@@ -364,28 +369,28 @@ void ProgramInfoManager::Program::UpdateES2(const std::vector<int8>& result) {
         static_cast<GLsizei>(name.size() + 1), max_attrib_name_length_);
     ++input;
   }
-  for (uint32 ii = 0; ii < header->num_uniforms; ++ii) {
-    const int32* locations = LocalGetAs<const int32*>(
-        result, input->location_offset, sizeof(int32) * input->size);
+  for (uint32_t ii = 0; ii < header->num_uniforms; ++ii) {
+    const int32_t* locations = LocalGetAs<const int32_t*>(
+        result, input->location_offset, sizeof(int32_t) * input->size);
     const char* name_buf = LocalGetAs<const char*>(
         result, input->name_offset, input->name_length);
     std::string name(name_buf, input->name_length);
     UniformInfo info(input->size, input->type, name);
     max_uniform_name_length_ = std::max(
         static_cast<GLsizei>(name.size() + 1), max_uniform_name_length_);
-    for (int32 jj = 0; jj < input->size; ++jj) {
+    for (int32_t jj = 0; jj < input->size; ++jj) {
       info.element_locations.push_back(locations[jj]);
     }
     uniform_infos_.push_back(info);
     ++input;
   }
   DCHECK_EQ(header->num_attribs + header->num_uniforms,
-            static_cast<uint32>(input - inputs));
+            static_cast<uint32_t>(input - inputs));
   cached_es2_ = true;
 }
 
 void ProgramInfoManager::Program::UpdateES3UniformBlocks(
-    const std::vector<int8>& result) {
+    const std::vector<int8_t>& result) {
   if (cached_es3_uniform_blocks_) {
     return;
   }
@@ -456,7 +461,7 @@ void ProgramInfoManager::Program::UpdateES3UniformBlocks(
 }
 
 void ProgramInfoManager::Program::UpdateES3Uniformsiv(
-    const std::vector<int8>& result) {
+    const std::vector<int8_t>& result) {
   if (cached_es3_uniformsiv_) {
     return;
   }
@@ -498,7 +503,7 @@ void ProgramInfoManager::Program::UpdateES3Uniformsiv(
 }
 
 void ProgramInfoManager::Program::UpdateES3TransformFeedbackVaryings(
-    const std::vector<int8>& result) {
+    const std::vector<int8_t>& result) {
   if (cached_es3_transform_feedback_varyings_) {
     return;
   }
@@ -596,7 +601,7 @@ ProgramInfoManager::Program* ProgramInfoManager::GetProgramInfo(
   if (info->IsCached(type))
     return info;
 
-  std::vector<int8> result;
+  std::vector<int8_t> result;
   switch (type) {
     case kES2:
       {

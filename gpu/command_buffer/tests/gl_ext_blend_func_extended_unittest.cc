@@ -6,6 +6,7 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 #include <GLES3/gl3.h>
+#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -44,7 +45,7 @@ template <int RGBs, int RGBd, int As, int Ad>
 void BlendEquationFuncAdd(float dst[4],
                           float src[4],
                           float src1[4],
-                          uint8 result[4]) {
+                          uint8_t result[4]) {
   float r[4];
   r[0] = src[0] * Weight<RGBs, 0>(dst, src, src1) +
          dst[0] * Weight<RGBd, 0>(dst, src, src1);
@@ -55,7 +56,7 @@ void BlendEquationFuncAdd(float dst[4],
   r[3] = src[3] * Weight<As, 3>(dst, src, src1) +
          dst[3] * Weight<Ad, 3>(dst, src, src1);
   for (int i = 0; i < 4; ++i) {
-    result[i] = static_cast<uint8>(
+    result[i] = static_cast<uint8_t>(
         std::floor(std::max(0.0f, std::min(1.0f, r[i])) * 255.0f));
   }
 }
@@ -180,7 +181,7 @@ class EXTBlendFuncExtendedDrawTest : public testing::TestWithParam<bool> {
     glDrawArrays(GL_TRIANGLES, 0, 6);
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
     // Verify.
-    uint8 color[4];
+    uint8_t color[4];
     BlendEquationFuncAdd<GL_SRC1_COLOR_EXT, GL_SRC_ALPHA,
                          GL_ONE_MINUS_SRC1_COLOR_EXT,
                          GL_ONE_MINUS_SRC1_ALPHA_EXT>(kDst, kSrc, kSrc1, color);

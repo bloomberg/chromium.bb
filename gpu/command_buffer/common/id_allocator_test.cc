@@ -4,6 +4,8 @@
 
 // This file has the unit tests for the IdAllocator class.
 
+#include <stdint.h>
+
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

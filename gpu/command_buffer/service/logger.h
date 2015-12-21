@@ -7,15 +7,18 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_LOGGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_LOGGER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
 
-typedef base::Callback<void(int32 id, const std::string& msg)> MsgCallback;
+typedef base::Callback<void(int32_t id, const std::string& msg)> MsgCallback;
 
 class DebugMarkerManager;
 

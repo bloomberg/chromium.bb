@@ -5,7 +5,11 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_COMMAND_BUFFER_SERVICE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_COMMAND_BUFFER_SERVICE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 
@@ -16,14 +20,14 @@ class TransferBufferManagerInterface;
 class GPU_EXPORT CommandBufferServiceBase : public CommandBuffer {
  public:
   // Sets the current get offset. This can be called from any thread.
-  virtual void SetGetOffset(int32 get_offset) = 0;
+  virtual void SetGetOffset(int32_t get_offset) = 0;
 
   // Get the transfer buffer associated with an ID. Returns a null buffer for
   // ID 0.
-  virtual scoped_refptr<gpu::Buffer> GetTransferBuffer(int32 id) = 0;
+  virtual scoped_refptr<gpu::Buffer> GetTransferBuffer(int32_t id) = 0;
 
   // Allows the reader to update the current token value.
-  virtual void SetToken(int32 token) = 0;
+  virtual void SetToken(int32_t token) = 0;
 
   // Allows the reader to set the current parse error.
   virtual void SetParseError(error::Error) = 0;
@@ -34,14 +38,14 @@ class GPU_EXPORT CommandBufferServiceBase : public CommandBuffer {
   virtual void SetContextLostReason(error::ContextLostReason) = 0;
 
   // Allows the reader to obtain the current put offset.
-  virtual int32 GetPutOffset() = 0;
+  virtual int32_t GetPutOffset() = 0;
 };
 
 // An object that implements a shared memory command buffer and a synchronous
 // API to manage the put and get pointers.
 class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
  public:
-  typedef base::Callback<bool(int32)> GetBufferChangedCallback;
+  typedef base::Callback<bool(int32_t)> GetBufferChangedCallback;
   explicit CommandBufferService(
       TransferBufferManagerInterface* transfer_buffer_manager);
   ~CommandBufferService() override;
@@ -49,22 +53,22 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   // CommandBuffer implementation:
   bool Initialize() override;
   State GetLastState() override;
-  int32 GetLastToken() override;
-  void Flush(int32 put_offset) override;
-  void OrderingBarrier(int32 put_offset) override;
-  void WaitForTokenInRange(int32 start, int32 end) override;
-  void WaitForGetOffsetInRange(int32 start, int32 end) override;
-  void SetGetBuffer(int32 transfer_buffer_id) override;
-  scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32* id) override;
-  void DestroyTransferBuffer(int32 id) override;
+  int32_t GetLastToken() override;
+  void Flush(int32_t put_offset) override;
+  void OrderingBarrier(int32_t put_offset) override;
+  void WaitForTokenInRange(int32_t start, int32_t end) override;
+  void WaitForGetOffsetInRange(int32_t start, int32_t end) override;
+  void SetGetBuffer(int32_t transfer_buffer_id) override;
+  scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32_t* id) override;
+  void DestroyTransferBuffer(int32_t id) override;
 
   // CommandBufferServiceBase implementation:
-  void SetGetOffset(int32 get_offset) override;
-  scoped_refptr<Buffer> GetTransferBuffer(int32 id) override;
-  void SetToken(int32 token) override;
+  void SetGetOffset(int32_t get_offset) override;
+  scoped_refptr<Buffer> GetTransferBuffer(int32_t id) override;
+  void SetToken(int32_t token) override;
   void SetParseError(error::Error error) override;
   void SetContextLostReason(error::ContextLostReason) override;
-  int32 GetPutOffset() override;
+  int32_t GetPutOffset() override;
 
   // Sets a callback that is called whenever the put offset is changed. When
   // called with sync==true, the callback must not return until some progress
@@ -88,22 +92,22 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
 
   // Registers an existing shared memory object and get an ID that can be used
   // to identify it in the command buffer.
-  bool RegisterTransferBuffer(int32 id, scoped_ptr<BufferBacking> buffer);
+  bool RegisterTransferBuffer(int32_t id, scoped_ptr<BufferBacking> buffer);
 
  private:
-  int32 ring_buffer_id_;
+  int32_t ring_buffer_id_;
   scoped_refptr<Buffer> ring_buffer_;
   scoped_ptr<BufferBacking> shared_state_buffer_;
   CommandBufferSharedState* shared_state_;
-  int32 num_entries_;
-  int32 get_offset_;
-  int32 put_offset_;
+  int32_t num_entries_;
+  int32_t get_offset_;
+  int32_t put_offset_;
   base::Closure put_offset_change_callback_;
   GetBufferChangedCallback get_buffer_change_callback_;
   base::Closure parse_error_callback_;
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
-  int32 token_;
-  uint32 generation_;
+  int32_t token_;
+  uint32_t generation_;
   error::Error error_;
   error::ContextLostReason context_lost_reason_;
 

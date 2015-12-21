@@ -5,6 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_TESTS_GL_MANAGER_H_
 #define GPU_COMMAND_BUFFER_TESTS_GL_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -113,21 +116,21 @@ class GLManager : private GpuControl {
 
   // GpuControl implementation.
   Capabilities GetCapabilities() override;
-  int32 CreateImage(ClientBuffer buffer,
-                    size_t width,
-                    size_t height,
-                    unsigned internalformat) override;
-  void DestroyImage(int32 id) override;
-  int32 CreateGpuMemoryBufferImage(size_t width,
-                                   size_t height,
-                                   unsigned internalformat,
-                                   unsigned usage) override;
-  uint32 InsertSyncPoint() override;
-  uint32 InsertFutureSyncPoint() override;
-  void RetireSyncPoint(uint32 sync_point) override;
-  void SignalSyncPoint(uint32 sync_point,
+  int32_t CreateImage(ClientBuffer buffer,
+                      size_t width,
+                      size_t height,
+                      unsigned internalformat) override;
+  void DestroyImage(int32_t id) override;
+  int32_t CreateGpuMemoryBufferImage(size_t width,
+                                     size_t height,
+                                     unsigned internalformat,
+                                     unsigned usage) override;
+  uint32_t InsertSyncPoint() override;
+  uint32_t InsertFutureSyncPoint() override;
+  void RetireSyncPoint(uint32_t sync_point) override;
+  void SignalSyncPoint(uint32_t sync_point,
                        const base::Closure& callback) override;
-  void SignalQuery(uint32 query, const base::Closure& callback) override;
+  void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
@@ -143,7 +146,7 @@ class GLManager : private GpuControl {
 
  private:
   void PumpCommands();
-  bool GetBufferChanged(int32 transfer_buffer_id);
+  bool GetBufferChanged(int32_t transfer_buffer_id);
   void SetupBaseContext();
   void OnFenceSyncRelease(uint64_t release);
   bool OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,

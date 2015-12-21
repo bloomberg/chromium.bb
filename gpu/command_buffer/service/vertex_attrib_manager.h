@@ -5,6 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_VERTEX_ATTRIB_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_VERTEX_ATTRIB_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <vector>
 #include "base/logging.h"
@@ -177,7 +180,7 @@ class GPU_EXPORT VertexAttribManager :
 
   VertexAttribManager();
 
-  void Initialize(uint32 num_vertex_attribs, bool init_attribs);
+  void Initialize(uint32_t num_vertex_attribs, bool init_attribs);
 
   bool Enable(GLuint index, bool enable);
 
@@ -263,8 +266,9 @@ class GPU_EXPORT VertexAttribManager :
   friend class base::RefCounted<VertexAttribManager>;
 
   // Used when creating from a VertexArrayManager
-  VertexAttribManager(VertexArrayManager* manager, GLuint service_id,
-      uint32 num_vertex_attribs);
+  VertexAttribManager(VertexArrayManager* manager,
+                      GLuint service_id,
+                      uint32_t num_vertex_attribs);
 
   ~VertexAttribManager();
 

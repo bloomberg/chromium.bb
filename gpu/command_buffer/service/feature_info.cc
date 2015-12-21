@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/feature_info.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 

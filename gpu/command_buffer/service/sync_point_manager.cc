@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/sync_point_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <climits>
 
 #include "base/bind.h"
@@ -352,9 +355,9 @@ scoped_refptr<SyncPointClientState> SyncPointManager::GetSyncPointClientState(
   return nullptr;
 }
 
-uint32 SyncPointManager::GenerateSyncPoint() {
+uint32_t SyncPointManager::GenerateSyncPoint() {
   base::AutoLock lock(lock_);
-  uint32 sync_point = next_sync_point_++;
+  uint32_t sync_point = next_sync_point_++;
   // When an integer overflow occurs, don't return 0.
   if (!sync_point)
     sync_point = next_sync_point_++;
@@ -369,7 +372,7 @@ uint32 SyncPointManager::GenerateSyncPoint() {
   return sync_point;
 }
 
-void SyncPointManager::RetireSyncPoint(uint32 sync_point) {
+void SyncPointManager::RetireSyncPoint(uint32_t sync_point) {
   ClosureList list;
   {
     base::AutoLock lock(lock_);
@@ -388,7 +391,7 @@ void SyncPointManager::RetireSyncPoint(uint32 sync_point) {
     i->Run();
 }
 
-void SyncPointManager::AddSyncPointCallback(uint32 sync_point,
+void SyncPointManager::AddSyncPointCallback(uint32_t sync_point,
                                             const base::Closure& callback) {
   {
     base::AutoLock lock(lock_);
@@ -401,12 +404,12 @@ void SyncPointManager::AddSyncPointCallback(uint32 sync_point,
   callback.Run();
 }
 
-bool SyncPointManager::IsSyncPointRetired(uint32 sync_point) {
+bool SyncPointManager::IsSyncPointRetired(uint32_t sync_point) {
   base::AutoLock lock(lock_);
   return IsSyncPointRetiredLocked(sync_point);
 }
 
-void SyncPointManager::WaitSyncPoint(uint32 sync_point) {
+void SyncPointManager::WaitSyncPoint(uint32_t sync_point) {
   if (!allow_threaded_wait_) {
     DCHECK(IsSyncPointRetired(sync_point));
     return;
@@ -418,7 +421,7 @@ void SyncPointManager::WaitSyncPoint(uint32 sync_point) {
   }
 }
 
-bool SyncPointManager::IsSyncPointRetiredLocked(uint32 sync_point) {
+bool SyncPointManager::IsSyncPointRetiredLocked(uint32_t sync_point) {
   lock_.AssertAcquired();
   return sync_point_map_.find(sync_point) == sync_point_map_.end();
 }

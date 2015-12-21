@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -24,7 +26,7 @@ namespace gles2 {
 using namespace cmds;
 
 TEST_P(GLES2DecoderWithShaderTest, ValuebufferBasic) {
-  const uint32 kBufferId = 123;
+  const uint32_t kBufferId = 123;
   ValueState valuestate;
   valuestate.int_value[0] = 111;
   valuestate.int_value[1] = 222;
@@ -48,7 +50,7 @@ TEST_P(GLES2DecoderWithShaderTest, ValuebufferBasic) {
 }
 
 TEST_P(GLES2DecoderWithShaderTest, SubscribeValuebufferNotBound) {
-  const uint32 kBufferId = 123;
+  const uint32_t kBufferId = 123;
   ValueState valuestate;
   valuestate.int_value[0] = 111;
   valuestate.int_value[1] = 222;
@@ -62,7 +64,7 @@ TEST_P(GLES2DecoderWithShaderTest, SubscribeValuebufferNotBound) {
 }
 
 TEST_P(GLES2DecoderWithShaderTest, PopulateValuebufferNoSubscription) {
-  const uint32 kBufferId = 123;
+  const uint32_t kBufferId = 123;
   ValueState valuestate;
   valuestate.int_value[0] = 111;
   valuestate.int_value[1] = 222;
@@ -79,7 +81,7 @@ TEST_P(GLES2DecoderWithShaderTest, PopulateValuebufferNoSubscription) {
 }
 
 TEST_P(GLES2DecoderWithShaderTest, UniformValuebufferNoState) {
-  const uint32 kBufferId = 123;
+  const uint32_t kBufferId = 123;
   ValueState valuestate;
   valuestate.int_value[0] = 111;
   valuestate.int_value[1] = 222;
@@ -101,7 +103,7 @@ TEST_P(GLES2DecoderWithShaderTest, UniformValuebufferNoState) {
 }
 
 TEST_P(GLES2DecoderWithShaderTest, UniformValuebufferInvalidLocation) {
-  const uint32 kBufferId = 123;
+  const uint32_t kBufferId = 123;
   ValueState valuestate;
   valuestate.int_value[0] = 111;
   valuestate.int_value[1] = 222;

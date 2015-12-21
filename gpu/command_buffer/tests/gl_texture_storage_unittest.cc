@@ -4,6 +4,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -56,9 +57,7 @@ TEST_F(TextureStorageTest, CorrectPixels) {
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          tex_, 0);
 
-  uint8 source_pixels[16] = {
-      1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4
-  };
+  uint8_t source_pixels[16] = {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
   glTexSubImage2D(GL_TEXTURE_2D,
                   0,
                   0, 0,
@@ -85,7 +84,7 @@ TEST_F(TextureStorageTest, OneLevel) {
 
   glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8_OES, 4, 4);
 
-  uint8 source_pixels[64] = { 0 };
+  uint8_t source_pixels[64] = {0};
 
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 4, 4,
@@ -102,7 +101,7 @@ TEST_F(TextureStorageTest, MultipleLevels) {
 
   glTexStorage2DEXT(GL_TEXTURE_2D, 2, GL_RGBA8_OES, 2, 2);
 
-  uint8 source_pixels[16] = { 0 };
+  uint8_t source_pixels[16] = {0};
 
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2,

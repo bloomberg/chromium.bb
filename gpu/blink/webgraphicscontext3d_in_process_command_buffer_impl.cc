@@ -10,6 +10,7 @@
 #endif
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stddef.h>
 
 #include <string>
 

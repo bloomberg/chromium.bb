@@ -4,6 +4,9 @@
 
 #include "gpu/gles2_conform_support/gles2_conform_test.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/at_exit.h"
@@ -47,7 +50,7 @@ bool RunGLES2ConformTest(const char* path) {
 
   // Set the bot config api based on the OS and command line
   base::CommandLine* current_cmd_line = base::CommandLine::ForCurrentProcess();
-  int32 config_os = bot_config.os();
+  int32_t config_os = bot_config.os();
   if ((config_os & gpu::GPUTestConfig::kOsWin) != 0) {
     std::string angle_renderer =
         current_cmd_line->HasSwitch("use-angle")
@@ -81,8 +84,8 @@ bool RunGLES2ConformTest(const char* path) {
   std::string path_string(path);
   std::string test_name;
   base::ReplaceChars(path_string, "\\/.", "_", &test_name);
-  int32 expectation =
-    test_expectations.GetTestExpectation(test_name, bot_config);
+  int32_t expectation =
+      test_expectations.GetTestExpectation(test_name, bot_config);
   if (expectation != gpu::GPUTestExpectationsParser::kGpuTestPass) {
     LOG(WARNING) << "Test " << test_name << " is bypassed";
     return true;

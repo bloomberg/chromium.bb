@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_CLIENT_VERTEX_ARRAY_OBJECT_MANAGER_H_
 
 #include <GLES2/gl2.h>
+#include <stdint.h>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
@@ -76,7 +77,7 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
 
   void SetAttribEnable(GLuint index, bool enabled);
 
-  bool GetVertexAttrib(GLuint index, GLenum pname, uint32* param);
+  bool GetVertexAttrib(GLuint index, GLenum pname, uint32_t* param);
 
   bool GetAttribPointer(GLuint index, GLenum pname, void** ptr) const;
 
@@ -112,7 +113,7 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
   GLuint element_array_buffer_id_;
   GLsizei element_array_buffer_size_;
   GLsizei collection_buffer_size_;
-  scoped_ptr<int8[]> collection_buffer_;
+  scoped_ptr<int8_t[]> collection_buffer_;
 
   VertexArrayObject* default_vertex_array_object_;
   VertexArrayObject* bound_vertex_array_object_;

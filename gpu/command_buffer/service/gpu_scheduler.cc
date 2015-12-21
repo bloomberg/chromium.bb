@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -67,7 +69,7 @@ void GpuScheduler::PutChanged() {
     // TODO(piman): various classes duplicate various pieces of state, leading
     // to needlessly complex update logic. It should be possible to simply
     // share the state across all of them.
-    command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
+    command_buffer_->SetGetOffset(static_cast<int32_t>(parser_->get()));
 
     if (error::IsError(error)) {
       command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
@@ -117,15 +119,15 @@ void GpuScheduler::SetSchedulingChangedCallback(
   scheduling_changed_callback_ = callback;
 }
 
-scoped_refptr<Buffer> GpuScheduler::GetSharedMemoryBuffer(int32 shm_id) {
+scoped_refptr<Buffer> GpuScheduler::GetSharedMemoryBuffer(int32_t shm_id) {
   return command_buffer_->GetTransferBuffer(shm_id);
 }
 
-void GpuScheduler::set_token(int32 token) {
+void GpuScheduler::set_token(int32_t token) {
   command_buffer_->SetToken(token);
 }
 
-bool GpuScheduler::SetGetBuffer(int32 transfer_buffer_id) {
+bool GpuScheduler::SetGetBuffer(int32_t transfer_buffer_id) {
   scoped_refptr<Buffer> ring_buffer =
       command_buffer_->GetTransferBuffer(transfer_buffer_id);
   if (!ring_buffer.get()) {
@@ -143,15 +145,15 @@ bool GpuScheduler::SetGetBuffer(int32 transfer_buffer_id) {
   return true;
 }
 
-bool GpuScheduler::SetGetOffset(int32 offset) {
+bool GpuScheduler::SetGetOffset(int32_t offset) {
   if (parser_->set_get(offset)) {
-    command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
+    command_buffer_->SetGetOffset(static_cast<int32_t>(parser_->get()));
     return true;
   }
   return false;
 }
 
-int32 GpuScheduler::GetGetOffset() {
+int32_t GpuScheduler::GetGetOffset() {
   return parser_->get();
 }
 

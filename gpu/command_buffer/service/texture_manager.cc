@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/texture_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <set>
 #include <utility>
@@ -591,7 +594,7 @@ bool Texture::CanGenerateMipmaps(
 
   // Can't generate mips for depth or stencil textures.
   const Texture::LevelInfo& base = face_infos_[0].level_infos[base_level_];
-  uint32 channels = GLES2Util::GetChannelsForFormat(base.format);
+  uint32_t channels = GLES2Util::GetChannelsForFormat(base.format);
   if (channels & (GLES2Util::kDepth | GLES2Util::kStencil)) {
     return false;
   }
@@ -904,9 +907,9 @@ bool Texture::ValidForTexture(
   if (level >= 0 && face_index < face_infos_.size() &&
       static_cast<size_t>(level) < face_infos_[face_index].level_infos.size()) {
     const LevelInfo& info = face_infos_[face_index].level_infos[level];
-    int32 max_x;
-    int32 max_y;
-    int32 max_z;
+    int32_t max_x;
+    int32_t max_y;
+    int32_t max_z;
     return SafeAddInt32(xoffset, width, &max_x) &&
            SafeAddInt32(yoffset, height, &max_y) &&
            SafeAddInt32(zoffset, depth, &max_z) &&
@@ -1469,7 +1472,7 @@ scoped_refptr<TextureRef>
     TextureManager::CreateDefaultAndBlackTextures(
         GLenum target,
         GLuint* black_texture) {
-  static uint8 black[] = {0, 0, 0, 255};
+  static uint8_t black[] = {0, 0, 0, 255};
 
   // Sampling a texture not associated with any EGLImage sibling will return
   // black values according to the spec.
@@ -1852,7 +1855,7 @@ bool TextureManager::ValidateTextureParameters(
     return false;
   }
   if (!feature_info_->IsES3Enabled()) {
-    uint32 channels = GLES2Util::GetChannelsForFormat(format);
+    uint32_t channels = GLES2Util::GetChannelsForFormat(format);
     if ((channels & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && level) {
       ERRORSTATE_SET_GL_ERROR(
           error_state, GL_INVALID_OPERATION, function_name,

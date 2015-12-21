@@ -5,9 +5,11 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
 #define GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
 
+#include <stdint.h>
+
 #include <vector>
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -88,43 +90,31 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return bind_generates_resource_;
   }
 
-  uint32 max_vertex_attribs() const {
-    return max_vertex_attribs_;
-  }
+  uint32_t max_vertex_attribs() const { return max_vertex_attribs_; }
 
-  uint32 max_texture_units() const {
-    return max_texture_units_;
-  }
+  uint32_t max_texture_units() const { return max_texture_units_; }
 
-  uint32 max_texture_image_units() const {
-    return max_texture_image_units_;
-  }
+  uint32_t max_texture_image_units() const { return max_texture_image_units_; }
 
-  uint32 max_vertex_texture_image_units() const {
+  uint32_t max_vertex_texture_image_units() const {
     return max_vertex_texture_image_units_;
   }
 
-  uint32 max_fragment_uniform_vectors() const {
+  uint32_t max_fragment_uniform_vectors() const {
     return max_fragment_uniform_vectors_;
   }
 
-  uint32 max_varying_vectors() const {
-    return max_varying_vectors_;
-  }
+  uint32_t max_varying_vectors() const { return max_varying_vectors_; }
 
-  uint32 max_vertex_uniform_vectors() const {
+  uint32_t max_vertex_uniform_vectors() const {
     return max_vertex_uniform_vectors_;
   }
 
-  uint32 max_color_attachments() const {
-    return max_color_attachments_;
-  }
+  uint32_t max_color_attachments() const { return max_color_attachments_; }
 
-  uint32 max_draw_buffers() const {
-    return max_draw_buffers_;
-  }
+  uint32_t max_draw_buffers() const { return max_draw_buffers_; }
 
-  uint32 max_dual_source_draw_buffers() const {
+  uint32_t max_dual_source_draw_buffers() const {
     return max_dual_source_draw_buffers_;
   }
 
@@ -182,7 +172,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return sampler_manager_.get();
   }
 
-  uint32 GetMemRepresented() const;
+  uint32_t GetMemRepresented() const;
 
   // Loses all the context associated with this group.
   void LoseContexts(error::ContextLostReason reason);
@@ -237,9 +227,9 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   ~ContextGroup();
 
   bool CheckGLFeature(GLint min_required, GLint* v);
-  bool CheckGLFeatureU(GLint min_required, uint32* v);
+  bool CheckGLFeatureU(GLint min_required, uint32_t* v);
   bool QueryGLFeature(GLenum pname, GLint min_required, GLint* v);
-  bool QueryGLFeatureU(GLenum pname, GLint min_required, uint32* v);
+  bool QueryGLFeatureU(GLenum pname, GLint min_required, uint32_t* v);
   bool HaveContexts();
 
   scoped_refptr<MailboxManager> mailbox_manager_;
@@ -253,16 +243,16 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   bool enforce_gl_minimums_;
   bool bind_generates_resource_;
 
-  uint32 max_vertex_attribs_;
-  uint32 max_texture_units_;
-  uint32 max_texture_image_units_;
-  uint32 max_vertex_texture_image_units_;
-  uint32 max_fragment_uniform_vectors_;
-  uint32 max_varying_vectors_;
-  uint32 max_vertex_uniform_vectors_;
-  uint32 max_color_attachments_;
-  uint32 max_draw_buffers_;
-  uint32 max_dual_source_draw_buffers_;
+  uint32_t max_vertex_attribs_;
+  uint32_t max_texture_units_;
+  uint32_t max_texture_image_units_;
+  uint32_t max_vertex_texture_image_units_;
+  uint32_t max_fragment_uniform_vectors_;
+  uint32_t max_varying_vectors_;
+  uint32_t max_vertex_uniform_vectors_;
+  uint32_t max_color_attachments_;
+  uint32_t max_draw_buffers_;
+  uint32_t max_dual_source_draw_buffers_;
 
   ProgramCache* program_cache_;
 

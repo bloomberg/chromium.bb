@@ -5,10 +5,11 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <cmath>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -86,14 +87,14 @@ TEST_F(GLReadbackTest, ReadPixelsWithPBOAndQuery) {
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
 
-static float HalfToFloat32(uint16 value) {
-  int32 s = (value >> 15) & 0x00000001;
-  int32 e = (value >> 10) & 0x0000001f;
-  int32 m =  value        & 0x000003ff;
+static float HalfToFloat32(uint16_t value) {
+  int32_t s = (value >> 15) & 0x00000001;
+  int32_t e = (value >> 10) & 0x0000001f;
+  int32_t m = value & 0x000003ff;
 
   if (e == 0) {
     if (m == 0) {
-      uint32 result = s << 31;
+      uint32_t result = s << 31;
       return bit_cast<float>(result);
     } else {
       while (!(m & 0x00000400)) {
@@ -106,10 +107,10 @@ static float HalfToFloat32(uint16 value) {
     }
   } else if (e == 31) {
     if (m == 0) {
-      uint32 result = (s << 31) | 0x7f800000;
+      uint32_t result = (s << 31) | 0x7f800000;
       return bit_cast<float>(result);
     } else {
-      uint32 result = (s << 31) | 0x7f800000 | (m << 13);
+      uint32_t result = (s << 31) | 0x7f800000 | (m << 13);
       return bit_cast<float>(result);
     }
   }
@@ -117,7 +118,7 @@ static float HalfToFloat32(uint16 value) {
   e = e + (127 - 15);
   m = m << 13;
 
-  uint32 result = (s << 31) | (e << 23) | m;
+  uint32_t result = (s << 31) | (e << 23) | m;
   return bit_cast<float>(result);
 }
 
@@ -146,7 +147,7 @@ TEST_F(GLReadbackTest, ReadPixelsFloat) {
   struct TestFormat {
     GLint format;
     GLint type;
-    uint32 comp_count;
+    uint32_t comp_count;
   };
   TestFormat test_formats[4];
   size_t test_count = 0;
@@ -260,7 +261,7 @@ TEST_F(GLReadbackTest, ReadPixelsFloat) {
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-        uint32 read_comp_count = 0;
+        uint32_t read_comp_count = 0;
         switch (read_format) {
           case GL_RGB:
             read_comp_count = 3;
@@ -278,8 +279,8 @@ TEST_F(GLReadbackTest, ReadPixelsFloat) {
                 0, 0, kTextureSize, kTextureSize, read_format, read_type,
                 buf.get());
             EXPECT_EQ(glGetError(), GLenum(GL_NO_ERROR));
-            for (uint32 jj = 0; jj < kTextureSize * kTextureSize; ++jj) {
-              for (uint32 kk = 0; kk < test_formats[ii].comp_count; ++kk) {
+            for (uint32_t jj = 0; jj < kTextureSize * kTextureSize; ++jj) {
+              for (uint32_t kk = 0; kk < test_formats[ii].comp_count; ++kk) {
                 EXPECT_LE(
                     std::abs(HalfToFloat32(buf[jj * read_comp_count + kk]) -
                         kDrawColor[kk]),
@@ -295,8 +296,8 @@ TEST_F(GLReadbackTest, ReadPixelsFloat) {
                 0, 0, kTextureSize, kTextureSize, read_format, read_type,
                 buf.get());
             EXPECT_EQ(glGetError(), GLenum(GL_NO_ERROR));
-            for (uint32 jj = 0; jj < kTextureSize * kTextureSize; ++jj) {
-              for (uint32 kk = 0; kk < test_formats[ii].comp_count; ++kk) {
+            for (uint32_t jj = 0; jj < kTextureSize * kTextureSize; ++jj) {
+              for (uint32_t kk = 0; kk < test_formats[ii].comp_count; ++kk) {
                 EXPECT_LE(
                     std::abs(buf[jj * read_comp_count + kk] - kDrawColor[kk]),
                     std::abs(kDrawColor[kk] * kEpsilon));

@@ -4,6 +4,9 @@
 
 #include "gpu/khronos_glcts_support/khronos_glcts_test.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/at_exit.h"
@@ -50,7 +53,7 @@ bool RunKhronosGLCTSTest(const char* test_name) {
 
   const ::testing::TestInfo* const test_info =
       ::testing::UnitTest::GetInstance()->current_test_info();
-  int32 expectation =
+  int32_t expectation =
       test_expectations.GetTestExpectation(test_info->name(), bot_config);
   if (expectation != gpu::GPUTestExpectationsParser::kGpuTestPass) {
     LOG(WARNING) << "Test " << test_info->name() << " is bypassed";

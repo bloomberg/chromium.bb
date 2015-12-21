@@ -3,15 +3,18 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/tests/gl_test_utils.h"
-#include <string>
+
+#include <stdint.h>
 #include <stdio.h>
-#include "base/basictypes.h"
+
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // GCC requires these declarations, but MSVC requires they not be present.
 #ifndef COMPILER_MSVC
-const uint8 GLTestHelper::kCheckClearValue;
+const uint8_t GLTestHelper::kCheckClearValue;
 #endif
 
 bool GLTestHelper::HasExtension(const char* extension) {
@@ -139,11 +142,14 @@ GLuint GLTestHelper::SetupColorsForUnitQuad(
   return vbo;
 }
 
-bool GLTestHelper::CheckPixels(
-    GLint x, GLint y, GLsizei width, GLsizei height, GLint tolerance,
-    const uint8* color) {
+bool GLTestHelper::CheckPixels(GLint x,
+                               GLint y,
+                               GLsizei width,
+                               GLsizei height,
+                               GLint tolerance,
+                               const uint8_t* color) {
   GLsizei size = width * height * 4;
-  scoped_ptr<uint8[]> pixels(new uint8[size]);
+  scoped_ptr<uint8_t[]> pixels(new uint8_t[size]);
   memset(pixels.get(), kCheckClearValue, size);
   glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
   int bad_count = 0;
@@ -151,8 +157,8 @@ bool GLTestHelper::CheckPixels(
     for (GLint xx = 0; xx < width; ++xx) {
       int offset = yy * width * 4 + xx * 4;
       for (int jj = 0; jj < 4; ++jj) {
-        uint8 actual = pixels[offset + jj];
-        uint8 expected = color[jj];
+        uint8_t actual = pixels[offset + jj];
+        uint8_t expected = color[jj];
         int diff = actual - expected;
         diff = diff < 0 ? -diff: diff;
         if (diff > tolerance) {
@@ -173,12 +179,12 @@ bool GLTestHelper::CheckPixels(
 
 namespace {
 
-void Set16BitValue(uint8 dest[2], uint16 value) {
+void Set16BitValue(uint8_t dest[2], uint16_t value) {
   dest[0] = value & 0xFFu;
   dest[1] = value >> 8;
 }
 
-void Set32BitValue(uint8 dest[4], uint32 value) {
+void Set32BitValue(uint8_t dest[4], uint32_t value) {
   dest[0] = (value >> 0) & 0xFFu;
   dest[1] = (value >> 8) & 0xFFu;
   dest[2] = (value >> 16) & 0xFFu;
@@ -186,24 +192,24 @@ void Set32BitValue(uint8 dest[4], uint32 value) {
 }
 
 struct BitmapHeaderFile {
-  uint8 magic[2];
-  uint8 size[4];
-  uint8 reserved[4];
-  uint8 offset[4];
+  uint8_t magic[2];
+  uint8_t size[4];
+  uint8_t reserved[4];
+  uint8_t offset[4];
 };
 
 struct BitmapInfoHeader{
-  uint8 size[4];
-  uint8 width[4];
-  uint8 height[4];
-  uint8 planes[2];
-  uint8 bit_count[2];
-  uint8 compression[4];
-  uint8 size_image[4];
-  uint8 x_pels_per_meter[4];
-  uint8 y_pels_per_meter[4];
-  uint8 clr_used[4];
-  uint8 clr_important[4];
+  uint8_t size[4];
+  uint8_t width[4];
+  uint8_t height[4];
+  uint8_t planes[2];
+  uint8_t bit_count[2];
+  uint8_t compression[4];
+  uint8_t size_image[4];
+  uint8_t x_pels_per_meter[4];
+  uint8_t y_pels_per_meter[4];
+  uint8_t clr_used[4];
+  uint8_t clr_important[4];
 };
 
 }
@@ -215,14 +221,14 @@ bool GLTestHelper::SaveBackbufferAsBMP(
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   int num_pixels = width * height;
   int size = num_pixels * 4;
-  scoped_ptr<uint8[]> data(new uint8[size]);
-  uint8* pixels = data.get();
+  scoped_ptr<uint8_t[]> data(new uint8_t[size]);
+  uint8_t* pixels = data.get();
   glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   // RGBA to BGRA
   for (int ii = 0; ii < num_pixels; ++ii) {
     int offset = ii * 4;
-    uint8 t = pixels[offset + 0];
+    uint8_t t = pixels[offset + 0];
     pixels[offset + 0] = pixels[offset + 2];
     pixels[offset + 2] = t;
   }

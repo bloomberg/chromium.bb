@@ -5,8 +5,8 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,20 +15,20 @@
 
 namespace gpu {
 
-static const uint16 kRedMask = 0xF800;
-static const uint16 kGreenMask = 0x07E0;
-static const uint16 kBlueMask = 0x001F;
+static const uint16_t kRedMask = 0xF800;
+static const uint16_t kGreenMask = 0x07E0;
+static const uint16_t kBlueMask = 0x001F;
 
 // Color palette in 565 format.
-static const uint16 kPalette[] = {
-  kGreenMask | kBlueMask,   // Cyan.
-  kBlueMask  | kRedMask,    // Magenta.
-  kRedMask   | kGreenMask,  // Yellow.
-  0x0000,                   // Black.
-  kRedMask,                 // Red.
-  kGreenMask,               // Green.
-  kBlueMask,                // Blue.
-  0xFFFF,                   // White.
+static const uint16_t kPalette[] = {
+    kGreenMask | kBlueMask,  // Cyan.
+    kBlueMask | kRedMask,    // Magenta.
+    kRedMask | kGreenMask,   // Yellow.
+    0x0000,                  // Black.
+    kRedMask,                // Red.
+    kGreenMask,              // Green.
+    kBlueMask,               // Blue.
+    0xFFFF,                  // White.
 };
 static const unsigned kBlockSize = 4;
 static const unsigned kPaletteSize = sizeof(kPalette) / sizeof(kPalette[0]);
@@ -52,8 +52,8 @@ static const char* extension(GLenum format) {
 
 // Index that chooses the given colors (color_0 and color_1),
 // not the interpolated colors (color_2 and color_3).
-static const uint16 kColor0 = 0x0000;
-static const uint16 kColor1 = 0x5555;
+static const uint16_t kColor0 = 0x0000;
+static const uint16_t kColor1 = 0x5555;
 
 static GLuint LoadCompressedTexture(const void* data,
                                     GLsizeiptr size,
@@ -74,7 +74,7 @@ static GLuint LoadCompressedTexture(const void* data,
 
 GLuint LoadTextureDXT1(bool alpha) {
   const unsigned kStride = 4;
-  uint16 data[kStride * kPaletteSize];
+  uint16_t data[kStride * kPaletteSize];
   for (unsigned i = 0; i < kPaletteSize; ++i) {
     // Each iteration defines a 4x4 block of texture.
     unsigned j = kStride * i;
@@ -91,8 +91,8 @@ GLuint LoadTextureDXT1(bool alpha) {
 
 GLuint LoadTextureDXT3() {
   const unsigned kStride = 8;
-  const uint16 kOpaque = 0xFFFF;
-  uint16 data[kStride * kPaletteSize];
+  const uint16_t kOpaque = 0xFFFF;
+  uint16_t data[kStride * kPaletteSize];
   for (unsigned i = 0; i < kPaletteSize; ++i) {
     // Each iteration defines a 4x4 block of texture.
     unsigned j = kStride * i;
@@ -114,9 +114,9 @@ GLuint LoadTextureDXT3() {
 
 GLuint LoadTextureDXT5() {
   const unsigned kStride = 8;
-  const uint16 kClear = 0x0000;
-  const uint16 kAlpha7 = 0xFFFF;  // Opaque alpha index.
-  uint16 data[kStride * kPaletteSize];
+  const uint16_t kClear = 0x0000;
+  const uint16_t kAlpha7 = 0xFFFF;  // Opaque alpha index.
+  uint16_t data[kStride * kPaletteSize];
   for (unsigned i = 0; i < kPaletteSize; ++i) {
     // Each iteration defines a 4x4 block of texture.
     unsigned j = kStride * i;
@@ -136,10 +136,10 @@ GLuint LoadTextureDXT5() {
                                kTextureHeight);
 }
 
-static void ToRGB888(uint16 rgb565, uint8 rgb888[]) {
-  uint8 r5 = (rgb565 & kRedMask)   >> 11;
-  uint8 g6 = (rgb565 & kGreenMask) >> 5;
-  uint8 b5 = (rgb565 & kBlueMask);
+static void ToRGB888(uint16_t rgb565, uint8_t rgb888[]) {
+  uint8_t r5 = (rgb565 & kRedMask) >> 11;
+  uint8_t g6 = (rgb565 & kGreenMask) >> 5;
+  uint8_t b5 = (rgb565 & kBlueMask);
   // Replicate upper bits to lower empty bits.
   rgb888[0] = (r5 << 3) | (r5 >> 2);
   rgb888[1] = (g6 << 2) | (g6 >> 4);
@@ -229,7 +229,7 @@ TEST_P(CompressedTextureTest, Draw) {
 
   // Verify results.
   int origin[] = {0, 0};
-  uint8 expected_rgba[] = {0, 0, 0, 255};
+  uint8_t expected_rgba[] = {0, 0, 0, 255};
   for (unsigned i = 0; i < kPaletteSize; ++i) {
     origin[0] = kBlockSize * i;
     ToRGB888(kPalette[i], expected_rgba);

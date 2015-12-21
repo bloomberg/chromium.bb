@@ -4,11 +4,13 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
+#include <stdint.h>
+
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
@@ -114,8 +116,8 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::ValidateProgram, 0>(
 };
 
 TEST_P(GLES2DecoderTest3, TraceBeginCHROMIUM) {
-  const uint32 kCategoryBucketId = 123;
-  const uint32 kNameBucketId = 234;
+  const uint32_t kCategoryBucketId = 123;
+  const uint32_t kNameBucketId = 234;
 
   const char kCategory[] = "test_category";
   const char kName[] = "test_command";
@@ -134,8 +136,8 @@ TEST_P(GLES2DecoderTest3, TraceEndCHROMIUM) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
-  const uint32 kCategoryBucketId = 123;
-  const uint32 kNameBucketId = 234;
+  const uint32_t kCategoryBucketId = 123;
+  const uint32_t kNameBucketId = 234;
 
   const char kCategory[] = "test_category";
   const char kName[] = "test_command";

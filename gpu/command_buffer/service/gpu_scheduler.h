@@ -5,11 +5,14 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_
 
+#include <stdint.h>
+
 #include <queue>
 
 #include "base/atomic_ref_count.h"
 #include "base/atomicops.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -85,11 +88,11 @@ class GPU_EXPORT GpuScheduler
   void SetSchedulingChangedCallback(const SchedulingChangedCallback& callback);
 
   // Implementation of CommandBufferEngine.
-  scoped_refptr<Buffer> GetSharedMemoryBuffer(int32 shm_id) override;
-  void set_token(int32 token) override;
-  bool SetGetBuffer(int32 transfer_buffer_id) override;
-  bool SetGetOffset(int32 offset) override;
-  int32 GetGetOffset() override;
+  scoped_refptr<Buffer> GetSharedMemoryBuffer(int32_t shm_id) override;
+  void set_token(int32_t token) override;
+  bool SetGetBuffer(int32_t transfer_buffer_id) override;
+  bool SetGetOffset(int32_t offset) override;
+  int32_t GetGetOffset() override;
 
   void SetCommandProcessedCallback(const base::Closure& callback);
 

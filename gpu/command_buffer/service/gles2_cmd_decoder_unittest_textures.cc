@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -700,8 +703,8 @@ TEST_P(GLES2DecoderTest, CopyTexImage2DGLError) {
 }
 
 TEST_P(GLES3DecoderTest, CompressedTexImage3DBucket) {
-  const uint32 kBucketId = 123;
-  const uint32 kBadBucketId = 99;
+  const uint32_t kBucketId = 123;
+  const uint32_t kBadBucketId = 99;
   const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
   const GLint kLevel = 0;
   const GLenum kInternalFormat = GL_COMPRESSED_R11_EAC;
@@ -747,7 +750,7 @@ TEST_P(GLES3DecoderTest, CompressedTexImage3DBucket) {
 }
 
 TEST_P(GLES2DecoderTest, CompressedTexImage3DFailsOnES2) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
   const GLint kLevel = 0;
   const GLenum kInternalFormat = GL_COMPRESSED_R11_EAC;
@@ -786,7 +789,7 @@ TEST_P(GLES2DecoderTest, CompressedTexImage3DFailsOnES2) {
 }
 
 TEST_P(GLES3DecoderTest, CompressedTexImage3DFailsWithBadImageSize) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
   const GLint kLevel = 0;
   const GLenum kInternalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
@@ -813,7 +816,7 @@ TEST_P(GLES3DecoderTest, CompressedTexImage3DFailsWithBadImageSize) {
 }
 
 TEST_P(GLES3DecoderTest, CompressedTexSubImage3DFails) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
   const GLint kLevel = 0;
   const GLenum kInternalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
@@ -952,7 +955,7 @@ TEST_P(GLES3DecoderTest, CompressedTexSubImage3DFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
   // Bad bucket id.
-  const uint32 kBadBucketId = 444;
+  const uint32_t kBadBucketId = 444;
   cmd.Init(kTarget,
            kLevel,
            kXOffset,
@@ -973,7 +976,7 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DBucketBadBucket) {
   init.bind_generates_resource = true;
   InitDecoder(init);
 
-  const uint32 kBadBucketId = 123;
+  const uint32_t kBadBucketId = 123;
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   CompressedTexImage2DBucket cmd;
   cmd.Init(GL_TEXTURE_2D,
@@ -1009,7 +1012,7 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
   init.extensions = "GL_EXT_texture_compression_s3tc";
   init.bind_generates_resource = true;
   InitDecoder(init);
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
   ASSERT_TRUE(bucket != NULL);
 
@@ -1167,7 +1170,7 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
   init.gl_version = "opengl es 2.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
   ASSERT_TRUE(bucket != NULL);
 
@@ -1285,7 +1288,7 @@ TEST_P(GLES2DecoderManualInitTest, EGLImageExternalGetBinding) {
                 GL_TEXTURE_BINDING_EXTERNAL_OES),
             result->GetNumResults());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_EQ(client_texture_id_, (uint32)result->GetData()[0]);
+  EXPECT_EQ(client_texture_id_, (uint32_t)result->GetData()[0]);
 }
 
 TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTextureDefaults) {
@@ -1690,7 +1693,7 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleGetBinding) {
                 GL_TEXTURE_BINDING_RECTANGLE_ARB),
             result->GetNumResults());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_EQ(client_texture_id_, (uint32)result->GetData()[0]);
+  EXPECT_EQ(client_texture_id_, (uint32_t)result->GetData()[0]);
 }
 
 TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTextureDefaults) {
@@ -2866,7 +2869,7 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(kServiceTextureId, texture->service_id());
 
-  const int32 kImageId = 1;
+  const int32_t kImageId = 1;
   scoped_refptr<MockGLImage> image(new MockGLImage);
   GetImageManager()->AddImage(image.get(), kImageId);
 

@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_STATE_TRACER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_STATE_TRACER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace gfx {

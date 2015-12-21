@@ -5,6 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GL_IN_PROCESS_CONTEXT_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GL_IN_PROCESS_CONTEXT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "gl_in_process_context_export.h"
@@ -33,7 +36,7 @@ class GLES2Implementation;
 struct GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContextSharedMemoryLimits {
   GLInProcessContextSharedMemoryLimits();
 
-  int32 command_buffer_size;
+  int32_t command_buffer_size;
   unsigned int start_transfer_buffer_size;
   unsigned int min_transfer_buffer_size;
   unsigned int max_transfer_buffer_size;
@@ -80,8 +83,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
 
 #if defined(OS_ANDROID)
   virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
-      uint32 stream_id) = 0;
-  virtual uint32 CreateStreamTexture(uint32 texture_id) = 0;
+      uint32_t stream_id) = 0;
+  virtual uint32_t CreateStreamTexture(uint32_t texture_id) = 0;
 #endif
 };
 

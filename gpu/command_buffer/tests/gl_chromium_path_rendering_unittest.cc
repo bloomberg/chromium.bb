@@ -5,6 +5,8 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <cmath>
 
 #include "base/command_line.h"
@@ -148,7 +150,7 @@ class CHROMIUMPathRenderingDrawTest : public CHROMIUMPathRenderingTest {
     SCOPED_TRACE(testing::Message() << "Verifying fill at " << x << "," << y);
     static const float kFillCoords[] = {55.0f, 54.0f, 50.0f,
                                         28.0f, 66.0f, 63.0f};
-    static const uint8 kBlue[] = {0, 0, 255, 255};
+    static const uint8_t kBlue[] = {0, 0, 255, 255};
 
     for (size_t i = 0; i < arraysize(kFillCoords); i += 2) {
       float fx = kFillCoords[i];
@@ -162,7 +164,7 @@ class CHROMIUMPathRenderingDrawTest : public CHROMIUMPathRenderingTest {
     SCOPED_TRACE(testing::Message() << "Verifying background at " << x << ","
                                     << y);
     const float kBackgroundCoords[] = {80.0f, 80.0f, 20.0f, 20.0f, 90.0f, 1.0f};
-    const uint8 kExpectedColor[] = {0, 0, 0, 0};
+    const uint8_t kExpectedColor[] = {0, 0, 0, 0};
 
     for (size_t i = 0; i < arraysize(kBackgroundCoords); i += 2) {
       float bx = kBackgroundCoords[i];
@@ -176,12 +178,12 @@ class CHROMIUMPathRenderingDrawTest : public CHROMIUMPathRenderingTest {
   void VerifyTestPatternStroke(float x, float y) {
     SCOPED_TRACE(testing::Message() << "Verifying stroke at " << x << "," << y);
     // Inside the stroke we should have green.
-    const uint8 kGreen[] = {0, 255, 0, 255};
+    const uint8_t kGreen[] = {0, 255, 0, 255};
     EXPECT_TRUE(GLTestHelper::CheckPixels(x + 50, y + 53, 1, 1, 0, kGreen));
     EXPECT_TRUE(GLTestHelper::CheckPixels(x + 26, y + 76, 1, 1, 0, kGreen));
 
     // Outside the path we should have black.
-    const uint8 black[] = {0, 0, 0, 0};
+    const uint8_t black[] = {0, 0, 0, 0};
     EXPECT_TRUE(GLTestHelper::CheckPixels(x + 10, y + 10, 1, 1, 0, black));
     EXPECT_TRUE(GLTestHelper::CheckPixels(x + 80, y + 80, 1, 1, 0, black));
   }
@@ -454,7 +456,7 @@ TEST_F(CHROMIUMPathRenderingTest, TestPathObjectState) {
 
   // Make sure nothing got drawn by the drawing commands that should not produce
   // anything.
-  const uint8 black[] = {0, 0, 0, 0};
+  const uint8_t black[] = {0, 0, 0, 0};
   EXPECT_TRUE(
       GLTestHelper::CheckPixels(0, 0, kResolution, kResolution, 0, black));
 }
@@ -1079,7 +1081,7 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
         float px = i * kShapeWidth;
         float py = j * kShapeHeight;
 
-        uint8 color[4];
+        uint8_t color[4];
         color[0] = roundf((px + fx) / kResolution * 255.0f);
         color[1] = roundf((py + fy) / kResolution * 255.0f);
         color[2] = 0;
@@ -1179,7 +1181,7 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
         float px = i * kShapeWidth;
         float py = j * kShapeHeight;
 
-        uint8 color[4];
+        uint8_t color[4];
         color[0] = roundf(fx / kShapeWidth * 255.0f);
         color[1] = roundf(fy / kShapeHeight * 255.0f);
         color[2] = 0;
@@ -1582,7 +1584,7 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
           float px = i * kShapeWidth;
           float py = j * kShapeHeight;
 
-          uint8 color[4] = {0, 255, 0, 255};
+          uint8_t color[4] = {0, 255, 0, 255};
 
           EXPECT_TRUE(
               GLTestHelper::CheckPixels(px + fx, py + fy, 1, 1, 2, color));
@@ -1676,7 +1678,7 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
         float px = i * kShapeWidth;
         float py = j * kShapeHeight;
 
-        uint8 color[4] = {0, 255, 0, 255};
+        uint8_t color[4] = {0, 255, 0, 255};
 
         EXPECT_TRUE(
             GLTestHelper::CheckPixels(px + fx, py + fy, 1, 1, 2, color));

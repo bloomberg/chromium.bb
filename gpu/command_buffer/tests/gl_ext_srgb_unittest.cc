@@ -4,6 +4,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -34,10 +35,10 @@ TEST_F(GLEXTSRGBTest, TexImageSRGBALPHAFormat) {
   static const int kSubImageY = kHeight / 2;
   static const int kSubImageWidth = kWidth / 2;
   static const int kSubImageHeight = kHeight / 2;
-  static const uint8 kImageColor[] = {255, 255, 255, 255};
-  static const uint8 kSubImageColor[] = {128, 128, 128, 128};
+  static const uint8_t kImageColor[] = {255, 255, 255, 255};
+  static const uint8_t kSubImageColor[] = {128, 128, 128, 128};
 
-  uint8 pixels[kWidth * kHeight * 4];
+  uint8_t pixels[kWidth * kHeight * 4];
 
   GLuint tex = 0;
   glGenTextures(1, &tex);

@@ -5,6 +5,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -49,11 +50,9 @@ TEST_F(GLLoseContextTest, ShareGroup) {
   glLoseContextCHROMIUM(
       GL_GUILTY_CONTEXT_RESET_EXT, GL_INNOCENT_CONTEXT_RESET_EXT);
 
-  uint8 expected_no_draw[] = {
-    GLTestHelper::kCheckClearValue,
-    GLTestHelper::kCheckClearValue,
-    GLTestHelper::kCheckClearValue,
-    GLTestHelper::kCheckClearValue,
+  uint8_t expected_no_draw[] = {
+      GLTestHelper::kCheckClearValue, GLTestHelper::kCheckClearValue,
+      GLTestHelper::kCheckClearValue, GLTestHelper::kCheckClearValue,
   };
   // Expect the read will fail.
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_no_draw));
@@ -61,7 +60,9 @@ TEST_F(GLLoseContextTest, ShareGroup) {
   // Expect the read will fail.
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_no_draw));
   gl2_.MakeCurrent();
-  uint8 expected_draw[] = { 0, 0, 0, 0, };
+  uint8_t expected_draw[] = {
+      0, 0, 0, 0,
+  };
   // Expect the read will succeed.
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_draw));
 }

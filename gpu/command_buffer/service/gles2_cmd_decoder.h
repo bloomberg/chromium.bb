@@ -7,10 +7,11 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -64,7 +65,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
                                 public CommonDecoder {
  public:
   typedef error::Error Error;
-  typedef base::Callback<bool(uint32 id)> WaitSyncPointCallback;
+  typedef base::Callback<bool(uint32_t id)> WaitSyncPointCallback;
   typedef base::Callback<void(uint64_t release)> FenceSyncReleaseCallback;
   typedef base::Callback<bool(gpu::CommandBufferNamespace namespace_id,
                               uint64_t command_buffer_id,
@@ -131,7 +132,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
                           bool offscreen,
                           const gfx::Size& offscreen_size,
                           const DisallowedFeatures& disallowed_features,
-                          const std::vector<int32>& attribs) = 0;
+                          const std::vector<int32_t>& attribs) = 0;
 
   // Destroys the graphics context.
   virtual void Destroy(bool have_context) = 0;
@@ -179,7 +180,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   virtual void SetIgnoreCachedStateForTest(bool ignore) = 0;
   virtual void SetForceShaderNameHashingForTest(bool force) = 0;
-  virtual uint32 GetAndClearBackbufferClearBitsForTest();
+  virtual uint32_t GetAndClearBackbufferClearBitsForTest();
 
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;
@@ -207,8 +208,8 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // Get the service texture ID corresponding to a client texture ID.
   // If no such record is found then return false.
-  virtual bool GetServiceTextureId(uint32 client_texture_id,
-                                   uint32* service_texture_id);
+  virtual bool GetServiceTextureId(uint32_t client_texture_id,
+                                   uint32_t* service_texture_id);
 
   // Provides detail about a lost context if one occurred.
   virtual error::ContextLostReason GetContextLostReason() = 0;
@@ -243,7 +244,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
       const WaitFenceSyncCallback& callback) = 0;
 
   virtual void WaitForReadPixels(base::Closure callback) = 0;
-  virtual uint32 GetTextureUploadCount() = 0;
+  virtual uint32_t GetTextureUploadCount() = 0;
   virtual base::TimeDelta GetTotalTextureUploadTime() = 0;
   virtual base::TimeDelta GetTotalProcessingCommandsTime() = 0;
   virtual void AddProcessingCommandsTime(base::TimeDelta) = 0;

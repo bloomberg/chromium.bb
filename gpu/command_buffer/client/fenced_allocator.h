@@ -7,6 +7,7 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_FENCED_ALLOCATOR_H_
 #define GPU_COMMAND_BUFFER_CLIENT_FENCED_ALLOCATOR_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>
@@ -68,7 +69,7 @@ class GPU_EXPORT FencedAllocator {
   // Parameters:
   //   offset: the offset of the memory block to free.
   //   token: the token value to wait for before re-using the memory.
-  void FreePendingToken(Offset offset, int32 token);
+  void FreePendingToken(Offset offset, int32_t token);
 
   // Frees any blocks pending a token for which the token has been read.
   void FreeUnused();
@@ -204,7 +205,7 @@ class FencedAllocatorWrapper {
   // Parameters:
   //   pointer: the pointer to the memory block to free.
   //   token: the token value to wait for before re-using the memory.
-  void FreePendingToken(void *pointer, int32 token) {
+  void FreePendingToken(void* pointer, int32_t token) {
     DCHECK(pointer);
     allocator_.FreePendingToken(GetOffset(pointer), token);
   }

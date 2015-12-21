@@ -5,8 +5,10 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_VALUEBUFFER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_VALUEBUFFER_MANAGER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -125,7 +127,7 @@ class GPU_EXPORT ValuebufferManager {
   // Updates the value state for the given Valuebuffer
   void UpdateValuebufferState(Valuebuffer* valuebuffer);
 
-  static uint32 ApiTypeForSubscriptionTarget(unsigned int target);
+  static uint32_t ApiTypeForSubscriptionTarget(unsigned int target);
 
  private:
   friend class Valuebuffer;

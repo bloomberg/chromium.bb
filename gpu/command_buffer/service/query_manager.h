@@ -5,12 +5,14 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_QUERY_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_QUERY_MANAGER_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <vector>
 #include "base/atomicops.h"
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -35,8 +37,10 @@ class GPU_EXPORT QueryManager {
  public:
   class GPU_EXPORT Query : public base::RefCounted<Query> {
    public:
-    Query(
-        QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+    Query(QueryManager* manager,
+          GLenum target,
+          int32_t shm_id,
+          uint32_t shm_offset);
 
     GLenum target() const {
       return target_;
@@ -66,13 +70,9 @@ class GPU_EXPORT QueryManager {
       return query_state_ == kQueryState_Finished;
     }
 
-    int32 shm_id() const {
-      return shm_id_;
-    }
+    int32_t shm_id() const { return shm_id_; }
 
-    uint32 shm_offset() const {
-      return shm_offset_;
-    }
+    uint32_t shm_offset() const { return shm_offset_; }
 
     // Returns false if shared memory for sync is invalid.
     virtual bool Begin() = 0;
@@ -126,7 +126,7 @@ class GPU_EXPORT QueryManager {
     }
 
     // Returns false if shared memory for sync is invalid.
-    bool MarkAsCompleted(uint64 result);
+    bool MarkAsCompleted(uint64_t result);
 
     void UnmarkAsPending() {
       DCHECK(query_state_ == kQueryState_Pending);
@@ -179,8 +179,8 @@ class GPU_EXPORT QueryManager {
     GLenum target_;
 
     // The shared memory used with this Query.
-    int32 shm_id_;
-    uint32 shm_offset_;
+    int32_t shm_id_;
+    uint32_t shm_offset_;
 
     // Count to set process count do when completed.
     base::subtle::Atomic32 submit_count_;
@@ -210,11 +210,13 @@ class GPU_EXPORT QueryManager {
   void Destroy(bool have_context);
 
   // Sets up a location to be incremented whenever a disjoint is detected.
-  void SetDisjointSync(int32 shm_id, uint32 shm_offset);
+  void SetDisjointSync(int32_t shm_id, uint32_t shm_offset);
 
   // Creates a Query for the given query.
-  Query* CreateQuery(
-      GLenum target, GLuint client_id, int32 shm_id, uint32 shm_offset);
+  Query* CreateQuery(GLenum target,
+                     GLuint client_id,
+                     int32_t shm_id,
+                     uint32_t shm_offset);
 
   // Gets the query info for the given query.
   Query* GetQuery(GLuint client_id);

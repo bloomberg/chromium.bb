@@ -906,7 +906,7 @@ TEST_P(GLES2DecoderTest2, ScissorInvalidArgs3_0) {
 }
 
 TEST_P(GLES2DecoderTest2, ShaderSourceBucketValidArgs) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
   const char kValidStrEnd = 0;
@@ -918,7 +918,7 @@ TEST_P(GLES2DecoderTest2, ShaderSourceBucketValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidArgs) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
   const char kValidStrEnd = 0;
@@ -935,7 +935,7 @@ TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidHeader) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
   const char kValidStrEnd = 0;
@@ -953,7 +953,7 @@ TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidHeader) {
 }
 
 TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidStringEnding) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
   const char kInvalidStrEnd = '*';
@@ -1224,7 +1224,7 @@ TEST_P(GLES2DecoderTest2, TexStorage3DValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketValidArgs) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
   const char kValidStrEnd = 0;
@@ -1238,7 +1238,7 @@ TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidArgs) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
   const char kValidStrEnd = 0;
@@ -1255,7 +1255,7 @@ TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidHeader) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
   const char kValidStrEnd = 0;
@@ -1273,7 +1273,7 @@ TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidHeader) {
 }
 
 TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidStringEnding) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = {kSource0};
   const char kInvalidStrEnd = '*';

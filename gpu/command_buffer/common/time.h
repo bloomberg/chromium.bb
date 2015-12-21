@@ -7,11 +7,13 @@
 
 #if !defined(__native_client__)
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 
 namespace gpu {
 
-inline uint64 MicrosecondsSinceOriginOfTime() {
+inline uint64_t MicrosecondsSinceOriginOfTime() {
   return (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
 }
 
@@ -21,7 +23,7 @@ inline uint64 MicrosecondsSinceOriginOfTime() {
 
 namespace gpu {
 
-inline uint64 MicrosecondsSinceOriginOfTime() {
+inline uint64_t MicrosecondsSinceOriginOfTime() {
   return 0;
 }
 

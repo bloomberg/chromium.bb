@@ -5,6 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_BASE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_BASE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/message_loop/message_loop.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -25,8 +28,8 @@
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace base {
@@ -46,7 +49,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   // Template to call glGenXXX functions.
   template <typename T>
   void GenHelper(GLuint client_id) {
-    int8 buffer[sizeof(T) + sizeof(client_id)];
+    int8_t buffer[sizeof(T) + sizeof(client_id)];
     T& cmd = *reinterpret_cast<T*>(&buffer);
     cmd.Init(1, &client_id);
     EXPECT_EQ(error::kNoError,
@@ -98,8 +101,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   }
 
   template <typename T>
-  T GetSharedMemoryAsWithOffset(uint32 offset) {
-    void* ptr = reinterpret_cast<int8*>(shared_memory_address_) + offset;
+  T GetSharedMemoryAsWithOffset(uint32_t offset) {
+    void* ptr = reinterpret_cast<int8_t*>(shared_memory_address_) + offset;
     return reinterpret_cast<T>(ptr);
   }
 
@@ -178,11 +181,14 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void DoFenceSync(GLuint client_id, GLuint service_id);
 
   void SetBucketData(uint32_t bucket_id, const void* data, uint32_t data_size);
-  void SetBucketAsCString(uint32 bucket_id, const char* str);
+  void SetBucketAsCString(uint32_t bucket_id, const char* str);
   // If we want a valid bucket, just set |count_in_header| as |count|,
   // and set |str_end| as 0.
-  void SetBucketAsCStrings(uint32 bucket_id, GLsizei count, const char** str,
-                           GLsizei count_in_header, char str_end);
+  void SetBucketAsCStrings(uint32_t bucket_id,
+                           GLsizei count,
+                           const char** str,
+                           GLsizei count_in_header,
+                           char str_end);
 
   void set_memory_tracker(MemoryTracker* memory_tracker) {
     memory_tracker_ = memory_tracker;
@@ -227,7 +233,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return decoder_.get();
   }
 
-  uint32 GetAndClearBackbufferClearBitsForTest() const {
+  uint32_t GetAndClearBackbufferClearBitsForTest() const {
     return decoder_->GetAndClearBackbufferClearBitsForTest();
   }
 
@@ -291,22 +297,36 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void DoDeleteShader(GLuint client_id, GLuint service_id);
   void DoDeleteTexture(GLuint client_id, GLuint service_id);
 
-  void DoCompressedTexImage2D(
-      GLenum target, GLint level, GLenum format,
-      GLsizei width, GLsizei height, GLint border,
-      GLsizei size, uint32 bucket_id);
+  void DoCompressedTexImage2D(GLenum target,
+                              GLint level,
+                              GLenum format,
+                              GLsizei width,
+                              GLsizei height,
+                              GLint border,
+                              GLsizei size,
+                              uint32_t bucket_id);
   void DoBindTexImage2DCHROMIUM(GLenum target, GLint image_id);
-  void DoTexImage2D(
-      GLenum target, GLint level, GLenum internal_format,
-      GLsizei width, GLsizei height, GLint border,
-      GLenum format, GLenum type,
-      uint32 shared_memory_id, uint32 shared_memory_offset);
-  void DoTexImage2DConvertInternalFormat(
-      GLenum target, GLint level, GLenum requested_internal_format,
-      GLsizei width, GLsizei height, GLint border,
-      GLenum format, GLenum type,
-      uint32 shared_memory_id, uint32 shared_memory_offset,
-      GLenum expected_internal_format);
+  void DoTexImage2D(GLenum target,
+                    GLint level,
+                    GLenum internal_format,
+                    GLsizei width,
+                    GLsizei height,
+                    GLint border,
+                    GLenum format,
+                    GLenum type,
+                    uint32_t shared_memory_id,
+                    uint32_t shared_memory_offset);
+  void DoTexImage2DConvertInternalFormat(GLenum target,
+                                         GLint level,
+                                         GLenum requested_internal_format,
+                                         GLsizei width,
+                                         GLsizei height,
+                                         GLint border,
+                                         GLenum format,
+                                         GLenum type,
+                                         uint32_t shared_memory_id,
+                                         uint32_t shared_memory_offset,
+                                         GLenum expected_internal_format);
   void DoRenderbufferStorage(
       GLenum target, GLenum internal_format, GLenum actual_format,
       GLsizei width, GLsizei height, GLenum error);
@@ -434,9 +454,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void AddExpectationsForBindVertexArrayOES();
   void AddExpectationsForRestoreAttribState(GLuint attrib);
 
-  GLvoid* BufferOffset(unsigned i) {
-    return static_cast<int8 *>(NULL)+(i);
-  }
+  GLvoid* BufferOffset(unsigned i) { return static_cast<int8_t*>(NULL) + (i); }
 
   template <typename Command, typename Result>
   bool IsObjectHelper(GLuint client_id) {
@@ -486,17 +504,17 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const GLuint kServiceTransformFeedbackId = 311;
   static const GLuint kServiceSyncId = 312;
 
-  static const int32 kSharedMemoryId = 401;
+  static const int32_t kSharedMemoryId = 401;
   static const size_t kSharedBufferSize = 2048;
-  static const uint32 kSharedMemoryOffset = 132;
-  static const int32 kInvalidSharedMemoryId = 402;
-  static const uint32 kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
-  static const uint32 kInitialResult = 0xBDBDBDBDu;
-  static const uint8 kInitialMemoryValue = 0xBDu;
+  static const uint32_t kSharedMemoryOffset = 132;
+  static const int32_t kInvalidSharedMemoryId = 402;
+  static const uint32_t kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
+  static const uint32_t kInitialResult = 0xBDBDBDBDu;
+  static const uint8_t kInitialMemoryValue = 0xBDu;
 
-  static const uint32 kNewClientId = 501;
-  static const uint32 kNewServiceId = 502;
-  static const uint32 kInvalidClientId = 601;
+  static const uint32_t kNewClientId = 501;
+  static const uint32_t kNewServiceId = 502;
+  static const uint32_t kInvalidClientId = 601;
 
   static const GLuint kServiceVertexShaderId = 321;
   static const GLuint kServiceFragmentShaderId = 322;
@@ -617,15 +635,15 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   GLuint client_transformfeedback_id_;
   GLuint client_sync_id_;
 
-  uint32 shared_memory_id_;
-  uint32 shared_memory_offset_;
+  uint32_t shared_memory_id_;
+  uint32_t shared_memory_offset_;
   void* shared_memory_address_;
   void* shared_memory_base_;
 
   GLuint service_renderbuffer_id_;
   bool service_renderbuffer_valid_;
 
-  uint32 immediate_buffer_[64];
+  uint32_t immediate_buffer_[64];
 
   const bool ignore_cached_state_for_test_;
   bool cached_color_mask_red_;
@@ -660,21 +678,21 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
 
     ~MockCommandBufferEngine() override;
 
-    scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id) override;
+    scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32_t shm_id) override;
 
     void ClearSharedMemory() {
       memset(valid_buffer_->memory(), kInitialMemoryValue, kSharedBufferSize);
     }
 
-    void set_token(int32 token) override;
+    void set_token(int32_t token) override;
 
-    bool SetGetBuffer(int32 /* transfer_buffer_id */) override;
-
-    // Overridden from CommandBufferEngine.
-    bool SetGetOffset(int32 offset) override;
+    bool SetGetBuffer(int32_t /* transfer_buffer_id */) override;
 
     // Overridden from CommandBufferEngine.
-    int32 GetGetOffset() override;
+    bool SetGetOffset(int32_t offset) override;
+
+    // Overridden from CommandBufferEngine.
+    int32_t GetGetOffset() override;
 
    private:
     scoped_refptr<gpu::Buffer> valid_buffer_;

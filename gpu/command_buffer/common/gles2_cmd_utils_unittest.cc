@@ -9,6 +9,7 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 #include <GLES3/gl3.h>
+#include <stdint.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
 

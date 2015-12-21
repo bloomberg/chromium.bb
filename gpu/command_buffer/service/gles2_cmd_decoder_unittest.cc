@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -449,14 +452,14 @@ TEST_P(GLES2DecoderManualInitTest, BindGeneratesResourceFalse) {
 }
 
 TEST_P(GLES2DecoderTest, EnableFeatureCHROMIUMBadBucket) {
-  const uint32 kBadBucketId = 123;
+  const uint32_t kBadBucketId = 123;
   EnableFeatureCHROMIUM cmd;
   cmd.Init(kBadBucketId, shared_memory_id_, shared_memory_offset_);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderTest, RequestExtensionCHROMIUMBadBucket) {
-  const uint32 kBadBucketId = 123;
+  const uint32_t kBadBucketId = 123;
   RequestExtensionCHROMIUM cmd;
   cmd.Init(kBadBucketId);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
@@ -582,8 +585,8 @@ static error::Error ExecuteBeginQueryCmd(GLES2DecoderTestBase* test,
                                          GLenum target,
                                          GLuint client_id,
                                          GLuint service_id,
-                                         int32 shm_id,
-                                         uint32 shm_offset) {
+                                         int32_t shm_id,
+                                         uint32_t shm_offset) {
   if (GL_ANY_SAMPLES_PASSED_EXT == target) {
     EXPECT_CALL(*gl, BeginQuery(target, service_id))
         .Times(1)
@@ -626,14 +629,14 @@ static error::Error ExecuteEndQueryCmd(GLES2DecoderTestBase* test,
 }
 
 static error::Error ExecuteQueryCounterCmd(GLES2DecoderTestBase* test,
-                                         ::gfx::MockGLInterface* gl,
-                                         ::gfx::GPUTimingFake* timing_queries,
-                                         GLenum target,
-                                         GLuint client_id,
-                                         GLuint service_id,
-                                         int32 shm_id,
-                                         uint32 shm_offset,
-                                         uint32_t submit_count) {
+                                           ::gfx::MockGLInterface* gl,
+                                           ::gfx::GPUTimingFake* timing_queries,
+                                           GLenum target,
+                                           GLuint client_id,
+                                           GLuint service_id,
+                                           int32_t shm_id,
+                                           uint32_t shm_offset,
+                                           uint32_t submit_count) {
   if (GL_TIMESTAMP == target) {
     timing_queries->ExpectGPUTimeStampQuery(*gl, false);
   }
@@ -678,8 +681,8 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
                                              GLuint client_id,
                                              GLuint service_id,
                                              const QueryType& query_type,
-                                             int32 shm_id,
-                                             uint32 shm_offset) {
+                                             int32_t shm_id,
+                                             uint32_t shm_offset) {
   // We need to reset the decoder on each iteration, because we lose the
   // context every time.
   GLES2DecoderTestBase::InitState init;

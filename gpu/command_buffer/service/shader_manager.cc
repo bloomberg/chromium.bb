@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/shader_manager.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/logging.h"

@@ -5,12 +5,15 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_TRANSFER_BUFFER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_TRANSFER_BUFFER_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
@@ -23,10 +26,10 @@ class MemoryTracker;
 class GPU_EXPORT TransferBufferManagerInterface :
     public base::RefCounted<TransferBufferManagerInterface> {
  public:
-  virtual bool RegisterTransferBuffer(int32 id,
+  virtual bool RegisterTransferBuffer(int32_t id,
                                       scoped_ptr<BufferBacking> buffer) = 0;
-  virtual void DestroyTransferBuffer(int32 id) = 0;
-  virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) = 0;
+  virtual void DestroyTransferBuffer(int32_t id) = 0;
+  virtual scoped_refptr<Buffer> GetTransferBuffer(int32_t id) = 0;
 
  protected:
   friend class base::RefCounted<TransferBufferManagerInterface>;
@@ -46,15 +49,15 @@ class GPU_EXPORT TransferBufferManager
 
   bool Initialize();
   bool RegisterTransferBuffer(
-      int32 id,
+      int32_t id,
       scoped_ptr<BufferBacking> buffer_backing) override;
-  void DestroyTransferBuffer(int32 id) override;
-  scoped_refptr<Buffer> GetTransferBuffer(int32 id) override;
+  void DestroyTransferBuffer(int32_t id) override;
+  scoped_refptr<Buffer> GetTransferBuffer(int32_t id) override;
 
  private:
   ~TransferBufferManager() override;
 
-  typedef base::hash_map<int32, scoped_refptr<Buffer> > BufferMap;
+  typedef base::hash_map<int32_t, scoped_refptr<Buffer>> BufferMap;
   BufferMap registered_buffers_;
   size_t shared_memory_bytes_allocated_;
   gles2::MemoryTracker* memory_tracker_;

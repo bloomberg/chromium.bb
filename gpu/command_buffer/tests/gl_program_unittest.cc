@@ -5,6 +5,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
@@ -127,7 +128,9 @@ TEST_F(GLProgramTest, NewShaderInCurrentProgram) {
   GLuint position_loc = glGetAttribLocation(program, "a_position");
   GLTestHelper::SetupUnitQuad(position_loc);
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  uint8 expected_color[] = { 0, 0, 255, 255, };
+  uint8_t expected_color[] = {
+      0, 0, 255, 255,
+  };
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color));
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
@@ -193,7 +196,9 @@ TEST_F(GLProgramTest, UniformsInCurrentProgram) {
   GLuint position_loc = glGetAttribLocation(program, "a_position");
   GLTestHelper::SetupUnitQuad(position_loc);
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  uint8 expected_color[] = { 0, 0, 255, 255, };
+  uint8_t expected_color[] = {
+      0, 0, 255, 255,
+  };
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color));
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }

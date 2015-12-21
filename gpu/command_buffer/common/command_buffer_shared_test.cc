@@ -6,6 +6,8 @@
 
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
@@ -39,8 +41,7 @@ TEST_F(CommandBufferSharedTest, TestBasic) {
 
 static const int kSize = 100000;
 
-void WriteToState(int32 *buffer,
-                  CommandBufferSharedState* shared_state) {
+void WriteToState(int32_t* buffer, CommandBufferSharedState* shared_state) {
   CommandBuffer::State state;
   for (int i = 0; i < kSize; i++) {
     state.token = i - 1;
@@ -56,11 +57,11 @@ void WriteToState(int32 *buffer,
 }
 
 TEST_F(CommandBufferSharedTest, TestConsistency) {
-  scoped_ptr<int32[]> buffer;
-  buffer.reset(new int32[kSize]);
+  scoped_ptr<int32_t[]> buffer;
+  buffer.reset(new int32_t[kSize]);
   base::Thread consumer("Reader Thread");
 
-  memset(buffer.get(), 0, kSize * sizeof(int32));
+  memset(buffer.get(), 0, kSize * sizeof(int32_t));
 
   consumer.Start();
   consumer.task_runner()->PostTask(

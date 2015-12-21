@@ -9,6 +9,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
 
 #include <vector>
 
@@ -111,7 +112,7 @@ TEST_P(GLClearFramebufferTest, ClearColor) {
   glClear(GL_COLOR_BUFFER_BIT);
 
   // Verify.
-  const uint8 expected[] = {255, 128, 64, 128};
+  const uint8_t expected[] = {255, 128, 64, 128};
   EXPECT_TRUE(
       GLTestHelper::CheckPixels(0, 0, 1, 1, 1 /* tolerance */, expected));
 }
@@ -122,7 +123,7 @@ TEST_P(GLClearFramebufferTest, ClearColorWithMask) {
   glClear(GL_COLOR_BUFFER_BIT);
 
   // Verify.
-  const uint8 expected[] = {255, 0, 0, 0};
+  const uint8_t expected[] = {255, 0, 0, 0};
   EXPECT_TRUE(
       GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, expected));
 }
@@ -134,7 +135,7 @@ TEST_P(GLClearFramebufferTest, ClearColorWithScissor) {
   glClear(GL_COLOR_BUFFER_BIT);
 
   // Verify.
-  const uint8 expected[] = {255, 255, 255, 255};
+  const uint8_t expected[] = {255, 255, 255, 255};
   EXPECT_TRUE(
       GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, expected));
 
@@ -155,8 +156,8 @@ TEST_P(GLClearFramebufferTest, ClearDepthStencil) {
   SetDrawColor(1.0f, 0.0f, 0.0f, 1.0f);
   DrawQuad();
   // Verify.
-  const uint8 kRed[] = {255, 0, 0, 255};
-  const uint8 kGreen[] = {0, 255, 0, 255};
+  const uint8_t kRed[] = {255, 0, 0, 255};
+  const uint8_t kGreen[] = {0, 255, 0, 255};
   EXPECT_TRUE(
       GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kRed));
 

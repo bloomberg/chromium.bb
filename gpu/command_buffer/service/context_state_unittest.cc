@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/context_state.h"
 
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {

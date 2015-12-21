@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/program_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/command_line.h"
@@ -38,15 +41,15 @@ namespace gpu {
 namespace gles2 {
 
 namespace {
-const uint32 kMaxVaryingVectors = 8;
-const uint32 kMaxDrawBuffers = 8;
-const uint32 kMaxDualSourceDrawBuffers = 8;
+const uint32_t kMaxVaryingVectors = 8;
+const uint32_t kMaxDrawBuffers = 8;
+const uint32_t kMaxDualSourceDrawBuffers = 8;
 
 void ShaderCacheCb(const std::string& key, const std::string& shader) {}
 
-uint32 ComputeOffset(const void* start, const void* position) {
-  return static_cast<const uint8*>(position) -
-         static_cast<const uint8*>(start);
+uint32_t ComputeOffset(const void* start, const void* position) {
+  return static_cast<const uint8_t*>(position) -
+         static_cast<const uint8_t*>(start);
 }
 
 }  // namespace anonymous
@@ -1062,12 +1065,12 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetProgramInfo) {
   ASSERT_TRUE(inputs != NULL);
   const ProgramInput* input = inputs;
   // TODO(gman): Don't assume these are in order.
-  for (uint32 ii = 0; ii < header->num_attribs; ++ii) {
+  for (uint32_t ii = 0; ii < header->num_attribs; ++ii) {
     const AttribInfo& expected = kAttribs[ii];
     EXPECT_EQ(expected.size, input->size);
     EXPECT_EQ(expected.type, input->type);
-    const int32* location = bucket.GetDataAs<const int32*>(
-        input->location_offset, sizeof(int32));
+    const int32_t* location = bucket.GetDataAs<const int32_t*>(
+        input->location_offset, sizeof(int32_t));
     ASSERT_TRUE(location != NULL);
     EXPECT_EQ(expected.location, *location);
     const char* name_buf = bucket.GetDataAs<const char*>(
@@ -1078,14 +1081,14 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetProgramInfo) {
     ++input;
   }
   // TODO(gman): Don't assume these are in order.
-  for (uint32 ii = 0; ii < header->num_uniforms; ++ii) {
+  for (uint32_t ii = 0; ii < header->num_uniforms; ++ii) {
     const UniformInfo& expected = kUniforms[ii];
     EXPECT_EQ(expected.size, input->size);
     EXPECT_EQ(expected.type, input->type);
-    const int32* locations = bucket.GetDataAs<const int32*>(
-        input->location_offset, sizeof(int32) * input->size);
+    const int32_t* locations = bucket.GetDataAs<const int32_t*>(
+        input->location_offset, sizeof(int32_t) * input->size);
     ASSERT_TRUE(locations != NULL);
-    for (int32 jj = 0; jj < input->size; ++jj) {
+    for (int32_t jj = 0; jj < input->size; ++jj) {
       EXPECT_EQ(
           ProgramManager::MakeFakeLocation(expected.fake_location, jj),
           locations[jj]);
@@ -1098,7 +1101,7 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetProgramInfo) {
     ++input;
   }
   EXPECT_EQ(header->num_attribs + header->num_uniforms,
-            static_cast<uint32>(input - inputs));
+            static_cast<uint32_t>(input - inputs));
 }
 
 TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetUniformBlocksNone) {
@@ -1494,16 +1497,16 @@ TEST_F(ProgramManagerWithShaderTest, UnusedUniformArrayElements) {
       sizeof(ProgramInput) * (header->num_attribs + header->num_uniforms));
   ASSERT_TRUE(inputs != NULL);
   const ProgramInput* input = inputs + header->num_attribs;
-  for (uint32 ii = 0; ii < header->num_uniforms; ++ii) {
+  for (uint32_t ii = 0; ii < header->num_uniforms; ++ii) {
     const UniformInfo& expected = kUniforms[ii];
     EXPECT_EQ(expected.size, input->size);
-    const int32* locations = bucket.GetDataAs<const int32*>(
-        input->location_offset, sizeof(int32) * input->size);
+    const int32_t* locations = bucket.GetDataAs<const int32_t*>(
+        input->location_offset, sizeof(int32_t) * input->size);
     ASSERT_TRUE(locations != NULL);
     EXPECT_EQ(
         ProgramManager::MakeFakeLocation(expected.fake_location, 0),
         locations[0]);
-    for (int32 jj = 1; jj < input->size; ++jj)
+    for (int32_t jj = 1; jj < input->size; ++jj)
       EXPECT_EQ(-1, locations[jj]);
     ++input;
   }
@@ -1512,7 +1515,7 @@ TEST_F(ProgramManagerWithShaderTest, UnusedUniformArrayElements) {
 TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   // Set up shader
   AttributeMap attrib_map;
-  for (uint32 ii = 0; ii < kNumAttribs; ++ii) {
+  for (uint32_t ii = 0; ii < kNumAttribs; ++ii) {
     attrib_map[kAttribs[ii].name] = TestHelper::ConstructAttribute(
         kAttribs[ii].type,
         kAttribs[ii].size,

@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_GPU_MEMORY_ALLOCATION_H_
 #define GPU_COMMAND_BUFFER_COMMON_GPU_MEMORY_ALLOCATION_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace gpu {
 
@@ -29,7 +29,7 @@ struct MemoryAllocation {
   };
 
   // Limits when this renderer is visible.
-  uint64 bytes_limit_when_visible;
+  uint64_t bytes_limit_when_visible;
   PriorityCutoff priority_cutoff_when_visible;
 
   MemoryAllocation()
@@ -37,10 +37,9 @@ struct MemoryAllocation {
         priority_cutoff_when_visible(CUTOFF_ALLOW_NOTHING) {
   }
 
-  MemoryAllocation(uint64 bytes_limit_when_visible)
+  MemoryAllocation(uint64_t bytes_limit_when_visible)
       : bytes_limit_when_visible(bytes_limit_when_visible),
-        priority_cutoff_when_visible(CUTOFF_ALLOW_EVERYTHING) {
-  }
+        priority_cutoff_when_visible(CUTOFF_ALLOW_EVERYTHING) {}
 
   bool Equals(const MemoryAllocation& other) const {
     return bytes_limit_when_visible ==

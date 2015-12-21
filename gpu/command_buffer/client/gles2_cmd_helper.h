@@ -5,6 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/gpu_export.h"

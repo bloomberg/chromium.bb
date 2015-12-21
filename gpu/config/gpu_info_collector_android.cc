@@ -4,6 +4,9 @@
 
 #include "gpu/config/gpu_info_collector.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/android/build_info.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -252,7 +255,7 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   return CollectBasicGraphicsInfo(gpu_info);
 }
 
-CollectInfoResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
+CollectInfoResult CollectGpuID(uint32_t* vendor_id, uint32_t* device_id) {
   DCHECK(vendor_id && device_id);
   *vendor_id = 0;
   *device_id = 0;

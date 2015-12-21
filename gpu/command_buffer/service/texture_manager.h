@@ -5,13 +5,16 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_TEXTURE_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_TEXTURE_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <list>
 #include <set>
 #include <string>
 #include <vector>
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -109,9 +112,7 @@ class GPU_EXPORT Texture {
     return num_uncleared_mips_;
   }
 
-  uint32 estimated_size() const {
-    return estimated_size_;
-  }
+  uint32_t estimated_size() const { return estimated_size_; }
 
   bool CanRenderTo() const {
     return target_ != GL_TEXTURE_EXTERNAL_OES;
@@ -265,7 +266,7 @@ class GPU_EXPORT Texture {
     GLenum type;
     scoped_refptr<gl::GLImage> image;
     ImageState image_state;
-    uint32 estimated_size;
+    uint32_t estimated_size;
   };
 
   struct FaceInfo {
@@ -497,7 +498,7 @@ class GPU_EXPORT Texture {
   bool has_images_;
 
   // Size in bytes this texture is assumed to take in memory.
-  uint32 estimated_size_;
+  uint32_t estimated_size_;
 
   // Cache of the computed CanRenderCondition flag.
   CanRenderCondition can_render_condition_;
@@ -859,7 +860,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
     GLenum format;
     GLenum type;
     const void* pixels;
-    uint32 pixels_size;
+    uint32_t pixels_size;
     TexImageCommandType command_type;
   };
 
@@ -888,7 +889,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
     GLenum format;
     GLenum type;
     const void* pixels;
-    uint32 pixels_size;
+    uint32_t pixels_size;
     // TODO(kkinnunen): currently this is used only for TexSubImage2D.
   };
 

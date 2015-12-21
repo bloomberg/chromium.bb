@@ -5,9 +5,12 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_MEMORY_TRACKING_H_
 #define GPU_COMMAND_BUFFER_SERVICE_MEMORY_TRACKING_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
 

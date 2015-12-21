@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/client/gpu_switches.h"
-#include "base/basictypes.h"
 
 namespace switches {
 

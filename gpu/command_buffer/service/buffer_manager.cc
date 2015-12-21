@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/buffer_manager.h"
+
+#include <stdint.h>
+
 #include <limits>
+
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -143,7 +147,7 @@ void Buffer::SetInfo(
     shadowed_ = shadow;
     size_ = size;
     if (shadowed_) {
-      shadow_.reset(new int8[size]);
+      shadow_.reset(new int8_t[size]);
     } else {
       shadow_.reset();
     }
@@ -160,10 +164,10 @@ void Buffer::SetInfo(
 
 bool Buffer::CheckRange(
     GLintptr offset, GLsizeiptr size) const {
-  int32 end = 0;
+  int32_t end = 0;
   return offset >= 0 && size >= 0 &&
-         offset <= std::numeric_limits<int32>::max() &&
-         size <= std::numeric_limits<int32>::max() &&
+         offset <= std::numeric_limits<int32_t>::max() &&
+         size <= std::numeric_limits<int32_t>::max() &&
          SafeAddInt32(offset, size, &end) && end <= size_;
 }
 
@@ -197,8 +201,8 @@ void Buffer::ClearCache() {
 template <typename T>
 GLuint GetMaxValue(const void* data, GLuint offset, GLsizei count) {
   GLuint max_value = 0;
-  const T* element = reinterpret_cast<const T*>(
-      static_cast<const int8*>(data) + offset);
+  const T* element =
+      reinterpret_cast<const T*>(static_cast<const int8_t*>(data) + offset);
   const T* end = element + count;
   for (; element < end; ++element) {
     if (*element > max_value) {
@@ -217,7 +221,7 @@ bool Buffer::GetMaxValueForRange(
     return true;
   }
 
-  uint32 size;
+  uint32_t size;
   if (!SafeMultiplyUint32(
       count, GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type), &size)) {
     return false;
@@ -227,7 +231,7 @@ bool Buffer::GetMaxValueForRange(
     return false;
   }
 
-  if (size > static_cast<uint32>(size_)) {
+  if (size > static_cast<uint32_t>(size_)) {
     return false;
   }
 
@@ -239,21 +243,21 @@ bool Buffer::GetMaxValueForRange(
   GLuint max_v = 0;
   switch (type) {
     case GL_UNSIGNED_BYTE:
-      max_v = GetMaxValue<uint8>(shadow_.get(), offset, count);
+      max_v = GetMaxValue<uint8_t>(shadow_.get(), offset, count);
       break;
     case GL_UNSIGNED_SHORT:
       // Check we are not accessing an odd byte for a 2 byte value.
       if ((offset & 1) != 0) {
         return false;
       }
-      max_v = GetMaxValue<uint16>(shadow_.get(), offset, count);
+      max_v = GetMaxValue<uint16_t>(shadow_.get(), offset, count);
       break;
     case GL_UNSIGNED_INT:
       // Check we are not accessing a non aligned address for a 4 byte value.
       if ((offset & 3) != 0) {
         return false;
       }
-      max_v = GetMaxValue<uint32>(shadow_.get(), offset, count);
+      max_v = GetMaxValue<uint32_t>(shadow_.get(), offset, count);
       break;
     default:
       NOTREACHED();  // should never get here by validation.
@@ -347,9 +351,9 @@ void BufferManager::DoBufferData(
     GLenum usage,
     const GLvoid* data) {
   // Clear the buffer to 0 if no initial data was passed in.
-  scoped_ptr<int8[]> zero;
+  scoped_ptr<int8_t[]> zero;
   if (!data) {
-    zero.reset(new int8[size]);
+    zero.reset(new int8_t[size]);
     memset(zero.get(), 0, size);
     data = zero.get();
   }

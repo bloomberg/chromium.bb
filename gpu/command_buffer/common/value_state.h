@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_COMMON_VALUE_STATE_H_
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/gpu_export.h"
 

@@ -8,10 +8,11 @@
 // Provides access to the GPU information for the system
 // on which chrome is currently running.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -75,8 +76,8 @@ struct GPU_EXPORT VideoDecodeAcceleratorCapabilities {
 struct GPU_EXPORT VideoEncodeAcceleratorSupportedProfile {
   VideoCodecProfile profile;
   gfx::Size max_resolution;
-  uint32 max_framerate_numerator;
-  uint32 max_framerate_denominator;
+  uint32_t max_framerate_numerator;
+  uint32_t max_framerate_denominator;
 };
 using VideoEncodeAcceleratorSupportedProfiles =
     std::vector<VideoEncodeAcceleratorSupportedProfile>;
@@ -86,12 +87,12 @@ struct GPU_EXPORT GPUInfo {
     GPUDevice();
     ~GPUDevice();
 
-    // The DWORD (uint32) representing the graphics card vendor id.
-    uint32 vendor_id;
+    // The DWORD (uint32_t) representing the graphics card vendor id.
+    uint32_t vendor_id;
 
-    // The DWORD (uint32) representing the graphics card device id.
+    // The DWORD (uint32_t) representing the graphics card device id.
     // Device ids are unique to vendor, not to one another.
-    uint32 device_id;
+    uint32_t device_id;
 
     // Whether this GPU is the currently used one.
     // Currently this field is only supported and meaningful on OS X.
@@ -140,7 +141,7 @@ struct GPU_EXPORT GPUInfo {
   // on the primary adapter. Note that the primary adapter can change at any
   // time so it is better to specify a particular LUID. Note that valid LUIDs
   // are always non-zero.
-  uint64 adapter_luid;
+  uint64_t adapter_luid;
 
   // The vendor of the graphics driver currently installed.
   std::string driver_vendor;
@@ -196,7 +197,7 @@ struct GPU_EXPORT GPUInfo {
 
   // GL reset notification strategy as defined by GL_ARB_robustness. 0 if GPU
   // reset detection or notification not available.
-  uint32 gl_reset_notification_strategy;
+  uint32_t gl_reset_notification_strategy;
 
   // The device semantics, i.e. whether the Vista and Windows 7 specific
   // semantics are available.
@@ -246,7 +247,7 @@ struct GPU_EXPORT GPUInfo {
     // is the root object, but calls to BeginGPUDevice/EndGPUDevice and
     // BeginAuxAttributes/EndAuxAttributes change the object to which these
     // calls should apply.
-    virtual void AddInt64(const char* name, int64 value) = 0;
+    virtual void AddInt64(const char* name, int64_t value) = 0;
     virtual void AddInt(const char* name, int value) = 0;
     virtual void AddString(const char* name, const std::string& value) = 0;
     virtual void AddBool(const char* name, bool value) = 0;

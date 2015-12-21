@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <GLES2/gl2.h>
+#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -59,7 +60,7 @@ class GLCubeMapTextureTest : public testing::TestWithParam<GLenum> {
   }
 
   GLManager gl_;
-  uint8 pixels_[256 * 4];
+  uint8_t pixels_[256 * 4];
   const int width_ = 16;
   GLuint texture_;
   GLuint framebuffer_id_;
@@ -138,7 +139,7 @@ TEST_P(GLCubeMapTextureTest, ReadPixelsFromIncompleteCubeTexture) {
   // by (POSITIVE_X, NEGATIVE_Z) order only once. If users call texImage2D again
   // after defining all faces, glReadPixels fails.
   GLsizei size = width_ * width_ * 4;
-  scoped_ptr<uint8[]> pixels(new uint8[size]);
+  scoped_ptr<uint8_t[]> pixels(new uint8_t[size]);
   glReadPixels(0, 0, width_, width_, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
 #else
   // Without force_cube_complete workaround,

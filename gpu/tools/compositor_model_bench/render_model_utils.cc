@@ -6,6 +6,9 @@
 
 #include "gpu/tools/compositor_model_bench/render_model_utils.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cstdlib>
 #include <map>
 #include <set>
@@ -136,9 +139,9 @@ void TextureGenerator::GenerateImageForTexture(int texID,
   int bytes_per_pixel = FormatBytesPerPixel(format);
   DCHECK_LE(bytes_per_pixel, 4);
   int imgID = images_generated_++;
-  image_data_[imgID].reset(new uint8[width*height*bytes_per_pixel]);
+  image_data_[imgID].reset(new uint8_t[width * height * bytes_per_pixel]);
   // Pick random colors to use for this texture.
-  uint8 random_color[4];
+  uint8_t random_color[4];
   for (int c = 0; c < 4; ++c) {
     random_color[c] = std::rand() % 255;
   }
@@ -148,7 +151,7 @@ void TextureGenerator::GenerateImageForTexture(int texID,
       int pix_addr = (y * width + x) * bytes_per_pixel;
       for (int c = 0; c < bytes_per_pixel; ++c) {
         bool on = ((x/8) + (y/8)) % 2;
-        uint8 v = on ? random_color[c] : ~random_color[c];
+        uint8_t v = on ? random_color[c] : ~random_color[c];
         (image_data_[imgID])[pix_addr + c] = v;
       }
       if (bytes_per_pixel == 4) {    // Randomize alpha.

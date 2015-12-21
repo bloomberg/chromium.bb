@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -2058,9 +2060,9 @@ TEST_P(GLES2DecoderManualInitTest, DrawArraysClearsAfterTexImage2DNULLCubemap) {
   // Fill out all the faces for 2 levels, leave 2 uncleared.
   for (int ii = 0; ii < 6; ++ii) {
     GLenum face = faces[ii];
-    int32 shm_id =
+    int32_t shm_id =
         (face == GL_TEXTURE_CUBE_MAP_NEGATIVE_Y) ? 0 : kSharedMemoryId;
-    uint32 shm_offset =
+    uint32_t shm_offset =
         (face == GL_TEXTURE_CUBE_MAP_NEGATIVE_Y) ? 0 : kSharedMemoryOffset;
     DoTexImage2D(face,
                  0,

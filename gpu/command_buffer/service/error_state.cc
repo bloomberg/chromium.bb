@@ -4,8 +4,11 @@
 
 #include "gpu/command_buffer/service/error_state.h"
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -20,7 +23,7 @@ class ErrorStateImpl : public ErrorState {
   explicit ErrorStateImpl(ErrorStateClient* client, Logger* logger);
   ~ErrorStateImpl() override;
 
-  uint32 GetGLError() override;
+  uint32_t GetGLError() override;
 
   void SetGLError(const char* filename,
                   int line,
@@ -63,7 +66,7 @@ class ErrorStateImpl : public ErrorState {
   // The last error message set.
   std::string last_error_;
   // Current GL error bits.
-  uint32 error_bits_;
+  uint32_t error_bits_;
 
   ErrorStateClient* client_;
   Logger* logger_;
@@ -84,11 +87,11 @@ ErrorStateImpl::ErrorStateImpl(ErrorStateClient* client, Logger* logger)
 
 ErrorStateImpl::~ErrorStateImpl() {}
 
-uint32 ErrorStateImpl::GetGLError() {
+uint32_t ErrorStateImpl::GetGLError() {
   // Check the GL error first, then our wrapped error.
   GLenum error = GetErrorHandleContextLoss();
   if (error == GL_NO_ERROR && error_bits_ != 0) {
-    for (uint32 mask = 1; mask != 0; mask = mask << 1) {
+    for (uint32_t mask = 1; mask != 0; mask = mask << 1) {
       if ((error_bits_ & mask) != 0) {
         error = GLES2Util::GLErrorBitToGLError(mask);
         break;

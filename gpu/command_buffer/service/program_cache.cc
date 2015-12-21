@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/program_cache.h"
 
+#include <stddef.h>
+
 #include <string>
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/shader_manager.h"

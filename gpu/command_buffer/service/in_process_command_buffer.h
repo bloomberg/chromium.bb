@@ -5,6 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_IN_PROCESS_COMMAND_BUFFER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_IN_PROCESS_COMMAND_BUFFER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
@@ -12,6 +15,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -85,7 +89,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                   bool is_offscreen,
                   gfx::AcceleratedWidget window,
                   const gfx::Size& size,
-                  const std::vector<int32>& attribs,
+                  const std::vector<int32_t>& attribs,
                   gfx::GpuPreference gpu_preference,
                   const base::Closure& context_lost_callback,
                   InProcessCommandBuffer* share_group,
@@ -96,34 +100,34 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // CommandBuffer implementation:
   bool Initialize() override;
   State GetLastState() override;
-  int32 GetLastToken() override;
-  void Flush(int32 put_offset) override;
-  void OrderingBarrier(int32 put_offset) override;
-  void WaitForTokenInRange(int32 start, int32 end) override;
-  void WaitForGetOffsetInRange(int32 start, int32 end) override;
-  void SetGetBuffer(int32 shm_id) override;
+  int32_t GetLastToken() override;
+  void Flush(int32_t put_offset) override;
+  void OrderingBarrier(int32_t put_offset) override;
+  void WaitForTokenInRange(int32_t start, int32_t end) override;
+  void WaitForGetOffsetInRange(int32_t start, int32_t end) override;
+  void SetGetBuffer(int32_t shm_id) override;
   scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
-                                                  int32* id) override;
-  void DestroyTransferBuffer(int32 id) override;
+                                                  int32_t* id) override;
+  void DestroyTransferBuffer(int32_t id) override;
   gpu::error::Error GetLastError() override;
 
   // GpuControl implementation:
   gpu::Capabilities GetCapabilities() override;
-  int32 CreateImage(ClientBuffer buffer,
-                    size_t width,
-                    size_t height,
-                    unsigned internalformat) override;
-  void DestroyImage(int32 id) override;
-  int32 CreateGpuMemoryBufferImage(size_t width,
-                                   size_t height,
-                                   unsigned internalformat,
-                                   unsigned usage) override;
-  uint32 InsertSyncPoint() override;
-  uint32 InsertFutureSyncPoint() override;
-  void RetireSyncPoint(uint32 sync_point) override;
-  void SignalSyncPoint(uint32 sync_point,
+  int32_t CreateImage(ClientBuffer buffer,
+                      size_t width,
+                      size_t height,
+                      unsigned internalformat) override;
+  void DestroyImage(int32_t id) override;
+  int32_t CreateGpuMemoryBufferImage(size_t width,
+                                     size_t height,
+                                     unsigned internalformat,
+                                     unsigned usage) override;
+  uint32_t InsertSyncPoint() override;
+  uint32_t InsertFutureSyncPoint() override;
+  void RetireSyncPoint(uint32_t sync_point) override;
+  void SignalSyncPoint(uint32_t sync_point,
                        const base::Closure& callback) override;
-  void SignalQuery(uint32 query_id, const base::Closure& callback) override;
+  void SignalQuery(uint32_t query_id, const base::Closure& callback) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
   CommandBufferNamespace GetNamespaceID() const override;
@@ -174,9 +178,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   };
 
 #if defined(OS_ANDROID)
-  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
-      uint32 stream_id);
-  uint32 CreateStreamTexture(uint32 texture_id);
+  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(uint32_t stream_id);
+  uint32_t CreateStreamTexture(uint32_t texture_id);
 #endif
 
  private:
@@ -184,7 +187,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     bool is_offscreen;
     gfx::AcceleratedWidget window;
     const gfx::Size& size;
-    const std::vector<int32>& attribs;
+    const std::vector<int32_t>& attribs;
     gfx::GpuPreference gpu_preference;
     gpu::Capabilities* capabilities;  // Ouptut.
     InProcessCommandBuffer* context_group;
@@ -193,7 +196,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     InitializeOnGpuThreadParams(bool is_offscreen,
                                 gfx::AcceleratedWidget window,
                                 const gfx::Size& size,
-                                const std::vector<int32>& attribs,
+                                const std::vector<int32_t>& attribs,
                                 gfx::GpuPreference gpu_preference,
                                 gpu::Capabilities* capabilities,
                                 InProcessCommandBuffer* share_group,
@@ -210,16 +213,16 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
   bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
   bool DestroyOnGpuThread();
-  void FlushOnGpuThread(int32 put_offset, uint32_t order_num);
+  void FlushOnGpuThread(int32_t put_offset, uint32_t order_num);
   void ScheduleDelayedWorkOnGpuThread();
-  uint32 CreateStreamTextureOnGpuThread(uint32 client_texture_id);
+  uint32_t CreateStreamTextureOnGpuThread(uint32_t client_texture_id);
   bool MakeCurrent();
   base::Closure WrapCallback(const base::Closure& callback);
   State GetStateFast();
   void QueueTask(const base::Closure& task) { service_->ScheduleTask(task); }
   void CheckSequencedThread();
-  void RetireSyncPointOnGpuThread(uint32 sync_point);
-  bool WaitSyncPointOnGpuThread(uint32 sync_point);
+  void RetireSyncPointOnGpuThread(uint32_t sync_point);
+  bool WaitSyncPointOnGpuThread(uint32_t sync_point);
   void FenceSyncReleaseOnGpuThread(uint64_t release);
   bool WaitFenceSyncOnGpuThread(gpu::CommandBufferNamespace namespace_id,
                                 uint64_t command_buffer_id,
@@ -227,20 +230,20 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void SignalSyncTokenOnGpuThread(const SyncToken& sync_token,
                                   const base::Closure& callback);
   void SignalQueryOnGpuThread(unsigned query_id, const base::Closure& callback);
-  void DestroyTransferBufferOnGpuThread(int32 id);
-  void CreateImageOnGpuThread(int32 id,
+  void DestroyTransferBufferOnGpuThread(int32_t id);
+  void CreateImageOnGpuThread(int32_t id,
                               const gfx::GpuMemoryBufferHandle& handle,
                               const gfx::Size& size,
                               gfx::BufferFormat format,
-                              uint32 internalformat,
+                              uint32_t internalformat,
                               uint32_t order_num,
                               uint64_t fence_sync);
-  void DestroyImageOnGpuThread(int32 id);
-  void SetGetBufferOnGpuThread(int32 shm_id, base::WaitableEvent* completion);
+  void DestroyImageOnGpuThread(int32_t id);
+  void SetGetBufferOnGpuThread(int32_t shm_id, base::WaitableEvent* completion);
 
   // Callbacks:
   void OnContextLost();
-  bool GetBufferChanged(int32 transfer_buffer_id);
+  bool GetBufferChanged(int32_t transfer_buffer_id);
   void PumpCommands();
   void PerformDelayedWork();
 
@@ -262,7 +265,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
   // Members accessed on the client thread:
   State last_state_;
-  int32 last_put_offset_;
+  int32_t last_put_offset_;
   gpu::Capabilities capabilities_;
   GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   base::AtomicSequenceNumber next_image_id_;

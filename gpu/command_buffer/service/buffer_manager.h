@@ -5,10 +5,13 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_BUFFER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_BUFFER_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/buffer.h"
@@ -164,7 +167,7 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 
   // A copy of the data in the buffer. This data is only kept if the target
   // is backed_ = true.
-  scoped_ptr<int8[]> shadow_;
+  scoped_ptr<int8_t[]> shadow_;
 
   // Size of buffer.
   GLsizeiptr size_;

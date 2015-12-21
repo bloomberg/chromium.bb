@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -163,7 +166,7 @@ TEST_P(GLES2DecoderTestDisabledExtensions, CHROMIUMPathRenderingDisabled) {
   }
   {
     cmds::BindFragmentInputLocationCHROMIUMBucket cmd;
-    const uint32 kBucketId = 123;
+    const uint32_t kBucketId = 123;
     const GLint kLocation = 2;
     const char* kName = "testing";
     SetBucketAsCString(kBucketId, kName);
@@ -248,11 +251,11 @@ class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
                               // since the implementation modifies the memory
                               // area.
     void* paths = NULL;
-    uint32 paths_shm_id = 0;
-    uint32 paths_shm_offset = 0;
+    uint32_t paths_shm_id = 0;
+    uint32_t paths_shm_offset = 0;
     GLfloat* transforms = NULL;
-    uint32 transforms_shm_id = 0;
-    uint32 transforms_shm_offset = 0;
+    uint32_t transforms_shm_id = 0;
+    uint32_t transforms_shm_offset = 0;
 
     if (testcase.transform_values) {
       transforms = GetSharedMemoryAs<GLfloat*>();
@@ -404,10 +407,10 @@ class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
   void CallAllInstancedCommandsWithInvalidSHM(GLsizei num_paths,
                                               const GLuint* paths,
                                               GLuint* paths_shm,
-                                              uint32 paths_shm_id,
-                                              uint32 paths_shm_offset,
-                                              uint32 transforms_shm_id,
-                                              uint32 transforms_shm_offset) {
+                                              uint32_t paths_shm_id,
+                                              uint32_t paths_shm_offset,
+                                              uint32_t transforms_shm_id,
+                                              uint32_t transforms_shm_offset) {
     const GLuint kPathBase = 0;
     const GLenum kFillMode = GL_INVERT;
     const GLuint kMask = 0x80;
@@ -1638,14 +1641,15 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedInvalidSHMValues) {
 
   for (int testcase = kFirstTestcase; testcase <= kLastTestcase; ++testcase) {
     GLfloat* transforms = GetSharedMemoryAs<GLfloat*>();
-    uint32 transforms_shm_id = shared_memory_id_;
-    uint32 transforms_shm_offset = shared_memory_offset_;
+    uint32_t transforms_shm_id = shared_memory_id_;
+    uint32_t transforms_shm_offset = shared_memory_offset_;
     memcpy(transforms, transform_values, sizeof(transform_values));
 
     GLuint* paths =
         GetSharedMemoryAsWithOffset<GLuint*>(sizeof(transform_values));
-    uint32 paths_shm_id = shared_memory_id_;
-    uint32 paths_shm_offset = shared_memory_offset_ + sizeof(transform_values);
+    uint32_t paths_shm_id = shared_memory_id_;
+    uint32_t paths_shm_offset =
+        shared_memory_offset_ + sizeof(transform_values);
 
     if (testcase & kPathsSHMIdInvalid) {
       paths_shm_id = kInvalidSharedMemoryId;
@@ -1669,7 +1673,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedInvalidSHMValues) {
 
 TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
        BindFragmentInputLocationCHROMIUM) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const GLint kLocation = 2;
   const char* kName = "testing";
   const char* kBadName1 = "gl_testing";

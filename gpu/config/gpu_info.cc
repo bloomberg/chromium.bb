@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "gpu/config/gpu_info.h"
 
 namespace {
@@ -90,7 +92,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     Version display_link_version;
     GPUDevice gpu;
     std::vector<GPUDevice> secondary_gpus;
-    uint64 adapter_luid;
+    uint64_t adapter_luid;
     std::string driver_vendor;
     std::string driver_version;
     std::string driver_date;
@@ -106,7 +108,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     std::string gl_ws_vendor;
     std::string gl_ws_version;
     std::string gl_ws_extensions;
-    uint32 gl_reset_notification_strategy;
+    uint32_t gl_reset_notification_strategy;
     bool can_lose_context;
     bool software_rendering;
     bool direct_rendering;

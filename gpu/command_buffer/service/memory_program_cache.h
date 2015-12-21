@@ -5,11 +5,14 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_MEMORY_PROGRAM_CACHE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_MEMORY_PROGRAM_CACHE_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"

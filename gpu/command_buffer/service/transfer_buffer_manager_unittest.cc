@@ -4,9 +4,11 @@
 
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::SharedMemory;
 

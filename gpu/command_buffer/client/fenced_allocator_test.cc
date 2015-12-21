@@ -4,6 +4,8 @@
 
 // This file contains the tests for the FencedAllocator class.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/aligned_memory.h"
@@ -65,9 +67,7 @@ class BaseFencedAllocatorTest : public testing::Test {
     helper_->Initialize(kBufferSize);
   }
 
-  int32 GetToken() {
-    return command_buffer_->GetLastState().token;
-  }
+  int32_t GetToken() { return command_buffer_->GetLastState().token; }
 
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
@@ -194,7 +194,7 @@ TEST_F(FencedAllocatorTest, TestFreePendingToken) {
   EXPECT_TRUE(allocator_->CheckConsistency());
 
   // Free one successful allocation, pending fence.
-  int32 token = helper_.get()->InsertToken();
+  int32_t token = helper_.get()->InsertToken();
   allocator_->FreePendingToken(offsets[0], token);
   EXPECT_TRUE(allocator_->CheckConsistency());
 
@@ -241,7 +241,7 @@ TEST_F(FencedAllocatorTest, FreeUnused) {
   EXPECT_EQ(0u, allocator_->GetLargestFreeSize());
 
   // Free one successful allocation, pending fence.
-  int32 token = helper_.get()->InsertToken();
+  int32_t token = helper_.get()->InsertToken();
   allocator_->FreePendingToken(offsets[0], token);
   EXPECT_TRUE(allocator_->CheckConsistency());
 
@@ -357,7 +357,7 @@ TEST_F(FencedAllocatorTest, TestGetLargestFreeOrPendingSize) {
             allocator_->GetLargestFreeOrPendingSize());
 
   // Free the last one, pending a token.
-  int32 token = helper_.get()->InsertToken();
+  int32_t token = helper_.get()->InsertToken();
   allocator_->FreePendingToken(offset2, token);
 
   // Now all the buffers have been freed...
@@ -545,7 +545,7 @@ TEST_F(FencedAllocatorWrapperTest, TestFreePendingToken) {
   EXPECT_TRUE(allocator_->CheckConsistency());
 
   // Free one successful allocation, pending fence.
-  int32 token = helper_.get()->InsertToken();
+  int32_t token = helper_.get()->InsertToken();
   allocator_->FreePendingToken(pointers[0], token);
   EXPECT_TRUE(allocator_->CheckConsistency());
 

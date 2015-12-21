@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/command_buffer_service.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/logging.h"
@@ -48,7 +51,7 @@ CommandBufferService::State CommandBufferService::GetLastState() {
   return state;
 }
 
-int32 CommandBufferService::GetLastToken() {
+int32_t CommandBufferService::GetLastToken() {
   return GetLastState().token;
 }
 
@@ -59,15 +62,15 @@ void CommandBufferService::UpdateState() {
   }
 }
 
-void CommandBufferService::WaitForTokenInRange(int32 start, int32 end) {
+void CommandBufferService::WaitForTokenInRange(int32_t start, int32_t end) {
   DCHECK(error_ != error::kNoError || InRange(start, end, token_));
 }
 
-void CommandBufferService::WaitForGetOffsetInRange(int32 start, int32 end) {
+void CommandBufferService::WaitForGetOffsetInRange(int32_t start, int32_t end) {
   DCHECK(error_ != error::kNoError || InRange(start, end, get_offset_));
 }
 
-void CommandBufferService::Flush(int32 put_offset) {
+void CommandBufferService::Flush(int32_t put_offset) {
   if (put_offset < 0 || put_offset > num_entries_) {
     error_ = gpu::error::kOutOfBounds;
     return;
@@ -79,18 +82,18 @@ void CommandBufferService::Flush(int32 put_offset) {
     put_offset_change_callback_.Run();
 }
 
-void CommandBufferService::OrderingBarrier(int32 put_offset) {
+void CommandBufferService::OrderingBarrier(int32_t put_offset) {
   Flush(put_offset);
 }
 
-void CommandBufferService::SetGetBuffer(int32 transfer_buffer_id) {
+void CommandBufferService::SetGetBuffer(int32_t transfer_buffer_id) {
   DCHECK_EQ(-1, ring_buffer_id_);
   DCHECK_EQ(put_offset_, get_offset_);  // Only if it's empty.
   // If the buffer is invalid we handle it gracefully.
   // This means ring_buffer_ can be NULL.
   ring_buffer_ = GetTransferBuffer(transfer_buffer_id);
   ring_buffer_id_ = transfer_buffer_id;
-  int32 size = ring_buffer_.get() ? ring_buffer_->size() : 0;
+  int32_t size = ring_buffer_.get() ? ring_buffer_->size() : 0;
   num_entries_ = size / sizeof(CommandBufferEntry);
   put_offset_ = 0;
   SetGetOffset(0);
@@ -112,13 +115,13 @@ void CommandBufferService::SetSharedStateBuffer(
   UpdateState();
 }
 
-void CommandBufferService::SetGetOffset(int32 get_offset) {
+void CommandBufferService::SetGetOffset(int32_t get_offset) {
   DCHECK(get_offset >= 0 && get_offset < num_entries_);
   get_offset_ = get_offset;
 }
 
 scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
-                                                                 int32* id) {
+                                                                 int32_t* id) {
   *id = -1;
 
   scoped_ptr<SharedMemory> shared_memory(new SharedMemory());
@@ -128,7 +131,7 @@ scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
     return NULL;
   }
 
-  static int32 next_id = 1;
+  static int32_t next_id = 1;
   *id = next_id++;
 
   if (!RegisterTransferBuffer(
@@ -142,7 +145,7 @@ scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
   return GetTransferBuffer(*id);
 }
 
-void CommandBufferService::DestroyTransferBuffer(int32 id) {
+void CommandBufferService::DestroyTransferBuffer(int32_t id) {
   transfer_buffer_manager_->DestroyTransferBuffer(id);
   if (id == ring_buffer_id_) {
     ring_buffer_id_ = -1;
@@ -153,18 +156,18 @@ void CommandBufferService::DestroyTransferBuffer(int32 id) {
   }
 }
 
-scoped_refptr<Buffer> CommandBufferService::GetTransferBuffer(int32 id) {
+scoped_refptr<Buffer> CommandBufferService::GetTransferBuffer(int32_t id) {
   return transfer_buffer_manager_->GetTransferBuffer(id);
 }
 
 bool CommandBufferService::RegisterTransferBuffer(
-    int32 id,
+    int32_t id,
     scoped_ptr<BufferBacking> buffer) {
   return transfer_buffer_manager_->RegisterTransferBuffer(id,
                                                           std::move(buffer));
 }
 
-void CommandBufferService::SetToken(int32 token) {
+void CommandBufferService::SetToken(int32_t token) {
   token_ = token;
   UpdateState();
 }
@@ -182,7 +185,7 @@ void CommandBufferService::SetContextLostReason(
   context_lost_reason_ = reason;
 }
 
-int32 CommandBufferService::GetPutOffset() {
+int32_t CommandBufferService::GetPutOffset() {
   return put_offset_;
 }
 

@@ -4,8 +4,11 @@
 
 #include "gpu/command_buffer/service/stream_texture_manager_in_process_android.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/android/surface_texture.h"
@@ -19,7 +22,7 @@ namespace {
 // Simply wraps a SurfaceTexture reference as a GLImage.
 class GLImageImpl : public gl::GLImage {
  public:
-  GLImageImpl(uint32 texture_id,
+  GLImageImpl(uint32_t texture_id,
               gles2::TextureManager* texture_manager,
               const scoped_refptr<gfx::SurfaceTexture>& surface_texture,
               const base::Closure& release_callback);
@@ -46,7 +49,7 @@ class GLImageImpl : public gl::GLImage {
  private:
   ~GLImageImpl() override;
 
-  uint32 texture_id_;
+  uint32_t texture_id_;
   gles2::TextureManager* texture_manager_;
   scoped_refptr<gfx::SurfaceTexture> surface_texture_;
   base::Closure release_callback_;
@@ -55,7 +58,7 @@ class GLImageImpl : public gl::GLImage {
 };
 
 GLImageImpl::GLImageImpl(
-    uint32 texture_id,
+    uint32_t texture_id,
     gles2::TextureManager* texture_manager,
     const scoped_refptr<gfx::SurfaceTexture>& surface_texture,
     const base::Closure& release_callback)
@@ -150,7 +153,7 @@ StreamTextureManagerInProcess::~StreamTextureManagerInProcess() {
 }
 
 GLuint StreamTextureManagerInProcess::CreateStreamTexture(
-    uint32 client_texture_id,
+    uint32_t client_texture_id,
     gles2::TextureManager* texture_manager) {
   CalledOnValidThread();
 
@@ -164,7 +167,7 @@ GLuint StreamTextureManagerInProcess::CreateStreamTexture(
   scoped_refptr<gfx::SurfaceTexture> surface_texture(
       gfx::SurfaceTexture::Create(texture->service_id()));
 
-  uint32 stream_id = next_id_++;
+  uint32_t stream_id = next_id_++;
   base::Closure release_callback =
       base::Bind(&StreamTextureManagerInProcess::OnReleaseStreamTexture,
                  weak_factory_.GetWeakPtr(), stream_id);
@@ -191,7 +194,7 @@ GLuint StreamTextureManagerInProcess::CreateStreamTexture(
   return stream_id;
 }
 
-void StreamTextureManagerInProcess::OnReleaseStreamTexture(uint32 stream_id) {
+void StreamTextureManagerInProcess::OnReleaseStreamTexture(uint32_t stream_id) {
   CalledOnValidThread();
   base::AutoLock lock(map_lock_);
   textures_.erase(stream_id);
@@ -199,7 +202,7 @@ void StreamTextureManagerInProcess::OnReleaseStreamTexture(uint32 stream_id) {
 
 // This can get called from any thread.
 scoped_refptr<gfx::SurfaceTexture>
-StreamTextureManagerInProcess::GetSurfaceTexture(uint32 stream_id) {
+StreamTextureManagerInProcess::GetSurfaceTexture(uint32_t stream_id) {
   base::AutoLock lock(map_lock_);
   TextureMap::const_iterator it = textures_.find(stream_id);
   if (it != textures_.end())

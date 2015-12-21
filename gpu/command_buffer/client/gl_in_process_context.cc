@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <utility>
 #include <vector>
@@ -19,6 +22,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -38,7 +42,7 @@ namespace gpu {
 
 namespace {
 
-const int32 kDefaultCommandBufferSize = 1024 * 1024;
+const int32_t kDefaultCommandBufferSize = 1024 * 1024;
 const unsigned int kDefaultStartTransferBufferSize = 4 * 1024 * 1024;
 const unsigned int kDefaultMinTransferBufferSize = 1 * 256 * 1024;
 const unsigned int kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
@@ -71,8 +75,8 @@ class GLInProcessContextImpl
 
 #if defined(OS_ANDROID)
   scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
-      uint32 stream_id) override;
-  uint32 CreateStreamTexture(uint32 texture_id) override;
+      uint32_t stream_id) override;
+  uint32_t CreateStreamTexture(uint32_t texture_id) override;
 #endif
 
  private:
@@ -154,7 +158,7 @@ bool GLInProcessContextImpl::Initialize(
   DCHECK(!use_global_share_group || !share_context);
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
-  std::vector<int32> attrib_vector;
+  std::vector<int32_t> attrib_vector;
   attribs.Serialize(&attrib_vector);
 
   base::Closure wrapped_callback =
@@ -263,12 +267,12 @@ void GLInProcessContextImpl::Destroy() {
 }
 
 #if defined(OS_ANDROID)
-scoped_refptr<gfx::SurfaceTexture>
-GLInProcessContextImpl::GetSurfaceTexture(uint32 stream_id) {
+scoped_refptr<gfx::SurfaceTexture> GLInProcessContextImpl::GetSurfaceTexture(
+    uint32_t stream_id) {
   return command_buffer_->GetSurfaceTexture(stream_id);
 }
 
-uint32 GLInProcessContextImpl::CreateStreamTexture(uint32 texture_id) {
+uint32_t GLInProcessContextImpl::CreateStreamTexture(uint32_t texture_id) {
   return command_buffer_->CreateStreamTexture(texture_id);
 }
 #endif

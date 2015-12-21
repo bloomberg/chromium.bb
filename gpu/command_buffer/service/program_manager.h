@@ -5,11 +5,14 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_PROGRAM_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_PROGRAM_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -96,7 +99,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
     GLsizei size;
     GLenum type;
-    uint32 accepts_api_type;
+    uint32_t accepts_api_type;
     GLint fake_location_base;
     bool is_array;
     std::string name;
@@ -432,7 +435,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   void GatherInterfaceBlockInfo();
 
   // Clears all the uniforms.
-  void ClearUniforms(std::vector<uint8>* zero_buffer);
+  void ClearUniforms(std::vector<uint8_t>* zero_buffer);
 
   // If long attribate names are mapped during shader translation, call
   // glBindAttribLocation() again with the mapped names.
@@ -539,8 +542,8 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 class GPU_EXPORT ProgramManager {
  public:
   explicit ProgramManager(ProgramCache* program_cache,
-                          uint32 max_varying_vectors,
-                          uint32 max_dual_source_draw_buffers,
+                          uint32_t max_varying_vectors,
+                          uint32_t max_dual_source_draw_buffers,
                           FeatureInfo* feature_info);
   ~ProgramManager();
 
@@ -578,13 +581,11 @@ class GPU_EXPORT ProgramManager {
   // Check if a Program is owned by this ProgramManager.
   bool IsOwned(Program* program) const;
 
-  static int32 MakeFakeLocation(int32 index, int32 element);
+  static int32_t MakeFakeLocation(int32_t index, int32_t element);
 
-  uint32 max_varying_vectors() const {
-    return max_varying_vectors_;
-  }
+  uint32_t max_varying_vectors() const { return max_varying_vectors_; }
 
-  uint32 max_dual_source_draw_buffers() const {
+  uint32_t max_dual_source_draw_buffers() const {
     return max_dual_source_draw_buffers_;
   }
 
@@ -609,12 +610,12 @@ class GPU_EXPORT ProgramManager {
   bool have_context_;
 
   // Used to clear uniforms.
-  std::vector<uint8> zero_;
+  std::vector<uint8_t> zero_;
 
   ProgramCache* program_cache_;
 
-  uint32 max_varying_vectors_;
-  uint32 max_dual_source_draw_buffers_;
+  uint32_t max_varying_vectors_;
+  uint32_t max_dual_source_draw_buffers_;
 
   scoped_refptr<FeatureInfo> feature_info_;
 

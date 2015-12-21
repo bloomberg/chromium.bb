@@ -7,8 +7,11 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_CMD_PARSER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_CMD_PARSER_H_
 
-#include "gpu/command_buffer/common/constants.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -66,7 +69,7 @@ class GPU_EXPORT CommandParser {
   CommandBufferOffset get_;
   CommandBufferOffset put_;
   CommandBufferEntry* buffer_;
-  int32 entry_count_;
+  int32_t entry_count_;
   AsyncAPIInterface* handler_;
 };
 

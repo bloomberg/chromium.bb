@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "gpu/command_buffer/service/error_state_mock.h"
-#include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
@@ -25,8 +28,8 @@ const GLint kMaxRectangleTextureSize = 64;
 const GLint kMax3DTextureSize = 256;
 const GLint kMaxRenderbufferSize = 64;
 const GLint kMaxSamples = 4;
-const uint32 kMaxDrawBuffers = 16;
-const uint32 kMaxColorAttachments = 16;
+const uint32_t kMaxDrawBuffers = 16;
+const uint32_t kMaxColorAttachments = 16;
 const bool kUseDefaultTextures = false;
 
 }  // namespace

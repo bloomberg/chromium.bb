@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -32,7 +34,7 @@ void VertexArrayManager::Destroy(bool have_context) {
 scoped_refptr<VertexAttribManager>
 VertexArrayManager::CreateVertexAttribManager(GLuint client_id,
                                               GLuint service_id,
-                                              uint32 num_vertex_attribs,
+                                              uint32_t num_vertex_attribs,
                                               bool client_visible) {
   scoped_refptr<VertexAttribManager> vertex_attrib_manager(
     new VertexAttribManager(this, service_id, num_vertex_attribs));

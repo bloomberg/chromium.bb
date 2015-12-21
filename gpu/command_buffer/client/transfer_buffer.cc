@@ -6,6 +6,9 @@
 
 #include "gpu/command_buffer/client/transfer_buffer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bits.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
@@ -95,7 +98,7 @@ unsigned int TransferBuffer::GetFreeSize() const {
 
 void TransferBuffer::AllocateRingBuffer(unsigned int size) {
   for (;size >= min_buffer_size_; size /= 2) {
-    int32 id = -1;
+    int32_t id = -1;
     scoped_refptr<gpu::Buffer> buffer =
         helper_->command_buffer()->CreateTransferBuffer(size, &id);
     if (id != -1) {

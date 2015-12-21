@@ -4,6 +4,9 @@
 
 #include "gpu/config/gpu_control_list.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/cpu.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -379,7 +382,7 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
   size_t dictionary_entry_count = 0;
 
   if (top_level) {
-    uint32 id;
+    uint32_t id;
     if (!value->GetInteger("id", reinterpret_cast<int*>(&id)) ||
         !entry->SetId(id)) {
       LOG(WARNING) << "Malformed id entry " << entry->id();
@@ -802,7 +805,7 @@ GpuControlList::GpuControlListEntry::GpuControlListEntry()
 
 GpuControlList::GpuControlListEntry::~GpuControlListEntry() { }
 
-bool GpuControlList::GpuControlListEntry::SetId(uint32 id) {
+bool GpuControlList::GpuControlListEntry::SetId(uint32_t id) {
   if (id != 0) {
     id_ = id;
     return true;
@@ -832,7 +835,7 @@ bool GpuControlList::GpuControlListEntry::SetVendorId(
 
 bool GpuControlList::GpuControlListEntry::AddDeviceId(
     const std::string& device_id_string) {
-  uint32 device_id = 0;
+  uint32_t device_id = 0;
   if (base::HexStringToUInt(device_id_string, &device_id) && device_id != 0) {
     device_id_list_.push_back(device_id);
     return true;
@@ -1304,7 +1307,7 @@ GpuControlList::OsType GpuControlList::GpuControlListEntry::GetOsType() const {
   return os_info_->type();
 }
 
-uint32 GpuControlList::GpuControlListEntry::id() const {
+uint32_t GpuControlList::GpuControlListEntry::id() const {
   return id_;
 }
 
@@ -1381,7 +1384,7 @@ bool GpuControlList::LoadList(const base::DictionaryValue& parsed_json,
   if (!parsed_json.GetList("entries", &list))
     return false;
 
-  uint32 max_entry_id = 0;
+  uint32_t max_entry_id = 0;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     const base::DictionaryValue* list_item = NULL;
     bool valid = list->GetDictionary(i, &list_item);
@@ -1464,8 +1467,8 @@ std::set<int> GpuControlList::MakeDecision(
   return features;
 }
 
-void GpuControlList::GetDecisionEntries(
-    std::vector<uint32>* entry_ids, bool disabled) const {
+void GpuControlList::GetDecisionEntries(std::vector<uint32_t>* entry_ids,
+                                        bool disabled) const {
   DCHECK(entry_ids);
   entry_ids->clear();
   for (size_t i = 0; i < active_entries_.size(); ++i) {
@@ -1526,7 +1529,7 @@ size_t GpuControlList::num_entries() const {
   return entries_.size();
 }
 
-uint32 GpuControlList::max_entry_id() const {
+uint32_t GpuControlList::max_entry_id() const {
   return max_entry_id_;
 }
 

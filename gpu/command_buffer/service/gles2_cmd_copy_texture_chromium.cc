@@ -4,9 +4,10 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "ui/gl/gl_implementation.h"

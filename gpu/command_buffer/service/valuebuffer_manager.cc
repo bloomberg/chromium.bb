@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
@@ -159,7 +161,7 @@ void ValuebufferManager::UpdateValuebufferState(Valuebuffer* valuebuffer) {
   valuebuffer->UpdateState(pending_state_map_.get());
 }
 
-uint32 ValuebufferManager::ApiTypeForSubscriptionTarget(unsigned int target) {
+uint32_t ValuebufferManager::ApiTypeForSubscriptionTarget(unsigned int target) {
   switch (target) {
     case GL_MOUSE_POSITION_CHROMIUM:
       return Program::kUniform2i;

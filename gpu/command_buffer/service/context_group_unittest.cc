@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/context_group.h"
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
@@ -70,19 +72,19 @@ TEST_F(ContextGroupTest, InitializeNoExtensions) {
       gl_.get(), DisallowedFeatures(), "", "", kBindGeneratesResource);
   group_->Initialize(decoder_.get(), CONTEXT_TYPE_OPENGLES2,
                      DisallowedFeatures());
-  EXPECT_EQ(static_cast<uint32>(TestHelper::kNumVertexAttribs),
+  EXPECT_EQ(static_cast<uint32_t>(TestHelper::kNumVertexAttribs),
             group_->max_vertex_attribs());
-  EXPECT_EQ(static_cast<uint32>(TestHelper::kNumTextureUnits),
+  EXPECT_EQ(static_cast<uint32_t>(TestHelper::kNumTextureUnits),
             group_->max_texture_units());
-  EXPECT_EQ(static_cast<uint32>(TestHelper::kMaxTextureImageUnits),
+  EXPECT_EQ(static_cast<uint32_t>(TestHelper::kMaxTextureImageUnits),
             group_->max_texture_image_units());
-  EXPECT_EQ(static_cast<uint32>(TestHelper::kMaxVertexTextureImageUnits),
-             group_->max_vertex_texture_image_units());
-  EXPECT_EQ(static_cast<uint32>(TestHelper::kMaxFragmentUniformVectors),
+  EXPECT_EQ(static_cast<uint32_t>(TestHelper::kMaxVertexTextureImageUnits),
+            group_->max_vertex_texture_image_units());
+  EXPECT_EQ(static_cast<uint32_t>(TestHelper::kMaxFragmentUniformVectors),
             group_->max_fragment_uniform_vectors());
-  EXPECT_EQ(static_cast<uint32>(TestHelper::kMaxVaryingVectors),
+  EXPECT_EQ(static_cast<uint32_t>(TestHelper::kMaxVaryingVectors),
             group_->max_varying_vectors());
-  EXPECT_EQ(static_cast<uint32>(TestHelper::kMaxVertexUniformVectors),
+  EXPECT_EQ(static_cast<uint32_t>(TestHelper::kMaxVertexUniformVectors),
             group_->max_vertex_uniform_vectors());
   EXPECT_TRUE(group_->buffer_manager() != NULL);
   EXPECT_TRUE(group_->framebuffer_manager() != NULL);

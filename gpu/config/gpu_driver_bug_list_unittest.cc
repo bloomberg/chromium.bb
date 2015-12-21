@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -107,7 +109,7 @@ TEST_F(GpuDriverBugListTest, GpuSwitching) {
       GpuControlList::kOsMacosx, "10.8", gpu_info());
   EXPECT_EQ(1u, switching.size());
   EXPECT_EQ(1u, switching.count(FORCE_DISCRETE_GPU));
-  std::vector<uint32> entries;
+  std::vector<uint32_t> entries;
   driver_bug_list->GetDecisionEntries(&entries, false);
   ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(1u, entries[0]);

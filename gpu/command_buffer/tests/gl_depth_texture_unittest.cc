@@ -4,6 +4,8 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -181,7 +183,9 @@ TEST_F(DepthTextureTest, RenderTo) {
       continue;
     }
 
-    uint8 actual_pixels[kResolution * kResolution * 4] = { 0, };
+    uint8_t actual_pixels[kResolution * kResolution * 4] = {
+        0,
+    };
     glReadPixels(
         0, 0, kResolution, kResolution, GL_RGBA, GL_UNSIGNED_BYTE,
         actual_pixels);
@@ -198,9 +202,9 @@ TEST_F(DepthTextureTest, RenderTo) {
     int bad_count = 0;  // used to not spam the log with too many messages.
     for (GLint yy = 0; bad_count < 16 && yy < kResolution; ++yy) {
       for (GLint xx = 0; bad_count < 16 && xx < kResolution; ++xx) {
-        const uint8* actual = &actual_pixels[(yy * kResolution + xx) * 4];
-        const uint8* left = actual - 4;
-        const uint8* down = actual - kResolution * 4;
+        const uint8_t* actual = &actual_pixels[(yy * kResolution + xx) * 4];
+        const uint8_t* left = actual - 4;
+        const uint8_t* down = actual - kResolution * 4;
 
         // NOTE: Qualcomm on Nexus 4 the right most column has the same
         // values as the next to right most column. (bad interpolator?)

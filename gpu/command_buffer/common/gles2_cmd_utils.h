@@ -8,6 +8,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>
@@ -219,9 +220,11 @@ class GLES2_UTILS_EXPORT GLES2Util {
   static std::string GetQualifiedEnumString(
       const EnumToString* table, size_t count, uint32_t value);
 
-  static bool ComputeImageRowSizeHelper(
-      int width, uint32 bytes_per_group, int alignment,
-      uint32* rt_unpadded_row_size, uint32* rt_padded_row_size);
+  static bool ComputeImageRowSizeHelper(int width,
+                                        uint32_t bytes_per_group,
+                                        int alignment,
+                                        uint32_t* rt_unpadded_row_size,
+                                        uint32_t* rt_padded_row_size);
 
   static const EnumToString* const enum_to_string_table_;
   static const size_t enum_to_string_table_len_;

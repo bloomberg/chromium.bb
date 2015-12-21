@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -193,7 +196,7 @@ TEST_F(BufferManagerTest, DoBufferSubData) {
   const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;
-  const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  const uint8_t data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
   manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
   Buffer* buffer = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(buffer != NULL);
@@ -208,7 +211,7 @@ TEST_F(BufferManagerTest, DoBufferSubData) {
   EXPECT_FALSE(DoBufferSubData(buffer, kTarget, 0, -1, data));
   DoBufferData(buffer, kTarget, 1, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
   const int size = 0x20000;
-  scoped_ptr<uint8[]> temp(new uint8[size]);
+  scoped_ptr<uint8_t[]> temp(new uint8_t[size]);
   EXPECT_FALSE(DoBufferSubData(buffer, kTarget, 0 - size, size, temp.get()));
   EXPECT_FALSE(DoBufferSubData(buffer, kTarget, 1, size / 2, temp.get()));
 }
@@ -243,8 +246,8 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint8) {
   const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;
-  const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-  const uint8 new_data[] = {100, 120, 110};
+  const uint8_t data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  const uint8_t new_data[] = {100, 120, 110};
   manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
   Buffer* buffer = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(buffer != NULL);
@@ -281,8 +284,8 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint16) {
   const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;
-  const uint16 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-  const uint16 new_data[] = {100, 120, 110};
+  const uint16_t data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  const uint16_t new_data[] = {100, 120, 110};
   manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
   Buffer* buffer = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(buffer != NULL);
@@ -322,8 +325,8 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint32) {
   const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;
-  const uint32 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-  const uint32 new_data[] = {100, 120, 110};
+  const uint32_t data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  const uint32_t new_data[] = {100, 120, 110};
   manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
   Buffer* buffer = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(buffer != NULL);
@@ -386,7 +389,7 @@ TEST_F(BufferManagerClientSideArraysTest, StreamBuffersAreShadowed) {
   const GLenum kTarget = GL_ARRAY_BUFFER;
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;
-  static const uint32 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  static const uint32_t data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
   manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
   Buffer* buffer = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(buffer != NULL);
@@ -404,9 +407,9 @@ TEST_F(BufferManagerTest, MaxValueCacheClearedCorrectly) {
   const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;
-  const uint32 data1[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-  const uint32 data2[] = {11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-  const uint32 data3[] = {30, 29, 28};
+  const uint32_t data1[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  const uint32_t data2[] = {11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+  const uint32_t data3[] = {30, 29, 28};
   manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
   Buffer* buffer = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(buffer != NULL);

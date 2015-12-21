@@ -9,6 +9,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -27,54 +28,52 @@ const CopyType kCopyTypes[] = {
     TexSubImage,
 };
 
-const uint8 kCompressedImageColor[4] = { 255u, 0u, 0u, 255u };
+const uint8_t kCompressedImageColor[4] = {255u, 0u, 0u, 255u};
 
 // Single compressed ATC block of source pixels all set to:
 // kCompressedImageColor.
-const uint8 kCompressedImageATC[8] = {
-    0x0, 0x7c, 0x0, 0xf8, 0x55, 0x55, 0x55, 0x55 };
+const uint8_t kCompressedImageATC[8] = {0x0,  0x7c, 0x0,  0xf8,
+                                        0x55, 0x55, 0x55, 0x55};
 
 // Single compressed ATCIA block of source pixels all set to:
 // kCompressedImageColor.
-const uint8 kCompressedImageATCIA[16] = {
-    0xff, 0xff, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x7c, 0x0, 0xf8, 0x55, 0x55, 0x55, 0x55 };
+const uint8_t kCompressedImageATCIA[16] = {0xff, 0xff, 0x0,  0x0,  0x0, 0x0,
+                                           0x0,  0x0,  0x0,  0x7c, 0x0, 0xf8,
+                                           0x55, 0x55, 0x55, 0x55};
 
 // Single compressed DXT1 block of source pixels all set to:
 // kCompressedImageColor.
-const uint8 kCompressedImageDXT1[8] = {
-    0x00, 0xf8, 0x00, 0xf8, 0xaa, 0xaa, 0xaa, 0xaa };
+const uint8_t kCompressedImageDXT1[8] = {0x00, 0xf8, 0x00, 0xf8,
+                                         0xaa, 0xaa, 0xaa, 0xaa};
 
 // Four compressed DXT1 blocks solidly colored in red, green, blue and black:
 // [R][G]
 // [B][b]
-const uint8 kCompressedImageDXT1RGB[32] = {
-    0x0, 0xf8, 0x0, 0xf8, 0xaa, 0xaa, 0xaa, 0xaa,
-    0xe0, 0x7, 0xe0, 0x7, 0xaa, 0xaa, 0xaa, 0xaa,
-    0x1f, 0x0, 0x1f, 0x0, 0xaa, 0xaa, 0xaa, 0xaa,
-    0x0, 0x0, 0x0, 0x0, 0xaa, 0xaa, 0xaa, 0xaa };
+const uint8_t kCompressedImageDXT1RGB[32] = {
+    0x0,  0xf8, 0x0,  0xf8, 0xaa, 0xaa, 0xaa, 0xaa, 0xe0, 0x7,  0xe0,
+    0x7,  0xaa, 0xaa, 0xaa, 0xaa, 0x1f, 0x0,  0x1f, 0x0,  0xaa, 0xaa,
+    0xaa, 0xaa, 0x0,  0x0,  0x0,  0x0,  0xaa, 0xaa, 0xaa, 0xaa};
 
 // Single compressed DXT5 block of source pixels all set to:
 // kCompressedImageColor.
-const uint8 kCompressedImageDXT5[16] = {
-    0xff, 0xff, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0xf8, 0x0, 0xf8, 0xaa, 0xaa, 0xaa, 0xaa };
+const uint8_t kCompressedImageDXT5[16] = {0xff, 0xff, 0x0,  0x0,  0x0, 0x0,
+                                          0x0,  0x0,  0x0,  0xf8, 0x0, 0xf8,
+                                          0xaa, 0xaa, 0xaa, 0xaa};
 
 // Single compressed DXT1 block of source pixels all set to:
 // kCompressedImageColor.
-const uint8 kCompressedImageETC1[8] = {
-    0x0, 0x0, 0xf8, 0x2, 0xff, 0xff, 0x0, 0x0 };
+const uint8_t kCompressedImageETC1[8] = {0x0,  0x0,  0xf8, 0x2,
+                                         0xff, 0xff, 0x0,  0x0};
 
 // Single block of zeroes, used for texture pre-allocation.
-const uint8 kInvalidCompressedImage[8] = {
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
+const uint8_t kInvalidCompressedImage[8] = {0x0, 0x0, 0x0, 0x0,
+                                            0x0, 0x0, 0x0, 0x0};
 
 // Four blocks of zeroes, used for texture pre-allocation.
-const uint8 kInvalidCompressedImageLarge[32] = {
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
+const uint8_t kInvalidCompressedImageLarge[32] = {
+    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 
 void glEnableDisable(GLint param, GLboolean value) {
   if (value)
@@ -199,11 +198,11 @@ TEST_P(GLCompressedCopyTextureCHROMIUMTest, InternalFormat) {
 
   struct Image {
     const GLint format;
-    const uint8* data;
+    const uint8_t* data;
     const GLsizei data_size;
 
-    Image(const GLint format, const uint8* data, const GLsizei data_size) :
-      format(format), data(data), data_size(data_size) {}
+    Image(const GLint format, const uint8_t* data, const GLsizei data_size)
+        : format(format), data(data), data_size(data_size) {}
   };
   std::vector<scoped_ptr<Image>> supported_formats;
 
@@ -279,7 +278,7 @@ TEST_P(GLCompressedCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
 
   CopyType copy_type = GetParam();
 
-  const uint8 kUncompressedPixels[1 * 4] = { 255u, 0u, 0u, 255u };
+  const uint8_t kUncompressedPixels[1 * 4] = {255u, 0u, 0u, 255u};
 
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -635,10 +634,10 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, CopySubTextureOffset) {
   glBindTexture(GL_TEXTURE_2D, textures_[1]);
   glUniform1i(texture_loc, 0);
 
-  const uint8 kBlack[1 * 4] = {0u, 0u, 0u, 255u};
-  const uint8 kRed[1 * 4] = {255u, 0u, 0u, 255u};
-  const uint8 kGreen[1 * 4] = {0u, 255u, 0u, 255u};
-  const uint8 kBlue[1 * 4] = {0u, 0u, 255u, 255u};
+  const uint8_t kBlack[1 * 4] = {0u, 0u, 0u, 255u};
+  const uint8_t kRed[1 * 4] = {255u, 0u, 0u, 255u};
+  const uint8_t kGreen[1 * 4] = {0u, 255u, 0u, 255u};
+  const uint8_t kBlue[1 * 4] = {0u, 0u, 255u, 255u};
 
   // Copy each block one by one in a clockwise fashion. Note that we reset the
   // destination texture after each copy operation. That's because on some
@@ -757,9 +756,9 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, CopySubTexturePreservation) {
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glFlush();
 
-  const uint8 kBlack[1 * 4] = {0u, 0u, 0u, 255u};
-  const uint8 kRed[1 * 4] = {255u, 0u, 0u, 255u};
-  const uint8 kBlue[1 * 4] = {0u, 0u, 255u, 255u};
+  const uint8_t kBlack[1 * 4] = {0u, 0u, 0u, 255u};
+  const uint8_t kRed[1 * 4] = {255u, 0u, 0u, 255u};
+  const uint8_t kBlue[1 * 4] = {0u, 0u, 255u, 255u};
 
   // Note that while destination texture is 8 x 8 pixels the viewport is only
   // 4 x 4.

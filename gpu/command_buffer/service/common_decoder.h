@@ -5,9 +5,13 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_COMMON_DECODER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_COMMON_DECODER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <stack>
 #include <string>
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/buffer.h"
@@ -100,7 +104,7 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
     }
 
     size_t size_;
-    ::scoped_ptr<int8[]> data_;
+    ::scoped_ptr<int8_t[]> data_;
 
     DISALLOW_COPY_AND_ASSIGN(Bucket);
   };
@@ -116,10 +120,10 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
   CommandBufferEngine* engine() const { return engine_; }
 
   // Creates a bucket. If the bucket already exists returns that bucket.
-  Bucket* CreateBucket(uint32 bucket_id);
+  Bucket* CreateBucket(uint32_t bucket_id);
 
   // Gets a bucket. Returns NULL if the bucket does not exist.
-  Bucket* GetBucket(uint32 bucket_id) const;
+  Bucket* GetBucket(uint32_t bucket_id) const;
 
   // Gets the address of shared memory data, given a shared memory ID and an
   // offset. Also checks that the size is consistent with the shared memory
@@ -165,8 +169,8 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
  private:
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
-  #define COMMON_COMMAND_BUFFER_CMD_OP(name)             \
-     error::Error Handle##name(uint32 immediate_data_size, const void* data);
+#define COMMON_COMMAND_BUFFER_CMD_OP(name) \
+  error::Error Handle##name(uint32_t immediate_data_size, const void* data);
 
   COMMON_COMMAND_BUFFER_CMDS(COMMON_COMMAND_BUFFER_CMD_OP)
 
@@ -174,19 +178,18 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
 
   CommandBufferEngine* engine_;
 
-  typedef std::map<uint32, linked_ptr<Bucket> > BucketMap;
+  typedef std::map<uint32_t, linked_ptr<Bucket>> BucketMap;
   BucketMap buckets_;
 
-  typedef Error (CommonDecoder::*CmdHandler)(
-      uint32 immediate_data_size,
-      const void* data);
+  typedef Error (CommonDecoder::*CmdHandler)(uint32_t immediate_data_size,
+                                             const void* data);
 
   // A struct to hold info about each command.
   struct CommandInfo {
     CmdHandler cmd_handler;
-    uint8 arg_flags;   // How to handle the arguments for this command
-    uint8 cmd_flags;   // How to handle this command
-    uint16 arg_count;  // How many arguments are expected for this command.
+    uint8_t arg_flags;   // How to handle the arguments for this command
+    uint8_t cmd_flags;   // How to handle this command
+    uint16_t arg_count;  // How many arguments are expected for this command.
   };
 
   // A table of CommandInfo for all the commands.

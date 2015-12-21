@@ -18,7 +18,7 @@ struct ActiveTexture {
   typedef ActiveTexture ValueType;
   static const CommandId kCmdId = kActiveTexture;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -50,7 +50,7 @@ struct AttachShader {
   typedef AttachShader ValueType;
   static const CommandId kCmdId = kAttachShader;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -86,7 +86,7 @@ struct BindAttribLocationBucket {
   typedef BindAttribLocationBucket ValueType;
   static const CommandId kCmdId = kBindAttribLocationBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -130,7 +130,7 @@ struct BindBuffer {
   typedef BindBuffer ValueType;
   static const CommandId kCmdId = kBindBuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -166,7 +166,7 @@ struct BindBufferBase {
   typedef BindBufferBase ValueType;
   static const CommandId kCmdId = kBindBufferBase;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -207,7 +207,7 @@ struct BindBufferRange {
   typedef BindBufferRange ValueType;
   static const CommandId kCmdId = kBindBufferRange;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -266,7 +266,7 @@ struct BindFramebuffer {
   typedef BindFramebuffer ValueType;
   static const CommandId kCmdId = kBindFramebuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -303,7 +303,7 @@ struct BindRenderbuffer {
   typedef BindRenderbuffer ValueType;
   static const CommandId kCmdId = kBindRenderbuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -340,7 +340,7 @@ struct BindSampler {
   typedef BindSampler ValueType;
   static const CommandId kCmdId = kBindSampler;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -376,7 +376,7 @@ struct BindTexture {
   typedef BindTexture ValueType;
   static const CommandId kCmdId = kBindTexture;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -412,7 +412,7 @@ struct BindTransformFeedback {
   typedef BindTransformFeedback ValueType;
   static const CommandId kCmdId = kBindTransformFeedback;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -449,7 +449,7 @@ struct BlendColor {
   typedef BlendColor ValueType;
   static const CommandId kCmdId = kBlendColor;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -497,7 +497,7 @@ struct BlendEquation {
   typedef BlendEquation ValueType;
   static const CommandId kCmdId = kBlendEquation;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -529,7 +529,7 @@ struct BlendEquationSeparate {
   typedef BlendEquationSeparate ValueType;
   static const CommandId kCmdId = kBlendEquationSeparate;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -566,7 +566,7 @@ struct BlendFunc {
   typedef BlendFunc ValueType;
   static const CommandId kCmdId = kBlendFunc;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -602,7 +602,7 @@ struct BlendFuncSeparate {
   typedef BlendFuncSeparate ValueType;
   static const CommandId kCmdId = kBlendFuncSeparate;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -654,7 +654,7 @@ struct BufferData {
   typedef BufferData ValueType;
   static const CommandId kCmdId = kBufferData;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -712,7 +712,7 @@ struct BufferSubData {
   typedef BufferSubData ValueType;
   static const CommandId kCmdId = kBufferSubData;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -771,7 +771,7 @@ struct CheckFramebufferStatus {
   typedef CheckFramebufferStatus ValueType;
   static const CommandId kCmdId = kCheckFramebufferStatus;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef GLenum Result;
 
@@ -821,7 +821,7 @@ struct Clear {
   typedef Clear ValueType;
   static const CommandId kCmdId = kClear;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -852,7 +852,7 @@ struct ClearBufferfi {
   typedef ClearBufferfi ValueType;
   static const CommandId kCmdId = kClearBufferfi;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -904,7 +904,7 @@ struct ClearBufferfvImmediate {
   typedef ClearBufferfvImmediate ValueType;
   static const CommandId kCmdId = kClearBufferfvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLfloat) * 4);
@@ -960,7 +960,7 @@ struct ClearBufferivImmediate {
   typedef ClearBufferivImmediate ValueType;
   static const CommandId kCmdId = kClearBufferivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLint) * 4);
@@ -1016,7 +1016,7 @@ struct ClearBufferuivImmediate {
   typedef ClearBufferuivImmediate ValueType;
   static const CommandId kCmdId = kClearBufferuivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLuint) * 4);
@@ -1062,7 +1062,7 @@ struct ClearColor {
   typedef ClearColor ValueType;
   static const CommandId kCmdId = kClearColor;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1110,7 +1110,7 @@ struct ClearDepthf {
   typedef ClearDepthf ValueType;
   static const CommandId kCmdId = kClearDepthf;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1142,7 +1142,7 @@ struct ClearStencil {
   typedef ClearStencil ValueType;
   static const CommandId kCmdId = kClearStencil;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1174,7 +1174,7 @@ struct ClientWaitSync {
   typedef ClientWaitSync ValueType;
   static const CommandId kCmdId = kClientWaitSync;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   typedef GLenum Result;
 
@@ -1244,7 +1244,7 @@ struct ColorMask {
   typedef ColorMask ValueType;
   static const CommandId kCmdId = kColorMask;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1295,7 +1295,7 @@ struct CompileShader {
   typedef CompileShader ValueType;
   static const CommandId kCmdId = kCompileShader;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1327,7 +1327,7 @@ struct CompressedTexImage2DBucket {
   typedef CompressedTexImage2DBucket ValueType;
   static const CommandId kCmdId = kCompressedTexImage2DBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1394,7 +1394,7 @@ struct CompressedTexImage2D {
   typedef CompressedTexImage2D ValueType;
   static const CommandId kCmdId = kCompressedTexImage2D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1473,7 +1473,7 @@ struct CompressedTexSubImage2DBucket {
   typedef CompressedTexSubImage2DBucket ValueType;
   static const CommandId kCmdId = kCompressedTexSubImage2DBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1550,7 +1550,7 @@ struct CompressedTexSubImage2D {
   typedef CompressedTexSubImage2D ValueType;
   static const CommandId kCmdId = kCompressedTexSubImage2D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1640,7 +1640,7 @@ struct CompressedTexImage3DBucket {
   typedef CompressedTexImage3DBucket ValueType;
   static const CommandId kCmdId = kCompressedTexImage3DBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1713,7 +1713,7 @@ struct CompressedTexImage3D {
   typedef CompressedTexImage3D ValueType;
   static const CommandId kCmdId = kCompressedTexImage3D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1798,7 +1798,7 @@ struct CompressedTexSubImage3DBucket {
   typedef CompressedTexSubImage3DBucket ValueType;
   static const CommandId kCmdId = kCompressedTexSubImage3DBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1888,7 +1888,7 @@ struct CompressedTexSubImage3D {
   typedef CompressedTexSubImage3D ValueType;
   static const CommandId kCmdId = kCompressedTexSubImage3D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -1990,7 +1990,7 @@ struct CopyBufferSubData {
   typedef CopyBufferSubData ValueType;
   static const CommandId kCmdId = kCopyBufferSubData;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2049,7 +2049,7 @@ struct CopyTexImage2D {
   typedef CopyTexImage2D ValueType;
   static const CommandId kCmdId = kCopyTexImage2D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2121,7 +2121,7 @@ struct CopyTexSubImage2D {
   typedef CopyTexSubImage2D ValueType;
   static const CommandId kCmdId = kCopyTexSubImage2D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2198,7 +2198,7 @@ struct CopyTexSubImage3D {
   typedef CopyTexSubImage3D ValueType;
   static const CommandId kCmdId = kCopyTexSubImage3D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2281,7 +2281,7 @@ struct CreateProgram {
   typedef CreateProgram ValueType;
   static const CommandId kCmdId = kCreateProgram;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2313,7 +2313,7 @@ struct CreateShader {
   typedef CreateShader ValueType;
   static const CommandId kCmdId = kCreateShader;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2349,7 +2349,7 @@ struct CullFace {
   typedef CullFace ValueType;
   static const CommandId kCmdId = kCullFace;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2381,7 +2381,7 @@ struct DeleteBuffersImmediate {
   typedef DeleteBuffersImmediate ValueType;
   static const CommandId kCmdId = kDeleteBuffersImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -2423,7 +2423,7 @@ struct DeleteFramebuffersImmediate {
   typedef DeleteFramebuffersImmediate ValueType;
   static const CommandId kCmdId = kDeleteFramebuffersImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -2465,7 +2465,7 @@ struct DeleteProgram {
   typedef DeleteProgram ValueType;
   static const CommandId kCmdId = kDeleteProgram;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2497,7 +2497,7 @@ struct DeleteRenderbuffersImmediate {
   typedef DeleteRenderbuffersImmediate ValueType;
   static const CommandId kCmdId = kDeleteRenderbuffersImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -2539,7 +2539,7 @@ struct DeleteSamplersImmediate {
   typedef DeleteSamplersImmediate ValueType;
   static const CommandId kCmdId = kDeleteSamplersImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -2581,7 +2581,7 @@ struct DeleteSync {
   typedef DeleteSync ValueType;
   static const CommandId kCmdId = kDeleteSync;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2613,7 +2613,7 @@ struct DeleteShader {
   typedef DeleteShader ValueType;
   static const CommandId kCmdId = kDeleteShader;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2645,7 +2645,7 @@ struct DeleteTexturesImmediate {
   typedef DeleteTexturesImmediate ValueType;
   static const CommandId kCmdId = kDeleteTexturesImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -2687,7 +2687,7 @@ struct DeleteTransformFeedbacksImmediate {
   typedef DeleteTransformFeedbacksImmediate ValueType;
   static const CommandId kCmdId = kDeleteTransformFeedbacksImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -2729,7 +2729,7 @@ struct DepthFunc {
   typedef DepthFunc ValueType;
   static const CommandId kCmdId = kDepthFunc;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2761,7 +2761,7 @@ struct DepthMask {
   typedef DepthMask ValueType;
   static const CommandId kCmdId = kDepthMask;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2793,7 +2793,7 @@ struct DepthRangef {
   typedef DepthRangef ValueType;
   static const CommandId kCmdId = kDepthRangef;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2829,7 +2829,7 @@ struct DetachShader {
   typedef DetachShader ValueType;
   static const CommandId kCmdId = kDetachShader;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2865,7 +2865,7 @@ struct Disable {
   typedef Disable ValueType;
   static const CommandId kCmdId = kDisable;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2896,7 +2896,7 @@ struct DisableVertexAttribArray {
   typedef DisableVertexAttribArray ValueType;
   static const CommandId kCmdId = kDisableVertexAttribArray;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2929,7 +2929,7 @@ struct DrawArrays {
   typedef DrawArrays ValueType;
   static const CommandId kCmdId = kDrawArrays;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -2969,7 +2969,7 @@ struct DrawElements {
   typedef DrawElements ValueType;
   static const CommandId kCmdId = kDrawElements;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -3017,7 +3017,7 @@ struct Enable {
   typedef Enable ValueType;
   static const CommandId kCmdId = kEnable;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -3048,7 +3048,7 @@ struct EnableVertexAttribArray {
   typedef EnableVertexAttribArray ValueType;
   static const CommandId kCmdId = kEnableVertexAttribArray;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -3081,7 +3081,7 @@ struct FenceSync {
   typedef FenceSync ValueType;
   static const CommandId kCmdId = kFenceSync;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -3115,7 +3115,7 @@ struct Finish {
   typedef Finish ValueType;
   static const CommandId kCmdId = kFinish;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -3141,7 +3141,7 @@ struct Flush {
   typedef Flush ValueType;
   static const CommandId kCmdId = kFlush;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -3167,7 +3167,7 @@ struct FramebufferRenderbuffer {
   typedef FramebufferRenderbuffer ValueType;
   static const CommandId kCmdId = kFramebufferRenderbuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -3221,7 +3221,7 @@ struct FramebufferTexture2D {
   typedef FramebufferTexture2D ValueType;
   static const CommandId kCmdId = kFramebufferTexture2D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -3280,7 +3280,7 @@ struct FramebufferTextureLayer {
   typedef FramebufferTextureLayer ValueType;
   static const CommandId kCmdId = kFramebufferTextureLayer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -3339,7 +3339,7 @@ struct FrontFace {
   typedef FrontFace ValueType;
   static const CommandId kCmdId = kFrontFace;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -3371,7 +3371,7 @@ struct GenBuffersImmediate {
   typedef GenBuffersImmediate ValueType;
   static const CommandId kCmdId = kGenBuffersImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -3413,7 +3413,7 @@ struct GenerateMipmap {
   typedef GenerateMipmap ValueType;
   static const CommandId kCmdId = kGenerateMipmap;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -3446,7 +3446,7 @@ struct GenFramebuffersImmediate {
   typedef GenFramebuffersImmediate ValueType;
   static const CommandId kCmdId = kGenFramebuffersImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -3488,7 +3488,7 @@ struct GenRenderbuffersImmediate {
   typedef GenRenderbuffersImmediate ValueType;
   static const CommandId kCmdId = kGenRenderbuffersImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -3530,7 +3530,7 @@ struct GenSamplersImmediate {
   typedef GenSamplersImmediate ValueType;
   static const CommandId kCmdId = kGenSamplersImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -3572,7 +3572,7 @@ struct GenTexturesImmediate {
   typedef GenTexturesImmediate ValueType;
   static const CommandId kCmdId = kGenTexturesImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -3614,7 +3614,7 @@ struct GenTransformFeedbacksImmediate {
   typedef GenTransformFeedbacksImmediate ValueType;
   static const CommandId kCmdId = kGenTransformFeedbacksImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -3656,7 +3656,7 @@ struct GetActiveAttrib {
   typedef GetActiveAttrib ValueType;
   static const CommandId kCmdId = kGetActiveAttrib;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   struct Result {
     int32_t success;
@@ -3730,7 +3730,7 @@ struct GetActiveUniform {
   typedef GetActiveUniform ValueType;
   static const CommandId kCmdId = kGetActiveUniform;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   struct Result {
     int32_t success;
@@ -3804,7 +3804,7 @@ struct GetActiveUniformBlockiv {
   typedef GetActiveUniformBlockiv ValueType;
   static const CommandId kCmdId = kGetActiveUniformBlockiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -3866,7 +3866,7 @@ struct GetActiveUniformBlockName {
   typedef GetActiveUniformBlockName ValueType;
   static const CommandId kCmdId = kGetActiveUniformBlockName;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef int32_t Result;
 
@@ -3929,7 +3929,7 @@ struct GetActiveUniformsiv {
   typedef GetActiveUniformsiv ValueType;
   static const CommandId kCmdId = kGetActiveUniformsiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -3990,7 +3990,7 @@ struct GetAttachedShaders {
   typedef GetAttachedShaders ValueType;
   static const CommandId kCmdId = kGetAttachedShaders;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLuint> Result;
 
@@ -4045,7 +4045,7 @@ struct GetAttribLocation {
   typedef GetAttribLocation ValueType;
   static const CommandId kCmdId = kGetAttribLocation;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef GLint Result;
 
@@ -4100,7 +4100,7 @@ struct GetBooleanv {
   typedef GetBooleanv ValueType;
   static const CommandId kCmdId = kGetBooleanv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLboolean> Result;
 
@@ -4148,7 +4148,7 @@ struct GetBufferParameteri64v {
   typedef GetBufferParameteri64v ValueType;
   static const CommandId kCmdId = kGetBufferParameteri64v;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint64> Result;
 
@@ -4204,7 +4204,7 @@ struct GetBufferParameteriv {
   typedef GetBufferParameteriv ValueType;
   static const CommandId kCmdId = kGetBufferParameteriv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -4259,7 +4259,7 @@ struct GetError {
   typedef GetError ValueType;
   static const CommandId kCmdId = kGetError;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef GLenum Result;
 
@@ -4297,7 +4297,7 @@ struct GetFloatv {
   typedef GetFloatv ValueType;
   static const CommandId kCmdId = kGetFloatv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLfloat> Result;
 
@@ -4345,7 +4345,7 @@ struct GetFragDataLocation {
   typedef GetFragDataLocation ValueType;
   static const CommandId kCmdId = kGetFragDataLocation;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef GLint Result;
 
@@ -4400,7 +4400,7 @@ struct GetFramebufferAttachmentParameteriv {
   typedef GetFramebufferAttachmentParameteriv ValueType;
   static const CommandId kCmdId = kGetFramebufferAttachmentParameteriv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -4468,7 +4468,7 @@ struct GetInteger64v {
   typedef GetInteger64v ValueType;
   static const CommandId kCmdId = kGetInteger64v;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint64> Result;
 
@@ -4517,7 +4517,7 @@ struct GetIntegeri_v {
   typedef GetIntegeri_v ValueType;
   static const CommandId kCmdId = kGetIntegeri_v;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -4572,7 +4572,7 @@ struct GetInteger64i_v {
   typedef GetInteger64i_v ValueType;
   static const CommandId kCmdId = kGetInteger64i_v;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint64> Result;
 
@@ -4627,7 +4627,7 @@ struct GetIntegerv {
   typedef GetIntegerv ValueType;
   static const CommandId kCmdId = kGetIntegerv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -4675,7 +4675,7 @@ struct GetInternalformativ {
   typedef GetInternalformativ ValueType;
   static const CommandId kCmdId = kGetInternalformativ;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -4736,7 +4736,7 @@ struct GetProgramiv {
   typedef GetProgramiv ValueType;
   static const CommandId kCmdId = kGetProgramiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -4790,7 +4790,7 @@ struct GetProgramInfoLog {
   typedef GetProgramInfoLog ValueType;
   static const CommandId kCmdId = kGetProgramInfoLog;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -4827,7 +4827,7 @@ struct GetRenderbufferParameteriv {
   typedef GetRenderbufferParameteriv ValueType;
   static const CommandId kCmdId = kGetRenderbufferParameteriv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -4884,7 +4884,7 @@ struct GetSamplerParameterfv {
   typedef GetSamplerParameterfv ValueType;
   static const CommandId kCmdId = kGetSamplerParameterfv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLfloat> Result;
 
@@ -4939,7 +4939,7 @@ struct GetSamplerParameteriv {
   typedef GetSamplerParameteriv ValueType;
   static const CommandId kCmdId = kGetSamplerParameteriv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -4994,7 +4994,7 @@ struct GetShaderiv {
   typedef GetShaderiv ValueType;
   static const CommandId kCmdId = kGetShaderiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -5048,7 +5048,7 @@ struct GetShaderInfoLog {
   typedef GetShaderInfoLog ValueType;
   static const CommandId kCmdId = kGetShaderInfoLog;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -5085,7 +5085,7 @@ struct GetShaderPrecisionFormat {
   typedef GetShaderPrecisionFormat ValueType;
   static const CommandId kCmdId = kGetShaderPrecisionFormat;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   struct Result {
     int32_t success;
@@ -5158,7 +5158,7 @@ struct GetShaderSource {
   typedef GetShaderSource ValueType;
   static const CommandId kCmdId = kGetShaderSource;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -5195,7 +5195,7 @@ struct GetString {
   typedef GetString ValueType;
   static const CommandId kCmdId = kGetString;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -5231,7 +5231,7 @@ struct GetSynciv {
   typedef GetSynciv ValueType;
   static const CommandId kCmdId = kGetSynciv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -5285,7 +5285,7 @@ struct GetTexParameterfv {
   typedef GetTexParameterfv ValueType;
   static const CommandId kCmdId = kGetTexParameterfv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLfloat> Result;
 
@@ -5340,7 +5340,7 @@ struct GetTexParameteriv {
   typedef GetTexParameteriv ValueType;
   static const CommandId kCmdId = kGetTexParameteriv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -5395,7 +5395,7 @@ struct GetTransformFeedbackVarying {
   typedef GetTransformFeedbackVarying ValueType;
   static const CommandId kCmdId = kGetTransformFeedbackVarying;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   struct Result {
     int32_t success;
@@ -5472,7 +5472,7 @@ struct GetUniformBlockIndex {
   typedef GetUniformBlockIndex ValueType;
   static const CommandId kCmdId = kGetUniformBlockIndex;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef GLuint Result;
 
@@ -5527,7 +5527,7 @@ struct GetUniformfv {
   typedef GetUniformfv ValueType;
   static const CommandId kCmdId = kGetUniformfv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLfloat> Result;
 
@@ -5581,7 +5581,7 @@ struct GetUniformiv {
   typedef GetUniformiv ValueType;
   static const CommandId kCmdId = kGetUniformiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -5635,7 +5635,7 @@ struct GetUniformuiv {
   typedef GetUniformuiv ValueType;
   static const CommandId kCmdId = kGetUniformuiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLuint> Result;
 
@@ -5690,7 +5690,7 @@ struct GetUniformIndices {
   typedef GetUniformIndices ValueType;
   static const CommandId kCmdId = kGetUniformIndices;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLuint> Result;
 
@@ -5745,7 +5745,7 @@ struct GetUniformLocation {
   typedef GetUniformLocation ValueType;
   static const CommandId kCmdId = kGetUniformLocation;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef GLint Result;
 
@@ -5800,7 +5800,7 @@ struct GetVertexAttribfv {
   typedef GetVertexAttribfv ValueType;
   static const CommandId kCmdId = kGetVertexAttribfv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLfloat> Result;
 
@@ -5855,7 +5855,7 @@ struct GetVertexAttribiv {
   typedef GetVertexAttribiv ValueType;
   static const CommandId kCmdId = kGetVertexAttribiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -5910,7 +5910,7 @@ struct GetVertexAttribIiv {
   typedef GetVertexAttribIiv ValueType;
   static const CommandId kCmdId = kGetVertexAttribIiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLint> Result;
 
@@ -5965,7 +5965,7 @@ struct GetVertexAttribIuiv {
   typedef GetVertexAttribIuiv ValueType;
   static const CommandId kCmdId = kGetVertexAttribIuiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLuint> Result;
 
@@ -6020,7 +6020,7 @@ struct GetVertexAttribPointerv {
   typedef GetVertexAttribPointerv ValueType;
   static const CommandId kCmdId = kGetVertexAttribPointerv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef SizedResult<GLuint> Result;
 
@@ -6076,7 +6076,7 @@ struct Hint {
   typedef Hint ValueType;
   static const CommandId kCmdId = kHint;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -6109,7 +6109,7 @@ struct InvalidateFramebufferImmediate {
   typedef InvalidateFramebufferImmediate ValueType;
   static const CommandId kCmdId = kInvalidateFramebufferImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLenum) * 1 * count);  // NOLINT
@@ -6158,7 +6158,7 @@ struct InvalidateSubFramebufferImmediate {
   typedef InvalidateSubFramebufferImmediate ValueType;
   static const CommandId kCmdId = kInvalidateSubFramebufferImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLenum) * 1 * count);  // NOLINT
@@ -6235,7 +6235,7 @@ struct IsBuffer {
   typedef IsBuffer ValueType;
   static const CommandId kCmdId = kIsBuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -6283,7 +6283,7 @@ struct IsEnabled {
   typedef IsEnabled ValueType;
   static const CommandId kCmdId = kIsEnabled;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -6329,7 +6329,7 @@ struct IsFramebuffer {
   typedef IsFramebuffer ValueType;
   static const CommandId kCmdId = kIsFramebuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -6378,7 +6378,7 @@ struct IsProgram {
   typedef IsProgram ValueType;
   static const CommandId kCmdId = kIsProgram;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -6426,7 +6426,7 @@ struct IsRenderbuffer {
   typedef IsRenderbuffer ValueType;
   static const CommandId kCmdId = kIsRenderbuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -6475,7 +6475,7 @@ struct IsSampler {
   typedef IsSampler ValueType;
   static const CommandId kCmdId = kIsSampler;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -6523,7 +6523,7 @@ struct IsShader {
   typedef IsShader ValueType;
   static const CommandId kCmdId = kIsShader;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -6571,7 +6571,7 @@ struct IsSync {
   typedef IsSync ValueType;
   static const CommandId kCmdId = kIsSync;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -6618,7 +6618,7 @@ struct IsTexture {
   typedef IsTexture ValueType;
   static const CommandId kCmdId = kIsTexture;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -6666,7 +6666,7 @@ struct IsTransformFeedback {
   typedef IsTransformFeedback ValueType;
   static const CommandId kCmdId = kIsTransformFeedback;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -6715,7 +6715,7 @@ struct LineWidth {
   typedef LineWidth ValueType;
   static const CommandId kCmdId = kLineWidth;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -6747,7 +6747,7 @@ struct LinkProgram {
   typedef LinkProgram ValueType;
   static const CommandId kCmdId = kLinkProgram;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -6779,7 +6779,7 @@ struct PauseTransformFeedback {
   typedef PauseTransformFeedback ValueType;
   static const CommandId kCmdId = kPauseTransformFeedback;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -6806,7 +6806,7 @@ struct PixelStorei {
   typedef PixelStorei ValueType;
   static const CommandId kCmdId = kPixelStorei;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -6842,7 +6842,7 @@ struct PolygonOffset {
   typedef PolygonOffset ValueType;
   static const CommandId kCmdId = kPolygonOffset;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -6879,7 +6879,7 @@ struct ReadBuffer {
   typedef ReadBuffer ValueType;
   static const CommandId kCmdId = kReadBuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -6914,7 +6914,7 @@ struct ReadPixels {
   typedef ReadPixels ValueType;
   static const CommandId kCmdId = kReadPixels;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   typedef uint32_t Result;
 
@@ -7011,7 +7011,7 @@ struct ReleaseShaderCompiler {
   typedef ReleaseShaderCompiler ValueType;
   static const CommandId kCmdId = kReleaseShaderCompiler;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7038,7 +7038,7 @@ struct RenderbufferStorage {
   typedef RenderbufferStorage ValueType;
   static const CommandId kCmdId = kRenderbufferStorage;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7091,7 +7091,7 @@ struct ResumeTransformFeedback {
   typedef ResumeTransformFeedback ValueType;
   static const CommandId kCmdId = kResumeTransformFeedback;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7118,7 +7118,7 @@ struct SampleCoverage {
   typedef SampleCoverage ValueType;
   static const CommandId kCmdId = kSampleCoverage;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7155,7 +7155,7 @@ struct SamplerParameterf {
   typedef SamplerParameterf ValueType;
   static const CommandId kCmdId = kSamplerParameterf;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7196,7 +7196,7 @@ struct SamplerParameterfvImmediate {
   typedef SamplerParameterfvImmediate ValueType;
   static const CommandId kCmdId = kSamplerParameterfvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLfloat) * 1);
@@ -7239,7 +7239,7 @@ struct SamplerParameteri {
   typedef SamplerParameteri ValueType;
   static const CommandId kCmdId = kSamplerParameteri;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7280,7 +7280,7 @@ struct SamplerParameterivImmediate {
   typedef SamplerParameterivImmediate ValueType;
   static const CommandId kCmdId = kSamplerParameterivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLint) * 1);
@@ -7323,7 +7323,7 @@ struct Scissor {
   typedef Scissor ValueType;
   static const CommandId kCmdId = kScissor;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7365,7 +7365,7 @@ struct ShaderBinary {
   typedef ShaderBinary ValueType;
   static const CommandId kCmdId = kShaderBinary;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7436,7 +7436,7 @@ struct ShaderSourceBucket {
   typedef ShaderSourceBucket ValueType;
   static const CommandId kCmdId = kShaderSourceBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7473,7 +7473,7 @@ struct StencilFunc {
   typedef StencilFunc ValueType;
   static const CommandId kCmdId = kStencilFunc;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7513,7 +7513,7 @@ struct StencilFuncSeparate {
   typedef StencilFuncSeparate ValueType;
   static const CommandId kCmdId = kStencilFuncSeparate;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7558,7 +7558,7 @@ struct StencilMask {
   typedef StencilMask ValueType;
   static const CommandId kCmdId = kStencilMask;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7590,7 +7590,7 @@ struct StencilMaskSeparate {
   typedef StencilMaskSeparate ValueType;
   static const CommandId kCmdId = kStencilMaskSeparate;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7627,7 +7627,7 @@ struct StencilOp {
   typedef StencilOp ValueType;
   static const CommandId kCmdId = kStencilOp;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7667,7 +7667,7 @@ struct StencilOpSeparate {
   typedef StencilOpSeparate ValueType;
   static const CommandId kCmdId = kStencilOpSeparate;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7716,7 +7716,7 @@ struct TexImage2D {
   typedef TexImage2D ValueType;
   static const CommandId kCmdId = kTexImage2D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7800,7 +7800,7 @@ struct TexImage3D {
   typedef TexImage3D ValueType;
   static const CommandId kCmdId = kTexImage3D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7890,7 +7890,7 @@ struct TexParameterf {
   typedef TexParameterf ValueType;
   static const CommandId kCmdId = kTexParameterf;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7931,7 +7931,7 @@ struct TexParameterfvImmediate {
   typedef TexParameterfvImmediate ValueType;
   static const CommandId kCmdId = kTexParameterfvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLfloat) * 1);
@@ -7974,7 +7974,7 @@ struct TexParameteri {
   typedef TexParameteri ValueType;
   static const CommandId kCmdId = kTexParameteri;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8015,7 +8015,7 @@ struct TexParameterivImmediate {
   typedef TexParameterivImmediate ValueType;
   static const CommandId kCmdId = kTexParameterivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLint) * 1);
@@ -8058,7 +8058,7 @@ struct TexStorage3D {
   typedef TexStorage3D ValueType;
   static const CommandId kCmdId = kTexStorage3D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8122,7 +8122,7 @@ struct TexSubImage2D {
   typedef TexSubImage2D ValueType;
   static const CommandId kCmdId = kTexSubImage2D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8218,7 +8218,7 @@ struct TexSubImage3D {
   typedef TexSubImage3D ValueType;
   static const CommandId kCmdId = kTexSubImage3D;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8326,7 +8326,7 @@ struct TransformFeedbackVaryingsBucket {
   typedef TransformFeedbackVaryingsBucket ValueType;
   static const CommandId kCmdId = kTransformFeedbackVaryingsBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8373,7 +8373,7 @@ struct Uniform1f {
   typedef Uniform1f ValueType;
   static const CommandId kCmdId = kUniform1f;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8408,7 +8408,7 @@ struct Uniform1fvImmediate {
   typedef Uniform1fvImmediate ValueType;
   static const CommandId kCmdId = kUniform1fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 1 * count);  // NOLINT
@@ -8454,7 +8454,7 @@ struct Uniform1i {
   typedef Uniform1i ValueType;
   static const CommandId kCmdId = kUniform1i;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8489,7 +8489,7 @@ struct Uniform1ivImmediate {
   typedef Uniform1ivImmediate ValueType;
   static const CommandId kCmdId = kUniform1ivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLint) * 1 * count);  // NOLINT
@@ -8535,7 +8535,7 @@ struct Uniform1ui {
   typedef Uniform1ui ValueType;
   static const CommandId kCmdId = kUniform1ui;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8571,7 +8571,7 @@ struct Uniform1uivImmediate {
   typedef Uniform1uivImmediate ValueType;
   static const CommandId kCmdId = kUniform1uivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLuint) * 1 * count);  // NOLINT
@@ -8617,7 +8617,7 @@ struct Uniform2f {
   typedef Uniform2f ValueType;
   static const CommandId kCmdId = kUniform2f;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8656,7 +8656,7 @@ struct Uniform2fvImmediate {
   typedef Uniform2fvImmediate ValueType;
   static const CommandId kCmdId = kUniform2fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 2 * count);  // NOLINT
@@ -8702,7 +8702,7 @@ struct Uniform2i {
   typedef Uniform2i ValueType;
   static const CommandId kCmdId = kUniform2i;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8741,7 +8741,7 @@ struct Uniform2ivImmediate {
   typedef Uniform2ivImmediate ValueType;
   static const CommandId kCmdId = kUniform2ivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLint) * 2 * count);  // NOLINT
@@ -8787,7 +8787,7 @@ struct Uniform2ui {
   typedef Uniform2ui ValueType;
   static const CommandId kCmdId = kUniform2ui;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8827,7 +8827,7 @@ struct Uniform2uivImmediate {
   typedef Uniform2uivImmediate ValueType;
   static const CommandId kCmdId = kUniform2uivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLuint) * 2 * count);  // NOLINT
@@ -8873,7 +8873,7 @@ struct Uniform3f {
   typedef Uniform3f ValueType;
   static const CommandId kCmdId = kUniform3f;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -8916,7 +8916,7 @@ struct Uniform3fvImmediate {
   typedef Uniform3fvImmediate ValueType;
   static const CommandId kCmdId = kUniform3fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 3 * count);  // NOLINT
@@ -8962,7 +8962,7 @@ struct Uniform3i {
   typedef Uniform3i ValueType;
   static const CommandId kCmdId = kUniform3i;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -9005,7 +9005,7 @@ struct Uniform3ivImmediate {
   typedef Uniform3ivImmediate ValueType;
   static const CommandId kCmdId = kUniform3ivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLint) * 3 * count);  // NOLINT
@@ -9051,7 +9051,7 @@ struct Uniform3ui {
   typedef Uniform3ui ValueType;
   static const CommandId kCmdId = kUniform3ui;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -9095,7 +9095,7 @@ struct Uniform3uivImmediate {
   typedef Uniform3uivImmediate ValueType;
   static const CommandId kCmdId = kUniform3uivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLuint) * 3 * count);  // NOLINT
@@ -9141,7 +9141,7 @@ struct Uniform4f {
   typedef Uniform4f ValueType;
   static const CommandId kCmdId = kUniform4f;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -9193,7 +9193,7 @@ struct Uniform4fvImmediate {
   typedef Uniform4fvImmediate ValueType;
   static const CommandId kCmdId = kUniform4fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 4 * count);  // NOLINT
@@ -9239,7 +9239,7 @@ struct Uniform4i {
   typedef Uniform4i ValueType;
   static const CommandId kCmdId = kUniform4i;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -9291,7 +9291,7 @@ struct Uniform4ivImmediate {
   typedef Uniform4ivImmediate ValueType;
   static const CommandId kCmdId = kUniform4ivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLint) * 4 * count);  // NOLINT
@@ -9337,7 +9337,7 @@ struct Uniform4ui {
   typedef Uniform4ui ValueType;
   static const CommandId kCmdId = kUniform4ui;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -9390,7 +9390,7 @@ struct Uniform4uivImmediate {
   typedef Uniform4uivImmediate ValueType;
   static const CommandId kCmdId = kUniform4uivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLuint) * 4 * count);  // NOLINT
@@ -9436,7 +9436,7 @@ struct UniformBlockBinding {
   typedef UniformBlockBinding ValueType;
   static const CommandId kCmdId = kUniformBlockBinding;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -9477,7 +9477,7 @@ struct UniformMatrix2fvImmediate {
   typedef UniformMatrix2fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix2fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 4 * count);  // NOLINT
@@ -9524,7 +9524,7 @@ struct UniformMatrix2x3fvImmediate {
   typedef UniformMatrix2x3fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix2x3fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 6 * count);  // NOLINT
@@ -9571,7 +9571,7 @@ struct UniformMatrix2x4fvImmediate {
   typedef UniformMatrix2x4fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix2x4fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 8 * count);  // NOLINT
@@ -9618,7 +9618,7 @@ struct UniformMatrix3fvImmediate {
   typedef UniformMatrix3fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix3fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 9 * count);  // NOLINT
@@ -9665,7 +9665,7 @@ struct UniformMatrix3x2fvImmediate {
   typedef UniformMatrix3x2fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix3x2fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 6 * count);  // NOLINT
@@ -9712,7 +9712,7 @@ struct UniformMatrix3x4fvImmediate {
   typedef UniformMatrix3x4fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix3x4fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 12 * count);  // NOLINT
@@ -9759,7 +9759,7 @@ struct UniformMatrix4fvImmediate {
   typedef UniformMatrix4fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix4fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 16 * count);  // NOLINT
@@ -9806,7 +9806,7 @@ struct UniformMatrix4x2fvImmediate {
   typedef UniformMatrix4x2fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix4x2fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 8 * count);  // NOLINT
@@ -9853,7 +9853,7 @@ struct UniformMatrix4x3fvImmediate {
   typedef UniformMatrix4x3fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix4x3fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLfloat) * 12 * count);  // NOLINT
@@ -9900,7 +9900,7 @@ struct UseProgram {
   typedef UseProgram ValueType;
   static const CommandId kCmdId = kUseProgram;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -9932,7 +9932,7 @@ struct ValidateProgram {
   typedef ValidateProgram ValueType;
   static const CommandId kCmdId = kValidateProgram;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -9965,7 +9965,7 @@ struct VertexAttrib1f {
   typedef VertexAttrib1f ValueType;
   static const CommandId kCmdId = kVertexAttrib1f;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10002,7 +10002,7 @@ struct VertexAttrib1fvImmediate {
   typedef VertexAttrib1fvImmediate ValueType;
   static const CommandId kCmdId = kVertexAttrib1fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLfloat) * 1);
@@ -10041,7 +10041,7 @@ struct VertexAttrib2f {
   typedef VertexAttrib2f ValueType;
   static const CommandId kCmdId = kVertexAttrib2f;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10082,7 +10082,7 @@ struct VertexAttrib2fvImmediate {
   typedef VertexAttrib2fvImmediate ValueType;
   static const CommandId kCmdId = kVertexAttrib2fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLfloat) * 2);
@@ -10121,7 +10121,7 @@ struct VertexAttrib3f {
   typedef VertexAttrib3f ValueType;
   static const CommandId kCmdId = kVertexAttrib3f;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10166,7 +10166,7 @@ struct VertexAttrib3fvImmediate {
   typedef VertexAttrib3fvImmediate ValueType;
   static const CommandId kCmdId = kVertexAttrib3fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLfloat) * 3);
@@ -10205,7 +10205,7 @@ struct VertexAttrib4f {
   typedef VertexAttrib4f ValueType;
   static const CommandId kCmdId = kVertexAttrib4f;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10259,7 +10259,7 @@ struct VertexAttrib4fvImmediate {
   typedef VertexAttrib4fvImmediate ValueType;
   static const CommandId kCmdId = kVertexAttrib4fvImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLfloat) * 4);
@@ -10298,7 +10298,7 @@ struct VertexAttribI4i {
   typedef VertexAttribI4i ValueType;
   static const CommandId kCmdId = kVertexAttribI4i;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10347,7 +10347,7 @@ struct VertexAttribI4ivImmediate {
   typedef VertexAttribI4ivImmediate ValueType;
   static const CommandId kCmdId = kVertexAttribI4ivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLint) * 4);
@@ -10386,7 +10386,7 @@ struct VertexAttribI4ui {
   typedef VertexAttribI4ui ValueType;
   static const CommandId kCmdId = kVertexAttribI4ui;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10440,7 +10440,7 @@ struct VertexAttribI4uivImmediate {
   typedef VertexAttribI4uivImmediate ValueType;
   static const CommandId kCmdId = kVertexAttribI4uivImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLuint) * 4);
@@ -10479,7 +10479,7 @@ struct VertexAttribIPointer {
   typedef VertexAttribIPointer ValueType;
   static const CommandId kCmdId = kVertexAttribIPointer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10537,7 +10537,7 @@ struct VertexAttribPointer {
   typedef VertexAttribPointer ValueType;
   static const CommandId kCmdId = kVertexAttribPointer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10602,7 +10602,7 @@ struct Viewport {
   typedef Viewport ValueType;
   static const CommandId kCmdId = kViewport;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10644,7 +10644,7 @@ struct WaitSync {
   typedef WaitSync ValueType;
   static const CommandId kCmdId = kWaitSync;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10693,7 +10693,7 @@ struct BlitFramebufferCHROMIUM {
   typedef BlitFramebufferCHROMIUM ValueType;
   static const CommandId kCmdId = kBlitFramebufferCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10783,7 +10783,7 @@ struct RenderbufferStorageMultisampleCHROMIUM {
   typedef RenderbufferStorageMultisampleCHROMIUM ValueType;
   static const CommandId kCmdId = kRenderbufferStorageMultisampleCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10850,7 +10850,7 @@ struct RenderbufferStorageMultisampleEXT {
   typedef RenderbufferStorageMultisampleEXT ValueType;
   static const CommandId kCmdId = kRenderbufferStorageMultisampleEXT;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10912,7 +10912,7 @@ struct FramebufferTexture2DMultisampleEXT {
   typedef FramebufferTexture2DMultisampleEXT ValueType;
   static const CommandId kCmdId = kFramebufferTexture2DMultisampleEXT;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -10984,7 +10984,7 @@ struct TexStorage2DEXT {
   typedef TexStorage2DEXT ValueType;
   static const CommandId kCmdId = kTexStorage2DEXT;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11043,7 +11043,7 @@ struct GenQueriesEXTImmediate {
   typedef GenQueriesEXTImmediate ValueType;
   static const CommandId kCmdId = kGenQueriesEXTImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -11085,7 +11085,7 @@ struct DeleteQueriesEXTImmediate {
   typedef DeleteQueriesEXTImmediate ValueType;
   static const CommandId kCmdId = kDeleteQueriesEXTImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -11127,7 +11127,7 @@ struct QueryCounterEXT {
   typedef QueryCounterEXT ValueType;
   static const CommandId kCmdId = kQueryCounterEXT;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11186,7 +11186,7 @@ struct BeginQueryEXT {
   typedef BeginQueryEXT ValueType;
   static const CommandId kCmdId = kBeginQueryEXT;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11239,7 +11239,7 @@ struct BeginTransformFeedback {
   typedef BeginTransformFeedback ValueType;
   static const CommandId kCmdId = kBeginTransformFeedback;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11272,7 +11272,7 @@ struct EndQueryEXT {
   typedef EndQueryEXT ValueType;
   static const CommandId kCmdId = kEndQueryEXT;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11308,7 +11308,7 @@ struct EndTransformFeedback {
   typedef EndTransformFeedback ValueType;
   static const CommandId kCmdId = kEndTransformFeedback;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11335,7 +11335,7 @@ struct SetDisjointValueSyncCHROMIUM {
   typedef SetDisjointValueSyncCHROMIUM ValueType;
   static const CommandId kCmdId = kSetDisjointValueSyncCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11377,7 +11377,7 @@ struct InsertEventMarkerEXT {
   typedef InsertEventMarkerEXT ValueType;
   static const CommandId kCmdId = kInsertEventMarkerEXT;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11410,7 +11410,7 @@ struct PushGroupMarkerEXT {
   typedef PushGroupMarkerEXT ValueType;
   static const CommandId kCmdId = kPushGroupMarkerEXT;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11443,7 +11443,7 @@ struct PopGroupMarkerEXT {
   typedef PopGroupMarkerEXT ValueType;
   static const CommandId kCmdId = kPopGroupMarkerEXT;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11470,7 +11470,7 @@ struct GenVertexArraysOESImmediate {
   typedef GenVertexArraysOESImmediate ValueType;
   static const CommandId kCmdId = kGenVertexArraysOESImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -11512,7 +11512,7 @@ struct DeleteVertexArraysOESImmediate {
   typedef DeleteVertexArraysOESImmediate ValueType;
   static const CommandId kCmdId = kDeleteVertexArraysOESImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -11554,7 +11554,7 @@ struct IsVertexArrayOES {
   typedef IsVertexArrayOES ValueType;
   static const CommandId kCmdId = kIsVertexArrayOES;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -11603,7 +11603,7 @@ struct BindVertexArrayOES {
   typedef BindVertexArrayOES ValueType;
   static const CommandId kCmdId = kBindVertexArrayOES;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11636,7 +11636,7 @@ struct SwapBuffers {
   typedef SwapBuffers ValueType;
   static const CommandId kCmdId = kSwapBuffers;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11662,7 +11662,7 @@ struct GetMaxValueInBufferCHROMIUM {
   typedef GetMaxValueInBufferCHROMIUM ValueType;
   static const CommandId kCmdId = kGetMaxValueInBufferCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef GLuint Result;
 
@@ -11731,7 +11731,7 @@ struct EnableFeatureCHROMIUM {
   typedef EnableFeatureCHROMIUM ValueType;
   static const CommandId kCmdId = kEnableFeatureCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef GLint Result;
 
@@ -11780,7 +11780,7 @@ struct MapBufferRange {
   typedef MapBufferRange ValueType;
   static const CommandId kCmdId = kMapBufferRange;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   typedef uint32_t Result;
 
@@ -11860,7 +11860,7 @@ struct UnmapBuffer {
   typedef UnmapBuffer ValueType;
   static const CommandId kCmdId = kUnmapBuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11892,7 +11892,7 @@ struct ResizeCHROMIUM {
   typedef ResizeCHROMIUM ValueType;
   static const CommandId kCmdId = kResizeCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11944,7 +11944,7 @@ struct GetRequestableExtensionsCHROMIUM {
   typedef GetRequestableExtensionsCHROMIUM ValueType;
   static const CommandId kCmdId = kGetRequestableExtensionsCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -11978,7 +11978,7 @@ struct RequestExtensionCHROMIUM {
   typedef RequestExtensionCHROMIUM ValueType;
   static const CommandId kCmdId = kRequestExtensionCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12011,7 +12011,7 @@ struct GetProgramInfoCHROMIUM {
   typedef GetProgramInfoCHROMIUM ValueType;
   static const CommandId kCmdId = kGetProgramInfoCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   struct Result {
     uint32_t link_status;
@@ -12063,7 +12063,7 @@ struct GetUniformBlocksCHROMIUM {
   typedef GetUniformBlocksCHROMIUM ValueType;
   static const CommandId kCmdId = kGetUniformBlocksCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -12102,7 +12102,7 @@ struct GetTransformFeedbackVaryingsCHROMIUM {
   typedef GetTransformFeedbackVaryingsCHROMIUM ValueType;
   static const CommandId kCmdId = kGetTransformFeedbackVaryingsCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -12144,7 +12144,7 @@ struct GetUniformsES3CHROMIUM {
   typedef GetUniformsES3CHROMIUM ValueType;
   static const CommandId kCmdId = kGetUniformsES3CHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -12183,7 +12183,7 @@ struct GetTranslatedShaderSourceANGLE {
   typedef GetTranslatedShaderSourceANGLE ValueType;
   static const CommandId kCmdId = kGetTranslatedShaderSourceANGLE;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12220,7 +12220,7 @@ struct PostSubBufferCHROMIUM {
   typedef PostSubBufferCHROMIUM ValueType;
   static const CommandId kCmdId = kPostSubBufferCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12265,7 +12265,7 @@ struct TexImageIOSurface2DCHROMIUM {
   typedef TexImageIOSurface2DCHROMIUM ValueType;
   static const CommandId kCmdId = kTexImageIOSurface2DCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12324,7 +12324,7 @@ struct CopyTextureCHROMIUM {
   typedef CopyTextureCHROMIUM ValueType;
   static const CommandId kCmdId = kCopyTextureCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12404,7 +12404,7 @@ struct CopySubTextureCHROMIUM {
   typedef CopySubTextureCHROMIUM ValueType;
   static const CommandId kCmdId = kCopySubTextureCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12509,7 +12509,7 @@ struct CompressedCopyTextureCHROMIUM {
   typedef CompressedCopyTextureCHROMIUM ValueType;
   static const CommandId kCmdId = kCompressedCopyTextureCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12550,7 +12550,7 @@ struct CompressedCopySubTextureCHROMIUM {
   typedef CompressedCopySubTextureCHROMIUM ValueType;
   static const CommandId kCmdId = kCompressedCopySubTextureCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12637,7 +12637,7 @@ struct DrawArraysInstancedANGLE {
   typedef DrawArraysInstancedANGLE ValueType;
   static const CommandId kCmdId = kDrawArraysInstancedANGLE;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12686,7 +12686,7 @@ struct DrawElementsInstancedANGLE {
   typedef DrawElementsInstancedANGLE ValueType;
   static const CommandId kCmdId = kDrawElementsInstancedANGLE;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12745,7 +12745,7 @@ struct VertexAttribDivisorANGLE {
   typedef VertexAttribDivisorANGLE ValueType;
   static const CommandId kCmdId = kVertexAttribDivisorANGLE;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12782,7 +12782,7 @@ struct ProduceTextureCHROMIUMImmediate {
   typedef ProduceTextureCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kProduceTextureCHROMIUMImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLbyte) * 64);
@@ -12821,7 +12821,7 @@ struct ProduceTextureDirectCHROMIUMImmediate {
   typedef ProduceTextureDirectCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kProduceTextureDirectCHROMIUMImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLbyte) * 64);
@@ -12870,7 +12870,7 @@ struct ConsumeTextureCHROMIUMImmediate {
   typedef ConsumeTextureCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kConsumeTextureCHROMIUMImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLbyte) * 64);
@@ -12909,7 +12909,7 @@ struct BindUniformLocationCHROMIUMBucket {
   typedef BindUniformLocationCHROMIUMBucket ValueType;
   static const CommandId kCmdId = kBindUniformLocationCHROMIUMBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -12956,7 +12956,7 @@ struct GenValuebuffersCHROMIUMImmediate {
   typedef GenValuebuffersCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kGenValuebuffersCHROMIUMImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -12998,7 +12998,7 @@ struct DeleteValuebuffersCHROMIUMImmediate {
   typedef DeleteValuebuffersCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kDeleteValuebuffersCHROMIUMImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize(GLsizei n) {
     return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
@@ -13041,7 +13041,7 @@ struct IsValuebufferCHROMIUM {
   typedef IsValuebufferCHROMIUM ValueType;
   static const CommandId kCmdId = kIsValuebufferCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -13090,7 +13090,7 @@ struct BindValuebufferCHROMIUM {
   typedef BindValuebufferCHROMIUM ValueType;
   static const CommandId kCmdId = kBindValuebufferCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13127,7 +13127,7 @@ struct SubscribeValueCHROMIUM {
   typedef SubscribeValueCHROMIUM ValueType;
   static const CommandId kCmdId = kSubscribeValueCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13164,7 +13164,7 @@ struct PopulateSubscribedValuesCHROMIUM {
   typedef PopulateSubscribedValuesCHROMIUM ValueType;
   static const CommandId kCmdId = kPopulateSubscribedValuesCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13197,7 +13197,7 @@ struct UniformValuebufferCHROMIUM {
   typedef UniformValuebufferCHROMIUM ValueType;
   static const CommandId kCmdId = kUniformValuebufferCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13238,7 +13238,7 @@ struct BindTexImage2DCHROMIUM {
   typedef BindTexImage2DCHROMIUM ValueType;
   static const CommandId kCmdId = kBindTexImage2DCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13275,7 +13275,7 @@ struct ReleaseTexImage2DCHROMIUM {
   typedef ReleaseTexImage2DCHROMIUM ValueType;
   static const CommandId kCmdId = kReleaseTexImage2DCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13312,7 +13312,7 @@ struct TraceBeginCHROMIUM {
   typedef TraceBeginCHROMIUM ValueType;
   static const CommandId kCmdId = kTraceBeginCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13349,7 +13349,7 @@ struct TraceEndCHROMIUM {
   typedef TraceEndCHROMIUM ValueType;
   static const CommandId kCmdId = kTraceEndCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13376,7 +13376,7 @@ struct DiscardFramebufferEXTImmediate {
   typedef DiscardFramebufferEXTImmediate ValueType;
   static const CommandId kCmdId = kDiscardFramebufferEXTImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLenum) * 1 * count);  // NOLINT
@@ -13425,7 +13425,7 @@ struct LoseContextCHROMIUM {
   typedef LoseContextCHROMIUM ValueType;
   static const CommandId kCmdId = kLoseContextCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13462,7 +13462,7 @@ struct WaitSyncPointCHROMIUM {
   typedef WaitSyncPointCHROMIUM ValueType;
   static const CommandId kCmdId = kWaitSyncPointCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13495,7 +13495,7 @@ struct InsertFenceSyncCHROMIUM {
   typedef InsertFenceSyncCHROMIUM ValueType;
   static const CommandId kCmdId = kInsertFenceSyncCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13537,7 +13537,7 @@ struct GenSyncTokenCHROMIUMImmediate {
   typedef GenSyncTokenCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kGenSyncTokenCHROMIUMImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize(uint32_t size_in_bytes) {
     return static_cast<uint32_t>(sizeof(ValueType) +  // NOLINT
@@ -13586,7 +13586,7 @@ struct GenUnverifiedSyncTokenCHROMIUMImmediate {
   typedef GenUnverifiedSyncTokenCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kGenUnverifiedSyncTokenCHROMIUMImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize(uint32_t size_in_bytes) {
     return static_cast<uint32_t>(sizeof(ValueType) +  // NOLINT
@@ -13638,7 +13638,7 @@ struct VerifySyncTokensCHROMIUMImmediate {
   typedef VerifySyncTokensCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kVerifySyncTokensCHROMIUMImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize(uint32_t size_in_bytes) {
     return static_cast<uint32_t>(sizeof(ValueType) +  // NOLINT
@@ -13676,7 +13676,7 @@ struct WaitSyncTokenCHROMIUM {
   typedef WaitSyncTokenCHROMIUM ValueType;
   static const CommandId kCmdId = kWaitSyncTokenCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13743,7 +13743,7 @@ struct DrawBuffersEXTImmediate {
   typedef DrawBuffersEXTImmediate ValueType;
   static const CommandId kCmdId = kDrawBuffersEXTImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeDataSize(GLsizei count) {
     return static_cast<uint32_t>(sizeof(GLenum) * 1 * count);  // NOLINT
@@ -13785,7 +13785,7 @@ struct DiscardBackbufferCHROMIUM {
   typedef DiscardBackbufferCHROMIUM ValueType;
   static const CommandId kCmdId = kDiscardBackbufferCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13812,7 +13812,7 @@ struct ScheduleOverlayPlaneCHROMIUM {
   typedef ScheduleOverlayPlaneCHROMIUM ValueType;
   static const CommandId kCmdId = kScheduleOverlayPlaneCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13914,7 +13914,7 @@ struct ScheduleCALayerCHROMIUM {
   typedef ScheduleCALayerCHROMIUM ValueType;
   static const CommandId kCmdId = kScheduleCALayerCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -13995,7 +13995,7 @@ struct CommitOverlayPlanesCHROMIUM {
   typedef CommitOverlayPlanesCHROMIUM ValueType;
   static const CommandId kCmdId = kCommitOverlayPlanesCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14022,7 +14022,7 @@ struct SwapInterval {
   typedef SwapInterval ValueType;
   static const CommandId kCmdId = kSwapInterval;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14054,7 +14054,7 @@ struct FlushDriverCachesCHROMIUM {
   typedef FlushDriverCachesCHROMIUM ValueType;
   static const CommandId kCmdId = kFlushDriverCachesCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14081,7 +14081,7 @@ struct MatrixLoadfCHROMIUMImmediate {
   typedef MatrixLoadfCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kMatrixLoadfCHROMIUMImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLfloat) * 16);
@@ -14120,7 +14120,7 @@ struct MatrixLoadIdentityCHROMIUM {
   typedef MatrixLoadIdentityCHROMIUM ValueType;
   static const CommandId kCmdId = kMatrixLoadIdentityCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14153,7 +14153,7 @@ struct GenPathsCHROMIUM {
   typedef GenPathsCHROMIUM ValueType;
   static const CommandId kCmdId = kGenPathsCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14190,7 +14190,7 @@ struct DeletePathsCHROMIUM {
   typedef DeletePathsCHROMIUM ValueType;
   static const CommandId kCmdId = kDeletePathsCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14227,7 +14227,7 @@ struct IsPathCHROMIUM {
   typedef IsPathCHROMIUM ValueType;
   static const CommandId kCmdId = kIsPathCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32_t Result;
 
@@ -14276,7 +14276,7 @@ struct PathCommandsCHROMIUM {
   typedef PathCommandsCHROMIUM ValueType;
   static const CommandId kCmdId = kPathCommandsCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14355,7 +14355,7 @@ struct PathParameterfCHROMIUM {
   typedef PathParameterfCHROMIUM ValueType;
   static const CommandId kCmdId = kPathParameterfCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14396,7 +14396,7 @@ struct PathParameteriCHROMIUM {
   typedef PathParameteriCHROMIUM ValueType;
   static const CommandId kCmdId = kPathParameteriCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14437,7 +14437,7 @@ struct PathStencilFuncCHROMIUM {
   typedef PathStencilFuncCHROMIUM ValueType;
   static const CommandId kCmdId = kPathStencilFuncCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14478,7 +14478,7 @@ struct StencilFillPathCHROMIUM {
   typedef StencilFillPathCHROMIUM ValueType;
   static const CommandId kCmdId = kStencilFillPathCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14519,7 +14519,7 @@ struct StencilStrokePathCHROMIUM {
   typedef StencilStrokePathCHROMIUM ValueType;
   static const CommandId kCmdId = kStencilStrokePathCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14560,7 +14560,7 @@ struct CoverFillPathCHROMIUM {
   typedef CoverFillPathCHROMIUM ValueType;
   static const CommandId kCmdId = kCoverFillPathCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14597,7 +14597,7 @@ struct CoverStrokePathCHROMIUM {
   typedef CoverStrokePathCHROMIUM ValueType;
   static const CommandId kCmdId = kCoverStrokePathCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14634,7 +14634,7 @@ struct StencilThenCoverFillPathCHROMIUM {
   typedef StencilThenCoverFillPathCHROMIUM ValueType;
   static const CommandId kCmdId = kStencilThenCoverFillPathCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14685,7 +14685,7 @@ struct StencilThenCoverStrokePathCHROMIUM {
   typedef StencilThenCoverStrokePathCHROMIUM ValueType;
   static const CommandId kCmdId = kStencilThenCoverStrokePathCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14737,7 +14737,7 @@ struct StencilFillPathInstancedCHROMIUM {
   typedef StencilFillPathInstancedCHROMIUM ValueType;
   static const CommandId kCmdId = kStencilFillPathInstancedCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14839,7 +14839,7 @@ struct StencilStrokePathInstancedCHROMIUM {
   typedef StencilStrokePathInstancedCHROMIUM ValueType;
   static const CommandId kCmdId = kStencilStrokePathInstancedCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -14943,7 +14943,7 @@ struct CoverFillPathInstancedCHROMIUM {
   typedef CoverFillPathInstancedCHROMIUM ValueType;
   static const CommandId kCmdId = kCoverFillPathInstancedCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -15037,7 +15037,7 @@ struct CoverStrokePathInstancedCHROMIUM {
   typedef CoverStrokePathInstancedCHROMIUM ValueType;
   static const CommandId kCmdId = kCoverStrokePathInstancedCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -15133,7 +15133,7 @@ struct StencilThenCoverFillPathInstancedCHROMIUM {
   typedef StencilThenCoverFillPathInstancedCHROMIUM ValueType;
   static const CommandId kCmdId = kStencilThenCoverFillPathInstancedCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -15251,7 +15251,7 @@ struct StencilThenCoverStrokePathInstancedCHROMIUM {
   typedef StencilThenCoverStrokePathInstancedCHROMIUM ValueType;
   static const CommandId kCmdId = kStencilThenCoverStrokePathInstancedCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -15371,7 +15371,7 @@ struct BindFragmentInputLocationCHROMIUMBucket {
   typedef BindFragmentInputLocationCHROMIUMBucket ValueType;
   static const CommandId kCmdId = kBindFragmentInputLocationCHROMIUMBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -15420,7 +15420,7 @@ struct ProgramPathFragmentInputGenCHROMIUM {
   typedef ProgramPathFragmentInputGenCHROMIUM ValueType;
   static const CommandId kCmdId = kProgramPathFragmentInputGenCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -15494,7 +15494,7 @@ struct BlendBarrierKHR {
   typedef BlendBarrierKHR ValueType;
   static const CommandId kCmdId = kBlendBarrierKHR;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -15521,7 +15521,7 @@ struct ApplyScreenSpaceAntialiasingCHROMIUM {
   typedef ApplyScreenSpaceAntialiasingCHROMIUM ValueType;
   static const CommandId kCmdId = kApplyScreenSpaceAntialiasingCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -15549,7 +15549,7 @@ struct BindFragDataLocationIndexedEXTBucket {
   typedef BindFragDataLocationIndexedEXTBucket ValueType;
   static const CommandId kCmdId = kBindFragDataLocationIndexedEXTBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -15608,7 +15608,7 @@ struct BindFragDataLocationEXTBucket {
   typedef BindFragDataLocationEXTBucket ValueType;
   static const CommandId kCmdId = kBindFragDataLocationEXTBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -15654,7 +15654,7 @@ struct GetFragDataIndexEXT {
   typedef GetFragDataIndexEXT ValueType;
   static const CommandId kCmdId = kGetFragDataIndexEXT;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef GLint Result;
 

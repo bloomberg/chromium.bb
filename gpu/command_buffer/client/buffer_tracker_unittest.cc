@@ -8,6 +8,8 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <stddef.h>
+#include <stdint.h>
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -27,7 +29,7 @@ class MockClientCommandBufferImpl : public MockClientCommandBuffer {
   ~MockClientCommandBufferImpl() override {}
 
   scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
-                                                  int32* id) override {
+                                                  int32_t* id) override {
     if (context_lost_) {
       *id = -1;
       return NULL;
@@ -45,8 +47,8 @@ class MockClientCommandBufferImpl : public MockClientCommandBuffer {
 
 class BufferTrackerTest : public testing::Test {
  protected:
-  static const int32 kNumCommandEntries = 400;
-  static const int32 kCommandBufferSizeBytes =
+  static const int32_t kNumCommandEntries = 400;
+  static const int32_t kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
 
   void SetUp() override {

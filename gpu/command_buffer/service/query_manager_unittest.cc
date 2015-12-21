@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/query_manager.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
@@ -10,6 +12,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
+#include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_context.h"
@@ -27,15 +30,15 @@ namespace gles2 {
 
 class QueryManagerTest : public GpuServiceTest {
  public:
-  static const int32 kSharedMemoryId = 401;
-  static const uint32 kSharedMemoryOffset = 132;
-  static const int32 kSharedMemory2Id = 402;
-  static const uint32 kSharedMemory2Offset = 232;
+  static const int32_t kSharedMemoryId = 401;
+  static const uint32_t kSharedMemoryOffset = 132;
+  static const int32_t kSharedMemory2Id = 402;
+  static const uint32_t kSharedMemory2Offset = 232;
   static const size_t kSharedBufferSize = 2048;
-  static const int32 kInvalidSharedMemoryId = 403;
-  static const uint32 kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
-  static const uint32 kInitialResult = 0xBDBDBDBDu;
-  static const uint8 kInitialMemoryValue = 0xBDu;
+  static const int32_t kInvalidSharedMemoryId = 403;
+  static const uint32_t kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
+  static const uint32_t kInitialResult = 0xBDBDBDBDu;
+  static const uint8_t kInitialMemoryValue = 0xBDu;
 
   QueryManagerTest() {
   }
@@ -70,9 +73,11 @@ class QueryManagerTest : public GpuServiceTest {
     manager_.reset(new QueryManager(decoder_.get(), feature_info.get()));
   }
 
-  QueryManager::Query* CreateQuery(
-      GLenum target, GLuint client_id, int32 shm_id, uint32 shm_offset,
-      GLuint service_id) {
+  QueryManager::Query* CreateQuery(GLenum target,
+                                   GLuint client_id,
+                                   int32_t shm_id,
+                                   uint32_t shm_offset,
+                                   GLuint service_id) {
     EXPECT_CALL(*gl_, GenQueries(1, _))
        .WillOnce(SetArgumentPointee<1>(service_id))
        .RetiresOnSaturation();
@@ -114,7 +119,7 @@ class QueryManagerTest : public GpuServiceTest {
 
     ~MockCommandBufferEngine() override {}
 
-    scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id) override {
+    scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32_t shm_id) override {
       switch (shm_id) {
         case kSharedMemoryId: return valid_buffer_;
         case kSharedMemory2Id: return valid_buffer2_;
@@ -127,21 +132,21 @@ class QueryManagerTest : public GpuServiceTest {
       memset(valid_buffer2_->memory(), kInitialMemoryValue, kSharedBufferSize);
     }
 
-    void set_token(int32 token) override { DCHECK(false); }
+    void set_token(int32_t token) override { DCHECK(false); }
 
-    bool SetGetBuffer(int32 /* transfer_buffer_id */) override {
+    bool SetGetBuffer(int32_t /* transfer_buffer_id */) override {
       DCHECK(false);
       return false;
     }
 
     // Overridden from CommandBufferEngine.
-    bool SetGetOffset(int32 offset) override {
+    bool SetGetOffset(int32_t offset) override {
       DCHECK(false);
       return false;
     }
 
     // Overridden from CommandBufferEngine.
-    int32 GetGetOffset() override {
+    int32_t GetGetOffset() override {
       DCHECK(false);
       return 0;
     }
@@ -164,15 +169,15 @@ class QueryManagerManualSetupTest : public QueryManagerTest {
 
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
-const int32 QueryManagerTest::kSharedMemoryId;
-const uint32 QueryManagerTest::kSharedMemoryOffset;
-const int32 QueryManagerTest::kSharedMemory2Id;
-const uint32 QueryManagerTest::kSharedMemory2Offset;
+const int32_t QueryManagerTest::kSharedMemoryId;
+const uint32_t QueryManagerTest::kSharedMemoryOffset;
+const int32_t QueryManagerTest::kSharedMemory2Id;
+const uint32_t QueryManagerTest::kSharedMemory2Offset;
 const size_t QueryManagerTest::kSharedBufferSize;
-const int32 QueryManagerTest::kInvalidSharedMemoryId;
-const uint32 QueryManagerTest::kInvalidSharedMemoryOffset;
-const uint32 QueryManagerTest::kInitialResult;
-const uint8 QueryManagerTest::kInitialMemoryValue;
+const int32_t QueryManagerTest::kInvalidSharedMemoryId;
+const uint32_t QueryManagerTest::kInvalidSharedMemoryOffset;
+const uint32_t QueryManagerTest::kInitialResult;
+const uint8_t QueryManagerTest::kInitialMemoryValue;
 #endif
 
 TEST_F(QueryManagerTest, Basic) {

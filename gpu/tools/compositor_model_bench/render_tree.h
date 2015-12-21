@@ -8,6 +8,8 @@
 #ifndef GPU_TOOLS_COMPOSITOR_MODEL_BENCH_RENDER_TREE_H_
 #define GPU_TOOLS_COMPOSITOR_MODEL_BENCH_RENDER_TREE_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

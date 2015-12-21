@@ -7,6 +7,8 @@
 #include "gpu/command_buffer/client/query_tracker.h"
 
 #include <GLES2/gl2ext.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <vector>
 
@@ -15,16 +17,16 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
 namespace gles2 {
 
 class QuerySyncManagerTest : public testing::Test {
  protected:
-  static const int32 kNumCommandEntries = 400;
-  static const int32 kCommandBufferSizeBytes =
+  static const int32_t kNumCommandEntries = 400;
+  static const int32_t kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
 
   void SetUp() override {
@@ -77,8 +79,8 @@ TEST_F(QuerySyncManagerTest, DontFree) {
 
 class QueryTrackerTest : public testing::Test {
  protected:
-  static const int32 kNumCommandEntries = 400;
-  static const int32 kCommandBufferSizeBytes =
+  static const int32_t kNumCommandEntries = 400;
+  static const int32_t kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
 
   void SetUp() override {
@@ -105,11 +107,11 @@ class QueryTrackerTest : public testing::Test {
     return query->info_.bucket;
   }
 
-  uint32 GetBucketUsedCount(QuerySyncManager::Bucket* bucket) {
+  uint32_t GetBucketUsedCount(QuerySyncManager::Bucket* bucket) {
     return bucket->in_use_queries.count();
   }
 
-  uint32 GetFlushGeneration() { return helper_->flush_generation(); }
+  uint32_t GetFlushGeneration() { return helper_->flush_generation(); }
 
   scoped_ptr<CommandBuffer> command_buffer_;
   scoped_ptr<GLES2CmdHelper> helper_;
@@ -137,8 +139,8 @@ TEST_F(QueryTrackerTest, Basic) {
 
 TEST_F(QueryTrackerTest, Query) {
   const GLuint kId1 = 123;
-  const int32 kToken = 46;
-  const uint32 kResult = 456;
+  const int32_t kToken = 46;
+  const uint32_t kResult = 456;
 
   // Create a Query.
   QueryTracker::Query* query = query_tracker_->CreateQuery(
@@ -170,14 +172,14 @@ TEST_F(QueryTrackerTest, Query) {
   helper_->Noop(1);
 
   // Store FlushGeneration count after EndQuery is called
-  uint32 gen1 = GetFlushGeneration();
+  uint32_t gen1 = GetFlushGeneration();
 
   // Check CheckResultsAvailable.
   EXPECT_FALSE(query->CheckResultsAvailable(helper_.get()));
   EXPECT_FALSE(query->NeverUsed());
   EXPECT_TRUE(query->Pending());
 
-  uint32 gen2 = GetFlushGeneration();
+  uint32_t gen2 = GetFlushGeneration();
   EXPECT_NE(gen1, gen2);
 
   // Repeated calls to CheckResultsAvailable should not flush unnecessarily
@@ -202,8 +204,8 @@ TEST_F(QueryTrackerTest, Query) {
 
 TEST_F(QueryTrackerTest, Remove) {
   const GLuint kId1 = 123;
-  const int32 kToken = 46;
-  const uint32 kResult = 456;
+  const int32_t kToken = 46;
+  const uint32_t kResult = 456;
 
   // Create a Query.
   QueryTracker::Query* query = query_tracker_->CreateQuery(
@@ -235,8 +237,8 @@ TEST_F(QueryTrackerTest, Remove) {
 
 TEST_F(QueryTrackerTest, ManyQueries) {
   const GLuint kId1 = 123;
-  const int32 kToken = 46;
-  const uint32 kResult = 456;
+  const int32_t kToken = 46;
+  const uint32_t kResult = 456;
 
   const size_t kTestSize = 4000;
   static_assert(kTestSize > QuerySyncManager::kSyncsPerBucket,
@@ -253,7 +255,7 @@ TEST_F(QueryTrackerTest, ManyQueries) {
   }
 
   QuerySyncManager::Bucket* query_0_bucket = GetBucket(queries[0]);
-  uint32 expected_use_count = QuerySyncManager::kSyncsPerBucket;
+  uint32_t expected_use_count = QuerySyncManager::kSyncsPerBucket;
   EXPECT_EQ(expected_use_count, GetBucketUsedCount(query_0_bucket));
 
   while (!queries.empty()) {
@@ -265,7 +267,7 @@ TEST_F(QueryTrackerTest, ManyQueries) {
     query->MarkAsPending(kToken);
 
     QuerySyncManager::Bucket* bucket = GetBucket(query);
-    uint32 use_count_before_remove = GetBucketUsedCount(bucket);
+    uint32_t use_count_before_remove = GetBucketUsedCount(bucket);
     query_tracker_->FreeCompletedQueries();
     EXPECT_EQ(use_count_before_remove, GetBucketUsedCount(bucket));
     query_tracker_->RemoveQuery(query_id);

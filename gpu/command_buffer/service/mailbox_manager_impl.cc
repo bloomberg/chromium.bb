@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "gpu/command_buffer/service/texture_manager.h"

@@ -6,6 +6,7 @@
 #include <GLES2/gl2chromium.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"

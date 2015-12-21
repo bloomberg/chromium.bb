@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/test_helper.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 
@@ -418,7 +421,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
   InSequence sequence;
 
   EXPECT_CALL(*gl, GetString(GL_VERSION))
-      .WillOnce(Return(reinterpret_cast<const uint8*>(gl_version)))
+      .WillOnce(Return(reinterpret_cast<const uint8_t*>(gl_version)))
       .RetiresOnSaturation();
 
   // Persistent storage is needed for the split extension string.
@@ -435,21 +438,21 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         .RetiresOnSaturation();
     for (size_t ii = 0; ii < split_extensions_.size(); ++ii) {
       EXPECT_CALL(*gl, GetStringi(GL_EXTENSIONS, ii))
-          .WillOnce(Return(reinterpret_cast<const uint8*>(
-              split_extensions_[ii].c_str())))
+          .WillOnce(Return(
+              reinterpret_cast<const uint8_t*>(split_extensions_[ii].c_str())))
           .RetiresOnSaturation();
     }
   } else {
     EXPECT_CALL(*gl, GetString(GL_EXTENSIONS))
-        .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
+        .WillOnce(Return(reinterpret_cast<const uint8_t*>(extensions)))
         .RetiresOnSaturation();
   }
 
   EXPECT_CALL(*gl, GetString(GL_VERSION))
-      .WillOnce(Return(reinterpret_cast<const uint8*>(gl_version)))
+      .WillOnce(Return(reinterpret_cast<const uint8_t*>(gl_version)))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetString(GL_RENDERER))
-      .WillOnce(Return(reinterpret_cast<const uint8*>(gl_renderer)))
+      .WillOnce(Return(reinterpret_cast<const uint8_t*>(gl_renderer)))
       .RetiresOnSaturation();
 
   if ((strstr(extensions, "GL_ARB_texture_float") ||

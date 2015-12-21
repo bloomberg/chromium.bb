@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <vector>
 
@@ -116,7 +119,7 @@ GLenum GLFormatToStorageFormat(GLenum format) {
 void GenerateTextureData(const gfx::Size& size,
                          int bytes_per_pixel,
                          const int seed,
-                         std::vector<uint8>* const pixels) {
+                         std::vector<uint8_t>* const pixels) {
   // Row bytes has to be multiple of 4 (GL_PACK_ALIGNMENT defaults to 4).
   int stride = ((size.width() * bytes_per_pixel) + 3) & ~0x3;
   pixels->resize(size.height() * stride);
@@ -135,8 +138,8 @@ void GenerateTextureData(const gfx::Size& size,
 // RGBA buffer.
 bool CompareBufferToRGBABuffer(GLenum format,
                                const gfx::Size& size,
-                               const std::vector<uint8>& pixels,
-                               const std::vector<uint8>& rgba) {
+                               const std::vector<uint8_t>& pixels,
+                               const std::vector<uint8_t>& rgba) {
   int bytes_per_pixel = GLFormatBytePerPixel(format);
   int pixels_stride = ((size.width() * bytes_per_pixel) + 3) & ~0x3;
   int rgba_stride = size.width() * GLFormatBytePerPixel(GL_RGBA);
@@ -144,7 +147,7 @@ bool CompareBufferToRGBABuffer(GLenum format,
     for (int x = 0; x < size.width(); ++x) {
       int rgba_index = y * rgba_stride + x * GLFormatBytePerPixel(GL_RGBA);
       int pixels_index = y * pixels_stride + x * bytes_per_pixel;
-      uint8 expected[4] = {0};
+      uint8_t expected[4] = {0};
       switch (format) {
         case GL_LUMINANCE:  // (L_t, L_t, L_t, 1)
           expected[1] = pixels[pixels_index];
@@ -330,7 +333,7 @@ class TextureUploadPerfTest : public testing::Test {
 
   void UploadTexture(GLuint texture_id,
                      const gfx::Size& size,
-                     const std::vector<uint8>& pixels,
+                     const std::vector<uint8_t>& pixels,
                      GLenum format,
                      const bool subimage) {
     if (subimage) {
@@ -350,7 +353,7 @@ class TextureUploadPerfTest : public testing::Test {
   // time elapsed in milliseconds.
   std::vector<Measurement> UploadAndDraw(GLuint texture_id,
                                          const gfx::Size& size,
-                                         const std::vector<uint8>& pixels,
+                                         const std::vector<uint8_t>& pixels,
                                          const GLenum format,
                                          const bool subimage) {
     MeasurementTimers tex_timers(gpu_timing_client_.get());
@@ -370,7 +373,7 @@ class TextureUploadPerfTest : public testing::Test {
     CheckNoGlError("glFinish");
     finish_timers.Record();
 
-    std::vector<uint8> pixels_rendered(size.GetArea() * 4);
+    std::vector<uint8_t> pixels_rendered(size.GetArea() * 4);
     glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE,
                  &pixels_rendered[0]);
     CheckNoGlError("glReadPixels");
@@ -396,7 +399,7 @@ class TextureUploadPerfTest : public testing::Test {
   void RunUploadAndDrawMultipleTimes(const gfx::Size& size,
                                      const GLenum format,
                                      const bool subimage) {
-    std::vector<uint8> pixels;
+    std::vector<uint8_t> pixels;
     base::SmallMap<std::map<std::string, Measurement>>
         aggregates;  // indexed by name
     int successful_runs = 0;
@@ -496,7 +499,7 @@ TEST_F(TextureUploadPerfTest, upload) {
 TEST_F(TextureUploadPerfTest, renaming) {
   gfx::Size texture_size(fbo_size_.width() / 2, fbo_size_.height() / 2);
 
-  std::vector<uint8> pixels[4];
+  std::vector<uint8_t> pixels[4];
   for (int i = 0; i < 4; ++i) {
     GenerateTextureData(texture_size, 4, i + 1, &pixels[i]);
   }
@@ -533,7 +536,7 @@ TEST_F(TextureUploadPerfTest, renaming) {
   glDeleteTextures(1, &texture_id);
 
   for (int i = 0; i < 4; ++i) {
-    std::vector<uint8> pixels_rendered(texture_size.GetArea() * 4);
+    std::vector<uint8_t> pixels_rendered(texture_size.GetArea() * 4);
     glReadPixels(texture_size.width() * positions[i].x(),
                  texture_size.height() * positions[i].y(), texture_size.width(),
                  texture_size.height(), GL_RGBA, GL_UNSIGNED_BYTE,

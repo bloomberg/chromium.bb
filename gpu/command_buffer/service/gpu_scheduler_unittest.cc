@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "gpu/command_buffer/common/command_buffer_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
@@ -24,12 +27,12 @@ const size_t kRingBufferSize = 1024;
 
 class GpuSchedulerTest : public testing::Test {
  protected:
-  static const int32 kTransferBufferId = 123;
+  static const int32_t kTransferBufferId = 123;
 
   void SetUp() override {
     scoped_ptr<base::SharedMemory> shared_memory(new ::base::SharedMemory);
     shared_memory->CreateAndMapAnonymous(kRingBufferSize);
-    buffer_ = static_cast<int32*>(shared_memory->memory());
+    buffer_ = static_cast<int32_t*>(shared_memory->memory());
     shared_memory_buffer_ =
         MakeBufferFromSharedMemory(std::move(shared_memory), kRingBufferSize);
     memset(buffer_, 0, kRingBufferSize);
@@ -69,7 +72,7 @@ class GpuSchedulerTest : public testing::Test {
 
   scoped_ptr<MockCommandBuffer> command_buffer_;
   scoped_refptr<Buffer> shared_memory_buffer_;
-  int32* buffer_;
+  int32_t* buffer_;
   scoped_ptr<gles2::MockGLES2Decoder> decoder_;
   scoped_ptr<GpuScheduler> scheduler_;
   base::MessageLoop message_loop_;

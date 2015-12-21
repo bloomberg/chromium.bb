@@ -4,7 +4,6 @@
 
 #include "gpu/config/gpu_driver_bug_list.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_switches.h"

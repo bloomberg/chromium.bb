@@ -4,6 +4,9 @@
 
 #include "gpu/config/gpu_info_collector_linux.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/command_line.h"
@@ -71,9 +74,9 @@ std::string CollectDriverVersionATI() {
   return std::string();
 }
 
-const uint32 kVendorIDIntel = 0x8086;
-const uint32 kVendorIDNVidia = 0x10de;
-const uint32 kVendorIDAMD = 0x1002;
+const uint32_t kVendorIDIntel = 0x8086;
+const uint32_t kVendorIDNVidia = 0x10de;
+const uint32_t kVendorIDAMD = 0x1002;
 
 CollectInfoResult CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
@@ -183,7 +186,7 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   return result;
 }
 
-CollectInfoResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
+CollectInfoResult CollectGpuID(uint32_t* vendor_id, uint32_t* device_id) {
   DCHECK(vendor_id && device_id);
   *vendor_id = 0;
   *device_id = 0;

@@ -9,6 +9,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"

@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GPU_CONTROL_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GPU_CONTROL_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>

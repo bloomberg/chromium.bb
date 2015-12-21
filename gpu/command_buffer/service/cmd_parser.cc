@@ -6,6 +6,8 @@
 
 #include "gpu/command_buffer/service/cmd_parser.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 

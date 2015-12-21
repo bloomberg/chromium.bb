@@ -5,6 +5,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
 
 #include "base/threading/platform_thread.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
@@ -72,7 +73,7 @@ TEST_F(QueryTest, MultipleQueries) {
                          &available);
   EXPECT_TRUE(available);
   glGetQueryObjectuivEXT(error_query, GL_QUERY_RESULT_EXT, &result);
-  EXPECT_EQ(static_cast<uint32>(GL_INVALID_ENUM), result);
+  EXPECT_EQ(static_cast<uint32_t>(GL_INVALID_ENUM), result);
 }
 
 TEST_F(QueryTest, GetErrorBasic) {
@@ -95,7 +96,7 @@ TEST_F(QueryTest, GetErrorBasic) {
   glGetQueryObjectuivEXT(query, GL_QUERY_RESULT_AVAILABLE_EXT, &result);
   EXPECT_TRUE(result);
   glGetQueryObjectuivEXT(query, GL_QUERY_RESULT_EXT, &query_status);
-  EXPECT_EQ(static_cast<uint32>(GL_INVALID_ENUM), query_status);
+  EXPECT_EQ(static_cast<uint32_t>(GL_INVALID_ENUM), query_status);
 }
 
 TEST_F(QueryTest, DISABLED_LatencyQueryBasic) {

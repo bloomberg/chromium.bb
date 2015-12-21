@@ -7,7 +7,7 @@
 #ifndef GPU_TOOLS_COMPOSITOR_MODEL_BENCH_FORWARD_RENDER_MODEL_H_
 #define GPU_TOOLS_COMPOSITOR_MODEL_BENCH_FORWARD_RENDER_MODEL_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/tools/compositor_model_bench/render_model_utils.h"
 #include "gpu/tools/compositor_model_bench/render_models.h"

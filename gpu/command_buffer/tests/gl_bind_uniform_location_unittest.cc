@@ -5,6 +5,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -93,7 +94,7 @@ TEST_P(BindUniformLocationTest, Basic) {
 
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
-  static const uint8 expected[] = { 64, 128, 192, 255 };
+  static const uint8_t expected[] = {64, 128, 192, 255};
   EXPECT_TRUE(
       GLTestHelper::CheckPixels(0, 0, kResolution, kResolution, 1, expected));
 
@@ -260,7 +261,7 @@ TEST_P(BindUniformLocationTest, Compositor) {
 
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
-  static const uint8 expected[] = { 204, 204, 204, 204 };
+  static const uint8_t expected[] = {204, 204, 204, 204};
   EXPECT_TRUE(
       GLTestHelper::CheckPixels(0, 0, kResolution, kResolution, 1, expected));
 

@@ -5,6 +5,8 @@
 #ifndef GPU_BLINK_WEBGRAPHICSCONTEXT3D_IMPL_H_
 #define GPU_BLINK_WEBGRAPHICSCONTEXT3D_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

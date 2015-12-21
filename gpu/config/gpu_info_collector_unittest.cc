@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "gpu/config/gpu_info.h"
@@ -142,7 +145,7 @@ class GPUInfoCollectorTest
           .WillRepeatedly(SetArgPointee<1>(split_extensions_.size()));
       for (size_t ii = 0; ii < split_extensions_.size(); ++ii) {
         EXPECT_CALL(*gl_, GetStringi(GL_EXTENSIONS, ii))
-            .WillRepeatedly(Return(reinterpret_cast<const uint8*>(
+            .WillRepeatedly(Return(reinterpret_cast<const uint8_t*>(
                 split_extensions_[ii].c_str())));
       }
     }

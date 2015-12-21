@@ -6,6 +6,8 @@
 #define GPU_COMMAND_BUFFER_CLIENT_SHARE_GROUP_H_
 
 #include <GLES2/gl2.h>
+#include <stdint.h>
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "gles2_impl_export.h"
 #include "gpu/command_buffer/client/ref_counted.h"
@@ -34,7 +36,7 @@ class ShareGroupContextData {
     ~IdHandlerData();
 
     std::vector<GLuint> freed_ids_;
-    uint32 flush_generation_;
+    uint32_t flush_generation_;
   };
 
   IdHandlerData* id_handler_data(int namespace_id) {

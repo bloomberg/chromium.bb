@@ -6,6 +6,8 @@
 
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -69,7 +71,7 @@ void CommandBufferHelper::CalcImmediateEntries(int waiting_count) {
   }
 
   // Get maximum safe contiguous entries.
-  const int32 curr_get = get_offset();
+  const int32_t curr_get = get_offset();
   if (curr_get > put_) {
     immediate_entry_count_ = curr_get - put_ - 1;
   } else {
@@ -79,11 +81,11 @@ void CommandBufferHelper::CalcImmediateEntries(int waiting_count) {
 
   // Limit entry count to force early flushing.
   if (flush_automatically_) {
-    int32 limit =
+    int32_t limit =
         total_entry_count_ /
         ((curr_get == last_put_sent_) ? kAutoFlushSmall : kAutoFlushBig);
 
-    int32 pending =
+    int32_t pending =
         (put_ + total_entry_count_ - last_put_sent_) % total_entry_count_;
 
     if (pending > 0 && pending >= limit) {
@@ -109,7 +111,7 @@ bool CommandBufferHelper::AllocateRingBuffer() {
     return true;
   }
 
-  int32 id = -1;
+  int32_t id = -1;
   scoped_refptr<Buffer> buffer =
       command_buffer_->CreateTransferBuffer(ring_buffer_size_, &id);
   if (id < 0) {
@@ -146,7 +148,7 @@ void CommandBufferHelper::FreeRingBuffer() {
   FreeResources();
 }
 
-bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
+bool CommandBufferHelper::Initialize(int32_t ring_buffer_size) {
   ring_buffer_size_ = ring_buffer_size;
   return AllocateRingBuffer();
 }
@@ -157,7 +159,7 @@ CommandBufferHelper::~CommandBufferHelper() {
   FreeResources();
 }
 
-bool CommandBufferHelper::WaitForGetOffsetInRange(int32 start, int32 end) {
+bool CommandBufferHelper::WaitForGetOffsetInRange(int32_t start, int32_t end) {
   DCHECK(start >= 0 && start <= total_entry_count_);
   DCHECK(end >= 0 && end <= total_entry_count_);
   if (!usable()) {
@@ -230,7 +232,7 @@ bool CommandBufferHelper::Finish() {
 // scheme so that we don't lose tokens (a token has passed if the current token
 // value is higher than that token). Calls Finish() if the token value wraps,
 // which will be rare.
-int32 CommandBufferHelper::InsertToken() {
+int32_t CommandBufferHelper::InsertToken() {
   AllocateRingBuffer();
   if (!usable()) {
     return token_;
@@ -254,7 +256,7 @@ int32 CommandBufferHelper::InsertToken() {
 
 // Waits until the current token value is greater or equal to the value passed
 // in argument.
-void CommandBufferHelper::WaitForToken(int32 token) {
+void CommandBufferHelper::WaitForToken(int32_t token) {
   if (!usable() || !HaveRingBuffer()) {
     return;
   }
@@ -273,7 +275,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
 // around, adding a noops. Thus this function may change the value of put_. The
 // function will return early if an error occurs, in which case the available
 // space may not be available.
-void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
+void CommandBufferHelper::WaitForAvailableEntries(int32_t count) {
   AllocateRingBuffer();
   if (!usable()) {
     return;
@@ -286,7 +288,7 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     // but we need to make sure get wraps first, actually that get is 1 or
     // more (since put will wrap to 0 after we add the noops).
     DCHECK_LE(1, put_);
-    int32 curr_get = get_offset();
+    int32_t curr_get = get_offset();
     if (curr_get > put_ || curr_get == 0) {
       TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries");
       Flush();
@@ -297,9 +299,9 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
       DCHECK_NE(0, curr_get);
     }
     // Insert Noops to fill out the buffer.
-    int32 num_entries = total_entry_count_ - put_;
+    int32_t num_entries = total_entry_count_ - put_;
     while (num_entries > 0) {
-      int32 num_to_skip = std::min(CommandHeader::kMaxSize, num_entries);
+      int32_t num_to_skip = std::min(CommandHeader::kMaxSize, num_entries);
       cmd::Noop::Set(&entries_[put_], num_to_skip);
       put_ += num_to_skip;
       num_entries -= num_to_skip;
@@ -325,8 +327,8 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
   }
 }
 
-int32 CommandBufferHelper::GetTotalFreeEntriesNoWaiting() const {
-  int32 current_get_offset = get_offset();
+int32_t CommandBufferHelper::GetTotalFreeEntriesNoWaiting() const {
+  int32_t current_get_offset = get_offset();
   if (current_get_offset > put_) {
     return current_get_offset - put_ - 1;
   } else {
@@ -341,7 +343,7 @@ bool CommandBufferHelper::OnMemoryDump(
   if (!HaveRingBuffer())
     return true;
 
-  const uint64 tracing_process_id =
+  const uint64_t tracing_process_id =
       base::trace_event::MemoryDumpManager::GetInstance()
           ->GetTracingProcessId();
 

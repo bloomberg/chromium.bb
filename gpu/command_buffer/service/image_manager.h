@@ -5,8 +5,10 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_IMAGE_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_IMAGE_MANAGER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/gpu_export.h"
 
@@ -24,12 +26,12 @@ class GPU_EXPORT ImageManager {
   ~ImageManager();
 
   void Destroy(bool have_context);
-  void AddImage(gl::GLImage* image, int32 service_id);
-  void RemoveImage(int32 service_id);
-  gl::GLImage* LookupImage(int32 service_id);
+  void AddImage(gl::GLImage* image, int32_t service_id);
+  void RemoveImage(int32_t service_id);
+  gl::GLImage* LookupImage(int32_t service_id);
 
  private:
-  typedef base::hash_map<int32, scoped_refptr<gl::GLImage>> GLImageMap;
+  typedef base::hash_map<int32_t, scoped_refptr<gl::GLImage>> GLImageMap;
   GLImageMap images_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageManager);

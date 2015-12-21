@@ -4,12 +4,14 @@
 
 #include "gpu/command_buffer/service/program_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <set>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
@@ -73,7 +75,7 @@ bool GetUniformNameSansElement(
   base::CheckedNumeric<GLint> index = 0;
   size_t last = name.size() - 1;
   for (size_t pos = open_pos + 1; pos < last; ++pos) {
-    int8 digit = name[pos] - '0';
+    int8_t digit = name[pos] - '0';
     if (digit < 0 || digit > 9) {
       return false;
     }
@@ -110,9 +112,9 @@ bool IsBuiltInInvariant(
   return hit->second.isInvariant;
 }
 
-uint32 ComputeOffset(const void* start, const void* position) {
-  return static_cast<const uint8*>(position) -
-         static_cast<const uint8*>(start);
+uint32_t ComputeOffset(const void* start, const void* position) {
+  return static_cast<const uint8_t*>(position) -
+         static_cast<const uint8_t*>(start);
 }
 
 }  // anonymous namespace.
@@ -323,8 +325,7 @@ void Program::UpdateLogInfo() {
   set_log_info(ProcessLogInfo(log).c_str());
 }
 
-void Program::ClearUniforms(
-    std::vector<uint8>* zero_buffer) {
+void Program::ClearUniforms(std::vector<uint8_t>* zero_buffer) {
   DCHECK(zero_buffer);
   if (uniforms_cleared_) {
     return;
@@ -333,11 +334,11 @@ void Program::ClearUniforms(
   for (const UniformInfo& uniform_info : uniform_infos_) {
     GLint location = uniform_info.element_locations[0];
     GLsizei size = uniform_info.size;
-    uint32 unit_size =
+    uint32_t unit_size =
         GLES2Util::GetElementCountForUniformType(uniform_info.type) *
         GLES2Util::GetElementSizeForUniformType(uniform_info.type);
     DCHECK_LT(0u, unit_size);
-    uint32 size_needed = size * unit_size;
+    uint32_t size_needed = size * unit_size;
     if (size_needed > zero_buffer->size()) {
       zero_buffer->resize(size_needed, 0u);
     }
@@ -1833,8 +1834,8 @@ void Program::GetProgramInfo(
   // because the data being calucated from has various small limits. The max
   // number of attribs + uniforms is somewhere well under 1024. The maximum size
   // of an identifier is 256 characters.
-  uint32 num_locations = 0;
-  uint32 total_string_size = 0;
+  uint32_t num_locations = 0;
+  uint32_t total_string_size = 0;
 
   for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
     const VertexAttrib& info = attrib_infos_[ii];
@@ -1847,17 +1848,17 @@ void Program::GetProgramInfo(
     total_string_size += info.name.size();
   }
 
-  uint32 num_inputs = attrib_infos_.size() + uniform_infos_.size();
-  uint32 input_size = num_inputs * sizeof(ProgramInput);
-  uint32 location_size = num_locations * sizeof(int32);
-  uint32 size = sizeof(ProgramInfoHeader) +
-      input_size + location_size + total_string_size;
+  uint32_t num_inputs = attrib_infos_.size() + uniform_infos_.size();
+  uint32_t input_size = num_inputs * sizeof(ProgramInput);
+  uint32_t location_size = num_locations * sizeof(int32_t);
+  uint32_t size = sizeof(ProgramInfoHeader) + input_size + location_size +
+                  total_string_size;
 
   bucket->SetSize(size);
   ProgramInfoHeader* header = bucket->GetDataAs<ProgramInfoHeader*>(0, size);
   ProgramInput* inputs = bucket->GetDataAs<ProgramInput*>(
       sizeof(ProgramInfoHeader), input_size);
-  int32* locations = bucket->GetDataAs<int32*>(
+  int32_t* locations = bucket->GetDataAs<int32_t*>(
       sizeof(ProgramInfoHeader) + input_size, location_size);
   char* strings = bucket->GetDataAs<char*>(
       sizeof(ProgramInfoHeader) + input_size + location_size,
@@ -2267,8 +2268,8 @@ Program::~Program() {
 }
 
 ProgramManager::ProgramManager(ProgramCache* program_cache,
-                               uint32 max_varying_vectors,
-                               uint32 max_dual_source_draw_buffers,
+                               uint32_t max_varying_vectors,
+                               uint32_t max_dual_source_draw_buffers,
                                FeatureInfo* feature_info)
     : program_count_(0),
       have_context_(true),
@@ -2383,7 +2384,7 @@ void ProgramManager::ClearUniforms(Program* program) {
   program->ClearUniforms(&zero_);
 }
 
-int32 ProgramManager::MakeFakeLocation(int32 index, int32 element) {
+int32_t ProgramManager::MakeFakeLocation(int32_t index, int32_t element) {
   return index + element * 0x10000;
 }
 

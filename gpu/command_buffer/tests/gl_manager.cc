@@ -7,6 +7,8 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <vector>
 
@@ -64,8 +66,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   void* memory(size_t plane) override {
     DCHECK(mapped_);
     DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
-    return reinterpret_cast<uint8*>(&bytes_->data().front()) +
-         gfx::BufferOffsetForBufferFormat(size_, format_, plane);
+    return reinterpret_cast<uint8_t*>(&bytes_->data().front()) +
+           gfx::BufferOffsetForBufferFormat(size_, format_, plane);
   }
   void Unmap() override {
     DCHECK(mapped_);
@@ -147,7 +149,7 @@ GLManager::~GLManager() {
 scoped_ptr<gfx::GpuMemoryBuffer> GLManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format) {
-  std::vector<uint8> data(gfx::BufferSizeForBufferFormat(size, format), 0);
+  std::vector<uint8_t> data(gfx::BufferSizeForBufferFormat(size, format), 0);
   scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes(data));
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(
       new GpuMemoryBufferImpl(bytes.get(), size, format));
@@ -159,7 +161,7 @@ void GLManager::Initialize(const GLManager::Options& options) {
 
 void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
                                           base::CommandLine* command_line) {
-  const int32 kCommandBufferSize = 1024 * 1024;
+  const int32_t kCommandBufferSize = 1024 * 1024;
   const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
   const size_t kMinTransferBufferSize = 1 * 256 * 1024;
   const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
@@ -199,7 +201,7 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
       share_group ? share_group : new gfx::GLShareGroup;
 
   gfx::GpuPreference gpu_preference(gfx::PreferDiscreteGpu);
-  std::vector<int32> attribs;
+  std::vector<int32_t> attribs;
   gles2::ContextCreationAttribHelper attrib_helper;
   attrib_helper.red_size = 8;
   attrib_helper.green_size = 8;
@@ -417,7 +419,7 @@ void GLManager::PumpCommands() {
   }
 }
 
-bool GLManager::GetBufferChanged(int32 transfer_buffer_id) {
+bool GLManager::GetBufferChanged(int32_t transfer_buffer_id) {
   return gpu_scheduler_->SetGetBuffer(transfer_buffer_id);
 }
 
@@ -425,10 +427,10 @@ Capabilities GLManager::GetCapabilities() {
   return decoder_->GetCapabilities();
 }
 
-int32 GLManager::CreateImage(ClientBuffer buffer,
-                             size_t width,
-                             size_t height,
-                             unsigned internalformat) {
+int32_t GLManager::CreateImage(ClientBuffer buffer,
+                               size_t width,
+                               size_t height,
+                               unsigned internalformat) {
   GpuMemoryBufferImpl* gpu_memory_buffer =
       GpuMemoryBufferImpl::FromClientBuffer(buffer);
 
@@ -440,8 +442,8 @@ int32 GLManager::CreateImage(ClientBuffer buffer,
     return -1;
   }
 
-  static int32 next_id = 1;
-  int32 new_id = next_id++;
+  static int32_t next_id = 1;
+  int32_t new_id = next_id++;
 
   gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
   DCHECK(image_manager);
@@ -449,42 +451,42 @@ int32 GLManager::CreateImage(ClientBuffer buffer,
   return new_id;
 }
 
-int32 GLManager::CreateGpuMemoryBufferImage(size_t width,
-                                            size_t height,
-                                            unsigned internalformat,
-                                            unsigned usage) {
+int32_t GLManager::CreateGpuMemoryBufferImage(size_t width,
+                                              size_t height,
+                                              unsigned internalformat,
+                                              unsigned usage) {
   DCHECK_EQ(usage, static_cast<unsigned>(GL_READ_WRITE_CHROMIUM));
   scoped_ptr<gfx::GpuMemoryBuffer> buffer = GLManager::CreateGpuMemoryBuffer(
       gfx::Size(width, height), gfx::BufferFormat::RGBA_8888);
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
 }
 
-void GLManager::DestroyImage(int32 id) {
+void GLManager::DestroyImage(int32_t id) {
   gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
   DCHECK(image_manager);
   image_manager->RemoveImage(id);
 }
 
-uint32 GLManager::InsertSyncPoint() {
+uint32_t GLManager::InsertSyncPoint() {
   NOTIMPLEMENTED();
   return 0u;
 }
 
-uint32 GLManager::InsertFutureSyncPoint() {
+uint32_t GLManager::InsertFutureSyncPoint() {
   NOTIMPLEMENTED();
   return 0u;
 }
 
-void GLManager::RetireSyncPoint(uint32 sync_point) {
+void GLManager::RetireSyncPoint(uint32_t sync_point) {
   NOTIMPLEMENTED();
 }
 
-void GLManager::SignalSyncPoint(uint32 sync_point,
+void GLManager::SignalSyncPoint(uint32_t sync_point,
                                 const base::Closure& callback) {
   NOTIMPLEMENTED();
 }
 
-void GLManager::SignalQuery(uint32 query, const base::Closure& callback) {
+void GLManager::SignalQuery(uint32_t query, const base::Closure& callback) {
   NOTIMPLEMENTED();
 }
 

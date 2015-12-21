@@ -4,6 +4,8 @@
 
 #include "gpu/perftests/measurements.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "testing/perf/perf_test.h"
 #include "ui/gl/gpu_timing.h"
@@ -88,7 +90,7 @@ Measurement MeasurementTimers::GetAsMeasurement(const std::string& name) {
   if (!base::ThreadTicks::IsSupported()) {
     cpu_time_ = base::TimeDelta::FromMicroseconds(-1);
   }
-  int64 gpu_time = -1;
+  int64_t gpu_time = -1;
   if (gpu_timer_.get() != nullptr && gpu_timer_->IsAvailable()) {
     gpu_time = gpu_timer_->GetDeltaElapsed();
   }

@@ -4,6 +4,9 @@
 
 // This file contains unit tests for gles2 commmands
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/bind.h"
@@ -50,8 +53,8 @@ class GLES2FormatTest : public testing::Test {
   unsigned char buffer_[1024];
 };
 
-void SignalCompletion(uint32* assigned_async_token_ptr,
-                      uint32 async_token,
+void SignalCompletion(uint32_t* assigned_async_token_ptr,
+                      uint32_t async_token,
                       AsyncUploadSync* sync) {
   EXPECT_EQ(async_token, *assigned_async_token_ptr);
   sync->SetAsyncUploadToken(async_token);
@@ -69,11 +72,11 @@ TEST(GLES2FormatAsyncUploadSyncTest, AsyncUploadSync) {
     AsyncUploadSync sync;
     sync.Reset();
 
-    uint32 buffer_tokens[kSize];
+    uint32_t buffer_tokens[kSize];
     memset(buffer_tokens, 0, sizeof(buffer_tokens));
 
     // Start with a token large enough so that we'll wrap.
-    uint32 async_token = std::numeric_limits<uint32>::max() - kCount / 2;
+    uint32_t async_token = std::numeric_limits<uint32_t>::max() - kCount / 2;
 
     // Set initial async token.
     sync.SetAsyncUploadToken(async_token);

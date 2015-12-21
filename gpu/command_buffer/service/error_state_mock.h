@@ -7,6 +7,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_ERROR_STATE_MOCK_H_
 #define GPU_COMMAND_BUFFER_SERVICE_ERROR_STATE_MOCK_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

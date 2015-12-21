@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -10,9 +12,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 const char kOsVersion[] = "10.6.4";
-const uint32 kIntelVendorId = 0x8086;
-const uint32 kNvidiaVendorId = 0x10de;
-const uint32 kAmdVendorId = 0x10de;
+const uint32_t kIntelVendorId = 0x8086;
+const uint32_t kNvidiaVendorId = 0x10de;
+const uint32_t kAmdVendorId = 0x10de;
 
 #define LONG_STRING_CONST(...) #__VA_ARGS__
 
@@ -136,7 +138,7 @@ TEST_F(GpuControlListTest, DetailedEntryAndInvalidJson) {
   features = control_list->MakeDecision(
       GpuControlList::kOsMacosx, kOsVersion, gpu_info());
   EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
-  std::vector<uint32> entries;
+  std::vector<uint32_t> entries;
   control_list->GetDecisionEntries(&entries, false);
   ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(5u, entries[0]);
@@ -278,7 +280,7 @@ TEST_F(GpuControlListTest, DisabledEntry) {
   std::set<int> features = control_list->MakeDecision(
       GpuControlList::kOsWin, kOsVersion, gpu_info());
   EXPECT_EMPTY_SET(features);
-  std::vector<uint32> flag_entries;
+  std::vector<uint32_t> flag_entries;
   control_list->GetDecisionEntries(&flag_entries, false);
   EXPECT_EQ(0u, flag_entries.size());
   control_list->GetDecisionEntries(&flag_entries, true);
@@ -318,7 +320,7 @@ TEST_F(GpuControlListTest, NeedsMoreInfo) {
       GpuControlList::kOsWin, kOsVersion, gpu_info);
   EXPECT_EMPTY_SET(features);
   EXPECT_TRUE(control_list->needs_more_info());
-  std::vector<uint32> decision_entries;
+  std::vector<uint32_t> decision_entries;
   control_list->GetDecisionEntries(&decision_entries, false);
   EXPECT_EQ(0u, decision_entries.size());
 

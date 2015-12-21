@@ -4,6 +4,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
@@ -26,7 +27,9 @@ class GLTest : public testing::Test {
 TEST_F(GLTest, Basic) {
   glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
-  uint8 expected[] = { 0, 255, 0, 255, };
+  uint8_t expected[] = {
+      0, 255, 0, 255,
+  };
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected));
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
@@ -37,7 +40,7 @@ TEST_F(GLTest, BasicFBO) {
   GLuint fbo = 0;
   glGenFramebuffers(1, &fbo);
   glBindTexture(GL_TEXTURE_2D, tex);
-  scoped_ptr<uint8[]> pixels(new uint8 [16*16*4]);
+  scoped_ptr<uint8_t[]> pixels(new uint8_t[16 * 16 * 4]);
   memset(pixels.get(), 0, 16*16*4);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels.get());
@@ -53,7 +56,9 @@ TEST_F(GLTest, BasicFBO) {
             glCheckFramebufferStatus(GL_FRAMEBUFFER));
   glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
-  uint8 expected[] = { 0, 255, 0, 255, };
+  uint8_t expected[] = {
+      0, 255, 0, 255,
+  };
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 16, 16, 0, expected));
   glDeleteFramebuffers(1, &fbo);
   glDeleteTextures(1, &tex);
@@ -80,11 +85,15 @@ TEST_F(GLTest, SimpleShader) {
 
   GLTestHelper::SetupUnitQuad(position_loc);
 
-  uint8 expected_clear[] = { 127, 0, 255, 0, };
+  uint8_t expected_clear[] = {
+      127, 0, 255, 0,
+  };
   glClearColor(0.5f, 0.0f, 1.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 1, expected_clear));
-  uint8 expected_draw[] = { 0, 255, 0, 255, };
+  uint8_t expected_draw[] = {
+      0, 255, 0, 255,
+  };
   glDrawArrays(GL_TRIANGLES, 0, 6);
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_draw));
 }

@@ -10,7 +10,7 @@
 
 #include "gpu/tools/compositor_model_bench/render_tree.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 enum RenderModel {

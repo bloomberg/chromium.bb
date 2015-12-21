@@ -5,6 +5,10 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_MOCK_H_
 #define GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_MOCK_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -23,23 +27,23 @@ class MockCommandBuffer : public CommandBufferServiceBase {
 
   MOCK_METHOD0(Initialize, bool());
   MOCK_METHOD0(GetLastState, State());
-  MOCK_METHOD0(GetLastToken, int32());
-  MOCK_METHOD1(Flush, void(int32 put_offset));
-  MOCK_METHOD1(OrderingBarrier, void(int32 put_offset));
-  MOCK_METHOD2(WaitForTokenInRange, void(int32 start, int32 end));
-  MOCK_METHOD2(WaitForGetOffsetInRange, void(int32 start, int32 end));
-  MOCK_METHOD1(SetGetBuffer, void(int32 transfer_buffer_id));
-  MOCK_METHOD1(SetGetOffset, void(int32 get_offset));
+  MOCK_METHOD0(GetLastToken, int32_t());
+  MOCK_METHOD1(Flush, void(int32_t put_offset));
+  MOCK_METHOD1(OrderingBarrier, void(int32_t put_offset));
+  MOCK_METHOD2(WaitForTokenInRange, void(int32_t start, int32_t end));
+  MOCK_METHOD2(WaitForGetOffsetInRange, void(int32_t start, int32_t end));
+  MOCK_METHOD1(SetGetBuffer, void(int32_t transfer_buffer_id));
+  MOCK_METHOD1(SetGetOffset, void(int32_t get_offset));
   MOCK_METHOD2(CreateTransferBuffer,
-               scoped_refptr<gpu::Buffer>(size_t size, int32* id));
-  MOCK_METHOD1(DestroyTransferBuffer, void(int32 id));
-  MOCK_METHOD1(GetTransferBuffer, scoped_refptr<gpu::Buffer>(int32 id));
-  MOCK_METHOD1(SetToken, void(int32 token));
+               scoped_refptr<gpu::Buffer>(size_t size, int32_t* id));
+  MOCK_METHOD1(DestroyTransferBuffer, void(int32_t id));
+  MOCK_METHOD1(GetTransferBuffer, scoped_refptr<gpu::Buffer>(int32_t id));
+  MOCK_METHOD1(SetToken, void(int32_t token));
   MOCK_METHOD1(SetParseError, void(error::Error error));
   MOCK_METHOD1(SetContextLostReason,
                void(error::ContextLostReason context_lost_reason));
-  MOCK_METHOD0(InsertSyncPoint, uint32());
-  MOCK_METHOD0(GetPutOffset, int32());
+  MOCK_METHOD0(InsertSyncPoint, uint32_t());
+  MOCK_METHOD0(GetPutOffset, int32_t());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCommandBuffer);

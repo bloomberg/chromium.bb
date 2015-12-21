@@ -5,6 +5,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -153,7 +154,7 @@ TEST_F(EXTMultisampleCompatibilityTest, DrawAndResolve) {
   // values. These might be due to different MSAA sample counts causing
   // different samples to hit.  Other option is driver bugs. Just test that
   // disabling multisample causes a difference.
-  scoped_ptr<uint8[]> results[3];
+  scoped_ptr<uint8_t[]> results[3];
   const GLint kResultSize = kWidth * kHeight * 4;
   for (int pass = 0; pass < 3; pass++) {
     PrepareForDraw();
@@ -175,7 +176,7 @@ TEST_F(EXTMultisampleCompatibilityTest, DrawAndResolve) {
       glEnable(GL_MULTISAMPLE_EXT);
     }
     PrepareForVerify();
-    results[pass].reset(new uint8[kResultSize]);
+    results[pass].reset(new uint8_t[kResultSize]);
     memset(results[pass].get(), GLTestHelper::kCheckClearValue, kResultSize);
     glReadPixels(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
                  results[pass].get());
@@ -205,7 +206,7 @@ TEST_F(EXTMultisampleCompatibilityTest, DrawAlphaOneAndResolve) {
   // even approximate sample values is not that easy.  Thus, just test
   // representative positions which have fractional pixels, inspecting that
   // normal rendering is different to SAMPLE_ALPHA_TO_ONE rendering.
-  scoped_ptr<uint8[]> results[3];
+  scoped_ptr<uint8_t[]> results[3];
   const GLint kResultSize = kWidth * kHeight * 4;
 
   for (int pass = 0; pass < 3; ++pass) {
@@ -225,7 +226,7 @@ TEST_F(EXTMultisampleCompatibilityTest, DrawAlphaOneAndResolve) {
     glDrawArrays(GL_TRIANGLES, 6, 3);
 
     PrepareForVerify();
-    results[pass].reset(new uint8[kResultSize]);
+    results[pass].reset(new uint8_t[kResultSize]);
     memset(results[pass].get(), GLTestHelper::kCheckClearValue, kResultSize);
     glReadPixels(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
                  results[pass].get());

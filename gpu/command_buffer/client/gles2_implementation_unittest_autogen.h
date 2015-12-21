@@ -1521,7 +1521,7 @@ TEST_F(GLES2ImplementationTest, Scissor) {
 }
 
 TEST_F(GLES2ImplementationTest, ShaderSource) {
-  const uint32 kBucketId = GLES2Implementation::kResultBucketId;
+  const uint32_t kBucketId = GLES2Implementation::kResultBucketId;
   const char* kString1 = "happy";
   const char* kString2 = "ending";
   const size_t kString1Size = ::strlen(kString1) + 1;
@@ -1569,7 +1569,7 @@ TEST_F(GLES2ImplementationTest, ShaderSource) {
 }
 
 TEST_F(GLES2ImplementationTest, ShaderSourceWithLength) {
-  const uint32 kBucketId = GLES2Implementation::kResultBucketId;
+  const uint32_t kBucketId = GLES2Implementation::kResultBucketId;
   const char* kString = "foobar******";
   const size_t kStringSize = 6;  // We only need "foobar".
   const size_t kHeaderSize = sizeof(GLint) * 2;
@@ -1739,7 +1739,7 @@ TEST_F(GLES2ImplementationTest, TexStorage3D) {
 }
 
 TEST_F(GLES2ImplementationTest, TransformFeedbackVaryings) {
-  const uint32 kBucketId = GLES2Implementation::kResultBucketId;
+  const uint32_t kBucketId = GLES2Implementation::kResultBucketId;
   const char* kString1 = "happy";
   const char* kString2 = "ending";
   const size_t kString1Size = ::strlen(kString1) + 1;

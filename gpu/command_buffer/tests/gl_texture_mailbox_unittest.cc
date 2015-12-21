@@ -5,6 +5,8 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -18,7 +20,7 @@
 namespace gpu {
 
 namespace {
-uint32 ReadTexel(GLuint id, GLint x, GLint y) {
+uint32_t ReadTexel(GLuint id, GLint x, GLint y) {
   GLint old_fbo = 0;
   glGetIntegerv(GL_FRAMEBUFFER_BINDING, &old_fbo);
 
@@ -40,7 +42,7 @@ uint32 ReadTexel(GLuint id, GLint x, GLint y) {
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-  uint32 texel = 0;
+  uint32_t texel = 0;
   glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &texel);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
@@ -83,7 +85,7 @@ TEST_F(GLTextureMailboxTest, ProduceAndConsumeTexture) {
   glGenTextures(1, &tex1);
 
   glBindTexture(GL_TEXTURE_2D, tex1);
-  uint32 source_pixel = 0xFF0000FF;
+  uint32_t source_pixel = 0xFF0000FF;
   glTexImage2D(GL_TEXTURE_2D,
                0,
                GL_RGBA,
@@ -127,7 +129,7 @@ TEST_F(GLTextureMailboxTest, ProduceAndConsumeTextureRGB) {
   glGenTextures(1, &tex1);
 
   glBindTexture(GL_TEXTURE_2D, tex1);
-  uint32 source_pixel = 0xFF000000;
+  uint32_t source_pixel = 0xFF000000;
   glTexImage2D(GL_TEXTURE_2D,
                0,
                GL_RGB,
@@ -171,7 +173,7 @@ TEST_F(GLTextureMailboxTest, ProduceAndConsumeTextureDirect) {
   glGenTextures(1, &tex1);
 
   glBindTexture(GL_TEXTURE_2D, tex1);
-  uint32 source_pixel = 0xFF0000FF;
+  uint32_t source_pixel = 0xFF0000FF;
   glTexImage2D(GL_TEXTURE_2D,
                0,
                GL_RGBA,
@@ -204,7 +206,7 @@ TEST_F(GLTextureMailboxTest, ConsumeTextureValidatesKey) {
   glGenTextures(1, &tex);
 
   glBindTexture(GL_TEXTURE_2D, tex);
-  uint32 source_pixel = 0xFF0000FF;
+  uint32_t source_pixel = 0xFF0000FF;
   glTexImage2D(GL_TEXTURE_2D,
                0,
                GL_RGBA,
@@ -233,7 +235,7 @@ TEST_F(GLTextureMailboxTest, SharedTextures) {
   glGenTextures(1, &tex1);
 
   glBindTexture(GL_TEXTURE_2D, tex1);
-  uint32 source_pixel = 0xFF0000FF;
+  uint32_t source_pixel = 0xFF0000FF;
   glTexImage2D(GL_TEXTURE_2D,
                0,
                GL_RGBA,
@@ -384,7 +386,7 @@ TEST_F(GLTextureMailboxTest, ProduceTextureDirectInvalidTarget) {
   glGenTextures(1, &tex1);
 
   glBindTexture(GL_TEXTURE_CUBE_MAP, tex1);
-  uint32 source_pixel = 0xFF0000FF;
+  uint32_t source_pixel = 0xFF0000FF;
   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X,
                0,
                GL_RGBA,

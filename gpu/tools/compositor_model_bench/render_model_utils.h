@@ -7,6 +7,8 @@
 #ifndef GPU_TOOLS_COMPOSITOR_MODEL_BENCH_RENDER_MODEL_UTILS_H_
 #define GPU_TOOLS_COMPOSITOR_MODEL_BENCH_RENDER_MODEL_UTILS_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <vector>
@@ -21,7 +23,7 @@
 // texture ID's in the tree, replacing them with the matching new textures.
 class TextureGenerator : public RenderNodeVisitor {
  public:
-  typedef scoped_ptr<uint8[]> ImagePtr;
+  typedef scoped_ptr<uint8_t[]> ImagePtr;
   typedef std::vector<Tile>::iterator tile_iter;
 
   explicit TextureGenerator(RenderNode* root);

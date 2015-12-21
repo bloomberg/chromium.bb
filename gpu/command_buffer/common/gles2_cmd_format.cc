@@ -12,6 +12,8 @@
 namespace gpu {
 namespace gles2 {
 
+#include <stddef.h>
+
 #include "gpu/command_buffer/common/gles2_cmd_ids_autogen.h"
 
 const char* GetCommandName(CommandId id) {

@@ -5,10 +5,11 @@
 #ifndef GPU_CONFIG_GPU_TEST_CONFIG_H_
 #define GPU_CONFIG_GPU_TEST_CONFIG_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "gpu/gpu_export.h"
 
@@ -58,18 +59,18 @@ class GPU_EXPORT GPUTestConfig {
   GPUTestConfig();
   virtual ~GPUTestConfig();
 
-  void set_os(int32 os);
-  void set_gpu_device_id(uint32 id);
-  void set_build_type(int32 build_type);
-  void set_api(int32 api);
+  void set_os(int32_t os);
+  void set_gpu_device_id(uint32_t id);
+  void set_build_type(int32_t build_type);
+  void set_api(int32_t api);
 
-  virtual void AddGPUVendor(uint32 gpu_vendor);
+  virtual void AddGPUVendor(uint32_t gpu_vendor);
 
-  int32 os() const { return os_; }
-  const std::vector<uint32>& gpu_vendor() const { return gpu_vendor_; }
-  uint32 gpu_device_id() const { return gpu_device_id_; }
-  int32 build_type() const { return build_type_; }
-  int32 api() const { return api_; }
+  int32_t os() const { return os_; }
+  const std::vector<uint32_t>& gpu_vendor() const { return gpu_vendor_; }
+  uint32_t gpu_device_id() const { return gpu_device_id_; }
+  int32_t build_type() const { return build_type_; }
+  int32_t api() const { return api_; }
 
   // Check if the config is valid. For example, if gpu_device_id_ is set, but
   // gpu_vendor_ is unknown, then it's invalid.
@@ -91,19 +92,19 @@ class GPU_EXPORT GPUTestConfig {
 
  private:
   // operating system.
-  int32 os_;
+  int32_t os_;
 
   // GPU vendor.
-  std::vector<uint32> gpu_vendor_;
+  std::vector<uint32_t> gpu_vendor_;
 
   // GPU device id (unique to each vendor).
-  uint32 gpu_device_id_;
+  uint32_t gpu_device_id_;
 
   // Release or Debug.
-  int32 build_type_;
+  int32_t build_type_;
 
   // Back-end rendering APIs.
-  int32 api_;
+  int32_t api_;
 };
 
 class GPU_EXPORT GPUTestBotConfig : public GPUTestConfig {
@@ -112,7 +113,7 @@ class GPU_EXPORT GPUTestBotConfig : public GPUTestConfig {
   ~GPUTestBotConfig() override;
 
   // This should only be called when no gpu_vendor is added.
-  void AddGPUVendor(uint32 gpu_vendor) override;
+  void AddGPUVendor(uint32_t gpu_vendor) override;
 
   // Return false if gpu_info does not have valid vendor_id and device_id.
   bool SetGPUInfo(const GPUInfo& gpu_info);

@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/texture_definition.h"
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/lazy_instance.h"
@@ -17,6 +19,7 @@
 #include "ui/gl/scoped_binders.h"
 
 #if !defined(OS_MACOSX)
+#include "base/macros.h"
 #include "ui/gl/gl_surface_egl.h"
 #endif
 

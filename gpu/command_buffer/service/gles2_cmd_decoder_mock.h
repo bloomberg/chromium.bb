@@ -7,9 +7,12 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_MOCK_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_MOCK_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,13 +49,13 @@ class MockGLES2Decoder : public GLES2Decoder {
                     bool offscreen,
                     const gfx::Size& size,
                     const DisallowedFeatures& disallowed_features,
-                    const std::vector<int32>& attribs));
+                    const std::vector<int32_t>& attribs));
   MOCK_METHOD1(Destroy, void(bool have_context));
   MOCK_METHOD1(SetSurface, void(const scoped_refptr<gfx::GLSurface>& surface));
   MOCK_METHOD1(ProduceFrontBuffer, void(const Mailbox& mailbox));
   MOCK_METHOD1(ResizeOffscreenFrameBuffer, bool(const gfx::Size& size));
   MOCK_METHOD0(MakeCurrent, bool());
-  MOCK_METHOD1(GetServiceIdForTesting, uint32(uint32 client_id));
+  MOCK_METHOD1(GetServiceIdForTesting, uint32_t(uint32_t client_id));
   MOCK_METHOD0(GetGLES2Util, GLES2Util*());
   MOCK_METHOD0(GetGLSurface, gfx::GLSurface*());
   MOCK_METHOD0(GetGLContext, gfx::GLContext*());
@@ -95,8 +98,8 @@ class MockGLES2Decoder : public GLES2Decoder {
                             const void* buffer,
                             int num_entries,
                             int* entries_processed));
-  MOCK_METHOD2(GetServiceTextureId, bool(uint32 client_texture_id,
-                                         uint32* service_texture_id));
+  MOCK_METHOD2(GetServiceTextureId,
+               bool(uint32_t client_texture_id, uint32_t* service_texture_id));
   MOCK_METHOD0(GetContextLostReason, error::ContextLostReason());
   MOCK_CONST_METHOD1(GetCommandName, const char*(unsigned int command_id));
   MOCK_METHOD9(ClearLevel,
@@ -122,7 +125,7 @@ class MockGLES2Decoder : public GLES2Decoder {
                void(const WaitFenceSyncCallback& callback));
   MOCK_METHOD1(WaitForReadPixels,
                void(base::Closure callback));
-  MOCK_METHOD0(GetTextureUploadCount, uint32());
+  MOCK_METHOD0(GetTextureUploadCount, uint32_t());
   MOCK_METHOD0(GetTotalTextureUploadTime, base::TimeDelta());
   MOCK_METHOD0(GetTotalProcessingCommandsTime, base::TimeDelta());
   MOCK_METHOD1(AddProcessingCommandsTime, void(base::TimeDelta));

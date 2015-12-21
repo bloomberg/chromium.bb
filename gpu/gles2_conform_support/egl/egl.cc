@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <EGL/egl.h>
+#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/environment.h"

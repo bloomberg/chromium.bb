@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/logging.h"
@@ -84,7 +86,7 @@ bool VertexAttrib::CanAccess(GLuint index) const {
     return false;
   }
 
-  uint32 usable_size = buffer_size - offset_;
+  uint32_t usable_size = buffer_size - offset_;
   GLuint num_elements = usable_size / real_stride_ +
       ((usable_size % real_stride_) >=
        (GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type_) * size_) ? 1 : 0);
@@ -99,8 +101,9 @@ VertexAttribManager::VertexAttribManager()
       service_id_(0) {
 }
 
-VertexAttribManager::VertexAttribManager(
-    VertexArrayManager* manager, GLuint service_id, uint32 num_vertex_attribs)
+VertexAttribManager::VertexAttribManager(VertexArrayManager* manager,
+                                         GLuint service_id,
+                                         uint32_t num_vertex_attribs)
     : num_fixed_attribs_(0),
       element_array_buffer_(NULL),
       manager_(manager),
@@ -121,11 +124,11 @@ VertexAttribManager::~VertexAttribManager() {
   }
 }
 
-void VertexAttribManager::Initialize(
-    uint32 max_vertex_attribs, bool init_attribs) {
+void VertexAttribManager::Initialize(uint32_t max_vertex_attribs,
+                                     bool init_attribs) {
   vertex_attribs_.resize(max_vertex_attribs);
 
-  for (uint32 vv = 0; vv < vertex_attribs_.size(); ++vv) {
+  for (uint32_t vv = 0; vv < vertex_attribs_.size(); ++vv) {
     vertex_attribs_[vv].set_index(vv);
     vertex_attribs_[vv].SetList(&disabled_vertex_attribs_);
 
@@ -155,7 +158,7 @@ void VertexAttribManager::Unbind(Buffer* buffer) {
   if (element_array_buffer_.get() == buffer) {
     element_array_buffer_ = NULL;
   }
-  for (uint32 vv = 0; vv < vertex_attribs_.size(); ++vv) {
+  for (uint32_t vv = 0; vv < vertex_attribs_.size(); ++vv) {
     vertex_attribs_[vv].Unbind(buffer);
   }
 }

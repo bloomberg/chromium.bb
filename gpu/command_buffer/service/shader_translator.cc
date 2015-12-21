@@ -4,8 +4,9 @@
 
 #include "gpu/command_buffer/service/shader_translator.h"
 
-#include <string.h>
 #include <GLES2/gl2.h>
+#include <stddef.h>
+#include <string.h>
 #include <algorithm>
 
 #include "base/at_exit.h"

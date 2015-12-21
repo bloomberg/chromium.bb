@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/memory_program_cache.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -81,7 +84,7 @@ class MemoryProgramCacheTest : public GpuServiceTest {
     shader_cache_shader_ = shader;
   }
 
-  int32 shader_cache_count() { return shader_cache_count_; }
+  int32_t shader_cache_count() { return shader_cache_count_; }
   const std::string& shader_cache_shader() { return shader_cache_shader_; }
 
  protected:
@@ -181,7 +184,7 @@ class MemoryProgramCacheTest : public GpuServiceTest {
   ShaderManager shader_manager_;
   Shader* vertex_shader_;
   Shader* fragment_shader_;
-  int32 shader_cache_count_;
+  int32_t shader_cache_count_;
   std::string shader_cache_shader_;
   std::vector<std::string> varyings_;
 };

@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/gpu_tracer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/bind.h"
@@ -61,8 +64,8 @@ TraceOutputter::~TraceOutputter() { g_outputter_thread = NULL; }
 void TraceOutputter::TraceDevice(GpuTracerSource source,
                                  const std::string& category,
                                  const std::string& name,
-                                 int64 start_time,
-                                 int64 end_time) {
+                                 int64_t start_time,
+                                 int64_t end_time) {
   DCHECK(source >= 0 && source < NUM_TRACER_SOURCES);
   TRACE_EVENT_COPY_BEGIN_WITH_ID_TID_AND_TIMESTAMP2(
       TRACE_DISABLED_BY_DEFAULT("gpu.device"),
@@ -109,7 +112,7 @@ void TraceOutputter::TraceServiceEnd(GpuTracerSource source,
                                      const std::string& name) {
   DCHECK(source >= 0 && source < NUM_TRACER_SOURCES);
   DCHECK(!trace_service_id_stack_[source].empty());
-  const uint64 local_trace_id = trace_service_id_stack_[source].top();
+  const uint64_t local_trace_id = trace_service_id_stack_[source].top();
   trace_service_id_stack_[source].pop();
 
   TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TTS2(
@@ -171,8 +174,8 @@ void GPUTrace::Process() {
   if (gpu_timer_.get() && device_enabled_) {
     DCHECK(IsAvailable());
 
-    int64 start = 0;
-    int64 end = 0;
+    int64_t start = 0;
+    int64_t end = 0;
     gpu_timer_->GetStartEndTimestamps(&start, &end);
     outputter_->TraceDevice(source_, category_, name_, start, end);
   }
@@ -376,7 +379,7 @@ scoped_refptr<Outputter> GPUTracer::CreateOutputter(const std::string& name) {
 }
 
 bool GPUTracer::CheckDisjointStatus() {
-  const int64 current_time = gpu_timing_client_->GetCurrentCPUTime();
+  const int64_t current_time = gpu_timing_client_->GetCurrentCPUTime();
   if (*gpu_trace_dev_category == 0)
     return false;
 

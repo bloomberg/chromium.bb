@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/query_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -25,8 +28,10 @@ namespace gles2 {
 
 class AbstractIntegerQuery : public QueryManager::Query {
  public:
-  AbstractIntegerQuery(
-      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+  AbstractIntegerQuery(QueryManager* manager,
+                       GLenum target,
+                       int32_t shm_id,
+                       uint32_t shm_offset);
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
   bool QueryCounter(base::subtle::Atomic32 submit_count) override;
@@ -42,8 +47,10 @@ class AbstractIntegerQuery : public QueryManager::Query {
   std::vector<GLuint> service_ids_;
 };
 
-AbstractIntegerQuery::AbstractIntegerQuery(
-    QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
+AbstractIntegerQuery::AbstractIntegerQuery(QueryManager* manager,
+                                           GLenum target,
+                                           int32_t shm_id,
+                                           uint32_t shm_offset)
     : Query(manager, target, shm_id, shm_offset) {
   GLuint service_id = 0;
   glGenQueries(1, &service_id);
@@ -107,18 +114,21 @@ bool AbstractIntegerQuery::AreAllResultsAvailable() {
 
 class BooleanQuery : public AbstractIntegerQuery {
  public:
-  BooleanQuery(
-      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+  BooleanQuery(QueryManager* manager,
+               GLenum target,
+               int32_t shm_id,
+               uint32_t shm_offset);
   bool Process(bool did_finish) override;
 
  protected:
   ~BooleanQuery() override;
 };
 
-BooleanQuery::BooleanQuery(
-    QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
-    : AbstractIntegerQuery(manager, target, shm_id, shm_offset) {
-}
+BooleanQuery::BooleanQuery(QueryManager* manager,
+                           GLenum target,
+                           int32_t shm_id,
+                           uint32_t shm_offset)
+    : AbstractIntegerQuery(manager, target, shm_id, shm_offset) {}
 
 BooleanQuery::~BooleanQuery() {
 }
@@ -140,18 +150,21 @@ bool BooleanQuery::Process(bool did_finish) {
 
 class SummedIntegerQuery : public AbstractIntegerQuery {
  public:
-  SummedIntegerQuery(
-      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+  SummedIntegerQuery(QueryManager* manager,
+                     GLenum target,
+                     int32_t shm_id,
+                     uint32_t shm_offset);
   bool Process(bool did_finish) override;
 
  protected:
   ~SummedIntegerQuery() override;
 };
 
-SummedIntegerQuery::SummedIntegerQuery(
-    QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
-    : AbstractIntegerQuery(manager, target, shm_id, shm_offset) {
-}
+SummedIntegerQuery::SummedIntegerQuery(QueryManager* manager,
+                                       GLenum target,
+                                       int32_t shm_id,
+                                       uint32_t shm_offset)
+    : AbstractIntegerQuery(manager, target, shm_id, shm_offset) {}
 
 SummedIntegerQuery::~SummedIntegerQuery() {
 }
@@ -173,8 +186,10 @@ bool SummedIntegerQuery::Process(bool did_finish) {
 
 class CommandsIssuedQuery : public QueryManager::Query {
  public:
-  CommandsIssuedQuery(
-      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+  CommandsIssuedQuery(QueryManager* manager,
+                      GLenum target,
+                      int32_t shm_id,
+                      uint32_t shm_offset);
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
@@ -191,10 +206,11 @@ class CommandsIssuedQuery : public QueryManager::Query {
   base::TimeTicks begin_time_;
 };
 
-CommandsIssuedQuery::CommandsIssuedQuery(
-      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
-    : Query(manager, target, shm_id, shm_offset) {
-}
+CommandsIssuedQuery::CommandsIssuedQuery(QueryManager* manager,
+                                         GLenum target,
+                                         int32_t shm_id,
+                                         uint32_t shm_offset)
+    : Query(manager, target, shm_id, shm_offset) {}
 
 bool CommandsIssuedQuery::Begin() {
   MarkAsActive();
@@ -237,8 +253,10 @@ CommandsIssuedQuery::~CommandsIssuedQuery() {
 
 class CommandLatencyQuery : public QueryManager::Query {
  public:
-  CommandLatencyQuery(
-      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+  CommandLatencyQuery(QueryManager* manager,
+                      GLenum target,
+                      int32_t shm_id,
+                      uint32_t shm_offset);
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
@@ -252,10 +270,11 @@ class CommandLatencyQuery : public QueryManager::Query {
   ~CommandLatencyQuery() override;
 };
 
-CommandLatencyQuery::CommandLatencyQuery(
-      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
-    : Query(manager, target, shm_id, shm_offset) {
-}
+CommandLatencyQuery::CommandLatencyQuery(QueryManager* manager,
+                                         GLenum target,
+                                         int32_t shm_id,
+                                         uint32_t shm_offset)
+    : Query(manager, target, shm_id, shm_offset) {}
 
 bool CommandLatencyQuery::Begin() {
   MarkAsActive();
@@ -300,8 +319,10 @@ class AsyncReadPixelsCompletedQuery
     : public QueryManager::Query,
       public base::SupportsWeakPtr<AsyncReadPixelsCompletedQuery> {
  public:
-  AsyncReadPixelsCompletedQuery(
-      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+  AsyncReadPixelsCompletedQuery(QueryManager* manager,
+                                GLenum target,
+                                int32_t shm_id,
+                                uint32_t shm_offset);
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
@@ -320,10 +341,11 @@ class AsyncReadPixelsCompletedQuery
 };
 
 AsyncReadPixelsCompletedQuery::AsyncReadPixelsCompletedQuery(
-    QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
-    : Query(manager, target, shm_id, shm_offset),
-      complete_result_(false) {
-}
+    QueryManager* manager,
+    GLenum target,
+    int32_t shm_id,
+    uint32_t shm_offset)
+    : Query(manager, target, shm_id, shm_offset), complete_result_(false) {}
 
 bool AsyncReadPixelsCompletedQuery::Begin() {
   MarkAsActive();
@@ -375,8 +397,10 @@ AsyncReadPixelsCompletedQuery::~AsyncReadPixelsCompletedQuery() {
 
 class GetErrorQuery : public QueryManager::Query {
  public:
-  GetErrorQuery(
-      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+  GetErrorQuery(QueryManager* manager,
+                GLenum target,
+                int32_t shm_id,
+                uint32_t shm_offset);
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
@@ -392,10 +416,11 @@ class GetErrorQuery : public QueryManager::Query {
  private:
 };
 
-GetErrorQuery::GetErrorQuery(
-      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
-    : Query(manager, target, shm_id, shm_offset) {
-}
+GetErrorQuery::GetErrorQuery(QueryManager* manager,
+                             GLenum target,
+                             int32_t shm_id,
+                             uint32_t shm_offset)
+    : Query(manager, target, shm_id, shm_offset) {}
 
 bool GetErrorQuery::Begin() {
   MarkAsActive();
@@ -438,8 +463,8 @@ class CommandsCompletedQuery : public QueryManager::Query {
  public:
   CommandsCompletedQuery(QueryManager* manager,
                          GLenum target,
-                         int32 shm_id,
-                         uint32 shm_offset);
+                         int32_t shm_id,
+                         uint32_t shm_offset);
 
   // Overridden from QueryManager::Query:
   bool Begin() override;
@@ -460,8 +485,8 @@ class CommandsCompletedQuery : public QueryManager::Query {
 
 CommandsCompletedQuery::CommandsCompletedQuery(QueryManager* manager,
                                                GLenum target,
-                                               int32 shm_id,
-                                               uint32 shm_offset)
+                                               int32_t shm_id,
+                                               uint32_t shm_offset)
     : Query(manager, target, shm_id, shm_offset) {}
 
 bool CommandsCompletedQuery::Begin() {
@@ -513,8 +538,8 @@ class TimeElapsedQuery : public QueryManager::Query {
  public:
   TimeElapsedQuery(QueryManager* manager,
                    GLenum target,
-                   int32 shm_id,
-                   uint32 shm_offset);
+                   int32_t shm_id,
+                   uint32_t shm_offset);
 
   // Overridden from QueryManager::Query:
   bool Begin() override;
@@ -534,11 +559,10 @@ class TimeElapsedQuery : public QueryManager::Query {
 
 TimeElapsedQuery::TimeElapsedQuery(QueryManager* manager,
                                    GLenum target,
-                                   int32 shm_id,
-                                   uint32 shm_offset)
+                                   int32_t shm_id,
+                                   uint32_t shm_offset)
     : Query(manager, target, shm_id, shm_offset),
-      gpu_timer_(manager->CreateGPUTimer(true)) {
-}
+      gpu_timer_(manager->CreateGPUTimer(true)) {}
 
 bool TimeElapsedQuery::Begin() {
   // Reset the disjoint value before the query begins if it is safe.
@@ -591,8 +615,8 @@ class TimeStampQuery : public QueryManager::Query {
  public:
   TimeStampQuery(QueryManager* manager,
                  GLenum target,
-                 int32 shm_id,
-                 uint32 shm_offset);
+                 int32_t shm_id,
+                 uint32_t shm_offset);
 
   // Overridden from QueryManager::Query:
   bool Begin() override;
@@ -612,8 +636,8 @@ class TimeStampQuery : public QueryManager::Query {
 
 TimeStampQuery::TimeStampQuery(QueryManager* manager,
                                GLenum target,
-                               int32 shm_id,
-                               uint32 shm_offset)
+                               int32_t shm_id,
+                               uint32_t shm_offset)
     : Query(manager, target, shm_id, shm_offset),
       gpu_timer_(manager->CreateGPUTimer(false)) {}
 
@@ -721,7 +745,7 @@ void QueryManager::Destroy(bool have_context) {
   }
 }
 
-void QueryManager::SetDisjointSync(int32 shm_id, uint32 shm_offset) {
+void QueryManager::SetDisjointSync(int32_t shm_id, uint32_t shm_offset) {
   DCHECK(disjoint_notify_shm_id_ == -1);
   DCHECK(shm_id != -1);
 
@@ -735,8 +759,10 @@ void QueryManager::SetDisjointSync(int32 shm_id, uint32 shm_offset) {
   disjoint_notify_shm_offset_ = shm_offset;
 }
 
-QueryManager::Query* QueryManager::CreateQuery(
-    GLenum target, GLuint client_id, int32 shm_id, uint32 shm_offset) {
+QueryManager::Query* QueryManager::CreateQuery(GLenum target,
+                                               GLuint client_id,
+                                               int32_t shm_id,
+                                               uint32_t shm_offset) {
   scoped_refptr<Query> query;
   switch (target) {
     case GL_COMMANDS_ISSUED_CHROMIUM:
@@ -896,8 +922,10 @@ void QueryManager::SafelyResetDisjointValue() {
   }
 }
 
-QueryManager::Query::Query(
-     QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
+QueryManager::Query::Query(QueryManager* manager,
+                           GLenum target,
+                           int32_t shm_id,
+                           uint32_t shm_offset)
     : manager_(manager),
       target_(target),
       shm_id_(shm_id),
@@ -935,7 +963,7 @@ QueryManager::Query::~Query() {
   }
 }
 
-bool QueryManager::Query::MarkAsCompleted(uint64 result) {
+bool QueryManager::Query::MarkAsCompleted(uint64_t result) {
   UnmarkAsPending();
   QuerySync* sync = manager_->decoder_->GetSharedMemoryAs<QuerySync*>(
       shm_id_, shm_offset_, sizeof(*sync));

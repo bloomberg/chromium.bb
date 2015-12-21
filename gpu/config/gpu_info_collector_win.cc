@@ -13,6 +13,8 @@
 #include <d3d11.h>
 #include <dxgi.h>
 #include <setupapi.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
@@ -89,8 +91,8 @@ bool IsLenovoDCuteInstalled() {
 }
 
 void DeviceIDToVendorAndDevice(const std::wstring& id,
-                               uint32* vendor_id,
-                               uint32* device_id) {
+                               uint32_t* vendor_id,
+                               uint32_t* device_id) {
   *vendor_id = 0;
   *device_id = 0;
   if (id.length() < 21)
@@ -217,7 +219,7 @@ CollectInfoResult CollectDriverInfoD3D(const std::wstring& device_id,
           if (id.compare(0, device_id.size(), device_id) == 0)
             primary_device = drivers.size();
 
-          uint32 vendor_id = 0, device_id = 0;
+          uint32_t vendor_id = 0, device_id = 0;
           DeviceIDToVendorAndDevice(id, &vendor_id, &device_id);
           driver.device.vendor_id = vendor_id;
           driver.device.device_id = device_id;
@@ -354,7 +356,7 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   return kCollectInfoSuccess;
 }
 
-CollectInfoResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
+CollectInfoResult CollectGpuID(uint32_t* vendor_id, uint32_t* device_id) {
   DCHECK(vendor_id && device_id);
   *vendor_id = 0;
   *device_id = 0;

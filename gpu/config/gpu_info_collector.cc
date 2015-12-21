@@ -4,6 +4,9 @@
 
 #include "gpu/config/gpu_info_collector.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -218,18 +221,17 @@ void IdentifyActiveGPU(GPUInfo* gpu_info) {
   const std::string kVendorNames[] = {
       kNVidiaName, kIntelName, kAMDName, kATIName};
 
-  const uint32 kNVidiaID = 0x10de;
-  const uint32 kIntelID = 0x8086;
-  const uint32 kAMDID = 0x1002;
-  const uint32 kATIID = 0x1002;
-  const uint32 kVendorIDs[] = {
-      kNVidiaID, kIntelID, kAMDID, kATIID};
+  const uint32_t kNVidiaID = 0x10de;
+  const uint32_t kIntelID = 0x8086;
+  const uint32_t kAMDID = 0x1002;
+  const uint32_t kATIID = 0x1002;
+  const uint32_t kVendorIDs[] = {kNVidiaID, kIntelID, kAMDID, kATIID};
 
   DCHECK(gpu_info);
   if (gpu_info->secondary_gpus.size() == 0)
     return;
 
-  uint32 active_vendor_id = 0;
+  uint32_t active_vendor_id = 0;
   if (!gpu_info->gl_vendor.empty()) {
     std::string gl_vendor_lower = base::ToLowerASCII(gpu_info->gl_vendor);
     int index = StringContainsName(

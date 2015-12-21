@@ -9,6 +9,8 @@
 #include <GLES2/gl2extchromium.h>
 
 #include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/atomicops.h"
 #include "base/numerics/safe_conversions.h"
@@ -21,12 +23,9 @@ namespace gpu {
 namespace gles2 {
 
 QuerySyncManager::Bucket::Bucket(QuerySync* sync_mem,
-                                 int32 shm_id,
+                                 int32_t shm_id,
                                  unsigned int shm_offset)
-    : syncs(sync_mem),
-      shm_id(shm_id),
-      base_shm_offset(shm_offset) {
-}
+    : syncs(sync_mem), shm_id(shm_id), base_shm_offset(shm_offset) {}
 
 QuerySyncManager::Bucket::~Bucket() = default;
 
@@ -55,7 +54,7 @@ bool QuerySyncManager::Alloc(QuerySyncManager::QueryInfo* info) {
     }
   }
   if (!bucket) {
-    int32 shm_id;
+    int32_t shm_id;
     unsigned int shm_offset;
     void* mem = mapped_memory_->Alloc(
         kSyncsPerBucket * sizeof(QuerySync), &shm_id, &shm_offset);
@@ -75,7 +74,7 @@ bool QuerySyncManager::Alloc(QuerySyncManager::QueryInfo* info) {
     }
   }
 
-  uint32 shm_offset =
+  uint32_t shm_offset =
       bucket->base_shm_offset + index_in_bucket * sizeof(QuerySync);
   QuerySync* sync = bucket->syncs + index_in_bucket;
   *info = QueryInfo(bucket, bucket->shm_id, shm_offset, sync);
@@ -206,7 +205,7 @@ bool QueryTracker::Query::CheckResultsAvailable(
   return state_ == kComplete;
 }
 
-uint64 QueryTracker::Query::GetResult() const {
+uint64_t QueryTracker::Query::GetResult() const {
   DCHECK(state_ == kComplete || state_ == kUninitialized);
   return result_;
 }

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/common_decoder.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
+#include "gpu/command_buffer/service/common_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -62,19 +65,19 @@ class TestCommonDecoder : public CommonDecoder {
     return DoCommonCommand(command, arg_count, cmd_data);
   }
 
-  CommonDecoder::Bucket* GetBucket(uint32 id) const {
+  CommonDecoder::Bucket* GetBucket(uint32_t id) const {
     return CommonDecoder::GetBucket(id);
   }
 };
 
 class MockCommandBufferEngine : public CommandBufferEngine {
  public:
-  static const int32 kStartValidShmId = 1;
-  static const int32 kValidShmId = 2;
-  static const int32 kInvalidShmId = 3;
+  static const int32_t kStartValidShmId = 1;
+  static const int32_t kValidShmId = 2;
+  static const int32_t kInvalidShmId = 3;
   static const size_t kBufferSize = 1024;
-  static const int32 kValidOffset = kBufferSize / 2;
-  static const int32 kInvalidOffset = kBufferSize;
+  static const int32_t kValidOffset = kBufferSize / 2;
+  static const int32_t kInvalidOffset = kBufferSize;
 
   MockCommandBufferEngine()
       : CommandBufferEngine(),
@@ -86,42 +89,40 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   }
 
   // Overridden from CommandBufferEngine.
-  scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id) override {
+  scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32_t shm_id) override {
     if (IsValidSharedMemoryId(shm_id))
       return buffer_;
     return NULL;
   }
 
   template <typename T>
-  T GetSharedMemoryAs(uint32 offset) {
+  T GetSharedMemoryAs(uint32_t offset) {
     DCHECK_LT(offset, kBufferSize);
-    int8* buffer_memory = static_cast<int8*>(buffer_->memory());
+    int8_t* buffer_memory = static_cast<int8_t*>(buffer_->memory());
     return reinterpret_cast<T>(&buffer_memory[offset]);
   }
 
-  int32 GetSharedMemoryOffset(const void* memory) {
-    int8* buffer_memory = static_cast<int8*>(buffer_->memory());
-    ptrdiff_t offset = static_cast<const int8*>(memory) - &buffer_memory[0];
+  int32_t GetSharedMemoryOffset(const void* memory) {
+    int8_t* buffer_memory = static_cast<int8_t*>(buffer_->memory());
+    ptrdiff_t offset = static_cast<const int8_t*>(memory) - &buffer_memory[0];
     DCHECK_GE(offset, 0);
     DCHECK_LT(static_cast<size_t>(offset), kBufferSize);
-    return static_cast<int32>(offset);
+    return static_cast<int32_t>(offset);
   }
 
   // Overridden from CommandBufferEngine.
-  void set_token(int32 token) override { token_ = token; }
+  void set_token(int32_t token) override { token_ = token; }
 
-  int32 token() const {
-    return token_;
-  }
+  int32_t token() const { return token_; }
 
   // Overridden from CommandBufferEngine.
-  bool SetGetBuffer(int32 transfer_buffer_id) override {
+  bool SetGetBuffer(int32_t transfer_buffer_id) override {
     NOTREACHED();
     return false;
   }
 
   // Overridden from CommandBufferEngine.
-  bool SetGetOffset(int32 offset) override {
+  bool SetGetOffset(int32_t offset) override {
     if (static_cast<size_t>(offset) < kBufferSize) {
       get_offset_ = offset;
       return true;
@@ -130,24 +131,24 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   }
 
   // Overridden from CommandBufferEngine.
-  int32 GetGetOffset() override { return get_offset_; }
+  int32_t GetGetOffset() override { return get_offset_; }
 
  private:
-  bool IsValidSharedMemoryId(int32 shm_id) {
+  bool IsValidSharedMemoryId(int32_t shm_id) {
     return shm_id == kValidShmId || shm_id == kStartValidShmId;
   }
 
   scoped_refptr<gpu::Buffer> buffer_;
-  int32 token_;
-  int32 get_offset_;
+  int32_t token_;
+  int32_t get_offset_;
 };
 
-const int32 MockCommandBufferEngine::kStartValidShmId;
-const int32 MockCommandBufferEngine::kValidShmId;
-const int32 MockCommandBufferEngine::kInvalidShmId;
+const int32_t MockCommandBufferEngine::kStartValidShmId;
+const int32_t MockCommandBufferEngine::kValidShmId;
+const int32_t MockCommandBufferEngine::kInvalidShmId;
 const size_t MockCommandBufferEngine::kBufferSize;
-const int32 MockCommandBufferEngine::kValidOffset;
-const int32 MockCommandBufferEngine::kInvalidOffset;
+const int32_t MockCommandBufferEngine::kValidOffset;
+const int32_t MockCommandBufferEngine::kInvalidOffset;
 
 class CommonDecoderTest : public testing::Test {
  protected:
@@ -185,12 +186,12 @@ TEST_F(CommonDecoderTest, DoCommonCommandInvalidCommand) {
 
 TEST_F(CommonDecoderTest, HandleNoop) {
   cmd::Noop cmd;
-  const uint32 kSkipCount = 5;
+  const uint32_t kSkipCount = 5;
   cmd.Init(kSkipCount);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(
                 cmd, kSkipCount * kCommandBufferEntrySize));
-  const uint32 kSkipCount2 = 1;
+  const uint32_t kSkipCount2 = 1;
   cmd.Init(kSkipCount2);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(
@@ -199,7 +200,7 @@ TEST_F(CommonDecoderTest, HandleNoop) {
 
 TEST_F(CommonDecoderTest, SetToken) {
   cmd::SetToken cmd;
-  const int32 kTokenId = 123;
+  const int32_t kTokenId = 123;
   EXPECT_EQ(0, engine_.token());
   cmd.Init(kTokenId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -208,9 +209,9 @@ TEST_F(CommonDecoderTest, SetToken) {
 
 TEST_F(CommonDecoderTest, SetBucketSize) {
   cmd::SetBucketSize cmd;
-  const uint32 kBucketId = 123;
-  const uint32 kBucketLength1 = 1234;
-  const uint32 kBucketLength2 = 78;
+  const uint32_t kBucketId = 123;
+  const uint32_t kBucketLength1 = 1234;
+  const uint32_t kBucketLength2 = 78;
   // Check the bucket does not exist.
   EXPECT_TRUE(NULL == decoder_.GetBucket(kBucketId));
   // Check we can create one.
@@ -239,8 +240,8 @@ TEST_F(CommonDecoderTest, SetBucketData) {
 
   static const char kData[] = "1234567890123456789";
 
-  const uint32 kBucketId = 123;
-  const uint32 kInvalidBucketId = 124;
+  const uint32_t kBucketId = 123;
+  const uint32_t kInvalidBucketId = 124;
 
   size_cmd.Init(kBucketId, sizeof(kData));
   EXPECT_EQ(error::kNoError, ExecuteCmd(size_cmd));
@@ -249,7 +250,7 @@ TEST_F(CommonDecoderTest, SetBucketData) {
   EXPECT_NE(0, memcmp(bucket->GetData(0, sizeof(kData)), kData, sizeof(kData)));
 
   // Check we can set it.
-  const uint32 kSomeOffsetInSharedMemory = 50;
+  const uint32_t kSomeOffsetInSharedMemory = 50;
   void* memory = engine_.GetSharedMemoryAs<void*>(kSomeOffsetInSharedMemory);
   memcpy(memory, kData, sizeof(kData));
   cmd.Init(kBucketId, 0, sizeof(kData),
@@ -259,7 +260,7 @@ TEST_F(CommonDecoderTest, SetBucketData) {
 
   // Check we can set it partially.
   static const char kData2[] = "ABCEDFG";
-  const uint32 kSomeOffsetInBucket = 5;
+  const uint32_t kSomeOffsetInBucket = 5;
   memcpy(memory, kData2, sizeof(kData2));
   cmd.Init(kBucketId, kSomeOffsetInBucket, sizeof(kData2),
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
@@ -291,14 +292,14 @@ TEST_F(CommonDecoderTest, SetBucketData) {
 
 TEST_F(CommonDecoderTest, SetBucketDataImmediate) {
   cmd::SetBucketSize size_cmd;
-  int8 buffer[1024];
+  int8_t buffer[1024];
   cmd::SetBucketDataImmediate& cmd =
       *reinterpret_cast<cmd::SetBucketDataImmediate*>(&buffer);
 
   static const char kData[] = "1234567890123456789";
 
-  const uint32 kBucketId = 123;
-  const uint32 kInvalidBucketId = 124;
+  const uint32_t kBucketId = 123;
+  const uint32_t kInvalidBucketId = 124;
 
   size_cmd.Init(kBucketId, sizeof(kData));
   EXPECT_EQ(error::kNoError, ExecuteCmd(size_cmd));
@@ -316,7 +317,7 @@ TEST_F(CommonDecoderTest, SetBucketDataImmediate) {
 
   // Check we can set it partially.
   static const char kData2[] = "ABCEDFG";
-  const uint32 kSomeOffsetInBucket = 5;
+  const uint32_t kSomeOffsetInBucket = 5;
   memcpy(memory, kData2, sizeof(kData2));
   cmd.Init(kBucketId, kSomeOffsetInBucket, sizeof(kData2));
   EXPECT_EQ(error::kNoError,
@@ -354,23 +355,24 @@ TEST_F(CommonDecoderTest, GetBucketStart) {
   static const char kData[] = "1234567890123456789";
   static const char zero[sizeof(kData)] = { 0, };
 
-  const uint32 kBucketSize = sizeof(kData);
-  const uint32 kBucketId = 123;
-  const uint32 kInvalidBucketId = 124;
+  const uint32_t kBucketSize = sizeof(kData);
+  const uint32_t kBucketId = 123;
+  const uint32_t kInvalidBucketId = 124;
 
   // Put data in the bucket.
   size_cmd.Init(kBucketId, sizeof(kData));
   EXPECT_EQ(error::kNoError, ExecuteCmd(size_cmd));
-  const uint32 kSomeOffsetInSharedMemory = 50;
-  uint8* start = engine_.GetSharedMemoryAs<uint8*>(kSomeOffsetInSharedMemory);
+  const uint32_t kSomeOffsetInSharedMemory = 50;
+  uint8_t* start =
+      engine_.GetSharedMemoryAs<uint8_t*>(kSomeOffsetInSharedMemory);
   memcpy(start, kData, sizeof(kData));
   set_cmd.Init(kBucketId, 0, sizeof(kData),
                MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
   EXPECT_EQ(error::kNoError, ExecuteCmd(set_cmd));
 
   // Check that the size is correct with no data buffer.
-  uint32* memory =
-      engine_.GetSharedMemoryAs<uint32*>(kSomeOffsetInSharedMemory);
+  uint32_t* memory =
+      engine_.GetSharedMemoryAs<uint32_t*>(kSomeOffsetInSharedMemory);
   *memory = 0x0;
   cmd.Init(kBucketId,
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
@@ -379,8 +381,9 @@ TEST_F(CommonDecoderTest, GetBucketStart) {
   EXPECT_EQ(kBucketSize, *memory);
 
   // Check that the data is copied with data buffer.
-  const uint32 kDataOffsetInSharedMemory = 54;
-  uint8* data = engine_.GetSharedMemoryAs<uint8*>(kDataOffsetInSharedMemory);
+  const uint32_t kDataOffsetInSharedMemory = 54;
+  uint8_t* data =
+      engine_.GetSharedMemoryAs<uint8_t*>(kDataOffsetInSharedMemory);
   *memory = 0x0;
   memset(data, 0, sizeof(kData));
   cmd.Init(kBucketId,
@@ -394,7 +397,7 @@ TEST_F(CommonDecoderTest, GetBucketStart) {
   // Check that we can get a piece.
   *memory = 0x0;
   memset(data, 0, sizeof(kData));
-  const uint32 kPieceSize = kBucketSize / 2;
+  const uint32_t kPieceSize = kBucketSize / 2;
   cmd.Init(kBucketId,
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
            kPieceSize, MockCommandBufferEngine::kValidShmId,
@@ -454,13 +457,14 @@ TEST_F(CommonDecoderTest, GetBucketData) {
   static const char kData[] = "1234567890123456789";
   static const char zero[sizeof(kData)] = { 0, };
 
-  const uint32 kBucketId = 123;
-  const uint32 kInvalidBucketId = 124;
+  const uint32_t kBucketId = 123;
+  const uint32_t kInvalidBucketId = 124;
 
   size_cmd.Init(kBucketId, sizeof(kData));
   EXPECT_EQ(error::kNoError, ExecuteCmd(size_cmd));
-  const uint32 kSomeOffsetInSharedMemory = 50;
-  uint8* memory = engine_.GetSharedMemoryAs<uint8*>(kSomeOffsetInSharedMemory);
+  const uint32_t kSomeOffsetInSharedMemory = 50;
+  uint8_t* memory =
+      engine_.GetSharedMemoryAs<uint8_t*>(kSomeOffsetInSharedMemory);
   memcpy(memory, kData, sizeof(kData));
   set_cmd.Init(kBucketId, 0, sizeof(kData),
                MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
@@ -474,9 +478,9 @@ TEST_F(CommonDecoderTest, GetBucketData) {
   EXPECT_EQ(0, memcmp(memory, kData, sizeof(kData)));
 
   // Check we can get a piece.
-  const uint32 kSomeOffsetInBucket = 5;
-  const uint32 kLengthOfPiece = 6;
-  const uint8 kSentinel = 0xff;
+  const uint32_t kSomeOffsetInBucket = 5;
+  const uint32_t kLengthOfPiece = 6;
+  const uint8_t kSentinel = 0xff;
   memset(memory, 0, sizeof(kData));
   memory[-1] = kSentinel;
   cmd.Init(kBucketId, kSomeOffsetInBucket, kLengthOfPiece,

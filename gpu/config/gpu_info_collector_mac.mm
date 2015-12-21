@@ -23,6 +23,8 @@
 #import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>
 #import <IOKit/IOKitLib.h>
+#include <stddef.h>
+#include <stdint.h>
 
 namespace gpu {
 
@@ -175,7 +177,7 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   return result;
 }
 
-CollectInfoResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
+CollectInfoResult CollectGpuID(uint32_t* vendor_id, uint32_t* device_id) {
   DCHECK(vendor_id && device_id);
 
   GPUInfo::GPUDevice gpu = GetActiveGPU();
@@ -190,7 +192,7 @@ CollectInfoResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  int32 model_major = 0, model_minor = 0;
+  int32_t model_major = 0, model_minor = 0;
   base::mac::ParseModelIdentifier(base::mac::GetModelIdentifier(),
                                   &gpu_info->machine_model_name,
                                   &model_major, &model_minor);

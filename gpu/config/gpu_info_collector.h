@@ -5,7 +5,8 @@
 #ifndef GPU_CONFIG_GPU_INFO_COLLECTOR_H_
 #define GPU_CONFIG_GPU_INFO_COLLECTOR_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "build/build_config.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
@@ -13,7 +14,8 @@
 namespace gpu {
 
 // Collect GPU vendor_id and device ID.
-GPU_EXPORT CollectInfoResult CollectGpuID(uint32* vendor_id, uint32* device_id);
+GPU_EXPORT CollectInfoResult CollectGpuID(uint32_t* vendor_id,
+                                          uint32_t* device_id);
 
 // Collects basic GPU info without creating a GL/DirectX context (and without
 // the danger of crashing), including vendor_id and device_id.

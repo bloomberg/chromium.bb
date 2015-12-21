@@ -6,6 +6,8 @@
 
 #include "gpu/command_buffer/client/fenced_allocator.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
@@ -95,8 +97,8 @@ void FencedAllocator::Free(FencedAllocator::Offset offset) {
 }
 
 // Looks for the corresponding block, mark it FREE_PENDING_TOKEN.
-void FencedAllocator::FreePendingToken(
-    FencedAllocator::Offset offset, int32 token) {
+void FencedAllocator::FreePendingToken(FencedAllocator::Offset offset,
+                                       int32_t token) {
   BlockIndex index = GetBlockByOffset(offset);
   Block &block = blocks_[index];
   if (block.state == IN_USE)

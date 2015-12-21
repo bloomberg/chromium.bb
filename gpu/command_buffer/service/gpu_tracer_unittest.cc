@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
@@ -22,8 +24,8 @@ using ::testing::Exactly;
 using ::testing::Invoke;
 using ::testing::Return;
 
-int64 g_fakeCPUTime = 0;
-int64 FakeCpuTime() {
+int64_t g_fakeCPUTime = 0;
+int64_t FakeCpuTime() {
   return g_fakeCPUTime;
 }
 
@@ -32,8 +34,10 @@ class MockOutputter : public Outputter {
   MockOutputter() {}
   MOCK_METHOD5(TraceDevice,
                void(GpuTracerSource source,
-                    const std::string& category, const std::string& name,
-                    int64 start_time, int64 end_time));
+                    const std::string& category,
+                    const std::string& name,
+                    int64_t start_time,
+                    int64_t end_time));
 
   MOCK_METHOD3(TraceServiceBegin,
                void(GpuTracerSource source,
@@ -144,8 +148,9 @@ class BaseGpuTest : public GpuServiceTest {
   void ExpectOutputterEndMocks(MockOutputter* outputter,
                                GpuTracerSource source,
                                const std::string& category,
-                               const std::string& name, int64 expect_start_time,
-                               int64 expect_end_time,
+                               const std::string& name,
+                               int64_t expect_start_time,
+                               int64_t expect_end_time,
                                bool trace_service,
                                bool trace_device) {
     if (trace_service) {
@@ -166,8 +171,8 @@ class BaseGpuTest : public GpuServiceTest {
   }
 
   void ExpectDisjointOutputMocks(MockOutputter* outputter,
-                                 int64 expect_start_time,
-                                 int64 expect_end_time) {
+                                 int64_t expect_start_time,
+                                 int64_t expect_end_time) {
     EXPECT_CALL(*outputter,
                 TraceDevice(kTraceDisjoint, "DisjointEvent", _,
                             expect_start_time, expect_end_time))
@@ -185,8 +190,9 @@ class BaseGpuTest : public GpuServiceTest {
                             bool tracing_device,
                             GpuTracerSource source,
                             const std::string& category,
-                            const std::string& name, int64 expect_start_time,
-                            int64 expect_end_time) {
+                            const std::string& name,
+                            int64_t expect_start_time,
+                            int64_t expect_end_time) {
     if (tracing_service)
       ExpectOutputterBeginMocks(outputter, source, category, name);
     const bool valid_timer = tracing_device &&
@@ -224,13 +230,13 @@ class BaseGpuTraceTest : public BaseGpuTest {
     const GpuTracerSource tracer_source = kTraceCHROMIUM;
     const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
-    const int64 offset_time = 3231;
+    const int64_t offset_time = 3231;
     const GLint64 start_timestamp = 7 * base::Time::kNanosecondsPerMicrosecond;
     const GLint64 end_timestamp = 32 * base::Time::kNanosecondsPerMicrosecond;
-    const int64 expect_start_time =
+    const int64_t expect_start_time =
         (start_timestamp / base::Time::kNanosecondsPerMicrosecond) +
         offset_time;
-    const int64 expect_end_time =
+    const int64_t expect_end_time =
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     ExpectOutputterMocks(outputter_ref_.get(), tracing_service, tracing_device,
@@ -366,13 +372,13 @@ class BaseGpuTracerTest : public BaseGpuTest {
 
     const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
-    const int64 offset_time = 3231;
+    const int64_t offset_time = 3231;
     const GLint64 start_timestamp = 7 * base::Time::kNanosecondsPerMicrosecond;
     const GLint64 end_timestamp = 32 * base::Time::kNanosecondsPerMicrosecond;
-    const int64 expect_start_time =
+    const int64_t expect_start_time =
         (start_timestamp / base::Time::kNanosecondsPerMicrosecond) +
         offset_time;
-    const int64 expect_end_time =
+    const int64_t expect_end_time =
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     MockGLES2Decoder decoder;
@@ -442,9 +448,9 @@ class BaseGpuTracerTest : public BaseGpuTest {
     const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
     const GpuTracerSource source = static_cast<GpuTracerSource>(0);
-    const int64 offset_time = 3231;
+    const int64_t offset_time = 3231;
     const GLint64 start_timestamp = 7 * base::Time::kNanosecondsPerMicrosecond;
-    const int64 expect_start_time =
+    const int64_t expect_start_time =
         (start_timestamp / base::Time::kNanosecondsPerMicrosecond) +
         offset_time;
     const bool valid_timer = gpu_timing_client_->IsAvailable();
@@ -518,13 +524,13 @@ class BaseGpuTracerTest : public BaseGpuTest {
     const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
     const GpuTracerSource source = static_cast<GpuTracerSource>(0);
-    const int64 offset_time = 3231;
+    const int64_t offset_time = 3231;
     const GLint64 start_timestamp = 7 * base::Time::kNanosecondsPerMicrosecond;
     const GLint64 end_timestamp = 32 * base::Time::kNanosecondsPerMicrosecond;
-    const int64 expect_start_time =
+    const int64_t expect_start_time =
         (start_timestamp / base::Time::kNanosecondsPerMicrosecond) +
         offset_time;
-    const int64 expect_end_time =
+    const int64_t expect_end_time =
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     MockGLES2Decoder decoder;
@@ -580,13 +586,13 @@ class BaseGpuTracerTest : public BaseGpuTest {
     const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
     const GpuTracerSource source = static_cast<GpuTracerSource>(0);
-    const int64 offset_time = 3231;
+    const int64_t offset_time = 3231;
     const GLint64 start_timestamp = 7 * base::Time::kNanosecondsPerMicrosecond;
     const GLint64 end_timestamp = 32 * base::Time::kNanosecondsPerMicrosecond;
-    const int64 expect_start_time =
+    const int64_t expect_start_time =
         (start_timestamp / base::Time::kNanosecondsPerMicrosecond) +
         offset_time;
-    const int64 expect_end_time =
+    const int64_t expect_end_time =
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     MockGLES2Decoder decoder;

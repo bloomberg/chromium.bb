@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/client/buffer_tracker.h"
 
+#include <stdint.h>
+
 #include <utility>
 #include "gpu/command_buffer/client/mapped_memory.h"
 
@@ -24,8 +26,8 @@ BufferTracker::Buffer* BufferTracker::CreateBuffer(
     GLuint id, GLsizeiptr size) {
   DCHECK_NE(0u, id);
   DCHECK_LE(0, size);
-  int32 shm_id = -1;
-  uint32 shm_offset = 0;
+  int32_t shm_id = -1;
+  uint32_t shm_offset = 0;
   void* address = NULL;
   if (size)
     address = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
@@ -53,7 +55,7 @@ void BufferTracker::RemoveBuffer(GLuint client_id) {
   }
 }
 
-void BufferTracker::FreePendingToken(Buffer* buffer, int32 token) {
+void BufferTracker::FreePendingToken(Buffer* buffer, int32_t token) {
   if (buffer->address_)
     mapped_memory_->FreePendingToken(buffer->address_, token);
   buffer->size_ = 0;

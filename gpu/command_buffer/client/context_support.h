@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_CONTEXT_SUPPORT_H_
 #define GPU_COMMAND_BUFFER_CLIENT_CONTEXT_SUPPORT_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "ui/gfx/overlay_transform.h"
 
@@ -20,7 +22,7 @@ struct SyncToken;
 class ContextSupport {
  public:
   // Runs |callback| when a sync point is reached.
-  virtual void SignalSyncPoint(uint32 sync_point,
+  virtual void SignalSyncPoint(uint32_t sync_point,
                                const base::Closure& callback) = 0;
 
   // Runs |callback| when a sync token is signalled.
@@ -29,7 +31,7 @@ class ContextSupport {
 
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared
   // passed the glEndQueryEXT() point.
-  virtual void SignalQuery(uint32 query, const base::Closure& callback) = 0;
+  virtual void SignalQuery(uint32_t query, const base::Closure& callback) = 0;
 
   // Indicates whether the context should aggressively free allocated resources.
   // If set to true, the context will purge all temporary resources when
@@ -50,8 +52,8 @@ class ContextSupport {
                                     const gfx::Rect& display_bounds,
                                     const gfx::RectF& uv_rect) = 0;
 
-  virtual uint32 InsertFutureSyncPointCHROMIUM() = 0;
-  virtual void RetireSyncPointCHROMIUM(uint32 sync_point) = 0;
+  virtual uint32_t InsertFutureSyncPointCHROMIUM() = 0;
+  virtual void RetireSyncPointCHROMIUM(uint32_t sync_point) = 0;
 
   // Returns an ID that can be used to globally identify the share group that
   // this context's resources belong to.

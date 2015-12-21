@@ -5,8 +5,11 @@
 #ifndef GPU_STREAM_TEXTURE_MANAGER_IN_PROCESS_ANDROID_H_
 #define GPU_STREAM_TEXTURE_MANAGER_IN_PROCESS_ANDROID_H_
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -27,19 +30,19 @@ class StreamTextureManagerInProcess : public base::NonThreadSafe {
   StreamTextureManagerInProcess();
   ~StreamTextureManagerInProcess();
 
-  uint32 CreateStreamTexture(uint32 client_texture_id,
-                             gles2::TextureManager* texture_manager);
+  uint32_t CreateStreamTexture(uint32_t client_texture_id,
+                               gles2::TextureManager* texture_manager);
 
   // This method can be called from any thread.
-  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(uint32 stream_id);
+  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(uint32_t stream_id);
 
  private:
-  void OnReleaseStreamTexture(uint32 stream_id);
+  void OnReleaseStreamTexture(uint32_t stream_id);
 
-  typedef std::map<uint32, scoped_refptr<gfx::SurfaceTexture> > TextureMap;
+  typedef std::map<uint32_t, scoped_refptr<gfx::SurfaceTexture>> TextureMap;
   TextureMap textures_;
   base::Lock map_lock_;
-  uint32 next_id_;
+  uint32_t next_id_;
 
   base::WeakPtrFactory<StreamTextureManagerInProcess> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(StreamTextureManagerInProcess);

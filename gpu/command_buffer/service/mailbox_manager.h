@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_MAILBOX_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_MAILBOX_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_export.h"
