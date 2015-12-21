@@ -1194,8 +1194,6 @@ crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure 
 
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
 
-crbug.com/571301 svg/wicd/rightsizing-grid.xhtml [ Skip ]
-
 # This test has different results in Debug and Release.
 crbug.com/529038 [ Debug ] virtual/gpu/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ Failure ]
 
@@ -1258,7 +1256,6 @@ crbug.com/568778 [ XP ] media/video-layer-crash.html [ Failure ]
 crbug.com/568778 [ XP ] media/video-overlay-cast-dark-rendering.html [ Failure ]
 crbug.com/568778 [ XP ] media/video-overlay-cast-light-rendering.html [ Failure ]
 crbug.com/568778 [ XP ] media/video-transformed.html [ Failure ]
-crbug.com/568778 [ XP ] svg/wicd/sizing-flakiness.html [ Failure ]
 crbug.com/568778 [ XP ] svg/wicd/test-rightsizing-a.xhtml [ Failure ]
 crbug.com/568778 [ XP ] svg/zoom/page/zoom-hixie-mixed-009.xml [ Failure ]
 crbug.com/568778 [ XP ] svg/zoom/page/zoom-img-preserveAspectRatio-support-1.html [ Failure ]
