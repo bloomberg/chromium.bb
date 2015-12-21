@@ -25,7 +25,10 @@ typedef struct SECKEYPublicKeyStr SECKEYPublicKey;
 namespace net {
 
 namespace ct {
+
 struct SignedTreeHead;
+struct MerkleConsistencyProof;
+
 }  // namespace ct
 
 // Class for verifying signatures of a single Certificate Transparency
@@ -53,12 +56,21 @@ class NET_EXPORT CTLogVerifier
   // Returns the log's URL
   const GURL& url() const { return url_; }
 
-  // Verifies that |sct| contains a valid signature for |entry|.
+  // Verifies that |sct| is valid for |entry| and was signed by this log.
   bool Verify(const ct::LogEntry& entry,
               const ct::SignedCertificateTimestamp& sct) const;
 
-  // Returns true if the signature in |signed_tree_head| verifies.
+  // Verifies that |signed_tree_head| is a valid Signed Tree Head (RFC 6962,
+  // Section 3.5) for this log.
   bool VerifySignedTreeHead(const ct::SignedTreeHead& signed_tree_head) const;
+
+  // Verifies that |proof| is a valid consistency proof (RFC 6962, Section
+  // 2.1.2) for this log, and which proves that |old_tree_hash| has
+  // been fully incorporated into the Merkle tree represented by
+  // |new_tree_hash|.
+  bool VerifyConsistencyProof(const ct::MerkleConsistencyProof& proof,
+                              const std::string& old_tree_hash,
+                              const std::string& new_tree_hash) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CTLogVerifierTest, VerifySignature);
