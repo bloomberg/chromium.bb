@@ -2443,8 +2443,11 @@ void V4L2SliceVideoDecodeAccelerator::OutputSurface(
   DCHECK_NE(output_record.picture_id, -1);
   output_record.at_client = true;
 
+  // TODO(posciak): Use visible size from decoder here instead
+  // (crbug.com/402760). Passing (0, 0) results in the client using the
+  // visible size extracted from the container instead.
   media::Picture picture(output_record.picture_id, dec_surface->bitstream_id(),
-                         gfx::Rect(visible_size_), false);
+                         gfx::Rect(0, 0), false);
   DVLOGF(3) << dec_surface->ToString()
             << ", bitstream_id: " << picture.bitstream_buffer_id()
             << ", picture_id: " << picture.picture_buffer_id();
