@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "third_party/re2/re2/re2.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace {
 

@@ -20,7 +20,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "jni/LinkerTests_jni.h"
-#include "third_party/re2/re2/re2.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace content {
 

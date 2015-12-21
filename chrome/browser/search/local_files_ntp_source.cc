@@ -18,8 +18,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
-#include "third_party/re2/re2/re2.h"
-#include "third_party/re2/re2/stringpiece.h"
+#include "third_party/re2/src/re2/re2.h"
+#include "third_party/re2/src/re2/stringpiece.h"
 
 namespace {
 

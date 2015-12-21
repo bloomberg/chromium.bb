@@ -388,6 +388,7 @@ vs-chromium-project.txt
 /third_party/python_26
 /third_party/pywebsocket/src
 /third_party/pywebsocket/src
+/third_party/re2/src
 /third_party/requests/src
 /third_party/robolectric/lib
 /third_party/safe_browsing/testing

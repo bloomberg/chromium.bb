@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
-#include "third_party/re2/re2/re2.h"
+#include "third_party/re2/src/re2/re2.h"
 
 using base::DictionaryValue;
 using base::ListValue;

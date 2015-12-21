@@ -12,7 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "device/core/device_info_query_win.h"
 #include "device/core/device_monitor_win.h"
-#include "third_party/re2/re2/re2.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace device {
 

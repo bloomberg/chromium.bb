@@ -22,7 +22,7 @@
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
-#include "third_party/re2/re2/re2.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace {
 // The maximum number of successive retries.

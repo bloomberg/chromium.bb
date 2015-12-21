@@ -14,7 +14,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/re2/re2/re2.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "third_party/zlib/zlib.h"
 
 namespace {

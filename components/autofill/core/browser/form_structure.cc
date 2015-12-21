@@ -34,7 +34,7 @@
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
-#include "third_party/re2/re2/re2.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace autofill {
 namespace {

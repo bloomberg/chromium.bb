@@ -18,7 +18,7 @@
 #include "google_apis/drive/drive_api_parser.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "third_party/re2/re2/re2.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
 namespace drive {

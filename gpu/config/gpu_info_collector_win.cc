@@ -5,7 +5,7 @@
 #include "gpu/config/gpu_info_collector.h"
 
 // This has to be included before windows.h.
-#include "third_party/re2/re2/re2.h"
+#include "third_party/re2/src/re2/re2.h"
 
 #include <windows.h>
 #include <cfgmgr32.h>
