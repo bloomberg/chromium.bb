@@ -3160,6 +3160,14 @@ void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
   }
 }
 
+void CoverageModulationCHROMIUM(GLenum components) {
+  gles2::cmds::CoverageModulationCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::CoverageModulationCHROMIUM>();
+  if (c) {
+    c->Init(components);
+  }
+}
+
 void BlendBarrierKHR() {
   gles2::cmds::BlendBarrierKHR* c = GetCmdSpace<gles2::cmds::BlendBarrierKHR>();
   if (c) {

@@ -1908,6 +1908,10 @@ void MojoGLES2Impl::ProgramPathFragmentInputGenCHROMIUM(GLuint program,
   glProgramPathFragmentInputGenCHROMIUM(program, location, genMode, components,
                                         coeffs);
 }
+void MojoGLES2Impl::CoverageModulationCHROMIUM(GLenum components) {
+  MojoGLES2MakeCurrent(context_);
+  glCoverageModulationCHROMIUM(components);
+}
 GLenum MojoGLES2Impl::GetGraphicsResetStatusKHR() {
   MojoGLES2MakeCurrent(context_);
   return glGetGraphicsResetStatusKHR();

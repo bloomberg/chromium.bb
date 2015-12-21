@@ -96,6 +96,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glCopyTexSubImage2DFn = reinterpret_cast<glCopyTexSubImage2DProc>(
       GetGLProcAddress("glCopyTexSubImage2D"));
   fn.glCopyTexSubImage3DFn = 0;
+  fn.glCoverageModulationNVFn = 0;
   fn.glCoverFillPathInstancedNVFn = 0;
   fn.glCoverFillPathNVFn = 0;
   fn.glCoverStrokePathInstancedNVFn = 0;
@@ -563,6 +564,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   ext.b_GL_NV_blend_equation_advanced =
       extensions.find("GL_NV_blend_equation_advanced ") != std::string::npos;
   ext.b_GL_NV_fence = extensions.find("GL_NV_fence ") != std::string::npos;
+  ext.b_GL_NV_framebuffer_mixed_samples =
+      extensions.find("GL_NV_framebuffer_mixed_samples ") != std::string::npos;
   ext.b_GL_NV_path_rendering =
       extensions.find("GL_NV_path_rendering ") != std::string::npos;
   ext.b_GL_OES_EGL_image =
@@ -791,6 +794,12 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
     fn.glCopyTexSubImage3DFn = reinterpret_cast<glCopyTexSubImage3DProc>(
         GetGLProcAddress("glCopyTexSubImage3D"));
+  }
+
+  debug_fn.glCoverageModulationNVFn = 0;
+  if (ext.b_GL_NV_framebuffer_mixed_samples) {
+    fn.glCoverageModulationNVFn = reinterpret_cast<glCoverageModulationNVProc>(
+        GetGLProcAddress("glCoverageModulationNV"));
   }
 
   debug_fn.glCoverFillPathInstancedNVFn = 0;
@@ -2546,6 +2555,12 @@ static void GL_BINDING_CALL Debug_glCopyTexSubImage3D(GLenum target,
                  << ")");
   g_driver_gl.debug_fn.glCopyTexSubImage3DFn(target, level, xoffset, yoffset,
                                              zoffset, x, y, width, height);
+}
+
+static void GL_BINDING_CALL Debug_glCoverageModulationNV(GLenum components) {
+  GL_SERVICE_LOG("glCoverageModulationNV"
+                 << "(" << GLEnums::GetStringEnum(components) << ")");
+  g_driver_gl.debug_fn.glCoverageModulationNVFn(components);
 }
 
 static void GL_BINDING_CALL
@@ -5356,6 +5371,10 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glCopyTexSubImage3DFn = fn.glCopyTexSubImage3DFn;
     fn.glCopyTexSubImage3DFn = Debug_glCopyTexSubImage3D;
   }
+  if (!debug_fn.glCoverageModulationNVFn) {
+    debug_fn.glCoverageModulationNVFn = fn.glCoverageModulationNVFn;
+    fn.glCoverageModulationNVFn = Debug_glCoverageModulationNV;
+  }
   if (!debug_fn.glCoverFillPathInstancedNVFn) {
     debug_fn.glCoverFillPathInstancedNVFn = fn.glCoverFillPathInstancedNVFn;
     fn.glCoverFillPathInstancedNVFn = Debug_glCoverFillPathInstancedNV;
@@ -6792,6 +6811,10 @@ void GLApiBase::glCopyTexSubImage3DFn(GLenum target,
                                       GLsizei height) {
   driver_->fn.glCopyTexSubImage3DFn(target, level, xoffset, yoffset, zoffset, x,
                                     y, width, height);
+}
+
+void GLApiBase::glCoverageModulationNVFn(GLenum components) {
+  driver_->fn.glCoverageModulationNVFn(components);
 }
 
 void GLApiBase::glCoverFillPathInstancedNVFn(GLsizei numPaths,
@@ -8726,6 +8749,11 @@ void TraceGLApi::glCopyTexSubImage3DFn(GLenum target,
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCopyTexSubImage3D")
   gl_api_->glCopyTexSubImage3DFn(target, level, xoffset, yoffset, zoffset, x, y,
                                  width, height);
+}
+
+void TraceGLApi::glCoverageModulationNVFn(GLenum components) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCoverageModulationNV")
+  gl_api_->glCoverageModulationNVFn(components);
 }
 
 void TraceGLApi::glCoverFillPathInstancedNVFn(GLsizei numPaths,
@@ -10990,6 +11018,13 @@ void NoContextGLApi::glCopyTexSubImage3DFn(GLenum target,
       << "Trying to call glCopyTexSubImage3D() without current GL context";
   LOG(ERROR)
       << "Trying to call glCopyTexSubImage3D() without current GL context";
+}
+
+void NoContextGLApi::glCoverageModulationNVFn(GLenum components) {
+  NOTREACHED()
+      << "Trying to call glCoverageModulationNV() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glCoverageModulationNV() without current GL context";
 }
 
 void NoContextGLApi::glCoverFillPathInstancedNVFn(

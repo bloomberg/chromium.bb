@@ -170,6 +170,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       angle_texture_usage(false),
       ext_texture_storage(false),
       chromium_path_rendering(false),
+      chromium_framebuffer_mixed_samples(false),
       blend_equation_advanced(false),
       blend_equation_advanced_coherent(false),
       ext_texture_rg(false),
@@ -1168,6 +1169,14 @@ void FeatureInfo::InitializeFeatures() {
       validators_.g_l_state.AddValue(GL_PATH_STENCIL_REF_CHROMIUM);
       validators_.g_l_state.AddValue(GL_PATH_STENCIL_VALUE_MASK_CHROMIUM);
     }
+  }
+
+  if (enable_gl_path_rendering_switch_ &&
+      !workarounds_.disable_gl_path_rendering &&
+      extensions.Contains("GL_NV_framebuffer_mixed_samples")) {
+    AddExtensionString("GL_CHROMIUM_framebuffer_mixed_samples");
+    feature_flags_.chromium_framebuffer_mixed_samples = true;
+    validators_.g_l_state.AddValue(GL_COVERAGE_MODULATION_CHROMIUM);
   }
 
   if ((gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile ||

@@ -563,6 +563,12 @@ MockGLInterface::Mock_glCoverStrokePathNV(GLuint name, GLenum coverMode) {
   interface_->CoverStrokePathNV(name, coverMode);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glCoverageModulationNV(GLenum components) {
+  MakeFunctionUnique("glCoverageModulationNV");
+  interface_->CoverageModulationNV(components);
+}
+
 GLuint GL_BINDING_CALL MockGLInterface::Mock_glCreateProgram(void) {
   MakeFunctionUnique("glCreateProgram");
   return interface_->CreateProgram();
@@ -3029,6 +3035,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glCoverStrokePathInstancedNV);
   if (strcmp(name, "glCoverStrokePathNV") == 0)
     return reinterpret_cast<void*>(Mock_glCoverStrokePathNV);
+  if (strcmp(name, "glCoverageModulationNV") == 0)
+    return reinterpret_cast<void*>(Mock_glCoverageModulationNV);
   if (strcmp(name, "glCreateProgram") == 0)
     return reinterpret_cast<void*>(Mock_glCreateProgram);
   if (strcmp(name, "glCreateShader") == 0)

@@ -176,6 +176,7 @@ void InitCommandBufferSkiaGLBinding(GrGLInterface* interface) {
   functions->fProgramPathFragmentInputGen =
       glProgramPathFragmentInputGenCHROMIUM;
   functions->fBindFragmentInputLocation = glBindFragmentInputLocationCHROMIUM;
+  functions->fCoverageModulation = glCoverageModulationCHROMIUM;
 }
 
 }  // namespace skia

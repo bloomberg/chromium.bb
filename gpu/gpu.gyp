@@ -360,6 +360,7 @@
         'command_buffer/tests/compressed_texture_test.cc',
         'command_buffer/tests/es3_misc_functions_unittest.cc',
         'command_buffer/tests/gl_bind_uniform_location_unittest.cc',
+        'command_buffer/tests/gl_chromium_framebuffer_mixed_samples_unittest.cc',
         'command_buffer/tests/gl_chromium_framebuffer_multisample_unittest.cc',
         'command_buffer/tests/gl_chromium_path_rendering_unittest.cc',
         'command_buffer/tests/gl_clear_framebuffer_unittest.cc',

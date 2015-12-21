@@ -890,6 +890,7 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                                            GLenum genMode,
                                            GLint components,
                                            const GLfloat* coeffs) override;
+  void CoverageModulationCHROMIUM(GLenum components) override;
   GLenum GetGraphicsResetStatusKHR() override;
   void BlendBarrierKHR() override;
   void ApplyScreenSpaceAntialiasingCHROMIUM() override;

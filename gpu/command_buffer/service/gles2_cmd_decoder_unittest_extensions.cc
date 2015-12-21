@@ -542,6 +542,28 @@ INSTANTIATE_TEST_CASE_P(Service,
                         GLES2DecoderTestWithBlendFuncExtended,
                         ::testing::Bool());
 
+class GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples
+    : public GLES2DecoderTest {
+ public:
+  GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples() {}
+  void SetUp() override {
+    InitState init;
+    init.gl_version = "opengl es 3.1";
+    init.has_alpha = true;
+    init.has_depth = true;
+    init.request_alpha = true;
+    init.request_depth = true;
+    init.bind_generates_resource = true;
+    init.extensions = "GL_NV_path_rendering GL_NV_framebuffer_mixed_samples ";
+    base::CommandLine command_line(0, NULL);
+    command_line.AppendSwitch(switches::kEnableGLPathRendering);
+    InitDecoderWithCommandLine(init, &command_line);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples,
+                        ::testing::Bool());
 
 TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, GenDeletePaths) {
   static GLuint kFirstClientID = client_path_id_ + 88;

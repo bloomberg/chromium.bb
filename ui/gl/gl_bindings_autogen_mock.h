@@ -242,6 +242,7 @@ Mock_glCoverStrokePathInstancedNV(GLsizei numPaths,
                                   const GLfloat* transformValues);
 static void GL_BINDING_CALL Mock_glCoverStrokePathNV(GLuint name,
                                                      GLenum coverMode);
+static void GL_BINDING_CALL Mock_glCoverageModulationNV(GLenum components);
 static GLuint GL_BINDING_CALL Mock_glCreateProgram(void);
 static GLuint GL_BINDING_CALL Mock_glCreateShader(GLenum type);
 static void GL_BINDING_CALL Mock_glCullFace(GLenum mode);

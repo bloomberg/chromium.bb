@@ -260,6 +260,9 @@ GL_FUNCTIONS = [
       'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
       'GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height', },
 { 'return_type': 'void',
+  'names': ['glCoverageModulationNV'],
+  'arguments': 'GLenum components'},
+{ 'return_type': 'void',
   'names': ['glCoverFillPathInstancedNV'],
   'arguments': 'GLsizei numPaths, GLenum pathNameType, const void* paths, '
   'GLuint pathBase, GLenum coverMode, GLenum transformType, '

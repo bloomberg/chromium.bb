@@ -91,6 +91,7 @@ class CmpFunctionValidator {
 CmpFunctionValidator cmp_function;
 
 ValueValidator<GLenum> compressed_texture_format;
+ValueValidator<GLenum> coverage_modulation_components;
 class DrawModeValidator {
  public:
   bool IsValid(const GLenum value) const;

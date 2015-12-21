@@ -331,11 +331,12 @@
   OP(StencilThenCoverStrokePathInstancedCHROMIUM) /* 572 */ \
   OP(BindFragmentInputLocationCHROMIUMBucket)     /* 573 */ \
   OP(ProgramPathFragmentInputGenCHROMIUM)         /* 574 */ \
-  OP(BlendBarrierKHR)                             /* 575 */ \
-  OP(ApplyScreenSpaceAntialiasingCHROMIUM)        /* 576 */ \
-  OP(BindFragDataLocationIndexedEXTBucket)        /* 577 */ \
-  OP(BindFragDataLocationEXTBucket)               /* 578 */ \
-  OP(GetFragDataIndexEXT)                         /* 579 */
+  OP(CoverageModulationCHROMIUM)                  /* 575 */ \
+  OP(BlendBarrierKHR)                             /* 576 */ \
+  OP(ApplyScreenSpaceAntialiasingCHROMIUM)        /* 577 */ \
+  OP(BindFragDataLocationIndexedEXTBucket)        /* 578 */ \
+  OP(BindFragDataLocationEXTBucket)               /* 579 */ \
+  OP(GetFragDataIndexEXT)                         /* 580 */
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

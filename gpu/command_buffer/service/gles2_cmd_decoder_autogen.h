@@ -4995,6 +4995,29 @@ error::Error GLES2DecoderImpl::HandlePathStencilFuncCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleCoverageModulationCHROMIUM(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::CoverageModulationCHROMIUM& c =
+      *static_cast<const gles2::cmds::CoverageModulationCHROMIUM*>(cmd_data);
+  (void)c;
+  if (!features().chromium_framebuffer_mixed_samples) {
+    return error::kUnknownCommand;
+  }
+
+  GLenum components = static_cast<GLenum>(c.components);
+  if (!validators_->coverage_modulation_components.IsValid(components)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glCoverageModulationCHROMIUM", components,
+                                    "components");
+    return error::kNoError;
+  }
+  if (state_.coverage_modulation != components) {
+    state_.coverage_modulation = components;
+    glCoverageModulationNV(components);
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleBlendBarrierKHR(
     uint32_t immediate_data_size,
     const void* cmd_data) {

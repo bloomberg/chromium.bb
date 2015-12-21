@@ -177,6 +177,7 @@ MOCK_METHOD9(CopyTexSubImage3D,
                   GLint y,
                   GLsizei width,
                   GLsizei height));
+MOCK_METHOD1(CoverageModulationNV, void(GLenum components));
 MOCK_METHOD7(CoverFillPathInstancedNV,
              void(GLsizei numPaths,
                   GLenum pathNameType,

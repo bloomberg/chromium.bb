@@ -3235,6 +3235,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x9317, "GL_MAX_FRAMEBUFFER_LAYERS_EXT",
     },
     {
+        0x9332, "GL_COVERAGE_MODULATION_CHROMIUM",
+    },
+    {
         0x9380, "GL_NUM_SAMPLE_COUNTS",
     },
     {
@@ -3638,6 +3641,17 @@ std::string GLES2Util::GetStringCompressedTextureFormat(uint32_t value) {
       {GL_COMPRESSED_RGBA8_ETC2_EAC, "GL_COMPRESSED_RGBA8_ETC2_EAC"},
       {GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,
        "GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringCoverageModulationComponents(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_RGB, "GL_RGB"},
+      {GL_RGBA, "GL_RGBA"},
+      {GL_ALPHA, "GL_ALPHA"},
+      {GL_NONE, "GL_NONE"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

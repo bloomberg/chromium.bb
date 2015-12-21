@@ -2471,6 +2471,12 @@ void GLES2TraceImplementation::ProgramPathFragmentInputGenCHROMIUM(
                                            components, coeffs);
 }
 
+void GLES2TraceImplementation::CoverageModulationCHROMIUM(GLenum components) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::CoverageModulationCHROMIUM");
+  gl_->CoverageModulationCHROMIUM(components);
+}
+
 GLenum GLES2TraceImplementation::GetGraphicsResetStatusKHR() {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetGraphicsResetStatusKHR");
   return gl_->GetGraphicsResetStatusKHR();

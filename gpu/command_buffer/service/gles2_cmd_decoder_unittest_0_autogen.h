@@ -52,6 +52,13 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
   EXPECT_CALL(*gl_, ColorMask(true, true, true, true))
       .Times(1)
       .RetiresOnSaturation();
+  if (group_->feature_info()
+          ->feature_flags()
+          .chromium_framebuffer_mixed_samples) {
+    EXPECT_CALL(*gl_, CoverageModulationNV(GL_NONE))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
   EXPECT_CALL(*gl_, CullFace(GL_BACK)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, DepthFunc(GL_LESS)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, DepthMask(true)).Times(1).RetiresOnSaturation();

@@ -78,6 +78,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool angle_texture_usage;
     bool ext_texture_storage;
     bool chromium_path_rendering;
+    bool chromium_framebuffer_mixed_samples;
     bool blend_equation_advanced;
     bool blend_equation_advanced_coherent;
     bool ext_texture_rg;

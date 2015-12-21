@@ -150,6 +150,18 @@ _STATES = {
       {'name': 'stencil_clear', 'type': 'GLint', 'default': '0'},
     ],
   },
+  'CoverageModulationCHROMIUM': {
+    'type': 'Normal',
+    'func': 'CoverageModulationNV',
+    'extension_flag': 'chromium_framebuffer_mixed_samples',
+    'states': [
+      { 'enum': 'GL_COVERAGE_MODULATION_CHROMIUM',
+        'name': 'coverage_modulation',
+        'type': 'GLenum',
+        'default': 'GL_NONE',
+      },
+    ]
+  },
   'BlendColor': {
     'type': 'Normal',
     'func': 'BlendColor',
@@ -651,6 +663,12 @@ _NAMED_TYPE_INFO = {
     ],
     'invalid': [
       'GL_LINEAR_MIPMAP_LINEAR',
+    ],
+  },
+  'CoverageModulationComponents': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_RGB', 'GL_RGBA', 'GL_ALPHA', 'GL_NONE'
     ],
   },
   'FrameBufferTarget': {
@@ -2444,6 +2462,14 @@ _FUNCTION_INFO = {
   },
   'CopyBufferSubData': {
     'unsafe': True,
+  },
+  'CoverageModulationCHROMIUM': {
+    'type': 'StateSet',
+    'state': 'CoverageModulationCHROMIUM',
+    'decoder_func': 'glCoverageModulationNV',
+    'chromium': True,
+    'extension': 'CHROMIUM_framebuffer_mixed_samples',
+    'extension_flag': 'chromium_framebuffer_mixed_samples',
   },
   'CreateAndConsumeTextureCHROMIUM': {
     'decoder_func': 'DoCreateAndConsumeTextureCHROMIUM',

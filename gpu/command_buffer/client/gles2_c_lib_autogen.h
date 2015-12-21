@@ -1704,6 +1704,9 @@ GLES2ProgramPathFragmentInputGenCHROMIUM(GLuint program,
   gles2::GetGLContext()->ProgramPathFragmentInputGenCHROMIUM(
       program, location, genMode, components, coeffs);
 }
+void GL_APIENTRY GLES2CoverageModulationCHROMIUM(GLenum components) {
+  gles2::GetGLContext()->CoverageModulationCHROMIUM(components);
+}
 GLenum GL_APIENTRY GLES2GetGraphicsResetStatusKHR() {
   return gles2::GetGLContext()->GetGraphicsResetStatusKHR();
 }
@@ -3007,6 +3010,10 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glProgramPathFragmentInputGenCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glProgramPathFragmentInputGenCHROMIUM),
+    },
+    {
+        "glCoverageModulationCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glCoverageModulationCHROMIUM),
     },
     {
         "glGetGraphicsResetStatusKHR",

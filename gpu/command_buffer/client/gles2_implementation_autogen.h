@@ -1184,6 +1184,8 @@ void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
                                          GLint components,
                                          const GLfloat* coeffs) override;
 
+void CoverageModulationCHROMIUM(GLenum components) override;
+
 GLenum GetGraphicsResetStatusKHR() override;
 
 void BlendBarrierKHR() override;

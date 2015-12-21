@@ -577,6 +577,10 @@ VISIT_GL_CALL(ProgramPathFragmentInputGenCHROMIUM,
                GLint components,
                const GLfloat* coeffs),
               (program, location, genMode, components, coeffs))
+VISIT_GL_CALL(CoverageModulationCHROMIUM,
+              void,
+              (GLenum components),
+              (components))
 VISIT_GL_CALL(GetGraphicsResetStatusKHR, GLenum, (), ())
 VISIT_GL_CALL(BlendBarrierKHR, void, (), ())
 VISIT_GL_CALL(ApplyScreenSpaceAntialiasingCHROMIUM, void, (), ())

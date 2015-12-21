@@ -171,6 +171,10 @@ static const GLenum valid_compressed_texture_format_table_es3[] = {
     GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,
 };
 
+static const GLenum valid_coverage_modulation_components_table[] = {
+    GL_RGB, GL_RGBA, GL_ALPHA, GL_NONE,
+};
+
 bool Validators::DrawModeValidator::IsValid(const GLenum value) const {
   switch (value) {
     case GL_POINTS:
@@ -1312,6 +1316,9 @@ Validators::Validators()
       bufferuiv(valid_bufferuiv_table, arraysize(valid_bufferuiv_table)),
       capability(valid_capability_table, arraysize(valid_capability_table)),
       compressed_texture_format(),
+      coverage_modulation_components(
+          valid_coverage_modulation_components_table,
+          arraysize(valid_coverage_modulation_components_table)),
       dst_blend_factor(valid_dst_blend_factor_table,
                        arraysize(valid_dst_blend_factor_table)),
       equation(valid_equation_table, arraysize(valid_equation_table)),

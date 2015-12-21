@@ -3226,4 +3226,15 @@ TEST_F(GLES2ImplementationTest, StencilThenCoverStrokePathCHROMIUM) {
   gl_->StencilThenCoverStrokePathCHROMIUM(1, 2, 3, GL_CONVEX_HULL_CHROMIUM);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, CoverageModulationCHROMIUM) {
+  struct Cmds {
+    cmds::CoverageModulationCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_RGB);
+
+  gl_->CoverageModulationCHROMIUM(GL_RGB);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

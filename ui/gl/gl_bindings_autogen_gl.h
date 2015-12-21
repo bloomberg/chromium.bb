@@ -206,6 +206,7 @@ typedef void(GL_BINDING_CALL* glCopyTexSubImage3DProc)(GLenum target,
                                                        GLint y,
                                                        GLsizei width,
                                                        GLsizei height);
+typedef void(GL_BINDING_CALL* glCoverageModulationNVProc)(GLenum components);
 typedef void(GL_BINDING_CALL* glCoverFillPathInstancedNVProc)(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -1080,6 +1081,7 @@ struct ExtensionsGL {
   bool b_GL_KHR_robustness;
   bool b_GL_NV_blend_equation_advanced;
   bool b_GL_NV_fence;
+  bool b_GL_NV_framebuffer_mixed_samples;
   bool b_GL_NV_path_rendering;
   bool b_GL_OES_EGL_image;
   bool b_GL_OES_get_program_binary;
@@ -1139,6 +1141,7 @@ struct ProcsGL {
   glCopyTexImage2DProc glCopyTexImage2DFn;
   glCopyTexSubImage2DProc glCopyTexSubImage2DFn;
   glCopyTexSubImage3DProc glCopyTexSubImage3DFn;
+  glCoverageModulationNVProc glCoverageModulationNVFn;
   glCoverFillPathInstancedNVProc glCoverFillPathInstancedNVFn;
   glCoverFillPathNVProc glCoverFillPathNVFn;
   glCoverStrokePathInstancedNVProc glCoverStrokePathInstancedNVFn;
@@ -1601,6 +1604,7 @@ class GL_EXPORT GLApi {
                                      GLint y,
                                      GLsizei width,
                                      GLsizei height) = 0;
+  virtual void glCoverageModulationNVFn(GLenum components) = 0;
   virtual void glCoverFillPathInstancedNVFn(GLsizei numPaths,
                                             GLenum pathNameType,
                                             const void* paths,
@@ -2384,6 +2388,8 @@ class GL_EXPORT GLApi {
 #define glCopyTexImage2D ::gfx::g_current_gl_context->glCopyTexImage2DFn
 #define glCopyTexSubImage2D ::gfx::g_current_gl_context->glCopyTexSubImage2DFn
 #define glCopyTexSubImage3D ::gfx::g_current_gl_context->glCopyTexSubImage3DFn
+#define glCoverageModulationNV \
+  ::gfx::g_current_gl_context->glCoverageModulationNVFn
 #define glCoverFillPathInstancedNV \
   ::gfx::g_current_gl_context->glCoverFillPathInstancedNVFn
 #define glCoverFillPathNV ::gfx::g_current_gl_context->glCoverFillPathNVFn

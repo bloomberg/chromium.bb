@@ -345,6 +345,9 @@ GL_APICALL void         GL_APIENTRY glBindFragmentInputLocationCHROMIUM (GLidPro
 GL_APICALL void         GL_APIENTRY glProgramPathFragmentInputGenCHROMIUM (GLidProgram program, GLint location, GLenumPathFragmentInputGenMode genMode, GLint components, const GLfloat* coeffs);
 
 
+// Extension CHROMIUM_framebuffer_mixed_samples
+GL_APICALL void         GL_APIENTRY glCoverageModulationCHROMIUM (GLenumCoverageModulationComponents components);
+
 // Extension KHR_robustness
 GL_APICALL GLenum	GL_APIENTRY glGetGraphicsResetStatusKHR (void);
 

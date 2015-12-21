@@ -190,6 +190,7 @@ void glCopyTexSubImage3DFn(GLenum target,
                            GLint y,
                            GLsizei width,
                            GLsizei height) override;
+void glCoverageModulationNVFn(GLenum components) override;
 void glCoverFillPathInstancedNVFn(GLsizei numPaths,
                                   GLenum pathNameType,
                                   const void* paths,
