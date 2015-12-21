@@ -90,7 +90,7 @@ private:
     SkPaint::Cap m_lineCap;
     SkPaint::Join m_lineJoin;
     float m_miterLimit;
-    RefPtr<SkDashPathEffect> m_dash;
+    RefPtr<SkPathEffect> m_dash;
 };
 
 } // namespace blink
