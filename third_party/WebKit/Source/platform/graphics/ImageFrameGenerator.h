@@ -67,25 +67,25 @@ public:
 
     ~ImageFrameGenerator();
 
-    // Decodes and scales the specified frame at |index|. The dimensions and output
-    // format are given in SkImageInfo. Decoded pixels are written into |pixels| with
-    // a stride of |rowBytes|. Returns true if decoding was successful.
-    bool decodeAndScale(const SkImageInfo&, size_t index, void* pixels, size_t rowBytes);
-
-    // Decodes YUV components directly into the provided memory planes.
-    bool decodeToYUV(SkISize componentSizes[3], void* planes[3], size_t rowBytes[3]);
-
     void setData(PassRefPtr<SharedBuffer>, bool allDataReceived);
 
     // Return our encoded image data. Caller takes ownership and must unref the data
-    // according to the contract SkImageGenerator::refEncodedData.
-    //
-    // Returns null if image is not fully received.
+    // according to the contract SkImageGenerator::refEncodedData. Returns null if
+    // the data is has not been fully received.
     SkData* refEncodedData();
+
+    // Decodes and scales the specified frame at |index|. The dimensions and output
+    // format are given in SkImageInfo. Decoded pixels are written into |pixels| with
+    // a stride of |rowBytes|. Returns true if decoding was successful.
+    bool decodeAndScale(size_t index, const SkImageInfo&, void* pixels, size_t rowBytes);
+
+    // Decodes YUV components directly into the provided memory planes.
+    bool decodeToYUV(size_t index, SkISize componentSizes[3], void* planes[3], size_t rowBytes[3]);
 
     const SkISize& getFullSize() const { return m_fullSize; }
 
     bool isMultiFrame() const { return m_isMultiFrame; }
+    bool decodeFailed() const { return m_decodeFailed; }
 
     bool hasAlpha(size_t index);
 
@@ -102,10 +102,7 @@ private:
     void setHasAlpha(size_t index, bool hasAlpha);
 
     // These methods are called while m_decodeMutex is locked.
-    SkBitmap tryToResumeDecode(const SkISize& scaledSize, size_t index);
-
-    // Use the given decoder to decode. If a decoder is not given then try to create one.
-    // Returns true if decoding was complete.
+    SkBitmap tryToResumeDecode(size_t index, const SkISize& scaledSize);
     bool decode(size_t index, ImageDecoder**, SkBitmap*);
 
     SkISize m_fullSize;
@@ -114,12 +111,12 @@ private:
     // In case that ImageFrameGenerator get's deleted before m_encodedData,
     // m_encodedData would hold the reference to it (and underlying data).
     RefPtr<ThreadSafeDataTransport> m_data;
+
     bool m_isMultiFrame;
-    bool m_decodeFailedAndEmpty;
-    Vector<bool> m_hasAlpha;
-    int m_decodeCount;
-    Vector<bool> m_frameComplete;
+    bool m_decodeFailed;
     size_t m_frameCount;
+    Vector<bool> m_hasAlpha;
+    Vector<bool> m_frameComplete;
 
     class ExternalMemoryAllocator;
     OwnPtr<ExternalMemoryAllocator> m_externalAllocator;

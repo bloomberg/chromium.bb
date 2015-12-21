@@ -83,18 +83,22 @@ String DeferredImageDecoder::filenameExtension() const
 
 PassRefPtr<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
 {
+    if (m_frameGenerator && m_frameGenerator->decodeFailed())
+        return nullptr;
+
     prepareLazyDecodedFrames();
 
     if (index < m_frameData.size()) {
+        FrameData* frameData = &m_frameData[index];
         // ImageFrameGenerator has the latest known alpha state. There will be a
         // performance boost if this frame is opaque.
-        FrameData* frameData = &m_frameData[index];
+        ASSERT(m_frameGenerator);
         frameData->m_hasAlpha = m_frameGenerator->hasAlpha(index);
         frameData->m_frameBytes = m_size.area() * sizeof(ImageFrame::PixelData);
         return createFrameImageAtIndex(index, !frameData->m_hasAlpha);
     }
 
-    if (!m_actualDecoder)
+    if (!m_actualDecoder || m_actualDecoder->failed())
         return nullptr;
 
     ImageFrame* frame = m_actualDecoder->frameBufferAtIndex(index);
