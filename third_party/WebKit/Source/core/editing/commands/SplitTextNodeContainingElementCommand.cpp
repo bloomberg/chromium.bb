@@ -23,7 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/editing/commands/SplitTextNodeContainingElementCommand.h"
 
 #include "core/dom/Element.h"

@@ -28,7 +28,6 @@
  */
 
 
-#include "config.h"
 #include "core/editing/DOMSelection.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"

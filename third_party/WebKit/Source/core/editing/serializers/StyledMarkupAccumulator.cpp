@@ -26,7 +26,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/editing/serializers/StyledMarkupAccumulator.h"
 
 #include "core/css/StylePropertySet.h"

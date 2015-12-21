@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"

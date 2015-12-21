@@ -26,7 +26,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/editing/commands/SmartReplace.h"
 
 #include <CoreFoundation/CFCharacterSet.h>

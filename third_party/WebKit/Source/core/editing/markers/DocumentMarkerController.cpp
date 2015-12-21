@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 
 #include "core/dom/Node.h"
