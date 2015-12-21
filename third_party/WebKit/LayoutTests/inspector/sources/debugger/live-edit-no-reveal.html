@@ -44,7 +44,6 @@ function test()
 
         function didEditScriptSource()
         {
-            WebInspector.SourcesPanel.instance().updateLastModificationTime();
             InspectorTest.resumeExecution();
         }
 
@@ -84,7 +83,6 @@ function test()
         {
             InspectorTest.addResult("Stepping into...");
             InspectorTest.addSniffer(WebInspector.SourcesView.prototype, "showSourceLocation", didRevealAfterStepInto);
-            WebInspector.SourcesPanel.instance()._lastModificationTimeoutPassedForTest();
             InspectorTest.stepInto();
         }
 
