@@ -3,26 +3,16 @@
 // Note: this doesn't work if the test doesn't contain any visible element with
 // 'font-family: Ahem' style.
 (function() {
-  var getPathToAhem = function() {
-    var scripts = document.getElementsByTagName('script');
-    for (var scriptIndex = 0; scriptIndex < scripts.length; scriptIndex++) {
-      var src = scripts[scriptIndex].src || scripts[scriptIndex].getAttribute('xlink:href');
-      if (src && src.indexOf('ahem.js') !== -1)
-        return src.substr(0, src.lastIndexOf('/')) + '/Ahem.ttf';
-    }
-    console.log("Error: <script> referencing ahem.js could not be found.");
-  }
+  var scripts = document.getElementsByTagName('script');
+  var scriptSrc = scripts[scripts.length - 1].src;
+  var relativePath = scriptSrc.substr(0, scriptSrc.lastIndexOf('/'));
 
   window.addEventListener('DOMContentLoaded', function() {
     var style = document.createElement('style');
     style.appendChild(document.createTextNode(
-      '@font-face { font-family: Ahem; src: url(' + getPathToAhem() + '); }'));
-    document.documentElement.appendChild(style);
-
+      '@font-face { font-family: Ahem; src: url(' + relativePath + '/Ahem.ttf); }'));
+    document.head.appendChild(style);
     // Force a layout to start loading the font.
-    if (document.documentElement.getBBox)
-      document.documentElement.getBBox();
-    else
-      document.documentElement.offsetTop;
+    document.documentElement.offsetTop;
   }, true);
 }());
