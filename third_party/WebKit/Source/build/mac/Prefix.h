@@ -18,20 +18,10 @@
  *
  */
 
-/* This prefix file is for use on Mac OS X only. This prefix file should contain only:
- *    1) files to precompile for faster builds
- *    2) in one case at least: OS-X-specific performance bug workarounds
- *    3) the special trick to catch us using new or delete without including "config.h"
- * The project should be able to build without this header, although we rarely test that.
+/* This prefix file is for use on Mac OS X only. This prefix file should contain
+ * only files to precompile for faster builds. The project should be able to
+ * build without this header, although we rarely test that.
  */
-
-/* Things that need to be defined globally should go into "config.h". */
-
-#ifdef __cplusplus
-#define NULL __null
-#else
-#define NULL ((void *)0)
-#endif
 
 #include <pthread.h>
 #include <sys/types.h>
@@ -48,35 +38,9 @@
 #include <unistd.h>
 
 #ifdef __cplusplus
-#include <ciso646>
-
-#if defined(_LIBCPP_VERSION)
-
-// Add work around for a bug in libc++ that caused standard heap
-// APIs to not compile <rdar://problem/10858112>.
-
-#include <type_traits>
-
-namespace blink {
-class TimerHeapReference;
-}
-
-_LIBCPP_BEGIN_NAMESPACE_STD
-
-inline _LIBCPP_INLINE_VISIBILITY
-const blink::TimerHeapReference& move(const blink::TimerHeapReference& t)
-{
-    return t;
-}
-
-_LIBCPP_END_NAMESPACE_STD
-
-#endif // defined(_LIBCPP_VERSION)
-
 #include <algorithm>
 #include <cstddef>
 #include <new>
-
 #endif // __cplusplus
 
 #include <sys/param.h>
