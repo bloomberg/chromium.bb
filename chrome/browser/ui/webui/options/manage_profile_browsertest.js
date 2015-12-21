@@ -202,7 +202,14 @@ TEST_F('ManageProfileUITestAsync', 'CreateExistingSupervisedUser', function() {
     },
     {
       id: 'supervisedUser4',
-      name: 'SameName',
+      name: 'RepeatingName',
+      iconURL: 'chrome://path/to/icon/image',
+      onCurrentDevice: true,
+      needAvatar: false
+    },
+    {
+      id: 'supervisedUser5',
+      name: 'RepeatingName',
       iconURL: 'chrome://path/to/icon/image',
       onCurrentDevice: false,
       needAvatar: false
@@ -218,10 +225,10 @@ TEST_F('ManageProfileUITestAsync', 'CreateExistingSupervisedUser', function() {
                CreateProfileOverlay.getInstance().signedInEmail_);
   this.setProfileSupervised_(false, 'create');
 
-  // Also add the names 'Test' and 'SameName' to |existingProfileNames_| to
+  // Also add the names 'Test' and 'RepeatingName' to |existingProfileNames_| to
   // simulate that profiles with those names exist on the device.
   ManageProfileOverlay.getInstance().existingProfileNames_.Test = true;
-  ManageProfileOverlay.getInstance().existingProfileNames_.SameName = true;
+  ManageProfileOverlay.getInstance().existingProfileNames_.RepeatingName = true;
 
   // Initially, the ok button should be enabled and the import link should not
   // exist.
@@ -252,12 +259,13 @@ TEST_F('ManageProfileUITestAsync', 'CreateExistingSupervisedUser', function() {
     ManageProfileOverlay.getInstance().onNameChanged_('create');
     return options.SupervisedUserListData.getInstance().promise_;
   }).then(function() {
-    assertFalse($('create-profile-ok').disabled);
+    assertTrue($('create-profile-ok').disabled);
     assertTrue($('supervised-user-import-existing') == null);
 
-    // A profile which does not exist on the device, but there is a profile with
-    // the same name already on the device.
-    nameField.value = 'SameName';
+    // A supervised user profile that is on the device, but has the same name
+    // as a supervised user profile that is not imported.
+    // This can happen due to a bug (https://crbug.com/557445)
+    nameField.value = 'RepeatingName';
     ManageProfileOverlay.getInstance().onNameChanged_('create');
     return options.SupervisedUserListData.getInstance().promise_;
   }).then(function() {
