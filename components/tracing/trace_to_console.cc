@@ -13,7 +13,7 @@ namespace tracing {
 
 namespace {
 // These categories will cause deadlock when ECHO_TO_CONSOLE. crbug.com/325575.
-const char kEchoToConsoleCategoryFilter[] = "-ipc,-task";
+const char kEchoToConsoleCategoryFilter[] = "-ipc,-toplevel";
 }  // namespace
 
 base::trace_event::TraceConfig GetConfigForTraceToConsole() {
