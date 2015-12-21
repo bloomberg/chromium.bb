@@ -14,8 +14,8 @@ import junit.framework.TestCase;
 
 import org.chromium.base.test.BaseInstrumentationTestRunner;
 import org.chromium.base.test.BaseTestResult;
-import org.chromium.base.test.BaseTestResult.SkipCheck;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.SkipCheck;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.net.test.BaseHttpTestServer;
@@ -237,7 +237,7 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
     /**
      * Checks for tests that should only run in document mode.
      */
-    private class DisableInTabbedModeSkipCheck implements SkipCheck {
+    private class DisableInTabbedModeSkipCheck extends SkipCheck {
 
         /**
          * If the test is running in tabbed mode, checks for

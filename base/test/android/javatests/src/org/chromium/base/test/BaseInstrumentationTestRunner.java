@@ -19,10 +19,11 @@ import junit.framework.TestResult;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.multidex.ChromiumMultiDex;
-import org.chromium.base.test.BaseTestResult.SkipCheck;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIfSkipCheck;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.SkipCheck;
 import org.chromium.test.reporter.TestStatusListener;
 
 import java.lang.reflect.Method;
@@ -64,24 +65,21 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
     protected void addTestHooks(BaseTestResult result) {
         result.addSkipCheck(new MinAndroidSdkLevelSkipCheck());
         result.addSkipCheck(new RestrictionSkipCheck());
+        result.addSkipCheck(new DisableIfSkipCheck());
 
         result.addPreTestHook(CommandLineFlags.getRegistrationHook());
     }
 
+
     /**
      * Checks if any restrictions exist and skip the test if it meets those restrictions.
      */
-    public class RestrictionSkipCheck implements SkipCheck {
+    public class RestrictionSkipCheck extends SkipCheck {
         @Override
         public boolean shouldSkip(TestCase testCase) {
-            Method method;
-            try {
-                method = testCase.getClass().getMethod(testCase.getName(), (Class[]) null);
-            } catch (NoSuchMethodException e) {
-                Log.e(TAG, "Unable to find %s in %s", testCase.getName(),
-                        testCase.getClass().getName(), e);
-                return true;
-            }
+            Method method = getTestMethod(testCase);
+            if (method == null) return true;
+
             Restriction restrictions = method.getAnnotation(Restriction.class);
             if (restrictions != null) {
                 for (String restriction : restrictions.value()) {
@@ -120,7 +118,7 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
     /**
      * Checks the device's SDK level against any specified minimum requirement.
      */
-    public static class MinAndroidSdkLevelSkipCheck implements SkipCheck {
+    public static class MinAndroidSdkLevelSkipCheck extends SkipCheck {
 
         /**
          * If {@link MinAndroidSdkLevel} is present, checks its value

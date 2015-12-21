@@ -1729,6 +1729,7 @@ if (is_android) {
     java_files = [
       "android/junit/src/org/chromium/base/BaseChromiumApplicationTest.java",
       "android/junit/src/org/chromium/base/LogTest.java",
+      "test/android/junit/src/org/chromium/base/test/util/DisableIfTest.java",
     ]
     deps = [
       ":base_java",

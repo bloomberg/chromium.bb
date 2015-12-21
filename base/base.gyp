@@ -1588,7 +1588,7 @@
           ],
           'variables': {
             'src_paths': [
-              '../base/test/android/junit/',
+              '../base/test/android/junit/src/org/chromium/base/test/shadows/ShadowMultiDex.java',
             ],
           },
           'includes': [ '../build/host_jar.gypi' ]
@@ -1607,6 +1607,7 @@
              'main_class': 'org.chromium.testing.local.JunitTestMain',
              'src_paths': [
                '../base/android/junit/',
+               '../base/test/android/junit/src/org/chromium/base/test/util/DisableIfTest.java',
              ],
            },
           'includes': [ '../build/host_jar.gypi' ],
