@@ -56,12 +56,12 @@ java_cpp_template("load_states_list") {
   inputs = [
     "//net/base/load_states_list.h",
   ]
-  package_name = "org/chromium/cronet"
+  package_name = "org/chromium/net"
 }
 
 _generated_version_java_dir = "$target_gen_dir/templates/cronet_version_java"
 _generated_version_java =
-    "$_generated_version_java_dir/org/chromium/cronet/Version.java"
+    "$_generated_version_java_dir/org/chromium/net/Version.java"
 
 process_version("cronet_version_java") {
   template_file = "java/src/org/chromium/net/Version.template"
