@@ -1057,7 +1057,11 @@ crbug.com/521124 [ Win7 XP ] fast/text/international/vertical-text-glyph-test.ht
 crbug.com/521124 [ Win7 ] fast/text/international/text-combine-image-test.html [ Pass Failure ]
 crbug.com/521124 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
 crbug.com/521124 [ Win7 Release ] fast/text/justify-ideograph-vertical.html [ Pass Failure ]
-crbug.com/521124 [ Win7 ] fast/text/orientation-sideways.html [ Pass Failure ]
+crbug.com/521124 crbug.com/571481 [ Win7 XP ] fast/text/orientation-sideways.html [ Pass Failure ]
+
+crbug.com/571481 [ Win10 ] fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
+crbug.com/571481 [ Win10 ] fast/text/orientation-sideways.html [ NeedsRebaseline ]
+crbug.com/571481 [ Win10 ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ NeedsRebaseline ]
 
 # Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
 crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]
