@@ -17,7 +17,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/page/Page.h"
 
 #include "core/css/resolver/ViewportStyleResolver.h"

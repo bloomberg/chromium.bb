@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/StyleRareInheritedData.h"
 
 #include "core/style/AppliedTextDecoration.h"

@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/StyleGeneratedImage.h"
 
 #include "core/css/CSSImageGeneratorValue.h"

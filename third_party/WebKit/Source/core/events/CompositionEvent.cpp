@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/events/CompositionEvent.h"
 
 namespace blink {

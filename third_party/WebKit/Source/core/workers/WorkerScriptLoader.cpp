@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "core/workers/WorkerScriptLoader.h"
 
 #include "core/dom/ExecutionContext.h"

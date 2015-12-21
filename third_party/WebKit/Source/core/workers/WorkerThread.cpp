@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/workers/WorkerThread.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"

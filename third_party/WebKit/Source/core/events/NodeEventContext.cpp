@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/events/NodeEventContext.h"
 
 #include "core/dom/TouchList.h"

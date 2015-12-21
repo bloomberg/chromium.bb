@@ -30,7 +30,6 @@
  *
  */
 
-#include "config.h"
 #include "core/events/EventListenerMap.h"
 
 #include "core/events/EventTarget.h"

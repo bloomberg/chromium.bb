@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "core/events/MessageEvent.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"

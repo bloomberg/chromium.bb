@@ -23,7 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/style/StyleFetchedImageSet.h"
 
 #include "core/css/CSSImageSetValue.h"

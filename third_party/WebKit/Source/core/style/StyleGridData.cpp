@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/StyleGridData.h"
 
 #include "core/style/ComputedStyle.h"

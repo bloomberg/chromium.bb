@@ -23,7 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 
 #include "core/EventTypeNames.h"

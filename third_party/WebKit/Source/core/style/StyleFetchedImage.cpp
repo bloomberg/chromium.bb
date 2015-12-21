@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/StyleFetchedImage.h"
 
 #include "core/css/CSSImageValue.h"

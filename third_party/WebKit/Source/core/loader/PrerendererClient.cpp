@@ -29,7 +29,6 @@
  *
  */
 
-#include "config.h"
 #include "core/loader/PrerendererClient.h"
 
 #include "core/page/Page.h"

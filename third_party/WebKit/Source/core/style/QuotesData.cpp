@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/QuotesData.h"
 
 namespace blink {

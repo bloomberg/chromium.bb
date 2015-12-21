@@ -27,7 +27,6 @@
  */
 
 
-#include "config.h"
 #include "core/frame/Screen.h"
 
 #include "core/frame/FrameHost.h"

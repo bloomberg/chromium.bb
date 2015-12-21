@@ -23,7 +23,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/events/EventDispatcher.h"
 
 #include "core/dom/ContainerNode.h"

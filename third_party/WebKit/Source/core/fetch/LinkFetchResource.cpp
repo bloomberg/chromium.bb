@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 
-#include "config.h"
 #include "core/fetch/LinkFetchResource.h"
 
 #include "core/fetch/FetchRequest.h"

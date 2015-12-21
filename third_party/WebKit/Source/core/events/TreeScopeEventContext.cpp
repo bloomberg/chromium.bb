@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/events/TreeScopeEventContext.h"
 
 #include "core/dom/StaticNodeList.h"

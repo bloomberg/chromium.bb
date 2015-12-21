@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 
-#include "config.h"
 #include "core/events/PromiseRejectionEvent.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"

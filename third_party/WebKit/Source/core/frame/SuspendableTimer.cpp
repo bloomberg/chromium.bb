@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/frame/SuspendableTimer.h"
 
 namespace blink {

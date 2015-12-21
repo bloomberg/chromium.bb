@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "StyleScrollSnapData.h"
+#include "core/style/StyleScrollSnapData.h"
 
 #include "core/style/ComputedStyle.h"
 

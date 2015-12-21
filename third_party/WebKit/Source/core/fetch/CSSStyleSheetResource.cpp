@@ -24,7 +24,6 @@
     pages from the web. It has a memory cache for these objects.
 */
 
-#include "config.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 
 #include "core/css/StyleSheetContents.h"

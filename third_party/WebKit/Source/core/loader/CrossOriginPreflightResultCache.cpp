@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/loader/CrossOriginPreflightResultCache.h"
 
 #include "core/fetch/FetchUtils.h"

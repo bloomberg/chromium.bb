@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/FillLayer.h"
 
 #include "core/style/DataEquivalency.h"

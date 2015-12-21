@@ -27,7 +27,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/frame/Frame.h"
 
 #include "core/dom/DocumentType.h"

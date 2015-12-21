@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/workers/WorkerEventQueue.h"
 
 #include "core/dom/ExecutionContext.h"

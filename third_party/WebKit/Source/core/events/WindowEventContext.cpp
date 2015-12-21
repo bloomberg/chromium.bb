@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/events/WindowEventContext.h"
 
 #include "core/dom/Document.h"

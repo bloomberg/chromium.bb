@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 
 #include "core/fetch/Resource.h"

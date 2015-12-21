@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/StyleBoxData.h"
 
 #include "core/style/ComputedStyle.h"

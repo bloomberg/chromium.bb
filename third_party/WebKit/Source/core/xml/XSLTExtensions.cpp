@@ -24,7 +24,6 @@
  * ings in this Software without prior written authorization from him.
  */
 
-#include "config.h"
 #include "core/xml/XSLTExtensions.h"
 
 #include "platform/RuntimeEnabledFeatures.h"

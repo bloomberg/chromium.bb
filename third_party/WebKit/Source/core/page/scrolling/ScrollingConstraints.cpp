@@ -23,7 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 
 namespace blink {

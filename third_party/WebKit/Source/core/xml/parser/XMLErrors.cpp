@@ -26,7 +26,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/xml/parser/XMLErrors.h"
 
 #include "core/HTMLNames.h"

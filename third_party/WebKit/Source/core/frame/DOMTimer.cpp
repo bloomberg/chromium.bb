@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/frame/DOMTimer.h"
 
 #include "core/dom/ExecutionContext.h"

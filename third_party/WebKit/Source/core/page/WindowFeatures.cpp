@@ -20,7 +20,6 @@
  *  USA
  */
 
-#include "config.h"
 #include "core/page/WindowFeatures.h"
 
 #include "platform/geometry/IntRect.h"

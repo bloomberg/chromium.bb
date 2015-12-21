@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/StyleRareNonInheritedData.h"
 
 #include "core/style/ContentData.h"

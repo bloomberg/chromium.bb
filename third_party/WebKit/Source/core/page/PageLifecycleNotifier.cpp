@@ -24,7 +24,6 @@
  */
 
 
-#include "config.h"
 #include "core/page/PageLifecycleNotifier.h"
 
 #include "core/page/PageLifecycleObserver.h"

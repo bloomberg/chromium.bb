@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/NinePieceImage.h"
 
 #include "core/style/DataEquivalency.h"

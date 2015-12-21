@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/dom/Element.h"
 #include "core/events/GestureEvent.h"
+
+#include "core/dom/Element.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {

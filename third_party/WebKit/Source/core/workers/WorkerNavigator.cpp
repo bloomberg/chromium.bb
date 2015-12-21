@@ -24,8 +24,6 @@
  *
  */
 
-#include "config.h"
-
 #include "core/workers/WorkerNavigator.h"
 
 namespace blink {

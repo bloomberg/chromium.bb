@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/StyleBackgroundData.h"
 
 #include "core/style/ComputedStyle.h"

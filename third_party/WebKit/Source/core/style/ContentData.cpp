@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/ContentData.h"
 
 #include "core/layout/LayoutCounter.h"

@@ -23,7 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/events/FocusEvent.h"
 
 #include "core/events/Event.h"

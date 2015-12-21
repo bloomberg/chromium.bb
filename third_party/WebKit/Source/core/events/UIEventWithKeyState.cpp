@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "core/events/UIEventWithKeyState.h"
 
 namespace blink {

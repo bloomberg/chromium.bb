@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/ShadowData.h"
 
 #include "platform/animation/AnimationUtilities.h"

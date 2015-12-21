@@ -16,7 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "config.h"
 #include "core/xml/DOMParser.h"
 
 #include "core/dom/DOMImplementation.h"

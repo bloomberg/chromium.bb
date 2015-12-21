@@ -27,7 +27,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/style/BasicShapes.h"
 
 #include "core/css/BasicShapeFunctions.h"

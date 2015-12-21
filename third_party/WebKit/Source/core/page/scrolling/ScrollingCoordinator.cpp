@@ -23,8 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
 #include "core/dom/Document.h"

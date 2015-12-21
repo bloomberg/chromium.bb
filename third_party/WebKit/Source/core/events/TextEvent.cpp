@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/events/TextEvent.h"
 
 #include "core/dom/DocumentFragment.h"

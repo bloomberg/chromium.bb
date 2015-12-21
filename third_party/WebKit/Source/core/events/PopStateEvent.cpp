@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/events/PopStateEvent.h"
 
 #include "bindings/core/v8/SerializedScriptValue.h"

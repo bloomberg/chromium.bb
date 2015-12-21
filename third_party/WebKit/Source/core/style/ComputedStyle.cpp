@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/ComputedStyle.h"
 
 #include "core/css/resolver/StyleResolver.h"

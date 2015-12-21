@@ -29,7 +29,6 @@
  *
  */
 
-#include "config.h"
 #include "core/loader/LinkLoader.h"
 
 #include "core/dom/Document.h"

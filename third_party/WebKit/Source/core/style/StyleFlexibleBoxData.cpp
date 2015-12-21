@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "core/style/StyleFlexibleBoxData.h"
 
 #include "core/style/ComputedStyle.h"

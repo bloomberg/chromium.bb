@@ -29,7 +29,6 @@
  *
  */
 
-#include "config.h"
 #include "core/events/EventTarget.h"
 
 #include "bindings/core/v8/ExceptionState.h"
