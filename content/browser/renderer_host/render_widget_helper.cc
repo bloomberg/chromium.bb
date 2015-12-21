@@ -126,8 +126,6 @@ void RenderWidgetHelper::CreateNewWindow(
     // be needed if a response ends up creating a plugin.
     resource_dispatcher_host_->BlockRequestsForRoute(
         render_process_id_, *route_id);
-    resource_dispatcher_host_->BlockRequestsForRoute(
-        render_process_id_, *main_frame_route_id);
   }
 
   BrowserThread::PostTask(

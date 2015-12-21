@@ -762,7 +762,9 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
 }
 
 void RenderFrameHostImpl::Init() {
-  GetProcess()->ResumeRequestsForView(routing_id_);
+  // TODO(csharrison): Call GetProcess()->ResumeRequestsForFrame(routing_id_)
+  // once ResourceDispatcherHostImpl is keyed on render frame routing ids
+  // instead of render view routing ids.
 }
 
 void RenderFrameHostImpl::OnAddMessageToConsole(

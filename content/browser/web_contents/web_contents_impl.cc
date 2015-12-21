@@ -1813,10 +1813,6 @@ void WebContentsImpl::CreateNewWindow(
       Send(new ViewMsg_Close(route_id));
     }
     GetRenderViewHost()->GetProcess()->ResumeRequestsForView(route_id);
-    GetRenderViewHost()->GetProcess()->ResumeRequestsForView(
-        main_frame_route_id);
-    GetRenderViewHost()->GetProcess()->ResumeRequestsForView(
-        main_frame_widget_route_id);
     return;
   }
 
