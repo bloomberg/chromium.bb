@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/animation/AnimationClock.h"
 
 #include "testing/gtest/include/gtest/gtest.h"

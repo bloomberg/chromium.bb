@@ -1,4 +1,3 @@
-#include "config.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
 
 #include "core/css/CSSPrimitiveValue.h"

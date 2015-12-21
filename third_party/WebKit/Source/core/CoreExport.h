@@ -5,6 +5,8 @@
 #ifndef CoreExport_h
 #define CoreExport_h
 
+#include "wtf/Compiler.h"
+
 #if !defined(LINK_CORE_MODULES_SEPARATELY)
 #define LINK_CORE_MODULES_SEPARATELY 0
 #endif
