@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/cast/ozone_platform_cast.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "chromecast/public/cast_egl_platform.h"
@@ -37,7 +39,7 @@ base::LazyInstance<scoped_ptr<GpuPlatformSupport>> g_gpu_platform_support =
 class OzonePlatformCast : public OzonePlatform {
  public:
   explicit OzonePlatformCast(scoped_ptr<CastEglPlatform> egl_platform)
-      : egl_platform_(egl_platform.Pass()) {}
+      : egl_platform_(std::move(egl_platform)) {}
   ~OzonePlatformCast() override {}
 
   // OzonePlatform implementation:
@@ -87,7 +89,7 @@ class OzonePlatformCast : public OzonePlatform {
       surface_factory_.reset(new SurfaceFactoryCast());
   }
   void InitializeGPU() override {
-    surface_factory_.reset(new SurfaceFactoryCast(egl_platform_.Pass()));
+    surface_factory_.reset(new SurfaceFactoryCast(std::move(egl_platform_)));
     g_gpu_platform_support.Get() =
         make_scoped_ptr(new GpuPlatformSupportCast(surface_factory_.get()));
   }
@@ -110,7 +112,7 @@ OzonePlatform* CreateOzonePlatformCast() {
       base::CommandLine::ForCurrentProcess()->argv();
   scoped_ptr<chromecast::CastEglPlatform> platform(
       chromecast::CastEglPlatformShlib::Create(argv));
-  return new OzonePlatformCast(platform.Pass());
+  return new OzonePlatformCast(std::move(platform));
 }
 
 }  // namespace ui

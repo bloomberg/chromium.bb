@@ -5,13 +5,14 @@
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
 
 #include <gbm.h>
+#include <utility>
 
 namespace ui {
 
 GbmDevice::GbmDevice(const base::FilePath& device_path,
                      base::File file,
                      bool is_primary_device)
-    : DrmDevice(device_path, file.Pass(), is_primary_device) {}
+    : DrmDevice(device_path, std::move(file), is_primary_device) {}
 
 GbmDevice::~GbmDevice() {
   if (device_)

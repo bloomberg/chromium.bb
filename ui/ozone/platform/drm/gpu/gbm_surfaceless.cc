@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
 
+#include <utility>
+
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_vsync_provider.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -14,7 +16,7 @@ namespace ui {
 
 GbmSurfaceless::GbmSurfaceless(scoped_ptr<DrmWindowProxy> window,
                                GbmSurfaceFactory* surface_manager)
-    : window_(window.Pass()), surface_manager_(surface_manager) {
+    : window_(std::move(window)), surface_manager_(surface_manager) {
   surface_manager_->RegisterSurface(window_->widget(), this);
 }
 

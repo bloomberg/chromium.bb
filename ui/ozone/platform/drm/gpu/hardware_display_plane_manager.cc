@@ -7,6 +7,7 @@
 #include <drm_fourcc.h>
 
 #include <set>
+#include <utility>
 
 #include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
@@ -108,7 +109,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
       // plane is updated via cursor specific DRM API. Hence, we dont keep
       // track of Cursor plane here to avoid re-using it for any other purpose.
       if (plane->type() != HardwareDisplayPlane::kCursor)
-        planes_.push_back(plane.Pass());
+        planes_.push_back(std::move(plane));
     }
   }
 
@@ -123,7 +124,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
             CreatePlane(resources->crtcs[i] - 1, (1 << i)));
         if (dummy_plane->Initialize(drm, std::vector<uint32_t>(), true,
                                     false)) {
-          planes_.push_back(dummy_plane.Pass());
+          planes_.push_back(std::move(dummy_plane));
         }
       }
     }

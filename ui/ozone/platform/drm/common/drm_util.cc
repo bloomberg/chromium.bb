@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <xf86drmMode.h>
+#include <utility>
 
 #include "ui/display/util/edid_parser.h"
 
@@ -108,7 +109,7 @@ int GetDrmProperty(int fd,
       continue;
 
     if (name == tmp->name) {
-      *property = tmp.Pass();
+      *property = std::move(tmp);
       return i;
     }
   }
@@ -162,7 +163,7 @@ HardwareDisplayControllerInfo::HardwareDisplayControllerInfo(
     ScopedDrmConnectorPtr connector,
     ScopedDrmCrtcPtr crtc,
     size_t index)
-    : connector_(connector.Pass()), crtc_(crtc.Pass()), index_(index) {}
+    : connector_(std::move(connector)), crtc_(std::move(crtc)), index_(index) {}
 
 HardwareDisplayControllerInfo::~HardwareDisplayControllerInfo() {
 }
@@ -186,11 +187,11 @@ ScopedVector<HardwareDisplayControllerInfo> GetAvailableDisplayControllerInfos(
       continue;
 
     ScopedDrmCrtcPtr crtc(drmModeGetCrtc(fd, crtc_id));
-    displays.push_back(
-        new HardwareDisplayControllerInfo(connector.Pass(), crtc.Pass(), i));
+    displays.push_back(new HardwareDisplayControllerInfo(std::move(connector),
+                                                         std::move(crtc), i));
   }
 
-  return displays.Pass();
+  return displays;
 }
 
 bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs) {

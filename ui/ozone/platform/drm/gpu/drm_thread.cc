@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/thread_task_runner_handle.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
@@ -51,7 +53,7 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
                                         base::File file,
                                         bool is_primary_device) override {
     scoped_refptr<DrmDevice> drm =
-        new GbmDevice(path, file.Pass(), is_primary_device);
+        new GbmDevice(path, std::move(file), is_primary_device);
     if (drm->Initialize(use_atomic_))
       return drm;
 
@@ -128,7 +130,7 @@ void DrmThread::CreateWindow(gfx::AcceleratedWidget widget) {
   scoped_ptr<DrmWindow> window(
       new DrmWindow(widget, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
-  screen_manager_->AddWindow(widget, window.Pass());
+  screen_manager_->AddWindow(widget, std::move(window));
 }
 
 void DrmThread::DestroyWindow(gfx::AcceleratedWidget widget) {

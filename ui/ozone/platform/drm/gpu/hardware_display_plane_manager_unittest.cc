@@ -4,6 +4,7 @@
 
 #include <drm_fourcc.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -66,7 +67,7 @@ class FakePlaneManager : public ui::HardwareDisplayPlaneManager {
       // Add support to test more formats.
       plane->Initialize(drm_, std::vector<uint32_t>(1, DRM_FORMAT_XRGB8888),
                         false, true);
-      planes_.push_back(plane.Pass());
+      planes_.push_back(std::move(plane));
     }
     // The real HDPM uses sorted planes, so sort them for consistency.
     std::sort(planes_.begin(), planes_.end(),

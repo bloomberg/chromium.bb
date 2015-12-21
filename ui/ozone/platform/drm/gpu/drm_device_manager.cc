@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 
+#include <utility>
+
 #include "base/file_descriptor_posix.h"
 #include "base/single_thread_task_runner.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -29,8 +31,7 @@ class FindByDevicePath {
 
 DrmDeviceManager::DrmDeviceManager(
     scoped_ptr<DrmDeviceGenerator> drm_device_generator)
-    : drm_device_generator_(drm_device_generator.Pass()) {
-}
+    : drm_device_generator_(std::move(drm_device_generator)) {}
 
 DrmDeviceManager::~DrmDeviceManager() {
   DCHECK(drm_device_map_.empty());
@@ -46,8 +47,8 @@ bool DrmDeviceManager::AddDrmDevice(const base::FilePath& path,
     return false;
   }
 
-  scoped_refptr<DrmDevice> device =
-      drm_device_generator_->CreateDevice(path, file.Pass(), !primary_device_);
+  scoped_refptr<DrmDevice> device = drm_device_generator_->CreateDevice(
+      path, std::move(file), !primary_device_);
   if (!device) {
     LOG(ERROR) << "Could not initialize DRM device for " << path.value();
     return false;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -99,7 +100,7 @@ void DrmWindowTest::SetUp() {
   window->Initialize();
   window->SetBounds(
       gfx::Rect(gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay)));
-  screen_manager_->AddWindow(kDefaultWidgetHandle, window.Pass());
+  screen_manager_->AddWindow(kDefaultWidgetHandle, std::move(window));
 }
 
 void DrmWindowTest::TearDown() {

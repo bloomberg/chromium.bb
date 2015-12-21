@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <xf86drm.h>
+#include <utility>
 
 #include "base/files/file_enumerator.h"
 #include "base/thread_task_runner_handle.h"
@@ -46,7 +47,7 @@ void OpenDeviceOnWorkerThread(
   scoped_ptr<DrmDeviceHandle> handle(new DrmDeviceHandle());
   handle->Initialize(path);
   reply_runner->PostTask(
-      FROM_HERE, base::Bind(callback, path, base::Passed(handle.Pass())));
+      FROM_HERE, base::Bind(callback, path, base::Passed(std::move(handle))));
 }
 
 base::FilePath GetPrimaryDisplayCardPath() {
@@ -328,7 +329,7 @@ void DrmDisplayHostManager::OnChannelEstablished(
 
   drm_devices_.clear();
   drm_devices_.insert(primary_graphics_card_path_);
-  scoped_ptr<DrmDeviceHandle> handle = primary_drm_device_handle_.Pass();
+  scoped_ptr<DrmDeviceHandle> handle = std::move(primary_drm_device_handle_);
   if (!handle) {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     handle.reset(new DrmDeviceHandle());

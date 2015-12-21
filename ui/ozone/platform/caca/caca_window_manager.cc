@@ -137,7 +137,7 @@ scoped_ptr<ui::SurfaceOzoneCanvas> CacaWindowManager::CreateCanvasForWidget(
   scoped_ptr<CacaSurface> canvas(new CacaSurface(window));
   bool initialized = canvas->Initialize();
   DCHECK(initialized);
-  return canvas.Pass();
+  return canvas;
 }
 
 }  // namespace ui

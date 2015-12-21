@@ -9,6 +9,7 @@
 #include <gbm.h>
 #include <stdlib.h>
 #include <xf86drm.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
@@ -105,7 +106,7 @@ class OzonePlatformGbm : public OzonePlatform {
                           event_factory_ozone_.get(), cursor_.get(),
                           window_manager_.get(), display_manager_.get()));
     platform_window->Initialize();
-    return platform_window.Pass();
+    return std::move(platform_window);
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return make_scoped_ptr(

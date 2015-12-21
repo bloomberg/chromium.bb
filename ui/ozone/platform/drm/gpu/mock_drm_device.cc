@@ -7,6 +7,7 @@
 #include <drm_fourcc.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -37,7 +38,7 @@ class MockHardwareDisplayPlaneManager
         // Add support to test more formats.
         plane->Initialize(drm, std::vector<uint32_t>(1, DRM_FORMAT_XRGB8888),
                           false, true);
-        planes_.push_back(plane.Pass());
+        planes_.push_back(std::move(plane));
       }
     }
   }

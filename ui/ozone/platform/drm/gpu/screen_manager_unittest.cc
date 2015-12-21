@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
@@ -375,7 +377,7 @@ TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithSameBounds) {
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
-  screen_manager_->AddWindow(1, window.Pass());
+  screen_manager_->AddWindow(1, std::move(window));
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
   screen_manager_->ConfigureDisplayController(
@@ -395,7 +397,7 @@ TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithDifferentBounds) {
   gfx::Rect new_bounds = GetPrimaryBounds();
   new_bounds.Inset(0, 0, 1, 1);
   window->SetBounds(new_bounds);
-  screen_manager_->AddWindow(1, window.Pass());
+  screen_manager_->AddWindow(1, std::move(window));
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
   screen_manager_->ConfigureDisplayController(
@@ -416,7 +418,7 @@ TEST_F(ScreenManagerTest,
         new ui::DrmWindow(i, device_manager_.get(), screen_manager_.get()));
     window->Initialize();
     window->SetBounds(GetPrimaryBounds());
-    screen_manager_->AddWindow(i, window.Pass());
+    screen_manager_->AddWindow(i, std::move(window));
   }
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
@@ -441,7 +443,7 @@ TEST_F(ScreenManagerTest, ShouldDissociateWindowOnControllerRemoval) {
       window_id, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
-  screen_manager_->AddWindow(window_id, window.Pass());
+  screen_manager_->AddWindow(window_id, std::move(window));
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
   screen_manager_->ConfigureDisplayController(
@@ -463,7 +465,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasNoBuffer) {
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
-  screen_manager_->AddWindow(1, window.Pass());
+  screen_manager_->AddWindow(1, std::move(window));
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
   screen_manager_->ConfigureDisplayController(
@@ -497,7 +499,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   window->SchedulePageFlip(
       std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(buffer)),
       base::Bind(&EmptySwapCallback));
-  screen_manager_->AddWindow(1, window.Pass());
+  screen_manager_->AddWindow(1, std::move(window));
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
   screen_manager_->ConfigureDisplayController(

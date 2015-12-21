@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/client_native_pixmap_factory_gbm.h"
 
+#include <utility>
+
 #include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"  // nogncheck
 
@@ -41,7 +43,7 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
     // It's called in IO thread. We rely on clients for thread-safety.
     // Switching to an IPC message filter ensures thread-safety.
     DCHECK_LT(vgem_fd_.get(), 0);
-    vgem_fd_ = device_fd.Pass();
+    vgem_fd_ = std::move(device_fd);
 #endif
   }
   bool IsConfigurationSupported(gfx::BufferFormat format,

@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 #include <xf86drmMode.h>
+#include <utility>
 
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -216,7 +217,7 @@ HardwareDisplayController* ScreenManager::GetDisplayController(
 void ScreenManager::AddWindow(gfx::AcceleratedWidget widget,
                               scoped_ptr<DrmWindow> window) {
   std::pair<WidgetToWindowMap::iterator, bool> result =
-      window_map_.add(widget, window.Pass());
+      window_map_.add(widget, std::move(window));
   DCHECK(result.second) << "Window already added.";
   UpdateControllerToWindowMapping();
 }
@@ -226,7 +227,7 @@ scoped_ptr<DrmWindow> ScreenManager::RemoveWindow(
   scoped_ptr<DrmWindow> window = window_map_.take_and_erase(widget);
   DCHECK(window) << "Attempting to remove non-existing window for " << widget;
   UpdateControllerToWindowMapping();
-  return window.Pass();
+  return window;
 }
 
 DrmWindow* ScreenManager::GetWindow(gfx::AcceleratedWidget widget) {

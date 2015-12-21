@@ -7,6 +7,7 @@
 #include <drm.h>
 #include <string.h>
 #include <xf86drm.h>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -34,7 +35,7 @@ HardwareDisplayController::HardwareDisplayController(
     const gfx::Point& origin)
     : origin_(origin),
       is_disabled_(controller->is_disabled()) {
-  AddCrtc(controller.Pass());
+  AddCrtc(std::move(controller));
 }
 
 HardwareDisplayController::~HardwareDisplayController() {
@@ -201,7 +202,7 @@ void HardwareDisplayController::AddCrtc(scoped_ptr<CrtcController> controller) {
       crtc_plane_list->old_plane_list.push_back(plane.get());
   }
 
-  crtc_controllers_.push_back(controller.Pass());
+  crtc_controllers_.push_back(std::move(controller));
 }
 
 scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
@@ -235,7 +236,7 @@ scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
         owned_hardware_planes_.erase(controller->drm().get());
       }
 
-      return controller.Pass();
+      return controller;
     }
   }
 

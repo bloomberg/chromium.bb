@@ -6,6 +6,7 @@
 
 #include <dlfcn.h>
 #include <EGL/egl.h>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "chromecast/public/cast_egl_platform.h"
@@ -76,8 +77,7 @@ SurfaceFactoryCast::SurfaceFactoryCast(scoped_ptr<CastEglPlatform> egl_platform)
       window_(0),
       display_size_(GetInitialDisplaySize()),
       new_display_size_(GetInitialDisplaySize()),
-      egl_platform_(egl_platform.Pass()) {
-}
+      egl_platform_(std::move(egl_platform)) {}
 
 SurfaceFactoryCast::~SurfaceFactoryCast() {
   ShutdownHardware();

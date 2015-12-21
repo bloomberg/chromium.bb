@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <gbm.h>
 #include <xf86drm.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
@@ -69,7 +70,7 @@ GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager)
     : surface_manager_(surface_manager) {}
 
 void GbmPixmap::Initialize(base::ScopedFD dma_buf, int dma_buf_pitch) {
-  dma_buf_ = dma_buf.Pass();
+  dma_buf_ = std::move(dma_buf);
   dma_buf_pitch_ = dma_buf_pitch;
 }
 
@@ -82,7 +83,7 @@ bool GbmPixmap::InitializeFromBuffer(const scoped_refptr<GbmBuffer>& buffer) {
     PLOG(ERROR) << "Failed to export buffer to dma_buf";
     return false;
   }
-  Initialize(dma_buf.Pass(), gbm_bo_get_stride(buffer->bo()));
+  Initialize(std::move(dma_buf), gbm_bo_get_stride(buffer->bo()));
   buffer_ = buffer;
   return true;
 }
