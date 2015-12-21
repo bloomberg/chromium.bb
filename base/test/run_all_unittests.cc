@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 #endif
   base::TestSuite test_suite(argc, argv);
 #if defined(OS_WIN)
-  base::debug::InstallHandleHooks();
+  CHECK(base::debug::InstallHandleHooks());
 #endif
   int ret = base::LaunchUnitTests(
       argc, argv,

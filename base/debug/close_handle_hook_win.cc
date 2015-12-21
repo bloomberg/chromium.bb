@@ -203,15 +203,14 @@ bool HandleHooks::AddIATPatch(HMODULE module) {
   base::win::IATPatchFunction* patch = NULL;
   patch = IATPatch(module, "CloseHandle", &CloseHandleHook,
                    reinterpret_cast<void**>(&g_close_function));
-  if (!patch)
-    return false;
-  hooks_.push_back(patch);
+  if (patch)
+    hooks_.push_back(patch);
 
   patch = IATPatch(module, "DuplicateHandle", &DuplicateHandleHook,
                    reinterpret_cast<void**>(&g_duplicate_function));
-  if (!patch)
-    return false;
-  hooks_.push_back(patch);
+  if (patch)
+    hooks_.push_back(patch);
+
   return true;
 }
 
@@ -249,15 +248,12 @@ bool PatchLoadedModules(HandleHooks* hooks) {
   returned /= sizeof(HMODULE);
   returned = std::min(kSize, returned);
 
-  bool success = false;
-
   for (DWORD current = 0; current < returned; current++) {
-    success = hooks->AddIATPatch(modules[current]);
-    if (!success)
-      break;
+    if (!hooks->AddIATPatch(modules[current]))
+      return false;
   }
 
-  return success;
+  return true;
 }
 
 }  // namespace
