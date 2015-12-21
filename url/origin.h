@@ -5,6 +5,8 @@
 #ifndef URL_ORIGIN_H_
 #define URL_ORIGIN_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/strings/string16.h"
@@ -98,14 +100,14 @@ class URL_EXPORT Origin {
   static Origin UnsafelyCreateOriginWithoutNormalization(
       base::StringPiece scheme,
       base::StringPiece host,
-      uint16 port);
+      uint16_t port);
 
   ~Origin();
 
   // For unique origins, these return ("", "", 0).
   const std::string& scheme() const { return tuple_.scheme(); }
   const std::string& host() const { return tuple_.host(); }
-  uint16 port() const { return tuple_.port(); }
+  uint16_t port() const { return tuple_.port(); }
 
   bool unique() const { return unique_; }
 
@@ -122,7 +124,7 @@ class URL_EXPORT Origin {
   bool operator<(const Origin& other) const;
 
  private:
-  Origin(base::StringPiece scheme, base::StringPiece host, uint16 port);
+  Origin(base::StringPiece scheme, base::StringPiece host, uint16_t port);
 
   SchemeHostPort tuple_;
   bool unique_;

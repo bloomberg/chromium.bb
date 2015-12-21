@@ -4,6 +4,7 @@
 
 #include "url/scheme_host_port.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include <tuple>
@@ -47,7 +48,7 @@ bool IsCanonicalHost(const base::StringPiece& host) {
 
 bool IsValidInput(const base::StringPiece& scheme,
                   const base::StringPiece& host,
-                  uint16 port) {
+                  uint16_t port) {
   SchemeType scheme_type = SCHEME_WITH_PORT;
   bool is_standard = GetStandardSchemeType(
       scheme.data(),
@@ -103,7 +104,7 @@ SchemeHostPort::SchemeHostPort() : port_(0) {
 
 SchemeHostPort::SchemeHostPort(base::StringPiece scheme,
                                base::StringPiece host,
-                               uint16 port)
+                               uint16_t port)
     : port_(0) {
   if (!IsValidInput(scheme, host, port))
     return;

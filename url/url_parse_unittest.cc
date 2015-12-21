@@ -4,6 +4,8 @@
 
 #include "url/third_party/mozilla/url_parse.h"
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/third_party/mozilla/url_parse.h"

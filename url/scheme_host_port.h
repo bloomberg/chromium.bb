@@ -5,9 +5,10 @@
 #ifndef URL_SCHEME_HOST_PORT_H_
 #define URL_SCHEME_HOST_PORT_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "url/url_export.h"
 
@@ -81,7 +82,9 @@ class URL_EXPORT SchemeHostPort {
   // support ports (e.g. 'file'). In that case, |port| must be 0.
   //
   // Copies the data in |scheme| and |host|.
-  SchemeHostPort(base::StringPiece scheme, base::StringPiece host, uint16 port);
+  SchemeHostPort(base::StringPiece scheme,
+                 base::StringPiece host,
+                 uint16_t port);
 
   // Creates a (scheme, host, port) tuple from |url|, as described at
   // https://tools.ietf.org/html/rfc6454#section-4
@@ -97,7 +100,7 @@ class URL_EXPORT SchemeHostPort {
   // and all IPv6 addresses will be enclosed in brackets ("[2001:db8::1]").
   const std::string& host() const { return host_; }
   const std::string& scheme() const { return scheme_; }
-  uint16 port() const { return port_; }
+  uint16_t port() const { return port_; }
   bool IsInvalid() const;
 
   // Serializes the SchemeHostPort tuple to a canonical form.
@@ -123,7 +126,7 @@ class URL_EXPORT SchemeHostPort {
  private:
   std::string scheme_;
   std::string host_;
-  uint16 port_;
+  uint16_t port_;
 };
 
 }  // namespace url

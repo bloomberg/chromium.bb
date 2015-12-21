@@ -4,6 +4,7 @@
 
 #include "url/origin.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include "base/logging.h"
@@ -38,7 +39,7 @@ Origin::Origin(const GURL& url) : unique_(true) {
   unique_ = tuple_.IsInvalid();
 }
 
-Origin::Origin(base::StringPiece scheme, base::StringPiece host, uint16 port)
+Origin::Origin(base::StringPiece scheme, base::StringPiece host, uint16_t port)
     : tuple_(scheme, host, port) {
   unique_ = tuple_.IsInvalid();
 }
@@ -50,7 +51,7 @@ Origin::~Origin() {
 Origin Origin::UnsafelyCreateOriginWithoutNormalization(
     base::StringPiece scheme,
     base::StringPiece host,
-    uint16 port) {
+    uint16_t port) {
   return Origin(scheme, host, port);
 }
 

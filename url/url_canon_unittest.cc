@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <errno.h>
+#include <stddef.h>
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"

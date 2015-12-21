@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
-#include "url/origin.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -44,7 +48,7 @@ TEST(OriginTest, ConstructFromGURL) {
     const char* const url;
     const char* const expected_scheme;
     const char* const expected_host;
-    const uint16 expected_port;
+    const uint16_t expected_port;
   } cases[] = {
       // IP Addresses
       {"http://192.168.9.1/", "http", "192.168.9.1", 80},
@@ -162,7 +166,7 @@ TEST(OriginTest, UnsafelyCreate) {
   struct TestCase {
     const char* scheme;
     const char* host;
-    uint16 port;
+    uint16_t port;
   } cases[] = {
       {"http", "example.com", 80},
       {"http", "example.com", 123},
@@ -189,7 +193,7 @@ TEST(OriginTest, UnsafelyCreateUniqueOnInvalidInput) {
   struct TestCases {
     const char* scheme;
     const char* host;
-    uint16 port;
+    uint16_t port;
   } cases[] = {{"", "", 0},
                {"data", "", 0},
                {"blob", "", 0},
@@ -226,7 +230,7 @@ TEST(OriginTest, UnsafelyCreateUniqueViaEmbeddedNulls) {
     size_t scheme_length;
     const char* host;
     size_t host_length;
-    uint16 port;
+    uint16_t port;
   } cases[] = {{"http\0more", 9, "example.com", 11, 80},
                {"http\0", 5, "example.com", 11, 80},
                {"\0http", 5, "example.com", 11, 80},

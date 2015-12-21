@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
@@ -40,7 +44,7 @@ TEST(SchemeHostPortTest, ExplicitConstruction) {
   struct TestCases {
     const char* scheme;
     const char* host;
-    uint16 port;
+    uint16_t port;
   } cases[] = {
       {"http", "example.com", 80},
       {"http", "example.com", 123},
@@ -66,7 +70,7 @@ TEST(SchemeHostPortTest, InvalidConstruction) {
   struct TestCases {
     const char* scheme;
     const char* host;
-    uint16 port;
+    uint16_t port;
   } cases[] = {{"", "", 0},
                {"data", "", 0},
                {"blob", "", 0},
@@ -103,7 +107,7 @@ TEST(SchemeHostPortTest, InvalidConstructionWithEmbeddedNulls) {
     size_t scheme_length;
     const char* host;
     size_t host_length;
-    uint16 port;
+    uint16_t port;
   } cases[] = {{"http\0more", 9, "example.com", 11, 80},
                {"http\0", 5, "example.com", 11, 80},
                {"\0http", 5, "example.com", 11, 80},
@@ -129,7 +133,7 @@ TEST(SchemeHostPortTest, GURLConstruction) {
     const char* url;
     const char* scheme;
     const char* host;
-    uint16 port;
+    uint16_t port;
   } cases[] = {
       {"http://192.168.9.1/", "http", "192.168.9.1", 80},
       {"http://[2001:db8::1]/", "http", "[2001:db8::1]", 80},
@@ -188,7 +192,7 @@ TEST(SchemeHostPortTest, Comparison) {
   struct SchemeHostPorts {
     const char* scheme;
     const char* host;
-    uint16 port;
+    uint16_t port;
   } tuples[] = {
       {"http", "a", 80},
       {"http", "b", 80},
