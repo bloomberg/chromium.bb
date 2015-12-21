@@ -5,6 +5,7 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_READER_H_
 #define STORAGE_BROWSER_BLOB_BLOB_READER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <map>
 #include <vector>

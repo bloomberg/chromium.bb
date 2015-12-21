@@ -5,11 +5,13 @@
 #ifndef STORAGE_BROWSER_FILEAPI_QUOTA_QUOTA_RESERVATION_BUFFER_H_
 #define STORAGE_BROWSER_FILEAPI_QUOTA_QUOTA_RESERVATION_BUFFER_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/storage_browser_export.h"
@@ -41,9 +43,9 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
   scoped_ptr<OpenFileHandle> GetOpenFileHandle(
       QuotaReservation* reservation,
       const base::FilePath& platform_path);
-  void CommitFileGrowth(int64 quota_consumption, int64 usage_delta);
+  void CommitFileGrowth(int64_t quota_consumption, int64_t usage_delta);
   void DetachOpenFileHandleContext(OpenFileHandleContext* context);
-  void PutReservationToBuffer(int64 size);
+  void PutReservationToBuffer(int64_t size);
 
   QuotaReservationManager* reservation_manager() {
     return reservation_manager_.get();
@@ -61,7 +63,7 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
       const GURL& origin,
       FileSystemType type,
       base::File::Error error,
-      int64 delta);
+      int64_t delta);
 
   typedef std::map<base::FilePath, OpenFileHandleContext*>
       OpenFileHandleContextByPath;
@@ -75,7 +77,7 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
   GURL origin_;
   storage::FileSystemType type_;
 
-  int64 reserved_quota_;
+  int64_t reserved_quota_;
 
   base::SequenceChecker sequence_checker_;
 

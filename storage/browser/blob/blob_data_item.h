@@ -5,10 +5,11 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_DATA_ITEM_H_
 #define STORAGE_BROWSER_BLOB_BLOB_DATA_ITEM_H_
 
+#include <stdint.h>
+
 #include <ostream>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/data_element.h"
@@ -46,8 +47,8 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   const base::FilePath& path() const { return item_->path(); }
   const GURL& filesystem_url() const { return item_->filesystem_url(); }
   const std::string& blob_uuid() const { return item_->blob_uuid(); }
-  uint64 offset() const { return item_->offset(); }
-  uint64 length() const { return item_->length(); }
+  uint64_t offset() const { return item_->offset(); }
+  uint64_t length() const { return item_->length(); }
   const base::Time& expected_modification_time() const {
     return item_->expected_modification_time();
   }

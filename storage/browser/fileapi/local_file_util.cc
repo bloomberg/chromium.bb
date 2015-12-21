@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/local_file_util.h"
 
+#include <stdint.h>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/file_util_proxy.h"
@@ -35,7 +37,7 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   ~LocalFileEnumerator() override {}
 
   base::FilePath Next() override;
-  int64 Size() override;
+  int64_t Size() override;
   base::Time LastModifiedTime() override;
   bool IsDirectory() override;
 
@@ -60,7 +62,7 @@ base::FilePath LocalFileEnumerator::Next() {
   return virtual_root_path_.Append(path);
 }
 
-int64 LocalFileEnumerator::Size() {
+int64_t LocalFileEnumerator::Size() {
   return file_util_info_.GetSize();
 }
 
@@ -173,10 +175,9 @@ base::File::Error LocalFileUtil::Touch(
   return NativeFileUtil::Touch(file_path, last_access_time, last_modified_time);
 }
 
-base::File::Error LocalFileUtil::Truncate(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url,
-    int64 length) {
+base::File::Error LocalFileUtil::Truncate(FileSystemOperationContext* context,
+                                          const FileSystemURL& url,
+                                          int64_t length) {
   base::FilePath file_path;
   base::File::Error error = GetLocalFilePath(context, url, &file_path);
   if (error != base::File::FILE_OK)

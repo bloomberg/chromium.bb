@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "storage/browser/fileapi/sandbox_origin_database_interface.h"
 
 namespace storage {

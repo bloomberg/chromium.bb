@@ -5,10 +5,11 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_QUOTA_UTIL_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_QUOTA_UTIL_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -51,7 +52,7 @@ class STORAGE_EXPORT FileSystemQuotaUtil {
                                                  std::set<GURL>* origins) = 0;
 
   // Returns the amount of data used for the origin for usage tracking.
-  virtual int64 GetOriginUsageOnFileTaskRunner(
+  virtual int64_t GetOriginUsageOnFileTaskRunner(
       storage::FileSystemContext* file_system_context,
       const GURL& origin_url,
       storage::FileSystemType type) = 0;

@@ -5,9 +5,12 @@
 #ifndef STORAGE_BROWSER_FILEAPI_NATIVE_FILE_UTIL_H_
 #define STORAGE_BROWSER_FILEAPI_NATIVE_FILE_UTIL_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/storage_browser_export.h"
@@ -53,8 +56,7 @@ class STORAGE_EXPORT NativeFileUtil {
   static base::File::Error Touch(const base::FilePath& path,
                                  const base::Time& last_access_time,
                                  const base::Time& last_modified_time);
-  static base::File::Error Truncate(const base::FilePath& path,
-                                    int64 length);
+  static base::File::Error Truncate(const base::FilePath& path, int64_t length);
   static bool PathExists(const base::FilePath& path);
   static bool DirectoryExists(const base::FilePath& path);
   static base::File::Error CopyOrMoveFile(

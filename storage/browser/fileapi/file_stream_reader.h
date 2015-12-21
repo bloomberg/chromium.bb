@@ -5,7 +5,8 @@
 #ifndef STORAGE_BLOB_FILE_STREAM_READER_H_
 #define STORAGE_BLOB_FILE_STREAM_READER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "net/base/completion_callback.h"
@@ -40,22 +41,22 @@ class FileStreamReader {
   // actual modification time to see if the file has been modified, and if
   // it does any succeeding read operations should fail with
   // ERR_UPLOAD_FILE_CHANGED error.
-  STORAGE_EXPORT static FileStreamReader*
-      CreateForLocalFile(base::TaskRunner* task_runner,
-                         const base::FilePath& file_path,
-                         int64 initial_offset,
-                         const base::Time& expected_modification_time);
+  STORAGE_EXPORT static FileStreamReader* CreateForLocalFile(
+      base::TaskRunner* task_runner,
+      const base::FilePath& file_path,
+      int64_t initial_offset,
+      const base::Time& expected_modification_time);
 
   // Creates a new reader for a filesystem URL |url| form |initial_offset|.
   // |expected_modification_time| specifies the expected last modification if
   // the value is non-null, the reader will check the underlying file's actual
   // modification time to see if the file has been modified, and if it does any
   // succeeding read operations should fail with ERR_UPLOAD_FILE_CHANGED error.
-  STORAGE_EXPORT static FileStreamReader*
-      CreateForFileSystemFile(storage::FileSystemContext* context,
-                              const storage::FileSystemURL& url,
-                              int64 initial_offset,
-                              const base::Time& expected_modification_time);
+  STORAGE_EXPORT static FileStreamReader* CreateForFileSystemFile(
+      storage::FileSystemContext* context,
+      const storage::FileSystemURL& url,
+      int64_t initial_offset,
+      const base::Time& expected_modification_time);
 
   // Verify if the underlying file has not been modified.
   STORAGE_EXPORT static bool VerifySnapshotTime(
@@ -88,10 +89,10 @@ class FileStreamReader {
   // Otherwise, a negative error code is returned (rv < 0 cases).
   // If the stream is deleted while it has an in-flight GetLength operation
   // |callback| will not be called.
-  // Note that the return type is int64 to return a larger file's size (a file
+  // Note that the return type is int64_t to return a larger file's size (a file
   // larger than 2G) but an error code should fit in the int range (may be
-  // smaller than int64 range).
-  virtual int64 GetLength(const net::Int64CompletionCallback& callback) = 0;
+  // smaller than int64_t range).
+  virtual int64_t GetLength(const net::Int64CompletionCallback& callback) = 0;
 };
 
 }  // namespace storage

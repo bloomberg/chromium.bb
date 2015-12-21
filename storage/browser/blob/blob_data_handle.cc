@@ -4,9 +4,12 @@
 
 #include "storage/browser/blob/blob_data_handle.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"

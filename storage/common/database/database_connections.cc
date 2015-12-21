@@ -4,6 +4,8 @@
 
 #include "storage/common/database/database_connections.h"
 
+#include <stdint.h>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -74,7 +76,7 @@ void DatabaseConnections::RemoveConnections(
   }
 }
 
-int64 DatabaseConnections::GetOpenDatabaseSize(
+int64_t DatabaseConnections::GetOpenDatabaseSize(
     const std::string& origin_identifier,
     const base::string16& database_name) const {
   DCHECK(IsDatabaseOpened(origin_identifier, database_name));
@@ -84,7 +86,7 @@ int64 DatabaseConnections::GetOpenDatabaseSize(
 void DatabaseConnections::SetOpenDatabaseSize(
     const std::string& origin_identifier,
     const base::string16& database_name,
-    int64 size) {
+    int64_t size) {
   DCHECK(IsDatabaseOpened(origin_identifier, database_name));
   connections_[origin_identifier][database_name].second = size;
 }

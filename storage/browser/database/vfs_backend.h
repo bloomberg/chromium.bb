@@ -5,6 +5,8 @@
 #ifndef STORAGE_BROWSER_DATABASE_VFS_BACKEND_H_
 #define STORAGE_BROWSER_DATABASE_VFS_BACKEND_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
@@ -26,11 +28,11 @@ class STORAGE_EXPORT VfsBackend {
 
   static int DeleteFile(const base::FilePath& file_path, bool sync_dir);
 
-  static uint32 GetFileAttributes(const base::FilePath& file_path);
+  static uint32_t GetFileAttributes(const base::FilePath& file_path);
 
-  static int64 GetFileSize(const base::FilePath& file_path);
+  static int64_t GetFileSize(const base::FilePath& file_path);
 
-  static bool SetFileSize(const base::FilePath& file_path, int64 size);
+  static bool SetFileSize(const base::FilePath& file_path, int64_t size);
 
   // Used to make decisions in the DatabaseDispatcherHost.
   static bool OpenTypeIsReadWrite(int desired_flags);

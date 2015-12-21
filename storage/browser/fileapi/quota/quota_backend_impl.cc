@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/quota/quota_backend_impl.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -35,7 +37,7 @@ QuotaBackendImpl::~QuotaBackendImpl() {
 
 void QuotaBackendImpl::ReserveQuota(const GURL& origin,
                                     FileSystemType type,
-                                    int64 delta,
+                                    int64_t delta,
                                     const ReserveQuotaCallback& callback) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origin.is_valid());
@@ -56,7 +58,7 @@ void QuotaBackendImpl::ReserveQuota(const GURL& origin,
 
 void QuotaBackendImpl::ReleaseReservedQuota(const GURL& origin,
                                             FileSystemType type,
-                                            int64 size) {
+                                            int64_t size) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origin.is_valid());
   DCHECK_LE(0, size);
@@ -67,7 +69,7 @@ void QuotaBackendImpl::ReleaseReservedQuota(const GURL& origin,
 
 void QuotaBackendImpl::CommitQuotaUsage(const GURL& origin,
                                         FileSystemType type,
-                                        int64 delta) {
+                                        int64_t delta) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origin.is_valid());
   if (!delta)
@@ -106,8 +108,8 @@ void QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota(
     const QuotaReservationInfo& info,
     const ReserveQuotaCallback& callback,
     storage::QuotaStatusCode status,
-    int64 usage,
-    int64 quota) {
+    int64_t usage,
+    int64_t quota) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(info.origin.is_valid());
   DCHECK_LE(0, usage);
@@ -119,11 +121,12 @@ void QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota(
 
   QuotaReservationInfo normalized_info = info;
   if (info.delta > 0) {
-    int64 new_usage =
-        base::saturated_cast<int64>(usage + static_cast<uint64>(info.delta));
+    int64_t new_usage = base::saturated_cast<int64_t>(
+        usage + static_cast<uint64_t>(info.delta));
     if (quota < new_usage)
       new_usage = quota;
-    normalized_info.delta = std::max(static_cast<int64>(0), new_usage - usage);
+    normalized_info.delta =
+        std::max(static_cast<int64_t>(0), new_usage - usage);
   }
 
   ReserveQuotaInternal(normalized_info);
@@ -162,9 +165,10 @@ base::File::Error QuotaBackendImpl::GetUsageCachePath(
 }
 
 QuotaBackendImpl::QuotaReservationInfo::QuotaReservationInfo(
-    const GURL& origin, FileSystemType type, int64 delta)
-    : origin(origin), type(type), delta(delta) {
-}
+    const GURL& origin,
+    FileSystemType type,
+    int64_t delta)
+    : origin(origin), type(type), delta(delta) {}
 
 QuotaBackendImpl::QuotaReservationInfo::~QuotaReservationInfo() {
 }

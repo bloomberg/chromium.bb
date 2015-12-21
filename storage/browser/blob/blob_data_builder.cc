@@ -4,6 +4,9 @@
 
 #include "storage/browser/blob/blob_data_builder.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/time/time.h"
@@ -21,11 +24,12 @@ BlobDataBuilder::~BlobDataBuilder() {
 }
 
 void BlobDataBuilder::AppendIPCDataElement(const DataElement& ipc_data) {
-  uint64 length = ipc_data.length();
+  uint64_t length = ipc_data.length();
   switch (ipc_data.type()) {
     case DataElement::TYPE_BYTES:
       DCHECK(!ipc_data.offset());
-      AppendData(ipc_data.bytes(), base::checked_cast<size_t, uint64>(length));
+      AppendData(ipc_data.bytes(),
+                 base::checked_cast<size_t, uint64_t>(length));
       break;
     case DataElement::TYPE_FILE:
       AppendFile(ipc_data.path(), ipc_data.offset(), length,

@@ -4,6 +4,8 @@
 
 #include "storage/browser/blob/internal_blob_data.h"
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/metrics/histogram.h"
 #include "storage/browser/blob/blob_data_item.h"

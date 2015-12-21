@@ -4,7 +4,11 @@
 
 #include "storage/browser/fileapi/isolated_context.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -470,7 +474,7 @@ bool IsolatedContext::UnregisterFileSystem(const std::string& filesystem_id) {
 std::string IsolatedContext::GetNewFileSystemId() const {
   // Returns an arbitrary random string which must be unique in the map.
   lock_.AssertAcquired();
-  uint32 random_data[4];
+  uint32_t random_data[4];
   std::string id;
   do {
     base::RandBytes(random_data, sizeof(random_data));

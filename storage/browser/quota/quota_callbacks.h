@@ -5,11 +5,13 @@
 #ifndef STORAGE_BROWSER_QUOTA_QUOTA_CALLBACKS_H_
 #define STORAGE_BROWSER_QUOTA_QUOTA_CALLBACKS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "storage/common/quota/quota_status_code.h"
 #include "storage/common/quota/quota_types.h"
@@ -22,11 +24,12 @@ struct UsageInfo;
 typedef std::vector<UsageInfo> UsageInfoEntries;
 
 // Common callback types that are used throughout in the quota module.
-typedef base::Callback<void(int64 usage,
-                            int64 unlimited_usage)> GlobalUsageCallback;
-typedef base::Callback<void(QuotaStatusCode status, int64 quota)> QuotaCallback;
-typedef base::Callback<void(int64 usage)> UsageCallback;
-typedef base::Callback<void(QuotaStatusCode, int64)> AvailableSpaceCallback;
+typedef base::Callback<void(int64_t usage, int64_t unlimited_usage)>
+    GlobalUsageCallback;
+typedef base::Callback<void(QuotaStatusCode status, int64_t quota)>
+    QuotaCallback;
+typedef base::Callback<void(int64_t usage)> UsageCallback;
+typedef base::Callback<void(QuotaStatusCode, int64_t)> AvailableSpaceCallback;
 typedef base::Callback<void(QuotaStatusCode)> StatusCallback;
 typedef base::Callback<void(const std::set<GURL>& origins,
                             StorageType type)> GetOriginsCallback;

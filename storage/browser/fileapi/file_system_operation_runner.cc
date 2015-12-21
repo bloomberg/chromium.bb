@@ -4,7 +4,10 @@
 
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/url_request/url_request_context.h"
@@ -238,7 +241,7 @@ OperationID FileSystemOperationRunner::Write(
     const net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
     scoped_ptr<storage::BlobDataHandle> blob,
-    int64 offset,
+    int64_t offset,
     const WriteCallback& callback) {
   base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
@@ -275,7 +278,8 @@ OperationID FileSystemOperationRunner::Write(
 }
 
 OperationID FileSystemOperationRunner::Truncate(
-    const FileSystemURL& url, int64 length,
+    const FileSystemURL& url,
+    int64_t length,
     const StatusCallback& callback) {
   base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
@@ -557,12 +561,11 @@ void FileSystemOperationRunner::DidReadDirectory(
     FinishOperation(handle.id);
 }
 
-void FileSystemOperationRunner::DidWrite(
-    const OperationHandle& handle,
-    const WriteCallback& callback,
-    base::File::Error rv,
-    int64 bytes,
-    bool complete) {
+void FileSystemOperationRunner::DidWrite(const OperationHandle& handle,
+                                         const WriteCallback& callback,
+                                         base::File::Error rv,
+                                         int64_t bytes,
+                                         bool complete) {
   if (handle.scope) {
     finished_operations_.insert(handle.id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -617,7 +620,7 @@ void FileSystemOperationRunner::OnCopyProgress(
     FileSystemOperation::CopyProgressType type,
     const FileSystemURL& source_url,
     const FileSystemURL& dest_url,
-    int64 size) {
+    int64_t size) {
   if (handle.scope) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(

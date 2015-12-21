@@ -5,7 +5,8 @@
 #ifndef STORAGE_BROWSER_BLOB_LOCAL_FILE_STREAM_READER_H_
 #define STORAGE_BROWSER_BLOB_LOCAL_FILE_STREAM_READER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -39,7 +40,7 @@ class STORAGE_EXPORT LocalFileStreamReader
   int Read(net::IOBuffer* buf,
            int buf_len,
            const net::CompletionCallback& callback) override;
-  int64 GetLength(const net::Int64CompletionCallback& callback) override;
+  int64_t GetLength(const net::Int64CompletionCallback& callback) override;
 
  private:
   friend class FileStreamReader;
@@ -47,17 +48,17 @@ class STORAGE_EXPORT LocalFileStreamReader
 
   LocalFileStreamReader(base::TaskRunner* task_runner,
                         const base::FilePath& file_path,
-                        int64 initial_offset,
+                        int64_t initial_offset,
                         const base::Time& expected_modification_time);
   int Open(const net::CompletionCallback& callback);
 
   // Callbacks that are chained from Open for Read.
   void DidVerifyForOpen(const net::CompletionCallback& callback,
-                        int64 get_length_result);
+                        int64_t get_length_result);
   void DidOpenFileStream(const net::CompletionCallback& callback,
                          int result);
   void DidSeekFileStream(const net::CompletionCallback& callback,
-                         int64 seek_result);
+                         int64_t seek_result);
   void DidOpenForRead(net::IOBuffer* buf,
                       int buf_len,
                       const net::CompletionCallback& callback,
@@ -70,7 +71,7 @@ class STORAGE_EXPORT LocalFileStreamReader
   scoped_refptr<base::TaskRunner> task_runner_;
   scoped_ptr<net::FileStream> stream_impl_;
   const base::FilePath file_path_;
-  const int64 initial_offset_;
+  const int64_t initial_offset_;
   const base::Time expected_modification_time_;
   bool has_pending_open_;
   base::WeakPtrFactory<LocalFileStreamReader> weak_factory_;

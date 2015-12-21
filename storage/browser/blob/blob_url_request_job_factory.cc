@@ -4,7 +4,6 @@
 
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request_context.h"

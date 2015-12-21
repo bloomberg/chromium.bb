@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/quota/open_file_handle.h"
 
+#include <stdint.h>
+
 #include "storage/browser/fileapi/quota/open_file_handle_context.h"
 #include "storage/browser/fileapi/quota/quota_reservation.h"
 
@@ -13,15 +15,15 @@ OpenFileHandle::~OpenFileHandle() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 }
 
-void OpenFileHandle::UpdateMaxWrittenOffset(int64 offset) {
+void OpenFileHandle::UpdateMaxWrittenOffset(int64_t offset) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  int64 growth = context_->UpdateMaxWrittenOffset(offset);
+  int64_t growth = context_->UpdateMaxWrittenOffset(offset);
   if (growth > 0)
     reservation_->ConsumeReservation(growth);
 }
 
-void OpenFileHandle::AddAppendModeWriteAmount(int64 amount) {
+void OpenFileHandle::AddAppendModeWriteAmount(int64_t amount) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (amount <= 0)
     return;
@@ -30,12 +32,12 @@ void OpenFileHandle::AddAppendModeWriteAmount(int64 amount) {
   reservation_->ConsumeReservation(amount);
 }
 
-int64 OpenFileHandle::GetEstimatedFileSize() const {
+int64_t OpenFileHandle::GetEstimatedFileSize() const {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return context_->GetEstimatedFileSize();
 }
 
-int64 OpenFileHandle::GetMaxWrittenOffset() const {
+int64_t OpenFileHandle::GetMaxWrittenOffset() const {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return context_->GetMaxWrittenOffset();
 }

@@ -7,6 +7,7 @@
 
 #include <stack>
 
+#include "base/macros.h"
 #include "storage/browser/fileapi/recursive_operation_delegate.h"
 
 namespace storage {

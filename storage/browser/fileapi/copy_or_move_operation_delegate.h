@@ -5,9 +5,12 @@
 #ifndef STORAGE_BROWSER_FILEAPI_COPY_OR_MOVE_OPERATION_DELEGATE_H_
 #define STORAGE_BROWSER_FILEAPI_COPY_OR_MOVE_OPERATION_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <stack>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -83,8 +86,8 @@ class CopyOrMoveOperationDelegate
     const FlushPolicy flush_policy_;
     FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
     scoped_refptr<net::IOBufferWithSize> io_buffer_;
-    int64 num_copied_bytes_;
-    int64 previous_flush_offset_;
+    int64_t num_copied_bytes_;
+    int64_t previous_flush_offset_;
     base::Time last_progress_callback_invocation_time_;
     base::TimeDelta min_progress_callback_invocation_span_;
     bool cancel_requested_;
@@ -141,7 +144,7 @@ class CopyOrMoveOperationDelegate
   void DidRemoveSourceForMove(const StatusCallback& callback,
                               base::File::Error error);
 
-  void OnCopyFileProgress(const FileSystemURL& src_url, int64 size);
+  void OnCopyFileProgress(const FileSystemURL& src_url, int64_t size);
   FileSystemURL CreateDestURL(const FileSystemURL& src_url) const;
 
   FileSystemURL src_root_;

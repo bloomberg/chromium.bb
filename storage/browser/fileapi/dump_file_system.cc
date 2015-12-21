@@ -28,6 +28,8 @@
 // children, and file_content_path is empty if the file is a directory.
 //
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -115,9 +117,9 @@ static void DumpDirectoryTree(const std::string& origin_name,
     const char* display_name = name.c_str() + 1;
     const char* directory_suffix = info.is_directory() ? "/" : "";
     if (g_opt_long) {
-      int64 size;
+      int64_t size;
       if (info.is_directory()) {
-        size = static_cast<int64>(children.size());
+        size = static_cast<int64_t>(children.size());
       } else {
         base::GetFileSize(origin_dir.Append(info.data_path), &size);
       }

@@ -5,7 +5,8 @@
 #ifndef STORAGE_BROWSER_QUOTA_STORAGE_OBSERVER_H_
 #define STORAGE_BROWSER_QUOTA_STORAGE_OBSERVER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/common/quota/quota_types.h"
@@ -57,13 +58,13 @@ class STORAGE_EXPORT StorageObserver {
     Filter filter;
 
     // The current usage corresponding to the filter.
-    int64 usage;
+    int64_t usage;
 
     // The quota corresponding to the filter.
-    int64 quota;
+    int64_t quota;
 
     Event();
-    Event(const Filter& filter, int64 usage, int64 quota);
+    Event(const Filter& filter, int64_t usage, int64_t quota);
     bool operator==(const Event& other) const;
   };
 

@@ -5,8 +5,11 @@
 #ifndef STORAGE_BROWSER_QUOTA_STORAGE_MONITOR_H_
 #define STORAGE_BROWSER_QUOTA_STORAGE_MONITOR_H_
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -86,14 +89,14 @@ class STORAGE_EXPORT HostStorageObservers {
   bool ContainsObservers() const;
 
   // Handles a usage change.
-  void NotifyUsageChange(const StorageObserver::Filter& filter, int64 delta);
+  void NotifyUsageChange(const StorageObserver::Filter& filter, int64_t delta);
 
  private:
   void StartInitialization(const StorageObserver::Filter& filter);
   void GotHostUsageAndQuota(const StorageObserver::Filter& filter,
                             QuotaStatusCode status,
-                            int64 usage,
-                            int64 quota);
+                            int64_t usage,
+                            int64_t quota);
   void DispatchEvent(const StorageObserver::Filter& filter, bool is_update);
 
   QuotaManager* quota_manager_;
@@ -103,11 +106,11 @@ class STORAGE_EXPORT HostStorageObservers {
   bool initialized_;
   bool initializing_;
   bool event_occurred_before_init_;
-  int64 usage_deltas_during_init_;
+  int64_t usage_deltas_during_init_;
 
   // Cached accumulated usage and quota for the host.
-  int64 cached_usage_;
-  int64 cached_quota_;
+  int64_t cached_usage_;
+  int64_t cached_quota_;
 
   base::WeakPtrFactory<HostStorageObservers> weak_factory_;
 
@@ -134,7 +137,7 @@ class STORAGE_EXPORT StorageTypeObservers {
   const HostStorageObservers* GetHostObservers(const std::string& host) const;
 
   // Handles a usage change.
-  void NotifyUsageChange(const StorageObserver::Filter& filter, int64 delta);
+  void NotifyUsageChange(const StorageObserver::Filter& filter, int64_t delta);
 
  private:
   typedef std::map<std::string, HostStorageObservers*> HostObserversMap;
@@ -164,7 +167,7 @@ class STORAGE_EXPORT StorageMonitor {
       StorageType storage_type) const;
 
   // Handles a usage change.
-  void NotifyUsageChange(const StorageObserver::Filter& filter, int64 delta);
+  void NotifyUsageChange(const StorageObserver::Filter& filter, int64_t delta);
 
  private:
   typedef std::map<StorageType, StorageTypeObservers*> StorageTypeObserversMap;

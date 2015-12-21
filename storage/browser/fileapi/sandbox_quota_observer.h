@@ -5,11 +5,13 @@
 #ifndef STORAGE_BROWSER_FILEAPI_SANDBOX_QUOTA_OBSERVER_H_
 #define STORAGE_BROWSER_FILEAPI_SANDBOX_QUOTA_OBSERVER_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -35,7 +37,7 @@ class SandboxQuotaObserver
     : public FileUpdateObserver,
       public FileAccessObserver {
  public:
-  typedef std::map<base::FilePath, int64> PendingUpdateNotificationMap;
+  typedef std::map<base::FilePath, int64_t> PendingUpdateNotificationMap;
 
   SandboxQuotaObserver(storage::QuotaManagerProxy* quota_manager_proxy,
                        base::SequencedTaskRunner* update_notify_runner,
@@ -45,7 +47,7 @@ class SandboxQuotaObserver
 
   // FileUpdateObserver overrides.
   void OnStartUpdate(const FileSystemURL& url) override;
-  void OnUpdate(const FileSystemURL& url, int64 delta) override;
+  void OnUpdate(const FileSystemURL& url, int64_t delta) override;
   void OnEndUpdate(const FileSystemURL& url) override;
 
   // FileAccessObserver overrides.
@@ -57,7 +59,8 @@ class SandboxQuotaObserver
 
  private:
   void ApplyPendingUsageUpdate();
-  void UpdateUsageCacheFile(const base::FilePath& usage_file_path, int64 delta);
+  void UpdateUsageCacheFile(const base::FilePath& usage_file_path,
+                            int64_t delta);
 
   base::FilePath GetUsageCachePath(const FileSystemURL& url);
 

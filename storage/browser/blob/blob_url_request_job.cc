@@ -4,12 +4,13 @@
 
 #include "storage/browser/blob/blob_url_request_job.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util_proxy.h"

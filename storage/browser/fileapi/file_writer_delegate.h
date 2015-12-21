@@ -5,8 +5,11 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_WRITER_DELEGATE_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_WRITER_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -30,7 +33,7 @@ class STORAGE_EXPORT FileWriterDelegate : public net::URLRequest::Delegate {
   };
 
   typedef base::Callback<void(base::File::Error result,
-                              int64 bytes,
+                              int64_t bytes,
                               WriteProgressStatus write_status)>
       DelegateWriteCallback;
 

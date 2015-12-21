@@ -4,6 +4,8 @@
 
 #include "storage/browser/quota/storage_monitor.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/stl_util.h"
@@ -151,8 +153,8 @@ void HostStorageObservers::AddObserver(
 
   if (initialized_) {
     StorageObserver::Event event(params.filter,
-                                 std::max<int64>(cached_usage_, 0),
-                                 std::max<int64>(cached_quota_, 0));
+                                 std::max<int64_t>(cached_usage_, 0),
+                                 std::max<int64_t>(cached_quota_, 0));
     observer->OnStorageEvent(event);
     return;
   }
@@ -172,7 +174,8 @@ bool HostStorageObservers::ContainsObservers() const {
 }
 
 void HostStorageObservers::NotifyUsageChange(
-    const StorageObserver::Filter& filter, int64 delta) {
+    const StorageObserver::Filter& filter,
+    int64_t delta) {
   if (initialized_) {
     cached_usage_ += delta;
     DispatchEvent(filter, true);
@@ -215,8 +218,8 @@ void HostStorageObservers::StartInitialization(
 void HostStorageObservers::GotHostUsageAndQuota(
     const StorageObserver::Filter& filter,
     QuotaStatusCode status,
-    int64 usage,
-    int64 quota) {
+    int64_t usage,
+    int64_t quota) {
   initializing_ = false;
   if (status != kQuotaStatusOk)
     return;
@@ -228,9 +231,8 @@ void HostStorageObservers::GotHostUsageAndQuota(
 
 void HostStorageObservers::DispatchEvent(
     const StorageObserver::Filter& filter, bool is_update) {
-  StorageObserver::Event event(filter,
-                               std::max<int64>(cached_usage_, 0),
-                               std::max<int64>(cached_quota_, 0));
+  StorageObserver::Event event(filter, std::max<int64_t>(cached_usage_, 0),
+                               std::max<int64_t>(cached_quota_, 0));
   if (is_update)
     observers_.OnStorageChange(event);
   else
@@ -303,7 +305,8 @@ const HostStorageObservers* StorageTypeObservers::GetHostObservers(
 }
 
 void StorageTypeObservers::NotifyUsageChange(
-    const StorageObserver::Filter& filter, int64 delta) {
+    const StorageObserver::Filter& filter,
+    int64_t delta) {
   std::string host = net::GetHostOrSpecFromURL(filter.origin);
   HostObserversMap::iterator it = host_observers_map_.find(host);
   if (it == host_observers_map_.end())
@@ -376,8 +379,8 @@ const StorageTypeObservers* StorageMonitor::GetStorageTypeObservers(
   return NULL;
 }
 
-void StorageMonitor::NotifyUsageChange(
-    const StorageObserver::Filter& filter, int64 delta) {
+void StorageMonitor::NotifyUsageChange(const StorageObserver::Filter& filter,
+                                       int64_t delta) {
   // Check preconditions.
   if (filter.storage_type == kStorageTypeUnknown ||
       filter.storage_type == kStorageTypeQuotaNotManaged ||

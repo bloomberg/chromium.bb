@@ -5,6 +5,8 @@
 #ifndef STORAGE_COMMON_DATABASE_DATABASE_CONNECTIONS_H_
 #define STORAGE_COMMON_DATABASE_DATABASE_CONNECTIONS_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -46,11 +48,11 @@ class STORAGE_COMMON_EXPORT DatabaseConnections {
       std::vector<std::pair<std::string, base::string16> >* closed_dbs);
 
   // Database sizes can be kept only if IsDatabaseOpened returns true.
-  int64 GetOpenDatabaseSize(const std::string& origin_identifier,
-                            const base::string16& database_name) const;
+  int64_t GetOpenDatabaseSize(const std::string& origin_identifier,
+                              const base::string16& database_name) const;
   void SetOpenDatabaseSize(const std::string& origin_identifier,
                            const base::string16& database_name,
-                           int64 size);
+                           int64_t size);
 
   // Returns a list of the connections, <origin_id, name>.
   void ListConnections(
@@ -58,7 +60,7 @@ class STORAGE_COMMON_EXPORT DatabaseConnections {
 
  private:
   // Mapping from name to <openCount, size>
-  typedef std::map<base::string16, std::pair<int, int64> > DBConnections;
+  typedef std::map<base::string16, std::pair<int, int64_t>> DBConnections;
   typedef std::map<std::string, DBConnections> OriginConnections;
   mutable OriginConnections connections_;  // mutable for GetOpenDatabaseSize
 

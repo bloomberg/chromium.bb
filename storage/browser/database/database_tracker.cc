@@ -4,10 +4,11 @@
 
 #include "storage/browser/database/database_tracker.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -59,7 +60,7 @@ void OriginInfo::GetAllDatabaseNames(
   }
 }
 
-int64 OriginInfo::GetDatabaseSize(const base::string16& database_name) const {
+int64_t OriginInfo::GetDatabaseSize(const base::string16& database_name) const {
   DatabaseInfoMap::const_iterator it = database_info_.find(database_name);
   if (it != database_info_.end())
     return it->second.first;
@@ -74,7 +75,7 @@ base::string16 OriginInfo::GetDatabaseDescription(
   return base::string16();
 }
 
-OriginInfo::OriginInfo(const std::string& origin_identifier, int64 total_size)
+OriginInfo::OriginInfo(const std::string& origin_identifier, int64_t total_size)
     : origin_identifier_(origin_identifier), total_size_(total_size) {}
 
 DatabaseTracker::DatabaseTracker(
@@ -110,8 +111,8 @@ DatabaseTracker::~DatabaseTracker() {
 void DatabaseTracker::DatabaseOpened(const std::string& origin_identifier,
                                      const base::string16& database_name,
                                      const base::string16& database_description,
-                                     int64 estimated_size,
-                                     int64* database_size) {
+                                     int64_t estimated_size,
+                                     int64_t* database_size) {
   if (shutting_down_ || !LazyInit()) {
     *database_size = 0;
     return;
@@ -287,7 +288,8 @@ base::FilePath DatabaseTracker::GetFullDBFilePath(
   if (!LazyInit())
     return base::FilePath();
 
-  int64 id = databases_table_->GetDatabaseID(origin_identifier, database_name);
+  int64_t id =
+      databases_table_->GetDatabaseID(origin_identifier, database_name);
   if (id < 0)
     return base::FilePath();
 
@@ -348,9 +350,9 @@ bool DatabaseTracker::DeleteClosedDatabase(
   if (database_connections_.IsDatabaseOpened(origin_identifier, database_name))
     return false;
 
-  int64 db_file_size = quota_manager_proxy_.get()
-                           ? GetDBFileSize(origin_identifier, database_name)
-                           : 0;
+  int64_t db_file_size = quota_manager_proxy_.get()
+                             ? GetDBFileSize(origin_identifier, database_name)
+                             : 0;
 
   // Try to delete the file on the hard drive.
   base::FilePath db_file = GetFullDBFilePath(origin_identifier, database_name);
@@ -386,7 +388,7 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
   if (database_connections_.IsOriginUsed(origin_identifier) && !force)
     return false;
 
-  int64 deleted_size = 0;
+  int64_t deleted_size = 0;
   if (quota_manager_proxy_.get()) {
     CachedOriginInfo* origin_info = GetCachedOriginInfo(origin_identifier);
     if (origin_info)
@@ -510,7 +512,7 @@ void DatabaseTracker::InsertOrUpdateDatabaseDetails(
     const std::string& origin_identifier,
     const base::string16& database_name,
     const base::string16& database_description,
-    int64 estimated_size) {
+    int64_t estimated_size) {
   DatabaseDetails details;
   if (!databases_table_->GetDatabaseDetails(
           origin_identifier, database_name, &details)) {
@@ -551,7 +553,7 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::MaybeGetCachedOriginInfo(
     origin_info.SetOriginIdentifier(origin_identifier);
     for (std::vector<DatabaseDetails>::const_iterator it = details.begin();
          it != details.end(); it++) {
-      int64 db_file_size;
+      int64_t db_file_size;
       if (database_connections_.IsDatabaseOpened(
               origin_identifier, it->database_name)) {
         db_file_size = database_connections_.GetOpenDatabaseSize(
@@ -567,21 +569,22 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::MaybeGetCachedOriginInfo(
   return &origins_info_map_[origin_identifier];
 }
 
-int64 DatabaseTracker::GetDBFileSize(const std::string& origin_identifier,
-                                     const base::string16& database_name) {
+int64_t DatabaseTracker::GetDBFileSize(const std::string& origin_identifier,
+                                       const base::string16& database_name) {
   base::FilePath db_file_name = GetFullDBFilePath(origin_identifier,
                                                   database_name);
-  int64 db_file_size = 0;
+  int64_t db_file_size = 0;
   if (!base::GetFileSize(db_file_name, &db_file_size))
     db_file_size = 0;
   return db_file_size;
 }
 
-int64 DatabaseTracker::SeedOpenDatabaseInfo(
-    const std::string& origin_id, const base::string16& name,
+int64_t DatabaseTracker::SeedOpenDatabaseInfo(
+    const std::string& origin_id,
+    const base::string16& name,
     const base::string16& description) {
   DCHECK(database_connections_.IsDatabaseOpened(origin_id, name));
-  int64 size = GetDBFileSize(origin_id, name);
+  int64_t size = GetDBFileSize(origin_id, name);
   database_connections_.SetOpenDatabaseSize(origin_id, name,  size);
   CachedOriginInfo* info = MaybeGetCachedOriginInfo(origin_id, false);
   if (info) {
@@ -591,12 +594,13 @@ int64 DatabaseTracker::SeedOpenDatabaseInfo(
   return size;
 }
 
-int64 DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
-    const std::string& origin_id, const base::string16& name,
+int64_t DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
+    const std::string& origin_id,
+    const base::string16& name,
     const base::string16* opt_description) {
   DCHECK(database_connections_.IsDatabaseOpened(origin_id, name));
-  int64 new_size = GetDBFileSize(origin_id, name);
-  int64 old_size = database_connections_.GetOpenDatabaseSize(origin_id, name);
+  int64_t new_size = GetDBFileSize(origin_id, name);
+  int64_t old_size = database_connections_.GetOpenDatabaseSize(origin_id, name);
   CachedOriginInfo* info = MaybeGetCachedOriginInfo(origin_id, false);
   if (info && opt_description)
     info->SetDatabaseDescription(name, *opt_description);

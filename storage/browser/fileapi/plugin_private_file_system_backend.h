@@ -5,9 +5,12 @@
 #ifndef STORAGE_BROWSER_FILEAPI_PLUGIN_PRIVATE_FILE_SYSTEM_BACKEND_H_
 #define STORAGE_BROWSER_FILEAPI_PLUGIN_PRIVATE_FILE_SYSTEM_BACKEND_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_system_backend.h"
@@ -80,13 +83,13 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
       storage::FileSystemType type) const override;
   scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
-      int64 offset,
-      int64 max_bytes_to_read,
+      int64_t offset,
+      int64_t max_bytes_to_read,
       const base::Time& expected_modification_time,
       FileSystemContext* context) const override;
   scoped_ptr<FileStreamWriter> CreateFileStreamWriter(
       const FileSystemURL& url,
-      int64 offset,
+      int64_t offset,
       FileSystemContext* context) const override;
   FileSystemQuotaUtil* GetQuotaUtil() override;
   const UpdateObserverList* GetUpdateObservers(
@@ -107,9 +110,9 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
   void GetOriginsForHostOnFileTaskRunner(FileSystemType type,
                                          const std::string& host,
                                          std::set<GURL>* origins) override;
-  int64 GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
-                                       const GURL& origin_url,
-                                       FileSystemType type) override;
+  int64_t GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
+                                         const GURL& origin_url,
+                                         FileSystemType type) override;
   scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
       const GURL& origin_url,
       FileSystemType type) override;

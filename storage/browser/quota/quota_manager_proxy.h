@@ -5,9 +5,11 @@
 #ifndef STORAGE_BROWSER_QUOTA_QUOTA_MANAGER_PROXY_H_
 #define STORAGE_BROWSER_QUOTA_QUOTA_MANAGER_PROXY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -41,7 +43,7 @@ class STORAGE_EXPORT QuotaManagerProxy
   virtual void NotifyStorageModified(QuotaClient::ID client_id,
                                      const GURL& origin,
                                      StorageType type,
-                                     int64 delta);
+                                     int64_t delta);
   virtual void NotifyOriginInUse(const GURL& origin);
   virtual void NotifyOriginNoLongerInUse(const GURL& origin);
 

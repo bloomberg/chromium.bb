@@ -4,6 +4,9 @@
 
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -16,7 +19,7 @@
 namespace storage {
 
 namespace {
-const int64 kCloseDelaySeconds = 5;
+const int64_t kCloseDelaySeconds = 5;
 const size_t kMaxHandleCacheSize = 2;
 }  // namespace
 
@@ -39,16 +42,16 @@ const int FileSystemUsageCache::kUsageFileHeaderSize = 4;
 // Pickle::{Read,Write}Bool treat bool as int
 const int FileSystemUsageCache::kUsageFileSize =
     sizeof(base::Pickle::Header) + FileSystemUsageCache::kUsageFileHeaderSize +
-    sizeof(int) + sizeof(int32) + sizeof(int64);  // NOLINT
+    sizeof(int) + sizeof(int32_t) + sizeof(int64_t);  // NOLINT
 
 bool FileSystemUsageCache::GetUsage(const base::FilePath& usage_file_path,
-                                    int64* usage_out) {
+                                    int64_t* usage_out) {
   TRACE_EVENT0("FileSystem", "UsageCache::GetUsage");
   DCHECK(CalledOnValidThread());
   DCHECK(usage_out);
   bool is_valid = true;
-  uint32 dirty = 0;
-  int64 usage = 0;
+  uint32_t dirty = 0;
+  int64_t usage = 0;
   if (!Read(usage_file_path, &is_valid, &dirty, &usage))
     return false;
   *usage_out = usage;
@@ -56,13 +59,13 @@ bool FileSystemUsageCache::GetUsage(const base::FilePath& usage_file_path,
 }
 
 bool FileSystemUsageCache::GetDirty(const base::FilePath& usage_file_path,
-                                    uint32* dirty_out) {
+                                    uint32_t* dirty_out) {
   TRACE_EVENT0("FileSystem", "UsageCache::GetDirty");
   DCHECK(CalledOnValidThread());
   DCHECK(dirty_out);
   bool is_valid = true;
-  uint32 dirty = 0;
-  int64 usage = 0;
+  uint32_t dirty = 0;
+  int64_t usage = 0;
   if (!Read(usage_file_path, &is_valid, &dirty, &usage))
     return false;
   *dirty_out = dirty;
@@ -74,8 +77,8 @@ bool FileSystemUsageCache::IncrementDirty(
   TRACE_EVENT0("FileSystem", "UsageCache::IncrementDirty");
   DCHECK(CalledOnValidThread());
   bool is_valid = true;
-  uint32 dirty = 0;
-  int64 usage = 0;
+  uint32_t dirty = 0;
+  int64_t usage = 0;
   bool new_handle = !HasCacheFileHandle(usage_file_path);
   if (!Read(usage_file_path, &is_valid, &dirty, &usage))
     return false;
@@ -91,8 +94,8 @@ bool FileSystemUsageCache::DecrementDirty(
   TRACE_EVENT0("FileSystem", "UsageCache::DecrementDirty");
   DCHECK(CalledOnValidThread());
   bool is_valid = true;
-  uint32 dirty = 0;
-  int64 usage = 0;
+  uint32_t dirty = 0;
+  int64_t usage = 0;
   if (!Read(usage_file_path, &is_valid, &dirty, &usage) || dirty == 0)
     return false;
 
@@ -103,8 +106,8 @@ bool FileSystemUsageCache::Invalidate(const base::FilePath& usage_file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::Invalidate");
   DCHECK(CalledOnValidThread());
   bool is_valid = true;
-  uint32 dirty = 0;
-  int64 usage = 0;
+  uint32_t dirty = 0;
+  int64_t usage = 0;
   if (!Read(usage_file_path, &is_valid, &dirty, &usage))
     return false;
 
@@ -115,27 +118,29 @@ bool FileSystemUsageCache::IsValid(const base::FilePath& usage_file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::IsValid");
   DCHECK(CalledOnValidThread());
   bool is_valid = true;
-  uint32 dirty = 0;
-  int64 usage = 0;
+  uint32_t dirty = 0;
+  int64_t usage = 0;
   if (!Read(usage_file_path, &is_valid, &dirty, &usage))
     return false;
   return is_valid;
 }
 
 bool FileSystemUsageCache::AtomicUpdateUsageByDelta(
-    const base::FilePath& usage_file_path, int64 delta) {
+    const base::FilePath& usage_file_path,
+    int64_t delta) {
   TRACE_EVENT0("FileSystem", "UsageCache::AtomicUpdateUsageByDelta");
   DCHECK(CalledOnValidThread());
   bool is_valid = true;
-  uint32 dirty = 0;
-  int64 usage = 0;;
+  uint32_t dirty = 0;
+  int64_t usage = 0;
+  ;
   if (!Read(usage_file_path, &is_valid, &dirty, &usage))
     return false;
   return Write(usage_file_path, is_valid, dirty, usage + delta);
 }
 
 bool FileSystemUsageCache::UpdateUsage(const base::FilePath& usage_file_path,
-                                       int64 fs_usage) {
+                                       int64_t fs_usage) {
   TRACE_EVENT0("FileSystem", "UsageCache::UpdateUsage");
   DCHECK(CalledOnValidThread());
   return Write(usage_file_path, true, 0, fs_usage);
@@ -162,9 +167,9 @@ void FileSystemUsageCache::CloseCacheFiles() {
 }
 
 bool FileSystemUsageCache::Read(const base::FilePath& usage_file_path,
-                                 bool* is_valid,
-                                 uint32* dirty_out,
-                                 int64* usage_out) {
+                                bool* is_valid,
+                                uint32_t* dirty_out,
+                                int64_t* usage_out) {
   TRACE_EVENT0("FileSystem", "UsageCache::Read");
   DCHECK(CalledOnValidThread());
   DCHECK(is_valid);
@@ -177,8 +182,8 @@ bool FileSystemUsageCache::Read(const base::FilePath& usage_file_path,
     return false;
   base::Pickle read_pickle(buffer, kUsageFileSize);
   base::PickleIterator iter(read_pickle);
-  uint32 dirty = 0;
-  int64 usage = 0;
+  uint32_t dirty = 0;
+  int64_t usage = 0;
 
   if (!iter.ReadBytes(&header, kUsageFileHeaderSize) ||
       !iter.ReadBool(is_valid) ||
@@ -199,8 +204,8 @@ bool FileSystemUsageCache::Read(const base::FilePath& usage_file_path,
 
 bool FileSystemUsageCache::Write(const base::FilePath& usage_file_path,
                                  bool is_valid,
-                                 int32 dirty,
-                                 int64 usage) {
+                                 int32_t dirty,
+                                 int64_t usage) {
   TRACE_EVENT0("FileSystem", "UsageCache::Write");
   DCHECK(CalledOnValidThread());
   base::Pickle write_pickle;
@@ -246,7 +251,7 @@ base::File* FileSystemUsageCache::GetFile(const base::FilePath& file_path) {
 
 bool FileSystemUsageCache::ReadBytes(const base::FilePath& file_path,
                                      char* buffer,
-                                     int64 buffer_size) {
+                                     int64_t buffer_size) {
   DCHECK(CalledOnValidThread());
   base::File* file = GetFile(file_path);
   if (!file)
@@ -256,7 +261,7 @@ bool FileSystemUsageCache::ReadBytes(const base::FilePath& file_path,
 
 bool FileSystemUsageCache::WriteBytes(const base::FilePath& file_path,
                                       const char* buffer,
-                                      int64 buffer_size) {
+                                      int64_t buffer_size) {
   DCHECK(CalledOnValidThread());
   base::File* file = GetFile(file_path);
   if (!file)

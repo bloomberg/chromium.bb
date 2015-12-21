@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/sandbox_file_stream_writer.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/files/file_util_proxy.h"

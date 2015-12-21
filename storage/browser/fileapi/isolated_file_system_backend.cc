@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/isolated_file_system_backend.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -124,8 +126,8 @@ bool IsolatedFileSystemBackend::HasInplaceCopyImplementation(
 scoped_ptr<storage::FileStreamReader>
 IsolatedFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
-    int64 offset,
-    int64 max_bytes_to_read,
+    int64_t offset,
+    int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   return scoped_ptr<storage::FileStreamReader>(
@@ -138,7 +140,7 @@ IsolatedFileSystemBackend::CreateFileStreamReader(
 
 scoped_ptr<FileStreamWriter> IsolatedFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
-    int64 offset,
+    int64_t offset,
     FileSystemContext* context) const {
   return scoped_ptr<FileStreamWriter>(
       FileStreamWriter::CreateForLocalFile(

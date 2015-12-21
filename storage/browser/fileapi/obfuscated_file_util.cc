@@ -4,6 +4,9 @@
 
 #include "storage/browser/fileapi/obfuscated_file_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 
 #include "base/files/file_util.h"
@@ -62,31 +65,31 @@ void InitFileInfo(
 // which base::FilePath uses wide chars [since they're converted to UTF-8 for
 // storage anyway], but as long as the cost is high enough that one can't cheat
 // on quota by storing data in paths, it doesn't need to be all that accurate.
-const int64 kPathCreationQuotaCost = 146;  // Bytes per inode, basically.
-const int64 kPathByteQuotaCost = 2;  // Bytes per byte of path length in UTF-8.
+const int64_t kPathCreationQuotaCost = 146;  // Bytes per inode, basically.
+const int64_t kPathByteQuotaCost =
+    2;  // Bytes per byte of path length in UTF-8.
 
 const char kDirectoryDatabaseKeySeparator = ' ';
 
-int64 UsageForPath(size_t length) {
+int64_t UsageForPath(size_t length) {
   return kPathCreationQuotaCost +
-      static_cast<int64>(length) * kPathByteQuotaCost;
+         static_cast<int64_t>(length) * kPathByteQuotaCost;
 }
 
-bool AllocateQuota(FileSystemOperationContext* context, int64 growth) {
+bool AllocateQuota(FileSystemOperationContext* context, int64_t growth) {
   if (context->allowed_bytes_growth() == storage::QuotaManager::kNoLimit)
     return true;
 
-  int64 new_quota = context->allowed_bytes_growth() - growth;
+  int64_t new_quota = context->allowed_bytes_growth() - growth;
   if (growth > 0 && new_quota < 0)
     return false;
   context->set_allowed_bytes_growth(new_quota);
   return true;
 }
 
-void UpdateUsage(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url,
-    int64 growth) {
+void UpdateUsage(FileSystemOperationContext* context,
+                 const FileSystemURL& url,
+                 int64_t growth) {
   context->update_observers()->Notify(
       &FileUpdateObserver::OnUpdate, base::MakeTuple(url, growth));
 }
@@ -158,7 +161,7 @@ class ObfuscatedFileEnumerator
     return virtual_path;
   }
 
-  int64 Size() override { return current_platform_file_info_.size; }
+  int64_t Size() override { return current_platform_file_info_.size; }
 
   base::Time LastModifiedTime() override {
     return current_platform_file_info_.last_modified;
@@ -310,7 +313,7 @@ base::File::Error ObfuscatedFileUtil::EnsureFileExists(
   InitFileInfo(&file_info, parent_id,
                VirtualPath::BaseName(url.path()).value());
 
-  int64 growth = UsageForPath(file_info.name.size());
+  int64_t growth = UsageForPath(file_info.name.size());
   if (!AllocateQuota(context, growth))
     return base::File::FILE_ERROR_NO_SPACE;
   base::File::Error error = CreateFile(context, base::FilePath(), url,
@@ -370,7 +373,7 @@ base::File::Error ObfuscatedFileUtil::CreateDirectory(
       continue;
     file_info.modification_time = base::Time::Now();
     file_info.parent_id = parent_id;
-    int64 growth = UsageForPath(file_info.name.size());
+    int64_t growth = UsageForPath(file_info.name.size());
     if (!AllocateQuota(context, growth))
       return base::File::FILE_ERROR_NO_SPACE;
     base::File::Error error = db->AddFileInfo(file_info, &parent_id);
@@ -464,7 +467,7 @@ base::File::Error ObfuscatedFileUtil::Touch(
 base::File::Error ObfuscatedFileUtil::Truncate(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
-    int64 length) {
+    int64_t length) {
   base::File::Info file_info;
   base::FilePath local_path;
   base::File::Error error =
@@ -472,7 +475,7 @@ base::File::Error ObfuscatedFileUtil::Truncate(
   if (error != base::File::FILE_OK)
     return error;
 
-  int64 growth = length - file_info.size;
+  int64_t growth = length - file_info.size;
   if (!AllocateQuota(context, growth))
     return base::File::FILE_ERROR_NO_SPACE;
   error = NativeFileUtil::Truncate(local_path, length);
@@ -544,7 +547,7 @@ base::File::Error ObfuscatedFileUtil::CopyOrMoveFile(
         VirtualPath::BaseName(dest_url.path()).value();
   }
 
-  int64 growth = 0;
+  int64_t growth = 0;
   if (copy)
     growth += src_platform_file_info.size;
   else
@@ -667,7 +670,7 @@ base::File::Error ObfuscatedFileUtil::CopyInForeignFile(
                  VirtualPath::BaseName(dest_url.path()).value());
   }
 
-  int64 growth = src_platform_file_info.size;
+  int64_t growth = src_platform_file_info.size;
   if (overwrite)
     growth -= dest_platform_file_info.size;
   else
@@ -727,7 +730,8 @@ base::File::Error ObfuscatedFileUtil::DeleteFile(
   if (file_info.is_directory())
     return base::File::FILE_ERROR_NOT_A_FILE;
 
-  int64 growth = -UsageForPath(file_info.name.size()) - platform_file_info.size;
+  int64_t growth =
+      -UsageForPath(file_info.name.size()) - platform_file_info.size;
   AllocateQuota(context, growth);
   if (!db->RemoveFileInfo(file_id)) {
     NOTREACHED();
@@ -767,7 +771,7 @@ base::File::Error ObfuscatedFileUtil::DeleteDirectory(
     return base::File::FILE_ERROR_NOT_A_DIRECTORY;
   if (!db->RemoveFileInfo(file_id))
     return base::File::FILE_ERROR_NOT_EMPTY;
-  int64 growth = -UsageForPath(file_info.name.size());
+  int64_t growth = -UsageForPath(file_info.name.size());
   AllocateQuota(context, growth);
   UpdateUsage(context, url, growth);
   TouchDirectory(db, file_info.parent_id);
@@ -940,7 +944,7 @@ void ObfuscatedFileUtil::DestroyDirectoryDatabase(
 }
 
 // static
-int64 ObfuscatedFileUtil::ComputeFilePathCost(const base::FilePath& path) {
+int64_t ObfuscatedFileUtil::ComputeFilePathCost(const base::FilePath& path) {
   return UsageForPath(VirtualPath::BaseName(path).value().size());
 }
 
@@ -1314,7 +1318,7 @@ base::File::Error ObfuscatedFileUtil::GenerateNewLocalPath(
     base::FilePath* root,
     base::FilePath* local_path) {
   DCHECK(local_path);
-  int64 number;
+  int64_t number;
   if (!db || !db->GetNextInteger(&number))
     return base::File::FILE_ERROR_FAILED;
 
@@ -1324,7 +1328,7 @@ base::File::Error ObfuscatedFileUtil::GenerateNewLocalPath(
     return error;
 
   // We use the third- and fourth-to-last digits as the directory.
-  int64 directory_number = number % 10000 / 100;
+  int64_t directory_number = number % 10000 / 100;
   base::FilePath new_local_path = root->AppendASCII(
       base::StringPrintf("%02" PRId64, directory_number));
 
@@ -1361,7 +1365,7 @@ base::File ObfuscatedFileUtil::CreateOrOpenInternal(
     InitFileInfo(&file_info, parent_id,
                  VirtualPath::BaseName(url.path()).value());
 
-    int64 growth = UsageForPath(file_info.name.size());
+    int64_t growth = UsageForPath(file_info.name.size());
     if (!AllocateQuota(context, growth))
       return base::File(base::File::FILE_ERROR_NO_SPACE);
     base::File file = CreateAndOpenFile(context, url, &file_info, file_flags);
@@ -1386,7 +1390,7 @@ base::File ObfuscatedFileUtil::CreateOrOpenInternal(
   if (file_info.is_directory())
     return base::File(base::File::FILE_ERROR_NOT_A_FILE);
 
-  int64 delta = 0;
+  int64_t delta = 0;
   if (file_flags & (base::File::FLAG_CREATE_ALWAYS |
                     base::File::FLAG_OPEN_TRUNCATED)) {
     // The file exists and we're truncating.

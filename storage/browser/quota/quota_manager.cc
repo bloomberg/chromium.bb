@@ -4,6 +4,9 @@
 
 #include "storage/browser/quota/quota_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <functional>
 #include <limits>
@@ -12,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"

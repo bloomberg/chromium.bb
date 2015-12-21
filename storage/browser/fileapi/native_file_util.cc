@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/native_file_util.h"
 
+#include <stdint.h>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
@@ -83,7 +85,7 @@ class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   ~NativeFileEnumerator() override {}
 
   base::FilePath Next() override;
-  int64 Size() override;
+  int64_t Size() override;
   base::Time LastModifiedTime() override;
   bool IsDirectory() override;
 
@@ -99,7 +101,7 @@ base::FilePath NativeFileEnumerator::Next() {
   return rv;
 }
 
-int64 NativeFileEnumerator::Size() {
+int64_t NativeFileEnumerator::Size() {
   return file_util_info_.GetSize();
 }
 
@@ -222,7 +224,7 @@ base::File::Error NativeFileUtil::Touch(
 }
 
 base::File::Error NativeFileUtil::Truncate(const base::FilePath& path,
-                                           int64 length) {
+                                           int64_t length) {
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_WRITE);
   if (!file.IsValid())
     return file.error_details();

@@ -4,6 +4,9 @@
 
 #include "storage/common/data_element.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/strings/string_number_conversions.h"

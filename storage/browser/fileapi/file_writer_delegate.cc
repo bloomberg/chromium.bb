@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/file_writer_delegate.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util_proxy.h"
@@ -133,7 +135,7 @@ void FileWriterDelegate::OnDataReceived(int bytes_read) {
 
 void FileWriterDelegate::Write() {
   writing_started_ = true;
-  int64 bytes_to_write = bytes_read_ - bytes_written_;
+  int64_t bytes_to_write = bytes_read_ - bytes_written_;
   int write_response =
       file_stream_writer_->Write(cursor_.get(),
                                  static_cast<int>(bytes_to_write),

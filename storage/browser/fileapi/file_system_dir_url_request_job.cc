@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/file_system_dir_url_request_job.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

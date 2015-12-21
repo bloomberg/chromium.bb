@@ -5,11 +5,14 @@
 #ifndef STORAGE_BROWSER_FILEAPI_LOCAL_FILE_STREAM_WRITER_H_
 #define STORAGE_BROWSER_FILEAPI_LOCAL_FILE_STREAM_WRITER_H_
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
@@ -44,7 +47,7 @@ class STORAGE_EXPORT LocalFileStreamWriter
   friend class FileStreamWriter;
   LocalFileStreamWriter(base::TaskRunner* task_runner,
                         const base::FilePath& file_path,
-                        int64 initial_offset,
+                        int64_t initial_offset,
                         OpenOrCreate open_or_create);
 
   // Opens |file_path_| and if it succeeds, proceeds to InitiateSeek().
@@ -61,7 +64,7 @@ class STORAGE_EXPORT LocalFileStreamWriter
                     const base::Closure& main_operation);
   void DidSeek(const net::CompletionCallback& error_callback,
                const base::Closure& main_operation,
-               int64 result);
+               int64_t result);
 
   // Passed as the |main_operation| of InitiateOpen() function.
   void ReadyToWrite(net::IOBuffer* buf, int buf_len,
@@ -83,7 +86,7 @@ class STORAGE_EXPORT LocalFileStreamWriter
   // Initialization parameters.
   const base::FilePath file_path_;
   OpenOrCreate open_or_create_;
-  const int64 initial_offset_;
+  const int64_t initial_offset_;
   scoped_refptr<base::TaskRunner> task_runner_;
 
   // Current states of the operation.

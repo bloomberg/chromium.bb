@@ -5,9 +5,9 @@
 #ifndef STORAGE_BROWSER_FILEAPI_TIMED_TASK_HELPER_H_
 #define STORAGE_BROWSER_FILEAPI_TIMED_TASK_HELPER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"

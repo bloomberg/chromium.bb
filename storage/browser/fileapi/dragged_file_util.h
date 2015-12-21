@@ -5,6 +5,7 @@
 #ifndef STORAGE_BROWSER_FILEAPI_DRAGGED_FILE_UTIL_H_
 #define STORAGE_BROWSER_FILEAPI_DRAGGED_FILE_UTIL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/local_file_util.h"
 #include "storage/browser/storage_browser_export.h"

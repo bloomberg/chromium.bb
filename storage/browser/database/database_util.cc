@@ -4,7 +4,8 @@
 
 #include "storage/browser/database/database_util.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/database/vfs_backend.h"

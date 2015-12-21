@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/local_file_stream_reader.h"
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/files/file_util_proxy.h"
 #include "base/location.h"
@@ -26,7 +28,7 @@ const int kOpenFlagsForRead = base::File::FLAG_OPEN |
 FileStreamReader* FileStreamReader::CreateForLocalFile(
     base::TaskRunner* task_runner,
     const base::FilePath& file_path,
-    int64 initial_offset,
+    int64_t initial_offset,
     const base::Time& expected_modification_time) {
   return new LocalFileStreamReader(task_runner, file_path, initial_offset,
                                    expected_modification_time);
@@ -45,7 +47,7 @@ int LocalFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
                          make_scoped_refptr(buf), buf_len, callback));
 }
 
-int64 LocalFileStreamReader::GetLength(
+int64_t LocalFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   const bool posted = base::FileUtilProxy::GetFileInfo(
       task_runner_.get(),
@@ -60,7 +62,7 @@ int64 LocalFileStreamReader::GetLength(
 LocalFileStreamReader::LocalFileStreamReader(
     base::TaskRunner* task_runner,
     const base::FilePath& file_path,
-    int64 initial_offset,
+    int64_t initial_offset,
     const base::Time& expected_modification_time)
     : task_runner_(task_runner),
       file_path_(file_path),
@@ -82,7 +84,7 @@ int LocalFileStreamReader::Open(const net::CompletionCallback& callback) {
 
 void LocalFileStreamReader::DidVerifyForOpen(
     const net::CompletionCallback& callback,
-    int64 get_length_result) {
+    int64_t get_length_result) {
   if (get_length_result < 0) {
     callback.Run(static_cast<int>(get_length_result));
     return;
@@ -115,7 +117,7 @@ void LocalFileStreamReader::DidOpenFileStream(
 
 void LocalFileStreamReader::DidSeekFileStream(
     const net::CompletionCallback& callback,
-    int64 seek_result) {
+    int64_t seek_result) {
   if (seek_result < 0) {
     callback.Run(static_cast<int>(seek_result));
     return;

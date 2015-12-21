@@ -4,6 +4,8 @@
 
 #include "storage/common/blob_storage/blob_item_bytes_response.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 

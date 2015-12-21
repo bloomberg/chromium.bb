@@ -5,6 +5,8 @@
 #ifndef STORAGE_BROWSER_BLOB_UPLOAD_BLOB_ELEMENT_READER_H_
 #define STORAGE_BROWSER_BLOB_UPLOAD_BLOB_ELEMENT_READER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

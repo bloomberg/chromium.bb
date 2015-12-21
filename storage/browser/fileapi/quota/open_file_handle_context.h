@@ -5,10 +5,12 @@
 #ifndef STORAGE_BROWSER_FILEAPI_OPEN_FILE_HANDLE_CONTEXT_H_
 #define STORAGE_BROWSER_FILEAPI_OPEN_FILE_HANDLE_CONTEXT_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/storage_browser_export.h"
@@ -29,24 +31,24 @@ class OpenFileHandleContext : public base::RefCounted<OpenFileHandleContext> {
                         QuotaReservationBuffer* reservation_buffer);
 
   // Updates the max written offset and returns the amount of growth.
-  int64 UpdateMaxWrittenOffset(int64 offset);
+  int64_t UpdateMaxWrittenOffset(int64_t offset);
 
-  void AddAppendModeWriteAmount(int64 amount);
+  void AddAppendModeWriteAmount(int64_t amount);
 
   const base::FilePath& platform_path() const {
     return platform_path_;
   }
 
-  int64 GetEstimatedFileSize() const;
-  int64 GetMaxWrittenOffset() const;
+  int64_t GetEstimatedFileSize() const;
+  int64_t GetMaxWrittenOffset() const;
 
  private:
   friend class base::RefCounted<OpenFileHandleContext>;
   virtual ~OpenFileHandleContext();
 
-  int64 initial_file_size_;
-  int64 maximum_written_offset_;
-  int64 append_mode_write_amount_;
+  int64_t initial_file_size_;
+  int64_t maximum_written_offset_;
+  int64_t append_mode_write_amount_;
   base::FilePath platform_path_;
 
   scoped_refptr<QuotaReservationBuffer> reservation_buffer_;

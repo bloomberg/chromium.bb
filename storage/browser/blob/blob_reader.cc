@@ -4,6 +4,9 @@
 
 #include "storage/browser/blob/blob_reader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 
@@ -240,11 +243,11 @@ bool BlobReader::ResolveFileItemLength(const BlobDataItem& item,
     return false;
   }
 
-  uint64 max_length = file_length - item_offset;
+  uint64_t max_length = file_length - item_offset;
 
   // If item length is undefined, then we need to use the file size being
   // resolved in the real time.
-  if (item_length == std::numeric_limits<uint64>::max()) {
+  if (item_length == std::numeric_limits<uint64_t>::max()) {
     item_length = max_length;
   } else if (item_length > max_length) {
     return false;

@@ -4,10 +4,14 @@
 
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
@@ -39,7 +43,7 @@ const char kOpenFileSystemLabel[] = "FileSystem.OpenFileSystem";
 const char kOpenFileSystemDetailLabel[] = "FileSystem.OpenFileSystemDetail";
 const char kOpenFileSystemDetailNonThrottledLabel[] =
     "FileSystem.OpenFileSystemDetailNonthrottled";
-int64 kMinimumStatsCollectionIntervalHours = 1;
+int64_t kMinimumStatsCollectionIntervalHours = 1;
 
 // For type directory names in ObfuscatedFileUtil.
 // TODO(kinuko,nhiroki): Each type string registration should be done
@@ -296,7 +300,7 @@ SandboxFileSystemBackendDelegate::CreateFileSystemOperationContext(
 scoped_ptr<storage::FileStreamReader>
 SandboxFileSystemBackendDelegate::CreateFileStreamReader(
     const FileSystemURL& url,
-    int64 offset,
+    int64_t offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   if (!IsAccessValid(url))
@@ -309,7 +313,7 @@ SandboxFileSystemBackendDelegate::CreateFileStreamReader(
 scoped_ptr<FileStreamWriter>
 SandboxFileSystemBackendDelegate::CreateFileStreamWriter(
     const FileSystemURL& url,
-    int64 offset,
+    int64_t offset,
     FileSystemContext* context,
     FileSystemType type) const {
   if (!IsAccessValid(url))
@@ -327,8 +331,8 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
     const GURL& origin_url,
     FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  int64 usage = GetOriginUsageOnFileTaskRunner(
-      file_system_context, origin_url, type);
+  int64_t usage =
+      GetOriginUsageOnFileTaskRunner(file_system_context, origin_url, type);
   usage_cache()->CloseCacheFiles();
   bool result = obfuscated_file_util()->DeleteDirectoryForOriginAndType(
       origin_url, GetTypeString(type));
@@ -380,7 +384,7 @@ void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileTaskRunner(
   }
 }
 
-int64 SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
+int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
     FileSystemContext* file_system_context,
     const GURL& origin_url,
     FileSystemType type) {
@@ -399,21 +403,21 @@ int64 SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
       base_path.Append(FileSystemUsageCache::kUsageFileName);
 
   bool is_valid = usage_cache()->IsValid(usage_file_path);
-  uint32 dirty_status = 0;
+  uint32_t dirty_status = 0;
   bool dirty_status_available =
       usage_cache()->GetDirty(usage_file_path, &dirty_status);
   bool visited = !visited_origins_.insert(origin_url).second;
   if (is_valid && (dirty_status == 0 || (dirty_status_available && visited))) {
     // The usage cache is clean (dirty == 0) or the origin is already
     // initialized and running.  Read the cache file to get the usage.
-    int64 usage = 0;
+    int64_t usage = 0;
     return usage_cache()->GetUsage(usage_file_path, &usage) ? usage : -1;
   }
   // The usage cache has not been initialized or the cache is dirty.
   // Get the directory size now and update the cache.
   usage_cache()->Delete(usage_file_path);
 
-  int64 usage = RecalculateUsage(file_system_context, origin_url, type);
+  int64_t usage = RecalculateUsage(file_system_context, origin_url, type);
 
   // This clears the dirty flag too.
   usage_cache()->UpdateUsage(usage_file_path, usage);
@@ -589,7 +593,7 @@ SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
   return base_path.Append(FileSystemUsageCache::kUsageFileName);
 }
 
-int64 SandboxFileSystemBackendDelegate::RecalculateUsage(
+int64_t SandboxFileSystemBackendDelegate::RecalculateUsage(
     FileSystemContext* context,
     const GURL& origin,
     FileSystemType type) {
@@ -601,7 +605,7 @@ int64 SandboxFileSystemBackendDelegate::RecalculateUsage(
           &operation_context, url, true));
 
   base::FilePath file_path_each;
-  int64 usage = 0;
+  int64_t usage = 0;
 
   while (!(file_path_each = enumerator->Next()).empty()) {
     usage += enumerator->Size();

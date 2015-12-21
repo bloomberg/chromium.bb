@@ -5,7 +5,8 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_STREAM_WRITER_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_STREAM_WRITER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "net/base/completion_callback.h"
 #include "storage/browser/storage_browser_export.h"
 
@@ -30,7 +31,7 @@ class FileStreamWriter {
   STORAGE_EXPORT static FileStreamWriter* CreateForLocalFile(
       base::TaskRunner* task_runner,
       const base::FilePath& file_path,
-      int64 initial_offset,
+      int64_t initial_offset,
       OpenOrCreate open_or_create);
 
   // Closes the file. If there's an in-flight operation, it is canceled (i.e.,

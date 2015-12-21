@@ -5,6 +5,8 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_STORAGE_REGISTRY_H_
 #define STORAGE_BROWSER_BLOB_BLOB_STORAGE_REGISTRY_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>

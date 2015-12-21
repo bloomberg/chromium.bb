@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "storage/browser/blob/blob_data_snapshot.h"
 
 namespace storage {
@@ -36,7 +39,7 @@ BlobDataSnapshot::~BlobDataSnapshot() {
 }
 
 size_t BlobDataSnapshot::GetMemoryUsage() const {
-  int64 memory = 0;
+  int64_t memory = 0;
   for (const auto& data_item : items_) {
     if (data_item->type() == DataElement::TYPE_BYTES)
       memory += data_item->length();

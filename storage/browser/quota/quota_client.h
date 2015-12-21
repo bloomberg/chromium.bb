@@ -5,6 +5,8 @@
 #ifndef STORAGE_BROWSER_QUOTA_QUOTA_CLIENT_H_
 #define STORAGE_BROWSER_QUOTA_QUOTA_CLIENT_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <set>
 #include <string>
@@ -22,7 +24,7 @@ namespace storage {
 // All the methods are assumed to be called on the IO thread in the browser.
 class STORAGE_EXPORT QuotaClient {
  public:
-  typedef base::Callback<void(int64 usage)> GetUsageCallback;
+  typedef base::Callback<void(int64_t usage)> GetUsageCallback;
   typedef base::Callback<void(const std::set<GURL>& origins)>
       GetOriginsCallback;
   typedef base::Callback<void(QuotaStatusCode status)> DeletionCallback;

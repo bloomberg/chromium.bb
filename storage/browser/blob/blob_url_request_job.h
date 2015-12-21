@@ -5,9 +5,12 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_URL_REQUEST_JOB_H_
 #define STORAGE_BROWSER_BLOB_BLOB_URL_REQUEST_JOB_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/http/http_byte_range.h"

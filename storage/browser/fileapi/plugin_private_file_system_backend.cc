@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/plugin_private_file_system_backend.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/stl_util.h"
@@ -196,8 +198,8 @@ bool PluginPrivateFileSystemBackend::HasInplaceCopyImplementation(
 scoped_ptr<storage::FileStreamReader>
 PluginPrivateFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
-    int64 offset,
-    int64 max_bytes_to_read,
+    int64_t offset,
+    int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   return scoped_ptr<storage::FileStreamReader>();
@@ -206,7 +208,7 @@ PluginPrivateFileSystemBackend::CreateFileStreamReader(
 scoped_ptr<FileStreamWriter>
 PluginPrivateFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
-    int64 offset,
+    int64_t offset,
     FileSystemContext* context) const {
   return scoped_ptr<FileStreamWriter>();
 }
@@ -257,7 +259,7 @@ void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
   }
 }
 
-int64 PluginPrivateFileSystemBackend::GetOriginUsageOnFileTaskRunner(
+int64_t PluginPrivateFileSystemBackend::GetOriginUsageOnFileTaskRunner(
     FileSystemContext* context,
     const GURL& origin_url,
     FileSystemType type) {

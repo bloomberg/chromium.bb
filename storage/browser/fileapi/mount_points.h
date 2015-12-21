@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_util.h"
 

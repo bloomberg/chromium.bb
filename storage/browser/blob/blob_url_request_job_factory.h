@@ -6,6 +6,7 @@
 #define STORAGE_BROWSER_BLOB_BLOB_URL_REQUEST_JOB_FACTORY_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request.h"

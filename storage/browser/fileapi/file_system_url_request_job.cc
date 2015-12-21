@@ -4,12 +4,15 @@
 
 #include "storage/browser/fileapi/file_system_url_request_job.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"

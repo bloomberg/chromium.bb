@@ -5,6 +5,9 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_ASYNC_BUILDER_HOST_H_
 #define STORAGE_BROWSER_BLOB_BLOB_ASYNC_BUILDER_HOST_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>

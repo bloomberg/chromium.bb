@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 

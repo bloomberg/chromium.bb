@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/task_runner.h"
 #include "base/threading/non_thread_safe.h"
 

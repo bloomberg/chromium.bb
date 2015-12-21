@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/quota/quota_reservation_manager.h"
 
+#include <stdint.h>
+
 #include "storage/browser/fileapi/quota/quota_reservation.h"
 #include "storage/browser/fileapi/quota/quota_reservation_buffer.h"
 
@@ -23,24 +25,22 @@ QuotaReservationManager::~QuotaReservationManager() {
 void QuotaReservationManager::ReserveQuota(
     const GURL& origin,
     FileSystemType type,
-    int64 size,
+    int64_t size,
     const ReserveQuotaCallback& callback) {
   DCHECK(origin.is_valid());
   backend_->ReserveQuota(origin, type, size, callback);
 }
 
-void QuotaReservationManager::ReleaseReservedQuota(
-    const GURL& origin,
-    FileSystemType type,
-    int64 size) {
+void QuotaReservationManager::ReleaseReservedQuota(const GURL& origin,
+                                                   FileSystemType type,
+                                                   int64_t size) {
   DCHECK(origin.is_valid());
   backend_->ReleaseReservedQuota(origin, type, size);
 }
 
-void QuotaReservationManager::CommitQuotaUsage(
-    const GURL& origin,
-    FileSystemType type,
-    int64 delta) {
+void QuotaReservationManager::CommitQuotaUsage(const GURL& origin,
+                                               FileSystemType type,
+                                               int64_t delta) {
   DCHECK(origin.is_valid());
   backend_->CommitQuotaUsage(origin, type, delta);
 }

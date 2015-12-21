@@ -4,6 +4,8 @@
 
 #include "storage/browser/blob/blob_storage_registry.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"

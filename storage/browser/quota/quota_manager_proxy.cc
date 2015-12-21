@@ -4,6 +4,8 @@
 
 #include "storage/browser/quota/quota_manager_proxy.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/sequenced_task_runner.h"
@@ -19,7 +21,9 @@ namespace {
 void DidGetUsageAndQuota(
     base::SequencedTaskRunner* original_task_runner,
     const QuotaManagerProxy::GetUsageAndQuotaCallback& callback,
-    QuotaStatusCode status, int64 usage, int64 quota) {
+    QuotaStatusCode status,
+    int64_t usage,
+    int64_t quota) {
   if (!original_task_runner->RunsTasksOnCurrentThread()) {
     original_task_runner->PostTask(
         FROM_HERE,
@@ -66,11 +70,10 @@ void QuotaManagerProxy::NotifyStorageAccessed(
     manager_->NotifyStorageAccessed(client_id, origin, type);
 }
 
-void QuotaManagerProxy::NotifyStorageModified(
-    QuotaClient::ID client_id,
-    const GURL& origin,
-    StorageType type,
-    int64 delta) {
+void QuotaManagerProxy::NotifyStorageModified(QuotaClient::ID client_id,
+                                              const GURL& origin,
+                                              StorageType type,
+                                              int64_t delta) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
         FROM_HERE,

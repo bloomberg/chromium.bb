@@ -4,15 +4,16 @@
 
 #include "storage/browser/fileapi/quota/quota_reservation.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "storage/browser/fileapi/quota/open_file_handle.h"
 #include "storage/browser/fileapi/quota/quota_reservation_buffer.h"
 
 namespace storage {
 
-void QuotaReservation::RefreshReservation(
-    int64 size,
-    const StatusCallback& callback) {
+void QuotaReservation::RefreshReservation(int64_t size,
+                                          const StatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(!running_refresh_request_);
   DCHECK(!client_crashed_);
@@ -48,7 +49,7 @@ void QuotaReservation::OnClientCrash() {
   }
 }
 
-void QuotaReservation::ConsumeReservation(int64 size) {
+void QuotaReservation::ConsumeReservation(int64_t size) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK_LT(0, size);
   DCHECK_LE(size, remaining_quota_);
@@ -93,10 +94,10 @@ QuotaReservation::~QuotaReservation() {
 // static
 bool QuotaReservation::AdaptDidUpdateReservedQuota(
     const base::WeakPtr<QuotaReservation>& reservation,
-    int64 previous_size,
+    int64_t previous_size,
     const StatusCallback& callback,
     base::File::Error error,
-    int64 delta) {
+    int64_t delta) {
   if (!reservation)
     return false;
 
@@ -104,11 +105,10 @@ bool QuotaReservation::AdaptDidUpdateReservedQuota(
       previous_size, callback, error, delta);
 }
 
-bool QuotaReservation::DidUpdateReservedQuota(
-    int64 previous_size,
-    const StatusCallback& callback,
-    base::File::Error error,
-    int64 delta) {
+bool QuotaReservation::DidUpdateReservedQuota(int64_t previous_size,
+                                              const StatusCallback& callback,
+                                              base::File::Error error,
+                                              int64_t delta) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(running_refresh_request_);
   running_refresh_request_ = false;

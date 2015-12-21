@@ -4,12 +4,16 @@
 
 #include "storage/browser/quota/quota_database.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <tuple>
 #include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
@@ -116,14 +120,10 @@ QuotaDatabase::QuotaTableEntry::QuotaTableEntry()
       quota(0) {
 }
 
-QuotaDatabase::QuotaTableEntry::QuotaTableEntry(
-    const std::string& host,
-    StorageType type,
-    int64 quota)
-    : host(host),
-      type(type),
-      quota(quota) {
-}
+QuotaDatabase::QuotaTableEntry::QuotaTableEntry(const std::string& host,
+                                                StorageType type,
+                                                int64_t quota)
+    : host(host), type(type), quota(quota) {}
 
 QuotaDatabase::OriginInfoTableEntry::OriginInfoTableEntry()
     : type(kStorageTypeUnknown),
@@ -161,8 +161,9 @@ void QuotaDatabase::CloseConnection() {
   db_.reset();
 }
 
-bool QuotaDatabase::GetHostQuota(
-    const std::string& host, StorageType type, int64* quota) {
+bool QuotaDatabase::GetHostQuota(const std::string& host,
+                                 StorageType type,
+                                 int64_t* quota) {
   DCHECK(quota);
   if (!LazyOpen(false))
     return false;
@@ -183,8 +184,9 @@ bool QuotaDatabase::GetHostQuota(
   return true;
 }
 
-bool QuotaDatabase::SetHostQuota(
-    const std::string& host, StorageType type, int64 quota) {
+bool QuotaDatabase::SetHostQuota(const std::string& host,
+                                 StorageType type,
+                                 int64_t quota) {
   DCHECK_GE(quota, 0);
   if (!LazyOpen(true))
     return false;
@@ -412,14 +414,14 @@ bool QuotaDatabase::DeleteOriginInfo(
   return true;
 }
 
-bool QuotaDatabase::GetQuotaConfigValue(const char* key, int64* value) {
+bool QuotaDatabase::GetQuotaConfigValue(const char* key, int64_t* value) {
   if (!LazyOpen(false))
     return false;
   DCHECK(VerifyValidQuotaConfig(key));
   return meta_table_->GetValue(key, value);
 }
 
-bool QuotaDatabase::SetQuotaConfigValue(const char* key, int64 value) {
+bool QuotaDatabase::SetQuotaConfigValue(const char* key, int64_t value) {
   if (!LazyOpen(true))
     return false;
   DCHECK(VerifyValidQuotaConfig(key));
@@ -734,8 +736,9 @@ bool QuotaDatabase::UpgradeSchema(int current_version) {
   return false;
 }
 
-bool QuotaDatabase::InsertOrReplaceHostQuota(
-    const std::string& host, StorageType type, int64 quota) {
+bool QuotaDatabase::InsertOrReplaceHostQuota(const std::string& host,
+                                             StorageType type,
+                                             int64_t quota) {
   DCHECK(db_.get());
   const char* kSql =
       "INSERT OR REPLACE INTO HostQuotaTable"

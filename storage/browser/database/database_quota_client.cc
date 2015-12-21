@@ -4,6 +4,8 @@
 
 #include "storage/browser/database/database_quota_client.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -24,9 +26,8 @@ namespace storage {
 
 namespace {
 
-int64 GetOriginUsageOnDBThread(
-    DatabaseTracker* db_tracker,
-    const GURL& origin_url) {
+int64_t GetOriginUsageOnDBThread(DatabaseTracker* db_tracker,
+                                 const GURL& origin_url) {
   OriginInfo info;
   if (db_tracker->GetOriginInfo(storage::GetIdentifierFromOrigin(origin_url),
                                 &info))

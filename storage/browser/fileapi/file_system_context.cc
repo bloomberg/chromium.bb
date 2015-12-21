@@ -4,7 +4,11 @@
 
 #include "storage/browser/fileapi/file_system_context.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
@@ -438,8 +442,8 @@ void FileSystemContext::DeleteFileSystem(
 
 scoped_ptr<storage::FileStreamReader> FileSystemContext::CreateFileStreamReader(
     const FileSystemURL& url,
-    int64 offset,
-    int64 max_bytes_to_read,
+    int64_t offset,
+    int64_t max_bytes_to_read,
     const base::Time& expected_modification_time) {
   if (!url.is_valid())
     return scoped_ptr<storage::FileStreamReader>();
@@ -452,7 +456,7 @@ scoped_ptr<storage::FileStreamReader> FileSystemContext::CreateFileStreamReader(
 
 scoped_ptr<FileStreamWriter> FileSystemContext::CreateFileStreamWriter(
     const FileSystemURL& url,
-    int64 offset) {
+    int64_t offset) {
   if (!url.is_valid())
     return scoped_ptr<FileStreamWriter>();
   FileSystemBackend* backend = GetFileSystemBackend(url.type());

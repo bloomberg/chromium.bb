@@ -5,12 +5,14 @@
 #ifndef STORAGE_BROWSER_QUOTA_USAGE_TRACKER_H_
 #define STORAGE_BROWSER_QUOTA_USAGE_TRACKER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "storage/browser/quota/quota_callbacks.h"
@@ -44,9 +46,9 @@ class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
   void GetHostUsage(const std::string& host, const UsageCallback& callback);
   void UpdateUsageCache(QuotaClient::ID client_id,
                         const GURL& origin,
-                        int64 delta);
-  void GetCachedOriginsUsage(std::map<GURL, int64>* origin_usage) const;
-  void GetCachedHostsUsage(std::map<std::string, int64>* host_usage) const;
+                        int64_t delta);
+  void GetCachedOriginsUsage(std::map<GURL, int64_t>* origin_usage) const;
+  void GetCachedHostsUsage(std::map<std::string, int64_t>* host_usage) const;
   void GetCachedOrigins(std::set<GURL>* origins) const;
   bool IsWorking() const {
     return global_usage_callbacks_.HasCallbacks() ||
@@ -61,27 +63,27 @@ class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
   struct AccumulateInfo {
     AccumulateInfo() : pending_clients(0), usage(0), unlimited_usage(0) {}
     int pending_clients;
-    int64 usage;
-    int64 unlimited_usage;
+    int64_t usage;
+    int64_t unlimited_usage;
   };
 
   typedef std::map<QuotaClient::ID, ClientUsageTracker*> ClientTrackerMap;
 
-  typedef CallbackQueue<UsageCallback, int64> UsageCallbackQueue;
-  typedef CallbackQueue<GlobalUsageCallback, int64, int64>
+  typedef CallbackQueue<UsageCallback, int64_t> UsageCallbackQueue;
+  typedef CallbackQueue<GlobalUsageCallback, int64_t, int64_t>
       GlobalUsageCallbackQueue;
-  typedef CallbackQueueMap<UsageCallback, std::string, int64>
+  typedef CallbackQueueMap<UsageCallback, std::string, int64_t>
       HostUsageCallbackMap;
 
   friend class ClientUsageTracker;
   void AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
-                                          int64 limited_usage);
+                                          int64_t limited_usage);
   void AccumulateClientGlobalUsage(AccumulateInfo* info,
-                                   int64 usage,
-                                   int64 unlimited_usage);
+                                   int64_t usage,
+                                   int64_t unlimited_usage);
   void AccumulateClientHostUsage(AccumulateInfo* info,
                                  const std::string& host,
-                                 int64 usage);
+                                 int64_t usage);
 
   const StorageType type_;
   ClientTrackerMap client_tracker_map_;

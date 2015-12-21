@@ -5,12 +5,14 @@
 #ifndef STORAGE_BROWSER_FILEAPI_QUOTA_QUOTA_RESERVATION_MANAGER_H_
 #define STORAGE_BROWSER_FILEAPI_QUOTA_QUOTA_RESERVATION_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/storage_browser_export.h"
@@ -32,7 +34,7 @@ class STORAGE_EXPORT QuotaReservationManager {
  public:
   // Callback for ReserveQuota. When this callback returns false, ReserveQuota
   // operation should be reverted.
-  typedef base::Callback<bool(base::File::Error error, int64 delta)>
+  typedef base::Callback<bool(base::File::Error error, int64_t delta)>
       ReserveQuotaCallback;
 
   // An abstraction of backing quota system.
@@ -49,19 +51,19 @@ class STORAGE_EXPORT QuotaReservationManager {
     // that case, the backend should roll back the reservation.
     virtual void ReserveQuota(const GURL& origin,
                               FileSystemType type,
-                              int64 delta,
+                              int64_t delta,
                               const ReserveQuotaCallback& callback) = 0;
 
     // Reclaims |size| of quota for |origin| and |type|.
     virtual void ReleaseReservedQuota(const GURL& origin,
                                       FileSystemType type,
-                                      int64 size) = 0;
+                                      int64_t size) = 0;
 
     // Updates disk usage of |origin| and |type|.
     // Invokes |callback| upon completion with an error code.
     virtual void CommitQuotaUsage(const GURL& origin,
                                   FileSystemType type,
-                                  int64 delta) = 0;
+                                  int64_t delta) = 0;
 
     virtual void IncrementDirtyCount(const GURL& origin,
                                     FileSystemType type) = 0;
@@ -91,16 +93,14 @@ class STORAGE_EXPORT QuotaReservationManager {
 
   void ReserveQuota(const GURL& origin,
                     FileSystemType type,
-                    int64 delta,
+                    int64_t delta,
                     const ReserveQuotaCallback& callback);
 
   void ReleaseReservedQuota(const GURL& origin,
                             FileSystemType type,
-                            int64 size);
+                            int64_t size);
 
-  void CommitQuotaUsage(const GURL& origin,
-                        FileSystemType type,
-                        int64 delta);
+  void CommitQuotaUsage(const GURL& origin, FileSystemType type, int64_t delta);
 
   void IncrementDirtyCount(const GURL& origin, FileSystemType type);
   void DecrementDirtyCount(const GURL& origin, FileSystemType type);

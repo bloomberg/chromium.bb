@@ -5,12 +5,15 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_CONTEXT_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_CONTEXT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -255,15 +258,14 @@ class STORAGE_EXPORT FileSystemContext
   // At most |max_bytes_to_read| can be fetched from the file stream reader.
   scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
-      int64 offset,
-      int64 max_bytes_to_read,
+      int64_t offset,
+      int64_t max_bytes_to_read,
       const base::Time& expected_modification_time);
 
   // Creates new FileStreamWriter instance to write into a file pointed by
   // |url| from |offset|.
-  scoped_ptr<FileStreamWriter> CreateFileStreamWriter(
-      const FileSystemURL& url,
-      int64 offset);
+  scoped_ptr<FileStreamWriter> CreateFileStreamWriter(const FileSystemURL& url,
+                                                      int64_t offset);
 
   // Creates a new FileSystemOperationRunner.
   scoped_ptr<FileSystemOperationRunner> CreateFileSystemOperationRunner();

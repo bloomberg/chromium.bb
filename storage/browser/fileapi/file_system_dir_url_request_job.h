@@ -5,11 +5,14 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_DIR_URL_REQUEST_JOB_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_DIR_URL_REQUEST_JOB_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request_job.h"
 #include "storage/browser/fileapi/file_system_url.h"

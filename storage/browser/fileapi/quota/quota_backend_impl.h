@@ -5,6 +5,9 @@
 #ifndef STORAGE_BROWSER_FILEAPI_QUOTA_QUOTA_BACKEND_IMPL_H_
 #define STORAGE_BROWSER_FILEAPI_QUOTA_QUOTA_BACKEND_IMPL_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/quota/quota_reservation_manager.h"
@@ -45,14 +48,14 @@ class STORAGE_EXPORT QuotaBackendImpl
   // QuotaReservationManager::QuotaBackend overrides.
   void ReserveQuota(const GURL& origin,
                     FileSystemType type,
-                    int64 delta,
+                    int64_t delta,
                     const ReserveQuotaCallback& callback) override;
   void ReleaseReservedQuota(const GURL& origin,
                             FileSystemType type,
-                            int64 size) override;
+                            int64_t size) override;
   void CommitQuotaUsage(const GURL& origin,
                         FileSystemType type,
-                        int64 delta) override;
+                        int64_t delta) override;
   void IncrementDirtyCount(const GURL& origin, FileSystemType type) override;
   void DecrementDirtyCount(const GURL& origin, FileSystemType type) override;
 
@@ -60,19 +63,21 @@ class STORAGE_EXPORT QuotaBackendImpl
   friend class content::QuotaBackendImplTest;
 
   struct QuotaReservationInfo {
-    QuotaReservationInfo(const GURL& origin, FileSystemType type, int64 delta);
+    QuotaReservationInfo(const GURL& origin,
+                         FileSystemType type,
+                         int64_t delta);
     ~QuotaReservationInfo();
 
     GURL origin;
     FileSystemType type;
-    int64 delta;
+    int64_t delta;
   };
 
   void DidGetUsageAndQuotaForReserveQuota(const QuotaReservationInfo& info,
                                           const ReserveQuotaCallback& callback,
                                           storage::QuotaStatusCode status,
-                                          int64 usage,
-                                          int64 quota);
+                                          int64_t usage,
+                                          int64_t quota);
 
   void ReserveQuotaInternal(
       const QuotaReservationInfo& info);

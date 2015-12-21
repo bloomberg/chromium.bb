@@ -5,12 +5,15 @@
 #ifndef STORAGE_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_BACKEND_DELEGATE_H_
 #define STORAGE_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_BACKEND_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -116,12 +119,12 @@ class STORAGE_EXPORT SandboxFileSystemBackendDelegate
       base::File::Error* error_code) const;
   scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
-      int64 offset,
+      int64_t offset,
       const base::Time& expected_modification_time,
       FileSystemContext* context) const;
   scoped_ptr<FileStreamWriter> CreateFileStreamWriter(
       const FileSystemURL& url,
-      int64 offset,
+      int64_t offset,
       FileSystemContext* context,
       FileSystemType type) const;
 
@@ -136,9 +139,9 @@ class STORAGE_EXPORT SandboxFileSystemBackendDelegate
   void GetOriginsForHostOnFileTaskRunner(FileSystemType type,
                                          const std::string& host,
                                          std::set<GURL>* origins) override;
-  int64 GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
-                                       const GURL& origin_url,
-                                       FileSystemType type) override;
+  int64_t GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
+                                         const GURL& origin_url,
+                                         FileSystemType type) override;
   scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
       const GURL& origin_url,
       FileSystemType type) override;
@@ -223,9 +226,9 @@ class STORAGE_EXPORT SandboxFileSystemBackendDelegate
       FileSystemType type,
       base::File::Error* error_out);
 
-  int64 RecalculateUsage(FileSystemContext* context,
-                         const GURL& origin,
-                         FileSystemType type);
+  int64_t RecalculateUsage(FileSystemContext* context,
+                           const GURL& origin,
+                           FileSystemType type);
 
   ObfuscatedFileUtil* obfuscated_file_util();
 

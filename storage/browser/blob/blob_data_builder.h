@@ -5,13 +5,14 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_DATA_BUILDER_H_
 #define STORAGE_BROWSER_BLOB_BLOB_DATA_BUILDER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <ostream>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"

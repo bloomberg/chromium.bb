@@ -9,9 +9,9 @@
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "storage/browser/fileapi/file_system_quota_util.h"
 #include "storage/browser/quota/quota_client.h"

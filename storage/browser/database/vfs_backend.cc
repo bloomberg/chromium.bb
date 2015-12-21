@@ -4,6 +4,8 @@
 
 #include "storage/browser/database/vfs_backend.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -134,15 +136,15 @@ int VfsBackend::DeleteFile(const base::FilePath& file_path, bool sync_dir) {
 }
 
 // static
-uint32 VfsBackend::GetFileAttributes(const base::FilePath& file_path) {
+uint32_t VfsBackend::GetFileAttributes(const base::FilePath& file_path) {
 #if defined(OS_WIN)
-  uint32 attributes = ::GetFileAttributes(file_path.value().c_str());
+  uint32_t attributes = ::GetFileAttributes(file_path.value().c_str());
 #elif defined(OS_POSIX)
-  uint32 attributes = 0;
+  uint32_t attributes = 0;
   if (!access(file_path.value().c_str(), R_OK))
-    attributes |= static_cast<uint32>(R_OK);
+    attributes |= static_cast<uint32_t>(R_OK);
   if (!access(file_path.value().c_str(), W_OK))
-    attributes |= static_cast<uint32>(W_OK);
+    attributes |= static_cast<uint32_t>(W_OK);
   if (!attributes)
     attributes = -1;
 #endif
@@ -150,13 +152,13 @@ uint32 VfsBackend::GetFileAttributes(const base::FilePath& file_path) {
 }
 
 // static
-int64 VfsBackend::GetFileSize(const base::FilePath& file_path) {
-  int64 size = 0;
+int64_t VfsBackend::GetFileSize(const base::FilePath& file_path) {
+  int64_t size = 0;
   return (base::GetFileSize(file_path, &size) ? size : 0);
 }
 
 // static
-bool VfsBackend::SetFileSize(const base::FilePath& file_path, int64 size) {
+bool VfsBackend::SetFileSize(const base::FilePath& file_path, int64_t size) {
   int flags = 0;
   flags |= base::File::FLAG_READ;
   flags |= base::File::FLAG_WRITE;

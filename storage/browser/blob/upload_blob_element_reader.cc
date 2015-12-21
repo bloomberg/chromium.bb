@@ -4,6 +4,8 @@
 
 #include "storage/browser/blob/upload_blob_element_reader.h"
 
+#include <stdint.h>
+
 #include "base/single_thread_task_runner.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/blob_data_handle.h"

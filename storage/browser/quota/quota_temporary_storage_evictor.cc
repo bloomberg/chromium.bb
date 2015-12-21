@@ -4,6 +4,8 @@
 
 #include "storage/browser/quota/quota_temporary_storage_evictor.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
@@ -23,7 +25,7 @@
       base::TimeDelta::FromDays(1), 50)
 
 namespace {
-const int64 kMBytes = 1024 * 1024;
+const int64_t kMBytes = 1024 * 1024;
 const double kUsageRatioToStartEviction = 0.7;
 const int kThresholdOfErrorsToStopEviction = 5;
 const int kHistogramReportIntervalMinutes = 60;
@@ -46,7 +48,7 @@ QuotaTemporaryStorageEvictor::EvictionRoundStatistics::EvictionRoundStatistics()
 
 QuotaTemporaryStorageEvictor::QuotaTemporaryStorageEvictor(
     QuotaEvictionHandler* quota_eviction_handler,
-    int64 interval_ms)
+    int64_t interval_ms)
     : min_available_disk_space_to_start_eviction_(
           kMinAvailableDiskSpaceToStartEvictionNotSpecified),
       quota_eviction_handler_(quota_eviction_handler),
@@ -60,7 +62,7 @@ QuotaTemporaryStorageEvictor::~QuotaTemporaryStorageEvictor() {
 }
 
 void QuotaTemporaryStorageEvictor::GetStatistics(
-    std::map<std::string, int64>* statistics) {
+    std::map<std::string, int64_t>* statistics) {
   DCHECK(statistics);
 
   (*statistics)["errors-on-evicting-origin"] =
@@ -168,20 +170,20 @@ void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
     const UsageAndQuota& qau) {
   DCHECK(CalledOnValidThread());
 
-  int64 usage = qau.global_limited_usage;
+  int64_t usage = qau.global_limited_usage;
   DCHECK_GE(usage, 0);
 
   if (status != kQuotaStatusOk)
     ++statistics_.num_errors_on_getting_usage_and_quota;
 
-  int64 usage_overage = std::max(
-      static_cast<int64>(0),
-      usage - static_cast<int64>(qau.quota * kUsageRatioToStartEviction));
+  int64_t usage_overage = std::max(
+      static_cast<int64_t>(0),
+      usage - static_cast<int64_t>(qau.quota * kUsageRatioToStartEviction));
 
   // min_available_disk_space_to_start_eviction_ might be < 0 if no value
   // is explicitly configured yet.
-  int64 diskspace_shortage = std::max(
-      static_cast<int64>(0),
+  int64_t diskspace_shortage = std::max(
+      static_cast<int64_t>(0),
       min_available_disk_space_to_start_eviction_ - qau.available_disk_space);
 
   if (!round_statistics_.is_initialized) {
@@ -192,7 +194,7 @@ void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
   }
   round_statistics_.usage_on_end_of_round = usage;
 
-  int64 amount_to_evict = std::max(usage_overage, diskspace_shortage);
+  int64_t amount_to_evict = std::max(usage_overage, diskspace_shortage);
   if (status == kQuotaStatusOk && amount_to_evict > 0) {
     // Space is getting tight. Get the least recently used origin and continue.
     // TODO(michaeln): if the reason for eviction is low physical disk space,

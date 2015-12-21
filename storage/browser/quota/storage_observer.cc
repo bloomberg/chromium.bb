@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "storage/browser/quota/storage_observer.h"
 
 namespace storage {
@@ -52,9 +54,10 @@ StorageObserver::Event::Event()
     : usage(0), quota(0) {
 }
 
-StorageObserver::Event::Event(const Filter& filter, int64 usage, int64 quota)
-    : filter(filter), usage(usage), quota(quota) {
-}
+StorageObserver::Event::Event(const Filter& filter,
+                              int64_t usage,
+                              int64_t quota)
+    : filter(filter), usage(usage), quota(quota) {}
 
 bool StorageObserver::Event::operator==(const Event& other) const {
   return filter == other.filter &&

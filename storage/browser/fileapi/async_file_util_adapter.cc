@@ -4,9 +4,13 @@
 
 #include "storage/browser/fileapi/async_file_util_adapter.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -239,7 +243,7 @@ void AsyncFileUtilAdapter::Touch(
 void AsyncFileUtilAdapter::Truncate(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
-    int64 length,
+    int64_t length,
     const StatusCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
   const bool success = base::PostTaskAndReplyWithResult(

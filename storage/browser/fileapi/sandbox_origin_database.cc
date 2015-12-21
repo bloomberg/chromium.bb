@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/sandbox_origin_database.h"
 
+#include <stdint.h>
+
 #include <set>
 #include <utility>
 
@@ -27,7 +29,7 @@ const base::FilePath::CharType kOriginDatabaseName[] =
     FILE_PATH_LITERAL("Origins");
 const char kOriginKeyPrefix[] = "ORIGIN:";
 const char kLastPathKey[] = "LAST_PATH";
-const int64 kMinimumReportIntervalHours = 1;
+const int64_t kMinimumReportIntervalHours = 1;
 const char kInitStatusHistogramLabel[] = "FileSystem.OriginDatabaseInit";
 const char kDatabaseRepairHistogramLabel[] = "FileSystem.OriginDatabaseRepair";
 

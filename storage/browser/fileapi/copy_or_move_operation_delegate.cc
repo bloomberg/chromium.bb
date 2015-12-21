@@ -4,8 +4,11 @@
 
 #include "storage/browser/fileapi/copy_or_move_operation_delegate.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/shareable_file_reference.h"
@@ -20,7 +23,7 @@
 
 namespace storage {
 
-const int64 kFlushIntervalInBytes = 10 << 20;  // 10MB.
+const int64_t kFlushIntervalInBytes = 10 << 20;  // 10MB.
 
 class CopyOrMoveOperationDelegate::CopyOrMoveImpl {
  public:
@@ -1013,7 +1016,8 @@ void CopyOrMoveOperationDelegate::DidRemoveSourceForMove(
 }
 
 void CopyOrMoveOperationDelegate::OnCopyFileProgress(
-    const FileSystemURL& src_url, int64 size) {
+    const FileSystemURL& src_url,
+    int64_t size) {
   if (!progress_callback_.is_null()) {
     progress_callback_.Run(
         FileSystemOperation::PROGRESS, src_url, FileSystemURL(), size);

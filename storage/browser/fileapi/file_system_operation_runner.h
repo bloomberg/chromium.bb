@@ -5,12 +5,14 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_RUNNER_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_RUNNER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -116,13 +118,14 @@ class STORAGE_EXPORT FileSystemOperationRunner
   OperationID Write(const net::URLRequestContext* url_request_context,
                     const FileSystemURL& url,
                     scoped_ptr<storage::BlobDataHandle> blob,
-                    int64 offset,
+                    int64_t offset,
                     const WriteCallback& callback);
 
   // Truncates a file at |url| to |length|. If |length| is larger than
   // the original file size, the file will be extended, and the extended
   // part is filled with null bytes.
-  OperationID Truncate(const FileSystemURL& url, int64 length,
+  OperationID Truncate(const FileSystemURL& url,
+                       int64_t length,
                        const StatusCallback& callback);
 
   // Tries to cancel the operation |id| [we support cancelling write or
@@ -270,7 +273,7 @@ class STORAGE_EXPORT FileSystemOperationRunner
   void DidWrite(const OperationHandle& handle,
                 const WriteCallback& callback,
                 base::File::Error rv,
-                int64 bytes,
+                int64_t bytes,
                 bool complete);
   void DidOpenFile(
       const OperationHandle& handle,
@@ -285,13 +288,12 @@ class STORAGE_EXPORT FileSystemOperationRunner
       const base::FilePath& platform_path,
       const scoped_refptr<storage::ShareableFileReference>& file_ref);
 
-  void OnCopyProgress(
-      const OperationHandle& handle,
-      const CopyProgressCallback& callback,
-      FileSystemOperation::CopyProgressType type,
-      const FileSystemURL& source_url,
-      const FileSystemURL& dest_url,
-      int64 size);
+  void OnCopyProgress(const OperationHandle& handle,
+                      const CopyProgressCallback& callback,
+                      FileSystemOperation::CopyProgressType type,
+                      const FileSystemURL& source_url,
+                      const FileSystemURL& dest_url,
+                      int64_t size);
 
   void PrepareForWrite(OperationID id, const FileSystemURL& url);
   void PrepareForRead(OperationID id, const FileSystemURL& url);

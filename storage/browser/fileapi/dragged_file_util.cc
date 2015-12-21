@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/dragged_file_util.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -39,7 +41,7 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
     NativeFileUtil::GetFileInfo(platform_file, &file_info_);
     return platform_file;
   }
-  int64 Size() override { return file_info_.size; }
+  int64_t Size() override { return file_info_.size; }
   bool IsDirectory() override { return file_info_.is_directory; }
   base::Time LastModifiedTime() override { return file_info_.last_modified; }
 

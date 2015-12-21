@@ -5,11 +5,14 @@
 #ifndef STORAGE_COMMON_BLOB_STORAGE_BLOB_STORAGE_CONSTANTS_H_
 #define STORAGE_COMMON_BLOB_STORAGE_BLOB_STORAGE_CONSTANTS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 namespace storage {
 
 // TODO(michaeln): use base::SysInfo::AmountOfPhysicalMemoryMB() in some
 // way to come up with a better limit.
-const int64 kBlobStorageMaxMemoryUsage = 500 * 1024 * 1024;  // Half a gig.
+const int64_t kBlobStorageMaxMemoryUsage = 500 * 1024 * 1024;  // Half a gig.
 const size_t kBlobStorageIPCThresholdBytes = 250 * 1024;
 const size_t kBlobStorageMaxSharedMemoryBytes = 10 * 1024 * 1024;
 const uint64_t kBlobStorageMaxFileSizeBytes = 100 * 1024 * 1024;

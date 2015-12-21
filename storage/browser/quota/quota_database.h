@@ -5,12 +5,15 @@
 #ifndef STORAGE_BROWSER_QUOTA_QUOTA_DATABASE_H_
 #define STORAGE_BROWSER_QUOTA_QUOTA_DATABASE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -61,10 +64,10 @@ class STORAGE_EXPORT QuotaDatabase {
   void CloseConnection();
 
   // Returns whether the record could be found.
-  bool GetHostQuota(const std::string& host, StorageType type, int64* quota);
+  bool GetHostQuota(const std::string& host, StorageType type, int64_t* quota);
 
   // Returns whether the operation succeeded.
-  bool SetHostQuota(const std::string& host, StorageType type, int64 quota);
+  bool SetHostQuota(const std::string& host, StorageType type, int64_t quota);
   bool DeleteHostQuota(const std::string& host, StorageType type);
 
   bool SetOriginLastAccessTime(const GURL& origin,
@@ -102,8 +105,8 @@ class STORAGE_EXPORT QuotaDatabase {
 
   bool DeleteOriginInfo(const GURL& origin, StorageType type);
 
-  bool GetQuotaConfigValue(const char* key, int64* value);
-  bool SetQuotaConfigValue(const char* key, int64 value);
+  bool GetQuotaConfigValue(const char* key, int64_t* value);
+  bool SetQuotaConfigValue(const char* key, int64_t value);
 
   // Sets |origin| to the least recently used origin of origins not included
   // in |exceptions| and not granted the special unlimited storage right.
@@ -129,13 +132,10 @@ class STORAGE_EXPORT QuotaDatabase {
  private:
   struct STORAGE_EXPORT QuotaTableEntry {
     QuotaTableEntry();
-    QuotaTableEntry(
-        const std::string& host,
-        StorageType type,
-        int64 quota);
+    QuotaTableEntry(const std::string& host, StorageType type, int64_t quota);
     std::string host;
     StorageType type;
-    int64 quota;
+    int64_t quota;
   };
   friend STORAGE_EXPORT bool operator <(
       const QuotaTableEntry& lhs, const QuotaTableEntry& rhs);
@@ -175,8 +175,9 @@ class STORAGE_EXPORT QuotaDatabase {
   bool EnsureDatabaseVersion();
   bool ResetSchema();
   bool UpgradeSchema(int current_version);
-  bool InsertOrReplaceHostQuota(
-      const std::string& host, StorageType type, int64 quota);
+  bool InsertOrReplaceHostQuota(const std::string& host,
+                                StorageType type,
+                                int64_t quota);
 
   static bool CreateSchema(
       sql::Connection* database,

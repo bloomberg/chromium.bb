@@ -5,6 +5,8 @@
 #include "storage/browser/fileapi/sandbox_directory_database.h"
 
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <algorithm>
 #include <set>
 #include <stack>
@@ -12,6 +14,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"
@@ -51,7 +54,7 @@ bool FileInfoFromPickle(const base::Pickle& pickle,
   base::PickleIterator iter(pickle);
   std::string data_path;
   std::string name;
-  int64 internal_time;
+  int64_t internal_time;
 
   if (iter.ReadInt64(&info->parent_id) &&
       iter.ReadString(&data_path) &&
@@ -72,7 +75,7 @@ const char kChildLookupPrefix[] = "CHILD_OF:";
 const char kChildLookupSeparator[] = ":";
 const char kLastFileIdKey[] = "LAST_FILE_ID";
 const char kLastIntegerKey[] = "LAST_INTEGER";
-const int64 kMinimumReportIntervalHours = 1;
+const int64_t kMinimumReportIntervalHours = 1;
 const char kInitStatusHistogramLabel[] = "FileSystem.DirectoryDatabaseInit";
 const char kDatabaseRepairHistogramLabel[] =
     "FileSystem.DirectoryDatabaseRepair";
@@ -198,7 +201,7 @@ bool DatabaseCheckHelper::IsDatabaseEmpty() {
 bool DatabaseCheckHelper::ScanDatabase() {
   // Scans all database entries sequentially to verify each of them has unique
   // backing file.
-  int64 max_file_id = -1;
+  int64_t max_file_id = -1;
   std::set<FileId> file_ids;
 
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
@@ -675,7 +678,7 @@ bool SandboxDirectoryDatabase::OverwritingMoveFile(
   return true;
 }
 
-bool SandboxDirectoryDatabase::GetNextInteger(int64* next) {
+bool SandboxDirectoryDatabase::GetNextInteger(int64_t* next) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(next);
@@ -683,7 +686,7 @@ bool SandboxDirectoryDatabase::GetNextInteger(int64* next) {
   leveldb::Status status =
       db_->Get(leveldb::ReadOptions(), LastIntegerKey(), &int_string);
   if (status.ok()) {
-    int64 temp;
+    int64_t temp;
     if (!base::StringToInt64(int_string, &temp)) {
       LOG(ERROR) << "Hit database corruption!";
       return false;

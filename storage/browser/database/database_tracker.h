@@ -5,6 +5,8 @@
 #ifndef STORAGE_BROWSER_DATABASE_DATABASE_TRACKER_H_
 #define STORAGE_BROWSER_DATABASE_DATABASE_TRACKER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <utility>
@@ -58,20 +60,20 @@ class STORAGE_EXPORT OriginInfo {
   ~OriginInfo();
 
   const std::string& GetOriginIdentifier() const { return origin_identifier_; }
-  int64 TotalSize() const { return total_size_; }
+  int64_t TotalSize() const { return total_size_; }
   void GetAllDatabaseNames(std::vector<base::string16>* databases) const;
-  int64 GetDatabaseSize(const base::string16& database_name) const;
+  int64_t GetDatabaseSize(const base::string16& database_name) const;
   base::string16 GetDatabaseDescription(
       const base::string16& database_name) const;
 
  protected:
-  typedef std::map<base::string16, std::pair<int64, base::string16> >
+  typedef std::map<base::string16, std::pair<int64_t, base::string16>>
       DatabaseInfoMap;
 
-  OriginInfo(const std::string& origin_identifier, int64 total_size);
+  OriginInfo(const std::string& origin_identifier, int64_t total_size);
 
   std::string origin_identifier_;
-  int64 total_size_;
+  int64_t total_size_;
   DatabaseInfoMap database_info_;
 };
 
@@ -92,7 +94,7 @@ class STORAGE_EXPORT DatabaseTracker
    public:
     virtual void OnDatabaseSizeChanged(const std::string& origin_identifier,
                                        const base::string16& database_name,
-                                       int64 database_size) = 0;
+                                       int64_t database_size) = 0;
     virtual void OnDatabaseScheduledForDeletion(
         const std::string& origin_identifier,
         const base::string16& database_name) = 0;
@@ -110,8 +112,8 @@ class STORAGE_EXPORT DatabaseTracker
   void DatabaseOpened(const std::string& origin_identifier,
                       const base::string16& database_name,
                       const base::string16& database_details,
-                      int64 estimated_size,
-                      int64* database_size);
+                      int64_t estimated_size,
+                      int64_t* database_size);
   void DatabaseModified(const std::string& origin_identifier,
                         const base::string16& database_name);
   void DatabaseClosed(const std::string& origin_identifier,
@@ -198,8 +200,9 @@ class STORAGE_EXPORT DatabaseTracker
     void SetOriginIdentifier(const std::string& origin_identifier) {
       origin_identifier_ = origin_identifier;
     }
-    void SetDatabaseSize(const base::string16& database_name, int64 new_size) {
-      int64 old_size = 0;
+    void SetDatabaseSize(const base::string16& database_name,
+                         int64_t new_size) {
+      int64_t old_size = 0;
       if (database_info_.find(database_name) != database_info_.end())
         old_size = database_info_[database_name].first;
       database_info_[database_name].first = new_size;
@@ -236,7 +239,7 @@ class STORAGE_EXPORT DatabaseTracker
   void InsertOrUpdateDatabaseDetails(const std::string& origin_identifier,
                                      const base::string16& database_name,
                                      const base::string16& database_details,
-                                     int64 estimated_size);
+                                     int64_t estimated_size);
 
   void ClearAllCachedOriginInfo();
   CachedOriginInfo* MaybeGetCachedOriginInfo(
@@ -247,16 +250,17 @@ class STORAGE_EXPORT DatabaseTracker
     return MaybeGetCachedOriginInfo(origin_identifier, true);
   }
 
-  int64 GetDBFileSize(const std::string& origin_identifier,
-                      const base::string16& database_name);
-  int64 SeedOpenDatabaseInfo(const std::string& origin_identifier,
-                             const base::string16& database_name,
-                             const base::string16& description);
-  int64 UpdateOpenDatabaseInfoAndNotify(const std::string& origin_identifier,
-                                        const base::string16& database_name,
-                                        const base::string16* opt_description);
-  int64 UpdateOpenDatabaseSizeAndNotify(const std::string& origin_identifier,
-                                        const base::string16& database_name) {
+  int64_t GetDBFileSize(const std::string& origin_identifier,
+                        const base::string16& database_name);
+  int64_t SeedOpenDatabaseInfo(const std::string& origin_identifier,
+                               const base::string16& database_name,
+                               const base::string16& description);
+  int64_t UpdateOpenDatabaseInfoAndNotify(
+      const std::string& origin_identifier,
+      const base::string16& database_name,
+      const base::string16* opt_description);
+  int64_t UpdateOpenDatabaseSizeAndNotify(const std::string& origin_identifier,
+                                          const base::string16& database_name) {
     return UpdateOpenDatabaseInfoAndNotify(
         origin_identifier, database_name, NULL);
   }

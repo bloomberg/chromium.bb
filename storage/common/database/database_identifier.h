@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "storage/common/storage_common_export.h"
 #include "url/gurl.h"

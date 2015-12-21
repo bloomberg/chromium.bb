@@ -4,6 +4,9 @@
 
 #include "storage/browser/blob/blob_storage_context.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 
@@ -41,7 +44,7 @@ GURL ClearBlobUrlRef(const GURL& url) {
 
 // TODO(michaeln): use base::SysInfo::AmountOfPhysicalMemoryMB() in some
 // way to come up with a better limit.
-static const int64 kMaxMemoryUsage = 500 * 1024 * 1024;  // Half a gig.
+static const int64_t kMaxMemoryUsage = 500 * 1024 * 1024;  // Half a gig.
 
 }  // namespace
 
@@ -264,7 +267,7 @@ scoped_refptr<BlobDataItem> BlobStorageContext::AllocateBlobItem(
     const DataElement& ipc_data) {
   scoped_refptr<BlobDataItem> blob_item;
 
-  uint64 length = ipc_data.length();
+  uint64_t length = ipc_data.length();
   scoped_ptr<DataElement> element(new DataElement());
   switch (ipc_data.type()) {
     case DataElement::TYPE_BYTES:
@@ -321,8 +324,8 @@ bool BlobStorageContext::AppendAllocatedBlobItem(
   //    portion of the item is copied.
 
   const DataElement& data_element = blob_item->data_element();
-  uint64 length = data_element.length();
-  uint64 offset = data_element.offset();
+  uint64_t length = data_element.length();
+  uint64_t offset = data_element.offset();
   UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeBeforeAppend",
                        memory_usage_ / 1024);
   switch (data_element.type()) {
@@ -338,7 +341,7 @@ bool BlobStorageContext::AppendAllocatedBlobItem(
           new ShareableBlobDataItem(target_blob_uuid, blob_item));
       break;
     case DataElement::TYPE_FILE: {
-      bool full_file = (length == std::numeric_limits<uint64>::max());
+      bool full_file = (length == std::numeric_limits<uint64_t>::max());
       UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.File.Unknown", full_file);
       if (!full_file) {
         UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.File",
@@ -349,7 +352,7 @@ bool BlobStorageContext::AppendAllocatedBlobItem(
       break;
     }
     case DataElement::TYPE_FILE_FILESYSTEM: {
-      bool full_file = (length == std::numeric_limits<uint64>::max());
+      bool full_file = (length == std::numeric_limits<uint64_t>::max());
       UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.FileSystem.Unknown",
                             full_file);
       if (!full_file) {
@@ -441,13 +444,13 @@ bool BlobStorageContext::AppendBlob(
         DCHECK(!item.offset());
         scoped_ptr<DataElement> element(new DataElement());
         element->SetToBytes(item.bytes() + offset,
-                            static_cast<int64>(new_length));
+                            static_cast<int64_t>(new_length));
         memory_usage_ += new_length;
         target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
             target_blob_uuid, new BlobDataItem(element.Pass())));
       } break;
       case DataElement::TYPE_FILE: {
-        DCHECK_NE(item.length(), std::numeric_limits<uint64>::max())
+        DCHECK_NE(item.length(), std::numeric_limits<uint64_t>::max())
             << "We cannot use a section of a file with an unknown length";
         UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.File",
                              new_length / 1024);

@@ -5,10 +5,13 @@
 #ifndef STORAGE_BROWSER_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_
 #define STORAGE_BROWSER_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
@@ -35,11 +38,11 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
           num_evicted_origins(0),
           num_eviction_rounds(0),
           num_skipped_eviction_rounds(0) {}
-    int64 num_errors_on_evicting_origin;
-    int64 num_errors_on_getting_usage_and_quota;
-    int64 num_evicted_origins;
-    int64 num_eviction_rounds;
-    int64 num_skipped_eviction_rounds;
+    int64_t num_errors_on_evicting_origin;
+    int64_t num_errors_on_getting_usage_and_quota;
+    int64_t num_evicted_origins;
+    int64_t num_eviction_rounds;
+    int64_t num_skipped_eviction_rounds;
 
     void subtract_assign(const Statistics& rhs) {
       num_errors_on_evicting_origin -= rhs.num_errors_on_evicting_origin;
@@ -58,32 +61,31 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
     bool is_initialized;
 
     base::Time start_time;
-    int64 usage_overage_at_round;
-    int64 diskspace_shortage_at_round;
+    int64_t usage_overage_at_round;
+    int64_t diskspace_shortage_at_round;
 
-    int64 usage_on_beginning_of_round;
-    int64 usage_on_end_of_round;
-    int64 num_evicted_origins_in_round;
+    int64_t usage_on_beginning_of_round;
+    int64_t usage_on_end_of_round;
+    int64_t num_evicted_origins_in_round;
   };
 
-  QuotaTemporaryStorageEvictor(
-      QuotaEvictionHandler* quota_eviction_handler,
-      int64 interval_ms);
+  QuotaTemporaryStorageEvictor(QuotaEvictionHandler* quota_eviction_handler,
+                               int64_t interval_ms);
   virtual ~QuotaTemporaryStorageEvictor();
 
-  void GetStatistics(std::map<std::string, int64>* statistics);
+  void GetStatistics(std::map<std::string, int64_t>* statistics);
   void ReportPerRoundHistogram();
   void ReportPerHourHistogram();
   void Start();
 
-  int64 min_available_disk_space_to_start_eviction() {
+  int64_t min_available_disk_space_to_start_eviction() {
     return min_available_disk_space_to_start_eviction_;
   }
   void reset_min_available_disk_space_to_start_eviction() {
     min_available_disk_space_to_start_eviction_ =
         kMinAvailableDiskSpaceToStartEvictionNotSpecified;
   }
-  void set_min_available_disk_space_to_start_eviction(int64 value) {
+  void set_min_available_disk_space_to_start_eviction(int64_t value) {
     min_available_disk_space_to_start_eviction_ = value;
   }
 
@@ -108,7 +110,7 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
 
   static const int kMinAvailableDiskSpaceToStartEvictionNotSpecified;
 
-  int64 min_available_disk_space_to_start_eviction_;
+  int64_t min_available_disk_space_to_start_eviction_;
 
   // Not owned; quota_eviction_handler owns us.
   QuotaEvictionHandler* quota_eviction_handler_;
@@ -120,7 +122,7 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   base::Time time_of_end_of_last_round_;
   std::set<GURL> in_progress_eviction_origins_;
 
-  int64 interval_ms_;
+  int64_t interval_ms_;
   bool repeated_eviction_;
 
   base::OneShotTimer eviction_timer_;

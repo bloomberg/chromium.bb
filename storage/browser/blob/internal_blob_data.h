@@ -5,6 +5,8 @@
 #ifndef STORAGE_BROWSER_BLOB_INTERNAL_BLOB_DATA_H_
 #define STORAGE_BROWSER_BLOB_INTERNAL_BLOB_DATA_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

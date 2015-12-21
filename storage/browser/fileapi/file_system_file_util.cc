@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "storage/browser/fileapi/file_system_file_util.h"
 
 namespace storage {
@@ -10,7 +12,7 @@ base::FilePath FileSystemFileUtil::EmptyFileEnumerator::Next() {
   return base::FilePath();
 }
 
-int64 FileSystemFileUtil::EmptyFileEnumerator::Size() {
+int64_t FileSystemFileUtil::EmptyFileEnumerator::Size() {
   return 0;
 }
 

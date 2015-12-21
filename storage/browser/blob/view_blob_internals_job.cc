@@ -4,6 +4,9 @@
 
 #include "storage/browser/blob/view_blob_internals_job.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
@@ -230,11 +233,13 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(
     }
     if (item.offset()) {
       AddHTMLListItem(kOffset, base::UTF16ToUTF8(base::FormatNumber(
-          static_cast<int64>(item.offset()))), out);
+                                   static_cast<int64_t>(item.offset()))),
+                      out);
     }
-    if (static_cast<int64>(item.length()) != -1) {
+    if (static_cast<int64_t>(item.length()) != -1) {
       AddHTMLListItem(kLength, base::UTF16ToUTF8(base::FormatNumber(
-          static_cast<int64>(item.length()))), out);
+                                   static_cast<int64_t>(item.length()))),
+                      out);
     }
 
     if (has_multi_items)

@@ -5,7 +5,10 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_CONTEXT_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_CONTEXT_H_
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
@@ -44,12 +47,12 @@ class STORAGE_EXPORT FileSystemOperationContext
 
   // Updates the current remaining quota.
   // This can be called to update the remaining quota during the operation.
-  void set_allowed_bytes_growth(const int64& allowed_bytes_growth) {
+  void set_allowed_bytes_growth(const int64_t& allowed_bytes_growth) {
     allowed_bytes_growth_ = allowed_bytes_growth;
   }
 
   // Returns the current remaining quota.
-  int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
+  int64_t allowed_bytes_growth() const { return allowed_bytes_growth_; }
   storage::QuotaLimitType quota_limit_type() const { return quota_limit_type_; }
   base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
 
@@ -77,7 +80,7 @@ class STORAGE_EXPORT FileSystemOperationContext
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The current remaining quota, used by ObfuscatedFileUtil.
-  int64 allowed_bytes_growth_;
+  int64_t allowed_bytes_growth_;
 
   // The current quota limit type, used by ObfuscatedFileUtil.
   storage::QuotaLimitType quota_limit_type_;

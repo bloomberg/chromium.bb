@@ -4,11 +4,13 @@
 
 #include "storage/browser/fileapi/file_stream_reader.h"
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 
 namespace storage {
 
-// Int64->double->int64 conversions (e.g. through Blink) may lose some
+// Int64->double->int64_t conversions (e.g. through Blink) may lose some
 // precision in the microsecond range. Allow 10us delta.
 const int kModificationTimeAllowedDeltaMicroseconds = 10;
 

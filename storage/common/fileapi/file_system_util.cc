@@ -4,9 +4,12 @@
 
 #include "storage/common/fileapi/file_system_util.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"

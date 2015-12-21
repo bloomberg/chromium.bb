@@ -5,10 +5,14 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_STORAGE_CONTEXT_H_
 #define STORAGE_BROWSER_BLOB_BLOB_STORAGE_CONTEXT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/blob/blob_data_handle.h"

@@ -5,12 +5,12 @@
 #ifndef STORAGE_COMMON_BLOB_STORAGE_BLOB_ITEM_BYTES_RESPONSE_H_
 #define STORAGE_COMMON_BLOB_STORAGE_BLOB_ITEM_BYTES_RESPONSE_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <algorithm>
 #include <ostream>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "storage/common/storage_common_export.h"
 
 namespace storage {

@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/quota/quota_reservation_buffer.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "storage/browser/fileapi/quota/open_file_handle.h"
 #include "storage/browser/fileapi/quota/open_file_handle_context.h"
@@ -39,8 +41,9 @@ scoped_ptr<OpenFileHandle> QuotaReservationBuffer::GetOpenFileHandle(
   return make_scoped_ptr(new OpenFileHandle(reservation, *open_file));
 }
 
-void QuotaReservationBuffer::CommitFileGrowth(int64 reserved_quota_consumption,
-                                              int64 usage_delta) {
+void QuotaReservationBuffer::CommitFileGrowth(
+    int64_t reserved_quota_consumption,
+    int64_t usage_delta) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (!reservation_manager_)
     return;
@@ -66,7 +69,7 @@ void QuotaReservationBuffer::DetachOpenFileHandleContext(
   open_files_.erase(open_file->platform_path());
 }
 
-void QuotaReservationBuffer::PutReservationToBuffer(int64 reservation) {
+void QuotaReservationBuffer::PutReservationToBuffer(int64_t reservation) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK_LE(0, reservation);
   reserved_quota_ += reservation;
@@ -93,7 +96,7 @@ bool QuotaReservationBuffer::DecrementDirtyCount(
     const GURL& origin,
     FileSystemType type,
     base::File::Error error,
-    int64 delta_unused) {
+    int64_t delta_unused) {
   DCHECK(origin.is_valid());
   if (error == base::File::FILE_OK && reservation_manager) {
     reservation_manager->DecrementDirtyCount(origin, type);

@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/local_file_stream_writer.h"
 
+#include <stdint.h>
+
 #include "base/message_loop/message_loop.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -25,7 +27,7 @@ const int kCreateFlagsForWrite = base::File::FLAG_CREATE |
 FileStreamWriter* FileStreamWriter::CreateForLocalFile(
     base::TaskRunner* task_runner,
     const base::FilePath& file_path,
-    int64 initial_offset,
+    int64_t initial_offset,
     OpenOrCreate open_or_create) {
   return new LocalFileStreamWriter(
       task_runner, file_path, initial_offset, open_or_create);
@@ -85,7 +87,7 @@ int LocalFileStreamWriter::Flush(const net::CompletionCallback& callback) {
 
 LocalFileStreamWriter::LocalFileStreamWriter(base::TaskRunner* task_runner,
                                              const base::FilePath& file_path,
-                                             int64 initial_offset,
+                                             int64_t initial_offset,
                                              OpenOrCreate open_or_create)
     : file_path_(file_path),
       open_or_create_(open_or_create),
@@ -165,7 +167,7 @@ void LocalFileStreamWriter::InitiateSeek(
 void LocalFileStreamWriter::DidSeek(
     const net::CompletionCallback& error_callback,
     const base::Closure& main_operation,
-    int64 result) {
+    int64_t result) {
   DCHECK(has_pending_operation_);
 
   if (CancelIfRequested())

@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/sandbox_quota_observer.h"
 
+#include <stdint.h>
+
 #include "base/sequenced_task_runner.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
@@ -35,8 +37,7 @@ void SandboxQuotaObserver::OnStartUpdate(const FileSystemURL& url) {
   file_system_usage_cache_->IncrementDirty(usage_file_path);
 }
 
-void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url,
-                                    int64 delta) {
+void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url, int64_t delta) {
   DCHECK(update_notify_runner_->RunsTasksOnCurrentThread());
 
   if (quota_manager_proxy_.get()) {
@@ -130,7 +131,7 @@ void SandboxQuotaObserver::ApplyPendingUsageUpdate() {
 
 void SandboxQuotaObserver::UpdateUsageCacheFile(
     const base::FilePath& usage_file_path,
-    int64 delta) {
+    int64_t delta) {
   DCHECK(!usage_file_path.empty());
   if (!usage_file_path.empty() && delta != 0)
     file_system_usage_cache_->AtomicUpdateUsageByDelta(usage_file_path, delta);

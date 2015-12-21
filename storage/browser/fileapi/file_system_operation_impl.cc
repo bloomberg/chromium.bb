@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/file_system_operation_impl.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/bind.h"

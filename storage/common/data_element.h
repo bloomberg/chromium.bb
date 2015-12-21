@@ -5,6 +5,7 @@
 #ifndef STORAGE_COMMON_DATA_ELEMENT_H_
 #define STORAGE_COMMON_DATA_ELEMENT_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>

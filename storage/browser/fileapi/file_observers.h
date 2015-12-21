@@ -5,7 +5,9 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_OBSERVERS_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_OBSERVERS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "storage/browser/storage_browser_export.h"
 
 // TODO(kinuko): Split this file into per-observer multiple files.
@@ -33,7 +35,7 @@ class STORAGE_EXPORT FileUpdateObserver {
   virtual ~FileUpdateObserver() {}
 
   virtual void OnStartUpdate(const FileSystemURL& url) = 0;
-  virtual void OnUpdate(const FileSystemURL& url, int64 delta) = 0;
+  virtual void OnUpdate(const FileSystemURL& url, int64_t delta) = 0;
   virtual void OnEndUpdate(const FileSystemURL& url) = 0;
 
  private:

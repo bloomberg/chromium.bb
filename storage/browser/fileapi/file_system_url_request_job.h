@@ -5,9 +5,12 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_URL_REQUEST_JOB_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_URL_REQUEST_JOB_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -68,7 +71,7 @@ class STORAGE_EXPORT FileSystemURLRequestJob : public net::URLRequestJob {
   FileSystemURL url_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
-  int64 remaining_bytes_;
+  int64_t remaining_bytes_;
   net::Error range_parse_result_;
   net::HttpByteRange byte_range_;
   base::WeakPtrFactory<FileSystemURLRequestJob> weak_factory_;
