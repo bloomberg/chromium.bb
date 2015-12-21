@@ -249,17 +249,19 @@ void LogUMAHistogramLongTimes(const std::string& name,
 // [0, |num_possible_metrics|).
 void LogTypeQualityMetric(const std::string& base_name,
                           AutofillMetrics::FieldTypeQualityMetric metric,
-                          ServerFieldType field_type) {
+                          ServerFieldType field_type,
+                          bool observed_submission) {
   DCHECK_LT(metric, AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
 
-  LogUMAHistogramEnumeration(base_name, metric,
+  const std::string suffix(observed_submission ? "" : ".NoSubmission");
+  LogUMAHistogramEnumeration(base_name + suffix, metric,
                              AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
 
   int field_type_group_metric = GetFieldTypeGroupMetric(field_type, metric);
   int num_field_type_group_metrics =
       AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS *
       NUM_FIELD_TYPE_GROUPS_FOR_METRICS;
-  LogUMAHistogramEnumeration(base_name + ".ByFieldType",
+  LogUMAHistogramEnumeration(base_name + ".ByFieldType" + suffix,
                              field_type_group_metric,
                              num_field_type_group_metrics);
 }
@@ -528,20 +530,26 @@ void AutofillMetrics::LogDeveloperEngagementMetric(
 
 // static
 void AutofillMetrics::LogHeuristicTypePrediction(FieldTypeQualityMetric metric,
-                                                 ServerFieldType field_type) {
-  LogTypeQualityMetric("Autofill.Quality.HeuristicType", metric, field_type);
+                                                 ServerFieldType field_type,
+                                                 bool observed_submission) {
+  LogTypeQualityMetric("Autofill.Quality.HeuristicType", metric, field_type,
+                       observed_submission);
 }
 
 // static
 void AutofillMetrics::LogOverallTypePrediction(FieldTypeQualityMetric metric,
-                                               ServerFieldType field_type) {
-  LogTypeQualityMetric("Autofill.Quality.PredictedType", metric, field_type);
+                                               ServerFieldType field_type,
+                                               bool observed_submission) {
+  LogTypeQualityMetric("Autofill.Quality.PredictedType", metric, field_type,
+                       observed_submission);
 }
 
 // static
 void AutofillMetrics::LogServerTypePrediction(FieldTypeQualityMetric metric,
-                                              ServerFieldType field_type) {
-  LogTypeQualityMetric("Autofill.Quality.ServerType", metric, field_type);
+                                              ServerFieldType field_type,
+                                              bool observed_submission) {
+  LogTypeQualityMetric("Autofill.Quality.ServerType", metric, field_type,
+                       observed_submission);
 }
 
 // static
@@ -642,11 +650,18 @@ void AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(int index) {
 }
 
 // static
-void AutofillMetrics::LogNumberOfEditedAutofilledFieldsAtSubmission(
-    size_t num_edited_autofilled_fields) {
-  UMA_HISTOGRAM_COUNTS_1000(
-      "Autofill.NumberOfEditedAutofilledFieldsAtSubmission",
-      num_edited_autofilled_fields);
+void AutofillMetrics::LogNumberOfEditedAutofilledFields(
+    size_t num_edited_autofilled_fields,
+    bool observed_submission) {
+  if (observed_submission) {
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Autofill.NumberOfEditedAutofilledFieldsAtSubmission",
+        num_edited_autofilled_fields);
+  } else {
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Autofill.NumberOfEditedAutofilledFieldsAtSubmission.NoSubmission",
+        num_edited_autofilled_fields);
+  }
 }
 
 // static

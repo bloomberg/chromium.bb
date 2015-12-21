@@ -277,7 +277,6 @@ void AutofillManager::StartUploadProcess(
   // is available to use as a baseline.
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   if (observed_submission && form_structure->IsAutofillable()) {
-    // TODO(mathp): provide metrics for non-submission uploads.
     AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
         personal_data_->GetProfiles().size());
   }
@@ -326,10 +325,13 @@ void AutofillManager::ProcessPendingFormForUpload() {
   if (!pending_form_data_)
     return;
 
-  // We copy |pending_form_data_| to a new FormStructure to be consumed by the
-  // upload process and reset |pending_form_data_|.
-  scoped_ptr<FormStructure> upload_form(new FormStructure(*pending_form_data_));
+  // We get the FormStructure corresponding to |pending_form_data_|, used in the
+  // upload process. |pending_form_data_| is reset.
+  scoped_ptr<FormStructure> upload_form =
+      ValidateSubmittedForm(*pending_form_data_);
   pending_form_data_.reset();
+  if (!upload_form)
+    return;
 
   StartUploadProcess(std::move(upload_form), base::TimeTicks::Now(), false);
 }
@@ -1040,12 +1042,9 @@ void AutofillManager::UploadFormDataAsyncCallback(
     const TimeTicks& interaction_time,
     const TimeTicks& submission_time,
     bool observed_submission) {
-  // TODO(mathp): Have different set of metrics for non-submission uploads.
-  if (observed_submission) {
-    submitted_form->LogQualityMetrics(
-        load_time, interaction_time, submission_time,
-        client_->GetRapporService(), did_show_suggestions_);
-  }
+  submitted_form->LogQualityMetrics(
+      load_time, interaction_time, submission_time, client_->GetRapporService(),
+      did_show_suggestions_, observed_submission);
 
   if (submitted_form->ShouldBeCrowdsourced())
     UploadFormData(*submitted_form, observed_submission);
@@ -1077,6 +1076,8 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form,
 void AutofillManager::Reset() {
   // Note that upload_request_ is not reset here because the prompt to
   // save a card is shown after page navigation.
+  ProcessPendingFormForUpload();
+  DCHECK(!pending_form_data_);
   form_structures_.clear();
   address_form_event_logger_.reset(
       new AutofillMetrics::FormEventLogger(false /* is_for_credit_card */));
@@ -1088,8 +1089,6 @@ void AutofillManager::Reset() {
   user_did_type_ = false;
   user_did_autofill_ = false;
   user_did_edit_autofilled_field_ = false;
-  ProcessPendingFormForUpload();
-  DCHECK(!pending_form_data_);
   unmask_request_ = payments::PaymentsClient::UnmaskRequestDetails();
   unmasking_query_id_ = -1;
   unmasking_form_ = FormData();
@@ -1350,7 +1349,7 @@ scoped_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
     return scoped_ptr<FormStructure>();
 
   submitted_form->UpdateFromCache(*cached_submitted_form);
-  return submitted_form.Pass();
+  return submitted_form;
 }
 
 bool AutofillManager::FindCachedForm(const FormData& form,

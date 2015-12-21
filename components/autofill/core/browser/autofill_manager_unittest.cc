@@ -83,7 +83,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
     delegate_->OnDidGetUploadDetails(
         app_locale == "en-US" ? AutofillClient::SUCCESS
                               : AutofillClient::PERMANENT_FAILURE,
-        base::ASCIIToUTF16("this is a context token"),
+        ASCIIToUTF16("this is a context token"),
         scoped_ptr<base::DictionaryValue>(nullptr));
   }
 
@@ -3289,19 +3289,18 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndUnfocus_Upload) {
   ServerFieldTypeSet types;
 
   FormFieldData field;
-  test::CreateTestFormField("First Name", "firstname", "Elvis", "text", &field);
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
   form.fields.push_back(field);
   types.insert(NAME_FIRST);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("Last Name", "lastname", "Presley", "text", &field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
   form.fields.push_back(field);
   types.clear();
   types.insert(NAME_LAST);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("Email", "email", "theking@gmail.com", "text",
-                            &field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
   form.fields.push_back(field);
   types.clear();
   types.insert(EMAIL_ADDRESS);
@@ -3314,6 +3313,11 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndUnfocus_Upload) {
   autofill_manager_->set_expected_submitted_field_types(expected_types);
   autofill_manager_->set_expected_observed_submission(false);
 
+  // The fields are edited after calling FormsSeen on them. This is because
+  // default values are not used for upload comparisons.
+  form.fields[0].value = ASCIIToUTF16("Elvis");
+  form.fields[1].value = ASCIIToUTF16("Presley");
+  form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
   // Simulate editing a field.
   autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                           base::TimeTicks::Now());
@@ -3338,19 +3342,18 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndNavigation_Upload) {
   ServerFieldTypeSet types;
 
   FormFieldData field;
-  test::CreateTestFormField("First Name", "firstname", "Elvis", "text", &field);
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
   form.fields.push_back(field);
   types.insert(NAME_FIRST);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("Last Name", "lastname", "Presley", "text", &field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
   form.fields.push_back(field);
   types.clear();
   types.insert(NAME_LAST);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("Email", "email", "theking@gmail.com", "text",
-                            &field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
   form.fields.push_back(field);
   types.clear();
   types.insert(EMAIL_ADDRESS);
@@ -3363,6 +3366,11 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndNavigation_Upload) {
   autofill_manager_->set_expected_submitted_field_types(expected_types);
   autofill_manager_->set_expected_observed_submission(false);
 
+  // The fields are edited after calling FormsSeen on them. This is because
+  // default values are not used for upload comparisons.
+  form.fields[0].value = ASCIIToUTF16("Elvis");
+  form.fields[1].value = ASCIIToUTF16("Presley");
+  form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
   // Simulate editing a field.
   autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                           base::TimeTicks::Now());
@@ -3413,9 +3421,9 @@ TEST_F(AutofillManagerTest, OnDidFillAutofillFormDataAndUnfocus_Upload) {
   autofill_manager_->set_expected_observed_submission(false);
 
   // Form was autofilled with user data.
-  form.fields[0].value = base::ASCIIToUTF16("Elvis");
-  form.fields[1].value = base::ASCIIToUTF16("Presley");
-  form.fields[2].value = base::ASCIIToUTF16("theking@gmail.com");
+  form.fields[0].value = ASCIIToUTF16("Elvis");
+  form.fields[1].value = ASCIIToUTF16("Presley");
+  form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
   autofill_manager_->OnDidFillAutofillFormData(form, base::TimeTicks::Now());
 
   autofill_manager_->ResetRunLoop();

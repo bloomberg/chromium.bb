@@ -832,7 +832,8 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
                                       const base::TimeTicks& interaction_time,
                                       const base::TimeTicks& submission_time,
                                       rappor::RapporService* rappor_service,
-                                      bool did_show_suggestions) const {
+                                      bool did_show_suggestions,
+                                      bool observed_submission) const {
   size_t num_detected_field_types = 0;
   size_t num_server_mismatches = 0;
   size_t num_heuristic_mismatches = 0;
@@ -894,101 +895,109 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
     // Log heuristic, server, and overall type quality metrics, independently of
     // whether the field was autofilled.
     if (heuristic_type == UNKNOWN_TYPE) {
-      AutofillMetrics::LogHeuristicTypePrediction(AutofillMetrics::TYPE_UNKNOWN,
-                                                  field_type);
+      AutofillMetrics::LogHeuristicTypePrediction(
+          AutofillMetrics::TYPE_UNKNOWN, field_type, observed_submission);
     } else if (field_types.count(heuristic_type)) {
-      AutofillMetrics::LogHeuristicTypePrediction(AutofillMetrics::TYPE_MATCH,
-                                                  field_type);
+      AutofillMetrics::LogHeuristicTypePrediction(
+          AutofillMetrics::TYPE_MATCH, field_type, observed_submission);
     } else {
       ++num_heuristic_mismatches;
       AutofillMetrics::LogHeuristicTypePrediction(
-          AutofillMetrics::TYPE_MISMATCH, field_type);
+          AutofillMetrics::TYPE_MISMATCH, field_type, observed_submission);
     }
 
     if (server_type == NO_SERVER_DATA) {
       AutofillMetrics::LogServerTypePrediction(AutofillMetrics::TYPE_UNKNOWN,
-                                               field_type);
+                                               field_type, observed_submission);
     } else if (field_types.count(server_type)) {
       AutofillMetrics::LogServerTypePrediction(AutofillMetrics::TYPE_MATCH,
-                                               field_type);
+                                               field_type, observed_submission);
     } else {
       ++num_server_mismatches;
       AutofillMetrics::LogServerTypePrediction(AutofillMetrics::TYPE_MISMATCH,
-                                               field_type);
+                                               field_type, observed_submission);
     }
 
     if (predicted_type == UNKNOWN_TYPE) {
-      AutofillMetrics::LogOverallTypePrediction(AutofillMetrics::TYPE_UNKNOWN,
-                                                field_type);
+      AutofillMetrics::LogOverallTypePrediction(
+          AutofillMetrics::TYPE_UNKNOWN, field_type, observed_submission);
     } else if (field_types.count(predicted_type)) {
-      AutofillMetrics::LogOverallTypePrediction(AutofillMetrics::TYPE_MATCH,
-                                                field_type);
+      AutofillMetrics::LogOverallTypePrediction(
+          AutofillMetrics::TYPE_MATCH, field_type, observed_submission);
     } else {
-      AutofillMetrics::LogOverallTypePrediction(AutofillMetrics::TYPE_MISMATCH,
-                                                field_type);
+      AutofillMetrics::LogOverallTypePrediction(
+          AutofillMetrics::TYPE_MISMATCH, field_type, observed_submission);
     }
   }
 
-  AutofillMetrics::LogNumberOfEditedAutofilledFieldsAtSubmission(
-      num_edited_autofilled_fields);
+  AutofillMetrics::LogNumberOfEditedAutofilledFields(
+      num_edited_autofilled_fields, observed_submission);
 
-  if (num_detected_field_types < kRequiredFieldsForPredictionRoutines) {
-    AutofillMetrics::LogAutofillFormSubmittedState(
-        AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
-  } else {
-    if (did_autofill_all_possible_fields) {
+  // We log "submission" and duration metrics if we are here after observing a
+  // submission event.
+  if (observed_submission) {
+    if (num_detected_field_types < kRequiredFieldsForPredictionRoutines) {
       AutofillMetrics::LogAutofillFormSubmittedState(
-          AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL);
-    } else if (did_autofill_some_possible_fields) {
-      AutofillMetrics::LogAutofillFormSubmittedState(
-          AutofillMetrics::FILLABLE_FORM_AUTOFILLED_SOME);
-    } else if (!did_show_suggestions) {
-      AutofillMetrics::LogAutofillFormSubmittedState(
-          AutofillMetrics::
-              FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS);
+          AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
     } else {
-      AutofillMetrics::LogAutofillFormSubmittedState(
-          AutofillMetrics::FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS);
-    }
-
-    // Log some RAPPOR metrics for problematic cases.
-    if (num_server_mismatches >= kNumberOfMismatchesThreshold) {
-      rappor::SampleDomainAndRegistryFromGURL(
-          rappor_service, "Autofill.HighNumberOfServerMismatches", source_url_);
-    }
-    if (num_heuristic_mismatches >= kNumberOfMismatchesThreshold) {
-      rappor::SampleDomainAndRegistryFromGURL(
-          rappor_service, "Autofill.HighNumberOfHeuristicMismatches",
-          source_url_);
-    }
-
-    // Unlike the other times, the |submission_time| should always be available.
-    DCHECK(!submission_time.is_null());
-
-    // The |load_time| might be unset, in the case that the form was dynamically
-    // added to the DOM.
-    if (!load_time.is_null()) {
-      // Submission should always chronologically follow form load.
-      DCHECK(submission_time > load_time);
-      base::TimeDelta elapsed = submission_time - load_time;
-      if (did_autofill_some_possible_fields)
-        AutofillMetrics::LogFormFillDurationFromLoadWithAutofill(elapsed);
-      else
-        AutofillMetrics::LogFormFillDurationFromLoadWithoutAutofill(elapsed);
-    }
-
-    // The |interaction_time| might be unset, in the case that the user
-    // submitted a blank form.
-    if (!interaction_time.is_null()) {
-      // Submission should always chronologically follow interaction.
-      DCHECK(submission_time > interaction_time);
-      base::TimeDelta elapsed = submission_time - interaction_time;
-      if (did_autofill_some_possible_fields) {
-        AutofillMetrics::LogFormFillDurationFromInteractionWithAutofill(
-            elapsed);
+      if (did_autofill_all_possible_fields) {
+        AutofillMetrics::LogAutofillFormSubmittedState(
+            AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL);
+      } else if (did_autofill_some_possible_fields) {
+        AutofillMetrics::LogAutofillFormSubmittedState(
+            AutofillMetrics::FILLABLE_FORM_AUTOFILLED_SOME);
+      } else if (!did_show_suggestions) {
+        AutofillMetrics::LogAutofillFormSubmittedState(
+            AutofillMetrics::
+                FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS);
       } else {
-        AutofillMetrics::LogFormFillDurationFromInteractionWithoutAutofill(
-            elapsed);
+        AutofillMetrics::LogAutofillFormSubmittedState(
+            AutofillMetrics::
+                FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS);
+      }
+
+      // Log some RAPPOR metrics for problematic cases.
+      if (num_server_mismatches >= kNumberOfMismatchesThreshold) {
+        rappor::SampleDomainAndRegistryFromGURL(
+            rappor_service, "Autofill.HighNumberOfServerMismatches",
+            source_url_);
+      }
+      if (num_heuristic_mismatches >= kNumberOfMismatchesThreshold) {
+        rappor::SampleDomainAndRegistryFromGURL(
+            rappor_service, "Autofill.HighNumberOfHeuristicMismatches",
+            source_url_);
+      }
+
+      // Unlike the other times, the |submission_time| should always be
+      // available.
+      DCHECK(!submission_time.is_null());
+
+      // The |load_time| might be unset, in the case that the form was
+      // dynamically
+      // added to the DOM.
+      if (!load_time.is_null()) {
+        // Submission should always chronologically follow form load.
+        DCHECK(submission_time > load_time);
+        base::TimeDelta elapsed = submission_time - load_time;
+        if (did_autofill_some_possible_fields)
+          AutofillMetrics::LogFormFillDurationFromLoadWithAutofill(elapsed);
+        else
+          AutofillMetrics::LogFormFillDurationFromLoadWithoutAutofill(elapsed);
+      }
+
+      // The |interaction_time| might be unset, in the case that the user
+      // submitted a blank form.
+      if (!interaction_time.is_null()) {
+        // Submission should always chronologically follow interaction.
+        DCHECK(submission_time > interaction_time);
+        base::TimeDelta elapsed = submission_time - interaction_time;
+        if (did_autofill_some_possible_fields) {
+          AutofillMetrics::LogFormFillDurationFromInteractionWithAutofill(
+              elapsed);
+        } else {
+          AutofillMetrics::LogFormFillDurationFromInteractionWithoutAutofill(
+              elapsed);
+        }
       }
     }
   }

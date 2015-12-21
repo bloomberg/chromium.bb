@@ -81152,6 +81152,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Extensions.ExternalExtensionEvent"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="FieldPredictionNoSubmission" separator=".">
+  <suffix name="NoSubmission" label="No observed submission."/>
+  <affected-histogram
+      name="Autofill.NumberOfEditedAutofilledFieldsAtSubmission"/>
+  <affected-histogram name="Autofill.Quality.HeuristicType"/>
+  <affected-histogram name="Autofill.Quality.HeuristicType.ByFieldType"/>
+  <affected-histogram name="Autofill.Quality.PredictedType"/>
+  <affected-histogram name="Autofill.Quality.PredictedType.ByFieldType"/>
+  <affected-histogram name="Autofill.Quality.ServerType"/>
+  <affected-histogram name="Autofill.Quality.ServerType.ByFieldType"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="FileBrowserLoad" separator=".">
   <suffix name="Construct"
       label="Time spent constructing the main Javascript object."/>

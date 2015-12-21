@@ -504,11 +504,14 @@ class AutofillMetrics {
   static void LogDeveloperEngagementMetric(DeveloperEngagementMetric metric);
 
   static void LogHeuristicTypePrediction(FieldTypeQualityMetric metric,
-                                         ServerFieldType field_type);
+                                         ServerFieldType field_type,
+                                         bool observed_submission);
   static void LogOverallTypePrediction(FieldTypeQualityMetric metric,
-                                       ServerFieldType field_type);
+                                       ServerFieldType field_type,
+                                       bool observed_submission);
   static void LogServerTypePrediction(FieldTypeQualityMetric metric,
-                                      ServerFieldType field_type);
+                                      ServerFieldType field_type,
+                                      bool observed_submission);
 
   static void LogServerQueryMetric(ServerQueryMetric metric);
 
@@ -630,10 +633,12 @@ class AutofillMetrics {
   // Log the index of the selected Autocomplete suggestion in the popup.
   static void LogAutocompleteSuggestionAcceptedIndex(int index);
 
-  // Log how many autofilled fields in a given form were edited before
-  // submission.
-  static void LogNumberOfEditedAutofilledFieldsAtSubmission(
-      size_t num_edited_autofilled_fields);
+  // Log how many autofilled fields in a given form were edited before the
+  // submission or when the user unfocused the form (depending on
+  // |observed_submission|).
+  static void LogNumberOfEditedAutofilledFields(
+      size_t num_edited_autofilled_fields,
+      bool observed_submission);
 
   // This should be called each time a server response is parsed for a form.
   static void LogServerResponseHasDataForForm(bool has_data);

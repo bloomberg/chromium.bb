@@ -512,6 +512,158 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
       GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
 }
 
+// Test that we log quality metrics appropriately when an upload is triggered
+// but no submission event is sent.
+TEST_F(AutofillMetricsTest, QualityMetrics_NoSubmission) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
+                            "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FIRST);
+
+  test::CreateTestFormField("Autofill Failed", "autofillfailed",
+                            "buddy@gmail.com", "text", &field);
+  field.is_autofilled = false;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_NUMBER);
+  server_types.push_back(EMAIL_ADDRESS);
+
+  test::CreateTestFormField("Empty", "empty", "", "text", &field);
+  field.is_autofilled = false;
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FIRST);
+
+  test::CreateTestFormField("Unknown", "unknown", "garbage", "text", &field);
+  field.is_autofilled = false;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_NUMBER);
+  server_types.push_back(EMAIL_ADDRESS);
+
+  test::CreateTestFormField("Select", "select", "USA", "select-one", &field);
+  field.is_autofilled = false;
+  form.fields.push_back(field);
+  heuristic_types.push_back(UNKNOWN_TYPE);
+  server_types.push_back(NO_SERVER_DATA);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_WHOLE_NUMBER);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+
+  // Simulate text input on one of the fields.
+  autofill_manager_->OnTextFieldDidChange(form, form.fields[0], TimeTicks());
+
+  // Trigger a form upload and metrics by Resetting the manager.
+  base::HistogramTester histogram_tester;
+
+  autofill_manager_->ResetRunLoop();
+  autofill_manager_->Reset();
+  autofill_manager_->RunRunLoop();
+
+  // Heuristic predictions.
+  // Unknown:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.NoSubmission",
+      AutofillMetrics::TYPE_UNKNOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
+                              AutofillMetrics::TYPE_UNKNOWN),
+      1);
+  // Match:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.NoSubmission",
+      AutofillMetrics::TYPE_MATCH, 2);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MATCH), 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
+                              AutofillMetrics::TYPE_MATCH),
+      1);
+  // Mismatch:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.NoSubmission",
+      AutofillMetrics::TYPE_MISMATCH, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MISMATCH),
+      1);
+
+  // Server predictions:
+  // Unknown:
+  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType.NoSubmission",
+                                     AutofillMetrics::TYPE_UNKNOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.ServerType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
+                              AutofillMetrics::TYPE_UNKNOWN),
+      1);
+  // Match:
+  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType.NoSubmission",
+                                     AutofillMetrics::TYPE_MATCH, 2);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.ServerType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MATCH), 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.ServerType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
+                              AutofillMetrics::TYPE_MATCH),
+      1);
+  // Mismatch:
+  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType.NoSubmission",
+                                     AutofillMetrics::TYPE_MISMATCH, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.ServerType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
+
+  // Overall predictions:
+  // Unknown:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.PredictedType.NoSubmission",
+      AutofillMetrics::TYPE_UNKNOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.PredictedType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
+                              AutofillMetrics::TYPE_UNKNOWN),
+      1);
+  // Match:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.PredictedType.NoSubmission",
+      AutofillMetrics::TYPE_MATCH, 2);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.PredictedType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MATCH), 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.PredictedType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
+                              AutofillMetrics::TYPE_MATCH),
+      1);
+  // Mismatch:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.PredictedType.NoSubmission",
+      AutofillMetrics::TYPE_MISMATCH, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.PredictedType.ByFieldType.NoSubmission",
+      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
+}
+
 // Test that we do not log RAPPOR metrics when the number of mismatches is not
 // high enough.
 TEST_F(AutofillMetricsTest, Rappor_LowMismatchRate_NoMetricsReported) {
@@ -1041,6 +1193,56 @@ TEST_F(AutofillMetricsTest, NumberOfEditedAutofilledFields) {
   // fields is logged.
   histogram_tester.ExpectUniqueSample(
       "Autofill.NumberOfEditedAutofilledFieldsAtSubmission", 2, 1);
+}
+
+// Verify that when resetting the autofill manager (such as during a
+// navigation), the proper number of edited fields is logged.
+TEST_F(AutofillMetricsTest, NumberOfEditedAutofilledFields_NoSubmission) {
+  // Construct a fillable form.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+
+  // Three fields is enough to make it an autofillable form.
+  FormFieldData field;
+  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
+                            "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FULL);
+
+  test::CreateTestFormField("Autofill Failed", "autofillfailed",
+                            "buddy@gmail.com", "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(EMAIL_ADDRESS);
+  server_types.push_back(EMAIL_ADDRESS);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+
+  base::HistogramTester histogram_tester;
+  // Simulate text input in the first field.
+  autofill_manager_->OnTextFieldDidChange(form, form.fields[0], TimeTicks());
+
+  // We expect metrics to be logged when the manager is reset.
+  autofill_manager_->ResetRunLoop();
+  autofill_manager_->Reset();
+  autofill_manager_->RunRunLoop();
+
+  // An autofillable form was uploaded, and the number of edited autofilled
+  // fields is logged.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.NumberOfEditedAutofilledFieldsAtSubmission.NoSubmission", 1, 1);
 }
 
 // Verify that we correctly log metrics regarding developer engagement.
@@ -3058,7 +3260,6 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     autofill_manager_->ResetRunLoop();
     autofill_manager_->Reset();
     autofill_manager_->RunRunLoop();
-    ;
   }
 
   // Make sure that submitting a form that was loaded later will report the
