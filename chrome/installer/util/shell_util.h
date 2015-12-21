@@ -20,10 +20,12 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "chrome/installer/util/work_item_list.h"
 
 class BrowserDistribution;
+class RegistryEntry;
 
 namespace base {
 class CancellationFlag;
@@ -647,6 +649,11 @@ class ShellUtil {
   // application, as given to AddFileAssociations. All information associated
   // with this name will be deleted.
   static bool DeleteFileAssociations(const base::string16& prog_id);
+
+  // This method converts all the RegistryEntries from the given list to
+  // Set/CreateRegWorkItems and runs them using WorkItemList.
+  static bool AddRegistryEntries(HKEY root,
+                                 const ScopedVector<RegistryEntry>& entries);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellUtil);

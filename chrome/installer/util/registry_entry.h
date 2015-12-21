@@ -92,6 +92,8 @@ class RegistryEntry {
   // with the same key.
   bool KeyExistsInRegistry(uint32 look_for_in) const;
 
+  const base::string16& key_path() const { return key_path_; }
+
  private:
   // States this RegistryKey can be in compared to the registry.
   enum RegistryStatus {
