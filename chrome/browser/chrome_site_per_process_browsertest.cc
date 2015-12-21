@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -103,23 +105,24 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 // involves querying content settings from the renderer process and using the
 // top frame's origin as one of the parameters.  See https://crbug.com/426658.
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PluginWithRemoteTopFrame) {
-  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  // Serve from the root so that flash_object.html can load the swf file.
+  base::FilePath test_data_dir;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/chrome/test/data/iframe.html"));
   ui_test_utils::NavigateToURL(browser(), main_url);
 
   // Navigate subframe to a page with a Flash object.
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL frame_url =
-      embedded_test_server()->GetURL("b.com", "/flash_object.html");
-  content::DOMMessageQueue msg_queue;
-  EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", frame_url));
+      embedded_test_server()->GetURL("b.com",
+                                     "/chrome/test/data/flash_object.html");
 
   // Ensure the page finishes loading without crashing.
-  std::string status;
-  while (msg_queue.WaitForMessage(&status)) {
-    if (status == "\"DONE\"")
-      break;
-  }
+  EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", frame_url));
 }
 
 // Check that window.focus works for cross-process popups.

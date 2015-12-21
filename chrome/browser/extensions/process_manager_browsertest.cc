@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -23,7 +22,6 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/background_page_watcher.h"
-#include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -151,25 +149,6 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
     // Wait until the last RenderFrameHosts are deleted. This wait doesn't take
     // long.
     observer.Wait();
-  }
-
-  void NavigateIframeToURLAndWait(content::WebContents* web_contents,
-                                  const std::string iframe_id,
-                                  const GURL& url) {
-    // This is an improved version of content::NavigateIframeToURL. Unlike the
-    // other method, this does actually wait until the load of all child frames
-    // completes.
-    std::string script = base::StringPrintf(
-        "var frame = document.getElementById('%s');"
-        "frame.onload = frame.onerror = function(event) {"
-        "  frame.onload = frame.onerror = null;"
-        "  domAutomationController.send(event.type === 'load');"
-        "};"
-        "frame.src = '%s';",
-        iframe_id.c_str(), url.spec().c_str());
-    bool is_loaded = false;
-    EXPECT_TRUE(ExecuteScriptAndExtractBool(web_contents, script, &is_loaded));
-    EXPECT_TRUE(is_loaded);
   }
 
   size_t IfExtensionsIsolated(size_t if_enabled, size_t if_disabled) {
@@ -385,12 +364,12 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, FrameClassification) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // Tests extension frames in non-extension page.
-  NavigateIframeToURLAndWait(tab, "frame1", kExt1EmptyUrl);
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame1", kExt1EmptyUrl));
   EXPECT_EQ(IfExtensionsIsolated(1, 0),
             pm->GetRenderFrameHostsForExtension(extension1->id()).size());
   EXPECT_EQ(IfExtensionsIsolated(1, 0), pm->GetAllFrames().size());
 
-  NavigateIframeToURLAndWait(tab, "frame2", kExt2EmptyUrl);
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame2", kExt2EmptyUrl));
   EXPECT_EQ(IfExtensionsIsolated(1, 0),
             pm->GetRenderFrameHostsForExtension(extension2->id()).size());
   EXPECT_EQ(IfExtensionsIsolated(2, 0), pm->GetAllFrames().size());
@@ -402,19 +381,20 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, FrameClassification) {
   EXPECT_EQ(3u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
   EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
 
-  NavigateIframeToURLAndWait(tab, "frame1",
-                             embedded_test_server()->GetURL("/empty.html"));
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame1",
+                                           embedded_test_server()
+                                           ->GetURL("/empty.html")));
   // 1 top-level + 1 child frame from Extension 1.
   EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
   EXPECT_EQ(2u, pm->GetAllFrames().size());
 
-  NavigateIframeToURLAndWait(tab, "frame1", kExt1EmptyUrl);
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame1", kExt1EmptyUrl));
   // 1 top-level + 2 child frames from Extension 1.
   EXPECT_EQ(3u, pm->GetAllFrames().size());
   EXPECT_EQ(3u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
 
   // Load a frame from another extension.
-  NavigateIframeToURLAndWait(tab, "frame1", kExt2EmptyUrl);
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame1", kExt2EmptyUrl));
   // 1 top-level + 1 child frame from Extension 1,
   // 1 child frame from Extension 2.
   EXPECT_EQ(IfExtensionsIsolated(3, 2), pm->GetAllFrames().size());
@@ -440,8 +420,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, FrameClassification) {
   EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
 
   // Sandboxed frames are not viewed as extension frames.
-  NavigateIframeToURLAndWait(tab, "frame0",
-                             extension2->url().Resolve("sandboxed.html"));
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame0",
+                                           extension2->url()
+                                           .Resolve("sandboxed.html")));
   // 1 top-level frame from Extension 2.
   EXPECT_EQ(1u, pm->GetAllFrames().size());
   EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
@@ -456,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, FrameClassification) {
   EXPECT_EQ(3u, pm->GetAllFrames().size());
   EXPECT_EQ(3u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
 
-  NavigateIframeToURLAndWait(tab, "frame1", kExt2TwoFramesUrl);
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame1", kExt2TwoFramesUrl));
   // 1 top-level + 2 child frames from Extension 1,
   // 2 child frames in frame1 from Extension 2.
   EXPECT_EQ(5u, pm->GetAllFrames().size());
@@ -464,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, FrameClassification) {
 
   // The extension frame from the other extension should not be classified as an
   // extension (unless out-of-process frames are enabled).
-  NavigateIframeToURLAndWait(tab, "frame1", kExt1EmptyUrl);
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame1", kExt1EmptyUrl));
   // 1 top-level + 1 child frames from Extension 2,
   // 1 child frame from Extension 1.
   EXPECT_EQ(IfExtensionsIsolated(3, 2), pm->GetAllFrames().size());
@@ -472,7 +453,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, FrameClassification) {
             pm->GetRenderFrameHostsForExtension(extension1->id()).size());
   EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
 
-  NavigateIframeToURLAndWait(tab, "frame2", kExt1TwoFramesUrl);
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame2", kExt1TwoFramesUrl));
   // 1 top-level + 1 child frames from Extension 2,
   // 1 child frame + 2 child frames in frame2 from Extension 1.
   EXPECT_EQ(IfExtensionsIsolated(5, 1), pm->GetAllFrames().size());
@@ -494,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, FrameClassification) {
   EXPECT_EQ(1u, pm->GetAllFrames().size());
 
   // ... load an extension frame in the non-extension process
-  NavigateIframeToURLAndWait(tab, "frame1", kExt1EmptyUrl);
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame1", kExt1EmptyUrl));
   EXPECT_EQ(IfExtensionsIsolated(2, 1),
             pm->GetRenderFrameHostsForExtension(extension1->id()).size());
 
