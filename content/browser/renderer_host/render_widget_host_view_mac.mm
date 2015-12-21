@@ -2292,7 +2292,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       event.skip_in_browser = true;
       widgetHost->ForwardKeyboardEvent(event);
     } else if ((!textInserted || delayEventUntilAfterImeCompostion) &&
-               [[theEvent characters] length] > 0 &&
+               event.text[0] != '\0' &&
                (([theEvent modifierFlags] & kCtrlCmdKeyMask) ||
                 (hasEditCommands_ && editCommands_.empty()))) {
       // We don't get insertText: calls if ctrl or cmd is down, or the key event
