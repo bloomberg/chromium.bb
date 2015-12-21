@@ -466,6 +466,10 @@ class Browser : public TabStripModelObserver,
   void ShowCertificateViewerInDevTools(
       content::WebContents* web_contents,
       int cert_id) override;
+  scoped_ptr<content::BluetoothChooser> RunBluetoothChooser(
+      content::WebContents* web_contents,
+      const content::BluetoothChooser::EventHandler& event_handler,
+      const GURL& origin) override;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
