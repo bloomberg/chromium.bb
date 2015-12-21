@@ -342,6 +342,13 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
         return false;
 }
 
+qcms_bool qcms_profile_has_white_point(qcms_profile *profile)
+{
+        struct XYZNumber wp = profile->mediaWhitePoint;
+
+        return (wp.X != 0) && (wp.Y != 0) && (wp.Z != 0);
+}
+
 #define TAG_bXYZ 0x6258595a
 #define TAG_gXYZ 0x6758595a
 #define TAG_rXYZ 0x7258595a
