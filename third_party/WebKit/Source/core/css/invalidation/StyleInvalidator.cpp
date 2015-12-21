@@ -69,8 +69,11 @@ void StyleInvalidator::scheduleInvalidationSetsForElement(const InvalidationList
 
     PendingInvalidations& pendingInvalidations = ensurePendingInvalidations(element);
     if (element.nextSibling()) {
-        for (auto& invalidationSet : invalidationLists.siblings)
+        for (auto& invalidationSet : invalidationLists.siblings) {
+            if (pendingInvalidations.siblings().contains(invalidationSet))
+                continue;
             pendingInvalidations.siblings().append(invalidationSet);
+        }
     }
 
     if (!requiresDescendantInvalidation)
@@ -78,8 +81,11 @@ void StyleInvalidator::scheduleInvalidationSetsForElement(const InvalidationList
 
     for (auto& invalidationSet : invalidationLists.descendants) {
         ASSERT(!invalidationSet->wholeSubtreeInvalid());
-        if (!invalidationSet->isEmpty())
-            pendingInvalidations.descendants().append(invalidationSet);
+        if (invalidationSet->isEmpty())
+            continue;
+        if (pendingInvalidations.descendants().contains(invalidationSet))
+            continue;
+        pendingInvalidations.descendants().append(invalidationSet);
     }
 }
 
