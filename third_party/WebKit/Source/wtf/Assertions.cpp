@@ -357,7 +357,7 @@ void ScopedLogger::print(const char* format, ...)
 
 ScopedLogger*& ScopedLogger::current()
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(ThreadSpecific<ScopedLogger*>, ref, new ThreadSpecific<ScopedLogger*>);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<ScopedLogger*>, ref, new ThreadSpecific<ScopedLogger*>);
     return *ref;
 }
 

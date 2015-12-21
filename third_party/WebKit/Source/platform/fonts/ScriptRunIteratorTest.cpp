@@ -35,7 +35,7 @@ public:
 
     static const MockScriptData* instance()
     {
-        DEFINE_STATIC_LOCAL_THREAD_SAFE(const MockScriptData, mockScriptData, (new MockScriptData()));
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(const MockScriptData, mockScriptData, (new MockScriptData()));
 
         return &mockScriptData;
     }

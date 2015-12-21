@@ -39,7 +39,7 @@
 // by some toolchains. Make use of double-checked locking to reduce overhead.
 // Note that this uses system-wide default lock, and cannot be used before
 // WTF::initializeThreading() is called.
-#define DEFINE_STATIC_LOCAL_THREAD_SAFE(T, name, initializer) \
+#define DEFINE_THREAD_SAFE_STATIC_LOCAL(T, name, initializer) \
     /* Init to nullptr is thread-safe on all implementations. */        \
     static void* name##Pointer = nullptr;                               \
     if (!WTF::acquireLoad(&name##Pointer)) {                            \

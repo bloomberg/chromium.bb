@@ -1070,7 +1070,7 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
 {
     // This static is atomically initialized to dodge a warning about
     // a race when dumping debug data for a layer.
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(HashSet<QualifiedName>, animatableAttributes, new HashSet<QualifiedName>());
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(HashSet<QualifiedName>, animatableAttributes, new HashSet<QualifiedName>());
 
     if (animatableAttributes.isEmpty()) {
         const QualifiedName* const animatableAttrs[] = {

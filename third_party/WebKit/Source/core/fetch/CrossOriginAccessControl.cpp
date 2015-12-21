@@ -57,7 +57,7 @@ static PassOwnPtr<HTTPHeaderSet> createAllowedCrossOriginResponseHeadersSet()
 
 bool isOnAccessControlResponseHeaderWhitelist(const String& name)
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(HTTPHeaderSet, allowedCrossOriginResponseHeaders, (createAllowedCrossOriginResponseHeadersSet().leakPtr()));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(HTTPHeaderSet, allowedCrossOriginResponseHeaders, (createAllowedCrossOriginResponseHeadersSet().leakPtr()));
 
     return allowedCrossOriginResponseHeaders.contains(name);
 }
@@ -130,9 +130,9 @@ static String buildAccessControlFailureMessage(const String& detail, SecurityOri
 
 bool passesAccessControlCheck(const ResourceResponse& response, StoredCredentials includeCredentials, SecurityOrigin* securityOrigin, String& errorDescription, WebURLRequest::RequestContext context)
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(AtomicString, allowOriginHeaderName, (new AtomicString("access-control-allow-origin", AtomicString::ConstructFromLiteral)));
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(AtomicString, allowCredentialsHeaderName, (new AtomicString("access-control-allow-credentials", AtomicString::ConstructFromLiteral)));
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(AtomicString, allowSuboriginHeaderName, (new AtomicString("access-control-allow-suborigin", AtomicString::ConstructFromLiteral)));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowOriginHeaderName, (new AtomicString("access-control-allow-origin", AtomicString::ConstructFromLiteral)));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowCredentialsHeaderName, (new AtomicString("access-control-allow-credentials", AtomicString::ConstructFromLiteral)));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowSuboriginHeaderName, (new AtomicString("access-control-allow-suborigin", AtomicString::ConstructFromLiteral)));
 
     int statusCode = response.httpStatusCode();
 

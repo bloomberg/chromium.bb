@@ -28,7 +28,7 @@ enum class GATTAttribute {
 
 NameToAssignedNumberMap* getAssignedNumberToServiceNameMap()
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(NameToAssignedNumberMap, servicesMap, []() {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(NameToAssignedNumberMap, servicesMap, []() {
         // https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx
         NameToAssignedNumberMap* services = new NameToAssignedNumberMap();
         services->add("alert_notification", 0x1811);
@@ -71,7 +71,7 @@ NameToAssignedNumberMap* getAssignedNumberToServiceNameMap()
 
 NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(NameToAssignedNumberMap, characteristicsMap, []() {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(NameToAssignedNumberMap, characteristicsMap, []() {
         // https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicsHome.aspx
         NameToAssignedNumberMap* characteristics = new NameToAssignedNumberMap();
         characteristics->add("aerobic_heart_rate_lower_limit", 0x2A7E);
@@ -243,7 +243,7 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
 
 NameToAssignedNumberMap* getAssignedNumberForDescriptorNameMap()
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(NameToAssignedNumberMap, descriptorsMap, []() {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(NameToAssignedNumberMap, descriptorsMap, []() {
         // https://developer.bluetooth.org/gatt/descriptors/Pages/DescriptorsHomePage.aspx
         NameToAssignedNumberMap* descriptors = new NameToAssignedNumberMap();
         descriptors->add("gatt.characteristic_extended_properties", 0x2900);

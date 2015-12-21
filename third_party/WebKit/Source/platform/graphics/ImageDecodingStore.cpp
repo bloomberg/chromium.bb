@@ -54,7 +54,7 @@ ImageDecodingStore::~ImageDecodingStore()
 
 ImageDecodingStore& ImageDecodingStore::instance()
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(ImageDecodingStore, store, ImageDecodingStore::create().leakPtr());
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(ImageDecodingStore, store, ImageDecodingStore::create().leakPtr());
     return store;
 }
 

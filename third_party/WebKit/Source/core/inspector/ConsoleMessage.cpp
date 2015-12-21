@@ -21,7 +21,7 @@ unsigned nextMessageId()
         unsigned value;
     };
 
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(WTF::ThreadSpecific<MessageId>, messageId, new WTF::ThreadSpecific<MessageId>);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(WTF::ThreadSpecific<MessageId>, messageId, new WTF::ThreadSpecific<MessageId>);
     return ++messageId->value;
 }
 

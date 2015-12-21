@@ -70,7 +70,7 @@ ForbiddenHeaderNames::ForbiddenHeaderNames()
 
 const ForbiddenHeaderNames& ForbiddenHeaderNames::get()
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(const ForbiddenHeaderNames, instance, new ForbiddenHeaderNames);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(const ForbiddenHeaderNames, instance, new ForbiddenHeaderNames);
     return instance;
 }
 

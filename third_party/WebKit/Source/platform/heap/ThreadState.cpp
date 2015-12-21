@@ -74,7 +74,7 @@ SafePointBarrier* ThreadState::s_safePointBarrier = nullptr;
 
 RecursiveMutex& ThreadState::threadAttachMutex()
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(RecursiveMutex, mutex, (new RecursiveMutex));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(RecursiveMutex, mutex, (new RecursiveMutex));
     return mutex;
 }
 
@@ -493,7 +493,7 @@ void ThreadState::threadLocalWeakProcessing()
 
 CrossThreadPersistentRegion& ThreadState::crossThreadPersistentRegion()
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(CrossThreadPersistentRegion, persistentRegion, new CrossThreadPersistentRegion());
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistentRegion, persistentRegion, new CrossThreadPersistentRegion());
     return persistentRegion;
 }
 

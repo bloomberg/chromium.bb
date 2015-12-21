@@ -39,7 +39,7 @@ namespace blink {
 
 NetworkStateNotifier& networkStateNotifier()
 {
-    DEFINE_STATIC_LOCAL_THREAD_SAFE(NetworkStateNotifier, networkStateNotifier, new NetworkStateNotifier);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(NetworkStateNotifier, networkStateNotifier, new NetworkStateNotifier);
     return networkStateNotifier;
 }
 
