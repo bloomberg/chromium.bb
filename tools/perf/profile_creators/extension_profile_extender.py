@@ -81,7 +81,7 @@ class ExtensionProfileExtender(profile_extender.ProfileExtender):
     local_zip_path = os.path.join(local_extensions_dir, ZIP_NAME)
     try:
       cloud_storage.Get(remote_bucket, remote_zip_path, local_zip_path)
-    except:
+    except cloud_storage.ServerError:
       raise InvalidExtensionArchiveError('Can\'t find archive at gs://%s/%s..'
                                          % (remote_bucket, remote_zip_path))
     try:
