@@ -63,20 +63,12 @@ shared_library("command_buffer_gles2") {
   ]
 
   deps = [
+    ":gpu",
     "//base",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/command_buffer/service",
-    "//gpu/config:config_sources",
     "//ui/gl:gl",
   ]
-
-  if (!is_component_build) {
-    deps += [
-      "//gpu/command_buffer/client:client_sources",
-      "//gpu/command_buffer/client:gles2_cmd_helper_sources",
-    ]
-  }
 
   defines = [
     "COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY",
