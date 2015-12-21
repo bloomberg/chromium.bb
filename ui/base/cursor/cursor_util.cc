@@ -15,10 +15,43 @@
 
 namespace ui {
 
+namespace {
+
+// Converts the SkBitmap to use a different alpha type. Returns true if bitmap
+// was modified, otherwise returns false.
+bool ConvertSkBitmapAlphaType(SkBitmap* bitmap, SkAlphaType alpha_type) {
+  if (bitmap->info().alphaType() == alpha_type) {
+    return false;
+  }
+
+  // Copy the bitmap into a temporary buffer. This will convert alpha type.
+  SkImageInfo image_info =
+      SkImageInfo::MakeN32(bitmap->width(), bitmap->height(), alpha_type);
+  std::vector<char> buffer(bitmap->getSize());
+  bitmap->readPixels(image_info, &buffer[0], image_info.minRowBytes(), 0, 0);
+  // Read the temporary buffer back into the original bitmap.
+  bitmap->reset();
+  bitmap->allocPixels(image_info);
+  memcpy(bitmap->getPixels(), &buffer[0], buffer.size());
+
+  return true;
+}
+
+} // namespace
+
 void ScaleAndRotateCursorBitmapAndHotpoint(float scale,
                                            gfx::Display::Rotation rotation,
                                            SkBitmap* bitmap,
                                            gfx::Point* hotpoint) {
+  // SkBitmapOperations::Rotate() needs the bitmap to have premultiplied alpha,
+  // so convert bitmap alpha type if we are going to rotate.
+  bool was_converted = false;
+  if (rotation != gfx::Display::ROTATE_0 &&
+      bitmap->info().alphaType() == kUnpremul_SkAlphaType) {
+    ConvertSkBitmapAlphaType(bitmap, kPremul_SkAlphaType);
+    was_converted = true;
+  }
+
   switch (rotation) {
     case gfx::Display::ROTATE_0:
       break;
@@ -38,6 +71,10 @@ void ScaleAndRotateCursorBitmapAndHotpoint(float scale,
       *bitmap = SkBitmapOperations::Rotate(
           *bitmap, SkBitmapOperations::ROTATION_270_CW);
       break;
+  }
+
+  if (was_converted) {
+    ConvertSkBitmapAlphaType(bitmap, kUnpremul_SkAlphaType);
   }
 
   if (scale < FLT_EPSILON) {

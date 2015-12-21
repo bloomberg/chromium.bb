@@ -757,6 +757,9 @@ SkBitmap SkBitmapOperations::CreateDropShadow(
 // static
 SkBitmap SkBitmapOperations::Rotate(const SkBitmap& source,
                                     RotationAmount rotation) {
+  // SkCanvas::drawBitmap() fails silently with unpremultiplied SkBitmap.
+  DCHECK_NE(source.info().alphaType(), kUnpremul_SkAlphaType);
+
   SkBitmap result;
   SkScalar angle = SkFloatToScalar(0.0f);
 
