@@ -44,6 +44,9 @@
     ],
     "ChromeDashboard": [
         {
+            "group_name": "Enabled"
+        },
+        {
             "group_name": "Default"
         }
     ],

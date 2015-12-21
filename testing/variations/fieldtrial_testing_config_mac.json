@@ -27,6 +27,14 @@
             "group_name": "Enabled"
         }
     ],
+    "ChromeDashboard": [
+        {
+            "group_name": "Enabled"
+        },
+        {
+            "group_name": "Default"
+        }
+    ],
     "ChromotingQUIC": [
         {
             "group_name": "Enabled"
