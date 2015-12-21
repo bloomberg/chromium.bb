@@ -132,8 +132,9 @@ const cc::LayerSettings& Layer::UILayerSettings() {
 // static
 void Layer::InitializeUILayerSettings() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUIEnableCompositorAnimationTimelines))
-    g_ui_layer_settings.Get().use_compositor_animation_timelines = true;
+  g_ui_layer_settings.Get().use_compositor_animation_timelines =
+      !command_line->HasSwitch(
+          switches::kUIDisableCompositorAnimationTimelines);
 }
 
 const Compositor* Layer::GetCompositor() const {

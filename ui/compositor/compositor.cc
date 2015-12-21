@@ -169,8 +169,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   // thread.
   settings.image_decode_tasks_enabled = false;
 
-  settings.use_compositor_animation_timelines =
-      command_line->HasSwitch(switches::kUIEnableCompositorAnimationTimelines);
+  settings.use_compositor_animation_timelines = !command_line->HasSwitch(
+      switches::kUIDisableCompositorAnimationTimelines);
 
 #if !defined(OS_ANDROID)
   // TODO(sohanjg): Revisit this memory usage in tile manager.

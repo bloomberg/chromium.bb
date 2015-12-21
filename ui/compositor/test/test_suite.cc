@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
@@ -32,6 +33,8 @@ void CompositorTestSuite::Initialize() {
 #if defined(OS_WIN)
   gfx::SetDefaultDeviceScaleFactor(1.0f);
 #endif
+
+  ui::Layer::InitializeUILayerSettings();
 
   message_loop_.reset(new base::MessageLoopForUI);
 }
