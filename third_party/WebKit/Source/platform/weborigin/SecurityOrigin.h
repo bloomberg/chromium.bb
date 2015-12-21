@@ -138,6 +138,7 @@ public:
     // cryptographically-authenticated origin, as described in
     // https://w3c.github.io/webappsec/specs/powerfulfeatures/#is-origin-trustworthy.
     bool isPotentiallyTrustworthy(String& errorMessage) const;
+    bool isPotentiallyTrustworthy() const;
 
     // Returns true if this SecurityOrigin can load local resources, such
     // as images, iframes, and style sheets, and can link to local URLs.

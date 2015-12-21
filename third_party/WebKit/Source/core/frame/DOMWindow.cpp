@@ -166,8 +166,7 @@ bool DOMWindow::isSecureContext() const
     if (!frame())
         return false;
 
-    String unusedErrorMessage;
-    return document()->isSecureContext(unusedErrorMessage, ExecutionContext::StandardSecureContextCheck);
+    return document()->isSecureContext(ExecutionContext::StandardSecureContextCheck);
 }
 
 void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, const String& targetOrigin, LocalDOMWindow* source, ExceptionState& exceptionState)

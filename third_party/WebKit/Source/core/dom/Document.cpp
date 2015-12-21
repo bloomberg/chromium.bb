@@ -341,6 +341,13 @@ static bool acceptsEditingFocus(const Element& element)
     return element.document().frame() && element.rootEditableElement();
 }
 
+static bool isOriginPotentiallyTrustworthy(SecurityOrigin* origin, String* errorMessage)
+{
+    if (errorMessage)
+        return origin->isPotentiallyTrustworthy(*errorMessage);
+    return origin->isPotentiallyTrustworthy();
+}
+
 uint64_t Document::s_globalTreeVersion = 0;
 
 static bool s_threadedParsingEnabledForTesting = true;
@@ -3324,6 +3331,70 @@ void Document::cloneDataFromDocument(const Document& other)
     setMimeType(other.contentType());
 }
 
+bool Document::isSecureContextImpl(String* errorMessage, const SecureContextCheck privilegeContextCheck) const
+{
+    // There may be exceptions for the secure context check defined for certain
+    // schemes. The exceptions are applied only to the special scheme and to
+    // sandboxed URLs from those origins, but *not* to any children.
+    //
+    // For example:
+    //   <iframe src="http://host">
+    //     <iframe src="scheme-has-exception://host"></iframe>
+    //     <iframe sandbox src="scheme-has-exception://host"></iframe>
+    //   </iframe>
+    // both inner iframes pass this check, assuming that the scheme
+    // "scheme-has-exception:" is granted an exception.
+    //
+    // However,
+    //   <iframe src="http://host">
+    //     <iframe sandbox src="http://host"></iframe>
+    //   </iframe>
+    // would fail the check (that is, sandbox does not grant an exception itself).
+    //
+    // Additionally, with
+    //   <iframe src="scheme-has-exception://host">
+    //     <iframe src="http://host"></iframe>
+    //     <iframe sandbox src="http://host"></iframe>
+    //   </iframe>
+    // both inner iframes would fail the check, even though the outermost iframe
+    // passes.
+    //
+    // In all cases, a frame must be potentially trustworthy in addition to
+    // having an exception listed in order for the exception to be granted.
+    if (SecurityContext::isSandboxed(SandboxOrigin)) {
+        RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url());
+        if (!isOriginPotentiallyTrustworthy(origin.get(), errorMessage))
+            return false;
+        if (SchemeRegistry::schemeShouldBypassSecureContextCheck(origin->protocol()))
+            return true;
+    } else {
+        if (!isOriginPotentiallyTrustworthy(securityOrigin(), errorMessage))
+            return false;
+        if (SchemeRegistry::schemeShouldBypassSecureContextCheck(securityOrigin()->protocol()))
+            return true;
+    }
+
+    if (privilegeContextCheck == StandardSecureContextCheck) {
+        Document* context = parentDocument();
+        while (context) {
+            // Skip to the next ancestor if it's a srcdoc.
+            if (!context->isSrcdocDocument()) {
+                if (context->securityContext().isSandboxed(SandboxOrigin)) {
+                    // For a sandboxed origin, use the document's URL.
+                    RefPtr<SecurityOrigin> origin = SecurityOrigin::create(context->url());
+                    if (!isOriginPotentiallyTrustworthy(origin.get(), errorMessage))
+                        return false;
+                } else {
+                    if (!isOriginPotentiallyTrustworthy(context->securityOrigin(), errorMessage))
+                        return false;
+                }
+            }
+            context = context->parentDocument();
+        }
+    }
+    return true;
+}
+
 StyleSheetList* Document::styleSheets()
 {
     if (!m_styleSheetList)
@@ -5700,66 +5771,12 @@ v8::Local<v8::Object> Document::associateWithWrapper(v8::Isolate* isolate, const
 
 bool Document::isSecureContext(String& errorMessage, const SecureContextCheck privilegeContextCheck) const
 {
-    // There may be exceptions for the secure context check defined for certain
-    // schemes. The exceptions are applied only to the special scheme and to
-    // sandboxed URLs from those origins, but *not* to any children.
-    //
-    // For example:
-    //   <iframe src="http://host">
-    //     <iframe src="scheme-has-exception://host"></iframe>
-    //     <iframe sandbox src="scheme-has-exception://host"></iframe>
-    //   </iframe>
-    // both inner iframes pass this check, assuming that the scheme
-    // "scheme-has-exception:" is granted an exception.
-    //
-    // However,
-    //   <iframe src="http://host">
-    //     <iframe sandbox src="http://host"></iframe>
-    //   </iframe>
-    // would fail the check (that is, sandbox does not grant an exception itself).
-    //
-    // Additionally, with
-    //   <iframe src="scheme-has-exception://host">
-    //     <iframe src="http://host"></iframe>
-    //     <iframe sandbox src="http://host"></iframe>
-    //   </iframe>
-    // both inner iframes would fail the check, even though the outermost iframe
-    // passes.
-    //
-    // In all cases, a frame must be potentially trustworthy in addition to
-    // having an exception listed in order for the exception to be granted.
-    if (SecurityContext::isSandboxed(SandboxOrigin)) {
-        RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url());
-        if (!origin->isPotentiallyTrustworthy(errorMessage))
-            return false;
-        if (SchemeRegistry::schemeShouldBypassSecureContextCheck(origin->protocol()))
-            return true;
-    } else {
-        if (!securityOrigin()->isPotentiallyTrustworthy(errorMessage))
-            return false;
-        if (SchemeRegistry::schemeShouldBypassSecureContextCheck(securityOrigin()->protocol()))
-            return true;
-    }
+    return isSecureContextImpl(&errorMessage, privilegeContextCheck);
+}
 
-    if (privilegeContextCheck == StandardSecureContextCheck) {
-        Document* context = parentDocument();
-        while (context) {
-            // Skip to the next ancestor if it's a srcdoc.
-            if (!context->isSrcdocDocument()) {
-                if (context->securityContext().isSandboxed(SandboxOrigin)) {
-                    // For a sandboxed origin, use the document's URL.
-                    RefPtr<SecurityOrigin> origin = SecurityOrigin::create(context->url());
-                    if (!origin->isPotentiallyTrustworthy(errorMessage))
-                        return false;
-                } else {
-                    if (!context->securityOrigin()->isPotentiallyTrustworthy(errorMessage))
-                        return false;
-                }
-            }
-            context = context->parentDocument();
-        }
-    }
-    return true;
+bool Document::isSecureContext(const SecureContextCheck privilegeContextCheck) const
+{
+    return isSecureContextImpl(nullptr, privilegeContextCheck);
 }
 
 WebTaskRunner* Document::loadingTaskRunner() const

@@ -1033,6 +1033,7 @@ public:
     NthIndexCache* nthIndexCache() const { return m_nthIndexCache; }
 
     bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const override;
+    bool isSecureContext(const SecureContextCheck = StandardSecureContextCheck) const override;
 
     ClientHintsPreferences& clientHintsPreferences() { return m_clientHintsPreferences; }
 
@@ -1119,6 +1120,7 @@ private:
     bool childTypeAllowed(NodeType) const final;
     PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) final;
     void cloneDataFromDocument(const Document&);
+    bool isSecureContextImpl(String* errorMessage, const SecureContextCheck priviligeContextCheck) const;
 
 #if !ENABLE(OILPAN)
     void refExecutionContext() final { ref(); }

@@ -263,6 +263,12 @@ bool ExecutionContext::isWindowInteractionAllowed() const
     return m_windowInteractionTokens > 0;
 }
 
+bool ExecutionContext::isSecureContext(const SecureContextCheck privilegeContextCheck) const
+{
+    String unusedErrorMessage;
+    return isSecureContext(unusedErrorMessage, privilegeContextCheck);
+}
+
 void ExecutionContext::setReferrerPolicy(ReferrerPolicy referrerPolicy)
 {
     // When a referrer policy has already been set, the latest value takes precedence.

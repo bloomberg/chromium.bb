@@ -355,6 +355,15 @@ bool SecurityOrigin::canDisplay(const KURL& url) const
 
 bool SecurityOrigin::isPotentiallyTrustworthy(String& errorMessage) const
 {
+    if (isPotentiallyTrustworthy())
+        return true;
+
+    errorMessage = "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).";
+    return false;
+}
+
+bool SecurityOrigin::isPotentiallyTrustworthy() const
+{
     ASSERT(m_protocol != "data");
     if (SchemeRegistry::shouldTreatURLSchemeAsSecure(m_protocol) || isLocal() || isLocalhost())
         return true;
@@ -362,7 +371,6 @@ bool SecurityOrigin::isPotentiallyTrustworthy(String& errorMessage) const
     if (SecurityPolicy::isOriginWhiteListedTrustworthy(*this))
         return true;
 
-    errorMessage = "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).";
     return false;
 }
 

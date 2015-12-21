@@ -153,6 +153,7 @@ public:
     // Decides whether this context is privileged, as described in
     // https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged.
     virtual bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const = 0;
+    virtual bool isSecureContext(const SecureContextCheck = StandardSecureContextCheck) const;
 
     virtual void setReferrerPolicy(ReferrerPolicy);
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
