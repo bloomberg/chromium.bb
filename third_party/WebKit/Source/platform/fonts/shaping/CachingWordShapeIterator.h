@@ -117,9 +117,40 @@ private:
         if (m_startIndex + 1u == length || isWordDelimiter(m_textRun[m_startIndex]))
             return m_startIndex + 1;
 
+        // Delimit every CJK character because these scripts do not delimit
+        // words by spaces, and not delimiting hits the performance.
+        if (!m_textRun.is8Bit()) {
+            UChar32 ch;
+            unsigned end = m_startIndex;
+            U16_NEXT(m_textRun.characters16(), end, length, ch);
+            if (Character::isCJKIdeographOrSymbol(ch)) {
+                bool hasAnyScript = !Character::isCommonOrInheritedScript(ch);
+                for (unsigned i = end; i < length; end = i) {
+                    U16_NEXT(m_textRun.characters16(), i, length, ch);
+                    if (U_GET_GC_MASK(ch) & (U_GC_M_MASK | U_GC_LM_MASK | U_GC_SK_MASK))
+                        continue;
+                    // Avoid delimiting COMMON/INHERITED alone, which makes harder to
+                    // identify the script.
+                    if (Character::isCJKIdeographOrSymbol(ch)) {
+                        if (Character::isCommonOrInheritedScript(ch))
+                            continue;
+                        if (!hasAnyScript) {
+                            hasAnyScript = true;
+                            continue;
+                        }
+                    }
+                    return end;
+                }
+                return length;
+            }
+        }
+
         for (unsigned i = m_startIndex + 1; ; i++) {
-            if (i == length || isWordDelimiter(m_textRun[i]))
+            if (i == length || isWordDelimiter(m_textRun[i])
+                || (!m_textRun.is8Bit()
+                    && Character::isCJKIdeographOrSymbol(m_textRun[i]))) {
                 return i;
+            }
         }
     }
 

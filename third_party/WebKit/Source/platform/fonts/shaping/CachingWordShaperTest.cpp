@@ -179,6 +179,162 @@ TEST_F(CachingWordShaperTest, SubRunWithZeroGlyphs)
     shaper.selectionRect(&font, textRun, point, height, 0, 8);
 }
 
+TEST_F(CachingWordShaperTest, SegmentCJKByCharacter)
+{
+    const UChar str[] = {
+        0x56FD, 0x56FD, // CJK Unified Ideograph
+        'a', 'b',
+        0x56FD, // CJK Unified Ideograph
+        'x', 'y', 'z',
+        0x3042, // HIRAGANA LETTER A
+        0x56FD, // CJK Unified Ideograph
+        0x0
+    };
+    TextRun textRun(str, 10);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(2u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(3u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
+TEST_F(CachingWordShaperTest, SegmentCJKAndCommon)
+{
+    const UChar str[] = {
+        'a', 'b',
+        0xFF08, // FULLWIDTH LEFT PARENTHESIS (script=common)
+        0x56FD, // CJK Unified Ideograph
+        0x56FD, // CJK Unified Ideograph
+        0x56FD, // CJK Unified Ideograph
+        0x3002, // IDEOGRAPHIC FULL STOP (script=common)
+        0x0
+    };
+    TextRun textRun(str, 7);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(2u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(2u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(2u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
+TEST_F(CachingWordShaperTest, SegmentCJKAndInherit)
+{
+    const UChar str[] = {
+        0x304B, // HIRAGANA LETTER KA
+        0x304B, // HIRAGANA LETTER KA
+        0x3009, // COMBINING KATAKANA-HIRAGANA VOICED SOUND MARK
+        0x304B, // HIRAGANA LETTER KA
+        0x0
+    };
+    TextRun textRun(str, 4);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(2u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
+TEST_F(CachingWordShaperTest, SegmentCJKAndNonCJKCommon)
+{
+    const UChar str[] = {
+        0x56FD, // CJK Unified Ideograph
+        ' ',
+        0x0
+    };
+    TextRun textRun(str, 2);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
+TEST_F(CachingWordShaperTest, SegmentCJKCommon)
+{
+    const UChar str[] = {
+        0xFF08, // FULLWIDTH LEFT PARENTHESIS (script=common)
+        0xFF08, // FULLWIDTH LEFT PARENTHESIS (script=common)
+        0xFF08, // FULLWIDTH LEFT PARENTHESIS (script=common)
+        0x0
+    };
+    TextRun textRun(str, 3);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(3u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
+TEST_F(CachingWordShaperTest, SegmentCJKCommonAndNonCJK)
+{
+    const UChar str[] = {
+        0xFF08, // FULLWIDTH LEFT PARENTHESIS (script=common)
+        'a', 'b',
+        0x0
+    };
+    TextRun textRun(str, 3);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(2u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
 TEST_F(CachingWordShaperTest, TextOrientationFallbackShouldNotInFallbackList)
 {
     const UChar str[] = {

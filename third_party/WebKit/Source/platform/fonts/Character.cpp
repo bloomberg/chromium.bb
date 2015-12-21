@@ -33,6 +33,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
+#include <unicode/uscript.h>
 
 using namespace WTF;
 using namespace Unicode;
@@ -509,6 +510,13 @@ String Character::normalizeSpaces(const LChar* characters, unsigned length)
 String Character::normalizeSpaces(const UChar* characters, unsigned length)
 {
     return normalizeSpacesInternal(characters, length);
+}
+
+bool Character::isCommonOrInheritedScript(UChar32 character)
+{
+    UErrorCode status = U_ZERO_ERROR;
+    UScriptCode script = uscript_getScript(character, &status);
+    return U_SUCCESS(status) && (script == USCRIPT_COMMON || script == USCRIPT_INHERITED);
 }
 
 } // namespace blink

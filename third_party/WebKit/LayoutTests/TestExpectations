@@ -476,6 +476,20 @@ crbug.com/510337 inspector/console/console-format.html [ Slow ]
 crbug.com/510337 inspector/elements/edit/edit-dom-actions.html [ Slow Timeout ]
 crbug.com/510337 inspector/elements/styles-1/edit-value-url-with-color.html [ Slow ]
 
+crbug.com/570229 [ Linux Mac ] fast/css/line-height-determined-by-primary-font.html [ NeedsRebaseline ]
+crbug.com/570229 [ Mac ] fast/ruby/nested-ruby.html [ NeedsRebaseline ]
+crbug.com/570229 [ Mac ] fast/text/international/002.html [ NeedsRebaseline ]
+crbug.com/570229 [ Mac ] fast/text/international/text-spliced-font.html [ NeedsRebaseline ]
+crbug.com/570229 [ Mac XP Win7 ] fast/text/international/wrap-CJK-001.html [ NeedsRebaseline ]
+crbug.com/570229 [ Linux ] fast/text/justify-ideograph-complex.html [ NeedsRebaseline ]
+crbug.com/570229 [ Linux ] fast/text/justify-ideograph-simple.html [ NeedsRebaseline ]
+crbug.com/570229 [ Linux ] fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
+crbug.com/570229 [ Win ] fast/writing-mode/english-lr-text.html [ NeedsRebaseline ]
+crbug.com/570229 [ Linux Mac ] inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ NeedsRebaseline ]
+crbug.com/570229 [ Linux Mac Win ] svg/W3C-SVG-1.1/text-align-08-b.svg [ NeedsRebaseline ]
+crbug.com/570229 [ Mac ] svg/W3C-SVG-1.1/text-intro-01-t.svg [ NeedsRebaseline ]
+crbug.com/570229 [ Mac ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ NeedsRebaseline ]
+
 # SPv2 paint properties are still being implemented.
 crbug.com/537409 virtual/spv2/ [ Skip ]
 

@@ -124,6 +124,8 @@ public:
 
     static String normalizeSpaces(const LChar*, unsigned length);
     static String normalizeSpaces(const UChar*, unsigned length);
+
+    static bool isCommonOrInheritedScript(UChar32);
 };
 
 } // namespace blink
