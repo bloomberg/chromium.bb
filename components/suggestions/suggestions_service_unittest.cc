@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/image_manager.h"
 #include "components/suggestions/proto/suggestions.pb.h"
@@ -35,6 +36,9 @@ using ::testing::_;
 
 namespace {
 
+// SuggestionsService::AccessTokenFetcher provides an empty account ID if its
+// SigninManager is null.
+const char kAccountId[] = "";
 const char kTestTitle[] = "a title";
 const char kTestUrl[] = "http://go.com";
 const char kTestFaviconUrl[] =
@@ -204,7 +208,10 @@ class SuggestionsServiceTest : public testing::Test {
         factory_(NULL, base::Bind(&CreateURLFetcher)),
         mock_thumbnail_manager_(NULL),
         mock_blacklist_store_(NULL),
-        test_suggestions_store_(NULL) {}
+        test_suggestions_store_(NULL) {
+    token_service_.UpdateCredentials(kAccountId, "refresh_token");
+    token_service_.set_auto_post_fetch_response_on_message_loop(true);
+  }
 
   ~SuggestionsServiceTest() override {}
 
@@ -237,7 +244,7 @@ class SuggestionsServiceTest : public testing::Test {
         sync_state, base::Bind(&SuggestionsServiceTest::CheckCallback,
                                base::Unretained(this)));
 
-    // Ensure that CheckSuggestionsData() ran once.
+    // Ensure that CheckCallback() ran once.
     EXPECT_EQ(1, suggestions_data_callback_count_);
 
     // Let the network request run.
@@ -253,6 +260,8 @@ class SuggestionsServiceTest : public testing::Test {
     mock_thumbnail_manager_ = new StrictMock<MockImageManager>();
     mock_blacklist_store_ = new StrictMock<MockBlacklistStore>();
     return new SuggestionsService(
+        nullptr /* signin_manager */,
+        &token_service_,
         request_context_.get(),
         scoped_ptr<SuggestionsStore>(test_suggestions_store_),
         scoped_ptr<ImageManager>(mock_thumbnail_manager_),
@@ -318,9 +327,14 @@ class SuggestionsServiceTest : public testing::Test {
     EXPECT_TRUE(undo_blacklisting_failed_);
   }
 
+  bool HasPendingSuggestionsRequest(SuggestionsService* suggestions_service) {
+    return !!suggestions_service->pending_request_.get();
+  }
+
  protected:
   base::MessageLoopForIO io_message_loop_;
   net::FakeURLFetcherFactory factory_;
+  FakeProfileOAuth2TokenService token_service_;
   // Only used if the SuggestionsService is built with mocks. Not owned.
   MockImageManager* mock_thumbnail_manager_;
   MockBlacklistStore* mock_blacklist_store_;
@@ -353,6 +367,31 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
 
   // Ensure that ExpectEmptySuggestionsProfile ran once.
   EXPECT_EQ(1, suggestions_empty_data_count_);
+}
+
+TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
+  token_service_.RevokeCredentials(kAccountId);
+
+  scoped_ptr<SuggestionsService> suggestions_service(
+      CreateSuggestionsServiceWithMocks());
+  ASSERT_TRUE(suggestions_service != NULL);
+
+  // We should get served from cache.
+  EXPECT_CALL(*mock_thumbnail_manager_, Initialize(_));
+  EXPECT_CALL(*mock_blacklist_store_, FilterSuggestions(_));
+  EXPECT_CALL(*mock_blacklist_store_, GetTimeUntilReadyForUpload(_))
+      .WillOnce(Return(false));
+
+  suggestions_service->FetchSuggestionsData(
+      INITIALIZED_ENABLED_HISTORY,
+      base::Bind(&SuggestionsServiceTest::CheckCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(1, suggestions_data_callback_count_);
+
+  // But no network request should be sent.
+  io_message_loop_.RunUntilIdle();
+  EXPECT_FALSE(HasPendingSuggestionsRequest(suggestions_service.get()));
 }
 
 TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingError) {

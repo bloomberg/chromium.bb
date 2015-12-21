@@ -34,8 +34,10 @@ source_set("suggestions") {
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//components/pref_registry",
+    "//components/signin/core/browser",
     "//components/variations",
     "//components/variations/net",
+    "//google_apis",
   ]
 
   if (is_ios) {
@@ -58,6 +60,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/leveldb_proto:test_support",
     "//components/pref_registry:test_support",
+    "//components/signin/core/browser:test_support",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

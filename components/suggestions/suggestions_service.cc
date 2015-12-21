@@ -4,10 +4,10 @@
 
 #include "components/suggestions/suggestions_service.h"
 
-#include <string>
+#include <utility>
 
+#include "base/feature_list.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -15,12 +15,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/time/time.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -30,7 +32,6 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
-#include "url/gurl.h"
 
 using base::CancelableClosure;
 using base::TimeDelta;
@@ -83,11 +84,19 @@ const int kSchedulingBackoffMultiplier = 2;
 // this are rejected. This means the maximum backoff is at least 5 / 2 minutes.
 const int kSchedulingMaxDelaySec = 5 * 60;
 
+// Format string for OAuth2 authentication headers.
+const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
+
 const char kFaviconURL[] =
     "https://s2.googleusercontent.com/s2/favicons?domain_url=%s&alt=s&sz=32";
 
 const char kPingURL[] =
     "https://www.google.com/chromesuggestions/click?q=%lld&cd=%d";
+
+const base::Feature kOAuth2AuthenticationFeature {
+  "SuggestionsServiceOAuth2", base::FEATURE_ENABLED_BY_DEFAULT
+};
+
 }  // namespace
 
 // TODO(mathp): Put this in TemplateURL.
@@ -110,7 +119,62 @@ const char kSuggestionsBlacklistURLParam[] = "url";
 // The default expiry timeout is 168 hours.
 const int64 kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
 
+// Helper class for fetching OAuth2 access tokens.
+// To get a token, call |GetAccessToken|. Does not support multiple concurrent
+// token requests, i.e. check |HasPendingRequest| first.
+class SuggestionsService::AccessTokenFetcher
+    : public OAuth2TokenService::Consumer {
+ public:
+  using TokenCallback = base::Callback<void(const std::string&)>;
+
+  AccessTokenFetcher(const SigninManagerBase* signin_manager,
+                     OAuth2TokenService* token_service)
+      : OAuth2TokenService::Consumer("suggestions_service"),
+        signin_manager_(signin_manager),
+        token_service_(token_service) {}
+
+  void GetAccessToken(const TokenCallback& callback) {
+    callback_ = callback;
+    std::string account_id;
+    // |signin_manager_| can be null in unit tests.
+    if (signin_manager_)
+      account_id = signin_manager_->GetAuthenticatedAccountId();
+    OAuth2TokenService::ScopeSet scopes;
+    scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
+    token_request_ = token_service_->StartRequest(account_id, scopes, this);
+  }
+
+  bool HasPendingRequest() const {
+    return !!token_request_.get();
+  }
+
+ private:
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override {
+    DCHECK_EQ(request, token_request_.get());
+    callback_.Run(access_token);
+    token_request_.reset(nullptr);
+  }
+
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override {
+    DCHECK_EQ(request, token_request_.get());
+    LOG(WARNING) << "Token error: " << error.ToString();
+    callback_.Run(std::string());
+    token_request_.reset(nullptr);
+  }
+
+  const SigninManagerBase* signin_manager_;
+  OAuth2TokenService* token_service_;
+
+  TokenCallback callback_;
+  scoped_ptr<OAuth2TokenService::Request> token_request_;
+};
+
 SuggestionsService::SuggestionsService(
+    const SigninManagerBase* signin_manager,
+    OAuth2TokenService* token_service,
     net::URLRequestContextGetter* url_request_context,
     scoped_ptr<SuggestionsStore> suggestions_store,
     scoped_ptr<ImageManager> thumbnail_manager,
@@ -120,6 +184,7 @@ SuggestionsService::SuggestionsService(
       thumbnail_manager_(thumbnail_manager.Pass()),
       blacklist_store_(blacklist_store.Pass()),
       scheduling_delay_(TimeDelta::FromSeconds(kDefaultSchedulingDelaySec)),
+      token_fetcher_(new AccessTokenFetcher(signin_manager, token_service)),
       suggestions_url_(kSuggestionsURL),
       blacklist_url_prefix_(kSuggestionsBlacklistURLPrefix),
       weak_ptr_factory_(this) {}
@@ -133,7 +198,7 @@ void SuggestionsService::FetchSuggestionsData(
   waiting_requestors_.push_back(callback);
   if (sync_state == SYNC_OR_HISTORY_SYNC_DISABLED) {
     // Cancel any ongoing request, to stop interacting with the server.
-    pending_request_.reset(NULL);
+    pending_request_.reset(nullptr);
     suggestions_store_->ClearSuggestions();
     DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
   } else if (sync_state == INITIALIZED_ENABLED_HISTORY ||
@@ -257,24 +322,56 @@ void SuggestionsService::IssueRequestIfNoneOngoing(const GURL& url) {
   if (pending_request_.get()) {
     return;
   }
-  pending_request_ = CreateSuggestionsRequest(url);
+  if (base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature)) {
+    // If there is an ongoing token request, also wait for that.
+    if (token_fetcher_->HasPendingRequest()) {
+      return;
+    }
+    token_fetcher_->GetAccessToken(
+        base::Bind(&SuggestionsService::IssueSuggestionsRequest,
+                   base::Unretained(this), url));
+  } else {
+    // No access token required.
+    IssueSuggestionsRequest(url, std::string());
+  }
+}
+
+void SuggestionsService::IssueSuggestionsRequest(
+    const GURL& url,
+    const std::string& access_token) {
+  if (base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature) &&
+      access_token.empty()) {
+    UpdateBlacklistDelay(false);
+    ScheduleBlacklistUpload();
+    return;
+  }
+  pending_request_ = CreateSuggestionsRequest(url, access_token);
   pending_request_->Start();
   last_request_started_time_ = TimeTicks::Now();
 }
 
 scoped_ptr<net::URLFetcher> SuggestionsService::CreateSuggestionsRequest(
-    const GURL& url) {
+    const GURL& url, const std::string& access_token) {
   scoped_ptr<net::URLFetcher> request =
       net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       request.get(), data_use_measurement::DataUseUserData::SUGGESTIONS);
-  request->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  int load_flags = net::LOAD_DISABLE_CACHE;
+  if (base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature)) {
+    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  }
+  request->SetLoadFlags(load_flags);
   request->SetRequestContext(url_request_context_);
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
   variations::AppendVariationHeaders(request->GetOriginalURL(), false, false,
                                      &headers);
   request->SetExtraRequestHeaders(headers.ToString());
+  if (base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature) &&
+      !access_token.empty()) {
+    request->AddExtraRequestHeader(
+        base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
+  }
   return request;
 }
 
@@ -283,7 +380,7 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(pending_request_.get(), source);
 
   // The fetcher will be deleted when the request is handled.
-  scoped_ptr<const net::URLFetcher> request(pending_request_.release());
+  scoped_ptr<const net::URLFetcher> request(std::move(pending_request_));
 
   const net::URLRequestStatus& request_status = request->GetStatus();
   if (request_status.status() != net::URLRequestStatus::SUCCESS) {
@@ -365,7 +462,7 @@ void SuggestionsService::PopulateExtraData(SuggestionsProfile* suggestions) {
 
 void SuggestionsService::Shutdown() {
   // Cancel pending request, then serve existing requestors from cache.
-  pending_request_.reset(NULL);
+  pending_request_.reset(nullptr);
   ServeFromCache();
 }
 

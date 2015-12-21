@@ -21,7 +21,6 @@
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_utils.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -31,6 +30,9 @@ class URLRequestContextGetter;
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
+
+class OAuth2TokenService;
+class SigninManagerBase;
 
 namespace suggestions {
 
@@ -51,6 +53,8 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // Class taking ownership of |suggestions_store|, |thumbnail_manager| and
   // |blacklist_store|.
   SuggestionsService(
+      const SigninManagerBase* signin_manager,
+      OAuth2TokenService* token_service,
       net::URLRequestContextGetter* url_request_context,
       scoped_ptr<SuggestionsStore> suggestions_store,
       scoped_ptr<ImageManager> thumbnail_manager,
@@ -110,7 +114,7 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   void SetDefaultExpiryTimestamp(SuggestionsProfile* suggestions,
                                  int64 timestamp_usec);
 
-  // Issue a network request if there isn't already one happening. Visible for
+  // Issues a network request if there isn't already one happening. Visible for
   // testing.
   void IssueRequestIfNoneOngoing(const GURL& url);
 
@@ -123,8 +127,18 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UndoBlacklistURLFailsHelper);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UpdateBlacklistDelay);
 
+  // Issues a network request for suggestions (fetch, blacklist, or clear
+  // blacklist, depending on |url|). |access_token| is used only if OAuth2
+  // authentication is enabled.
+  void IssueSuggestionsRequest(const GURL& url,
+                               const std::string& access_token);
+
   // Creates a request to the suggestions service, properly setting headers.
-  scoped_ptr<net::URLFetcher> CreateSuggestionsRequest(const GURL& url);
+  // If OAuth2 authentication is enabled, |access_token| should be a valid
+  // OAuth2 access token, and will be written into an auth header.
+  scoped_ptr<net::URLFetcher> CreateSuggestionsRequest(
+      const GURL& url,
+      const std::string& access_token);
 
   // net::URLFetcherDelegate implementation.
   // Called when fetch request completes. Parses the received suggestions data,
@@ -174,6 +188,10 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   // Delay used when scheduling a blacklisting task.
   base::TimeDelta scheduling_delay_;
+
+  // Helper for fetching OAuth2 access tokens.
+  class AccessTokenFetcher;
+  scoped_ptr<AccessTokenFetcher> token_fetcher_;
 
   // Contains the current suggestions fetch request. Will only have a value
   // while a request is pending, and will be reset by |OnURLFetchComplete| or
