@@ -100,34 +100,53 @@ private:
 
     bool nextWord(RefPtr<ShapeResult>* wordResult)
     {
-        unsigned length = m_textRun.length();
-        if (m_startIndex < length) {
-            if (m_textRun[m_startIndex] == spaceCharacter
-                || m_textRun[m_startIndex] == tabulationCharacter) {
-                TextRun wordRun = m_textRun.subRun(m_startIndex, 1);
-                *wordResult = shapeWord(wordRun, m_font);
-                m_startIndex++;
-                return *wordResult;
-            }
-
-            return nextUntilCharacterOrTab(wordResult, spaceCharacter);
-        }
-        return false;
+        return shapeToEndIndex(wordResult, nextWordEndIndex());
     }
 
-    bool nextUntilCharacterOrTab(RefPtr<ShapeResult>* wordResult, UChar delimiter)
+    static bool isWordDelimiter(UChar ch)
+    {
+        return ch == spaceCharacter || ch == tabulationCharacter;
+    }
+
+    unsigned nextWordEndIndex()
+    {
+        const unsigned length = m_textRun.length();
+        if (m_startIndex >= length)
+            return 0;
+
+        if (m_startIndex + 1u == length || isWordDelimiter(m_textRun[m_startIndex]))
+            return m_startIndex + 1;
+
+        for (unsigned i = m_startIndex + 1; ; i++) {
+            if (i == length || isWordDelimiter(m_textRun[i]))
+                return i;
+        }
+    }
+
+    bool shapeToEndIndex(RefPtr<ShapeResult>* result, unsigned endIndex)
+    {
+        if (!endIndex || endIndex <= m_startIndex)
+            return false;
+
+        const unsigned length = m_textRun.length();
+        if (!m_startIndex && endIndex == length) {
+            *result = shapeWord(m_textRun, m_font);
+        } else {
+            ASSERT(endIndex <= length);
+            TextRun subRun = m_textRun.subRun(m_startIndex, endIndex - m_startIndex);
+            *result = shapeWord(subRun, m_font);
+        }
+        m_startIndex = endIndex;
+        return *result;
+    }
+
+    unsigned endIndexUntil(UChar ch)
     {
         unsigned length = m_textRun.length();
         ASSERT(m_startIndex < length);
         for (unsigned i = m_startIndex + 1; ; i++) {
-            if (i == length || m_textRun[i] == delimiter
-                || m_textRun[i] == tabulationCharacter) {
-                TextRun wordRun = m_textRun.subRun(m_startIndex,
-                    i - m_startIndex);
-                m_startIndex = i;
-                *wordResult = shapeWord(wordRun, m_font);
-                return *wordResult;
-            }
+            if (i == length || m_textRun[i] == ch)
+                return i;
         }
     }
 
@@ -147,14 +166,13 @@ private:
                 }
             }
         } else if (!m_shapeByWord) {
-            if (!nextUntilCharacterOrTab(wordResult, 0))
+            if (!shapeToEndIndex(wordResult, endIndexUntil(tabulationCharacter)))
                 return false;
         } else {
             if (!nextWord(wordResult))
                 return false;
         }
-        if (!*wordResult)
-            return false;
+        ASSERT(*wordResult);
         m_widthSoFar += (*wordResult)->width();
         return true;
     }
