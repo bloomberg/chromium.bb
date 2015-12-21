@@ -32,7 +32,6 @@ import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Row adapter for presenting recently closed tabs, synced tabs from other devices, the sync or
@@ -56,7 +55,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     private final RecentlyClosedTabsGroup mRecentlyClosedTabsGroup = new RecentlyClosedTabsGroup();
     private final SeparatorGroup mVisibleSeparatorGroup = new SeparatorGroup(true);
     private final SeparatorGroup mInvisibleSeparatorGroup = new SeparatorGroup(false);
-    private final long mInitializationTimestamp;  // Seconds since Unix epoch.
     private final FaviconCache mFaviconCache;
     private final int mFaviconSize;
 
@@ -138,7 +136,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
             if (groupView == null) {
                 groupView = (RecentTabsGroupView) LayoutInflater.from(mActivity).inflate(
                         R.layout.recent_tabs_group_item, parent, false);
-                groupView.initialize(mInitializationTimestamp);
             }
             configureGroupView(groupView, isExpanded);
             return groupView;
@@ -662,8 +659,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         mActivity = activity;
         mRecentTabsManager = recentTabsManager;
         mGroups = new ArrayList<Group>();
-        mInitializationTimestamp =
-            TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS);
         mFaviconCache = buildFaviconCache(MAX_NUM_FAVICONS_TO_CACHE);
 
         Resources resources = activity.getResources();
