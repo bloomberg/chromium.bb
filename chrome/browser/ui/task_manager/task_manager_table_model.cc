@@ -584,6 +584,13 @@ void TaskManagerTableModel::StartUpdating() {
   TaskManagerInterface::GetTaskManager()->AddObserver(this);
   tasks_ = observed_task_manager()->GetTaskIdsList();
   OnRefresh();
+
+  // In order for the scrollbar of the TableView to work properly on startup of
+  // the task manager, we must invoke TableModelObserver::OnModelChanged() which
+  // in turn will invoke TableView::NumRowsChanged(). This will adjust the
+  // vertical scrollbar correctly. crbug.com/570966.
+  if (table_model_observer_)
+    table_model_observer_->OnModelChanged();
 }
 
 void TaskManagerTableModel::StopUpdating() {
