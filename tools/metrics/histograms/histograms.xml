@@ -30230,6 +30230,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Notifications.AppNotificationStatus"
+    enum="NotificationAppStatus">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Records whether notifications are enabled for Chrome, as the Android app,
+    for each Web Notification that is being shown to the user.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.AuthorDataSizeKB" units="KB">
   <owner>peter@chromium.org</owner>
   <summary>
@@ -71198,6 +71207,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Notification displayed"/>
   <int value="6" label="Notification closed by user"/>
   <int value="7" label="Notification closed by system"/>
+</enum>
+
+<enum name="NotificationAppStatus" type="int">
+  <int value="0" label="Undeterminable (old Android version)"/>
+  <int value="1" label="Undeterminable (exception thrown)"/>
+  <int value="2" label="Enabled"/>
+  <int value="3" label="Disabled"/>
 </enum>
 
 <enum name="NotificationDatabaseStatus" type="int">

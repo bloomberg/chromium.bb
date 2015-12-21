@@ -23,6 +23,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -423,6 +424,13 @@ public class NotificationUIManager {
             boolean incognito, String tag, String title, String body, Bitmap icon,
             int[] vibrationPattern, boolean silent, String[] actionTitles) {
         Resources res = mAppContext.getResources();
+
+        // Record whether it's known whether notifications can be shown to the user at all.
+        RecordHistogram.recordEnumeratedHistogram(
+                "Notifications.AppNotificationStatus",
+                NotificationSystemStatusUtil.determineAppNotificationStatus(mAppContext),
+                NotificationSystemStatusUtil.APP_NOTIFICATIONS_STATUS_BOUNDARY);
+
         // Set up a pending intent for going to the settings screen for |origin|.
         Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
                 mAppContext, SingleWebsitePreferences.class.getName());
