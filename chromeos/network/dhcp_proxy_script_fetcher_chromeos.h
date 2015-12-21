@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_NETWORK_DHCP_PROXY_SCRIPT_FETCHER_CHROMEOS_H_
 #define CHROMEOS_NETWORK_DHCP_PROXY_SCRIPT_FETCHER_CHROMEOS_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"

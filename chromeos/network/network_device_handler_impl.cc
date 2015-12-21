@@ -4,6 +4,9 @@
 
 #include "chromeos/network/network_device_handler_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -171,8 +174,8 @@ void TDLSSuccessCallback(
   }
 
   TDLSOperationParams new_params;
-  const int64 kRequestStatusDelayMs = 500;
-  int64 request_delay_ms = 0;
+  const int64_t kRequestStatusDelayMs = 500;
+  int64_t request_delay_ms = 0;
   if (params.operation == shill::kTDLSStatusOperation) {
     // If this is the last operation, or the result is 'Nonexistent',
     // return the result.
@@ -228,7 +231,7 @@ void TDLSErrorCallback(
     ++retry_params.retry_count;
     NET_LOG(EVENT) << "TDLS Retry: " << params.retry_count << ": "
                    << device_path;
-    const int64 kReRequestDelayMs = 1000;
+    const int64_t kReRequestDelayMs = 1000;
     base::TimeDelta request_delay;
     if (!DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface())
       request_delay = base::TimeDelta::FromMilliseconds(kReRequestDelayMs);

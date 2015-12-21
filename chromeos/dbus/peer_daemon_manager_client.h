@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_PEER_DAEMON_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_PEER_DAEMON_MANAGER_CLIENT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <utility>

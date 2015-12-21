@@ -4,6 +4,8 @@
 
 #include "chromeos/audio/audio_device.h"
 
+#include <stdint.h>
+
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -15,7 +17,7 @@ namespace {
 
 // Get the priority for a particular device type. The priority returned
 // will be between 0 to 3, the higher number meaning a higher priority.
-uint8 GetDevicePriority(AudioDeviceType type, bool is_input) {
+uint8_t GetDevicePriority(AudioDeviceType type, bool is_input) {
   // Lower the priority of bluetooth mic to prevent unexpected bad eperience
   // to user because of bluetooth audio profile switching. Make priority to
   // zero so this mic will never be automatically chosen.

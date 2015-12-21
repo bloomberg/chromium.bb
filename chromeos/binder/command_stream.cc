@@ -5,6 +5,8 @@
 #include "chromeos/binder/command_stream.h"
 
 #include <linux/android/binder.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "chromeos/binder/buffer_reader.h"
@@ -52,7 +54,7 @@ bool CommandStream::CanProcessIncomingCommand() {
 bool CommandStream::ProcessIncomingCommand() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(CanProcessIncomingCommand());
-  uint32 command = 0;
+  uint32_t command = 0;
   if (!incoming_data_reader_->Read(&command, sizeof(command)) ||
       !OnIncomingCommand(command, incoming_data_reader_.get())) {
     LOG(ERROR) << "Error while handling command: " << command;
@@ -61,7 +63,7 @@ bool CommandStream::ProcessIncomingCommand() {
   return true;
 }
 
-void CommandStream::AppendOutgoingCommand(uint32 command,
+void CommandStream::AppendOutgoingCommand(uint32_t command,
                                           const void* data,
                                           size_t size) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -93,14 +95,14 @@ bool CommandStream::Flush() {
   return true;
 }
 
-bool CommandStream::OnIncomingCommand(uint32 command, BufferReader* reader) {
+bool CommandStream::OnIncomingCommand(uint32_t command, BufferReader* reader) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(hashimoto): Replace all NOTIMPLEMENTED with logic to handle incoming
   // commands.
   VLOG(1) << "Processing " << CommandToString(command) << ", this = " << this;
   switch (command) {
     case BR_ERROR: {
-      int32 error = 0;
+      int32_t error = 0;
       if (!reader->Read(&error, sizeof(error))) {
         LOG(ERROR) << "Failed to read error code.";
         return false;

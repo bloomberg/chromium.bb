@@ -5,10 +5,13 @@
 #ifndef CHROMEOS_PROCESS_PROXY_PROCESS_OUTPUT_WATCHER_H_
 #define CHROMEOS_PROCESS_PROXY_PROCESS_OUTPUT_WATCHER_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/chromeos_export.h"

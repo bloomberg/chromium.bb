@@ -4,7 +4,11 @@
 
 #include "chromeos/audio/cras_audio_handler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -20,23 +24,23 @@
 namespace chromeos {
 namespace {
 
-const uint64 kInternalSpeakerId = 10001;
-const uint64 kHeadphoneId = 10002;
-const uint64 kInternalMicId = 10003;
-const uint64 kUSBMicId = 10004;
-const uint64 kBluetoothHeadsetId = 10005;
-const uint64 kHDMIOutputId = 10006;
-const uint64 kUSBHeadphoneId1 = 10007;
-const uint64 kUSBHeadphoneId2 = 10008;
-const uint64 kMicJackId = 10009;
-const uint64 kKeyboardMicId = 10010;
-const uint64 kOtherTypeOutputId = 90001;
-const uint64 kOtherTypeInputId = 90002;
-const uint64 kUSBJabraSpeakerOutputId1 = 90003;
-const uint64 kUSBJabraSpeakerOutputId2 = 90004;
-const uint64 kUSBJabraSpeakerInputId1 = 90005;
-const uint64 kUSBJabraSpeakerInputId2 = 90006;
-const uint64 kUSBCameraInputId = 90007;
+const uint64_t kInternalSpeakerId = 10001;
+const uint64_t kHeadphoneId = 10002;
+const uint64_t kInternalMicId = 10003;
+const uint64_t kUSBMicId = 10004;
+const uint64_t kBluetoothHeadsetId = 10005;
+const uint64_t kHDMIOutputId = 10006;
+const uint64_t kUSBHeadphoneId1 = 10007;
+const uint64_t kUSBHeadphoneId2 = 10008;
+const uint64_t kMicJackId = 10009;
+const uint64_t kKeyboardMicId = 10010;
+const uint64_t kOtherTypeOutputId = 90001;
+const uint64_t kOtherTypeInputId = 90002;
+const uint64_t kUSBJabraSpeakerOutputId1 = 90003;
+const uint64_t kUSBJabraSpeakerOutputId2 = 90004;
+const uint64_t kUSBJabraSpeakerInputId1 = 90005;
+const uint64_t kUSBJabraSpeakerInputId2 = 90006;
+const uint64_t kUSBCameraInputId = 90007;
 
 const AudioNode kInternalSpeaker(
     false,
@@ -265,12 +269,12 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
     ++input_mute_changed_count_;
   }
 
-  void OnOutputNodeVolumeChanged(uint64 /* node_id */,
+  void OnOutputNodeVolumeChanged(uint64_t /* node_id */,
                                  int /* volume */) override {
     ++output_volume_changed_count_;
   }
 
-  void OnInputNodeGainChanged(uint64 /* node_id */, int /* gain */) override {
+  void OnInputNodeGainChanged(uint64_t /* node_id */, int /* gain */) override {
     ++input_gain_changed_count_;
   }
 
@@ -341,7 +345,7 @@ class CrasAudioHandlerTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  const AudioDevice* GetDeviceFromId(uint64 id) {
+  const AudioDevice* GetDeviceFromId(uint64_t id) {
     return cras_audio_handler_->GetDeviceFromId(id);
   }
 

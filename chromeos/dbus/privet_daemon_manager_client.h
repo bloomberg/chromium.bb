@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_DBUS_PRIVET_DAEMON_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_PRIVET_DAEMON_MANAGER_CLIENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

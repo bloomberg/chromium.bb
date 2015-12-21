@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"

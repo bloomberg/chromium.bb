@@ -5,9 +5,10 @@
 #ifndef CHROMEOS_BINDER_COMMAND_BROKER_H_
 #define CHROMEOS_BINDER_COMMAND_BROKER_H_
 
+#include <stdint.h>
+
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -32,7 +33,7 @@ class CHROMEOS_EXPORT CommandBroker
   // Performs transaction with the remote object specified by the handle.
   // Returns true on success. If not one-way transaction, this method blocks
   // until the target object sends a reply.
-  bool Transact(int32 handle,
+  bool Transact(int32_t handle,
                 const TransactionData& request,
                 scoped_ptr<TransactionData>* reply);
 

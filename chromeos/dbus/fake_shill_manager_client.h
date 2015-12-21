@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_manager_client.h"
 

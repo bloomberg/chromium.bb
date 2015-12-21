@@ -5,14 +5,13 @@
 #ifndef CHROMEOS_BINDER_UTIL_H_
 #define CHROMEOS_BINDER_UTIL_H_
 
-#include "base/basictypes.h"
 #include "chromeos/chromeos_export.h"
 
 namespace binder {
 
 // Returns the string representation of the given binder command or "UNKNOWN"
 // if command is unknown, never returns null.
-CHROMEOS_EXPORT const char* CommandToString(uint32 command);
+CHROMEOS_EXPORT const char* CommandToString(uint32_t command);
 
 }  // namespace binder
 

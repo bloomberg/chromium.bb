@@ -5,6 +5,7 @@
 #include "chromeos/network/firewall_hole.h"
 
 #include <fcntl.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include "base/bind.h"

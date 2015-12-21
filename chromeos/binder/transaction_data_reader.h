@@ -5,7 +5,9 @@
 #ifndef CHROMEOS_BINDER_TRANSACTION_DATA_READER_H_
 #define CHROMEOS_BINDER_TRANSACTION_DATA_READER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "chromeos/binder/buffer_reader.h"
 #include "chromeos/chromeos_export.h"
@@ -28,17 +30,17 @@ class CHROMEOS_EXPORT TransactionDataReader {
   // Reads the specified number of bytes with appropriate padding.
   bool ReadData(void* buf, size_t n);
 
-  // Reads an int32 value.
-  bool ReadInt32(int32* value);
+  // Reads an int32_t value.
+  bool ReadInt32(int32_t* value);
 
-  // Reads an uint32 value.
-  bool ReadUint32(uint32* value);
+  // Reads an uint32_t value.
+  bool ReadUint32(uint32_t* value);
 
-  // Reads an int64 value.
-  bool ReadInt64(int64* value);
+  // Reads an int64_t value.
+  bool ReadInt64(int64_t* value);
 
-  // Reads an uint64 value.
-  bool ReadUint64(uint64* value);
+  // Reads an uint64_t value.
+  bool ReadUint64(uint64_t* value);
 
   // Reads a float value.
   bool ReadFloat(float* value);

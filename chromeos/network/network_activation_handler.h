@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_handler_callbacks.h"

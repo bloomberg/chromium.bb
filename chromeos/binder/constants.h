@@ -11,12 +11,12 @@
 namespace binder {
 
 // Context manager's handle is always 0.
-const uint32 kContextManagerHandle = 0;
+const uint32_t kContextManagerHandle = 0;
 
 // Transaction code constants.
-const uint32 kFirstTransactionCode = 0x00000001;
-const uint32 kLastTransactionCode = 0x00ffffff;
-const uint32 kPingTransactionCode = BINDER_PACK_CHARS('_', 'P', 'N', 'G');
+const uint32_t kFirstTransactionCode = 0x00000001;
+const uint32_t kLastTransactionCode = 0x00ffffff;
+const uint32_t kPingTransactionCode = BINDER_PACK_CHARS('_', 'P', 'N', 'G');
 
 }  // namespace binder
 

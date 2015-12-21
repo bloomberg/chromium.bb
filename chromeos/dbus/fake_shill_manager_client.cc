@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_shill_manager_client.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"

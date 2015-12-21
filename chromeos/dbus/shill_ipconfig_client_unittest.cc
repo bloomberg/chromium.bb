@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_client_unittest_base.h"
@@ -80,7 +82,7 @@ TEST_F(ShillIPConfigClientTest, PropertyChanged) {
 
 TEST_F(ShillIPConfigClientTest, GetProperties) {
   const char kAddress[] = "address";
-  const int32 kMtu = 68;
+  const int32_t kMtu = 68;
 
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());

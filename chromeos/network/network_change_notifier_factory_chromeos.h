@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_CHANGE_NOTIFIER_FACTORY_CHROMEOS_H_
 #define CHROMEOS_NETWORK_NETWORK_CHANGE_NOTIFIER_FACTORY_CHROMEOS_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chromeos/chromeos_export.h"
 #include "net/base/network_change_notifier_factory.h"

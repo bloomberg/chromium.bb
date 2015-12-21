@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/managed_network_configuration_handler.h"

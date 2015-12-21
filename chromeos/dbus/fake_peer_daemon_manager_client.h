@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "chromeos/dbus/peer_daemon_manager_client.h"
 
 namespace chromeos {

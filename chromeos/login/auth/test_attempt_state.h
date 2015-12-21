@@ -6,6 +6,7 @@
 #define CHROMEOS_LOGIN_AUTH_TEST_ATTEMPT_STATE_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_attempt_state.h"
 #include "chromeos/login/auth/auth_status_consumer.h"

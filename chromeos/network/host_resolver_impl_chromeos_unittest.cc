@@ -5,6 +5,7 @@
 #include "chromeos/network/host_resolver_impl_chromeos.h"
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"

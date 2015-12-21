@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_STUB_H_
 #define CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_STUB_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/macros.h"

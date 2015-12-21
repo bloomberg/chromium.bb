@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"

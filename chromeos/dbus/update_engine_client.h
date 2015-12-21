@@ -5,9 +5,12 @@
 #ifndef CHROMEOS_DBUS_UPDATE_ENGINE_CLIENT_H_
 #define CHROMEOS_DBUS_UPDATE_ENGINE_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"

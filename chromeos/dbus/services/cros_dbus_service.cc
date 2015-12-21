@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/services/cros_dbus_service.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"

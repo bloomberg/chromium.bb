@@ -14,7 +14,7 @@ uintptr_t TransactionStatus::GetCookie() const {
   return 0;
 }
 
-uint32 TransactionStatus::GetCode() const {
+uint32_t TransactionStatus::GetCode() const {
   return 0;
 }
 

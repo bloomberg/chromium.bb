@@ -5,10 +5,12 @@
 #ifndef CHROMEOS_DBUS_GSM_SMS_CLIENT_H_
 #define CHROMEOS_DBUS_GSM_SMS_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 
@@ -29,7 +31,8 @@ namespace chromeos {
 // initializes the DBusThreadManager instance.
 class CHROMEOS_EXPORT GsmSMSClient : public DBusClient {
  public:
-  typedef base::Callback<void(uint32 index, bool complete)> SmsReceivedHandler;
+  typedef base::Callback<void(uint32_t index, bool complete)>
+      SmsReceivedHandler;
   typedef base::Callback<void()> DeleteCallback;
   typedef base::Callback<void(const base::DictionaryValue& sms)> GetCallback;
   typedef base::Callback<void(const base::ListValue& result)> ListCallback;
@@ -52,13 +55,13 @@ class CHROMEOS_EXPORT GsmSMSClient : public DBusClient {
   // Calls Delete method.  |callback| is called after the method call succeeds.
   virtual void Delete(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
-                      uint32 index,
+                      uint32_t index,
                       const DeleteCallback& callback) = 0;
 
   // Calls Get method.  |callback| is called after the method call succeeds.
   virtual void Get(const std::string& service_name,
                    const dbus::ObjectPath& object_path,
-                   uint32 index,
+                   uint32_t index,
                    const GetCallback& callback) = 0;
 
   // Calls List method.  |callback| is called after the method call succeeds.

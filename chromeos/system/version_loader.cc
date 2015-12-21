@@ -4,6 +4,8 @@
 
 #include "chromeos/system/version_loader.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"

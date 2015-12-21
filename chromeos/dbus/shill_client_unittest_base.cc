@@ -4,6 +4,9 @@
 
 #include "chromeos/dbus/shill_client_unittest_base.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"

@@ -5,9 +5,9 @@
 #ifndef CHROMEOS_TIMEZONE_TIMEZONE_REQUEST_H_
 #define CHROMEOS_TIMEZONE_TIMEZONE_REQUEST_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"

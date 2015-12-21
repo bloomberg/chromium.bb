@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_NETWORK_DEVICE_STATE_H_
 #define CHROMEOS_NETWORK_DEVICE_STATE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_util.h"
@@ -41,7 +44,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   const std::string& technology_family() const { return technology_family_; }
   const std::string& carrier() const { return carrier_; }
   const std::string& sim_lock_type() const { return sim_lock_type_; }
-  uint32 sim_retries_left() const { return sim_retries_left_; }
+  uint32_t sim_retries_left() const { return sim_retries_left_; }
   const std::string& meid() const { return meid_; }
   const std::string& imei() const { return imei_; }
   const std::string& iccid() const { return iccid_; }
@@ -79,7 +82,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   std::string technology_family_;
   std::string carrier_;
   std::string sim_lock_type_;
-  uint32 sim_retries_left_;
+  uint32_t sim_retries_left_;
   bool sim_present_;
   std::string meid_;
   std::string imei_;

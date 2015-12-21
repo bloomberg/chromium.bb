@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_FAKE_PRIVET_DAEMON_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_PRIVET_DAEMON_MANAGER_CLIENT_H_
 
+#include "base/macros.h"
 #include "chromeos/dbus/privet_daemon_manager_client.h"
 
 namespace chromeos {

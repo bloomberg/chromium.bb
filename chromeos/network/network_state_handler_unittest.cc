@@ -4,11 +4,14 @@
 
 #include "chromeos/network/network_state_handler.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"

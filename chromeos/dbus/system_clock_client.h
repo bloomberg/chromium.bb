@@ -5,7 +5,10 @@
 #ifndef CHROMEOS_DBUS_SYSTEM_CLOCK_CLIENT_H_
 #define CHROMEOS_DBUS_SYSTEM_CLOCK_CLIENT_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 
@@ -38,7 +41,7 @@ class CHROMEOS_EXPORT SystemClockClient : public DBusClient {
   virtual bool HasObserver(const Observer* observer) const = 0;
 
   // Sets the system clock.
-  virtual void SetTime(int64 time_in_seconds) = 0;
+  virtual void SetTime(int64_t time_in_seconds) = 0;
 
   // Checks if the system time can be set.
   virtual bool CanSetTime() = 0;

@@ -4,6 +4,8 @@
 #ifndef CHROMEOS_DBUS_AP_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_AP_MANAGER_CLIENT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>

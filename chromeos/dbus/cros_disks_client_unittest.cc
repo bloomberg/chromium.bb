@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/cros_disks_client.h"
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "dbus/message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,10 +47,10 @@ TEST(CrosDisksClientTest, DiskInfo) {
   const bool kDeviceIsOnBootDevice = true;
   const bool kDeviceIsOnRemovableDevice = true;
   const bool kDeviceIsReadOnly = true;
-  const uint32 kDeviceMediaType = cros_disks::DEVICE_MEDIA_SD;
+  const uint32_t kDeviceMediaType = cros_disks::DEVICE_MEDIA_SD;
   const std::string kMountPath = "/media/removable/UNTITLED";
   const bool kDevicePresentationHide = false;
-  const uint64 kDeviceSize = 16005464064;
+  const uint64_t kDeviceSize = 16005464064;
   const std::string kDriveModel = "DriveModel";
   const std::string kIdLabel = "UNTITLED";
   const std::string kIdUuid = "XXXX-YYYY";

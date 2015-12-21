@@ -4,6 +4,9 @@
 
 #include "chromeos/binder/transaction_data_from_driver.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -44,7 +47,7 @@ uintptr_t TransactionDataFromDriver::GetCookie() const {
   return data_.cookie;
 }
 
-uint32 TransactionDataFromDriver::GetCode() const {
+uint32_t TransactionDataFromDriver::GetCode() const {
   return data_.code;
 }
 

@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_SHILL_CLIENT_UNITTEST_BASE_H_
 #define CHROMEOS_DBUS_SHILL_CLIENT_UNITTEST_BASE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/ref_counted.h"

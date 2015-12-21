@@ -25,8 +25,7 @@ bool FakeSystemClockClient::HasObserver(const Observer* observer) const {
   return false;
 }
 
-void FakeSystemClockClient::SetTime(int64 time_in_seconds) {
-}
+void FakeSystemClockClient::SetTime(int64_t time_in_seconds) {}
 
 bool FakeSystemClockClient::CanSetTime() {
   return true;

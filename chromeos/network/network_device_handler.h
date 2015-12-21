@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_handler_callbacks.h"
 

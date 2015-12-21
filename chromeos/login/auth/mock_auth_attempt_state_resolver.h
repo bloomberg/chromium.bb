@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_LOGIN_AUTH_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
 #define CHROMEOS_LOGIN_AUTH_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"

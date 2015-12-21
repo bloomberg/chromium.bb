@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_FAKE_NFC_DEVICE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_NFC_DEVICE_CLIENT_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"

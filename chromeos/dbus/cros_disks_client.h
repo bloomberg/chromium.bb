@@ -5,11 +5,13 @@
 #ifndef CHROMEOS_DBUS_CROS_DISKS_CLIENT_H_
 #define CHROMEOS_DBUS_CROS_DISKS_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
@@ -153,7 +155,7 @@ class CHROMEOS_EXPORT DiskInfo {
   DeviceType device_type() const { return device_type_; }
 
   // Total size of the disk in bytes.
-  uint64 total_size_in_bytes() const { return total_size_in_bytes_; }
+  uint64_t total_size_in_bytes() const { return total_size_in_bytes_; }
 
   // Is the device read-only.
   bool is_read_only() const { return is_read_only_; }
@@ -183,7 +185,7 @@ class CHROMEOS_EXPORT DiskInfo {
   std::string product_name_;
   std::string drive_model_;
   DeviceType device_type_;
-  uint64 total_size_in_bytes_;
+  uint64_t total_size_in_bytes_;
   bool is_read_only_;
   bool is_hidden_;
   std::string uuid_;

@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/power_policy_controller.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/format_macros.h"
@@ -193,7 +195,7 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
 
   // If auto screen-locking is enabled, ensure that the screen is locked soon
   // after it's turned off due to user inactivity.
-  int64 lock_ms = delays->screen_off_ms() + kScreenLockAfterOffDelayMs;
+  int64_t lock_ms = delays->screen_off_ms() + kScreenLockAfterOffDelayMs;
   if (values.enable_auto_screen_lock && delays->screen_off_ms() > 0 &&
       (delays->screen_lock_ms() <= 0 || lock_ms < delays->screen_lock_ms()) &&
       lock_ms < delays->idle_ms()) {

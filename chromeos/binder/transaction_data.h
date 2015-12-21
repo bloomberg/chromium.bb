@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_BINDER_TRANSACTION_DATA_H_
 #define CHROMEOS_BINDER_TRANSACTION_DATA_H_
 
-#include "base/basictypes.h"
 #include "chromeos/binder/status.h"
 
 namespace binder {
@@ -19,7 +18,7 @@ class TransactionData {
   virtual uintptr_t GetCookie() const = 0;
 
   // Returns the transaction code.
-  virtual uint32 GetCode() const = 0;
+  virtual uint32_t GetCode() const = 0;
 
   // Returns the PID of the sender.
   virtual pid_t GetSenderPID() const = 0;

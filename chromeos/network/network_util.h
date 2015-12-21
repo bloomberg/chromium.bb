@@ -10,10 +10,11 @@
 // All calls to functions in chromeos_network.h should be made through
 // functions provided by this header.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -75,11 +76,11 @@ namespace network_util {
 // Converts a |prefix_length| to a netmask. (for IPv4 only)
 // e.g. a |prefix_length| of 24 is converted to a netmask of "255.255.255.0".
 // Invalid prefix lengths will return the empty string.
-CHROMEOS_EXPORT std::string PrefixLengthToNetmask(int32 prefix_length);
+CHROMEOS_EXPORT std::string PrefixLengthToNetmask(int32_t prefix_length);
 
 // Converts a |netmask| to a prefixlen. (for IPv4 only)
 // e.g. a |netmask| of 255.255.255.0 is converted to a prefixlen of 24
-CHROMEOS_EXPORT int32 NetmaskToPrefixLength(const std::string& netmask);
+CHROMEOS_EXPORT int32_t NetmaskToPrefixLength(const std::string& netmask);
 
 // Returns |shill_mac_address| in aa:bb format.
 CHROMEOS_EXPORT std::string FormattedMacAddress(

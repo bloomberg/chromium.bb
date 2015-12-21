@@ -4,10 +4,14 @@
 
 #include "chromeos/dbus/easy_unlock_client.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -20,7 +24,7 @@ namespace {
 
 // Reads array of bytes from a dbus message reader and converts it to string.
 std::string PopResponseData(dbus::MessageReader* reader) {
-  const uint8* bytes = NULL;
+  const uint8_t* bytes = NULL;
   size_t length = 0;
   if (!reader->PopArrayOfBytes(&bytes, &length))
     return "";
@@ -31,7 +35,7 @@ std::string PopResponseData(dbus::MessageReader* reader) {
 // Converts string to array of bytes and writes it using dbus meddage writer.
 void AppendStringAsByteArray(const std::string& data,
                              dbus::MessageWriter* writer) {
-  writer->AppendArrayOfBytes(reinterpret_cast<const uint8*>(data.data()),
+  writer->AppendArrayOfBytes(reinterpret_cast<const uint8_t*>(data.data()),
                              data.length());
 }
 

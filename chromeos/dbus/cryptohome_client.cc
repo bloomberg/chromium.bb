@@ -4,8 +4,12 @@
 
 #include "chromeos/dbus/cryptohome_client.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -349,7 +353,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   bool InstallAttributesGet(const std::string& name,
-                            std::vector<uint8>* value,
+                            std::vector<uint8_t>* value,
                             bool* successful) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeInstallAttributesGet);
@@ -360,7 +364,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     if (!response.get())
       return false;
     dbus::MessageReader reader(response.get());
-    const uint8* bytes = NULL;
+    const uint8_t* bytes = NULL;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length) ||
         !reader.PopBool(successful))
@@ -371,7 +375,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   bool InstallAttributesSet(const std::string& name,
-                            const std::vector<uint8>& value,
+                            const std::vector<uint8_t>& value,
                             bool* successful) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeInstallAttributesSet);
@@ -457,7 +461,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(pca_type);
     writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8*>(pca_response.data()),
+        reinterpret_cast<const uint8_t*>(pca_response.data()),
         pca_response.size());
     proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
@@ -498,7 +502,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
         cryptohome::kCryptohomeAsyncTpmAttestationFinishCertRequest);
     dbus::MessageWriter writer(&method_call);
     writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8*>(pca_response.data()),
+        reinterpret_cast<const uint8_t*>(pca_response.data()),
         pca_response.size());
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
@@ -604,13 +608,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(user_id);
     writer.AppendString(key_name);
     writer.AppendString(domain);
-    writer.AppendArrayOfBytes(reinterpret_cast<const uint8*>(device_id.data()),
-                              device_id.size());
+    writer.AppendArrayOfBytes(
+        reinterpret_cast<const uint8_t*>(device_id.data()), device_id.size());
     bool include_signed_public_key =
         (options & attestation::CHALLENGE_INCLUDE_SIGNED_PUBLIC_KEY);
     writer.AppendBool(include_signed_public_key);
-    writer.AppendArrayOfBytes(reinterpret_cast<const uint8*>(challenge.data()),
-                              challenge.size());
+    writer.AppendArrayOfBytes(
+        reinterpret_cast<const uint8_t*>(challenge.data()), challenge.size());
     proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
@@ -632,8 +636,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(user_id);
     writer.AppendString(key_name);
-    writer.AppendArrayOfBytes(reinterpret_cast<const uint8*>(challenge.data()),
-                              challenge.size());
+    writer.AppendArrayOfBytes(
+        reinterpret_cast<const uint8_t*>(challenge.data()), challenge.size());
     proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
@@ -675,7 +679,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(user_id);
     writer.AppendString(key_name);
-    writer.AppendArrayOfBytes(reinterpret_cast<const uint8*>(payload.data()),
+    writer.AppendArrayOfBytes(reinterpret_cast<const uint8_t*>(payload.data()),
                               payload.size());
     CallBoolMethod(&method_call, callback);
   }
@@ -901,18 +905,18 @@ class CryptohomeClientImpl : public CryptohomeClient {
   void OnGetSystemSalt(const GetSystemSaltCallback& callback,
                        dbus::Response* response) {
     if (!response) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, std::vector<uint8>());
+      callback.Run(DBUS_METHOD_CALL_FAILURE, std::vector<uint8_t>());
       return;
     }
     dbus::MessageReader reader(response);
-    const uint8* bytes = NULL;
+    const uint8_t* bytes = NULL;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, std::vector<uint8>());
+      callback.Run(DBUS_METHOD_CALL_FAILURE, std::vector<uint8_t>());
       return;
     }
     callback.Run(DBUS_METHOD_CALL_SUCCESS,
-                 std::vector<uint8>(bytes, bytes + length));
+                 std::vector<uint8_t>(bytes, bytes + length));
   }
 
   // Calls a method without result values.
@@ -995,7 +999,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       return;
     }
     dbus::MessageReader reader(response);
-    const uint8* data_buffer = NULL;
+    const uint8_t* data_buffer = NULL;
     size_t data_length = 0;
     bool result = false;
     if (!reader.PopArrayOfBytes(&data_buffer, &data_length) ||
@@ -1084,7 +1088,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageReader reader(signal);
     int async_id = 0;
     bool return_status = false;
-    const uint8* return_data_buffer = NULL;
+    const uint8_t* return_data_buffer = NULL;
     size_t return_data_length = 0;
     if (!reader.PopInt32(&async_id) ||
         !reader.PopBool(&return_status) ||

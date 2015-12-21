@@ -4,6 +4,9 @@
 
 #include "chromeos/process_proxy/process_output_watcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
@@ -23,10 +26,10 @@ namespace {
 // byte. If the most significant bit is '0', the character is a valid ASCII
 // and it's byte size is 1.
 // The method returns 1 if the provided byte is invalid leading byte.
-size_t UTF8SizeFromLeadingByte(uint8 leading_byte) {
+size_t UTF8SizeFromLeadingByte(uint8_t leading_byte) {
   size_t byte_count = 0;
-  uint8 mask = 1 << 7;
-  uint8 error_mask = 1 << (7 - CBU8_MAX_LENGTH);
+  uint8_t mask = 1 << 7;
+  uint8_t error_mask = 1 << (7 - CBU8_MAX_LENGTH);
   while (leading_byte & mask) {
     if (mask & error_mask)
       return 1;

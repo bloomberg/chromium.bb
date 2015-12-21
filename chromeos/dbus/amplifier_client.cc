@@ -4,7 +4,10 @@
 
 #include "chromeos/dbus/amplifier_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
@@ -154,7 +157,7 @@ void AmplifierClientImpl::SetVolume(double db_spl,
 
 void AmplifierClientImpl::OnError(dbus::Signal* signal) {
   dbus::MessageReader reader(signal);
-  int32 error_code = 0;
+  int32_t error_code = 0;
   if (!reader.PopInt32(&error_code)) {
     LOG(ERROR) << "Invalid signal: " << signal->ToString();
     return;

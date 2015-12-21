@@ -4,7 +4,6 @@
 
 #include "chromeos/dbus/dbus_client_bundle.h"
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

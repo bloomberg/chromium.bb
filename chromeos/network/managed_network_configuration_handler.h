@@ -8,9 +8,9 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_handler.h"

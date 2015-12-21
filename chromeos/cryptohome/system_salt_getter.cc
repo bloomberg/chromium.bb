@@ -4,6 +4,8 @@
 
 #include "chromeos/cryptohome/system_salt_getter.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -54,9 +56,10 @@ void SystemSaltGetter::DidWaitForServiceToBeAvailable(
                  callback));
 }
 
-void SystemSaltGetter::DidGetSystemSalt(const GetSystemSaltCallback& callback,
-                                        DBusMethodCallStatus call_status,
-                                        const std::vector<uint8>& system_salt) {
+void SystemSaltGetter::DidGetSystemSalt(
+    const GetSystemSaltCallback& callback,
+    DBusMethodCallStatus call_status,
+    const std::vector<uint8_t>& system_salt) {
   if (call_status == DBUS_METHOD_CALL_SUCCESS &&
       !system_salt.empty() &&
       system_salt.size() % 2 == 0U)
@@ -94,7 +97,7 @@ SystemSaltGetter* SystemSaltGetter::Get() {
 
 // static
 std::string SystemSaltGetter::ConvertRawSaltToHexString(
-    const std::vector<uint8>& salt) {
+    const std::vector<uint8_t>& salt) {
   return base::ToLowerASCII(
       base::HexEncode(reinterpret_cast<const void*>(salt.data()), salt.size()));
 }

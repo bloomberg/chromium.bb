@@ -5,11 +5,13 @@
 #ifndef CHROMEOS_DBUS_CRYPTOHOME_CLIENT_H_
 #define CHROMEOS_DBUS_CRYPTOHOME_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
@@ -56,9 +58,9 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // A callback to handle responses of AsyncXXX methods.
   typedef base::Callback<void(int async_id)> AsyncMethodCallback;
   // A callback for GetSystemSalt().
-  typedef base::Callback<void(
-      DBusMethodCallStatus call_status,
-      const std::vector<uint8>& system_salt)> GetSystemSaltCallback;
+  typedef base::Callback<void(DBusMethodCallStatus call_status,
+                              const std::vector<uint8_t>& system_salt)>
+      GetSystemSaltCallback;
   // A callback for WaitForServiceToBeAvailable().
   typedef base::Callback<void(bool service_is_ready)>
       WaitForServiceToBeAvailableCallback;
@@ -250,13 +252,13 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // This method blocks until the call returns.
   // The original content of |value| is lost.
   virtual bool InstallAttributesGet(const std::string& name,
-                                    std::vector<uint8>* value,
+                                    std::vector<uint8_t>* value,
                                     bool* successful) = 0;
 
   // Calls InstallAttributesSet method and returns true when the call succeeds.
   // This method blocks until the call returns.
   virtual bool InstallAttributesSet(const std::string& name,
-                                    const std::vector<uint8>& value,
+                                    const std::vector<uint8_t>& value,
                                     bool* successful) = 0;
 
   // Calls InstallAttributesFinalize method and returns true when the call

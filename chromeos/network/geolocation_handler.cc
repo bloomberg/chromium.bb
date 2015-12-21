@@ -4,6 +4,9 @@
 
 #include "chromeos/network/geolocation_handler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -35,7 +38,8 @@ void GeolocationHandler::Init() {
 }
 
 bool GeolocationHandler::GetWifiAccessPoints(
-    WifiAccessPointVector* access_points, int64* age_ms) {
+    WifiAccessPointVector* access_points,
+    int64_t* age_ms) {
   if (!wifi_enabled_)
     return false;
   // Always request updated access points.
@@ -127,7 +131,7 @@ void GeolocationHandler::GeolocationCallback(
       entry->GetString(shill::kGeoMacAddressProperty, &wap.mac_address);
       std::string age_str;
       if (entry->GetString(shill::kGeoAgeProperty, &age_str)) {
-        int64 age_ms;
+        int64_t age_ms;
         if (base::StringToInt64(age_str, &age_ms)) {
           wap.timestamp =
               base::Time::Now() - base::TimeDelta::FromMilliseconds(age_ms);

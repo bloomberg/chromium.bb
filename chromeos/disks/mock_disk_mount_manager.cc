@@ -4,6 +4,8 @@
 
 #include "chromeos/disks/mock_disk_mount_manager.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
@@ -186,7 +188,7 @@ void MockDiskMountManager::CreateDiskEntryForMountDevice(
     const std::string& vendor_name,
     const std::string& product_name,
     DeviceType device_type,
-    uint64 total_size_in_bytes,
+    uint64_t total_size_in_bytes,
     bool is_parent,
     bool has_media,
     bool on_boot_device,

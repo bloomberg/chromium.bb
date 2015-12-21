@@ -4,6 +4,9 @@
 
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/testing_pref_service.h"
 #include "chromeos/audio/audio_device.h"
@@ -14,11 +17,11 @@
 
 namespace chromeos {
 
-const uint64 kInternalMicId = 10003;
-const uint64 kHeadphoneId = 10002;
-const uint64 kHDMIOutputId = 10006;
-const uint64 kOtherTypeOutputId = 90001;
-const uint64 kOtherTypeInputId = 90002;
+const uint64_t kInternalMicId = 10003;
+const uint64_t kHeadphoneId = 10002;
+const uint64_t kHDMIOutputId = 10006;
+const uint64_t kOtherTypeOutputId = 90001;
+const uint64_t kOtherTypeInputId = 90002;
 
 const AudioDevice kInternalMic(AudioNode(true,
                                          kInternalMicId,

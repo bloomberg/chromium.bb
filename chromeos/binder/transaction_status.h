@@ -5,7 +5,9 @@
 #ifndef CHROMEOS_BINDER_TRANSACTION_STATUS_H_
 #define CHROMEOS_BINDER_TRANSACTION_STATUS_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "chromeos/binder/status.h"
 #include "chromeos/binder/transaction_data.h"
@@ -23,7 +25,7 @@ class CHROMEOS_EXPORT TransactionStatus : public TransactionData {
 
   // TransactionData override:
   uintptr_t GetCookie() const override;
-  uint32 GetCode() const override;
+  uint32_t GetCode() const override;
   pid_t GetSenderPID() const override;
   uid_t GetSenderEUID() const override;
   bool IsOneWay() const override;

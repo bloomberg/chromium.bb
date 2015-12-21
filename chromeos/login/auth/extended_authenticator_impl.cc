@@ -4,6 +4,8 @@
 
 #include "chromeos/login/auth/extended_authenticator_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

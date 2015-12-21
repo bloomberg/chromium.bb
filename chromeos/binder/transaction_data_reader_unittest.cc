@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "chromeos/binder/transaction_data_reader.h"
@@ -31,10 +34,10 @@ TEST(BinderTransactionDataReaderTest, ReadData) {
 }
 
 TEST(BinderTransactionDataReaderTest, ReadScalarValues) {
-  const int32 kInt32Value = -1;
-  const uint32 kUint32Value = 2;
-  const int64 kInt64Value = -3;
-  const uint64 kUint64Value = 4;
+  const int32_t kInt32Value = -1;
+  const uint32_t kUint32Value = 2;
+  const int64_t kInt64Value = -3;
+  const uint64_t kUint64Value = 4;
   const float kFloatValue = 5.55;
   const double kDoubleValue = 6.66;
 
@@ -49,22 +52,22 @@ TEST(BinderTransactionDataReaderTest, ReadScalarValues) {
   TransactionDataReader reader(data);
   EXPECT_TRUE(reader.HasMoreData());
   {
-    int32 result = 0;
+    int32_t result = 0;
     EXPECT_TRUE(reader.ReadInt32(&result));
     EXPECT_EQ(kInt32Value, result);
   }
   {
-    uint32 result = 0;
+    uint32_t result = 0;
     EXPECT_TRUE(reader.ReadUint32(&result));
     EXPECT_EQ(kUint32Value, result);
   }
   {
-    int64 result = 0;
+    int64_t result = 0;
     EXPECT_TRUE(reader.ReadInt64(&result));
     EXPECT_EQ(kInt64Value, result);
   }
   {
-    uint64 result = 0;
+    uint64_t result = 0;
     EXPECT_TRUE(reader.ReadUint64(&result));
     EXPECT_EQ(kUint64Value, result);
   }

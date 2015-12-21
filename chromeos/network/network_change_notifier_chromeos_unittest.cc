@@ -4,9 +4,10 @@
 
 #include "chromeos/network/network_change_notifier_chromeos.h"
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"

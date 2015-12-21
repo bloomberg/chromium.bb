@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
 

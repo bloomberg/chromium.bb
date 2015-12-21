@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/nfc_manager_client.h"

@@ -7,6 +7,7 @@
 #include <cert.h>
 #include <keyhi.h>
 #include <pk11pub.h>
+#include <stddef.h>
 
 #include "base/base64.h"
 #include "base/bind.h"

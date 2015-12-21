@@ -6,6 +6,7 @@
 
 #include <cert.h>
 #include <pk11pub.h>
+#include <stddef.h>
 
 #include <list>
 

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"

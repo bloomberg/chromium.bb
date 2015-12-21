@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_device_client.h"
 

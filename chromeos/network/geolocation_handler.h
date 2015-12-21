@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_NETWORK_GEOLOCATION_HANDLER_H_
 #define CHROMEOS_NETWORK_GEOLOCATION_HANDLER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -37,7 +40,8 @@ class CHROMEOS_EXPORT GeolocationHandler : public ShillPropertyChangedObserver {
   // This sends a request for wifi access point data. If data is already
   // available, returns |true|, fills |access_points| with the latest access
   // point data, and sets |age_ms| to the time since the last update in MS.
-  bool GetWifiAccessPoints(WifiAccessPointVector* access_points, int64* age_ms);
+  bool GetWifiAccessPoints(WifiAccessPointVector* access_points,
+                           int64_t* age_ms);
 
   bool wifi_enabled() const { return wifi_enabled_; }
 

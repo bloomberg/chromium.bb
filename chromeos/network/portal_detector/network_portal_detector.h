@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_H_
 #define CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "net/url_request/url_fetcher.h"

@@ -4,7 +4,10 @@
 
 #include "chromeos/dbus/audio_dsp_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
@@ -131,16 +134,16 @@ class AudioDspClientImpl : public AudioDspClient {
   void GetBass(const DoubleDBusMethodCallback& callback) override;
   void GetCapabilitiesOEM(
       const ThreeStringDBusMethodCallback& callback) override;
-  void SetCapabilitiesOEM(uint32 speaker_id,
+  void SetCapabilitiesOEM(uint32_t speaker_id,
                           const std::string& speaker_capabilities,
                           const std::string& driver_capabilities,
                           const VoidDBusMethodCallback& callback) override;
-  void GetFilterConfigOEM(uint32 speaker_id,
+  void GetFilterConfigOEM(uint32_t speaker_id,
                           const TwoStringDBusMethodCallback& callback) override;
   void SetFilterConfigOEM(const std::string& speaker_config,
                           const std::string& driver_config,
                           const VoidDBusMethodCallback& callback) override;
-  void SetSourceType(uint16 source_type,
+  void SetSourceType(uint16_t source_type,
                      const VoidDBusMethodCallback& callback) override;
   void AmplifierVolumeChanged(double db_spl,
                               const VoidDBusMethodCallback& callback) override;
@@ -287,7 +290,7 @@ void AudioDspClientImpl::GetCapabilitiesOEM(
 }
 
 void AudioDspClientImpl::SetCapabilitiesOEM(
-    uint32 speaker_id,
+    uint32_t speaker_id,
     const std::string& speaker_capabilities,
     const std::string& driver_capabilities,
     const VoidDBusMethodCallback& callback) {
@@ -303,7 +306,7 @@ void AudioDspClientImpl::SetCapabilitiesOEM(
 }
 
 void AudioDspClientImpl::GetFilterConfigOEM(
-    uint32 speaker_id,
+    uint32_t speaker_id,
     const TwoStringDBusMethodCallback& callback) {
   dbus::MethodCall method_call(audio_dsp::kAudioDspInterface,
                                audio_dsp::kGetFilterConfigOEMMethod);
@@ -328,7 +331,7 @@ void AudioDspClientImpl::SetFilterConfigOEM(
                      base::Bind(&OnVoidDBusMethod, callback));
 }
 
-void AudioDspClientImpl::SetSourceType(uint16 source_type,
+void AudioDspClientImpl::SetSourceType(uint16_t source_type,
                                        const VoidDBusMethodCallback& callback) {
   dbus::MethodCall method_call(audio_dsp::kAudioDspInterface,
                                audio_dsp::kSetSourceTypeMethod);
@@ -353,7 +356,7 @@ void AudioDspClientImpl::AmplifierVolumeChanged(
 
 void AudioDspClientImpl::OnError(dbus::Signal* signal) {
   dbus::MessageReader reader(signal);
-  int32 error_code = 0;
+  int32_t error_code = 0;
   if (!reader.PopInt32(&error_code)) {
     LOG(ERROR) << "Invalid signal: " << signal->ToString();
     return;

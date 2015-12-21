@@ -5,8 +5,8 @@
 #ifndef CHROMEOS_DBUS_FAKE_MODEM_MESSAGING_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_MODEM_MESSAGING_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 

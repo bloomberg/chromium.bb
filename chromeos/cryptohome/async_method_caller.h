@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/chromeos_export.h"

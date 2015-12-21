@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_NETWORK_HOST_RESOLVER_IMPL_CHROMEOS_H_
 #define CHROMEOS_NETWORK_HOST_RESOLVER_IMPL_CHROMEOS_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/chromeos_export.h"

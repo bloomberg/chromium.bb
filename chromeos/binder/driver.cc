@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/android/binder.h>
+#include <stddef.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/user.h>

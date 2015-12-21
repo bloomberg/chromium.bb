@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/session_manager_client.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/socket.h>
 
 #include "base/bind.h"
@@ -11,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -275,7 +278,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageWriter writer(&method_call);
     // static_cast does not work due to signedness.
     writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8*>(policy_blob.data()), policy_blob.size());
+        reinterpret_cast<const uint8_t*>(policy_blob.data()),
+        policy_blob.size());
     session_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -445,7 +449,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
     writer.AppendString(username);
     // static_cast does not work due to signedness.
     writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8*>(policy_blob.data()), policy_blob.size());
+        reinterpret_cast<const uint8_t*>(policy_blob.data()),
+        policy_blob.size());
     session_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -555,7 +560,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
       return;
     }
     dbus::MessageReader reader(response);
-    const uint8* values = NULL;
+    const uint8_t* values = NULL;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&values, &length)) {
       LOG(ERROR) << "Invalid response: " << response->ToString();
@@ -649,7 +654,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
         LOG(ERROR) << "Bad response: " << response->ToString();
       } else {
         while (array_reader.HasMoreData()) {
-          const uint8* data = NULL;
+          const uint8_t* data = NULL;
           size_t size = 0;
           if (!array_reader.PopArrayOfBytes(&data, &size)) {
             LOG(ERROR) << "Bad response: " << response->ToString();

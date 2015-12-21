@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

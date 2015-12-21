@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -45,7 +47,7 @@ void FakeGsmSMSClient::ResetSmsReceivedHandler(
 
 void FakeGsmSMSClient::Delete(const std::string& service_name,
                               const dbus::ObjectPath& object_path,
-                              uint32 index,
+                              uint32_t index,
                               const DeleteCallback& callback) {
   message_list_.Remove(index, NULL);
   callback.Run();
@@ -53,7 +55,7 @@ void FakeGsmSMSClient::Delete(const std::string& service_name,
 
 void FakeGsmSMSClient::Get(const std::string& service_name,
                            const dbus::ObjectPath& object_path,
-                           uint32 index,
+                           uint32_t index,
                            const GetCallback& callback) {
   base::DictionaryValue* dictionary = NULL;
   if (message_list_.GetDictionary(index, &dictionary)) {

@@ -5,8 +5,11 @@
 #ifndef CHROMEOS_DBUS_NFC_RECORD_CLIENT_H_
 #define CHROMEOS_DBUS_NFC_RECORD_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/nfc_property_set.h"
@@ -60,7 +63,7 @@ class CHROMEOS_EXPORT NfcRecordClient : public DBusClient {
     // the object or not. This is not a mandatory field and is only valid for
     // Smart Posters carrying a URI record.
     // Read-only.
-    dbus::Property<uint32> size;
+    dbus::Property<uint32_t> size;
 
     // The suggested course of action. This one is only valid for Smart Posters
     // and is a suggestion only. It can be ignored, and the possible values are

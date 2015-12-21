@@ -5,8 +5,11 @@
 #ifndef CHROMEOS_DBUS_FAKE_GSM_SMS_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_GSM_SMS_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chromeos/dbus/gsm_sms_client.h"
@@ -29,11 +32,11 @@ class CHROMEOS_EXPORT FakeGsmSMSClient : public GsmSMSClient {
                                const dbus::ObjectPath& object_path) override;
   void Delete(const std::string& service_name,
               const dbus::ObjectPath& object_path,
-              uint32 index,
+              uint32_t index,
               const DeleteCallback& callback) override;
   void Get(const std::string& service_name,
            const dbus::ObjectPath& object_path,
-           uint32 index,
+           uint32_t index,
            const GetCallback& callback) override;
   void List(const std::string& service_name,
             const dbus::ObjectPath& object_path,

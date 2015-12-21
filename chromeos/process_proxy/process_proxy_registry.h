@@ -10,8 +10,9 @@
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_export.h"

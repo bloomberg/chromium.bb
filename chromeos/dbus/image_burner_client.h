@@ -5,10 +5,12 @@
 #ifndef CHROMEOS_DBUS_IMAGE_BURNER_CLIENT_H_
 #define CHROMEOS_DBUS_IMAGE_BURNER_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 
@@ -31,8 +33,8 @@ class CHROMEOS_EXPORT ImageBurnerClient : public DBusClient {
 
   // A callback to handle burn_progress_update signal.
   typedef base::Callback<void(const std::string& target_path,
-                              int64 num_bytes_burnt,
-                              int64 total_size)> BurnProgressUpdateHandler;
+                              int64_t num_bytes_burnt,
+                              int64_t total_size)> BurnProgressUpdateHandler;
 
   // Burns the image |from_path| to the disk |to_path|.
   virtual void BurnImage(const std::string& from_path,

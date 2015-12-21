@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"

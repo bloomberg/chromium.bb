@@ -5,11 +5,12 @@
 #ifndef CHROMEOS_AUDIO_AUDIO_DEVICE_H_
 #define CHROMEOS_AUDIO_AUDIO_DEVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/audio_node.h"
 
@@ -56,18 +57,18 @@ struct CHROMEOS_EXPORT AudioDevice {
   }
 
   bool is_input;
-  uint64 id;
+  uint64_t id;
   std::string display_name;
   std::string device_name;
   std::string mic_positions;
   AudioDeviceType type;
-  uint8 priority;
+  uint8_t priority;
   bool active;
-  uint64 plugged_time;
+  uint64_t plugged_time;
 };
 
 typedef std::vector<AudioDevice> AudioDeviceList;
-typedef std::map<uint64, AudioDevice> AudioDeviceMap;
+typedef std::map<uint64_t, AudioDevice> AudioDeviceMap;
 
 struct AudioDeviceCompare {
   // Rules used to discern which device is higher,

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"

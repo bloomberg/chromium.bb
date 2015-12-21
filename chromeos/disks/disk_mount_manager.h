@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DISKS_DISK_MOUNT_MANAGER_H_
 #define CHROMEOS_DISKS_DISK_MOUNT_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/callback_forward.h"
@@ -64,7 +66,7 @@ class CHROMEOS_EXPORT DiskMountManager {
          const std::string& fs_uuid,
          const std::string& system_path_prefix,
          DeviceType device_type,
-         uint64 total_size_in_bytes,
+         uint64_t total_size_in_bytes,
          bool is_parent,
          bool is_read_only,
          bool has_media,
@@ -121,7 +123,7 @@ class CHROMEOS_EXPORT DiskMountManager {
     DeviceType device_type() const { return device_type_; }
 
     // Total size of the device in bytes.
-    uint64 total_size_in_bytes() const { return total_size_in_bytes_; }
+    uint64_t total_size_in_bytes() const { return total_size_in_bytes_; }
 
     // Is the device is a parent device (i.e. sdb rather than sdb1).
     bool is_parent() const { return is_parent_; }
@@ -161,7 +163,7 @@ class CHROMEOS_EXPORT DiskMountManager {
     std::string fs_uuid_;
     std::string system_path_prefix_;
     DeviceType device_type_;
-    uint64 total_size_in_bytes_;
+    uint64_t total_size_in_bytes_;
     bool is_parent_;
     bool is_read_only_;
     bool has_media_;

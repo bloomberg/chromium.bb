@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 #include "chromeos/dbus/gsm_sms_client.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -57,7 +60,7 @@ class SMSProxy {
   }
 
   // Calls Delete method.
-  void Delete(uint32 index, const DeleteCallback& callback) {
+  void Delete(uint32_t index, const DeleteCallback& callback) {
     dbus::MethodCall method_call(modemmanager::kModemManagerSMSInterface,
                                  modemmanager::kSMSDeleteFunction);
     dbus::MessageWriter writer(&method_call);
@@ -69,7 +72,7 @@ class SMSProxy {
   }
 
   // Calls Get method.
-  void Get(uint32 index, const GetCallback& callback) {
+  void Get(uint32_t index, const GetCallback& callback) {
     dbus::MethodCall method_call(modemmanager::kModemManagerSMSInterface,
                                  modemmanager::kSMSGetFunction);
     dbus::MessageWriter writer(&method_call);
@@ -93,7 +96,7 @@ class SMSProxy {
  private:
   // Handles SmsReceived signal.
   void OnSmsReceived(dbus::Signal* signal) {
-    uint32 index = 0;
+    uint32_t index = 0;
     bool complete = false;
     dbus::MessageReader reader(signal);
     if (!reader.PopUint32(&index) ||
@@ -179,7 +182,7 @@ class GsmSMSClientImpl : public GsmSMSClient {
   // GsmSMSClient override.
   void Delete(const std::string& service_name,
               const dbus::ObjectPath& object_path,
-              uint32 index,
+              uint32_t index,
               const DeleteCallback& callback) override {
     GetProxy(service_name, object_path)->Delete(index, callback);
   }
@@ -187,7 +190,7 @@ class GsmSMSClientImpl : public GsmSMSClient {
   // GsmSMSClient override.
   void Get(const std::string& service_name,
            const dbus::ObjectPath& object_path,
-           uint32 index,
+           uint32_t index,
            const GetCallback& callback) override {
     GetProxy(service_name, object_path)->Get(index, callback);
   }

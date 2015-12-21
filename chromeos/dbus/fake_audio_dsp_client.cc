@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_audio_dsp_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -106,7 +108,7 @@ void FakeAudioDspClient::GetCapabilitiesOEM(
 }
 
 void FakeAudioDspClient::SetCapabilitiesOEM(
-    uint32 speaker_id,
+    uint32_t speaker_id,
     const std::string& speaker_capabilities,
     const std::string& driver_capabilities,
     const VoidDBusMethodCallback& callback) {
@@ -115,7 +117,7 @@ void FakeAudioDspClient::SetCapabilitiesOEM(
 }
 
 void FakeAudioDspClient::GetFilterConfigOEM(
-    uint32 speaker_id,
+    uint32_t speaker_id,
     const TwoStringDBusMethodCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&OnTwoStringDBusMethod, callback));
@@ -129,7 +131,7 @@ void FakeAudioDspClient::SetFilterConfigOEM(
       FROM_HERE, base::Bind(&OnVoidDBusMethod, callback));
 }
 
-void FakeAudioDspClient::SetSourceType(uint16 source_type,
+void FakeAudioDspClient::SetSourceType(uint16_t source_type,
                                        const VoidDBusMethodCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&OnVoidDBusMethod, callback));

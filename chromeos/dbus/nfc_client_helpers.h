@@ -9,8 +9,8 @@
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/nfc_property_set.h"

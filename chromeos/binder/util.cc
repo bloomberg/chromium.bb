@@ -5,12 +5,13 @@
 #include "chromeos/binder/util.h"
 
 #include <linux/android/binder.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 
 namespace binder {
 
-const char* CommandToString(uint32 command) {
+const char* CommandToString(uint32_t command) {
   switch (command) {
     case BR_ERROR:
       return "BR_ERROR";

@@ -4,6 +4,9 @@
 
 #include "chromeos/dbus/fake_cryptohome_client.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -231,8 +234,8 @@ void FakeCryptohomeClient::Pkcs11GetTpmTokenInfoForUser(
 }
 
 bool FakeCryptohomeClient::InstallAttributesGet(const std::string& name,
-                                                    std::vector<uint8>* value,
-                                                    bool* successful) {
+                                                std::vector<uint8_t>* value,
+                                                bool* successful) {
   if (install_attrs_.find(name) != install_attrs_.end()) {
     *value = install_attrs_[name];
     *successful = true;
@@ -245,7 +248,7 @@ bool FakeCryptohomeClient::InstallAttributesGet(const std::string& name,
 
 bool FakeCryptohomeClient::InstallAttributesSet(
     const std::string& name,
-    const std::vector<uint8>& value,
+    const std::vector<uint8_t>& value,
     bool* successful) {
   install_attrs_[name] = value;
   *successful = true;
@@ -280,7 +283,7 @@ bool FakeCryptohomeClient::InstallAttributesFinalize(bool* successful) {
     const int kVarLengthTag1 = (1 << 3) | 0x2;
     const int kVarLengthTag2 = (2 << 3) | 0x2;
 
-    typedef std::map<std::string, std::vector<uint8> >::const_iterator Iter;
+    typedef std::map<std::string, std::vector<uint8_t>>::const_iterator Iter;
     for (Iter it = install_attrs_.begin(); it != install_attrs_.end(); ++it) {
       std::string attr;
       {
@@ -552,10 +555,10 @@ void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
 }
 
 // static
-std::vector<uint8> FakeCryptohomeClient::GetStubSystemSalt() {
+std::vector<uint8_t> FakeCryptohomeClient::GetStubSystemSalt() {
   const char kStubSystemSalt[] = "stub_system_salt";
-  return std::vector<uint8>(kStubSystemSalt,
-                            kStubSystemSalt + arraysize(kStubSystemSalt) - 1);
+  return std::vector<uint8_t>(kStubSystemSalt,
+                              kStubSystemSalt + arraysize(kStubSystemSalt) - 1);
 }
 
 void FakeCryptohomeClient::ReturnProtobufMethodCallback(

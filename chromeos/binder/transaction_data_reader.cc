@@ -4,6 +4,9 @@
 
 #include "chromeos/binder/transaction_data_reader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "chromeos/binder/transaction_data.h"
 
 namespace binder {
@@ -32,19 +35,19 @@ bool TransactionDataReader::ReadData(void* buf, size_t n) {
   return reader_.Read(buf, n) && reader_.Skip(AddPadding(n) - n);
 }
 
-bool TransactionDataReader::ReadInt32(int32* value) {
+bool TransactionDataReader::ReadInt32(int32_t* value) {
   return ReadData(value, sizeof(*value));
 }
 
-bool TransactionDataReader::ReadUint32(uint32* value) {
+bool TransactionDataReader::ReadUint32(uint32_t* value) {
   return ReadData(value, sizeof(*value));
 }
 
-bool TransactionDataReader::ReadInt64(int64* value) {
+bool TransactionDataReader::ReadInt64(int64_t* value) {
   return ReadData(value, sizeof(*value));
 }
 
-bool TransactionDataReader::ReadUint64(uint64* value) {
+bool TransactionDataReader::ReadUint64(uint64_t* value) {
   return ReadData(value, sizeof(*value));
 }
 

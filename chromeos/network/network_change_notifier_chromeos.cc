@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"

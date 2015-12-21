@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -53,7 +55,7 @@ void RecordGetterResult(TestTPMTokenInfo* target,
 class FakeTaskRunner : public base::TaskRunner {
  public:
   // |delays|: Vector to which the dalays seen by the task runner are saved.
-  explicit FakeTaskRunner(std::vector<int64>* delays) : delays_(delays) {}
+  explicit FakeTaskRunner(std::vector<int64_t>* delays) : delays_(delays) {}
 
   // base::TaskRunner overrides:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
@@ -70,7 +72,7 @@ class FakeTaskRunner : public base::TaskRunner {
 
  private:
   // The vector of delays.
-  std::vector<int64>* delays_;
+  std::vector<int64_t>* delays_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTaskRunner);
 };
@@ -246,7 +248,7 @@ class SystemTPMTokenInfoGetterTest : public testing::Test {
   scoped_ptr<TestCryptohomeClient> cryptohome_client_;
   scoped_ptr<chromeos::TPMTokenInfoGetter> tpm_token_info_getter_;
 
-  std::vector<int64> delays_;
+  std::vector<int64_t> delays_;
 
  private:
   base::MessageLoop message_loop_;
@@ -273,7 +275,7 @@ class UserTPMTokenInfoGetterTest : public testing::Test {
   scoped_ptr<chromeos::TPMTokenInfoGetter> tpm_token_info_getter_;
 
   std::string user_id_;
-  std::vector<int64> delays_;
+  std::vector<int64_t> delays_;
 
  private:
   base::MessageLoop message_loop_;
@@ -296,7 +298,7 @@ TEST_F(SystemTPMTokenInfoGetterTest, BasicFlow) {
   EXPECT_EQ("2222", reported_info.pin);
   EXPECT_EQ(1, reported_info.slot_id);
 
-  EXPECT_EQ(std::vector<int64>(), delays_);
+  EXPECT_EQ(std::vector<int64_t>(), delays_);
 }
 
 TEST_F(SystemTPMTokenInfoGetterTest, TokenSlotIdEqualsZero) {
@@ -316,7 +318,7 @@ TEST_F(SystemTPMTokenInfoGetterTest, TokenSlotIdEqualsZero) {
   EXPECT_EQ("2222", reported_info.pin);
   EXPECT_EQ(0, reported_info.slot_id);
 
-  EXPECT_EQ(std::vector<int64>(), delays_);
+  EXPECT_EQ(std::vector<int64_t>(), delays_);
 }
 
 TEST_F(SystemTPMTokenInfoGetterTest, TPMNotEnabled) {
@@ -330,7 +332,7 @@ TEST_F(SystemTPMTokenInfoGetterTest, TPMNotEnabled) {
   EXPECT_FALSE(reported_info.IsReady());
   EXPECT_FALSE(reported_info.enabled);
 
-  EXPECT_EQ(std::vector<int64>(), delays_);
+  EXPECT_EQ(std::vector<int64_t>(), delays_);
 }
 
 TEST_F(SystemTPMTokenInfoGetterTest, TpmEnabledCallFails) {
@@ -350,9 +352,9 @@ TEST_F(SystemTPMTokenInfoGetterTest, TpmEnabledCallFails) {
   EXPECT_EQ("2222", reported_info.pin);
   EXPECT_EQ(1, reported_info.slot_id);
 
-  const int64 kExpectedDelays[] = {100};
-  EXPECT_EQ(std::vector<int64>(kExpectedDelays,
-                               kExpectedDelays + arraysize(kExpectedDelays)),
+  const int64_t kExpectedDelays[] = {100};
+  EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
+                                 kExpectedDelays + arraysize(kExpectedDelays)),
             delays_);
 }
 
@@ -373,9 +375,9 @@ TEST_F(SystemTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyNotReady) {
   EXPECT_EQ("2222", reported_info.pin);
   EXPECT_EQ(1, reported_info.slot_id);
 
-  const int64 kExpectedDelays[] = {100};
-  EXPECT_EQ(std::vector<int64>(kExpectedDelays,
-                               kExpectedDelays + arraysize(kExpectedDelays)),
+  const int64_t kExpectedDelays[] = {100};
+  EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
+                                 kExpectedDelays + arraysize(kExpectedDelays)),
             delays_);
 }
 
@@ -396,9 +398,9 @@ TEST_F(SystemTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyFails) {
   EXPECT_EQ("2222", reported_info.pin);
   EXPECT_EQ(1, reported_info.slot_id);
 
-  const int64 kExpectedDelays[] = {100};
-  EXPECT_EQ(std::vector<int64>(kExpectedDelays,
-                               kExpectedDelays + arraysize(kExpectedDelays)),
+  const int64_t kExpectedDelays[] = {100};
+  EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
+                                 kExpectedDelays + arraysize(kExpectedDelays)),
             delays_);
 }
 
@@ -421,11 +423,10 @@ TEST_F(SystemTPMTokenInfoGetterTest, RetryDelaysIncreaseExponentially) {
   EXPECT_EQ("2222", reported_info.pin);
   EXPECT_EQ(2, reported_info.slot_id);
 
-  int64 kExpectedDelays[] = { 100, 200, 400, 800, 1600, 3200 };
-  ASSERT_EQ(
-      std::vector<int64>(kExpectedDelays,
-                         kExpectedDelays + arraysize(kExpectedDelays)),
-      delays_);
+  int64_t kExpectedDelays[] = {100, 200, 400, 800, 1600, 3200};
+  ASSERT_EQ(std::vector<int64_t>(kExpectedDelays,
+                                 kExpectedDelays + arraysize(kExpectedDelays)),
+            delays_);
 }
 
 TEST_F(SystemTPMTokenInfoGetterTest, RetryDelayBounded) {
@@ -447,14 +448,12 @@ TEST_F(SystemTPMTokenInfoGetterTest, RetryDelayBounded) {
   EXPECT_EQ("2222", reported_info.pin);
   EXPECT_EQ(1, reported_info.slot_id);
 
-  int64 kExpectedDelays[] = {
-     100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600, 51200, 102400, 204800,
-     300000, 300000, 300000
-  };
-  ASSERT_EQ(
-      std::vector<int64>(kExpectedDelays,
-                         kExpectedDelays + arraysize(kExpectedDelays)),
-      delays_);
+  int64_t kExpectedDelays[] = {100,    200,    400,    800,    1600,
+                               3200,   6400,   12800,  25600,  51200,
+                               102400, 204800, 300000, 300000, 300000};
+  ASSERT_EQ(std::vector<int64_t>(kExpectedDelays,
+                                 kExpectedDelays + arraysize(kExpectedDelays)),
+            delays_);
 }
 
 TEST_F(UserTPMTokenInfoGetterTest, BasicFlow) {
@@ -472,7 +471,7 @@ TEST_F(UserTPMTokenInfoGetterTest, BasicFlow) {
   EXPECT_EQ("2222", reported_info.pin);
   EXPECT_EQ(1, reported_info.slot_id);
 
-  EXPECT_EQ(std::vector<int64>(), delays_);
+  EXPECT_EQ(std::vector<int64_t>(), delays_);
 }
 
 TEST_F(UserTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyFails) {
@@ -492,9 +491,9 @@ TEST_F(UserTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyFails) {
   EXPECT_EQ("2222", reported_info.pin);
   EXPECT_EQ(1, reported_info.slot_id);
 
-  const int64 kExpectedDelays[] = {100};
-  EXPECT_EQ(std::vector<int64>(kExpectedDelays,
-                               kExpectedDelays + arraysize(kExpectedDelays)),
+  const int64_t kExpectedDelays[] = {100};
+  EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
+                                 kExpectedDelays + arraysize(kExpectedDelays)),
             delays_);
 }
 
@@ -515,9 +514,9 @@ TEST_F(UserTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyNotReady) {
   EXPECT_EQ("2222", reported_info.pin);
   EXPECT_EQ(1, reported_info.slot_id);
 
-  const int64 kExpectedDelays[] = {100};
-  EXPECT_EQ(std::vector<int64>(kExpectedDelays,
-                               kExpectedDelays + arraysize(kExpectedDelays)),
+  const int64_t kExpectedDelays[] = {100};
+  EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
+                                 kExpectedDelays + arraysize(kExpectedDelays)),
             delays_);
 }
 

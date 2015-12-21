@@ -5,17 +5,18 @@
 #ifndef CHROMEOS_DBUS_VOLUME_STATE_H_
 #define CHROMEOS_DBUS_VOLUME_STATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 struct CHROMEOS_EXPORT VolumeState {
-  int32 output_volume;
+  int32_t output_volume;
   bool output_system_mute;
-  int32 input_gain;
+  int32_t input_gain;
   bool input_mute;
   bool output_user_mute;
 

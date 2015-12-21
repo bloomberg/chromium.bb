@@ -4,9 +4,13 @@
 
 #include "chromeos/disks/disk_mount_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
@@ -651,7 +655,7 @@ DiskMountManager::Disk::Disk(const std::string& device_path,
                              const std::string& fs_uuid,
                              const std::string& system_path_prefix,
                              DeviceType device_type,
-                             uint64 total_size_in_bytes,
+                             uint64_t total_size_in_bytes,
                              bool is_parent,
                              bool is_read_only,
                              bool has_media,
@@ -677,8 +681,7 @@ DiskMountManager::Disk::Disk(const std::string& device_path,
       has_media_(has_media),
       on_boot_device_(on_boot_device),
       on_removable_device_(on_removable_device),
-      is_hidden_(is_hidden) {
-}
+      is_hidden_(is_hidden) {}
 
 DiskMountManager::Disk::~Disk() {}
 

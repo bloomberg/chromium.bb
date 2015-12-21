@@ -4,6 +4,8 @@
 
 #include "chromeos/network/certificate_pattern.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/values.h"
 #include "components/onc/onc_constants.h"

@@ -5,6 +5,8 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 
 #include <fcntl.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <string>
 #include <vector>
@@ -13,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
@@ -464,18 +467,18 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     if (!reader.PopInt32(&status))
       return;
 
-    const uint8* buffer = nullptr;
+    const uint8_t* buffer = nullptr;
     size_t buf_size = 0;
 
     if (!reader.PopArrayOfBytes(&buffer, &buf_size))
       return;
-    std::vector<uint8> perf_data;
+    std::vector<uint8_t> perf_data;
     if (buf_size > 0)
       perf_data.insert(perf_data.end(), buffer, buffer + buf_size);
 
     if (!reader.PopArrayOfBytes(&buffer, &buf_size))
       return;
-    std::vector<uint8> perf_stat;
+    std::vector<uint8_t> perf_stat;
     if (buf_size > 0)
       perf_stat.insert(perf_stat.end(), buffer, buffer + buf_size);
 
@@ -533,7 +536,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     if (callback.is_null())
       return;
 
-    int32 feature_mask = DEV_FEATURE_NONE;
+    int32_t feature_mask = DEV_FEATURE_NONE;
     if (!response || !dbus::MessageReader(response).PopInt32(&feature_mask)) {
       callback.Run(false, debugd::DevFeatureFlag::DEV_FEATURES_DISABLED);
       return;

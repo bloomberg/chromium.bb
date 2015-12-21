@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_shill_third_party_vpn_driver_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"

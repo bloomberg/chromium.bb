@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_MOCK_CRYPTOHOME_CLIENT_H_
 #define CHROMEOS_DBUS_MOCK_CRYPTOHOME_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
@@ -79,11 +81,11 @@ class MockCryptohomeClient : public CryptohomeClient {
                     const Pkcs11GetTpmTokenInfoCallback& callback));
   MOCK_METHOD3(InstallAttributesGet,
                bool(const std::string& name,
-                    std::vector<uint8>* value,
+                    std::vector<uint8_t>* value,
                     bool* successful));
   MOCK_METHOD3(InstallAttributesSet,
                bool(const std::string& name,
-                    const std::vector<uint8>& value,
+                    const std::vector<uint8_t>& value,
                     bool* successful));
   MOCK_METHOD1(InstallAttributesFinalize, bool(bool* successful));
   MOCK_METHOD1(InstallAttributesIsReady,

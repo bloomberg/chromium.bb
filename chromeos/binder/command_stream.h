@@ -5,9 +5,11 @@
 #ifndef CHROMEOS_BINDER_COMMAND_STREAM_H_
 #define CHROMEOS_BINDER_COMMAND_STREAM_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -59,7 +61,7 @@ class CHROMEOS_EXPORT CommandStream {
   bool ProcessIncomingCommand();
 
   // Appends a command to the outgoing command buffer.
-  void AppendOutgoingCommand(uint32 command, const void* data, size_t size);
+  void AppendOutgoingCommand(uint32_t command, const void* data, size_t size);
 
   // Writes buffered outgoing commands to the driver, and returns true on
   // success.
@@ -67,7 +69,7 @@ class CHROMEOS_EXPORT CommandStream {
 
  private:
   // Calls the appropriate delegate method to handle the incoming command.
-  bool OnIncomingCommand(uint32 command, BufferReader* reader);
+  bool OnIncomingCommand(uint32_t command, BufferReader* reader);
 
   // Frees the buffer used by the driver to pass transaction data payload.
   void FreeTransactionBuffer(const void* ptr);

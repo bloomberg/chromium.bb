@@ -98,7 +98,8 @@ void FakeCrasAudioClient::GetNodes(const GetNodesCallback& callback,
   callback.Run(node_list_, true);
 }
 
-void FakeCrasAudioClient::SetOutputNodeVolume(uint64 node_id, int32 volume) {}
+void FakeCrasAudioClient::SetOutputNodeVolume(uint64_t node_id,
+                                              int32_t volume) {}
 
 void FakeCrasAudioClient::SetOutputUserMute(bool mute_on) {
   volume_state_.output_user_mute = mute_on;
@@ -106,7 +107,8 @@ void FakeCrasAudioClient::SetOutputUserMute(bool mute_on) {
                     OutputMuteChanged(volume_state_.output_user_mute));
 }
 
-void FakeCrasAudioClient::SetInputNodeGain(uint64 node_id, int32 input_gain) {}
+void FakeCrasAudioClient::SetInputNodeGain(uint64_t node_id,
+                                           int32_t input_gain) {}
 
 void FakeCrasAudioClient::SetInputMute(bool mute_on) {
   volume_state_.input_mute = mute_on;
@@ -114,7 +116,7 @@ void FakeCrasAudioClient::SetInputMute(bool mute_on) {
                     InputMuteChanged(volume_state_.input_mute));
 }
 
-void FakeCrasAudioClient::SetActiveOutputNode(uint64 node_id) {
+void FakeCrasAudioClient::SetActiveOutputNode(uint64_t node_id) {
   if (active_output_node_id_ == node_id)
     return;
 
@@ -128,7 +130,7 @@ void FakeCrasAudioClient::SetActiveOutputNode(uint64 node_id) {
   FOR_EACH_OBSERVER(Observer, observers_, ActiveOutputNodeChanged(node_id));
 }
 
-void FakeCrasAudioClient::SetActiveInputNode(uint64 node_id) {
+void FakeCrasAudioClient::SetActiveInputNode(uint64_t node_id) {
   if (active_input_node_id_ == node_id)
     return;
 
@@ -142,31 +144,30 @@ void FakeCrasAudioClient::SetActiveInputNode(uint64 node_id) {
   FOR_EACH_OBSERVER(Observer, observers_, ActiveInputNodeChanged(node_id));
 }
 
-void FakeCrasAudioClient::AddActiveInputNode(uint64 node_id) {
+void FakeCrasAudioClient::AddActiveInputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)
       node_list_[i].active = true;
   }
 }
 
-void FakeCrasAudioClient::RemoveActiveInputNode(uint64 node_id) {
+void FakeCrasAudioClient::RemoveActiveInputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)
       node_list_[i].active = false;
   }
 }
 
-void FakeCrasAudioClient::SwapLeftRight(uint64 node_id, bool swap) {
-}
+void FakeCrasAudioClient::SwapLeftRight(uint64_t node_id, bool swap) {}
 
-void FakeCrasAudioClient::AddActiveOutputNode(uint64 node_id) {
+void FakeCrasAudioClient::AddActiveOutputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)
       node_list_[i].active = true;
   }
 }
 
-void FakeCrasAudioClient::RemoveActiveOutputNode(uint64 node_id) {
+void FakeCrasAudioClient::RemoveActiveOutputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)
       node_list_[i].active = false;
@@ -182,7 +183,7 @@ void FakeCrasAudioClient::InsertAudioNodeToList(const AudioNode& audio_node) {
   FOR_EACH_OBSERVER(Observer, observers_, NodesChanged());
 }
 
-void FakeCrasAudioClient::RemoveAudioNodeFromList(const uint64& node_id) {
+void FakeCrasAudioClient::RemoveAudioNodeFromList(const uint64_t& node_id) {
   auto iter = FindNode(node_id);
   if (iter != node_list_.end()) {
     node_list_.erase(iter);
@@ -201,7 +202,7 @@ void FakeCrasAudioClient::SetAudioNodesAndNotifyObserversForTesting(
   FOR_EACH_OBSERVER(Observer, observers_, NodesChanged());
 }
 
-AudioNodeList::iterator FakeCrasAudioClient::FindNode(uint64 node_id) {
+AudioNodeList::iterator FakeCrasAudioClient::FindNode(uint64_t node_id) {
   return std::find_if(
       node_list_.begin(), node_list_.end(),
       [node_id](const AudioNode& node) { return node_id == node.id; });

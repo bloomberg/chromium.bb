@@ -5,8 +5,8 @@
 #ifndef CHROMEOS_NETWORK_ONC_ONC_CERTIFICATE_IMPORTER_H_
 #define CHROMEOS_NETWORK_ONC_ONC_CERTIFICATE_IMPORTER_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "components/onc/onc_constants.h"
 #include "net/cert/x509_certificate.h"

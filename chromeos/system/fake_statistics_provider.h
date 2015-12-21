@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "chromeos/system/statistics_provider.h"
 
 namespace chromeos {

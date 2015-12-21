@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "chromeos/binder/buffer_reader.h"
 #include "chromeos/binder/writable_transaction_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,52 +28,52 @@ TEST(BinderWritableTransactionDataTest, WriteData) {
 }
 
 TEST(BinderWritableTransactionDataTest, WriteInt32) {
-  const int32 kValue = -1234;
+  const int32_t kValue = -1234;
   WritableTransactionData data;
   data.WriteInt32(kValue);
   EXPECT_EQ(sizeof(kValue), data.GetDataSize());
   BufferReader reader(reinterpret_cast<const char*>(data.GetData()),
                       data.GetDataSize());
-  int32 result = 0;
+  int32_t result = 0;
   EXPECT_TRUE(reader.Read(&result, sizeof(result)));
   EXPECT_EQ(kValue, result);
   EXPECT_FALSE(reader.HasMoreData());
 }
 
 TEST(BinderWritableTransactionDataTest, WriteUint32) {
-  const uint32 kValue = 1234;
+  const uint32_t kValue = 1234;
   WritableTransactionData data;
   data.WriteUint32(kValue);
   EXPECT_EQ(sizeof(kValue), data.GetDataSize());
   BufferReader reader(reinterpret_cast<const char*>(data.GetData()),
                       data.GetDataSize());
-  uint32 result = 0;
+  uint32_t result = 0;
   EXPECT_TRUE(reader.Read(&result, sizeof(result)));
   EXPECT_EQ(kValue, result);
   EXPECT_FALSE(reader.HasMoreData());
 }
 
 TEST(BinderWritableTransactionDataTest, WriteInt64) {
-  const int64 kValue = -1234;
+  const int64_t kValue = -1234;
   WritableTransactionData data;
   data.WriteInt64(kValue);
   EXPECT_EQ(sizeof(kValue), data.GetDataSize());
   BufferReader reader(reinterpret_cast<const char*>(data.GetData()),
                       data.GetDataSize());
-  int64 result = 0;
+  int64_t result = 0;
   EXPECT_TRUE(reader.Read(&result, sizeof(result)));
   EXPECT_EQ(kValue, result);
   EXPECT_FALSE(reader.HasMoreData());
 }
 
 TEST(BinderWritableTransactionDataTest, WriteUint64) {
-  const uint64 kValue = 1234;
+  const uint64_t kValue = 1234;
   WritableTransactionData data;
   data.WriteUint64(kValue);
   EXPECT_EQ(sizeof(kValue), data.GetDataSize());
   BufferReader reader(reinterpret_cast<const char*>(data.GetData()),
                       data.GetDataSize());
-  uint64 result = 0;
+  uint64_t result = 0;
   EXPECT_TRUE(reader.Read(&result, sizeof(result)));
   EXPECT_EQ(kValue, result);
   EXPECT_FALSE(reader.HasMoreData());

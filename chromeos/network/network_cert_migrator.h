@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_CERT_MIGRATOR_H_
 #define CHROMEOS_NETWORK_NETWORK_CERT_MIGRATOR_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_export.h"

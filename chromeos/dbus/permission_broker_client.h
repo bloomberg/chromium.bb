@@ -5,10 +5,12 @@
 #ifndef CHROMEOS_DBUS_PERMISSION_BROKER_CLIENT_H_
 #define CHROMEOS_DBUS_PERMISSION_BROKER_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "dbus/file_descriptor.h"
@@ -62,7 +64,7 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
   // connections received on |interface| (an empty string indicates all
   // interfaces). An open pipe must be passed as |lifeline_fd| so that the
   // permission broker can monitor the lifetime of the calling process.
-  virtual void RequestTcpPortAccess(uint16 port,
+  virtual void RequestTcpPortAccess(uint16_t port,
                                     const std::string& interface,
                                     const dbus::FileDescriptor& lifeline_fd,
                                     const ResultCallback& callback) = 0;
@@ -71,7 +73,7 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
   // received on |interface| (an empty string indicates all interfaces). An open
   // pipe must be passed as |lifeline_fd| so that the permission broker can
   // monitor the lifetime of the calling process.
-  virtual void RequestUdpPortAccess(uint16 port,
+  virtual void RequestUdpPortAccess(uint16_t port,
                                     const std::string& interface,
                                     const dbus::FileDescriptor& lifeline_fd,
                                     const ResultCallback& callback) = 0;
@@ -79,14 +81,14 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
   // Releases a request for an open firewall port for TCP/IP connections. The
   // |port| and |interface| parameters must be the same as a previous call to
   // RequestTcpPortAccess.
-  virtual void ReleaseTcpPort(uint16 port,
+  virtual void ReleaseTcpPort(uint16_t port,
                               const std::string& interface,
                               const ResultCallback& callback) = 0;
 
   // Releases a request for an open firewall port for UDP packets. The |port|
   // and |interface| parameters must be the same as a previous call to
   // RequestUdpPortAccess.
-  virtual void ReleaseUdpPort(uint16 port,
+  virtual void ReleaseUdpPort(uint16_t port,
                               const std::string& interface,
                               const ResultCallback& callback) = 0;
 

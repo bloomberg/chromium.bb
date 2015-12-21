@@ -5,10 +5,12 @@
 #ifndef CHROMEOS_DBUS_FAKE_DEBUG_DAEMON_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_DEBUG_DAEMON_CLIENT_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 
 namespace chromeos {

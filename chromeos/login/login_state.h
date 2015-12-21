@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_LOGIN_LOGIN_STATE_H_
 #define CHROMEOS_LOGIN_LOGIN_STATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 

@@ -4,6 +4,8 @@
 
 #include "chromeos/timezone/timezone_request.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/json/json_reader.h"

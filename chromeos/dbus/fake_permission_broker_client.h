@@ -5,8 +5,10 @@
 #ifndef CHROMEOS_DBUS_FAKE_PERMISSION_BROKER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_PERMISSION_BROKER_CLIENT_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chromeos/dbus/permission_broker_client.h"
 
 namespace chromeos {
@@ -25,18 +27,18 @@ class CHROMEOS_EXPORT FakePermissionBrokerClient
                          const ResultCallback& callback) override;
   void OpenPath(const std::string& path,
                 const OpenPathCallback& callback) override;
-  void RequestTcpPortAccess(uint16 port,
+  void RequestTcpPortAccess(uint16_t port,
                             const std::string& interface,
                             const dbus::FileDescriptor& lifeline_fd,
                             const ResultCallback& callback) override;
-  void RequestUdpPortAccess(uint16 port,
+  void RequestUdpPortAccess(uint16_t port,
                             const std::string& interface,
                             const dbus::FileDescriptor& lifeline_fd,
                             const ResultCallback& callback) override;
-  void ReleaseTcpPort(uint16 port,
+  void ReleaseTcpPort(uint16_t port,
                       const std::string& interface,
                       const ResultCallback& callback) override;
-  void ReleaseUdpPort(uint16 port,
+  void ReleaseUdpPort(uint16_t port,
                       const std::string& interface,
                       const ResultCallback& callback) override;
 

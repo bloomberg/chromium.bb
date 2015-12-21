@@ -4,10 +4,13 @@
 
 #include "chromeos/network/shill_property_handler.h"
 
+#include <stddef.h>
+
 #include <sstream>
 
 #include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"

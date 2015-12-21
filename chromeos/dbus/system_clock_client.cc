@@ -4,7 +4,10 @@
 
 #include "chromeos/dbus/system_clock_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -37,7 +40,7 @@ class SystemClockClientImpl : public SystemClockClient {
     return observers_.HasObserver(observer);
   }
 
-  void SetTime(int64 time_in_seconds) override {
+  void SetTime(int64_t time_in_seconds) override {
     // Always try to set the time, because |can_set_time_| may be stale.
     dbus::MethodCall method_call(system_clock::kSystemClockInterface,
                                  system_clock::kSystemClockSet);

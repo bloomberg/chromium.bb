@@ -4,6 +4,8 @@
 
 #include "chromeos/settings/timezone_settings.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -11,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"

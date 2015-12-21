@@ -4,8 +4,11 @@
 
 #include "chromeos/dbus/cras_audio_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -62,7 +65,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
-  void SetOutputNodeVolume(uint64 node_id, int32 volume) override {
+  void SetOutputNodeVolume(uint64_t node_id, int32_t volume) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSetOutputNodeVolume);
     dbus::MessageWriter writer(&method_call);
@@ -85,7 +88,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void SetInputNodeGain(uint64 node_id, int32 input_gain) override {
+  void SetInputNodeGain(uint64_t node_id, int32_t input_gain) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSetInputNodeGain);
     dbus::MessageWriter writer(&method_call);
@@ -108,7 +111,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void SetActiveOutputNode(uint64 node_id) override {
+  void SetActiveOutputNode(uint64_t node_id) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSetActiveOutputNode);
     dbus::MessageWriter writer(&method_call);
@@ -119,7 +122,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void SetActiveInputNode(uint64 node_id) override {
+  void SetActiveInputNode(uint64_t node_id) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSetActiveInputNode);
     dbus::MessageWriter writer(&method_call);
@@ -130,7 +133,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void AddActiveInputNode(uint64 node_id) override {
+  void AddActiveInputNode(uint64_t node_id) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kAddActiveInputNode);
     dbus::MessageWriter writer(&method_call);
@@ -141,7 +144,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void RemoveActiveInputNode(uint64 node_id) override {
+  void RemoveActiveInputNode(uint64_t node_id) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kRemoveActiveInputNode);
     dbus::MessageWriter writer(&method_call);
@@ -152,7 +155,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void AddActiveOutputNode(uint64 node_id) override {
+  void AddActiveOutputNode(uint64_t node_id) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kAddActiveOutputNode);
     dbus::MessageWriter writer(&method_call);
@@ -162,7 +165,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
                             dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void RemoveActiveOutputNode(uint64 node_id) override {
+  void RemoveActiveOutputNode(uint64_t node_id) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kRemoveActiveOutputNode);
     dbus::MessageWriter writer(&method_call);
@@ -172,7 +175,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
                             dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void SwapLeftRight(uint64 node_id, bool swap) override {
+  void SwapLeftRight(uint64_t node_id, bool swap) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSwapLeftRight);
     dbus::MessageWriter writer(&method_call);
@@ -283,7 +286,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
 
   void ActiveOutputNodeChangedReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
-    uint64 node_id;
+    uint64_t node_id;
     if (!reader.PopUint64(&node_id)) {
       LOG(ERROR) << "Error reading signal from cras:"
                  << signal->ToString();
@@ -293,7 +296,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
 
   void ActiveInputNodeChangedReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
-    uint64 node_id;
+    uint64_t node_id;
     if (!reader.PopUint64(&node_id)) {
       LOG(ERROR) << "Error reading signal from cras:"
                  << signal->ToString();
@@ -442,11 +445,9 @@ void CrasAudioClient::Observer::InputMuteChanged(bool mute_on) {
 void CrasAudioClient::Observer::NodesChanged() {
 }
 
-void CrasAudioClient::Observer::ActiveOutputNodeChanged(uint64 node_id){
-}
+void CrasAudioClient::Observer::ActiveOutputNodeChanged(uint64_t node_id) {}
 
-void CrasAudioClient::Observer::ActiveInputNodeChanged(uint64 node_id) {
-}
+void CrasAudioClient::Observer::ActiveInputNodeChanged(uint64_t node_id) {}
 
 CrasAudioClient::CrasAudioClient() {
 }

@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_BINDER_BUFFER_READER_H_
 #define CHROMEOS_BINDER_BUFFER_READER_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 

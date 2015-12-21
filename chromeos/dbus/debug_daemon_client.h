@@ -5,10 +5,13 @@
 #ifndef CHROMEOS_DBUS_DEBUG_DAEMON_CLIENT_H_
 #define CHROMEOS_DBUS_DEBUG_DAEMON_CLIENT_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task_runner.h"
 #include "base/trace_event/tracing_agent.h"
@@ -94,8 +97,8 @@ class CHROMEOS_EXPORT DebugDaemonClient
   // - Output from "perf stat", in PerfStatProto format.
   using GetPerfOutputCallback =
       base::Callback<void(int status,
-                          const std::vector<uint8>& perf_data,
-                          const std::vector<uint8>& perf_stat)>;
+                          const std::vector<uint8_t>& perf_data,
+                          const std::vector<uint8_t>& perf_stat)>;
 
   // Runs perf with arguments for |duration| seconds and returns data collected.
   virtual void GetPerfOutput(uint32_t duration,

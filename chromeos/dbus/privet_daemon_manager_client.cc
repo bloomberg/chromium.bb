@@ -4,9 +4,13 @@
 
 #include "chromeos/dbus/privet_daemon_manager_client.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
@@ -220,7 +224,7 @@ bool PrivetDaemonManagerClient::PairingInfoProperty::PopValueFromReader(
         value_.set_mode(string_value);
       }
     } else if (field_reader.GetDataSignature() == "ay") {
-      const uint8* bytes = nullptr;
+      const uint8_t* bytes = nullptr;
       size_t length = 0;
       if (!field_reader.PopArrayOfBytes(&bytes, &length))
         return false;

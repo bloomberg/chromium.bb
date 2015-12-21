@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

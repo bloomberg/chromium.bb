@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/update_engine_client.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
@@ -351,7 +353,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   void StatusUpdateReceived(dbus::Signal* signal) {
     VLOG(1) << "Status update signal received: " << signal->ToString();
     dbus::MessageReader reader(signal);
-    int64 last_checked_time = 0;
+    int64_t last_checked_time = 0;
     double progress = 0.0;
     std::string current_operation;
     std::string new_version;

@@ -4,6 +4,8 @@
 
 #include "chromeos/cryptohome/cryptohome_util.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -34,7 +36,7 @@ bool TpmIsBeingOwned() {
 
 bool InstallAttributesGet(
     const std::string& name, std::string* value) {
-  std::vector<uint8> buf;
+  std::vector<uint8_t> buf;
   bool success = false;
   DBusThreadManager::Get()->GetCryptohomeClient()->
       InstallAttributesGet(name, &buf, &success);
@@ -49,7 +51,7 @@ bool InstallAttributesGet(
 
 bool InstallAttributesSet(
     const std::string& name, const std::string& value) {
-  std::vector<uint8> buf(value.c_str(), value.c_str() + value.size() + 1);
+  std::vector<uint8_t> buf(value.c_str(), value.c_str() + value.size() + 1);
   bool success = false;
   DBusThreadManager::Get()->GetCryptohomeClient()->
       InstallAttributesSet(name, buf, &success);

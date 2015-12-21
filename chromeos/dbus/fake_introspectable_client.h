@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_DBUS_FAKE_INTROSPECTABLE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_INTROSPECTABLE_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chromeos/dbus/introspectable_client.h"
 

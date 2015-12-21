@@ -14,7 +14,7 @@ uintptr_t WritableTransactionData::GetCookie() const {
   return 0;
 }
 
-uint32 WritableTransactionData::GetCode() const {
+uint32_t WritableTransactionData::GetCode() const {
   return code_;
 }
 
@@ -66,21 +66,21 @@ void WritableTransactionData::WriteData(const void* data, size_t n) {
   }
 }
 
-void WritableTransactionData::WriteInt32(int32 value) {
+void WritableTransactionData::WriteInt32(int32_t value) {
   // Binder is not used for inter-device communication, so no endian conversion.
   // The same applies to other Write() methods.
   WriteData(&value, sizeof(value));
 }
 
-void WritableTransactionData::WriteUint32(uint32 value) {
+void WritableTransactionData::WriteUint32(uint32_t value) {
   WriteData(&value, sizeof(value));
 }
 
-void WritableTransactionData::WriteInt64(int64 value) {
+void WritableTransactionData::WriteInt64(int64_t value) {
   WriteData(&value, sizeof(value));
 }
 
-void WritableTransactionData::WriteUint64(uint64 value) {
+void WritableTransactionData::WriteUint64(uint64_t value) {
   WriteData(&value, sizeof(value));
 }
 

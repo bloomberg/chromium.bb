@@ -5,8 +5,10 @@
 #ifndef CHROMEOS_BINDER_TRANSACTION_DATA_FROM_DRIVER_H_
 #define CHROMEOS_BINDER_TRANSACTION_DATA_FROM_DRIVER_H_
 
-#include <unistd.h>
 #include <linux/android/binder.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <unistd.h>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -33,7 +35,7 @@ class CHROMEOS_EXPORT TransactionDataFromDriver : public TransactionData {
 
   // TransactionData override:
   uintptr_t GetCookie() const override;
-  uint32 GetCode() const override;
+  uint32_t GetCode() const override;
   pid_t GetSenderPID() const override;
   uid_t GetSenderEUID() const override;
   bool IsOneWay() const override;

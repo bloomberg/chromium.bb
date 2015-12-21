@@ -4,6 +4,8 @@
 
 #include "chromeos/network/network_profile_handler.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

@@ -4,6 +4,8 @@
 
 #include "chromeos/geolocation/simple_geolocation_request.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 

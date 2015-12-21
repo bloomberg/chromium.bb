@@ -7,8 +7,8 @@
 
 #include "chromeos/attestation/attestation_flow.h"
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {

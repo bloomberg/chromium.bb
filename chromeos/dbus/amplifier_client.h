@@ -5,7 +5,9 @@
 #ifndef CHROMEOS_DBUS_AMPLIFIER_CLIENT_H_
 #define CHROMEOS_DBUS_AMPLIFIER_CLIENT_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -20,7 +22,7 @@ class CHROMEOS_EXPORT AmplifierClient : public DBusClient {
    public:
     virtual ~Observer() {}
     // Called when the Error signal is received.
-    virtual void OnError(int32 error_code) = 0;
+    virtual void OnError(int32_t error_code) = 0;
   };
 
   ~AmplifierClient() override;

@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/dbus_client_bundle.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/command_line.h"

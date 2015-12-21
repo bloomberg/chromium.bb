@@ -6,14 +6,13 @@
 #define CHROMEOS_BINDER_STATUS_H_
 
 #include <errno.h>
-
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace binder {
 
 // Status code.
 // Using the same values as used by libbinder.
-enum class Status : int32 {
+enum class Status : int32_t {
   OK = 0,
 
   UNKNOWN_ERROR = INT32_MIN,

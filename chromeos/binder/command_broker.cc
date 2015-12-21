@@ -5,6 +5,8 @@
 #include "chromeos/binder/command_broker.h"
 
 #include <linux/android/binder.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "chromeos/binder/driver.h"
@@ -42,7 +44,7 @@ CommandBroker::~CommandBroker() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool CommandBroker::Transact(int32 handle,
+bool CommandBroker::Transact(int32_t handle,
                              const TransactionData& request,
                              scoped_ptr<TransactionData>* reply) {
   DCHECK(thread_checker_.CalledOnValidThread());

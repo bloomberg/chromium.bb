@@ -4,7 +4,10 @@
 
 #include "chromeos/dbus/permission_broker_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -63,7 +66,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void RequestTcpPortAccess(uint16 port,
+  void RequestTcpPortAccess(uint16_t port,
                             const std::string& interface,
                             const dbus::FileDescriptor& lifeline_fd,
                             const ResultCallback& callback) override {
@@ -78,7 +81,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
                                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void RequestUdpPortAccess(uint16 port,
+  void RequestUdpPortAccess(uint16_t port,
                             const std::string& interface,
                             const dbus::FileDescriptor& lifeline_fd,
                             const ResultCallback& callback) override {
@@ -93,7 +96,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
                                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void ReleaseTcpPort(uint16 port,
+  void ReleaseTcpPort(uint16_t port,
                       const std::string& interface,
                       const ResultCallback& callback) override {
     dbus::MethodCall method_call(kPermissionBrokerInterface, kReleaseTcpPort);
@@ -105,7 +108,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
                                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void ReleaseUdpPort(uint16 port,
+  void ReleaseUdpPort(uint16_t port,
                       const std::string& interface,
                       const ResultCallback& callback) override {
     dbus::MethodCall method_call(kPermissionBrokerInterface, kReleaseUdpPort);

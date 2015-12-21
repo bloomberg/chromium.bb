@@ -4,6 +4,8 @@
 
 #include "chromeos/network/shill_property_util.h"
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/i18n/icu_encoding_detection.h"
@@ -28,15 +30,15 @@ namespace {
 // Replace non UTF8 characters in |str| with a replacement character.
 std::string ValidateUTF8(const std::string& str) {
   std::string result;
-  for (int32 index = 0; index < static_cast<int32>(str.size()); ++index) {
-    uint32 code_point_out;
+  for (int32_t index = 0; index < static_cast<int32_t>(str.size()); ++index) {
+    uint32_t code_point_out;
     bool is_unicode_char = base::ReadUnicodeCharacter(
         str.c_str(), str.size(), &index, &code_point_out);
-    const uint32 kFirstNonControlChar = 0x20;
+    const uint32_t kFirstNonControlChar = 0x20;
     if (is_unicode_char && (code_point_out >= kFirstNonControlChar)) {
       base::WriteUnicodeCharacter(code_point_out, &result);
     } else {
-      const uint32 kReplacementChar = 0xFFFD;
+      const uint32_t kReplacementChar = 0xFFFD;
       // Puts kReplacementChar if character is a control character [0,0x20)
       // or is not readable UTF8.
       base::WriteUnicodeCharacter(kReplacementChar, &result);
@@ -86,7 +88,7 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   }
 
   std::string ssid;
-  std::vector<uint8> raw_ssid_bytes;
+  std::vector<uint8_t> raw_ssid_bytes;
   if (base::HexStringToBytes(hex_ssid, &raw_ssid_bytes)) {
     ssid = std::string(raw_ssid_bytes.begin(), raw_ssid_bytes.end());
     VLOG(2) << "GetSSIDFromProperties: " << name << " HexSsid=" << hex_ssid

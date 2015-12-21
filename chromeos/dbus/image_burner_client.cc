@@ -4,8 +4,11 @@
 
 #include "chromeos/dbus/image_burner_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -102,8 +105,8 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
   void OnBurnProgressUpdate(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     std::string target_path;
-    int64 num_bytes_burnt;
-    int64 total_size;
+    int64_t num_bytes_burnt;
+    int64_t total_size;
     if (!reader.PopString(&target_path) ||
         !reader.PopInt64(&num_bytes_burnt) ||
         !reader.PopInt64(&total_size)) {

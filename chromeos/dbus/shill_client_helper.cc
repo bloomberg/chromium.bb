@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/shill_client_helper.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"

@@ -4,14 +4,16 @@
 
 #include "chromeos/tpm/tpm_token_info_getter.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "chromeos/dbus/cryptohome_client.h"
 
 namespace {
 
-const int64 kInitialRequestDelayMs = 100;
-const int64 kMaxRequestDelayMs = 300000;  // 5 minutes
+const int64_t kInitialRequestDelayMs = 100;
+const int64_t kMaxRequestDelayMs = 300000;  // 5 minutes
 
 // Calculates the delay before running next attempt to initiatialize the TPM
 // token, if |last_delay| was the last or initial delay.

@@ -4,8 +4,12 @@
 
 #include "chromeos/cryptohome/homedir_methods.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -387,7 +391,7 @@ class HomedirMethodsImpl : public HomedirMethods {
 
         // Extract |number|.
         if (provider_data_it->has_number()) {
-          provider_data.number.reset(new int64(provider_data_it->number()));
+          provider_data.number.reset(new int64_t(provider_data_it->number()));
           ++data_items;
         }
 

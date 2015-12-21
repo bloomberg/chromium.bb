@@ -11,6 +11,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"

@@ -4,8 +4,10 @@
 
 #include "chromeos/network/network_state.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/i18n/streaming_utf8_validator.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"

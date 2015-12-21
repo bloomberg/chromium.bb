@@ -4,6 +4,9 @@
 
 #include "chromeos/dbus/privet_daemon_manager_client.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "dbus/message.h"

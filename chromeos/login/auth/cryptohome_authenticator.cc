@@ -4,9 +4,10 @@
 
 #include "chromeos/login/auth/cryptohome_authenticator.h"
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -194,14 +195,14 @@ void OnGetKeyDataEx(
       DCHECK_EQ(kCryptohomeGAIAKeyLabel, key_definition.label);
 
       // Extract the key type and salt from |key_definition|, if present.
-      scoped_ptr<int64> type;
+      scoped_ptr<int64_t> type;
       scoped_ptr<std::string> salt;
       for (std::vector<cryptohome::KeyDefinition::ProviderData>::
                const_iterator it = key_definition.provider_data.begin();
            it != key_definition.provider_data.end(); ++it) {
         if (it->name == kKeyProviderDataTypeName) {
           if (it->number)
-            type.reset(new int64(*it->number));
+            type.reset(new int64_t(*it->number));
           else
             NOTREACHED();
         } else if (it->name == kKeyProviderDataSaltName) {

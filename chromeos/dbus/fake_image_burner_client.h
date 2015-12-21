@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chromeos/dbus/image_burner_client.h"
 
 namespace chromeos {

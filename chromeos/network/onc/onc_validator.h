@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_mapper.h"

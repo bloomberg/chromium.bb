@@ -6,10 +6,10 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_profile_handler.h"

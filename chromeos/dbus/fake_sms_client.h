@@ -5,8 +5,8 @@
 #ifndef CHROMEOS_DBUS_FAKE_SMS_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_SMS_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/sms_client.h"
 

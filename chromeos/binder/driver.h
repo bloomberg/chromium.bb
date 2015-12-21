@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_BINDER_DRIVER_H_
 #define CHROMEOS_BINDER_DRIVER_H_
 
+#include <stddef.h>
+
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"

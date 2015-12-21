@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/audio_node.h"
 
+#include <stdint.h>
+
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -18,20 +20,19 @@ AudioNode::AudioNode()
 }
 
 AudioNode::AudioNode(bool is_input,
-                     uint64 id,
+                     uint64_t id,
                      std::string device_name,
                      std::string type,
                      std::string name,
                      bool active,
-                     uint64 plugged_time)
+                     uint64_t plugged_time)
     : is_input(is_input),
       id(id),
       device_name(device_name),
       type(type),
       name(name),
       active(active),
-      plugged_time(plugged_time) {
-}
+      plugged_time(plugged_time) {}
 
 AudioNode::~AudioNode() {}
 

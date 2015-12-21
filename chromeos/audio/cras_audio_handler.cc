@@ -4,6 +4,9 @@
 
 #include "chromeos/audio/cras_audio_handler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 

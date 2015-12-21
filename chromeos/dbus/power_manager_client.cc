@@ -4,12 +4,15 @@
 
 #include "chromeos/dbus/power_manager_client.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"

@@ -4,6 +4,9 @@
 
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "chromeos/dbus/cryptohome/key.pb.h"
 
 namespace cryptohome {
@@ -81,15 +84,14 @@ KeyDefinition::ProviderData::ProviderData(const std::string& name)
 KeyDefinition::ProviderData::ProviderData(const ProviderData& other)
     : name(other.name) {
   if (other.number)
-    number.reset(new int64(*other.number));
+    number.reset(new int64_t(*other.number));
   if (other.bytes)
     bytes.reset(new std::string(*other.bytes));
 }
 
-KeyDefinition::ProviderData::ProviderData(const std::string& name, int64 number)
-    : name(name),
-      number(new int64(number)) {
-}
+KeyDefinition::ProviderData::ProviderData(const std::string& name,
+                                          int64_t number)
+    : name(name), number(new int64_t(number)) {}
 
 KeyDefinition::ProviderData::ProviderData(const std::string& name,
                                           const std::string& bytes)
@@ -99,7 +101,7 @@ KeyDefinition::ProviderData::ProviderData(const std::string& name,
 
 void KeyDefinition::ProviderData::operator=(const ProviderData& other) {
   name = other.name;
-  number.reset(other.number ? new int64(*other.number) : NULL);
+  number.reset(other.number ? new int64_t(*other.number) : NULL);
   bytes.reset(other.bytes ? new std::string(*other.bytes) : NULL);
 }
 

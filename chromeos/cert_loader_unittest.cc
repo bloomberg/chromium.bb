@@ -4,6 +4,8 @@
 
 #include "chromeos/cert_loader.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"

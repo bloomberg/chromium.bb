@@ -5,8 +5,11 @@
 #ifndef CHROMEOS_DISKS_MOCK_DISK_MOUNT_MANAGER_H_
 #define CHROMEOS_DISKS_MOCK_DISK_MOUNT_MANAGER_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -63,7 +66,7 @@ class MockDiskMountManager : public DiskMountManager {
       const std::string& vendor_name,
       const std::string& product_name,
       DeviceType device_type,
-      uint64 total_size_in_bytes,
+      uint64_t total_size_in_bytes,
       bool is_parent,
       bool has_media,
       bool on_boot_device,

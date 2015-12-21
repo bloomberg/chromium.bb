@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_nfc_record_client.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_nfc_device_client.h"
@@ -295,7 +297,7 @@ bool FakeNfcRecordClient::WriteTagRecord(
       GetStringValue(attributes, nfc_record::kMimeTypeProperty));
   tag_record_properties_->action.ReplaceValue(
       GetStringValue(attributes, nfc_record::kActionProperty));
-  tag_record_properties_->size.ReplaceValue(static_cast<uint32>(
+  tag_record_properties_->size.ReplaceValue(static_cast<uint32_t>(
       GetDoubleValue(attributes, nfc_record::kSizeProperty)));
 
   SetTagRecordsVisible(false);

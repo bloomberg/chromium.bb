@@ -5,10 +5,11 @@
 #ifndef CHROMEOS_DBUS_AUDIO_NODE_H_
 #define CHROMEOS_DBUS_AUDIO_NODE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -16,23 +17,23 @@ namespace chromeos {
 // Structure to hold AudioNode data received from cras.
 struct CHROMEOS_EXPORT AudioNode {
   bool is_input;
-  uint64 id;
+  uint64_t id;
   std::string device_name;
   std::string type;
   std::string name;
   std::string mic_positions;
   bool active;
   // Time that the node was plugged in.
-  uint64 plugged_time;
+  uint64_t plugged_time;
 
   AudioNode();
   AudioNode(bool is_input,
-            uint64 id,
+            uint64_t id,
             std::string device_name,
             std::string type,
             std::string name,
             bool active,
-            uint64 plugged_time);
+            uint64_t plugged_time);
   ~AudioNode();
   std::string ToString() const;
 };

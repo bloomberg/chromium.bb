@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "components/onc/onc_constants.h"

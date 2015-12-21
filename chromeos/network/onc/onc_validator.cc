@@ -4,6 +4,9 @@
 
 #include "chromeos/network/onc/onc_validator.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/json/json_writer.h"
@@ -452,7 +455,7 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
   std::string hex_ssid_string;
   if (object->GetStringWithoutPathExpansion(::onc::wifi::kHexSSID,
                                             &hex_ssid_string)) {
-    std::vector<uint8> decoded_ssid;
+    std::vector<uint8_t> decoded_ssid;
     if (!base::HexStringToBytes(hex_ssid_string, &decoded_ssid)) {
       LOG(ERROR) << MessageHeader() << "Field " << ::onc::wifi::kHexSSID
                  << " is not a valid hex representation: \"" << hex_ssid_string

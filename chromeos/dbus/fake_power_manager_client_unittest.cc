@@ -4,7 +4,6 @@
 
 #include "chromeos/dbus/fake_power_manager_client.h"
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

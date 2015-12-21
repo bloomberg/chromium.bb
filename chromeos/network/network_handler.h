@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_HANDLER_H_
 #define CHROMEOS_NETWORK_NETWORK_HANDLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"

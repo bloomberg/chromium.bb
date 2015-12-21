@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/power_manager_client.h"

@@ -5,11 +5,13 @@
 #ifndef CHROMEOS_CRYPTOHOME_SYSTEM_SALT_GETTER_H_
 #define CHROMEOS_CRYPTOHOME_SYSTEM_SALT_GETTER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -29,7 +31,8 @@ class CHROMEOS_EXPORT SystemSaltGetter {
   static SystemSaltGetter* Get();
 
   // Converts |salt| to a hex encoded string.
-  static std::string ConvertRawSaltToHexString(const std::vector<uint8>& salt);
+  static std::string ConvertRawSaltToHexString(
+      const std::vector<uint8_t>& salt);
 
   // Returns system hash in hex encoded ascii format. Note: this may return
   // an empty string (e.g. errors in D-Bus layer)
@@ -45,7 +48,7 @@ class CHROMEOS_EXPORT SystemSaltGetter {
                                       bool service_is_available);
   void DidGetSystemSalt(const GetSystemSaltCallback& callback,
                         DBusMethodCallStatus call_status,
-                        const std::vector<uint8>& system_salt);
+                        const std::vector<uint8_t>& system_salt);
 
   std::string system_salt_;
 

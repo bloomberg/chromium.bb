@@ -5,7 +5,9 @@
 #ifndef CHROMEOS_DBUS_FAKE_AUDIO_DSP_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_AUDIO_DSP_CLIENT_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/audio_dsp_client.h"
 #include "chromeos/dbus/dbus_client.h"
@@ -36,16 +38,16 @@ class CHROMEOS_EXPORT FakeAudioDspClient : public AudioDspClient {
   void GetBass(const DoubleDBusMethodCallback& callback) override;
   void GetCapabilitiesOEM(
       const ThreeStringDBusMethodCallback& callback) override;
-  void SetCapabilitiesOEM(uint32 speaker_id,
+  void SetCapabilitiesOEM(uint32_t speaker_id,
                           const std::string& speaker_capabilities,
                           const std::string& driver_capabilities,
                           const VoidDBusMethodCallback& callback) override;
-  void GetFilterConfigOEM(uint32 speaker_id,
+  void GetFilterConfigOEM(uint32_t speaker_id,
                           const TwoStringDBusMethodCallback& callback) override;
   void SetFilterConfigOEM(const std::string& speaker_config,
                           const std::string& driver_config,
                           const VoidDBusMethodCallback& callback) override;
-  void SetSourceType(uint16 source_type,
+  void SetSourceType(uint16_t source_type,
                      const VoidDBusMethodCallback& callback) override;
   void AmplifierVolumeChanged(double db_spl,
                               const VoidDBusMethodCallback& callback) override;

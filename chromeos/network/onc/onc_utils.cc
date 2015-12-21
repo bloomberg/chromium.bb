@@ -4,6 +4,9 @@
 
 #include "chromeos/network/onc/onc_utils.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -768,7 +771,7 @@ net::ProxyServer ConvertOncProxyLocationToHostPort(
   return net::ProxyServer(
       proxy_server.scheme(),
       net::HostPortPair(proxy_server.host_port_pair().host(),
-                        static_cast<uint16>(port)));
+                        static_cast<uint16_t>(port)));
 }
 
 void AppendProxyServerForScheme(const base::DictionaryValue& onc_manual,

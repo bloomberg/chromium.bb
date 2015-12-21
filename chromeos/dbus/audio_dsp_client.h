@@ -5,7 +5,9 @@
 #ifndef CHROMEOS_DBUS_AUDIO_DSP_CLIENT_H_
 #define CHROMEOS_DBUS_AUDIO_DSP_CLIENT_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -38,7 +40,7 @@ class CHROMEOS_EXPORT AudioDspClient : public DBusClient {
     virtual ~Observer() {}
 
     // Called when the Error signal is received.
-    virtual void OnError(int32 error_code) = 0;
+    virtual void OnError(int32_t error_code) = 0;
   };
 
   ~AudioDspClient() override;
@@ -109,7 +111,7 @@ class CHROMEOS_EXPORT AudioDspClient : public DBusClient {
   // Calls SetCapabilitiesOEM method.
   // |callback| will be called with a DBusMethodCallStatus indicating whether
   // the DBus method call succeeded.
-  virtual void SetCapabilitiesOEM(uint32 speaker_id,
+  virtual void SetCapabilitiesOEM(uint32_t speaker_id,
                                   const std::string& speaker_capabilities,
                                   const std::string& driver_capabilities,
                                   const VoidDBusMethodCallback& callback) = 0;
@@ -119,7 +121,7 @@ class CHROMEOS_EXPORT AudioDspClient : public DBusClient {
   // the DBus method call succeeded, and two std::strings that constitute
   // the return value from the DBus method.
   virtual void GetFilterConfigOEM(
-      uint32 speaker_id,
+      uint32_t speaker_id,
       const TwoStringDBusMethodCallback& callback) = 0;
 
   // Calls SetFilterConfigOEM method.
@@ -132,7 +134,7 @@ class CHROMEOS_EXPORT AudioDspClient : public DBusClient {
   // Calls SetSourceType method.
   // |callback| will be called with a DBusMethodCallStatus indicating whether
   // the DBus method call succeeded.
-  virtual void SetSourceType(uint16 source_type,
+  virtual void SetSourceType(uint16_t source_type,
                              const VoidDBusMethodCallback& callback) = 0;
 
   // Calls AmplifierVolumeChanged method.

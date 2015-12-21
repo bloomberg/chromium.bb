@@ -4,6 +4,7 @@
 
 #include "chromeos/process_proxy/process_proxy.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 

@@ -5,9 +5,11 @@
 #ifndef CHROMEOS_AUDIO_CRAS_AUDIO_HANDLER_H_
 #define CHROMEOS_AUDIO_CRAS_AUDIO_HANDLER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <queue>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

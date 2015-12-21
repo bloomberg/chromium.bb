@@ -4,6 +4,8 @@
 
 #include "chromeos/system/name_value_pairs_parser.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"

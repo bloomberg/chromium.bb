@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/gsm_sms_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
@@ -29,7 +31,7 @@ namespace {
 // A mock SmsReceivedHandler.
 class MockSmsReceivedHandler {
  public:
-  MOCK_METHOD2(Run, void(uint32 index, bool complete));
+  MOCK_METHOD2(Run, void(uint32_t index, bool complete));
 };
 
 // A mock DeleteCallback.
@@ -114,7 +116,7 @@ class GsmSMSClientTest : public testing::Test {
     EXPECT_EQ(modemmanager::kModemManagerSMSInterface,
               method_call->GetInterface());
     EXPECT_EQ(modemmanager::kSMSDeleteFunction, method_call->GetMember());
-    uint32 index = 0;
+    uint32_t index = 0;
     dbus::MessageReader reader(method_call);
     EXPECT_TRUE(reader.PopUint32(&index));
     EXPECT_EQ(expected_index_, index);
@@ -131,7 +133,7 @@ class GsmSMSClientTest : public testing::Test {
     EXPECT_EQ(modemmanager::kModemManagerSMSInterface,
               method_call->GetInterface());
     EXPECT_EQ(modemmanager::kSMSGetFunction, method_call->GetMember());
-    uint32 index = 0;
+    uint32_t index = 0;
     dbus::MessageReader reader(method_call);
     EXPECT_TRUE(reader.PopUint32(&index));
     EXPECT_EQ(expected_index_, index);
@@ -172,7 +174,7 @@ class GsmSMSClientTest : public testing::Test {
   // The SmsReceived signal handler given by the tested client.
   dbus::ObjectProxy::SignalCallback sms_received_callback_;
   // Expected argument for Delete and Get methods.
-  uint32 expected_index_;
+  uint32_t expected_index_;
   // Response returned by mock methods.
   dbus::Response* response_;
   // Expected result of Get and List methods.
@@ -195,7 +197,7 @@ class GsmSMSClientTest : public testing::Test {
 
 TEST_F(GsmSMSClientTest, SmsReceived) {
   // Set expectations.
-  const uint32 kIndex = 42;
+  const uint32_t kIndex = 42;
   const bool kComplete = true;
   MockSmsReceivedHandler handler;
   EXPECT_CALL(handler, Run(kIndex, kComplete)).Times(1);
@@ -223,7 +225,7 @@ TEST_F(GsmSMSClientTest, SmsReceived) {
 
 TEST_F(GsmSMSClientTest, Delete) {
   // Set expectations.
-  const uint32 kIndex = 42;
+  const uint32_t kIndex = 42;
   expected_index_ = kIndex;
   EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
       .WillOnce(Invoke(this, &GsmSMSClientTest::OnDelete));
@@ -243,7 +245,7 @@ TEST_F(GsmSMSClientTest, Delete) {
 
 TEST_F(GsmSMSClientTest, Get) {
   // Set expectations.
-  const uint32 kIndex = 42;
+  const uint32_t kIndex = 42;
   expected_index_ = kIndex;
   EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
       .WillOnce(Invoke(this, &GsmSMSClientTest::OnGet));
