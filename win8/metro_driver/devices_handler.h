@@ -7,7 +7,7 @@
 
 #include <windows.ui.core.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "win8/metro_driver/print_handler.h"
 
 namespace metro_driver {

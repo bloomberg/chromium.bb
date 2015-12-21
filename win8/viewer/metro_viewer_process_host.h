@@ -5,8 +5,10 @@
 #ifndef WIN8_VIEWER_METRO_VIEWER_PROCESS_HOST_H_
 #define WIN8_VIEWER_METRO_VIEWER_PROCESS_HOST_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -166,7 +168,7 @@ class METRO_VIEWER_EXPORT MetroViewerProcessHost : public IPC::Listener,
   virtual void OnHandleSearchRequest(const base::string16& search_string) = 0;
 
   // Called over IPC by the viewer process when the window size has changed.
-  virtual void OnWindowSizeChanged(uint32 width, uint32 height) = 0;
+  virtual void OnWindowSizeChanged(uint32_t width, uint32_t height) = 0;
 
   void NotifyChannelConnected();
 
@@ -188,7 +190,7 @@ class METRO_VIEWER_EXPORT MetroViewerProcessHost : public IPC::Listener,
     InternalMessageFilter(MetroViewerProcessHost* owner);
 
     // IPC::MessageFilter implementation.
-    void OnChannelConnected(int32 peer_pid) override;
+    void OnChannelConnected(int32_t peer_pid) override;
 
    private:
     ~InternalMessageFilter() override;

@@ -5,6 +5,7 @@
 #ifndef WIN8_METRO_DRIVER_CHROME_APP_VIEW_ASH_H_
 #define WIN8_METRO_DRIVER_CHROME_APP_VIEW_ASH_H_
 
+#include <stdint.h>
 #include <windows.applicationmodel.core.h>
 #include <windows.ui.core.h>
 #include <windows.ui.input.h>
@@ -108,7 +109,7 @@ class ChromeAppViewAsh
 
   void OnImeCancelComposition();
   void OnImeUpdateTextInputClient(
-      const std::vector<int32>& input_scopes,
+      const std::vector<int32_t>& input_scopes,
       const std::vector<metro_viewer::CharacterBounds>& character_bounds);
 
   void OnMetroExit(MetroTerminateMethod method);
@@ -128,8 +129,8 @@ class ChromeAppViewAsh
   // TextServiceDelegate overrides.
   void OnCompositionChanged(
       const base::string16& text,
-      int32 selection_start,
-      int32 selection_end,
+      int32_t selection_start,
+      int32_t selection_end,
       const std::vector<metro_viewer::UnderlineInfo>& underlines) override;
   void OnTextCommitted(const base::string16& text) override;
 
@@ -139,7 +140,7 @@ class ChromeAppViewAsh
                        int y,
                        int extra,
                        ui::EventType event_type,
-                       uint32 flags,
+                       uint32_t flags,
                        ui::EventFlags changed_button,
                        bool is_horizontal_wheel);
 
@@ -223,7 +224,7 @@ class ChromeAppViewAsh
   // Keep state about which button is currently down, if any, as PointerMoved
   // events do not contain that state, but Ash's MouseEvents need it. Value is
   // as a bitmask of ui::EventFlags.
-  uint32 mouse_down_flags_;
+  uint32_t mouse_down_flags_;
 
   // Set the D3D swap chain and nothing else.
   metro_driver::Direct3DHelper direct3d_helper_;

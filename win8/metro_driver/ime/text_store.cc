@@ -4,6 +4,9 @@
 
 #include "win8/metro_driver/ime/text_store.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/win/scoped_variant.h"
@@ -304,8 +307,8 @@ STDMETHODIMP TextStore::GetTextExt(TsViewCookie view_cookie,
   // right position when composition has multiple lines.
   RECT result;
   RECT tmp_rect;
-  const uint32 start_pos = acp_start - committed_size_;
-  const uint32 end_pos = acp_end - committed_size_;
+  const uint32_t start_pos = acp_start - committed_size_;
+  const uint32_t end_pos = acp_end - committed_size_;
 
   if (start_pos == end_pos) {
     // According to MSDN document, if |acp_start| and |acp_end| are equal it is
@@ -500,7 +503,7 @@ STDMETHODIMP TextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   current_lock_type_ = (lock_flags & TS_LF_READWRITE);
 
   edit_flag_ = false;
-  const uint32 last_committed_size = committed_size_;
+  const uint32_t last_committed_size = committed_size_;
 
   // Grant the lock.
   *result = text_store_acp_sink_->OnLockGranted(current_lock_type_);
@@ -522,7 +525,7 @@ STDMETHODIMP TextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // If the text store is edited in OnLockGranted(), we may need to call
   // TextStoreDelegate::ConfirmComposition() or
   // TextStoreDelegate::SetComposition().
-  const uint32 new_committed_size = committed_size_;
+  const uint32_t new_committed_size = committed_size_;
   const base::string16& new_committed_string =
       string_buffer_.substr(last_committed_size,
                             new_committed_size - last_committed_size);
@@ -541,8 +544,8 @@ STDMETHODIMP TextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
     underlines[i].start_offset -= new_committed_size;
     underlines[i].end_offset -= new_committed_size;
   }
-  int32 selection_start = 0;
-  int32 selection_end = 0;
+  int32_t selection_start = 0;
+  int32_t selection_end = 0;
   if (selection_start_ >= new_committed_size)
     selection_start = selection_start_ - new_committed_size;
   if (selection_end_ >= new_committed_size)
@@ -727,7 +730,7 @@ bool TextStore::GetDisplayAttribute(TfGuidAtom guid_atom,
 bool TextStore::GetCompositionStatus(
     ITfContext* context,
     const TfEditCookie read_only_edit_cookie,
-    uint32* committed_size,
+    uint32_t* committed_size,
     std::vector<metro_viewer::UnderlineInfo>* undelines) {
   DCHECK(context);
   DCHECK(committed_size);
@@ -819,8 +822,8 @@ bool TextStore::CancelComposition() {
   // we use the same operation to cancel composition here to minimize the risk
   // of potential compatibility issues.
 
-  const uint32 previous_buffer_size =
-      static_cast<uint32>(string_buffer_.size());
+  const uint32_t previous_buffer_size =
+      static_cast<uint32_t>(string_buffer_.size());
   string_buffer_.clear();
   committed_size_ = 0;
   selection_start_ = 0;
@@ -856,8 +859,8 @@ bool TextStore::ConfirmComposition() {
   if (!composition_text.empty())
     delegate_->OnTextCommitted(composition_text);
 
-  const uint32 previous_buffer_size =
-      static_cast<uint32>(string_buffer_.size());
+  const uint32_t previous_buffer_size =
+      static_cast<uint32_t>(string_buffer_.size());
   string_buffer_.clear();
   committed_size_ = 0;
   selection_start_ = 0;

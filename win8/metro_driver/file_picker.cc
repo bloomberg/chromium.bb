@@ -5,11 +5,14 @@
 #include "stdafx.h"
 #include "win8/metro_driver/file_picker.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <windows.storage.pickers.h>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -513,7 +516,7 @@ HRESULT SaveFilePickerSession::StartFilePicker() {
 
   // The save picker requires at least one choice.  Callers are strongly advised
   // to provide sensible choices.  If none were given, fallback to .dat.
-  uint32 num_choices = 0;
+  uint32_t num_choices = 0;
   hr = choices->get_Size(&num_choices);
   if (FAILED(hr))
     return hr;

@@ -7,11 +7,12 @@
 
 #include <documentsource.h>
 #include <printpreview.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <windows.graphics.printing.h>
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/condition_variable.h"
@@ -87,8 +88,8 @@ class PrintDocumentSource
                           IPrintDocumentPackageTarget* package_target);
 
   // classic COM interface IPrintPreviewPageCollection methods
-  STDMETHOD(Paginate)(uint32 page, IInspectable* options);
-  STDMETHOD(MakePage)(uint32 desired_page, float width, float height);
+  STDMETHOD(Paginate)(uint32_t page, IInspectable* options);
+  STDMETHOD(MakePage)(uint32_t desired_page, float width, float height);
 
   // If the screen DPI changes, we must be warned here.
   void ResetDpi(float dpi);

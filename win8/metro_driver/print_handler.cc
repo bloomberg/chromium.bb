@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "win8/metro_driver/print_handler.h"
 
+#include <stddef.h>
 #include <windows.graphics.display.h>
 
 #include "base/bind.h"

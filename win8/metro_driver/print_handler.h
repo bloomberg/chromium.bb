@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_METRO_DRIVER_PRINT_HANDLER_H_
 
 #include <windows.media.playto.h>
+#include <stddef.h>
 #include <windows.graphics.printing.h>
 #include <windows.ui.core.h>
 

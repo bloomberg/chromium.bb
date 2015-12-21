@@ -8,8 +8,8 @@
 #include <vector>
 
 #include <windows.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 
 namespace metro_viewer {
@@ -31,8 +31,8 @@ class TextStoreDelegate {
   // that the composition is canceled.
   virtual void OnCompositionChanged(
       const base::string16& text,
-      int32 selection_start,
-      int32 selection_end,
+      int32_t selection_start,
+      int32_t selection_end,
       const std::vector<metro_viewer::UnderlineInfo>& underlines) = 0;
 
   // Called when |text| is committed.
@@ -47,7 +47,7 @@ class TextStoreDelegate {
   // implement this method must return true and fill the character bounds into
   // |rect| in screen coordinates.
   // Should return false if |index| is invalid.
-  virtual bool GetCompositionCharacterBounds(uint32 index, RECT* rect) = 0;
+  virtual bool GetCompositionCharacterBounds(uint32_t index, RECT* rect) = 0;
 };
 
 }  // namespace metro_driver

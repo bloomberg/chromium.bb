@@ -4,6 +4,8 @@
 
 #include "win8/delegate_execute/delegate_execute_operation.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -57,7 +59,7 @@ base::Process DelegateExecuteOperation::GetParent() const {
   if (parts.size() != 3)
     return base::Process();
   DWORD pid;
-  if (!base::StringToUint(parts[2], reinterpret_cast<uint32*>(&pid)))
+  if (!base::StringToUint(parts[2], reinterpret_cast<uint32_t*>(&pid)))
     return base::Process();
   return base::Process::Open(pid);
 }

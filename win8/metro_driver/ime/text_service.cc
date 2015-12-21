@@ -5,8 +5,11 @@
 #include "win8/metro_driver/ime/text_service.h"
 
 #include <msctf.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/win/scoped_variant.h"
 #include "ui/metro_viewer/ime_types.h"
 #include "win8/metro_driver/ime/text_service_delegate.h"
@@ -153,7 +156,7 @@ bool InitializeDisabledContext(ITfContext* context, TfClientId client_id) {
   }
 
   base::win::ScopedVariant empty_context_variant;
-  empty_context_variant.Set(static_cast<int32>(1));
+  empty_context_variant.Set(static_cast<int32_t>(1));
   hr = empty_context->SetValue(client_id, empty_context_variant.ptr());
   if (FAILED(hr)) {
     LOG(ERROR) << "ITfCompartment::SetValue failed. hr = " << hr;
@@ -343,10 +346,9 @@ class TextServiceImpl : public TextService,
     text_store->CancelComposition();
   }
 
-  void OnDocumentChanged(
-      const std::vector<int32>& input_scopes,
-      const std::vector<metro_viewer::CharacterBounds>& character_bounds)
-      override {
+  void OnDocumentChanged(const std::vector<int32_t>& input_scopes,
+                         const std::vector<metro_viewer::CharacterBounds>&
+                             character_bounds) override {
     bool document_type_changed = input_scopes_ != input_scopes;
     input_scopes_ = input_scopes;
     composition_character_bounds_ = character_bounds;
@@ -373,8 +375,8 @@ class TextServiceImpl : public TextService,
 
   void OnCompositionChanged(
       const base::string16& text,
-      int32 selection_start,
-      int32 selection_end,
+      int32_t selection_start,
+      int32_t selection_end,
       const std::vector<metro_viewer::UnderlineInfo>& underlines) override {
     if (!delegate_)
       return;
@@ -410,7 +412,7 @@ class TextServiceImpl : public TextService,
     return rect;
   }
 
-  bool GetCompositionCharacterBounds(uint32 index, RECT* rect) override {
+  bool GetCompositionCharacterBounds(uint32_t index, RECT* rect) override {
     if (index >= composition_character_bounds_.size()) {
       return false;
     }
@@ -424,7 +426,7 @@ class TextServiceImpl : public TextService,
     return true;
   }
 
-  void OnDocumentTypeChanged(const std::vector<int32>& input_scopes) {
+  void OnDocumentTypeChanged(const std::vector<int32_t>& input_scopes) {
     std::vector<InputScope> native_input_scopes(input_scopes.size());
     for (size_t i = 0; i < input_scopes.size(); ++i)
       native_input_scopes[i] = static_cast<InputScope>(input_scopes[i]);
@@ -449,7 +451,7 @@ class TextServiceImpl : public TextService,
   // the focused text field. Note that in our IPC message protocol, an empty
   // |input_scopes_| has special meaning that IMEs must be disabled on this
   // document.
-  std::vector<int32> input_scopes_;
+  std::vector<int32_t> input_scopes_;
   // Character bounds of the composition. When there is no composition but this
   // vector is not empty, the first element contains the caret bounds.
   std::vector<metro_viewer::CharacterBounds> composition_character_bounds_;

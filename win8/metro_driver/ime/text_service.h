@@ -5,11 +5,11 @@
 #ifndef WIN8_METRO_DRIVER_IME_TEXT_SERVICE_H_
 #define WIN8_METRO_DRIVER_IME_TEXT_SERVICE_H_
 
-#include <Windows.h>
+#include <windows.h>
+#include <stdint.h>
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace metro_viewer {
@@ -31,12 +31,12 @@ class TextService {
   // Updates document type with |input_scopes| and caret/composition position
   // with |character_bounds|.  An empty |input_scopes| indicates that IMEs
   // should be disabled until non-empty |input_scopes| is specified.
-  // Note: |input_scopes| is defined as std::vector<int32> here rather than
+  // Note: |input_scopes| is defined as std::vector<int32_t> here rather than
   // std::vector<InputScope> because the wire format of IPC message
-  // MetroViewerHostMsg_ImeTextInputClientUpdated uses std::vector<int32> to
+  // MetroViewerHostMsg_ImeTextInputClientUpdated uses std::vector<int32_t> to
   // avoid dependency on <InputScope.h> header.
   virtual void OnDocumentChanged(
-      const std::vector<int32>& input_scopes,
+      const std::vector<int32_t>& input_scopes,
       const std::vector<metro_viewer::CharacterBounds>& character_bounds) = 0;
 
   // Must be called whenever the attached window gains keyboard focus.

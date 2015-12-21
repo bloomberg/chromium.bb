@@ -5,6 +5,7 @@
 #include "win8/viewer/metro_viewer_process_host.h"
 
 #include <shlobj.h>
+#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -41,7 +42,7 @@ MetroViewerProcessHost::InternalMessageFilter::InternalMessageFilter(
 }
 
 void MetroViewerProcessHost::InternalMessageFilter::OnChannelConnected(
-    int32 peer_pid) {
+    int32_t peer_pid) {
   owner_->NotifyChannelConnected();
 }
 

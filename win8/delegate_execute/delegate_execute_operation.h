@@ -8,8 +8,8 @@
 #include <windows.h>
 #include <atldef.h>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 

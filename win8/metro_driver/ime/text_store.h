@@ -10,12 +10,13 @@
 #include <initguid.h>
 #include <inputscope.h>
 #include <msctf.h>
+#include <stdint.h>
 
 #include <deque>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_comptr.h"
@@ -245,7 +246,7 @@ class ATL_NO_VTABLE TextStore
   bool GetCompositionStatus(
       ITfContext* context,
       const TfEditCookie read_only_edit_cookie,
-      uint32* committed_size,
+      uint32_t* committed_size,
       std::vector<metro_viewer::UnderlineInfo>* undelines);
 
   // A pointer of ITextStoreACPSink, this instance is given in AdviseSink.
@@ -262,15 +263,15 @@ class ATL_NO_VTABLE TextStore
   //    |string_buffer_|: "aoiumi"
   //    |committed_size_|: 3
   base::string16 string_buffer_;
-  uint32 committed_size_;
+  uint32_t committed_size_;
 
   //  |selection_start_| and |selection_end_| indicates the selection range.
   //  Example: "iue" is selected
   //    |string_buffer_|: "aiueo"
   //    |selection_start_|: 1
   //    |selection_end_|: 4
-  uint32 selection_start_;
-  uint32 selection_end_;
+  uint32_t selection_start_;
+  uint32_t selection_end_;
 
   //  |start_offset| and |end_offset| of |composition_undelines_| indicates
   //  the offsets in |string_buffer_|.

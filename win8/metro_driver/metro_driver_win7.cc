@@ -5,8 +5,10 @@
 #include "stdafx.h"
 #include <corewindow.h>
 #include <shobjidl.h>
+#include <stdint.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/win/msg_util.h"
 
@@ -157,14 +159,14 @@ class MouseEvent : public mswr::RuntimeClass<
     return S_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE get_PointerId(uint32* pointer_id) override {
+  HRESULT STDMETHODCALLTYPE get_PointerId(uint32_t* pointer_id) override {
     // TODO(ananta)
     // Implement this properly.
     *pointer_id = 1;
     return S_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE get_Timestamp(uint64* timestamp) override {
+  HRESULT STDMETHODCALLTYPE get_Timestamp(uint64_t* timestamp) override {
     *timestamp = msg_.time;
     return S_OK;
   }
@@ -180,7 +182,7 @@ class MouseEvent : public mswr::RuntimeClass<
     return E_NOTIMPL;
   }
 
-  HRESULT STDMETHODCALLTYPE get_FrameId(uint32* frame_id) override {
+  HRESULT STDMETHODCALLTYPE get_FrameId(uint32_t* frame_id) override {
     return E_NOTIMPL;
   }
 
@@ -312,14 +314,15 @@ class MouseEvent : public mswr::RuntimeClass<
     return E_NOTIMPL;
   }
 
-  HRESULT STDMETHODCALLTYPE
-  HasUsage(uint32 usage_page, uint32 usage_id, boolean* has_usage) override {
+  HRESULT STDMETHODCALLTYPE HasUsage(uint32_t usage_page,
+                                     uint32_t usage_id,
+                                     boolean* has_usage) override {
     return E_NOTIMPL;
   }
 
-  HRESULT STDMETHODCALLTYPE GetUsageValue(uint32 usage_page,
-                                          uint32 usage_id,
-                                          int32* usage_value) override {
+  HRESULT STDMETHODCALLTYPE GetUsageValue(uint32_t usage_page,
+                                          uint32_t usage_id,
+                                          int32_t* usage_value) override {
     return E_NOTIMPL;
   }
 
@@ -338,7 +341,7 @@ class MouseEvent : public mswr::RuntimeClass<
     return E_NOTIMPL;
   }
 
-  HRESULT STDMETHODCALLTYPE get_MaxContacts(uint32* contacts) override {
+  HRESULT STDMETHODCALLTYPE get_MaxContacts(uint32_t* contacts) override {
     return E_NOTIMPL;
   }
 
@@ -393,7 +396,7 @@ class KeyEvent : public mswr::RuntimeClass<
   }
 
   // ICharacterReceivedEventArgs implementation.
-  HRESULT STDMETHODCALLTYPE get_KeyCode(uint32* key_code) override {
+  HRESULT STDMETHODCALLTYPE get_KeyCode(uint32_t* key_code) override {
     *key_code = msg_.wParam;
     return S_OK;
   }

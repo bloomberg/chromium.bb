@@ -7,7 +7,6 @@
 
 #include <Windows.h>
 
-#include "base/basictypes.h"
 
 namespace metro_driver {
 

@@ -5,11 +5,12 @@
 #ifndef WIN8_METRO_DRIVER_DIRECT3D_HELPER_
 #define WIN8_METRO_DRIVER_DIRECT3D_HELPER_
 
-#include "base/basictypes.h"
 
 #include <windows.ui.core.h>
 #include <windows.foundation.h>
 #include <d3d11_1.h>
+
+#include "base/macros.h"
 
 namespace metro_driver {
 

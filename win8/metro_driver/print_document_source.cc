@@ -5,6 +5,8 @@
 #include "stdafx.h"
 #include "win8/metro_driver/print_document_source.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <windows.graphics.display.h>
 
 #include "base/logging.h"
@@ -211,7 +213,7 @@ STDMETHODIMP PrintDocumentSource::MakeDocument(
     return hr;
 }
 
-STDMETHODIMP PrintDocumentSource::Paginate(uint32 page,
+STDMETHODIMP PrintDocumentSource::Paginate(uint32_t page,
                                            IInspectable* options) {
   DVLOG(1) << __FUNCTION__ << ", page = " << page;
   DCHECK(options != NULL);
@@ -261,7 +263,7 @@ STDMETHODIMP PrintDocumentSource::Paginate(uint32 page,
   return hr;
 }
 
-STDMETHODIMP PrintDocumentSource::MakePage(uint32 job_page,
+STDMETHODIMP PrintDocumentSource::MakePage(uint32_t job_page,
                                            float width,
                                            float height) {
   DVLOG(1) << __FUNCTION__ << ", width: " << width << ", height: " << height

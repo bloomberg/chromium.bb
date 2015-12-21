@@ -8,6 +8,7 @@
 #include <atlcom.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/base/win/atl_module.h"
 
 namespace metro_driver {

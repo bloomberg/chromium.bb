@@ -7,12 +7,14 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <oleauto.h>
+#include <stdint.h>
 #include <uiautomation.h>
 
 #include <algorithm>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -574,7 +576,7 @@ void UIAutomationClient::Context::CloseWindow(
 
   HWND handle = reinterpret_cast<HWND>(V_I4(var.ptr()));
 
-  uint32 scan_code = MapVirtualKey(VK_ESCAPE, MAPVK_VK_TO_VSC);
+  uint32_t scan_code = MapVirtualKey(VK_ESCAPE, MAPVK_VK_TO_VSC);
   PostMessage(handle, WM_KEYDOWN, VK_ESCAPE,
               MAKELPARAM(1, scan_code));
   PostMessage(handle, WM_KEYUP, VK_ESCAPE,
