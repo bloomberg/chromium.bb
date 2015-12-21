@@ -4,6 +4,7 @@
 
 #include "gin/public/isolate_holder.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 

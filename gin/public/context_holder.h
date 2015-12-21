@@ -7,7 +7,7 @@
 
 #include <list>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "gin/gin_export.h"
 #include "v8/include/v8.h"

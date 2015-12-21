@@ -5,7 +5,6 @@
 #ifndef GIN_ARGUMENTS_H_
 #define GIN_ARGUMENTS_H_
 
-#include "base/basictypes.h"
 #include "gin/converter.h"
 #include "gin/gin_export.h"
 

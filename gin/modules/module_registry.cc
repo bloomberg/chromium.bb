@@ -4,6 +4,9 @@
 
 #include "gin/modules/module_registry.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

@@ -4,6 +4,8 @@
 
 #include "gin/v8_isolate_memory_dump_provider.h"
 
+#include <stddef.h>
+
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"

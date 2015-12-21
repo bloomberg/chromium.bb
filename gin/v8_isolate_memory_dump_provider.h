@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gin/gin_export.h"
 

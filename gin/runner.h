@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "gin/gin_export.h"
 #include "gin/public/context_holder.h"

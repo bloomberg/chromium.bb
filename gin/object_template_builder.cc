@@ -4,6 +4,8 @@
 
 #include "gin/object_template_builder.h"
 
+#include <stdint.h>
+
 #include "gin/interceptor.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"

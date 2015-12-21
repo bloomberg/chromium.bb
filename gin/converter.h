@@ -5,6 +5,8 @@
 #ifndef GIN_CONVERTER_H_
 #define GIN_CONVERTER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

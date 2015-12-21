@@ -5,6 +5,8 @@
 #ifndef GIN_PUBLIC_DEBUG_H_
 #define GIN_PUBLIC_DEBUG_H_
 
+#include <stddef.h>
+
 #include "build/build_config.h"
 #include "gin/gin_export.h"
 #include "v8/include/v8.h"

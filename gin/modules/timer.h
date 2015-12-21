@@ -5,6 +5,7 @@
 #ifndef GIN_MODULES_TIMER_H_
 #define GIN_MODULES_TIMER_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "gin/gin_export.h"

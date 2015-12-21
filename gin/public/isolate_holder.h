@@ -5,7 +5,7 @@
 #ifndef GIN_PUBLIC_ISOLATE_HOLDER_H_
 #define GIN_PUBLIC_ISOLATE_HOLDER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "gin/gin_export.h"
 #include "gin/public/v8_idle_task_runner.h"

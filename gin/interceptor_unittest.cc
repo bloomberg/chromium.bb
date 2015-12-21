@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/interceptor.h"

@@ -5,8 +5,11 @@
 #ifndef GIN_FUNCTION_TEMPLATE_H_
 #define GIN_FUNCTION_TEMPLATE_H_
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/gin_export.h"

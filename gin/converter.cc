@@ -4,6 +4,8 @@
 
 #include "gin/converter.h"
 
+#include <stdint.h>
+
 #include "v8/include/v8.h"
 
 using v8::ArrayBuffer;

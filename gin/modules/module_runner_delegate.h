@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "gin/gin_export.h"
 #include "gin/modules/file_module_provider.h"
 #include "gin/shell_runner.h"

@@ -5,7 +5,7 @@
 #ifndef GIN_PER_CONTEXT_DATA_H_
 #define GIN_PER_CONTEXT_DATA_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "gin/gin_export.h"
 #include "v8/include/v8.h"

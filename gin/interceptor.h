@@ -5,10 +5,12 @@
 #ifndef GIN_INTERCEPTOR_H_
 #define GIN_INTERCEPTOR_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "gin/gin_export.h"
 #include "v8/include/v8.h"
 

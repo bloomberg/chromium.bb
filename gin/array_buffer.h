@@ -5,8 +5,11 @@
 #ifndef GIN_ARRAY_BUFFER_H_
 #define GIN_ARRAY_BUFFER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gin/converter.h"
 #include "gin/gin_export.h"

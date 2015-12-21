@@ -4,6 +4,8 @@
 
 #include "gin/modules/file_module_provider.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"

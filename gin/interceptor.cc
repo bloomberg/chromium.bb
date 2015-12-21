@@ -4,6 +4,8 @@
 
 #include "gin/interceptor.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "gin/per_isolate_data.h"

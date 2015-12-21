@@ -4,7 +4,9 @@
 
 #include "gin/v8_initializer.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/debug/alias.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -286,8 +288,8 @@ void V8Initializer::LoadV8Natives() {
 
 // static
 void V8Initializer::LoadV8SnapshotFromFD(base::PlatformFile snapshot_pf,
-                                         int64 snapshot_offset,
-                                         int64 snapshot_size) {
+                                         int64_t snapshot_offset,
+                                         int64_t snapshot_size) {
   if (g_mapped_snapshot)
     return;
 
@@ -318,8 +320,8 @@ void V8Initializer::LoadV8SnapshotFromFD(base::PlatformFile snapshot_pf,
 
 // static
 void V8Initializer::LoadV8NativesFromFD(base::PlatformFile natives_pf,
-                                        int64 natives_offset,
-                                        int64 natives_size) {
+                                        int64_t natives_offset,
+                                        int64_t natives_size) {
   if (g_mapped_natives)
     return;
 

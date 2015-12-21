@@ -7,6 +7,7 @@
 
 #include <type_traits>
 
+#include "base/macros.h"
 #include "base/template_util.h"
 #include "gin/converter.h"
 #include "gin/gin_export.h"

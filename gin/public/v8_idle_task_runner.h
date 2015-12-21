@@ -5,7 +5,6 @@
 #ifndef GIN_PUBLIC_V8_IDLE_TASK_RUNNER_H_
 #define GIN_PUBLIC_V8_IDLE_TASK_RUNNER_H_
 
-#include "base/basictypes.h"
 #include "v8/include/v8-platform.h"
 
 namespace gin {
