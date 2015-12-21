@@ -197,9 +197,11 @@ AnimationTimelinesTest::AnimationTimelinesTest()
       host_impl_(nullptr),
       timeline_id_(AnimationIdProvider::NextTimelineId()),
       player_id_(AnimationIdProvider::NextPlayerId()),
-      layer_id_(1) {
+      next_test_layer_id_(0) {
   host_ = client_.host();
   host_impl_ = client_impl_.host();
+
+  layer_id_ = NextTestLayerId();
 }
 
 AnimationTimelinesTest::~AnimationTimelinesTest() {
@@ -256,6 +258,11 @@ AnimationPlayer* AnimationTimelinesTest::GetImplPlayerForLayerId(int layer_id) {
       host_impl_->GetElementAnimationsForLayerId(layer_id);
   return element_animations ? element_animations->players_list().head()->value()
                             : nullptr;
+}
+
+int AnimationTimelinesTest::NextTestLayerId() {
+  next_test_layer_id_++;
+  return next_test_layer_id_;
 }
 
 }  // namespace cc

@@ -174,6 +174,8 @@ class AnimationTimelinesTest : public testing::Test {
   AnimationPlayer* GetPlayerForLayerId(int layer_id);
   AnimationPlayer* GetImplPlayerForLayerId(int layer_id);
 
+  int NextTestLayerId();
+
   TestHostClient client_;
   TestHostClient client_impl_;
 
@@ -182,7 +184,9 @@ class AnimationTimelinesTest : public testing::Test {
 
   const int timeline_id_;
   const int player_id_;
-  const int layer_id_;
+  int layer_id_;
+
+  int next_test_layer_id_;
 
   scoped_refptr<AnimationTimeline> timeline_;
   scoped_refptr<AnimationPlayer> player_;

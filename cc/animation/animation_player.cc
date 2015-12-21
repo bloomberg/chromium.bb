@@ -154,15 +154,12 @@ void AnimationPlayer::RemoveAnimation(int animation_id) {
 }
 
 void AnimationPlayer::PushPropertiesTo(AnimationPlayer* player_impl) {
-  if (!element_animations_) {
-    if (player_impl->element_animations())
+  if (layer_id_ != player_impl->layer_id()) {
+    if (player_impl->layer_id())
       player_impl->DetachLayer();
-    return;
+    if (layer_id_)
+      player_impl->AttachLayer(layer_id_);
   }
-
-  DCHECK(layer_id_);
-  if (!player_impl->element_animations())
-    player_impl->AttachLayer(layer_id_);
 }
 
 void AnimationPlayer::NotifyAnimationStarted(
