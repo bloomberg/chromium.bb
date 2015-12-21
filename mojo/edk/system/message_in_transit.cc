@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/message_in_transit.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <ostream>
 #include <utility>

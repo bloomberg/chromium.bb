@@ -9,6 +9,8 @@
 
 #include "mojo/edk/system/simple_dispatcher.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"

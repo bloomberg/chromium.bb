@@ -4,6 +4,8 @@
 
 #include "mojo/package_manager/content_handler_connection.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"

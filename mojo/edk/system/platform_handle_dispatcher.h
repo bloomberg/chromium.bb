@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_PLATFORM_HANDLE_DISPATCHER_H_
 #define MOJO_EDK_SYSTEM_PLATFORM_HANDLE_DISPATCHER_H_
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "mojo/edk/embedder/scoped_platform_handle.h"

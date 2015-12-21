@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_INTERNAL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_INTERNAL_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "mojo/public/cpp/bindings/array.h"

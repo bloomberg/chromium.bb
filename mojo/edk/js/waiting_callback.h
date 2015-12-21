@@ -5,6 +5,7 @@
 #ifndef MOJO_EDK_JS_WAITING_CALLBACK_H_
 #define MOJO_EDK_JS_WAITING_CALLBACK_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "gin/handle.h"
 #include "gin/runner.h"

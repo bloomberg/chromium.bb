@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_H_
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_group.h"

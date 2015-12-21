@@ -5,6 +5,8 @@
 #ifndef MOJO_GLES2_GLES2_CONTEXT_H_
 #define MOJO_GLES2_GLES2_CONTEXT_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

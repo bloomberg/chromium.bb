@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_CHILD_BROKER_HOST_H_
 #define MOJO_EDK_SYSTEM_CHILD_BROKER_HOST_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"

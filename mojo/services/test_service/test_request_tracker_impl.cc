@@ -4,6 +4,9 @@
 
 #include "mojo/services/test_service/test_request_tracker_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 namespace mojo {

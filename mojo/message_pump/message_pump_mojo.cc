@@ -4,6 +4,8 @@
 
 #include "mojo/message_pump/message_pump_mojo.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <vector>
 

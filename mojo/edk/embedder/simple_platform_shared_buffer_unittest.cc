@@ -4,6 +4,8 @@
 
 #include "mojo/edk/embedder/simple_platform_shared_buffer.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/memory/ref_counted.h"

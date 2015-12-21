@@ -4,6 +4,9 @@
 
 #include "mojo/edk/system/data_pipe_consumer_dispatcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 

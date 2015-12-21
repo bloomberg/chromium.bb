@@ -5,6 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_SERIALIZATION_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_SERIALIZATION_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/memory/ref_counted.h"

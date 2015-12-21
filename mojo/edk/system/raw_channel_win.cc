@@ -5,6 +5,8 @@
 #include "mojo/edk/system/raw_channel.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"

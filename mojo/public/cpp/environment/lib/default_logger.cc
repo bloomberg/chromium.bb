@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/environment/lib/default_logger.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>  // For |abort()|.
 

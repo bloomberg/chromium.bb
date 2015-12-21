@@ -4,6 +4,7 @@
 
 #include "mojo/runner/tracer.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <utility>

@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_
 
+#include <stddef.h>
 #include <string.h>
 
 #include <algorithm>

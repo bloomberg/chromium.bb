@@ -5,6 +5,8 @@
 #ifndef MOJO_SHELL_DATA_PIPE_PEEK_H_
 #define MOJO_SHELL_DATA_PIPE_PEEK_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "mojo/public/cpp/system/core.h"

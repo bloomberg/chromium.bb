@@ -4,6 +4,8 @@
 
 #include "mojo/services/test_service/test_time_service_impl.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/time/time.h"
@@ -37,7 +39,7 @@ void TestTimeServiceImpl::GetPartyTime(
       + base::TimeDelta::FromDays(10957)
       + base::TimeDelta::FromHours(7)
       + base::TimeDelta::FromMinutes(59));
-  int64 time(frozen_time.ToInternalValue());
+  int64_t time(frozen_time.ToInternalValue());
   callback.Run(time);
 }
 

@@ -5,6 +5,9 @@
 #ifndef MOJO_EDK_SYSTEM_CHILD_BROKER_H_
 #define MOJO_EDK_SYSTEM_CHILD_BROKER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"

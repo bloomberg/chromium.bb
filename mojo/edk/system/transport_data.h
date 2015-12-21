@@ -5,6 +5,7 @@
 #ifndef MOJO_EDK_SYSTEM_TRANSPORT_DATA_H_
 #define MOJO_EDK_SYSTEM_TRANSPORT_DATA_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>

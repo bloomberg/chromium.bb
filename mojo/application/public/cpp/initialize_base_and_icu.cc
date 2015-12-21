@@ -7,6 +7,8 @@
 // which means that it can't use mojo. Our runners will dig around in the
 // symbol table and run this before the mojo system is initialized.
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/i18n/icu_util.h"
 #include "base/rand_util.h"
@@ -23,7 +25,7 @@ __declspec(dllexport) void __cdecl
 #else
 void __attribute__((visibility("default")))
 #endif
-InitializeBase(const uint8* icu_data) {
+InitializeBase(const uint8_t* icu_data) {
   base::RandUint64();
   base::SysInfo::AmountOfPhysicalMemory();
   base::SysInfo::NumberOfProcessors();

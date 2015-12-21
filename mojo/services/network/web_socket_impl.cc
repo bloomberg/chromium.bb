@@ -4,9 +4,12 @@
 
 #include "mojo/services/network/web_socket_impl.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/handle_watcher.h"
 #include "mojo/services/network/network_context.h"
@@ -76,9 +79,9 @@ struct WebSocketEventHandler : public net::WebSocketEventInterface {
                            WebSocketMessageType type,
                            const std::vector<char>& data) override;
   ChannelState OnClosingHandshake() override;
-  ChannelState OnFlowControl(int64 quota) override;
+  ChannelState OnFlowControl(int64_t quota) override;
   ChannelState OnDropChannel(bool was_clean,
-                             uint16 code,
+                             uint16_t code,
                              const std::string& reason) override;
   ChannelState OnFailChannel(const std::string& message) override;
   ChannelState OnStartOpeningHandshake(
@@ -131,13 +134,13 @@ ChannelState WebSocketEventHandler::OnClosingHandshake() {
   return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocketEventHandler::OnFlowControl(int64 quota) {
+ChannelState WebSocketEventHandler::OnFlowControl(int64_t quota) {
   client_->DidReceiveFlowControl(quota);
   return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
 ChannelState WebSocketEventHandler::OnDropChannel(bool was_clean,
-                                                  uint16 code,
+                                                  uint16_t code,
                                                   const std::string& reason) {
   client_->DidClose(was_clean, code, reason);
   return WebSocketEventInterface::CHANNEL_DELETED;

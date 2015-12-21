@@ -5,6 +5,8 @@
 #ifndef MOJO_SHELL_DATA_PIPE_UTILS_H_
 #define MOJO_SHELL_DATA_PIPE_UTILS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback_forward.h"

@@ -4,6 +4,9 @@
 
 #include "mojo/edk/system/handle_table.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/logging.h"

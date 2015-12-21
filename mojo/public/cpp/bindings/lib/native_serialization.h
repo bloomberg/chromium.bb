@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_NATIVE_SERIALIZATION_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_NATIVE_SERIALIZATION_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>

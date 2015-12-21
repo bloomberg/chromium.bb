@@ -4,6 +4,8 @@
 
 #include "mojo/edk/embedder/simple_platform_shared_buffer.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/logging.h"

@@ -5,6 +5,7 @@
 #ifndef MOJO_APPLICATION_PUBLIC_CPP_CONTENT_HANDLER_FACTORY_H_
 #define MOJO_APPLICATION_PUBLIC_CPP_CONTENT_HANDLER_FACTORY_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"

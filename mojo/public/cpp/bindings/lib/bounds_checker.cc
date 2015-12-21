@@ -4,6 +4,9 @@
 
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/environment/logging.h"
 #include "mojo/public/cpp/system/handle.h"

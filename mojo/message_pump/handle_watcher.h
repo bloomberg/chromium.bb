@@ -5,8 +5,8 @@
 #ifndef MOJO_MESSAGE_PUMP_HANDLE_WATCHER_H_
 #define MOJO_MESSAGE_PUMP_HANDLE_WATCHER_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "mojo/message_pump/mojo_message_pump_export.h"

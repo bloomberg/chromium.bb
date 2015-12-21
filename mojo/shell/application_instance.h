@@ -5,9 +5,12 @@
 #ifndef MOJO_SHELL_APPLICATION_INSTANCE_H_
 #define MOJO_SHELL_APPLICATION_INSTANCE_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "mojo/application/public/interfaces/application.mojom.h"

@@ -5,6 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_INTERNAL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_INTERNAL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <new>
 #include <vector>
 

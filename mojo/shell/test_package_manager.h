@@ -5,6 +5,9 @@
 #ifndef MOJO_SHELL_TEST_PACKAGE_MANAGER_H_
 #define MOJO_SHELL_TEST_PACKAGE_MANAGER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "mojo/shell/package_manager.h"
 
 namespace mojo {

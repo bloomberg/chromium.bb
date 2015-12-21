@@ -4,6 +4,7 @@
 
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 
+#include <stddef.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <unistd.h>

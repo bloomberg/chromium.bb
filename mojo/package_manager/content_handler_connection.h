@@ -5,9 +5,12 @@
 #ifndef MOJO_PACKAGE_MANAGER_CONTENT_HANDLER_CONNECTION_H_
 #define MOJO_PACKAGE_MANAGER_CONTENT_HANDLER_CONNECTION_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/shell/identity.h"
 #include "url/gurl.h"

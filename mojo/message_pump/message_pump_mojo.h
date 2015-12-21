@@ -5,6 +5,8 @@
 #ifndef MOJO_MESSAGE_PUMP_MESSAGE_PUMP_MOJO_H_
 #define MOJO_MESSAGE_PUMP_MESSAGE_PUMP_MOJO_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 

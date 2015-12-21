@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 

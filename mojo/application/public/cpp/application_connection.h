@@ -5,6 +5,8 @@
 #ifndef MOJO_APPLICATION_PUBLIC_CPP_APPLICATION_CONNECTION_H_
 #define MOJO_APPLICATION_PUBLIC_CPP_APPLICATION_CONNECTION_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 

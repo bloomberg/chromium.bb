@@ -5,6 +5,8 @@
 #ifndef MOJO_SERVICES_NETWORK_URL_LOADER_IMPL_H_
 #define MOJO_SERVICES_NETWORK_URL_LOADER_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"

@@ -4,6 +4,8 @@
 
 #include "mojo/runner/init.h"
 
+#include <stdint.h>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -66,7 +68,7 @@ void WaitForDebuggerIfNecessary() {
 
 void CallLibraryEarlyInitialization(base::NativeLibrary app_library) {
   // Do whatever warming that the mojo application wants.
-  typedef void (*LibraryEarlyInitFunction)(const uint8*);
+  typedef void (*LibraryEarlyInitFunction)(const uint8_t*);
   LibraryEarlyInitFunction init_function =
       reinterpret_cast<LibraryEarlyInitFunction>(
           base::GetFunctionPointerFromNativeLibrary(app_library,
@@ -74,7 +76,7 @@ void CallLibraryEarlyInitialization(base::NativeLibrary app_library) {
   if (init_function) {
     // Get the ICU data that we prewarmed in the runner and then pass it to
     // the copy of icu in the mojo binary that we're running.
-    const uint8* icu_data = base::i18n::GetRawIcuMemory();
+    const uint8_t* icu_data = base::i18n::GetRawIcuMemory();
     init_function(icu_data);
   }
 

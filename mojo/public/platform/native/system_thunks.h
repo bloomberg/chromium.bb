@@ -8,6 +8,7 @@
 #define MOJO_PUBLIC_PLATFORM_NATIVE_SYSTEM_THUNKS_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "mojo/public/c/system/core.h"
 

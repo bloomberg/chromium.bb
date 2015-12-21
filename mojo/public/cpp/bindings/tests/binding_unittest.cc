@@ -5,6 +5,8 @@
 // Note: This file tests both binding.h (mojo::Binding) and strong_binding.h
 // (mojo::StrongBinding).
 
+#include <stdint.h>
+
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"

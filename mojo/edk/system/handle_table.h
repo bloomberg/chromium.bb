@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_HANDLE_TABLE_H_
 #define MOJO_EDK_SYSTEM_HANDLE_TABLE_H_
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 

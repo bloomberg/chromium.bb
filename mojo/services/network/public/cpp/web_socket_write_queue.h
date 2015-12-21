@@ -5,6 +5,8 @@
 #ifndef MOJO_SERVICES_NETWORK_PUBLIC_CPP_WEB_SOCKET_WRITE_QUEUE_H_
 #define MOJO_SERVICES_NETWORK_PUBLIC_CPP_WEB_SOCKET_WRITE_QUEUE_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"

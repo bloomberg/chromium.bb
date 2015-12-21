@@ -4,6 +4,9 @@
 
 #include "mojo/edk/system/broker_state.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/rand_util.h"
 #include "mojo/edk/embedder/embedder_internal.h"

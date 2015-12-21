@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_PICKLE_BUFFER_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_PICKLE_BUFFER_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"

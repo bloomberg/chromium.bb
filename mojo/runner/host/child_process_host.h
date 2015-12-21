@@ -5,6 +5,8 @@
 #ifndef MOJO_RUNNER_HOST_CHILD_PROCESS_HOST_H_
 #define MOJO_RUNNER_HOST_CHILD_PROCESS_HOST_H_
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

@@ -5,6 +5,7 @@
 #include "mojo/edk/test/test_utils.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <unistd.h>
 
 #include "base/posix/eintr_wrapper.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <assert.h>
+#include <stdint.h>
 #include <utility>
 
 #include "mojo/public/cpp/environment/logging.h"

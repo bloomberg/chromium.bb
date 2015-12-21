@@ -4,6 +4,7 @@
 
 #include "mojo/edk/embedder/simple_platform_shared_buffer.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/mman.h>   // For |PROT_...|.
 #include <sys/types.h>  // For |off_t|.

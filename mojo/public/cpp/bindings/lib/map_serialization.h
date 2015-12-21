@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
 
+#include <stddef.h>
+
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/map_data_internal.h"
 #include "mojo/public/cpp/bindings/lib/map_internal.h"

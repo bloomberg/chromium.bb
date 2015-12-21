@@ -4,6 +4,8 @@
 
 #include "mojo/common/common_type_converters.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"

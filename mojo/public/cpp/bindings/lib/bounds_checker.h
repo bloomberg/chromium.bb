@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_BOUNDS_CHECKER_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_BOUNDS_CHECKER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "mojo/public/cpp/system/macros.h"

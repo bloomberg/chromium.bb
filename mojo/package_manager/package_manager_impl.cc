@@ -4,6 +4,8 @@
 
 #include "mojo/package_manager/package_manager_impl.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"

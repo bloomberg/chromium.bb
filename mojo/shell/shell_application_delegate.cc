@@ -4,6 +4,8 @@
 
 #include "mojo/shell/shell_application_delegate.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/process/process.h"

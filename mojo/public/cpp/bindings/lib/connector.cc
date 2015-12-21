@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/connector.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"

@@ -4,6 +4,9 @@
 
 #include "mojo/public/cpp/utility/run_loop.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "mojo/public/cpp/system/core.h"

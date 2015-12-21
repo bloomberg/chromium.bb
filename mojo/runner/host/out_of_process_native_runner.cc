@@ -4,6 +4,8 @@
 
 #include "mojo/runner/host/out_of_process_native_runner.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"

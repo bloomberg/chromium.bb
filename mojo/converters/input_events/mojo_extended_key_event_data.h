@@ -5,6 +5,9 @@
 #ifndef MOJO_CONVERTERS_INPUT_EVENTS_MOJO_EXTENDED_KEY_EVENT_DATA_H_
 #define MOJO_CONVERTERS_INPUT_EVENTS_MOJO_EXTENDED_KEY_EVENT_DATA_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "mojo/converters/input_events/mojo_input_events_export.h"
 #include "ui/events/event.h"
 

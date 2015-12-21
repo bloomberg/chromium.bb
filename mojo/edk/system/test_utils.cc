@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/test_utils.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/logging.h"

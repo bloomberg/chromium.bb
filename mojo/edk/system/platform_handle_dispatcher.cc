@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/platform_handle_dispatcher.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 

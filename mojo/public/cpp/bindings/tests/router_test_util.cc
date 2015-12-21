@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/tests/router_test_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "mojo/public/cpp/bindings/lib/message_builder.h"

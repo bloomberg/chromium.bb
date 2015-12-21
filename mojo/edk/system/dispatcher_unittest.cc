@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/dispatcher.h"
 
+#include <stddef.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"

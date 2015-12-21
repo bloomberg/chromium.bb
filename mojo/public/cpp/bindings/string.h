@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_STRING_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_STRING_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"

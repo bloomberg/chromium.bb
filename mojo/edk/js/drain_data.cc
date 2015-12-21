@@ -4,6 +4,9 @@
 
 #include "mojo/edk/js/drain_data.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"

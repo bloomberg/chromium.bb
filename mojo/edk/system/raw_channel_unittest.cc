@@ -4,6 +4,7 @@
 
 #include "mojo/edk/system/raw_channel.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <utility>

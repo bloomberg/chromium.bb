@@ -5,6 +5,7 @@
 #include "mojo/platform_handle/platform_handle_private_thunks.h"
 
 #include <assert.h>
+#include <stddef.h>
 
 #if defined(WIN32)
 #define THUNK_EXPORT __declspec(dllexport)

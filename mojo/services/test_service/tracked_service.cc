@@ -4,6 +4,8 @@
 
 #include "mojo/services/test_service/tracked_service.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"

@@ -4,6 +4,9 @@
 
 #include "mojo/android/javatests/validation_test_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"

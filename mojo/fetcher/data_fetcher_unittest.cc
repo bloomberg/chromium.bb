@@ -4,6 +4,8 @@
 
 #include "mojo/fetcher/data_fetcher.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/auto_reset.h"

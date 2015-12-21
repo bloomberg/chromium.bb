@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/application/public/cpp/application_connection.h"

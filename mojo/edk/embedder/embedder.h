@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_EMBEDDER_EMBEDDER_H_
 #define MOJO_EDK_EMBEDDER_EMBEDDER_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/callback.h"

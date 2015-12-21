@@ -4,6 +4,8 @@
 
 #include "mojo/runner/host/child_process_host.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"

@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/wait_set_dispatcher.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 

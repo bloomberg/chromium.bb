@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_INTERNAL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_INTERNAL_H_
 
+#include <stdint.h>
+
 #include "mojo/public/cpp/bindings/lib/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"

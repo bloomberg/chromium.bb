@@ -4,6 +4,8 @@
 
 #include "mojo/runner/host/native_application_support.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"

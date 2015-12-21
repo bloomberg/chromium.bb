@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/bindings/lib/string_serialization.h"
 
+#include <stddef.h>
 #include <string.h>
 
 namespace mojo {

@@ -4,6 +4,9 @@
 
 #include "mojo/shell/data_pipe_peek.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_MAP_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_MAP_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "mojo/public/cpp/bindings/lib/map_internal.h"

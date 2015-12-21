@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/waiter.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/logging.h"

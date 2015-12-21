@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_TESTS_ROUTER_TEST_UTIL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_TESTS_ROUTER_TEST_UTIL_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "mojo/public/cpp/bindings/message.h"

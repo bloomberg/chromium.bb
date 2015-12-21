@@ -4,11 +4,14 @@
 
 #include "mojo/runner/child/runner_connection.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"

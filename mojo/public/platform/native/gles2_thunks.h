@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_PLATFORM_NATIVE_GLES2_THUNKS_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "mojo/public/c/gles2/gles2.h"
 

@@ -4,8 +4,12 @@
 
 #include "mojo/edk/system/wait_set_dispatcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/test_utils.h"

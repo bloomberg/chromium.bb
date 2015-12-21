@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/message_in_transit_test_utils.h"
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

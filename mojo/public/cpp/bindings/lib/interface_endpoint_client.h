@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_ENDPOINT_CLIENT_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_ENDPOINT_CLIENT_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/logging.h"

@@ -5,6 +5,8 @@
 // Serialization warnings are only recorded in debug build.
 #ifndef NDEBUG
 
+#include <stddef.h>
+
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"

@@ -5,6 +5,9 @@
 #ifndef MOJO_EDK_SYSTEM_DATA_PIPE_CONSUMER_DISPATCHER_H_
 #define MOJO_EDK_SYSTEM_DATA_PIPE_CONSUMER_DISPATCHER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/dispatcher.h"

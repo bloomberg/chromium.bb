@@ -4,6 +4,8 @@
 
 #include "mojo/fetcher/network_fetcher.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"

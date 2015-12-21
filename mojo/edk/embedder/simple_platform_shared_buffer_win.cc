@@ -5,6 +5,8 @@
 #include "mojo/edk/embedder/simple_platform_shared_buffer.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <limits>
 

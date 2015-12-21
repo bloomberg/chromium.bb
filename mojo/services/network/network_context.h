@@ -5,6 +5,8 @@
 #ifndef MOJO_SERVICES_NETWORK_NETWORK_CONTEXT_H_
 #define MOJO_SERVICES_NETWORK_NETWORK_CONTEXT_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/macros.h"

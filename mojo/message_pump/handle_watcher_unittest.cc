@@ -9,6 +9,7 @@
 #include "base/at_exit.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"

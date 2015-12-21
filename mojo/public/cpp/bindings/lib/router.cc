@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/router.h"
 
+#include <stdint.h>
+
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {

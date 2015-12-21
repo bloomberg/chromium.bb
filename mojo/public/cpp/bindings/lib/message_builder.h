@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_BUILDER_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_BUILDER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "mojo/public/cpp/bindings/lib/message_internal.h"

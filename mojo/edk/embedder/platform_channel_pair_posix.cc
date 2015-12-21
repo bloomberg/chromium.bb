@@ -5,6 +5,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/socket.h>
 #include <sys/types.h>

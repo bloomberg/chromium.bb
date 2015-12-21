@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/system/core.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <map>
 

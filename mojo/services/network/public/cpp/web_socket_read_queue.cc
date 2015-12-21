@@ -4,6 +4,8 @@
 
 #include "network/public/cpp/web_socket_read_queue.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

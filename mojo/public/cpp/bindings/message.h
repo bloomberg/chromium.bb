@@ -5,6 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 #include <vector>
 

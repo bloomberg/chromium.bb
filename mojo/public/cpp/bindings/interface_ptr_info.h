@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_PTR_INFO_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_PTR_INFO_H_
 
+#include <stdint.h>
+
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 

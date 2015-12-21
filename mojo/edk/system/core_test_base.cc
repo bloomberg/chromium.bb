@@ -4,6 +4,9 @@
 
 #include "mojo/edk/system/core_test_base.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/logging.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "gin/modules/console.h"
 #include "gin/modules/module_registry.h"

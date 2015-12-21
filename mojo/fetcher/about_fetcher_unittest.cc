@@ -4,6 +4,8 @@
 
 #include "mojo/fetcher/about_fetcher.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/at_exit.h"

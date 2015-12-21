@@ -4,6 +4,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"

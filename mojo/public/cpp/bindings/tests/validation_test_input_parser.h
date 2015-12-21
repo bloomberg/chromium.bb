@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_TESTS_VALIDATION_TEST_INPUT_PARSER_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_TESTS_VALIDATION_TEST_INPUT_PARSER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>
@@ -70,13 +71,13 @@ namespace test {
 //
 // Suppose you have the following Mojo types defined:
 //   struct Bar {
-//     int32 a;
+//     int32_t a;
 //     bool b;
 //     bool c;
 //   };
 //   struct Foo {
 //     Bar x;
-//     uint32 y;
+//     uint32_t y;
 //   };
 //
 // The following describes a valid message whose payload is a Foo struct:

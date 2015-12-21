@@ -9,6 +9,8 @@
 #ifndef MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
 #define MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
 
+#include <stddef.h>
+
 #include "mojo/public/c/system/macros.h"  // Symbols exposed.
 
 // A macro to disallow the copy constructor and operator= functions.

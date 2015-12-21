@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/utility/thread.h"
 
+#include <stddef.h>
+
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

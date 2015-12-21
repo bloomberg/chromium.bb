@@ -5,6 +5,9 @@
 #ifndef MOJO_SHELL_FETCHER_H_
 #define MOJO_SHELL_FETCHER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 

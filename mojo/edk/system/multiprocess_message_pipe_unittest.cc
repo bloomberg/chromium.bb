@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -537,9 +538,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckMessagePipe) {
   // Now write some data into the message pipe.
   std::string write_buffer = "world";
   CHECK_EQ(MojoWriteMessage(handles[0], write_buffer.data(),
-                            static_cast<uint32>(write_buffer.size()),
-                            nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE),
-            MOJO_RESULT_OK);
+                            static_cast<uint32_t>(write_buffer.size()), nullptr,
+                            0u, MOJO_WRITE_MESSAGE_FLAG_NONE),
+           MOJO_RESULT_OK);
   MojoClose(handles[0]);
   return 0;
 }

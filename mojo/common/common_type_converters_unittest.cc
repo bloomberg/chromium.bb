@@ -4,6 +4,8 @@
 
 #include "mojo/common/common_type_converters.h"
 
+#include <stdint.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/common/url_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"

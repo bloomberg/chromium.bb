@@ -13,6 +13,7 @@
 #define MOJO_PUBLIC_CPP_SYSTEM_MESSAGE_PIPE_H_
 
 #include <assert.h>
+#include <stdint.h>
 
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/cpp/system/handle.h"

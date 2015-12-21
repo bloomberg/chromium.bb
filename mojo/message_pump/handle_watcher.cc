@@ -4,6 +4,9 @@
 
 #include "mojo/message_pump/handle_watcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/atomic_sequence_num.h"

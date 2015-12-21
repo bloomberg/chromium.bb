@@ -5,6 +5,9 @@
 #ifndef MOJO_EDK_SYSTEM_MESSAGE_PIPE_DISPATCHER_H_
 #define MOJO_EDK_SYSTEM_MESSAGE_PIPE_DISPATCHER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/system/awakable_list.h"

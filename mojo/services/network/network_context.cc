@@ -4,6 +4,9 @@
 
 #include "mojo/services/network/network_context.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -12,6 +15,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "mojo/common/user_agent.h"
@@ -44,8 +48,8 @@ const char kLogNetLog[] = "log-net-log";
 const char kTestingFixedHttpPort[] = "testing-fixed-http-port";
 const char kTestingFixedHttpsPort[] = "testing-fixed-https-port";
 
-uint16 GetPortNumber(const base::CommandLine& command_line,
-                     const base::StringPiece& switch_name) {
+uint16_t GetPortNumber(const base::CommandLine& command_line,
+                       const base::StringPiece& switch_name) {
   std::string port_str = command_line.GetSwitchValueASCII(switch_name);
   unsigned port;
   if (!base::StringToUint(port_str, &port) || port > 65535) {
@@ -53,7 +57,7 @@ uint16 GetPortNumber(const base::CommandLine& command_line,
                << port_str << "' is not a valid port number.";
     return 0;
   }
-  return static_cast<uint16>(port);
+  return static_cast<uint16_t>(port);
 }
 
 }  // namespace

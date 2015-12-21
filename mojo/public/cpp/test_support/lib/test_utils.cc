@@ -4,6 +4,9 @@
 
 #include "mojo/public/cpp/test_support/test_utils.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 

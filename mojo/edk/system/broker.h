@@ -5,6 +5,7 @@
 #ifndef MOJO_EDK_SYSTEM_BROKER_H_
 #define MOJO_EDK_SYSTEM_BROKER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "mojo/edk/embedder/scoped_platform_handle.h"

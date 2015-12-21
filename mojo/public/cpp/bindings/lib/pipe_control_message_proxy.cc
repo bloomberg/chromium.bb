@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/pipe_control_message_proxy.h"
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/message.h"

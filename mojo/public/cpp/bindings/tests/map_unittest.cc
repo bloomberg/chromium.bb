@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"

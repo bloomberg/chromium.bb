@@ -4,6 +4,8 @@
 
 #include "mojo/shell/fetcher.h"
 
+#include <stddef.h>
+
 #include "url/gurl.h"
 
 namespace mojo {

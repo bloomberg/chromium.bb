@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/pickle_buffer.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "base/logging.h"

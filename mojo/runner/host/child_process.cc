@@ -4,6 +4,8 @@
 
 #include "mojo/runner/host/child_process.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/base_switches.h"

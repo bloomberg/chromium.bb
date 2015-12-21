@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "mojo/services/network/net_address_type_converters.h"
 
 namespace mojo {
@@ -39,13 +41,13 @@ NetAddressPtr TypeConverter<NetAddressPtr, net::IPEndPoint>::Convert(
     case net::ADDRESS_FAMILY_IPV4:
       net_address->family = NET_ADDRESS_FAMILY_IPV4;
       net_address->ipv4 = NetAddressIPv4::New();
-      net_address->ipv4->port = static_cast<uint16>(obj.port());
+      net_address->ipv4->port = static_cast<uint16_t>(obj.port());
       net_address->ipv4->addr = Array<uint8_t>::From(obj.address());
       break;
     case NET_ADDRESS_FAMILY_IPV6:
       net_address->ipv6 = NetAddressIPv6::New();
       net_address->family = NET_ADDRESS_FAMILY_IPV6;
-      net_address->ipv6->port = static_cast<uint16>(obj.port());
+      net_address->ipv6->port = static_cast<uint16_t>(obj.port());
       net_address->ipv6->addr = Array<uint8_t>::From(obj.address());
       break;
     default:

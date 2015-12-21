@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_DATA_PIPE_H_
 #define MOJO_EDK_SYSTEM_DATA_PIPE_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"

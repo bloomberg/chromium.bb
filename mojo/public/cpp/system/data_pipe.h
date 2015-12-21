@@ -13,6 +13,7 @@
 #define MOJO_PUBLIC_CPP_SYSTEM_DATA_PIPE_H_
 
 #include <assert.h>
+#include <stdint.h>
 
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/system/handle.h"

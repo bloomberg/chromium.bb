@@ -5,6 +5,8 @@
 #ifndef MOJO_SERVICES_NETWORK_HTTP_CONNECTION_IMPL_H_
 #define MOJO_SERVICES_NETWORK_HTTP_CONNECTION_IMPL_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 

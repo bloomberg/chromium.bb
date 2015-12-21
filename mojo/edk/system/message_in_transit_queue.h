@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_QUEUE_H_
 #define MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_QUEUE_H_
 
+#include <stddef.h>
+
 #include <deque>
 
 #include "base/memory/scoped_ptr.h"

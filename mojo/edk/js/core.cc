@@ -4,6 +4,9 @@
 
 #include "mojo/edk/js/core.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "gin/arguments.h"

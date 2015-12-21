@@ -4,6 +4,9 @@
 
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/macros.h"

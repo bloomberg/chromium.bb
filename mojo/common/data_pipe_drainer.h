@@ -5,6 +5,8 @@
 #ifndef MOJO_COMMON_DATA_PIPE_DRAINER_H_
 #define MOJO_COMMON_DATA_PIPE_DRAINER_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/common/mojo_common_export.h"

@@ -4,6 +4,9 @@
 
 #include "mojo/fetcher/local_fetcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -104,7 +107,7 @@ URLResponsePtr LocalFetcher::AsURLResponse(base::TaskRunner* task_runner,
   response->url = String::From(url_);
   DataPipe data_pipe;
   response->body = std::move(data_pipe.consumer_handle);
-  int64 file_size;
+  int64_t file_size;
   if (base::GetFileSize(path_, &file_size)) {
     response->headers = Array<HttpHeaderPtr>(1);
     HttpHeaderPtr header = HttpHeader::New();

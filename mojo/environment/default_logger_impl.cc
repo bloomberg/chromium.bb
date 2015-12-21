@@ -4,6 +4,8 @@
 
 #include "mojo/environment/default_logger_impl.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 

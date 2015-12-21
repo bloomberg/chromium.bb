@@ -4,6 +4,8 @@
 
 #include "mojo/services/network/tcp_connected_socket_impl.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/message_loop/message_loop.h"

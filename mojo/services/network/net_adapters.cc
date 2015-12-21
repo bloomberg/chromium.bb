@@ -4,6 +4,8 @@
 
 #include "mojo/services/network/net_adapters.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "net/base/net_errors.h"

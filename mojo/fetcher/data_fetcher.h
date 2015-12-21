@@ -7,6 +7,8 @@
 
 #include "mojo/shell/fetcher.h"
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "url/gurl.h"

@@ -5,6 +5,7 @@
 #include "mojo/edk/system/raw_channel.h"
 
 #include <errno.h>
+#include <stddef.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>

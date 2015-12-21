@@ -4,6 +4,9 @@
 
 #include "mojo/public/cpp/bindings/lib/control_message_handler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/environment/logging.h"
 #include "mojo/public/interfaces/bindings/interface_control_messages.mojom.h"

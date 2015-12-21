@@ -5,7 +5,7 @@
 #ifndef MOJO_APPLICATION_PUBLIC_CPP_APP_LIFETIME_HELPER_H_
 #define MOJO_APPLICATION_PUBLIC_CPP_APP_LIFETIME_HELPER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 

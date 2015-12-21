@@ -7,6 +7,8 @@
 
 #include "mojo/application/public/cpp/application_delegate.h"
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/interfaces/application_manager.mojom.h"

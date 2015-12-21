@@ -4,6 +4,9 @@
 
 #include "mojo/services/network/http_connection_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 #include <utility>
 
@@ -11,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "mojo/message_pump/handle_watcher.h"

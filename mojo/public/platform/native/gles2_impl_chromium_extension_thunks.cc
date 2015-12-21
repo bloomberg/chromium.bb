@@ -5,6 +5,7 @@
 #include "mojo/public/platform/native/gles2_impl_chromium_extension_thunks.h"
 
 #include <assert.h>
+#include <stddef.h>
 
 #include "mojo/public/platform/native/thunk_export.h"
 

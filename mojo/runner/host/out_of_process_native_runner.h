@@ -5,6 +5,8 @@
 #ifndef MOJO_RUNNER_HOST_OUT_OF_PROCESS_NATIVE_RUNNER_H_
 #define MOJO_RUNNER_HOST_OUT_OF_PROCESS_NATIVE_RUNNER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"

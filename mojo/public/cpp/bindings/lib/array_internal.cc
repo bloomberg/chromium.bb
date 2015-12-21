@@ -4,6 +4,9 @@
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <sstream>
 
 namespace mojo {

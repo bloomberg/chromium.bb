@@ -6,6 +6,7 @@
 #define MOJO_EDK_EMBEDDER_CONFIGURATION_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 namespace mojo {
 namespace edk {

@@ -5,6 +5,8 @@
 #ifndef MOJO_SERVICES_TRACING_TRACING_APP_H_
 #define MOJO_SERVICES_TRACING_TRACING_APP_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -49,13 +51,13 @@ class TracingApp
   void StopAndFlush() override;
 
   // StartupPerformanceDataCollector implementation.
-  void SetShellProcessCreationTime(int64 time) override;
-  void SetShellMainEntryPointTime(int64 time) override;
-  void SetBrowserMessageLoopStartTicks(int64 ticks) override;
-  void SetBrowserWindowDisplayTicks(int64 ticks) override;
-  void SetBrowserOpenTabsTimeDelta(int64 delta) override;
-  void SetFirstWebContentsMainFrameLoadTicks(int64 ticks) override;
-  void SetFirstVisuallyNonEmptyLayoutTicks(int64 ticks) override;
+  void SetShellProcessCreationTime(int64_t time) override;
+  void SetShellMainEntryPointTime(int64_t time) override;
+  void SetBrowserMessageLoopStartTicks(int64_t ticks) override;
+  void SetBrowserWindowDisplayTicks(int64_t ticks) override;
+  void SetBrowserOpenTabsTimeDelta(int64_t delta) override;
+  void SetFirstWebContentsMainFrameLoadTicks(int64_t ticks) override;
+  void SetFirstVisuallyNonEmptyLayoutTicks(int64_t ticks) override;
   void GetStartupPerformanceTimes(
       const GetStartupPerformanceTimesCallback& callback) override;
 

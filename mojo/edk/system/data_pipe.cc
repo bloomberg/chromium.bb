@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/data_pipe.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "mojo/edk/system/configuration.h"

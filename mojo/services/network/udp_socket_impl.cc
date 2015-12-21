@@ -4,6 +4,8 @@
 
 #include "mojo/services/network/udp_socket_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <algorithm>
 #include <limits>

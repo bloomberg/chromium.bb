@@ -5,6 +5,7 @@
 #ifndef MOJO_RUNNER_TRACER_H_
 #define MOJO_RUNNER_TRACER_H_
 
+#include <stddef.h>
 #include <stdio.h>
 
 #include <string>

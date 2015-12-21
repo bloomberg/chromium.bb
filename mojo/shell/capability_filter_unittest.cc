@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "mojo/shell/capability_filter_test.h"
 #include "mojo/shell/test_package_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"

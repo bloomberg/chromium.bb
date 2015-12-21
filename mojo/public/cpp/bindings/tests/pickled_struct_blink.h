@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_STRUCT_BLINK_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_TESTS_PICKLED_STRUCT_BLINK_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/logging.h"

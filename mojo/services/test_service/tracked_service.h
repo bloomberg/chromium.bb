@@ -5,6 +5,8 @@
 #ifndef SERVICES_TEST_SERVICE_TRACKED_SERVICE_H_
 #define SERVICES_TEST_SERVICE_TRACKED_SERVICE_H_
 
+#include <stdint.h>
+
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/services/test_service/test_request_tracker.mojom.h"
 

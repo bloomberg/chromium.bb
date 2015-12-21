@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_CORE_TEST_BASE_H_
 #define MOJO_EDK_SYSTEM_CORE_TEST_BASE_H_
 
+#include <stddef.h>
+
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/test_utils.h"

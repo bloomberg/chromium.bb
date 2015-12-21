@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_EMBEDDER_SIMPLE_PLATFORM_SUPPORT_H_
 #define MOJO_EDK_EMBEDDER_SIMPLE_PLATFORM_SUPPORT_H_
 
+#include <stddef.h>
+
 #include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"

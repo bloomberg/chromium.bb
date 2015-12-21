@@ -5,6 +5,8 @@
 #ifndef SERVICES_TEST_SERVICE_TEST_REQUEST_TRACKER_IMPL_H_
 #define SERVICES_TEST_SERVICE_TEST_REQUEST_TRACKER_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/macros.h"

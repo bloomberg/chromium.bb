@@ -4,7 +4,6 @@
 
 #include "mojo/shell/switches.h"
 
-#include "base/basictypes.h"
 
 namespace switches {
 

@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 #include <algorithm>

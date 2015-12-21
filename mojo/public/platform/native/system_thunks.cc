@@ -5,6 +5,8 @@
 #include "mojo/public/platform/native/system_thunks.h"
 
 #include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "mojo/public/platform/native/thunk_export.h"
 

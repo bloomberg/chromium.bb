@@ -7,6 +7,7 @@
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 // Include all the header files that are meant to be compilable as C. Start with

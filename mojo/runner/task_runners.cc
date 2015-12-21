@@ -4,6 +4,8 @@
 
 #include "mojo/runner/task_runners.h"
 
+#include <stddef.h>
+
 #include "base/threading/sequenced_worker_pool.h"
 
 namespace mojo {

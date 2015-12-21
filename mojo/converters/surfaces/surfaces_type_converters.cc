@@ -4,6 +4,9 @@
 
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/macros.h"

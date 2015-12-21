@@ -4,6 +4,9 @@
 
 #include "mojo/edk/system/transport_data.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/logging.h"

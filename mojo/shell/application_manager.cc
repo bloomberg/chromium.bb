@@ -4,6 +4,8 @@
 
 #include "mojo/shell/application_manager.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"

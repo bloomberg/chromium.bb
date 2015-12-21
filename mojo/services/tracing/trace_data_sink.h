@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 namespace tracing {

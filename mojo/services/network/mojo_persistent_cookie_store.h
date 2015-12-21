@@ -6,6 +6,7 @@
 #define MOJO_SERVICES_NETWORK_MOJO_PERSISTENT_COOKIE_STORE_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/services/network/network_service_delegate_observer.h"
 #include "net/cookies/cookie_monster.h"

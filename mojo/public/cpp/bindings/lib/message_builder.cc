@@ -4,6 +4,9 @@
 
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/bindings/message.h"
 

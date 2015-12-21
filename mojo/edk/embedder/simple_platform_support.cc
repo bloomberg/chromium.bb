@@ -4,6 +4,8 @@
 
 #include "mojo/edk/embedder/simple_platform_support.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/rand_util.h"

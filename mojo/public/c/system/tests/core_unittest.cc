@@ -6,6 +6,7 @@
 
 #include "mojo/public/c/system/core.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include "testing/gtest/include/gtest/gtest.h"

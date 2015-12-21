@@ -4,6 +4,9 @@
 
 #include "mojo/runner/context.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 

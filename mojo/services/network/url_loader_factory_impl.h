@@ -6,6 +6,7 @@
 #define MOJO_SERVICES_NETWORK_URL_LOADER_FACTORY_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"

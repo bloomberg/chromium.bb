@@ -4,6 +4,7 @@
 
 #include "mojo/edk/embedder/simple_platform_shared_buffer.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>     // For |fileno()|.
 #include <sys/mman.h>  // For |mmap()|/|munmap()|.

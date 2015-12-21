@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_H_
 #define MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 

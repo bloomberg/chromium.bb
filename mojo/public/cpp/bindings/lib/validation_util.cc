@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/validation_util.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"

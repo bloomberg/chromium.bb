@@ -5,9 +5,12 @@
 #ifndef MOJO_FETCHER_LOCAL_FETCHER_H_
 #define MOJO_FETCHER_LOCAL_FETCHER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "mojo/shell/fetcher.h"
 #include "url/gurl.h"
 

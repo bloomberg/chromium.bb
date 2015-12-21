@@ -4,6 +4,9 @@
 
 #include "mojo/services/tracing/tracing_app.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -129,37 +132,37 @@ void TracingApp::StopAndFlush() {
   AllDataCollected();
 }
 
-void TracingApp::SetShellProcessCreationTime(int64 time) {
+void TracingApp::SetShellProcessCreationTime(int64_t time) {
   if (startup_performance_times_.shell_process_creation_time == 0)
     startup_performance_times_.shell_process_creation_time = time;
 }
 
-void TracingApp::SetShellMainEntryPointTime(int64 time) {
+void TracingApp::SetShellMainEntryPointTime(int64_t time) {
   if (startup_performance_times_.shell_main_entry_point_time == 0)
     startup_performance_times_.shell_main_entry_point_time = time;
 }
 
-void TracingApp::SetBrowserMessageLoopStartTicks(int64 ticks) {
+void TracingApp::SetBrowserMessageLoopStartTicks(int64_t ticks) {
   if (startup_performance_times_.browser_message_loop_start_ticks == 0)
     startup_performance_times_.browser_message_loop_start_ticks = ticks;
 }
 
-void TracingApp::SetBrowserWindowDisplayTicks(int64 ticks) {
+void TracingApp::SetBrowserWindowDisplayTicks(int64_t ticks) {
   if (startup_performance_times_.browser_window_display_ticks == 0)
     startup_performance_times_.browser_window_display_ticks = ticks;
 }
 
-void TracingApp::SetBrowserOpenTabsTimeDelta(int64 delta) {
+void TracingApp::SetBrowserOpenTabsTimeDelta(int64_t delta) {
   if (startup_performance_times_.browser_open_tabs_time_delta == 0)
     startup_performance_times_.browser_open_tabs_time_delta = delta;
 }
 
-void TracingApp::SetFirstWebContentsMainFrameLoadTicks(int64 ticks) {
+void TracingApp::SetFirstWebContentsMainFrameLoadTicks(int64_t ticks) {
   if (startup_performance_times_.first_web_contents_main_frame_load_ticks == 0)
     startup_performance_times_.first_web_contents_main_frame_load_ticks = ticks;
 }
 
-void TracingApp::SetFirstVisuallyNonEmptyLayoutTicks(int64 ticks) {
+void TracingApp::SetFirstVisuallyNonEmptyLayoutTicks(int64_t ticks) {
   if (startup_performance_times_.first_visually_non_empty_layout_ticks == 0)
     startup_performance_times_.first_visually_non_empty_layout_ticks = ticks;
 }

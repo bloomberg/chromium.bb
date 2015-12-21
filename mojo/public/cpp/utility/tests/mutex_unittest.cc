@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/utility/mutex.h"
 
+#include <stddef.h>
 #include <stdlib.h>  // For |rand()|.
 #include <time.h>  // For |nanosleep()| (defined by POSIX).
 

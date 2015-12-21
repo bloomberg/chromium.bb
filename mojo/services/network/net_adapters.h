@@ -5,7 +5,9 @@
 #ifndef MOJO_SERVICES_NETWORK_NET_ADAPTERS_H_
 #define MOJO_SERVICES_NETWORK_NET_ADAPTERS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/services/network/public/interfaces/network_error.mojom.h"
 #include "net/base/io_buffer.h"

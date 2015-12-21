@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATE_PARAMS_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATE_PARAMS_H_
 
+#include <stdint.h>
+
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {

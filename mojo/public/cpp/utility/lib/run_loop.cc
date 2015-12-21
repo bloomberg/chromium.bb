@@ -5,6 +5,7 @@
 #include "mojo/public/cpp/utility/run_loop.h"
 
 #include <assert.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <vector>

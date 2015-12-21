@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_JS_HANDLE_H_
 #define MOJO_EDK_JS_HANDLE_H_
 
+#include <stdint.h>
+
 #include "base/observer_list.h"
 #include "gin/converter.h"
 #include "gin/handle.h"
@@ -48,7 +50,7 @@ class HandleWrapper : public gin::Wrappable<HandleWrapper> {
 namespace gin {
 
 // Note: It's important to use this converter rather than the one for
-// MojoHandle, since that will do a simple int32 conversion. It's unfortunate
+// MojoHandle, since that will do a simple int32_t conversion. It's unfortunate
 // there's no way to prevent against accidental use.
 // TODO(mpcomplete): define converters for all Handle subtypes.
 template<>

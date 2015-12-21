@@ -4,6 +4,8 @@
 
 #include "mojo/application/public/cpp/lib/service_registry.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"

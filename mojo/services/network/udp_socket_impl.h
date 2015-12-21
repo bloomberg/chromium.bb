@@ -5,6 +5,9 @@
 #ifndef MOJO_SERVICES_NETWORK_UDP_SOCKET_IMPL_H_
 #define MOJO_SERVICES_NETWORK_UDP_SOCKET_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/macros.h"

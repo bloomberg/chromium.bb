@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_ROUTED_RAW_CHANNEL_H_
 #define MOJO_EDK_SYSTEM_ROUTED_RAW_CHANNEL_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"

@@ -4,6 +4,9 @@
 
 #include "mojo/gles2/gles2_context.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"

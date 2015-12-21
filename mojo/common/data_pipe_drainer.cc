@@ -4,6 +4,8 @@
 
 #include "mojo/common/data_pipe_drainer.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"

@@ -5,6 +5,9 @@
 #ifndef MOJO_GLES2_COMMAND_BUFFER_CLIENT_IMPL_H_
 #define MOJO_GLES2_COMMAND_BUFFER_CLIENT_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
@@ -65,12 +68,12 @@ class CommandBufferClientImpl
                                      size_t height,
                                      unsigned internalformat,
                                      unsigned usage) override;
-  uint32 InsertSyncPoint() override;
-  uint32 InsertFutureSyncPoint() override;
-  void RetireSyncPoint(uint32 sync_point) override;
-  void SignalSyncPoint(uint32 sync_point,
+  uint32_t InsertSyncPoint() override;
+  uint32_t InsertFutureSyncPoint() override;
+  void RetireSyncPoint(uint32_t sync_point) override;
+  void SignalSyncPoint(uint32_t sync_point,
                        const base::Closure& callback) override;
-  void SignalQuery(uint32 query, const base::Closure& callback) override;
+  void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;

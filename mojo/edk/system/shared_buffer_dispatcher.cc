@@ -4,6 +4,9 @@
 
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 #include <utility>
 

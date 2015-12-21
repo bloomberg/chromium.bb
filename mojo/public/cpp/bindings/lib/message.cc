@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/message.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <algorithm>

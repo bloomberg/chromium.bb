@@ -4,6 +4,9 @@
 
 #include "mojo/edk/system/core.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 

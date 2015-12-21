@@ -4,9 +4,13 @@
 
 #include "mojo/services/network/url_loader_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/common_type_converters.h"
@@ -107,8 +111,8 @@ class UploadDataPipeElementReader : public net::UploadElementReader {
     ReadDataRaw(pipe_.get(), nullptr, &num_bytes_, MOJO_READ_DATA_FLAG_QUERY);
     return net::OK;
   }
-  uint64 GetContentLength() const override { return num_bytes_; }
-  uint64 BytesRemaining() const override { return num_bytes_ - offset_; }
+  uint64_t GetContentLength() const override { return num_bytes_; }
+  uint64_t BytesRemaining() const override { return num_bytes_ - offset_; }
   bool IsInMemory() const override { return false; }
   int Read(net::IOBuffer* buf,
            int buf_length,

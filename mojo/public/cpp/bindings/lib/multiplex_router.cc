@@ -4,9 +4,12 @@
 
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/associated_group.h"

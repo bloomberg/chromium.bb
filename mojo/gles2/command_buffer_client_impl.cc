@@ -4,6 +4,9 @@
 
 #include "mojo/gles2/command_buffer_client_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 #include <utility>
 
@@ -122,12 +125,12 @@ gpu::CommandBuffer::State CommandBufferClientImpl::GetLastState() {
   return last_state_;
 }
 
-int32 CommandBufferClientImpl::GetLastToken() {
+int32_t CommandBufferClientImpl::GetLastToken() {
   TryUpdateState();
   return last_state_.token;
 }
 
-void CommandBufferClientImpl::Flush(int32 put_offset) {
+void CommandBufferClientImpl::Flush(int32_t put_offset) {
   if (last_put_offset_ == put_offset)
     return;
 
@@ -141,7 +144,7 @@ void CommandBufferClientImpl::OrderingBarrier(int32_t put_offset) {
   Flush(put_offset);
 }
 
-void CommandBufferClientImpl::WaitForTokenInRange(int32 start, int32 end) {
+void CommandBufferClientImpl::WaitForTokenInRange(int32_t start, int32_t end) {
   TryUpdateState();
   while (!InRange(start, end, last_state_.token) &&
          last_state_.error == gpu::error::kNoError) {
@@ -150,7 +153,8 @@ void CommandBufferClientImpl::WaitForTokenInRange(int32 start, int32 end) {
   }
 }
 
-void CommandBufferClientImpl::WaitForGetOffsetInRange(int32 start, int32 end) {
+void CommandBufferClientImpl::WaitForGetOffsetInRange(int32_t start,
+                                                      int32_t end) {
   TryUpdateState();
   while (!InRange(start, end, last_state_.get_offset) &&
          last_state_.error == gpu::error::kNoError) {
@@ -159,14 +163,14 @@ void CommandBufferClientImpl::WaitForGetOffsetInRange(int32 start, int32 end) {
   }
 }
 
-void CommandBufferClientImpl::SetGetBuffer(int32 shm_id) {
+void CommandBufferClientImpl::SetGetBuffer(int32_t shm_id) {
   command_buffer_->SetGetBuffer(shm_id);
   last_put_offset_ = -1;
 }
 
 scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
     size_t size,
-    int32* id) {
+    int32_t* id) {
   if (size >= std::numeric_limits<uint32_t>::max())
     return NULL;
 
@@ -190,7 +194,7 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
   return buffer;
 }
 
-void CommandBufferClientImpl::DestroyTransferBuffer(int32 id) {
+void CommandBufferClientImpl::DestroyTransferBuffer(int32_t id) {
   command_buffer_->DestroyTransferBuffer(id);
 }
 
@@ -202,7 +206,7 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
                                              size_t width,
                                              size_t height,
                                              unsigned internalformat) {
-  int32 new_id = ++next_image_id_;
+  int32_t new_id = ++next_image_id_;
 
   mojo::SizePtr size = mojo::Size::New();
   size->width = static_cast<int32_t>(width);
@@ -250,7 +254,7 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
   return new_id;
 }
 
-void CommandBufferClientImpl::DestroyImage(int32 id) {
+void CommandBufferClientImpl::DestroyImage(int32_t id) {
   command_buffer_->DestroyImage(id);
 }
 

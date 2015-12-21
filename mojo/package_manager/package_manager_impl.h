@@ -5,7 +5,10 @@
 #ifndef MOJO_PACKAGE_MANAGER_PACKAGE_MANAGER_IMPL_H_
 #define MOJO_PACKAGE_MANAGER_PACKAGE_MANAGER_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "mojo/fetcher/url_resolver.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"

@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/environment/logging.h"
 
+#include <stdint.h>
+
 #include "mojo/public/cpp/environment/environment.h"
 
 namespace mojo {

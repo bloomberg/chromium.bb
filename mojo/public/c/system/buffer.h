@@ -12,6 +12,8 @@
 #ifndef MOJO_PUBLIC_C_SYSTEM_BUFFER_H_
 #define MOJO_PUBLIC_C_SYSTEM_BUFFER_H_
 
+#include <stdint.h>
+
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/c/system/system_export.h"
 #include "mojo/public/c/system/types.h"

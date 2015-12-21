@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/logging.h"
@@ -256,7 +259,7 @@ class TestHttpClient {
       return false;
 
     // Return true if response has data equal to or more than content length.
-    int64 body_size = static_cast<int64>(response.size()) - end_of_headers;
+    int64_t body_size = static_cast<int64_t>(response.size()) - end_of_headers;
     DCHECK_LE(0, body_size);
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(

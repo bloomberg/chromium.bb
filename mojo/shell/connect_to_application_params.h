@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

@@ -4,6 +4,9 @@
 
 #include "mojo/edk/system/dispatcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/data_pipe_consumer_dispatcher.h"

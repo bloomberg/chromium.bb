@@ -5,6 +5,9 @@
 #ifndef MOJO_EDK_SYSTEM_SHARED_BUFFER_DISPATCHER_H_
 #define MOJO_EDK_SYSTEM_SHARED_BUFFER_DISPATCHER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "mojo/edk/embedder/platform_shared_buffer.h"

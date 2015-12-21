@@ -4,6 +4,8 @@
 
 #include "mojo/common/data_pipe_utils.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <utility>
 

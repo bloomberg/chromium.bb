@@ -4,6 +4,9 @@
 
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {

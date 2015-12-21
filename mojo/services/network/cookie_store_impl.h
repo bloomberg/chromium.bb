@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_NETWORK_COOKIE_STORE_IMPL_H_
 #define MOJO_SERVICES_NETWORK_COOKIE_STORE_IMPL_H_
 
+#include "base/macros.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"

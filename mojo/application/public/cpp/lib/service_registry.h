@@ -5,6 +5,8 @@
 #ifndef MOJO_APPLICATION_PUBLIC_CPP_LIB_SERVICE_REGISTRY_H_
 #define MOJO_APPLICATION_PUBLIC_CPP_LIB_SERVICE_REGISTRY_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 

@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_RAW_CHANNEL_H_
 #define MOJO_EDK_SYSTEM_RAW_CHANNEL_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"

@@ -4,6 +4,8 @@
 
 #include "mojo/edk/test/multiprocess_test_helper.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/logging.h"

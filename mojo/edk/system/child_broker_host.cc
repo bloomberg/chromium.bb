@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/child_broker_host.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"

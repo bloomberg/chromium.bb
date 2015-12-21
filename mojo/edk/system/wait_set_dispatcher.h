@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_WAIT_SET_DISPATCHER_H_
 #define MOJO_EDK_SYSTEM_WAIT_SET_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <utility>

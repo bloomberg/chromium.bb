@@ -5,6 +5,8 @@
 #ifndef SERVICES_TEST_SERVICE_TEST_TIME_SERVICE_IMPL_H_
 #define SERVICES_TEST_SERVICE_TEST_TIME_SERVICE_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

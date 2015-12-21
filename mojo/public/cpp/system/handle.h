@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_SYSTEM_HANDLE_H_
 
 #include <assert.h>
+#include <stdint.h>
 #include <limits>
 
 #include "mojo/public/c/system/functions.h"
