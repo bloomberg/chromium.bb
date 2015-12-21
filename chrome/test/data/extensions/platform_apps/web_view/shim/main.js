@@ -1718,7 +1718,7 @@ function testWebRequestAPIWithHeaders() {
   webview.request.onBeforeSendHeaders.addListener(function(details) {
     var headers = details.requestHeaders;
     for( var i = 0, l = headers.length; i < l; ++i ) {
-      if (headers[i].name == 'User-Agent') {
+      if (headers[i].name.toLowerCase() == 'user-agent') {
         headers[i].value = 'foobar';
         break;
       }

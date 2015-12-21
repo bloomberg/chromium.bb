@@ -52,8 +52,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
   http_response->set_code(net::HTTP_OK);
 
   std::string request_cookies;
-  std::map<std::string, std::string>::const_iterator it =
-      request.headers.find("Cookie");
+  auto it = request.headers.find("Cookie");
   if (it != request.headers.end())
     request_cookies = it->second;
 

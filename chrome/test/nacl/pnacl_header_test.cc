@@ -109,8 +109,7 @@ scoped_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
   // For pexe files, check for the special Accept header,
   // along with the expected ResourceType of the URL request.
   EXPECT_NE(0U, request.headers.count("Accept"));
-  std::map<std::string, std::string>::const_iterator it =
-      request.headers.find("Accept");
+  auto it = request.headers.find("Accept");
   EXPECT_NE(std::string::npos, it->second.find("application/x-pnacl"));
   EXPECT_NE(std::string::npos, it->second.find("*/*"));
   EXPECT_TRUE(test_delegate_.found_pnacl_header());

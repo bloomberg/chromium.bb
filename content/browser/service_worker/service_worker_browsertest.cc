@@ -208,8 +208,7 @@ class WorkerActivatedObserver
 scoped_ptr<net::test_server::HttpResponse> VerifyServiceWorkerHeaderInRequest(
     const net::test_server::HttpRequest& request) {
   EXPECT_EQ(request.relative_url, "/service_worker/generated_sw.js");
-  std::map<std::string, std::string>::const_iterator it =
-      request.headers.find("Service-Worker");
+  auto it = request.headers.find("Service-Worker");
   EXPECT_TRUE(it != request.headers.end());
   EXPECT_EQ("script", it->second);
 

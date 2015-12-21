@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -37,6 +38,15 @@ enum HttpMethod {
 // instead of copying. However, the struct is copyable so tests can save and
 // examine a HTTP request.
 struct HttpRequest {
+  struct CaseInsensitiveStringComparator {
+    bool operator()(const std::string& left, const std::string& right) const {
+      return base::CompareCaseInsensitiveASCII(left, right) < 0;
+    }
+  };
+
+  using HeaderMap =
+      std::map<std::string, std::string, CaseInsensitiveStringComparator>;
+
   HttpRequest();
   ~HttpRequest();
 
@@ -48,7 +58,7 @@ struct HttpRequest {
   HttpMethod method;
   std::string method_string;
   std::string all_headers;
-  std::map<std::string, std::string> headers;
+  HeaderMap headers;
   std::string content;
   bool has_content;
 };

@@ -68,8 +68,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
       request.relative_url.substr(query_string_pos + 1);
 
   std::string header_value;
-  std::map<std::string, std::string>::const_iterator it = request.headers.find(
-      header_name);
+  auto it = request.headers.find(header_name);
   if (it != request.headers.end())
     header_value = it->second;
 

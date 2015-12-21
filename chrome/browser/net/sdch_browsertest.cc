@@ -53,7 +53,7 @@
 namespace {
 
 typedef std::vector<net::test_server::HttpRequest> RequestVector;
-typedef std::map<std::string, std::string> HttpRequestHeaderMap;
+typedef net::test_server::HttpRequest::HeaderMap HttpRequestHeaderMap;
 
 // Credit Alfred, Lord Tennyson
 static const char kSampleData[] = "<html><body><pre>"

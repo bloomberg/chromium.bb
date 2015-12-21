@@ -653,7 +653,8 @@ static std::string FindSetRequestHeader(
     net::HttpRequestHeaders::Iterator modification(
         (*delta)->modified_request_headers);
     while (modification.GetNext()) {
-      if (key == modification.name() && value == modification.value())
+      if (base::EqualsCaseInsensitiveASCII(key, modification.name()) &&
+          value == modification.value())
         return (*delta)->extension_id;
     }
   }
@@ -671,7 +672,7 @@ static std::string FindRemoveRequestHeader(
     for (i = (*delta)->deleted_request_headers.begin();
          i != (*delta)->deleted_request_headers.end();
          ++i) {
-      if (*i == key)
+      if (base::EqualsCaseInsensitiveASCII(*i, key))
         return (*delta)->extension_id;
     }
   }

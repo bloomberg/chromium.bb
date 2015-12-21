@@ -97,8 +97,7 @@ CookieMap GetRequestCookies(const HttpRequest& request) {
 bool GetAccessToken(const HttpRequest& request,
                     const char* auth_token_prefix,
                     std::string* access_token) {
-  std::map<std::string, std::string>::const_iterator auth_header_entry =
-      request.headers.find("Authorization");
+  auto auth_header_entry = request.headers.find("Authorization");
   if (auth_header_entry != request.headers.end()) {
     if (base::StartsWith(auth_header_entry->second, auth_token_prefix,
                          base::CompareCase::SENSITIVE)) {

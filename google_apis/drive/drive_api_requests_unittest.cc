@@ -328,8 +328,7 @@ class DriveApiRequestsTest : public testing::Test {
 
     // Check if the X-Upload-Content-Length is present. If yes, store the
     // length of the file.
-    std::map<std::string, std::string>::const_iterator found =
-        request.headers.find("X-Upload-Content-Length");
+    auto found = request.headers.find("X-Upload-Content-Length");
     if (found == request.headers.end() ||
         !base::StringToInt64(found->second, &content_length_)) {
       return scoped_ptr<net::test_server::HttpResponse>();
@@ -354,8 +353,7 @@ class DriveApiRequestsTest : public testing::Test {
     http_request_ = request;
 
     if (!request.content.empty()) {
-      std::map<std::string, std::string>::const_iterator iter =
-          request.headers.find("Content-Range");
+      auto iter = request.headers.find("Content-Range");
       if (iter == request.headers.end()) {
         // The range must be set.
         return scoped_ptr<net::test_server::HttpResponse>();

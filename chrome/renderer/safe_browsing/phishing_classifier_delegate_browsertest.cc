@@ -192,8 +192,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
 
   scoped_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
-    std::map<std::string, std::string>::const_iterator host_it =
-        request.headers.find("Host");
+    auto host_it = request.headers.find("Host");
     if (host_it == request.headers.end())
       return scoped_ptr<net::test_server::HttpResponse>();
 

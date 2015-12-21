@@ -61,8 +61,7 @@ static scoped_ptr<net::test_server::HttpResponse> UserAgentResponseHandler(
                         base::CompareCase::SENSITIVE))
     return scoped_ptr<net::test_server::HttpResponse>();
 
-  std::map<std::string, std::string>::const_iterator it =
-        request.headers.find("User-Agent");
+  auto it = request.headers.find("User-Agent");
   EXPECT_TRUE(it != request.headers.end());
   if (!base::StartsWith("foobar", it->second, base::CompareCase::SENSITIVE))
     return scoped_ptr<net::test_server::HttpResponse>();
