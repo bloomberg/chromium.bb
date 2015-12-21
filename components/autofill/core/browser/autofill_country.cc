@@ -871,7 +871,7 @@ class CountryNames {
 
   // Returns an ICU collator -- i.e. string comparator -- appropriate for the
   // given |locale|, or null if no collator is available.
-  icu::Collator* GetCollatorForLocale(const std::string& locale);
+  const icu::Collator* GetCollatorForLocale(const std::string& locale);
 
   // Returns the ICU sort key corresponding to |str| for the given |collator|.
   // Uses |buffer| as temporary storage, and might resize |buffer| as a side-
@@ -895,7 +895,7 @@ class CountryNames {
       locales_to_localized_names_;
 
   // Maps ICU locale names to their corresponding collators.
-  std::map<std::string, icu::Collator*> collators_;
+  std::map<std::string, scoped_ptr<icu::Collator>> collators_;
 
   DISALLOW_COPY_AND_ASSIGN(CountryNames);
 };
@@ -930,10 +930,7 @@ CountryNames::CountryNames() {
   common_names_.insert(std::make_pair("DEUTSCHLAND", "DE"));
 }
 
-CountryNames::~CountryNames() {
-  STLDeleteContainerPairSecondPointers(collators_.begin(),
-                                       collators_.end());
-}
+CountryNames::~CountryNames() {}
 
 const std::string CountryNames::GetCountryCode(const base::string16& country,
                                                const std::string& locale) {
@@ -985,7 +982,7 @@ const std::string CountryNames::GetCountryCodeForLocalizedName(
     const std::string& locale) {
   AddLocalizedNamesForLocale(locale);
 
-  icu::Collator* collator = GetCollatorForLocale(locale);
+  const icu::Collator* collator = GetCollatorForLocale(locale);
   // In very rare cases, the collator fails to initialize.
   if (!collator)
     return std::string();
@@ -1011,9 +1008,10 @@ const std::string CountryNames::GetCountryCodeForLocalizedName(
   return std::string();
 }
 
-icu::Collator* CountryNames::GetCollatorForLocale(const std::string& locale) {
-  if (!collators_.count(locale)) {
-    icu::Collator* collator(
+const icu::Collator* CountryNames::GetCollatorForLocale(
+    const std::string& locale) {
+  if (!ContainsKey(collators_, locale)) {
+    scoped_ptr<icu::Collator> collator(
         autofill::l10n::GetCollatorForLocale(icu::Locale(locale.c_str())));
     if (!collator)
       return nullptr;
@@ -1024,10 +1022,10 @@ icu::Collator* CountryNames::GetCollatorForLocale(const std::string& locale) {
     ignored = U_ZERO_ERROR;
     collator->setAttribute(UCOL_ALTERNATE_HANDLING, UCOL_SHIFTED, ignored);
 
-    collators_.insert(std::make_pair(locale, collator));
+    collators_[locale] = std::move(collator);
   }
 
-  return collators_[locale];
+  return collators_[locale].get();
 }
 
 const std::string CountryNames::GetSortKey(const icu::Collator& collator,

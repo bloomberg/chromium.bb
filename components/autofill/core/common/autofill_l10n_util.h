@@ -12,7 +12,7 @@ namespace l10n {
 
 // Obtains the ICU Collator for this locale. If unsuccessful, attempts to return
 // the ICU collator for the English locale. If unsuccessful, returns null.
-icu::Collator* GetCollatorForLocale(const icu::Locale& locale);
+scoped_ptr<icu::Collator> GetCollatorForLocale(const icu::Locale& locale);
 
 // Assists with locale-aware case insensitive string comparisons.
 class CaseInsensitiveCompare {

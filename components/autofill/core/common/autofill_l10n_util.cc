@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/common/autofill_l10n_util.h"
 
+#include <utility>
+
 #include "base/i18n/string_compare.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -11,9 +13,10 @@
 namespace autofill {
 namespace l10n {
 
-icu::Collator* GetCollatorForLocale(const icu::Locale& locale) {
+scoped_ptr<icu::Collator> GetCollatorForLocale(const icu::Locale& locale) {
   UErrorCode ignored = U_ZERO_ERROR;
-  icu::Collator* collator(icu::Collator::createInstance(locale, ignored));
+  scoped_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(locale, ignored));
   if (!collator) {
     // On some systems, the default locale is invalid to the eyes of the ICU
     // library. This could be due to a device-specific issue (has been seen in
@@ -26,8 +29,8 @@ icu::Collator* GetCollatorForLocale(const icu::Locale& locale) {
                << locale_name;
 
     // Attempt to load the English locale.
-    collator =
-        icu::Collator::createInstance(icu::Locale::getEnglish(), ignored);
+    collator = make_scoped_ptr(
+        icu::Collator::createInstance(icu::Locale::getEnglish(), ignored));
     if (!collator) {
       LOG(ERROR) << "Failed to initialize the ICU Collator with the English "
                  << "locale.";
