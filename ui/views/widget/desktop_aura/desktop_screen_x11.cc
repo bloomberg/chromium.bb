@@ -10,9 +10,7 @@
 // It clashes with out RootWindow.
 #undef RootWindow
 
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -252,6 +250,13 @@ uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
   }
 
   return ui::POST_DISPATCH_NONE;
+}
+
+// static
+void DesktopScreenX11::UpdateDeviceScaleFactorForTest() {
+  DesktopScreenX11* screen =
+      static_cast<DesktopScreenX11*>(gfx::Screen::GetNativeScreen());
+  screen->ConfigureTimerFired();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -125,8 +125,6 @@ class WebTestDelegateImpl : public test_runner::WebTestDelegate {
       blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params) override;
   void OnWebTestProxyBaseDestroy(test_runner::WebTestProxyBase* base) override;
-  blink::WebPoint ConvertDIPToNative(
-      const blink::WebPoint& point_in_dip) const override;
 
   // Must not be constructed until after blink has been initialized.
   scoped_ptr<test_runner::TestPreferences> prefs_;

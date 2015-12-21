@@ -186,7 +186,6 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnGetBluetoothManualChooserEvents();
   void OnSendBluetoothManualChooserEvent(const std::string& event,
                                          const std::string& argument);
-  void OnSetDeviceScaleFactor(float scale);
 
   scoped_ptr<BlinkTestResultPrinter> printer_;
 

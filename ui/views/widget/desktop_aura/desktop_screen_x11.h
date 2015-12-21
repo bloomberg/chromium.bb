@@ -51,6 +51,8 @@ class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
   bool CanDispatchEvent(const ui::PlatformEvent& event) override;
   uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
+  static void UpdateDeviceScaleFactorForTest();
+
  private:
   friend class DesktopScreenX11Test;
   friend class test::DesktopScreenX11TestApi;

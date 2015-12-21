@@ -150,8 +150,6 @@ class BlinkTestRunner : public RenderViewObserver,
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) override;
   void OnWebTestProxyBaseDestroy(test_runner::WebTestProxyBase* proxy) override;
-  blink::WebPoint ConvertDIPToNative(
-      const blink::WebPoint& point_in_dip) const override;
 
   void Reset();
 
@@ -200,8 +198,6 @@ class BlinkTestRunner : public RenderViewObserver,
 
   scoped_ptr<LeakDetector> leak_detector_;
   bool needs_leak_detector_;
-
-  float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkTestRunner);
 };
