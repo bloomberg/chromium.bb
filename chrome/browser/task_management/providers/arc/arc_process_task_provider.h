@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -32,8 +33,7 @@ namespace task_management {
 // the worst outcome is just that an Android app (non-system) process which
 // the user did not intend to choose is killed. Since Android apps are designed
 // to be killed at any time, it sounds acceptable.
-class ArcProcessTaskProvider : public TaskProvider,
-                               public arc::ArcBridgeService::ProcessObserver {
+class ArcProcessTaskProvider : public TaskProvider {
  public:
   ArcProcessTaskProvider();
   ~ArcProcessTaskProvider() override;
@@ -43,12 +43,10 @@ class ArcProcessTaskProvider : public TaskProvider,
                             int child_id,
                             int route_id) override;
 
-  // arc::ArcBridgeService::ProcessObserver:
-  void OnUpdateProcessList(
-      const std::vector<arc::RunningAppProcessInfo>& processes) override;
-
  private:
   void RequestProcessList();
+  void OnUpdateProcessList(
+      mojo::Array<arc::RunningAppProcessInfoPtr> processes);
 
   void RemoveTasks(const std::set<base::ProcessId>& removed_nspids);
   void AddTasks(const std::vector<arc::RunningAppProcessInfo>& added_processes,

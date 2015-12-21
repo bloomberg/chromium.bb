@@ -6,10 +6,12 @@
 
 #include <algorithm>
 
+#include "base/json/json_writer.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/arc/common/settings.mojom.h"
 
 namespace arc {
 
@@ -90,18 +92,15 @@ void ArcSettingsBridgeImpl::OnPrefChanged(const std::string& pref_name) const {
 
 void ArcSettingsBridgeImpl::OnStateChanged(ArcBridgeService::State state) {
   // ArcBridgeService::State::READY is emitted before ArcSettings app is ready
-  // to send broadcasts.  Instead we wait for a later boot phase in
-  // OnInstanceBootPhase.
+  // to send broadcasts.  Instead we wait for the SettingsInstance to be ready.
   if (state == ArcBridgeService::State::STOPPING) {
     StopObservingPrefChanges();
   }
 }
 
-void ArcSettingsBridgeImpl::OnInstanceBootPhase(InstanceBootPhase phase) {
-  if (phase == INSTANCE_BOOT_PHASE_ACTIVITY_MANAGER_READY) {
-    StartObservingPrefChanges();
-    SyncAllPrefs();
-  }
+void ArcSettingsBridgeImpl::OnSettingsInstanceReady() {
+  StartObservingPrefChanges();
+  SyncAllPrefs();
 }
 
 void ArcSettingsBridgeImpl::SyncSpokenFeedbackEnabled() const {
@@ -150,9 +149,12 @@ void ArcSettingsBridgeImpl::SendSettingsBroadcast(
     return;
   }
 
-  bridge_service->SendBroadcast(action, "org.chromium.arc.settings",
-                                "org.chromium.arc.settings.SettingsReceiver",
-                                extras);
+  std::string extras_json;
+  bool write_success = base::JSONWriter::Write(extras, &extras_json);
+  DCHECK(write_success);
+  bridge_service->settings_instance()->SendBroadcast(
+      action, "org.chromium.arc.settings",
+      "org.chromium.arc.settings.SettingsReceiver", extras_json);
 }
 
 }  // namespace arc

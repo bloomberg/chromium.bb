@@ -56,9 +56,7 @@ class ArcSettingsBridgeImpl : public ArcSettingsBridge,
 
   // ArcBridgeService::Observer
   void OnStateChanged(ArcBridgeService::State state) override;
-
-  // ArcBridgeService::Observer
-  void OnInstanceBootPhase(InstanceBootPhase phase) override;
+  void OnSettingsInstanceReady() override;
 
  private:
   // Registers to observe changes for Chrome settings we care about.
