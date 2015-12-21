@@ -16,6 +16,8 @@
 #include <openssl/ssl.h>
 #include <string.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
@@ -184,6 +186,46 @@ class ScopedCBB {
   CBB cbb_;
   DISALLOW_COPY_AND_ASSIGN(ScopedCBB);
 };
+
+scoped_ptr<base::Value> NetLogPrivateKeyOperationCallback(
+    SSLPrivateKey::Type type,
+    SSLPrivateKey::Hash hash,
+    NetLogCaptureMode mode) {
+  std::string type_str;
+  switch (type) {
+    case SSLPrivateKey::Type::RSA:
+      type_str = "RSA";
+      break;
+    case SSLPrivateKey::Type::ECDSA:
+      type_str = "ECDSA";
+      break;
+  }
+
+  std::string hash_str;
+  switch (hash) {
+    case SSLPrivateKey::Hash::MD5_SHA1:
+      hash_str = "MD5_SHA1";
+      break;
+    case SSLPrivateKey::Hash::SHA1:
+      hash_str = "SHA1";
+      break;
+    case SSLPrivateKey::Hash::SHA256:
+      hash_str = "SHA256";
+      break;
+    case SSLPrivateKey::Hash::SHA384:
+      hash_str = "SHA384";
+      break;
+    case SSLPrivateKey::Hash::SHA512:
+      hash_str = "SHA512";
+      break;
+  }
+
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+  value->SetString("type", type_str);
+  value->SetString("hash", hash_str);
+  return std::move(value);
+}
+
 }  // namespace
 
 class SSLClientSocketOpenSSL::SSLContext {
@@ -2129,13 +2171,16 @@ ssl_private_key_result_t SSLClientSocketOpenSSL::PrivateKeySignCallback(
   DCHECK(signature_.empty());
   DCHECK(ssl_config_.client_private_key);
 
-  net_log_.BeginEvent(NetLog::TYPE_SSL_PRIVATE_KEY_OPERATION);
-
   SSLPrivateKey::Hash hash;
   if (!EVP_MDToPrivateKeyHash(md, &hash)) {
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
     return ssl_private_key_failure;
   }
+
+  net_log_.BeginEvent(
+      NetLog::TYPE_SSL_PRIVATE_KEY_OPERATION,
+      base::Bind(&NetLogPrivateKeyOperationCallback,
+                 ssl_config_.client_private_key->GetType(), hash));
 
   signature_result_ = ERR_IO_PENDING;
   ssl_config_.client_private_key->SignDigest(
