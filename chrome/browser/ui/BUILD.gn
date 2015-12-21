@@ -20,8 +20,6 @@ config("ui_warnings") {
 }
 
 source_set("ui") {
-  output_name = "browser_ui"
-
   sources = []
   defines = []
   libs = []
@@ -46,7 +44,7 @@ source_set("ui") {
   deps = [
     # NOTE: New dependencies should generally be added in the OS!="ios"
     # dependencies block below, rather than here.
-    "//base/debug:debugging_flags",
+    "//base",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",

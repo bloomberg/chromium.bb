@@ -8,7 +8,7 @@ assert(is_win, "This only runs on Windows.")
 
 message_compiler("chrome_events_win") {
   visibility = [
-    "//base/trace_event/*",
+    "//base/*",
     "//chrome:main_dll",
   ]
 
