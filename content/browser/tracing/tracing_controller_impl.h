@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/tracing_agent.h"
 #include "content/public/browser/tracing_controller.h"
@@ -164,6 +165,7 @@ class TracingControllerImpl
   void OnStartAgentTracingDone(
       const base::trace_event::TraceConfig& trace_config,
       const StartTracingDoneCallback& callback);
+  void StopTracingAfterClockSync();
   void OnStopTracingDone();
   void OnStartMonitoringDone(
       const base::trace_event::TraceConfig& trace_config,
@@ -172,8 +174,13 @@ class TracingControllerImpl
 
   void OnMonitoringStateChanged(bool is_monitoring);
 
+  int GetUniqueClockSyncID();
   // Issue clock sync markers to the tracing agents.
   void IssueClockSyncMarker();
+  void OnClockSyncMarkerRecordedByAgent(
+      int sync_id,
+      const base::TimeTicks& issue_ts,
+      const base::TimeTicks& issue_end_ts);
 
   typedef std::set<scoped_refptr<TraceMessageFilter>> TraceMessageFilterSet;
   TraceMessageFilterSet trace_message_filters_;
@@ -201,6 +208,9 @@ class TracingControllerImpl
 
   StartTracingDoneCallback start_tracing_done_callback_;
   std::vector<base::trace_event::TracingAgent*> additional_tracing_agents_;
+  int clock_sync_id_;
+  int pending_clock_sync_ack_count_;
+  base::OneShotTimer clock_sync_timer_;
 
   bool is_tracing_;
   bool is_monitoring_;

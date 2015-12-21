@@ -13,13 +13,14 @@ namespace content {
 
 // This class handles the connection with the battor h/w using
 // chrome serial port interfaces.
-// TODO (aschulman) port over battor C code.
+// TODO(charliea): port over battor C code.
 class BattorPowerTraceProvider {
  public:
   BattorPowerTraceProvider();
   bool IsConnected();
   bool StartTracing();
   bool StopTracing();
+  void RecordClockSyncMarker(int sync_id);
   void GetLog(std::string* log_str);
   ~BattorPowerTraceProvider();
 

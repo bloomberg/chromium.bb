@@ -48,10 +48,14 @@ class PowerTracingAgent : public base::trace_event::TracingAgent {
   void OnStopTracingDone(const StopAgentTracingCallback& callback,
                          const scoped_refptr<base::RefCountedString>& result);
 
+  void TraceOnThread();
   void FlushOnThread(const StopAgentTracingCallback& callback);
+  void RecordClockSyncMarkerOnThread(
+      int sync_id,
+      const RecordClockSyncMarkerCallback& callback);
 
+  base::Thread thread_;
   scoped_ptr<BattorPowerTraceProvider> battor_trace_provider_;
-  bool is_tracing_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerTracingAgent);
 };

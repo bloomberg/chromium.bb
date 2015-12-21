@@ -49,6 +49,8 @@ const char kChromeTracingAgentName[] = "chrome";
 const char kETWTracingAgentName[] = "etw";
 const char kChromeTraceLabel[] = "traceEvents";
 
+const int kIssueClockSyncTimeout = 30;
+
 std::string GetNetworkTypeString() {
   switch (net::NetworkChangeNotifier::GetConnectionType()) {
     case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
@@ -148,6 +150,8 @@ TracingControllerImpl::TracingControllerImpl()
       approximate_event_count_(0),
       pending_memory_dump_ack_count_(0),
       failed_memory_dump_count_(0),
+      clock_sync_id_(0),
+      pending_clock_sync_ack_count_(0),
       is_tracing_(false),
       is_monitoring_(false) {
   base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
@@ -287,6 +291,20 @@ bool TracingControllerImpl::StopTracing(
     return false;
 
   trace_data_sink_ = trace_data_sink;
+
+  // Issue clock sync marker before actually stopping tracing.
+  // StopTracingAfterClockSync() will be called after clock sync is done.
+  IssueClockSyncMarker();
+
+  return true;
+}
+
+void TracingControllerImpl::StopTracingAfterClockSync() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // |pending_clock_sync_ack_count_| could be non-zero if clock sync times out.
+  pending_clock_sync_ack_count_ = 0;
+
   // Disable local trace early to avoid traces during end-tracing process from
   // interfering with the process.
   base::Closure on_stop_tracing_done_callback = base::Bind(
@@ -295,7 +313,6 @@ bool TracingControllerImpl::StopTracing(
       base::Bind(&TracingControllerImpl::SetDisabledOnFileThread,
                  base::Unretained(this),
                  on_stop_tracing_done_callback));
-  return true;
 }
 
 void TracingControllerImpl::OnStopTracingDone() {
@@ -913,19 +930,67 @@ void TracingControllerImpl::StopAgentTracing(
 }
 
 bool TracingControllerImpl::SupportsExplicitClockSync() {
-  // TODO(zhenw): return true after implementing explicit clock sync.
-  return false;
+  return true;
 }
 
 void TracingControllerImpl::RecordClockSyncMarker(
     int sync_id,
     const RecordClockSyncMarkerCallback& callback) {
   DCHECK(SupportsExplicitClockSync());
-  // TODO(zhenw): implement explicit clock sync.
+
+  TRACE_EVENT_CLOCK_SYNC_RECEIVER(sync_id);
+}
+
+int TracingControllerImpl::GetUniqueClockSyncID() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // There is no need to lock because this function only runs on UI thread.
+  return ++clock_sync_id_;
 }
 
 void TracingControllerImpl::IssueClockSyncMarker() {
-  // TODO(zhenw): implement explicit clock sync.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(pending_clock_sync_ack_count_ == 0);
+
+  for (const auto& it : additional_tracing_agents_) {
+    if (it->SupportsExplicitClockSync()) {
+      it->RecordClockSyncMarker(
+          GetUniqueClockSyncID(),
+          base::Bind(&TracingControllerImpl::OnClockSyncMarkerRecordedByAgent,
+                     base::Unretained(this)));
+      pending_clock_sync_ack_count_++;
+    }
+  }
+
+  // If no clock sync is needed, stop tracing right away. Otherwise, schedule
+  // to stop tracing after timeout.
+  if (pending_clock_sync_ack_count_ == 0) {
+    StopTracingAfterClockSync();
+  } else {
+    clock_sync_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(kIssueClockSyncTimeout),
+        this,
+        &TracingControllerImpl::StopTracingAfterClockSync);
+  }
+}
+
+void TracingControllerImpl::OnClockSyncMarkerRecordedByAgent(
+    int sync_id,
+    const base::TimeTicks& issue_ts,
+    const base::TimeTicks& issue_end_ts) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  TRACE_EVENT_CLOCK_SYNC_ISSUER(sync_id, issue_ts, issue_end_ts);
+
+  // Timer is not running means that clock sync already timed out.
+  if (!clock_sync_timer_.IsRunning())
+    return;
+
+  // Stop tracing only if all agents report back.
+  if(--pending_clock_sync_ack_count_ == 0) {
+    clock_sync_timer_.Stop();
+    StopTracingAfterClockSync();
+  }
 }
 
 void TracingControllerImpl::RequestGlobalMemoryDump(

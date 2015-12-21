@@ -23,7 +23,7 @@ PowerTracingAgent* PowerTracingAgent::GetInstance() {
   return base::Singleton<PowerTracingAgent>::get();
 }
 
-PowerTracingAgent::PowerTracingAgent() : is_tracing_(false) {
+PowerTracingAgent::PowerTracingAgent() : thread_("PowerTracingAgentThread") {
   battor_trace_provider_.reset(new BattorPowerTraceProvider());
 }
 
@@ -39,45 +39,57 @@ std::string PowerTracingAgent::GetTraceEventLabel() {
 
 bool PowerTracingAgent::StartAgentTracing(
     const base::trace_event::TraceConfig& trace_config) {
-  // Tracing session already in progress.
-  if (is_tracing_)
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // TODO(charliea): When system tracing is enabled in about://tracing, it will
+  // trigger power tracing. We need a way of checking if BattOr is connected.
+  // Currently, IsConnected() always returns false, so that we do not include
+  // BattOr trace until it is hooked up.
+  if (!battor_trace_provider_->IsConnected())
     return false;
 
-  // TODO(prabhur) Start tracing probably needs to be done in a
-  // separate thread since it involves talking to the h/w.
-  // Revisit once battor h/w communication is enabled.
-  is_tracing_ = battor_trace_provider_->StartTracing();
-  return is_tracing_;
+  thread_.Start();
+
+  thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&PowerTracingAgent::TraceOnThread, base::Unretained(this)));
+  return true;
 }
 
 void PowerTracingAgent::StopAgentTracing(
     const StopAgentTracingCallback& callback) {
-  // No tracing session in progress.
-  if (!is_tracing_)
-    return;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_.IsRunning());
 
-  // Stop tracing & collect logs.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PowerTracingAgent::FlushOnThread,
-                 base::Unretained(this),
+  thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&PowerTracingAgent::FlushOnThread, base::Unretained(this),
                  callback));
 }
 
 void PowerTracingAgent::OnStopTracingDone(
     const StopAgentTracingCallback& callback,
     const scoped_refptr<base::RefCountedString>& result) {
-  is_tracing_ = false;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // Pass the serialized events.
   callback.Run(GetTracingAgentName(), GetTraceEventLabel(), result);
+
+  // Stop the power tracing agent thread on file thread.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&base::Thread::Stop, base::Unretained(&thread_)));
+}
+
+void PowerTracingAgent::TraceOnThread() {
+  DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+  battor_trace_provider_->StartTracing();
 }
 
 void PowerTracingAgent::FlushOnThread(
     const StopAgentTracingCallback& callback) {
-  // Pass the result to the UI Thread.
+  DCHECK(thread_.task_runner()->BelongsToCurrentThread());
 
-  // TODO(prabhur) StopTracing & GetLog need to be called on a
-  // separate thread depending on how BattorPowerTraceProvider is implemented.
   battor_trace_provider_->StopTracing();
   std::string battor_logs;
   battor_trace_provider_->GetLog(&battor_logs);
@@ -92,15 +104,36 @@ void PowerTracingAgent::FlushOnThread(
 }
 
 bool PowerTracingAgent::SupportsExplicitClockSync() {
-  // TODO(zhenw): return true after implementing explicit clock sync.
-  return false;
+  return true;
 }
 
 void PowerTracingAgent::RecordClockSyncMarker(
     int sync_id,
     const RecordClockSyncMarkerCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(SupportsExplicitClockSync());
-  // TODO(zhenw): implement explicit clock sync.
+
+  thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&PowerTracingAgent::RecordClockSyncMarkerOnThread,
+                 base::Unretained(this),
+                 sync_id,
+                 callback));
+}
+
+void PowerTracingAgent::RecordClockSyncMarkerOnThread(
+    int sync_id,
+    const RecordClockSyncMarkerCallback& callback) {
+  DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(SupportsExplicitClockSync());
+
+  base::TimeTicks issue_ts = base::TimeTicks::Now();
+  battor_trace_provider_->RecordClockSyncMarker(sync_id);
+  base::TimeTicks issue_end_ts = base::TimeTicks::Now();
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, sync_id, issue_ts, issue_end_ts));
 }
 
 }  // namespace content

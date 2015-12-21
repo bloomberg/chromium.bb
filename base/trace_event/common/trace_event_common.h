@@ -926,6 +926,17 @@
                                    name, id, TRACE_EVENT_FLAG_COPY, arg1_name, \
                                    arg1_val, arg2_name, arg2_val)
 
+// Records a clock sync event.
+#define TRACE_EVENT_CLOCK_SYNC_RECEIVER(sync_id)                               \
+  INTERNAL_TRACE_EVENT_ADD(                                                    \
+      TRACE_EVENT_PHASE_CLOCK_SYNC, "__metadata", "clock_sync",                \
+      TRACE_EVENT_FLAG_NONE, "sync_id", sync_id)
+#define TRACE_EVENT_CLOCK_SYNC_ISSUER(sync_id, issue_ts, issue_end_ts)         \
+  INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP(                                     \
+      TRACE_EVENT_PHASE_CLOCK_SYNC, "__metadata", "clock_sync",                \
+      issue_end_ts.ToInternalValue(), TRACE_EVENT_FLAG_NONE,                   \
+      "sync_id", sync_id, "issue_ts", issue_ts.ToInternalValue())
+
 // Macros to track the life time and value of arbitrary client objects.
 // See also TraceTrackableObject.
 #define TRACE_EVENT_OBJECT_CREATED_WITH_ID(category_group, name, id) \
@@ -1013,6 +1024,7 @@
 #define TRACE_EVENT_PHASE_DELETE_OBJECT ('D')
 #define TRACE_EVENT_PHASE_MEMORY_DUMP ('v')
 #define TRACE_EVENT_PHASE_MARK ('R')
+#define TRACE_EVENT_PHASE_CLOCK_SYNC ('c')
 
 // Flags for changing the behavior of TRACE_EVENT_API_ADD_TRACE_EVENT.
 #define TRACE_EVENT_FLAG_NONE (static_cast<unsigned int>(0))

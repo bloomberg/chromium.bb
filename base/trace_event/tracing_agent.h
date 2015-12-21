@@ -32,8 +32,8 @@ class BASE_EXPORT TracingAgent {
       const scoped_refptr<base::RefCountedString>& events_str_ptr)>;
   using RecordClockSyncMarkerCallback = base::Callback<void(
       int sync_id,
-      const TimeTicks& sync_ts,
-      const TimeTicks& sync_end_ts)>;
+      const TimeTicks& issue_ts,
+      const TimeTicks& issue_end_ts)>;
 
   virtual ~TracingAgent();
 
