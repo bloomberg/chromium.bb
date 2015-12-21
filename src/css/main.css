@@ -676,17 +676,16 @@ body.performance-test * {
 
 #album img {
   -webkit-app-region: no-drag;
-  border: 4px solid white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-  margin: 10px;
+  margin: 8px;
   transition: -webkit-transform 50ms;
   vertical-align: middle;
-  width: 170px;
+  width: 220px;
 }
 
 #album img.selected {
-  -webkit-transform: scale(1.2);
-  border-color: rgb(66, 129, 244);
+  outline: 4px solid rgb(66, 129, 244);
+  outline-offset: -4px;
 }
 
 #browser {
@@ -711,7 +710,6 @@ body.album #album {
 }
 
 #browser img {
-  border: 10px solid white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   display: -webkit-box;
   height: 72%;
