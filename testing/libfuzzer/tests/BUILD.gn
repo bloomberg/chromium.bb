@@ -1,0 +1,38 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# Fuzzing Infrastructure Tests
+
+import("//testing/test.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
+
+test("libfuzzer_tests") {
+  sources = [
+    "fuzzer_launcher_test.cc",
+  ]
+  deps = [
+    ":test_dict_launcher.sh",
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//testing/gtest:gtest_main",
+  ]
+  data_deps = [
+    ":print_args",
+  ]
+}
+
+fuzzer_test_launcher("test_dict_launcher.sh") {
+  fuzzer_name = "print_args.py"
+  dict = "test_dict"
+}
+
+copy("print_args") {
+  sources = [
+    "print_args.py",
+  ]
+  outputs = [
+    "$root_build_dir/print_args.py",
+  ]
+}

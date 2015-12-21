@@ -715,6 +715,7 @@ group("gn_only") {
     # these are needed only for gn to discover build files.
     deps += [
       "//testing/libfuzzer:libfuzzer_main",
+      "//testing/libfuzzer/tests:libfuzzer_tests",
       "//testing/libfuzzer/fuzzers:string_to_int_fuzzer",
     ]
   }

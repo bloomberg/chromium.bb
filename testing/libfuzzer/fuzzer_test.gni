@@ -2,7 +2,32 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Defines fuzzer_test.
+#
 import("//testing/test.gni")
+
+# visible for testing only.
+template("fuzzer_test_launcher") {
+  assert(defined(invoker.fuzzer_name), "need fuzzer_name in $target_name.")
+  assert(defined(invoker.dict), "need dict in $target_name.")
+
+  generated_script = "$root_build_dir/$target_name"
+
+  action(target_name) {
+    script = "//testing/libfuzzer/gen_fuzzer_runner.py"
+    args = [
+      "--fuzzer",
+      invoker.fuzzer_name,
+      "--launcher",
+      rebase_path(generated_script, root_build_dir),
+      "--dict",
+      rebase_path("$target_out_dir/" + invoker.dict, root_build_dir),
+    ]
+    outputs = [
+      generated_script,
+    ]
+  }
+}
 
 # fuzzer_test is used to define individual libfuzzer tests.
 #
@@ -34,7 +59,6 @@ template("fuzzer_test") {
   if (defined(invoker.dict)) {
     fuzzer_name = target_name
     launcher_name = target_name + ".sh"
-    generated_script = "$root_build_dir/$launcher_name"
 
     # Copy dictionary to output
     copy(target_name + "_dict_copy") {
@@ -46,21 +70,10 @@ template("fuzzer_test") {
       ]
     }
 
-    # Generate test launcher
-    action(launcher_name) {
-      script = "//testing/libfuzzer/gen_fuzzer_runner.py"
-      args = [
-        "--fuzzer",
-        fuzzer_name,
-        "--launcher",
-        rebase_path(generated_script, root_build_dir),
-        "--dict",
-        rebase_path("$target_out_dir/" + invoker.dict, root_build_dir),
-      ]
-      outputs = [
-        generated_script,
-      ]
+    fuzzer_test_launcher(launcher_name) {
+      dict = invoker.dict
     }
+
     test_deps += [
       ":$launcher_name",
       ":" + fuzzer_name + "_dict_copy",
