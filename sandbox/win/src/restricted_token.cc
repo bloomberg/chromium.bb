@@ -4,6 +4,8 @@
 
 #include "sandbox/win/src/restricted_token.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/logging.h"

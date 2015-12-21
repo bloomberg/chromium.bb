@@ -5,8 +5,11 @@
 #ifndef SANDBOX_SRC_WIN2K_THREADPOOL_H_
 #define SANDBOX_SRC_WIN2K_THREADPOOL_H_
 
-#include <list>
+#include <stddef.h>
+
 #include <algorithm>
+#include <list>
+#include "base/macros.h"
 #include "sandbox/win/src/crosscall_server.h"
 
 namespace sandbox {

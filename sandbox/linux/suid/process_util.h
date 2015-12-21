@@ -9,6 +9,7 @@
 #define SANDBOX_LINUX_SUID_PROCESS_UTIL_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <sys/types.h>
 
 // This adjusts /proc/process/oom_score_adj so the Linux OOM killer

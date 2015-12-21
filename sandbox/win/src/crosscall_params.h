@@ -7,11 +7,12 @@
 
 #include <windows.h>
 #include <lmaccess.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <memory>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/sandbox_types.h"
 

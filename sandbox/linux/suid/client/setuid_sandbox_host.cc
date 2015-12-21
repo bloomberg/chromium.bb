@@ -5,6 +5,7 @@
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>

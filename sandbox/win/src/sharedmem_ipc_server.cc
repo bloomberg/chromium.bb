@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include "sandbox/win/src/sharedmem_ipc_server.h"
-#include "sandbox/win/src/sharedmem_ipc_client.h"
-#include "sandbox/win/src/sandbox.h"
-#include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/crosscall_params.h"
 #include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/sharedmem_ipc_client.h"
+#include "sandbox/win/src/sharedmem_ipc_server.h"
 
 namespace {
 // This handle must not be closed.
@@ -62,8 +65,9 @@ SharedMemIPCServer::~SharedMemIPCServer() {
     ::UnmapViewOfFile(client_control_);
 }
 
-bool SharedMemIPCServer::Init(void* shared_mem, uint32 shared_size,
-                              uint32 channel_size) {
+bool SharedMemIPCServer::Init(void* shared_mem,
+                              uint32_t shared_size,
+                              uint32_t channel_size) {
   // The shared memory needs to be at least as big as a channel.
   if (shared_size < channel_size) {
     return false;
@@ -163,8 +167,8 @@ bool GetArgs(CrossCallParamsEx* params, IPCParams* ipc_params,
   if (kMaxIpcParams < params->GetParamsCount())
     return false;
 
-  for (uint32 i = 0; i < params->GetParamsCount(); i++) {
-    uint32 size;
+  for (uint32_t i = 0; i < params->GetParamsCount(); i++) {
+    uint32_t size;
     ArgType type;
     args[i] = params->GetRawParameter(i, &size, &type);
     if (args[i]) {
@@ -181,7 +185,7 @@ bool GetArgs(CrossCallParamsEx* params, IPCParams* ipc_params,
           break;
         }
         case UINT32_TYPE: {
-          uint32 data;
+          uint32_t data;
           if (!params->GetParameter32(i, &data)) {
             ReleaseArgs(ipc_params, args);
             return false;
@@ -220,7 +224,7 @@ bool SharedMemIPCServer::InvokeCallback(const ServerControl* service_context,
                                         CrossCallReturn* call_result) {
   // Set the default error code;
   SetCallError(SBOX_ERROR_INVALID_IPC, call_result);
-  uint32 output_size = 0;
+  uint32_t output_size = 0;
   // Parse, verify and copy the message. The handler operates on a copy
   // of the message so the client cannot play dirty tricks by changing the
   // data in the channel while the IPC is being processed.
@@ -231,7 +235,7 @@ bool SharedMemIPCServer::InvokeCallback(const ServerControl* service_context,
   if (!params.get())
     return false;
 
-  uint32 tag = params->GetTag();
+  uint32_t tag = params->GetTag();
   static_assert(0 == INVALID_TYPE, "incorrect type enum");
   IPCParams ipc_params = {0};
   ipc_params.ipc_tag = tag;

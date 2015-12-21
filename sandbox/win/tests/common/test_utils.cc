@@ -4,6 +4,7 @@
 
 #include "sandbox/win/tests/common/test_utils.h"
 
+#include <stddef.h>
 #include <winioctl.h>
 
 typedef struct _REPARSE_DATA_BUFFER {

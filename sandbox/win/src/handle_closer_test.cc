@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/strings/stringprintf.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/handle_closer_agent.h"

@@ -5,6 +5,7 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_BPF_TESTER_COMPATIBILITY_DELEGATE_H_
 #define SANDBOX_LINUX_SECCOMP_BPF_BPF_TESTER_COMPATIBILITY_DELEGATE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_test_runner.h"
 

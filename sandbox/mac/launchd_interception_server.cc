@@ -5,6 +5,8 @@
 #include "sandbox/mac/launchd_interception_server.h"
 
 #include <servers/bootstrap.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"

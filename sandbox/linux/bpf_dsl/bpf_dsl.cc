@@ -4,9 +4,13 @@
 
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/bpf_dsl/errorcode.h"

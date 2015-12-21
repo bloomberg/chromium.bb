@@ -5,6 +5,7 @@
 #ifndef SANDBOX_LINUX_BPF_DSL_POLICY_COMPILER_H_
 #define SANDBOX_LINUX_BPF_DSL_POLICY_COMPILER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>

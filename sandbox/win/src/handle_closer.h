@@ -5,10 +5,12 @@
 #ifndef SANDBOX_SRC_HANDLE_CLOSER_H_
 #define SANDBOX_SRC_HANDLE_CLOSER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "sandbox/win/src/interception.h"
 #include "sandbox/win/src/sandbox_types.h"

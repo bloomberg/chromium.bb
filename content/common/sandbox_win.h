@@ -24,7 +24,7 @@ namespace content {
 // should be let to run without a job object assigned.
 void SetJobLevel(const base::CommandLine& cmd_line,
                  sandbox::JobLevel job_level,
-                 uint32 ui_exceptions,
+                 uint32_t ui_exceptions,
                  sandbox::TargetPolicy* policy);
 
 // Closes handles that are opened at process creation and initialization.

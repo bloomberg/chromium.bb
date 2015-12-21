@@ -4,14 +4,16 @@
 
 #include "sandbox/win/src/target_process.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/pe_image.h"
 #include "base/win/startup_information.h"
 #include "base/win/windows_version.h"
-#include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/crosscall_client.h"
+#include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/policy_low_level.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/sharedmem_ipc_server.h"
@@ -266,8 +268,10 @@ ResultCode TargetProcess::TransferVariable(const char* name, void* address,
 
 // Construct the IPC server and the IPC dispatcher. When the target does
 // an IPC it will eventually call the dispatcher.
-DWORD TargetProcess::Init(Dispatcher* ipc_dispatcher, void* policy,
-                          uint32 shared_IPC_size, uint32 shared_policy_size) {
+DWORD TargetProcess::Init(Dispatcher* ipc_dispatcher,
+                          void* policy,
+                          uint32_t shared_IPC_size,
+                          uint32_t shared_policy_size) {
   // We need to map the shared memory on the target. This is necessary for
   // any IPC that needs to take place, even if the target has not yet hit
   // the main( ) function or even has initialized the CRT. So here we set

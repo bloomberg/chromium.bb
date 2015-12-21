@@ -6,16 +6,17 @@
 // The tests require private information so the whole interception.cc file is
 // included from this file.
 
+#include <windows.h>
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
-
-#include <windows.h>
 
 #include "base/bits.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/interception.h"
-#include "sandbox/win/src/interceptors.h"
 #include "sandbox/win/src/interception_internal.h"
+#include "sandbox/win/src/interceptors.h"
 #include "sandbox/win/src/target_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

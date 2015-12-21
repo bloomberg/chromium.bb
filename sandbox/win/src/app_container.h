@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "sandbox/win/src/sandbox_types.h"

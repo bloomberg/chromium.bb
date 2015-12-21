@@ -8,7 +8,6 @@
 #include <windows.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "sandbox/win/src/nt_internals.h"
 

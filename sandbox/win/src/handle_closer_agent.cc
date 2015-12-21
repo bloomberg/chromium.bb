@@ -4,6 +4,8 @@
 
 #include "sandbox/win/src/handle_closer_agent.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/win_utils.h"

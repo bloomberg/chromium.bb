@@ -5,7 +5,9 @@
 #ifndef SANDBOX_SRC_JOB_H_
 #define SANDBOX_SRC_JOB_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 

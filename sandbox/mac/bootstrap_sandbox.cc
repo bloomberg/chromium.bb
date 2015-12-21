@@ -5,11 +5,13 @@
 #include "sandbox/mac/bootstrap_sandbox.h"
 
 #include <servers/bootstrap.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mach_logging.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "sandbox/mac/launchd_interception_server.h"

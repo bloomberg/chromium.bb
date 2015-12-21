@@ -7,6 +7,7 @@
 #include <Block.h>
 #include <mach/mach.h>
 #include <servers/bootstrap.h>
+#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/logging.h"

@@ -4,11 +4,13 @@
 
 // Some tests for the framework itself.
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include <stddef.h>
+
 #include "sandbox/win/src/sandbox.h"
-#include "sandbox/win/src/target_services.h"
 #include "sandbox/win/src/sandbox_factory.h"
+#include "sandbox/win/src/target_services.h"
 #include "sandbox/win/tests/common/controller.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
 

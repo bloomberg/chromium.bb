@@ -6,6 +6,7 @@
 
 #include <mach/mach.h>
 #include <servers/bootstrap.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"

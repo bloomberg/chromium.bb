@@ -6,8 +6,9 @@
 
 #include <fcntl.h>
 #include <sched.h>
-#include <sys/types.h>
+#include <stddef.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <string>

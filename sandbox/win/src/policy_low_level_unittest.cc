@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "sandbox/win/src/policy_engine_params.h"
 #include "sandbox/win/src/policy_engine_processor.h"
 #include "sandbox/win/src/policy_low_level.h"
@@ -56,7 +59,7 @@ TEST(PolicyEngineTest, SimpleStrMatch) {
               CASE_INSENSITIVE));
 
   PolicyGlobal* policy = MakePolicyMemory();
-  const uint32 kFakeService = 2;
+  const uint32_t kFakeService = 2;
 
   LowLevelPolicy policyGen(policy);
   EXPECT_TRUE(policyGen.AddRule(kFakeService, &pr));
@@ -89,7 +92,7 @@ TEST(PolicyEngineTest, SimpleIfNotStrMatch) {
                                 CASE_SENSITIVE));
 
   PolicyGlobal* policy = MakePolicyMemory();
-  const uint32 kFakeService = 2;
+  const uint32_t kFakeService = 2;
   LowLevelPolicy policyGen(policy);
 
   EXPECT_TRUE(policyGen.AddRule(kFakeService, &pr));
@@ -127,7 +130,7 @@ TEST(PolicyEngineTest, SimpleIfNotStrMatchWild1) {
                                 CASE_SENSITIVE));
 
   PolicyGlobal* policy = MakePolicyMemory();
-  const uint32 kFakeService = 3;
+  const uint32_t kFakeService = 3;
   LowLevelPolicy policyGen(policy);
 
   EXPECT_TRUE(policyGen.AddRule(kFakeService, &pr));
@@ -160,7 +163,7 @@ TEST(PolicyEngineTest, SimpleIfNotStrMatchWild2) {
                                 CASE_SENSITIVE));
 
   PolicyGlobal* policy = MakePolicyMemory();
-  const uint32 kFakeService = 3;
+  const uint32_t kFakeService = 3;
   LowLevelPolicy policyGen(policy);
 
   EXPECT_TRUE(policyGen.AddRule(kFakeService, &pr));
@@ -199,14 +202,14 @@ TEST(PolicyEngineTest, IfNotStrMatchTwoRulesWild1) {
   EXPECT_TRUE(pr.AddNumberMatch(IF, 1, 24, EQUAL));
 
   PolicyGlobal* policy = MakePolicyMemory();
-  const uint32 kFakeService = 3;
+  const uint32_t kFakeService = 3;
   LowLevelPolicy policyGen(policy);
 
   EXPECT_TRUE(policyGen.AddRule(kFakeService, &pr));
   EXPECT_TRUE(policyGen.Done());
 
   const wchar_t* filename = NULL;
-  uint32 access = 0;
+  uint32_t access = 0;
   POLPARAMS_BEGIN(eval_params)
     POLPARAM(filename)                // Argument 0
     POLPARAM(access)                  // Argument 1
@@ -248,15 +251,15 @@ TEST(PolicyEngineTest, IfNotStrMatchTwoRulesWild2) {
   EXPECT_TRUE(pr.AddNumberMatch(IF, 2, 66, EQUAL));
 
   PolicyGlobal* policy = MakePolicyMemory();
-  const uint32 kFakeService = 3;
+  const uint32_t kFakeService = 3;
   LowLevelPolicy policyGen(policy);
 
   EXPECT_TRUE(policyGen.AddRule(kFakeService, &pr));
   EXPECT_TRUE(policyGen.Done());
 
   const wchar_t* filename = NULL;
-  uint32 access = 0;
-  uint32 sharing = 66;
+  uint32_t access = 0;
+  uint32_t sharing = 66;
 
   POLPARAMS_BEGIN(eval_params)
     POLPARAM(filename)                // Argument 0
@@ -322,15 +325,15 @@ TEST(PolicyEngineTest, OneRuleTest) {
 
   PolicyGlobal* policy = MakePolicyMemory();
 
-  const uint32 kNtFakeCreateFile = 7;
+  const uint32_t kNtFakeCreateFile = 7;
 
   LowLevelPolicy policyGen(policy);
   EXPECT_TRUE(policyGen.AddRule(kNtFakeCreateFile, &pr));
   EXPECT_TRUE(policyGen.Done());
 
   const wchar_t* filename = L"c:\\Documents and Settings\\Microsoft\\BLAH.txt";
-  uint32 creation_mode = OPEN_EXISTING;
-  uint32 flags = FILE_ATTRIBUTE_NORMAL;
+  uint32_t creation_mode = OPEN_EXISTING;
+  uint32_t flags = FILE_ATTRIBUTE_NORMAL;
   void* security_descriptor = NULL;
 
   POLPARAMS_BEGIN(eval_params)
@@ -428,9 +431,9 @@ TEST(PolicyEngineTest, ThreeRulesTest) {
 
   PolicyGlobal* policy = MakePolicyMemory();
 
-  const uint32 kNtFakeNone       = 4;
-  const uint32 kNtFakeCreateFile = 5;
-  const uint32 kNtFakeOpenFile   = 6;
+  const uint32_t kNtFakeNone = 4;
+  const uint32_t kNtFakeCreateFile = 5;
+  const uint32_t kNtFakeOpenFile = 6;
 
   LowLevelPolicy policyGen(policy);
   EXPECT_TRUE(policyGen.AddRule(kNtFakeCreateFile, &pr_pipe));
@@ -486,8 +489,8 @@ TEST(PolicyEngineTest, ThreeRulesTest) {
   // Test the policy evaluation.
 
   const wchar_t* filename = L"";
-  uint32 creation_mode = OPEN_EXISTING;
-  uint32 flags = FILE_ATTRIBUTE_NORMAL;
+  uint32_t creation_mode = OPEN_EXISTING;
+  uint32_t flags = FILE_ATTRIBUTE_NORMAL;
   void* security_descriptor = NULL;
 
   POLPARAMS_BEGIN(params)
