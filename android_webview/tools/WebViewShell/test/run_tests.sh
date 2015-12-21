@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-PACKAGE_NAME="org.chromium.webview_shell"
+PACKAGE_NAME="org.chromium.webview_shell.test"
 DEVICE_WEBVIEW_TEST_PATH="/sdcard/android_webview/tools/WebViewShell/test/"
 TESTRUNNER="../../../../build/android/test_runner.py"
 
