@@ -57,7 +57,7 @@ public class Snackbar {
     /**
      * Sets the action button to show on the snackbar.
      * @param actionText The text to show on the button. If null, the button will not be shown.
-     * @param actionData An object to be passed to {@linkSnackbarController#onAction} or
+     * @param actionData An object to be passed to {@link SnackbarController#onAction} or
      *        {@link SnackbarController#onDismissNoAction} when the button is pressed or the
      *        snackbar is dismissed.
      */
@@ -68,9 +68,9 @@ public class Snackbar {
     }
 
     /**
-     * Sets the identity profileImage (profile image) which should be displayed in the snackbar.
-     * If null, snackbar will have no profileImage. Ability to have an icon is specific to the
-     * identity snackbars and should be used only there.
+     * Sets the identity profile image that will be displayed at the beginning of the snackbar.
+     * If null, there won't be a profile image. The ability to have an icon is exclusive to
+     * identity snackbars.
      */
     public Snackbar setProfileImage(Bitmap profileImage) {
         mProfileImage = profileImage;

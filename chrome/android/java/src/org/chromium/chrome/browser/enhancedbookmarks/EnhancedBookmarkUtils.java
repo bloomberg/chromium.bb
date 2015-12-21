@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.enhancedbookmarks;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarksModel.AddBookmarkCallback;
-import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceCallback;
@@ -48,6 +47,7 @@ import org.chromium.ui.base.DeviceFormFactor;
  */
 public class EnhancedBookmarkUtils {
     private static final String PREF_LAST_USED_URL = "enhanced_bookmark_last_used_url";
+    private static final String PREF_LAST_USED_PARENT = "enhanced_bookmark_last_used_parent_folder";
 
     /**
      * @return True if enhanced bookmark feature is enabled.
@@ -73,7 +73,7 @@ public class EnhancedBookmarkUtils {
             return;
         }
 
-        BookmarkId parent = bookmarkModel.getDefaultFolder();
+        BookmarkId parent = getLastUsedParent(activity, bookmarkModel);
         bookmarkModel.addBookmarkAsync(parent, bookmarkModel.getChildCount(parent), tab.getTitle(),
                 tab.getUrl(), tab.getWebContents(), tab.isShowingErrorPage(),
                 createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
@@ -104,42 +104,45 @@ public class EnhancedBookmarkUtils {
     private static void showSnackbarForAddingBookmark(final EnhancedBookmarksModel bookmarkModel,
             final SnackbarManager snackbarManager, final Activity activity,
             final BookmarkId bookmarkId, final int saveResult, boolean isStorageAlmostFull) {
-        SnackbarController snackbarController = null;
-        int messageId;
-        int buttonId = 0;
-
+        Snackbar snackbar;
         OfflinePageBridge offlinePageBridge = bookmarkModel.getOfflinePageBridge();
         if (offlinePageBridge == null) {
-            messageId = R.string.enhanced_bookmark_page_saved;
-        } else if (saveResult == AddBookmarkCallback.SKIPPED) {
-            messageId = R.string.offline_pages_page_skipped;
-        } else if (isStorageAlmostFull) {
-            messageId = saveResult == AddBookmarkCallback.SAVED
-                    ? R.string.offline_pages_page_saved_storage_near_full
-                    : R.string.offline_pages_page_failed_to_save_storage_near_full;
-            // Show "Free up space" button.
-            buttonId = R.string.offline_pages_free_up_space_title;
-            snackbarController = createSnackbarControllerForFreeUpSpaceButton(
-                    bookmarkModel, snackbarManager, activity);
-        } else {
-            messageId = saveResult == AddBookmarkCallback.SAVED
-                    ? R.string.offline_pages_page_saved
-                    : R.string.offline_pages_page_failed_to_save;
-        }
-
-        // Show "Edit" button when "Free up space" button is not desired, regardless
-        // whether the offline page was saved successfuly, because a bookmark was
-        // created and user might want to edit title.
-        if (buttonId == 0) {
-            buttonId = R.string.enhanced_bookmark_item_edit;
-            snackbarController = createSnackbarControllerForEditButton(
+            String folderName = bookmarkModel
+                    .getBookmarkTitle(bookmarkModel.getBookmarkById(bookmarkId).getParentId());
+            SnackbarController snackbarController = createSnackbarControllerForEditButton(
                     bookmarkModel, activity, bookmarkId);
+            snackbar = Snackbar.make(folderName, snackbarController)
+                    .setTemplateText(activity.getString(R.string.enhanced_bookmark_page_saved))
+                    .setAction(activity.getString(R.string.enhanced_bookmark_item_edit), null);
+        } else {
+            SnackbarController snackbarController = null;
+            int messageId;
+            int buttonId = R.string.enhanced_bookmark_item_edit;
+
+            if (saveResult == AddBookmarkCallback.SKIPPED) {
+                messageId = R.string.offline_pages_page_skipped;
+            } else if (isStorageAlmostFull) {
+                messageId = saveResult == AddBookmarkCallback.SAVED
+                        ? R.string.offline_pages_page_saved_storage_near_full
+                        : R.string.offline_pages_page_failed_to_save_storage_near_full;
+                // Show "Free up space" button.
+                buttonId = R.string.offline_pages_free_up_space_title;
+                snackbarController = createSnackbarControllerForFreeUpSpaceButton(
+                        bookmarkModel, snackbarManager, activity);
+            } else {
+                messageId = saveResult == AddBookmarkCallback.SAVED
+                        ? R.string.offline_pages_page_saved
+                        : R.string.offline_pages_page_failed_to_save;
+            }
+            if (snackbarController == null) {
+                snackbarController = createSnackbarControllerForEditButton(
+                        bookmarkModel, activity, bookmarkId);
+            }
+            snackbar = Snackbar.make(activity.getString(messageId), snackbarController)
+                    .setAction(activity.getString(buttonId), null).setSingleLine(false);
         }
 
-        snackbarManager.showSnackbar(
-                Snackbar.make(activity.getString(messageId), snackbarController)
-                        .setAction(activity.getString(buttonId), null)
-                        .setSingleLine(false));
+        snackbarManager.showSnackbar(snackbar);
     }
 
     private static AddBookmarkCallback createAddBookmarkCallback(
@@ -195,7 +198,6 @@ public class EnhancedBookmarkUtils {
             @Override
             public void onAction(Object actionData) {
                 RecordUserAction.record("EnhancedBookmarks.EditAfterCreateButtonClicked");
-                // Show edit activity with the name of parent folder highlighted.
                 startEditActivity(activity, bookmarkId, null);
                 bookmarkModel.destroy();
             }
@@ -322,6 +324,31 @@ public class EnhancedBookmarkUtils {
     }
 
     /**
+     * Save the last used {@link BookmarkId} as a folder to put new bookmarks to.
+     */
+    static void setLastUsedParent(Context context, BookmarkId bookmarkId) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putString(PREF_LAST_USED_PARENT, bookmarkId.toString()).apply();
+    }
+
+    /**
+     * @return The parent {@link BookmarkId} that the user used the last time,
+     *         or the default folder if no previous user action has been recorded.
+     */
+    static BookmarkId getLastUsedParent(Context context, EnhancedBookmarksModel model) {
+        BookmarkId parentId = null;
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        if (preferences.contains(PREF_LAST_USED_PARENT)) {
+            parentId = BookmarkId
+                    .getBookmarkIdFromString(preferences.getString(PREF_LAST_USED_PARENT, null));
+        }
+        if (parentId == null || !model.doesBookmarkExist(parentId)) {
+            parentId = model.getDefaultFolder();
+        }
+        return parentId;
+    }
+
+    /**
      * Starts an {@link EnhancedBookmarkEditActivity} for the given {@link BookmarkId}.
      */
     public static void startEditActivity(
@@ -377,21 +404,6 @@ public class EnhancedBookmarkUtils {
                 activity.getApplicationContext().getPackageName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         IntentHandler.startActivityForTrustedIntent(intent, activity);
-    }
-
-    /**
-     * Get dominant color from bitmap. This function uses favicon helper to fulfil its task.
-     * @param bitmap The bitmap to extract color from.
-     * @return The dominant color in ARGB format.
-     */
-    public static int getDominantColorForBitmap(Bitmap bitmap) {
-        int mDominantColor = FaviconHelper.getDominantColorForBitmap(bitmap);
-        // FaviconHelper returns color in ABGR format, do a manual conversion here.
-        int red = (mDominantColor & 0xff) << 16;
-        int green = mDominantColor & 0xff00;
-        int blue = (mDominantColor & 0xff0000) >> 16;
-        int alpha = mDominantColor & 0xff000000;
-        return alpha + red + green + blue;
     }
 
     /**

@@ -1845,7 +1845,7 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
         Sign in
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_PAGE_SAVED" desc="Message shown after user adds a new bookmark. [CHAR-LIMIT=32]">
-        Bookmarked
+        Bookmarked to <ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_DRAWER_ALL_ITEMS" desc="Menu item for showing all bookmark items in the enhanced bookmarks UI [CHAR-LIMIT=24]">
         All bookmarks

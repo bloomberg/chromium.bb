@@ -206,6 +206,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
             EnhancedBookmarkAddEditFolderActivity.startAddFolderActivity(this, mBookmarksToMove);
         } else if (entry.mType == FolderListEntry.TYPE_NORMAL) {
             mEnhancedBookmarksModel.moveBookmarks(mBookmarksToMove, entry.mId);
+            EnhancedBookmarkUtils.setLastUsedParent(this, entry.mId);
             finish();
         }
     }
@@ -218,6 +219,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
             BookmarkId createdBookmark = BookmarkId.getBookmarkIdFromString(data.getStringExtra(
                     EnhancedBookmarkAddEditFolderActivity.INTENT_CREATED_BOOKMARK));
             mEnhancedBookmarksModel.moveBookmarks(mBookmarksToMove, createdBookmark);
+            EnhancedBookmarkUtils.setLastUsedParent(this, createdBookmark);
             finish();
         }
     }
