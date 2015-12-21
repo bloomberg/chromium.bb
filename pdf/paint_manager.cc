@@ -4,6 +4,9 @@
 
 #include "pdf/paint_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

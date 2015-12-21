@@ -4,8 +4,10 @@
 
 #include "pdf/draw_utils.h"
 
-#include <algorithm>
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <algorithm>
 #include <vector>
 
 #include "base/logging.h"
@@ -13,42 +15,47 @@
 
 namespace chrome_pdf {
 
-inline uint8 GetBlue(const uint32& pixel) {
-  return static_cast<uint8>(pixel & 0xFF);
+inline uint8_t GetBlue(const uint32_t& pixel) {
+  return static_cast<uint8_t>(pixel & 0xFF);
 }
 
-inline uint8 GetGreen(const uint32& pixel) {
-  return static_cast<uint8>((pixel >> 8) & 0xFF);
+inline uint8_t GetGreen(const uint32_t& pixel) {
+  return static_cast<uint8_t>((pixel >> 8) & 0xFF);
 }
 
-inline uint8 GetRed(const uint32& pixel) {
-  return static_cast<uint8>((pixel >> 16) & 0xFF);
+inline uint8_t GetRed(const uint32_t& pixel) {
+  return static_cast<uint8_t>((pixel >> 16) & 0xFF);
 }
 
-inline uint8 GetAlpha(const uint32& pixel) {
-  return static_cast<uint8>((pixel >> 24) & 0xFF);
+inline uint8_t GetAlpha(const uint32_t& pixel) {
+  return static_cast<uint8_t>((pixel >> 24) & 0xFF);
 }
 
-inline uint32_t MakePixel(uint8 red, uint8 green, uint8 blue, uint8 alpha) {
+inline uint32_t MakePixel(uint8_t red,
+                          uint8_t green,
+                          uint8_t blue,
+                          uint8_t alpha) {
   return (static_cast<uint32_t>(alpha) << 24) |
       (static_cast<uint32_t>(red) << 16) |
       (static_cast<uint32_t>(green) << 8) |
       static_cast<uint32_t>(blue);
 }
 
-inline uint8 GradientChannel(uint8 start, uint8 end, double ratio) {
+inline uint8_t GradientChannel(uint8_t start, uint8_t end, double ratio) {
   double new_channel = start - (static_cast<double>(start) - end) * ratio;
   if (new_channel < 0)
     return 0;
   if (new_channel > 255)
     return 255;
-  return static_cast<uint8>(new_channel + 0.5);
+  return static_cast<uint8_t>(new_channel + 0.5);
 }
 
-inline uint8 ProcessColor(uint8 src_color, uint8 dest_color, uint8 alpha) {
-  uint32 processed = static_cast<uint32>(src_color) * alpha +
-      static_cast<uint32>(dest_color) * (0xFF - alpha);
-  return static_cast<uint8>((processed / 0xFF) & 0xFF);
+inline uint8_t ProcessColor(uint8_t src_color,
+                            uint8_t dest_color,
+                            uint8_t alpha) {
+  uint32_t processed = static_cast<uint32_t>(src_color) * alpha +
+                       static_cast<uint32_t>(dest_color) * (0xFF - alpha);
+  return static_cast<uint8_t>((processed / 0xFF) & 0xFF);
 }
 
 inline bool ImageDataContainsRect(const pp::ImageData& image_data,
@@ -57,9 +64,11 @@ inline bool ImageDataContainsRect(const pp::ImageData& image_data,
       pp::Rect(image_data.size()).Contains(rect);
 }
 
-void AlphaBlend(const pp::ImageData& src, const pp::Rect& src_rc,
-                pp::ImageData* dest, const pp::Point& dest_origin,
-                uint8 alpha_adjustment) {
+void AlphaBlend(const pp::ImageData& src,
+                const pp::Rect& src_rc,
+                pp::ImageData* dest,
+                const pp::Point& dest_origin,
+                uint8_t alpha_adjustment) {
   if (src_rc.IsEmpty() || !ImageDataContainsRect(src, src_rc))
     return;
 
@@ -76,13 +85,15 @@ void AlphaBlend(const pp::ImageData& src, const pp::Rect& src_rc,
     const uint32_t* src_pixel = src_origin_pixel;
     uint32_t* dest_pixel = dest_origin_pixel;
     for (int x = 0; x < width; x++) {
-      uint8 alpha = static_cast<uint8>(static_cast<uint32_t>(alpha_adjustment) *
-          GetAlpha(*src_pixel) / 0xFF);
-      uint8 red = ProcessColor(GetRed(*src_pixel), GetRed(*dest_pixel), alpha);
-      uint8 green = ProcessColor(GetGreen(*src_pixel),
-                                 GetGreen(*dest_pixel), alpha);
-      uint8 blue = ProcessColor(GetBlue(*src_pixel),
-                                GetBlue(*dest_pixel), alpha);
+      uint8_t alpha =
+          static_cast<uint8_t>(static_cast<uint32_t>(alpha_adjustment) *
+                               GetAlpha(*src_pixel) / 0xFF);
+      uint8_t red =
+          ProcessColor(GetRed(*src_pixel), GetRed(*dest_pixel), alpha);
+      uint8_t green =
+          ProcessColor(GetGreen(*src_pixel), GetGreen(*dest_pixel), alpha);
+      uint8_t blue =
+          ProcessColor(GetBlue(*src_pixel), GetBlue(*dest_pixel), alpha);
       *dest_pixel = MakePixel(red, green, blue, GetAlpha(*dest_pixel));
 
       src_pixel++;
@@ -95,9 +106,12 @@ void AlphaBlend(const pp::ImageData& src, const pp::Rect& src_rc,
   }
 }
 
-void GradientFill(pp::ImageData* image, const pp::Rect& rc,
-                  uint32 start_color, uint32 end_color, bool horizontal) {
-  std::vector<uint32> colors;
+void GradientFill(pp::ImageData* image,
+                  const pp::Rect& rc,
+                  uint32_t start_color,
+                  uint32_t end_color,
+                  bool horizontal) {
+  std::vector<uint32_t> colors;
   colors.resize(horizontal ? rc.width() : rc.height());
   for (size_t i = 0; i < colors.size(); ++i) {
     double ratio = static_cast<double>(i) / colors.size();
@@ -135,10 +149,10 @@ void GradientFill(pp::Instance* instance,
                   pp::ImageData* image,
                   const pp::Rect& dirty_rc,
                   const pp::Rect& gradient_rc,
-                  uint32 start_color,
-                  uint32 end_color,
+                  uint32_t start_color,
+                  uint32_t end_color,
                   bool horizontal,
-                  uint8 transparency) {
+                  uint8_t transparency) {
   pp::Rect draw_rc = gradient_rc.Intersect(dirty_rc);
   if (draw_rc.IsEmpty())
     return;
@@ -175,8 +189,8 @@ void CopyImage(const pp::ImageData& src, const pp::Rect& src_rc,
     for (int32_t y = 0; y < height; ++y) {
       uint32_t* dest_pixel = dest_origin_pixel;
       for (int32_t x = 0; x < width; ++x) {
-        uint32 src_x = static_cast<uint32>(x * x_ratio);
-        uint32 src_y = static_cast<uint32>(y * y_ratio);
+        uint32_t src_x = static_cast<uint32_t>(x * x_ratio);
+        uint32_t src_y = static_cast<uint32_t>(y * y_ratio);
         const uint32_t* src_pixel = src.GetAddr32(
             pp::Point(src_rc.x() + src_x, src_rc.y() + src_y));
         *dest_pixel = *src_pixel;
@@ -199,7 +213,7 @@ void CopyImage(const pp::ImageData& src, const pp::Rect& src_rc,
   }
 }
 
-void FillRect(pp::ImageData* image, const pp::Rect& rc, uint32 color) {
+void FillRect(pp::ImageData* image, const pp::Rect& rc, uint32_t color) {
   int height = rc.height();
   if (height == 0)
     return;
@@ -221,7 +235,7 @@ void FillRect(pp::ImageData* image, const pp::Rect& rc, uint32 color) {
   }
 }
 
-ShadowMatrix::ShadowMatrix(uint32 depth, double factor, uint32 background)
+ShadowMatrix::ShadowMatrix(uint32_t depth, double factor, uint32_t background)
     : depth_(depth), factor_(factor), background_(background) {
   DCHECK(depth_ > 0);
   matrix_.resize(depth_ * depth_);
@@ -235,10 +249,10 @@ ShadowMatrix::ShadowMatrix(uint32 depth, double factor, uint32 background)
   double r = static_cast<double>(depth_);
   double coef = 256.0 / pow(r, factor);
 
-  for (uint32 y = 0; y < depth_; y++) {
+  for (uint32_t y = 0; y < depth_; y++) {
     // Since matrix is symmetrical, we can reduce the number of calculations
     // by mirroring results.
-    for (uint32 x = 0; x <= y; x++) {
+    for (uint32_t x = 0; x <= y; x++) {
       // Fill cache if needed.
       if (pow_pv[x] == 0.0)
         pow_pv[x] =  pow(x, pv);
@@ -255,18 +269,18 @@ ShadowMatrix::ShadowMatrix(uint32 depth, double factor, uint32 background)
       // if factor > 1, smoothing will drop faster near the end (depth).
       double f = 256.0 - coef * pow(v, factor);
 
-      uint8 alpha = 0;
+      uint8_t alpha = 0;
       if (f > kOpaqueAlpha)
         alpha = kOpaqueAlpha;
       else if (f < kTransparentAlpha)
         alpha = kTransparentAlpha;
       else
-        alpha = static_cast<uint8>(f);
+        alpha = static_cast<uint8_t>(f);
 
-      uint8 red = ProcessColor(0, GetRed(background), alpha);
-      uint8 green = ProcessColor(0, GetGreen(background), alpha);
-      uint8 blue = ProcessColor(0, GetBlue(background), alpha);
-      uint32 pixel = MakePixel(red, green, blue, GetAlpha(background));
+      uint8_t red = ProcessColor(0, GetRed(background), alpha);
+      uint8_t green = ProcessColor(0, GetGreen(background), alpha);
+      uint8_t blue = ProcessColor(0, GetBlue(background), alpha);
+      uint32_t pixel = MakePixel(red, green, blue, GetAlpha(background));
 
       // Mirror matrix.
       matrix_[y * depth_ + x] = pixel;
@@ -286,7 +300,7 @@ void PaintShadow(pp::ImageData* image,
   if (draw_rc.IsEmpty())
     return;
 
-  int32 depth = static_cast<int32>(matrix.depth());
+  int32_t depth = static_cast<int32_t>(matrix.depth());
   for (int32_t y = draw_rc.y(); y < draw_rc.bottom(); y++) {
     for (int32_t x = draw_rc.x(); x < draw_rc.right(); x++) {
       int32_t matrix_x = std::max(depth + shadow_rc.x() - x - 1,
@@ -297,12 +311,12 @@ void PaintShadow(pp::ImageData* image,
 
       if (matrix_x < 0)
         matrix_x = 0;
-      else if (matrix_x >= static_cast<int32>(depth))
+      else if (matrix_x >= static_cast<int32_t>(depth))
         matrix_x = depth - 1;
 
       if (matrix_y < 0)
         matrix_y = 0;
-      else if (matrix_y >= static_cast<int32>(depth))
+      else if (matrix_y >= static_cast<int32_t>(depth))
         matrix_y = depth - 1;
 
       *pixel = matrix.GetValue(matrix_x, matrix_y);

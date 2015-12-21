@@ -5,11 +5,14 @@
 #include "pdf/pdfium/pdfium_engine.h"
 
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -71,7 +74,7 @@ namespace {
 #define kHighlightColorG 193
 #define kHighlightColorB 218
 
-const uint32 kPendingPageColor = 0xFFEEEEEE;
+const uint32_t kPendingPageColor = 0xFFEEEEEE;
 
 #define kFormHighlightColor 0xFFE4DD
 #define kFormHighlightAlpha 100
@@ -3102,14 +3105,11 @@ void PDFiumEngine::Highlight(void* buffer,
 
   for (int y = t; y < t + h; ++y) {
     for (int x = l; x < l + w; ++x) {
-      uint8* pixel = static_cast<uint8*>(buffer) + y * stride + x * 4;
+      uint8_t* pixel = static_cast<uint8_t*>(buffer) + y * stride + x * 4;
       //  This is our highlight color.
-      pixel[0] = static_cast<uint8>(
-          pixel[0] * (kHighlightColorB / 255.0));
-      pixel[1] = static_cast<uint8>(
-          pixel[1] * (kHighlightColorG / 255.0));
-      pixel[2] = static_cast<uint8>(
-          pixel[2] * (kHighlightColorR / 255.0));
+      pixel[0] = static_cast<uint8_t>(pixel[0] * (kHighlightColorB / 255.0));
+      pixel[1] = static_cast<uint8_t>(pixel[1] * (kHighlightColorG / 255.0));
+      pixel[2] = static_cast<uint8_t>(pixel[2] * (kHighlightColorR / 255.0));
     }
   }
 }
@@ -3381,12 +3381,12 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
 
   // Page drop shadow parameters.
   const double factor = 0.5;
-  uint32 depth = std::max(
-      std::max(page_rect.x() - shadow_rect.x(),
-               page_rect.y() - shadow_rect.y()),
-      std::max(shadow_rect.right() - page_rect.right(),
-               shadow_rect.bottom() - page_rect.bottom()));
-  depth = static_cast<uint32>(depth * 1.5) + 1;
+  uint32_t depth =
+      std::max(std::max(page_rect.x() - shadow_rect.x(),
+                        page_rect.y() - shadow_rect.y()),
+               std::max(shadow_rect.right() - page_rect.right(),
+                        shadow_rect.bottom() - page_rect.bottom()));
+  depth = static_cast<uint32_t>(depth * 1.5) + 1;
 
   // We need to check depth only to verify our copy of shadow matrix is correct.
   if (!page_shadow_.get() || page_shadow_->depth() != depth)

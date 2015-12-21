@@ -5,28 +5,31 @@
 #ifndef PDF_DRAW_UTILS_H_
 #define PDF_DRAW_UTILS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/rect.h"
 
 namespace chrome_pdf {
 
-const uint8 kOpaqueAlpha = 0xFF;
-const uint8 kTransparentAlpha = 0x00;
+const uint8_t kOpaqueAlpha = 0xFF;
+const uint8_t kTransparentAlpha = 0x00;
 
-void AlphaBlend(const pp::ImageData& src, const pp::Rect& src_rc,
-                pp::ImageData* dest, const pp::Point& dest_origin,
-                uint8 alpha_adjustment);
+void AlphaBlend(const pp::ImageData& src,
+                const pp::Rect& src_rc,
+                pp::ImageData* dest,
+                const pp::Point& dest_origin,
+                uint8_t alpha_adjustment);
 
 // Fill rectangle with gradient horizontally or vertically. Start is a color of
 // top-left point of the rectangle, end color is a color of
 // top-right (horizontal==true) or bottom-left (horizontal==false) point.
 void GradientFill(pp::ImageData* image,
                   const pp::Rect& rc,
-                  uint32 start_color,
-                  uint32 end_color,
+                  uint32_t start_color,
+                  uint32_t end_color,
                   bool horizontal);
 
 // Fill dirty rectangle with gradient, where gradient color set for corners of
@@ -36,10 +39,10 @@ void GradientFill(pp::Instance* instance,
                   pp::ImageData* image,
                   const pp::Rect& dirty_rc,
                   const pp::Rect& gradient_rc,
-                  uint32 start_color,
-                  uint32 end_color,
+                  uint32_t start_color,
+                  uint32_t end_color,
                   bool horizontal,
-                  uint8 transparency);
+                  uint8_t transparency);
 
 // Copy one image into another. If stretch is true, the result occupy the entire
 // dest_rc. If stretch is false, dest_rc.point will be used as an origin of the
@@ -50,7 +53,7 @@ void CopyImage(const pp::ImageData& src, const pp::Rect& src_rc,
                bool stretch);
 
 // Fill in rectangle with specified color.
-void FillRect(pp::ImageData* image, const pp::Rect& rc, uint32 color);
+void FillRect(pp::ImageData* image, const pp::Rect& rc, uint32_t color);
 
 // Shadow Matrix contains matrix for shadow rendering. To reduce amount of
 // calculations user may choose to cache matrix and reuse it if nothing changed.
@@ -62,21 +65,23 @@ class ShadowMatrix {
   // If factor == 1, smoothing will be linear from 0 to the end (depth),
   // if 0 < factor < 1, smoothing will drop faster near 0.
   // if factor > 1, smoothing will drop faster near the end (depth).
-  ShadowMatrix(uint32 depth, double factor, uint32 background);
+  ShadowMatrix(uint32_t depth, double factor, uint32_t background);
 
   ~ShadowMatrix();
 
-  uint32 GetValue(int32 x, int32 y) const { return matrix_[y * depth_ + x]; }
+  uint32_t GetValue(int32_t x, int32_t y) const {
+    return matrix_[y * depth_ + x];
+  }
 
-  uint32 depth() const { return depth_; }
+  uint32_t depth() const { return depth_; }
   double factor() const { return factor_; }
-  uint32 background() const { return background_; }
+  uint32_t background() const { return background_; }
 
  private:
-  uint32 depth_;
+  uint32_t depth_;
   double factor_;
-  uint32 background_;
-  std::vector<uint32> matrix_;
+  uint32_t background_;
+  std::vector<uint32_t> matrix_;
 };
 
 // Draw shadow on the image using provided ShadowMatrix.

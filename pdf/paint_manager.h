@@ -5,6 +5,8 @@
 #ifndef PDF_PAINT_MANAGER_H_
 #define PDF_PAINT_MANAGER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "pdf/paint_aggregator.h"

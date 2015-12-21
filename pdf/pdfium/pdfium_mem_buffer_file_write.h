@@ -5,6 +5,8 @@
 #ifndef PDF_PDFIUM_PDFIUM_MEM_BUFFER_FILE_WRITE_
 #define PDF_PDFIUM_PDFIUM_MEM_BUFFER_FILE_WRITE_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "third_party/pdfium/public/fpdf_save.h"

@@ -5,11 +5,15 @@
 #ifndef PDF_PDFIUM_PDFIUM_ENGINE_H_
 #define PDF_PDFIUM_PDFIUM_ENGINE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "pdf/document_loader.h"

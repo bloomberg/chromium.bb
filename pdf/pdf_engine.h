@@ -5,6 +5,8 @@
 #ifndef PDF_PDF_ENGINE_H_
 #define PDF_PDF_ENGINE_H_
 
+#include <stdint.h>
+
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -36,9 +38,9 @@ namespace chrome_pdf {
 class Stream;
 
 #if defined(OS_MACOSX)
-const uint32 kDefaultKeyModifier = PP_INPUTEVENT_MODIFIER_METAKEY;
+const uint32_t kDefaultKeyModifier = PP_INPUTEVENT_MODIFIER_METAKEY;
 #else  // !OS_MACOSX
-const uint32 kDefaultKeyModifier = PP_INPUTEVENT_MODIFIER_CONTROLKEY;
+const uint32_t kDefaultKeyModifier = PP_INPUTEVENT_MODIFIER_CONTROLKEY;
 #endif  // OS_MACOSX
 
 // Do one time initialization of the SDK.
@@ -165,7 +167,8 @@ class PDFEngine {
     virtual void DocumentHasUnsupportedFeature(const std::string& feature) = 0;
 
     // Notifies the client about document load progress.
-    virtual void DocumentLoadProgress(uint32 available, uint32 doc_size) = 0;
+    virtual void DocumentLoadProgress(uint32_t available,
+                                      uint32_t doc_size) = 0;
 
     // Notifies the client about focus changes for form text fields.
     virtual void FormTextFieldFocusChange(bool in_focus) = 0;
@@ -174,7 +177,7 @@ class PDFEngine {
     virtual bool IsPrintPreview() = 0;
 
     // Get the background color of the PDF.
-    virtual uint32 GetBackgroundColor() = 0;
+    virtual uint32_t GetBackgroundColor() = 0;
 
     // Sets selection status.
     virtual void IsSelectingChanged(bool is_selecting) {}

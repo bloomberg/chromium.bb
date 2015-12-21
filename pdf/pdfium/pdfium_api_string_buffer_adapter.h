@@ -5,7 +5,9 @@
 #ifndef PDF_PDFIUM_PDFIUM_API_STRING_BUFFER_ADAPTER_H_
 #define PDF_PDFIUM_PDFIUM_API_STRING_BUFFER_ADAPTER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/numerics/safe_math.h"
 
 namespace chrome_pdf {

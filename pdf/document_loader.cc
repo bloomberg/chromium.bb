@@ -4,6 +4,9 @@
 
 #include "pdf/document_loader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "net/http/http_util.h"

@@ -4,6 +4,8 @@
 
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/logging.h"

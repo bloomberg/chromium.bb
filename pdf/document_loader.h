@@ -5,12 +5,14 @@
 #ifndef PDF_DOCUMENT_LOADER_H_
 #define PDF_DOCUMENT_LOADER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "pdf/chunk_stream.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/utility/completion_callback_factory.h"

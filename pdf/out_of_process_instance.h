@@ -5,12 +5,15 @@
 #ifndef PDF_OUT_OF_PROCESS_INSTANCE_H_
 #define PDF_OUT_OF_PROCESS_INSTANCE_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "pdf/paint_manager.h"
 #include "pdf/pdf_engine.h"
@@ -125,10 +128,10 @@ class OutOfProcessInstance : public pp::Instance,
   void DocumentLoadFailed() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
-  void DocumentLoadProgress(uint32 available, uint32 doc_size) override;
+  void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
   void FormTextFieldFocusChange(bool in_focus) override;
   bool IsPrintPreview() override;
-  uint32 GetBackgroundColor() override;
+  uint32_t GetBackgroundColor() override;
   void IsSelectingChanged(bool is_selecting) override;
 
   // PreviewModeClient::Client implementation.
@@ -156,7 +159,7 @@ class OutOfProcessInstance : public pp::Instance,
   int GetDocumentPixelHeight() const;
 
   // Draws a rectangle with the specified dimensions and color in our buffer.
-  void FillRect(const pp::Rect& rect, uint32 color);
+  void FillRect(const pp::Rect& rect, uint32_t color);
 
   void LoadUrl(const std::string& url);
   void LoadPreviewUrl(const std::string& url);
@@ -229,7 +232,7 @@ class OutOfProcessInstance : public pp::Instance,
 
   struct BackgroundPart {
     pp::Rect location;
-    uint32 color;
+    uint32_t color;
   };
   std::vector<BackgroundPart> background_parts_;
 
@@ -333,7 +336,7 @@ class OutOfProcessInstance : public pp::Instance,
   bool stop_scrolling_;
 
   // The background color of the PDF viewer.
-  uint32 background_color_;
+  uint32_t background_color_;
 
   // The blank space above the first page of the document reserved for the
   // toolbar.

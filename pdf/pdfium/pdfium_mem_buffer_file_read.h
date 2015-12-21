@@ -5,6 +5,7 @@
 #ifndef PDF_PDFIUM_PDFIUM_MEM_BUFFER_FILE_READ_H_
 #define PDF_PDFIUM_PDFIUM_MEM_BUFFER_FILE_READ_H_
 
+#include <stddef.h>
 #include <stdlib.h>
 
 #include "third_party/pdfium/public/fpdfview.h"

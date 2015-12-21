@@ -4,6 +4,8 @@
 
 #include "pdf/pdf.h"
 
+#include <stdint.h>
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif

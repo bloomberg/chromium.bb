@@ -4,6 +4,9 @@
 
 #include "pdf/out_of_process_instance.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>  // for min/max()
 #define _USE_MATH_DEFINES  // for M_PI
 #include <cmath>      // for log() and pow()
@@ -816,11 +819,11 @@ int OutOfProcessInstance::GetDocumentPixelHeight() const {
       ceil(document_size_.height() * zoom_ * device_scale_));
 }
 
-void OutOfProcessInstance::FillRect(const pp::Rect& rect, uint32 color) {
+void OutOfProcessInstance::FillRect(const pp::Rect& rect, uint32_t color) {
   DCHECK(!image_data_.is_null() || rect.IsEmpty());
-  uint32* buffer_start = static_cast<uint32*>(image_data_.data());
+  uint32_t* buffer_start = static_cast<uint32_t*>(image_data_.data());
   int stride = image_data_.stride();
-  uint32* ptr = buffer_start + rect.y() * stride / 4 + rect.x();
+  uint32_t* ptr = buffer_start + rect.y() * stride / 4 + rect.x();
   int height = rect.height();
   int width = rect.width();
   for (int y = 0; y < height; ++y) {
@@ -1252,8 +1255,8 @@ void OutOfProcessInstance::DocumentHasUnsupportedFeature(
   pp::PDF::HasUnsupportedFeature(this);
 }
 
-void OutOfProcessInstance::DocumentLoadProgress(uint32 available,
-                                                uint32 doc_size) {
+void OutOfProcessInstance::DocumentLoadProgress(uint32_t available,
+                                                uint32_t doc_size) {
   double progress = 0.0;
   if (doc_size == 0) {
     // Document size is unknown. Use heuristics.
@@ -1380,7 +1383,7 @@ bool OutOfProcessInstance::IsPrintPreview() {
   return IsPrintPreviewUrl(url_);
 }
 
-uint32 OutOfProcessInstance::GetBackgroundColor() {
+uint32_t OutOfProcessInstance::GetBackgroundColor() {
   return background_color_;
 }
 

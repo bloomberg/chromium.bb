@@ -5,6 +5,8 @@
 #ifndef PDF_PREVIEW_MODE_CLIENT_H_
 #define PDF_PREVIEW_MODE_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -64,10 +66,10 @@ class PreviewModeClient : public PDFEngine::Client {
   virtual void DocumentLoadFailed();
   virtual pp::Instance* GetPluginInstance();
   virtual void DocumentHasUnsupportedFeature(const std::string& feature);
-  virtual void DocumentLoadProgress(uint32 available, uint32 doc_size);
+  virtual void DocumentLoadProgress(uint32_t available, uint32_t doc_size);
   virtual void FormTextFieldFocusChange(bool in_focus);
   virtual bool IsPrintPreview();
-  virtual uint32 GetBackgroundColor();
+  virtual uint32_t GetBackgroundColor();
 
  private:
   Client* client_;

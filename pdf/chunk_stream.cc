@@ -4,6 +4,9 @@
 
 #include "pdf/chunk_stream.h"
 
+#include <stddef.h>
+#include <string.h>
+
 #define __STDC_LIMIT_MACROS
 #ifdef _WIN32
 #include <limits.h>
@@ -12,8 +15,6 @@
 #endif
 
 #include <algorithm>
-
-#include "base/basictypes.h"
 
 namespace chrome_pdf {
 

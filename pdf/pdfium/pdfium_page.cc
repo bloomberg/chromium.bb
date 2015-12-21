@@ -5,6 +5,7 @@
 #include "pdf/pdfium/pdfium_page.h"
 
 #include <math.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"

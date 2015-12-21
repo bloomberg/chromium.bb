@@ -4,6 +4,7 @@
 
 #include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
 
+#include <stddef.h>
 #include <string.h>
 
 namespace chrome_pdf {
