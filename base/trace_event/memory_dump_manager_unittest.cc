@@ -4,10 +4,8 @@
 
 #include "base/trace_event/memory_dump_manager.h"
 
-#include <vector>
-
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -204,13 +202,10 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   // Finally check the unregister logic: the delegate will be invoked but not
   // the dump provider, as it has been unregistered.
   EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
-  EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(3);
+  EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(1);
   EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
-
-  for (int i = 0; i < 3; ++i) {
-    RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                             MemoryDumpLevelOfDetail::DETAILED);
-  }
+  RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                           MemoryDumpLevelOfDetail::DETAILED);
   DisableTracing();
 }
 
@@ -536,14 +531,13 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperWhileDumping) {
 // dumping from a different thread than the dumping thread.
 TEST_F(MemoryDumpManagerTest, UnregisterDumperFromThreadWhileDumping) {
   InitializeMemoryDumpManager(false /* is_coordinator */);
-  std::vector<scoped_ptr<TestIOThread>> threads;
-  std::vector<scoped_ptr<MockMemoryDumpProvider>> mdps;
+  ScopedVector<TestIOThread> threads;
+  ScopedVector<MockMemoryDumpProvider> mdps;
 
   for (int i = 0; i < 2; i++) {
-    threads.push_back(
-        make_scoped_ptr(new TestIOThread(TestIOThread::kAutoStart)));
-    mdps.push_back(make_scoped_ptr(new MockMemoryDumpProvider()));
-    RegisterDumpProvider(mdps.back().get(), threads.back()->task_runner(),
+    threads.push_back(new TestIOThread(TestIOThread::kAutoStart));
+    mdps.push_back(new MockMemoryDumpProvider());
+    RegisterDumpProvider(mdps.back(), threads.back()->task_runner(),
                          kDefaultOptions);
   }
 
@@ -551,10 +545,10 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperFromThreadWhileDumping) {
 
   // When OnMemoryDump is called on either of the dump providers, it will
   // unregister the other one.
-  for (const scoped_ptr<MockMemoryDumpProvider>& mdp : mdps) {
+  for (MockMemoryDumpProvider* mdp : mdps) {
     int other_idx = (mdps.front() == mdp);
-    TestIOThread* other_thread = threads[other_idx].get();
-    MockMemoryDumpProvider* other_mdp = mdps[other_idx].get();
+    TestIOThread* other_thread = threads[other_idx];
+    MockMemoryDumpProvider* other_mdp = mdps[other_idx];
     auto on_dump = [this, other_thread, other_mdp, &on_memory_dump_call_count](
         const MemoryDumpArgs& args, ProcessMemoryDump* pmd) {
       other_thread->PostTaskAndWait(
@@ -577,54 +571,7 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperFromThreadWhileDumping) {
   RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
                            MemoryDumpLevelOfDetail::DETAILED);
   ASSERT_EQ(1, on_memory_dump_call_count);
-  ASSERT_TRUE(last_callback_success_);
-
-  DisableTracing();
-}
-
-// If a thread (with a dump provider living on it) is torn down during a dump
-// its dump provider should be skipped but the dump itself should succeed.
-TEST_F(MemoryDumpManagerTest, TearDownThreadWhileDumping) {
-  InitializeMemoryDumpManager(false /* is_coordinator */);
-  std::vector<scoped_ptr<TestIOThread>> threads;
-  std::vector<scoped_ptr<MockMemoryDumpProvider>> mdps;
-
-  for (int i = 0; i < 2; i++) {
-    threads.push_back(
-        make_scoped_ptr(new TestIOThread(TestIOThread::kAutoStart)));
-    mdps.push_back(make_scoped_ptr(new MockMemoryDumpProvider()));
-    RegisterDumpProvider(mdps.back().get(), threads.back()->task_runner(),
-                         kDefaultOptions);
-  }
-
-  int on_memory_dump_call_count = 0;
-
-  // When OnMemoryDump is called on either of the dump providers, it will
-  // tear down the thread of the other one.
-  for (const scoped_ptr<MockMemoryDumpProvider>& mdp : mdps) {
-    int other_idx = (mdps.front() == mdp);
-    TestIOThread* other_thread = threads[other_idx].get();
-    auto on_dump = [other_thread, &on_memory_dump_call_count](
-        const MemoryDumpArgs& args, ProcessMemoryDump* pmd) {
-      other_thread->Stop();
-      on_memory_dump_call_count++;
-      return true;
-    };
-
-    // OnMemoryDump is called once for the provider that dumps first, and zero
-    // times for the other provider.
-    EXPECT_CALL(*mdp, OnMemoryDump(_, _))
-        .Times(AtMost(1))
-        .WillOnce(Invoke(on_dump));
-  }
-
-  last_callback_success_ = false;
-  EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
-  EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(1);
-  RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                           MemoryDumpLevelOfDetail::DETAILED);
-  ASSERT_EQ(1, on_memory_dump_call_count);
-  ASSERT_TRUE(last_callback_success_);
+  ASSERT_EQ(true, last_callback_success_);
 
   DisableTracing();
 }
@@ -814,9 +761,9 @@ TEST_F(MemoryDumpManagerTest, DisableTracingWhileDumping) {
   tracing_disabled_event.Signal();
   run_loop.Run();
 
-  // RequestGlobalMemoryDump() should still suceed even if some threads were
-  // torn down during the dump.
-  EXPECT_TRUE(last_callback_success_);
+  // RequestGlobalMemoryDump() should be NACK-ed because one of the threads
+  // threads died before we had a chance to PostTask onto them.
+  EXPECT_FALSE(last_callback_success_);
 }
 
 TEST_F(MemoryDumpManagerTest, DumpOnBehalfOfOtherProcess) {
