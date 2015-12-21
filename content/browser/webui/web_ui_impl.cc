@@ -237,9 +237,8 @@ void WebUIImpl::ExecuteJavascript(const base::string16& javascript) {
           // It's possible to load about:blank in a Web UI renderer.
           // See http://crbug.com/42547
           target_frame->GetLastCommittedURL().spec() == url::kAboutBlankURL)) {
-      // Don't crash when we try to inject JavaScript into a non-WebUI page, but
-      // upload a crash report anyways. http://crbug.com/516690
-      base::debug::DumpWithoutCrashing();
+      // Silently ignore the request. Would be nice to clean-up WebUI so we
+      // could turn this into a CHECK(). http://crbug.com/516690.
       return;
     }
     target_frame->ExecuteJavaScript(javascript);
