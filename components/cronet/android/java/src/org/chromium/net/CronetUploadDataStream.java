@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
@@ -79,6 +80,8 @@ final class CronetUploadDataStream implements UploadDataSink {
     private boolean mRewinding = false;
     private boolean mDestroyAdapterPostponed = false;
 
+    private Runnable mOnDestroyedCallbackForTesting;
+
     /**
      * Constructs a CronetUploadDataStream.
      * @param dataProvider the UploadDataProvider to read data from.
@@ -146,14 +149,7 @@ final class CronetUploadDataStream implements UploadDataSink {
     @SuppressWarnings("unused")
     @CalledByNative
     void onUploadDataStreamDestroyed() {
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                destroyAdapter();
-            }
-        };
-
-        postTaskToExecutor(task);
+        destroyAdapter();
     }
 
     /**
@@ -268,8 +264,11 @@ final class CronetUploadDataStream implements UploadDataSink {
             if (mUploadDataStreamAdapter == 0) {
                 return;
             }
-            nativeDestroyAdapter(mUploadDataStreamAdapter);
+            nativeDestroy(mUploadDataStreamAdapter);
             mUploadDataStreamAdapter = 0;
+            if (mOnDestroyedCallbackForTesting != null) {
+                mOnDestroyedCallbackForTesting.run();
+            }
         }
     }
 
@@ -308,10 +307,16 @@ final class CronetUploadDataStream implements UploadDataSink {
      * CronetUploadDataStream for testing.
      * @return the address of the native CronetUploadDataStream object.
      */
-    public long createUploadDataStreamForTesting() {
+    @VisibleForTesting
+    long createUploadDataStreamForTesting() {
         mUploadDataStreamAdapter = nativeCreateAdapterForTesting();
         return nativeCreateUploadDataStreamForTesting(mLength,
                 mUploadDataStreamAdapter);
+    }
+
+    @VisibleForTesting
+    void setOnDestroyedCallbackForTesting(Runnable onDestroyedCallbackForTesting) {
+        mOnDestroyedCallbackForTesting = onDestroyedCallbackForTesting;
     }
 
     // Native methods are implemented in upload_data_stream_adapter.cc.
@@ -331,6 +336,6 @@ final class CronetUploadDataStream implements UploadDataSink {
     @NativeClassQualifiedName("CronetUploadDataStreamAdapter")
     private native void nativeOnRewindSucceeded(long nativePtr);
 
-    private static native void nativeDestroyAdapter(
-            long uploadDataStreamAdapter);
+    @NativeClassQualifiedName("CronetUploadDataStreamAdapter")
+    private static native void nativeDestroy(long nativePtr);
 }

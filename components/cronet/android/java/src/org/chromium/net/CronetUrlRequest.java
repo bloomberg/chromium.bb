@@ -91,7 +91,7 @@ final class CronetUrlRequest implements UrlRequest {
      */
     private OnReadCompletedRunnable mOnReadCompletedTask;
 
-    private Runnable mOnDestroyedCallbackForTests;
+    private Runnable mOnDestroyedCallbackForTesting;
 
     private static final class HeadersList extends ArrayList<Map.Entry<String, String>> {}
 
@@ -352,8 +352,13 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     @VisibleForTesting
-    public void setOnDestroyedCallbackForTests(Runnable onDestroyedCallbackForTests) {
-        mOnDestroyedCallbackForTests = onDestroyedCallbackForTests;
+    public void setOnDestroyedCallbackForTesting(Runnable onDestroyedCallbackForTesting) {
+        mOnDestroyedCallbackForTesting = onDestroyedCallbackForTesting;
+    }
+
+    @VisibleForTesting
+    CronetUploadDataStream getUploadDataStreamForTesting() {
+        return mUploadDataStream;
     }
 
     /**
@@ -437,8 +442,8 @@ final class CronetUrlRequest implements UrlRequest {
             mRequestContext.reportFinished(this);
             mRequestContext.onRequestDestroyed(this);
             mUrlRequestAdapter = 0;
-            if (mOnDestroyedCallbackForTests != null) {
-                mOnDestroyedCallbackForTests.run();
+            if (mOnDestroyedCallbackForTesting != null) {
+                mOnDestroyedCallbackForTesting.run();
             }
         }
     }

@@ -1498,7 +1498,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertFalse(urlRequest.isDone());
 
         final ConditionVariable requestDestroyed = new ConditionVariable(false);
-        urlRequest.setOnDestroyedCallbackForTests(new Runnable() {
+        urlRequest.setOnDestroyedCallbackForTesting(new Runnable() {
             @Override
             public void run() {
                 requestDestroyed.open();
@@ -1569,10 +1569,51 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertTrue(urlRequest.isDone());
     }
 
+    /**
+     * A TestUrlRequestCallback that shuts down executor upon receiving onSucceeded callback.
+     */
+    private static class QuitOnSuccessCallback extends TestUrlRequestCallback {
+        @Override
+        public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
+            // Stop accepting new tasks.
+            shutdownExecutor();
+            super.onSucceeded(request, info);
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    // Regression test for crbug.com/564946.
+    public void testDestroyUploadDataStreamAdapterOnSucceededCallback() throws Exception {
+        TestUrlRequestCallback callback = new QuitOnSuccessCallback();
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
+                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        CronetUrlRequest request = (CronetUrlRequest) builder.build();
+        CronetUploadDataStream uploadDataStream = request.getUploadDataStreamForTesting();
+        final ConditionVariable uploadDataStreamAdapterDestroyed = new ConditionVariable();
+        uploadDataStream.setOnDestroyedCallbackForTesting(new Runnable() {
+            @Override
+            public void run() {
+                uploadDataStreamAdapterDestroyed.open();
+            }
+        });
+
+        request.start();
+        uploadDataStreamAdapterDestroyed.block();
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("", callback.mResponseAsString);
+    }
+
+    @SmallTest
     // Returns the contents of byteBuffer, from its position() to its limit(),
     // as a String. Does not modify byteBuffer's position().
-    private String bufferContentsToString(ByteBuffer byteBuffer, int start,
-            int end) {
+    private String bufferContentsToString(ByteBuffer byteBuffer, int start, int end) {
         // Use a duplicate to avoid modifying byteBuffer.
         ByteBuffer duplicate = byteBuffer.duplicate();
         duplicate.position(start);

@@ -52,6 +52,11 @@ class CronetUploadDataStreamAdapter : public CronetUploadDataStream::Delegate {
   void OnRewindSucceeded(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 
+  // Destroys |this|. Can be called from any thread, but needs to be protected
+  // by the adapter lock.
+  void Destroy(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& jobject);
+
  private:
   // Initialized on construction, effectively constant.
   base::android::ScopedJavaGlobalRef<jobject> jupload_data_stream_;
