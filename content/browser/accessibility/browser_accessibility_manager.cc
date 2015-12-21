@@ -181,6 +181,10 @@ BrowserAccessibilityManager::GetEmptyDocument() {
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
+  // tree_ can be null during destruction.
+  if (!tree_)
+    return nullptr;
+
   // tree_->root() can be null during AXTreeDelegate callbacks.
   ui::AXNode* root = tree_->root();
   return root ? GetFromAXNode(root) : nullptr;

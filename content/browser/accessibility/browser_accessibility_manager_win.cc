@@ -47,6 +47,11 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
 }
 
 BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
+  // Destroy the tree in the subclass, rather than in the inherited
+  // destructor, otherwise our overrides of functions like
+  // OnNodeWillBeDeleted won't be called.
+  tree_.reset(NULL);
+
   if (tracked_scroll_object_) {
     tracked_scroll_object_->Release();
     tracked_scroll_object_ = NULL;

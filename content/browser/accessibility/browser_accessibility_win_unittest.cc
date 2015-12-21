@@ -1615,4 +1615,66 @@ TEST_F(BrowserAccessibilityTest, TestSanitizeStringAttributeForIA2) {
   EXPECT_EQ(L"\\\\\\:\\=\\,\\;", output);
 }
 
+TEST_F(BrowserAccessibilityTest, UniqueIdWinInvalidAfterDeletingTree) {
+  ui::AXNodeData root_node;
+  root_node.id = 1;
+  root_node.role = ui::AX_ROLE_ROOT_WEB_AREA;
+
+  ui::AXNodeData child_node;
+  child_node.id = 2;
+  root_node.child_ids.push_back(2);
+
+  scoped_ptr<BrowserAccessibilityManagerWin> manager(
+      new BrowserAccessibilityManagerWin(
+          MakeAXTreeUpdate(root_node, child_node),
+          nullptr,
+          new CountedBrowserAccessibilityFactory()));
+
+  BrowserAccessibility* root = manager->GetRoot();
+  LONG root_unique_id = root->ToBrowserAccessibilityWin()->unique_id_win();
+  BrowserAccessibility* child = root->PlatformGetChild(0);
+  LONG child_unique_id = child->ToBrowserAccessibilityWin()->unique_id_win();
+
+  // Now destroy that original tree and create a new tree.
+  manager.reset(
+      new BrowserAccessibilityManagerWin(
+          MakeAXTreeUpdate(root_node, child_node),
+          nullptr,
+          new CountedBrowserAccessibilityFactory()));
+  root = manager->GetRoot();
+  LONG root_unique_id_2 = root->ToBrowserAccessibilityWin()->unique_id_win();
+  child = root->PlatformGetChild(0);
+  LONG child_unique_id_2 = child->ToBrowserAccessibilityWin()->unique_id_win();
+
+  // The nodes in the new tree should not have the same ids.
+  EXPECT_NE(root_unique_id, root_unique_id_2);
+  EXPECT_NE(child_unique_id, child_unique_id_2);
+
+  // Trying to access the unique IDs of the old, deleted objects should fail.
+  base::win::ScopedVariant old_root_variant(root_unique_id);
+  base::win::ScopedComPtr<IDispatch> old_root_dispatch;
+  HRESULT hr = root->ToBrowserAccessibilityWin()->get_accChild(
+      old_root_variant, old_root_dispatch.Receive());
+  EXPECT_EQ(E_INVALIDARG, hr);
+
+  base::win::ScopedVariant old_child_variant(child_unique_id);
+  base::win::ScopedComPtr<IDispatch> old_child_dispatch;
+  hr = root->ToBrowserAccessibilityWin()->get_accChild(
+      old_child_variant, old_child_dispatch.Receive());
+  EXPECT_EQ(E_INVALIDARG, hr);
+
+  // Trying to access the unique IDs of the new objects should succeed.
+  base::win::ScopedVariant new_root_variant(root_unique_id_2);
+  base::win::ScopedComPtr<IDispatch> new_root_dispatch;
+  hr = root->ToBrowserAccessibilityWin()->get_accChild(
+      new_root_variant, new_root_dispatch.Receive());
+  EXPECT_EQ(S_OK, hr);
+
+  base::win::ScopedVariant new_child_variant(child_unique_id_2);
+  base::win::ScopedComPtr<IDispatch> new_child_dispatch;
+  hr = root->ToBrowserAccessibilityWin()->get_accChild(
+      new_child_variant, new_child_dispatch.Receive());
+  EXPECT_EQ(S_OK, hr);
+}
+
 }  // namespace content
