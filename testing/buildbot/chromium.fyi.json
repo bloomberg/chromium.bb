@@ -5687,7 +5687,7 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-AllUrlsApiTest.WhitelistedExtension:BrowserNavigatorTest.NavigateFromNTPToOptionsInSameTab:BrowserTest.OtherRedirectsDontForkProcess:BrowserTest.WindowOpenClose:ChromeRenderProcessHostTest.*:ChromeRenderProcessHostTestWithCommandLine.*:ErrorPageTest.*:ExtensionApiTest.Tabs2:ExtensionApiTest.TabMove:ExtensionApiTest.TabsOnUpdated:ExtensionURLRewriteBrowserTest.NewTabPageURL:IsolatedAppTest.*:PhishingClassifierDelegateTest.*:PhishingDOMFeatureExtractorTest.SubFrames:PolicyTest.HomepageLocation:PrerenderBrowserTest.*:ProcessManagementTest.*:RedirectTest.ClientEmptyReferer:ReferrerPolicyTest.HttpsRedirect:RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest*:SSLUITest.TestGoodFrameNavigation:SSLUITest.TestMarkNonSecureAs:WebNavigationApiTest.CrossProcessFragment:WebNavigationApiTest.ServerRedirectSingleProcess:WebNavigationApiTest.CrossProcessHistory:WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs"
+          "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.browser_tests.filter"
         ],
         "test": "browser_tests"
       },
@@ -5706,7 +5706,7 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-SessionHistoryTest.FrameBackForward:NavigationControllerBrowserTest.ReloadOriginalRequest:*.RestoreSubframeFileAccessForHistoryNavigation"
+          "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.content_browsertests.filter"
         ],
         "test": "content_browsertests"
       },

@@ -1,0 +1,3 @@
+-SessionHistoryTest.FrameBackForward
+-NavigationControllerBrowserTest.ReloadOriginalRequest
+-*.RestoreSubframeFileAccessForHistoryNavigation
