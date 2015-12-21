@@ -93,7 +93,6 @@
                         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
                         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
                         '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
-                        '<(DEPTH)/third_party/modp_b64/modp_b64.gyp:modp_b64',
                         '<(DEPTH)/third_party/ots/ots.gyp:ots',
                         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
                         '<(DEPTH)/url/url.gyp:url_lib',
