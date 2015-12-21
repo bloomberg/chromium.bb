@@ -1295,3 +1295,5 @@ crbug.com/569514 inspector/sources/debugger/debugger-scripts.html [ NeedsManualR
 crbug.com/569811 inspector-protocol/debugger/updateCallFrameScopes.html [ Pass Failure ]
 
 crbug.com/570899 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled.html [ Failure ]
+
+crbug.com/536999 paint/selection/selection-within-composited-scroller.html [ NeedsRebaseline ]
