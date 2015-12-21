@@ -116,6 +116,8 @@
             'app/chrome_main_delegate.h',
             'app/chrome_main_mac.h',
             'app/chrome_main_mac.mm',
+            'app/close_handle_hook_win.cc',
+            'app/close_handle_hook_win.h',
             'app/delay_load_hook_win.cc',
             'app/delay_load_hook_win.h',
           ],
@@ -362,6 +364,8 @@
             'app/chrome_main.cc',
             'app/chrome_main_delegate.cc',
             'app/chrome_main_delegate.h',
+            'app/close_handle_hook_win.cc',
+            'app/close_handle_hook_win.h',
           ],
           'conditions': [
             ['OS=="win" and win_use_allocator_shim==1', {

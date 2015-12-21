@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <windows.h>
-#include <winternl.h>
-
 #include "base/win/scoped_handle.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,39 +29,4 @@ TEST(ScopedHandleTest, ScopedHandle) {
   ::SetLastError(magic_error);
   handle_holder = handle_source.Pass();
   EXPECT_EQ(magic_error, ::GetLastError());
-}
-
-TEST(ScopedHandleTest, ActiveVerifierCloseTracked) {
-  HANDLE handle = ::CreateMutex(nullptr, FALSE, nullptr);
-  ASSERT_NE(HANDLE(NULL), handle);
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder(handle);
-    // Calling CloseHandle on a tracked handle should crash.
-    ::CloseHandle(handle);
-  }, "CloseHandle called on tracked handle.");
-}
-
-TEST(ScopedHandleTest, ActiveVerifierTrackedHasBeenClosed) {
-  HANDLE handle = ::CreateMutex(nullptr, FALSE, nullptr);
-  ASSERT_NE(HANDLE(NULL), handle);
-  typedef NTSTATUS(WINAPI * NtCloseFunc)(HANDLE);
-  NtCloseFunc ntclose = reinterpret_cast<NtCloseFunc>(
-      GetProcAddress(GetModuleHandle(L"ntdll.dll"), "NtClose"));
-  ASSERT_NE(nullptr, ntclose);
-
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder(handle);
-    ntclose(handle);
-    // Destructing a ScopedHandle with an illegally closed handle should fail.
-  }, "CloseHandle failed.");
-}
-
-TEST(ScopedHandleTest, ActiveVerifierDoubleTracking) {
-  HANDLE handle = ::CreateMutex(nullptr, FALSE, nullptr);
-  ASSERT_NE(HANDLE(NULL), handle);
-
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder(handle);
-    base::win::ScopedHandle handle_holder2(handle);
-  }, "Attempt to start tracking already tracked handle.");
 }

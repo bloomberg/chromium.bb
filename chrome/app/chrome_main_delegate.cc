@@ -55,7 +55,7 @@
 #include <atlbase.h>
 #include <malloc.h>
 #include <algorithm>
-#include "base/debug/close_handle_hook_win.h"
+#include "chrome/app/close_handle_hook_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/v8_breakpad_support_win.h"
 #include "components/crash/content/app/crashpad.h"
@@ -499,25 +499,8 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
     return true;
   }
 
-  // Handle verifier is enabled on 32-bit only, and only in Debug builds or
-  // Release builds running on Dev or Canary channels.
-  bool handle_verifier_enabled = false;
-#if !defined(ARCH_CPU_X86_64)
-#if defined(NDEBUG)
-  version_info::Channel channel = chrome::GetChannel();
-  if (channel == version_info::Channel::CANARY ||
-      channel == version_info::Channel::DEV) {
-    handle_verifier_enabled = true;
-  }
-#else
-  // Always enabled in Debug.
-  handle_verifier_enabled = true;
-#endif  // NDEBUG
-#endif  // ARCH_CPU_X86_64
-
-  if (!handle_verifier_enabled || !base::debug::InstallHandleHooks())
-    base::win::DisableHandleVerifier();
-#endif  // OS_WIN
+  InstallHandleHooks();
+#endif
 
   chrome::RegisterPathProvider();
 #if defined(OS_CHROMEOS)
@@ -906,7 +889,7 @@ void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  base::debug::RemoveHandleHooks();
+  RemoveHandleHooks();
 #endif
 }
 

@@ -317,6 +317,8 @@ source_set("test_support") {
   sources = [
     "chrome_main_delegate.cc",
     "chrome_main_delegate.h",
+    "close_handle_hook_win.cc",
+    "close_handle_hook_win.h",
   ]
 
   deps = [

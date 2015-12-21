@@ -11,8 +11,6 @@ source_set("debug") {
     "alias.h",
     "asan_invalid_access.cc",
     "asan_invalid_access.h",
-    "close_handle_hook_win.cc",
-    "close_handle_hook_win.h",
     "crash_logging.cc",
     "crash_logging.h",
     "debugger.cc",
