@@ -7,8 +7,10 @@
 #include <atlsecurity.h>
 #include <ntsecapi.h>
 #include <windows.h>
+#include <stddef.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 
 const wchar_t kSeServiceLogonRight[] = L"SeServiceLogonRight";

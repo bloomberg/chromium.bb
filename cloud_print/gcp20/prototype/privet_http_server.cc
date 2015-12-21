@@ -4,6 +4,9 @@
 
 #include "cloud_print/gcp20/prototype/privet_http_server.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
@@ -102,7 +105,7 @@ PrivetHttpServer::~PrivetHttpServer() {
   Shutdown();
 }
 
-bool PrivetHttpServer::Start(uint16 port) {
+bool PrivetHttpServer::Start(uint16_t port) {
   if (server_)
     return true;
 
@@ -370,7 +373,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessSubmitDoc(
       response->SetString("job_type", job.content_type);
       response->SetString(
           "job_size",
-          base::StringPrintf("%u", static_cast<uint32>(job.content.size())));
+          base::StringPrintf("%u", static_cast<uint32_t>(job.content.size())));
       if (job_name_present)
         response->SetString("job_name", job.job_name);
       return response.Pass();

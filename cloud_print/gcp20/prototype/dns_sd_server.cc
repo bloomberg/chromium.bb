@@ -4,9 +4,9 @@
 
 #include "cloud_print/gcp20/prototype/dns_sd_server.h"
 
+#include <stdint.h>
 #include <string.h>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -21,13 +21,13 @@
 namespace {
 
 const char kDefaultIpAddressMulticast[] = "224.0.0.251";
-const uint16 kDefaultPortMulticast = 5353;
+const uint16_t kDefaultPortMulticast = 5353;
 
 const double kTimeToNextAnnouncement = 0.8;  // relatively to TTL
 const int kDnsBufSize = 65537;
 
-const uint16 kSrvPriority = 0;
-const uint16 kSrvWeight = 0;
+const uint16_t kSrvPriority = 0;
+const uint16_t kSrvWeight = 0;
 
 void DoNothingAfterSendToSocket(int /*val*/) {
   NOTREACHED();
@@ -46,7 +46,8 @@ DnsSdServer::~DnsSdServer() {
   Shutdown();
 }
 
-bool DnsSdServer::Start(const ServiceParameters& serv_params, uint32 full_ttl,
+bool DnsSdServer::Start(const ServiceParameters& serv_params,
+                        uint32_t full_ttl,
                         const std::vector<std::string>& metadata) {
   if (IsOnline())
     return true;
@@ -96,7 +97,7 @@ void DnsSdServer::UpdateMetadata(const std::vector<std::string>& metadata) {
   // TODO(maksymb): If less than 20% of full TTL left before next announcement
   // then send it now.
 
-  uint32 current_ttl = GetCurrentTLL();
+  uint32_t current_ttl = GetCurrentTLL();
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNoAnnouncement)) {
     DnsResponseBuilder builder(current_ttl);
@@ -158,7 +159,7 @@ void DnsSdServer::ProcessMessage(int len, net::IOBufferWithSize* buf) {
 
   DnsResponseBuilder builder(parser.header().id);
 
-  uint32 current_ttl = GetCurrentTLL();
+  uint32_t current_ttl = GetCurrentTLL();
 
   DnsQueryRecord query;
   // TODO(maksymb): Check known answers.
@@ -187,7 +188,8 @@ void DnsSdServer::ProcessMessage(int len, net::IOBufferWithSize* buf) {
       << (unicast_respond ? recv_address_ : multicast_address_).ToString();
 }
 
-void DnsSdServer::ProccessQuery(uint32 current_ttl, const DnsQueryRecord& query,
+void DnsSdServer::ProccessQuery(uint32_t current_ttl,
+                                const DnsQueryRecord& query,
                                 DnsResponseBuilder* builder) const {
   std::string log;
   bool responded = false;
@@ -274,7 +276,7 @@ void DnsSdServer::OnDatagramReceived() {
   DoLoop(0);
 }
 
-void DnsSdServer::SendAnnouncement(uint32 ttl) {
+void DnsSdServer::SendAnnouncement(uint32_t ttl) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNoAnnouncement)) {
     DnsResponseBuilder builder(ttl);
@@ -307,14 +309,13 @@ void DnsSdServer::SendAnnouncement(uint32 ttl) {
 
   // Schedule next announcement.
   base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DnsSdServer::Update, AsWeakPtr()),
-      base::TimeDelta::FromSeconds(static_cast<int64>(
-          kTimeToNextAnnouncement*full_ttl_)));
+      FROM_HERE, base::Bind(&DnsSdServer::Update, AsWeakPtr()),
+      base::TimeDelta::FromSeconds(
+          static_cast<int64_t>(kTimeToNextAnnouncement * full_ttl_)));
 }
 
-uint32 DnsSdServer::GetCurrentTLL() const {
-  uint32 current_ttl = (time_until_live_ - base::Time::Now()).InSeconds();
+uint32_t DnsSdServer::GetCurrentTLL() const {
+  uint32_t current_ttl = (time_until_live_ - base::Time::Now()).InSeconds();
   if (time_until_live_ < base::Time::Now() || current_ttl == 0) {
     // This should not be reachable. But still we don't need to fail.
     current_ttl = 1;  // Service is still alive.

@@ -4,6 +4,9 @@
 
 #include "cloud_print/gcp20/prototype/cloud_print_response_parser.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -196,7 +199,7 @@ bool ParseFetchResponse(const std::string& response,
       *error_description = "Cannot parse job info.";
       return false;
     }
-    int64 create_time_ms = 0;
+    int64_t create_time_ms = 0;
     if (!base::StringToInt64(create_time_str, &create_time_ms)) {
       *error_description = "Cannot convert time.";
       return false;

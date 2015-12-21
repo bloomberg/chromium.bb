@@ -4,9 +4,11 @@
 
 #include "cloud_print/virtual_driver/win/port_monitor/port_monitor.h"
 
+#include <stddef.h>
 #include <winspool.h>
 
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/win/registry.h"

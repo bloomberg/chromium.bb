@@ -6,6 +6,7 @@
 
 #include <atlbase.h>
 #include <atlsecurity.h>
+#include <stddef.h>
 
 #include "base/bind.h"
 #include "base/guid.h"

@@ -4,6 +4,8 @@
 
 #include "cloud_print/service/win/chrome_launcher.h"
 
+#include <stddef.h>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"

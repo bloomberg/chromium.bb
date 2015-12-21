@@ -4,10 +4,10 @@
 
 #include "cloud_print/gcp20/prototype/x_privet_token.h"
 
+#include <stdint.h>
 #include <stdio.h>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/sha1.h"
@@ -18,8 +18,8 @@
 
 TEST(XPrivetTokenTest, Generation) {
   std::string secret = "E3E92296-E290-4E77-B678-6AEF256C30C8";
-  uint64 gen_time = 1372444784;
-  uint64 issue_time = gen_time;
+  uint64_t gen_time = 1372444784;
+  uint64_t issue_time = gen_time;
 
   XPrivetToken xtoken(secret, base::Time::FromTimeT(gen_time));
 

@@ -5,6 +5,8 @@
 #include "cloud_print/gcp20/prototype/printer.h"
 
 #include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <algorithm>
 #include <string>
@@ -34,8 +36,8 @@ const char kPrinterStatePathDefault[] = "printer_state.json";
 
 namespace {
 
-const uint16 kHttpPortDefault = 10101;
-const uint32 kTtlDefault = 60*60;  // in seconds
+const uint16_t kHttpPortDefault = 10101;
+const uint32_t kTtlDefault = 60 * 60;  // in seconds
 
 const char kServiceType[] = "_privet._tcp.local";
 const char kSecondaryServiceType[] = "_printer._sub._privet._tcp.local";
@@ -681,8 +683,8 @@ void Printer::RememberAccessToken(const std::string& access_token,
   using base::Time;
   using base::TimeDelta;
   state_.access_token = access_token;
-  int64 time_to_update = static_cast<int64>(expires_in_seconds *
-                                            kTimeToNextAccessTokenUpdate);
+  int64_t time_to_update =
+      static_cast<int64_t>(expires_in_seconds * kTimeToNextAccessTokenUpdate);
   state_.access_token_update =
       Time::Now() + TimeDelta::FromSeconds(time_to_update);
   VLOG(0) << "Current access_token: " << access_token;
@@ -852,7 +854,7 @@ bool Printer::StartDnsServer() {
     return false;
   }
 
-  uint16 port = command_line_reader::ReadHttpPort(kHttpPortDefault);
+  uint16_t port = command_line_reader::ReadHttpPort(kHttpPortDefault);
 
   VLOG_IF(0, !ipv4.empty())
       << "Local IPv4 address: " << net::IPAddressToStringWithPort(ipv4, port);

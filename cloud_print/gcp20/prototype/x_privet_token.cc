@@ -4,6 +4,9 @@
 
 #include "cloud_print/gcp20/prototype/x_privet_token.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
@@ -15,8 +18,8 @@
 namespace {
 
 const char kXPrivetTokenDelimeter = ':';
-const uint64 kTimeExpiration = 24*60*60;  // in seconds
-const uint64 kTimeSecretRefresh = 24*60*60;  // in seconds
+const uint64_t kTimeExpiration = 24 * 60 * 60;     // in seconds
+const uint64_t kTimeSecretRefresh = 24 * 60 * 60;  // in seconds
 
 }  // namespace
 
@@ -37,7 +40,7 @@ std::string XPrivetToken::GenerateXToken() {
   if (Time::Now() > last_gen_time_ + TimeDelta::FromSeconds(kTimeSecretRefresh))
     UpdateSecret();
 
-  return GenerateXTokenWithTime(static_cast<uint64>(Time::Now().ToTimeT()));
+  return GenerateXTokenWithTime(static_cast<uint64_t>(Time::Now().ToTimeT()));
 }
 
 bool XPrivetToken::CheckValidXToken(const std::string& token) const {
@@ -46,7 +49,7 @@ bool XPrivetToken::CheckValidXToken(const std::string& token) const {
     return false;
 
   std::string issue_time_str = token.substr(delimeter_pos + 1);
-  uint64 issue_time;
+  uint64_t issue_time;
   if (!base::StringToUint64(issue_time_str, &issue_time))
     return false;
 
@@ -57,7 +60,7 @@ bool XPrivetToken::CheckValidXToken(const std::string& token) const {
       TimeDelta::FromSeconds(kTimeExpiration);
 }
 
-std::string XPrivetToken::GenerateXTokenWithTime(uint64 issue_time) const {
+std::string XPrivetToken::GenerateXTokenWithTime(uint64_t issue_time) const {
   std::string result;
   std::string issue_time_str = base::StringPrintf("%" PRIu64, issue_time);
   std::string hash = base::SHA1HashString(secret_ +

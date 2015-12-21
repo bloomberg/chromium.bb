@@ -8,6 +8,8 @@
 #include <lmcons.h>
 #include <shellapi.h>
 #include <shlobj.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <strsafe.h>
 #include <userenv.h>
 #include <winspool.h>
@@ -574,7 +576,7 @@ BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
     base::CloseFile(port_data->file);
     port_data->file = NULL;
     bool delete_file = true;
-    int64 file_size = 0;
+    int64_t file_size = 0;
     base::GetFileSize(port_data->file_path, &file_size);
     if (file_size > 0) {
       base::string16 job_title;

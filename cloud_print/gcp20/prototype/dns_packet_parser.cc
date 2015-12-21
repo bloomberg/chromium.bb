@@ -4,6 +4,8 @@
 
 #include "cloud_print/gcp20/prototype/dns_packet_parser.h"
 
+#include <stddef.h>
+
 #include "base/big_endian.h"
 #include "base/logging.h"
 

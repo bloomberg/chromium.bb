@@ -5,10 +5,12 @@
 #ifndef CLOUD_PRINT_GCP20_PROTOTYPE_DNS_SD_SERVER_H_
 #define CLOUD_PRINT_GCP20_PROTOTYPE_DNS_SD_SERVER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cloud_print/gcp20/prototype/service_parameters.h"
@@ -38,7 +40,7 @@ class DnsSdServer : public base::SupportsWeakPtr<DnsSdServer> {
   // Starts the server. Returns |true| if server works. Also sends
   // announcement.
   bool Start(const ServiceParameters& serv_params,
-             uint32 full_ttl,
+             uint32_t full_ttl,
              const std::vector<std::string>& metadata) WARN_UNUSED_RESULT;
 
   // Sends announcement if server works.
@@ -58,7 +60,7 @@ class DnsSdServer : public base::SupportsWeakPtr<DnsSdServer> {
   bool CreateSocket();
 
   // Processes single query.
-  void ProccessQuery(uint32 current_ttl,
+  void ProccessQuery(uint32_t current_ttl,
                      const DnsQueryRecord& query,
                      DnsResponseBuilder* builder) const;
 
@@ -72,11 +74,11 @@ class DnsSdServer : public base::SupportsWeakPtr<DnsSdServer> {
   void OnDatagramReceived();
 
   // Sends announcement.
-  void SendAnnouncement(uint32 ttl);
+  void SendAnnouncement(uint32_t ttl);
 
   // Calculates and returns current TTL (with accordance to last send
   // announcement time.
-  uint32 GetCurrentTLL() const;
+  uint32_t GetCurrentTLL() const;
 
   // Stores socket to multicast address.
   scoped_ptr<net::UDPServerSocket> socket_;
@@ -100,7 +102,7 @@ class DnsSdServer : public base::SupportsWeakPtr<DnsSdServer> {
   std::vector<std::string> metadata_;
 
   // TTL for announcements
-  uint32 full_ttl_;
+  uint32_t full_ttl_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsSdServer);
 };

@@ -4,6 +4,9 @@
 
 #include "cloud_print/service/win/service_listener.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -75,7 +78,7 @@ bool ServiceListener::OnMessageReceived(const IPC::Message& msg) {
   return true;
 }
 
-void ServiceListener::OnChannelConnected(int32 peer_pid) {
+void ServiceListener::OnChannelConnected(int32_t peer_pid) {
   IPC::Message* message = new IPC::Message(0, 0, IPC::Message::PRIORITY_NORMAL);
   message->WriteString(GetEnvironment(user_data_dir_));
   channel_->Send(message);

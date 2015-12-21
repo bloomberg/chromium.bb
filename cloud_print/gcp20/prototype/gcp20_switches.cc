@@ -4,6 +4,8 @@
 
 #include "cloud_print/gcp20/prototype/gcp20_switches.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 

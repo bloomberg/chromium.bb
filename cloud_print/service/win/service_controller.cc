@@ -7,11 +7,13 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
+#include <stdint.h>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_switches.h"
@@ -297,7 +299,7 @@ void ServiceController::UpdateState() {
   if (!config_size)
     return;
 
-  std::vector<uint8> buffer(config_size, 0);
+  std::vector<uint8_t> buffer(config_size, 0);
   QUERY_SERVICE_CONFIG* config =
       reinterpret_cast<QUERY_SERVICE_CONFIG*>(&buffer[0]);
   if (!::QueryServiceConfig(service.Get(), config,

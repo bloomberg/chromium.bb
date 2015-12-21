@@ -4,6 +4,8 @@
 
 #include "cloud_print/gcp20/prototype/cloud_print_xmpp_listener.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"

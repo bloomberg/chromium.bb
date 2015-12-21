@@ -5,8 +5,12 @@
 #ifndef CLOUD_PRINT_GCP20_PROTOTYPE_DNS_PACKET_PARSER_H_
 #define CLOUD_PRINT_GCP20_PROTOTYPE_DNS_PACKET_PARSER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
 
@@ -16,8 +20,8 @@ struct DnsQueryRecord {
   ~DnsQueryRecord() {}
 
   std::string qname;  // in dotted form
-  uint16 qtype;
-  uint16 qclass;
+  uint16_t qtype;
+  uint16_t qclass;
 };
 
 // Iterator to walk over records of the DNS response packet. Encapsulates

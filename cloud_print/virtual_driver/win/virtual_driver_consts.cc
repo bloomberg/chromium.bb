@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "cloud_print/virtual_driver/win/virtual_driver_consts.h"
+
 #include <windows.h>
+#include <stddef.h>
+
 #include "cloud_print/virtual_driver/win/virtual_driver_helpers.h"
 
 namespace cloud_print {

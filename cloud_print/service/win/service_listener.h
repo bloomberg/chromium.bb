@@ -5,6 +5,8 @@
 #ifndef CLOUD_PRINT_SERVICE_SERVICE_LISTENER_H_
 #define CLOUD_PRINT_SERVICE_SERVICE_LISTENER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -26,7 +28,7 @@ class ServiceListener : public IPC::Listener {
   ~ServiceListener() override;
 
   bool OnMessageReceived(const IPC::Message& msg) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
 
  private:
   void Disconnect();

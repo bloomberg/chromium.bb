@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <setupapi.h>  // Must be included after windows.h
 #include <winspool.h>
+#include <stddef.h>
+
 #include <iomanip>
 
 #include "base/at_exit.h"

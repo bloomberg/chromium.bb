@@ -4,7 +4,6 @@
 
 #include "cloud_print/gcp20/prototype/printer.h"
 
-#include "base/basictypes.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"

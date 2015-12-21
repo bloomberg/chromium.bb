@@ -4,6 +4,9 @@
 
 #include "cloud_print/gcp20/prototype/dns_response_builder.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
@@ -13,7 +16,7 @@
 
 namespace {
 
-uint16 klass = net::dns_protocol::kClassIN;
+uint16_t klass = net::dns_protocol::kClassIN;
 
 }  // namespace
 
@@ -23,7 +26,7 @@ DnsResponseRecord::DnsResponseRecord() : type(0), klass(0), ttl(0) {
 DnsResponseRecord::~DnsResponseRecord() {
 }
 
-DnsResponseBuilder::DnsResponseBuilder(uint16 id) {
+DnsResponseBuilder::DnsResponseBuilder(uint16_t id) {
   header_.id = id;
   // TODO(maksymb): Check do we need AA flag enabled.
   header_.flags = net::dns_protocol::kFlagResponse |
@@ -38,7 +41,7 @@ DnsResponseBuilder::~DnsResponseBuilder() {
 }
 
 void DnsResponseBuilder::AppendPtr(const std::string& service_type,
-                                   uint32 ttl,
+                                   uint32_t ttl,
                                    const std::string& service_name,
                                    bool answer) {
   std::string rdata;
@@ -49,17 +52,17 @@ void DnsResponseBuilder::AppendPtr(const std::string& service_type,
 }
 
 void DnsResponseBuilder::AppendSrv(const std::string& service_name,
-                                   uint32 ttl,
-                                   uint16 priority,
-                                   uint16 weight,
-                                   uint16 http_port,
+                                   uint32_t ttl,
+                                   uint16_t priority,
+                                   uint16_t weight,
+                                   uint16_t http_port,
                                    const std::string& service_domain_name,
                                    bool answer) {
   std::string domain_name;
   bool success = net::DNSDomainFromDot(service_domain_name, &domain_name);
   DCHECK(success);
 
-  std::vector<uint8> rdata(2 + 2 + 2 + domain_name.size());
+  std::vector<uint8_t> rdata(2 + 2 + 2 + domain_name.size());
 
   base::BigEndianWriter writer(reinterpret_cast<char*>(rdata.data()),
                                rdata.size());
@@ -75,7 +78,7 @@ void DnsResponseBuilder::AppendSrv(const std::string& service_name,
 }
 
 void DnsResponseBuilder::AppendA(const std::string& service_domain_name,
-                                 uint32 ttl,
+                                 uint32_t ttl,
                                  net::IPAddressNumber http_ipv4,
                                  bool answer) {
   // TODO(maksymb): IP to send must depends on interface from where query was
@@ -89,7 +92,7 @@ void DnsResponseBuilder::AppendA(const std::string& service_domain_name,
 }
 
 void DnsResponseBuilder::AppendAAAA(const std::string& service_domain_name,
-                                    uint32 ttl,
+                                    uint32_t ttl,
                                     net::IPAddressNumber http_ipv6,
                                     bool answer) {
   // TODO(maksymb): IP to send must depends on interface from where query was
@@ -103,7 +106,7 @@ void DnsResponseBuilder::AppendAAAA(const std::string& service_domain_name,
 }
 
 void DnsResponseBuilder::AppendTxt(const std::string& service_name,
-                                   uint32 ttl,
+                                   uint32_t ttl,
                                    const std::vector<std::string>& metadata,
                                    bool answer) {
   std::string rdata;
@@ -153,10 +156,9 @@ scoped_refptr<net::IOBufferWithSize> DnsResponseBuilder::Build() {
 
     success = writer.WriteBytes(name_in_dns_format.data(),
                                 name_in_dns_format.size()) &&
-              writer.WriteU16(iter->type) &&
-              writer.WriteU16(iter->klass) &&
+              writer.WriteU16(iter->type) && writer.WriteU16(iter->klass) &&
               writer.WriteU32(iter->ttl) &&
-              writer.WriteU16(static_cast<uint16>(iter->rdata.size())) &&
+              writer.WriteU16(static_cast<uint16_t>(iter->rdata.size())) &&
               writer.WriteBytes(iter->rdata.data(), iter->rdata.size());
     DCHECK(success);
   }
@@ -167,8 +169,8 @@ scoped_refptr<net::IOBufferWithSize> DnsResponseBuilder::Build() {
 }
 
 void DnsResponseBuilder::AddResponse(const std::string& name,
-                                     uint16 type,
-                                     uint32 ttl,
+                                     uint16_t type,
+                                     uint32_t ttl,
                                      const std::string& rdata,
                                      bool answer) {
   DnsResponseRecord response;

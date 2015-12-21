@@ -4,6 +4,8 @@
 
 #include <atlbase.h>
 #include <atlapp.h>  // NOLINT
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/at_exit.h"
 #include "base/bind.h"

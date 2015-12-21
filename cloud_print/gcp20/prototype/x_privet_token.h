@@ -5,9 +5,10 @@
 #ifndef CLOUD_PRINT_GCP20_PROTOTYPE_X_PRIVET_TOKEN_H_
 #define CLOUD_PRINT_GCP20_PROTOTYPE_X_PRIVET_TOKEN_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 
@@ -36,7 +37,7 @@ class XPrivetToken {
   XPrivetToken(const std::string& secret, const base::Time& gen_time);
 
   // Generates X-Privet-Token for with certain time of issue.
-  std::string GenerateXTokenWithTime(uint64 issue_time) const;
+  std::string GenerateXTokenWithTime(uint64_t issue_time) const;
 
   // Creates new XPrivetToken secret.
   void UpdateSecret();

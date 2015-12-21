@@ -5,7 +5,7 @@
 #ifndef CLOUD_PRINT_GCP20_PROTOTYPE_CLOUD_PRINT_URL_REQUEST_CONTEXT_GETTER_H_
 #define CLOUD_PRINT_GCP20_PROTOTYPE_CLOUD_PRINT_URL_REQUEST_CONTEXT_GETTER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_context_getter.h"
 

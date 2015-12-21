@@ -9,6 +9,7 @@
 #include <atlbase.h>
 #pragma warning(pop)
 #include <security.h>
+#include <stddef.h>
 
 #include <iomanip>
 #include <iostream>

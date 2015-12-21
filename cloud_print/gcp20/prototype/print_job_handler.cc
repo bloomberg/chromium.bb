@@ -4,6 +4,8 @@
 
 #include "cloud_print/gcp20/prototype/print_job_handler.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"

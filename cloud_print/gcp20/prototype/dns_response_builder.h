@@ -5,10 +5,12 @@
 #ifndef CLOUD_PRINT_GCP20_PROTOTYPE_DNS_RESPONSE_BUILDER_H_
 #define CLOUD_PRINT_GCP20_PROTOTYPE_DNS_RESPONSE_BUILDER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address_number.h"
@@ -24,9 +26,9 @@ struct DnsResponseRecord {
   ~DnsResponseRecord();
 
   std::string name;  // in dotted form
-  uint16 type;
-  uint16 klass;
-  uint32 ttl;
+  uint16_t type;
+  uint16_t klass;
+  uint32_t ttl;
   std::string rdata;
 };
 
@@ -34,36 +36,37 @@ struct DnsResponseRecord {
 class DnsResponseBuilder {
  public:
   // Initializes builder.
-  explicit DnsResponseBuilder(uint16 id);
+  explicit DnsResponseBuilder(uint16_t id);
 
   // Destroys the object.
   ~DnsResponseBuilder();
 
   // Methods for appending different types of responses to packet.
   void AppendPtr(const std::string& service_type,
-                 uint32 ttl,
+                 uint32_t ttl,
                  const std::string& service_name,
                  bool answer);
 
   void AppendSrv(const std::string& service_name,
-                 uint32 ttl,
-                 uint16 priority,
-                 uint16 weight, uint16 http_port,
+                 uint32_t ttl,
+                 uint16_t priority,
+                 uint16_t weight,
+                 uint16_t http_port,
                  const std::string& service_domain_name,
                  bool answer);
 
   void AppendA(const std::string& service_domain_name,
-               uint32 ttl,
+               uint32_t ttl,
                net::IPAddressNumber http_ipv4,
                bool answer);
 
   void AppendAAAA(const std::string& service_domain_name,
-                  uint32 ttl,
+                  uint32_t ttl,
                   net::IPAddressNumber http_ipv6,
                   bool answer);
 
   void AppendTxt(const std::string& service_name,
-                 uint32 ttl,
+                 uint32_t ttl,
                  const std::vector<std::string>& metadata,
                  bool answer);
 
@@ -73,8 +76,8 @@ class DnsResponseBuilder {
  private:
   // Appends response to packet.
   void AddResponse(const std::string& name,
-                   uint16 type,
-                   uint32 ttl,
+                   uint16_t type,
+                   uint32_t ttl,
                    const std::string& rdata,
                    bool answer);
 

@@ -8,7 +8,7 @@
 #include <wtypes.h>  // Has to be before ntsecapi.h
 #include <ntsecapi.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 extern const wchar_t kSeServiceLogonRight[];

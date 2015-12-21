@@ -4,6 +4,8 @@
 
 #include "cloud_print/service/service_state.h"
 
+#include <stdint.h>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -35,7 +37,7 @@ const char kXmppAuthTokenOptionName[] = "xmpp_auth_token";
 
 const char kClientLoginUrl[] = "https://www.google.com/accounts/ClientLogin";
 
-const int64 kRequestTimeoutMs = 10 * 1000;
+const int64_t kRequestTimeoutMs = 10 * 1000;
 
 class ServiceStateURLRequestDelegate : public net::URLRequest::Delegate {
  public:

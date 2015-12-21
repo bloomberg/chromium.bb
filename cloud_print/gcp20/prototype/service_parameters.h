@@ -5,6 +5,8 @@
 #ifndef CLOUD_PRINT_GCP20_PROTOTYPE_SERVICE_PARAMETERS_H_
 #define CLOUD_PRINT_GCP20_PROTOTYPE_SERVICE_PARAMETERS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "net/base/ip_address_number.h"
@@ -21,7 +23,7 @@ struct ServiceParameters {
                     const std::string& service_domain_name,
                     const net::IPAddressNumber& http_ipv4,
                     const net::IPAddressNumber& http_ipv6,
-                    uint16 http_port);
+                    uint16_t http_port);
 
   std::string service_type_;
   std::string secondary_service_type_;
@@ -29,7 +31,7 @@ struct ServiceParameters {
   std::string service_domain_name_;
   net::IPAddressNumber http_ipv4_;
   net::IPAddressNumber http_ipv6_;
-  uint16 http_port_;
+  uint16_t http_port_;
 };
 
 #endif  // CLOUD_PRINT_GCP20_PROTOTYPE_SERVICE_PARAMETERS_H_

@@ -4,6 +4,7 @@
 
 #include "cloud_print/service/service_state.h"
 
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

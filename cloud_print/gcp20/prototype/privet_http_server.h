@@ -5,10 +5,12 @@
 #ifndef CLOUD_PRINT_GCP20_PROTOTYPE_PRIVET_HTTP_SERVER_H_
 #define CLOUD_PRINT_GCP20_PROTOTYPE_PRIVET_HTTP_SERVER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "cloud_print/gcp20/prototype/local_print_job.h"
 #include "net/server/http_server.h"
@@ -134,7 +136,7 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
   ~PrivetHttpServer() override;
 
   // Starts HTTP server: start listening port |port| for HTTP requests.
-  bool Start(uint16 port);
+  bool Start(uint16_t port);
 
   // Stops HTTP server.
   void Shutdown();
@@ -201,7 +203,7 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
 
   // Port for listening.
 
-  uint16 port_;
+  uint16_t port_;
 
   // Contains encapsulated object for listening for requests.
   scoped_ptr<net::HttpServer> server_;
