@@ -5,6 +5,8 @@
 #ifndef SANDBOX_SANDBOX_POC_MAIN_UI_WINDOW_H__
 #define SANDBOX_SANDBOX_POC_MAIN_UI_WINDOW_H__
 
+#include <windows.h>
+
 #include <string>
 
 #include "base/basictypes.h"
