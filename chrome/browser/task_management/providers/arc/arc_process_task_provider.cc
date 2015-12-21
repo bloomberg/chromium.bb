@@ -81,9 +81,12 @@ std::map<base::ProcessId, base::ProcessId> ComputeNspidToPidMap() {
 
 namespace task_management {
 
-ArcProcessTaskProvider::ArcProcessTaskProvider() : weak_ptr_factory_(this) {}
+ArcProcessTaskProvider::ArcProcessTaskProvider()
+    : weak_ptr_factory_(this) {
+}
 
-ArcProcessTaskProvider::~ArcProcessTaskProvider() {}
+ArcProcessTaskProvider::~ArcProcessTaskProvider() {
+}
 
 Task* ArcProcessTaskProvider::GetTaskOfUrlRequest(int origin_pid,
                                                   int child_id,
@@ -93,7 +96,7 @@ Task* ArcProcessTaskProvider::GetTaskOfUrlRequest(int origin_pid,
 }
 
 void ArcProcessTaskProvider::OnUpdateProcessList(
-    mojo::Array<arc::RunningAppProcessInfoPtr> processes) {
+    const std::vector<arc::RunningAppProcessInfo>& processes) {
   TRACE_EVENT0("browser", "ArcProcessTaskProvider::OnUpdateProcessList");
 
   // NB: |processes| can be already stale here because it is sent via IPC, and
@@ -104,12 +107,11 @@ void ArcProcessTaskProvider::OnUpdateProcessList(
   std::set<base::ProcessId> removed_nspids;
   for (const auto& entry : nspid_to_task_)
     removed_nspids.insert(entry.first);
-  for (size_t i = 0; i < processes.size(); ++i) {
-    const arc::RunningAppProcessInfoPtr& process = processes[i];
-    if (nspid_to_task_.count(process->pid))
-      removed_nspids.erase(process->pid);
+  for (const arc::RunningAppProcessInfo& process : processes) {
+    if (nspid_to_task_.count(process.pid))
+      removed_nspids.erase(process.pid);
     else
-      added_processes.push_back(*process);
+      added_processes.push_back(process);
   }
 
   // Remove stale tasks.
@@ -130,15 +132,7 @@ void ArcProcessTaskProvider::OnUpdateProcessList(
 }
 
 void ArcProcessTaskProvider::RequestProcessList() {
-  arc::ProcessInstance* arc_process_instance =
-      arc::ArcBridgeService::Get()->process_instance();
-  if (!arc_process_instance) {
-    VLOG(2) << "ARC process instance is not ready.";
-    return;
-  }
-  arc_process_instance->RequestProcessList(
-      base::Bind(&ArcProcessTaskProvider::OnUpdateProcessList,
-                 weak_ptr_factory_.GetWeakPtr()));
+  arc::ArcBridgeService::Get()->RequestProcessList();
 }
 
 void ArcProcessTaskProvider::RemoveTasks(
@@ -166,6 +160,7 @@ void ArcProcessTaskProvider::AddTasks(
 }
 
 void ArcProcessTaskProvider::StartUpdating() {
+  arc::ArcBridgeService::Get()->AddProcessObserver(this);
   RequestProcessList();
   // TODO(nya): Remove this timer once ARC starts to send us UpdateProcessList
   // message when the process list changed. As of today, ARC does not send
@@ -178,6 +173,7 @@ void ArcProcessTaskProvider::StartUpdating() {
 }
 
 void ArcProcessTaskProvider::StopUpdating() {
+  arc::ArcBridgeService::Get()->RemoveProcessObserver(this);
   timer_.Stop();
   nspid_to_task_.clear();
 }

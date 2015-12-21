@@ -23,6 +23,24 @@ class FakeArcBridgeInstance : public ArcBridgeInstance {
 
   // ArcBridgeInstance:
   void Init(ArcBridgeHostPtr host) override;
+  void RegisterInputDevice(const mojo::String& name,
+                           const mojo::String& device_type,
+                           mojo::ScopedHandle fd) override;
+  void SendNotificationEventToAndroid(const mojo::String& key,
+                                      ArcNotificationEvent event) override;
+  void RefreshAppList() override;
+  void LaunchApp(const mojo::String& package,
+                 const mojo::String& activity) override;
+  void RequestAppIcon(const mojo::String& package,
+                      const mojo::String& activity,
+                      ScaleFactor scale_factor) override;
+
+  void RequestProcessList() override;
+
+  void SendBroadcast(const mojo::String& action,
+                     const mojo::String& package,
+                     const mojo::String& clazz,
+                     const mojo::String& extras) override;
 
  private:
   // Mojo endpoints.

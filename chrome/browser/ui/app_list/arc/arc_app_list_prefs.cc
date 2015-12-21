@@ -102,7 +102,8 @@ std::string ArcAppListPrefs::GetAppId(const std::string& package,
 
 ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
                                  PrefService* prefs)
-    : prefs_(prefs), binding_(this), weak_ptr_factory_(this) {
+    : prefs_(prefs),
+      weak_ptr_factory_(this) {
   base_path_ = base_path.AppendASCII(prefs::kArcApps);
 
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
@@ -112,12 +113,14 @@ ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
   }
 
   bridge_service->AddObserver(this);
+  bridge_service->AddAppObserver(this);
   OnStateChanged(bridge_service->state());
 }
 
 ArcAppListPrefs::~ArcAppListPrefs() {
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
   if (bridge_service) {
+    bridge_service->RemoveAppObserver(this);
     bridge_service->RemoveObserver(this);
   }
 }
@@ -167,13 +170,8 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
   }
 
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
-    VLOG(2) << "Request to load icon when bridge service is not ready: "
-            << app_id << ".";
-    return;
-  }
-  arc::AppInstance* app_instance = bridge_service->app_instance();
-  if (!app_instance) {
+  if (!bridge_service ||
+      bridge_service->state() != arc::ArcBridgeService::State::READY) {
     VLOG(2) << "Request to load icon when bridge service is not ready: "
             <<  app_id << ".";
     return;
@@ -185,8 +183,9 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     return;
   }
 
-  app_instance->RequestAppIcon(app_info->package, app_info->activity,
-                               static_cast<arc::ScaleFactor>(scale_factor));
+  bridge_service->RequestAppIcon(app_info->package,
+                                 app_info->activity,
+                                 static_cast<arc::ScaleFactor>(scale_factor));
 }
 
 void ArcAppListPrefs::AddObserver(Observer* observer) {
@@ -252,26 +251,10 @@ void ArcAppListPrefs::DisableAllApps() {
 }
 
 void ArcAppListPrefs::OnStateChanged(arc::ArcBridgeService::State state) {
-  if (state != arc::ArcBridgeService::State::READY)
+  if (state == arc::ArcBridgeService::State::READY)
+    arc::ArcBridgeService::Get()->RefreshAppList();
+  else
     DisableAllApps();
-}
-
-void ArcAppListPrefs::OnAppInstanceReady() {
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
-    VLOG(2) << "Request to refresh app list when bridge service is not ready.";
-    return;
-  }
-  arc::AppInstance* app_instance = bridge_service->app_instance();
-  if (!app_instance) {
-    VLOG(2) << "Request to refresh app list when bridge service is not ready.";
-    return;
-  }
-
-  arc::AppHostPtr host;
-  binding_.Bind(mojo::GetProxy(&host));
-  app_instance->Init(std::move(host));
-  app_instance->RefreshAppList();
 }
 
 void ArcAppListPrefs::OnAppReady(const arc::AppInfo& app) {
@@ -316,12 +299,13 @@ void ArcAppListPrefs::OnAppReady(const arc::AppInfo& app) {
   }
 }
 
-void ArcAppListPrefs::OnAppListRefreshed(mojo::Array<arc::AppInfoPtr> apps) {
+void ArcAppListPrefs::OnAppListRefreshed(
+    const std::vector<arc::AppInfo>& apps) {
   std::set<std::string> old_ready_apps;
   old_ready_apps.swap(ready_apps_);
 
-  for (size_t i = 0; i < apps.size(); ++i)
-    OnAppReady(*apps[i]);
+  for (auto& app : apps)
+    OnAppReady(app);
 
   // Detect unavailable apps after current refresh.
   for (auto& app_id : old_ready_apps) {
@@ -333,12 +317,12 @@ void ArcAppListPrefs::OnAppListRefreshed(mojo::Array<arc::AppInfoPtr> apps) {
   }
 }
 
-void ArcAppListPrefs::OnAppIcon(const mojo::String& package,
-                                const mojo::String& activity,
+void ArcAppListPrefs::OnAppIcon(const std::string& package,
+                                const std::string& activity,
                                 arc::ScaleFactor scale_factor,
-                                mojo::Array<uint8_t> icon_png_data) {
+                                const std::vector<uint8_t>& icon_png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_NE(0u, icon_png_data.size());
+  DCHECK(!icon_png_data.empty());
   DCHECK(scale_factor >= arc::SCALE_FACTOR_SCALE_FACTOR_100P &&
          scale_factor < arc::SCALE_FACTOR_NUM_SCALE_FACTORS);
 
@@ -348,8 +332,9 @@ void ArcAppListPrefs::OnAppIcon(const mojo::String& package,
     return;
   }
 
-  InstallIcon(app_id, static_cast<ui::ScaleFactor>(scale_factor),
-              icon_png_data.To<std::vector<uint8_t>>());
+  InstallIcon(app_id,
+              static_cast<ui::ScaleFactor>(scale_factor),
+              icon_png_data);
 }
 
 
