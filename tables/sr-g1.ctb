@@ -40,27 +40,30 @@ begcaps 45
 
 prepunc `` 236
 # --- Emphasis opcodes ---------------------------------------------------------
+emphclass italic
+emphclass underline
+emphclass bold
 
-lastworditalbefore 456
-lastworditalafter 6-3
-lenitalphrase 1
-firstletterital 6-456
-lastletterital 6-3
-singleletterital 456
+lastwordemphbefore italic 456
+lastwordemphafter italic 6-3
+lenemphphrase italic 1
+firstletteremph italic 6-456
+lastletteremph italic 6-3
+singleletteremph italic 456
 
-lastwordboldbefore 456
-lastwordboldafter 6-3
-lenboldphrase 1
-firstletterbold 6-456
-lastletterbold 6-3
-singleletterbold 456
+lastwordemphbefore bold 456
+lastwordemphafter bold 6-3
+lenemphphrase bold 1
+firstletteremph bold 6-456
+lastletteremph bold 6-3
+singleletteremph bold 456
 
-lastwordunderbefore 456
-lastwordunderafter 6-3
-lenunderphrase 1
-firstletterunder 6-456
-lastletterunder 6-3
-singleletterunder 456
+lastwordemphbefore underline 456
+lastwordemphafter underline 6-3
+lenemphphrase underline 1
+firstletteremph underline 6-456
+lastletteremph underline 6-3
+singleletteremph underline 456
 
 #----------- SPECIAL SYLLABLES ------------------------------------------------
 always \x0044\x017D 12456			# LATIN CAPITAL LETTER D + LATIN CAPITAL LETTER Z WITH CARON

@@ -237,16 +237,7 @@ read_typeforms (yaml_parser_t *parser, int len) {
 
   while ((parse_error = yaml_parser_parse(parser, &event)) &&
 	 (event.type == YAML_SCALAR_EVENT)) {
-    if (!strcmp(event.data.scalar.value, "italic")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, italic, len);
-    } else if (!strcmp(event.data.scalar.value, "underline")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, underline, len);
-    } else if (!strcmp(event.data.scalar.value, "bold")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, bold, len);
-    } else if (!strcmp(event.data.scalar.value, "computer_braille")) {
+    if (!strcmp(event.data.scalar.value, "computer_braille")) {
       yaml_event_delete(&event);
       read_typeform_string(parser, typeform, computer_braille, len);
     } else if (!strcmp(event.data.scalar.value, "passage_break")) {
@@ -255,30 +246,36 @@ read_typeforms (yaml_parser_t *parser, int len) {
     } else if (!strcmp(event.data.scalar.value, "word_reset")) {
       yaml_event_delete(&event);
       read_typeform_string(parser, typeform, word_reset, len);
-    } else if (!strcmp(event.data.scalar.value, "script")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, script, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note_1")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note_1, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note_2")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note_2, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note_3")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note_3, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note_4")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note_4, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note_5")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note_5, len);
     } else {
-      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
-		    "Typeform '%s' not supported\n", event.data.scalar.value);
+      int i;
+      static const char* emph_classes [11];
+      typeforms kind = plain_text;
+      getEmphClasses(emph_classes); // get declared emphasis classes
+      for (i = 0; emph_classes[i]; i++) {
+        if (strcmp(event.data.scalar.value, emph_classes[i]) == 0) {
+          yaml_event_delete(&event);
+          switch (i) {
+          case 0: kind = italic; break;
+          case 1: kind = underline; break;
+          case 2: kind = bold; break;
+          case 3: kind = script; break;
+          case 4: kind = trans_note; break;
+          case 5: kind = trans_note_1; break;
+          case 6: kind = trans_note_2; break;
+          case 7: kind = trans_note_3; break;
+          case 8: kind = trans_note_4; break;
+          case 9: kind = trans_note_5; break;
+          default:
+            fprintf(stderr, "CODING ERROR\n");
+            exit(1);
+          }
+          read_typeform_string(parser, typeform, kind, len);
+          break;
+        }
+      }
+      if (kind == plain_text)
+        error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+                      "Typeform '%s' was not declared\n", event.data.scalar.value);
     }
   }
   if (!parse_error)
@@ -426,7 +423,12 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
     yaml_error(YAML_SEQUENCE_START_EVENT, &event);
 
   yaml_event_delete(&event);
-
+  
+  // compile table a first time so that declared emphasis classes, which are
+  // required to parse the "typeform" options, are available during the first
+  // call to read_typeforms
+  lou_getTable(tables_list);
+  
   int done = 0;
   while (!done) {
     if (!yaml_parser_parse(parser, &event)) {

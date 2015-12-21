@@ -217,130 +217,43 @@ extern "C"
     CTO_LastLetterCaps,
     CTO_SingleLetterCaps,
     CTO_CapsWord,
-	CTO_CapsWordStop,
+    CTO_CapsWordStop,
     CTO_LetterSign,
     CTO_NoLetsignBefore,
     CTO_NoLetsign,
     CTO_NoLetsignAfter,
-    
     CTO_NumberSign,
-	//CTO_NumericModeChars,
-	//CTO_NumericNoContractChars,
-	CTO_SeqDelimiter,
-	CTO_SeqBeforeChars,
-	CTO_SeqAfterChars,
-	CTO_SeqAfterPattern,
-	
-    CTO_FirstWordItal,
+    // CTO_NumericModeChars,
+    // CTO_NumericNoContractChars,
+    CTO_SeqDelimiter,
+    CTO_SeqBeforeChars,
+    CTO_SeqAfterChars,
+    CTO_SeqAfterPattern,
     CTO_ItalSign,
-    CTO_LastWordItalBefore,
-    CTO_LastWordItalAfter,
     CTO_BegItal,
-    CTO_FirstLetterItal,
     CTO_EndItal,
-    CTO_LastLetterItal,
-    CTO_SingleLetterItal,
-    CTO_ItalWord,
-    CTO_ItalWordStop,
-    CTO_LenItalPhrase,
-    CTO_FirstWordBold,
     CTO_BoldSign,
-    CTO_LastWordBoldBefore,
-    CTO_LastWordBoldAfter,
     CTO_BegBold,
-    CTO_FirstLetterBold,
     CTO_EndBold,
-    CTO_LastLetterBold,
-    CTO_SingleLetterBold,
-    CTO_BoldWord,
-	CTO_BoldWordStop,
-    CTO_LenBoldPhrase,
-    CTO_FirstWordUnder,
     CTO_UnderSign,
-    CTO_LastWordUnderBefore,
-    CTO_LastWordUnderAfter,
     CTO_BegUnder,
-    CTO_FirstLetterUnder,
     CTO_EndUnder,
-    CTO_LastLetterUnder,
-    CTO_SingleLetterUnder,
-    CTO_UnderWord,
-	CTO_UnderWordStop,
-    CTO_LenUnderPhrase,
+    CTO_EmphClass,
     
-	CTO_SingleLetterScript,
-	CTO_ScriptWord,
-	CTO_ScriptWordStop,
-	CTO_FirstLetterScript,
-	CTO_LastLetterScript,
-	CTO_FirstWordScript,
-	CTO_LastWordScriptBefore,
-	CTO_LastWordScriptAfter,
-	CTO_LenScriptPhrase,
+    /* the following 9 opcodes are compiled further down to one of the 10 x 9 values defined below
+       (CTO_SingleLetterItal...CTO_LenTransNotePhrase) */
+    CTO_SingleLetterEmph,
+    CTO_EmphWord,
+    CTO_EmphWordStop,
+    CTO_FirstLetterEmph,
+    CTO_LastLetterEmph,
+    CTO_FirstWordEmph,
+    CTO_LastWordEmphBefore,
+    CTO_LastWordEmphAfter,
+    CTO_LenEmphPhrase,
     
-	CTO_SingleLetterTrans1,
-	CTO_Trans1Word,
-	CTO_Trans1WordStop,
-	CTO_FirstLetterTrans1,
-	CTO_LastLetterTrans1,
-	CTO_FirstWordTrans1,
-	CTO_LastWordTrans1Before,
-	CTO_LastWordTrans1After,
-	CTO_LenTrans1Phrase,
-    
-	CTO_SingleLetterTrans2,
-	CTO_Trans2Word,
-	CTO_Trans2WordStop,
-	CTO_FirstLetterTrans2,
-	CTO_LastLetterTrans2,
-	CTO_FirstWordTrans2,
-	CTO_LastWordTrans2Before,
-	CTO_LastWordTrans2After,
-	CTO_LenTrans2Phrase,
-    
-	CTO_SingleLetterTrans3,
-	CTO_Trans3Word,
-	CTO_Trans3WordStop,
-	CTO_FirstLetterTrans3,
-	CTO_LastLetterTrans3,
-	CTO_FirstWordTrans3,
-	CTO_LastWordTrans3Before,
-	CTO_LastWordTrans3After,
-	CTO_LenTrans3Phrase,
-    
-	CTO_SingleLetterTrans4,
-	CTO_Trans4Word,
-	CTO_Trans4WordStop,
-	CTO_FirstLetterTrans4,
-	CTO_LastLetterTrans4,
-	CTO_FirstWordTrans4,
-	CTO_LastWordTrans4Before,
-	CTO_LastWordTrans4After,
-	CTO_LenTrans4Phrase,
-    
-	CTO_SingleLetterTrans5,
-	CTO_Trans5Word,
-	CTO_Trans5WordStop,
-	CTO_FirstLetterTrans5,
-	CTO_LastLetterTrans5,
-	CTO_FirstWordTrans5,
-	CTO_LastWordTrans5Before,
-	CTO_LastWordTrans5After,
-	CTO_LenTrans5Phrase,
-    
-	CTO_SingleLetterTransNote,
-	CTO_TransNoteWord,
-	CTO_TransNoteWordStop,
-	CTO_FirstLetterTransNote,
-	CTO_LastLetterTransNote,
-	CTO_FirstWordTransNote,
-	CTO_LastWordTransNoteBefore,
-	CTO_LastWordTransNoteAfter,
-	CTO_LenTransNotePhrase,
-
-	CTO_CapsModeChars,
-	// CTO_EmphModeChars,
-
+    CTO_CapsModeChars,
+    // CTO_EmphModeChars,
     CTO_BegComp,
     CTO_CompBegEmph1,
     CTO_CompEndEmph1,
@@ -388,7 +301,7 @@ extern "C"
     CTO_ExactDots,
     CTO_NoCross,
     CTO_Syllable,
-	CTO_NoContractSign,
+    CTO_NoContractSign,
     CTO_NoCont,
     CTO_CompBrl,
     CTO_Literal,
@@ -413,13 +326,116 @@ extern "C"
     CTO_EndNum,			/*end of number */
     CTO_DecPoint,
     CTO_Hyphen,
-	//CTO_Apostrophe,
-	//CTO_Initial,
+    //CTO_Apostrophe,
+    //CTO_Initial,
     CTO_NoBreak,
-	CTO_Match,
-	CTO_Attribute,
+    CTO_Match,
+    CTO_Attribute,
     CTO_None,
-/*Internal opcodes */
+    
+    /* Start of (10 x 9) internal opcodes values that match {"singleletteremph"..."lenemphphrase"}
+     */
+    CTO_SingleLetterItal,        // singleletteremph {emph_1}
+    CTO_ItalWord,                // emphword {emph_1}
+    CTO_ItalWordStop,            // emphwordstop {emph_1}
+    CTO_FirstLetterItal,         // firstletteremph {emph_1}
+    CTO_LastLetterItal,          // lastletteremph {emph_1}
+    CTO_FirstWordItal,           // firstwordemph {emph_1}
+    CTO_LastWordItalBefore,      // lastwordemphbefore {emph_1}
+    CTO_LastWordItalAfter,       // lastwordemphafter {emph_1}
+    CTO_LenItalPhrase,           // lenemphphrase {emph_1}
+    
+    CTO_SingleLetterUnder,       // singleletteremph {emph_2}
+    CTO_UnderWord,               // emphword {emph_2}
+    CTO_UnderWordStop,           // emphwordstop {emph_2}
+    CTO_FirstLetterUnder,        // firstletteremph {emph_2}
+    CTO_LastLetterUnder,         // lastletteremph {emph_2}
+    CTO_FirstWordUnder,          // firstwordemph {emph_2}
+    CTO_LastWordUnderBefore,     // lastwordemphbefore {emph_2}
+    CTO_LastWordUnderAfter,      // lastwordemphafter {emph_2}
+    CTO_LenUnderPhrase,          // lenemphphrase {emph_2}
+    
+    CTO_SingleLetterBold,        // singleletteremph {emph_3}
+    CTO_BoldWord,                // emphword {emph_3}
+    CTO_BoldWordStop,            // emphwordstop {emph_3}
+    CTO_FirstLetterBold,         // firstletteremph {emph_3}
+    CTO_LastLetterBold,          // lastletteremph {emph_3}
+    CTO_FirstWordBold,           // firstwordemph {emph_3}
+    CTO_LastWordBoldBefore,      // lastwordemphbefore {emph_3}
+    CTO_LastWordBoldAfter,       // lastwordemphafter {emph_3}
+    CTO_LenBoldPhrase,           // lenemphphrase {emph_3}
+    
+    CTO_SingleLetterScript,      // singleletteremph {emph_4}
+    CTO_ScriptWord,              // emphword {emph_4}
+    CTO_ScriptWordStop,          // emphwordstop {emph_4}
+    CTO_FirstLetterScript,       // firstletteremph {emph_4}
+    CTO_LastLetterScript,        // lastletteremph {emph_4}
+    CTO_FirstWordScript,         // firstwordemph {emph_4}
+    CTO_LastWordScriptBefore,    // lastwordemphbefore {emph_4}
+    CTO_LastWordScriptAfter,     // lastwordemphafter {emph_4}
+    CTO_LenScriptPhrase,         // lenemphphrase {emph_4}
+    
+    CTO_SingleLetterTransNote,   // singleletteremph {emph_5}
+    CTO_TransNoteWord,           // emphword {emph_5}
+    CTO_TransNoteWordStop,       // emphwordstop {emph_5}
+    CTO_FirstLetterTransNote,    // firstletteremph {emph_5}
+    CTO_LastLetterTransNote,     // lastletteremph {emph_5}
+    CTO_FirstWordTransNote,      // firstwordemph {emph_5}
+    CTO_LastWordTransNoteBefore, // lastwordemphbefore {emph_5}
+    CTO_LastWordTransNoteAfter,  // lastwordemphafter {emph_5}
+    CTO_LenTransNotePhrase,      // lenemphphrase {emph_5}
+    
+    CTO_SingleLetterTrans1,      // singleletteremph {emph_6}
+    CTO_Trans1Word,              // emphword {emph_6}
+    CTO_Trans1WordStop,          // emphwordstop {emph_6}
+    CTO_FirstLetterTrans1,       // firstletteremph {emph_6}
+    CTO_LastLetterTrans1,        // lastletteremph {emph_6}
+    CTO_FirstWordTrans1,         // firstwordemph {emph_6}
+    CTO_LastWordTrans1Before,    // lastwordemphbefore {emph_6}
+    CTO_LastWordTrans1After,     // lastwordemphafter {emph_6}
+    CTO_LenTrans1Phrase,         // lenemphphrase {emph_6}
+    
+    CTO_SingleLetterTrans2,      // singleletteremph {emph_7}
+    CTO_Trans2Word,              // emphword {emph_7}
+    CTO_Trans2WordStop,          // emphwordstop {emph_7}
+    CTO_FirstLetterTrans2,       // firstletteremph {emph_7}
+    CTO_LastLetterTrans2,        // lastletteremph {emph_7}
+    CTO_FirstWordTrans2,         // firstwordemph {emph_7}
+    CTO_LastWordTrans2Before,    // lastwordemphbefore {emph_7}
+    CTO_LastWordTrans2After,     // lastwordemphafter {emph_7}
+    CTO_LenTrans2Phrase,         // lenemphphrase {emph_7}
+    
+    CTO_SingleLetterTrans3,      // singleletteremph {emph_8}
+    CTO_Trans3Word,              // emphword {emph_8}
+    CTO_Trans3WordStop,          // emphwordstop {emph_8}
+    CTO_FirstLetterTrans3,       // firstletteremph {emph_8}
+    CTO_LastLetterTrans3,        // lastletteremph {emph_8}
+    CTO_FirstWordTrans3,         // firstwordemph {emph_8}
+    CTO_LastWordTrans3Before,    // lastwordemphbefore {emph_8}
+    CTO_LastWordTrans3After,     // lastwordemphafter {emph_8}
+    CTO_LenTrans3Phrase,         // lenemphphrase {emph_8}
+    
+    CTO_SingleLetterTrans4,      // singleletteremph {emph_9}
+    CTO_Trans4Word,              // emphword {emph_9}
+    CTO_Trans4WordStop,          // emphwordstop {emph_9}
+    CTO_FirstLetterTrans4,       // firstletteremph {emph_9}
+    CTO_LastLetterTrans4,        // lastletteremph {emph_9}
+    CTO_FirstWordTrans4,         // firstwordemph {emph_9}
+    CTO_LastWordTrans4Before,    // lastwordemphbefore {emph_9}
+    CTO_LastWordTrans4After,     // lastwordemphafter {emph_9}
+    CTO_LenTrans4Phrase,         // lenemphphrase {emph_9}
+    
+    CTO_SingleLetterTrans5,      // singleletteremph {emph_10}
+    CTO_Trans5Word,              // emphword {emph_10}
+    CTO_Trans5WordStop,          // emphwordstop {emph_10}
+    CTO_FirstLetterTrans5,       // firstletteremph {emph_10}
+    CTO_LastLetterTrans5,        // lastletteremph {emph_10}
+    CTO_FirstWordTrans5,         // firstwordemph {emph_10}
+    CTO_LastWordTrans5Before,    // lastwordemphbefore {emph_10}
+    CTO_LastWordTrans5After,     // lastwordemphafter {emph_10}
+    CTO_LenTrans5Phrase,         // lenemphphrase {emph_10}
+    
+    /* More internal opcodes */
     CTO_CapitalRule,
     CTO_BeginCapitalRule,
     CTO_EndCapitalRule,
@@ -427,10 +443,10 @@ extern "C"
     CTO_LastWordCapsBeforeRule,
     CTO_LastWordCapsAfterRule,
     CTO_CapsWordRule,
-	CTO_CapsWordStopRule,
+    CTO_CapsWordStopRule,
     CTO_LetterRule,
     CTO_NumberRule,
-	CTO_NoContractRule,
+    CTO_NoContractRule,
     CTO_FirstWordItalRule,
     CTO_LastWordItalBeforeRule,
     CTO_LastWordItalAfterRule,
@@ -438,7 +454,7 @@ extern "C"
     CTO_LastLetterItalRule,
     CTO_SingleLetterItalRule,
     CTO_ItalWordRule,
-	CTO_ItalWordStopRule,
+    CTO_ItalWordStopRule,
     CTO_FirstWordBoldRule,
     CTO_LastWordBoldBeforeRule,
     CTO_LastWordBoldAfterRule,
@@ -446,7 +462,7 @@ extern "C"
     CTO_LastLetterBoldRule,
     CTO_SingleLetterBoldRule,
     CTO_BoldWordRule,
-	CTO_BoldWordStopRule,
+    CTO_BoldWordStopRule,
     CTO_FirstWordUnderRule,
     CTO_LastWordUnderBeforeRule,
     CTO_LastWordUnderAfterRule,
@@ -454,78 +470,70 @@ extern "C"
     CTO_LastLetterUnderRule,
     CTO_SingleLetterUnderRule,
     CTO_UnderWordRule,
-	CTO_UnderWordStopRule,
-	
-	CTO_SingleLetterScriptRule,
-	CTO_ScriptWordRule,
-	CTO_ScriptWordStopRule,
-	CTO_FirstLetterScriptRule,
-	CTO_LastLetterScriptRule,
-	CTO_FirstWordScriptRule,
-	CTO_LastWordScriptBeforeRule,
-	CTO_LastWordScriptAfterRule,
-	CTO_LenScriptPhraseRule,
-	
-	CTO_SingleLetterTrans1Rule,
-	CTO_Trans1WordRule,
-	CTO_Trans1WordStopRule,
-	CTO_FirstLetterTrans1Rule,
-	CTO_LastLetterTrans1Rule,
-	CTO_FirstWordTrans1Rule,
-	CTO_LastWordTrans1BeforeRule,
-	CTO_LastWordTrans1AfterRule,
-	CTO_LenTrans1PhraseRule,
-	
-	CTO_SingleLetterTrans2Rule,
-	CTO_Trans2WordRule,
-	CTO_Trans2WordStopRule,
-	CTO_FirstLetterTrans2Rule,
-	CTO_LastLetterTrans2Rule,
-	CTO_FirstWordTrans2Rule,
-	CTO_LastWordTrans2BeforeRule,
-	CTO_LastWordTrans2AfterRule,
-	CTO_LenTrans2PhraseRule,
-	
-	CTO_SingleLetterTrans3Rule,
-	CTO_Trans3WordRule,
-	CTO_Trans3WordStopRule,
-	CTO_FirstLetterTrans3Rule,
-	CTO_LastLetterTrans3Rule,
-	CTO_FirstWordTrans3Rule,
-	CTO_LastWordTrans3BeforeRule,
-	CTO_LastWordTrans3AfterRule,
-	CTO_LenTrans3PhraseRule,
-	
-	CTO_SingleLetterTrans4Rule,
-	CTO_Trans4WordRule,
-	CTO_Trans4WordStopRule,
-	CTO_FirstLetterTrans4Rule,
-	CTO_LastLetterTrans4Rule,
-	CTO_FirstWordTrans4Rule,
-	CTO_LastWordTrans4BeforeRule,
-	CTO_LastWordTrans4AfterRule,
-	CTO_LenTrans4PhraseRule,
-	
-	CTO_SingleLetterTrans5Rule,
-	CTO_Trans5WordRule,
-	CTO_Trans5WordStopRule,
-	CTO_FirstLetterTrans5Rule,
-	CTO_LastLetterTrans5Rule,
-	CTO_FirstWordTrans5Rule,
-	CTO_LastWordTrans5BeforeRule,
-	CTO_LastWordTrans5AfterRule,
-	CTO_LenTrans5PhraseRule,
-	
-	CTO_SingleLetterTransNoteRule,
-	CTO_TransNoteWordRule,
-	CTO_TransNoteWordStopRule,
-	CTO_FirstLetterTransNoteRule,
-	CTO_LastLetterTransNoteRule,
-	CTO_FirstWordTransNoteRule,
-	CTO_LastWordTransNoteBeforeRule,
-	CTO_LastWordTransNoteAfterRule,
-	CTO_LenTransNotePhraseRule,
-	
+    CTO_UnderWordStopRule,
+    CTO_SingleLetterScriptRule,
+    CTO_ScriptWordRule,
+    CTO_ScriptWordStopRule,
+    CTO_FirstLetterScriptRule,
+    CTO_LastLetterScriptRule,
+    CTO_FirstWordScriptRule,
+    CTO_LastWordScriptBeforeRule,
+    CTO_LastWordScriptAfterRule,
+    CTO_LenScriptPhraseRule,
+    CTO_SingleLetterTrans1Rule,
+    CTO_Trans1WordRule,
+    CTO_Trans1WordStopRule,
+    CTO_FirstLetterTrans1Rule,
+    CTO_LastLetterTrans1Rule,
+    CTO_FirstWordTrans1Rule,
+    CTO_LastWordTrans1BeforeRule,
+    CTO_LastWordTrans1AfterRule,
+    CTO_LenTrans1PhraseRule,
+    CTO_SingleLetterTrans2Rule,
+    CTO_Trans2WordRule,
+    CTO_Trans2WordStopRule,
+    CTO_FirstLetterTrans2Rule,
+    CTO_LastLetterTrans2Rule,
+    CTO_FirstWordTrans2Rule,
+    CTO_LastWordTrans2BeforeRule,
+    CTO_LastWordTrans2AfterRule,
+    CTO_LenTrans2PhraseRule,
+    CTO_SingleLetterTrans3Rule,
+    CTO_Trans3WordRule,
+    CTO_Trans3WordStopRule,
+    CTO_FirstLetterTrans3Rule,
+    CTO_LastLetterTrans3Rule,
+    CTO_FirstWordTrans3Rule,
+    CTO_LastWordTrans3BeforeRule,
+    CTO_LastWordTrans3AfterRule,
+    CTO_LenTrans3PhraseRule,
+    CTO_SingleLetterTrans4Rule,
+    CTO_Trans4WordRule,
+    CTO_Trans4WordStopRule,
+    CTO_FirstLetterTrans4Rule,
+    CTO_LastLetterTrans4Rule,
+    CTO_FirstWordTrans4Rule,
+    CTO_LastWordTrans4BeforeRule,
+    CTO_LastWordTrans4AfterRule,
+    CTO_LenTrans4PhraseRule,
+    CTO_SingleLetterTrans5Rule,
+    CTO_Trans5WordRule,
+    CTO_Trans5WordStopRule,
+    CTO_FirstLetterTrans5Rule,
+    CTO_LastLetterTrans5Rule,
+    CTO_FirstWordTrans5Rule,
+    CTO_LastWordTrans5BeforeRule,
+    CTO_LastWordTrans5AfterRule,
+    CTO_LenTrans5PhraseRule,
+    CTO_SingleLetterTransNoteRule,
+    CTO_TransNoteWordRule,
+    CTO_TransNoteWordStopRule,
+    CTO_FirstLetterTransNoteRule,
+    CTO_LastLetterTransNoteRule,
+    CTO_FirstWordTransNoteRule,
+    CTO_LastWordTransNoteBeforeRule,
+    CTO_LastWordTransNoteAfterRule,
+    CTO_LenTransNotePhraseRule,
     CTO_BegCompRule,
     CTO_CompBegEmph1Rule,
     CTO_CompEndEmph1Rule,
@@ -631,7 +639,6 @@ extern "C"
     TranslationTableOffset CapsWord;
     TranslationTableOffset CapsWordStop;
     TranslationTableOffset lenCapsPhrase;
-    
     TranslationTableOffset firstWordScript;
     TranslationTableOffset lastWordScriptBefore;
     TranslationTableOffset lastWordScriptAfter;
@@ -641,7 +648,6 @@ extern "C"
     TranslationTableOffset scriptWord;
     TranslationTableOffset scriptWordStop;
     TranslationTableOffset lenScriptPhrase;
-    
     TranslationTableOffset firstWordTrans1;
     TranslationTableOffset lastWordTrans1Before;
     TranslationTableOffset lastWordTrans1After;

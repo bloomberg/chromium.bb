@@ -140,27 +140,30 @@ pass4    [@12346a]                   @12346
 numsign  3456
 
 # §1.58 Drukwijzigingsteken [1]
+emphclass italic
+emphclass underline
+emphclass bold
 
-lenitalphrase 4
-italword 456
-italwordstop 6
-firstwordital 456-456
-lastworditalbefore 456
-singleletterital 456
+lenemphphrase italic 4
+emphword italic 456
+emphwordstop italic 6
+firstwordemph italic 456-456
+lastwordemphbefore italic 456
+singleletteremph italic 456
 
-lenboldphrase 4
-boldword 456
-boldwordstop 6
-firstwordbold 456-456
-lastwordboldbefore 456
-singleletterbold 456
+lenemphphrase bold 4
+emphword bold 456
+emphwordstop bold 6
+firstwordemph bold 456-456
+lastwordemphbefore bold 456
+singleletteremph bold 456
 
-lenunderphrase 4
-underword 456
-underwordstop 6
-firstwordunder 456-456
-lastwordunderbefore 456
-singleletterunder 456
+lenemphphrase underline 4
+emphword underline 456
+emphwordstop underline 6
+firstwordemph underline 456-456
+lastwordemphbefore underline 456
+singleletteremph underline 456
 
 # §2.12 Hoofdletters [1]
 

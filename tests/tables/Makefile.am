@@ -1,4 +1,4 @@
-SUBDIRS = moreTables resolve_table
+SUBDIRS = moreTables resolve_table emphclass
 
 EXTRA_DIST =					\
 	bad.ctb					\

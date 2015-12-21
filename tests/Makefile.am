@@ -138,6 +138,11 @@ logging_SOURCES =				\
 findTable_SOURCES =				\
 	findTable.c
 
+emphclass_SOURCES =	\
+	brl_checks.c		\
+	brl_checks.h		\
+	emphclass.c
+
 check_yaml_SOURCES = 				\
 	brl_checks.c				\
 	brl_checks.h				\
@@ -179,7 +184,8 @@ program_TESTS =					\
 	hash_collision                          \
 	resolve_table                          	\
 	logging                          	\
-	findTable
+	findTable                          	\
+	emphclass
 
 check_PROGRAMS = $(program_TESTS) check_yaml
 

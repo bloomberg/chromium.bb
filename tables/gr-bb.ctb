@@ -66,12 +66,15 @@ multind 56-6 letsign capsign
 capsign 6
 begcaps 6-6
 endcaps 6-3
-firstwordital 46-46
-lastworditalbefore 46
-lenitalphrase 4
-firstwordbold 456-456
-lastwordboldbefore 456
-lenboldphrase 4
+emphclass italic
+emphclass underline
+emphclass bold
+firstwordemph italic 46-46
+lastwordemphbefore italic 46
+lenemphphrase italic 4
+firstwordemph bold 456-456
+lastwordemphbefore bold 456
+lenemphphrase bold 4
 begcomp 456-346
 endcomp 456-156
 

@@ -142,23 +142,27 @@ begcaps 6-6
 endcaps 56
 
 # Emphasis
-firstwordunder 346-346
-lastwordunderbefore 346
-firstletterunder 346
-lastletterunder 346
-lenunderphrase 3
+emphclass italic
+emphclass underline
+emphclass bold
 
-firstwordbold 346-346
-lastwordboldbefore 346
-firstletterbold 346
-lastletterbold 346
-lenboldphrase 3
+firstwordemph underline 346-346
+lastwordemphbefore underline 346
+firstletteremph underline 346
+lastletteremph underline 346
+lenemphphrase underline 3
 
-firstwordital 46-46
-lastworditalbefore 46
-firstletterital 46
-lastletterital 46
-lenitalphrase 3
+firstwordemph bold 346-346
+lastwordemphbefore bold 346
+firstletteremph bold 346
+lastletteremph bold 346
+lenemphphrase bold 3
+
+firstwordemph italic 46-46
+lastwordemphbefore italic 46
+firstletteremph italic 46
+lastletteremph italic 46
+lenemphphrase italic 3
 
 # Longer number expressions
 midnum . 3

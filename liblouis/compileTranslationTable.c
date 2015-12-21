@@ -182,11 +182,26 @@ typedef struct
 }
 CharsString;
 
+#define MAX_EMPH_CLASSES 10 // {emph_1...emph_10} in typeform enum (liblouis.h)
+
 static int errorCount;
 static int warningCount;
 static TranslationTableHeader *table;
 static TranslationTableOffset tableSize;
 static TranslationTableOffset tableUsed;
+static const char * emphClasses[MAX_EMPH_CLASSES + 1];
+
+/* for accessing emphasis classes declared in last compiled table from check_brl.c
+ * array must be at least (MAX_EMPH_CLASSES + 1) long
+ */
+void
+getEmphClasses(const char ** array)
+{
+  int i;
+  for (i = 0; emphClasses[i]; i++)
+    array[i] = strdup(emphClasses[i]);
+  array[i] = NULL;
+}
 
 typedef struct
 {
@@ -242,122 +257,33 @@ static const char *opcodeNames[CTO_None] = {
   "noletsign",
   "noletsignafter",
   "numsign",
-//	"numericmodechars",
-//	"numericnocontchars",
-	"seqdelimiter",
-	"seqbeforechars",
-	"seqafterchars",
-	"seqafterpattern",
-  "firstwordital",
+  // "numericmodechars",
+  // "numericnocontchars",
+  "seqdelimiter",
+  "seqbeforechars",
+  "seqafterchars",
+  "seqafterpattern",
   "italsign",
-  "lastworditalbefore",
-  "lastworditalafter",
   "begital",
-  "firstletterital",
   "endital",
-  "lastletterital",
-  "singleletterital",
-  "italword",
-  "italwordstop",
-  "lenitalphrase",
-  "firstwordbold",
   "boldsign",
-  "lastwordboldbefore",
-  "lastwordboldafter",
   "begbold",
-  "firstletterbold",
   "endbold",
-  "lastletterbold",
-  "singleletterbold",
-  "boldword",
-  "boldwordstop",
-  "lenboldphrase",
-  "firstwordunder",
   "undersign",
-  "lastwordunderbefore",
-  "lastwordunderafter",
   "begunder",
-  "firstletterunder",
   "endunder",
-  "lastletterunder",
-  "singleletterunder",
-  "underword",
-  "underwordstop",
-  "lenunderphrase",
-
-	"singleletterscript",
-	"scriptword",
-	"scriptwordstop",
-	"firstletterscript",
-	"lastletterscript",
-	"firstwordscript",
-	"lastwordscriptbefore",
-	"lastwordscriptafter",
-	"lenscriptphrase",
-
-	"singlelettertrans1",
-	"trans1word",
-	"trans1wordstop",
-	"firstlettertrans1",
-	"lastlettertrans1",
-	"firstwordtrans1",
-	"lastwordtrans1before",
-	"lastwordtrans1after",
-	"lentrans1phrase",
-
-	"singlelettertrans2",
-	"trans2word",
-	"trans2wordstop",
-	"firstlettertrans2",
-	"lastlettertrans2",
-	"firstwordtrans2",
-	"lastwordtrans2before",
-	"lastwordtrans2after",
-	"lentrans2phrase",
-
-	"singlelettertrans3",
-	"trans3word",
-	"trans3wordstop",
-	"firstlettertrans3",
-	"lastlettertrans3",
-	"firstwordtrans3",
-	"lastwordtrans3before",
-	"lastwordtrans3after",
-	"lentrans3phrase",
-
-	"singlelettertrans4",
-	"trans4word",
-	"trans4wordstop",
-	"firstlettertrans4",
-	"lastlettertrans4",
-	"firstwordtrans4",
-	"lastwordtrans4before",
-	"lastwordtrans4after",
-	"lentrans4phrase",
-
-	"singlelettertrans5",
-	"trans5word",
-	"trans5wordstop",
-	"firstlettertrans5",
-	"lastlettertrans5",
-	"firstwordtrans5",
-	"lastwordtrans5before",
-	"lastwordtrans5after",
-	"lentrans5phrase",
-
-	"singlelettertransnote",
-	"transnoteword",
-	"transnotewordstop",
-	"firstlettertransnote",
-	"lastlettertransnote",
-	"firstwordtransnote",
-	"lastwordtransnotebefore",
-	"lastwordtransnoteafter",
-	"lentransnotephrase",
-
-	"capsmodechars",
-	// "emphmodechars",
-	
+  "emphclass",
+  "singleletteremph",
+  "emphword",
+  "emphwordstop",
+  "firstletteremph",
+  "lastletteremph",
+  "firstwordemph",
+  "lastwordemphbefore",
+  "lastwordemphafter",
+  "lenemphphrase",
+  "capsmodechars",
+  // "emphmodechars",
   "begcomp",
   "compbegemph1",
   "compendemph1",
@@ -405,7 +331,7 @@ static const char *opcodeNames[CTO_None] = {
   "exactdots",
   "nocross",
   "syllable",
-	"nocontractsign",
+  "nocontractsign",
   "nocont",
   "compbrl",
   "literal",
@@ -433,8 +359,8 @@ static const char *opcodeNames[CTO_None] = {
 //  "apostrophe",
 //  "initial",
   "nobreak",
-	"match",
-	"attribute",
+  "match",
+  "attribute",
 };
 static short opcodeLengths[CTO_None] = { 0 };
 
@@ -4087,6 +4013,7 @@ compileRule (FileInfo * nested)
   CharsString ruleDots;
   CharsString cells;
   CharsString scratchPad;
+  CharsString emphClass;
   TranslationTableCharacterAttributes after = 0;
   TranslationTableCharacterAttributes before = 0;
 	TranslationTableCharacter *c = NULL;
@@ -4107,6 +4034,130 @@ doOpcode:
       return 1;
     }
   opcode = getOpcode (nested, &token);
+  
+  /* these 9 general purpose emphasis opcodes are compiled further down to more specific internal opcodes:
+   * - singleletteremph
+   * - emphword
+   * - emphwordstop
+   * - firstletteremph
+   * - lastletteremph
+   * - firstwordemph
+   * - lastwordemphbefore
+   * - lastwordemphafter
+   * - lenemphphrase
+   */
+  switch (opcode)
+    {
+    case CTO_EmphClass:
+      if (getToken(nested, &token, "emphasis class"))
+	if (parseChars(nested, &emphClass, &token))
+	  {
+	    char * s = malloc(sizeof(char) * (emphClass.length + 1));
+	    for (k = 0; k < emphClass.length; k++)
+	      s[k] = (char)emphClass.chars[k];
+	    s[k++] = '\0';
+	    for (i = 0; emphClasses[i]; i++)
+	      if (strcmp(s, emphClasses[i]) == 0)
+		{
+		  logMessage (LOG_WARN, "Duplicate emphasis class: %s", s);
+		  warningCount++;
+		  free(s);
+		  return 0;
+		}
+	    if (i < MAX_EMPH_CLASSES)
+	      {
+		switch (i)
+		  {
+		  case 0:
+		    /* For backwards compatibility (i.e. because programs will assume the first 3
+		     * typeform bits are `italic', `underline' and `bold') we require that the first
+		     * 3 emphclass definitions are (in that order):
+		     *
+		     *   emphclass italic
+		     *   emphclass underline
+		     *   emphclass bold
+		     *
+		     * While it would be possible to use the emphclass opcode only for defining
+		     * _additional_ classes (not allowing for them to be called italic, underline or
+		     * bold), thereby reducing the amount of boilerplate, we deliberately choose not
+		     * to do that in order to not give italic, underline and bold any special
+		     * status. The hope is that eventually all programs will use liblouis for
+		     * emphasis the recommended way (i.e. by looking up the supported typeforms in
+		     * the documentation or API) so that we can drop this restriction.
+		    */
+		    if (strcmp(s, "italic") != 0)
+		      {
+			logMessage (LOG_ERROR, "First emphasis class must be \"italic\" but got %s", s);
+			errorCount++;
+			return 1;
+		      }
+		    break;
+		  case 1:
+		    if (strcmp(s, "underline") != 0)
+		      {
+			logMessage (LOG_ERROR, "Second emphasis class must be \"underline\" but got %s", s);
+			errorCount++;
+			return 1;
+		      }
+		    break;
+		  case 2:
+		    if (strcmp(s, "bold") != 0)
+		      {
+			logMessage (LOG_ERROR, "Third emphasis class must be \"bold\" but got %s", s);
+			errorCount++;
+			return 1;
+		      }
+		    break;
+		  }
+		emphClasses[i] = s;
+		emphClasses[i+1] = NULL;
+		return 0;
+	      }
+	    else
+	      {
+		logMessage (LOG_ERROR, "Max number of emphasis classes (%i) reached", MAX_EMPH_CLASSES);
+		errorCount++;
+		free(s);
+		return 1;
+	      }
+	  }
+      return 1;
+    case CTO_SingleLetterEmph:
+    case CTO_EmphWord:
+    case CTO_EmphWordStop:
+    case CTO_FirstLetterEmph:
+    case CTO_LastLetterEmph:
+    case CTO_FirstWordEmph:
+    case CTO_LastWordEmphBefore:
+    case CTO_LastWordEmphAfter:
+    case CTO_LenEmphPhrase:
+      if (getToken(nested, &token, "emphasis class"))
+	if (parseChars(nested, &emphClass, &token))
+	  {
+	    char * s = malloc(sizeof(char) * (emphClass.length + 1));
+	    for (k = 0; k < emphClass.length; k++)
+	      s[k] = (char)emphClass.chars[k];
+	    s[k++] = '\0';
+	    for (i = 0; emphClasses[i]; i++)
+	      if (strcmp(s, emphClasses[i]) == 0)
+		{
+		  /* TODO: compileBrailleIndicator could be called directly here which would remove
+		     the need for values CTO_SingleLetterItal to CTO_LenTransNotePhrase.
+		   */
+		  opcode = opcode + CTO_SingleLetterItal - CTO_SingleLetterEmph + 9 * i;
+		  ok = 0;
+		  break;
+		}
+	    if (ok != 0)
+	      {
+		logMessage (LOG_ERROR, "Emphasis class %s not declared", s);
+		errorCount++;
+	      }
+	    free(s);
+	  }
+      if (ok != 0)
+	return ok;
+    }
   switch (opcode)
     {				/*Carry out operations */
     case CTO_None:
@@ -5707,6 +5758,7 @@ compileTranslationTable (const char *tableList)
 {
   char **tableFiles;
   char **subTable;
+  int i;
   errorCount = warningCount = fileCount = 0;
   table = NULL;
   characterClasses = NULL;
@@ -5720,6 +5772,12 @@ compileTranslationTable (const char *tableList)
 	opcodeLengths[opcode] = strlen (opcodeNames[opcode]);
     }
   allocateHeader (NULL);
+  
+  /* Initialize emphClasses array */
+  for (i = 0; emphClasses[i]; i++)
+    free(emphClasses[i]);
+  emphClasses[0] = NULL;
+  
   /* Compile things that are necesary for the proper operation of 
      liblouis or liblouisxml or liblouisutdml */
   compileString ("space \\s 0");

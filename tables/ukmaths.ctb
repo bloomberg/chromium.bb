@@ -41,8 +41,11 @@ numsign 3456
 capsign 6
 begcaps 6-6
 endcaps 6-3
-singleletterital 4
-singleletterbold 4
+emphclass italic
+emphclass underline
+emphclass bold
+singleletteremph italic 4
+singleletteremph bold 4
 
 # litdigit opcodes must be in this table, not the single-cell table.
 include litdigits6Dots.uti
