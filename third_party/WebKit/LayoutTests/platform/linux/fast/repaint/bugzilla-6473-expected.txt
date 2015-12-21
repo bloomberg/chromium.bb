@@ -16,6 +16,7 @@
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV id='allcontent'",
         "LayoutBlockFlow (relative positioned) P",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'SUCCESS'"
       ]

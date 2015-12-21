@@ -24,6 +24,7 @@
         "RootInlineBox",
         "LayoutBlockFlow DIV",
         "LayoutBlockFlow DIV id='inline-block-2' class='item'",
+        "RootInlineBox",
         "LayoutBR BR",
         "InlineTextBox '\n'"
       ]

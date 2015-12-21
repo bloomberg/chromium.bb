@@ -11,6 +11,7 @@
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (positioned) DIV id='target'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'PASS'"
       ]

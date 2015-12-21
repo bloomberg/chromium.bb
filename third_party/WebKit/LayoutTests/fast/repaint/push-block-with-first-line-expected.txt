@@ -6,14 +6,18 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [488, 8, 150, 20],
-        [488, 8, 80, 20]
+        [8, 68, 784, 20],
+        [8, 68, 140, 20],
+        [8, 8, 784, 60],
+        [8, 8, 784, 20],
+        [8, 8, 140, 20]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='target'",
+        "LayoutBlockFlow DIV id='spacer'",
+        "LayoutBlockFlow DIV class='test'",
         "RootInlineBox",
         "LayoutText #text",
-        "InlineTextBox 'PASS'"
+        "InlineTextBox 'JOCULAR'"
       ]
     }
   ]

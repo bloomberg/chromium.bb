@@ -14,6 +14,7 @@
         "RootInlineBox",
         "InlineTextBox 'Lorem Ipsum'",
         "LayoutBlockFlow (positioned) A id='link' class='updated'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'Lorem Ipsum'"
       ]

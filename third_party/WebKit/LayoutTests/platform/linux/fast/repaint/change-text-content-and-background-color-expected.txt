@@ -16,6 +16,7 @@
         "InlineTextBox ''",
         "LayoutTextControl (positioned) INPUT id='input'",
         "LayoutBlockFlow DIV id='inner-editor'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'NEW'"
       ]

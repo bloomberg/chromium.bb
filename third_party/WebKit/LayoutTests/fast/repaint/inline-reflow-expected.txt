@@ -47,6 +47,7 @@
         "RootInlineBox",
         "InlineTextBox 'A A A A A'",
         "LayoutBlockFlow (positioned) DIV id='div1' class='container'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'A A A A A AA AA'",
         "InlineTextBox 'AA AA AAA AAA'",
@@ -58,7 +59,8 @@
         "InlineTextBox 'AAA AAA AAA AA'",
         "InlineTextBox 'AA AA AA A A A'",
         "InlineTextBox 'A A'",
-        "LayoutBlockFlow (positioned) DIV id='div2' class='container'"
+        "LayoutBlockFlow (positioned) DIV id='div2' class='container'",
+        "RootInlineBox"
       ]
     }
   ]

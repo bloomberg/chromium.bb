@@ -12,6 +12,7 @@
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV id='target' class='target'",
+        "RootInlineBox",
         "LayoutImage IMG",
         "InlineBox",
         "RootInlineBox",

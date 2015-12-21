@@ -19,6 +19,7 @@
         "InlineFlowBox",
         "InlineTextBox ''",
         "LayoutMultiColumnFlowThread (anonymous)",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'XXXXXX'"
       ]

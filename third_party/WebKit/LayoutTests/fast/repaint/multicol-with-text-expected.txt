@@ -18,6 +18,7 @@
         "InlineTextBox '\n'",
         "InlineTextBox '\n'",
         "LayoutMultiColumnFlowThread (anonymous)",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'PASS'"
       ]

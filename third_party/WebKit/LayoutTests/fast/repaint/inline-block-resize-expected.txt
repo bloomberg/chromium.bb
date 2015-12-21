@@ -13,6 +13,7 @@
         "RootInlineBox",
         "InlineBox",
         "LayoutBlockFlow (positioned) DIV",
+        "RootInlineBox",
         "LayoutBlockFlow DIV id='target'"
       ]
     }

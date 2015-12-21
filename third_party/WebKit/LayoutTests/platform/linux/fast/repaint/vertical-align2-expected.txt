@@ -18,6 +18,7 @@
         "RootInlineBox",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow BODY",
+        "RootInlineBox",
         "LayoutBlockFlow DIV id='target'"
       ]
     }

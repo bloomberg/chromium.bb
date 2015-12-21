@@ -14,6 +14,7 @@
       "paintInvalidationClients": [
         "LayoutBlockFlow (relative positioned) DIV id='shiftMe'",
         "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
+        "RootInlineBox",
         "LayoutImage IMG",
         "LayoutText #text"
       ]

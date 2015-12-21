@@ -9,7 +9,8 @@
         [550, 8, 200, 50]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='target' class='changed'"
+        "LayoutBlockFlow DIV id='target' class='changed'",
+        "RootInlineBox"
       ]
     }
   ]

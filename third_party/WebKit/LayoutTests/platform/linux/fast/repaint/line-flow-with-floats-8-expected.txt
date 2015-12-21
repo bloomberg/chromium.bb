@@ -91,6 +91,7 @@
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'difficult game indeed.\n'",
         "LayoutText #text",

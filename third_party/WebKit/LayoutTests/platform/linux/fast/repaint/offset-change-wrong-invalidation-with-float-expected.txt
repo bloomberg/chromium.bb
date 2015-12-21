@@ -16,6 +16,7 @@
       "paintInvalidationClients": [
         "LayoutBlockFlow (positioned) UL id='submenu'",
         "LayoutListItem LI",
+        "RootInlineBox",
         "LayoutListMarker (anonymous)"
       ],
       "children": [
