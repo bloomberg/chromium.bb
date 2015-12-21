@@ -10,6 +10,7 @@
 #include "core/animation/CSSImageInterpolationType.h"
 #include "core/animation/CSSImageListInterpolationType.h"
 #include "core/animation/CSSLengthInterpolationType.h"
+#include "core/animation/CSSLengthListInterpolationType.h"
 #include "core/animation/CSSNumberInterpolationType.h"
 #include "core/animation/CSSPaintInterpolationType.h"
 #include "core/animation/CSSShadowListInterpolationType.h"
@@ -40,7 +41,6 @@
 #include "core/animation/SVGPathInterpolationType.h"
 #include "core/animation/SVGPointListInterpolationType.h"
 #include "core/animation/SVGRectInterpolationType.h"
-#include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
 #include "core/animation/SVGTransformListInterpolationType.h"
 #include "core/animation/SVGValueInterpolationType.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
@@ -253,6 +253,9 @@ const InterpolationTypes* applicableTypesForProperty(PropertyHandle property)
         case CSSPropertyBackgroundImage:
         case CSSPropertyWebkitMaskImage:
             applicableTypes->append(adoptPtr(new CSSImageListInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyStrokeDasharray:
+            applicableTypes->append(adoptPtr(new CSSLengthListInterpolationType(cssProperty)));
             break;
         default:
             // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
@@ -496,14 +499,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
             return interpolation.release();
         if (ImageSliceStyleInterpolation::usesDefaultInterpolation(*fromCSSValue, *toCSSValue))
             forceDefaultInterpolation = true;
-
-        break;
-    }
-
-    case CSSPropertyStrokeDasharray: {
-        RefPtr<Interpolation> interpolation = SVGStrokeDasharrayStyleInterpolation::maybeCreate(*fromCSSValue, *toCSSValue, property);
-        if (interpolation)
-            return interpolation.release();
 
         break;
     }

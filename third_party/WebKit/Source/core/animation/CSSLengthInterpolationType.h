@@ -23,11 +23,15 @@ public:
     static Length resolveInterpolableLength(const InterpolableValue&, const NonInterpolableValue*, const CSSToLengthConversionData&, ValueRange = ValueRangeAll);
     static PassOwnPtr<InterpolableValue> createInterpolablePixels(double pixels);
     static InterpolationComponent maybeConvertCSSValue(const CSSValue&);
+    static InterpolationComponent maybeConvertLength(const Length&, float zoom);
+    static PassOwnPtr<InterpolableList> createNeutralInterpolableValue();
+    static PairwiseInterpolationComponent mergeSingleConversionComponents(InterpolationComponent& startValue, InterpolationComponent& endValue);
+    static bool nonInterpolableValuesAreCompatible(const NonInterpolableValue*, const NonInterpolableValue*);
+    static void composite(OwnPtr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
 
 private:
     float effectiveZoom(const ComputedStyle&) const;
 
-    PassOwnPtr<InterpolationValue> maybeConvertLength(const Length&, float zoom) const;
     PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const final;
     PassOwnPtr<InterpolationValue> maybeConvertInitial() const final;
     PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
