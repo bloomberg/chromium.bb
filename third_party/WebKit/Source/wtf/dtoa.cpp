@@ -32,14 +32,12 @@
  * file.
  */
 
-#include "config.h"
-#include "dtoa.h"
+#include "wtf/dtoa.h"
 
 #include "wtf/CPU.h"
 #include "wtf/MathExtras.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
-
 #include <string.h>
 
 #if COMPILER(MSVC)

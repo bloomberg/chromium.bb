@@ -49,6 +49,7 @@
  */
 
 #include "wtf/WTFExport.h"
+#include "wtf/build_config.h"
 
 #if USE(DYNAMIC_ANNOTATIONS)
 /* Tell data race detector that we're not interested in reports on the given address range. */

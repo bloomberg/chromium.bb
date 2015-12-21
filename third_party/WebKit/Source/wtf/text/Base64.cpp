@@ -21,8 +21,7 @@
    package by Ronald Tschalaer Copyright (C) 1996-1999.
 */
 
-#include "config.h"
-#include "Base64.h"
+#include "wtf/text/Base64.h"
 
 #include "wtf/StringExtras.h"
 #include <limits.h>

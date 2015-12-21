@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "wtf/text/StringImpl.h"
 
 #include "wtf/DynamicAnnotations.h"

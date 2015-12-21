@@ -23,8 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "DataLog.h"
+#include "wtf/DataLog.h"
 
 #if OS(POSIX)
 #include <pthread.h>

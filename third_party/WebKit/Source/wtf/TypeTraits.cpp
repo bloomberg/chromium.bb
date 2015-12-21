@@ -19,12 +19,10 @@
  *
  */
 
-#include "config.h"
-#include "TypeTraits.h"
+#include "wtf/TypeTraits.h"
 
-#include "Assertions.h"
-#include "Noncopyable.h"
-
+#include "wtf/Assertions.h"
+#include "wtf/Noncopyable.h"
 #include <type_traits>
 
 namespace WTF {

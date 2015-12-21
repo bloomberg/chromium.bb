@@ -43,7 +43,7 @@
 #include "wtf/Compiler.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WTFExport.h"
-
+#include "wtf/build_config.h"
 #include <stdarg.h>
 
 // Users must test "#if ENABLE(ASSERT)", which helps ensure that code

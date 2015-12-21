@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "wtf/WTFThreadData.h"
 
 #include "wtf/text/TextCodecICU.h"

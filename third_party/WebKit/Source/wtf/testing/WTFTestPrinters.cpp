@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 #include <ostream> // NOLINT

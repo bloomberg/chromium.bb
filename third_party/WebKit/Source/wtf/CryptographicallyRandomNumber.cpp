@@ -15,7 +15,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "config.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 
 namespace WTF {

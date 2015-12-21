@@ -31,7 +31,6 @@
 // we need to place this directive before any data or functions are defined.
 #pragma GCC diagnostic ignored "-Wmissing-format-attribute"
 
-#include "config.h"
 #include "wtf/Assertions.h"
 
 #include "wtf/Compiler.h"

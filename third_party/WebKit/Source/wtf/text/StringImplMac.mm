@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "wtf/text/StringImpl.h"
 
 #import <CoreFoundation/CFBase.h>

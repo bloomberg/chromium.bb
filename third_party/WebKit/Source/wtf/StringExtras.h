@@ -26,6 +26,7 @@
 #ifndef WTF_StringExtras_h
 #define WTF_StringExtras_h
 
+#include "wtf/build_config.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>

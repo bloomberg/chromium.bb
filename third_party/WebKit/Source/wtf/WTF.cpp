@@ -28,8 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "WTF.h"
+#include "wtf/WTF.h"
 
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/Assertions.h"

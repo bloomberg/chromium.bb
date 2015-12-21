@@ -19,10 +19,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
-#include "WTFString.h"
+#include "wtf/text/WTFString.h"
 
-#include "IntegerToStringConversion.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/DataLog.h"
 #include "wtf/HexNumber.h"
@@ -32,6 +30,7 @@
 #include "wtf/dtoa.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/CharacterNames.h"
+#include "wtf/text/IntegerToStringConversion.h"
 #include "wtf/text/UTF8.h"
 #include "wtf/text/Unicode.h"
 #include <algorithm>

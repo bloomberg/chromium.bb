@@ -28,6 +28,7 @@
 
 #include "wtf/TypeTraits.h"
 #include "wtf/WTFExport.h"
+#include "wtf/build_config.h"
 
 namespace WTF {
 

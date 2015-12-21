@@ -23,7 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "wtf/HashSet.h"
 
 #include "testing/gtest/include/gtest/gtest.h"

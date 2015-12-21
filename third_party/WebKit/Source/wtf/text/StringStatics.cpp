@@ -23,14 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "StringStatics.h"
+#include "wtf/text/StringStatics.h"
 
-#include "AtomicString.h"
-#include "StringImpl.h"
 #include "wtf/DynamicAnnotations.h"
 #include "wtf/MainThread.h"
 #include "wtf/StaticConstructors.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/StringImpl.h"
 
 namespace WTF {
 

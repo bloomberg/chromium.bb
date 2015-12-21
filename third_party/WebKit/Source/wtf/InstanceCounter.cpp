@@ -23,8 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "InstanceCounter.h"
+#include "wtf/InstanceCounter.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/StdLibExtras.h"

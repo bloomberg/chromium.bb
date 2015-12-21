@@ -4,8 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include "config.h"
-#include "StringConcatenate.h"
+#include "wtf/text/StringConcatenate.h"
 
 // This macro is helpful for testing how many intermediate Strings are created while evaluating an
 // expression containing operator+.

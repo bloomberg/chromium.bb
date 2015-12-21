@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "ThreadSpecific.h"
 
 #if OS(WIN)

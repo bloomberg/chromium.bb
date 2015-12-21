@@ -24,8 +24,7 @@
  */
 
 
-#include "config.h"
-#include "CString.h"
+#include "wtf/text/CString.h"
 
 #include "wtf/PartitionAlloc.h"
 #include "wtf/Partitions.h"

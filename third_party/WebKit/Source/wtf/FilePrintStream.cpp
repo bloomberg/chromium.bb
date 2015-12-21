@@ -23,8 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "FilePrintStream.h"
+#include "wtf/FilePrintStream.h"
 
 namespace WTF {
 

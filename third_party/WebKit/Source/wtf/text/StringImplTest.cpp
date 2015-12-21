@@ -23,7 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "wtf/text/StringImpl.h"
 
 #include "testing/gtest/include/gtest/gtest.h"

@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "RefCountedLeakCounter.h"
 #include "wtf/Assertions.h"
 

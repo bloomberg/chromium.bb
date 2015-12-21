@@ -21,6 +21,7 @@
 #ifndef WTF_Alignment_h
 #define WTF_Alignment_h
 
+#include "wtf/Compiler.h"
 #include <algorithm>
 #include <stdint.h>
 #include <utility>
