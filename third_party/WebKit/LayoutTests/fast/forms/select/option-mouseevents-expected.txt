@@ -74,15 +74,15 @@ PASS: event type should be mousedown and is
 PASS: event target should be [object HTMLSelectElement] and is
 PASS: event.pageX should be 22 and is
 PASS: event.pageY should be 448 and is
-FAIL: event.offsetX should be 12 but instead is 14
-FAIL: event.offsetY should be 38 but instead is 40
+PASS: event.offsetX should be 13 and is
+PASS: event.offsetY should be 39 and is
 PASS: event.x should be 22 and is
 PASS: event.y should be 448 and is
 PASS: event type should be mousedown and is
 PASS: event target should be [object HTMLSelectElement] and is
 PASS: event.pageX should be 22 and is
 PASS: event.pageY should be 448 and is
-FAIL: event.offsetX should be 12 but instead is 14
-FAIL: event.offsetY should be 38 but instead is 40
+PASS: event.offsetX should be 13 and is
+PASS: event.offsetY should be 39 and is
 PASS: event.x should be 22 and is
 PASS: event.y should be 448 and is
