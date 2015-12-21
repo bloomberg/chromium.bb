@@ -204,8 +204,8 @@ cr.define('options', function() {
       var url = imageGrid.selectedItemUrl;
 
       // Flip button available only for camera picture.
-      imageGrid.flipPhotoElement.tabIndex =
-          imageGrid.selectionType == 'camera' ? 1 : -1;
+      imageGrid.flipPhotoElement.hidden =
+          imageGrid.selectionType != 'camera';
       // Ignore selection change caused by program itself and selection of one
       // of the action buttons.
       if (!imageGrid.inProgramSelection &&

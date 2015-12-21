@@ -133,32 +133,19 @@
 }
 
 #flip-photo {
-  -webkit-transition: opacity 75ms linear;
   background: url(chrome://theme/IDR_MIRROR_FLIP) no-repeat;
   border: none;
   bottom: 44px;  /* 8px + image bottom. */
   display: block;
   height: 32px;
-  opacity: 0;
   position: absolute;
   right: 8px;
   width: 32px;
 }
 
-/* TODO(merkulova): remove when webkit crbug.com/126479 is fixed. */
-.flip-trick {
-  -webkit-transform: translateZ(1px);
-}
-
 html[dir=rtl] #flip-photo {
   left: 8px;
   right: auto;
-}
-
-/* "Flip photo" button is hidden during flip animation. */
-.camera.online:not(.animation) #flip-photo,
-.camera:not(.live):not(.animation) #flip-photo {
-  opacity: 0.75;
 }
 
 #discard-photo,
