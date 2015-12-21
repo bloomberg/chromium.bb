@@ -4,6 +4,9 @@
 
 #include "cc/test/ordered_simple_task_runner.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 #include <set>
 #include <sstream>

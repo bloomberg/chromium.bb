@@ -5,6 +5,8 @@
 #ifndef CC_TEST_FAKE_PICTURE_LAYER_IMPL_H_
 #define CC_TEST_FAKE_PICTURE_LAYER_IMPL_H_
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/display_list_raster_source.h"

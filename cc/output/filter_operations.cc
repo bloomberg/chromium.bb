@@ -4,6 +4,8 @@
 
 #include "cc/output/filter_operations.h"
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "base/trace_event/trace_event_argument.h"

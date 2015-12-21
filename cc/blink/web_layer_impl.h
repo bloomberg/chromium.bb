@@ -5,9 +5,13 @@
 #ifndef CC_BLINK_WEB_LAYER_IMPL_H_
 #define CC_BLINK_WEB_LAYER_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/blink/cc_blink_export.h"

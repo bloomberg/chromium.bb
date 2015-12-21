@@ -4,6 +4,8 @@
 
 #include "cc/layers/texture_layer_impl.h"
 
+#include <stddef.h>
+
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/test/layer_test_common.h"

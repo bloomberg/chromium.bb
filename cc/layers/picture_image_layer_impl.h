@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_PICTURE_IMAGE_LAYER_IMPL_H_
 #define CC_LAYERS_PICTURE_IMAGE_LAYER_IMPL_H_
 
+#include "base/macros.h"
 #include "cc/layers/picture_layer_impl.h"
 
 namespace cc {

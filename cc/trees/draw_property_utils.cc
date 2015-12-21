@@ -4,6 +4,8 @@
 
 #include "cc/trees/draw_property_utils.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "cc/base/math_util.h"

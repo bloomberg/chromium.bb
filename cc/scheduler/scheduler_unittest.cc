@@ -4,6 +4,8 @@
 
 #include "cc/scheduler/scheduler.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

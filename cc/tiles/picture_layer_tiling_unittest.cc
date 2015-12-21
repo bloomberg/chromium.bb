@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <limits>
 #include <set>
 
+#include "base/macros.h"
 #include "cc/base/math_util.h"
 #include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_output_surface.h"

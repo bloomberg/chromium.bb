@@ -5,6 +5,8 @@
 #ifndef CC_TREES_PROXY_COMMON_H_
 #define CC_TREES_PROXY_COMMON_H_
 
+#include <stddef.h>
+
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/trees/layer_tree_host_common.h"

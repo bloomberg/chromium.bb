@@ -5,6 +5,9 @@
 #ifndef CC_TEST_TEST_TEXTURE_H_
 #define CC_TEST_TEST_TEXTURE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

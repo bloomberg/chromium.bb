@@ -4,7 +4,6 @@
 
 #include "cc/blink/web_filter_operations_impl.h"
 
-#include "base/basictypes.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"

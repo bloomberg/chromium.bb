@@ -4,6 +4,8 @@
 
 #include "cc/blink/web_content_layer_impl.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "cc/base/switches.h"
 #include "cc/blink/web_display_item_list_impl.h"

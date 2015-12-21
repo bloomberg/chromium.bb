@@ -4,6 +4,8 @@
 
 #include "cc/test/layer_tree_json_parser.h"
 
+#include <stddef.h>
+
 #include "cc/layers/layer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"

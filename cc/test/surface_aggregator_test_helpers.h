@@ -5,6 +5,8 @@
 #ifndef CC_TEST_SURFACE_AGGREGATOR_TEST_HELPERS_H_
 #define CC_TEST_SURFACE_AGGREGATOR_TEST_HELPERS_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "cc/quads/draw_quad.h"

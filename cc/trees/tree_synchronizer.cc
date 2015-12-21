@@ -4,6 +4,8 @@
 
 #include "cc/trees/tree_synchronizer.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/containers/hash_tables.h"

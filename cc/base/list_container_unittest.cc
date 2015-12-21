@@ -4,6 +4,8 @@
 
 #include "cc/base/list_container.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 #include "testing/gmock/include/gmock/gmock.h"

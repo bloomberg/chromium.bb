@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/resource_id.h"
 #include "gpu/command_buffer/common/sync_token.h"

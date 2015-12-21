@@ -4,6 +4,8 @@
 
 #include "cc/trees/layer_tree_host.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

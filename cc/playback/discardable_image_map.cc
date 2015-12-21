@@ -4,6 +4,8 @@
 
 #include "cc/playback/discardable_image_map.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <limits>
 

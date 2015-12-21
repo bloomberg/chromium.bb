@@ -4,6 +4,8 @@
 
 #include "cc/animation/transform_operations.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "ui/gfx/animation/tween.h"

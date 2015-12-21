@@ -4,6 +4,8 @@
 
 #include "cc/output/texture_mailbox_deleter.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"

@@ -5,6 +5,9 @@
 #ifndef CC_BASE_RTREE_H_
 #define CC_BASE_RTREE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <vector>
 

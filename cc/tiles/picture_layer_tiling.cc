@@ -4,6 +4,8 @@
 
 #include "cc/tiles/picture_layer_tiling.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>

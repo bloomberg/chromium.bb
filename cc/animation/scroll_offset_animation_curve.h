@@ -5,6 +5,7 @@
 #ifndef CC_ANIMATION_SCROLL_OFFSET_ANIMATION_CURVE_H_
 #define CC_ANIMATION_SCROLL_OFFSET_ANIMATION_CURVE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_curve.h"

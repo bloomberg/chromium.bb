@@ -5,13 +5,15 @@
 #ifndef CC_TEST_ORDERED_SIMPLE_TASK_RUNNER_H_
 #define CC_TEST_ORDERED_SIMPLE_TASK_RUNNER_H_
 
+#include <stddef.h>
+
 #include <limits>
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/trace_event/trace_event.h"

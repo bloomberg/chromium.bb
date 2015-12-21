@@ -4,6 +4,9 @@
 
 #include "cc/test/fake_tile_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <limits>
 

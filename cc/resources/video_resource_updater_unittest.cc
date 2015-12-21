@@ -4,6 +4,9 @@
 
 #include "cc/resources/video_resource_updater.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -80,9 +83,9 @@ class VideoResourceUpdaterTest : public testing::Test {
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {
     const int kDimension = 10;
     gfx::Size size(kDimension, kDimension);
-    static uint8 y_data[kDimension * kDimension] = { 0 };
-    static uint8 u_data[kDimension * kDimension / 2] = { 0 };
-    static uint8 v_data[kDimension * kDimension / 2] = { 0 };
+    static uint8_t y_data[kDimension * kDimension] = {0};
+    static uint8_t u_data[kDimension * kDimension / 2] = {0};
+    static uint8_t v_data[kDimension * kDimension / 2] = {0};
 
     return media::VideoFrame::WrapExternalYuvData(
         media::PIXEL_FORMAT_YV16,  // format

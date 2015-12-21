@@ -5,6 +5,7 @@
 #ifndef CC_OUTPUT_DELEGATED_FRAME_DATA_H_
 #define CC_OUTPUT_DELEGATED_FRAME_DATA_H_
 
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/transferable_resource.h"

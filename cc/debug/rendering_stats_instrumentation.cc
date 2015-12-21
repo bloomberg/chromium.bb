@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "cc/debug/rendering_stats_instrumentation.h"
 
 namespace cc {
@@ -37,7 +39,7 @@ void RenderingStatsInstrumentation::AccumulateAndClearImplThreadStats() {
   impl_thread_rendering_stats_ = RenderingStats();
 }
 
-void RenderingStatsInstrumentation::IncrementFrameCount(int64 count) {
+void RenderingStatsInstrumentation::IncrementFrameCount(int64_t count) {
   if (!record_rendering_stats_)
     return;
 
@@ -45,7 +47,7 @@ void RenderingStatsInstrumentation::IncrementFrameCount(int64 count) {
   impl_thread_rendering_stats_.frame_count += count;
 }
 
-void RenderingStatsInstrumentation::AddVisibleContentArea(int64 area) {
+void RenderingStatsInstrumentation::AddVisibleContentArea(int64_t area) {
   if (!record_rendering_stats_)
     return;
 
@@ -54,7 +56,7 @@ void RenderingStatsInstrumentation::AddVisibleContentArea(int64 area) {
 }
 
 void RenderingStatsInstrumentation::AddApproximatedVisibleContentArea(
-    int64 area) {
+    int64_t area) {
   if (!record_rendering_stats_)
     return;
 
@@ -63,7 +65,7 @@ void RenderingStatsInstrumentation::AddApproximatedVisibleContentArea(
 }
 
 void RenderingStatsInstrumentation::AddCheckerboardedVisibleContentArea(
-    int64 area) {
+    int64_t area) {
   if (!record_rendering_stats_)
     return;
 
@@ -72,7 +74,7 @@ void RenderingStatsInstrumentation::AddCheckerboardedVisibleContentArea(
 }
 
 void RenderingStatsInstrumentation::AddCheckerboardedNoRecordingContentArea(
-    int64 area) {
+    int64_t area) {
   if (!record_rendering_stats_)
     return;
 
@@ -81,7 +83,7 @@ void RenderingStatsInstrumentation::AddCheckerboardedNoRecordingContentArea(
 }
 
 void RenderingStatsInstrumentation::AddCheckerboardedNeedsRasterContentArea(
-    int64 area) {
+    int64_t area) {
   if (!record_rendering_stats_)
     return;
 

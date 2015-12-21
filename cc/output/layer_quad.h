@@ -6,7 +6,7 @@
 #ifndef CC_OUTPUT_LAYER_QUAD_H_
 #define CC_OUTPUT_LAYER_QUAD_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/point_f.h"
 

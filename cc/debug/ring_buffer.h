@@ -5,7 +5,10 @@
 #ifndef CC_DEBUG_RING_BUFFER_H_
 #define CC_DEBUG_RING_BUFFER_H_
 
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace cc {
 

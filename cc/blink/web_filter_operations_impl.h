@@ -5,8 +5,9 @@
 #ifndef CC_BLINK_WEB_FILTER_OPERATIONS_IMPL_H_
 #define CC_BLINK_WEB_FILTER_OPERATIONS_IMPL_H_
 
-#include "cc/output/filter_operations.h"
+#include "base/macros.h"
 #include "cc/blink/cc_blink_export.h"
+#include "cc/output/filter_operations.h"
 #include "third_party/WebKit/public/platform/WebFilterOperations.h"
 
 namespace cc_blink {

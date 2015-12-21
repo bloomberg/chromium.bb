@@ -4,6 +4,8 @@
 
 #include "cc/trees/property_tree_builder.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 

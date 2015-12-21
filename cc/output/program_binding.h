@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/shader.h"
 

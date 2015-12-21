@@ -4,6 +4,8 @@
 
 #include "cc/playback/display_list_recording_source.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/numerics/safe_math.h"

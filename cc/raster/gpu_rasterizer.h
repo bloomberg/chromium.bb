@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/tiles/tile.h"

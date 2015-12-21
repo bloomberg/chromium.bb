@@ -5,6 +5,8 @@
 #ifndef CC_DEBUG_RASTERIZE_AND_RECORD_BENCHMARK_IMPL_H_
 #define CC_DEBUG_RASTERIZE_AND_RECORD_BENCHMARK_IMPL_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <utility>
 #include <vector>

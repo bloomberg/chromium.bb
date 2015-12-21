@@ -6,6 +6,7 @@
 #define CC_TEST_FAKE_SCROLLBAR_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "cc/input/scrollbar.h"
 #include "third_party/skia/include/core/SkColor.h"
 

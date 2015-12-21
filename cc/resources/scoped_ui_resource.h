@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_SCOPED_UI_RESOURCE_H_
 #define CC_RESOURCES_SCOPED_UI_RESOURCE_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/ui_resource_bitmap.h"

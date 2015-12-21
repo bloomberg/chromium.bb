@@ -4,6 +4,8 @@
 
 #include "cc/trees/layer_tree_host_common.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/trace_event/trace_event.h"

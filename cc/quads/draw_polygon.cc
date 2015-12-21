@@ -4,6 +4,8 @@
 
 #include "cc/quads/draw_polygon.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "cc/output/bsp_compare_result.h"

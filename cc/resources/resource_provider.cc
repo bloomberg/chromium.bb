@@ -4,11 +4,15 @@
 
 #include "cc/resources/resource_provider.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 
 #include "base/atomic_sequence_num.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
@@ -1623,7 +1627,7 @@ bool ResourceProvider::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const uint64 tracing_process_id =
+  const uint64_t tracing_process_id =
       base::trace_event::MemoryDumpManager::GetInstance()
           ->GetTracingProcessId();
 

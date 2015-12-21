@@ -5,7 +5,10 @@
 #ifndef CC_BLINK_WEB_EXTERNAL_BITMAP_IMPL_H_
 #define CC_BLINK_WEB_EXTERNAL_BITMAP_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/blink/cc_blink_export.h"
 #include "third_party/WebKit/public/platform/WebExternalBitmap.h"
@@ -31,7 +34,7 @@ class WebExternalBitmapImpl : public blink::WebExternalBitmap {
   // blink::WebExternalBitmap implementation.
   blink::WebSize size() override;
   void setSize(blink::WebSize size) override;
-  uint8* pixels() override;
+  uint8_t* pixels() override;
 
   cc::SharedBitmap* shared_bitmap() { return shared_bitmap_.get(); }
 

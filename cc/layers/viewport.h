@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_VIEWPORT_H_
 #define CC_LAYERS_VIEWPORT_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_impl.h"
 #include "ui/gfx/geometry/vector2d_f.h"

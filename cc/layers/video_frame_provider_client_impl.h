@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_VIDEO_FRAME_PROVIDER_CLIENT_IMPL_H_
 #define CC_LAYERS_VIDEO_FRAME_PROVIDER_CLIENT_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"

@@ -5,12 +5,14 @@
 #ifndef CC_QUADS_RENDER_PASS_H_
 #define CC_QUADS_RENDER_PASS_H_
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/list_container.h"
 #include "cc/quads/render_pass_id.h"

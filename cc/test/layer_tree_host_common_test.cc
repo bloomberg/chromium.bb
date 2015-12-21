@@ -4,6 +4,8 @@
 
 #include "cc/test/layer_tree_host_common_test.h"
 
+#include <stddef.h>
+
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/test/fake_layer_tree_host.h"

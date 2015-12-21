@@ -4,6 +4,8 @@
 
 #include "cc/playback/discardable_image_map.h"
 
+#include <stddef.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"

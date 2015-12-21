@@ -5,6 +5,8 @@
 #ifndef CC_TEST_ORDERED_TEXTURE_MAP_H_
 #define CC_TEST_ORDERED_TEXTURE_MAP_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/containers/hash_tables.h"

@@ -4,6 +4,8 @@
 
 #include "cc/layers/surface_layer_impl.h"
 
+#include <stdint.h>
+
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/quads/solid_color_draw_quad.h"

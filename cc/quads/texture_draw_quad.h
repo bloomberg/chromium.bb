@@ -5,6 +5,8 @@
 #ifndef CC_QUADS_TEXTURE_DRAW_QUAD_H_
 #define CC_QUADS_TEXTURE_DRAW_QUAD_H_
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/quads/draw_quad.h"

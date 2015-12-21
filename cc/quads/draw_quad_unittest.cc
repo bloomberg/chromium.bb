@@ -4,6 +4,8 @@
 
 #include "cc/quads/draw_quad.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

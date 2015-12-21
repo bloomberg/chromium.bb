@@ -4,10 +4,11 @@
 
 #include "cc/debug/invalidation_benchmark.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "cc/layers/layer.h"
@@ -126,10 +127,10 @@ bool InvalidationBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {
 // high quality, but they need to be identical in each run. Therefore, we use a
 // LCG and keep the state locally in the benchmark.
 float InvalidationBenchmark::LCGRandom() {
-  const uint32 a = 1664525;
-  const uint32 c = 1013904223;
+  const uint32_t a = 1664525;
+  const uint32_t c = 1013904223;
   seed_ = a * seed_ + c;
-  return static_cast<float>(seed_) / std::numeric_limits<uint32>::max();
+  return static_cast<float>(seed_) / std::numeric_limits<uint32_t>::max();
 }
 
 }  // namespace cc

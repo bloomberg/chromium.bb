@@ -4,6 +4,9 @@
 
 #include "cc/resources/video_resource_updater.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

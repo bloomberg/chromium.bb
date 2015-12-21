@@ -5,9 +5,10 @@
 #ifndef CC_TREES_PROPERTY_TREE_H_
 #define CC_TREES_PROPERTY_TREE_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"

@@ -4,6 +4,9 @@
 
 #include "cc/base/rtree.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cmath>
 
 #include "base/logging.h"

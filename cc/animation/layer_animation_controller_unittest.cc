@@ -4,6 +4,8 @@
 
 #include "cc/animation/layer_animation_controller.h"
 
+#include <stddef.h>
+
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_delegate.h"

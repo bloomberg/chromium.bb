@@ -4,6 +4,8 @@
 
 #include "cc/layers/layer.h"
 
+#include <stddef.h>
+
 #include "base/thread_task_runner_handle.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/mutable_properties.h"

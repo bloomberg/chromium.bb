@@ -4,8 +4,11 @@
 
 #include "cc/raster/zero_copy_tile_task_worker_pool.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"

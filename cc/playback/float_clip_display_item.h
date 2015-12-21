@@ -5,6 +5,8 @@
 #ifndef CC_PLAYBACK_FLOAT_CLIP_DISPLAY_ITEM_H_
 #define CC_PLAYBACK_FLOAT_CLIP_DISPLAY_ITEM_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"

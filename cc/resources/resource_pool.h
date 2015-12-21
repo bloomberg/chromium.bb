@@ -5,9 +5,13 @@
 #ifndef CC_RESOURCES_RESOURCE_POOL_H_
 #define CC_RESOURCES_RESOURCE_POOL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
@@ -37,7 +41,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   ~ResourcePool() override;
 
   Resource* AcquireResource(const gfx::Size& size, ResourceFormat format);
-  Resource* TryAcquireResourceWithContentId(uint64 content_id);
+  Resource* TryAcquireResourceWithContentId(uint64_t content_id);
   void ReleaseResource(Resource* resource, uint64_t content_id);
 
   void SetResourceUsageLimits(size_t max_memory_usage_bytes,

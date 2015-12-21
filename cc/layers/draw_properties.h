@@ -5,6 +5,8 @@
 #ifndef CC_LAYERS_DRAW_PROPERTIES_H_
 #define CC_LAYERS_DRAW_PROPERTIES_H_
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/trees/occlusion.h"
 #include "third_party/skia/include/core/SkXfermode.h"

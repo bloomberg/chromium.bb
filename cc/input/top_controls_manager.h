@@ -5,6 +5,7 @@
 #ifndef CC_INPUT_TOP_CONTROLS_MANAGER_H_
 #define CC_INPUT_TOP_CONTROLS_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/input/top_controls_state.h"

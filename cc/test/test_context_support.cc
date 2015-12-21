@@ -4,6 +4,9 @@
 
 #include "cc/test/test_context_support.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -16,7 +19,7 @@ TestContextSupport::TestContextSupport()
 
 TestContextSupport::~TestContextSupport() {}
 
-void TestContextSupport::SignalSyncPoint(uint32 sync_point,
+void TestContextSupport::SignalSyncPoint(uint32_t sync_point,
                                          const base::Closure& callback) {
   sync_point_callbacks_.push_back(callback);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -32,7 +35,7 @@ void TestContextSupport::SignalSyncToken(const gpu::SyncToken& sync_token,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void TestContextSupport::SignalQuery(uint32 query,
+void TestContextSupport::SignalQuery(uint32_t query,
                                      const base::Closure& callback) {
   sync_point_callbacks_.push_back(callback);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -68,12 +71,12 @@ void TestContextSupport::SetScheduleOverlayPlaneCallback(
 void TestContextSupport::Swap() {
 }
 
-uint32 TestContextSupport::InsertFutureSyncPointCHROMIUM() {
+uint32_t TestContextSupport::InsertFutureSyncPointCHROMIUM() {
   NOTIMPLEMENTED();
   return 0;
 }
 
-void TestContextSupport::RetireSyncPointCHROMIUM(uint32 sync_point) {
+void TestContextSupport::RetireSyncPointCHROMIUM(uint32_t sync_point) {
   NOTIMPLEMENTED();
 }
 

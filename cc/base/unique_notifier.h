@@ -6,6 +6,7 @@
 #define CC_BASE_UNIQUE_NOTIFIER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
 

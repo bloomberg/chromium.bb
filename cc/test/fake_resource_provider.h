@@ -5,6 +5,8 @@
 #ifndef CC_TEST_FAKE_RESOURCE_PROVIDER_H_
 #define CC_TEST_FAKE_RESOURCE_PROVIDER_H_
 
+#include <stddef.h>
+
 #include "cc/resources/resource_provider.h"
 #include "ui/gfx/buffer_types.h"
 

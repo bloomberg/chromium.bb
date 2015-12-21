@@ -5,6 +5,8 @@
 #ifndef CC_OUTPUT_COMPOSITOR_FRAME_METADATA_H_
 #define CC_OUTPUT_COMPOSITOR_FRAME_METADATA_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "cc/base/cc_export.h"

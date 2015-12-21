@@ -4,6 +4,8 @@
 
 #include "cc/base/contiguous_container.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 namespace cc {

@@ -4,6 +4,7 @@
 
 #include "cc/layers/picture_layer_impl.h"
 
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/test/fake_display_list_raster_source.h"

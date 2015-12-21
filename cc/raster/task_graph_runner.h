@@ -5,6 +5,9 @@
 #ifndef CC_RASTER_TASK_GRAPH_RUNNER_H_
 #define CC_RASTER_TASK_GRAPH_RUNNER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <map>
 #include <vector>

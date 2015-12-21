@@ -5,6 +5,9 @@
 #ifndef CC_SURFACES_SURFACE_H_
 #define CC_SURFACES_SURFACE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <vector>

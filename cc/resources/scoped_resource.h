@@ -5,8 +5,8 @@
 #ifndef CC_RESOURCES_SCOPED_RESOURCE_H_
 #define CC_RESOURCES_SCOPED_RESOURCE_H_
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource.h"

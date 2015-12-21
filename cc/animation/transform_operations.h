@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/animation/transform_operation.h"
 #include "cc/base/cc_export.h"

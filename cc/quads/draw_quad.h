@@ -5,6 +5,8 @@
 #ifndef CC_QUADS_DRAW_QUAD_H_
 #define CC_QUADS_DRAW_QUAD_H_
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/resource_id.h"

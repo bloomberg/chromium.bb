@@ -4,6 +4,8 @@
 
 #include "cc/base/region.h"
 
+#include <stddef.h>
+
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/simple_enclosed_region.h"

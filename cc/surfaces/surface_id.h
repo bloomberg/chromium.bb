@@ -5,6 +5,9 @@
 #ifndef CC_SURFACES_SURFACE_ID_H_
 #define CC_SURFACES_SURFACE_ID_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
 
 namespace cc {

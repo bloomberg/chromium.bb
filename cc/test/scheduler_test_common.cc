@@ -4,6 +4,8 @@
 
 #include "cc/test/scheduler_test_common.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/logging.h"

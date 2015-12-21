@@ -4,6 +4,7 @@
 
 #include "cc/trees/threaded_channel.h"
 
+#include "base/macros.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"

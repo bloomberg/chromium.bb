@@ -5,9 +5,12 @@
 #ifndef CC_BASE_ROLLING_TIME_DELTA_HISTORY_H_
 #define CC_BASE_ROLLING_TIME_DELTA_HISTORY_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <set>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 

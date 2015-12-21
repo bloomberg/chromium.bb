@@ -4,6 +4,8 @@
 
 #include "cc/base/random_access_list_container.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 

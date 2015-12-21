@@ -4,6 +4,9 @@
 
 #include "cc/trees/layer_tree_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <set>

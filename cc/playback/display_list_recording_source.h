@@ -5,6 +5,9 @@
 #ifndef CC_PLAYBACK_DISPLAY_LIST_RECORDING_SOURCE_H_
 #define CC_PLAYBACK_DISPLAY_LIST_RECORDING_SOURCE_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"

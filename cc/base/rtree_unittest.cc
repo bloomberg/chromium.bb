@@ -4,6 +4,8 @@
 
 #include "cc/base/rtree.h"
 
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

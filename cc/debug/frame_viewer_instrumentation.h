@@ -5,6 +5,7 @@
 #ifndef CC_DEBUG_FRAME_VIEWER_INSTRUMENTATION_H_
 #define CC_DEBUG_FRAME_VIEWER_INSTRUMENTATION_H_
 
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/tiles/tile.h"
 #include "cc/tiles/tile_priority.h"

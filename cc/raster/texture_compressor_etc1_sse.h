@@ -5,6 +5,9 @@
 #ifndef CC_RASTER_TEXTURE_COMPRESSOR_ETC1_SSE_H_
 #define CC_RASTER_TEXTURE_COMPRESSOR_ETC1_SSE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "cc/raster/texture_compressor.h"
 
 namespace cc {

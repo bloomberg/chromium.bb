@@ -5,8 +5,10 @@
 #ifndef CC_BASE_CONTIGUOUS_CONTAINER_H_
 #define CC_BASE_CONTIGUOUS_CONTAINER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "cc/base/cc_export.h"

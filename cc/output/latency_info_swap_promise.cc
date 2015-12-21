@@ -4,6 +4,8 @@
 
 #include "cc/output/latency_info_swap_promise.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 
@@ -46,7 +48,7 @@ void LatencyInfoSwapPromise::DidNotSwap(DidNotSwapReason reason) {
   // DCHECK(latency_.terminated);
 }
 
-int64 LatencyInfoSwapPromise::TraceId() const {
+int64_t LatencyInfoSwapPromise::TraceId() const {
   return latency_.trace_id();
 }
 

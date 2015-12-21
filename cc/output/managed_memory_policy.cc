@@ -4,6 +4,8 @@
 
 #include "cc/output/managed_memory_policy.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "cc/proto/gpu_conversions.h"
 #include "cc/proto/managed_memory_policy.pb.h"

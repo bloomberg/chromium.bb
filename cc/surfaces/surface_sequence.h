@@ -5,6 +5,9 @@
 #ifndef CC_SURFACES_SURFACE_SEQUENCE_H_
 #define CC_SURFACES_SURFACE_SEQUENCE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <tuple>
 
 #include "base/containers/hash_tables.h"

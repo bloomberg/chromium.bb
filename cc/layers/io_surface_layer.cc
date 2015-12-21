@@ -4,6 +4,8 @@
 
 #include "cc/layers/io_surface_layer.h"
 
+#include <stdint.h>
+
 #include "cc/layers/io_surface_layer_impl.h"
 
 namespace cc {

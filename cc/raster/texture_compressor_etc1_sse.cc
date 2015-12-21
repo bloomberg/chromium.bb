@@ -5,6 +5,7 @@
 #include "cc/raster/texture_compressor_etc1_sse.h"
 
 #include <emmintrin.h>
+#include <stdint.h>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"

@@ -4,6 +4,8 @@
 
 #include "cc/test/render_pass_test_utils.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"

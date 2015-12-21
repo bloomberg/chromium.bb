@@ -4,6 +4,8 @@
 
 #include "cc/tiles/tiling_set_raster_queue_required.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "cc/tiles/picture_layer_tiling_set.h"

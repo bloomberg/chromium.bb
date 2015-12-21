@@ -5,6 +5,9 @@
 #ifndef CC_SURFACES_SURFACE_ID_ALLOCATOR_H_
 #define CC_SURFACES_SURFACE_ID_ALLOCATOR_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
 

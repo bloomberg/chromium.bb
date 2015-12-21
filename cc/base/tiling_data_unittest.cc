@@ -4,6 +4,8 @@
 
 #include "cc/base/tiling_data.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 

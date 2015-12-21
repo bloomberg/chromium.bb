@@ -4,6 +4,9 @@
 
 #include "cc/tiles/image_decode_controller.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "cc/debug/devtools_instrumentation.h"
 
 namespace cc {

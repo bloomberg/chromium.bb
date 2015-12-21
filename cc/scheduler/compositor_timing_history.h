@@ -5,6 +5,7 @@
 #ifndef CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_
 #define CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/rolling_time_delta_history.h"
 

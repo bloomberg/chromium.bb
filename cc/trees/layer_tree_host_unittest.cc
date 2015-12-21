@@ -4,6 +4,9 @@
 
 #include "cc/trees/layer_tree_host.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/auto_reset.h"
@@ -4095,7 +4098,7 @@ class TestSwapPromise : public SwapPromise {
     result_->reason = reason;
   }
 
-  int64 TraceId() const override { return 0; }
+  int64_t TraceId() const override { return 0; }
 
  private:
   // Not owned.

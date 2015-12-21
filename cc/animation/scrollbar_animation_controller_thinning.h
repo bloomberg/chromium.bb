@@ -5,6 +5,7 @@
 #ifndef CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_THINNING_H_
 #define CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_THINNING_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/base/cc_export.h"

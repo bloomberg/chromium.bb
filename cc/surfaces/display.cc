@@ -4,6 +4,8 @@
 
 #include "cc/surfaces/display.h"
 
+#include <stddef.h>
+
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/benchmark_instrumentation.h"

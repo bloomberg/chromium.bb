@@ -5,6 +5,7 @@
 #ifndef CC_BLINK_WEB_LAYER_IMPL_FIXED_BOUNDS_H_
 #define CC_BLINK_WEB_LAYER_IMPL_FIXED_BOUNDS_H_
 
+#include "base/macros.h"
 #include "cc/blink/web_layer_impl.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"

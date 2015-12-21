@@ -4,6 +4,9 @@
 
 #include "cc/scheduler/compositor_timing_history.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/metrics/histogram.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
@@ -66,7 +69,7 @@ const double kActivateEstimationPercentile = 90.0;
 const double kDrawEstimationPercentile = 90.0;
 
 const int kUmaDurationMinMicros = 1;
-const int64 kUmaDurationMaxMicros = 1 * base::Time::kMicrosecondsPerSecond;
+const int64_t kUmaDurationMaxMicros = 1 * base::Time::kMicrosecondsPerSecond;
 const size_t kUmaDurationBucketCount = 100;
 
 // Deprecated because they combine Browser and Renderer stats and have low

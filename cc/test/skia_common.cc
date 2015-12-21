@@ -4,6 +4,8 @@
 
 #include "cc/test/skia_common.h"
 
+#include <stddef.h>
+
 #include "cc/playback/display_item_list.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"

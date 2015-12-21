@@ -4,6 +4,8 @@
 
 #include "cc/trees/layer_tree_host_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <utility>

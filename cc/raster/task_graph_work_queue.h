@@ -5,6 +5,8 @@
 #ifndef CC_RASTER_TASK_GRAPH_WORK_QUEUE_H_
 #define CC_RASTER_TASK_GRAPH_WORK_QUEUE_H_
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <map>
 #include <vector>

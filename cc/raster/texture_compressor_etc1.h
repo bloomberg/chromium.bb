@@ -7,8 +7,11 @@
 
 #include "cc/raster/texture_compressor.h"
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace cc {
 

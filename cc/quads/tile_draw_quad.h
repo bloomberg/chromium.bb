@@ -5,6 +5,8 @@
 #ifndef CC_QUADS_TILE_DRAW_QUAD_H_
 #define CC_QUADS_TILE_DRAW_QUAD_H_
 
+#include <stddef.h>
+
 #include "cc/quads/content_draw_quad_base.h"
 
 namespace cc {

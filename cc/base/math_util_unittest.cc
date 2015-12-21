@@ -4,6 +4,8 @@
 
 #include "cc/base/math_util.h"
 
+#include <stdint.h>
+
 #include <cmath>
 
 #include "cc/test/geometry_test_utils.h"

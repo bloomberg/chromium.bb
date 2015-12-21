@@ -5,7 +5,10 @@
 #ifndef CC_TILES_TILING_SET_RASTER_QUEUE_ALL_H_
 #define CC_TILES_TILING_SET_RASTER_QUEUE_ALL_H_
 
+#include <stddef.h>
+
 #include "base/containers/stack_container.h"
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
 #include "cc/tiles/prioritized_tile.h"

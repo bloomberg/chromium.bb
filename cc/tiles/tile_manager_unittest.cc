@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/playback/display_list_raster_source.h"

@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_SURFACE_LAYER_H_
 #define CC_LAYERS_SURFACE_LAYER_H_
 
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/surfaces/surface_id.h"

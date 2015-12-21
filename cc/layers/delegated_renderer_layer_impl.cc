@@ -4,6 +4,9 @@
 
 #include "cc/layers/delegated_renderer_layer_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 

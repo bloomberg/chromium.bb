@@ -5,7 +5,6 @@
 #ifndef CC_DEBUG_LAYER_TREE_DEBUG_STATE_H_
 #define CC_DEBUG_LAYER_TREE_DEBUG_STATE_H_
 
-#include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {

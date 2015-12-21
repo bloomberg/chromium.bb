@@ -4,6 +4,8 @@
 
 #include "cc/raster/tile_task_worker_pool.h"
 
+#include <stddef.h>
+
 #include "base/trace_event/trace_event.h"
 #include "cc/playback/display_list_raster_source.h"
 #include "skia/ext/refptr.h"

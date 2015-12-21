@@ -4,6 +4,8 @@
 
 #include "cc/layers/surface_layer_impl.h"
 
+#include <stddef.h>
+
 #include "cc/test/layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

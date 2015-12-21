@@ -7,7 +7,6 @@
 
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/rect.h"

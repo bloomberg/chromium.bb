@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "cc/debug/micro_benchmark_impl.h"
 
 namespace cc {

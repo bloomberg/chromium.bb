@@ -4,6 +4,8 @@
 
 #include "cc/playback/largest_display_item.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "cc/playback/clip_display_item.h"

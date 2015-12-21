@@ -4,6 +4,8 @@
 
 #include "cc/playback/display_item_list.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "cc/output/filter_operation.h"

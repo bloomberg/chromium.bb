@@ -4,6 +4,8 @@
 
 #include "cc/test/fake_content_layer_client.h"
 
+#include <stddef.h>
+
 #include "cc/playback/clip_display_item.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"

@@ -5,7 +5,9 @@
 #ifndef CC_DEBUG_FRAME_RATE_COUNTER_H_
 #define CC_DEBUG_FRAME_RATE_COUNTER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/debug/ring_buffer.h"

@@ -4,6 +4,9 @@
 
 #include "cc/layers/texture_layer_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/strings/stringprintf.h"
@@ -110,8 +113,8 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
     }
 
     if (texture_copy_->id()) {
-      std::vector<uint8> swizzled;
-      uint8* pixels = texture_mailbox_.shared_bitmap()->pixels();
+      std::vector<uint8_t> swizzled;
+      uint8_t* pixels = texture_mailbox_.shared_bitmap()->pixels();
 
       if (!PlatformColor::SameComponentOrder(texture_copy_->format())) {
         // Swizzle colors. This is slow, but should be really uncommon.

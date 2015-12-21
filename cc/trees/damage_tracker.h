@@ -6,6 +6,7 @@
 #define CC_TREES_DAMAGE_TRACKER_H_
 
 #include <vector>
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_lists.h"

@@ -5,9 +5,11 @@
 #ifndef CC_TEST_SCHEDULER_TEST_COMMON_H_
 #define CC_TEST_SCHEDULER_TEST_COMMON_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/scheduler/compositor_timing_history.h"

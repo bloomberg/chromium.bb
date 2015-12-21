@@ -14,7 +14,7 @@ namespace cc {
 class CC_EXPORT TimeUtil {
  public:
   static base::TimeDelta Scale(base::TimeDelta time_delta, double value) {
-    return base::TimeDelta::FromInternalValue(static_cast<int64>(
+    return base::TimeDelta::FromInternalValue(static_cast<int64_t>(
         static_cast<double>(time_delta.ToInternalValue()) * value));
   }
 

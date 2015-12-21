@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/ui_resource_layer_impl.h"

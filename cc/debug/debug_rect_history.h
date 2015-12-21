@@ -6,7 +6,7 @@
 #define CC_DEBUG_DEBUG_RECT_HISTORY_H_
 
 #include <vector>
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_lists.h"
 #include "ui/gfx/geometry/rect.h"

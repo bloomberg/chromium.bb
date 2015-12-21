@@ -5,6 +5,7 @@
 #ifndef CC_OUTPUT_OVERLAY_STRATEGY_SANDWICH_H_
 #define CC_OUTPUT_OVERLAY_STRATEGY_SANDWICH_H_
 
+#include "base/macros.h"
 #include "cc/output/overlay_processor.h"
 
 namespace cc {

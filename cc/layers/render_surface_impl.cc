@@ -4,6 +4,8 @@
 
 #include "cc/layers/render_surface_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

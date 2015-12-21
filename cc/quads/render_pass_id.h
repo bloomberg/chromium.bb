@@ -5,9 +5,10 @@
 #ifndef CC_QUADS_RENDER_PASS_ID_H_
 #define CC_QUADS_RENDER_PASS_ID_H_
 
+#include <stddef.h>
+
 #include <tuple>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "cc/base/cc_export.h"
 

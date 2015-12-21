@@ -4,6 +4,8 @@
 
 #include "cc/test/fake_picture_layer_tiling_client.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/thread_task_runner_handle.h"

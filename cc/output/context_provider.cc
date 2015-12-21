@@ -4,6 +4,8 @@
 
 #include "cc/output/context_provider.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 namespace cc {

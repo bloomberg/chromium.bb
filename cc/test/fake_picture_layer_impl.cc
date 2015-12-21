@@ -4,6 +4,8 @@
 
 #include "cc/test/fake_picture_layer_impl.h"
 
+#include <stddef.h>
+
 #include <vector>
 #include "cc/tiles/tile.h"
 #include "cc/trees/layer_tree_impl.h"

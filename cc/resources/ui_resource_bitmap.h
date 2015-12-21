@@ -5,6 +5,8 @@
 #ifndef CC_RESOURCES_UI_RESOURCE_BITMAP_H_
 #define CC_RESOURCES_UI_RESOURCE_BITMAP_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"

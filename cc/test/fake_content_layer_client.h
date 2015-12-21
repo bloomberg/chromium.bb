@@ -5,6 +5,8 @@
 #ifndef CC_TEST_FAKE_CONTENT_LAYER_CLIENT_H_
 #define CC_TEST_FAKE_CONTENT_LAYER_CLIENT_H_
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 

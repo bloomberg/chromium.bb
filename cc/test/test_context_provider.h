@@ -5,7 +5,11 @@
 #ifndef CC_TEST_TEST_CONTEXT_PROVIDER_H_
 #define CC_TEST_TEST_CONTEXT_PROVIDER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"

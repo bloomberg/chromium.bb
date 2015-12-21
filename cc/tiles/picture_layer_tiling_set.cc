@@ -4,6 +4,8 @@
 
 #include "cc/tiles/picture_layer_tiling_set.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <set>
 #include <vector>

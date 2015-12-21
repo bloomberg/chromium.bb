@@ -5,6 +5,8 @@
 #ifndef CC_OUTPUT_LATENCY_INFO_SWAP_PROMISE_H_
 #define CC_OUTPUT_LATENCY_INFO_SWAP_PROMISE_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "cc/output/swap_promise.h"
 #include "ui/events/latency_info.h"
@@ -21,7 +23,7 @@ class CC_EXPORT LatencyInfoSwapPromise : public SwapPromise {
   void DidNotSwap(DidNotSwapReason reason) override;
   void OnCommit() override;
 
-  int64 TraceId() const override;
+  int64_t TraceId() const override;
 
  private:
   ui::LatencyInfo latency_;

@@ -5,7 +5,8 @@
 #ifndef CC_PLAYBACK_LARGEST_DISPLAY_ITEM_H_
 #define CC_PLAYBACK_LARGEST_DISPLAY_ITEM_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "cc/base/cc_export.h"
 
 namespace cc {

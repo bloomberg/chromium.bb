@@ -5,8 +5,8 @@
 #ifndef CC_RESOURCES_PLATFORM_COLOR_H_
 #define CC_RESOURCES_PLATFORM_COLOR_H_
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "cc/resources/resource_format.h"
 #include "third_party/skia/include/core/SkTypes.h"
 

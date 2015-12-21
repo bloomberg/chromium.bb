@@ -4,12 +4,16 @@
 
 #include "cc/layers/texture_layer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -151,8 +155,8 @@ struct CommonMailboxObjects {
     release_mailbox2_impl_ = base::Bind(&MockMailboxCallback::ReleaseImpl,
                                         base::Unretained(&mock_callback_),
                                         mailbox_name2_);
-    const uint32 arbitrary_target1 = GL_TEXTURE_2D;
-    const uint32 arbitrary_target2 = GL_TEXTURE_EXTERNAL_OES;
+    const uint32_t arbitrary_target1 = GL_TEXTURE_2D;
+    const uint32_t arbitrary_target2 = GL_TEXTURE_EXTERNAL_OES;
     mailbox1_ = TextureMailbox(mailbox_name1_, sync_token1_, arbitrary_target1);
     mailbox2_ = TextureMailbox(mailbox_name2_, sync_token2_, arbitrary_target2);
     gfx::Size size(128, 128);

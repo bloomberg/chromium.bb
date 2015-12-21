@@ -5,6 +5,7 @@
 #ifndef CC_OUTPUT_DYNAMIC_GEOMETRY_BINDING_H_
 #define CC_OUTPUT_DYNAMIC_GEOMETRY_BINDING_H_
 
+#include "base/macros.h"
 #include "cc/output/geometry_binding.h"
 
 namespace cc {

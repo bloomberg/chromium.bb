@@ -4,6 +4,9 @@
 
 #include "cc/layers/picture_layer_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -347,7 +350,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         append_quads_data->num_missing_tiles++;
         ++missing_tile_count;
       }
-      int64 checkerboarded_area =
+      int64_t checkerboarded_area =
           visible_geometry_rect.width() * visible_geometry_rect.height();
       append_quads_data->checkerboarded_visible_content_area +=
           checkerboarded_area;
@@ -357,7 +360,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
       // subtraction.
       gfx::Rect visible_rect_has_recording = visible_geometry_rect;
       visible_rect_has_recording.Intersect(scaled_recorded_viewport);
-      int64 checkerboarded_has_recording_area =
+      int64_t checkerboarded_has_recording_area =
           visible_rect_has_recording.width() *
           visible_rect_has_recording.height();
       append_quads_data->checkerboarded_needs_raster_content_area +=
@@ -977,22 +980,24 @@ void PictureLayerImpl::RecalculateRasterScales() {
     if (maximum_scale) {
       gfx::Size bounds_at_maximum_scale =
           gfx::ScaleToCeiledSize(raster_source_->GetSize(), maximum_scale);
-      int64 maximum_area = static_cast<int64>(bounds_at_maximum_scale.width()) *
-                           static_cast<int64>(bounds_at_maximum_scale.height());
+      int64_t maximum_area =
+          static_cast<int64_t>(bounds_at_maximum_scale.width()) *
+          static_cast<int64_t>(bounds_at_maximum_scale.height());
       gfx::Size viewport = layer_tree_impl()->device_viewport_size();
-      int64 viewport_area = static_cast<int64>(viewport.width()) *
-                            static_cast<int64>(viewport.height());
+      int64_t viewport_area = static_cast<int64_t>(viewport.width()) *
+                              static_cast<int64_t>(viewport.height());
       if (maximum_area <= viewport_area)
         can_raster_at_maximum_scale = true;
     }
     if (starting_scale && starting_scale > maximum_scale) {
       gfx::Size bounds_at_starting_scale =
           gfx::ScaleToCeiledSize(raster_source_->GetSize(), starting_scale);
-      int64 start_area = static_cast<int64>(bounds_at_starting_scale.width()) *
-                         static_cast<int64>(bounds_at_starting_scale.height());
+      int64_t start_area =
+          static_cast<int64_t>(bounds_at_starting_scale.width()) *
+          static_cast<int64_t>(bounds_at_starting_scale.height());
       gfx::Size viewport = layer_tree_impl()->device_viewport_size();
-      int64 viewport_area = static_cast<int64>(viewport.width()) *
-                            static_cast<int64>(viewport.height());
+      int64_t viewport_area = static_cast<int64_t>(viewport.width()) *
+                              static_cast<int64_t>(viewport.height());
       if (start_area <= viewport_area)
         should_raster_at_starting_scale = true;
     }

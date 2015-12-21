@@ -4,6 +4,8 @@
 
 #include "cc/scheduler/begin_frame_source.h"
 
+#include <stddef.h>
+
 #include "base/auto_reset.h"
 #include "base/location.h"
 #include "base/logging.h"

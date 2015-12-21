@@ -4,6 +4,8 @@
 
 #include "cc/blink/web_external_bitmap_impl.h"
 
+#include <stdint.h>
+
 #include "cc/resources/shared_bitmap.h"
 
 namespace cc_blink {
@@ -36,7 +38,7 @@ blink::WebSize WebExternalBitmapImpl::size() {
   return size_;
 }
 
-uint8* WebExternalBitmapImpl::pixels() {
+uint8_t* WebExternalBitmapImpl::pixels() {
   if (!shared_bitmap_) {
     // crbug.com/520417: not sure why a non-null WebExternalBitmap is
     // being passed to prepareMailbox when the shared_bitmap_ is null.

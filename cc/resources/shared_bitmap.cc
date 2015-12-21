@@ -4,6 +4,9 @@
 
 #include "cc/resources/shared_bitmap.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
@@ -12,9 +15,8 @@
 
 namespace cc {
 
-SharedBitmap::SharedBitmap(uint8* pixels, const SharedBitmapId& id)
-    : pixels_(pixels), id_(id) {
-}
+SharedBitmap::SharedBitmap(uint8_t* pixels, const SharedBitmapId& id)
+    : pixels_(pixels), id_(id) {}
 
 SharedBitmap::~SharedBitmap() {
 }

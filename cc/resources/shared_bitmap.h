@@ -5,7 +5,10 @@
 #ifndef CC_RESOURCES_SHARED_BITMAP_H_
 #define CC_RESOURCES_SHARED_BITMAP_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -19,11 +22,11 @@ GetSharedBitmapGUIDForTracing(const SharedBitmapId& bitmap_id);
 
 class CC_EXPORT SharedBitmap {
  public:
-  SharedBitmap(uint8* pixels, const SharedBitmapId& id);
+  SharedBitmap(uint8_t* pixels, const SharedBitmapId& id);
 
   virtual ~SharedBitmap();
 
-  uint8* pixels() { return pixels_; }
+  uint8_t* pixels() { return pixels_; }
 
   const SharedBitmapId& id() { return id_; }
 
@@ -41,7 +44,7 @@ class CC_EXPORT SharedBitmap {
   static SharedBitmapId GenerateId();
 
  private:
-  uint8* pixels_;
+  uint8_t* pixels_;
   SharedBitmapId id_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedBitmap);

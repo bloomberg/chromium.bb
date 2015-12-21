@@ -4,6 +4,8 @@
 
 #include "cc/layers/video_layer_impl.h"
 
+#include <stddef.h>
+
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"

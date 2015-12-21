@@ -7,6 +7,8 @@
 #define _USE_MATH_DEFINES
 #endif
 
+#include <stddef.h>
+
 #include <limits>
 #include <vector>
 

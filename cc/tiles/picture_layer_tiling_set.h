@@ -5,9 +5,12 @@
 #ifndef CC_TILES_PICTURE_LAYER_TILING_SET_H_
 #define CC_TILES_PICTURE_LAYER_TILING_SET_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 
+#include "base/macros.h"
 #include "cc/base/region.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "ui/gfx/geometry/size.h"

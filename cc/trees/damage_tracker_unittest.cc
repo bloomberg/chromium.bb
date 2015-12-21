@@ -4,6 +4,8 @@
 
 #include "cc/trees/damage_tracker.h"
 
+#include <stddef.h>
+
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/output/filter_operation.h"

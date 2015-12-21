@@ -4,6 +4,8 @@
 
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 
+#include <stddef.h>
+
 #include "cc/test/layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

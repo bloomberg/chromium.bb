@@ -4,6 +4,7 @@
 
 #include "cc/animation/element_animations.h"
 
+#include "base/macros.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_player.h"
 #include "cc/animation/animation_registrar.h"

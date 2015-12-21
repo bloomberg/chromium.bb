@@ -4,6 +4,8 @@
 
 #include "cc/test/test_image_factory.h"
 
+#include <stddef.h>
+
 #include "base/numerics/safe_conversions.h"
 #include "ui/gl/gl_image_shared_memory.h"
 

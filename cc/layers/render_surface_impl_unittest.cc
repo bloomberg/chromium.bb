@@ -4,6 +4,8 @@
 
 #include "cc/layers/render_surface_impl.h"
 
+#include <stddef.h>
+
 #include "cc/layers/append_quads_data.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/test/fake_mask_layer_impl.h"

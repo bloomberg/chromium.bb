@@ -5,11 +5,13 @@
 #ifndef CC_DEBUG_FRAME_TIMING_TRACKER_H_
 #define CC_DEBUG_FRAME_TIMING_TRACKER_H_
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"

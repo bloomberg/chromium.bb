@@ -5,6 +5,9 @@
 #ifndef CC_DEBUG_RENDERING_STATS_INSTRUMENTATION_H_
 #define CC_DEBUG_RENDERING_STATS_INSTRUMENTATION_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "cc/debug/rendering_stats.h"
@@ -37,12 +40,12 @@ class CC_EXPORT RenderingStatsInstrumentation {
       record_rendering_stats_ = record_rendering_stats;
   }
 
-  void IncrementFrameCount(int64 count);
-  void AddVisibleContentArea(int64 area);
-  void AddApproximatedVisibleContentArea(int64 area);
-  void AddCheckerboardedVisibleContentArea(int64 area);
-  void AddCheckerboardedNoRecordingContentArea(int64 area);
-  void AddCheckerboardedNeedsRasterContentArea(int64 area);
+  void IncrementFrameCount(int64_t count);
+  void AddVisibleContentArea(int64_t area);
+  void AddApproximatedVisibleContentArea(int64_t area);
+  void AddCheckerboardedVisibleContentArea(int64_t area);
+  void AddCheckerboardedNoRecordingContentArea(int64_t area);
+  void AddCheckerboardedNeedsRasterContentArea(int64_t area);
   void AddDrawDuration(base::TimeDelta draw_duration,
                        base::TimeDelta draw_duration_estimate);
   void AddBeginMainFrameToCommitDuration(

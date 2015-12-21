@@ -5,8 +5,11 @@
 #ifndef CC_RESOURCES_RESOURCE_UTIL_H_
 #define CC_RESOURCES_RESOURCE_UTIL_H_
 
+#include <stddef.h>
+
 #include <limits>
 
+#include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/math_util.h"

@@ -4,9 +4,13 @@
 
 #include "cc/surfaces/surface_factory.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -400,7 +404,7 @@ TEST_F(SurfaceFactoryTest, BlankNoIndexIncrement) {
   factory_->Destroy(surface_id);
 }
 
-void DrawCallback(uint32* execute_count,
+void DrawCallback(uint32_t* execute_count,
                   SurfaceDrawStatus* result,
                   SurfaceDrawStatus drawn) {
   *execute_count += 1;
@@ -419,7 +423,7 @@ TEST_F(SurfaceFactoryTest, DestroyAll) {
   frame_data->resource_list.push_back(resource);
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
   frame->delegated_frame_data = std::move(frame_data);
-  uint32 execute_count = 0;
+  uint32_t execute_count = 0;
   SurfaceDrawStatus drawn = SurfaceDrawStatus::DRAW_SKIPPED;
 
   factory_->SubmitCompositorFrame(

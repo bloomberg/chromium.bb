@@ -4,6 +4,9 @@
 
 #include "cc/tiles/tile_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <string>
@@ -11,6 +14,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -1102,14 +1106,14 @@ TileManager::MemoryUsage::MemoryUsage()
 
 TileManager::MemoryUsage::MemoryUsage(size_t memory_bytes,
                                       size_t resource_count)
-    : memory_bytes_(static_cast<int64>(memory_bytes)),
+    : memory_bytes_(static_cast<int64_t>(memory_bytes)),
       resource_count_(static_cast<int>(resource_count)) {
   // MemoryUsage is constructed using size_ts, since it deals with memory and
   // the inputs are typically size_t. However, during the course of usage (in
   // particular operator-=) can cause internal values to become negative. Thus,
   // member variables are signed.
   DCHECK_LE(memory_bytes,
-            static_cast<size_t>(std::numeric_limits<int64>::max()));
+            static_cast<size_t>(std::numeric_limits<int64_t>::max()));
   DCHECK_LE(resource_count,
             static_cast<size_t>(std::numeric_limits<int>::max()));
 }

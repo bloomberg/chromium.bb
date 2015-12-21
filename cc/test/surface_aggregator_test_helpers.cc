@@ -4,6 +4,8 @@
 
 #include "cc/test/surface_aggregator_test_helpers.h"
 
+#include <stddef.h>
+
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "cc/layers/append_quads_data.h"

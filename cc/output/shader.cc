@@ -4,9 +4,10 @@
 
 #include "cc/output/shader.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/static_geometry_binding.h"

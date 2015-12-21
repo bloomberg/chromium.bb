@@ -4,7 +4,10 @@
 
 #include "cc/test/test_in_process_context_provider.h"
 
+#include <stdint.h>
+
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "cc/resources/platform_color.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"

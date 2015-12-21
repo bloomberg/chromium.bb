@@ -4,12 +4,15 @@
 
 #include "cc/layers/picture_layer_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <limits>
 #include <set>
 #include <utility>
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"

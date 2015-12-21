@@ -6,6 +6,7 @@
 #define CC_LAYERS_DELEGATED_FRAME_RESOURCE_COLLECTION_H_
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"

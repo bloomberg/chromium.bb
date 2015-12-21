@@ -4,6 +4,8 @@
 
 #include "cc/playback/display_list_raster_source.h"
 
+#include <stddef.h>
+
 #include "base/trace_event/trace_event.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"

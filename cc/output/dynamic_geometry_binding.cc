@@ -4,6 +4,8 @@
 
 #include "cc/output/dynamic_geometry_binding.h"
 
+#include <stdint.h>
+
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -50,8 +52,9 @@ void DynamicGeometryBinding::InitializeCustomQuadWithUVs(const gfx::QuadF& quad,
 
   GeometryBindingQuad local_quad = {v0, v1, v2, v3};
   GeometryBindingQuadIndex quad_index(
-      static_cast<uint16>(0), static_cast<uint16>(1), static_cast<uint16>(2),
-      static_cast<uint16>(3), static_cast<uint16>(0), static_cast<uint16>(2));
+      static_cast<uint16_t>(0), static_cast<uint16_t>(1),
+      static_cast<uint16_t>(2), static_cast<uint16_t>(3),
+      static_cast<uint16_t>(0), static_cast<uint16_t>(2));
 
   gl_->BufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GeometryBindingQuad),
                      &local_quad);

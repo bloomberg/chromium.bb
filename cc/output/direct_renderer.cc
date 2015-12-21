@@ -4,6 +4,8 @@
 
 #include "cc/output/direct_renderer.h"
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 

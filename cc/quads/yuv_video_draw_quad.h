@@ -5,7 +5,8 @@
 #ifndef CC_QUADS_YUV_VIDEO_DRAW_QUAD_H_
 #define CC_QUADS_YUV_VIDEO_DRAW_QUAD_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/quads/draw_quad.h"

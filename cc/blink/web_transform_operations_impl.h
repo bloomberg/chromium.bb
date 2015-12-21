@@ -5,6 +5,7 @@
 #ifndef CC_BLINK_WEB_TRANSFORM_OPERATIONS_IMPL_H_
 #define CC_BLINK_WEB_TRANSFORM_OPERATIONS_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/blink/cc_blink_export.h"

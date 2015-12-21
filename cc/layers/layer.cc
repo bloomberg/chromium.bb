@@ -4,6 +4,9 @@
 
 #include "cc/layers/layer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/atomic_sequence_num.h"

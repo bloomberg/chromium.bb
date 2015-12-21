@@ -4,6 +4,8 @@
 
 #include "cc/raster/single_thread_task_graph_runner.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/threading/simple_thread.h"

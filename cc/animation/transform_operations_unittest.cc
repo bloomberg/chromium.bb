@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/test/geometry_test_utils.h"

@@ -4,6 +4,8 @@
 
 #include "cc/resources/ui_resource_bitmap.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"

@@ -4,6 +4,8 @@
 
 #include "cc/quads/largest_draw_quad.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "cc/quads/debug_border_draw_quad.h"

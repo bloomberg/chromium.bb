@@ -4,6 +4,9 @@
 
 #include "cc/resources/resource_provider.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <deque>
 #include <map>
@@ -124,7 +127,7 @@ class ContextSharedData {
     return make_scoped_ptr(new ContextSharedData());
   }
 
-  uint32 InsertSyncPoint() { return next_sync_point_++; }
+  uint32_t InsertSyncPoint() { return next_sync_point_++; }
 
   void GenMailbox(GLbyte* mailbox) {
     memset(mailbox, 0, GL_MAILBOX_SIZE_CHROMIUM);
@@ -164,11 +167,11 @@ class ContextSharedData {
  private:
   ContextSharedData() : next_sync_point_(1), next_mailbox_(1) {}
 
-  uint32 next_sync_point_;
+  uint32_t next_sync_point_;
   unsigned next_mailbox_;
   typedef base::hash_map<unsigned, scoped_refptr<TestTexture>> TextureMap;
   TextureMap textures_;
-  base::hash_map<unsigned, uint32> sync_point_for_mailbox_;
+  base::hash_map<unsigned, uint32_t> sync_point_for_mailbox_;
 };
 
 class ResourceProviderContext : public TestWebGraphicsContext3D {
@@ -179,7 +182,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   }
 
   GLuint insertSyncPoint() override {
-    uint32 sync_point = shared_data_->InsertSyncPoint();
+    uint32_t sync_point = shared_data_->InsertSyncPoint();
     // Commit the produceTextureCHROMIUM calls at this point, so that
     // they're associated with the sync point.
     for (const scoped_ptr<PendingProduceTexture>& pending_texture :

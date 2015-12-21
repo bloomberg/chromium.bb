@@ -4,6 +4,8 @@
 
 #include "cc/resources/resource_pool.h"
 
+#include <stddef.h>
+
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/resources/resource_util.h"

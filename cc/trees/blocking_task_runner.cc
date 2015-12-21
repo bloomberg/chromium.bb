@@ -4,6 +4,8 @@
 
 #include "cc/trees/blocking_task_runner.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/callback.h"

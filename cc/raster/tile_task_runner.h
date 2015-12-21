@@ -5,6 +5,8 @@
 #ifndef CC_RASTER_TILE_TASK_RUNNER_H_
 #define CC_RASTER_TILE_TASK_RUNNER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"

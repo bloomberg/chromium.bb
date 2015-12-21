@@ -4,6 +4,9 @@
 
 #include "cc/resources/resource_pool.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 

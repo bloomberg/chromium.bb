@@ -5,7 +5,7 @@
 #ifndef CC_OUTPUT_RENDERER_H_
 #define CC_OUTPUT_RENDERER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/renderer_capabilities.h"
 #include "cc/output/renderer_settings.h"

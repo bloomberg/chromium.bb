@@ -4,6 +4,9 @@
 
 #include "cc/layers/layer_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/json/json_reader.h"

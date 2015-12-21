@@ -4,6 +4,8 @@
 
 #include "cc/test/pixel_comparator.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
@@ -75,10 +77,10 @@ bool FuzzyPixelComparator::Compare(const SkBitmap& actual_bmp,
   // Number of pixels with a small error
   int small_error_pixels_count = 0;
   // The per channel sums of absolute errors over all pixels.
-  int64 sum_abs_error_r = 0;
-  int64 sum_abs_error_g = 0;
-  int64 sum_abs_error_b = 0;
-  int64 sum_abs_error_a = 0;
+  int64_t sum_abs_error_r = 0;
+  int64_t sum_abs_error_g = 0;
+  int64_t sum_abs_error_b = 0;
+  int64_t sum_abs_error_a = 0;
   // The per channel maximum absolute errors over all pixels.
   int max_abs_error_r = 0;
   int max_abs_error_g = 0;

@@ -4,6 +4,9 @@
 
 #include "cc/resources/texture_mailbox.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "cc/resources/shared_bitmap.h"
 
@@ -20,7 +23,7 @@ TextureMailbox::TextureMailbox(const gpu::MailboxHolder& mailbox_holder)
 
 TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
                                const gpu::SyncToken& sync_token,
-                               uint32 target)
+                               uint32_t target)
     : mailbox_holder_(mailbox, sync_token, target),
       shared_bitmap_(NULL),
       is_overlay_candidate_(false),
@@ -28,7 +31,7 @@ TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
 
 TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
                                const gpu::SyncToken& sync_token,
-                               uint32 target,
+                               uint32_t target,
                                const gfx::Size& size_in_pixels,
                                bool is_overlay_candidate)
     : mailbox_holder_(mailbox, sync_token, target),

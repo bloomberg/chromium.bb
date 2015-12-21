@@ -5,6 +5,8 @@
 #ifndef CC_TREES_LAYER_TREE_HOST_COMMON_H_
 #define CC_TREES_LAYER_TREE_HOST_COMMON_H_
 
+#include <stddef.h>
+
 #include <limits>
 #include <vector>
 

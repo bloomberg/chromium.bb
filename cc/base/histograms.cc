@@ -4,6 +4,8 @@
 
 #include "cc/base/histograms.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -52,7 +54,7 @@ const char* GetClientNameForMetrics() {
 }
 
 // Minimum elapsed time of 1us to limit weighting of fast calls.
-static const int64 kMinimumTimeMicroseconds = 1;
+static const int64_t kMinimumTimeMicroseconds = 1;
 
 ScopedUMAHistogramAreaTimerBase::ScopedUMAHistogramAreaTimerBase() : area_(0) {
 }

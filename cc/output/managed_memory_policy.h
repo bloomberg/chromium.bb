@@ -5,7 +5,8 @@
 #ifndef CC_OUTPUT_MANAGED_MEMORY_POLICY_H_
 #define CC_OUTPUT_MANAGED_MEMORY_POLICY_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "cc/base/cc_export.h"
 #include "cc/tiles/tile_priority.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"

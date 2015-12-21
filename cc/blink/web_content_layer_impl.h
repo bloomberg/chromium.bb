@@ -5,6 +5,9 @@
 #ifndef CC_BLINK_WEB_CONTENT_LAYER_IMPL_H_
 #define CC_BLINK_WEB_CONTENT_LAYER_IMPL_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/blink/cc_blink_export.h"
 #include "cc/blink/web_layer_impl.h"

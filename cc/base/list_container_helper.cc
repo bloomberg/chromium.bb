@@ -4,10 +4,13 @@
 
 #include "cc/base/list_container_helper.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace {
 const size_t kDefaultNumElementTypesToReserve = 32;

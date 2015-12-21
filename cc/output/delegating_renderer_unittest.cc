@@ -4,6 +4,8 @@
 
 #include "cc/output/delegating_renderer.h"
 
+#include <stdint.h>
+
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/render_pass_test_utils.h"

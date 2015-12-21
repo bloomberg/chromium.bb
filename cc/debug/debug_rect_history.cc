@@ -4,6 +4,8 @@
 
 #include "cc/debug/debug_rect_history.h"
 
+#include <stddef.h>
+
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_iterator.h"

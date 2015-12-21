@@ -4,6 +4,8 @@
 
 #include "cc/proto/skia_conversions.h"
 
+#include <stddef.h>
+
 #include "cc/proto/skregion.pb.h"
 #include "cc/proto/skrrect.pb.h"
 #include "cc/proto/skxfermode.pb.h"

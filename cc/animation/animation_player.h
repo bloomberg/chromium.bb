@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/linked_list.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"

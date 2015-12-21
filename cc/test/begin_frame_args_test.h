@@ -5,6 +5,8 @@
 #ifndef CC_TEST_BEGIN_FRAME_ARGS_TEST_H_
 #define CC_TEST_BEGIN_FRAME_ARGS_TEST_H_
 
+#include <stdint.h>
+
 #include <iosfwd>
 
 #include "base/test/simple_test_tick_clock.h"
@@ -22,14 +24,14 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
     base::TimeTicks frame_time);
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    int64 frame_time,
-    int64 deadline,
-    int64 interval);
+    int64_t frame_time,
+    int64_t deadline,
+    int64_t interval);
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    int64 frame_time,
-    int64 deadline,
-    int64 interval,
+    int64_t frame_time,
+    int64_t deadline,
+    int64_t interval,
     BeginFrameArgs::BeginFrameArgsType type);
 
 // Creates a BeginFrameArgs using the fake Now value stored on the

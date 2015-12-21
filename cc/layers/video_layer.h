@@ -6,6 +6,7 @@
 #define CC_LAYERS_VIDEO_LAYER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
 #include "media/base/video_rotation.h"

@@ -4,6 +4,8 @@
 
 #include "cc/output/managed_memory_policy.h"
 
+#include <stddef.h>
+
 #include "cc/proto/managed_memory_policy.pb.h"
 #include "cc/proto/memory_allocation.pb.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"

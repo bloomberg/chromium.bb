@@ -6,6 +6,7 @@
 #define CC_BASE_HISTOGRAMS_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"

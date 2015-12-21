@@ -4,6 +4,8 @@
 
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 
+#include <stddef.h>
+
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/test/layer_test_common.h"

@@ -5,7 +5,10 @@
 #ifndef CC_PLAYBACK_DISPLAY_ITEM_LIST_H_
 #define CC_PLAYBACK_DISPLAY_ITEM_LIST_H_
 
+#include <stddef.h>
+
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"

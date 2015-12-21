@@ -4,6 +4,8 @@
 
 #include "cc/proto/gpu_conversions.h"
 
+#include <stddef.h>
+
 #include "cc/proto/memory_allocation.pb.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "testing/gtest/include/gtest/gtest.h"

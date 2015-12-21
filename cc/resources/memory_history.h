@@ -5,7 +5,10 @@
 #ifndef CC_RESOURCES_MEMORY_HISTORY_H_
 #define CC_RESOURCES_MEMORY_HISTORY_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/debug/ring_buffer.h"
@@ -26,7 +29,7 @@ class MemoryHistory {
           had_enough_memory(false) {}
 
     size_t total_budget_in_bytes;
-    int64 total_bytes_used;
+    int64_t total_bytes_used;
     bool had_enough_memory;
   };
 

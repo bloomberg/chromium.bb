@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "cc/layers/picture_image_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
@@ -50,11 +52,11 @@ SkColor kCSSTestColors[] = {
 const int kBlendModesCount = arraysize(kBlendModes);
 const int kCSSTestColorsCount = arraysize(kCSSTestColors);
 
-using RenderPassOptions = uint32;
-const uint32 kUseMasks = 1 << 0;
-const uint32 kUseAntialiasing = 1 << 1;
-const uint32 kUseColorMatrix = 1 << 2;
-const uint32 kForceShaders = 1 << 3;
+using RenderPassOptions = uint32_t;
+const uint32_t kUseMasks = 1 << 0;
+const uint32_t kUseAntialiasing = 1 << 1;
+const uint32_t kUseColorMatrix = 1 << 2;
+const uint32_t kForceShaders = 1 << 3;
 
 class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
  public:

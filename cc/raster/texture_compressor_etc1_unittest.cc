@@ -4,6 +4,8 @@
 
 #include "cc/raster/texture_compressor.h"
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

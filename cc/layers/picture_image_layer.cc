@@ -4,6 +4,8 @@
 
 #include "cc/layers/picture_image_layer.h"
 
+#include <stddef.h>
+
 #include "cc/layers/picture_image_layer_impl.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"

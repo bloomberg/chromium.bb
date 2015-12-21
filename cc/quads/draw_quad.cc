@@ -4,6 +4,8 @@
 
 #include "cc/quads/draw_quad.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"

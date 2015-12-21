@@ -5,12 +5,15 @@
 #ifndef CC_TILES_PICTURE_LAYER_TILING_H_
 #define CC_TILES_PICTURE_LAYER_TILING_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
@@ -70,9 +73,9 @@ namespace BASE_HASH_NAMESPACE {
 template <>
 struct hash<cc::TileMapKey> {
   size_t operator()(const cc::TileMapKey& key) const {
-    uint16 value1 = static_cast<uint16>(key.index_x);
-    uint16 value2 = static_cast<uint16>(key.index_y);
-    uint32 value1_32 = value1;
+    uint16_t value1 = static_cast<uint16_t>(key.index_x);
+    uint16_t value2 = static_cast<uint16_t>(key.index_y);
+    uint32_t value1_32 = value1;
     return (value1_32 << 16) | value2;
   }
 };

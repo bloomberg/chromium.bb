@@ -4,6 +4,8 @@
 
 #include "cc/output/software_renderer.h"
 
+#include <stdint.h>
+
 #include "base/run_loop.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"

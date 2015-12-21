@@ -5,6 +5,8 @@
 #ifndef CC_TILES_TILE_PRIORITY_H_
 #define CC_TILES_TILE_PRIORITY_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <limits>
 #include <string>

@@ -5,7 +5,6 @@
 #ifndef CC_TEST_BEGIN_FRAME_SOURCE_TEST_H_
 #define CC_TEST_BEGIN_FRAME_SOURCE_TEST_H_
 
-#include "base/basictypes.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/test/begin_frame_args_test.h"

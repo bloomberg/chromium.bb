@@ -5,6 +5,9 @@
 #ifndef CC_PLAYBACK_COMPOSITING_DISPLAY_ITEM_H_
 #define CC_PLAYBACK_COMPOSITING_DISPLAY_ITEM_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item.h"

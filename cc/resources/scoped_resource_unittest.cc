@@ -4,6 +4,8 @@
 
 #include "cc/resources/scoped_resource.h"
 
+#include <stddef.h>
+
 #include "cc/output/renderer.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"

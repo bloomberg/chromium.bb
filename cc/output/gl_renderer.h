@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer_draw_cache.h"

@@ -4,6 +4,8 @@
 
 #include "cc/output/render_surface_filters.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "cc/output/filter_operation.h"

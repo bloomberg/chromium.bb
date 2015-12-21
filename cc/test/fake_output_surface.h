@@ -5,6 +5,8 @@
 #ifndef CC_TEST_FAKE_OUTPUT_SURFACE_H_
 #define CC_TEST_FAKE_OUTPUT_SURFACE_H_
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/time/time.h"

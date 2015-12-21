@@ -5,6 +5,7 @@
 #ifndef CC_SURFACES_SURFACE_DISPLAY_OUTPUT_SURFACE_H_
 #define CC_SURFACES_SURFACE_DISPLAY_OUTPUT_SURFACE_H_
 
+#include "base/macros.h"
 #include "cc/output/output_surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"

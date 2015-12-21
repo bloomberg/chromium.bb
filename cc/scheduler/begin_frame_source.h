@@ -5,10 +5,14 @@
 #ifndef CC_SCHEDULER_BEGIN_FRAME_SOURCE_H_
 #define CC_SCHEDULER_BEGIN_FRAME_SOURCE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/delay_based_time_source.h"

@@ -4,6 +4,8 @@
 
 #include "cc/output/layer_quad.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "ui/gfx/geometry/quad_f.h"
 

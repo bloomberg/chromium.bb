@@ -5,6 +5,8 @@
 #ifndef CC_DEBUG_FRAME_TIMING_REQUEST_H_
 #define CC_DEBUG_FRAME_TIMING_REQUEST_H_
 
+#include <stdint.h>
+
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/rect.h"
 

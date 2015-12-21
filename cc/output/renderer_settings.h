@@ -5,7 +5,8 @@
 #ifndef CC_OUTPUT_RENDERER_SETTINGS_H_
 #define CC_OUTPUT_RENDERER_SETTINGS_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "cc/base/cc_export.h"
 
 namespace cc {

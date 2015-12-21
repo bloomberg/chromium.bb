@@ -4,6 +4,8 @@
 
 #include "cc/raster/synchronous_task_graph_runner.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 

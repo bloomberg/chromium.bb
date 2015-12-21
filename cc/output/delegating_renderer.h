@@ -5,6 +5,7 @@
 #ifndef CC_OUTPUT_DELEGATING_RENDERER_H_
 #define CC_OUTPUT_DELEGATING_RENDERER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/compositor_frame.h"

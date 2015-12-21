@@ -4,6 +4,8 @@
 
 #include "cc/layers/delegated_frame_provider.h"
 
+#include <stddef.h>
+
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/layers/delegated_renderer_layer.h"
 #include "cc/output/delegated_frame_data.h"

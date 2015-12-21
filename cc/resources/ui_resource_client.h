@@ -5,7 +5,6 @@
 #ifndef CC_RESOURCES_UI_RESOURCE_CLIENT_H_
 #define CC_RESOURCES_UI_RESOURCE_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"

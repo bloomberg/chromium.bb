@@ -4,6 +4,8 @@
 
 #include "cc/test/layer_tree_json_parser.h"
 
+#include <stddef.h>
+
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "cc/layers/layer.h"

@@ -4,6 +4,9 @@
 
 #include "cc/output/gl_renderer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <set>
@@ -11,12 +14,13 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "build/build_config.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/base/container_util.h"
 #include "cc/base/math_util.h"
 #include "cc/output/compositor_frame.h"
@@ -2837,19 +2841,19 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
   DCHECK(iter != reverse_end);
   PendingAsyncReadPixels* current_read = iter->get();
 
-  uint8* src_pixels = NULL;
+  uint8_t* src_pixels = NULL;
   scoped_ptr<SkBitmap> bitmap;
 
   if (source_buffer != 0) {
     gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, source_buffer);
-    src_pixels = static_cast<uint8*>(gl_->MapBufferCHROMIUM(
+    src_pixels = static_cast<uint8_t*>(gl_->MapBufferCHROMIUM(
         GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, GL_READ_ONLY));
 
     if (src_pixels) {
       bitmap.reset(new SkBitmap);
       bitmap->allocN32Pixels(size.width(), size.height());
       scoped_ptr<SkAutoLockPixels> lock(new SkAutoLockPixels(*bitmap));
-      uint8* dest_pixels = static_cast<uint8*>(bitmap->getPixels());
+      uint8_t* dest_pixels = static_cast<uint8_t*>(bitmap->getPixels());
 
       size_t row_bytes = size.width() * 4;
       int num_rows = size.height();

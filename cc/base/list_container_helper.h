@@ -5,6 +5,9 @@
 #ifndef CC_BASE_LIST_CONTAINER_HELPER_H_
 #define CC_BASE_LIST_CONTAINER_HELPER_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 

@@ -5,6 +5,8 @@
 #ifndef CC_OUTPUT_BSP_TREE_H_
 #define CC_OUTPUT_BSP_TREE_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <vector>
 

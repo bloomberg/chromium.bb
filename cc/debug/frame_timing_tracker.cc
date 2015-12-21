@@ -4,6 +4,8 @@
 
 #include "cc/debug/frame_timing_tracker.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 

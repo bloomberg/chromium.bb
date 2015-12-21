@@ -5,6 +5,8 @@
 #ifndef CC_RASTER_TILE_TASK_WORKER_POOL_H_
 #define CC_RASTER_TILE_TASK_WORKER_POOL_H_
 
+#include <stddef.h>
+
 #include "cc/raster/tile_task_runner.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

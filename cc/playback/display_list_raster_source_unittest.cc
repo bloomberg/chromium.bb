@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/playback/display_list_raster_source.h"
 #include "cc/test/fake_display_list_recording_source.h"

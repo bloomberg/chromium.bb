@@ -5,6 +5,8 @@
 #ifndef CC_SURFACES_SURFACE_MANAGER_H_
 #define CC_SURFACES_SURFACE_MANAGER_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <vector>
 

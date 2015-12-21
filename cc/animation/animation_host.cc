@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/macros.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"

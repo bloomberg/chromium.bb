@@ -5,7 +5,10 @@
 #ifndef CC_LAYERS_DELEGATED_RENDERER_LAYER_IMPL_H_
 #define CC_LAYERS_DELEGATED_RENDERER_LAYER_IMPL_H_
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"

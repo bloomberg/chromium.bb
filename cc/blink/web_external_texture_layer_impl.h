@@ -6,6 +6,7 @@
 #define CC_BLINK_WEB_EXTERNAL_TEXTURE_LAYER_IMPL_H_
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "cc/blink/cc_blink_export.h"

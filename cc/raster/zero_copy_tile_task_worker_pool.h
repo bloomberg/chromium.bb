@@ -5,6 +5,9 @@
 #ifndef CC_RASTER_ZERO_COPY_TILE_TASK_WORKER_POOL_H_
 #define CC_RASTER_ZERO_COPY_TILE_TASK_WORKER_POOL_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "cc/raster/tile_task_runner.h"

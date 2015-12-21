@@ -4,6 +4,8 @@
 
 #include "cc/test/layer_test_common.h"
 
+#include <stddef.h>
+
 #include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/layers/append_quads_data.h"

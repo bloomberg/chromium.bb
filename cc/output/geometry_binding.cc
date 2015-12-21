@@ -4,6 +4,8 @@
 
 #include "cc/output/geometry_binding.h"
 
+#include <stdint.h>
+
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -56,12 +58,12 @@ GeometryBindingQuadIndex::GeometryBindingQuadIndex() {
   memset(data, 0x0, sizeof(data));
 }
 
-GeometryBindingQuadIndex::GeometryBindingQuadIndex(uint16 index0,
-                                                   uint16 index1,
-                                                   uint16 index2,
-                                                   uint16 index3,
-                                                   uint16 index4,
-                                                   uint16 index5) {
+GeometryBindingQuadIndex::GeometryBindingQuadIndex(uint16_t index0,
+                                                   uint16_t index1,
+                                                   uint16_t index2,
+                                                   uint16_t index3,
+                                                   uint16_t index4,
+                                                   uint16_t index5) {
   data[0] = index0;
   data[1] = index1;
   data[2] = index2;

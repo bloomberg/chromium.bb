@@ -5,6 +5,8 @@
 #ifndef CC_TEST_TEST_IN_PROCESS_CONTEXT_PROVIDER_H_
 #define CC_TEST_TEST_IN_PROCESS_CONTEXT_PROVIDER_H_
 
+#include <stdint.h>
+
 #include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"

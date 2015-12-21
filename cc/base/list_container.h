@@ -5,6 +5,8 @@
 #ifndef CC_BASE_LIST_CONTAINER_H_
 #define CC_BASE_LIST_CONTAINER_H_
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

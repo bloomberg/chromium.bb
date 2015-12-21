@@ -4,6 +4,8 @@
 
 #include "cc/trees/layer_tree_host.h"
 
+#include <stdint.h>
+
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
@@ -1302,8 +1304,8 @@ class LayerTreeHostAnimationTestNotifyAnimationFinished
                               Animation::TargetProperty target_property,
                               int group) override {
     called_animation_started_ = true;
-    layer_tree_host()->AnimateLayers(
-        base::TimeTicks::FromInternalValue(std::numeric_limits<int64>::max()));
+    layer_tree_host()->AnimateLayers(base::TimeTicks::FromInternalValue(
+        std::numeric_limits<int64_t>::max()));
     PostSetNeedsCommitToMainThread();
   }
 

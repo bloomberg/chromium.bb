@@ -4,6 +4,9 @@
 
 #include "cc/layers/surface_layer.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/output/swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
@@ -27,7 +30,7 @@ class SatisfySwapPromise : public SwapPromise {
   void DidNotSwap(DidNotSwapReason reason) override {
     satisfy_callback_.Run(sequence_);
   }
-  int64 TraceId() const override { return 0; }
+  int64_t TraceId() const override { return 0; }
 
   SurfaceSequence sequence_;
   SurfaceLayer::SatisfyCallback satisfy_callback_;

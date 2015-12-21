@@ -4,10 +4,11 @@
 
 #include "cc/debug/rasterize_and_record_benchmark_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/values.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/layers/layer_impl.h"

@@ -5,6 +5,8 @@
 #ifndef CC_OUTPUT_SWAP_PROMISE_H_
 #define CC_OUTPUT_SWAP_PROMISE_H_
 
+#include <stdint.h>
+
 #include "cc/output/compositor_frame_metadata.h"
 
 namespace cc {
@@ -60,7 +62,7 @@ class CC_EXPORT SwapPromise {
   // A non-zero trace id identifies a trace flow object that is embedded in the
   // swap promise. This can be used for registering additional flow steps to
   // visualize the object's path through the system.
-  virtual int64 TraceId() const = 0;
+  virtual int64_t TraceId() const = 0;
 };
 
 }  // namespace cc

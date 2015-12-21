@@ -7,6 +7,7 @@
 
 #include "cc/raster/texture_compressor_etc1.h"
 
+#include <stdint.h>
 #include <string.h>
 #include <limits>
 

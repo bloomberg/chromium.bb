@@ -5,6 +5,8 @@
 #ifndef CC_BASE_SIMPLE_ENCLOSED_REGION_H_
 #define CC_BASE_SIMPLE_ENCLOSED_REGION_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "cc/base/cc_export.h"

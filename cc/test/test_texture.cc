@@ -4,6 +4,9 @@
 
 #include "cc/test/test_texture.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 

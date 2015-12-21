@@ -5,6 +5,9 @@
 #ifndef CC_LAYERS_PICTURE_IMAGE_LAYER_H_
 #define CC_LAYERS_PICTURE_IMAGE_LAYER_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer.h"

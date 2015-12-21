@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_SOLID_COLOR_SCROLLBAR_LAYER_H_
 #define CC_LAYERS_SOLID_COLOR_SCROLLBAR_LAYER_H_
 
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/scrollbar_layer_interface.h"

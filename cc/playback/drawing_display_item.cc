@@ -4,6 +4,8 @@
 
 #include "cc/playback/drawing_display_item.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/strings/stringprintf.h"

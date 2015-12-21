@@ -5,6 +5,8 @@
 #ifndef CC_TEST_FAKE_PICTURE_LAYER_H_
 #define CC_TEST_FAKE_PICTURE_LAYER_H_
 
+#include <stddef.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/picture_layer.h"

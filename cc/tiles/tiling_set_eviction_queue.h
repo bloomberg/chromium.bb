@@ -5,6 +5,8 @@
 #ifndef CC_TILES_TILING_SET_EVICTION_QUEUE_H_
 #define CC_TILES_TILING_SET_EVICTION_QUEUE_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "cc/base/cc_export.h"

@@ -4,8 +4,12 @@
 
 #include "cc/surfaces/surface_aggregator.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
+#include "base/macros.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/render_pass.h"

@@ -5,6 +5,8 @@
 #ifndef CC_RASTER_RASTER_BUFFER_H_
 #define CC_RASTER_RASTER_BUFFER_H_
 
+#include <stdint.h>
+
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/rect.h"
 

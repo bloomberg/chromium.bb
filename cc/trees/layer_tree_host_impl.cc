@@ -4,13 +4,15 @@
 
 #include "cc/trees/layer_tree_host_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <map>
 #include <set>
 
 #include "base/auto_reset.h"
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/small_map.h"
 #include "base/json/json_writer.h"
@@ -823,7 +825,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   TRACE_EVENT_BEGIN2(
       "cc", "LayerTreeHostImpl::CalculateRenderPasses",
       "render_surface_layer_list.size()",
-      static_cast<uint64>(frame->render_surface_layer_list->size()),
+      static_cast<uint64_t>(frame->render_surface_layer_list->size()),
       "RequiresHighResToDraw", RequiresHighResToDraw());
 
   // Create the render passes in dependency order.
@@ -885,8 +887,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
   int num_missing_tiles = 0;
   int num_incomplete_tiles = 0;
-  int64 checkerboarded_no_recording_content_area = 0;
-  int64 checkerboarded_needs_raster_content_area = 0;
+  int64_t checkerboarded_no_recording_content_area = 0;
+  int64_t checkerboarded_needs_raster_content_area = 0;
   bool have_copy_request = false;
   bool have_missing_animated_tiles = false;
 
@@ -1269,7 +1271,7 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
     global_tile_state_.hard_memory_limit_in_bytes =
         policy.bytes_limit_when_visible;
     global_tile_state_.soft_memory_limit_in_bytes =
-        (static_cast<int64>(global_tile_state_.hard_memory_limit_in_bytes) *
+        (static_cast<int64_t>(global_tile_state_.hard_memory_limit_in_bytes) *
          settings_.max_memory_for_prepaint_percentage) /
         100;
   }

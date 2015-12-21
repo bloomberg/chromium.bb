@@ -4,6 +4,8 @@
 
 #include "cc/test/ordered_texture_map.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "cc/test/test_texture.h"
 

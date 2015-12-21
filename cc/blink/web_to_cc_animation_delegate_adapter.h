@@ -5,8 +5,8 @@
 #ifndef CC_BLINK_WEB_TO_CC_ANIMATION_DELEGATE_ADAPTER_H_
 #define CC_BLINK_WEB_TO_CC_ANIMATION_DELEGATE_ADAPTER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "cc/animation/animation_delegate.h"
 
 namespace blink {

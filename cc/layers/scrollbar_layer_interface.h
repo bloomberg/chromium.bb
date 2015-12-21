@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_SCROLLBAR_LAYER_INTERFACE_H_
 #define CC_LAYERS_SCROLLBAR_LAYER_INTERFACE_H_
 
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/input/scrollbar.h"
 

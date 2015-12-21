@@ -4,6 +4,8 @@
 
 #include "cc/debug/picture_debug_util.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/base64.h"

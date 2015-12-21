@@ -6,6 +6,7 @@
 #define CC_RASTER_SCOPED_GPU_RASTER_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"

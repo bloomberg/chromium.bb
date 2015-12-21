@@ -4,11 +4,12 @@
 
 #include "cc/debug/rasterize_and_record_benchmark.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <limits>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "cc/debug/lap_timer.h"

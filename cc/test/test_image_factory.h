@@ -5,6 +5,7 @@
 #ifndef CC_TEST_TEST_IMAGE_FACTORY_H_
 #define CC_TEST_TEST_IMAGE_FACTORY_H_
 
+#include "base/macros.h"
 #include "gpu/command_buffer/service/image_factory.h"
 
 namespace cc {

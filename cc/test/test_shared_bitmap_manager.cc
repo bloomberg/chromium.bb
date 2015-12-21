@@ -4,6 +4,8 @@
 
 #include "cc/test/test_shared_bitmap_manager.h"
 
+#include <stdint.h>
+
 #include "base/memory/shared_memory.h"
 
 namespace cc {
@@ -13,7 +15,7 @@ class OwnedSharedBitmap : public SharedBitmap {
  public:
   OwnedSharedBitmap(scoped_ptr<base::SharedMemory> shared_memory,
                     const SharedBitmapId& id)
-      : SharedBitmap(static_cast<uint8*>(shared_memory->memory()), id),
+      : SharedBitmap(static_cast<uint8_t*>(shared_memory->memory()), id),
         shared_memory_(std::move(shared_memory)) {}
 
   ~OwnedSharedBitmap() override {}
@@ -44,7 +46,7 @@ scoped_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
   base::AutoLock lock(lock_);
   if (bitmap_map_.find(id) == bitmap_map_.end())
     return nullptr;
-  uint8* pixels = static_cast<uint8*>(bitmap_map_[id]->memory());
+  uint8_t* pixels = static_cast<uint8_t*>(bitmap_map_[id]->memory());
   return make_scoped_ptr(new SharedBitmap(pixels, id));
 }
 

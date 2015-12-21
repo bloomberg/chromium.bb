@@ -4,6 +4,8 @@
 
 #include "cc/quads/render_pass.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/numerics/safe_conversions.h"

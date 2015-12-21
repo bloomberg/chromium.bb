@@ -5,11 +5,15 @@
 #ifndef CC_TILES_TILE_MANAGER_H_
 #define CC_TILES_TILE_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <utility>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/base/unique_notifier.h"
@@ -228,10 +232,10 @@ class CC_EXPORT TileManager {
     MemoryUsage operator-(const MemoryUsage& other);
 
     bool Exceeds(const MemoryUsage& limit) const;
-    int64 memory_bytes() const { return memory_bytes_; }
+    int64_t memory_bytes() const { return memory_bytes_; }
 
    private:
-    int64 memory_bytes_;
+    int64_t memory_bytes_;
     int resource_count_;
   };
 

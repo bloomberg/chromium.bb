@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/layers/layer_iterator.h"

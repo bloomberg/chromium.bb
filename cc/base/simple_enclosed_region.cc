@@ -4,14 +4,17 @@
 
 #include "cc/base/simple_enclosed_region.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "cc/base/region.h"
 
 namespace cc {
 
 static bool RectIsLargerArea(const gfx::Rect& a, const gfx::Rect b) {
-  int64 a_area = static_cast<int64>(a.width()) * a.height();
-  int64 b_area = static_cast<int64>(b.width()) * b.height();
+  int64_t a_area = static_cast<int64_t>(a.width()) * a.height();
+  int64_t b_area = static_cast<int64_t>(b.width()) * b.height();
   return a_area > b_area;
 }
 

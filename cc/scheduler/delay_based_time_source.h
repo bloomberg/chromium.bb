@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "cc/base/cc_export.h"

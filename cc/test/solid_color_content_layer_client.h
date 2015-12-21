@@ -5,6 +5,8 @@
 #ifndef CC_TEST_SOLID_COLOR_CONTENT_LAYER_CLIENT_H_
 #define CC_TEST_SOLID_COLOR_CONTENT_LAYER_CLIENT_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "cc/layers/content_layer_client.h"
 #include "third_party/skia/include/core/SkColor.h"

@@ -5,6 +5,7 @@
 #ifndef CC_TEST_MOCK_OCCLUSION_TRACKER_H_
 #define CC_TEST_MOCK_OCCLUSION_TRACKER_H_
 
+#include "base/macros.h"
 #include "cc/trees/occlusion_tracker.h"
 
 namespace cc {

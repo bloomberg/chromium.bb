@@ -4,6 +4,8 @@
 
 #include "cc/layers/delegated_frame_resource_collection.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "cc/trees/blocking_task_runner.h"
 

@@ -5,6 +5,7 @@
 #ifndef CC_TEST_FAILURE_OUTPUT_SURFACE_H_
 #define CC_TEST_FAILURE_OUTPUT_SURFACE_H_
 
+#include "base/macros.h"
 #include "cc/test/fake_output_surface.h"
 
 namespace cc {

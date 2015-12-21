@@ -5,8 +5,11 @@
 #ifndef CC_PLAYBACK_DISPLAY_LIST_RASTER_SOURCE_H_
 #define CC_PLAYBACK_DISPLAY_LIST_RASTER_SOURCE_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"

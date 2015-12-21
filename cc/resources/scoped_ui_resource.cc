@@ -4,7 +4,6 @@
 
 #include "cc/resources/scoped_ui_resource.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "cc/trees/layer_tree_host.h"
 

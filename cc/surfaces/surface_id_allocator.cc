@@ -4,6 +4,8 @@
 
 #include "cc/surfaces/surface_id_allocator.h"
 
+#include <stdint.h>
+
 #include "cc/surfaces/surface_manager.h"
 
 namespace cc {

@@ -4,6 +4,9 @@
 
 #include "cc/surfaces/surface.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "cc/base/container_util.h"

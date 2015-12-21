@@ -5,6 +5,8 @@
 #ifndef CC_LAYERS_CONTENT_LAYER_CLIENT_H_
 #define CC_LAYERS_CONTENT_LAYER_CLIENT_H_
 
+#include <stddef.h>
+
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item_list.h"
 

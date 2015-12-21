@@ -4,6 +4,8 @@
 
 #include "cc/base/simple_enclosed_region.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 

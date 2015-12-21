@@ -4,6 +4,8 @@
 
 #include "cc/scheduler/scheduler_state_machine.h"
 
+#include <stddef.h>
+
 #include "base/trace_event/trace_event.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/test/begin_frame_args_test.h"

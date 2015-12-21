@@ -5,12 +5,16 @@
 #ifndef CC_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
 #define CC_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -407,7 +411,7 @@ class TestWebGraphicsContext3D {
     ~Buffer();
 
     GLenum target;
-    scoped_ptr<uint8[]> pixels;
+    scoped_ptr<uint8_t[]> pixels;
     size_t size;
 
    private:
@@ -418,7 +422,7 @@ class TestWebGraphicsContext3D {
     Image();
     ~Image();
 
-    scoped_ptr<uint8[]> pixels;
+    scoped_ptr<uint8_t[]> pixels;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Image);

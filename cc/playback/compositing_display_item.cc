@@ -4,6 +4,9 @@
 
 #include "cc/playback/compositing_display_item.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/proto/display_item.pb.h"

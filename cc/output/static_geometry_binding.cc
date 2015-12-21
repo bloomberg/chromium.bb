@@ -4,6 +4,9 @@
 
 #include "cc/output/static_geometry_binding.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -40,9 +43,9 @@ StaticGeometryBinding::StaticGeometryBinding(gpu::gles2::GLES2Interface* gl,
     GeometryBindingQuad x(v0, v1, v2, v3);
     quads[i] = x;
     GeometryBindingQuadIndex y(
-        static_cast<uint16>(0 + 4 * i), static_cast<uint16>(1 + 4 * i),
-        static_cast<uint16>(2 + 4 * i), static_cast<uint16>(3 + 4 * i),
-        static_cast<uint16>(0 + 4 * i), static_cast<uint16>(2 + 4 * i));
+        static_cast<uint16_t>(0 + 4 * i), static_cast<uint16_t>(1 + 4 * i),
+        static_cast<uint16_t>(2 + 4 * i), static_cast<uint16_t>(3 + 4 * i),
+        static_cast<uint16_t>(0 + 4 * i), static_cast<uint16_t>(2 + 4 * i));
     quad_indices[i] = y;
   }
 

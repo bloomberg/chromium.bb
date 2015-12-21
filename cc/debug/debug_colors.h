@@ -5,7 +5,7 @@
 #ifndef CC_DEBUG_DEBUG_COLORS_H_
 #define CC_DEBUG_DEBUG_COLORS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {

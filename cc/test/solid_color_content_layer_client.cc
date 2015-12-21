@@ -4,6 +4,8 @@
 
 #include "cc/test/solid_color_content_layer_client.h"
 
+#include <stddef.h>
+
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"

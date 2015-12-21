@@ -4,7 +4,8 @@
 
 #include "cc/scheduler/delay_based_time_source.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/test/test_simple_task_runner.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -429,7 +430,7 @@ TEST(DelayBasedTimeSourceTest, AchievesTargetRateWithNoNoise) {
 
   double total_frame_time = 0.0;
   for (int i = 0; i < num_iterations; ++i) {
-    int64 delay_ms = task_runner->NextPendingTaskDelay().InMilliseconds();
+    int64_t delay_ms = task_runner->NextPendingTaskDelay().InMilliseconds();
 
     // accumulate the "delay"
     total_frame_time += delay_ms / 1000.0;

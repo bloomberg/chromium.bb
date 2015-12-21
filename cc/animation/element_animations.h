@@ -6,6 +6,7 @@
 #define CC_ANIMATION_ELEMENT_ANIMATIONS_H_
 
 #include "base/containers/linked_list.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/layer_animation_controller.h"

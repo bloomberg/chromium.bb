@@ -4,8 +4,11 @@
 
 #include "cc/raster/gpu_tile_task_worker_pool.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/playback/display_list_raster_source.h"
 #include "cc/raster/gpu_rasterizer.h"

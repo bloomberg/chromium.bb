@@ -6,6 +6,7 @@
 #define CC_ANIMATION_ANIMATION_REGISTRAR_H_
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/animation/animation_events.h"

@@ -4,6 +4,8 @@
 
 #include "cc/output/gl_renderer.h"
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/location.h"

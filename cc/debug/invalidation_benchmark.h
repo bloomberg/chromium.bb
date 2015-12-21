@@ -5,6 +5,8 @@
 #ifndef CC_DEBUG_INVALIDATION_BENCHMARK_H_
 #define CC_DEBUG_INVALIDATION_BENCHMARK_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "cc/debug/micro_benchmark_controller.h"
@@ -36,7 +38,7 @@ class CC_EXPORT InvalidationBenchmark : public MicroBenchmark {
   Mode mode_;
   int width_;
   int height_;
-  uint32 seed_;
+  uint32_t seed_;
 };
 
 }  // namespace cc

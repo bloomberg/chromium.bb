@@ -5,6 +5,7 @@
 #include "cc/trees/layer_tree_settings.h"
 
 #include <GLES2/gl2.h>
+#include <stddef.h>
 #include <limits>
 
 #include "base/command_line.h"

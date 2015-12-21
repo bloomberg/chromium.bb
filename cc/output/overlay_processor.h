@@ -5,7 +5,7 @@
 #ifndef CC_OUTPUT_OVERLAY_PROCESSOR_H_
 #define CC_OUTPUT_OVERLAY_PROCESSOR_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/ca_layer_overlay.h"

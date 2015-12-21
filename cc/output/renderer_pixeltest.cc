@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/message_loop/message_loop.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/quads/draw_quad.h"
@@ -183,7 +186,7 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
 void CreateTestYUVVideoDrawQuad_FromVideoFrame(
     const SharedQuadState* shared_state,
     scoped_refptr<media::VideoFrame> video_frame,
-    uint8 alpha_value,
+    uint8_t alpha_value,
     const gfx::RectF& tex_coord_rect,
     RenderPass* render_pass,
     VideoResourceUpdater* video_resource_updater,
@@ -304,7 +307,7 @@ void CreateTestYUVVideoDrawQuad_Striped(
       v_row[j] = (v_value += 5);
     }
   }
-  uint8 alpha_value = is_transparent ? 0 : 128;
+  uint8_t alpha_value = is_transparent ? 0 : 128;
   CreateTestYUVVideoDrawQuad_FromVideoFrame(
       shared_state, video_frame, alpha_value, tex_coord_rect, render_pass,
       video_resource_updater, rect, visible_rect, resource_provider);
@@ -322,13 +325,13 @@ void CreateTestYUVVideoDrawQuad_TwoColor(
     const gfx::RectF& tex_coord_rect,
     const gfx::Size& background_size,
     const gfx::Rect& visible_rect,
-    uint8 y_background,
-    uint8 u_background,
-    uint8 v_background,
+    uint8_t y_background,
+    uint8_t u_background,
+    uint8_t v_background,
     const gfx::Rect& foreground_rect,
-    uint8 y_foreground,
-    uint8 u_foreground,
-    uint8 v_foreground,
+    uint8_t y_foreground,
+    uint8_t u_foreground,
+    uint8_t v_foreground,
     RenderPass* render_pass,
     VideoResourceUpdater* video_resource_updater,
     ResourceProvider* resource_provider) {
@@ -343,8 +346,8 @@ void CreateTestYUVVideoDrawQuad_TwoColor(
   int planes[] = {media::VideoFrame::kYPlane,
                   media::VideoFrame::kUPlane,
                   media::VideoFrame::kVPlane};
-  uint8 yuv_background[] = {y_background, u_background, v_background};
-  uint8 yuv_foreground[] = {y_foreground, u_foreground, v_foreground};
+  uint8_t yuv_background[] = {y_background, u_background, v_background};
+  uint8_t yuv_foreground[] = {y_foreground, u_foreground, v_foreground};
   int sample_size[] = {1, 2, 2};
 
   for (int i = 0; i < 3; ++i) {
@@ -372,7 +375,7 @@ void CreateTestYUVVideoDrawQuad_TwoColor(
     }
   }
 
-  uint8 alpha_value = 255;
+  uint8_t alpha_value = 255;
   CreateTestYUVVideoDrawQuad_FromVideoFrame(
       shared_state, video_frame, alpha_value, tex_coord_rect, render_pass,
       video_resource_updater, rect, visible_rect, resource_provider);
@@ -384,9 +387,9 @@ void CreateTestYUVVideoDrawQuad_Solid(
     media::ColorSpace color_space,
     bool is_transparent,
     const gfx::RectF& tex_coord_rect,
-    uint8 y,
-    uint8 u,
-    uint8 v,
+    uint8_t y,
+    uint8_t u,
+    uint8_t v,
     RenderPass* render_pass,
     VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
@@ -409,7 +412,7 @@ void CreateTestYUVVideoDrawQuad_Solid(
          video_frame->stride(media::VideoFrame::kVPlane) *
              video_frame->rows(media::VideoFrame::kVPlane));
 
-  uint8 alpha_value = is_transparent ? 0 : 128;
+  uint8_t alpha_value = is_transparent ? 0 : 128;
   CreateTestYUVVideoDrawQuad_FromVideoFrame(
       shared_state, video_frame, alpha_value, tex_coord_rect, render_pass,
       video_resource_updater, rect, visible_rect, resource_provider);

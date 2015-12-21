@@ -5,6 +5,7 @@
 #ifndef CC_BLINK_WEB_FLOAT_ANIMATION_CURVE_IMPL_H_
 #define CC_BLINK_WEB_FLOAT_ANIMATION_CURVE_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/blink/cc_blink_export.h"
 #include "third_party/WebKit/public/platform/WebFloatAnimationCurve.h"

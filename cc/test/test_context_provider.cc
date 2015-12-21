@@ -4,6 +4,9 @@
 
 #include "cc/test/test_context_provider.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 

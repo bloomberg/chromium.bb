@@ -4,6 +4,8 @@
 
 #include "cc/trees/occlusion.h"
 
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

@@ -5,6 +5,8 @@
 #ifndef CC_BASE_RANDOM_ACCESS_LIST_CONTAINER_H_
 #define CC_BASE_RANDOM_ACCESS_LIST_CONTAINER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/logging.h"

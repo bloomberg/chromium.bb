@@ -4,6 +4,9 @@
 
 #include "cc/test/test_web_graphics_context_3d.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 
@@ -548,7 +551,7 @@ void TestWebGraphicsContext3D::bufferData(GLenum target,
 
   size_t old_size = buffer->size;
 
-  buffer->pixels.reset(new uint8[size]);
+  buffer->pixels.reset(new uint8_t[size]);
   buffer->size = size;
   if (data != NULL)
     memcpy(buffer->pixels.get(), data, size);

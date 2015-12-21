@@ -5,6 +5,10 @@
 #ifndef CC_TILES_TILE_H_
 #define CC_TILES_TILE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/tiles/tile_draw_info.h"
 #include "ui/gfx/geometry/rect.h"
@@ -45,7 +49,7 @@ class CC_EXPORT Tile {
 
   enum TileRasterFlags { USE_PICTURE_ANALYSIS = 1 << 0, IS_OPAQUE = 1 << 1 };
 
-  typedef uint64 Id;
+  typedef uint64_t Id;
 
   Id id() const {
     return id_;

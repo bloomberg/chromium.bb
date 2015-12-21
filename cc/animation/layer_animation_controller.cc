@@ -4,6 +4,8 @@
 
 #include "cc/animation/layer_animation_controller.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 

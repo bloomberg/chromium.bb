@@ -5,6 +5,7 @@
 #ifndef CC_DEBUG_LAP_TIMER_H_
 #define CC_DEBUG_LAP_TIMER_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 

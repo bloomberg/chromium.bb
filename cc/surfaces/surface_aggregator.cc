@@ -4,11 +4,14 @@
 
 #include "cc/surfaces/surface_aggregator.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"

@@ -4,6 +4,8 @@
 
 #include "cc/trees/layer_tree_host.h"
 
+#include <stdint.h>
+
 #include <sstream>
 
 #include "base/files/file_path.h"
@@ -291,7 +293,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     std::ostringstream name_stream;
     name_stream << "name" << next_sync_point_;
     gpu_mailbox.SetName(
-        reinterpret_cast<const int8*>(name_stream.str().c_str()));
+        reinterpret_cast<const int8_t*>(name_stream.str().c_str()));
     scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
         base::Bind(&EmptyReleaseCallback));
     TextureMailbox mailbox(gpu_mailbox, gpu::SyncToken(next_sync_point_),

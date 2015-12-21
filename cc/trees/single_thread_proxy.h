@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_events.h"
 #include "cc/output/begin_frame_args.h"

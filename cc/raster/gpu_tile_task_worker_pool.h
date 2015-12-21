@@ -5,6 +5,9 @@
 #ifndef CC_RASTER_GPU_TILE_TASK_WORKER_POOL_H_
 #define CC_RASTER_GPU_TILE_TASK_WORKER_POOL_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "cc/raster/tile_task_runner.h"
 #include "cc/raster/tile_task_worker_pool.h"
 

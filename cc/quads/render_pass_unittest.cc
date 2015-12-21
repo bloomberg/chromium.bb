@@ -4,6 +4,8 @@
 
 #include "cc/quads/render_pass.h"
 
+#include <stddef.h>
+
 #include "cc/base/math_util.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/render_pass_draw_quad.h"

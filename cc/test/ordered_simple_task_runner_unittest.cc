@@ -6,6 +6,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_pending_task.h"

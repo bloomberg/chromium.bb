@@ -4,6 +4,9 @@
 
 #include "cc/raster/task_graph_work_queue.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <map>
 #include <utility>

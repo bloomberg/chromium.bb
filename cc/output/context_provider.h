@@ -5,6 +5,9 @@
 #ifndef CC_OUTPUT_CONTEXT_PROVIDER_H_
 #define CC_OUTPUT_CONTEXT_PROVIDER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"

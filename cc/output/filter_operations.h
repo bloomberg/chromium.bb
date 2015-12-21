@@ -5,6 +5,8 @@
 #ifndef CC_OUTPUT_FILTER_OPERATIONS_H_
 #define CC_OUTPUT_FILTER_OPERATIONS_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/logging.h"

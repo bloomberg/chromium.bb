@@ -4,6 +4,9 @@
 
 #include "cc/blink/web_display_item_list_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "cc/blink/web_filter_operations_impl.h"

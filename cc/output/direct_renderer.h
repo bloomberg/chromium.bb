@@ -5,9 +5,9 @@
 #ifndef CC_OUTPUT_DIRECT_RENDERER_H_
 #define CC_OUTPUT_DIRECT_RENDERER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/ca_layer_overlay.h"
 #include "cc/output/overlay_processor.h"

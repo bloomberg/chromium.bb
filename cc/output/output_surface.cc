@@ -4,8 +4,11 @@
 
 #include "cc/output/output_surface.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -53,7 +56,7 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
   void setMemoryBacking(const char* dump_name,
                         const char* backing_type,
                         const char* backing_object_id) override {
-    const uint64 tracing_process_id =
+    const uint64_t tracing_process_id =
         base::trace_event::MemoryDumpManager::GetInstance()
             ->GetTracingProcessId();
 

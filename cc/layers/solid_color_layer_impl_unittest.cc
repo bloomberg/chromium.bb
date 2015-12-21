@@ -4,6 +4,8 @@
 
 #include "cc/layers/solid_color_layer_impl.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "cc/layers/append_quads_data.h"
