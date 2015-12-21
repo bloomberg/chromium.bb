@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
 

@@ -7,9 +7,10 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "printing/metafile.h"
 

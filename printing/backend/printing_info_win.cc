@@ -4,19 +4,21 @@
 
 #include "printing/backend/printing_info_win.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 
 namespace printing {
 
 namespace internal {
 
-uint8* GetDriverInfo(HANDLE printer, int level) {
+uint8_t* GetDriverInfo(HANDLE printer, int level) {
   DWORD size = 0;
   ::GetPrinterDriver(printer, NULL, level, NULL, 0, &size);
   if (size == 0) {
     return NULL;
   }
-  scoped_ptr<uint8[]> buffer(new uint8[size]);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[size]);
   memset(buffer.get(), 0, size);
   if (!::GetPrinterDriver(printer, NULL, level, buffer.get(), size, &size)) {
     return NULL;
@@ -24,7 +26,7 @@ uint8* GetDriverInfo(HANDLE printer, int level) {
   return buffer.release();
 }
 
-uint8* GetPrinterInfo(HANDLE printer, int level) {
+uint8_t* GetPrinterInfo(HANDLE printer, int level) {
   DWORD size = 0;
   ::GetPrinter(printer, level, NULL, 0, &size);
   if (size == 0) {
@@ -32,7 +34,7 @@ uint8* GetPrinterInfo(HANDLE printer, int level) {
                     ", error = " << GetLastError();
     return NULL;
   }
-  scoped_ptr<uint8[]> buffer(new uint8[size]);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[size]);
   memset(buffer.get(), 0, size);
   if (!::GetPrinter(printer, level, buffer.get(), size, &size)) {
     LOG(WARNING) << "Failed to get PRINTER_INFO_" << level <<

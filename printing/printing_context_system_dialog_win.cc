@@ -5,6 +5,7 @@
 #include "printing/printing_context_system_dialog_win.h"
 
 #include "base/auto_reset.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "printing/backend/win_helper.h"
 #include "printing/print_settings_initializer_win.h"

@@ -5,6 +5,7 @@
 #ifndef PRINTING_PRINTED_PAGE_H_
 #define PRINTING_PRINTED_PAGE_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "printing/metafile.h"

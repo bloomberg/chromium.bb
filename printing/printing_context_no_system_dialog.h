@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "printing/printing_context.h"
 
 namespace base {

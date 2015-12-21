@@ -5,12 +5,12 @@
 #include "printing/emf_win.h"
 
 // For quick access.
+#include <stdint.h>
 #include <wingdi.h>
 #include <winspool.h>
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"

@@ -8,6 +8,7 @@
 #import <ApplicationServices/ApplicationServices.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "printing/page_range.h"
 
 namespace printing {

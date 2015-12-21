@@ -5,6 +5,7 @@
 #include "printing/backend/cups_helper.h"
 
 #include <cups/ppd.h>
+#include <stddef.h>
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"

@@ -4,6 +4,8 @@
 
 #include "printing/image.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/files/file_util.h"

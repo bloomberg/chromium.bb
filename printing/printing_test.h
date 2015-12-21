@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 // Disable the whole test case when executing on a computer that has no printer
 // installed.

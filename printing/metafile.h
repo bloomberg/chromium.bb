@@ -5,9 +5,11 @@
 #ifndef PRINTING_METAFILE_H_
 #define PRINTING_METAFILE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "printing/printing_export.h"
 #include "ui/gfx/native_widget_types.h"

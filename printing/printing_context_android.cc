@@ -4,6 +4,8 @@
 
 #include "printing/printing_context_android.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/android/jni_android.h"

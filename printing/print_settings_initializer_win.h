@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "printing/page_range.h"
 
 typedef struct HDC__* HDC;

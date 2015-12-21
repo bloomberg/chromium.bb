@@ -4,6 +4,8 @@
 
 #include "printing/pdf_metafile_cg_mac.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/files/file_path.h"

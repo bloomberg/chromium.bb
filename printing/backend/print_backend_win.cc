@@ -5,6 +5,7 @@
 #include "printing/backend/print_backend.h"
 
 #include <objidl.h>
+#include <stddef.h>
 #include <winspool.h>
 
 #include "base/memory/scoped_ptr.h"

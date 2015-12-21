@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "printing/printing_context_win.h"
 #include "ui/gfx/native_widget_types.h"
 

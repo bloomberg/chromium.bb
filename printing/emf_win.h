@@ -6,12 +6,14 @@
 #define PRINTING_EMF_WIN_H_
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "printing/metafile.h"
 

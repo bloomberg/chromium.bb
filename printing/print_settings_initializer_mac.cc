@@ -4,6 +4,8 @@
 
 #include "printing/print_settings_initializer_mac.h"
 
+#include <stdint.h>
+
 #include "base/strings/sys_string_conversions.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"

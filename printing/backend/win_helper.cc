@@ -4,11 +4,14 @@
 
 #include "printing/backend/win_helper.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"

@@ -5,10 +5,12 @@
 #ifndef PRINTING_IMAGE_H_
 #define PRINTING_IMAGE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "printing/printing_export.h"
 #include "ui/gfx/geometry/size.h"

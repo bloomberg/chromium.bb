@@ -5,6 +5,7 @@
 #include "printing/pdf_metafile_cg_mac.h"
 
 #import <ApplicationServices/ApplicationServices.h>
+#include <stdint.h>
 
 #include <string>
 #include <vector>

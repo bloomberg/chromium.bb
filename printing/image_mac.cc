@@ -5,6 +5,8 @@
 #include "printing/image.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "printing/metafile.h"

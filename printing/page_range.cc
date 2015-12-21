@@ -4,6 +4,8 @@
 
 #include "printing/page_range.h"
 
+#include <stddef.h>
+
 #include <set>
 
 namespace {

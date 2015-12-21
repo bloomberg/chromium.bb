@@ -5,6 +5,8 @@
 #ifndef PRINTING_PRINTING_UTILS_H_
 #define PRINTING_PRINTING_UTILS_H_
 
+#include <stddef.h>
+
 #include "base/strings/string16.h"
 #include "printing/printing_export.h"
 

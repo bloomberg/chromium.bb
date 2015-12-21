@@ -4,6 +4,8 @@
 
 #include "printing/page_number.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/logging.h"

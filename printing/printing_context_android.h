@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "printing/printing_context.h"
 
 namespace printing {

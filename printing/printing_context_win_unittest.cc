@@ -4,6 +4,9 @@
 
 #include "printing/printing_context_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/win/scoped_handle.h"
@@ -115,19 +118,16 @@ class MockPrintingContextWin : public PrintingContextSytemDialogWin {
     DEVNAMES* dev_names = reinterpret_cast<DEVNAMES*>(dev_names_ptr);
     dev_names->wDefault = 1;
     dev_names->wDriverOffset = sizeof(DEVNAMES) / sizeof(wchar_t);
-    memcpy(reinterpret_cast<uint8*>(dev_names_ptr) + dev_names->wDriverOffset,
-           info_2.get()->pDriverName,
-           driver_size);
+    memcpy(reinterpret_cast<uint8_t*>(dev_names_ptr) + dev_names->wDriverOffset,
+           info_2.get()->pDriverName, driver_size);
     dev_names->wDeviceOffset = base::checked_cast<WORD>(
         dev_names->wDriverOffset + driver_size / sizeof(wchar_t));
-    memcpy(reinterpret_cast<uint8*>(dev_names_ptr) + dev_names->wDeviceOffset,
-           info_2.get()->pPrinterName,
-           printer_size);
+    memcpy(reinterpret_cast<uint8_t*>(dev_names_ptr) + dev_names->wDeviceOffset,
+           info_2.get()->pPrinterName, printer_size);
     dev_names->wOutputOffset = base::checked_cast<WORD>(
         dev_names->wDeviceOffset + printer_size / sizeof(wchar_t));
-    memcpy(reinterpret_cast<uint8*>(dev_names_ptr) + dev_names->wOutputOffset,
-           info_2.get()->pPortName,
-           port_size);
+    memcpy(reinterpret_cast<uint8_t*>(dev_names_ptr) + dev_names->wOutputOffset,
+           info_2.get()->pPortName, port_size);
     GlobalUnlock(dev_names_mem.Get());
     dev_names_ptr = NULL;
 

@@ -4,6 +4,9 @@
 
 #include "printing/pdf_metafile_skia.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"

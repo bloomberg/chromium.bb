@@ -4,6 +4,8 @@
 
 #include "printing/metafile.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file.h"

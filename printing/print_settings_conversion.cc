@@ -4,6 +4,8 @@
 
 #include "printing/print_settings_conversion.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <string>

@@ -5,8 +5,10 @@
 #ifndef PRINTING_PDF_METAFILE_SKIA_H_
 #define PRINTING_PDF_METAFILE_SKIA_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "printing/metafile.h"

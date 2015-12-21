@@ -4,6 +4,7 @@
 
 #include "printing/printing_context_no_system_dialog.h"
 
+#include <stdint.h>
 #include <unicode/ulocdata.h>
 
 #include "base/logging.h"
