@@ -4,8 +4,7 @@
 
 #include "sandbox/win/src/named_pipe_dispatcher.h"
 
-#include <stdint.h>
-
+#include "base/basictypes.h"
 #include "base/strings/string_split.h"
 
 #include "sandbox/win/src/crosscall_client.h"
@@ -48,12 +47,12 @@ bool NamedPipeDispatcher::SetupService(InterceptionManager* manager,
 
 bool NamedPipeDispatcher::CreateNamedPipe(IPCInfo* ipc,
                                           base::string16* name,
-                                          uint32_t open_mode,
-                                          uint32_t pipe_mode,
-                                          uint32_t max_instances,
-                                          uint32_t out_buffer_size,
-                                          uint32_t in_buffer_size,
-                                          uint32_t default_timeout) {
+                                          uint32 open_mode,
+                                          uint32 pipe_mode,
+                                          uint32 max_instances,
+                                          uint32 out_buffer_size,
+                                          uint32 in_buffer_size,
+                                          uint32 default_timeout) {
   ipc->return_info.win32_result = ERROR_ACCESS_DENIED;
   ipc->return_info.handle = INVALID_HANDLE_VALUE;
 

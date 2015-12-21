@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
-
 #include <string>
 
 #include "sandbox/win/src/filesystem_policy.h"
@@ -14,8 +12,8 @@
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/policy_engine_opcodes.h"
 #include "sandbox/win/src/policy_params.h"
-#include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/sandbox_utils.h"
+#include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/win_utils.h"
 
 namespace {
@@ -241,16 +239,16 @@ bool FileSystemPolicy::SetInitialRules(LowLevelPolicy* policy) {
 
 bool FileSystemPolicy::CreateFileAction(EvalResult eval_result,
                                         const ClientInfo& client_info,
-                                        const base::string16& file,
-                                        uint32_t attributes,
-                                        uint32_t desired_access,
-                                        uint32_t file_attributes,
-                                        uint32_t share_access,
-                                        uint32_t create_disposition,
-                                        uint32_t create_options,
-                                        HANDLE* handle,
+                                        const base::string16 &file,
+                                        uint32 attributes,
+                                        uint32 desired_access,
+                                        uint32 file_attributes,
+                                        uint32 share_access,
+                                        uint32 create_disposition,
+                                        uint32 create_options,
+                                        HANDLE *handle,
                                         NTSTATUS* nt_status,
-                                        ULONG_PTR* io_information) {
+                                        ULONG_PTR *io_information) {
   // The only action supported is ASK_BROKER which means create the requested
   // file as specified.
   if (ASK_BROKER != eval_result) {
@@ -275,14 +273,14 @@ bool FileSystemPolicy::CreateFileAction(EvalResult eval_result,
 
 bool FileSystemPolicy::OpenFileAction(EvalResult eval_result,
                                       const ClientInfo& client_info,
-                                      const base::string16& file,
-                                      uint32_t attributes,
-                                      uint32_t desired_access,
-                                      uint32_t share_access,
-                                      uint32_t open_options,
-                                      HANDLE* handle,
+                                      const base::string16 &file,
+                                      uint32 attributes,
+                                      uint32 desired_access,
+                                      uint32 share_access,
+                                      uint32 open_options,
+                                      HANDLE *handle,
                                       NTSTATUS* nt_status,
-                                      ULONG_PTR* io_information) {
+                                      ULONG_PTR *io_information) {
   // The only action supported is ASK_BROKER which means open the requested
   // file as specified.
   if (ASK_BROKER != eval_result) {
@@ -310,8 +308,8 @@ bool FileSystemPolicy::OpenFileAction(EvalResult eval_result,
 bool FileSystemPolicy::QueryAttributesFileAction(
     EvalResult eval_result,
     const ClientInfo& client_info,
-    const base::string16& file,
-    uint32_t attributes,
+    const base::string16 &file,
+    uint32 attributes,
     FILE_BASIC_INFORMATION* file_info,
     NTSTATUS* nt_status) {
   // The only action supported is ASK_BROKER which means query the requested
@@ -338,8 +336,8 @@ bool FileSystemPolicy::QueryAttributesFileAction(
 bool FileSystemPolicy::QueryFullAttributesFileAction(
     EvalResult eval_result,
     const ClientInfo& client_info,
-    const base::string16& file,
-    uint32_t attributes,
+    const base::string16 &file,
+    uint32 attributes,
     FILE_NETWORK_OPEN_INFORMATION* file_info,
     NTSTATUS* nt_status) {
   // The only action supported is ASK_BROKER which means query the requested
@@ -363,14 +361,11 @@ bool FileSystemPolicy::QueryFullAttributesFileAction(
   return true;
 }
 
-bool FileSystemPolicy::SetInformationFileAction(EvalResult eval_result,
-                                                const ClientInfo& client_info,
-                                                HANDLE target_file_handle,
-                                                void* file_info,
-                                                uint32_t length,
-                                                uint32_t info_class,
-                                                IO_STATUS_BLOCK* io_block,
-                                                NTSTATUS* nt_status) {
+bool FileSystemPolicy::SetInformationFileAction(
+    EvalResult eval_result, const ClientInfo& client_info,
+    HANDLE target_file_handle, void* file_info, uint32 length,
+    uint32 info_class, IO_STATUS_BLOCK* io_block,
+    NTSTATUS* nt_status) {
   // The only action supported is ASK_BROKER which means open the requested
   // file as specified.
   if (ASK_BROKER != eval_result) {

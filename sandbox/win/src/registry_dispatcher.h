@@ -5,9 +5,7 @@
 #ifndef SANDBOX_SRC_REGISTRY_DISPATCHER_H_
 #define SANDBOX_SRC_REGISTRY_DISPATCHER_H_
 
-#include <stdint.h>
-
-#include "base/macros.h"
+#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
@@ -27,18 +25,18 @@ class RegistryDispatcher : public Dispatcher {
   // Processes IPC requests coming from calls to NtCreateKey in the target.
   bool NtCreateKey(IPCInfo* ipc,
                    base::string16* name,
-                   uint32_t attributes,
+                   uint32 attributes,
                    HANDLE root,
-                   uint32_t desired_access,
-                   uint32_t title_index,
-                   uint32_t create_options);
+                   uint32 desired_access,
+                   uint32 title_index,
+                   uint32 create_options);
 
   // Processes IPC requests coming from calls to NtOpenKey in the target.
   bool NtOpenKey(IPCInfo* ipc,
                  base::string16* name,
-                 uint32_t attributes,
+                 uint32 attributes,
                  HANDLE root,
-                 uint32_t desired_access);
+                 uint32 desired_access);
 
   PolicyBase* policy_base_;
   DISALLOW_COPY_AND_ASSIGN(RegistryDispatcher);

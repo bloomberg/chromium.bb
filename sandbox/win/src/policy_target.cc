@@ -4,8 +4,6 @@
 
 #include "sandbox/win/src/policy_target.h"
 
-#include <stddef.h>
-
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/policy_engine_processor.h"

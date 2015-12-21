@@ -6,14 +6,12 @@
 #define SANDBOX_WIN_SRC_SANDBOX_POLICY_BASE_H_
 
 #include <windows.h>
-#include <stddef.h>
-#include <stdint.h>
 
 #include <list>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
@@ -44,7 +42,7 @@ class PolicyBase final : public TargetPolicy {
   ResultCode SetTokenLevel(TokenLevel initial, TokenLevel lockdown) override;
   TokenLevel GetInitialTokenLevel() const override;
   TokenLevel GetLockdownTokenLevel() const override;
-  ResultCode SetJobLevel(JobLevel job_level, uint32_t ui_exceptions) override;
+  ResultCode SetJobLevel(JobLevel job_level, uint32 ui_exceptions) override;
   ResultCode SetJobMemoryLimit(size_t memory_limit) override;
   ResultCode SetAlternateDesktop(bool alternate_winstation) override;
   base::string16 GetAlternateDesktop() const override;
@@ -131,7 +129,7 @@ class PolicyBase final : public TargetPolicy {
   TokenLevel lockdown_level_;
   TokenLevel initial_level_;
   JobLevel job_level_;
-  uint32_t ui_exceptions_;
+  uint32 ui_exceptions_;
   size_t memory_limit_;
   bool use_alternate_desktop_;
   bool use_alternate_winstation_;

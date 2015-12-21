@@ -4,9 +4,9 @@
 
 #include "sandbox/win/src/top_level_dispatcher.h"
 
-#include <stdint.h>
 #include <string.h>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/crosscall_server.h"
@@ -116,7 +116,7 @@ bool TopLevelDispatcher::Ping(IPCInfo* ipc, void* arg1) {
   switch (ipc->ipc_tag) {
     case IPC_PING1_TAG: {
       IPCInt ipc_int(arg1);
-      uint32_t cookie = ipc_int.As32Bit();
+      uint32 cookie = ipc_int.As32Bit();
       ipc->return_info.extended_count = 2;
       ipc->return_info.extended[0].unsigned_int = ::GetTickCount();
       ipc->return_info.extended[1].unsigned_int = 2 * cookie;
@@ -124,10 +124,10 @@ bool TopLevelDispatcher::Ping(IPCInfo* ipc, void* arg1) {
     }
     case IPC_PING2_TAG: {
       CountedBuffer* io_buffer = reinterpret_cast<CountedBuffer*>(arg1);
-      if (sizeof(uint32_t) != io_buffer->Size())
+      if (sizeof(uint32) != io_buffer->Size())
         return false;
 
-      uint32_t* cookie = reinterpret_cast<uint32_t*>(io_buffer->Buffer());
+      uint32* cookie = reinterpret_cast<uint32*>(io_buffer->Buffer());
       *cookie = (*cookie) * 3;
       return true;
     }

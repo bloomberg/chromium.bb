@@ -6,10 +6,9 @@
 #define SANDBOX_SRC_WIN_UTILS_H_
 
 #include <windows.h>
-#include <stddef.h>
 #include <string>
 
-#include "base/macros.h"
+#include "base/basictypes.h"
 #include "base/strings/string16.h"
 
 namespace sandbox {

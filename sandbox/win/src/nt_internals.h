@@ -8,7 +8,6 @@
 #define SANDBOX_WIN_SRC_NT_INTERNALS_H__
 
 #include <windows.h>
-#include <stddef.h>
 
 typedef LONG NTSTATUS;
 #define NT_SUCCESS(st) (st >= 0)

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <sched.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>

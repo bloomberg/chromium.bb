@@ -6,10 +6,8 @@
 #define SANDBOX_WIN_SRC_TARGET_PROCESS_H_
 
 #include <windows.h>
-#include <stddef.h>
-#include <stdint.h>
 
-#include "base/macros.h"
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
@@ -62,10 +60,8 @@ class TargetProcess {
 
   // Creates the IPC objects such as the BrokerDispatcher and the
   // IPC server. The IPC server uses the services of the thread_pool.
-  DWORD Init(Dispatcher* ipc_dispatcher,
-             void* policy,
-             uint32_t shared_IPC_size,
-             uint32_t shared_policy_size);
+  DWORD Init(Dispatcher* ipc_dispatcher, void* policy,
+             uint32 shared_IPC_size, uint32 shared_policy_size);
 
   // Returns the handle to the target process.
   HANDLE Process() const {

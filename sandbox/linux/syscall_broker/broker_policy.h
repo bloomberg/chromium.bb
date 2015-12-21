@@ -5,8 +5,6 @@
 #ifndef SANDBOX_LINUX_SYSCALL_BROKER_BROKER_POLICY_H_
 #define SANDBOX_LINUX_SYSCALL_BROKER_BROKER_POLICY_H_
 
-#include <stddef.h>
-
 #include <string>
 #include <vector>
 

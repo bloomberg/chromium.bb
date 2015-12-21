@@ -7,7 +7,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
-#include <stdint.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
 #include <sys/utsname.h>

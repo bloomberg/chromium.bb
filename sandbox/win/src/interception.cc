@@ -5,8 +5,6 @@
 // For information about interceptions as a whole see
 // http://dev.chromium.org/developers/design-documents/sandbox .
 
-#include <stddef.h>
-
 #include <set>
 
 #include "sandbox/win/src/interception.h"

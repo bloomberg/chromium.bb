@@ -5,12 +5,10 @@
 #ifndef SANDBOX_SRC_SHAREDMEM_IPC_SERVER_H_
 #define SANDBOX_SRC_SHAREDMEM_IPC_SERVER_H_
 
-#include <stdint.h>
-
 #include <list>
 
+#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/crosscall_params.h"
 #include "sandbox/win/src/crosscall_server.h"
@@ -55,7 +53,7 @@ class SharedMemIPCServer {
 
   // Initializes the server structures, shared memory structures and
   // creates the kernels events used to signal the IPC.
-  bool Init(void* shared_mem, uint32_t shared_size, uint32_t channel_size);
+  bool Init(void* shared_mem, uint32 shared_size, uint32 channel_size);
 
  private:
   // Allow tests to be marked DISABLED_. Note that FLAKY_ and FAILS_ prefixes
@@ -87,7 +85,7 @@ class SharedMemIPCServer {
     // This channel server pong event.
     base::win::ScopedHandle pong_event;
     // The size of this channel.
-    uint32_t channel_size;
+    uint32 channel_size;
     // The pointer to the actual channel data.
     char* channel_buffer;
     // The pointer to the base of the shared memory.

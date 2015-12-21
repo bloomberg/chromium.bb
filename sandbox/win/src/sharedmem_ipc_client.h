@@ -5,9 +5,6 @@
 #ifndef SANDBOX_SRC_SHAREDMEM_IPC_CLIENT_H__
 #define SANDBOX_SRC_SHAREDMEM_IPC_CLIENT_H__
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include "sandbox/win/src/crosscall_params.h"
 #include "sandbox/win/src/sandbox.h"
 
@@ -84,7 +81,7 @@ struct ChannelControl {
   // the client waits on the pong event for the IPC answer back
   HANDLE pong_event;
   // the IPC unique identifier
-  uint32_t ipc_tag;
+  uint32 ipc_tag;
 };
 
 struct IPCControl {

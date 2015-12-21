@@ -5,8 +5,6 @@
 #ifndef SANDBOX_LINUX_SYSTEM_HEADERS_MIPS_LINUX_UCONTEXT_H_
 #define SANDBOX_LINUX_SYSTEM_HEADERS_MIPS_LINUX_UCONTEXT_H_
 
-#include <stdint.h>
-
 // This is mostly copied from breakpad (common/android/include/sys/ucontext.h),
 // except we do use sigset_t for uc_sigmask instead of a custom type.
 #if !defined(__BIONIC_HAVE_UCONTEXT_T)

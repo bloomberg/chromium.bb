@@ -7,8 +7,8 @@
 #include <new>
 
 #include <process.h>
-#include <stdint.h>
 
+#include "base/basictypes.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/handle_closer_agent.h"
@@ -17,9 +17,9 @@
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/src/sandbox.h"
-#include "sandbox/win/src/sandbox_nt_util.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/sharedmem_ipc_client.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
 
 namespace {
 
@@ -168,8 +168,8 @@ bool TargetServicesBase::TestIPCPing(int version) {
   CrossCallReturn answer = {0};
 
   if (1 == version) {
-    uint32_t tick1 = ::GetTickCount();
-    uint32_t cookie = 717115;
+    uint32 tick1 = ::GetTickCount();
+    uint32 cookie = 717115;
     ResultCode code = CrossCall(ipc, IPC_PING1_TAG, cookie, &answer);
 
     if (SBOX_ALL_OK != code) {
@@ -182,7 +182,7 @@ bool TargetServicesBase::TestIPCPing(int version) {
     }
     // We test the first extended answer to be within the bounds of the tick
     // count only if there was no tick count wraparound.
-    uint32_t tick2 = ::GetTickCount();
+    uint32 tick2 = ::GetTickCount();
     if (tick2 >= tick1) {
       if ((answer.extended[0].unsigned_int < tick1) ||
           (answer.extended[0].unsigned_int > tick2)) {
@@ -194,7 +194,7 @@ bool TargetServicesBase::TestIPCPing(int version) {
       return false;
     }
   } else if (2 == version) {
-    uint32_t cookie = 717111;
+    uint32 cookie = 717111;
     InOutCountedBuffer counted_buffer(&cookie, sizeof(cookie));
     ResultCode code = CrossCall(ipc, IPC_PING2_TAG, counted_buffer, &answer);
 

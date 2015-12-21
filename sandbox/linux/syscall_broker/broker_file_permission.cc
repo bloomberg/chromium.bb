@@ -5,7 +5,6 @@
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 
 #include <fcntl.h>
-#include <stddef.h>
 #include <string.h>
 
 #include <string>

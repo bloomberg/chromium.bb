@@ -5,7 +5,6 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
 #include <errno.h>
-#include <stdint.h>
 #include <sys/prctl.h>
 #include <sys/types.h>
 #include <unistd.h>

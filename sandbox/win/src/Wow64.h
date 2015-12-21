@@ -7,7 +7,7 @@
 
 #include <windows.h>
 
-#include "base/macros.h"
+#include "base/basictypes.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/sandbox_types.h"
 

@@ -5,7 +5,6 @@
 #ifndef SANDBOX_LINUX_BPF_DSL_CONS_H_
 #define SANDBOX_LINUX_BPF_DSL_CONS_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "sandbox/sandbox_export.h"
 

@@ -5,8 +5,6 @@
 #ifndef SANDBOX_LINUX_SYSTEM_HEADERS_ARM_LINUX_UCONTEXT_H_
 #define SANDBOX_LINUX_SYSTEM_HEADERS_ARM_LINUX_UCONTEXT_H_
 
-#include <stddef.h>
-
 #if !defined(__BIONIC_HAVE_UCONTEXT_T)
 #if !defined(__native_client_nonsfi__)
 #include <asm/sigcontext.h>

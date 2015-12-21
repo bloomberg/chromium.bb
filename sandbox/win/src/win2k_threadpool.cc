@@ -4,8 +4,6 @@
 
 #include "sandbox/win/src/win2k_threadpool.h"
 
-#include <stddef.h>
-
 #include "sandbox/win/src/win_utils.h"
 
 namespace sandbox {

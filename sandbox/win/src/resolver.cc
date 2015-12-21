@@ -4,8 +4,6 @@
 
 #include "sandbox/win/src/resolver.h"
 
-#include <stddef.h>
-
 #include "base/win/pe_image.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
 

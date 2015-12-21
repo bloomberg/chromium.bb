@@ -4,8 +4,6 @@
 
 #include "sandbox/win/src/process_thread_policy.h"
 
-#include <stdint.h>
-
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -103,8 +101,8 @@ bool ProcessPolicy::GenerateRules(const wchar_t* name,
 }
 
 NTSTATUS ProcessPolicy::OpenThreadAction(const ClientInfo& client_info,
-                                         uint32_t desired_access,
-                                         uint32_t thread_id,
+                                         uint32 desired_access,
+                                         uint32 thread_id,
                                          HANDLE* handle) {
   *handle = NULL;
 
@@ -134,8 +132,8 @@ NTSTATUS ProcessPolicy::OpenThreadAction(const ClientInfo& client_info,
 }
 
 NTSTATUS ProcessPolicy::OpenProcessAction(const ClientInfo& client_info,
-                                          uint32_t desired_access,
-                                          uint32_t process_id,
+                                          uint32 desired_access,
+                                          uint32 process_id,
                                           HANDLE* handle) {
   *handle = NULL;
 
@@ -166,7 +164,7 @@ NTSTATUS ProcessPolicy::OpenProcessAction(const ClientInfo& client_info,
 
 NTSTATUS ProcessPolicy::OpenProcessTokenAction(const ClientInfo& client_info,
                                                HANDLE process,
-                                               uint32_t desired_access,
+                                               uint32 desired_access,
                                                HANDLE* handle) {
   *handle = NULL;
   NtOpenProcessTokenFunction NtOpenProcessToken = NULL;
@@ -190,8 +188,8 @@ NTSTATUS ProcessPolicy::OpenProcessTokenAction(const ClientInfo& client_info,
 
 NTSTATUS ProcessPolicy::OpenProcessTokenExAction(const ClientInfo& client_info,
                                                  HANDLE process,
-                                                 uint32_t desired_access,
-                                                 uint32_t attributes,
+                                                 uint32 desired_access,
+                                                 uint32 attributes,
                                                  HANDLE* handle) {
   *handle = NULL;
   NtOpenProcessTokenExFunction NtOpenProcessTokenEx = NULL;

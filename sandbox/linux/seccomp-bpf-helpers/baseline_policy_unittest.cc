@@ -9,7 +9,6 @@
 #include <netinet/in.h>
 #include <sched.h>
 #include <signal.h>
-#include <stddef.h>
 #include <string.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>

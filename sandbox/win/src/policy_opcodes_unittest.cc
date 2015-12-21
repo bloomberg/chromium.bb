@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include "sandbox/win/src/policy_engine_opcodes.h"
-#include "sandbox/win/src/policy_engine_params.h"
-#include "sandbox/win/src/sandbox_nt_types.h"
 #include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_nt_types.h"
+#include "sandbox/win/src/policy_engine_params.h"
+#include "sandbox/win/src/policy_engine_opcodes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 
@@ -48,7 +45,7 @@ TEST(PolicyEngineTest, ParameterSetTest) {
 
   // Test that we can store and retrieve a void pointer:
   const void* result1 =0;
-  uint32_t result2 = 0;
+  uint32 result2 = 0;
   EXPECT_TRUE(pset1.Get(&result1));
   EXPECT_TRUE(pv1 == result1);
   EXPECT_FALSE(pset1.Get(&result2));
@@ -56,8 +53,8 @@ TEST(PolicyEngineTest, ParameterSetTest) {
   EXPECT_TRUE(pv2 == result1);
   EXPECT_FALSE(pset2.Get(&result2));
 
-  // Test that we can store and retrieve a uint32_t:
-  uint32_t number = 12747;
+  // Test that we can store and retrieve a uint32:
+  uint32 number = 12747;
   ParameterSet pset3 = ParamPickerMake(number);
   EXPECT_FALSE(pset3.Get(&result1));
   EXPECT_TRUE(pset3.Get(&result2));
@@ -184,8 +181,8 @@ TEST(PolicyEngineTest, OpcodeMakerCase2) {
 
 TEST(PolicyEngineTest, IntegerOpcodes) {
   const wchar_t* txt = L"abcdef";
-  uint32_t num1 = 42;
-  uint32_t num2 = 113377;
+  uint32 num1 = 42;
+  uint32 num2 = 113377;
 
   ParameterSet pp_wrong1 = ParamPickerMake(txt);
   ParameterSet pp_num1 = ParamPickerMake(num1);
@@ -224,7 +221,7 @@ TEST(PolicyEngineTest, LogicalOpcodes) {
   char memory[kOpcodeMemory];
   OpcodeFactory opcode_maker(memory, sizeof(memory));
 
-  uint32_t num1 = 0x10100702;
+  uint32 num1 = 0x10100702;
   ParameterSet pp_num1 = ParamPickerMake(num1);
 
   PolicyOpcode* op_and1 =

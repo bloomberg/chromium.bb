@@ -5,9 +5,7 @@
 #ifndef SANDBOX_SRC_EAT_RESOLVER_H__
 #define SANDBOX_SRC_EAT_RESOLVER_H__
 
-#include <stddef.h>
-
-#include "base/macros.h"
+#include "base/basictypes.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/resolver.h"
 

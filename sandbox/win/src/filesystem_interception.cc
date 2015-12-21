@@ -4,8 +4,6 @@
 
 #include "sandbox/win/src/filesystem_interception.h"
 
-#include <stdint.h>
-
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/policy_params.h"
@@ -48,16 +46,16 @@ NTSTATUS WINAPI TargetNtCreateFile(NtCreateFileFunction orig_CreateFile,
     if (NULL == memory)
       break;
 
-    uint32_t attributes = 0;
+    uint32 attributes = 0;
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
                                     NULL);
     if (!NT_SUCCESS(ret) || NULL == name)
       break;
 
-    uint32_t desired_access_uint32 = desired_access;
-    uint32_t options_uint32 = options;
-    uint32_t disposition_uint32 = disposition;
-    uint32_t broker = FALSE;
+    uint32 desired_access_uint32 = desired_access;
+    uint32 options_uint32 = options;
+    uint32 disposition_uint32 = disposition;
+    uint32 broker = FALSE;
     CountedParameterSet<OpenFile> params;
     params[OpenFile::NAME] = ParamPickerMake(name);
     params[OpenFile::ACCESS] = ParamPickerMake(desired_access_uint32);
@@ -124,16 +122,16 @@ NTSTATUS WINAPI TargetNtOpenFile(NtOpenFileFunction orig_OpenFile, PHANDLE file,
     if (NULL == memory)
       break;
 
-    uint32_t attributes;
+    uint32 attributes;
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
                                     NULL);
     if (!NT_SUCCESS(ret) || NULL == name)
       break;
 
-    uint32_t desired_access_uint32 = desired_access;
-    uint32_t options_uint32 = options;
-    uint32_t disposition_uint32 = FILE_OPEN;
-    uint32_t broker = FALSE;
+    uint32 desired_access_uint32 = desired_access;
+    uint32 options_uint32 = options;
+    uint32 disposition_uint32 = FILE_OPEN;
+    uint32 broker = FALSE;
     CountedParameterSet<OpenFile> params;
     params[OpenFile::NAME] = ParamPickerMake(name);
     params[OpenFile::ACCESS] = ParamPickerMake(desired_access_uint32);
@@ -194,7 +192,7 @@ NTSTATUS WINAPI TargetNtQueryAttributesFile(
     if (NULL == memory)
       break;
 
-    uint32_t attributes = 0;
+    uint32 attributes = 0;
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
                                     NULL);
     if (!NT_SUCCESS(ret) || NULL == name)
@@ -203,7 +201,7 @@ NTSTATUS WINAPI TargetNtQueryAttributesFile(
     InOutCountedBuffer file_info(file_attributes,
                                  sizeof(FILE_BASIC_INFORMATION));
 
-    uint32_t broker = FALSE;
+    uint32 broker = FALSE;
     CountedParameterSet<FileName> params;
     params[FileName::NAME] = ParamPickerMake(name);
     params[FileName::BROKER] = ParamPickerMake(broker);
@@ -253,7 +251,7 @@ NTSTATUS WINAPI TargetNtQueryFullAttributesFile(
     if (NULL == memory)
       break;
 
-    uint32_t attributes = 0;
+    uint32 attributes = 0;
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
                                     NULL);
     if (!NT_SUCCESS(ret) || NULL == name)
@@ -262,7 +260,7 @@ NTSTATUS WINAPI TargetNtQueryFullAttributesFile(
     InOutCountedBuffer file_info(file_attributes,
                                  sizeof(FILE_NETWORK_OPEN_INFORMATION));
 
-    uint32_t broker = FALSE;
+    uint32 broker = FALSE;
     CountedParameterSet<FileName> params;
     params[FileName::NAME] = ParamPickerMake(name);
     params[FileName::BROKER] = ParamPickerMake(broker);
@@ -335,7 +333,7 @@ NTSTATUS WINAPI TargetNtSetInformationFile(
     if (!NT_SUCCESS(ret) || !name)
       break;
 
-    uint32_t broker = FALSE;
+    uint32 broker = FALSE;
     CountedParameterSet<FileName> params;
     params[FileName::NAME] = ParamPickerMake(name);
     params[FileName::BROKER] = ParamPickerMake(broker);

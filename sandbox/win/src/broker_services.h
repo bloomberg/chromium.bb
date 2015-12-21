@@ -9,8 +9,8 @@
 #include <map>
 #include <set>
 #include <utility>
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/job.h"

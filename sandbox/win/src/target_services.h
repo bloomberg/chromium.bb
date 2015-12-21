@@ -5,7 +5,7 @@
 #ifndef SANDBOX_SRC_TARGET_SERVICES_H__
 #define SANDBOX_SRC_TARGET_SERVICES_H__
 
-#include "base/macros.h"
+#include "base/basictypes.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/win_utils.h"
 

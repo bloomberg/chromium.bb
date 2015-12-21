@@ -5,7 +5,6 @@
 #include "sandbox/win/src/broker_services.h"
 
 #include <AclAPI.h>
-#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -18,8 +17,8 @@
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/app_container.h"
 #include "sandbox/win/src/process_mitigations.h"
-#include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
+#include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/target_process.h"
 #include "sandbox/win/src/win2k_threadpool.h"
 #include "sandbox/win/src/win_utils.h"

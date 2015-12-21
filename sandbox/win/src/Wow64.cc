@@ -4,8 +4,6 @@
 
 #include "sandbox/win/src/wow64.h"
 
-#include <stddef.h>
-
 #include <sstream>
 
 #include "base/logging.h"

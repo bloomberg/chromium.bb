@@ -4,15 +4,12 @@
 
 #include "sandbox/win/src/crosscall_server.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
-#include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/crosscall_params.h"
+#include "sandbox/win/src/crosscall_client.h"
+#include "base/logging.h"
 
 // This code performs the ipc message validation. Potential security flaws
 // on the ipc are likelier to be found in this code than in the rest of

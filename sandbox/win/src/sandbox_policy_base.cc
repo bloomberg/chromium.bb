@@ -5,9 +5,8 @@
 #include "sandbox/win/src/sandbox_policy_base.h"
 
 #include <sddl.h>
-#include <stddef.h>
-#include <stdint.h>
 
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -183,7 +182,7 @@ TokenLevel PolicyBase::GetLockdownTokenLevel() const{
   return lockdown_level_;
 }
 
-ResultCode PolicyBase::SetJobLevel(JobLevel job_level, uint32_t ui_exceptions) {
+ResultCode PolicyBase::SetJobLevel(JobLevel job_level, uint32 ui_exceptions) {
   if (memory_limit_ && job_level == JOB_NONE) {
     return SBOX_ERROR_BAD_PARAMS;
   }

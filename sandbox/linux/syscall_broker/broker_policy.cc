@@ -5,7 +5,6 @@
 #include "sandbox/linux/syscall_broker/broker_policy.h"
 
 #include <fcntl.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 

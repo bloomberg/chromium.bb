@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
-
 #include "sandbox/win/src/win2k_threadpool.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +24,7 @@ TEST(IPCTest, ThreadPoolRegisterTest1) {
   HANDLE event1 = ::CreateEventW(NULL, FALSE, FALSE, NULL);
   HANDLE event2 = ::CreateEventW(NULL, FALSE, FALSE, NULL);
 
-  uint32_t context = 0;
+  uint32 context = 0;
   EXPECT_FALSE(thread_pool.RegisterWait(0, event1, EmptyCallBack, &context));
   EXPECT_EQ(0u, thread_pool.OutstandingWaits());
 
@@ -49,9 +47,9 @@ TEST(IPCTest, ThreadPoolRegisterTest2) {
   HANDLE event1 = ::CreateEventW(NULL, FALSE, FALSE, NULL);
   HANDLE event2 = ::CreateEventW(NULL, FALSE, FALSE, NULL);
 
-  uint32_t context = 0;
-  uint32_t c1 = 0;
-  uint32_t c2 = 0;
+  uint32 context = 0;
+  uint32 c1 = 0;
+  uint32 c2 = 0;
 
   EXPECT_TRUE(thread_pool.RegisterWait(&c1, event1, EmptyCallBack, &context));
   EXPECT_EQ(1u, thread_pool.OutstandingWaits());

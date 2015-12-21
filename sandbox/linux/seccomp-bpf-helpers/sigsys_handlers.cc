@@ -6,8 +6,6 @@
 
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 
-#include <stddef.h>
-#include <stdint.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 

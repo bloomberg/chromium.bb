@@ -6,17 +6,15 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <utility>
 
+#include "build/build_config.h"
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket_linux.h"
-#include "build/build_config.h"
 #include "sandbox/linux/syscall_broker/broker_channel.h"
 #include "sandbox/linux/syscall_broker/broker_common.h"
 #include "sandbox/linux/syscall_broker/broker_policy.h"

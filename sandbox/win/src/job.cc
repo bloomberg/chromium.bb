@@ -4,8 +4,6 @@
 
 #include "sandbox/win/src/job.h"
 
-#include <stddef.h>
-
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/restricted_token.h"
 

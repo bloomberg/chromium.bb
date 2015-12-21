@@ -5,8 +5,6 @@
 #ifndef SANDBOX_LINUX_SYSTEM_HEADERS_LINUX_SIGNAL_H_
 #define SANDBOX_LINUX_SYSTEM_HEADERS_LINUX_SIGNAL_H_
 
-#include <stdint.h>
-
 // NOTE: On some toolchains, signal related ABI is incompatible with Linux's
 // (not undefined, but defined different values and in different memory
 // layouts). So, fill the gap here.

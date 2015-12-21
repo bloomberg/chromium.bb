@@ -5,9 +5,6 @@
 #ifndef SANDBOX_LINUX_SYSTEM_HEADERS_ANDROID_I386_UCONTEXT_H_
 #define SANDBOX_LINUX_SYSTEM_HEADERS_ANDROID_I386_UCONTEXT_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
 // We do something compatible with glibc. Hopefully, at some point Android will
 // provide that for us, and __BIONIC_HAVE_UCONTEXT_T should be defined.
 // This is mostly copied from breakpad (common/android/include/sys/ucontext.h),

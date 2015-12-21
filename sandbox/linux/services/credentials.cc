@@ -6,7 +6,6 @@
 
 #include <errno.h>
 #include <signal.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/syscall.h>

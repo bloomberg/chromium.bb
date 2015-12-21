@@ -4,8 +4,6 @@
 
 #include "sandbox/win/src/registry_interception.h"
 
-#include <stdint.h>
-
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/policy_params.h"
@@ -53,14 +51,14 @@ NTSTATUS WINAPI TargetNtCreateKey(NtCreateKeyFunction orig_CreateKey,
       break;
 
     wchar_t* name;
-    uint32_t attributes = 0;
+    uint32 attributes = 0;
     HANDLE root_directory = 0;
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
                                     &root_directory);
     if (!NT_SUCCESS(ret) || NULL == name)
       break;
 
-    uint32_t desired_access_uint32 = desired_access;
+    uint32 desired_access_uint32 = desired_access;
     CountedParameterSet<OpenKey> params;
     params[OpenKey::ACCESS] = ParamPickerMake(desired_access_uint32);
 
@@ -135,14 +133,14 @@ NTSTATUS WINAPI CommonNtOpenKey(NTSTATUS status, PHANDLE key,
       break;
 
     wchar_t* name;
-    uint32_t attributes;
+    uint32 attributes;
     HANDLE root_directory;
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
                                     &root_directory);
     if (!NT_SUCCESS(ret) || NULL == name)
       break;
 
-    uint32_t desired_access_uint32 = desired_access;
+    uint32 desired_access_uint32 = desired_access;
     CountedParameterSet<OpenKey> params;
     params[OpenKey::ACCESS] = ParamPickerMake(desired_access_uint32);
 

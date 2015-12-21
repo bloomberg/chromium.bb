@@ -5,7 +5,6 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_TRAP_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_TRAP_H__
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include <map>

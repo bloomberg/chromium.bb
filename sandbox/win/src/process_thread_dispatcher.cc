@@ -4,9 +4,7 @@
 
 #include "sandbox/win/src/process_thread_dispatcher.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/interception.h"
@@ -154,8 +152,8 @@ bool ThreadProcessDispatcher::SetupService(InterceptionManager* manager,
 }
 
 bool ThreadProcessDispatcher::NtOpenThread(IPCInfo* ipc,
-                                           uint32_t desired_access,
-                                           uint32_t thread_id) {
+                                           uint32 desired_access,
+                                           uint32 thread_id) {
   HANDLE handle;
   NTSTATUS ret = ProcessPolicy::OpenThreadAction(*ipc->client_info,
                                                  desired_access, thread_id,
@@ -166,8 +164,8 @@ bool ThreadProcessDispatcher::NtOpenThread(IPCInfo* ipc,
 }
 
 bool ThreadProcessDispatcher::NtOpenProcess(IPCInfo* ipc,
-                                            uint32_t desired_access,
-                                            uint32_t process_id) {
+                                            uint32 desired_access,
+                                            uint32 process_id) {
   HANDLE handle;
   NTSTATUS ret = ProcessPolicy::OpenProcessAction(*ipc->client_info,
                                                   desired_access, process_id,
@@ -179,7 +177,7 @@ bool ThreadProcessDispatcher::NtOpenProcess(IPCInfo* ipc,
 
 bool ThreadProcessDispatcher::NtOpenProcessToken(IPCInfo* ipc,
                                                  HANDLE process,
-                                                 uint32_t desired_access) {
+                                                 uint32 desired_access) {
   HANDLE handle;
   NTSTATUS ret = ProcessPolicy::OpenProcessTokenAction(*ipc->client_info,
                                                        process, desired_access,
@@ -191,8 +189,8 @@ bool ThreadProcessDispatcher::NtOpenProcessToken(IPCInfo* ipc,
 
 bool ThreadProcessDispatcher::NtOpenProcessTokenEx(IPCInfo* ipc,
                                                    HANDLE process,
-                                                   uint32_t desired_access,
-                                                   uint32_t attributes) {
+                                                   uint32 desired_access,
+                                                   uint32 attributes) {
   HANDLE handle;
   NTSTATUS ret = ProcessPolicy::OpenProcessTokenExAction(*ipc->client_info,
                                                          process,

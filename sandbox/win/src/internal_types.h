@@ -5,8 +5,6 @@
 #ifndef SANDBOX_WIN_SRC_INTERNAL_TYPES_H_
 #define SANDBOX_WIN_SRC_INTERNAL_TYPES_H_
 
-#include <stdint.h>
-
 namespace sandbox {
 
 const wchar_t kNtdllName[] = L"ntdll.dll";
@@ -30,16 +28,18 @@ enum ArgType {
 // Encapsulates a pointer to a buffer and the size of the buffer.
 class CountedBuffer {
  public:
-  CountedBuffer(void* buffer, uint32_t size) : size_(size), buffer_(buffer) {}
+  CountedBuffer(void* buffer, uint32 size) : size_(size), buffer_(buffer) {}
 
-  uint32_t Size() const { return size_; }
+  uint32 Size() const {
+    return size_;
+  }
 
   void* Buffer() const {
     return buffer_;
   }
 
  private:
-  uint32_t size_;
+  uint32 size_;
   void* buffer_;
 };
 

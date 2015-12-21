@@ -4,8 +4,6 @@
 
 #include "sandbox/win/src/win_utils.h"
 
-#include <stddef.h>
-
 #include <map>
 
 #include "base/memory/scoped_ptr.h"

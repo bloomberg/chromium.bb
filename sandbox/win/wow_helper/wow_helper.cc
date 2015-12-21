@@ -9,7 +9,6 @@
 // setup the interceptions (32-bit) properly on the target.
 
 #include <windows.h>
-#include <stddef.h>
 
 #include <string>
 

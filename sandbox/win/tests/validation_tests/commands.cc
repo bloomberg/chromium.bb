@@ -4,7 +4,6 @@
 
 #include <Aclapi.h>
 #include <windows.h>
-#include <stddef.h>
 #include <string>
 
 #include "sandbox/win/tests/validation_tests/commands.h"

@@ -6,7 +6,6 @@
 
 #include <bsm/libbsm.h>
 #include <servers/bootstrap.h>
-#include <stddef.h>
 
 #include <string>
 

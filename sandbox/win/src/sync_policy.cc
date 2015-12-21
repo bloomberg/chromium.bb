@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
-
 #include <string>
 
 #include "sandbox/win/src/sync_policy.h"
@@ -147,8 +145,8 @@ bool SyncPolicy::GenerateRules(const wchar_t* name,
   if (TargetPolicy::EVENTS_ALLOW_READONLY == semantics) {
     // We consider all flags that are not known to be readonly as potentially
     // used for write.
-    uint32_t allowed_flags = SYNCHRONIZE | GENERIC_READ | READ_CONTROL;
-    uint32_t restricted_flags = ~allowed_flags;
+    uint32 allowed_flags = SYNCHRONIZE | GENERIC_READ | READ_CONTROL;
+    uint32 restricted_flags = ~allowed_flags;
     open.AddNumberMatch(IF_NOT, OpenEventParams::ACCESS, restricted_flags, AND);
   }
 
@@ -170,10 +168,10 @@ bool SyncPolicy::GenerateRules(const wchar_t* name,
 
 NTSTATUS SyncPolicy::CreateEventAction(EvalResult eval_result,
                                        const ClientInfo& client_info,
-                                       const base::string16& event_name,
-                                       uint32_t event_type,
-                                       uint32_t initial_state,
-                                       HANDLE* handle) {
+                                       const base::string16 &event_name,
+                                       uint32 event_type,
+                                       uint32 initial_state,
+                                       HANDLE *handle) {
   NtCreateEventFunction NtCreateEvent = NULL;
   ResolveNTFunctionPtr("NtCreateEvent", &NtCreateEvent);
 
@@ -209,9 +207,9 @@ NTSTATUS SyncPolicy::CreateEventAction(EvalResult eval_result,
 
 NTSTATUS SyncPolicy::OpenEventAction(EvalResult eval_result,
                                      const ClientInfo& client_info,
-                                     const base::string16& event_name,
-                                     uint32_t desired_access,
-                                     HANDLE* handle) {
+                                     const base::string16 &event_name,
+                                     uint32 desired_access,
+                                     HANDLE *handle) {
   NtOpenEventFunction NtOpenEvent = NULL;
   ResolveNTFunctionPtr("NtOpenEvent", &NtOpenEvent);
 

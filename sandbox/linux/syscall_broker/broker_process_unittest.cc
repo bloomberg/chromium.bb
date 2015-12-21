@@ -7,7 +7,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
-#include <stddef.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/types.h>

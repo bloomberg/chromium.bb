@@ -5,7 +5,7 @@
 #ifndef SANDBOX_SRC_PROCESS_MITIGATIONS_WIN32K_DISPATCHER_H_
 #define SANDBOX_SRC_PROCESS_MITIGATIONS_WIN32K_DISPATCHER_H_
 
-#include "base/macros.h"
+#include "base/basictypes.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
 
 namespace sandbox {

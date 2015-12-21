@@ -4,9 +4,6 @@
 
 #include "sandbox/win/src/sandbox_nt_util.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <string>
 
 #include "base/win/pe_image.h"

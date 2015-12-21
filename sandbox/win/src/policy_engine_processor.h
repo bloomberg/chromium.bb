@@ -5,12 +5,9 @@
 #ifndef SANDBOX_SRC_POLICY_ENGINE_PROCESSOR_H__
 #define SANDBOX_SRC_POLICY_ENGINE_PROCESSOR_H__
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include "base/macros.h"
-#include "sandbox/win/src/policy_engine_opcodes.h"
+#include "base/basictypes.h"
 #include "sandbox/win/src/policy_engine_params.h"
+#include "sandbox/win/src/policy_engine_opcodes.h"
 
 namespace sandbox {
 
@@ -69,15 +66,15 @@ enum PolicyResult {
 // TODO(cpu): implement the options kStopOnErrors & kRankedEval.
 //
 // Stop evaluating as soon as an error is encountered.
-const uint32_t kStopOnErrors = 1;
+const uint32 kStopOnErrors = 1;
 // Ignore all non fatal opcode evaluation errors.
-const uint32_t kIgnoreErrors = 2;
+const uint32 kIgnoreErrors = 2;
 // Short-circuit evaluation: Only evaluate until opcode group that
 // evaluated to true has been found.
-const uint32_t kShortEval = 4;
+const uint32 kShortEval = 4;
 // Discussed briefly at the policy design meeting. It will evaluate
 // all rules and then return the 'best' rule that evaluated true.
-const uint32_t kRankedEval = 8;
+const uint32 kRankedEval = 8;
 
 // This class evaluates a policy-opcode stream given the memory where the
 // opcodes are and an input 'parameter set'.
@@ -122,7 +119,7 @@ class PolicyProcessor {
   // Evaluates a policy-opcode stream. See the comments at the top of this
   // class for more info. Returns POLICY_MATCH if a rule set was found that
   // matches an active policy.
-  PolicyResult Evaluate(uint32_t options,
+  PolicyResult Evaluate(uint32 options,
                         ParameterSet* parameters,
                         size_t parameter_count);
 

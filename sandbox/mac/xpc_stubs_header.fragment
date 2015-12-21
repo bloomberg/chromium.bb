@@ -6,8 +6,6 @@
 #define SANDBOX_MAC_XPC_STUBS_HEADER_FRAGMENT_
 
 #include <bsm/libbsm.h>
-#include <stddef.h>
-#include <stdint.h>
 
 #include "sandbox/sandbox_export.h"
 

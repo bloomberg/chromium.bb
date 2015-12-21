@@ -5,8 +5,6 @@
 #ifndef SANDBOX_SRC_SERVICE_RESOLVER_H__
 #define SANDBOX_SRC_SERVICE_RESOLVER_H__
 
-#include <stddef.h>
-
 #include "base/macros.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/resolver.h"

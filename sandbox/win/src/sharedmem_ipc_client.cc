@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
 #include <string.h>
-
-#include "base/logging.h"
+#include "sandbox/win/src/sharedmem_ipc_client.h"
+#include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/crosscall_params.h"
-#include "sandbox/win/src/sandbox.h"
-#include "sandbox/win/src/sharedmem_ipc_client.h"
+#include "base/logging.h"
 
 namespace sandbox {
 

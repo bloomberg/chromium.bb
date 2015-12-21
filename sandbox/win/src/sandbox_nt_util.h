@@ -6,7 +6,6 @@
 #define SANDBOX_SRC_SANDBOX_NT_UTIL_H_
 
 #include <intrin.h>
-#include <stddef.h>
 #include <stdint.h>
 
 #include "base/macros.h"

@@ -16,7 +16,6 @@
 #ifndef SANDBOX_LINUX_SUID_COMMON_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
 #define SANDBOX_LINUX_SUID_COMMON_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
 
-#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>  // malloc
 #include <string.h>  // memcpy

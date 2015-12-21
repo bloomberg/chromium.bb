@@ -5,8 +5,6 @@
 #include "sandbox/linux/bpf_dsl/dump_bpf.h"
 
 #include <inttypes.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 
 #include <string>

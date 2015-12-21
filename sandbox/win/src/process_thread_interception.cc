@@ -4,8 +4,6 @@
 
 #include "sandbox/win/src/process_thread_interception.h"
 
-#include <stdint.h>
-
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/policy_params.h"
@@ -36,7 +34,7 @@ NTSTATUS WINAPI TargetNtOpenThread(NtOpenThreadFunction orig_OpenThread,
     if (!client_id)
       break;
 
-    uint32_t thread_id = 0;
+    uint32 thread_id = 0;
     bool should_break = false;
     __try {
       // We support only the calls for the current process
@@ -54,8 +52,8 @@ NTSTATUS WINAPI TargetNtOpenThread(NtOpenThreadFunction orig_OpenThread,
         }
       }
 
-      thread_id = static_cast<uint32_t>(
-          reinterpret_cast<ULONG_PTR>(client_id->UniqueThread));
+      thread_id = static_cast<uint32>(
+                      reinterpret_cast<ULONG_PTR>(client_id->UniqueThread));
     } __except(EXCEPTION_EXECUTE_HANDLER) {
       break;
     }
@@ -118,7 +116,7 @@ NTSTATUS WINAPI TargetNtOpenProcess(NtOpenProcessFunction orig_OpenProcess,
     if (!client_id)
       break;
 
-    uint32_t process_id = 0;
+    uint32 process_id = 0;
     bool should_break = false;
     __try {
       // Object attributes should be NULL or empty.
@@ -132,8 +130,8 @@ NTSTATUS WINAPI TargetNtOpenProcess(NtOpenProcessFunction orig_OpenProcess,
         }
       }
 
-      process_id = static_cast<uint32_t>(
-          reinterpret_cast<ULONG_PTR>(client_id->UniqueProcess));
+      process_id = static_cast<uint32>(
+                      reinterpret_cast<ULONG_PTR>(client_id->UniqueProcess));
     } __except(EXCEPTION_EXECUTE_HANDLER) {
       break;
     }
