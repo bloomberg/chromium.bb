@@ -1056,6 +1056,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                                     stateObject:stateObject
                                      transition:transition];
   [self didUpdateHistoryStateWithPageURL:pageURL];
+  self.userInteractionRegistered = NO;
 }
 
 - (void)replaceStateWithPageURL:(const GURL&)pageUrl
@@ -2513,11 +2514,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // If the user interacted with the page, categorize it as a link navigation.
   // If not, categorize it is a client redirect as it occurred without user
   // input and should not be added to the history stack.
-  // TODO(ios): Improve transition detection.
-  ui::PageTransition transition =
-      [context[web::kUserIsInteractingKey] boolValue]
-          ? ui::PAGE_TRANSITION_LINK
-          : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+  // TODO(crbug.com/549301): Improve transition detection.
+  ui::PageTransition transition = self.userInteractionRegistered
+                                      ? ui::PAGE_TRANSITION_LINK
+                                      : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
   [self pushStateWithPageURL:pushURL
                  stateObject:stateObject
                   transition:transition];
