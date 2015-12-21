@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <style type="text/css">
-        @font-face {
-            font-family: "Ahem";
-            src: url(../../resources/Ahem.ttf);
-        }
-    </style>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
     <script xlink:href="../../fast/repaint/resources/text-based-repaint.js"/>
+    <script xlink:href="../../resources/ahem.js"/>
     <text x="20" y="60" font-family="Ahem" font-size="50px" style="text-shadow: 200px 200px 5px red">X</text>
     <text x="170" y="60" font-family="Ahem" font-size="50px" style="text-shadow: 200px 200px 5px red">X</text>
 
@@ -16,8 +11,5 @@
             if (window.testRunner)
                 testRunner.notifyDone();
         }
-        if (window.testRunner)
-            testRunner.waitUntilDone();
-        document.fonts.ready.then(runRepaintAndPixelTest);
     </script>
 </svg>
