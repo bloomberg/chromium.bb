@@ -6,6 +6,8 @@
 
 #include <openssl/aes.h>
 #include <openssl/evp.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -103,21 +105,20 @@ bool Encryptor::Crypt(bool do_encrypt,
   DCHECK_EQ(EVP_CIPHER_key_length(cipher), key.length());
 
   ScopedCipherCTX ctx;
-  if (!EVP_CipherInit_ex(ctx.get(), cipher, NULL,
-                         reinterpret_cast<const uint8*>(key.data()),
-                         reinterpret_cast<const uint8*>(iv_.data()),
-                         do_encrypt))
+  if (!EVP_CipherInit_ex(
+          ctx.get(), cipher, NULL, reinterpret_cast<const uint8_t*>(key.data()),
+          reinterpret_cast<const uint8_t*>(iv_.data()), do_encrypt))
     return false;
 
   // When encrypting, add another block size of space to allow for any padding.
   const size_t output_size = input.size() + (do_encrypt ? iv_.size() : 0);
   CHECK_GT(output_size, 0u);
   CHECK_GT(output_size + 1, input.size());
-  uint8* out_ptr =
-      reinterpret_cast<uint8*>(base::WriteInto(&result, output_size + 1));
+  uint8_t* out_ptr =
+      reinterpret_cast<uint8_t*>(base::WriteInto(&result, output_size + 1));
   int out_len;
   if (!EVP_CipherUpdate(ctx.get(), out_ptr, &out_len,
-                        reinterpret_cast<const uint8*>(input.data()),
+                        reinterpret_cast<const uint8_t*>(input.data()),
                         input.length()))
     return false;
 
@@ -144,7 +145,7 @@ bool Encryptor::CryptCTR(bool do_encrypt,
   }
 
   AES_KEY aes_key;
-  if (AES_set_encrypt_key(reinterpret_cast<const uint8*>(key_->key().data()),
+  if (AES_set_encrypt_key(reinterpret_cast<const uint8_t*>(key_->key().data()),
                           key_->key().size() * 8, &aes_key) != 0) {
     return false;
   }
@@ -154,8 +155,8 @@ bool Encryptor::CryptCTR(bool do_encrypt,
   CHECK_GT(out_size + 1, input.size());
 
   std::string result;
-  uint8* out_ptr =
-      reinterpret_cast<uint8*>(base::WriteInto(&result, out_size + 1));
+  uint8_t* out_ptr =
+      reinterpret_cast<uint8_t*>(base::WriteInto(&result, out_size + 1));
 
   uint8_t ivec[AES_BLOCK_SIZE] = { 0 };
   uint8_t ecount_buf[AES_BLOCK_SIZE] = { 0 };
@@ -163,7 +164,7 @@ bool Encryptor::CryptCTR(bool do_encrypt,
 
   counter_->Write(ivec);
 
-  AES_ctr128_encrypt(reinterpret_cast<const uint8*>(input.data()), out_ptr,
+  AES_ctr128_encrypt(reinterpret_cast<const uint8_t*>(input.data()), out_ptr,
                      input.size(), &aes_key, ivec, ecount_buf, &block_offset);
 
   // AES_ctr128_encrypt() updates |ivec|. Update the |counter_| here.

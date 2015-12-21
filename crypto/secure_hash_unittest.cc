@@ -4,9 +4,11 @@
 
 #include "crypto/secure_hash.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "crypto/sha2.h"
@@ -24,7 +26,7 @@ TEST(SecureHashTest, TestUpdate) {
                       0x04, 0x6d, 0x39, 0xcc,
                       0xc7, 0x11, 0x2c, 0xd0 };
 
-  uint8 output3[crypto::kSHA256Length];
+  uint8_t output3[crypto::kSHA256Length];
 
   scoped_ptr<crypto::SecureHash> ctx(crypto::SecureHash::Create(
       crypto::SecureHash::SHA256));
@@ -46,8 +48,8 @@ TEST(SecureHashTest, TestSerialization) {
   std::string input4(10001, 'd');  // 'd' repeated 10001 times
   std::string input5(10001, 'e');  // 'e' repeated 10001 times
 
-  uint8 output1[crypto::kSHA256Length];
-  uint8 output2[crypto::kSHA256Length];
+  uint8_t output1[crypto::kSHA256Length];
+  uint8_t output2[crypto::kSHA256Length];
 
   scoped_ptr<crypto::SecureHash> ctx1(crypto::SecureHash::Create(
       crypto::SecureHash::SHA256));

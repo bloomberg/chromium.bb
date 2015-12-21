@@ -4,6 +4,8 @@
 
 #include "crypto/sha2.h"
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "crypto/secure_hash.h"

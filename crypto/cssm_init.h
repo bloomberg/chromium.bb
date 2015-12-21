@@ -7,7 +7,7 @@
 
 #include <Security/cssm.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "crypto/crypto_export.h"
 
 namespace crypto {

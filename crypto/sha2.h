@@ -5,6 +5,8 @@
 #ifndef CRYPTO_SHA2_H_
 #define CRYPTO_SHA2_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/strings/string_piece.h"

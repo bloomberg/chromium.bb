@@ -5,6 +5,8 @@
 #include "crypto/encryptor.h"
 
 #include <cryptohi.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <vector>
 
 #include "base/logging.h"
@@ -116,12 +118,12 @@ bool Encryptor::Crypt(PK11Context* context,
   CHECK_GT(output_len, input.size());
 
   output->resize(output_len);
-  uint8* output_data =
-      reinterpret_cast<uint8*>(const_cast<char*>(output->data()));
+  uint8_t* output_data =
+      reinterpret_cast<uint8_t*>(const_cast<char*>(output->data()));
 
   int input_len = input.size();
-  uint8* input_data =
-      reinterpret_cast<uint8*>(const_cast<char*>(input.data()));
+  uint8_t* input_data =
+      reinterpret_cast<uint8_t*>(const_cast<char*>(input.data()));
 
   int op_len;
   SECStatus rv = PK11_CipherOp(context,
@@ -162,8 +164,8 @@ bool Encryptor::CryptCTR(PK11Context* context,
       AES_BLOCK_SIZE;
   CHECK_GE(output_len, input.size());
   output->resize(output_len);
-  uint8* output_data =
-      reinterpret_cast<uint8*>(const_cast<char*>(output->data()));
+  uint8_t* output_data =
+      reinterpret_cast<uint8_t*>(const_cast<char*>(output->data()));
 
   size_t mask_len;
   bool ret = GenerateCounterMask(input.size(), output_data, &mask_len);
@@ -192,9 +194,8 @@ bool Encryptor::CryptCTR(PK11Context* context,
   CHECK(!digest_len);
 
   // Use |output_data| to mask |input|.
-  MaskMessage(
-      reinterpret_cast<uint8*>(const_cast<char*>(input.data())),
-      input.length(), output_data, output_data);
+  MaskMessage(reinterpret_cast<uint8_t*>(const_cast<char*>(input.data())),
+              input.length(), output_data, output_data);
   output->resize(input.length());
   return true;
 }

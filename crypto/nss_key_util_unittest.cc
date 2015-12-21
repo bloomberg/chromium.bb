@@ -6,6 +6,7 @@
 
 #include <keyhi.h>
 #include <pk11pub.h>
+#include <stdint.h>
 
 #include <vector>
 

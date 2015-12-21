@@ -6,6 +6,7 @@
 
 #include <openssl/evp.h>
 #include <openssl/x509.h>
+#include <stdint.h>
 
 #include <vector>
 
@@ -42,11 +43,11 @@ SignatureVerifier::~SignatureVerifier() {
   Reset();
 }
 
-bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
+bool SignatureVerifier::VerifyInit(const uint8_t* signature_algorithm,
                                    int signature_algorithm_len,
-                                   const uint8* signature,
+                                   const uint8_t* signature,
                                    int signature_len,
-                                   const uint8* public_key_info,
+                                   const uint8_t* public_key_info,
                                    int public_key_info_len) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
   ScopedOpenSSL<X509_ALGOR, X509_ALGOR_free> algorithm(
@@ -74,9 +75,9 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
 bool SignatureVerifier::VerifyInitRSAPSS(HashAlgorithm hash_alg,
                                          HashAlgorithm mask_hash_alg,
                                          int salt_len,
-                                         const uint8* signature,
+                                         const uint8_t* signature,
                                          int signature_len,
-                                         const uint8* public_key_info,
+                                         const uint8_t* public_key_info,
                                          int public_key_info_len) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
   const EVP_MD* const digest = ToOpenSSLDigest(hash_alg);
@@ -106,7 +107,7 @@ bool SignatureVerifier::VerifyInitRSAPSS(HashAlgorithm hash_alg,
   return rv == 1;
 }
 
-void SignatureVerifier::VerifyUpdate(const uint8* data_part,
+void SignatureVerifier::VerifyUpdate(const uint8_t* data_part,
                                      int data_part_len) {
   DCHECK(verify_context_);
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
@@ -126,9 +127,9 @@ bool SignatureVerifier::VerifyFinal() {
 }
 
 bool SignatureVerifier::CommonInit(const EVP_MD* digest,
-                                   const uint8* signature,
+                                   const uint8_t* signature,
                                    int signature_len,
-                                   const uint8* public_key_info,
+                                   const uint8_t* public_key_info,
                                    int public_key_info_len,
                                    EVP_PKEY_CTX** pkey_ctx) {
   if (verify_context_)

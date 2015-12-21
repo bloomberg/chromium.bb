@@ -7,6 +7,7 @@
 #include <cryptohi.h>
 #include <keyhi.h>
 #include <pk11pub.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "crypto/nss_util.h"

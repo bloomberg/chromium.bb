@@ -5,6 +5,7 @@
 #include "crypto/cssm_init.h"
 
 #include <Security/SecBase.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -32,7 +33,7 @@ void* CSSMRealloc(void* ptr, CSSM_SIZE size, void* alloc_ref) {
   return realloc(ptr, size);
 }
 
-void* CSSMCalloc(uint32 num, CSSM_SIZE size, void* alloc_ref) {
+void* CSSMCalloc(uint32_t num, CSSM_SIZE size, void* alloc_ref) {
   return calloc(num, size);
 }
 

@@ -4,6 +4,8 @@
 
 #include "crypto/random.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

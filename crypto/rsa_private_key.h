@@ -5,10 +5,13 @@
 #ifndef CRYPTO_RSA_PRIVATE_KEY_H_
 #define CRYPTO_RSA_PRIVATE_KEY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "crypto/crypto_export.h"
 
@@ -30,14 +33,14 @@ namespace crypto {
 class PrivateKeyInfoCodec {
  public:
   // ASN.1 encoding of the AlgorithmIdentifier from PKCS #8.
-  static const uint8 kRsaAlgorithmIdentifier[];
+  static const uint8_t kRsaAlgorithmIdentifier[];
 
   // ASN.1 tags for some types we use.
-  static const uint8 kBitStringTag = 0x03;
-  static const uint8 kIntegerTag = 0x02;
-  static const uint8 kNullTag = 0x05;
-  static const uint8 kOctetStringTag = 0x04;
-  static const uint8 kSequenceTag = 0x30;
+  static const uint8_t kBitStringTag = 0x03;
+  static const uint8_t kIntegerTag = 0x02;
+  static const uint8_t kNullTag = 0x05;
+  static const uint8_t kOctetStringTag = 0x04;
+  static const uint8_t kSequenceTag = 0x30;
 
   // |big_endian| here specifies the byte-significance of the integer components
   // that will be parsed & serialized (modulus(), etc...) during Import(),
@@ -49,111 +52,113 @@ class PrivateKeyInfoCodec {
 
   // Exports the contents of the integer components to the ASN.1 DER encoding
   // of the PrivateKeyInfo structure to |output|.
-  bool Export(std::vector<uint8>* output);
+  bool Export(std::vector<uint8_t>* output);
 
   // Exports the contents of the integer components to the ASN.1 DER encoding
   // of the PublicKeyInfo structure to |output|.
-  bool ExportPublicKeyInfo(std::vector<uint8>* output);
+  bool ExportPublicKeyInfo(std::vector<uint8_t>* output);
 
   // Exports the contents of the integer components to the ASN.1 DER encoding
   // of the RSAPublicKey structure to |output|.
-  bool ExportPublicKey(std::vector<uint8>* output);
+  bool ExportPublicKey(std::vector<uint8_t>* output);
 
   // Parses the ASN.1 DER encoding of the PrivateKeyInfo structure in |input|
   // and populates the integer components with |big_endian_| byte-significance.
   // IMPORTANT NOTE: This is currently *not* security-approved for importing
   // keys from unstrusted sources.
-  bool Import(const std::vector<uint8>& input);
+  bool Import(const std::vector<uint8_t>& input);
 
   // Accessors to the contents of the integer components of the PrivateKeyInfo
   // structure.
-  std::vector<uint8>* modulus() { return &modulus_; }
-  std::vector<uint8>* public_exponent() { return &public_exponent_; }
-  std::vector<uint8>* private_exponent() { return &private_exponent_; }
-  std::vector<uint8>* prime1() { return &prime1_; }
-  std::vector<uint8>* prime2() { return &prime2_; }
-  std::vector<uint8>* exponent1() { return &exponent1_; }
-  std::vector<uint8>* exponent2() { return &exponent2_; }
-  std::vector<uint8>* coefficient() { return &coefficient_; }
+  std::vector<uint8_t>* modulus() { return &modulus_; }
+  std::vector<uint8_t>* public_exponent() { return &public_exponent_; }
+  std::vector<uint8_t>* private_exponent() { return &private_exponent_; }
+  std::vector<uint8_t>* prime1() { return &prime1_; }
+  std::vector<uint8_t>* prime2() { return &prime2_; }
+  std::vector<uint8_t>* exponent1() { return &exponent1_; }
+  std::vector<uint8_t>* exponent2() { return &exponent2_; }
+  std::vector<uint8_t>* coefficient() { return &coefficient_; }
 
  private:
   // Utility wrappers for PrependIntegerImpl that use the class's |big_endian_|
   // value.
-  void PrependInteger(const std::vector<uint8>& in, std::list<uint8>* out);
-  void PrependInteger(uint8* val, int num_bytes, std::list<uint8>* data);
+  void PrependInteger(const std::vector<uint8_t>& in, std::list<uint8_t>* out);
+  void PrependInteger(uint8_t* val, int num_bytes, std::list<uint8_t>* data);
 
   // Prepends the integer stored in |val| - |val + num_bytes| with |big_endian|
   // byte-significance into |data| as an ASN.1 integer.
-  void PrependIntegerImpl(uint8* val,
+  void PrependIntegerImpl(uint8_t* val,
                           int num_bytes,
-                          std::list<uint8>* data,
+                          std::list<uint8_t>* data,
                           bool big_endian);
 
   // Utility wrappers for ReadIntegerImpl that use the class's |big_endian_|
   // value.
-  bool ReadInteger(uint8** pos, uint8* end, std::vector<uint8>* out);
-  bool ReadIntegerWithExpectedSize(uint8** pos,
-                                   uint8* end,
+  bool ReadInteger(uint8_t** pos, uint8_t* end, std::vector<uint8_t>* out);
+  bool ReadIntegerWithExpectedSize(uint8_t** pos,
+                                   uint8_t* end,
                                    size_t expected_size,
-                                   std::vector<uint8>* out);
+                                   std::vector<uint8_t>* out);
 
   // Reads an ASN.1 integer from |pos|, and stores the result into |out| with
   // |big_endian| byte-significance.
-  bool ReadIntegerImpl(uint8** pos,
-                       uint8* end,
-                       std::vector<uint8>* out,
+  bool ReadIntegerImpl(uint8_t** pos,
+                       uint8_t* end,
+                       std::vector<uint8_t>* out,
                        bool big_endian);
 
   // Prepends the integer stored in |val|, starting a index |start|, for
   // |num_bytes| bytes onto |data|.
-  void PrependBytes(uint8* val,
+  void PrependBytes(uint8_t* val,
                     int start,
                     int num_bytes,
-                    std::list<uint8>* data);
+                    std::list<uint8_t>* data);
 
   // Helper to prepend an ASN.1 length field.
-  void PrependLength(size_t size, std::list<uint8>* data);
+  void PrependLength(size_t size, std::list<uint8_t>* data);
 
   // Helper to prepend an ASN.1 type header.
-  void PrependTypeHeaderAndLength(uint8 type,
-                                  uint32 length,
-                                  std::list<uint8>* output);
+  void PrependTypeHeaderAndLength(uint8_t type,
+                                  uint32_t length,
+                                  std::list<uint8_t>* output);
 
   // Helper to prepend an ASN.1 bit string
-  void PrependBitString(uint8* val, int num_bytes, std::list<uint8>* output);
+  void PrependBitString(uint8_t* val,
+                        int num_bytes,
+                        std::list<uint8_t>* output);
 
   // Read an ASN.1 length field. This also checks that the length does not
   // extend beyond |end|.
-  bool ReadLength(uint8** pos, uint8* end, uint32* result);
+  bool ReadLength(uint8_t** pos, uint8_t* end, uint32_t* result);
 
   // Read an ASN.1 type header and its length.
-  bool ReadTypeHeaderAndLength(uint8** pos,
-                               uint8* end,
-                               uint8 expected_tag,
-                               uint32* length);
+  bool ReadTypeHeaderAndLength(uint8_t** pos,
+                               uint8_t* end,
+                               uint8_t expected_tag,
+                               uint32_t* length);
 
   // Read an ASN.1 sequence declaration. This consumes the type header and
   // length field, but not the contents of the sequence.
-  bool ReadSequence(uint8** pos, uint8* end);
+  bool ReadSequence(uint8_t** pos, uint8_t* end);
 
   // Read the RSA AlgorithmIdentifier.
-  bool ReadAlgorithmIdentifier(uint8** pos, uint8* end);
+  bool ReadAlgorithmIdentifier(uint8_t** pos, uint8_t* end);
 
   // Read one of the two version fields in PrivateKeyInfo.
-  bool ReadVersion(uint8** pos, uint8* end);
+  bool ReadVersion(uint8_t** pos, uint8_t* end);
 
   // The byte-significance of the stored components (modulus, etc..).
   bool big_endian_;
 
   // Component integers of the PrivateKeyInfo
-  std::vector<uint8> modulus_;
-  std::vector<uint8> public_exponent_;
-  std::vector<uint8> private_exponent_;
-  std::vector<uint8> prime1_;
-  std::vector<uint8> prime2_;
-  std::vector<uint8> exponent1_;
-  std::vector<uint8> exponent2_;
-  std::vector<uint8> coefficient_;
+  std::vector<uint8_t> modulus_;
+  std::vector<uint8_t> public_exponent_;
+  std::vector<uint8_t> private_exponent_;
+  std::vector<uint8_t> prime1_;
+  std::vector<uint8_t> prime2_;
+  std::vector<uint8_t> exponent1_;
+  std::vector<uint8_t> exponent2_;
+  std::vector<uint8_t> coefficient_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivateKeyInfoCodec);
 };
@@ -166,13 +171,13 @@ class CRYPTO_EXPORT RSAPrivateKey {
   ~RSAPrivateKey();
 
   // Create a new random instance. Can return NULL if initialization fails.
-  static RSAPrivateKey* Create(uint16 num_bits);
+  static RSAPrivateKey* Create(uint16_t num_bits);
 
   // Create a new instance by importing an existing private key. The format is
   // an ASN.1-encoded PrivateKeyInfo block from PKCS #8. This can return NULL if
   // initialization fails.
   static RSAPrivateKey* CreateFromPrivateKeyInfo(
-      const std::vector<uint8>& input);
+      const std::vector<uint8_t>& input);
 
 #if defined(USE_OPENSSL)
   // Create a new instance from an existing EVP_PKEY, taking a
@@ -196,10 +201,10 @@ class CRYPTO_EXPORT RSAPrivateKey {
   RSAPrivateKey* Copy() const;
 
   // Exports the private key to a PKCS #1 PrivateKey block.
-  bool ExportPrivateKey(std::vector<uint8>* output) const;
+  bool ExportPrivateKey(std::vector<uint8_t>* output) const;
 
   // Exports the public key to an X509 SubjectPublicKeyInfo block.
-  bool ExportPublicKey(std::vector<uint8>* output) const;
+  bool ExportPublicKey(std::vector<uint8_t>* output) const;
 
  private:
   // Constructor is private. Use one of the Create*() methods above instead.

@@ -5,10 +5,11 @@
 #ifndef CRYPTO_SIGNATURE_VERIFIER_H_
 #define CRYPTO_SIGNATURE_VERIFIER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "build/build_config.h"
-#include "base/basictypes.h"
 #include "crypto/crypto_export.h"
 
 #if defined(USE_OPENSSL)
@@ -58,11 +59,11 @@ class CRYPTO_EXPORT SignatureVerifier {
   //   SubjectPublicKeyInfo  ::=  SEQUENCE  {
   //       algorithm            AlgorithmIdentifier,
   //       subjectPublicKey     BIT STRING  }
-  bool VerifyInit(const uint8* signature_algorithm,
+  bool VerifyInit(const uint8_t* signature_algorithm,
                   int signature_algorithm_len,
-                  const uint8* signature,
+                  const uint8_t* signature,
                   int signature_len,
-                  const uint8* public_key_info,
+                  const uint8_t* public_key_info,
                   int public_key_info_len);
 
   // Initiates a RSA-PSS signature verification operation.  This should be
@@ -84,13 +85,13 @@ class CRYPTO_EXPORT SignatureVerifier {
   bool VerifyInitRSAPSS(HashAlgorithm hash_alg,
                         HashAlgorithm mask_hash_alg,
                         int salt_len,
-                        const uint8* signature,
+                        const uint8_t* signature,
                         int signature_len,
-                        const uint8* public_key_info,
+                        const uint8_t* public_key_info,
                         int public_key_info_len);
 
   // Feeds a piece of the data to the signature verifier.
-  void VerifyUpdate(const uint8* data_part, int data_part_len);
+  void VerifyUpdate(const uint8_t* data_part, int data_part_len);
 
   // Concludes a signature verification operation.  Returns true if the
   // signature is valid.  Returns false if the signature is invalid or an
@@ -98,31 +99,31 @@ class CRYPTO_EXPORT SignatureVerifier {
   bool VerifyFinal();
 
   // Note: we can provide a one-shot interface if there is interest:
-  //   bool Verify(const uint8* data,
+  //   bool Verify(const uint8_t* data,
   //               int data_len,
-  //               const uint8* signature_algorithm,
+  //               const uint8_t* signature_algorithm,
   //               int signature_algorithm_len,
-  //               const uint8* signature,
+  //               const uint8_t* signature,
   //               int signature_len,
-  //               const uint8* public_key_info,
+  //               const uint8_t* public_key_info,
   //               int public_key_info_len);
 
  private:
 #if defined(USE_OPENSSL)
   bool CommonInit(const EVP_MD* digest,
-                  const uint8* signature,
+                  const uint8_t* signature,
                   int signature_len,
-                  const uint8* public_key_info,
+                  const uint8_t* public_key_info,
                   int public_key_info_len,
                   EVP_PKEY_CTX** pkey_ctx);
 #else
-  static SECKEYPublicKey* DecodePublicKeyInfo(const uint8* public_key_info,
+  static SECKEYPublicKey* DecodePublicKeyInfo(const uint8_t* public_key_info,
                                               int public_key_info_len);
 #endif
 
   void Reset();
 
-  std::vector<uint8> signature_;
+  std::vector<uint8_t> signature_;
 
 #if defined(USE_OPENSSL)
   struct VerifyContext;

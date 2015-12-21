@@ -4,6 +4,8 @@
 
 #include "crypto/curve25519.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "crypto/random.h"

@@ -4,6 +4,8 @@
 
 #include "crypto/curve25519.h"
 
+#include <stdint.h>
+
 #include "crypto/secure_util.h"
 
 // Curve25519 is specified in terms of byte strings, not numbers, so all

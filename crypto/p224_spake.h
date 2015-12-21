@@ -5,10 +5,12 @@
 #ifndef CRYPTO_P224_SPAKE_H_
 #define CRYPTO_P224_SPAKE_H_
 
-#include <base/gtest_prod_util.h>
-#include <base/strings/string_piece.h>
 #include <crypto/p224.h>
 #include <crypto/sha2.h>
+#include <stdint.h>
+
+#include "base/gtest_prod_util.h"
+#include "base/strings/string_piece.h"
 
 namespace crypto {
 
@@ -101,22 +103,21 @@ class CRYPTO_EXPORT P224EncryptedKeyExchange {
 
   // CalculateHash computes the verification hash for the given peer and writes
   // |kSHA256Length| bytes at |out_digest|.
-  void CalculateHash(
-      PeerType peer_type,
-      const std::string& client_masked_dh,
-      const std::string& server_masked_dh,
-      const std::string& k,
-      uint8* out_digest);
+  void CalculateHash(PeerType peer_type,
+                     const std::string& client_masked_dh,
+                     const std::string& server_masked_dh,
+                     const std::string& k,
+                     uint8_t* out_digest);
 
   // x_ is the secret Diffie-Hellman exponent (see paper referenced in .cc
   // file).
-  uint8 x_[p224::kScalarBytes];
-  // pw_ is SHA256(P(password), P(session))[:28] where P() prepends a uint32,
+  uint8_t x_[p224::kScalarBytes];
+  // pw_ is SHA256(P(password), P(session))[:28] where P() prepends a uint32_t,
   // big-endian length prefix (see paper referenced in .cc file).
-  uint8 pw_[p224::kScalarBytes];
+  uint8_t pw_[p224::kScalarBytes];
   // expected_authenticator_ is used to store the hash value expected from the
   // other party.
-  uint8 expected_authenticator_[kSHA256Length];
+  uint8_t expected_authenticator_[kSHA256Length];
 
   std::string key_;
 };

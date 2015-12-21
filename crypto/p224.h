@@ -5,9 +5,11 @@
 #ifndef CRYPTO_P224_H_
 #define CRYPTO_P224_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "crypto/crypto_export.h"
 
@@ -19,7 +21,7 @@ namespace p224 {
 
 // An element of the field (ℤ/pℤ) is represented with 8, 28-bit limbs in
 // little endian order.
-typedef uint32 FieldElement[8];
+typedef uint32_t FieldElement[8];
 
 struct CRYPTO_EXPORT Point {
   // SetFromString the value of the point from the 56 byte, external
@@ -41,11 +43,13 @@ static const size_t kScalarBytes = 28;
 
 // ScalarMult computes *out = in*scalar where scalar is a 28-byte, big-endian
 // number.
-void CRYPTO_EXPORT ScalarMult(const Point& in, const uint8* scalar, Point* out);
+void CRYPTO_EXPORT ScalarMult(const Point& in,
+                              const uint8_t* scalar,
+                              Point* out);
 
 // ScalarBaseMult computes *out = g*scalar where g is the base point of the
 // curve and scalar is a 28-byte, big-endian number.
-void CRYPTO_EXPORT ScalarBaseMult(const uint8* scalar, Point* out);
+void CRYPTO_EXPORT ScalarBaseMult(const uint8_t* scalar, Point* out);
 
 // Add computes *out = a+b.
 void CRYPTO_EXPORT Add(const Point& a, const Point& b, Point* out);

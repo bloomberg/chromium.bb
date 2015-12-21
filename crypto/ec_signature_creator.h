@@ -5,10 +5,11 @@
 #ifndef CRYPTO_EC_SIGNATURE_CREATOR_H_
 #define CRYPTO_EC_SIGNATURE_CREATOR_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "crypto/crypto_export.h"
 
 namespace crypto {
@@ -48,17 +49,17 @@ class CRYPTO_EXPORT ECSignatureCreator {
   //  ECDSA-Sig-Value ::= SEQUENCE {
   //    r     INTEGER,
   //    s     INTEGER }
-  virtual bool Sign(const uint8* data,
+  virtual bool Sign(const uint8_t* data,
                     int data_len,
-                    std::vector<uint8>* signature) = 0;
+                    std::vector<uint8_t>* signature) = 0;
 
   // DecodeSignature converts from a DER encoded ECDSA-Sig-Value (as produced
   // by Sign) to a `raw' ECDSA signature which consists of a pair of
   // big-endian, zero-padded, 256-bit integers, r and s. On success it returns
   // true and puts the raw signature into |out_raw_sig|.
   // (Only P-256 signatures are supported.)
-  virtual bool DecodeSignature(const std::vector<uint8>& signature,
-                               std::vector<uint8>* out_raw_sig) = 0;
+  virtual bool DecodeSignature(const std::vector<uint8_t>& signature,
+                               std::vector<uint8_t>* out_raw_sig) = 0;
 };
 
 }  // namespace crypto

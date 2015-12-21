@@ -6,6 +6,7 @@
 
 #include <cryptohi.h>
 #include <keyhi.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "base/logging.h"
@@ -68,9 +69,9 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key,
 // static
 bool SignatureCreator::Sign(RSAPrivateKey* key,
                             HashAlgorithm hash_alg,
-                            const uint8* data,
+                            const uint8_t* data,
                             int data_len,
-                            std::vector<uint8>* signature) {
+                            std::vector<uint8_t>* signature) {
   SECItem data_item;
   data_item.type = siBuffer;
   data_item.data = const_cast<unsigned char*>(data);
@@ -89,7 +90,7 @@ bool SignatureCreator::Sign(RSAPrivateKey* key,
   return true;
 }
 
-bool SignatureCreator::Update(const uint8* data_part, int data_part_len) {
+bool SignatureCreator::Update(const uint8_t* data_part, int data_part_len) {
   SECStatus rv = SGN_Update(sign_context_, data_part, data_part_len);
   if (rv != SECSuccess) {
     NOTREACHED();
@@ -99,7 +100,7 @@ bool SignatureCreator::Update(const uint8* data_part, int data_part_len) {
   return true;
 }
 
-bool SignatureCreator::Final(std::vector<uint8>* signature) {
+bool SignatureCreator::Final(std::vector<uint8_t>* signature) {
   SECItem signature_item;
   SECStatus rv = SGN_End(sign_context_, &signature_item);
   if (rv != SECSuccess) {

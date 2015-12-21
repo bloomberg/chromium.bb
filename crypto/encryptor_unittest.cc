@@ -4,8 +4,11 @@
 
 #include "crypto/encryptor.h"
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/symmetric_key.h"

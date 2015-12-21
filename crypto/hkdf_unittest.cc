@@ -4,8 +4,12 @@
 
 #include "crypto/hkdf.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,7 +60,7 @@ TEST(HKDFTest, HKDF) {
     const HKDFTest& test(kHKDFTests[i]);
     SCOPED_TRACE(i);
 
-    std::vector<uint8> data;
+    std::vector<uint8_t> data;
     ASSERT_TRUE(base::HexStringToBytes(test.key_hex, &data));
     const std::string key(reinterpret_cast<char*>(&data[0]), data.size());
 

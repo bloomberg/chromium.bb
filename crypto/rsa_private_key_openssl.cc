@@ -9,6 +9,7 @@
 #include <openssl/evp.h>
 #include <openssl/pkcs12.h>
 #include <openssl/rsa.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -30,7 +31,7 @@ using ExportFunction = int (*)(BIO*, EVP_PKEY*);
 // Helper to export |key| into |output| via the specified ExportFunction.
 bool ExportKey(EVP_PKEY* key,
                ExportFunction export_fn,
-               std::vector<uint8>* output) {
+               std::vector<uint8_t>* output) {
   if (!key)
     return false;
 
@@ -53,7 +54,7 @@ bool ExportKey(EVP_PKEY* key,
 }  // namespace
 
 // static
-RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
+RSAPrivateKey* RSAPrivateKey::Create(uint16_t num_bits) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   ScopedRSA rsa_key(RSA_new());
@@ -74,7 +75,7 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
 
 // static
 RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
-    const std::vector<uint8>& input) {
+    const std::vector<uint8_t>& input) {
   if (input.empty())
     return NULL;
 
@@ -127,11 +128,11 @@ RSAPrivateKey* RSAPrivateKey::Copy() const {
   return copy.release();
 }
 
-bool RSAPrivateKey::ExportPrivateKey(std::vector<uint8>* output) const {
+bool RSAPrivateKey::ExportPrivateKey(std::vector<uint8_t>* output) const {
   return ExportKey(key_, i2d_PKCS8PrivateKeyInfo_bio, output);
 }
 
-bool RSAPrivateKey::ExportPublicKey(std::vector<uint8>* output) const {
+bool RSAPrivateKey::ExportPublicKey(std::vector<uint8_t>* output) const {
   return ExportKey(key_, i2d_PUBKEY_bio, output);
 }
 

@@ -203,14 +203,14 @@ P224EncryptedKeyExchange::Result P224EncryptedKeyExchange::ProcessMessage(
 
   // Now we calculate the hashes that each side will use to prove to the other
   // that they derived the correct value for K.
-  uint8 client_hash[kSHA256Length], server_hash[kSHA256Length];
+  uint8_t client_hash[kSHA256Length], server_hash[kSHA256Length];
   CalculateHash(kPeerTypeClient, client_masked_dh, server_masked_dh, key_,
                 client_hash);
   CalculateHash(kPeerTypeServer, client_masked_dh, server_masked_dh, key_,
                 server_hash);
 
-  const uint8* my_hash = is_server_ ? server_hash : client_hash;
-  const uint8* their_hash = is_server_ ? client_hash : server_hash;
+  const uint8_t* my_hash = is_server_ ? server_hash : client_hash;
+  const uint8_t* their_hash = is_server_ ? client_hash : server_hash;
 
   next_message_ =
       std::string(reinterpret_cast<const char*>(my_hash), kSHA256Length);
@@ -224,7 +224,7 @@ void P224EncryptedKeyExchange::CalculateHash(
     const std::string& client_masked_dh,
     const std::string& server_masked_dh,
     const std::string& k,
-    uint8* out_digest) {
+    uint8_t* out_digest) {
   std::string hash_contents;
 
   if (peer_type == kPeerTypeServer) {

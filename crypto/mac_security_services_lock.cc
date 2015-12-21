@@ -4,6 +4,7 @@
 
 #include "crypto/mac_security_services_lock.h"
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 

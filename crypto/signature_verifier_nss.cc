@@ -9,6 +9,7 @@
 #include <pk11pub.h>
 #include <secerr.h>
 #include <sechash.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "base/logging.h"
@@ -73,11 +74,11 @@ SignatureVerifier::~SignatureVerifier() {
   Reset();
 }
 
-bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
+bool SignatureVerifier::VerifyInit(const uint8_t* signature_algorithm,
                                    int signature_algorithm_len,
-                                   const uint8* signature,
+                                   const uint8_t* signature,
                                    int signature_len,
-                                   const uint8* public_key_info,
+                                   const uint8_t* public_key_info,
                                    int public_key_info_len) {
   if (vfy_context_ || hash_context_)
     return false;
@@ -97,7 +98,7 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
 
   SECItem sig_alg_der;
   sig_alg_der.type = siBuffer;
-  sig_alg_der.data = const_cast<uint8*>(signature_algorithm);
+  sig_alg_der.data = const_cast<uint8_t*>(signature_algorithm);
   sig_alg_der.len = signature_algorithm_len;
   SECAlgorithmID sig_alg_id;
   SECStatus rv;
@@ -112,7 +113,7 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
 
   SECItem sig;
   sig.type = siBuffer;
-  sig.data = const_cast<uint8*>(signature);
+  sig.data = const_cast<uint8_t*>(signature);
   sig.len = signature_len;
   SECOidTag hash_alg_tag;
   vfy_context_ = VFY_CreateContextWithAlgorithmID(public_key, &sig,
@@ -138,9 +139,9 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
 bool SignatureVerifier::VerifyInitRSAPSS(HashAlgorithm hash_alg,
                                          HashAlgorithm mask_hash_alg,
                                          int salt_len,
-                                         const uint8* signature,
+                                         const uint8_t* signature,
                                          int signature_len,
-                                         const uint8* public_key_info,
+                                         const uint8_t* public_key_info,
                                          int public_key_info_len) {
   if (vfy_context_ || hash_context_)
     return false;
@@ -163,7 +164,7 @@ bool SignatureVerifier::VerifyInitRSAPSS(HashAlgorithm hash_alg,
   return true;
 }
 
-void SignatureVerifier::VerifyUpdate(const uint8* data_part,
+void SignatureVerifier::VerifyUpdate(const uint8_t* data_part,
                                      int data_part_len) {
   if (vfy_context_) {
     SECStatus rv = VFY_Update(vfy_context_, data_part, data_part_len);
@@ -192,12 +193,12 @@ bool SignatureVerifier::VerifyFinal() {
 
 // static
 SECKEYPublicKey* SignatureVerifier::DecodePublicKeyInfo(
-    const uint8* public_key_info,
+    const uint8_t* public_key_info,
     int public_key_info_len) {
   CERTSubjectPublicKeyInfo* spki = NULL;
   SECItem spki_der;
   spki_der.type = siBuffer;
-  spki_der.data = const_cast<uint8*>(public_key_info);
+  spki_der.data = const_cast<uint8_t*>(public_key_info);
   spki_der.len = public_key_info_len;
   spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&spki_der);
   if (!spki)

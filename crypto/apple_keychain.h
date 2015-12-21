@@ -7,7 +7,8 @@
 
 #include <Security/Security.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "crypto/crypto_export.h"
 
 #if defined (OS_IOS)

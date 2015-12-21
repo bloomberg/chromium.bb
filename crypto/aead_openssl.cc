@@ -8,9 +8,10 @@
 
 #include <openssl/aes.h>
 #include <openssl/evp.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
 
@@ -43,7 +44,7 @@ bool Aead::Seal(const base::StringPiece& plaintext,
   EVP_AEAD_CTX ctx;
 
   if (!EVP_AEAD_CTX_init(&ctx, aead_,
-                         reinterpret_cast<const uint8*>(key_->data()),
+                         reinterpret_cast<const uint8_t*>(key_->data()),
                          key_->size(), EVP_AEAD_DEFAULT_TAG_LENGTH, nullptr)) {
     return false;
   }
@@ -52,14 +53,14 @@ bool Aead::Seal(const base::StringPiece& plaintext,
   const size_t max_output_length =
       EVP_AEAD_max_overhead(aead_) + plaintext.size();
   size_t output_length;
-  uint8* out_ptr =
-      reinterpret_cast<uint8*>(base::WriteInto(&result, max_output_length + 1));
+  uint8_t* out_ptr = reinterpret_cast<uint8_t*>(
+      base::WriteInto(&result, max_output_length + 1));
 
   if (!EVP_AEAD_CTX_seal(
           &ctx, out_ptr, &output_length, max_output_length,
-          reinterpret_cast<const uint8*>(nonce.data()), nonce.size(),
-          reinterpret_cast<const uint8*>(plaintext.data()), plaintext.size(),
-          reinterpret_cast<const uint8*>(additional_data.data()),
+          reinterpret_cast<const uint8_t*>(nonce.data()), nonce.size(),
+          reinterpret_cast<const uint8_t*>(plaintext.data()), plaintext.size(),
+          reinterpret_cast<const uint8_t*>(additional_data.data()),
           additional_data.size())) {
     EVP_AEAD_CTX_cleanup(&ctx);
     return false;
@@ -82,7 +83,7 @@ bool Aead::Open(const base::StringPiece& ciphertext,
   EVP_AEAD_CTX ctx;
 
   if (!EVP_AEAD_CTX_init(&ctx, aead_,
-                         reinterpret_cast<const uint8*>(key_->data()),
+                         reinterpret_cast<const uint8_t*>(key_->data()),
                          key_->size(), EVP_AEAD_DEFAULT_TAG_LENGTH, nullptr)) {
     return false;
   }
@@ -90,14 +91,15 @@ bool Aead::Open(const base::StringPiece& ciphertext,
   std::string result;
   const size_t max_output_length = ciphertext.size();
   size_t output_length;
-  uint8* out_ptr =
-      reinterpret_cast<uint8*>(base::WriteInto(&result, max_output_length + 1));
+  uint8_t* out_ptr = reinterpret_cast<uint8_t*>(
+      base::WriteInto(&result, max_output_length + 1));
 
   if (!EVP_AEAD_CTX_open(
           &ctx, out_ptr, &output_length, max_output_length,
-          reinterpret_cast<const uint8*>(nonce.data()), nonce.size(),
-          reinterpret_cast<const uint8*>(ciphertext.data()), ciphertext.size(),
-          reinterpret_cast<const uint8*>(additional_data.data()),
+          reinterpret_cast<const uint8_t*>(nonce.data()), nonce.size(),
+          reinterpret_cast<const uint8_t*>(ciphertext.data()),
+          ciphertext.size(),
+          reinterpret_cast<const uint8_t*>(additional_data.data()),
           additional_data.size())) {
     EVP_AEAD_CTX_cleanup(&ctx);
     return false;

@@ -5,6 +5,7 @@
 #ifndef CRYPTO_MOCK_KEYCHAIN_MAC_H_
 #define CRYPTO_MOCK_KEYCHAIN_MAC_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>

@@ -5,10 +5,12 @@
 #ifndef CRYPTO_SIGNATURE_CREATOR_H_
 #define CRYPTO_SIGNATURE_CREATOR_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "build/build_config.h"
-#include "base/basictypes.h"
 #include "crypto/crypto_export.h"
 
 #if defined(USE_OPENSSL)
@@ -45,15 +47,15 @@ class CRYPTO_EXPORT SignatureCreator {
   // specified in PKCS #1 v1.5.
   static bool Sign(RSAPrivateKey* key,
                    HashAlgorithm hash_alg,
-                   const uint8* data,
+                   const uint8_t* data,
                    int data_len,
-                   std::vector<uint8>* signature);
+                   std::vector<uint8_t>* signature);
 
   // Update the signature with more data.
-  bool Update(const uint8* data_part, int data_part_len);
+  bool Update(const uint8_t* data_part, int data_part_len);
 
   // Finalize the signature.
-  bool Final(std::vector<uint8>* signature);
+  bool Final(std::vector<uint8_t>* signature);
 
  private:
   // Private constructor. Use the Create() method instead.

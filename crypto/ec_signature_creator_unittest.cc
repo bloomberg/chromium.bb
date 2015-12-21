@@ -4,6 +4,8 @@
 
 #include "crypto/ec_signature_creator.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -21,10 +23,10 @@ TEST(ECSignatureCreatorTest, BasicTest) {
       crypto::ECPrivateKey::Create());
   ASSERT_TRUE(key_original.get());
 
-  std::vector<uint8> key_info;
+  std::vector<uint8_t> key_info;
   ASSERT_TRUE(
       key_original->ExportEncryptedPrivateKey(std::string(), 1000, &key_info));
-  std::vector<uint8> pubkey_info;
+  std::vector<uint8_t> pubkey_info;
   ASSERT_TRUE(key_original->ExportPublicKey(&pubkey_info));
 
   scoped_ptr<crypto::ECPrivateKey> key(
@@ -38,12 +40,11 @@ TEST(ECSignatureCreatorTest, BasicTest) {
   ASSERT_TRUE(signer.get());
 
   std::string data("Hello, World!");
-  std::vector<uint8> signature;
-  ASSERT_TRUE(signer->Sign(reinterpret_cast<const uint8*>(data.c_str()),
-                           data.size(),
-                           &signature));
+  std::vector<uint8_t> signature;
+  ASSERT_TRUE(signer->Sign(reinterpret_cast<const uint8_t*>(data.c_str()),
+                           data.size(), &signature));
 
-  std::vector<uint8> public_key_info;
+  std::vector<uint8_t> public_key_info;
   ASSERT_TRUE(key_original->ExportPublicKey(&public_key_info));
 
   // This is the algorithm ID for ECDSA with SHA-256. Parameters are ABSENT.
@@ -58,10 +59,8 @@ TEST(ECSignatureCreatorTest, BasicTest) {
   //   component, the OID ecdsa-with-SHA224, ecdsa-with-SHA256, ecdsa-with-
   //   SHA384, or ecdsa-with-SHA512.
   // See also RFC 5480, Appendix A.
-  const uint8 kECDSAWithSHA256AlgorithmID[] = {
-    0x30, 0x0a,
-      0x06, 0x08,
-        0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02,
+  const uint8_t kECDSAWithSHA256AlgorithmID[] = {
+      0x30, 0x0a, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02,
   };
   crypto::SignatureVerifier verifier;
   ASSERT_TRUE(verifier.VerifyInit(
@@ -69,7 +68,7 @@ TEST(ECSignatureCreatorTest, BasicTest) {
       &signature[0], signature.size(),
       &public_key_info.front(), public_key_info.size()));
 
-  verifier.VerifyUpdate(reinterpret_cast<const uint8*>(data.c_str()),
+  verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(data.c_str()),
                         data.size());
   ASSERT_TRUE(verifier.VerifyFinal());
 }

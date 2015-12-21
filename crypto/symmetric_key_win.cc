@@ -4,6 +4,9 @@
 
 #include "crypto/symmetric_key.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 // TODO(wtc): replace scoped_array by std::vector.
@@ -239,7 +242,7 @@ bool ComputePBKDF2Block(HCRYPTHASH hash,
                         DWORD hash_size,
                         const std::string& salt,
                         size_t iterations,
-                        uint32 block_index,
+                        uint32_t block_index,
                         BYTE* output_buf) {
   // From RFC 2898:
   // 3. <snip> The function F is defined as the exclusive-or sum of the first
@@ -263,7 +266,7 @@ bool ComputePBKDF2Block(HCRYPTHASH hash,
     return false;
 
   // Iteration U_1: and append (big-endian) INT (i).
-  uint32 big_endian_block_index = base::HostToNet32(block_index);
+  uint32_t big_endian_block_index = base::HostToNet32(block_index);
   ok = CryptHashData(safe_hash,
                      reinterpret_cast<BYTE*>(&big_endian_block_index),
                      sizeof(big_endian_block_index), 0);
@@ -440,7 +443,7 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
   // 4. Concatenate the blocks and extract the first dkLen octets to produce
   //    a derived key DK:
   //    DK = T_1 || T_2 || ... || T_l<0..r-1>
-  for (uint32 block_index = 1; block_index <= L; ++block_index) {
+  for (uint32_t block_index = 1; block_index <= L; ++block_index) {
     if (!ComputePBKDF2Block(prf, hLen, salt, iterations, block_index,
                             block_offset))
         return NULL;

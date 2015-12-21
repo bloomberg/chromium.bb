@@ -7,6 +7,7 @@
 #include <cryptohi.h>
 #include <keyhi.h>
 #include <pk11pub.h>
+#include <stdint.h>
 
 #include <list>
 
@@ -23,7 +24,7 @@ namespace {
 
 static bool ReadAttribute(SECKEYPrivateKey* key,
                           CK_ATTRIBUTE_TYPE type,
-                          std::vector<uint8>* output) {
+                          std::vector<uint8_t>* output) {
   SECItem item;
   SECStatus rv;
   rv = PK11_ReadRawAttribute(PK11_TypePrivKey, key, type, &item);
@@ -49,7 +50,7 @@ RSAPrivateKey::~RSAPrivateKey() {
 }
 
 // static
-RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
+RSAPrivateKey* RSAPrivateKey::Create(uint16_t num_bits) {
   EnsureNSSInit();
 
   ScopedPK11Slot slot(PK11_GetInternalSlot());
@@ -73,7 +74,7 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
 
 // static
 RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
-    const std::vector<uint8>& input) {
+    const std::vector<uint8_t>& input) {
   EnsureNSSInit();
 
   ScopedPK11Slot slot(PK11_GetInternalSlot());
@@ -111,7 +112,7 @@ RSAPrivateKey* RSAPrivateKey::Copy() const {
   return copy;
 }
 
-bool RSAPrivateKey::ExportPrivateKey(std::vector<uint8>* output) const {
+bool RSAPrivateKey::ExportPrivateKey(std::vector<uint8_t>* output) const {
   PrivateKeyInfoCodec private_key_info(true);
 
   // Manually read the component attributes of the private key and build up
@@ -133,7 +134,7 @@ bool RSAPrivateKey::ExportPrivateKey(std::vector<uint8>* output) const {
   return private_key_info.Export(output);
 }
 
-bool RSAPrivateKey::ExportPublicKey(std::vector<uint8>* output) const {
+bool RSAPrivateKey::ExportPublicKey(std::vector<uint8_t>* output) const {
   ScopedSECItem der_pubkey(SECKEY_EncodeDERSubjectPublicKeyInfo(public_key_));
   if (!der_pubkey.get()) {
     NOTREACHED();

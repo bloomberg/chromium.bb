@@ -4,6 +4,9 @@
 
 #include "crypto/rsa_private_key.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
@@ -43,21 +46,20 @@ namespace {
 
 namespace crypto {
 
-const uint8 PrivateKeyInfoCodec::kRsaAlgorithmIdentifier[] = {
-  0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01,
-  0x05, 0x00
-};
+const uint8_t PrivateKeyInfoCodec::kRsaAlgorithmIdentifier[] = {
+    0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86,
+    0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00};
 
 PrivateKeyInfoCodec::PrivateKeyInfoCodec(bool big_endian)
     : big_endian_(big_endian) {}
 
 PrivateKeyInfoCodec::~PrivateKeyInfoCodec() {}
 
-bool PrivateKeyInfoCodec::Export(std::vector<uint8>* output) {
-  std::list<uint8> content;
+bool PrivateKeyInfoCodec::Export(std::vector<uint8_t>* output) {
+  std::list<uint8_t> content;
 
   // Version (always zero)
-  uint8 version = 0;
+  uint8_t version = 0;
 
   PrependInteger(coefficient_, &content);
   PrependInteger(exponent2_, &content);
@@ -85,14 +87,14 @@ bool PrivateKeyInfoCodec::Export(std::vector<uint8>* output) {
   return true;
 }
 
-bool PrivateKeyInfoCodec::ExportPublicKeyInfo(std::vector<uint8>* output) {
+bool PrivateKeyInfoCodec::ExportPublicKeyInfo(std::vector<uint8_t>* output) {
   // Create a sequence with the modulus (n) and public exponent (e).
-  std::vector<uint8> bit_string;
+  std::vector<uint8_t> bit_string;
   if (!ExportPublicKey(&bit_string))
     return false;
 
   // Add the sequence as the contents of a bit string.
-  std::list<uint8> content;
+  std::list<uint8_t> content;
   PrependBitString(&bit_string[0], static_cast<int>(bit_string.size()),
                    &content);
 
@@ -110,9 +112,9 @@ bool PrivateKeyInfoCodec::ExportPublicKeyInfo(std::vector<uint8>* output) {
   return true;
 }
 
-bool PrivateKeyInfoCodec::ExportPublicKey(std::vector<uint8>* output) {
+bool PrivateKeyInfoCodec::ExportPublicKey(std::vector<uint8_t>* output) {
   // Create a sequence with the modulus (n) and public exponent (e).
-  std::list<uint8> content;
+  std::list<uint8_t> content;
   PrependInteger(&public_exponent_[0],
                  static_cast<int>(public_exponent_.size()),
                  &content);
@@ -126,15 +128,15 @@ bool PrivateKeyInfoCodec::ExportPublicKey(std::vector<uint8>* output) {
   return true;
 }
 
-bool PrivateKeyInfoCodec::Import(const std::vector<uint8>& input) {
+bool PrivateKeyInfoCodec::Import(const std::vector<uint8_t>& input) {
   if (input.empty()) {
     return false;
   }
 
   // Parse the private key info up to the public key values, ignoring
   // the subsequent private key values.
-  uint8* src = const_cast<uint8*>(&input.front());
-  uint8* end = src + input.size();
+  uint8_t* src = const_cast<uint8_t*>(&input.front());
+  uint8_t* end = src + input.size();
   if (!ReadSequence(&src, end) ||
       !ReadVersion(&src, end) ||
       !ReadAlgorithmIdentifier(&src, end) ||
@@ -163,25 +165,25 @@ bool PrivateKeyInfoCodec::Import(const std::vector<uint8>& input) {
   return true;
 }
 
-void PrivateKeyInfoCodec::PrependInteger(const std::vector<uint8>& in,
-                                         std::list<uint8>* out) {
-  uint8* ptr = const_cast<uint8*>(&in.front());
+void PrivateKeyInfoCodec::PrependInteger(const std::vector<uint8_t>& in,
+                                         std::list<uint8_t>* out) {
+  uint8_t* ptr = const_cast<uint8_t*>(&in.front());
   PrependIntegerImpl(ptr, in.size(), out, big_endian_);
 }
 
 // Helper to prepend an ASN.1 integer.
-void PrivateKeyInfoCodec::PrependInteger(uint8* val,
+void PrivateKeyInfoCodec::PrependInteger(uint8_t* val,
                                          int num_bytes,
-                                         std::list<uint8>* data) {
+                                         std::list<uint8_t>* data) {
   PrependIntegerImpl(val, num_bytes, data, big_endian_);
 }
 
-void PrivateKeyInfoCodec::PrependIntegerImpl(uint8* val,
+void PrivateKeyInfoCodec::PrependIntegerImpl(uint8_t* val,
                                              int num_bytes,
-                                             std::list<uint8>* data,
+                                             std::list<uint8_t>* data,
                                              bool big_endian) {
  // Reverse input if little-endian.
- std::vector<uint8> tmp;
+ std::vector<uint8_t> tmp;
  if (!big_endian) {
    tmp.assign(val, val + num_bytes);
    std::reverse(tmp.begin(), tmp.end());
@@ -201,7 +203,7 @@ void PrivateKeyInfoCodec::PrependIntegerImpl(uint8* val,
   // (the most significant bit) would otherwise be set and make the number
   // negative, ASN.1 requires a leading null byte to force the integer to be
   // positive.
-  uint8 front = data->front();
+  uint8_t front = data->front();
   if ((front & 0x80) != 0) {
     data->push_front(0x00);
     num_bytes++;
@@ -210,17 +212,18 @@ void PrivateKeyInfoCodec::PrependIntegerImpl(uint8* val,
   PrependTypeHeaderAndLength(kIntegerTag, num_bytes, data);
 }
 
-bool PrivateKeyInfoCodec::ReadInteger(uint8** pos,
-                                      uint8* end,
-                                      std::vector<uint8>* out) {
+bool PrivateKeyInfoCodec::ReadInteger(uint8_t** pos,
+                                      uint8_t* end,
+                                      std::vector<uint8_t>* out) {
   return ReadIntegerImpl(pos, end, out, big_endian_);
 }
 
-bool PrivateKeyInfoCodec::ReadIntegerWithExpectedSize(uint8** pos,
-                                                      uint8* end,
-                                                      size_t expected_size,
-                                                      std::vector<uint8>* out) {
-  std::vector<uint8> temp;
+bool PrivateKeyInfoCodec::ReadIntegerWithExpectedSize(
+    uint8_t** pos,
+    uint8_t* end,
+    size_t expected_size,
+    std::vector<uint8_t>* out) {
+  std::vector<uint8_t> temp;
   if (!ReadIntegerImpl(pos, end, &temp, true))  // Big-Endian
     return false;
 
@@ -243,11 +246,11 @@ bool PrivateKeyInfoCodec::ReadIntegerWithExpectedSize(uint8** pos,
   return true;
 }
 
-bool PrivateKeyInfoCodec::ReadIntegerImpl(uint8** pos,
-                                          uint8* end,
-                                          std::vector<uint8>* out,
+bool PrivateKeyInfoCodec::ReadIntegerImpl(uint8_t** pos,
+                                          uint8_t* end,
+                                          std::vector<uint8_t>* out,
                                           bool big_endian) {
-  uint32 length = 0;
+  uint32_t length = 0;
   if (!ReadTypeHeaderAndLength(pos, end, kIntegerTag, &length) || !length)
     return false;
 
@@ -268,25 +271,25 @@ bool PrivateKeyInfoCodec::ReadIntegerImpl(uint8** pos,
   return true;
 }
 
-void PrivateKeyInfoCodec::PrependBytes(uint8* val,
+void PrivateKeyInfoCodec::PrependBytes(uint8_t* val,
                                        int start,
                                        int num_bytes,
-                                       std::list<uint8>* data) {
+                                       std::list<uint8_t>* data) {
   while (num_bytes > 0) {
     --num_bytes;
     data->push_front(val[start + num_bytes]);
   }
 }
 
-void PrivateKeyInfoCodec::PrependLength(size_t size, std::list<uint8>* data) {
+void PrivateKeyInfoCodec::PrependLength(size_t size, std::list<uint8_t>* data) {
   // The high bit is used to indicate whether additional octets are needed to
   // represent the length.
   if (size < 0x80) {
-    data->push_front(static_cast<uint8>(size));
+    data->push_front(static_cast<uint8_t>(size));
   } else {
-    uint8 num_bytes = 0;
+    uint8_t num_bytes = 0;
     while (size > 0) {
-      data->push_front(static_cast<uint8>(size & 0xFF));
+      data->push_front(static_cast<uint8_t>(size & 0xFF));
       size >>= 8;
       num_bytes++;
     }
@@ -295,16 +298,17 @@ void PrivateKeyInfoCodec::PrependLength(size_t size, std::list<uint8>* data) {
   }
 }
 
-void PrivateKeyInfoCodec::PrependTypeHeaderAndLength(uint8 type,
-                                                     uint32 length,
-                                                     std::list<uint8>* output) {
+void PrivateKeyInfoCodec::PrependTypeHeaderAndLength(
+    uint8_t type,
+    uint32_t length,
+    std::list<uint8_t>* output) {
   PrependLength(length, output);
   output->push_front(type);
 }
 
-void PrivateKeyInfoCodec::PrependBitString(uint8* val,
+void PrivateKeyInfoCodec::PrependBitString(uint8_t* val,
                                            int num_bytes,
-                                           std::list<uint8>* output) {
+                                           std::list<uint8_t>* output) {
   // Start with the data.
   PrependBytes(val, 0, num_bytes, output);
   // Zero unused bits.
@@ -312,10 +316,12 @@ void PrivateKeyInfoCodec::PrependBitString(uint8* val,
   // Add the length.
   PrependLength(num_bytes + 1, output);
   // Finally, add the bit string tag.
-  output->push_front((uint8) kBitStringTag);
+  output->push_front((uint8_t)kBitStringTag);
 }
 
-bool PrivateKeyInfoCodec::ReadLength(uint8** pos, uint8* end, uint32* result) {
+bool PrivateKeyInfoCodec::ReadLength(uint8_t** pos,
+                                     uint8_t* end,
+                                     uint32_t* result) {
   READ_ASSERT(*pos < end);
   int length = 0;
 
@@ -343,10 +349,10 @@ bool PrivateKeyInfoCodec::ReadLength(uint8** pos, uint8* end, uint32* result) {
   return true;
 }
 
-bool PrivateKeyInfoCodec::ReadTypeHeaderAndLength(uint8** pos,
-                                                  uint8* end,
-                                                  uint8 expected_tag,
-                                                  uint32* length) {
+bool PrivateKeyInfoCodec::ReadTypeHeaderAndLength(uint8_t** pos,
+                                                  uint8_t* end,
+                                                  uint8_t expected_tag,
+                                                  uint32_t* length) {
   READ_ASSERT(*pos < end);
   READ_ASSERT(**pos == expected_tag);
   (*pos)++;
@@ -354,11 +360,11 @@ bool PrivateKeyInfoCodec::ReadTypeHeaderAndLength(uint8** pos,
   return ReadLength(pos, end, length);
 }
 
-bool PrivateKeyInfoCodec::ReadSequence(uint8** pos, uint8* end) {
+bool PrivateKeyInfoCodec::ReadSequence(uint8_t** pos, uint8_t* end) {
   return ReadTypeHeaderAndLength(pos, end, kSequenceTag, NULL);
 }
 
-bool PrivateKeyInfoCodec::ReadAlgorithmIdentifier(uint8** pos, uint8* end) {
+bool PrivateKeyInfoCodec::ReadAlgorithmIdentifier(uint8_t** pos, uint8_t* end) {
   READ_ASSERT(*pos + sizeof(kRsaAlgorithmIdentifier) < end);
   READ_ASSERT(memcmp(*pos, kRsaAlgorithmIdentifier,
                      sizeof(kRsaAlgorithmIdentifier)) == 0);
@@ -366,13 +372,13 @@ bool PrivateKeyInfoCodec::ReadAlgorithmIdentifier(uint8** pos, uint8* end) {
   return true;
 }
 
-bool PrivateKeyInfoCodec::ReadVersion(uint8** pos, uint8* end) {
-  uint32 length = 0;
+bool PrivateKeyInfoCodec::ReadVersion(uint8_t** pos, uint8_t* end) {
+  uint32_t length = 0;
   if (!ReadTypeHeaderAndLength(pos, end, kIntegerTag, &length))
     return false;
 
   // The version should be zero.
-  for (uint32 i = 0; i < length; ++i) {
+  for (uint32_t i = 0; i < length; ++i) {
     READ_ASSERT(**pos == 0x00);
     (*pos)++;
   }

@@ -5,6 +5,8 @@
 #ifndef CRYPTO_AEAD_H_
 #define CRYPTO_AEAD_H_
 
+#include <stddef.h>
+
 #include "base/strings/string_piece.h"
 #include "crypto/crypto_export.h"
 

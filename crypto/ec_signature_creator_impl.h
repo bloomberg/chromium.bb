@@ -5,7 +5,10 @@
 #ifndef CRYPTO_EC_SIGNATURE_CREATOR_IMPL_H_
 #define CRYPTO_EC_SIGNATURE_CREATOR_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "crypto/ec_signature_creator.h"
 
 namespace crypto {
@@ -15,12 +18,12 @@ class ECSignatureCreatorImpl : public ECSignatureCreator {
   explicit ECSignatureCreatorImpl(ECPrivateKey* key);
   ~ECSignatureCreatorImpl() override;
 
-  bool Sign(const uint8* data,
+  bool Sign(const uint8_t* data,
             int data_len,
-            std::vector<uint8>* signature) override;
+            std::vector<uint8_t>* signature) override;
 
-  bool DecodeSignature(const std::vector<uint8>& der_sig,
-                       std::vector<uint8>* out_raw_sig) override;
+  bool DecodeSignature(const std::vector<uint8_t>& der_sig,
+                       std::vector<uint8_t>* out_raw_sig) override;
 
  private:
   ECPrivateKey* key_;

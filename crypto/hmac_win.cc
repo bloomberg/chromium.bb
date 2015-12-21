@@ -5,6 +5,7 @@
 #include "crypto/hmac.h"
 
 #include <windows.h>
+#include <stddef.h>
 
 #include <algorithm>
 #include <vector>

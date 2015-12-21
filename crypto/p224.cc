@@ -9,6 +9,8 @@
 
 #include "crypto/p224.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "base/sys_byteorder.h"
@@ -23,7 +25,7 @@ using base::NetToHost32;
 // The field that we're dealing with is ℤ/pℤ where p = 2**224 - 2**96 + 1.
 //
 // Field elements are represented by a FieldElement, which is a typedef to an
-// array of 8 uint32's. The value of a FieldElement, a, is:
+// array of 8 uint32_t's. The value of a FieldElement, a, is:
 //   a[0] + 2**28·a[1] + 2**56·a[1] + ... + 2**196·a[7]
 //
 // Using 28-bit limbs means that there's only 4 bits of headroom, which is less
@@ -41,12 +43,12 @@ const FieldElement kP = {
 void Contract(FieldElement* inout);
 
 // IsZero returns 0xffffffff if a == 0 mod p and 0 otherwise.
-uint32 IsZero(const FieldElement& a) {
+uint32_t IsZero(const FieldElement& a) {
   FieldElement minimal;
   memcpy(&minimal, &a, sizeof(minimal));
   Contract(&minimal);
 
-  uint32 is_zero = 0, is_p = 0;
+  uint32_t is_zero = 0, is_p = 0;
   for (unsigned i = 0; i < 8; i++) {
     is_zero |= minimal[i];
     is_p |= minimal[i] - kP[i];
@@ -68,7 +70,7 @@ uint32 IsZero(const FieldElement& a) {
   // For is_zero and is_p, the LSB is 0 iff all the bits are zero.
   is_zero &= is_p & 1;
   is_zero = (~is_zero) << 31;
-  is_zero = static_cast<int32>(is_zero) >> 31;
+  is_zero = static_cast<int32_t>(is_zero) >> 31;
   return is_zero;
 }
 
@@ -81,9 +83,9 @@ void Add(FieldElement* out, const FieldElement& a, const FieldElement& b) {
   }
 }
 
-static const uint32 kTwo31p3 = (1u<<31) + (1u<<3);
-static const uint32 kTwo31m3 = (1u<<31) - (1u<<3);
-static const uint32 kTwo31m15m3 = (1u<<31) - (1u<<15) - (1u<<3);
+static const uint32_t kTwo31p3 = (1u << 31) + (1u << 3);
+static const uint32_t kTwo31m3 = (1u << 31) - (1u << 3);
+static const uint32_t kTwo31m15m3 = (1u << 31) - (1u << 15) - (1u << 3);
 // kZero31ModP is 0 mod p where bit 31 is set in all limbs so that we can
 // subtract smaller amounts without underflow. See the section "Subtraction" in
 // [1] for why.
@@ -103,22 +105,22 @@ void Subtract(FieldElement* out, const FieldElement& a, const FieldElement& b) {
   }
 }
 
-static const uint64 kTwo63p35 = (1ull<<63) + (1ull<<35);
-static const uint64 kTwo63m35 = (1ull<<63) - (1ull<<35);
-static const uint64 kTwo63m35m19 = (1ull<<63) - (1ull<<35) - (1ull<<19);
+static const uint64_t kTwo63p35 = (1ull << 63) + (1ull << 35);
+static const uint64_t kTwo63m35 = (1ull << 63) - (1ull << 35);
+static const uint64_t kTwo63m35m19 = (1ull << 63) - (1ull << 35) - (1ull << 19);
 // kZero63ModP is 0 mod p where bit 63 is set in all limbs. See the section
 // "Subtraction" in [1] for why.
-static const uint64 kZero63ModP[8] = {
-  kTwo63p35, kTwo63m35, kTwo63m35, kTwo63m35,
-  kTwo63m35m19, kTwo63m35, kTwo63m35, kTwo63m35,
+static const uint64_t kZero63ModP[8] = {
+    kTwo63p35,    kTwo63m35, kTwo63m35, kTwo63m35,
+    kTwo63m35m19, kTwo63m35, kTwo63m35, kTwo63m35,
 };
 
-static const uint32 kBottom28Bits = 0xfffffff;
+static const uint32_t kBottom28Bits = 0xfffffff;
 
 // LargeFieldElement also represents an element of the field. The limbs are
 // still spaced 28-bits apart and in little-endian order. So the limbs are at
 // 0, 28, 56, ..., 392 bits, each 64-bits wide.
-typedef uint64 LargeFieldElement[15];
+typedef uint64_t LargeFieldElement[15];
 
 // ReduceLarge converts a LargeFieldElement to a FieldElement.
 //
@@ -144,21 +146,21 @@ void ReduceLarge(FieldElement* out, LargeFieldElement* inptr) {
   // 32-bit operations.
   for (int i = 1; i < 8; i++) {
     in[i+1] += in[i] >> 28;
-    (*out)[i] = static_cast<uint32>(in[i] & kBottom28Bits);
+    (*out)[i] = static_cast<uint32_t>(in[i] & kBottom28Bits);
   }
   // Eliminate the term at 2*224 that we introduced while keeping the same
   // value mod p.
   in[0] -= in[8];  // reflection off the "+1" term of p.
-  (*out)[3] += static_cast<uint32>(in[8] & 0xffff) << 12;  // "-2**96" term
-  (*out)[4] += static_cast<uint32>(in[8] >> 16);  // rest of "-2**96" term
+  (*out)[3] += static_cast<uint32_t>(in[8] & 0xffff) << 12;  // "-2**96" term
+  (*out)[4] += static_cast<uint32_t>(in[8] >> 16);  // rest of "-2**96" term
   // in[0] < 2**64
   // out[3] < 2**29
   // out[4] < 2**29
   // out[1,2,5..7] < 2**28
 
-  (*out)[0] = static_cast<uint32>(in[0] & kBottom28Bits);
-  (*out)[1] += static_cast<uint32>((in[0] >> 28) & kBottom28Bits);
-  (*out)[2] += static_cast<uint32>(in[0] >> 56);
+  (*out)[0] = static_cast<uint32_t>(in[0] & kBottom28Bits);
+  (*out)[1] += static_cast<uint32_t>((in[0] >> 28) & kBottom28Bits);
+  (*out)[2] += static_cast<uint32_t>(in[0] >> 56);
   // out[0] < 2**28
   // out[1..4] < 2**29
   // out[5..7] < 2**28
@@ -174,7 +176,7 @@ void Mul(FieldElement* out, const FieldElement& a, const FieldElement& b) {
 
   for (int i = 0; i < 8; i++) {
     for (int j = 0; j < 8; j++) {
-      tmp[i+j] += static_cast<uint64>(a[i]) * static_cast<uint64>(b[j]);
+      tmp[i + j] += static_cast<uint64_t>(a[i]) * static_cast<uint64_t>(b[j]);
     }
   }
 
@@ -191,7 +193,7 @@ void Square(FieldElement* out, const FieldElement& a) {
 
   for (int i = 0; i < 8; i++) {
     for (int j = 0; j <= i; j++) {
-      uint64 r = static_cast<uint64>(a[i]) * static_cast<uint64>(a[j]);
+      uint64_t r = static_cast<uint64_t>(a[i]) * static_cast<uint64_t>(a[j]);
       if (i == j) {
         tmp[i+j] += r;
       } else {
@@ -214,16 +216,16 @@ void Reduce(FieldElement* in_out) {
     a[i+1] += a[i] >> 28;
     a[i] &= kBottom28Bits;
   }
-  uint32 top = a[7] >> 28;
+  uint32_t top = a[7] >> 28;
   a[7] &= kBottom28Bits;
 
   // top < 2**4
   // Constant-time: mask = (top != 0) ? 0xffffffff : 0
-  uint32 mask = top;
+  uint32_t mask = top;
   mask |= mask >> 2;
   mask |= mask >> 1;
   mask <<= 31;
-  mask = static_cast<uint32>(static_cast<int32>(mask) >> 31);
+  mask = static_cast<uint32_t>(static_cast<int32_t>(mask) >> 31);
 
   // Eliminate top while maintaining the same value mod p.
   a[0] -= top;
@@ -300,7 +302,7 @@ void Contract(FieldElement* inout) {
     out[i+1] += out[i] >> 28;
     out[i] &= kBottom28Bits;
   }
-  uint32 top = out[7] >> 28;
+  uint32_t top = out[7] >> 28;
   out[7] &= kBottom28Bits;
 
   // Eliminate top while maintaining the same value mod p.
@@ -311,7 +313,7 @@ void Contract(FieldElement* inout) {
   // out[0] negative then we know that out[3] is sufficiently positive
   // because we just added to it.
   for (int i = 0; i < 3; i++) {
-    uint32 mask = static_cast<uint32>(static_cast<int32>(out[i]) >> 31);
+    uint32_t mask = static_cast<uint32_t>(static_cast<int32_t>(out[i]) >> 31);
     out[i] += (1 << 28) & mask;
     out[i+1] -= 1 & mask;
   }
@@ -344,7 +346,7 @@ void Contract(FieldElement* inout) {
   // As before, if we made out[0] negative then we know that out[3] is
   // sufficiently positive.
   for (int i = 0; i < 3; i++) {
-    uint32 mask = static_cast<uint32>(static_cast<int32>(out[i]) >> 31);
+    uint32_t mask = static_cast<uint32_t>(static_cast<int32_t>(out[i]) >> 31);
     out[i] += (1 << 28) & mask;
     out[i+1] -= 1 & mask;
   }
@@ -356,7 +358,7 @@ void Contract(FieldElement* inout) {
   // equal to bottom28Bits if the whole value is >= p. If top_4_all_ones
   // ends up with any zero bits in the bottom 28 bits, then this wasn't
   // true.
-  uint32 top_4_all_ones = 0xffffffffu;
+  uint32_t top_4_all_ones = 0xffffffffu;
   for (int i = 4; i < 8; i++) {
     top_4_all_ones &= out[i];
   }
@@ -368,37 +370,39 @@ void Contract(FieldElement* inout) {
   top_4_all_ones &= top_4_all_ones >> 2;
   top_4_all_ones &= top_4_all_ones >> 1;
   top_4_all_ones =
-      static_cast<uint32>(static_cast<int32>(top_4_all_ones << 31) >> 31);
+      static_cast<uint32_t>(static_cast<int32_t>(top_4_all_ones << 31) >> 31);
 
   // Now we test whether the bottom three limbs are non-zero.
-  uint32 bottom_3_non_zero = out[0] | out[1] | out[2];
+  uint32_t bottom_3_non_zero = out[0] | out[1] | out[2];
   bottom_3_non_zero |= bottom_3_non_zero >> 16;
   bottom_3_non_zero |= bottom_3_non_zero >> 8;
   bottom_3_non_zero |= bottom_3_non_zero >> 4;
   bottom_3_non_zero |= bottom_3_non_zero >> 2;
   bottom_3_non_zero |= bottom_3_non_zero >> 1;
   bottom_3_non_zero =
-      static_cast<uint32>(static_cast<int32>(bottom_3_non_zero) >> 31);
+      static_cast<uint32_t>(static_cast<int32_t>(bottom_3_non_zero) >> 31);
 
   // Everything depends on the value of out[3].
   //    If it's > 0xffff000 and top_4_all_ones != 0 then the whole value is >= p
   //    If it's = 0xffff000 and top_4_all_ones != 0 and bottom_3_non_zero != 0,
   //      then the whole value is >= p
   //    If it's < 0xffff000, then the whole value is < p
-  uint32 n = out[3] - 0xffff000;
-  uint32 out_3_equal = n;
+  uint32_t n = out[3] - 0xffff000;
+  uint32_t out_3_equal = n;
   out_3_equal |= out_3_equal >> 16;
   out_3_equal |= out_3_equal >> 8;
   out_3_equal |= out_3_equal >> 4;
   out_3_equal |= out_3_equal >> 2;
   out_3_equal |= out_3_equal >> 1;
   out_3_equal =
-      ~static_cast<uint32>(static_cast<int32>(out_3_equal << 31) >> 31);
+      ~static_cast<uint32_t>(static_cast<int32_t>(out_3_equal << 31) >> 31);
 
   // If out[3] > 0xffff000 then n's MSB will be zero.
-  uint32 out_3_gt = ~static_cast<uint32>(static_cast<int32>(n << 31) >> 31);
+  uint32_t out_3_gt =
+      ~static_cast<uint32_t>(static_cast<int32_t>(n << 31) >> 31);
 
-  uint32 mask = top_4_all_ones & ((out_3_equal & bottom_3_non_zero) | out_3_gt);
+  uint32_t mask =
+      top_4_all_ones & ((out_3_equal & bottom_3_non_zero) | out_3_gt);
   out[0] -= 1 & mask;
   out[3] -= 0xffff000 & mask;
   out[4] -= 0xfffffff & mask;
@@ -421,7 +425,7 @@ const FieldElement kB = {
   39211076, 180311059, 84673715, 188764328,
 };
 
-void CopyConditional(Point* out, const Point& a, uint32 mask);
+void CopyConditional(Point* out, const Point& a, uint32_t mask);
 void DoubleJacobian(Point* out, const Point& a);
 
 // AddJacobian computes *out = a+b where a != b.
@@ -431,8 +435,8 @@ void AddJacobian(Point *out,
   // See http://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#addition-add-2007-bl
   FieldElement z1z1, z2z2, u1, u2, s1, s2, h, i, j, r, v;
 
-  uint32 z1_is_zero = IsZero(a.z);
-  uint32 z2_is_zero = IsZero(b.z);
+  uint32_t z1_is_zero = IsZero(a.z);
+  uint32_t z2_is_zero = IsZero(b.z);
 
   // Z1Z1 = Z1²
   Square(&z1z1, a.z);
@@ -457,7 +461,7 @@ void AddJacobian(Point *out,
   // H = U2-U1
   Subtract(&h, u2, u1);
   Reduce(&h);
-  uint32 x_equal = IsZero(h);
+  uint32_t x_equal = IsZero(h);
 
   // I = (2*H)²
   for (int k = 0; k < 8; k++) {
@@ -471,7 +475,7 @@ void AddJacobian(Point *out,
   // r = 2*(S2-S1)
   Subtract(&r, s2, s1);
   Reduce(&r);
-  uint32 y_equal = IsZero(r);
+  uint32_t y_equal = IsZero(r);
 
   if (x_equal && y_equal && !z1_is_zero && !z2_is_zero) {
     // The two input points are the same therefore we must use the dedicated
@@ -578,9 +582,7 @@ void DoubleJacobian(Point* out, const Point& a) {
 
 // CopyConditional sets *out=a if mask is 0xffffffff. mask must be either 0 of
 // 0xffffffff.
-void CopyConditional(Point* out,
-                     const Point& a,
-                     uint32 mask) {
+void CopyConditional(Point* out, const Point& a, uint32_t mask) {
   for (int i = 0; i < 8; i++) {
     out->x[i] ^= mask & (a.x[i] ^ out->x[i]);
     out->y[i] ^= mask & (a.y[i] ^ out->y[i]);
@@ -590,15 +592,17 @@ void CopyConditional(Point* out,
 
 // ScalarMult calculates *out = a*scalar where scalar is a big-endian number of
 // length scalar_len and != 0.
-void ScalarMult(Point* out, const Point& a,
-                const uint8* scalar, size_t scalar_len) {
+void ScalarMult(Point* out,
+                const Point& a,
+                const uint8_t* scalar,
+                size_t scalar_len) {
   memset(out, 0, sizeof(*out));
   Point tmp;
 
   for (size_t i = 0; i < scalar_len; i++) {
     for (unsigned int bit_num = 0; bit_num < 8; bit_num++) {
       DoubleJacobian(out, *out);
-      uint32 bit = static_cast<uint32>(static_cast<int32>(
+      uint32_t bit = static_cast<uint32_t>(static_cast<int32_t>(
           (((scalar[i] >> (7 - bit_num)) & 1) << 31) >> 31));
       AddJacobian(&tmp, a, *out);
       CopyConditional(out, tmp, bit);
@@ -608,7 +612,7 @@ void ScalarMult(Point* out, const Point& a,
 
 // Get224Bits reads 7 words from in and scatters their contents in
 // little-endian form into 8 words at out, 28 bits per output word.
-void Get224Bits(uint32* out, const uint32* in) {
+void Get224Bits(uint32_t* out, const uint32_t* in) {
   out[0] = NetToHost32(in[6]) & kBottom28Bits;
   out[1] = ((NetToHost32(in[5]) << 4) |
             (NetToHost32(in[6]) >> 28)) & kBottom28Bits;
@@ -628,7 +632,7 @@ void Get224Bits(uint32* out, const uint32* in) {
 // Put224Bits performs the inverse operation to Get224Bits: taking 28 bits from
 // each of 8 input words and writing them in big-endian order to 7 words at
 // out.
-void Put224Bits(uint32* out, const uint32* in) {
+void Put224Bits(uint32_t* out, const uint32_t* in) {
   out[6] = HostToNet32((in[0] >> 0) | (in[1] << 28));
   out[5] = HostToNet32((in[1] >> 4) | (in[2] << 24));
   out[4] = HostToNet32((in[2] >> 8) | (in[3] << 20));
@@ -647,7 +651,7 @@ namespace p224 {
 bool Point::SetFromString(const base::StringPiece& in) {
   if (in.size() != 2*28)
     return false;
-  const uint32* inwords = reinterpret_cast<const uint32*>(in.data());
+  const uint32_t* inwords = reinterpret_cast<const uint32_t*>(in.data());
   Get224Bits(x, inwords);
   Get224Bits(y, inwords + 7);
   memset(&z, 0, sizeof(z));
@@ -693,13 +697,13 @@ std::string Point::ToString() const {
   Contract(&xx);
   Contract(&yy);
 
-  uint32 outwords[14];
+  uint32_t outwords[14];
   Put224Bits(outwords, xx);
   Put224Bits(outwords + 7, yy);
   return std::string(reinterpret_cast<const char*>(outwords), sizeof(outwords));
 }
 
-void ScalarMult(const Point& in, const uint8* scalar, Point* out) {
+void ScalarMult(const Point& in, const uint8_t* scalar, Point* out) {
   ::ScalarMult(out, in, scalar, 28);
 }
 
@@ -712,7 +716,7 @@ static const Point kBasePoint = {
   {1, 0, 0, 0, 0, 0, 0, 0},
 };
 
-void ScalarBaseMult(const uint8* scalar, Point* out) {
+void ScalarBaseMult(const uint8_t* scalar, Point* out) {
   ::ScalarMult(out, kBasePoint, scalar, 28);
 }
 
