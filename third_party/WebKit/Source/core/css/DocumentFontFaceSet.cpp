@@ -23,7 +23,6 @@
  * DAMAGE.
  */
 
-#include "config.h"
 #include "core/css/DocumentFontFaceSet.h"
 
 #include "core/css/FontFaceSet.h"

@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/css/CSSTestHelper.h"
 
 #include "core/css/CSSRuleList.h"

@@ -22,7 +22,6 @@
  * 02110-1301  USA
  */
 
-#include "config.h"
 #include "core/css/ComputedStyleCSSValueMapping.h"
 
 #include "core/StylePropertyShorthand.h"

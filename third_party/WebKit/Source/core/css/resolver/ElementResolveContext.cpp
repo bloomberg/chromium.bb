@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/css/resolver/ElementResolveContext.h"
 
 #include "core/dom/LayoutTreeBuilderTraversal.h"

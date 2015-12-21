@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/css/resolver/FontBuilder.h"
 
 #include "core/CSSValueKeywords.h"

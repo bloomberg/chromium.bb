@@ -23,7 +23,6 @@
  * DAMAGE.
  */
 
-#include "config.h"
 #include "core/css/FontFaceSet.h"
 
 #include "bindings/core/v8/Dictionary.h"

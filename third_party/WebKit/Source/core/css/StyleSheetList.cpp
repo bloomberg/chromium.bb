@@ -18,7 +18,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/css/StyleSheetList.h"
 
 #include "core/HTMLNames.h"

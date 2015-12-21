@@ -18,7 +18,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/css/CSSValueList.h"
 
 #include "core/css/CSSPrimitiveValue.h"

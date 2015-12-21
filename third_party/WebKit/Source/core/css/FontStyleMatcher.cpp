@@ -25,7 +25,6 @@
  */
 
 
-#include "config.h"
 #include "core/css/FontStyleMatcher.h"
 
 #include "core/css/CSSSegmentedFontFace.h"

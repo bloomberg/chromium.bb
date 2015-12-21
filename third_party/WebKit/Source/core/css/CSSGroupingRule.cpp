@@ -28,7 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/css/CSSGroupingRule.h"
 
 #include "bindings/core/v8/ExceptionState.h"

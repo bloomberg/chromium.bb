@@ -27,7 +27,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 
 #include "core/CSSValueKeywords.h"

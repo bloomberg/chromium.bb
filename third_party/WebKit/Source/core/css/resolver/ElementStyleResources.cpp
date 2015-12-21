@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/css/resolver/ElementStyleResources.h"
 
 #include "core/CSSPropertyNames.h"

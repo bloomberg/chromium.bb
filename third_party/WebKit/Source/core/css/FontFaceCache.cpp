@@ -25,7 +25,6 @@
  */
 
 
-#include "config.h"
 #include "core/css/FontFaceCache.h"
 
 #include "core/css/CSSFontSelector.h"

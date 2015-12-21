@@ -21,7 +21,6 @@
  * 02110-1301  USA
  */
 
-#include "config.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 
 #include "bindings/core/v8/ExceptionState.h"

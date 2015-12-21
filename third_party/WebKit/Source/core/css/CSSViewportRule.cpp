@@ -28,7 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/css/CSSViewportRule.h"
 
 #include "core/css/PropertySetCSSStyleDeclaration.h"

@@ -25,7 +25,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 
 #include "core/CSSValueKeywords.h"

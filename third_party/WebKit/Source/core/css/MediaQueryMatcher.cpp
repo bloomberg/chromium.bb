@@ -17,7 +17,6 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/css/MediaQueryMatcher.h"
 
 #include "core/css/MediaList.h"

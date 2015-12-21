@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/css/CSSValue.h"
 
 #include "core/css/CSSBasicShapeValues.h"

@@ -2,7 +2,6 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // found in the LICENSE file.
 
-#include "config.h"
 #include "core/css/MediaValues.h"
 
 #include "core/css/CSSPrimitiveValue.h"

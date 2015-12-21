@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/css/resolver/StyleResolverState.h"
 
 #include "core/animation/css/CSSAnimations.h"
