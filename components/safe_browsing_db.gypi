@@ -25,17 +25,5 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
     },
-    {
-      # GN version: //components/safe_browsing_db:proto
-      # Protobuf compiler / generator for the Safe Browsing protocol buffer.
-      'target_name': 'safebrowsing_proto',
-      'type': 'static_library',
-      'sources': [ 'safe_browsing_db/safebrowsing.proto' ],
-      'variables': {
-        'proto_in_dir': 'safe_browsing_db',
-        'proto_out_dir': 'components/safe_browsing_db',
-      },
-      'includes': [ '../build/protoc.gypi' ]
-    },
   ],
 }
