@@ -16,8 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
-using testing::InvokeArgument;
-using testing::Return;
 using testing::SaveArg;
 
 namespace blimp {
