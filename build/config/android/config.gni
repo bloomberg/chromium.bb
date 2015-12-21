@@ -142,8 +142,6 @@ if (is_android) {
   android_ndk_root = "//third_party/android_tools/ndk"
   android_ndk_include_dir = "$android_ndk_root/usr/include"
 
-  android_sdk = "${android_sdk_root}/platforms/android-${android_sdk_version}"
-
   android_sdk_tools = "${android_sdk_root}/tools"
   android_sdk_build_tools =
       "${android_sdk_root}/build-tools/$android_sdk_build_tools_version"
