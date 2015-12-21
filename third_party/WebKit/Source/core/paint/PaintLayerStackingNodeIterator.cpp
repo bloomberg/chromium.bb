@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
 
 // FIXME: We should build our primitive on top of

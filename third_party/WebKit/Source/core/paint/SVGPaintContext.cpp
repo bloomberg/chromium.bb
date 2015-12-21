@@ -22,7 +22,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/paint/SVGPaintContext.h"
 
 #include "core/frame/FrameHost.h"

@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/paint/ThemePainterDefault.h"
 
 #include "core/layout/LayoutObject.h"

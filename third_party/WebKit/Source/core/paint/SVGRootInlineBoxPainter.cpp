@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
 #include "core/paint/SVGRootInlineBoxPainter.h"
 
 #include "core/layout/api/SelectionState.h"

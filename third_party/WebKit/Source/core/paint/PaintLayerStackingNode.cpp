@@ -41,7 +41,6 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "config.h"
 #include "core/paint/PaintLayerStackingNode.h"
 
 #include "core/layout/LayoutView.h"

@@ -27,7 +27,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/paint/PaintLayerFilterInfo.h"
 
 #include "core/fetch/DocumentResourceReference.h"
