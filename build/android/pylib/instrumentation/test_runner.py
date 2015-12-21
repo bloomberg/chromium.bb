@@ -97,7 +97,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     """Sets up the test harness and device before all tests are run."""
     super(TestRunner, self).SetUp()
     if not self.device.HasRoot():
-      logging.warning('Unable to enable java asserts for %s, non rooted device',
+      logging.warning('Unable to enable java asserts for %s; run `adb root`.',
                       str(self.device))
     else:
       if self.device.SetJavaAsserts(self.options.set_asserts):
