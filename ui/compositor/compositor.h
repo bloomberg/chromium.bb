@@ -33,6 +33,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace cc {
+class AnimationTimeline;
 class ContextProvider;
 class Layer;
 class LayerTreeDebugState;
@@ -176,6 +177,8 @@ class COMPOSITOR_EXPORT Compositor
   const Layer* root_layer() const { return root_layer_; }
   Layer* root_layer() { return root_layer_; }
   void SetRootLayer(Layer* root_layer);
+
+  cc::AnimationTimeline* GetAnimationTimeline() const;
 
   // Called when we need the compositor to preserve the alpha channel in the
   // output for situations when we want to render transparently atop something
@@ -368,6 +371,7 @@ class COMPOSITOR_EXPORT Compositor
   CompositorLock* compositor_lock_;
 
   LayerAnimatorCollection layer_animator_collection_;
+  scoped_refptr<cc::AnimationTimeline> animation_timeline_;
 
   // Used to send to any new CompositorBeginFrameObserver immediately.
   cc::BeginFrameArgs missed_begin_frame_args_;

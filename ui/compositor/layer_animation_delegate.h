@@ -39,10 +39,14 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
   virtual float GetGrayscaleForAnimation() const = 0;
   virtual SkColor GetColorForAnimation() const = 0;
   virtual float GetDeviceScaleFactor() const = 0;
+
+  // TODO(loyso): Extract these 3 methods as a separate
+  // LayerThreadedAnimationDelegate.
   virtual void AddThreadedAnimation(scoped_ptr<cc::Animation> animation) = 0;
   virtual void RemoveThreadedAnimation(int animation_id) = 0;
-  virtual LayerAnimatorCollection* GetLayerAnimatorCollection() = 0;
   virtual cc::Layer* GetCcLayer() const = 0;
+
+  virtual LayerAnimatorCollection* GetLayerAnimatorCollection() = 0;
 
  protected:
   virtual ~LayerAnimationDelegate() {}

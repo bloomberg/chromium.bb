@@ -434,11 +434,8 @@ class COMPOSITOR_EXPORT Layer
   // be called once we have been added to a tree.
   void SendPendingThreadedAnimations();
 
-  void AddAnimatorsInTreeToCollection(LayerAnimatorCollection* collection);
-  void RemoveAnimatorsInTreeFromCollection(LayerAnimatorCollection* collection);
-
-  // Returns whether the layer has an animating LayerAnimator.
-  bool IsAnimating() const;
+  void SetCompositorForAnimatorsInTree(Compositor* compositor);
+  void ResetCompositorForAnimatorsInTree(Compositor* compositor);
 
   const LayerType type_;
 

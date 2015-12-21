@@ -15,6 +15,9 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/animation/animation_host.h"
+#include "cc/animation/animation_id_provider.h"
+#include "cc/animation/animation_timeline.h"
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
@@ -190,6 +193,12 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
                       base::TimeTicks::Now() - before_create);
+
+  if (settings.use_compositor_animation_timelines) {
+    animation_timeline_ = cc::AnimationTimeline::Create(
+        cc::AnimationIdProvider::NextTimelineId());
+    host_->animation_host()->AddAnimationTimeline(animation_timeline_.get());
+  }
   host_->SetRootLayer(root_web_layer_);
   host_->set_surface_id_namespace(surface_id_allocator_->id_namespace());
   host_->SetVisible(true);
@@ -209,6 +218,9 @@ Compositor::~Compositor() {
 
   if (root_layer_)
     root_layer_->ResetCompositor();
+
+  if (animation_timeline_)
+    host_->animation_host()->RemoveAnimationTimeline(animation_timeline_.get());
 
   // Stop all outstanding draws before telling the ContextFactory to tear
   // down any contexts that the |host_| may rely upon.
@@ -236,6 +248,10 @@ void Compositor::SetRootLayer(Layer* root_layer) {
   root_web_layer_->RemoveAllChildren();
   if (root_layer_)
     root_layer_->SetCompositor(this, root_web_layer_);
+}
+
+cc::AnimationTimeline* Compositor::GetAnimationTimeline() const {
+  return animation_timeline_.get();
 }
 
 void Compositor::SetHostHasTransparentBackground(
