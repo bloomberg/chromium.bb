@@ -23,7 +23,6 @@
  */
 
 
-#include "config.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 
 #include "core/inspector/ConsoleMessage.h"

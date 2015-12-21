@@ -4,8 +4,6 @@
 // found in the LICENSE file.
 //
 
-#include "config.h"
-
 #include "core/inspector/InspectorTracingAgent.h"
 
 #include "core/frame/LocalFrame.h"
