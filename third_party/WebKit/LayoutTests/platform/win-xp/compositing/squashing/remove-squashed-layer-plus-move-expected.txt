@@ -16,7 +16,9 @@
         "RootInlineBox",
         "LayoutBlockFlow DIV id='container'",
         "LayoutBlockFlow DIV id='container'",
+        "RootInlineBox",
         "LayoutBlockFlow (anonymous)",
+        "RootInlineBox",
         "LayoutText #text",
         "LayoutText #text"
       ],

@@ -11,6 +11,17 @@
         [8, 62, 769, 54],
         [8, 8, 769, 108]
       ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='container'",
+        "LayoutBlockFlow DIV id='container'",
+        "RootInlineBox",
+        "LayoutBlockFlow (anonymous)",
+        "RootInlineBox",
+        "LayoutText #text",
+        "LayoutText #text"
+      ],
       "children": [
         {
           "shouldFlattenTransform": false,
@@ -29,6 +40,15 @@
                 [0, 54, 100, 50],
                 [0, 0, 100, 50],
                 [0, 0, 100, 50]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow (relative positioned) DIV id='foo' class='mv-tile'",
+                "InlineBox",
+                "InlineBox",
+                "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+                "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+                "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+                "LayoutBlockFlow (relative positioned) DIV class='mv-tile'"
               ]
             }
           ]

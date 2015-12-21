@@ -298,9 +298,6 @@ crbug.com/537638 svg/text/text-rescale.html [ NeedsRebaseline ]
 crbug.com/537638 svg/text/text-viewbox-rescale.html [ NeedsRebaseline ]
 crbug.com/537638 svg/text/tspan-dynamic-positioning.svg [ NeedsRebaseline ]
 
-crbug.com/537638 compositing/squashing/remove-squashed-layer-plus-move.html [ NeedsManualRebaseline ]
-crbug.com/537638 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsManualRebaseline ]
-
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
@@ -1014,7 +1011,7 @@ crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-evenodd.html [ Failure ]
-# crbug.com/463358 [ Mac ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
+crbug.com/463358 [ Mac ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
@@ -1126,7 +1123,7 @@ crbug.com/509025 [ Mac10.10 ] compositing/overflow/updating-scrolling-container.
 crbug.com/509025 [ Mac10.10 ] compositing/squashing/invalidate-when-leaving-squashed-layer.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] compositing/squashing/invalidation-for-subpixel-offset-of-squashed-layer.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] compositing/squashing/invalidations-with-large-negative-margin.html [ Failure ]
-# crbug.com/509025 [ Mac10.10 ] compositing/squashing/remove-squashed-layer-plus-move.html [ Failure ]
+crbug.com/509025 [ Mac10.10 ] compositing/squashing/remove-squashed-layer-plus-move.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] compositing/squashing/repaint-overflow-scrolled-squashed-content.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] compositing/squashing/repaint-squashed-layer-in-rect.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] compositing/squashing/repaint-via-layout-offset.html [ Failure ]

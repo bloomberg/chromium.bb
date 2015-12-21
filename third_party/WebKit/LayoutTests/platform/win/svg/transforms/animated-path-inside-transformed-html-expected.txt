@@ -24,6 +24,7 @@
         "LayoutSVGRoot svg",
         "LayoutSVGRect rect id='rect'",
         "LayoutSVGText text id='text'",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'This is some text'",
         "LayoutSVGImage image id='image'"
