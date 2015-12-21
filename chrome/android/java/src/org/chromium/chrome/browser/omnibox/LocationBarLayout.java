@@ -229,6 +229,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     private boolean mSuggestionModalShown;
     private boolean mUseDarkColors;
+    private boolean mIsEmphasizingHttpsScheme;
 
     // True if the user has just selected a suggestion from the suggestion list. This suppresses
     // the recording of the dismissal of the suggestion list. (The list is only considered to have
@@ -1204,7 +1205,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             mSecurityButton.setImageResource(id);
         }
 
-        if (mSecurityIconType == securityLevel) return;
+        boolean shouldEmphasizeHttpsScheme = shouldEmphasizeHttpsScheme();
+        if (mSecurityIconType == securityLevel
+                && mIsEmphasizingHttpsScheme == shouldEmphasizeHttpsScheme) {
+            return;
+        }
         mSecurityIconType = securityLevel;
 
         if (securityLevel == ConnectionSecurityLevel.NONE) {
@@ -1216,6 +1221,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         // refresh the emphasis.
         mUrlBar.deEmphasizeUrl();
         emphasizeUrl();
+        mIsEmphasizingHttpsScheme = shouldEmphasizeHttpsScheme;
     }
 
     private void emphasizeUrl() {
@@ -2274,7 +2280,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      */
     @Override
     public void updateVisualsForState() {
-        if (updateUseDarkColors() || getToolbarDataProvider().isUsingBrandColor()) {
+        if (updateUseDarkColors() || mIsEmphasizingHttpsScheme != shouldEmphasizeHttpsScheme()) {
             updateSecurityIcon(getSecurityLevel());
         }
         ColorStateList colorStateList = ApiCompatibilityUtils.getColorStateList(getResources(),
