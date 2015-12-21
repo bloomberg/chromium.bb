@@ -105,4 +105,22 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
       kMediaRecorderHtmlFile);
 }
 
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderIllegalStopThrowsDOMError) {
+  MakeTypicalCall("testIllegalStopThrowsDOMError();",
+      kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderIllegalStartWhileRecordingThrowsDOMError) {
+  MakeTypicalCall("testIllegalStartInRecordingStateThrowsDOMError();",
+      kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderIllegalStartWhilePausedThrowsDOMError) {
+  MakeTypicalCall("testIllegalStartInPausedStateThrowsDOMError();",
+      kMediaRecorderHtmlFile);
+}
+
 }  // namespace content
