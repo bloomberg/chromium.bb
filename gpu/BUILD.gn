@@ -67,6 +67,7 @@ shared_library("command_buffer_gles2") {
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/service",
+    "//gpu/config:config_sources",
     "//ui/gl:gl",
   ]
 
