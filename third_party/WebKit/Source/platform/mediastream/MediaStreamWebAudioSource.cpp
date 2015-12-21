@@ -28,10 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#if ENABLE(WEB_AUDIO)
 #include "platform/mediastream/MediaStreamWebAudioSource.h"
 
+#include "wtf/build_config.h"
+
+#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioBus.h"
 #include "public/platform/WebAudioSourceProvider.h"
 

@@ -17,13 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
-
 #include "platform/mac/LocalCurrentGraphicsContext.h"
-#include "platform/mac/ThemeMac.h"
 
 #include <AppKit/NSGraphicsContext.h>
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/mac/ThemeMac.h"
 #include "platform_canvas.h"
 
 namespace blink {

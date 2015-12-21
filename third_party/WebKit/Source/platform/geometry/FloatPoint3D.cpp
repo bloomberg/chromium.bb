@@ -19,11 +19,9 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "config.h"
-
 #include "platform/geometry/FloatPoint3D.h"
-#include "wtf/MathExtras.h"
 
+#include "wtf/MathExtras.h"
 #include <math.h>
 
 namespace blink {

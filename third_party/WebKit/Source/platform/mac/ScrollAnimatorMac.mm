@@ -23,8 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
 #include "platform/mac/ScrollAnimatorMac.h"
 
 #include "platform/PlatformGestureEvent.h"

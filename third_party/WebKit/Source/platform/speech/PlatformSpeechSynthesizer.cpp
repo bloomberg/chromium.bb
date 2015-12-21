@@ -23,7 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "platform/speech/PlatformSpeechSynthesizer.h"
 
 #include "platform/exported/WebSpeechSynthesizerClientImpl.h"

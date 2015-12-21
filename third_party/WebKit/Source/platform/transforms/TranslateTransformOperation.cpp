@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 
 namespace blink {

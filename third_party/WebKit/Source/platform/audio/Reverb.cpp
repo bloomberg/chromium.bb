@@ -26,12 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
-#if ENABLE(WEB_AUDIO)
-
 #include "platform/audio/Reverb.h"
 
+#include "wtf/build_config.h"
+
+#if ENABLE(WEB_AUDIO)
 #include <math.h>
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/VectorMath.h"

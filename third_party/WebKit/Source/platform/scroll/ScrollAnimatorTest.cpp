@@ -25,7 +25,6 @@
 
 // Tests for the ScrollAnimator class.
 
-#include "config.h"
 #include "platform/scroll/ScrollAnimator.h"
 
 #include "platform/Logging.h"

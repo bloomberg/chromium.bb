@@ -18,7 +18,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "platform/graphics/filters/FEDropShadow.h"
 
 #include "platform/graphics/filters/FEGaussianBlur.h"

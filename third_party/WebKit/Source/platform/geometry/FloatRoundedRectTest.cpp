@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "platform/geometry/FloatRoundedRect.h"
 
 #include "testing/gtest/include/gtest/gtest.h"

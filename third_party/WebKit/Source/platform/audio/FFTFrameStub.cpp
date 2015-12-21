@@ -25,7 +25,7 @@
 
 // FFTFrame stub implementation to avoid link errors during bringup
 
-#include "config.h"
+#include "wtf/build_config.h"
 
 #if ENABLE(WEB_AUDIO)
 

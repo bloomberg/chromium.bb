@@ -23,8 +23,9 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "platform/text/DateTimeFormat.h"
+
+#include "wtf/build_config.h"
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "testing/gtest/include/gtest/gtest.h"

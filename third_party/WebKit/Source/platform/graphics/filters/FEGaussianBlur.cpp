@@ -23,8 +23,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
-
 #include "platform/graphics/filters/FEGaussianBlur.h"
 
 #include "platform/graphics/filters/Filter.h"

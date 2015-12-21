@@ -20,7 +20,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "platform/text/TextBreakIterator.h"
 
 #include "wtf/ASCIICType.h"

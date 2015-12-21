@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/transforms/SkewTransformOperation.h"
 
 #include "platform/animation/AnimationUtilities.h"

@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
 
 #include "platform/fonts/Character.h"

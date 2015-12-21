@@ -22,12 +22,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
-#if ENABLE(WEB_AUDIO)
-
 #include "platform/audio/AudioResamplerKernel.h"
 
+#include "wtf/build_config.h"
+
+#if ENABLE(WEB_AUDIO)
 #include <algorithm>
 #include "platform/audio/AudioResampler.h"
 

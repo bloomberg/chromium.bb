@@ -23,7 +23,6 @@
  * DAMAGE.
  */
 
-#include "config.h"
 #include "platform/text/LocaleMac.h"
 
 #include "platform/DateComponents.h"

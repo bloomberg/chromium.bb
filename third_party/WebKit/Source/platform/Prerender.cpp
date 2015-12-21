@@ -29,7 +29,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/Prerender.h"
 
 #include "platform/PrerenderClient.h"

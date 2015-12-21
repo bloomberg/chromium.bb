@@ -25,7 +25,6 @@
 
 // Tests for the red-black tree class.
 
-#include "config.h"
 #include "platform/PODRedBlackTree.h"
 
 #include "platform/testing/ArenaTestHelpers.h"

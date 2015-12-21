@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/fonts/Font.h"
 
 #include "platform/LayoutTestSupport.h"

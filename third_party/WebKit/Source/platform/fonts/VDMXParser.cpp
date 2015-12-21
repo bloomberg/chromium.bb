@@ -28,8 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "VDMXParser.h"
+#include "platform/fonts/VDMXParser.h"
 
 #include "wtf/Allocator.h"
 #include "wtf/ByteOrder.h"

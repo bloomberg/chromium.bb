@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/text/BidiContext.h"
 
 #include "wtf/StdLibExtras.h"

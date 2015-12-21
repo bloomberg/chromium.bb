@@ -26,7 +26,7 @@
 // FFTFrame implementation using FFmpeg's RDFT algorithm,
 // suitable for use on Windows and Linux.
 
-#include "config.h"
+#include "wtf/build_config.h"
 
 #if ENABLE(WEB_AUDIO)
 

@@ -36,7 +36,6 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "config.h"
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 
 #include "png.h"

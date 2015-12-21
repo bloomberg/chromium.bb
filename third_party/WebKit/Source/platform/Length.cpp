@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/Length.h"
 
 #include "platform/CalculationValue.h"

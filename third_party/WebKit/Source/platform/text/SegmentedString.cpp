@@ -17,7 +17,6 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "config.h"
 #include "platform/text/SegmentedString.h"
 
 namespace blink {

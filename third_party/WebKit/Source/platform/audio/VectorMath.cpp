@@ -22,11 +22,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#include "platform/audio/VectorMath.h"
+
+#include "wtf/build_config.h"
 
 #if ENABLE(WEB_AUDIO)
-
-#include "platform/audio/VectorMath.h"
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
 #include <stdint.h>

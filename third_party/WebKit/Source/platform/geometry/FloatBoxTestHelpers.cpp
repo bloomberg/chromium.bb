@@ -22,11 +22,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "platform/geometry/FloatBoxTestHelpers.h"
-#include "platform/geometry/GeometryTestHelpers.h"
 
 #include "platform/geometry/FloatBox.h"
+#include "platform/geometry/GeometryTestHelpers.h"
+
 const static float kTestEpsilon = 1e-6;
 
 namespace blink {

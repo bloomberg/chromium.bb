@@ -25,7 +25,6 @@
 
 // Tests for the Font class.
 
-#include "config.h"
 #include "platform/fonts/Font.h"
 
 #include "platform/fonts/Character.h"

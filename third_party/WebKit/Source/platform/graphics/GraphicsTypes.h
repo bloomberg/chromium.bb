@@ -31,6 +31,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "wtf/Forward.h"
+#include "wtf/build_config.h"
 
 namespace blink {
 

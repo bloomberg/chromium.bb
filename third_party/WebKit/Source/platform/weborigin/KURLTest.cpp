@@ -31,7 +31,6 @@
 // Basic tests that verify our KURL's interface behaves the same as the
 // original KURL's.
 
-#include "config.h"
 #include "platform/weborigin/KURL.h"
 
 #include "testing/gtest/include/gtest/gtest.h"

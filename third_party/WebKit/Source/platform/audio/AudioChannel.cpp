@@ -26,16 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
-#if ENABLE(WEB_AUDIO)
-
 #include "platform/audio/AudioChannel.h"
 
-#include <math.h>
-#include <algorithm>
+#include "wtf/build_config.h"
+
+#if ENABLE(WEB_AUDIO)
 #include "platform/audio/VectorMath.h"
 #include "wtf/OwnPtr.h"
+#include <algorithm>
+#include <math.h>
 
 namespace blink {
 

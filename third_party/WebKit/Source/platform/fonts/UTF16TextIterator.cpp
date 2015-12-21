@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/fonts/UTF16TextIterator.h"
 
 #include <unicode/unorm.h>

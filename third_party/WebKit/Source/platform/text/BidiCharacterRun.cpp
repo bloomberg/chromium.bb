@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/text/BidiCharacterRun.h"
 
 #include "wtf/Partitions.h"

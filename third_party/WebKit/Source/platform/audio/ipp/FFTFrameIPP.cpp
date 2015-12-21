@@ -27,7 +27,7 @@
 // FFTFrame implementation using Intel IPP's DFT algorithm,
 // suitable for use on Linux.
 
-#include "config.h"
+#include "wtf/build_config.h"
 
 #if ENABLE(WEB_AUDIO)
 

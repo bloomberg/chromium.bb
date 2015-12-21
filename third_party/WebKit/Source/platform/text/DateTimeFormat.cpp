@@ -23,7 +23,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "platform/text/DateTimeFormat.h"
 
 #include "wtf/ASCIICType.h"

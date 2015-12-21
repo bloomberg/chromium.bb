@@ -25,7 +25,6 @@
 
 // Tests for the interval tree class.
 
-#include "config.h"
 #include "platform/PODIntervalTree.h"
 
 #include "platform/Logging.h"

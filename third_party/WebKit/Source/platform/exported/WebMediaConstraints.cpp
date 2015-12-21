@@ -28,14 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
-#include <math.h>
-
 #include "public/platform/WebMediaConstraints.h"
 
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include <math.h>
 
 namespace blink {
 

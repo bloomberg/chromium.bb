@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/image-decoders/ImageDecoder.h"
 
 #include "platform/PlatformInstrumentation.h"

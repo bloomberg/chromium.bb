@@ -23,7 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "platform/geometry/IntRect.h"
 
 #include "platform/geometry/FloatRect.h"

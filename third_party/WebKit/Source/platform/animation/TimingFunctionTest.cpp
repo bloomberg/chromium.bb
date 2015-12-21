@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "platform/animation/TimingFunction.h"
 
 #include "testing/gmock/include/gmock/gmock.h"

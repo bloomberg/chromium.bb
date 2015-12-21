@@ -28,11 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
-#if !OS(WIN) && !OS(ANDROID)
-#include "SkFontConfigInterface.h"
-#endif
 #include "SkFontMgr.h"
 #include "SkStream.h"
 #include "SkTypeface.h"
@@ -49,6 +44,8 @@
 #include <unicode/locid.h>
 
 #if !OS(WIN) && !OS(ANDROID)
+#include "SkFontConfigInterface.h"
+
 static PassRefPtr<SkTypeface> typefaceForFontconfigInterfaceIdAndTtcIndex(int fontconfigInterfaceId, int ttcIndex)
 {
     SkAutoTUnref<SkFontConfigInterface> fci(SkFontConfigInterface::RefGlobal());

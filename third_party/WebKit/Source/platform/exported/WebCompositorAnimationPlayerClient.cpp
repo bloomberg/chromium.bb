@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
 #include "public/platform/WebCompositorAnimationPlayerClient.h"
 
-// This WebCompositorAnimationPlayerClient.cpp, which includes only config.h
+// This WebCompositorAnimationPlayerClient.cpp, which includes only
 // and WebCompositorAnimationPlayerClient.h, should be in
 // Source/platform/exported, because WebCompositorAnimationPlayerClient is not
 // compiled without this cpp.

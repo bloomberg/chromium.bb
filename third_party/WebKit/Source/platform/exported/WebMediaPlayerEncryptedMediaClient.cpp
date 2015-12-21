@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
 #include "public/platform/WebMediaPlayerEncryptedMediaClient.h"
 
-// This WebMediaPlayerEncryptedMediaClient.cpp, which includes only config.h
+// This WebMediaPlayerEncryptedMediaClient.cpp, which includes only
 // and WebMediaPlayerEncryptedMediaClient.h, should be in
 // Source/platform/exported, because WebMediaPlayerEncryptedMediaClient is not
 // compiled without this cpp.

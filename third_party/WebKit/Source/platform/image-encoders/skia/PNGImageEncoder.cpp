@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
+
 #include "platform/graphics/ImageBuffer.h"
 #include "wtf/OwnPtr.h"
 

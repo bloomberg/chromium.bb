@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/text/TextBreakIterator.h"
 
 #include "platform/text/TextBreakIteratorInternalICU.h"

@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/fonts/FontPlatformData.h"
 
 #include "SkTypeface.h"

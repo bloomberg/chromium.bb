@@ -22,7 +22,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "platform/network/FormDataEncoder.h"
 
 #include "wtf/CryptographicallyRandomNumber.h"

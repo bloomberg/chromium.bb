@@ -28,7 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "platform/graphics/filters/Filter.h"
 
 #include "platform/graphics/filters/FilterEffect.h"

@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/weborigin/SchemeRegistry.h"
 
 #include "wtf/ThreadSpecific.h"

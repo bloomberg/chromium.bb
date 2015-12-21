@@ -24,8 +24,6 @@
  *
  */
 
-#include "config.h"
-
 #include "platform/LifecycleNotifier.h"
 #include "platform/LifecycleObserver.h"
 #include "platform/heap/Handle.h"

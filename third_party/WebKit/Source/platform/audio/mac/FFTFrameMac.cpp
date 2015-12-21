@@ -28,7 +28,7 @@
 
 // Mac OS X - specific FFTFrame implementation
 
-#include "config.h"
+#include "wtf/build_config.h"
 
 #if ENABLE(WEB_AUDIO)
 

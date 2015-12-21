@@ -27,8 +27,6 @@
  *
  */
 
-#include "config.h"
-
 #include "platform/graphics/ImageObserver.h"
 
 namespace blink {

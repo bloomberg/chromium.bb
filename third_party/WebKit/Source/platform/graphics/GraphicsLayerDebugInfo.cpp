@@ -17,7 +17,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
 
 #include "base/trace_event/trace_event_argument.h"

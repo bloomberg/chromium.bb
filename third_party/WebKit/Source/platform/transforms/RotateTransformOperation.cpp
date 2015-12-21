@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "platform/transforms/RotateTransformOperation.h"
 
 #include "platform/animation/AnimationUtilities.h"

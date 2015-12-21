@@ -22,8 +22,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
+
 #include "public/platform/WebString.h"
 
 namespace blink {

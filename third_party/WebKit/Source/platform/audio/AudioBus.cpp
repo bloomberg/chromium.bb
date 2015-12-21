@@ -26,12 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
-#if ENABLE(WEB_AUDIO)
-
 #include "platform/audio/AudioBus.h"
 
+#include "wtf/build_config.h"
+
+#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioFileReader.h"
 #include "platform/audio/DenormalDisabler.h"
 #include "platform/audio/SincResampler.h"
@@ -39,7 +38,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioBus.h"
 #include "wtf/OwnPtr.h"
-
 #include <assert.h>
 #include <math.h>
 #include <algorithm>

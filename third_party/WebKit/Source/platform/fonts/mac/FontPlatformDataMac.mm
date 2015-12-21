@@ -21,7 +21,6 @@
  *
  */
 
-#import "config.h"
 #import "platform/fonts/FontPlatformData.h"
 
 #import "platform/LayoutTestSupport.h"

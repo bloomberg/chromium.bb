@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "public/platform/linux/WebFontInfo.h"
 
 #include "public/platform/linux/WebFallbackFont.h"
