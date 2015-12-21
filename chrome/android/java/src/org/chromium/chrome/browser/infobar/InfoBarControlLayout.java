@@ -92,22 +92,46 @@ public final class InfoBarControlLayout extends ViewGroup {
         int exactlyColumnWidthSpec = MeasureSpec.makeMeasureSpec(columnWidth, MeasureSpec.EXACTLY);
         int unspecifiedSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 
-        // Measure all children, assuming they all have to fit within the width of the layout.
-        // Height is unconstrained.
+        // Figure out how many columns each child requires.
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             measureChild(child, atMostFullWidthSpec, unspecifiedSpec);
 
             if (child.getMeasuredWidth() <= columnWidth
                     && !getControlLayoutParams(child).mMustBeFullWidth) {
-                // Stretch out the control to take up a column width.
                 getControlLayoutParams(child).columnsRequired = 1;
-                measureChild(child, exactlyColumnWidthSpec, unspecifiedSpec);
             } else {
-                // Stretch out the control to take up the full width.
                 getControlLayoutParams(child).columnsRequired = 2;
-                measureChild(child, exactlyFullWidthSpec, unspecifiedSpec);
             }
+        }
+
+        // Pack all the children as tightly into rows as possible without changing their ordering.
+        // Stretch out column-width controls if either it is the last control or the next one is
+        // a full-width control.
+        for (int i = 0; i < getChildCount(); i++) {
+            ControlLayoutParams lp = getControlLayoutParams(getChildAt(i));
+
+            if (i == getChildCount() - 1) {
+                lp.columnsRequired = 2;
+            } else {
+                ControlLayoutParams nextLp = getControlLayoutParams(getChildAt(i + 1));
+                if (lp.columnsRequired + nextLp.columnsRequired > 2) {
+                    // This control is too big to place with the next child.
+                    lp.columnsRequired = 2;
+                } else {
+                    // This and the next control fit on the same line.  Skip placing the next child.
+                    i++;
+                }
+            }
+        }
+
+        // Measure all children, assuming they all have to fit within the width of the layout.
+        // Height is unconstrained.
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            ControlLayoutParams lp = getControlLayoutParams(child);
+            int spec = lp.columnsRequired == 1 ? exactlyColumnWidthSpec : exactlyFullWidthSpec;
+            measureChild(child, spec, unspecifiedSpec);
         }
 
         // Pack all the children as tightly into rows as possible without changing their ordering.
