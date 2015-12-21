@@ -1,0 +1,5 @@
+{
+  "name": "Simple Extension with icon",
+  "version": "0.1",
+  "icons": { "128": "icon.png" }
+}

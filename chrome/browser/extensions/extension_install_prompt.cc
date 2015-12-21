@@ -671,7 +671,8 @@ void ExtensionInstallPrompt::ShowDialog(
   DCHECK(prompt);
   extension_ = extension;
   delegate_ = delegate;
-  SetIcon(icon);
+  if (icon && !icon->empty())
+    SetIcon(icon);
   prompt_ = prompt.Pass();
   custom_permissions_ = custom_permissions.Pass();
   show_dialog_callback_ = show_dialog_callback;

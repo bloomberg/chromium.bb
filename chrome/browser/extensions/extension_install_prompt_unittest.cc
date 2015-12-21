@@ -9,12 +9,17 @@
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
+#include "chrome/browser/extensions/extension_service_test_with_install.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
+#include "extensions/browser/image_loader.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
@@ -22,10 +27,21 @@
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/skia_util.h"
 
 namespace extensions {
 
 namespace {
+
+void VerifyPromptIconCallback(
+    const base::Closure& quit_closure,
+    const SkBitmap& expected_bitmap,
+    ExtensionInstallPromptShowParams* params,
+    ExtensionInstallPrompt::Delegate* delegate,
+    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
+  EXPECT_TRUE(gfx::BitmapsAreEqual(prompt->icon().AsBitmap(), expected_bitmap));
+  quit_closure.Run();
+}
 
 void VerifyPromptPermissionsCallback(
     const base::Closure& quit_closure,
@@ -41,6 +57,13 @@ void VerifyPromptPermissionsCallback(
   EXPECT_EQ(withheld_permissions_count,
             install_prompt->GetPermissionCount(
                 ExtensionInstallPrompt::WITHHELD_PERMISSIONS));
+  quit_closure.Run();
+}
+
+void SetImage(gfx::Image* image_out,
+              const base::Closure& quit_closure,
+              const gfx::Image& image_in) {
+  *image_out = image_in;
   quit_closure.Run();
 }
 
@@ -163,6 +186,57 @@ TEST_F(ExtensionInstallPromptUnitTest,
                  2u,    // |regular_permissions_count|.
                  0u));  // |withheld_permissions_count|.
   run_loop.Run();
+}
+
+using ExtensionInstallPromptTestWithService = ExtensionServiceTestWithInstall;
+
+TEST_F(ExtensionInstallPromptTestWithService, ExtensionInstallPromptIconsTest) {
+  InitializeEmptyExtensionService();
+
+  const Extension* extension = PackAndInstallCRX(
+      data_dir().AppendASCII("simple_with_icon"), INSTALL_NEW);
+  ASSERT_TRUE(extension);
+
+  std::vector<ImageLoader::ImageRepresentation> image_rep(
+      1, ImageLoader::ImageRepresentation(
+             IconsInfo::GetIconResource(extension,
+                                        extension_misc::EXTENSION_ICON_LARGE,
+                                        ExtensionIconSet::MATCH_BIGGER),
+             ImageLoader::ImageRepresentation::NEVER_RESIZE, gfx::Size(),
+             ui::SCALE_FACTOR_100P));
+  base::RunLoop image_loop;
+  gfx::Image image;
+  ImageLoader::Get(browser_context())
+      ->LoadImagesAsync(
+          extension, image_rep,
+          base::Bind(&SetImage, &image, image_loop.QuitClosure()));
+  image_loop.Run();
+  ASSERT_FALSE(image.IsEmpty());
+  content::TestWebContentsFactory factory;
+  content::WebContents* web_contents =
+      factory.CreateWebContents(browser_context());
+  {
+    ExtensionInstallPrompt prompt(web_contents);
+    base::RunLoop run_loop;
+    prompt.ShowDialog(nullptr,  // No delegate.
+                      extension,
+                      nullptr,  // Force an icon fetch.
+                      base::Bind(&VerifyPromptIconCallback,
+                                 run_loop.QuitClosure(), image.AsBitmap()));
+    run_loop.Run();
+  }
+
+  {
+    ExtensionInstallPrompt prompt(web_contents);
+    base::RunLoop run_loop;
+    gfx::ImageSkia app_icon = util::GetDefaultAppIcon();
+    prompt.ShowDialog(nullptr,  // No delegate.
+                      extension,
+                      app_icon.bitmap(),  // Use a different icon.
+                      base::Bind(&VerifyPromptIconCallback,
+                                 run_loop.QuitClosure(), *app_icon.bitmap()));
+    run_loop.Run();
+  }
 }
 
 }  // namespace extensions
