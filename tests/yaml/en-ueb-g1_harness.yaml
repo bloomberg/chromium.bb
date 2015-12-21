@@ -50,40 +50,46 @@ tests:
   - [4th, ⠼⠙⠞⠓]
   - - one italic word
     - ⠕⠝⠑ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙
-    - typeform: '000011111100000'
+    - typeform:
+        italic: '    ++++++     '
       # Emphasis doesn't always work
       xfail: true
   - - two italic words
     - ⠨⠂⠞⠺⠕ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎
-    - typeform: '1111111111000000'
+    - typeform:
+        italic: '++++++++++      '
       # Emphasis doesn't always work
       xfail: true
   - - three italic words
     - ⠨⠶⠞⠓⠗⠑⠑ ⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎⠨⠄
-    - {typeform: '111111111111111111'}
+    - {typeform: {italic: '++++++++++++++++++'}}
   - - one bold word
     - ⠕⠝⠑ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙
-    - typeform: '0000444400000'
+    - typeform:
+        bold: '    ++++     '
       # Emphasis doesn't always work
       xfail: true
   - - two bold words
     - ⠘⠂⠞⠺⠕ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙⠎
-    - typeform: '44444444000000'
+    - typeform:
+        bold: '++++++++      '
       # Emphasis doesn't always work
       xfail: true
   - - three bold words
     - ⠘⠶⠞⠓⠗⠑⠑ ⠃⠕⠇⠙ ⠺⠕⠗⠙⠎⠘⠄
-    - {typeform: '4444444444444444'}
+    - {typeform: {bold: '++++++++++++++++'}}
   - - one underlined word
     - ⠕⠝⠑ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙
-    - typeform: '0000222222222200000'
+    - typeform:
+        underline: '    ++++++++++     '
       # Emphasis doesn't always work
       xfail: true
   - - two underlined words
     - ⠸⠂⠞⠺⠕ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎
-    - typeform: '22222222222222000000'
+    - typeform:
+        underline: '++++++++++++++      '
       # Emphasis doesn't always work
       xfail: true
   - - three underlined words
     - ⠸⠶⠞⠓⠗⠑⠑ ⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎⠸⠄
-    - {typeform: '2222222222222222222222'}
+    - {typeform: {underline: '++++++++++++++++++++++'}}

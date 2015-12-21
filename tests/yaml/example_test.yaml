@@ -17,7 +17,7 @@ tests:
     # item such as typeform or expected failure, etc
     - Hello
     - ⠨⠶⠠⠓⠑⠇⠇⠕⠨⠄
-    - {typeform: '11110', xfail: true}
+    - {typeform: {italic: '++++ '}, xfail: true}
   - # a simple, no-frills test
     - Good bye
     - ⠠⠛⠕⠕⠙ ⠃⠽⠑

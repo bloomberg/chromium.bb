@@ -88,7 +88,7 @@ tests:
   - [y, ⠽] # lowercase letter y [y]
   - [Z, ⠠⠵] # capital letter Z [Z]
   - [z, ⠵] # lowercase letter z [z]
-  - [\, ⠸⠡] # reverse solidus (backslash) [\]
+  - [\\, ⠸⠡] # reverse solidus (backslash) [\]
   - [_, ⠨⠤] # low line (underscore) [\x005f]
   - ['`', ⠨⠡] # grave accent alone [\x0060]
   - ['{', ⠸⠣] # opening curly bracket (brace bracket) [\x007b]

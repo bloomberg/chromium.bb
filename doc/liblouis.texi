@@ -1977,7 +1977,7 @@ tests:
     # item such as typeform or expected failure, etc
     - Hello
     - ⠨⠶⠠⠓⠑⠇⠇⠕⠨⠄
-    - @{typeform: '11110', xfail: true@}
+    - @{typeform: @{italic: '++++ '@}, xfail: true@}
   - # a simple, no-frills test
     - Good bye
     - ⠠⠛⠕⠕⠙ ⠃⠽⠑
@@ -2052,9 +2052,9 @@ shows a typical example:
   -
     - Hello
     - ⠨⠶⠠⠓⠑⠇⠇⠕⠨⠄
-    - @{typeform: '11110', xfail: true@}
+    - @{typeform: @{italic: '++++ '@}, xfail: true@}
   # same test more compact
-  - [Hello, ⠨⠶⠠⠓⠑⠇⠇⠕⠨⠄, @{typeform: '11110', xfail: true@}]
+  - [Hello, ⠨⠶⠠⠓⠑⠇⠇⠕⠨⠄, @{typeform: @{italic: '++++ '@}, xfail: true@}]
 @end example
 
 The valid additional options for a test are as follows:
@@ -2065,8 +2065,24 @@ Whether a test is expected to fail. Valid options are @samp{true},
 @samp{Y}, @samp{Yes} or @samp{ON}. Anything else is considered false.
 
 @item typeform
-The typeform used for a translation. The typeform is passed in the
-form of a string.
+The typeform used for a translation. It consists of one or more
+emphasis specifications. For each character in the specifications that
+is not a space the corresponding emphasis will be set. Valid options
+for emphasis are @samp{italic}, @samp{underline}, @samp{bold},
+@samp{computer_braille}, @samp{passage_break}, @samp{word_reset},
+@samp{script}, @samp{trans_note}, @samp{trans_note_1},
+@samp{trans_note_2}, @samp{trans_note_3}, @samp{trans_note_4} or
+@samp{trans_note_5}. The following shows an example where both
+@samp{italic} and @samp{underline} are specified:
+
+@example
+  -
+    - Hello
+    - ⠨⠶⠠⠓⠑⠇⠇⠕⠨⠄
+    - typeform:
+        italic:    '++++ '
+        underline: '    +'
+@end example
 
 @item cursorPos
 A list of cursor positions for each input position. Useful when

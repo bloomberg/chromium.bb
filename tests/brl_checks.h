@@ -45,3 +45,4 @@ int check_hyphenation(const char *tableList, const char *str, const char *expect
    The caller is responsible for freeing the returned array. */
 formtype * convert_typeform(const char* typeform_string);
 
+void update_typeform(const char* typeform_string, formtype* typeform, typeforms kind);

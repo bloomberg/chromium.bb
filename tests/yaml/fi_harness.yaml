@@ -61,16 +61,19 @@ tests:
   - # Underlines, p. 39
     - Tietoa saa Näkövammaisten Keskusliitosta.
     - ⠠⠞⠊⠑⠞⠕⠁ ⠎⠁⠁ ⠬⠠⠝⠜⠅⠪⠧⠁⠍⠍⠁⠊⠎⠞⠑⠝ ⠬⠠⠅⠑⠎⠅⠥⠎⠇⠊⠊⠞⠕⠎⠞⠁⠄
-    - {typeform: '00000000000444444444444444444444444444440'}
+    - {typeform: {bold: '           +++++++++++++++++++++++++++++ '}}
   - # Bold, p. 39
     - Hän kiinnitti huomiota järjestysluvun taivutukseen sanassa tuhannennen.
     - ⠠⠓⠜⠝ ⠅⠊⠊⠝⠝⠊⠞⠞⠊ ⠓⠥⠕⠍⠊⠕⠞⠁ ⠬⠚⠜⠗⠚⠑⠎⠞⠽⠎⠇⠥⠧⠥⠝ ⠞⠁⠊⠧⠥⠞⠥⠅⠎⠑⠑⠝ ⠎⠁⠝⠁⠎⠎⠁ ⠞⠥⠓⠁⠝⠬⠝⠑⠝⠬⠝⠑⠝⠄
-    - {typeform: '00000000000000000000000222222222222220000000000000000000000000002220000'}
+    - typeform:
+        underline: '                       ++++++++++++++                           +++    '
   - # Italic, p. 40
     - Ei kaikki ole kultaa, mikä kiiltää.
     - ⠠⠑⠊ ⠨⠅⠁⠊⠅⠅⠊ ⠕⠇⠑ ⠅⠥⠇⠞⠁⠁⠂ ⠨⠍⠊⠅⠜ ⠅⠊⠊⠇⠞⠜⠜⠄
-    - {typeform: '00011111100000000000001111000000000'}
+    - typeform:
+        italic: '   ++++++             ++++         '
   - # Longer emphasized phrase, p. 39
     - Tämä on yli kolmen sanan testi.
     - ⠠⠞⠜⠍⠜ ⠬⠬⠕⠝ ⠽⠇⠊ ⠅⠕⠇⠍⠑⠝ ⠎⠁⠝⠁⠝ ⠬⠞⠑⠎⠞⠊⠄
-    - {typeform: '0000022222222222222222222222220'}
+    - typeform:
+        underline: '     +++++++++++++++++++++++++ '

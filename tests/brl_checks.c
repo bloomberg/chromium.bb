@@ -172,6 +172,16 @@ convert_typeform(const char* typeform_string)
   return typeform;
 }
 
+void
+update_typeform(const char* typeform_string, formtype* typeform, const typeforms kind)
+{
+  int len = strlen(typeform_string);
+  int i;
+  for (i=0; i<len; i++)
+    if (typeform_string[i] != ' ')
+      typeform[i] |= kind;
+}
+
 /* Check if a string is translated as expected. Return 0 if the
    translation is as expected and 1 otherwise. */
 int
@@ -195,7 +205,7 @@ check_translation_with_mode(const char *tableList, const char *str,
    backtranslation is as expected and 1 otherwise. */
 int
 check_backtranslation(const char *tableList, const char *str,
-		  const formtype *typeform, const char *expected)
+		      const formtype *typeform, const char *expected)
 {
   return check_backtranslation_with_mode(tableList, str, typeform, expected, 0);
 }
@@ -204,8 +214,8 @@ check_backtranslation(const char *tableList, const char *str,
    backtranslation is as expected and 1 otherwise. */
 int
 check_backtranslation_with_mode(const char *tableList, const char *str,
-			    const formtype *typeform, const char *expected, 
-			    int mode)
+				const formtype *typeform, const char *expected,
+				int mode)
 {
     return check_with_mode(tableList, str, typeform, expected, mode, 1);
 }

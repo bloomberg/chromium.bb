@@ -137,31 +137,31 @@ tests:
     - ⠭⠂⠼⠁
   - - Landt je vader op Schiphol?
     - ⠨⠇⠁⠝⠙⠸⠞ ⠚⠑ ⠧⠁⠙⠑⠗ ⠕⠏ ⠨⠎⠉⠓⠊⠏⠓⠕⠇⠢
-    - {typeform: '000040000000000000000000000'}
+    - {typeform: {bold: '    +                      '}}
   - - Amsterdam en Brussel
     - ⠸⠨⠁⠍⠎⠞⠑⠗⠙⠁⠍ ⠑⠝ ⠸⠨⠃⠗⠥⠎⠎⠑⠇
-    - {typeform: '44444444400004444444'}
+    - {typeform: {bold: '+++++++++    +++++++'}}
   - - Heb je Vlucht langs de Anapoer al gelezen?
     - ⠨⠓⠑⠃ ⠚⠑ ⠸⠸⠨⠧⠇⠥⠉⠓⠞ ⠇⠁⠝⠛⠎ ⠙⠑ ⠸⠨⠁⠝⠁⠏⠕⠑⠗ ⠁⠇ ⠛⠑⠇⠑⠵⠑⠝⠢
-    - {typeform: '000000044444444444444444444444000000000000'}
+    - {typeform: {bold: '       +++++++++++++++++++++++            '}}
   - - '''t Is tijd om naar huis te gaan.'
     - ⠸⠸⠄⠞ ⠨⠊⠎ ⠞⠊⠚⠙ ⠕⠍ ⠝⠁⠁⠗ ⠓⠥⠊⠎ ⠞⠑ ⠸⠛⠁⠁⠝⠲
-    - {typeform: '44444444444444444444444444444444'}
+    - {typeform: {bold: '++++++++++++++++++++++++++++++++'}}
   - - ZUID-AFRIKA was zijn droom.
     - ⠸⠘⠵⠥⠊⠙⠤⠁⠋⠗⠊⠅⠁ ⠺⠁⠎ ⠵⠊⠚⠝ ⠙⠗⠕⠕⠍⠲
-    - {typeform: '4444444444400000000000000000'}
+    - {typeform: {bold: '+++++++++++                '}}
   - - BTW-tarieven
     - ⠸⠘⠃⠞⠺⠤⠠⠞⠁⠗⠊⠑⠧⠑⠝
-    - {typeform: '444400000000'}
+    - {typeform: {bold: '++++        '}}
   - - 3de
     - ⠼⠉⠸⠙⠑
-    - {typeform: '044'}
+    - {typeform: {bold: ' ++'}}
   - - cursief
     - ⠸⠉⠥⠗⠎⠊⠑⠋
-    - {typeform: '1111111'}
+    - {typeform: {italic: '+++++++'}}
   - - onderstreept
     - ⠸⠕⠝⠙⠑⠗⠎⠞⠗⠑⠑⠏⠞
-    - {typeform: '222222222222'}
+    - {typeform: {underline: '++++++++++++'}}
   - - vetgedrukt
     - ⠸⠧⠑⠞⠛⠑⠙⠗⠥⠅⠞
-    - {typeform: '4444444444'}
+    - {typeform: {bold: '++++++++++'}}

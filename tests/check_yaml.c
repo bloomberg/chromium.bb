@@ -210,6 +210,87 @@ read_cursorPos (yaml_parser_t *parser, int len) {
 }
 
 void
+read_typeform_string(yaml_parser_t *parser, formtype* typeform, typeforms kind, int len) {
+  yaml_event_t event;
+  int typeform_len;
+
+  if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
+    yaml_error(YAML_SCALAR_EVENT, &event);
+  typeform_len = strlen(event.data.scalar.value);
+  if (typeform_len != len)
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		  "Too many or too typeforms (%i) for word of length %i\n", typeform_len, len);
+  update_typeform(event.data.scalar.value, typeform, kind);
+  yaml_event_delete(&event);
+}
+
+formtype*
+read_typeforms (yaml_parser_t *parser, int len) {
+  yaml_event_t event;
+  formtype *typeform = calloc(len, sizeof(formtype));
+  int parse_error = 1;
+
+  if (!yaml_parser_parse(parser, &event) ||
+      (event.type != YAML_MAPPING_START_EVENT))
+    yaml_error(YAML_MAPPING_START_EVENT, &event);
+  yaml_event_delete(&event);
+
+  while ((parse_error = yaml_parser_parse(parser, &event)) &&
+	 (event.type == YAML_SCALAR_EVENT)) {
+    if (!strcmp(event.data.scalar.value, "italic")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, italic, len);
+    } else if (!strcmp(event.data.scalar.value, "underline")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, underline, len);
+    } else if (!strcmp(event.data.scalar.value, "bold")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, bold, len);
+    } else if (!strcmp(event.data.scalar.value, "computer_braille")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, computer_braille, len);
+    } else if (!strcmp(event.data.scalar.value, "passage_break")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, passage_break, len);
+    } else if (!strcmp(event.data.scalar.value, "word_reset")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, word_reset, len);
+    } else if (!strcmp(event.data.scalar.value, "script")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, script, len);
+    } else if (!strcmp(event.data.scalar.value, "trans_note")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, trans_note, len);
+    } else if (!strcmp(event.data.scalar.value, "trans_note_1")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, trans_note_1, len);
+    } else if (!strcmp(event.data.scalar.value, "trans_note_2")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, trans_note_2, len);
+    } else if (!strcmp(event.data.scalar.value, "trans_note_3")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, trans_note_3, len);
+    } else if (!strcmp(event.data.scalar.value, "trans_note_4")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, trans_note_4, len);
+    } else if (!strcmp(event.data.scalar.value, "trans_note_5")) {
+      yaml_event_delete(&event);
+      read_typeform_string(parser, typeform, trans_note_5, len);
+    } else {
+      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		    "Typeform '%s' not supported\n", event.data.scalar.value);
+    }
+  }
+  if (!parse_error)
+    simple_error("Error in YAML", &event);
+
+  if (event.type != YAML_MAPPING_END_EVENT)
+    yaml_error(YAML_MAPPING_END_EVENT, &event);
+  yaml_event_delete(&event);
+  return typeform;
+}
+
+void
 read_options (yaml_parser_t *parser, int len,
 	      int *xfail, translationModes *mode,
 	      formtype **typeform, int **cursorPos) {
@@ -234,11 +315,7 @@ read_options (yaml_parser_t *parser, int len,
       *mode = read_mode(parser);
     } else if (!strcmp(option_name, "typeform")) {
       yaml_event_delete(&event);
-      if (!yaml_parser_parse(parser, &event) ||
-	  (event.type != YAML_SCALAR_EVENT))
-	yaml_error(YAML_SCALAR_EVENT, &event);
-      *typeform = convert_typeform(event.data.scalar.value);
-      yaml_event_delete(&event);
+      *typeform = read_typeforms(parser, len);
     } else if (!strcmp(option_name, "cursorPos")) {
       yaml_event_delete(&event);
       *cursorPos = read_cursorPos(parser, len);
