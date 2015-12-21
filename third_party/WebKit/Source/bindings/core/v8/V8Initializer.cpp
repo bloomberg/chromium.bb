@@ -317,15 +317,6 @@ static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> conte
     return false;
 }
 
-static void timerTraceProfilerInMainThread(const char* name, int status)
-{
-    if (!status) {
-        TRACE_EVENT_BEGIN0("v8", name);
-    } else {
-        TRACE_EVENT_END0("v8", name);
-    }
-}
-
 static void initializeV8Common(v8::Isolate* isolate)
 {
     isolate->AddGCPrologueCallback(V8GCController::gcPrologue);
@@ -388,7 +379,6 @@ void V8Initializer::initializeMainThreadIfNeeded()
         V8PerIsolateData::enableIdleTasks(isolate, adoptPtr(new V8IdleTaskRunner(scheduler)));
     }
 
-    isolate->SetEventLogger(timerTraceProfilerInMainThread);
     isolate->SetPromiseRejectCallback(promiseRejectHandlerInMainThread);
 
     if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler())

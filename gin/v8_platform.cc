@@ -61,4 +61,42 @@ double V8Platform::MonotonicallyIncreasingTime() {
       static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
+const uint8_t* V8Platform::GetCategoryGroupEnabled(const char* name) {
+  return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(name);
+}
+
+const char* V8Platform::GetCategoryGroupName(
+    const uint8_t* category_enabled_flag) {
+  return base::trace_event::TraceLog::GetCategoryGroupName(
+      category_enabled_flag);
+}
+
+uint64_t V8Platform::AddTraceEvent(char phase,
+                                   const uint8_t* category_enabled_flag,
+                                   const char* name,
+                                   uint64_t id,
+                                   uint64_t bind_id,
+                                   int32_t num_args,
+                                   const char** arg_names,
+                                   const uint8_t* arg_types,
+                                   const uint64_t* arg_values,
+                                   unsigned int flags) {
+  base::trace_event::TraceEventHandle handle =
+      TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_BIND_ID(
+          phase, category_enabled_flag, name, id, bind_id, num_args, arg_names,
+          arg_types, (const long long unsigned int*)arg_values, NULL, flags);
+  uint64_t result;
+  memcpy(&result, &handle, sizeof(result));
+  return result;
+}
+
+void V8Platform::UpdateTraceEventDuration(const uint8_t* category_enabled_flag,
+                                          const char* name,
+                                          uint64_t handle) {
+  base::trace_event::TraceEventHandle traceEventHandle;
+  memcpy(&traceEventHandle, &handle, sizeof(handle));
+  TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(category_enabled_flag, name,
+                                              traceEventHandle);
+}
+
 }  // namespace gin
