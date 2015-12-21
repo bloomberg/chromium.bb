@@ -40,20 +40,20 @@ const char kDisableIOSWKWebView[] = "disable-wkwebview";
 // Disables support for keyboard commands.
 const char kDisableKeyboardCommands[] = "disable-keyboard-commands";
 
+// Disable the snapshots lru cache.
+const char kDisableLRUSnapshotCache[] = "disable-lru-snapshot-cache";
+
 // Disables NTP favicons.
 const char kDisableNTPFavicons[] = "disable-ntp-favicons";
 
 // Disable auto-reload of error pages if offline.
 const char kDisableOfflineAutoReload[] = "disable-offline-auto-reload";
 
-// Disables the tab switcher.
-const char kDisableTabSwitcher[] = "disable-tab-switcher";
-
-// Disable the snapshots lru cache.
-const char kDisableLRUSnapshotCache[] = "disable-lru-snapshot-cache";
-
 // Disables the tab eviction policy. (applicable iff WKWebView is enabled)
 const char kDisableTabEviction[] = "disable-tab-eviction";
+
+// Disables the tab switcher.
+const char kDisableTabSwitcher[] = "disable-tab-switcher";
 
 // Enables Contextual Search.
 const char kEnableContextualSearch[] = "enable-contextual-search";
@@ -80,6 +80,9 @@ const char kEnableIOSPasswordGeneration[] = "enable-ios-password-generation";
 // Enables the use of WKWebView instead of UIWebView.
 const char kEnableIOSWKWebView[] = "enable-wkwebview";
 
+// Enables the snapshot lru cache.
+const char kEnableLRUSnapshotCache[] = "enable-lru-snapshot-cache";
+
 // Enables NTP favicons.
 const char kEnableNTPFavicons[] = "enable-ntp-favicons";
 
@@ -89,14 +92,11 @@ const char kEnableOfflineAutoReload[] = "enable-offline-auto-reload";
 // Enables context-sensitive reader mode button in the toolbar.
 const char kEnableReaderModeToolbarIcon[] = "enable-reader-mode-toolbar-icon";
 
-// Enables the tab switcher.
-const char kEnableTabSwitcher[] = "enable-tab-switcher";
-
-// Enables the snapshot lru cache.
-const char kEnableLRUSnapshotCache[] = "enable-lru-snapshot-cache";
-
 // Enables the tab eviction policy. (applicable iff WKWebView is enabled)
 const char kEnableTabEviction[] = "enable-tab-eviction";
+
+// Enables the tab switcher.
+const char kEnableTabSwitcher[] = "enable-tab-switcher";
 
 // Forces additional Chrome Variation Ids that will be sent in X-Client-Data
 // header, specified as a 64-bit encoded list of numeric experiment ids. Ids

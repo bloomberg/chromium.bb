@@ -17,11 +17,11 @@ extern const char kDisableIOSPasswordSuggestions[];
 extern const char kDisableIOSWebResources[];
 extern const char kDisableIOSWKWebView[];
 extern const char kDisableKeyboardCommands[];
+extern const char kDisableLRUSnapshotCache[];
 extern const char kDisableNTPFavicons[];
 extern const char kDisableOfflineAutoReload[];
-extern const char kDisableTabSwitcher[];
-extern const char kDisableLRUSnapshotCache[];
 extern const char kDisableTabEviction[];
+extern const char kDisableTabSwitcher[];
 
 extern const char kEnableContextualSearch[];
 extern const char kEnableCredentialManagerAPI[];
@@ -30,12 +30,12 @@ extern const char kEnableIOSFeatures[];
 extern const char kEnableIOSHandoffToOtherDevices[];
 extern const char kEnableIOSPasswordGeneration[];
 extern const char kEnableIOSWKWebView[];
+extern const char kEnableLRUSnapshotCache[];
 extern const char kEnableNTPFavicons[];
 extern const char kEnableOfflineAutoReload[];
 extern const char kEnableReaderModeToolbarIcon[];
-extern const char kEnableTabSwitcher[];
-extern const char kEnableLRUSnapshotCache[];
 extern const char kEnableTabEviction[];
+extern const char kEnableTabSwitcher[];
 
 extern const char kIOSForceVariationIds[];
 extern const char kIOSMetricsRecordingOnly[];
