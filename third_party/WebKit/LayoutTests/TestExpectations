@@ -1272,6 +1272,17 @@ crbug.com/568778 [ XP ] tables/mozilla/bugs/bug86708.html [ Failure ]
 crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/97619.html [ Failure ]
 crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/bug85016.html [ Failure ]
 
+# FIXME crbug.com/570401 bad rebaselines submited, wrong size scale factor affecting the text result expected
+# backing size, some image results twice a big as expected, or become all-white squares.
+crbug.com/569919 compositing/color-matching/image-color-matching.html [ Failure ]
+crbug.com/569919 fast/canvas/canvas-toBlob-jpeg-maximum-quality.html [ Failure ]
+crbug.com/569919 fast/canvas/canvas-toBlob-jpeg-medium-quality.html [ Failure ]
+crbug.com/569919 fast/canvas/canvas-toBlob-webp-maximum-quality.html [ Failure ]
+crbug.com/569919 fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ Failure ]
+crbug.com/570401 fast/canvas/canvas-shadow-source-in.html [ Failure ]
+crbug.com/570401 virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ Failure ]
+crbug.com/570401 compositing/overflow/updating-scrolling-content.html [ Failure ]
+
 crbug.com/568867 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/568867 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
@@ -1282,11 +1293,5 @@ crbug.com/569514 inspector/sources/debugger-step/debugger-step-over-inlined-scri
 crbug.com/569514 inspector/sources/debugger/debugger-scripts.html [ NeedsManualRebaseline ]
 
 crbug.com/569811 inspector-protocol/debugger/updateCallFrameScopes.html [ Pass Failure ]
-
-crbug.com/569919 compositing/color-matching/image-color-matching.html [ Failure ]
-crbug.com/569919 fast/canvas/canvas-toBlob-jpeg-maximum-quality.html [ Failure ]
-crbug.com/569919 fast/canvas/canvas-toBlob-jpeg-medium-quality.html [ Failure ]
-crbug.com/569919 fast/canvas/canvas-toBlob-webp-maximum-quality.html [ Failure ]
-crbug.com/569919 fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ Failure ]
 
 crbug.com/570899 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled.html [ Failure ]
