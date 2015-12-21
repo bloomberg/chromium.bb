@@ -4,6 +4,8 @@
 
 #include "sql/recovery.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/logging.h"

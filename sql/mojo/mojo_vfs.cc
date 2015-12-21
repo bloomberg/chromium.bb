@@ -4,6 +4,9 @@
 
 #include "sql/mojo/mojo_vfs.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"

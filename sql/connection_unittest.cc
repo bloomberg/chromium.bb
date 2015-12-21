@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/histogram_tester.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -211,14 +215,14 @@ class ScopedUmaskSetter {
 void sqlite_adjust_millis(sql::test::ScopedMockTimeSource* time_mock,
                           sqlite3_context* context,
                           int argc, sqlite3_value** argv) {
-  int64 milliseconds = argc > 0 ? sqlite3_value_int64(argv[0]) : 1000;
+  int64_t milliseconds = argc > 0 ? sqlite3_value_int64(argv[0]) : 1000;
   time_mock->adjust(base::TimeDelta::FromMilliseconds(milliseconds));
   sqlite3_result_int64(context, milliseconds);
 }
 
 // Adjust mock time by |milliseconds| on commit.
 int adjust_commit_hook(sql::test::ScopedMockTimeSource* time_mock,
-                       int64 milliseconds) {
+                       int64_t milliseconds) {
   time_mock->adjust(base::TimeDelta::FromMilliseconds(milliseconds));
   return SQLITE_OK;
 }

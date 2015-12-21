@@ -4,6 +4,9 @@
 
 #include "sql/mojo/sql_test_base.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/util/capture_util.h"
 #include "sql/mojo/mojo_vfs.h"

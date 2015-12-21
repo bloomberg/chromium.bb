@@ -5,6 +5,8 @@
 #ifndef SQL_RECOVERY_H_
 #define SQL_RECOVERY_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "sql/connection.h"
 

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -191,8 +194,8 @@ TEST_F(SQLiteFeaturesTest, Mmap) {
   }
   db().Close();
 
-  const uint32 kFlags =
-      base::File::FLAG_OPEN|base::File::FLAG_READ|base::File::FLAG_WRITE;
+  const uint32_t kFlags =
+      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE;
   char buf[4096];
 
   // Create a file with a block of '0', a block of '1', and a block of '2'.

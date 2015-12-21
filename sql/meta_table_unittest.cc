@@ -4,6 +4,8 @@
 
 #include "sql/meta_table.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "sql/connection.h"

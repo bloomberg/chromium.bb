@@ -5,6 +5,7 @@
 #ifndef SQL_PROCESS_MEMORY_DUMP_PROVIDER_H
 #define SQL_PROCESS_MEMORY_DUMP_PROVIDER_H
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "sql/sql_export.h"

@@ -4,6 +4,8 @@
 
 #include "sql/connection.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "base/bind.h"
@@ -120,22 +122,22 @@ bool ValidAttachmentPoint(const char* attachment_point) {
 }
 
 void RecordSqliteMemory10Min() {
-  const int64 used = sqlite3_memory_used();
+  const int64_t used = sqlite3_memory_used();
   UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.TenMinutes", used / 1024);
 }
 
 void RecordSqliteMemoryHour() {
-  const int64 used = sqlite3_memory_used();
+  const int64_t used = sqlite3_memory_used();
   UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneHour", used / 1024);
 }
 
 void RecordSqliteMemoryDay() {
-  const int64 used = sqlite3_memory_used();
+  const int64_t used = sqlite3_memory_used();
   UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneDay", used / 1024);
 }
 
 void RecordSqliteMemoryWeek() {
-  const int64 used = sqlite3_memory_used();
+  const int64_t used = sqlite3_memory_used();
   UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneWeek", used / 1024);
 }
 
@@ -843,7 +845,7 @@ std::string Connection::CollectCorruptionInfo() {
   // If the file cannot be accessed it is unlikely that an integrity check will
   // turn up actionable information.
   const base::FilePath db_path = DbPath();
-  int64 db_size = -1;
+  int64_t db_size = -1;
   if (!base::GetFileSize(db_path, &db_size) || db_size < 0)
     return std::string();
 
@@ -855,7 +857,7 @@ std::string Connection::CollectCorruptionInfo() {
                       db_size);
 
   // Only check files up to 8M to keep things from blocking too long.
-  const int64 kMaxIntegrityCheckSize = 8192 * 1024;
+  const int64_t kMaxIntegrityCheckSize = 8192 * 1024;
   if (db_size > kMaxIntegrityCheckSize) {
     debug_info += "integrity_check skipped due to size\n";
   } else {

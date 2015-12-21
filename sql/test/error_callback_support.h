@@ -5,6 +5,7 @@
 #ifndef SQL_TEST_ERROR_CALLBACK_SUPPORT_H_
 #define SQL_TEST_ERROR_CALLBACK_SUPPORT_H_
 
+#include "base/macros.h"
 #include "sql/connection.h"
 
 namespace sql {

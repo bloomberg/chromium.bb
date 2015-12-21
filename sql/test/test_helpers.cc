@@ -4,6 +4,9 @@
 
 #include "sql/test/test_helpers.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file_util.h"

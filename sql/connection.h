@@ -5,6 +5,7 @@
 #ifndef SQL_CONNECTION_H_
 #define SQL_CONNECTION_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <map>
 #include <set>

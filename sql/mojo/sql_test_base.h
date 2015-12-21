@@ -6,6 +6,7 @@
 #define SQL_MOJO_SQL_TEST_BASE_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/application/public/cpp/application_test_base.h"

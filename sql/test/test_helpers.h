@@ -5,6 +5,9 @@
 #ifndef SQL_TEST_TEST_HELPERS_H_
 #define SQL_TEST_TEST_HELPERS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
