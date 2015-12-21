@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/FormAssociatedElement.h"
 
 #include "core/HTMLNames.h"

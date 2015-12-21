@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLOptGroupElement.h"
 
 #include "core/HTMLNames.h"

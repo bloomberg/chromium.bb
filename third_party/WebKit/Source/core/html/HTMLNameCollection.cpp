@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLNameCollection.h"
 
 #include "core/dom/NodeRareData.h"

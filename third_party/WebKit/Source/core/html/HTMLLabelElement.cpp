@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLLabelElement.h"
 
 #include "core/HTMLNames.h"

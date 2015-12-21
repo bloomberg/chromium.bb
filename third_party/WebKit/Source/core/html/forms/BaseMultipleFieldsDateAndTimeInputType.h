@@ -31,9 +31,10 @@
 #ifndef BaseMultipleFieldsDateAndTimeInputType_h
 #define BaseMultipleFieldsDateAndTimeInputType_h
 
+#include "wtf/build_config.h"
+
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/forms/BaseDateAndTimeInputType.h"
-
 #include "core/html/shadow/ClearButtonElement.h"
 #include "core/html/shadow/DateTimeEditElement.h"
 #include "core/html/shadow/PickerIndicatorElement.h"

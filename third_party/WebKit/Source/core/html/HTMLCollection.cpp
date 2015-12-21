@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLCollection.h"
 
 #include "core/HTMLNames.h"

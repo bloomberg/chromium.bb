@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLHeadingElement.h"
 
 namespace blink {

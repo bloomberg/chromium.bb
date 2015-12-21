@@ -22,7 +22,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/html/HTMLTableColElement.h"
 
 #include "core/CSSPropertyNames.h"

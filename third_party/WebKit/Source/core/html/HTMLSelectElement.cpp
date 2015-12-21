@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLSelectElement.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"

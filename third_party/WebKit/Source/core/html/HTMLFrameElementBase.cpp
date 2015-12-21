@@ -21,7 +21,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/html/HTMLFrameElementBase.h"
 
 #include "bindings/core/v8/ScriptController.h"

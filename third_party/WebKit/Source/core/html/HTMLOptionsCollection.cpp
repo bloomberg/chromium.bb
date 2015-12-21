@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLOptionsCollection.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"

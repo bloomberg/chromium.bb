@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/LabelableElement.h"
 
 #include "core/dom/NodeRareData.h"

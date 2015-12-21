@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/forms/FileInputType.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"

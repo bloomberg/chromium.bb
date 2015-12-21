@@ -21,7 +21,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/html/HTMLAnchorElement.h"
 
 #include "core/events/KeyboardEvent.h"

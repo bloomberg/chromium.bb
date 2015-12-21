@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/forms/StepRange.h"
 
 #include "core/HTMLNames.h"

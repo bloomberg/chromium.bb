@@ -26,7 +26,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLInputElement.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"

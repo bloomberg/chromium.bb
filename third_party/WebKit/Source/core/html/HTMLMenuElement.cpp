@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLMenuElement.h"
 
 #include "core/HTMLNames.h"

@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLFormControlElement.h"
 
 #include "core/dom/ElementTraversal.h"

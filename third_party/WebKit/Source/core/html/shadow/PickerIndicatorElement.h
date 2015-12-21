@@ -31,6 +31,8 @@
 #ifndef PickerIndicatorElement_h
 #define PickerIndicatorElement_h
 
+#include "wtf/build_config.h"
+
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/HTMLDivElement.h"
 #include "core/html/forms/DateTimeChooser.h"

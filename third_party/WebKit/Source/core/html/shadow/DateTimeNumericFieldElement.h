@@ -26,9 +26,10 @@
 #ifndef DateTimeNumericFieldElement_h
 #define DateTimeNumericFieldElement_h
 
+#include "wtf/build_config.h"
+
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/shadow/DateTimeFieldElement.h"
-
 #include "wtf/Allocator.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"

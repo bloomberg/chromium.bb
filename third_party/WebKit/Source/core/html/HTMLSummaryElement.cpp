@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLSummaryElement.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"

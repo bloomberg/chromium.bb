@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLButtonElement.h"
 
 #include "core/HTMLNames.h"

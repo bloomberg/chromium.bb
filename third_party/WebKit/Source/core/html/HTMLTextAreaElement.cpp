@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLTextAreaElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"

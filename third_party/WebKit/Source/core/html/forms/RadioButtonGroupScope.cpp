@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/forms/RadioButtonGroupScope.h"
 
 #include "core/InputTypeNames.h"

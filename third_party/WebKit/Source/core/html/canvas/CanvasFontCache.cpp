@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "core/html/canvas/CanvasFontCache.h"
 
 #include "core/css/parser/CSSParser.h"

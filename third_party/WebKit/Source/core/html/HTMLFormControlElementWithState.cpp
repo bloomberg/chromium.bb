@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 
 #include "core/frame/FrameHost.h"

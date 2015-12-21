@@ -23,10 +23,9 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/forms/DateTimeFieldsState.h"
 
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/forms/FormController.h"
 
 namespace blink {

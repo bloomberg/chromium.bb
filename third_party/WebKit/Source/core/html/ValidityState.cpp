@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/ValidityState.h"
 
 namespace blink {

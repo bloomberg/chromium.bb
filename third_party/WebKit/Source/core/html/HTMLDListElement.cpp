@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLDListElement.h"
 
 #include "core/HTMLNames.h"

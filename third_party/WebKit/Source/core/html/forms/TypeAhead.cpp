@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/forms/TypeAhead.h"
 
 #include "core/events/KeyboardEvent.h"

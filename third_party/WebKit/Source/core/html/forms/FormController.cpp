@@ -18,7 +18,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/html/forms/FormController.h"
 
 #include "core/html/HTMLFormControlElementWithState.h"

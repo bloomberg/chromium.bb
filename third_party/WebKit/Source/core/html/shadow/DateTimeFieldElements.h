@@ -26,6 +26,8 @@
 #ifndef DateTimeFieldElements_h
 #define DateTimeFieldElements_h
 
+#include "wtf/build_config.h"
+
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/shadow/DateTimeNumericFieldElement.h"
 #include "core/html/shadow/DateTimeSymbolicFieldElement.h"

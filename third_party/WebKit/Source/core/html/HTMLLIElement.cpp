@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLLIElement.h"
 
 #include "core/CSSPropertyNames.h"

@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/forms/InputTypeView.h"
 
 #include "core/dom/shadow/ShadowRoot.h"

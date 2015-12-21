@@ -18,8 +18,6 @@
  *
  */
 
-#include "config.h"
-
 #include "core/html/HTMLMeterElement.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"

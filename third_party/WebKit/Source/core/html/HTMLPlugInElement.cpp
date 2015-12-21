@@ -20,7 +20,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/html/HTMLPlugInElement.h"
 
 #include "bindings/core/v8/ScriptController.h"

@@ -29,7 +29,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/LinkRelAttribute.h"
 
 #include "platform/RuntimeEnabledFeatures.h"

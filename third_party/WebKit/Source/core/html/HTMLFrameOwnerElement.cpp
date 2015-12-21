@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"

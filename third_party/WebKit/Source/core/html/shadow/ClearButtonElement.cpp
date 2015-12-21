@@ -23,7 +23,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/html/shadow/ClearButtonElement.h"
 
 #include "core/events/MouseEvent.h"

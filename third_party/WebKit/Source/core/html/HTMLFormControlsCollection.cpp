@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLFormControlsCollection.h"
 
 #include "bindings/core/v8/UnionTypesCore.h"

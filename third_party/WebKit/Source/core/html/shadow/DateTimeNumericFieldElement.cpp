@@ -23,10 +23,9 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/shadow/DateTimeNumericFieldElement.h"
 
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/events/KeyboardEvent.h"

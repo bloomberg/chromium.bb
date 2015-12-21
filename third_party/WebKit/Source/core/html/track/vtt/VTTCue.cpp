@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/html/track/vtt/VTTCue.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"

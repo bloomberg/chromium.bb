@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLKeygenElement.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"

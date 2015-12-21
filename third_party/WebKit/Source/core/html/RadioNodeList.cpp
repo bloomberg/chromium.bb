@@ -23,7 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/html/RadioNodeList.h"
 
 #include "core/HTMLNames.h"

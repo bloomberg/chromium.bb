@@ -23,10 +23,9 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
-#if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/forms/BaseChooserOnlyDateAndTimeInputType.h"
 
+#if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ShadowRoot.h"

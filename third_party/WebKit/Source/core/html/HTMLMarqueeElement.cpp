@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLMarqueeElement.h"
 
 #include "bindings/core/v8/PrivateScriptRunner.h"

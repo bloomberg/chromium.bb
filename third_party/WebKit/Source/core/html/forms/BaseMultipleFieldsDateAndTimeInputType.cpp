@@ -28,10 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
 
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/CSSValueKeywords.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/KeyboardEvent.h"

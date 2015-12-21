@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLFormElement.h"
 
 #include "bindings/core/v8/ScriptController.h"

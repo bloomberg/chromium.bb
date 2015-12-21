@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLTextFormControlElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"

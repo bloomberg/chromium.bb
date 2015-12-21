@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/forms/BaseTextInputType.h"
 
 #include "bindings/core/v8/ScriptRegexp.h"

@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/forms/RadioInputType.h"
 
 #include "core/HTMLNames.h"

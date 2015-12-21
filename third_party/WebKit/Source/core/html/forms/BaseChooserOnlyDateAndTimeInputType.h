@@ -26,6 +26,8 @@
 #ifndef BaseChooserOnlyDateAndTimeInputType_h
 #define BaseChooserOnlyDateAndTimeInputType_h
 
+#include "wtf/build_config.h"
+
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/forms/BaseClickableWithKeyInputType.h"
 #include "core/html/forms/BaseDateAndTimeInputType.h"

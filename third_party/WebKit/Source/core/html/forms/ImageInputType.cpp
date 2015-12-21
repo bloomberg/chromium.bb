@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/forms/ImageInputType.h"
 
 #include "core/HTMLNames.h"

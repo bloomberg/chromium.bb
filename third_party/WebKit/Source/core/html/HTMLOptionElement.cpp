@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "core/html/HTMLOptionElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
