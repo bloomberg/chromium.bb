@@ -30,6 +30,7 @@
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
+#include "ios/web/public/web_kit_constants.h"
 #import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
@@ -222,6 +223,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   // The WKNavigation for the most recent load request.
   base::scoped_nsobject<WKNavigation> _latestWKNavigation;
+
+  // The WKNavigation captured when |stopLoading| was called. Used for reporting
+  // WebController.EmptyNavigationManagerCausedByStopLoading UMA metric which
+  // helps with diagnosing a navigation related crash (crbug.com/565457).
+  base::WeakNSObject<WKNavigation> _stoppedWKNavigation;
 }
 
 // Dictionary where keys are the names of WKWebView properties and values are
@@ -465,6 +471,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)close {
   [_certVerificationController shutDown];
   [super close];
+}
+
+- (void)stopLoading {
+  _stoppedWKNavigation.reset(_latestWKNavigation);
 }
 
 #pragma mark -
@@ -1836,6 +1846,24 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   if (![_latestWKNavigation isEqual:navigation]) {
     return;
   }
+
+  // TODO(crbug.com/570699): Remove this workaround once |stopLoading| does not
+  // discard pending navigation items.
+  if ((!self.webStateImpl ||
+       !self.webStateImpl->GetNavigationManagerImpl().GetVisibleItem()) &&
+      [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
+      error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
+    // App is going to crash in this state (crbug.com/565457). Crash will occur
+    // on dereferencing visible navigation item, which is null. This scenario is
+    // possible after pending load was stopped for a child window. Early return
+    // to prevent the crash and report UMA metric to check if crash happening
+    // because the load was stopped.
+    UMA_HISTOGRAM_BOOLEAN(
+        "WebController.EmptyNavigationManagerCausedByStopLoading",
+        [_stoppedWKNavigation isEqual:navigation]);
+    return;
+  }
+
   // Directly cancelled navigations are simply discarded without handling
   // their potential errors.
   if (![_pendingNavigationInfo cancelled]) {

@@ -52881,6 +52881,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebController.EmptyNavigationManagerCausedByStopLoading"
+    enum="Boolean">
+  <owner>eugenebut@chromium.org</owner>
+  <summary>
+    [iOS] Chrome for iOS crashes because NavigationManager does not have any
+    navigation items and visible navigation item is dereferenced
+    (crbug.com/565457). The assumption is that crash occurs if pending load was
+    stopped for a child window. This metric will prove or disprove that
+    assumption.
+  </summary>
+</histogram>
+
 <histogram name="WebController.ExternalURLRequestBlocking"
     enum="IOSExternalURLRequestStatus">
   <owner>jyquinn@chromium.org</owner>
