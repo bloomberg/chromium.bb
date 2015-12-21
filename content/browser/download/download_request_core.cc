@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -18,6 +19,7 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_manager_impl.h"
+#include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -34,65 +36,23 @@
 
 namespace content {
 
-namespace {
-
-void CallStartedCBOnUIThread(
-    const DownloadUrlParameters::OnStartedCallback& started_cb,
-    DownloadItem* item,
-    DownloadInterruptReason interrupt_reason) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (started_cb.is_null())
-    return;
-  started_cb.Run(item, interrupt_reason);
-}
-
-// Static function in order to prevent any accidental accesses to
-// DownloadRequestCore members from the UI thread.
-static void StartOnUIThread(
-    scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<ByteStreamReader> stream,
-    base::WeakPtr<DownloadManager> download_manager,
-    const DownloadUrlParameters::OnStartedCallback& started_cb) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!download_manager) {
-    // nullptr in unittests or if the page closed right after starting the
-    // download.
-    if (!started_cb.is_null())
-      started_cb.Run(nullptr, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
-
-    // |stream| gets deleted on non-FILE thread, but it's ok since
-    // we're not using stream_writer_ yet.
-
-    return;
-  }
-
-  download_manager->StartDownload(info.Pass(), stream.Pass(), started_cb);
-}
-
-}  // namespace
-
 const int DownloadRequestCore::kDownloadByteStreamSize = 100 * 1024;
 
 DownloadRequestCore::DownloadRequestCore(
-    uint32 id,
     net::URLRequest* request,
-    const DownloadUrlParameters::OnStartedCallback& started_cb,
     scoped_ptr<DownloadSaveInfo> save_info,
-    base::WeakPtr<DownloadManagerImpl> download_manager)
-    : request_(request),
-      download_id_(id),
-      started_cb_(started_cb),
-      save_info_(save_info.Pass()),
+    const base::Closure& on_ready_to_read_callback)
+    : on_ready_to_read_callback_(on_ready_to_read_callback),
+      request_(request),
+      save_info_(std::move(save_info)),
       last_buffer_size_(0),
       bytes_read_(0),
       pause_count_(0),
-      was_deferred_(false),
-      on_response_started_called_(false),
-      download_manager_(download_manager) {
+      was_deferred_(false) {
+  DCHECK(request_);
+  DCHECK(save_info_);
+  DCHECK(!on_ready_to_read_callback_.is_null());
   RecordDownloadCount(UNTHROTTLED_COUNT);
-
   power_save_blocker_ = PowerSaveBlocker::Create(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       PowerSaveBlocker::kReasonOther, "Download in progress");
@@ -100,12 +60,6 @@ DownloadRequestCore::DownloadRequestCore(
 
 DownloadRequestCore::~DownloadRequestCore() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // This won't do anything if the callback was called before.
-  // If it goes through, it will likely be because OnWillStart() returned
-  // false somewhere in the chain of resource handlers.
-  CallStartedCB(nullptr, DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
-
   // Remove output stream callback if a stream exists.
   if (stream_writer_)
     stream_writer_->RegisterCallback(base::Closure());
@@ -115,12 +69,11 @@ DownloadRequestCore::~DownloadRequestCore() {
 }
 
 // Send the download creation information to the download thread.
-bool DownloadRequestCore::OnResponseStarted() {
+void DownloadRequestCore::OnResponseStarted(
+    scoped_ptr<DownloadCreateInfo>* create_info,
+    scoped_ptr<ByteStreamReader>* stream_reader) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // There can be only one (call)
-  DCHECK(!on_response_started_called_);
-  on_response_started_called_ = true;
-
+  DCHECK(save_info_);
   DVLOG(20) << __FUNCTION__ << "()" << DebugString();
   download_start_time_ = base::TimeTicks::Now();
 
@@ -139,20 +92,18 @@ bool DownloadRequestCore::OnResponseStarted() {
                              : 0;
 
   // Deleted in DownloadManager.
-  scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo(
-      base::Time::Now(), content_length, request()->net_log(), false,
-      ui::PAGE_TRANSITION_LINK, save_info_.Pass()));
+  scoped_ptr<DownloadCreateInfo> info(
+      new DownloadCreateInfo(base::Time::Now(), content_length,
+                             request()->net_log(), std::move(save_info_)));
 
   // Create the ByteStream for sending data to the download sink.
-  scoped_ptr<ByteStreamReader> stream_reader;
   CreateByteStream(
       base::ThreadTaskRunnerHandle::Get(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      kDownloadByteStreamSize, &stream_writer_, &stream_reader);
+      kDownloadByteStreamSize, &stream_writer_, stream_reader);
   stream_writer_->RegisterCallback(
       base::Bind(&DownloadRequestCore::ResumeRequest, AsWeakPtr()));
 
-  info->download_id = download_id_;
   info->url_chain = request()->url_chain();
   info->referrer_url = GURL(request()->referrer());
   string mime_type;
@@ -164,7 +115,7 @@ bool DownloadRequestCore::OnResponseStarted() {
     // though as of this writing, the network stack ensures if there are, they
     // are all duplicates.
     request()->response_headers()->EnumerateHeader(
-        nullptr, "content-disposition", &info->content_disposition);
+        nullptr, "Content-Disposition", &info->content_disposition);
   }
   RecordDownloadMimeType(info->mime_type);
   RecordDownloadContentDisposition(info->content_disposition);
@@ -202,30 +153,7 @@ bool DownloadRequestCore::OnResponseStarted() {
       info->url_chain.front().GetOrigin() != info->url_chain.back().GetOrigin())
     info->save_info->suggested_name.clear();
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&StartOnUIThread, base::Passed(&info),
-                 base::Passed(&stream_reader), download_manager_,
-                 // Pass to StartOnUIThread so that variable
-                 // access is always on IO thread but function
-                 // is called on UI thread.
-                 started_cb_));
-  // Guaranteed to be called in StartOnUIThread
-  started_cb_.Reset();
-
-  return true;
-}
-
-void DownloadRequestCore::CallStartedCB(
-    DownloadItem* item,
-    DownloadInterruptReason interrupt_reason) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (started_cb_.is_null())
-    return;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&CallStartedCBOnUIThread, started_cb_,
-                                     item, interrupt_reason));
-  started_cb_.Reset();
+  info.swap(*create_info);
 }
 
 // Create a new buffer, which will be handed to the download thread for file
@@ -284,7 +212,7 @@ bool DownloadRequestCore::OnReadCompleted(int bytes_read, bool* defer) {
   return true;
 }
 
-void DownloadRequestCore::OnResponseCompleted(
+DownloadInterruptReason DownloadRequestCore::OnResponseCompleted(
     const net::URLRequestStatus& status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int response_code = status.is_success() ? request()->GetResponseCode() : 0;
@@ -382,8 +310,6 @@ void DownloadRequestCore::OnResponseCompleted(
   RecordNetworkBlockage(base::TimeTicks::Now() - download_start_time_,
                         total_pause_time_);
 
-  CallStartedCB(nullptr, reason);
-
   // Send the info down the stream.  Conditional is in case we get
   // OnResponseCompleted without OnResponseStarted.
   if (stream_writer_)
@@ -398,6 +324,8 @@ void DownloadRequestCore::OnResponseCompleted(
 
   stream_writer_.reset();  // We no longer need the stream.
   read_buffer_ = nullptr;
+
+  return reason;
 }
 
 void DownloadRequestCore::PauseRequest() {
@@ -423,7 +351,7 @@ void DownloadRequestCore::ResumeRequest() {
     last_stream_pause_time_ = base::TimeTicks();
   }
 
-  downloader_->ResumeReading();
+  on_ready_to_read_callback_.Run();
 }
 
 std::string DownloadRequestCore::DebugString() const {

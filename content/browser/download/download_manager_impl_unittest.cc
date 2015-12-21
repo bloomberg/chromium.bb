@@ -519,7 +519,7 @@ class DownloadManagerTest : public testing::Test {
     // null.
     uint32 id = next_download_id_;
     ++next_download_id_;
-    info.request_handle = DownloadRequestHandle();
+    info.request_handle.reset(new DownloadRequestHandle);
     download_manager_->CreateActiveItem(id, info);
     DCHECK(mock_download_item_factory_->GetItem(id));
     MockDownloadItemImpl& item(*mock_download_item_factory_->GetItem(id));

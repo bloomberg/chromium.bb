@@ -16,8 +16,9 @@
 
 namespace content {
 
-DownloadRequestHandle::~DownloadRequestHandle() {
-}
+DownloadRequestHandleInterface::~DownloadRequestHandleInterface() {}
+
+DownloadRequestHandle::~DownloadRequestHandle() {}
 
 DownloadRequestHandle::DownloadRequestHandle()
     : child_id_(-1),

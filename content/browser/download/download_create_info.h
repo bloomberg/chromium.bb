@@ -27,8 +27,6 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   DownloadCreateInfo(const base::Time& start_time,
                      int64 total_bytes,
                      const net::BoundNetLog& bound_net_log,
-                     bool has_user_gesture,
-                     ui::PageTransition transition_type,
                      scoped_ptr<DownloadSaveInfo> save_info);
   DownloadCreateInfo();
   ~DownloadCreateInfo();
@@ -92,7 +90,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   std::string remote_address;
 
   // The handle to the URLRequest sourcing this download.
-  DownloadRequestHandle request_handle;
+  scoped_ptr<DownloadRequestHandleInterface> request_handle;
 
   // The request's |BoundNetLog|, for "source_dependency" linking with the
   // download item's.

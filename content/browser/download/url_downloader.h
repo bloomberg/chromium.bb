@@ -16,22 +16,22 @@
 
 namespace content {
 class DownloadManagerImpl;
-class DownloadRequestCore;
 
 class UrlDownloader : public net::URLRequest::Delegate {
  public:
-  UrlDownloader(scoped_ptr<net::URLRequest> request,
-                scoped_ptr<DownloadRequestCore> handler,
-                base::WeakPtr<DownloadManagerImpl> manager);
+  UrlDownloader(
+      scoped_ptr<net::URLRequest> request,
+      base::WeakPtr<DownloadManagerImpl> manager,
+      scoped_ptr<DownloadSaveInfo> save_info,
+      uint32 download_id,
+      const DownloadUrlParameters::OnStartedCallback& on_started_callback);
   ~UrlDownloader() override;
 
   static scoped_ptr<UrlDownloader> BeginDownload(
       base::WeakPtr<DownloadManagerImpl> download_manager,
       scoped_ptr<net::URLRequest> request,
       const Referrer& referrer,
-      bool is_content_initiated,
       bool prefer_cache,
-      bool do_not_prompt_for_login,
       scoped_ptr<DownloadSaveInfo> save_info,
       uint32 download_id,
       const DownloadUrlParameters::OnStartedCallback& started_callback);
@@ -49,10 +49,21 @@ class UrlDownloader : public net::URLRequest::Delegate {
   void Start();
   void ResumeReading();
 
+  void CallStartedCallbackOnFailure(DownloadInterruptReason result);
+
  private:
+  class RequestHandle;
+
+  void PauseRequest();
+  void ResumeRequest();
+  void CancelRequest();
+
   scoped_ptr<net::URLRequest> request_;
-  scoped_ptr<DownloadRequestCore> handler_;
   base::WeakPtr<DownloadManagerImpl> manager_;
+  uint32 download_id_;
+  DownloadUrlParameters::OnStartedCallback on_started_callback_;
+
+  DownloadRequestCore handler_;
 
   base::WeakPtrFactory<UrlDownloader> weak_ptr_factory_;
 };

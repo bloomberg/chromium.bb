@@ -24,7 +24,7 @@ class WebContents;
 // DownloadRequestHandleInterface is defined for mocking purposes.
 class CONTENT_EXPORT DownloadRequestHandleInterface {
  public:
-  virtual ~DownloadRequestHandleInterface() {}
+  virtual ~DownloadRequestHandleInterface();
 
   // These functions must be called on the UI thread.
   virtual WebContents* GetWebContents() const = 0;

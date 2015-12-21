@@ -1521,7 +1521,7 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest, CancelResumingDownload) {
   ASSERT_FALSE(intermediate_path.empty());
   EXPECT_TRUE(base::PathExists(intermediate_path));
 
-  // Resume and remove download. We expect only a single OnDownloadCreated()
+  // Resume and cancel download. We expect only a single OnDownloadCreated()
   // call, and that's for the second download created below.
   MockDownloadManagerObserver dm_observer(
       DownloadManagerForShell(initiator_shell_for_resumption()));
@@ -1557,6 +1557,76 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest, CancelResumingDownload) {
   // DownloadItem::Resume() call reulted in a new download or not.
   NavigateToURLAndWaitForDownload(shell(), request_handler.url(),
                                   DownloadItem::COMPLETE);
+  EXPECT_TRUE(EnsureNoPendingDownloads());
+}
+
+IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest, RemoveResumedDownload) {
+  TestDownloadRequestHandler::Parameters parameters =
+      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
+  TestDownloadRequestHandler request_handler;
+  request_handler.StartServing(parameters);
+
+  DownloadItem* download = StartDownloadAndReturnItem(
+      initiator_shell_for_resumption(), request_handler.url());
+  WaitForInterrupt(download);
+
+  base::FilePath intermediate_path(download->GetFullPath());
+  base::FilePath target_path(download->GetTargetFilePath());
+  ASSERT_FALSE(intermediate_path.empty());
+  EXPECT_TRUE(base::PathExists(intermediate_path));
+  EXPECT_FALSE(base::PathExists(target_path));
+
+  // Resume and remove download. We don't expect OnDownloadCreated() calls.
+  MockDownloadManagerObserver dm_observer(
+      DownloadManagerForShell(initiator_shell_for_resumption()));
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_, _)).Times(0);
+
+  PrepareToResume();
+  download->Resume();
+  WaitForInProgress(download);
+
+  download->Remove();
+
+  // The intermediate file should now be gone.
+  RunAllPendingInMessageLoop(BrowserThread::FILE);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(base::PathExists(intermediate_path));
+  EXPECT_FALSE(base::PathExists(target_path));
+  EXPECT_TRUE(EnsureNoPendingDownloads());
+}
+
+IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest, CancelResumedDownload) {
+  TestDownloadRequestHandler::Parameters parameters =
+      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
+  TestDownloadRequestHandler request_handler;
+  request_handler.StartServing(parameters);
+
+  DownloadItem* download = StartDownloadAndReturnItem(
+      initiator_shell_for_resumption(), request_handler.url());
+  WaitForInterrupt(download);
+
+  base::FilePath intermediate_path(download->GetFullPath());
+  base::FilePath target_path(download->GetTargetFilePath());
+  ASSERT_FALSE(intermediate_path.empty());
+  EXPECT_TRUE(base::PathExists(intermediate_path));
+  EXPECT_FALSE(base::PathExists(target_path));
+
+  // Resume and remove download. We don't expect OnDownloadCreated() calls.
+  MockDownloadManagerObserver dm_observer(
+      DownloadManagerForShell(initiator_shell_for_resumption()));
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_, _)).Times(0);
+
+  PrepareToResume();
+  download->Resume();
+  WaitForInProgress(download);
+
+  download->Cancel(true);
+
+  // The intermediate file should now be gone.
+  RunAllPendingInMessageLoop(BrowserThread::FILE);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(base::PathExists(intermediate_path));
+  EXPECT_FALSE(base::PathExists(target_path));
   EXPECT_TRUE(EnsureNoPendingDownloads());
 }
 
@@ -1703,6 +1773,17 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadGZipWithNoContent) {
   GURL url = net::URLRequestMockHTTPJob::GetMockUrl("empty.bin");
   NavigateToURLAndWaitForDownload(shell(), url, DownloadItem::COMPLETE);
   // That's it. This should work without crashing.
+}
+
+// Make sure that sniffed MIME types are correctly passed through to the
+// download item.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, SniffedMimeType) {
+  GURL url = net::URLRequestMockHTTPJob::GetMockUrl("gzip-content.gz");
+  DownloadItem* item = StartDownloadAndReturnItem(shell(), url);
+  WaitForCompletion(item);
+
+  EXPECT_STREQ("application/x-gzip", item->GetMimeType().c_str());
+  EXPECT_TRUE(item->GetOriginalMimeType().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, Spam) {

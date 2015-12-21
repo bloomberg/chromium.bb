@@ -25,10 +25,13 @@ class DownloadManagerImpl;
 class ByteStreamReader;
 class ByteStreamWriter;
 class PowerSaveBlocker;
-class UrlDownloader;
 struct DownloadCreateInfo;
 
-// Forwards data to the download thread.
+// This class encapsulates the core logic for reading data from a URLRequest and
+// writing it into a ByteStream. It's common to both DownloadResourceHandler and
+// UrlDownloader.
+//
+// Created, lives on and dies on the IO thread.
 class CONTENT_EXPORT DownloadRequestCore
     : public base::SupportsWeakPtr<DownloadRequestCore> {
  public:
@@ -36,52 +39,68 @@ class CONTENT_EXPORT DownloadRequestCore
   // downstream receiver of its output.
   static const int kDownloadByteStreamSize;
 
-  // started_cb will be called exactly once on the UI thread.
-  // |id| should be invalid if the id should be automatically assigned.
-  DownloadRequestCore(
-      uint32 id,
-      net::URLRequest* request,
-      const DownloadUrlParameters::OnStartedCallback& started_cb,
-      scoped_ptr<DownloadSaveInfo> save_info,
-      base::WeakPtr<DownloadManagerImpl> download_manager);
+  // |request| *must* outlive the DownloadRequestCore. |save_info| must be
+  // valid.
+  //
+  // Invokes |on_ready_to_read_callback| if a previous call to OnReadCompleted()
+  // resulted in |defer| being set to true, and DownloadRequestCore is now ready
+  // to commence reading.
+  DownloadRequestCore(net::URLRequest* request,
+                      scoped_ptr<DownloadSaveInfo> save_info,
+                      const base::Closure& on_ready_to_read_callback);
   ~DownloadRequestCore();
 
-  // Send the download creation information to the download thread.
-  bool OnResponseStarted();
+  // Should be called when the URLRequest::Delegate receives OnResponseStarted.
+  // Constructs a DownloadCreateInfo and a ByteStreamReader that should be
+  // passed into DownloadManagerImpl::StartDownload().
+  //
+  // Only populates the response derived fields of DownloadCreateInfo, with the
+  // exception of |save_info|.
+  void OnResponseStarted(scoped_ptr<DownloadCreateInfo>* info,
+                         scoped_ptr<ByteStreamReader>* stream_reader);
 
-  // Create a new buffer, which will be handed to the download thread for file
-  // writing and deletion.
+  // Starts a read cycle. Creates a new IOBuffer which can be passed into
+  // URLRequest::Read(). Call OnReadCompleted() when the Read operation
+  // completes.
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size);
 
+  // Should be called when the Read() operation completes. |defer| will be set
+  // to true if reading is to be suspended. In the latter case, once more data
+  // can be read, invokes the |on_ready_to_read_callback|.
   bool OnReadCompleted(int bytes_read, bool* defer);
 
-  void OnResponseCompleted(const net::URLRequestStatus& status);
+  // Called to signal that the response is complete. If the return value is
+  // something other than DOWNLOAD_INTERRUPT_REASON_NONE, then the download
+  // should be considered interrupted.
+  //
+  // It is expected that once this method is invoked, the DownloadRequestCore
+  // object will be destroyed in short order without invoking any other methods
+  // other than the destructor.
+  DownloadInterruptReason OnResponseCompleted(
+      const net::URLRequestStatus& status);
 
+  // Called if the request should suspend reading. A subsequent
+  // OnReadCompleted() will result in |defer| being set to true.
+  //
+  // Each PauseRequest() must be balanced with a call to ResumeRequest().
   void PauseRequest();
+
+  // Balances a call to PauseRequest(). If no more pauses are outstanding and
+  // the reader end of the ByteStream is ready to receive more data,
+  // DownloadRequestCore will invoke the |on_ready_to_read_callback| to signal
+  // to the caller that the read cycles should commence.
   void ResumeRequest();
 
   std::string DebugString() const;
-
-  void set_downloader(UrlDownloader* downloader) { downloader_ = downloader; }
 
  protected:
   net::URLRequest* request() const { return request_; }
 
  private:
-  // Arrange for started_cb_ to be called on the UI thread with the
-  // below values, nulling out started_cb_.  Should only be called
-  // on the IO thread.
-  void CallStartedCB(DownloadItem* item,
-                     DownloadInterruptReason interrupt_reason);
-
+  base::Closure on_ready_to_read_callback_;
   net::URLRequest* request_;
-  uint32 download_id_;
-
-  // This is read only on the IO thread, but may only
-  // be called on the UI thread.
-  DownloadUrlParameters::OnStartedCallback started_cb_;
   scoped_ptr<DownloadSaveInfo> save_info_;
 
   // Data flow
@@ -104,16 +123,8 @@ class CONTENT_EXPORT DownloadRequestCore
   int pause_count_;
   bool was_deferred_;
 
-  // For DCHECKing
-  bool on_response_started_called_;
-
-  UrlDownloader* downloader_;
-
-  // DownloadManager passed in by the owner of DownloadRequestCore.
-  base::WeakPtr<DownloadManagerImpl> download_manager_;
-
+  // Each successful OnWillRead will yield a buffer of this size.
   static const int kReadBufSize = 32768;   // bytes
-  static const int kThrottleTimeMs = 200;  // milliseconds
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRequestCore);
 };

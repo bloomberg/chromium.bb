@@ -125,19 +125,19 @@ scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
 
   if (params->render_process_host_id() != -1) {
     ResourceDispatcherHost::Get()->BeginDownload(
-        request.Pass(), params->referrer(), params->content_initiated(),
+        std::move(request), params->referrer(), params->content_initiated(),
         params->resource_context(), params->render_process_host_id(),
         params->render_view_host_routing_id(),
         params->render_frame_host_routing_id(), params->prefer_cache(),
-        params->do_not_prompt_for_login(), save_info.Pass(), download_id,
+        params->do_not_prompt_for_login(), std::move(save_info), download_id,
         params->callback());
     return nullptr;
   }
   return scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>(
-      UrlDownloader::BeginDownload(
-          download_manager, request.Pass(), params->referrer(), false,
-          params->prefer_cache(), true, save_info.Pass(), download_id,
-          params->callback())
+      UrlDownloader::BeginDownload(download_manager, std::move(request),
+                                   params->referrer(), params->prefer_cache(),
+                                   std::move(save_info), download_id,
+                                   params->callback())
           .release());
 }
 
@@ -348,8 +348,8 @@ void DownloadManagerImpl::StartDownload(
   base::Callback<void(uint32)> got_id(base::Bind(
       &DownloadManagerImpl::StartDownloadWithId,
       weak_factory_.GetWeakPtr(),
-      base::Passed(info.Pass()),
-      base::Passed(stream.Pass()),
+      base::Passed(&info),
+      base::Passed(&stream),
       on_started,
       new_download));
   if (new_download) {
@@ -378,7 +378,7 @@ void DownloadManagerImpl::StartDownloadWithId(
       // If the download is no longer known to the DownloadManager, then it was
       // removed after it was resumed. Ignore. If the download is cancelled
       // while resuming, then also ignore the request.
-      info->request_handle.CancelRequest();
+      info->request_handle->CancelRequest();
       if (!on_started.is_null())
         on_started.Run(NULL, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
       return;
@@ -397,13 +397,11 @@ void DownloadManagerImpl::StartDownloadWithId(
   }
 
   // Create the download file and start the download.
-  scoped_ptr<DownloadFile> download_file(
-      file_factory_->CreateFile(
-          info->save_info.Pass(), default_download_directory,
-          info->url(), info->referrer_url,
-          delegate_ && delegate_->GenerateFileHash(),
-          stream.Pass(), download->GetBoundNetLog(),
-          download->DestinationObserverAsWeakPtr()));
+  scoped_ptr<DownloadFile> download_file(file_factory_->CreateFile(
+      std::move(info->save_info), default_download_directory, info->url(),
+      info->referrer_url, delegate_ && delegate_->GenerateFileHash(),
+      std::move(stream), download->GetBoundNetLog(),
+      download->DestinationObserverAsWeakPtr()));
 
   // Attach the client ID identifying the app to the AV system.
   if (download_file.get() && delegate_) {
@@ -411,9 +409,7 @@ void DownloadManagerImpl::StartDownloadWithId(
         delegate_->ApplicationClientIdForFileScanning());
   }
 
-  scoped_ptr<DownloadRequestHandleInterface> req_handle(
-      new DownloadRequestHandle(info->request_handle));
-  download->Start(download_file.Pass(), req_handle.Pass());
+  download->Start(std::move(download_file), std::move(info->request_handle));
 
   // For interrupted downloads, Start() will transition the state to
   // IN_PROGRESS and consumers will be notified via OnDownloadUpdated().
