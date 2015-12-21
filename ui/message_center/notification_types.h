@@ -25,12 +25,17 @@ MESSAGE_CENTER_EXPORT extern const char kItemMessageKey[];
 // to use it there, it's used to cancel timeout for webkit notifications.
 MESSAGE_CENTER_EXPORT extern const char kPrivateNeverTimeoutKey[];
 
+// Notification types. Note that the values in this enumeration are being
+// recoded in a histogram, updates should not change the entries' values.
 enum NotificationType {
-  NOTIFICATION_TYPE_SIMPLE,
-  NOTIFICATION_TYPE_BASE_FORMAT,
-  NOTIFICATION_TYPE_IMAGE,
-  NOTIFICATION_TYPE_MULTIPLE,
-  NOTIFICATION_TYPE_PROGRESS  // Notification with progress bar.
+  NOTIFICATION_TYPE_SIMPLE = 0,
+  NOTIFICATION_TYPE_BASE_FORMAT = 1,
+  NOTIFICATION_TYPE_IMAGE = 2,
+  NOTIFICATION_TYPE_MULTIPLE = 3,
+  NOTIFICATION_TYPE_PROGRESS = 4,  // Notification with progress bar.
+
+  // Add new values before this line.
+  NOTIFICATION_TYPE_LAST = NOTIFICATION_TYPE_PROGRESS
 };
 
 enum NotificationPriority {

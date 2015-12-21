@@ -30331,6 +30331,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Notifications.ExtensionNotificationActionCount"
+    units="buttons">
+  <owner>dewittj@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    The number of action buttons the developer provided for a notification
+    created using the extensions notification API. Logged when creating the
+    notification.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.ExtensionNotificationType"
+    enum="ExtensionNotificationType">
+  <owner>dewittj@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    The type of a notification created using the extensions notification API.
+    Logged when creating the notification.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.PerNotificationActions"
     enum="NotificationActionType">
   <owner>dewittj@chromium.org</owner>
@@ -62885,6 +62906,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="COMMAND_LINE"/>
   <int value="9" label="EXTERNAL_POLICY"/>
   <int value="10" label="EXTERNAL_COMPONENT"/>
+</enum>
+
+<enum name="ExtensionNotificationType" type="int">
+  <int value="0" label="NOTIFICATION_TYPE_SIMPLE"/>
+  <int value="1" label="NOTIFICATION_TYPE_BASE_FORMAT"/>
+  <int value="2" label="NOTIFICATION_TYPE_IMAGE"/>
+  <int value="3" label="NOTIFICATION_TYPE_MULTIPLE"/>
+  <int value="4" label="NOTIFICATION_TYPE_PROGRESS"/>
 </enum>
 
 <enum name="ExtensionPermission" type="int">
