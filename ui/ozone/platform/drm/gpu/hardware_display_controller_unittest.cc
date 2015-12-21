@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <drm_fourcc.h>
-
 #include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
-#include "ui/ozone/platform/drm/gpu/drm_buffer.h"
-#include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
+#include "ui/ozone/platform/drm/gpu/mock_scanout_buffer.h"
 #include "ui/ozone/public/native_pixmap.h"
 
 namespace {
@@ -30,27 +27,6 @@ const gfx::Size kDefaultModeSize(kDefaultMode.hdisplay, kDefaultMode.vdisplay);
 const gfx::Size kOverlaySize(kDefaultMode.hdisplay / 2,
                              kDefaultMode.vdisplay / 2);
 const gfx::SizeF kDefaultModeSizeF(1.0, 1.0);
-
-class MockScanoutBuffer : public ui::ScanoutBuffer {
- public:
-  MockScanoutBuffer(const gfx::Size& size) : size_(size) {}
-
-  // ScanoutBuffer:
-  uint32_t GetFramebufferId() const override { return 0; }
-  uint32_t GetHandle() const override { return 0; }
-  gfx::Size GetSize() const override { return size_; }
-  uint32_t GetFramebufferPixelFormat() const override {
-    return DRM_FORMAT_XRGB8888;
-  }
-  bool RequiresGlFinish() const override { return false; }
-
- private:
-  ~MockScanoutBuffer() override {}
-
-  gfx::Size size_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockScanoutBuffer);
-};
 
 }  // namespace
 
@@ -101,7 +77,7 @@ void HardwareDisplayControllerTest::PageFlipCallback(gfx::SwapResult result) {
 
 TEST_F(HardwareDisplayControllerTest, CheckModesettingResult) {
   ui::OverlayPlane plane(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
 
   EXPECT_TRUE(controller_->Modeset(plane, kDefaultMode));
   EXPECT_FALSE(plane.buffer->HasOneRef());
@@ -109,12 +85,12 @@ TEST_F(HardwareDisplayControllerTest, CheckModesettingResult) {
 
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
   ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane2);
   controller_->SchedulePageFlip(
@@ -134,7 +110,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
   drm_->set_set_crtc_expectation(false);
 
   ui::OverlayPlane plane(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
 
   EXPECT_FALSE(controller_->Modeset(plane, kDefaultMode));
 }
@@ -143,12 +119,12 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
   drm_->set_page_flip_expectation(false);
 
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
   ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane2);
   controller_->SchedulePageFlip(
@@ -165,10 +141,10 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
 
 TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   ui::OverlayPlane plane2(
-      scoped_refptr<ui::ScanoutBuffer>(new MockScanoutBuffer(kOverlaySize)), 1,
-      gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kOverlaySize),
+      scoped_refptr<ui::ScanoutBuffer>(new ui::MockScanoutBuffer(kOverlaySize)),
+      1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kOverlaySize),
       gfx::RectF(kDefaultModeSizeF));
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
@@ -189,10 +165,10 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
 
 TEST_F(HardwareDisplayControllerTest, CheckOverlayTestMode) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   ui::OverlayPlane plane2(
-      scoped_refptr<ui::ScanoutBuffer>(new MockScanoutBuffer(kOverlaySize)), 1,
-      gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kOverlaySize),
+      scoped_refptr<ui::ScanoutBuffer>(new ui::MockScanoutBuffer(kOverlaySize)),
+      1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kOverlaySize),
       gfx::RectF(kDefaultModeSizeF));
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
@@ -226,11 +202,12 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayTestMode) {
 
 TEST_F(HardwareDisplayControllerTest, CheckOverlayFullScreenMode) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
-  ui::OverlayPlane plane2(
-      scoped_refptr<ui::ScanoutBuffer>(new MockScanoutBuffer(kDefaultModeSize)),
-      1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kDefaultModeSize),
-      gfx::RectF(kDefaultModeSizeF));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
+  ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
+                              new ui::MockScanoutBuffer(kDefaultModeSize)),
+                          1, gfx::OVERLAY_TRANSFORM_NONE,
+                          gfx::Rect(kDefaultModeSize),
+                          gfx::RectF(kDefaultModeSizeF));
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
@@ -250,11 +227,12 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayFullScreenMode) {
 
 TEST_F(HardwareDisplayControllerTest, RejectUnderlays) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
-  ui::OverlayPlane plane2(
-      scoped_refptr<ui::ScanoutBuffer>(new MockScanoutBuffer(kDefaultModeSize)),
-      -1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kDefaultModeSize),
-      gfx::RectF(kDefaultModeSizeF));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
+  ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
+                              new ui::MockScanoutBuffer(kDefaultModeSize)),
+                          -1, gfx::OVERLAY_TRANSFORM_NONE,
+                          gfx::Rect(kDefaultModeSize),
+                          gfx::RectF(kDefaultModeSizeF));
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
@@ -274,12 +252,12 @@ TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
       new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
 
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   EXPECT_EQ(2, drm_->get_set_crtc_call_count());
 
   ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane2);
   controller_->SchedulePageFlip(
@@ -294,7 +272,7 @@ TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
 
 TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -333,7 +311,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
 
 TEST_F(HardwareDisplayControllerTest, PlaneStateAfterDestroyingCrtc) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -364,7 +342,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
       new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
 
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -412,7 +390,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
 
 TEST_F(HardwareDisplayControllerTest, ModesetWhilePageFlipping) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -430,7 +408,7 @@ TEST_F(HardwareDisplayControllerTest, FailPageFlipping) {
   drm_->set_page_flip_expectation(false);
 
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -444,10 +422,10 @@ TEST_F(HardwareDisplayControllerTest, FailPageFlipping) {
 }
 
 TEST_F(HardwareDisplayControllerTest, FailPageFlippingDueToNoPrimaryPlane) {
-  ui::OverlayPlane plane1(
-      scoped_refptr<ui::ScanoutBuffer>(new MockScanoutBuffer(kDefaultModeSize)),
-      1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kDefaultModeSize),
-      gfx::RectF(0, 0, 1, 1));
+  ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
+                              new ui::MockScanoutBuffer(kDefaultModeSize)),
+                          1, gfx::OVERLAY_TRANSFORM_NONE,
+                          gfx::Rect(kDefaultModeSize), gfx::RectF(0, 0, 1, 1));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -462,7 +440,7 @@ TEST_F(HardwareDisplayControllerTest, FailPageFlippingDueToNoPrimaryPlane) {
 
 TEST_F(HardwareDisplayControllerTest, AddCrtcMidPageFlip) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -480,7 +458,7 @@ TEST_F(HardwareDisplayControllerTest, AddCrtcMidPageFlip) {
 
 TEST_F(HardwareDisplayControllerTest, RemoveCrtcMidPageFlip) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new MockScanoutBuffer(kDefaultModeSize)));
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);

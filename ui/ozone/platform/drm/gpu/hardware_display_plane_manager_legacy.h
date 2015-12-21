@@ -20,7 +20,7 @@ class OZONE_EXPORT HardwareDisplayPlaneManagerLegacy
   bool Commit(HardwareDisplayPlaneList* plane_list,
               bool test_only) override;
 
- private:
+ protected:
   bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                     HardwareDisplayPlane* hw_plane,
                     const OverlayPlane& overlay,
@@ -28,6 +28,7 @@ class OZONE_EXPORT HardwareDisplayPlaneManagerLegacy
                     const gfx::Rect& src_rect,
                     CrtcController* crtc) override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManagerLegacy);
 };
 

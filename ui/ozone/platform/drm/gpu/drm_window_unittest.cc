@@ -15,8 +15,8 @@
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
-#include "ui/ozone/platform/drm/gpu/mock_buffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
+#include "ui/ozone/platform/drm/gpu/mock_dumb_buffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
@@ -70,7 +70,7 @@ class DrmWindowTest : public testing::Test {
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<ui::MockDrmDevice> drm_;
-  scoped_ptr<ui::MockBufferGenerator> buffer_generator_;
+  scoped_ptr<ui::MockDumbBufferGenerator> buffer_generator_;
   scoped_ptr<ui::ScreenManager> screen_manager_;
   scoped_ptr<ui::DrmDeviceManager> drm_device_manager_;
 
@@ -87,7 +87,7 @@ void DrmWindowTest::SetUp() {
 
   message_loop_.reset(new base::MessageLoopForUI);
   drm_ = new ui::MockDrmDevice();
-  buffer_generator_.reset(new ui::MockBufferGenerator());
+  buffer_generator_.reset(new ui::MockDumbBufferGenerator());
   screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
   screen_manager_->AddDisplayController(drm_, kDefaultCrtc, kDefaultConnector);
   screen_manager_->ConfigureDisplayController(
@@ -161,7 +161,7 @@ TEST_F(DrmWindowTest, CheckCursorSurfaceAfterChangingDevice) {
 
 TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
   const gfx::Size window_size(6, 4);
-  ui::MockBufferGenerator buffer_generator;
+  ui::MockDumbBufferGenerator buffer_generator;
   ui::DrmWindow* window = screen_manager_->GetWindow(kDefaultWidgetHandle);
   ui::OverlayPlane plane(
       buffer_generator.Create(drm_, gfx::BufferFormat::BGRX_8888, window_size));

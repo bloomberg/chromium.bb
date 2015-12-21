@@ -16,11 +16,8 @@
 
 namespace ui {
 
-class CrtcController;
-struct GammaRampRGBEntry;
-
 // The real DrmDevice makes actual DRM calls which we can't use in unit tests.
-class MockDrmDevice : public ui::DrmDevice {
+class MockDrmDevice : public DrmDevice {
  public:
   MockDrmDevice();
   MockDrmDevice(bool use_sync_flips,

@@ -153,12 +153,18 @@ source_set("gbm_unittests") {
   testonly = true
   sources = [
     "gpu/drm_window_unittest.cc",
+    "gpu/fake_plane_info.cc",
+    "gpu/fake_plane_info.h",
     "gpu/hardware_display_controller_unittest.cc",
     "gpu/hardware_display_plane_manager_unittest.cc",
-    "gpu/mock_buffer_generator.cc",
-    "gpu/mock_buffer_generator.h",
     "gpu/mock_drm_device.cc",
     "gpu/mock_drm_device.h",
+    "gpu/mock_dumb_buffer_generator.cc",
+    "gpu/mock_dumb_buffer_generator.h",
+    "gpu/mock_hardware_display_plane_manager.cc",
+    "gpu/mock_hardware_display_plane_manager.h",
+    "gpu/mock_scanout_buffer.cc",
+    "gpu/mock_scanout_buffer.h",
     "gpu/screen_manager_unittest.cc",
   ]
 

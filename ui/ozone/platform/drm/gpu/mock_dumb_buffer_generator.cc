@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/gpu/mock_buffer_generator.h"
+#include "ui/ozone/platform/drm/gpu/mock_dumb_buffer_generator.h"
 
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 
 namespace ui {
 
-MockBufferGenerator::MockBufferGenerator() {}
+MockDumbBufferGenerator::MockDumbBufferGenerator() {}
 
-MockBufferGenerator::~MockBufferGenerator() {}
+MockDumbBufferGenerator::~MockDumbBufferGenerator() {}
 
-scoped_refptr<ScanoutBuffer> MockBufferGenerator::Create(
+scoped_refptr<ScanoutBuffer> MockDumbBufferGenerator::Create(
     const scoped_refptr<DrmDevice>& drm,
     gfx::BufferFormat format,
     const gfx::Size& size) {

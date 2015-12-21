@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_GPU_MOCK_BUFFER_GENERATOR_H_
-#define UI_OZONE_PLATFORM_DRM_GPU_MOCK_BUFFER_GENERATOR_H_
+#ifndef UI_OZONE_PLATFORM_DRM_GPU_MOCK_DUMB_BUFFER_GENERATOR_H_
+#define UI_OZONE_PLATFORM_DRM_GPU_MOCK_DUMB_BUFFER_GENERATOR_H_
 
 #include "base/macros.h"
 
@@ -11,10 +11,10 @@
 
 namespace ui {
 
-class MockBufferGenerator : public ScanoutBufferGenerator {
+class MockDumbBufferGenerator : public ScanoutBufferGenerator {
  public:
-  MockBufferGenerator();
-  ~MockBufferGenerator() override;
+  MockDumbBufferGenerator();
+  ~MockDumbBufferGenerator() override;
 
   // ScanoutBufferGenerator:
   scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DrmDevice>& drm,
@@ -22,9 +22,9 @@ class MockBufferGenerator : public ScanoutBufferGenerator {
                                       const gfx::Size& size) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockBufferGenerator);
+  DISALLOW_COPY_AND_ASSIGN(MockDumbBufferGenerator);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_GPU_MOCK_BUFFER_GENERATOR_H_
+#endif  // UI_OZONE_PLATFORM_DRM_GPU_MOCK_DUMB_BUFFER_GENERATOR_H_

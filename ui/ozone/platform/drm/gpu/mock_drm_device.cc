@@ -4,14 +4,12 @@
 
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
 
-#include <drm_fourcc.h>
 #include <xf86drm.h>
-#include <xf86drmMode.h>
-#include <utility>
 
 #include "base/logging.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
+#include "ui/ozone/platform/drm/gpu/mock_hardware_display_plane_manager.h"
 
 namespace ui {
 
@@ -21,28 +19,6 @@ template <class Object>
 Object* DrmAllocator() {
   return static_cast<Object*>(drmMalloc(sizeof(Object)));
 }
-
-class MockHardwareDisplayPlaneManager
-    : public HardwareDisplayPlaneManagerLegacy {
- public:
-  MockHardwareDisplayPlaneManager(DrmDevice* drm,
-                                  std::vector<uint32_t> crtcs,
-                                  size_t planes_per_crtc) {
-    const int kPlaneBaseId = 50;
-    drm_ = drm;
-    crtcs_.swap(crtcs);
-    for (size_t crtc_idx = 0; crtc_idx < crtcs_.size(); crtc_idx++) {
-      for (size_t i = 0; i < planes_per_crtc; i++) {
-        scoped_ptr<HardwareDisplayPlane> plane(
-            new HardwareDisplayPlane(kPlaneBaseId + i, 1 << crtc_idx));
-        // Add support to test more formats.
-        plane->Initialize(drm, std::vector<uint32_t>(1, DRM_FORMAT_XRGB8888),
-                          false, true);
-        planes_.push_back(std::move(plane));
-      }
-    }
-  }
-};
 
 }  // namespace
 
