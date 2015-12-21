@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkFontHost.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -99,12 +100,11 @@ GFX_EXPORT FontRenderParams GetFontRenderParams(
     const FontRenderParamsQuery& query,
     std::string* family_out);
 
+#if defined(OS_LINUX)
 // Clears GetFontRenderParams()'s cache. Intended to be called by tests that are
 // changing Fontconfig's configuration.
-// TODO(derat): This is only defined for Linux, but OS_LINUX doesn't seem to be
-// set when font_render_params_linux_unittest.cc includes this header. Figure
-// out what's going on here.
 GFX_EXPORT void ClearFontRenderParamsCacheForTest();
+#endif
 
 #if defined(OS_CHROMEOS)
 // Gets the device scale factor to query the FontRenderParams.
