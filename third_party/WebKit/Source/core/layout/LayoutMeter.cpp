@@ -18,8 +18,6 @@
  *
  */
 
-#include "config.h"
-
 #include "core/layout/LayoutMeter.h"
 
 #include "core/html/HTMLMeterElement.h"

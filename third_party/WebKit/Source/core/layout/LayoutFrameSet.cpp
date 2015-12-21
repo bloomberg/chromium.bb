@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutFrameSet.h"
 
 #include "core/dom/Document.h"

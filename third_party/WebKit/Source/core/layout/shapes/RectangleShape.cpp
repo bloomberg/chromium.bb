@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/layout/shapes/RectangleShape.h"
 
 #include "wtf/MathExtras.h"

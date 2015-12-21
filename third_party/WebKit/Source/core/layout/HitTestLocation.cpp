@@ -19,7 +19,6 @@
  *
 */
 
-#include "config.h"
 #include "core/layout/HitTestLocation.h"
 
 #include "platform/geometry/FloatRoundedRect.h"

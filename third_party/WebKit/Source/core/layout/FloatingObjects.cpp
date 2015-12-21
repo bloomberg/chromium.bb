@@ -21,7 +21,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/layout/FloatingObjects.h"
 
 #include "core/layout/LayoutBlockFlow.h"

@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutTextCombine.h"
 
 #include "core/layout/TextRunConstructor.h"

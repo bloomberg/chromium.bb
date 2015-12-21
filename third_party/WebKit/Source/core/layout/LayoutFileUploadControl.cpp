@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutFileUploadControl.h"
 
 #include "core/HTMLNames.h"

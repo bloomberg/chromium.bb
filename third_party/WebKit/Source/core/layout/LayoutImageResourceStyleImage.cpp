@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutImageResourceStyleImage.h"
 
 #include "core/fetch/ImageResource.h"

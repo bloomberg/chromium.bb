@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutInline.h"
 
 #include "core/dom/Fullscreen.h"

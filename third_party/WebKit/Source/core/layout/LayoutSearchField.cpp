@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutSearchField.h"
 
 #include "core/InputTypeNames.h"

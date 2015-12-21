@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutCounter.h"
 
 #include "core/HTMLNames.h"

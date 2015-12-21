@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/line/BreakingContextInlineHeaders.h"
 
 namespace blink {

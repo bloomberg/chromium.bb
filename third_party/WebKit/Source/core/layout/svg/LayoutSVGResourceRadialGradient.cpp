@@ -19,8 +19,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
-
 #include "core/layout/svg/LayoutSVGResourceRadialGradient.h"
 
 #include "core/svg/SVGRadialGradientElement.h"

@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/line/InlineTextBox.h"
 
 #include "core/layout/HitTestResult.h"

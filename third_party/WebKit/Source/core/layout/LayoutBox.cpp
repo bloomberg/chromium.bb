@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutBox.h"
 
 #include "core/HTMLNames.h"

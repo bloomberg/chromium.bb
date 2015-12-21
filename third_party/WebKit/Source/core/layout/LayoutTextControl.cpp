@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutTextControl.h"
 
 #include "core/html/HTMLTextFormControlElement.h"

@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutBoxModelObject.h"
 
 #include "core/dom/NodeComputedStyle.h"

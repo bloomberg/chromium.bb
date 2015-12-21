@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutReplaced.h"
 
 #include "core/editing/PositionWithAffinity.h"

@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/ListMarkerText.h"
 
 #include "core/layout/TextRunConstructor.h"

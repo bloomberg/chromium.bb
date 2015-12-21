@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutListItem.h"
 
 #include "core/HTMLNames.h"

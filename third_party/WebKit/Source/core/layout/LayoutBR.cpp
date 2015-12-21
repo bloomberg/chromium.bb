@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutBR.h"
 
 #include "core/dom/Document.h"

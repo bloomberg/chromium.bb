@@ -27,8 +27,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
-
 #include "core/layout/LayoutFlowThread.h"
 
 #include "core/layout/LayoutMultiColumnSet.h"

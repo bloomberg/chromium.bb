@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutSlider.h"
 
 #include "core/InputTypeNames.h"

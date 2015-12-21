@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutThemeDefault.h"
 
 #include "core/CSSValueKeywords.h"

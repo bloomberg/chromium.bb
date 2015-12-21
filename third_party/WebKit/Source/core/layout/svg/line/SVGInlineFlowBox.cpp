@@ -20,7 +20,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 
 #include "core/layout/svg/line/SVGInlineTextBox.h"

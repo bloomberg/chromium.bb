@@ -17,7 +17,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/layout/svg/SVGResourcesCycleSolver.h"
 
 // Set to a value > 0, to debug the resource cache.

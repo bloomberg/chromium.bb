@@ -18,8 +18,6 @@
  *
  */
 
-#include "config.h"
-
 #include "core/layout/LayoutProgress.h"
 
 #include "core/html/HTMLProgressElement.h"

@@ -20,8 +20,6 @@
  *
  */
 
-#include "config.h"
-
 #include "core/dom/AXObjectCache.h"
 #include "core/layout/BidiRunForLine.h"
 #include "core/layout/LayoutCounter.h"

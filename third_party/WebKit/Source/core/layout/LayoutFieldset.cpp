@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutFieldset.h"
 
 #include "core/CSSPropertyNames.h"

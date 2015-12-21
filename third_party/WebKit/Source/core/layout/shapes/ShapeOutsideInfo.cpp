@@ -27,7 +27,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 
 #include "core/inspector/ConsoleMessage.h"

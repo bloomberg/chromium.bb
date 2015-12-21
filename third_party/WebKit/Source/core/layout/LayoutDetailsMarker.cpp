@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutDetailsMarker.h"
 
 #include "core/HTMLNames.h"

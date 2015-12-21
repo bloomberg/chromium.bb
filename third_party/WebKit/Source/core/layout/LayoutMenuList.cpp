@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutMenuList.h"
 
 #include "core/HTMLNames.h"

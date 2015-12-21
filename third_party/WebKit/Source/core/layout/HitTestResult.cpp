@@ -19,7 +19,6 @@
  *
 */
 
-#include "config.h"
 #include "core/layout/HitTestResult.h"
 
 #include "core/HTMLNames.h"

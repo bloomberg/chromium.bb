@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutTextFragment.h"
 
 #include "core/dom/FirstLetterPseudoElement.h"

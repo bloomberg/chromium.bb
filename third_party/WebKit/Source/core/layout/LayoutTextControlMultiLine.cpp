@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutTextControlMultiLine.h"
 
 #include "core/html/HTMLTextAreaElement.h"

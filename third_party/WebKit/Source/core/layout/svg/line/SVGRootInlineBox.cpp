@@ -21,7 +21,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 
 #include "core/layout/api/LineLayoutSVGInlineText.h"

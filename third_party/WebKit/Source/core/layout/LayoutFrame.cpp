@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutFrame.h"
 
 #include "core/frame/FrameView.h"

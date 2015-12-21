@@ -20,7 +20,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/line/LineBreaker.h"
 
 #include "core/layout/line/BreakingContextInlineHeaders.h"

@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 
 #include "core/CSSValueKeywords.h"

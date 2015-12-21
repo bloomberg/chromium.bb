@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/layout/shapes/BoxShape.h"
 
 #include "wtf/MathExtras.h"

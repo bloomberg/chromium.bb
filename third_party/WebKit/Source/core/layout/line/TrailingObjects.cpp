@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/line/TrailingObjects.h"
 
 #include "core/layout/api/LineLayoutItem.h"

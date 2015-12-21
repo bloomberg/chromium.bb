@@ -21,7 +21,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 
 #include "core/CSSValueKeywords.h"

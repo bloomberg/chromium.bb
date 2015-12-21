@@ -25,8 +25,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
-
 #include "core/layout/svg/LayoutSVGPath.h"
 
 #include "core/layout/svg/LayoutSVGResourceMarker.h"

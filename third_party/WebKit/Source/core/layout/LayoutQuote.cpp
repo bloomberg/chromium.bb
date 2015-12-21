@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutQuote.h"
 
 #include "core/layout/LayoutTextFragment.h"

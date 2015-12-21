@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutImageResource.h"
 
 #include "core/dom/Element.h"

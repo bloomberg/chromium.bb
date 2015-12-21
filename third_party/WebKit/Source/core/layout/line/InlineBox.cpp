@@ -17,7 +17,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/layout/line/InlineBox.h"
 
 #include "core/layout/HitTestLocation.h"

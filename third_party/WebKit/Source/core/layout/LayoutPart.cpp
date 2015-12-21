@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutPart.h"
 
 #include "core/dom/AXObjectCache.h"

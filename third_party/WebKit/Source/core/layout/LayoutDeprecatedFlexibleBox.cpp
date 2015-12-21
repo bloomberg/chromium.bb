@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
 
 #include "core/frame/UseCounter.h"

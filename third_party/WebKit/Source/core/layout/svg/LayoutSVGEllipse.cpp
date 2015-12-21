@@ -24,13 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
 #include "core/layout/svg/LayoutSVGEllipse.h"
 
 #include "core/svg/SVGCircleElement.h"
 #include "core/svg/SVGEllipseElement.h"
-
 #include <cmath>
 
 namespace blink {

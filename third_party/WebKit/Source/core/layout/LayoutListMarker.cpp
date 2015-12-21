@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "core/layout/LayoutListMarker.h"
 
 #include "core/fetch/ImageResource.h"
