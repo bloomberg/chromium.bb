@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
 // FIXME(dominicc): Poor confused check-webkit-style demands Attribute.h here.
 #include "core/dom/Attribute.h"
 

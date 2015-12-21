@@ -18,7 +18,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/svg/SVGPolylineElement.h"
 
 #include "platform/graphics/Path.h"

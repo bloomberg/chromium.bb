@@ -19,8 +19,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
-
 #include "core/svg/SVGLength.h"
 
 #include "bindings/core/v8/ExceptionState.h"

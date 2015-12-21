@@ -19,8 +19,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
-
 #include "core/svg/SVGFitToViewBox.h"
 
 #include "core/dom/Attribute.h"

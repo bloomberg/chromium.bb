@@ -18,8 +18,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
-
 #include "core/svg/SVGFEGaussianBlurElement.h"
 
 #include "core/SVGNames.h"

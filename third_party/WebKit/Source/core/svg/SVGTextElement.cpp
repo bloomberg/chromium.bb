@@ -18,7 +18,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "core/svg/SVGTextElement.h"
 
 #include "core/layout/svg/LayoutSVGText.h"

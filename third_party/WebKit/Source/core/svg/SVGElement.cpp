@@ -21,8 +21,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
-
 #include "core/svg/SVGElement.h"
 
 #include "bindings/core/v8/ScriptEventListener.h"
