@@ -36,18 +36,17 @@
     readonly attribute boolean ctrlKey;
     readonly attribute boolean shiftKey;
 
-    // FIXME: initTouchEvent() is not standardized. http://crbug.com/518868
-    [CallWith=ScriptState, Measure, LegacyInterfaceTypeChecking] void initTouchEvent([Default=Undefined] optional TouchList touches,
-                                                                                     [Default=Undefined] optional TouchList targetTouches,
-                                                                                     [Default=Undefined] optional TouchList changedTouches,
-                                                                                     [Default=Undefined] optional DOMString type,
-                                                                                     [Default=Undefined] optional Window? view,
-                                                                                     [Default=Undefined] optional long unused1,
-                                                                                     [Default=Undefined] optional long unused2,
-                                                                                     [Default=Undefined] optional long unused3,
-                                                                                     [Default=Undefined] optional long unused4,
-                                                                                     [Default=Undefined] optional boolean ctrlKey,
-                                                                                     [Default=Undefined] optional boolean altKey,
-                                                                                     [Default=Undefined] optional boolean shiftKey,
-                                                                                     [Default=Undefined] optional boolean metaKey);
+    [CallWith=ScriptState, DeprecateAs=V8TouchEvent_InitTouchEvent_Method, LegacyInterfaceTypeChecking] void initTouchEvent([Default=Undefined] optional TouchList touches,
+                                                                                                                            [Default=Undefined] optional TouchList targetTouches,
+                                                                                                                            [Default=Undefined] optional TouchList changedTouches,
+                                                                                                                            [Default=Undefined] optional DOMString type,
+                                                                                                                            [Default=Undefined] optional Window? view,
+                                                                                                                            [Default=Undefined] optional long unused1,
+                                                                                                                            [Default=Undefined] optional long unused2,
+                                                                                                                            [Default=Undefined] optional long unused3,
+                                                                                                                            [Default=Undefined] optional long unused4,
+                                                                                                                            [Default=Undefined] optional boolean ctrlKey,
+                                                                                                                            [Default=Undefined] optional boolean altKey,
+                                                                                                                            [Default=Undefined] optional boolean shiftKey,
+                                                                                                                            [Default=Undefined] optional boolean metaKey);
 };

@@ -735,6 +735,8 @@ static const char* milestoneString(int milestone)
     switch (milestone) {
     case 50:
         return "M50, around April 2016";
+    case 53:
+        return "M53, around September 2016";
     }
 
     ASSERT_NOT_REACHED();
@@ -962,6 +964,9 @@ String UseCounter::deprecationMessage(Feature feature)
 
     case DocumentDefaultCharset:
         return willBeRemoved("'Document.defaultCharset'", 50, "6217124578066432");
+
+    case V8TouchEvent_InitTouchEvent_Method:
+        return replacedWillBeRemoved("'TouchEvent.initTouchEvent'", "the TouchEvent constructor", 53, "5730982598541312");
 
     // Features that aren't deprecated don't have a deprecation message.
     default:
