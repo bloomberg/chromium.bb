@@ -76,7 +76,7 @@ config("compiler") {
     # http://crbug.com/448386
     "-Wl,--exclude-libs=libvpx_assembly_arm.a",
   ]
-  if (current_cpu == "arm") {
+  if (current_cpu == "arm" && !use_order_profiling) {
     ldflags += [
       # Enable identical code folding to reduce size.
       "-Wl,--icf=safe",

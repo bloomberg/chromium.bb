@@ -289,6 +289,7 @@ group("both_gn_and_gyp") {
       "//tools/android:memconsumer",
       "//tools/android/heap_profiler:heap_profiler_unittests",
       "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
+      "//tools/cygprofile:cygprofile_unittests",
       "//tools/imagediff($host_toolchain)",
     ]
     deps -= [

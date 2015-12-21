@@ -283,7 +283,7 @@ config("compiler") {
       #"-Wl,--thread-count=4",
     ]
 
-    if (!using_sanitizer) {
+    if (!using_sanitizer && !(is_android && use_order_profiling)) {
       # TODO(brettw) common.gypi has this only for target toolset.
       ldflags += [ "-Wl,--icf=all" ]
     }
