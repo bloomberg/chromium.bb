@@ -730,6 +730,27 @@
             '<(blink_core_output_dir)',
           ],
         },
+        {
+          'action_name': 'ExperimentalFeatures',
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            '../build/scripts/make_experimental_features.py',
+            '../platform/RuntimeEnabledFeatures.in',
+            '../build/scripts/templates/ExperimentalFeatures.cpp.tmpl',
+            '../build/scripts/templates/ExperimentalFeatures.h.tmpl',
+          ],
+          'outputs': [
+            '<(blink_core_output_dir)/experiments/ExperimentalFeatures.cpp',
+            '<(blink_core_output_dir)/experiments/ExperimentalFeatures.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_experimental_features.py',
+            '../platform/RuntimeEnabledFeatures.in',
+            '--output_dir',
+            '<(blink_core_output_dir)/experiments',
+          ],
+        },
       ],
       'rules': [
         {

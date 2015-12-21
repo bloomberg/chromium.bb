@@ -122,6 +122,10 @@
 
       # Generated from make_css_property_metadata.py
       '<(blink_core_output_dir)/CSSPropertyMetadata.cpp',
+
+      # Generated from make_experimental_features.py
+      '<(blink_core_output_dir)/experiments/ExperimentalFeatures.cpp',
+      '<(blink_core_output_dir)/experiments/ExperimentalFeatures.h',
     ],
   },
 }

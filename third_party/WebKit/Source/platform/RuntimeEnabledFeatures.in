@@ -19,6 +19,9 @@
 //
 // condition=ENABLE_NAME is used for wrapping features in compile-time
 // #if ENABLE(FEATURE) guards.  These are deprecated and should all be removed.
+//
+// api_name=API_NAME is used to enable the feature through the experimental framework, so that the feature can be
+// enabled at runtime on a per-page basis through a signed API key for the corresponding API name.
 
 AdditiveAnimations status=experimental, depends_on=StackedCSSPropertyAnimations
 AppBanner status=stable

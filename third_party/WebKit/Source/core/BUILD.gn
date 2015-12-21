@@ -581,6 +581,7 @@ group("make_core_generated") {
     ":make_core_generated_event_names",
     ":make_core_generated_event_target_names",
     ":make_core_generated_event_type_names",
+    ":make_core_generated_experimental_features",
     ":make_core_generated_fetch_initiator_type_names",
     ":make_core_generated_html_element_factory",
     ":make_core_generated_html_element_lookup_trie",
@@ -987,6 +988,28 @@ action("make_core_generated_html_element_lookup_trie") {
   ]
 
   deps = make_core_generated_deps
+}
+
+# "ExperimentalFeatures" action in make_core_generated from GYP.
+action("make_core_generated_experimental_features") {
+  script = "../build/scripts/make_experimental_features.py"
+
+  inputs = scripts_for_in_files + [
+             "../build/scripts/make_experimental_features.py",
+             "../platform/RuntimeEnabledFeatures.in",
+             "../build/scripts/templates/ExperimentalFeatures.cpp.tmpl",
+             "../build/scripts/templates/ExperimentalFeatures.h.tmpl",
+           ]
+  outputs = [
+    "$blink_core_output_dir/experiments/ExperimentalFeatures.cpp",
+    "$blink_core_output_dir/experiments/ExperimentalFeatures.h",
+  ]
+
+  args = [
+    rebase_path("../platform/RuntimeEnabledFeatures.in", root_build_dir),
+    "--output_dir",
+    "$rel_blink_core_gen_dir/experiments",
+  ]
 }
 
 # The bison rules from make_core_generated.
