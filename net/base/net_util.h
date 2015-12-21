@@ -69,7 +69,7 @@ NET_EXPORT std::string GetHostAndPort(const GURL& url);
 
 // Returns a host[:port] string for the given URL, where the port is omitted
 // if it is the default for the URL's scheme.
-NET_EXPORT_PRIVATE std::string GetHostAndOptionalPort(const GURL& url);
+NET_EXPORT std::string GetHostAndOptionalPort(const GURL& url);
 
 // Returns true if |hostname| contains a non-registerable or non-assignable
 // domain name (eg: a gTLD that has not been assigned by IANA) or an IP address
@@ -160,7 +160,7 @@ NET_EXPORT std::string GetDirectoryListingEntry(const base::string16& name,
 // Strip the portions of |url| that aren't core to the network request.
 //   - user name / password
 //   - reference section
-NET_EXPORT_PRIVATE GURL SimplifyUrlForRequest(const GURL& url);
+NET_EXPORT GURL SimplifyUrlForRequest(const GURL& url);
 
 // Retuns the port field of the |sockaddr|.
 const uint16_t* GetPortFieldFromSockaddr(const struct sockaddr* address,
@@ -184,7 +184,7 @@ NET_EXPORT_PRIVATE bool ResolveLocalHostname(base::StringPiece host,
 // Note that this function does not check for IP addresses other than
 // the above, although other IP addresses may point to the local
 // machine.
-NET_EXPORT_PRIVATE bool IsLocalhost(base::StringPiece host);
+NET_EXPORT bool IsLocalhost(base::StringPiece host);
 
 // Returns true if the url's host is a Google server. This should only be used
 // for histograms and shouldn't be used to affect behavior.
