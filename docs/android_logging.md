@@ -200,5 +200,9 @@ environment variable:
 export ANDROID_LOG_TAGS="cr_YourModuleTag:D *:S"
 ```
 
+The syntax does not support tag expansion or regular expressions other than `*`
+for all tags. Please use `grep` or a similar tool to refine your filters
+further.
+
 For more, see the [related page on developer.android.com]
 (http://developer.android.com/tools/debugging/debugging-log.html#filteringOutput)
