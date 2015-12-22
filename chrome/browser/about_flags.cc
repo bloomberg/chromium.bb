@@ -665,7 +665,8 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_PANELS_NAME,
      IDS_FLAGS_PANELS_DESCRIPTION,
      kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnablePanels)},
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePanels,
+                               switches::kDisablePanels)},
     {// See http://crbug.com/120416 for how to remove this flag.
      "save-page-as-mhtml",  // FLAGS:RECORD_UMA
      IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME,

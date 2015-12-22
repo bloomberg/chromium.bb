@@ -464,8 +464,9 @@ const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
 const char kEnableOfflineAutoReloadVisibleOnly[] =
     "enable-offline-auto-reload-visible-only";
 
-// Enables panels (always on-top docked pop-up windows).
+// Enables or disables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
+const char kDisablePanels[]                 = "disable-panels";
 
 // Enables the Permissions Blacklist, which blocks access to permissions
 // for blacklisted sites.

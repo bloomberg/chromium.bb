@@ -135,6 +135,7 @@ extern const char kEnableNTPSearchEngineCountryDetection[];
 extern const char kEnableOfflineAutoReload[];
 extern const char kEnableOfflineAutoReloadVisibleOnly[];
 extern const char kEnablePanels[];
+extern const char kDisablePanels[];
 extern const char kEnablePermissionsBlacklist[];
 extern const char kEnablePotentiallyAnnoyingSecurityFeatures[];
 extern const char kEnablePowerOverlay[];

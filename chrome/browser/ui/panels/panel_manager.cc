@@ -105,6 +105,11 @@ void PanelManager::SetDisplaySettingsProviderForTesting(
 
 // static
 bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
+  // If --disable-panels is on, never use panels.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePanels))
+    return false;
+
   // If --enable-panels is on, always use panels.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePanels))
