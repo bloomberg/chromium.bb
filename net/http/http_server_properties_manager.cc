@@ -37,8 +37,6 @@ const int kMissingVersion = 0;
 // The version number of persisted http_server_properties.
 const int kVersionNumber = 3;
 
-typedef std::vector<std::string> StringVector;
-
 // Persist 200 MRU AlternateProtocolHostPortPairs.
 const int kMaxAlternateProtocolHostsToPersist = 200;
 
@@ -449,6 +447,16 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
 
   // The properties for a given server is in
   // http_server_properties_dict["servers"][server].
+  // Server data was stored in the following format in alphabetical order.
+  //
+  //   "http_server_properties": {
+  //      "servers": {
+  //         "accounts.google.com:443": {...},
+  //         "accounts.youtube.com:443": {...},
+  //         "android.clients.google.com:443": {...},
+  //          ...
+  //      }, ...
+  // },
   const base::DictionaryValue* servers_dict = NULL;
   if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
           kServersKey, &servers_dict)) {
@@ -460,7 +468,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
   ReadSupportsQuic(http_server_properties_dict, addr);
 
   // String is host/port pair of spdy server.
-  scoped_ptr<StringVector> spdy_servers(new StringVector);
+  scoped_ptr<ServerList> spdy_servers(new ServerList);
   scoped_ptr<SpdySettingsMap> spdy_settings_map(
       new SpdySettingsMap(kMaxSpdySettingsHostsToPersist));
   scoped_ptr<AlternativeServiceMap> alternative_service_map(
@@ -470,38 +478,10 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
   scoped_ptr<QuicServerInfoMap> quic_server_info_map(
       new QuicServerInfoMap(kMaxQuicServersToPersist));
 
-  for (base::DictionaryValue::Iterator it(*servers_dict); !it.IsAtEnd();
-       it.Advance()) {
-    // Get server's host/pair.
-    const std::string& server_str = it.key();
-    HostPortPair server = HostPortPair::FromString(server_str);
-    if (server.host().empty()) {
-      DVLOG(1) << "Malformed http_server_properties for server: " << server_str;
-      detected_corrupted_prefs = true;
-      continue;
-    }
-
-    const base::DictionaryValue* server_pref_dict = NULL;
-    if (!it.value().GetAsDictionary(&server_pref_dict)) {
-      DVLOG(1) << "Malformed http_server_properties server: " << server_str;
-      detected_corrupted_prefs = true;
-      continue;
-    }
-
-    // Get if server supports Spdy.
-    bool supports_spdy = false;
-    if ((server_pref_dict->GetBoolean(kSupportsSpdyKey, &supports_spdy)) &&
-        supports_spdy) {
-      spdy_servers->push_back(server_str);
-    }
-
-    AddToSpdySettingsMap(server, *server_pref_dict, spdy_settings_map.get());
-    if (!AddToAlternativeServiceMap(server, *server_pref_dict,
-                                    alternative_service_map.get()) ||
-        !AddToNetworkStatsMap(server, *server_pref_dict,
-                              server_network_stats_map.get())) {
-      detected_corrupted_prefs = true;
-    }
+  if (!AddServersData(*servers_dict, spdy_servers.get(),
+                      spdy_settings_map.get(), alternative_service_map.get(),
+                      server_network_stats_map.get())) {
+    detected_corrupted_prefs = true;
   }
 
   if (!AddToQuicServerInfoMap(http_server_properties_dict,
@@ -519,6 +499,45 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
           base::Owned(server_network_stats_map.release()),
           base::Owned(quic_server_info_map.release()),
           detected_corrupted_prefs));
+}
+
+bool HttpServerPropertiesManager::AddServersData(
+    const base::DictionaryValue& servers_dict,
+    ServerList* spdy_servers,
+    SpdySettingsMap* spdy_settings_map,
+    AlternativeServiceMap* alternative_service_map,
+    ServerNetworkStatsMap* network_stats_map) {
+  for (base::DictionaryValue::Iterator it(servers_dict); !it.IsAtEnd();
+       it.Advance()) {
+    // Get server's host/pair.
+    const std::string& server_str = it.key();
+    HostPortPair server = HostPortPair::FromString(server_str);
+    if (server.host().empty()) {
+      DVLOG(1) << "Malformed http_server_properties for server: " << server_str;
+      return false;
+    }
+
+    const base::DictionaryValue* server_pref_dict = NULL;
+    if (!it.value().GetAsDictionary(&server_pref_dict)) {
+      DVLOG(1) << "Malformed http_server_properties server: " << server_str;
+      return false;
+    }
+
+    // Get if server supports Spdy.
+    bool supports_spdy = false;
+    if ((server_pref_dict->GetBoolean(kSupportsSpdyKey, &supports_spdy)) &&
+        supports_spdy) {
+      spdy_servers->push_back(server_str);
+    }
+
+    AddToSpdySettingsMap(server, *server_pref_dict, spdy_settings_map);
+    if (!AddToAlternativeServiceMap(server, *server_pref_dict,
+                                    alternative_service_map) ||
+        !AddToNetworkStatsMap(server, *server_pref_dict, network_stats_map)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void HttpServerPropertiesManager::AddToSpdySettingsMap(
@@ -768,7 +787,7 @@ bool HttpServerPropertiesManager::AddToQuicServerInfoMap(
 }
 
 void HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkThread(
-    StringVector* spdy_servers,
+    ServerList* spdy_servers,
     SpdySettingsMap* spdy_settings_map,
     AlternativeServiceMap* alternative_service_map,
     IPAddressNumber* last_quic_address,
