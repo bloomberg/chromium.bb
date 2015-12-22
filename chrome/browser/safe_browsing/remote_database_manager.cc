@@ -104,7 +104,7 @@ RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager()
   if (ints_str.empty()) {
     // By default, we check all types except a few.
     static_assert(content::RESOURCE_TYPE_LAST_TYPE ==
-                      content::RESOURCE_TYPE_SERVICE_WORKER + 1,
+                      content::RESOURCE_TYPE_PLUGIN_RESOURCE + 1,
                   "Decide if new resource type should be skipped on mobile.");
     for (int t_int = 0; t_int < content::RESOURCE_TYPE_LAST_TYPE; t_int++) {
       content::ResourceType t = static_cast<content::ResourceType>(t_int);

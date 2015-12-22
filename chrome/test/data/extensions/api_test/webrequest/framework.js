@@ -40,7 +40,7 @@ function runTests(tests) {
   var waitForAboutBlank = function(_, info, tab) {
     if (info.status == "complete" && tab.url == "about:blank") {
       tabId = tab.id;
-      tabIdMap = {};
+      tabIdMap = {"-1": -1};
       tabIdMap[tabId] = 0;
       chrome.tabs.onUpdated.removeListener(waitForAboutBlank);
       chrome.test.getConfig(function(config) {
@@ -170,10 +170,36 @@ function checkUserAgent(headers) {
   return false;
 }
 
+// Whether the request is missing a tabId and frameId and we're not expecting
+// a request with the given details. If the method returns true, the event
+// should be ignored.
+function isUnexpectedDetachedRequest(name, details) {
+  // This function is responsible for marking detached requests as unexpected.
+  // Non-detached requests are not this function's concern.
+  if (details.tabId !== -1 || details.frameId >= 0)
+    return false;
+
+  // Only return true if there is no matching expectation for the given details.
+  return !expectedEventData.some(function(exp) {
+    return name === exp.event &&
+      exp.details.tabId === -1 &&
+      exp.details.frameId === -1 &&
+      exp.details.method === details.method &&
+      exp.details.url === details.url &&
+      exp.details.type === details.type;
+  });
+}
+
 function captureEvent(name, details, callback) {
+  // frameId should be -1 or positive, but is sometimes -2 (MSG_ROUTING_NONE).
+  // TODO(robwu): This will be resolved once crbug.com/432875 is resolved.
+  if (details.frameId === -2)
+    details.frameId = -1;
+
   // Ignore system-level requests like safebrowsing updates and favicon fetches
   // since they are unpredictable.
-  if (details.tabId == -1 || details.type == "other" ||
+  if (details.type == "other" ||
+      isUnexpectedDetachedRequest(name, details) ||
       details.url.match(/\/favicon.ico$/) ||
       details.url.match(/https:\/\/dl.google.com/))
     return;
@@ -218,7 +244,9 @@ function captureEvent(name, details, callback) {
   // This assigns unique IDs to newly opened tabs. However, the new IDs are only
   // deterministic, if the order in which the tabs are opened is deterministic.
   if (!(details.tabId in tabIdMap)) {
-    tabIdMap[details.tabId] = Object.keys(tabIdMap).length;
+    // Subtract one because the map is initialized with {"-1": -1}, and the
+    // first tab has ID 0.
+    tabIdMap[details.tabId] = Object.keys(tabIdMap).length - 1;
   }
   details.tabId = tabIdMap[details.tabId];
 

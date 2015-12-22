@@ -30,13 +30,13 @@ struct ResourceResponseInfo;
 //   0:HTML, 1:XML, 2:JSON, 3:Plain, 4:Others
 // SiteIsolation.XSD.[%MIMETYPE].Blocked :
 //   blocked # of cross-site document responses grouped by sniffed MIME type.
-// SiteIsolation.XSD.[%MIMETYPE].Blocked.RenderableStatusCode :
+// SiteIsolation.XSD.[%MIMETYPE].Blocked.RenderableStatusCode2 :
 //   # of responses with renderable status code,
 //   out of SiteIsolation.XSD.[%MIMETYPE].Blocked.
 // SiteIsolation.XSD.[%MIMETYPE].Blocked.NonRenderableStatusCode :
 //   # of responses with non-renderable status code,
 //   out of SiteIsolation.XSD.[%MIMETYPE].Blocked.
-// SiteIsolation.XSD.[%MIMETYPE].NoSniffBlocked.RenderableStatusCode :
+// SiteIsolation.XSD.[%MIMETYPE].NoSniffBlocked.RenderableStatusCode2 :
 //   # of responses failed to be sniffed for its MIME type, but blocked by
 //   "X-Content-Type-Options: nosniff" header, and with renderable status code
 //   out of SiteIsolation.XSD.[%MIMETYPE].Blocked.

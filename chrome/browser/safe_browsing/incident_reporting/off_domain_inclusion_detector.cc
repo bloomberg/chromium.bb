@@ -145,6 +145,7 @@ bool OffDomainInclusionDetector::ShouldAnalyzeRequest(
     case content::RESOURCE_TYPE_OBJECT:
     case content::RESOURCE_TYPE_MEDIA:
     case content::RESOURCE_TYPE_XHR:
+    case content::RESOURCE_TYPE_PLUGIN_RESOURCE:
       // Types above are to be analyzed for off-domain inclusion if they are
       // loaded as part of the main frame.
       return request_info->IsMainFrame();
@@ -154,6 +155,7 @@ bool OffDomainInclusionDetector::ShouldAnalyzeRequest(
     case content::RESOURCE_TYPE_FAVICON:
     case content::RESOURCE_TYPE_PING:
     case content::RESOURCE_TYPE_SERVICE_WORKER:
+    case content::RESOURCE_TYPE_CSP_REPORT:
       // Types above are not to be analyzed for off-domain inclusion.
       return false;
     case content::RESOURCE_TYPE_LAST_TYPE:
@@ -311,7 +313,7 @@ void OffDomainInclusionDetector::ReportAnalysisResult(
 
   // Always record this histogram for the resource type analyzed to be able to
   // do ratio analysis w.r.t. other histograms below.
-  UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion.RequestAnalyzed",
+  UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion2.RequestAnalyzed",
                             off_domain_inclusion_info->resource_type,
                             content::RESOURCE_TYPE_LAST_TYPE);
 
@@ -322,28 +324,28 @@ void OffDomainInclusionDetector::ReportAnalysisResult(
     case AnalysisEvent::NO_EVENT:
       break;
     case AnalysisEvent::ABORT_EMPTY_MAIN_FRAME_URL:
-      histogram_name = "SBOffDomainInclusion.Abort.EmptyMainFrameURL";
+      histogram_name = "SBOffDomainInclusion2.Abort.EmptyMainFrameURL";
       break;
     case AnalysisEvent::ABORT_NO_PROFILE:
-      histogram_name = "SBOffDomainInclusion.Abort.NoProfile";
+      histogram_name = "SBOffDomainInclusion2.Abort.NoProfile";
       break;
     case AnalysisEvent::ABORT_INCOGNITO:
-      histogram_name = "SBOffDomainInclusion.Abort.Incognito";
+      histogram_name = "SBOffDomainInclusion2.Abort.Incognito";
       break;
     case AnalysisEvent::ABORT_NO_HISTORY_SERVICE:
-      histogram_name = "SBOffDomainInclusion.Abort.NoHistoryService";
+      histogram_name = "SBOffDomainInclusion2.Abort.NoHistoryService";
       break;
     case AnalysisEvent::ABORT_HISTORY_LOOKUP_FAILED:
-      histogram_name = "SBOffDomainInclusion.Abort.HistoryLookupFailed";
+      histogram_name = "SBOffDomainInclusion2.Abort.HistoryLookupFailed";
       break;
     case AnalysisEvent::OFF_DOMAIN_INCLUSION_WHITELISTED:
-      histogram_name = "SBOffDomainInclusion.Whitelisted";
+      histogram_name = "SBOffDomainInclusion2.Whitelisted";
       break;
     case AnalysisEvent::OFF_DOMAIN_INCLUSION_IN_HISTORY:
-      histogram_name = "SBOffDomainInclusion.InHistory";
+      histogram_name = "SBOffDomainInclusion2.InHistory";
       break;
     case AnalysisEvent::OFF_DOMAIN_INCLUSION_SUSPICIOUS:
-      histogram_name = "SBOffDomainInclusion.Suspicious";
+      histogram_name = "SBOffDomainInclusion2.Suspicious";
       break;
   }
   if (!histogram_name.empty()) {

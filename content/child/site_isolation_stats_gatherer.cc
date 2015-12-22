@@ -68,7 +68,7 @@ void HistogramCountBlockedResponse(
 
   if (renderable_status_code) {
     IncrementHistogramEnum(
-        bucket_prefix + block_label + ".RenderableStatusCode",
+        bucket_prefix + block_label + ".RenderableStatusCode2",
         resp_data->resource_type, RESOURCE_TYPE_LAST_TYPE);
   } else {
     IncrementHistogramCount(bucket_prefix + block_label +

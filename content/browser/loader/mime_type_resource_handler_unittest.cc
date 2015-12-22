@@ -318,6 +318,14 @@ TEST_F(MimeTypeResourceHandlerTest, StreamHandling) {
   EXPECT_FALSE(
       TestStreamIsIntercepted(allow_download, must_download, resource_type));
 
+  // Plugin resource request with download not allowed. Stream shouldn't be
+  // intercepted.
+  allow_download = false;
+  must_download = false;
+  resource_type = RESOURCE_TYPE_PLUGIN_RESOURCE;
+  EXPECT_FALSE(
+      TestStreamIsIntercepted(allow_download, must_download, resource_type));
+
   // Object request with download not allowed. Stream should be intercepted.
   allow_download = false;
   must_download = false;

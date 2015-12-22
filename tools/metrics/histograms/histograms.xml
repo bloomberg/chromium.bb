@@ -41091,6 +41091,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SB2.ResourceTypes" enum="ContentResourceType">
+  <obsolete>
+    Superseded by SB2.ResourceTypes2 in December 2015.
+  </obsolete>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Resource types of resources that were inspected by Safe Browsing in the
+    SafeBrowsingResourceThrottle.
+  </summary>
+</histogram>
+
+<histogram name="SB2.ResourceTypes2" enum="ContentResourceType2">
   <owner>nparker@chromium.org</owner>
   <summary>
     Resource types of resources that were inspected by Safe Browsing in the
@@ -41999,6 +42010,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBOffDomainInclusion.Abort" enum="ContentResourceType">
+  <obsolete>
+    Superseded by SBOffDomainInclusion2.Abort in December 2015.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request for which the off-domain
@@ -42031,6 +42045,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBOffDomainInclusion.InHistory" enum="ContentResourceType">
+  <obsolete>
+    Superseded by SBOffDomainInclusion2.InHistory in December 2015.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request for which the off-domain
@@ -42054,6 +42071,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SBOffDomainInclusion.RequestAnalyzed"
     enum="ContentResourceType">
+  <obsolete>
+    Superseded by SBOffDomainInclusion2.RequestAnalyzed in December 2015.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request analyzed by the
@@ -42062,6 +42082,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBOffDomainInclusion.Suspicious" enum="ContentResourceType">
+  <obsolete>
+    Superseded by SBOffDomainInclusion2.Suspicious in December 2015.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request for which an off-domain
@@ -42071,6 +42094,53 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBOffDomainInclusion.Whitelisted" enum="ContentResourceType">
+  <obsolete>
+    Superseded by SBOffDomainInclusion2.Suspicious in December 2015.
+  </obsolete>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request for which the off-domain
+    inclusion analysis concluded in an inclusion whitelist hit.
+  </summary>
+</histogram>
+
+<histogram name="SBOffDomainInclusion2.Abort" enum="ContentResourceType2">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request for which the off-domain
+    inclusion analysis was aborted. This histogram is suffixed with the abort
+    reason.
+  </summary>
+</histogram>
+
+<histogram name="SBOffDomainInclusion2.InHistory" enum="ContentResourceType2">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request for which the off-domain
+    inclusion analysis concluded in no inclusion whitelist hit but a browsing
+    history hit.
+  </summary>
+</histogram>
+
+<histogram name="SBOffDomainInclusion2.RequestAnalyzed"
+    enum="ContentResourceType2">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request analyzed by the
+    OffDomainInclusionDetector.
+  </summary>
+</histogram>
+
+<histogram name="SBOffDomainInclusion2.Suspicious" enum="ContentResourceType2">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request for which an off-domain
+    inclusion was detected by the OffDomainInclusionDetector and considered
+    suspicious.
+  </summary>
+</histogram>
+
+<histogram name="SBOffDomainInclusion2.Whitelisted" enum="ContentResourceType2">
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request for which the off-domain
@@ -45685,12 +45755,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SiteIsolation.XSD.HTML.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
+  <obsolete>
+    Superseded by SiteIsolation.XSD.HTML.Blocked.RenderableStatusCode2 in
+    December 2015.
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.) among blocked
     cross-site document responses due to their HTML contents. Sampled with a
     resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.HTML.Blocked.RenderableStatusCode2"
+    enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.) among blocked
+    cross-site document responses due to their HTML contents. Sampled with a
+    resource type (0-17) when the first network packet of a response of this
     type is received.
   </summary>
 </histogram>
@@ -45707,12 +45793,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SiteIsolation.XSD.HTML.NoSniffBlocked.RenderableStatusCode"
     enum="ContentResourceType">
+  <obsolete>
+    Superseded by SiteIsolation.XSD.HTML.NoSniffBlocked.RenderableStatusCode2 in
+    December 2015.
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
     cross-site document responses due to having HTML content type and nosniff
     headers. Sampled with a resource type (0-14) when the first network packet
+    of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.HTML.NoSniffBlocked.RenderableStatusCode2"
+    enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to having HTML content type and nosniff
+    headers. Sampled with a resource type (0-17) when the first network packet
     of a response of this type is received.
   </summary>
 </histogram>
@@ -45755,12 +45857,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SiteIsolation.XSD.JSON.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
+  <obsolete>
+    Superseded by SiteIsolation.XSD.JSON.Blocked.RenderableStatusCode2 in
+    December 2015.
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
     cross-site document responses due to their JSON contents. Sampled with a
     resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.JSON.Blocked.RenderableStatusCode2"
+    enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to their JSON contents. Sampled with a
+    resource type (0-17) when the first network packet of a response of this
     type is received.
   </summary>
 </histogram>
@@ -45777,12 +45895,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SiteIsolation.XSD.JSON.NoSniffBlocked.RenderableStatusCode"
     enum="ContentResourceType">
+  <obsolete>
+    Superseded by SiteIsolation.XSD.JSON.NoSniffBlocked.RenderableStatusCode2 in
+    December 2015.
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
     cross-site document responses due to having JSON content type and nosniff
     headers. Sampled with a resource type (0-14) when the first network packet
+    of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.JSON.NoSniffBlocked.RenderableStatusCode2"
+    enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to having JSON content type and nosniff
+    headers. Sampled with a resource type (0-17) when the first network packet
     of a response of this type is received.
   </summary>
 </histogram>
@@ -45835,12 +45969,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SiteIsolation.XSD.Plain.HTML.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
+  <obsolete>
+    Superseded by SiteIsolation.XSD.Plain.HTML.Blocked.RenderableStatusCode2 in
+    December 2015.
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
     cross-site document responses due to their Plain.HTML contents. Sampled with
     a resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.HTML.Blocked.RenderableStatusCode2"
+    enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to their Plain.HTML contents. Sampled with
+    a resource type (0-17) when the first network packet of a response of this
     type is received.
   </summary>
 </histogram>
@@ -45866,12 +46016,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SiteIsolation.XSD.Plain.JSON.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
+  <obsolete>
+    Superseded by SiteIsolation.XSD.Plain.JSON.Blocked.RenderableStatusCode2 in
+    December 2015.
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
     cross-site document responses due to their Plain.JSON contents. Sampled with
     a resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.JSON.Blocked.RenderableStatusCode2"
+    enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to their Plain.JSON contents. Sampled with
+    a resource type (0-17) when the first network packet of a response of this
     type is received.
   </summary>
 </histogram>
@@ -45889,12 +46055,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SiteIsolation.XSD.Plain.NoSniffBlocked.RenderableStatusCode"
     enum="ContentResourceType">
+  <obsolete>
+    Superseded by SiteIsolation.XSD.Plain.NoSniffBlocked.RenderableStatusCode2
+    in December 2015.
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
     cross-site document responses due to having Plain content type and nosniff
     header. Sampled with a resource type (0-14) when the first network packet of
+    a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.NoSniffBlocked.RenderableStatusCode2"
+    enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to having Plain content type and nosniff
+    header. Sampled with a resource type (0-17) when the first network packet of
     a response of this type is received.
   </summary>
 </histogram>
@@ -45938,12 +46120,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SiteIsolation.XSD.Plain.XML.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
+  <obsolete>
+    Superseded by SiteIsolation.XSD.Plain.XML.Blocked.RenderableStatusCode2 in
+    December 2015.
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with renderable HTTP status codes sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
     cross-site document responses due to their Plain.XML contents. Sampled with
     a resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.XML.Blocked.RenderableStatusCode2"
+    enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The count of responses with renderable HTTP status codes sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to their Plain.XML contents. Sampled with
+    a resource type (0-17) when the first network packet of a response of this
     type is received.
   </summary>
 </histogram>
@@ -45968,12 +46166,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SiteIsolation.XSD.XML.Blocked.RenderableStatusCode"
     enum="ContentResourceType">
+  <obsolete>
+    Superseded by SiteIsolation.XSD.XML.Blocked.RenderableStatusCode2 in
+    December 2015.
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with renderable HTTP status codes sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
     cross-site document responses due to their XML contents. Sampled with a
     resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.XML.Blocked.RenderableStatusCode2"
+    enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The count of responses with renderable HTTP status codes sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to their XML contents. Sampled with a
+    resource type (0-17) when the first network packet of a response of this
     type is received.
   </summary>
 </histogram>
@@ -45990,12 +46204,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SiteIsolation.XSD.XML.NoSniffBlocked.RenderableStatusCode"
     enum="ContentResourceType">
+  <obsolete>
+    Superseded by SiteIsolation.XSD.XML.NoSniffBlocked.RenderableStatusCode2 in
+    December 2015.
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
     their requesting context type (e.g., image, script, etc.), among blocked
     cross-site document responses due to having XML content type and nosniff
     headers. Sampled with a resource type (0-14) when the first network packet
+    of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.XML.NoSniffBlocked.RenderableStatusCode2"
+    enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to having XML content type and nosniff
+    headers. Sampled with a resource type (0-17) when the first network packet
     of a response of this type is received.
   </summary>
 </histogram>
@@ -58178,6 +58408,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="ContentResourceType" type="int">
+  <obsolete>
+    Superseded by ContentResourceType in December 2015 when SUB_RESOURCE was
+    split into RESOURCE_TYPE_SUB_RESOURCE and RESOURCE_TYPE_PLUGIN_RESOURCE, and
+    PING was split into RESOURCE_TYPE_PING and RESOURCE_TYPE_CSP_REPORT.
+  </obsolete>
   <int value="0" label="MAIN_FRAME"/>
   <int value="1" label="SUB_FRAME"/>
   <int value="2" label="STYLESHEET"/>
@@ -58194,6 +58429,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="13" label="XHR"/>
   <int value="14" label="PING"/>
   <int value="15" label="RESOURCE_TYPE_SERVICE_WORKER"/>
+</enum>
+
+<enum name="ContentResourceType2" type="int">
+  <int value="0" label="RESOURCE_TYPE_MAIN_FRAME"/>
+  <int value="1" label="RESOURCE_TYPE_SUB_FRAME"/>
+  <int value="2" label="RESOURCE_TYPE_STYLESHEET"/>
+  <int value="3" label="RESOURCE_TYPE_SCRIPT"/>
+  <int value="4" label="RESOURCE_TYPE_IMAGE"/>
+  <int value="5" label="RESOURCE_TYPE_FONT_RESOURCE"/>
+  <int value="6" label="RESOURCE_TYPE_SUB_RESOURCE"/>
+  <int value="7" label="RESOURCE_TYPE_OBJECT"/>
+  <int value="8" label="RESOURCE_TYPE_MEDIA"/>
+  <int value="9" label="RESOURCE_TYPE_WORKER"/>
+  <int value="10" label="RESOURCE_TYPE_SHARED_WORKER"/>
+  <int value="11" label="RESOURCE_TYPE_PREFETCH"/>
+  <int value="12" label="RESOURCE_TYPE_FAVICON"/>
+  <int value="13" label="RESOURCE_TYPE_XHR"/>
+  <int value="14" label="RESOURCE_TYPE_PING"/>
+  <int value="15" label="RESOURCE_TYPE_SERVICE_WORKER"/>
+  <int value="16" label="RESOURCE_TYPE_CSP_REPORT"/>
+  <int value="17" label="RESOURCE_TYPE_PLUGIN_RESOURCE"/>
 </enum>
 
 <enum name="ContentSetting" type="int">
@@ -83416,6 +83672,7 @@ To add a new entry, add it with any value and run test to compute valid value.
              resolved (expected to happen at a low frequency by the
              asynchronous nature of the analysis)."/>
   <affected-histogram name="SBOffDomainInclusion.Abort"/>
+  <affected-histogram name="SBOffDomainInclusion2.Abort"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OmniboxProviderTime" separator=".">
@@ -84549,6 +84806,7 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Pre-fetched resources that were checked and classified as
              unsafe. Logged as the request is canceled."/>
   <affected-histogram name="SB2.ResourceTypes"/>
+  <affected-histogram name="SB2.ResourceTypes2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SBInterstitial">

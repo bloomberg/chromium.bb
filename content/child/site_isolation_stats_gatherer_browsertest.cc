@@ -81,7 +81,7 @@ class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
     std::string base = "SiteIsolation.XSD." + bucket;
     if (should_be_blocked) {
       expected_metrics[base + ".Blocked"] = 1;
-      expected_metrics[base + ".Blocked.RenderableStatusCode"] = 1;
+      expected_metrics[base + ".Blocked.RenderableStatusCode2"] = 1;
     } else {
       expected_metrics[base + ".NotBlocked"] = 1;
       if (base::MatchPattern(resource_name, "*js.*")) {
@@ -102,9 +102,9 @@ class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
     if (should_be_blocked) {
       static_assert(13 == RESOURCE_TYPE_XHR, "Histogram enums mustn't change.");
       EXPECT_THAT(
-          histograms.GetAllSamples(base + ".Blocked.RenderableStatusCode"),
+          histograms.GetAllSamples(base + ".Blocked.RenderableStatusCode2"),
           testing::ElementsAre(base::Bucket(RESOURCE_TYPE_XHR, 1)))
-          << "The wrong RenderableStatusCode bucket was incremented.";
+          << "The wrong RenderableStatusCode2 bucket was incremented.";
     }
   }
 

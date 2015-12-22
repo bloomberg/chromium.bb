@@ -103,6 +103,7 @@ const content::ResourceType kResourceTypesObservedIfInMainFrame[] = {
     content::RESOURCE_TYPE_OBJECT,
     content::RESOURCE_TYPE_MEDIA,
     content::RESOURCE_TYPE_XHR,
+    content::RESOURCE_TYPE_PLUGIN_RESOURCE,
 };
 
 const content::ResourceType kResourceTypesIgnored[] = {
@@ -113,6 +114,7 @@ const content::ResourceType kResourceTypesIgnored[] = {
     content::RESOURCE_TYPE_FAVICON,
     content::RESOURCE_TYPE_PING,
     content::RESOURCE_TYPE_SERVICE_WORKER,
+    content::RESOURCE_TYPE_CSP_REPORT,
 };
 
 static_assert(

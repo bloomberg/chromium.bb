@@ -79,7 +79,7 @@
             "type": "array",
             "optional": true,
             "description": "Matches if the request type of a request is contained in the list. Requests that cannot match any of the types will be filtered out.",
-            "items": { "type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"] }
+            "items": { "type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "other"] }
           },
           "contentType": {
             "type": "array",

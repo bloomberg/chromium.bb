@@ -52,9 +52,15 @@ static const char* kResourceTypeStrings[] = {
   "stylesheet",
   "script",
   "image",
+  "font",
   "object",
+  "script",
+  "script",
+  "image",
   "xmlhttprequest",
-  "other",
+  "ping",
+  "script",
+  "object",
   "other",
 };
 
@@ -66,15 +72,16 @@ static ResourceType kResourceTypeValues[] = {
   content::RESOURCE_TYPE_STYLESHEET,
   content::RESOURCE_TYPE_SCRIPT,
   content::RESOURCE_TYPE_IMAGE,
+  content::RESOURCE_TYPE_FONT_RESOURCE,
   content::RESOURCE_TYPE_OBJECT,
+  content::RESOURCE_TYPE_WORKER,
+  content::RESOURCE_TYPE_SHARED_WORKER,
+  content::RESOURCE_TYPE_FAVICON,
   content::RESOURCE_TYPE_XHR,
+  content::RESOURCE_TYPE_PING,
+  content::RESOURCE_TYPE_SERVICE_WORKER,
+  content::RESOURCE_TYPE_PLUGIN_RESOURCE,
   content::RESOURCE_TYPE_LAST_TYPE,  // represents "other"
-  // TODO(jochen): We duplicate the last entry, so the array's size is not a
-  // power of two. If it is, this triggers a bug in gcc 4.4 in Release builds
-  // (http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43949). Once we use a version
-  // of gcc with this bug fixed, or the array is changed so this duplicate
-  // entry is no longer required, this should be removed.
-  content::RESOURCE_TYPE_LAST_TYPE,
 };
 
 const size_t kResourceTypeValuesLength = arraysize(kResourceTypeValues);
@@ -1250,8 +1257,6 @@ base::DictionaryValue* CreateHeaderDictionary(
   }
   return header;
 }
-
-#define ARRAYEND(array) (array + arraysize(array))
 
 bool IsRelevantResourceType(ResourceType type) {
   ResourceType* iter =
