@@ -82,7 +82,6 @@
 // The client is expected to be set whenever the WebLocalFrameImpl is attached to
 // the DOM.
 
-#include "config.h"
 #include "web/WebLocalFrameImpl.h"
 
 #include "bindings/core/v8/BindingSecurity.h"

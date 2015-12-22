@@ -23,7 +23,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "public/web/WebGeolocationPermissionRequestManager.h"
 
 #include "modules/geolocation/Geolocation.h"

@@ -26,8 +26,10 @@
 #ifndef ExternalDateTimeChooser_h
 #define ExternalDateTimeChooser_h
 
-#if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/forms/DateTimeChooser.h"
+#include "wtf/build_config.h"
+
+#if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 
 namespace blink {
 

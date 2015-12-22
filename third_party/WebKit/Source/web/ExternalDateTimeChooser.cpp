@@ -23,10 +23,9 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
-#if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "web/ExternalDateTimeChooser.h"
 
+#if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/InputTypeNames.h"
 #include "core/html/forms/DateTimeChooserClient.h"
 #include "public/web/WebDateTimeChooserCompletion.h"

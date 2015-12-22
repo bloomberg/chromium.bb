@@ -23,7 +23,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "public/web/WebDateTimeSuggestion.h"
 
 #include "core/html/forms/DateTimeChooser.h"

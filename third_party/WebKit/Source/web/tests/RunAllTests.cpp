@@ -28,10 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if BLINK_IMPLEMENTATION
-#include "config.h"
-#endif
-
 #include "public/platform/Platform.h"
 #include "public/web/WebKit.h"
 #include "web/tests/WebUnitTests.h"

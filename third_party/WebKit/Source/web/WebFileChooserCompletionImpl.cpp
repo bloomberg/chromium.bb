@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "web/WebFileChooserCompletionImpl.h"
+
 #include "platform/FileMetadata.h"
 #include "wtf/DateMath.h"
 

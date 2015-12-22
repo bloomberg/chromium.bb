@@ -1,5 +1,3 @@
-#include "config.h"
-
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/DocumentLoader.h"

@@ -25,7 +25,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "public/platform/modules/indexeddb/WebIDBKey.h"
 
 #include "modules/indexeddb/IDBKey.h"

@@ -29,7 +29,6 @@
  */
 
 
-#include "config.h"
 #include "web/TextFinder.h"
 
 #include "core/dom/Range.h"

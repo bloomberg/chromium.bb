@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
 #include "core/page/Page.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebInputEvent.h"

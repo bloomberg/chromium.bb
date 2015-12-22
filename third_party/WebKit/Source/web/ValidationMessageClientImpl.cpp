@@ -23,7 +23,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "web/ValidationMessageClientImpl.h"
 
 #include "core/dom/Element.h"

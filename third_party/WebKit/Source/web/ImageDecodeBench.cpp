@@ -21,8 +21,6 @@ http://crbug.com/398235#c103 and http://crbug.com/258324#c5
 
 #endif
 
-#include "config.h"
-
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/testing/TestingPlatformSupport.h"

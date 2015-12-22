@@ -28,7 +28,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "core/page/PageSerializer.h"
 
 #include "bindings/core/v8/V8Binding.h"

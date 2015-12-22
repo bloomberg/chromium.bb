@@ -75,7 +75,6 @@
 // override the incorrect base URL and make sure we alway load correct local
 // saved resource files.
 
-#include "config.h"
 #include "web/WebPageSerializerImpl.h"
 
 #include "core/HTMLNames.h"
