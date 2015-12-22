@@ -52,6 +52,7 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
       case gfx::BufferUsage::GPU_READ:
       case gfx::BufferUsage::SCANOUT:
         return format == gfx::BufferFormat::RGBA_8888 ||
+               format == gfx::BufferFormat::RGBX_8888 ||
                format == gfx::BufferFormat::BGRA_8888 ||
                format == gfx::BufferFormat::BGRX_8888;
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:

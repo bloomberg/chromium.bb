@@ -11,6 +11,7 @@
 #define DRM_FORMAT_ARGB8888 FOURCC('A', 'R', '2', '4')
 #define DRM_FORMAT_ABGR8888 FOURCC('A', 'B', '2', '4')
 #define DRM_FORMAT_XRGB8888 FOURCC('X', 'R', '2', '4')
+#define DRM_FORMAT_XBGR8888 FOURCC('X', 'B', '2', '4')
 
 namespace gfx {
 namespace {
@@ -29,6 +30,7 @@ bool ValidInternalFormat(unsigned internalformat) {
 bool ValidFormat(BufferFormat format) {
   switch (format) {
     case BufferFormat::RGBA_8888:
+    case BufferFormat::RGBX_8888:
     case BufferFormat::BGRA_8888:
     case BufferFormat::BGRX_8888:
       return true;
@@ -39,7 +41,6 @@ bool ValidFormat(BufferFormat format) {
     case BufferFormat::ETC1:
     case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
-    case BufferFormat::RGBX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
     case BufferFormat::UYVY_422:
@@ -54,6 +55,8 @@ EGLint FourCC(BufferFormat format) {
   switch (format) {
     case BufferFormat::RGBA_8888:
       return DRM_FORMAT_ABGR8888;
+    case BufferFormat::RGBX_8888:
+      return DRM_FORMAT_XBGR8888;
     case BufferFormat::BGRA_8888:
       return DRM_FORMAT_ARGB8888;
     case BufferFormat::BGRX_8888:
@@ -65,7 +68,6 @@ EGLint FourCC(BufferFormat format) {
     case BufferFormat::ETC1:
     case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
-    case BufferFormat::RGBX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
     case BufferFormat::UYVY_422:

@@ -7,22 +7,18 @@
 #include <gbm.h>
 
 #include "base/logging.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 
 namespace ui {
 
 GbmBufferBase::GbmBufferBase(const scoped_refptr<DrmDevice>& drm,
                              gbm_bo* bo,
-                             bool scanout)
+                             gfx::BufferFormat format,
+                             gfx::BufferUsage usage)
     : drm_(drm), bo_(bo) {
-  if (scanout) {
-    fb_pixel_format_ = gbm_bo_get_format(bo);
-    if (fb_pixel_format_ == GBM_FORMAT_ARGB8888)
-      fb_pixel_format_ = GBM_FORMAT_XRGB8888;
-
-    // For now, we only support XRGB and UYVY format.
-    DCHECK(fb_pixel_format_ == GBM_FORMAT_XRGB8888 ||
-           fb_pixel_format_ == GBM_FORMAT_UYVY);
+  if (usage == gfx::BufferUsage::SCANOUT) {
+    framebuffer_pixel_format_ = GetFourCCFormatForFramebuffer(format);
 
     uint32_t handles[4] = {0};
     handles[0] = gbm_bo_get_handle(bo).u32;
@@ -31,8 +27,8 @@ GbmBufferBase::GbmBufferBase(const scoped_refptr<DrmDevice>& drm,
     uint32_t offsets[4] = {0};
 
     if (!drm_->AddFramebuffer2(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
-                               fb_pixel_format_, handles, strides, offsets,
-                               &framebuffer_, 0)) {
+                               framebuffer_pixel_format_, handles, strides,
+                               offsets, &framebuffer_, 0)) {
       PLOG(ERROR) << "Failed to register buffer";
       return;
     }
@@ -57,7 +53,8 @@ gfx::Size GbmBufferBase::GetSize() const {
 }
 
 uint32_t GbmBufferBase::GetFramebufferPixelFormat() const {
-  return fb_pixel_format_;
+  DCHECK(framebuffer_);
+  return framebuffer_pixel_format_;
 }
 
 bool GbmBufferBase::RequiresGlFinish() const {

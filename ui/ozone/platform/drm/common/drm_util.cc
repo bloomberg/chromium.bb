@@ -274,6 +274,10 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
 
 int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
   switch (format) {
+    case gfx::BufferFormat::RGBA_8888:
+      return DRM_FORMAT_ABGR8888;
+    case gfx::BufferFormat::RGBX_8888:
+      return DRM_FORMAT_XBGR8888;
     case gfx::BufferFormat::BGRA_8888:
       return DRM_FORMAT_ARGB8888;
     case gfx::BufferFormat::BGRX_8888:
@@ -288,6 +292,10 @@ int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
 
 gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
   switch (format) {
+    case DRM_FORMAT_ABGR8888:
+      return gfx::BufferFormat::RGBA_8888;
+    case DRM_FORMAT_XBGR8888:
+      return gfx::BufferFormat::RGBX_8888;
     case DRM_FORMAT_ARGB8888:
       return gfx::BufferFormat::BGRA_8888;
     case DRM_FORMAT_XRGB8888:
@@ -297,6 +305,23 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
     default:
       NOTREACHED();
       return gfx::BufferFormat::BGRA_8888;
+  }
+}
+
+int GetFourCCFormatForFramebuffer(gfx::BufferFormat format) {
+  // Currently, drm supports 24 bitcolordepth for hardware overlay.
+  switch (format) {
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+      return DRM_FORMAT_XBGR8888;
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRX_8888:
+      return DRM_FORMAT_XRGB8888;
+    case gfx::BufferFormat::UYVY_422:
+      return DRM_FORMAT_UYVY;
+    default:
+      NOTREACHED();
+      return 0;
   }
 }
 }  // namespace ui

@@ -158,12 +158,7 @@ std::vector<OverlayCheck_Params> DrmWindow::TestPageFlip(
     scoped_refptr<ScanoutBuffer> buffer;
     // Check if we can re-use existing buffers.
     for (const auto& plane : last_submitted_planes_) {
-      uint32_t format = GetFourCCFormatFromBufferFormat(overlay.format);
-      // We always use a storage type of XRGB, even if the pixel format
-      // is ARGB.
-      if (format == DRM_FORMAT_ARGB8888)
-        format = DRM_FORMAT_XRGB8888;
-
+      uint32_t format = GetFourCCFormatForFramebuffer(overlay.format);
       if (plane.buffer->GetFramebufferPixelFormat() == format &&
           plane.z_order == overlay.plane_z_order &&
           plane.display_bounds == overlay.display_rect &&

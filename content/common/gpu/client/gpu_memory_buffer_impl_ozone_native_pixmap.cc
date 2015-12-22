@@ -61,6 +61,7 @@ base::Closure GpuMemoryBufferImplOzoneNativePixmap::AllocateForTesting(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     gfx::GpuMemoryBufferHandle* handle) {
+  DCHECK(IsConfigurationSupported(format, usage));
   scoped_refptr<ui::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
