@@ -291,7 +291,8 @@ class DownloadItemTest : public testing::Test {
     EXPECT_EQ(expected_state, item->GetState());
 
     if (expected_state == DownloadItem::IN_PROGRESS) {
-      EXPECT_CALL(*download_file, Cancel());
+      if (download_file)
+        EXPECT_CALL(*download_file, Cancel());
       item->Cancel(true);
       loop_.RunUntilIdle();
     }
@@ -420,7 +421,9 @@ TEST_F(DownloadItemTest, ContinueAfterInterrupted) {
   item->DestinationObserverAsWeakPtr()->DestinationError(
       DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR);
   ASSERT_TRUE(observer.CheckAndResetDownloadUpdated());
-  ASSERT_EQ(1, observer.interrupt_count());
+  // Since the download is resumed automatically, the interrupt count doesn't
+  // increase.
+  ASSERT_EQ(0, observer.interrupt_count());
 
   // Test expectations verify that ResumeInterruptedDownload() is called (by way
   // of MockResumeInterruptedDownload) after the download is interrupted. But
@@ -429,7 +432,9 @@ TEST_F(DownloadItemTest, ContinueAfterInterrupted) {
   // the automatic resumption was triggered.
   RunAllPendingInMessageLoops();
 
-  CleanupItem(item, download_file, DownloadItem::INTERRUPTED);
+  // The download item is currently in RESUMING_INTERNAL state, which maps to
+  // IN_PROGRESS.
+  CleanupItem(item, nullptr, DownloadItem::IN_PROGRESS);
 }
 
 // Same as above, but with a non-continuable interrupt.
@@ -449,7 +454,7 @@ TEST_F(DownloadItemTest, RestartAfterInterrupted) {
   ASSERT_EQ(0, observer.resume_count());
   RunAllPendingInMessageLoops();
 
-  CleanupItem(item, download_file, DownloadItem::INTERRUPTED);
+  CleanupItem(item, nullptr, DownloadItem::INTERRUPTED);
 }
 
 // Check we do correct cleanup for RESUME_MODE_INVALID interrupts.
@@ -476,7 +481,7 @@ TEST_F(DownloadItemTest, UnresumableInterrupt) {
   ASSERT_EQ(1, observer.interrupt_count());
   ASSERT_EQ(0, observer.resume_count());
 
-  CleanupItem(item, download_file, DownloadItem::INTERRUPTED);
+  CleanupItem(item, nullptr, DownloadItem::INTERRUPTED);
 }
 
 TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
@@ -524,17 +529,16 @@ TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
                    DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path);
       RunAllPendingInMessageLoops();
     }
-    ASSERT_EQ(i, observer.resume_count());
 
     // Use a continuable interrupt.
     item->DestinationObserverAsWeakPtr()->DestinationError(
         DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR);
 
-    ASSERT_EQ(i + 1, observer.interrupt_count());
     ::testing::Mock::VerifyAndClearExpectations(mock_download_file);
   }
 
-  CleanupItem(item, mock_download_file, DownloadItem::INTERRUPTED);
+  EXPECT_EQ(1, observer.interrupt_count());
+  CleanupItem(item, nullptr, DownloadItem::INTERRUPTED);
 }
 
 // Test that resumption uses the final URL in a URL chain when resuming.
@@ -565,8 +569,6 @@ TEST_F(DownloadItemTest, ResumeUsingFinalURL) {
       .Times(1);
   item->DestinationObserverAsWeakPtr()->DestinationError(
       DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR);
-  ASSERT_TRUE(observer.CheckAndResetDownloadUpdated());
-  ASSERT_EQ(1, observer.interrupt_count());
 
   // Test expectations verify that ResumeInterruptedDownload() is called (by way
   // of MockResumeInterruptedDownload) after the download is interrupted. But
@@ -575,7 +577,8 @@ TEST_F(DownloadItemTest, ResumeUsingFinalURL) {
   // the resumption was triggered.
   RunAllPendingInMessageLoops();
 
-  CleanupItem(item, download_file, DownloadItem::INTERRUPTED);
+  // The download is currently in RESUMING_INTERNAL, which maps to IN_PROGRESS.
+  CleanupItem(item, nullptr, DownloadItem::IN_PROGRESS);
 }
 
 TEST_F(DownloadItemTest, NotificationAfterRemove) {
