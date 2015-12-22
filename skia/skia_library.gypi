@@ -68,7 +68,6 @@
   '../third_party/skia/src/utils/SkBoundaryPatch.cpp',
   '../third_party/skia/src/utils/SkFrontBufferedStream.cpp',
   '../third_party/skia/src/utils/SkCamera.cpp',
-  '../third_party/skia/src/utils/SkCubicInterval.cpp',
   '../third_party/skia/src/utils/SkDumpCanvas.cpp',
   '../third_party/skia/src/utils/SkInterpolator.cpp',
   '../third_party/skia/src/utils/SkLayer.cpp',
