@@ -776,49 +776,32 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
       if (!found_progress)
         return true;
 
-      // We iterate in two passes to avoid a bug in STLport (which is used in
-      // the Android build).  There are some versions of that library where a
-      // hash_map's iterators can be invalidated when an item is erased from the
-      // hash_map.
-      // See http://sourceforge.net/p/stlport/bugs/239/.
-
-      std::set<EntryKernel*> to_purge;
       for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
-           it != kernel_->metahandles_map.end(); ++it) {
-        const sync_pb::EntitySpecifics& local_specifics =
-            it->second->ref(SPECIFICS);
+           it != kernel_->metahandles_map.end();) {
+        EntryKernel* entry = it->second;
+        const sync_pb::EntitySpecifics& local_specifics = entry->ref(SPECIFICS);
         const sync_pb::EntitySpecifics& server_specifics =
-            it->second->ref(SERVER_SPECIFICS);
+            entry->ref(SERVER_SPECIFICS);
         ModelType local_type = GetModelTypeFromSpecifics(local_specifics);
         ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
+
+        // Increment the iterator before (potentially) calling DeleteEntry,
+        // otherwise our iterator may be invalidated.
+        ++it;
 
         if ((IsRealDataType(local_type) && disabled_types.Has(local_type)) ||
             (IsRealDataType(server_type) && disabled_types.Has(server_type))) {
-          to_purge.insert(it->second);
-        }
-      }
-
-      for (std::set<EntryKernel*>::iterator it = to_purge.begin();
-           it != to_purge.end(); ++it) {
-        EntryKernel* entry = *it;
-
-        const sync_pb::EntitySpecifics& local_specifics =
-            (*it)->ref(SPECIFICS);
-        const sync_pb::EntitySpecifics& server_specifics =
-            (*it)->ref(SERVER_SPECIFICS);
-        ModelType local_type = GetModelTypeFromSpecifics(local_specifics);
-        ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
-
-        if (types_to_unapply.Has(local_type) ||
-            types_to_unapply.Has(server_type)) {
-          UnapplyEntry(entry);
-        } else {
-          bool save_to_journal =
-              (types_to_journal.Has(local_type) ||
-               types_to_journal.Has(server_type)) &&
-              (delete_journal_->IsDeleteJournalEnabled(local_type) ||
-               delete_journal_->IsDeleteJournalEnabled(server_type));
-          DeleteEntry(lock, save_to_journal, entry, &entries_to_journal);
+          if (types_to_unapply.Has(local_type) ||
+              types_to_unapply.Has(server_type)) {
+            UnapplyEntry(entry);
+          } else {
+            bool save_to_journal =
+                (types_to_journal.Has(local_type) ||
+                 types_to_journal.Has(server_type)) &&
+                (delete_journal_->IsDeleteJournalEnabled(local_type) ||
+                 delete_journal_->IsDeleteJournalEnabled(server_type));
+            DeleteEntry(lock, save_to_journal, entry, &entries_to_journal);
+          }
         }
       }
 

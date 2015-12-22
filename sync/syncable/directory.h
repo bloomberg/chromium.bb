@@ -11,6 +11,7 @@
 #include <deque>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -62,21 +63,11 @@ class SYNC_EXPORT Directory {
  public:
   typedef std::vector<int64_t> Metahandles;
 
-  // TODO(skym): Convert this hash_map usage to unordered_map, crbug/567280.
-  // Be careful when using these hash_map containers.  According to the spec,
-  // inserting into them may invalidate all iterators.
-  //
-  // It gets worse, though.  The Anroid STL library has a bug that means it may
-  // invalidate all iterators when you erase from the map, too.  That means that
-  // you can't iterate while erasing.  STLDeleteElements(), std::remove_if(),
-  // and other similar functions are off-limits too, until this bug is fixed.
-  //
-  // See http://sourceforge.net/p/stlport/bugs/239/.
-  typedef base::hash_map<int64_t, EntryKernel*> MetahandlesMap;
-  typedef base::hash_map<std::string, EntryKernel*> IdsMap;
-  typedef base::hash_map<std::string, EntryKernel*> TagsMap;
+  typedef std::unordered_map<int64_t, EntryKernel*> MetahandlesMap;
+  typedef std::unordered_map<std::string, EntryKernel*> IdsMap;
+  typedef std::unordered_map<std::string, EntryKernel*> TagsMap;
   typedef std::string AttachmentIdUniqueId;
-  typedef base::hash_map<AttachmentIdUniqueId, MetahandleSet>
+  typedef std::unordered_map<AttachmentIdUniqueId, MetahandleSet>
       IndexByAttachmentId;
 
   static const base::FilePath::CharType kSyncDatabaseFilename[];

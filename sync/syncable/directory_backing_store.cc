@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <unordered_set>
 
 #include "base/base64.h"
 #include "base/logging.h"
@@ -1636,7 +1637,7 @@ bool DirectoryBackingStore::CreateShareInfoTableVersion71(
 bool DirectoryBackingStore::VerifyReferenceIntegrity(
     const Directory::MetahandlesMap* handles_map) {
   TRACE_EVENT0("sync", "SyncDatabaseIntegrityCheck");
-  typedef base::hash_set<std::string> IdsSet;
+  typedef std::unordered_set<std::string> IdsSet;
 
   IdsSet ids_set;
   bool is_ok = true;
