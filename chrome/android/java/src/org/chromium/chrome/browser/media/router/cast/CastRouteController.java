@@ -21,9 +21,6 @@ import com.google.android.gms.common.api.Status;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
-import org.chromium.chrome.browser.media.router.RouteController;
-import org.chromium.chrome.browser.media.router.RouteDelegate;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
@@ -43,7 +40,7 @@ import java.util.Set;
 /**
  * A wrapper around the established Cast application session.
  */
-public class CastRouteController implements RouteController, MediaNotificationListener {
+public class CastRouteController implements MediaNotificationListener {
     private static final String TAG = "MediaRouter";
 
     private static final String MEDIA_NAMESPACE = "urn:x-cast:com.google.cast.media";
@@ -156,7 +153,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     private final String mOrigin;
     private final int mTabId;
     private final CastMessagingChannel mMessageChannel;
-    private final RouteDelegate mRouteDelegate;
+    private final CastMediaRouteProvider mRouteProvider;
     private final CastDevice mCastDevice;
     private final MediaSource mSource;
 
@@ -184,7 +181,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
      * @param origin The origin of the frame requesting the route.
      * @param tabId the id of the tab containing the frame requesting the route.
      * @param source The {@link MediaSource} corresponding to this session.
-     * @param mediaRouter The {@link ChromeMediaRouter} instance managing this session.
+     * @param routeProvider The {@link CastMediaRouteProvider} instance managing this session.
      */
     public CastRouteController(
             GoogleApiClient apiClient,
@@ -195,13 +192,13 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             String origin,
             int tabId,
             MediaSource source,
-            RouteDelegate delegate) {
+            CastMediaRouteProvider routeProvider) {
         mApiClient = apiClient;
         mSessionId = sessionId;
         mOrigin = origin;
         mTabId = tabId;
         mSource = source;
-        mRouteDelegate = delegate;
+        mRouteProvider = routeProvider;
         mApplicationMetadata = metadata;
         mApplicationStatus = applicationStatus;
         mCastDevice = castDevice;
@@ -271,128 +268,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
         return mSessionId;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    // RouteController implementation.
-
-    @Override
-    public void close() {
-        stopApplication();
-    }
-
-    @Override
-    public void sendStringMessage(String message, int callbackId) {
-        if (handleInternalMessage(message, callbackId)) return;
-
-        // TODO(avayvod): figure out what to do with custom namespace messages.
-        mRouteDelegate.onMessageSentResult(false, callbackId);
-    }
-
-    @Override
-    public void sendBinaryMessage(byte[] data, int callbackId) {
-        // TODO(crbug.com/524128): Implement this.
-    }
-
-    @Override
-    public String getSourceId() {
-        return mSource.getUrn();
-    }
-
-    @Override
-    public String getSinkId() {
-        return mCastDevice.getDeviceId();
-    }
-
-    @Override
-    public String getOrigin() {
-        return mOrigin;
-    }
-
-    @Override
-    public int getTabId() {
-        return mTabId;
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    // MediaNotificationListener implementation.
-
-    @Override
-    public void onPlay(int actionSource) {
-        if (mMediaPlayer == null || isApiClientInvalid()) return;
-
-        mMediaPlayer.play(mApiClient);
-    }
-
-    @Override
-    public void onPause(int actionSource) {
-        if (mMediaPlayer == null || isApiClientInvalid()) return;
-
-        mMediaPlayer.pause(mApiClient);
-    }
-
-    @Override
-    public void onStop(int actionSource) {
-        mRouteDelegate.onSessionStopAction();
-    }
-
-
-    /**
-     * Forwards the media message to the page via the media router.
-     * The MEDIA_STATUS message needs to be sent to all the clients.
-     * @param message The media that's being send by the receiver.
-     * @param request The information about the client and the sequence number to respond with.
-     */
-    public void onMediaMessage(String message, RequestRecord request) {
-        if (mMediaPlayer != null) {
-            mMediaPlayer.onMessageReceived(mCastDevice, MEDIA_NAMESPACE, message);
-        }
-
-        if (isMediaStatusMessage(message)) {
-            // MEDIA_STATUS needs to be sent to all the clients.
-            for (String clientId : mClients) {
-                if (request != null && clientId.equals(request.clientId)) continue;
-
-                sendClientMessageTo(
-                        clientId, "v2_message", message, INVALID_SEQUENCE_NUMBER);
-            }
-        }
-        if (request != null) {
-            sendClientMessageTo(request.clientId, "v2_message", message, request.sequenceNumber);
-        }
-    }
-
-    /**
-     * Forwards the application specific message to the page via the media router.
-     * @param message The message within the namespace that's being send by the receiver.
-     * @param namespace The application specific namespace this message belongs to.
-     * @param request The information about the client and the sequence number to respond with.
-     */
-    public void onAppMessage(String message, String namespace, RequestRecord request) {
-        try {
-            JSONObject jsonMessage = new JSONObject();
-            jsonMessage.put("sessionId", mSessionId);
-            jsonMessage.put("namespaceName", namespace);
-            jsonMessage.put("message", message);
-            if (request != null) {
-                sendClientMessageTo(request.clientId, "app_message",
-                        jsonMessage.toString(), request.sequenceNumber);
-            } else {
-                broadcastClientMessage("app_message", jsonMessage.toString());
-            }
-        } catch (JSONException e) {
-            Log.e(TAG, "Failed to create the message wrapper", e);
-        }
-    }
-
-    private boolean isMediaStatusMessage(String message) {
-        try {
-            JSONObject jsonMessage = new JSONObject(message);
-            return "MEDIA_STATUS".equals(jsonMessage.getString("type"));
-        } catch (JSONException e) {
-            return false;
-        }
-    }
-
-    private void stopApplication() {
+    public void stopApplication() {
         if (mStoppingApplication) return;
 
         if (isApiClientInvalid()) return;
@@ -427,13 +303,116 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                         mSessionId = null;
                         mApiClient = null;
 
-                        mRouteDelegate.onSessionClosed();
+                        mRouteProvider.onSessionClosed();
                         mStoppingApplication = false;
 
                         MediaNotificationManager.hide(
                                 mTabId, R.id.presentation_notification);
                     }
                 });
+    }
+
+    public void sendStringMessage(String message, int callbackId) {
+        if (handleInternalMessage(message, callbackId)) return;
+
+        // TODO(avayvod): figure out what to do with custom namespace messages.
+        mRouteProvider.onMessageSentResult(false, callbackId);
+    }
+
+    public String getSourceId() {
+        return mSource.getUrn();
+    }
+
+    public String getSinkId() {
+        return mCastDevice.getDeviceId();
+    }
+
+    public String getOrigin() {
+        return mOrigin;
+    }
+
+    public int getTabId() {
+        return mTabId;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // MediaNotificationListener implementation.
+
+    @Override
+    public void onPlay(int actionSource) {
+        if (mMediaPlayer == null || isApiClientInvalid()) return;
+
+        mMediaPlayer.play(mApiClient);
+    }
+
+    @Override
+    public void onPause(int actionSource) {
+        if (mMediaPlayer == null || isApiClientInvalid()) return;
+
+        mMediaPlayer.pause(mApiClient);
+    }
+
+    @Override
+    public void onStop(int actionSource) {
+        mRouteProvider.onSessionStopAction();
+    }
+
+
+    /**
+     * Forwards the media message to the page via the media router.
+     * The MEDIA_STATUS message needs to be sent to all the clients.
+     * @param message The media that's being send by the receiver.
+     * @param request The information about the client and the sequence number to respond with.
+     */
+    private void onMediaMessage(String message, RequestRecord request) {
+        if (mMediaPlayer != null) {
+            mMediaPlayer.onMessageReceived(mCastDevice, MEDIA_NAMESPACE, message);
+        }
+
+        if (isMediaStatusMessage(message)) {
+            // MEDIA_STATUS needs to be sent to all the clients.
+            for (String clientId : mClients) {
+                if (request != null && clientId.equals(request.clientId)) continue;
+
+                sendClientMessageTo(
+                        clientId, "v2_message", message, INVALID_SEQUENCE_NUMBER);
+            }
+        }
+        if (request != null) {
+            sendClientMessageTo(request.clientId, "v2_message", message, request.sequenceNumber);
+        }
+    }
+
+    /**
+     * Forwards the application specific message to the page via the media router.
+     * @param message The message within the namespace that's being send by the receiver.
+     * @param namespace The application specific namespace this message belongs to.
+     * @param request The information about the client and the sequence number to respond with.
+     */
+    private void onAppMessage(String message, String namespace, RequestRecord request) {
+        try {
+            JSONObject jsonMessage = new JSONObject();
+            jsonMessage.put("sessionId", mSessionId);
+            jsonMessage.put("namespaceName", namespace);
+            jsonMessage.put("message", message);
+            if (request != null) {
+                sendClientMessageTo(request.clientId, "app_message",
+                        jsonMessage.toString(), request.sequenceNumber);
+            } else {
+                broadcastClientMessage("app_message", jsonMessage.toString());
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "Failed to create the message wrapper", e);
+        }
+    }
+
+    private boolean isMediaStatusMessage(String message) {
+        try {
+            JSONObject jsonMessage = new JSONObject(message);
+            return "MEDIA_STATUS".equals(jsonMessage.getString("type"));
+        } catch (JSONException e) {
+            return false;
+        }
     }
 
     private void addNamespace(String namespace) {
@@ -490,7 +469,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             return false;
         }
 
-        mRouteDelegate.onMessageSentResult(success, callbackId);
+        mRouteProvider.onMessageSentResult(success, callbackId);
         return true;
     }
 
@@ -865,7 +844,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
     private void sendClientMessageTo(
             String clientId, String type, String message, int sequenceNumber) {
-        mRouteDelegate.onMessage(clientId,
+        mRouteProvider.onMessage(clientId,
                 buildInternalMessage(type, message, clientId, sequenceNumber));
     }
 

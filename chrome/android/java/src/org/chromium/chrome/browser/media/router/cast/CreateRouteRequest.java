@@ -18,7 +18,6 @@ import com.google.android.gms.common.api.Status;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 import org.chromium.chrome.browser.media.router.MediaRoute;
-import org.chromium.chrome.browser.media.router.RouteDelegate;
 
 /**
  * Establishes a {@link MediaRoute} by starting a Cast application represented by the given
@@ -71,7 +70,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
             // This callback can be called more than once if the application is stopped from Chrome.
             if (mSession == null) return;
 
-            mSession.close();
+            mSession.stopApplication();
             mSession = null;
         }
 
@@ -89,7 +88,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private final String mOrigin;
     private final int mTabId;
     private final int mRequestId;
-    private final RouteDelegate mDelegate;
+    private final CastMediaRouteProvider mRouteProvider;
     private final CastListener mCastListener = new CastListener();
 
     private GoogleApiClient mApiClient;
@@ -104,7 +103,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
      * @param tabId the id of the tab containing the frame requesting the route.
      * @param requestId The id of the route creation request for tracking by
      * {@link ChromeMediaRouter}.
-     * @param delegate The instance of {@link RouteDelegate} handling the request.
+     * @param routeProvider The instance of {@link CastMediaRouteProvider} handling the request.
      */
     public CreateRouteRequest(
             MediaSource source,
@@ -113,7 +112,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
             String origin,
             int tabId,
             int requestId,
-            RouteDelegate delegate) {
+            CastMediaRouteProvider routeProvider) {
         assert source != null;
         assert sink != null;
 
@@ -123,7 +122,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         mOrigin = origin;
         mTabId = tabId;
         mRequestId = requestId;
-        mDelegate = delegate;
+        mRouteProvider = routeProvider;
     }
 
     /**
@@ -234,9 +233,9 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
                 mOrigin,
                 mTabId,
                 mSource,
-                mDelegate);
+                mRouteProvider);
         mCastListener.setSession(session);
-        mDelegate.onRouteCreated(mRequestId, route, session);
+        mRouteProvider.onRouteCreated(mRequestId, route, session);
 
         terminate();
     }
@@ -244,8 +243,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private void reportError(String message) {
         if (mState == STATE_TERMINATED) throwInvalidState();
 
-        assert mDelegate != null;
-        mDelegate.onRouteRequestError(message, mRequestId);
+        assert mRouteProvider != null;
+        mRouteProvider.onRouteRequestError(message, mRequestId);
 
         terminate();
     }
