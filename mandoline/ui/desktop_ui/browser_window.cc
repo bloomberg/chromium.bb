@@ -4,9 +4,12 @@
 
 #include "mandoline/ui/desktop_ui/browser_window.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"

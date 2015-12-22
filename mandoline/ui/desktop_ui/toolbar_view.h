@@ -5,8 +5,9 @@
 #ifndef MANDOLINE_UI_DESKTOP_UI_TOOLBAR_VIEW_H_
 #define MANDOLINE_UI_DESKTOP_UI_TOOLBAR_VIEW_H_
 
-#include "ui/views/view.h"
+#include "base/macros.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/view.h"
 
 namespace views {
 class BoxLayout;

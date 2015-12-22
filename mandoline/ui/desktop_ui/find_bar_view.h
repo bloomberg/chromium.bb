@@ -5,9 +5,10 @@
 #ifndef MANDOLINE_UI_DESKTOP_UI_FIND_BAR_VIEW_H_
 #define MANDOLINE_UI_DESKTOP_UI_FIND_BAR_VIEW_H_
 
-#include "ui/views/view.h"
+#include "base/macros.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/view.h"
 
 namespace views {
 class BoxLayout;

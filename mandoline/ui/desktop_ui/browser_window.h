@@ -5,6 +5,9 @@
 #ifndef MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
 #define MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"

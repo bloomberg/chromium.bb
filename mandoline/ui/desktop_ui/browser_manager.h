@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/macros.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/launch_handler.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"

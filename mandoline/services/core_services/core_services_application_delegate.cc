@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
