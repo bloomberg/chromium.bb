@@ -17,7 +17,8 @@ std::string ReplaceTemplateExpressions(
                     substitutions.size() * kValueLengthGuess);
   base::StringPiece::const_iterator i = format_string.begin();
   while (i < format_string.end()) {
-    if (*i == '$' && i + 1 < format_string.end() && i[1] == '{') {
+    if (*i == '$' && i + 2 < format_string.end() && i[1] == '{' &&
+        i[2] != '}') {
       size_t key_start = i + strlen("${") - format_string.begin();
       size_t key_length = format_string.find('}', key_start);
       if (key_length == base::StringPiece::npos)
