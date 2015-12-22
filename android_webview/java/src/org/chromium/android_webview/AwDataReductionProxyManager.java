@@ -12,9 +12,9 @@ import android.database.SQLException;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.util.Log;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 
 import java.lang.reflect.Field;
@@ -32,7 +32,7 @@ public final class AwDataReductionProxyManager {
     private static final String WEBVIEW_DATA_REDUCTION_PROXY = "use_webview_data_reduction_proxy";
 
     private static final String DRP_CLASS = "com.android.webview.chromium.Drp";
-    private static final String TAG = "DataReductionProxySettingListener";
+    private static final String TAG = "DRP";
 
     // This is the same as Chromium data_reduction_proxy::switches::kEnableDataReductionProxy.
     private static final String ENABLE_DATA_REDUCTION_PROXY = "enable-spdy-proxy-auth";
@@ -92,7 +92,8 @@ public final class AwDataReductionProxyManager {
             Field f = cls.getField("KEY");
             return (String) f.get(null);
         } catch (ClassNotFoundException ex) {
-            Log.e(TAG, "No DRP key due to exception:" + ex);
+            // Class not found is a normal case, simply log.
+            Log.i(TAG, "No DRP key due to exception:" + ex);
         } catch (NoSuchFieldException ex) {
             Log.e(TAG, "No DRP key due to exception:" + ex);
         } catch (SecurityException ex) {
