@@ -23,7 +23,6 @@
  * DAMAGE.
  */
 
-#include "config.h"
 #include "modules/indexeddb/DOMWindowIndexedDatabase.h"
 
 #include "core/dom/Document.h"

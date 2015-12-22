@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "modules/filesystem/WorkerGlobalScopeFileSystem.h"
 
 #include "bindings/core/v8/ExceptionState.h"

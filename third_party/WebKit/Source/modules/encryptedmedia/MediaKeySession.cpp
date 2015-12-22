@@ -23,7 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"

@@ -23,8 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
 #include "modules/geolocation/GeolocationController.h"
 
 #include "core/page/Page.h"

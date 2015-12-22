@@ -27,7 +27,6 @@
  */
 
 
-#include "config.h"
 #include "modules/accessibility/AXMediaControls.h"
 
 #include "modules/accessibility/AXObjectCacheImpl.h"

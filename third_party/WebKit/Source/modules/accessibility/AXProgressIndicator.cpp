@@ -18,7 +18,6 @@
  *
  */
 
-#include "config.h"
 #include "modules/accessibility/AXProgressIndicator.h"
 
 #include "core/html/HTMLProgressElement.h"

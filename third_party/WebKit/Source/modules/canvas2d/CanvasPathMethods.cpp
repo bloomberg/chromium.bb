@@ -32,7 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "modules/canvas2d/CanvasPathMethods.h"
 
 #include "bindings/core/v8/ExceptionState.h"

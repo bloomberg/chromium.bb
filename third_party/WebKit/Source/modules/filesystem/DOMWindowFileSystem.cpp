@@ -23,7 +23,6 @@
  * DAMAGE.
  */
 
-#include "config.h"
 #include "modules/filesystem/DOMWindowFileSystem.h"
 
 #include "core/dom/Document.h"

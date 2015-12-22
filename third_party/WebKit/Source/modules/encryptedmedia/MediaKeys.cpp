@@ -23,7 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 
 #include "bindings/core/v8/ScriptState.h"

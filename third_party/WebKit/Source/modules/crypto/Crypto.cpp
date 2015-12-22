@@ -27,7 +27,6 @@
  */
 
 
-#include "config.h"
 #include "modules/crypto/Crypto.h"
 
 #include "bindings/core/v8/ExceptionState.h"

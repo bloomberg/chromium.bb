@@ -23,7 +23,6 @@
  * DAMAGE.
  */
 
-#include "config.h"
 #include "modules/gamepad/NavigatorGamepad.h"
 
 #include "core/dom/Document.h"

@@ -25,8 +25,6 @@
  *
  */
 
-#include "config.h"
-
 #include "modules/indexeddb/WorkerGlobalScopeIndexedDatabase.h"
 
 #include "core/dom/ExecutionContext.h"

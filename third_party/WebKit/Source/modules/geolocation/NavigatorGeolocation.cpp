@@ -20,7 +20,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "config.h"
 #include "modules/geolocation/NavigatorGeolocation.h"
 
 #include "core/dom/Document.h"
