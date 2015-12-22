@@ -240,7 +240,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
 
     std::string request_content;
     base::JSONWriter::Write(request_dict, &request_content);
-    VLOG(3) << "getsavecarddetails request body: " << request_content;
+    VLOG(3) << "getdetailsforsavecard request body: " << request_content;
     return request_content;
   }
 
