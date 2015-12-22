@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_L10N_UTIL_H_
+#define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_L10N_UTIL_H_
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "third_party/icu/source/common/unicode/locid.h"
@@ -32,3 +35,5 @@ class CaseInsensitiveCompare {
 
 }  // namespace l10n
 }  // namespace autofill
+
+#endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_L10N_UTIL_H_
