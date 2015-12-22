@@ -4,19 +4,51 @@
 
 #include "net/base/ip_endpoint.h"
 
-#include "base/strings/string_number_conversions.h"
-#include "net/base/net_util.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
+#include "build/build_config.h"
+
 #if defined(OS_WIN)
 #include <winsock2.h>
 #elif defined(OS_POSIX)
 #include <netinet/in.h>
 #endif
 
+#include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/sys_byteorder.h"
+#include "net/base/net_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
+
 namespace net {
 
 namespace {
+
+// Retuns the port field of the |sockaddr|.
+const uint16_t* GetPortFieldFromSockaddr(const struct sockaddr* address,
+                                         socklen_t address_len) {
+  if (address->sa_family == AF_INET) {
+    DCHECK_LE(sizeof(sockaddr_in), static_cast<size_t>(address_len));
+    const struct sockaddr_in* sockaddr =
+        reinterpret_cast<const struct sockaddr_in*>(address);
+    return &sockaddr->sin_port;
+  } else if (address->sa_family == AF_INET6) {
+    DCHECK_LE(sizeof(sockaddr_in6), static_cast<size_t>(address_len));
+    const struct sockaddr_in6* sockaddr =
+        reinterpret_cast<const struct sockaddr_in6*>(address);
+    return &sockaddr->sin6_port;
+  } else {
+    NOTREACHED();
+    return NULL;
+  }
+}
+
+// Returns the value of port in |sockaddr| (in host byte ordering).
+int GetPortFromSockaddr(const struct sockaddr* address, socklen_t address_len) {
+  const uint16_t* port_field = GetPortFieldFromSockaddr(address, address_len);
+  if (!port_field)
+    return -1;
+  return base::NetToHost16(*port_field);
+}
 
 struct TestData {
   std::string host;

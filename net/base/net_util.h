@@ -162,13 +162,6 @@ NET_EXPORT std::string GetDirectoryListingEntry(const base::string16& name,
 //   - reference section
 NET_EXPORT GURL SimplifyUrlForRequest(const GURL& url);
 
-// Retuns the port field of the |sockaddr|.
-const uint16_t* GetPortFieldFromSockaddr(const struct sockaddr* address,
-                                         socklen_t address_len);
-// Returns the value of port in |sockaddr| (in host byte ordering).
-NET_EXPORT_PRIVATE int GetPortFromSockaddr(const struct sockaddr* address,
-                                           socklen_t address_len);
-
 // Resolves a local hostname (such as "localhost" or "localhost6") into
 // IP endpoints with the given port. Returns true if |host| is a local
 // hostname and false otherwise. Special IPv6 names (e.g. "localhost6")
