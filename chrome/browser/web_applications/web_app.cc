@@ -164,10 +164,7 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
 
 }  // namespace internals
 
-ShortcutInfo::ShortcutInfo()
-    : is_platform_app(false) {
-}
-
+ShortcutInfo::ShortcutInfo() {}
 ShortcutInfo::~ShortcutInfo() {}
 
 ShortcutLocations::ShortcutLocations()
