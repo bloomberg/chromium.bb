@@ -115,12 +115,17 @@ def DownloadUrl(url, output_file):
       retry_wait_s *= 2
 
 
+def EnsureDirExists(path):
+  if not os.path.exists(path):
+    print "Making path %s" % path
+    os.makedirs(dirs)
+
+
 def DownloadAndUnpack(url, output_dir):
   with tempfile.TemporaryFile() as f:
     DownloadUrl(url, f)
     f.seek(0)
-    if not os.path.exists(output_dir):
-      os.makedirs(output_dir)
+    EnsureDirExists(output_dir)
     if url.endswith('.zip'):
       zipfile.ZipFile(f).extractall(path=output_dir)
     else:
@@ -138,8 +143,7 @@ def ReadStampFile():
 
 def WriteStampFile(s):
   """Write s to the stamp file."""
-  if not os.path.exists(os.path.dirname(STAMP_FILE)):
-    os.makedirs(os.path.dirname(STAMP_FILE))
+  EnsureDirExists(os.path.dirname(STAMP_FILE))
   with open(STAMP_FILE, 'w') as f:
     f.write(s)
     f.write('\n')
@@ -213,8 +217,7 @@ def CopyDirectoryContents(src, dst, filename_filter=None):
   """Copy the files from directory src to dst
   with an optional filename filter."""
   dst = os.path.realpath(dst)  # realpath() in case dst ends in /..
-  if not os.path.exists(dst):
-    os.makedirs(dst)
+  EnsureDirExists(dst)
   for root, _, files in os.walk(src):
     for f in files:
       if filename_filter and not re.match(filename_filter, f):
@@ -440,8 +443,7 @@ def UpdateClang(args):
 
   if args.bootstrap:
     print 'Building bootstrap compiler'
-    if not os.path.exists(LLVM_BOOTSTRAP_DIR):
-      os.makedirs(LLVM_BOOTSTRAP_DIR)
+    EnsureDirExists(LLVM_BOOTSTRAP_DIR)
     os.chdir(LLVM_BOOTSTRAP_DIR)
     bootstrap_args = base_cmake_args + [
         '-DLLVM_TARGETS_TO_BUILD=host',
@@ -562,8 +564,7 @@ def UpdateClang(args):
       '-DCHROMIUM_TOOLS_SRC=%s' % os.path.join(CHROMIUM_DIR, 'tools', 'clang'),
       '-DCHROMIUM_TOOLS=%s' % ';'.join(args.tools)]
 
-  if not os.path.exists(LLVM_BUILD_DIR):
-    os.makedirs(LLVM_BUILD_DIR)
+  EnsureDirExists(LLVM_BUILD_DIR)
   os.chdir(LLVM_BUILD_DIR)
   RmCmakeCache('.')
   RunCommand(['cmake'] + cmake_args + [LLVM_DIR],
@@ -661,8 +662,7 @@ def UpdateClang(args):
     aux_sanitizer_include_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
                                              VERSION, 'include_sanitizer',
                                              'sanitizer')
-    if not os.path.exists(aux_sanitizer_include_dir):
-      os.makedirs(aux_sanitizer_include_dir)
+    EnsureDirExists(aux_sanitizer_include_dir)
     for _, _, files in os.walk(sanitizer_include_dir):
       for f in files:
         CopyFile(os.path.join(sanitizer_include_dir, f),
