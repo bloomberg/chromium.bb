@@ -38,7 +38,7 @@ class MediaStreamTrack;
 
 class SpeechRecognitionClient {
 public:
-    virtual void start(SpeechRecognition*, const SpeechGrammarList*, const String& lang, const String& serviceURI, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack* audioTrack) = 0;
+    virtual void start(SpeechRecognition*, const SpeechGrammarList*, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack* audioTrack) = 0;
     virtual void stop(SpeechRecognition*) = 0;
     virtual void abort(SpeechRecognition*) = 0;
 

@@ -59,8 +59,6 @@ public:
     void setGrammars(SpeechGrammarList* grammars) { m_grammars = grammars; }
     String lang() { return m_lang; }
     void setLang(const String& lang) { m_lang = lang; }
-    String serviceURI() { return m_serviceURI; }
-    void setServiceURI(const String& serviceURI) { m_serviceURI = serviceURI; }
     bool continuous() { return m_continuous; }
     void setContinuous(bool continuous) { m_continuous = continuous; }
     bool interimResults() { return m_interimResults; }
@@ -119,7 +117,6 @@ private:
     Member<SpeechGrammarList> m_grammars;
     Member<MediaStreamTrack> m_audioTrack;
     String m_lang;
-    String m_serviceURI;
     bool m_continuous;
     bool m_interimResults;
     unsigned long m_maxAlternatives;
