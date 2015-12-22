@@ -23,9 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
 #include "modules/webgl/WebGLDrawBuffers.h"
+
 #include "modules/webgl/WebGLFramebuffer.h"
 
 namespace blink {
