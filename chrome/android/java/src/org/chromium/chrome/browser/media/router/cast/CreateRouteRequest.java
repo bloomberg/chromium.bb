@@ -45,11 +45,11 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
             "GoogleApiClient connection failed: %d, %b";
 
     private class CastListener extends Cast.Listener {
-        private CastRouteController mSession;
+        private CastSession mSession;
 
         CastListener() {}
 
-        void setSession(CastRouteController session) {
+        void setSession(CastSession session) {
             mSession = session;
         }
 
@@ -224,7 +224,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         if (mState != STATE_LAUNCH_SUCCEEDED) throwInvalidState();
 
         MediaRoute route = new MediaRoute(mSink.getId(), mSource.getUrn(), mPresentationId);
-        CastRouteController session = new CastRouteController(
+        CastSession session = new CastSession(
                 mApiClient,
                 result.getSessionId(),
                 result.getApplicationMetadata(),

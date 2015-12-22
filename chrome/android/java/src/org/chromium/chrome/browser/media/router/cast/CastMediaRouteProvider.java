@@ -49,7 +49,7 @@ public class CastMediaRouteProvider
     private final List<ClientRecord> mClientRecords = new ArrayList<ClientRecord>();
 
     // There can be only one Cast session at the same time on Android.
-    private CastRouteController mSession;
+    private CastSession mSession;
     private CreateRouteRequest mPendingCreateRouteRequest;
     private Handler mHandler = new Handler();
 
@@ -80,7 +80,7 @@ public class CastMediaRouteProvider
         mHandler.post(new OnSinksReceivedRunnable(mManager, this, sourceId, sinks));
     }
 
-    public void onRouteCreated(int requestId, MediaRoute route, CastRouteController session) {
+    public void onRouteCreated(int requestId, MediaRoute route, CastSession session) {
         mSession = session;
 
         addRoute(route, session.getOrigin(), session.getTabId());
@@ -431,7 +431,7 @@ public class CastMediaRouteProvider
             JSONObject jsonReceiver = new JSONObject();
             jsonReceiver.put("label", sink.getId());
             jsonReceiver.put("friendlyName", sink.getName());
-            jsonReceiver.put("capabilities", CastRouteController.getCapabilities(sink.getDevice()));
+            jsonReceiver.put("capabilities", CastSession.getCapabilities(sink.getDevice()));
             jsonReceiver.put("volume", null);
             jsonReceiver.put("isActiveInput", null);
             jsonReceiver.put("displayStatus", null);

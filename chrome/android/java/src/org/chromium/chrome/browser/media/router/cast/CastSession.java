@@ -40,7 +40,7 @@ import java.util.Set;
 /**
  * A wrapper around the established Cast application session.
  */
-public class CastRouteController implements MediaNotificationListener {
+public class CastSession implements MediaNotificationListener {
     private static final String TAG = "MediaRouter";
 
     private static final String MEDIA_NAMESPACE = "urn:x-cast:com.google.cast.media";
@@ -95,9 +95,9 @@ public class CastRouteController implements MediaNotificationListener {
     }
 
     private static class CastMessagingChannel implements Cast.MessageReceivedCallback {
-        private final CastRouteController mSession;
+        private final CastSession mSession;
 
-        public CastMessagingChannel(CastRouteController session) {
+        public CastMessagingChannel(CastSession session) {
             mSession = session;
         }
 
@@ -175,7 +175,7 @@ public class CastRouteController implements MediaNotificationListener {
     private Handler mHandler;
 
     /**
-     * Initializes a new {@link CastRouteController} instance.
+     * Initializes a new {@link CastSession} instance.
      * @param apiClient The Google Play Services client used to create the session.
      * @param sessionId The session identifier to use with the Cast SDK.
      * @param origin The origin of the frame requesting the route.
@@ -183,7 +183,7 @@ public class CastRouteController implements MediaNotificationListener {
      * @param source The {@link MediaSource} corresponding to this session.
      * @param routeProvider The {@link CastMediaRouteProvider} instance managing this session.
      */
-    public CastRouteController(
+    public CastSession(
             GoogleApiClient apiClient,
             String sessionId,
             ApplicationMetadata metadata,
