@@ -12,7 +12,7 @@ layer at (30,400) size 349x72
   LayoutBlockFlow (positioned) {DIV} at (30,400) size 348.70x72
     LayoutInline {SPAN} at (0,0) size 326x17 [color=#008000]
       LayoutText {#text} at (0,0) size 326x17
-        text run at (0,0) width 326: "PASS: event at (285, 50) hit box2 at offset (198, 2)"
+        text run at (0,0) width 326: "PASS: event at (285, 50) hit box2 at offset (197, 1)"
     LayoutBR {BR} at (325,14) size 1x0
     LayoutInline {SPAN} at (0,0) size 326x17 [color=#008000]
       LayoutText {#text} at (0,18) size 326x17
