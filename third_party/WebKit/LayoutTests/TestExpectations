@@ -1309,3 +1309,13 @@ crbug.com/570899 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-
 crbug.com/571361 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled-out-and-in.html [ Failure ]
 
 crbug.com/571590 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
+
+crbug.com/571248 fast/canvas/canvas-toDataURL-webp.html [ NeedsRebaseline ]
+crbug.com/571248 fast/images/webp-color-profile-lossy-alpha.html [ NeedsRebaseline ]
+crbug.com/571248 fast/images/webp-color-profile-lossy.html [ NeedsRebaseline ]
+crbug.com/571248 http/tests/images/webp-partial-load.html [ NeedsRebaseline ]
+crbug.com/571248 http/tests/images/webp-progressive-load.html [ NeedsRebaseline ]
+crbug.com/571248 virtual/display_list_2d_canvas/fast/canvas/canvas-toBlob-webp-maximum-quality.html [ NeedsRebaseline ]
+crbug.com/571248 virtual/display_list_2d_canvas/fast/canvas/canvas-toDataURL-webp.html [ NeedsRebaseline ]
+crbug.com/571248 virtual/gpu/fast/canvas/canvas-toBlob-webp-maximum-quality.html [ NeedsRebaseline ]
+crbug.com/571248 virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ NeedsRebaseline ]
