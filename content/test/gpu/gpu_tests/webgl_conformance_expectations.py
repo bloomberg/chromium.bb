@@ -346,6 +346,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Nexus 5 failures
     self.Fail('conformance/glsl/bugs/struct-constructor-highp-bug.html',
               ['android', ('qualcomm', 'Adreno (TM) 330')], bug=559342)
+    self.Fail('conformance/glsl/bugs/qualcomm-loop-with-continue-crash.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=527761)
+    self.Fail('conformance/glsl/bugs/sketchfab-lighting-shader-crash.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=551937)
     # Nexus 6 failures only
     self.Fail('conformance/context/' +
               'context-attributes-alpha-depth-stencil-antialias.html',
