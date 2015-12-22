@@ -142,15 +142,15 @@ ShShaderOutput ShaderTranslator::GetShaderOutputLanguageForContext(
     return SH_GLSL_330_CORE_OUTPUT;
   } else if (context_version == 320) {
     return SH_GLSL_150_CORE_OUTPUT;
-  } else if (context_version == 310) {
-    return SH_GLSL_140_OUTPUT;
-  } else if (context_version == 300) {
-    return SH_GLSL_130_OUTPUT;
   }
 
-  // Before OpenGL 3.0 we use compatibility profile. Also for future
-  // specs between OpenGL 3.3 and OpenGL 4.0, at the time of writing,
-  // we use compatibility profile.
+  // Before OpenGL 3.2 we use the compatibility profile. Shading
+  // language version 130 restricted how sampler arrays can be indexed
+  // in loops, which causes problems like crbug.com/550487 .
+  //
+  // Also for any future specs that might be introduced between OpenGL
+  // 3.3 and OpenGL 4.0, at the time of writing, we use the
+  // compatibility profile.
   return SH_GLSL_COMPATIBILITY_OUTPUT;
 }
 

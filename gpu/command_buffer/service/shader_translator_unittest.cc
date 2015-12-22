@@ -519,8 +519,8 @@ INSTANTIATE_TEST_CASE_P(
                     make_gl_glsl_tuple("4.0", "#version 400\n"),
                     make_gl_glsl_tuple("3.3", "#version 330\n"),
                     make_gl_glsl_tuple("3.2", "#version 150\n"),
-                    make_gl_glsl_tuple("3.1", "#version 140\n"),
-                    make_gl_glsl_tuple("3.0", "#version 130\n")));
+                    make_gl_glsl_tuple("3.1", ""),
+                    make_gl_glsl_tuple("3.0", "")));
 
 // Test data for the above test. Check that early OpenGL contexts get
 // GLSL compatibility profile shader, e.g. shader has no #version
