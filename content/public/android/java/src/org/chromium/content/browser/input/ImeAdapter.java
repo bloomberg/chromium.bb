@@ -142,6 +142,7 @@ public class ImeAdapter {
         // ImeAdapter#dispatchKeyEvent().
         if (mTextInputType == TextInputType.NONE) {
             mInputConnection = null;
+            Log.d(TAG, "onCreateInputConnection returns null.");
             return null;
         }
 
@@ -155,6 +156,7 @@ public class ImeAdapter {
         int initialSelEnd = outAttrs.initialSelEnd = Selection.getSelectionEnd(mEditable);
         mInputConnection = mInputConnectionFactory.get(
                 mViewEmbedder.getAttachedView(), this, initialSelStart, initialSelEnd, outAttrs);
+        Log.d(TAG, "onCreateInputConnection");
         return mInputConnection;
     }
 
@@ -242,12 +244,6 @@ public class ImeAdapter {
             int textInputFlags, boolean showIfNeeded) {
         Log.d(TAG, "updateKeyboardVisibility: type [%d->%d], flags [%d], show [%b], ",
                 mTextInputType, textInputType, textInputFlags, showIfNeeded);
-        // If current input type is none and showIfNeeded is false, IME should not be shown
-        // and input type should remain as none.
-        if (mTextInputType == TextInputType.NONE && !showIfNeeded) {
-            return;
-        }
-
         mTextInputFlags = textInputFlags;
         if (mTextInputType != textInputType) {
             mTextInputType = textInputType;

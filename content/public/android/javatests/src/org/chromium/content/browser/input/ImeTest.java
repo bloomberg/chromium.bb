@@ -978,9 +978,11 @@ public class ImeTest extends ContentShellTestBase {
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                boolean hasConnection = getAdapterInputConnection() != null;
-                return show == mInputMethodManagerWrapper.isShowWithoutHideOutstanding()
-                        && show == hasConnection;
+                // We do not check the other way around: in some cases we need to keep
+                // input connection even when the last known status is 'hidden'.
+                // See crbug.com/569332 for more details.
+                if (show && getAdapterInputConnection() == null) return false;
+                return show == mInputMethodManagerWrapper.isShowWithoutHideOutstanding();
             }
         });
     }
