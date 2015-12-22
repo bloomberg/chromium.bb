@@ -3119,6 +3119,16 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_Automatic) {
   // created should be that number + 1 (for the original download request). We
   // only care that it is greater than 1.
   EXPECT_GT(1u, error_injector->TotalFileCount());
+
+  scoped_ptr<content::DownloadTestObserver> completion_observer(
+      CreateWaiter(browser(), 1));
+  download->Resume();
+  completion_observer->WaitForFinished();
+
+  // Automatic resumption causes download target determination to be run
+  // multiple times. Make sure we end up with the correct filename at the end.
+  EXPECT_STREQ(kDownloadTest1Path,
+               download->GetTargetFilePath().BaseName().AsUTF8Unsafe().c_str());
 }
 
 // An interrupting download should be resumable multiple times.
