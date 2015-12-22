@@ -222,7 +222,7 @@ std::string MHTMLGenerationManager::Job::GenerateMHTMLBoundaryMarker() {
   // Trying to generate random boundaries similar to IE/UnMHT
   // (ex: ----=_NextPart_000_001B_01CC157B.96F808A0).
   uint8_t random_values[10];
-  base::RandBytes(&random_values, sizeof(random_values));
+  base::RandBytes(random_values, sizeof(random_values));
 
   std::string result("----=_NextPart_000_");
   result += base::HexEncode(random_values + 0, 2);
