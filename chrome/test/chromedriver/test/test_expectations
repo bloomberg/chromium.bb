@@ -99,7 +99,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1290
     'ElementEqualityTest.testAnElementFoundInADifferentFrameViaJsShouldHaveSameId',
     'ElementFindingTest.testAnElementFoundInADifferentFrameViaJsCanBeUsed',
-    'ChromeDriverTests.testShouldThrowAnExceptionWhenThereIsNoLinkToClickAndItIsFoundWithLinkText',
 ]
 
 
