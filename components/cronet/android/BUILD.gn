@@ -409,14 +409,50 @@ android_library("cronet_test_apk_java") {
   ]
 }
 
+android_assets("cronet_test_apk_assets") {
+  testonly = true
+
+  # Need to use renaming_sources to maintain subdirectories.
+  renaming_sources = [
+    "test/assets/test/cacheable.txt",
+    "test/assets/test/cacheable.txt.mock-http-headers",
+    "test/assets/test/content_length_mismatch.html",
+    "test/assets/test/content_length_mismatch.html.mock-http-headers",
+    "test/assets/test/datareductionproxysuccess.txt",
+    "test/assets/test/datareductionproxysuccess.txt.mock-http-headers",
+    "test/assets/test/multiredirect.html",
+    "test/assets/test/multiredirect.html.mock-http-headers",
+    "test/assets/test/notfound.html",
+    "test/assets/test/notfound.html.mock-http-headers",
+    "test/assets/test/quic_data/simple.txt",
+    "test/assets/test/redirect.html",
+    "test/assets/test/redirect.html.mock-http-headers",
+    "test/assets/test/redirect_invalid_scheme.html",
+    "test/assets/test/redirect_invalid_scheme.html.mock-http-headers",
+    "test/assets/test/sdch/dict/LeQxM80O",
+    "test/assets/test/sdch/dict/LeQxM80O.mock-http-headers",
+    "test/assets/test/sdch/index",
+    "test/assets/test/sdch/index.mock-http-headers",
+    "test/assets/test/sdch/LeQxM80O_encoded",
+    "test/assets/test/sdch/LeQxM80O_encoded.mock-http-headers",
+    "test/assets/test/secureproxychecksuccess.txt",
+    "test/assets/test/secureproxychecksuccess.txt.mock-http-headers",
+    "test/assets/test/success.txt",
+    "test/assets/test/success.txt.mock-http-headers",
+  ]
+
+  # Maintain directory structure. Example entry: "test/sdch/index".
+  renaming_destinations = rebase_path(renaming_sources, "test/assets")
+}
+
 android_apk("cronet_test_apk") {
   testonly = true
   apk_name = "CronetTest"
   android_manifest = "test/AndroidManifest.xml"
   native_libs = [ "libcronet_tests.so" ]
-  asset_location = "test/assets"
 
   deps = [
+    ":cronet_test_apk_assets",
     ":cronet_test_apk_java",
     ":cronet_test_apk_resources",
     ":cronet_tests",
