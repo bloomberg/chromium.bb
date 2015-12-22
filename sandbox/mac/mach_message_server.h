@@ -6,6 +6,7 @@
 #define SANDBOX_MAC_MACH_MESSAGE_SERVER_H_
 
 #include <mach/mach.h>
+#include <stddef.h>
 
 #include "base/mac/dispatch_source_mach.h"
 #include "base/mac/scoped_mach_port.h"

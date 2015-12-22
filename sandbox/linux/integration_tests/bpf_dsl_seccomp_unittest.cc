@@ -7,14 +7,16 @@
 #include <pthread.h>
 #include <sched.h>
 #include <signal.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/prctl.h>
 #include <sys/ptrace.h>
+#include <sys/socket.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
-#include <sys/socket.h>
 
 #if defined(ANDROID)
 // Work-around for buggy headers in Android's NDK

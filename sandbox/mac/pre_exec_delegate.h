@@ -5,6 +5,9 @@
 #ifndef SANDBOX_MAC_PRE_EXEC_DELEGATE_H_
 #define SANDBOX_MAC_PRE_EXEC_DELEGATE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/process/launch.h"
 #include "sandbox/mac/xpc.h"
 

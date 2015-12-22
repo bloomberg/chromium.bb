@@ -5,9 +5,11 @@
 #ifndef SANDBOX_WIN_SRC_SANDBOX_POLICY_H_
 #define SANDBOX_WIN_SRC_SANDBOX_POLICY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/security_level.h"
@@ -130,7 +132,8 @@ class TargetPolicy {
   //   http://msdn2.microsoft.com/en-us/library/ms684152.aspx
   //
   // Note: the recommended level is JOB_RESTRICTED or JOB_LOCKDOWN.
-  virtual ResultCode SetJobLevel(JobLevel job_level, uint32 ui_exceptions) = 0;
+  virtual ResultCode SetJobLevel(JobLevel job_level,
+                                 uint32_t ui_exceptions) = 0;
 
   // Sets a hard limit on the size of the commit set for the sandboxed process.
   // If the limit is reached, the process will be terminated with

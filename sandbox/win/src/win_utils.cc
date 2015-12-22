@@ -4,8 +4,11 @@
 
 #include "sandbox/win/src/win_utils.h"
 
+#include <stddef.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/win/pe_image.h"

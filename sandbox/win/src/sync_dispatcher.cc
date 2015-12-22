@@ -4,6 +4,8 @@
 
 #include "sandbox/win/src/sync_dispatcher.h"
 
+#include <stdint.h>
+
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/interception.h"
@@ -42,8 +44,8 @@ bool SyncDispatcher::SetupService(InterceptionManager* manager,
 
 bool SyncDispatcher::CreateEvent(IPCInfo* ipc,
                                  base::string16* name,
-                                 uint32 event_type,
-                                 uint32 initial_state) {
+                                 uint32_t event_type,
+                                 uint32_t initial_state) {
   const wchar_t* event_name = name->c_str();
   CountedParameterSet<NameBased> params;
   params[NameBased::NAME] = ParamPickerMake(event_name);
@@ -60,7 +62,7 @@ bool SyncDispatcher::CreateEvent(IPCInfo* ipc,
 
 bool SyncDispatcher::OpenEvent(IPCInfo* ipc,
                                base::string16* name,
-                               uint32 desired_access) {
+                               uint32_t desired_access) {
   const wchar_t* event_name = name->c_str();
 
   CountedParameterSet<OpenEventParams> params;

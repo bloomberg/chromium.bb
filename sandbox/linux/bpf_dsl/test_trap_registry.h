@@ -10,6 +10,7 @@
 #include <map>
 #include <utility>
 
+#include "base/macros.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
 
 namespace sandbox {

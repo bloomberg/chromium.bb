@@ -5,6 +5,7 @@
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -18,6 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"

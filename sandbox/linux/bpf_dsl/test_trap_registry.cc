@@ -4,6 +4,8 @@
 
 #include "sandbox/linux/bpf_dsl/test_trap_registry.h"
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {

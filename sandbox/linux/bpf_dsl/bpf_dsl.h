@@ -5,6 +5,7 @@
 #ifndef SANDBOX_LINUX_BPF_DSL_BPF_DSL_H_
 #define SANDBOX_LINUX_BPF_DSL_BPF_DSL_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <utility>

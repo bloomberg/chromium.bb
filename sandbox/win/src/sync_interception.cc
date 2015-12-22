@@ -4,6 +4,8 @@
 
 #include "sandbox/win/src/sync_interception.h"
 
+#include <stdint.h>
+
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/policy_params.h"
@@ -16,7 +18,7 @@
 namespace sandbox {
 
 ResultCode ProxyCreateEvent(LPCWSTR name,
-                            uint32 initial_state,
+                            uint32_t initial_state,
                             EVENT_TYPE event_type,
                             void* ipc_memory,
                             CrossCallReturn* answer) {
@@ -33,7 +35,7 @@ ResultCode ProxyCreateEvent(LPCWSTR name,
 }
 
 ResultCode ProxyOpenEvent(LPCWSTR name,
-                          uint32 desired_access,
+                          uint32_t desired_access,
                           void* ipc_memory,
                           CrossCallReturn* answer) {
   CountedParameterSet<OpenEventParams> params;
@@ -79,7 +81,7 @@ NTSTATUS WINAPI TargetNtCreateEvent(NtCreateEventFunction orig_CreateEvent,
     object_attribs_copy.RootDirectory = NULL;
 
     wchar_t* name = NULL;
-    uint32 attributes = 0;
+    uint32_t attributes = 0;
     NTSTATUS ret = AllocAndCopyName(&object_attribs_copy, &name, &attributes,
                                     NULL);
     if (!NT_SUCCESS(ret) || name == NULL)
@@ -132,7 +134,7 @@ NTSTATUS WINAPI TargetNtOpenEvent(NtOpenEventFunction orig_OpenEvent,
     object_attribs_copy.RootDirectory = NULL;
 
     wchar_t* name = NULL;
-    uint32 attributes = 0;
+    uint32_t attributes = 0;
     NTSTATUS ret = AllocAndCopyName(&object_attribs_copy, &name, &attributes,
                                     NULL);
     if (!NT_SUCCESS(ret) || name == NULL)

@@ -4,6 +4,8 @@
 
 #include "sandbox/win/src/handle_closer.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/windows_version.h"

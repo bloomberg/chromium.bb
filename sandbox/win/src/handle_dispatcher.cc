@@ -4,6 +4,8 @@
 
 #include "sandbox/win/src/handle_dispatcher.h"
 
+#include <stdint.h>
+
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/handle_interception.h"
 #include "sandbox/win/src/handle_policy.h"
@@ -41,9 +43,9 @@ bool HandleDispatcher::SetupService(InterceptionManager* manager,
 
 bool HandleDispatcher::DuplicateHandleProxy(IPCInfo* ipc,
                                             HANDLE source_handle,
-                                            uint32 target_process_id,
-                                            uint32 desired_access,
-                                            uint32 options) {
+                                            uint32_t target_process_id,
+                                            uint32_t desired_access,
+                                            uint32_t options) {
   static NtQueryObject QueryObject = NULL;
   if (!QueryObject)
     ResolveNTFunctionPtr("NtQueryObject", &QueryObject);

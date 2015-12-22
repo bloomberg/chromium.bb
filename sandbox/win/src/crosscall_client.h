@@ -5,6 +5,9 @@
 #ifndef SANDBOX_SRC_CROSSCALL_CLIENT_H_
 #define SANDBOX_SRC_CROSSCALL_CLIENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "sandbox/win/src/crosscall_params.h"
 #include "sandbox/win/src/sandbox.h"
 

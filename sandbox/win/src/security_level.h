@@ -5,7 +5,7 @@
 #ifndef SANDBOX_SRC_SECURITY_LEVEL_H_
 #define SANDBOX_SRC_SECURITY_LEVEL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace sandbox {
 
@@ -138,7 +138,7 @@ enum JobLevel {
 // Flags that are unsupported for the target OS will be silently ignored.
 // Flags that are invalid for their application (pre or post startup) will
 // return SBOX_ERROR_BAD_PARAMS.
-typedef uint64 MitigationFlags;
+typedef uint64_t MitigationFlags;
 
 // Permanently enables DEP for the target process. Corresponds to
 // PROCESS_CREATION_MITIGATION_POLICY_DEP_ENABLE.

@@ -8,6 +8,7 @@
 #if !defined(__BIONIC_HAVE_UCONTEXT_T)
 #include <asm/sigcontext.h>
 #include <signal.h>
+#include <stdint.h>
 // We also need greg_t for the sandbox, include it in this header as well.
 typedef uint64_t greg_t;
 

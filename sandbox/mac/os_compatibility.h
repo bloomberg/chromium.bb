@@ -13,6 +13,7 @@
 #define SANDBOX_MAC_OS_COMPATIBILITY_H_
 
 #include <mach/mach.h>
+#include <stdint.h>
 
 #include <string>
 

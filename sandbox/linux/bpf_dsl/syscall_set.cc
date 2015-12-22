@@ -4,6 +4,8 @@
 
 #include "sandbox/linux/bpf_dsl/syscall_set.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "sandbox/linux/bpf_dsl/linux_syscall_ranges.h"

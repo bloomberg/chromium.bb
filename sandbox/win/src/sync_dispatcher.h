@@ -5,7 +5,9 @@
 #ifndef SANDBOX_SRC_SYNC_DISPATCHER_H_
 #define SANDBOX_SRC_SYNC_DISPATCHER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
@@ -23,13 +25,13 @@ class SyncDispatcher : public Dispatcher {
 
 private:
   // Processes IPC requests coming from calls to CreateEvent in the target.
-  bool CreateEvent(IPCInfo* ipc,
-                   base::string16* name,
-                   uint32 event_type,
-                   uint32 initial_state);
+ bool CreateEvent(IPCInfo* ipc,
+                  base::string16* name,
+                  uint32_t event_type,
+                  uint32_t initial_state);
 
   // Processes IPC requests coming from calls to OpenEvent in the target.
-  bool OpenEvent(IPCInfo* ipc, base::string16* name, uint32 desired_access);
+ bool OpenEvent(IPCInfo* ipc, base::string16* name, uint32_t desired_access);
 
   PolicyBase* policy_base_;
   DISALLOW_COPY_AND_ASSIGN(SyncDispatcher);

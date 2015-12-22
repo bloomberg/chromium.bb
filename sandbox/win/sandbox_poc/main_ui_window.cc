@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/sandbox_poc/main_ui_window.h"
+
 #include <windows.h>
 #include <CommCtrl.h>
 #include <commdlg.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <time.h>
 #include <windowsx.h>
 #include <atlbase.h>
@@ -13,7 +16,6 @@
 #include <algorithm>
 #include <sstream>
 
-#include "sandbox/win/sandbox_poc/main_ui_window.h"
 #include "base/logging.h"
 #include "sandbox/win/sandbox_poc/resource.h"
 #include "sandbox/win/src/acl.h"

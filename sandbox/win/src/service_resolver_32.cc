@@ -4,6 +4,8 @@
 
 #include "sandbox/win/src/service_resolver.h"
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/win_utils.h"
 

@@ -5,6 +5,8 @@
 #ifndef SANDBOX_SRC_CROSSCALL_SERVER_H_
 #define SANDBOX_SRC_CROSSCALL_SERVER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

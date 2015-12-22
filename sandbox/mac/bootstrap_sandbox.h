@@ -6,6 +6,7 @@
 #define SANDBOX_MAC_BOOTSTRAP_SANDBOX_H_
 
 #include <mach/mach.h>
+#include <stdint.h>
 
 #include <map>
 #include <string>

@@ -559,7 +559,7 @@ bool IsAppContainerEnabled() {
 
 void SetJobLevel(const base::CommandLine& cmd_line,
                  sandbox::JobLevel job_level,
-                 uint32 ui_exceptions,
+                 uint32_t ui_exceptions,
                  sandbox::TargetPolicy* policy) {
   if (ShouldSetJobLevel(cmd_line)) {
 #ifdef _WIN64

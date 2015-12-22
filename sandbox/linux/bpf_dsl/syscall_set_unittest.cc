@@ -4,8 +4,10 @@
 
 #include "sandbox/linux/bpf_dsl/syscall_set.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "sandbox/linux/bpf_dsl/linux_syscall_ranges.h"
 #include "sandbox/linux/tests/unit_tests.h"
 

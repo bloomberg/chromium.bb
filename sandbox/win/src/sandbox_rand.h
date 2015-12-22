@@ -5,7 +5,6 @@
 #ifndef SANDBOX_SRC_SANDBOX_RAND_H_
 #define SANDBOX_SRC_SANDBOX_RAND_H_
 
-#include "base/basictypes.h"
 
 namespace sandbox {
 

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {

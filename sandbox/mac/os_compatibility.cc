@@ -5,6 +5,8 @@
 #include "sandbox/mac/os_compatibility.h"
 
 #include <servers/bootstrap.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include "base/mac/mac_util.h"
