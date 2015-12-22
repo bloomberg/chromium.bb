@@ -6,14 +6,16 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [11, 125, 100, 100],
-        [11, 125, 50, 100]
+        [42, 119, 334, 268],
+        [17, 219, 84, 68],
+        [8, 52, 402, 405],
+        [8, 52, 102, 405]
       ],
       "paintInvalidationClients": [
         "RootInlineBox",
-        "InlineTextBox '\u00A0'",
-        "LayoutBlockFlow DIV id='im'",
-        "RootInlineBox"
+        "InlineBox",
+        "LayoutBlockFlow div id='contentBox'",
+        "LayoutSVGRoot svg"
       ]
     }
   ]

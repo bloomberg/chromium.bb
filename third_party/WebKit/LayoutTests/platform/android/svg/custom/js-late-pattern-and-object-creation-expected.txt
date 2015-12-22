@@ -1,0 +1,44 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [16, 16, 18, 18],
+        [16, 16, 18, 18],
+        [8, 8, 17, 17],
+        [8, 8, 17, 17],
+        [0, 247, 680, 132],
+        [0, 247, 680, 132],
+        [0, 130, 519, 133],
+        [0, 130, 519, 133],
+        [0, 15, 680, 364],
+        [0, 15, 680, 364],
+        [0, 15, 370, 129],
+        [0, 15, 370, 129]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGResourcePattern pattern id='fillPattern'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect",
+        "LayoutSVGResourcePattern pattern id='strokePattern'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect",
+        "LayoutSVGRoot svg id='svg-root'",
+        "LayoutSVGContainer g id='content'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Pattern on fill'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Pattern on stroke'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Pattern on fill/stroke'"
+      ]
+    }
+  ]
+}
+

@@ -19,7 +19,8 @@
         "InlineTextBox 'Lorem Ipsum'",
         "LayoutBlockFlow UL",
         "LayoutListItem LI",
-        "LayoutBlockFlow A id='link'"
+        "LayoutBlockFlow A id='link'",
+        "RootInlineBox"
       ]
     }
   ]

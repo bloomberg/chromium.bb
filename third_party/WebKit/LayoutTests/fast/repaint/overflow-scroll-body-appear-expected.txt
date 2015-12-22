@@ -28,7 +28,9 @@
         "LayoutView #document",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow P",
+        "RootInlineBox",
         "LayoutBlockFlow P",
+        "RootInlineBox",
         "LayoutView #document",
         "LayoutView #document"
       ]

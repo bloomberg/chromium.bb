@@ -6,14 +6,15 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [11, 125, 100, 100],
-        [11, 125, 50, 100]
+        [33, 23, 697, 194]
       ],
       "paintInvalidationClients": [
         "RootInlineBox",
-        "InlineTextBox '\u00A0'",
-        "LayoutBlockFlow DIV id='im'",
-        "RootInlineBox"
+        "InlineTextBox 'Gradient on fill'",
+        "LayoutSVGText text",
+        "LayoutSVGResourceLinearGradient linearGradient id='dynGrad'",
+        "LayoutSVGGradientStop stop",
+        "LayoutSVGGradientStop stop"
       ]
     }
   ]

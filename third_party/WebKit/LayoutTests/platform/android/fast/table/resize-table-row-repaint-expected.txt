@@ -6,17 +6,19 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [48, 102, 87, 18],
-        [48, 102, 87, 18],
-        [43, 97, 97, 28]
+        [3, 192, 59, 19],
+        [3, 142, 59, 19],
+        [2, 102, 102, 200],
+        [2, 102, 102, 100],
+        [0, 202, 106, 100]
       ],
       "paintInvalidationClients": [
         "RootInlineBox",
-        "InlineTextBox 'Lorem Ipsum'",
-        "LayoutBlockFlow (positioned) A id='link' class='updated'",
-        "RootInlineBox",
+        "InlineTextBox 'MIDDLE'",
+        "LayoutTableRow TR id='row'",
+        "LayoutTableCell TD",
         "LayoutText #text",
-        "InlineTextBox 'Lorem Ipsum'"
+        "InlineTextBox 'MIDDLE'"
       ]
     }
   ]
