@@ -151,9 +151,10 @@ void MouseRelatedEvent::computeRelativePosition()
 
         // Adding this here to address crbug.com/570666. Basically we'd like to
         // find the local coordinates relative to the padding box not the border box.
-        LayoutBoxModelObject* layoutBox = toLayoutBoxModelObject(r);
-        if (layoutBox)
+        if (r->isBoxModelObject()) {
+            LayoutBoxModelObject* layoutBox = toLayoutBoxModelObject(r);
             localPos.move(-layoutBox->borderLeft(), -layoutBox->borderTop());
+        }
 
         m_offsetLocation = roundedLayoutPoint(localPos);
         float scaleFactor = 1 / pageZoomFactor(this);
