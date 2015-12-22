@@ -50,7 +50,7 @@ class BuildUpdater(object):
   _OMAHA_PLATFORMS = ['mac', 'linux', 'win']
 
   # All of the information we need to update each platform.
-  #   omaha: name omaha uses for the plaftorms.
+  #   omaha: name omaha uses for the platforms.
   #   zip_name: name of the zip file to be retrieved from cloud storage.
   #   gs_build: name of the Chrome build platform used in cloud storage.
   #   destination: Name of the folder to download the reference build to.

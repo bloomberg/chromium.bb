@@ -107,7 +107,7 @@ def PostUploadHook(cl, change, output_api):
   """git cl upload will call this hook after the issue is created/modified.
 
   This hook adds extra try bots list to the CL description in order to run
-  Telemetry benchmarks on Perf trybots in addtion to CQ trybots if the CL
+  Telemetry benchmarks on Perf trybots in addition to CQ trybots if the CL
   contains any changes to Telemetry benchmarks.
   """
   benchmarks_modified = _AreBenchmarksModified(change)

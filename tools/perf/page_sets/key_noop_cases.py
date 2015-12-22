@@ -47,7 +47,7 @@ class KeyNoOpCasesPageSet(story.StorySet):
     # minimal activity.
     self.AddStory(NoOpPage('file://key_noop_cases/no_op_raf.html', self))
 
-    # Why: An inifinite setTimeout loop which does not modify the page should
+    # Why: An infinite setTimeout loop which does not modify the page should
     # incur minimal activity.
     self.AddStory(NoOpPage('file://key_noop_cases/no_op_settimeout.html', self))
 

@@ -10,7 +10,7 @@ from page_sets import top_pages
 def _Reload(action_runner):
   # Numbers below are chosen arbitrarily. For the V8DetachedContextAgeInGC
   # the number of reloads should be high enough so that V8 could do few
-  # incremeantal GCs.
+  # incremental GCs.
   NUMBER_OF_RELOADS = 7
   WAIT_TIME = 2
   for _ in xrange(NUMBER_OF_RELOADS):

@@ -23,7 +23,7 @@ class ToughScrollingWhileZoomedInCasesPage(page_module.Page):
         scale_factor=20.0,
         speed_in_pixels_per_second=10000)
     # 20.0 was chosen because at the time it was close to the maximum.
-    # The more zoomed in, the more noticable the tile rasterization.
+    # The more zoomed in, the more noticeable the tile rasterization.
     #
     # 10,000 was chosen to complete this pre-step quickly.
 
@@ -47,7 +47,7 @@ class ToughScrollingWhileZoomedInCasesPageSet(story.StorySet):
         archive_data_file='data/tough_pinch_zoom_cases.json',
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
-    # The following urls were chosen because they tend to have >15%
+    # The following URLs were chosen because they tend to have >15%
     # mean_pixels_approximated at this scrolling speed.
     urls_list = [
         'file://tough_scrolling_cases/background_fixed.html',

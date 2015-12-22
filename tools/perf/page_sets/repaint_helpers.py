@@ -19,7 +19,7 @@ def Repaint(action_runner, mode='viewport', width=None, height=None):
   if height:
     args['height'] = height
 
-  # Enque benchmark
+  # Enqueue benchmark
   action_runner.ExecuteJavaScript("""
       window.benchmark_results = {};
       window.benchmark_results.id =

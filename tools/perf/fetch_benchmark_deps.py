@@ -36,7 +36,7 @@ def _FetchDependenciesIfNeeded(story_set):
 
 
 def _EnumerateDependencies(story_set):
-  """ Enumerate pathes of files needed by a user story set. """
+  """Enumerates paths of files needed by a user story set."""
   deps = set()
   # Enumerate WPRs
   for story in story_set:
@@ -56,7 +56,7 @@ def _EnumerateDependencies(story_set):
         if extension == '.sha1':
           deps.add(path_name)
 
-  # Return relative pathes.
+  # Return relative paths.
   prefix_len = len(os.path.realpath(GetChromiumDir())) + 1
   return [dep[prefix_len:] for dep in deps if dep]
 

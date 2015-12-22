@@ -25,7 +25,7 @@ class FetchBenchmarkDepsUnittest(unittest.TestCase):
   """
 
   def setUp(self):
-    """Override sys.argv as if it is called from commnad line."""
+    """Override sys.argv as if it is called from command line."""
     self._argv = sys.argv
     sys.argv = ['./fetch_benchmark_deps', '']
 

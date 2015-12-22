@@ -22,7 +22,7 @@ class ServiceWorkerPageSet(story.StorySet):
     self.AddStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self,
         name='first_load', make_javascript_deterministic=False))
-    # 2st time: 1st onfetch with caching
+    # 2nd time: 1st onfetch with caching
     self.AddStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self,
         name='second_load', make_javascript_deterministic=False))
@@ -36,7 +36,7 @@ class ServiceWorkerPageSet(story.StorySet):
     self.AddStory(page.Page(
         'https://jakearchibald.github.io/svgomg/', self,
         name='svgomg_first_load', make_javascript_deterministic=False))
-    # 2st time: onfetch from cache
+    # 2nd time: onfetch from cache
     self.AddStory(page.Page(
         'https://jakearchibald.github.io/svgomg/', self,
         name='svgomg_second_load', make_javascript_deterministic=False))

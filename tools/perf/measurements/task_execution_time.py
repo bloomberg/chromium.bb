@@ -172,7 +172,7 @@ def _ProcessTasksForThread(
     reported_name += 'IPC_Class_' + str(task_slice.args['class'])
     reported_name += ':Line_' + str(task_slice.args['line'])
   else:
-    # Fallback to use the name of the task slice.
+    # Fall back to use the name of the task slice.
     reported_name += task_slice.name.lower()
 
   # Replace any '.'s with '_'s as V8 uses them and it confuses the dashboard.

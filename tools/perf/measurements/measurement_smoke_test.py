@@ -22,7 +22,7 @@ def _GetAllPossiblePageTestInstances():
   benchmarks_dir = os.path.join(top_level_dir, 'benchmarks')
 
   # Get all page test instances from measurement classes that are directly
-  # constructable
+  # constructible
   all_measurement_classes = discover.DiscoverClasses(
       measurements_dir, top_level_dir, page_test.PageTest,
       index_by_class_name=True, directly_constructable=True).values()

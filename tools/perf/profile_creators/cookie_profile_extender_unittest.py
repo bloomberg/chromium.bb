@@ -36,7 +36,7 @@ class CookieProfileExtenderTest(unittest.TestCase):
   @decorators.Disabled('chromeos')  # crbug.com/483212
   def testCookieCount(self):
     # Neither tempfile.TemporaryFile() nor tempfile.NamedTemporaryFile() work
-    # well here. The former doesn't work at all, since it doesn't gaurantee a
+    # well here. The former doesn't work at all, since it doesn't guarantee a
     # file-system visible path. The latter doesn't work well, since the
     # returned file cannot be opened a second time on Windows. The returned
     # file would have to be closed, and the method would need to be called with

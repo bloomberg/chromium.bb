@@ -13,7 +13,7 @@ technique is sufficient to speed up all benchmarks. Latency tests measure that
 a web application can start up quickly, ramp up to peak performance quickly,
 and run smoothly without interruptions. Throughput tests measure the sustained
 peak performance of a web application, ignoring ramp-up time and spikes in
-smoothness. Some benchmarks demonstrate tradeoffs, and aggressive or
+smoothness. Some benchmarks demonstrate trade-offs, and aggressive or
 specialized optimization for one benchmark might make another benchmark slower.
 """
 

@@ -61,7 +61,7 @@ class InfiniteScrollPageSet(story.StorySet):
         archive_data_file='data/infinite_scroll.json',
         cloud_storage_bucket=story.PARTNER_BUCKET)
     # The scroll distance is chosen such that the page can be scrolled
-    # continiously throught the test without hitting the end of the page.
+    # continuously through the test without hitting the end of the page.
     SCROLL_FAR = 60
     SCROLL_PAGE = 1
     pages = [
