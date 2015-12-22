@@ -449,7 +449,7 @@ public class WindowAndroid {
      *         Context.startActivity will not throw ActivityNotFoundException.
      */
     public boolean canResolveActivity(Intent intent) {
-        return mApplicationContext.getPackageManager().resolveActivity(intent, 0) != null;
+        return mApplicationContext.getPackageManager().queryIntentActivities(intent, 0).size() > 0;
     }
 
     /**

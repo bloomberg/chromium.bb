@@ -16,6 +16,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.TransactionTooLargeException;
 import android.provider.Browser;
 import android.support.v7.app.AlertDialog;
@@ -24,6 +25,7 @@ import android.util.Log;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -62,10 +64,25 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     /**
+     * If the intent is for a pdf, resolves intent handlers to find the platform pdf viewer if
+     * it is available and force is for the provided |intent| so that the user doesn't need to
+     * choose it from Intent picker.
+     *
+     * @param context Context of the app.
+     * @param intent Intent to open.
+     */
+    public static void forcePdfViewerAsIntentHandlerIfNeeded(Context context, Intent intent) {
+        if (intent == null || !isPdfIntent(intent)) return;
+        resolveIntent(context, intent, true /* allowSelfOpen (ignored) */);
+    }
+
+    /**
      * Retrieve the best activity for the given intent. If a default activity is provided,
      * choose the default one. Otherwise, return the Intent picker if there are more than one
      * capable activities. If the intent is pdf type, return the platform pdf viewer if
      * it is available so user don't need to choose it from Intent picker.
+     *
+     * Note this function is slow on Android versions less than Lollipop.
      *
      * @param context Context of the app.
      * @param intent Intent to open.
@@ -95,9 +112,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                             if (packageName.equals(pName)) {
                                 canSelfOpen = true;
                             } else if (PDF_VIEWER.equals(pName)) {
-                                String filename = intent.getData().getLastPathSegment();
-                                if ((filename != null && filename.endsWith(PDF_SUFFIX))
-                                        || PDF_MIME.equals(intent.getType())) {
+                                if (isPdfIntent(intent)) {
                                     intent.setClassName(pName, resolveInfo.activityInfo.name);
                                     hasPdfViewer = true;
                                     break;
@@ -117,12 +132,25 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return false;
     }
 
+    private static boolean isPdfIntent(Intent intent) {
+        if (intent == null) return false;
+        String filename = intent.getData().getLastPathSegment();
+        return (filename != null && filename.endsWith(PDF_SUFFIX))
+                || PDF_MIME.equals(intent.getType());
+    }
+
     /**
      * Retrieve information about the Activity that will handle the given Intent.
+     *
+     * Note this function is slow on Android versions less than Lollipop.
+     *
      * @param intent Intent to resolve.
      * @return       ResolveInfo of the Activity that will handle the Intent, or null if it failed.
      */
     public static ResolveInfo resolveActivity(Intent intent) {
+        // This function is expensive on KK and below and should not be called from main thread.
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                || !ThreadUtils.runningOnUiThread();
         try {
             Context context = ApplicationStatus.getApplicationContext();
             PackageManager pm = context.getPackageManager();
@@ -135,6 +163,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     /**
      * Determines whether Chrome will be handling the given Intent.
+     *
+     * Note this function is slow on Android versions less than Lollipop.
+     *
      * @param context           Context that will be firing the Intent.
      * @param intent            Intent that will be fired.
      * @param matchDefaultOnly  See {@link PackageManager#MATCH_DEFAULT_ONLY}.
@@ -156,16 +187,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public List<ComponentName> queryIntentActivities(Intent intent) {
         return IntentUtils.getIntentHandlers(mActivity, intent);
-    }
-
-    @Override
-    public boolean canResolveActivity(Intent intent) {
-        try {
-            return mActivity.getPackageManager().resolveActivity(intent, 0) != null;
-        } catch (RuntimeException e) {
-            logTransactionTooLargeOrRethrow(e, intent);
-            return false;
-        }
     }
 
     @Override
@@ -210,7 +231,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public void startActivity(Intent intent) {
         try {
-            resolveIntent(mActivity, intent, true);
+            forcePdfViewerAsIntentHandlerIfNeeded(mActivity, intent);
             mActivity.startActivity(intent);
         } catch (RuntimeException e) {
             logTransactionTooLargeOrRethrow(e, intent);
@@ -220,7 +241,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean startActivityIfNeeded(Intent intent) {
         try {
-            resolveIntent(mActivity, intent, true);
+            forcePdfViewerAsIntentHandlerIfNeeded(mActivity, intent);
             return mActivity.startActivityIfNeeded(intent, -1);
         } catch (RuntimeException e) {
             logTransactionTooLargeOrRethrow(e, intent);

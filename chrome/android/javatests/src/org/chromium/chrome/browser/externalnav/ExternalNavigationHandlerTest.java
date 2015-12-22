@@ -91,6 +91,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         mDelegate.setContext(getInstrumentation().getContext());
         CommandLine.init(new String[0]);
         ExternalNavigationHandler.sReportingDisabledForTests = true;
+        mDelegate.mQueryIntentOverride = null;
     }
 
     @SmallTest
@@ -1154,6 +1155,15 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         @Override
         public List<ComponentName> queryIntentActivities(Intent intent) {
             List<ComponentName> list = new ArrayList<ComponentName>();
+            // TODO(yfriedman): We shouldn't have a separate global override just for tests - we
+            // should mimic the appropriate intent resolution intead.
+            if (mQueryIntentOverride != null) {
+                if (mQueryIntentOverride.booleanValue()) {
+                    list.add(new ComponentName("foo", "foo"));
+                } else {
+                    return list;
+                }
+            }
             if (intent.getDataString().startsWith("http://m.youtube.com")
                     || intent.getDataString().startsWith("http://youtube.com")) {
                 list.add(new ComponentName("youtube", "youtube"));
@@ -1164,13 +1174,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
             } else {
                 list.add(new ComponentName("foo", "foo"));
             }
-
             return list;
-        }
-
-        @Override
-        public boolean canResolveActivity(Intent intent) {
-            return mCanResolveActivity;
         }
 
         @Override
@@ -1247,7 +1251,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         }
 
         public void setCanResolveActivity(boolean value) {
-            mCanResolveActivity = value;
+            mQueryIntentOverride = value;
         }
 
         public String getNewUrlAfterClobbering() {
@@ -1266,7 +1270,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         public boolean startIncognitoIntentCalled = false;
 
         // This should not be reset for every run of check().
-        private boolean mCanResolveActivity = true;
+        private Boolean mQueryIntentOverride;
+
         private String mNewUrlAfterClobbering;
         private String mReferrerUrlForClobbering;
         public boolean mIsChromeAppInForeground = true;

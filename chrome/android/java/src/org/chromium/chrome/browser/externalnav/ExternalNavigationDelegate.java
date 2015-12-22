@@ -23,11 +23,6 @@ interface ExternalNavigationDelegate {
     List<ComponentName> queryIntentActivities(Intent intent);
 
     /**
-     * Determine if the given intent can be resolved to at least one activity.
-     */
-    boolean canResolveActivity(Intent intent);
-
-    /**
      * Determine if Chrome is the default or only handler for a given intent. If true, Chrome
      * will handle the intent when started.
      */
