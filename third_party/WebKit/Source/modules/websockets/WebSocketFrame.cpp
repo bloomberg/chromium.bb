@@ -20,8 +20,6 @@
  *
  */
 
-#include "config.h"
-
 #include "modules/websockets/WebSocketFrame.h"
 
 namespace blink {

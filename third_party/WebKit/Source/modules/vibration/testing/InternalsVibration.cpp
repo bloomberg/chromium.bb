@@ -28,8 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "InternalsVibration.h"
+#include "modules/vibration/testing/InternalsVibration.h"
 
 #include "core/dom/Document.h"
 #include "core/testing/Internals.h"

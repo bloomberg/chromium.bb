@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
 
 #include "core/dom/DOMArrayBuffer.h"

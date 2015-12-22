@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
 
 #include "core/events/Event.h"

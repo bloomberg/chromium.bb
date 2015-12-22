@@ -17,7 +17,6 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "modules/vibration/NavigatorVibration.h"
 
 #include "bindings/modules/v8/UnionTypesModules.h"

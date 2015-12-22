@@ -25,7 +25,6 @@
  *
  */
 
-#include "config.h"
 #include "modules/webdatabase/DatabaseContext.h"
 
 #include "core/dom/Document.h"

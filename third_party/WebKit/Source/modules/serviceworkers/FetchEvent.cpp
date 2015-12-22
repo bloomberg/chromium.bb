@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-#include "FetchEvent.h"
+#include "modules/serviceworkers/FetchEvent.h"
 
 #include "modules/fetch/Request.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"

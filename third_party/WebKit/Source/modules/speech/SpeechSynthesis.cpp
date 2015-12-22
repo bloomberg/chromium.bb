@@ -23,7 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "modules/speech/SpeechSynthesis.h"
 
 #include "core/dom/ExecutionContext.h"

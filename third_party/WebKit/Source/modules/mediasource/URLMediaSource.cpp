@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "modules/mediasource/URLMediaSource.h"
 
 #include "core/dom/DOMURL.h"

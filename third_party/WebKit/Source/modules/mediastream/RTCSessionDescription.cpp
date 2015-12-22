@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "modules/mediastream/RTCSessionDescription.h"
 
 #include "bindings/core/v8/ScriptValue.h"

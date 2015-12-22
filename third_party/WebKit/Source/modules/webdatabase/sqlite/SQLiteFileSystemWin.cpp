@@ -31,7 +31,6 @@
 // Expose chromium_sqlite3_* functions from Chromium's patched SQLite.
 #define CHROMIUM_SQLITE_INTERNALS
 
-#include "config.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 
 #include <windows.h>

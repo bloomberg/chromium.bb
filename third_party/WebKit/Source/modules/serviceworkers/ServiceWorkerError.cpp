@@ -28,8 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "ServiceWorkerError.h"
+#include "modules/serviceworkers/ServiceWorkerError.h"
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"

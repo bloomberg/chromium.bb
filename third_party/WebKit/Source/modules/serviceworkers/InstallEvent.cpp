@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-#include "InstallEvent.h"
+#include "modules/serviceworkers/InstallEvent.h"
 
 #include "core/dom/ExceptionCode.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"

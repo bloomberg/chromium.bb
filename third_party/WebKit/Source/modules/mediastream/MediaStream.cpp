@@ -23,7 +23,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "modules/mediastream/MediaStream.h"
 
 #include "bindings/core/v8/ExceptionState.h"

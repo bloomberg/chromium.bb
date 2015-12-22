@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-#include "ServiceWorkerRegistration.h"
+#include "modules/serviceworkers/ServiceWorkerRegistration.h"
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"

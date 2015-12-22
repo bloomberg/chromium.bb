@@ -22,7 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 
 #include "core/html/HTMLMediaElement.h"

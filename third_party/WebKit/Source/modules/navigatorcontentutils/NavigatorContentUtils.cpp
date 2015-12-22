@@ -24,7 +24,6 @@
  * DAMAGE.
  */
 
-#include "config.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtils.h"
 
 #include "bindings/core/v8/ExceptionState.h"

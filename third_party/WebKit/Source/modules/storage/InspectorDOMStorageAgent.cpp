@@ -27,7 +27,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "modules/storage/InspectorDOMStorageAgent.h"
 
 #include "bindings/core/v8/ExceptionState.h"

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
 #include "modules/push_messaging/PushController.h"
 
 #include "public/platform/modules/push_messaging/WebPushClient.h"

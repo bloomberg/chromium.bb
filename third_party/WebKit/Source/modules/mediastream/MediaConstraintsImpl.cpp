@@ -28,15 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
 #include "modules/mediastream/MediaConstraintsImpl.h"
-#include "modules/mediastream/MediaTrackConstraintSet.h"
 
 #include "bindings/core/v8/ArrayValue.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/mediastream/MediaTrackConstraintSet.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"

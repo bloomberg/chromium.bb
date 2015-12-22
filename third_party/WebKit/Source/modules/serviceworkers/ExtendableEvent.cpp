@@ -28,8 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "ExtendableEvent.h"
+#include "modules/serviceworkers/ExtendableEvent.h"
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
