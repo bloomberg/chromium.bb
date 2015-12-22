@@ -15,10 +15,12 @@ const size_t IPAddress::kIPv6AddressSize = 16;
 
 IPAddress::IPAddress() {}
 
-IPAddress::~IPAddress() {}
+IPAddress::IPAddress(const IPAddressNumber& address) : ip_address_(address) {}
 
 IPAddress::IPAddress(const uint8_t* address, size_t address_len)
     : ip_address_(address, address + address_len) {}
+
+IPAddress::~IPAddress() {}
 
 bool IPAddress::IsIPv4() const {
   return ip_address_.size() == kIPv4AddressSize;
@@ -26,6 +28,10 @@ bool IPAddress::IsIPv4() const {
 
 bool IPAddress::IsIPv6() const {
   return ip_address_.size() == kIPv6AddressSize;
+}
+
+bool IPAddress::IsValid() const {
+  return IsIPv4() || IsIPv6();
 }
 
 bool IPAddress::IsReserved() const {

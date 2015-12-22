@@ -24,38 +24,54 @@ std::string DumpIPAddress(const IPAddress& v) {
   return out;
 }
 
-template <size_t N>
-IPAddress ArrayToIPAdress(const uint8_t(&address)[N]) {
-  return IPAddress(address, N);
-}
-
 TEST(IPAddressTest, IsIPVersion) {
   uint8_t addr1[4] = {192, 168, 0, 1};
-  IPAddress ip_address1 = ArrayToIPAdress(addr1);
+  IPAddress ip_address1(addr1);
   EXPECT_TRUE(ip_address1.IsIPv4());
   EXPECT_FALSE(ip_address1.IsIPv6());
 
   uint8_t addr2[16] = {0xFE, 0xDC, 0xBA, 0x98};
-  IPAddress ip_address2 = ArrayToIPAdress(addr2);
+  IPAddress ip_address2(addr2);
   EXPECT_TRUE(ip_address2.IsIPv6());
   EXPECT_FALSE(ip_address2.IsIPv4());
 
-  IPAddress ip_address3 = IPAddress();
+  IPAddress ip_address3;
   EXPECT_FALSE(ip_address3.IsIPv6());
   EXPECT_FALSE(ip_address3.IsIPv4());
 }
 
+TEST(IPAddressTest, IsValid) {
+  uint8_t addr1[4] = {192, 168, 0, 1};
+  IPAddress ip_address1(addr1);
+  EXPECT_TRUE(ip_address1.IsValid());
+  EXPECT_FALSE(ip_address1.empty());
+
+  uint8_t addr2[16] = {0xFE, 0xDC, 0xBA, 0x98};
+  IPAddress ip_address2(addr2);
+  EXPECT_TRUE(ip_address2.IsValid());
+  EXPECT_FALSE(ip_address2.empty());
+
+  uint8_t addr3[5] = {0xFE, 0xDC, 0xBA, 0x98};
+  IPAddress ip_address3(addr3);
+  EXPECT_FALSE(ip_address3.IsValid());
+  EXPECT_FALSE(ip_address3.empty());
+
+  IPAddress ip_address4;
+  EXPECT_FALSE(ip_address4.IsValid());
+  EXPECT_TRUE(ip_address4.empty());
+}
+
 TEST(IPAddressTest, ToString) {
   uint8_t addr1[4] = {0, 0, 0, 0};
-  IPAddress ip_address1 = ArrayToIPAdress(addr1);
+  IPAddress ip_address1(addr1);
   EXPECT_EQ("0.0.0.0", ip_address1.ToString());
 
   uint8_t addr2[4] = {192, 168, 0, 1};
-  IPAddress ip_address2 = ArrayToIPAdress(addr2);
+  IPAddress ip_address2(addr2);
   EXPECT_EQ("192.168.0.1", ip_address2.ToString());
 
   uint8_t addr3[16] = {0xFE, 0xDC, 0xBA, 0x98};
-  IPAddress ip_address3 = ArrayToIPAdress(addr3);
+  IPAddress ip_address3(addr3);
   EXPECT_EQ("fedc:ba98::", ip_address3.ToString());
 }
 
