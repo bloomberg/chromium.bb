@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/containers/hash_tables.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 
 namespace blink {
@@ -55,12 +56,13 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter {
   }
 
  private:
+  using SurfaceIdNamespaceOwnerMap =
+      base::hash_map<uint32_t, base::WeakPtr<RenderWidgetHostViewBase>>;
+
   RenderWidgetHostViewBase* FindEventTarget(RenderWidgetHostViewBase* root_view,
                                             const gfx::Point& point,
                                             gfx::Point* transformed_point);
 
-  typedef base::hash_map<uint32_t, RenderWidgetHostViewBase*>
-      SurfaceIdNamespaceOwnerMap;
   SurfaceIdNamespaceOwnerMap owner_map_;
   RenderWidgetHostViewBase* current_touch_target_;
   int active_touches_;

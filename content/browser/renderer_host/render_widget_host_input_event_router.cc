@@ -41,7 +41,7 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
   // parent frame has not sent a new compositor frame since that happened.
   if (iter == owner_map_.end())
     return root_view;
-  return iter->second;
+  return iter->second.get();
 }
 
 void RenderWidgetHostInputEventRouter::RouteMouseEvent(
@@ -50,6 +50,9 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
   gfx::Point transformed_point;
   RenderWidgetHostViewBase* target = FindEventTarget(
       root_view, gfx::Point(event->x, event->y), &transformed_point);
+  if (!target)
+    return;
+
   event->x = transformed_point.x();
   event->y = transformed_point.y();
 
@@ -62,6 +65,9 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
   gfx::Point transformed_point;
   RenderWidgetHostViewBase* target = FindEventTarget(
       root_view, gfx::Point(event->x, event->y), &transformed_point);
+  if (!target)
+    return;
+
   event->x = transformed_point.x();
   event->y = transformed_point.y();
 
@@ -85,18 +91,19 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
             FindEventTarget(root_view, original_point, &transformed_point);
       }
       ++active_touches_;
-      current_touch_target_->ProcessTouchEvent(*event, latency);
+      if (current_touch_target_)
+        current_touch_target_->ProcessTouchEvent(*event, latency);
       break;
     }
     case blink::WebInputEvent::TouchMove:
-      DCHECK(current_touch_target_);
-      current_touch_target_->ProcessTouchEvent(*event, latency);
+      if (current_touch_target_)
+        current_touch_target_->ProcessTouchEvent(*event, latency);
       break;
     case blink::WebInputEvent::TouchEnd:
     case blink::WebInputEvent::TouchCancel:
       DCHECK(active_touches_);
-      DCHECK(current_touch_target_);
-      current_touch_target_->ProcessTouchEvent(*event, latency);
+      if (current_touch_target_)
+        current_touch_target_->ProcessTouchEvent(*event, latency);
       --active_touches_;
       if (!active_touches_)
         current_touch_target_ = nullptr;
@@ -110,7 +117,7 @@ void RenderWidgetHostInputEventRouter::AddSurfaceIdNamespaceOwner(
     uint32_t id,
     RenderWidgetHostViewBase* owner) {
   DCHECK(owner_map_.find(id) == owner_map_.end());
-  owner_map_.insert(std::make_pair(id, owner));
+  owner_map_.insert(std::make_pair(id, owner->GetWeakPtr()));
 }
 
 void RenderWidgetHostInputEventRouter::RemoveSurfaceIdNamespaceOwner(
