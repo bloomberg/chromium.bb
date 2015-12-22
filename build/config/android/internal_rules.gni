@@ -1991,6 +1991,14 @@ template("test_runner_script") {
         "--apk-under-test",
         "@FileArg($_rebased_build_config:deps_info:tested_apk_path)",
       ]
+      if (emma_coverage) {
+        # Set a default coverage output directory (can be overridden by user
+        # passing the same flag).
+        test_runner_args += [
+          "--coverage-dir",
+          rebase_path("$root_out_dir/coverage", root_build_dir),
+        ]
+      }
     } else {
       assert(false, "Invalid test type: $_test_type.")
     }

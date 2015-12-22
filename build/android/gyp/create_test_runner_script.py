@@ -58,6 +58,7 @@ def main(args):
   group.add_argument('--isolate-file-path')
   group.add_argument('--apk-under-test')
   group.add_argument('--test-apk')
+  group.add_argument('--coverage-dir')
   args, test_runner_args = parser.parse_known_args(
       build_utils.ExpandFileArgs(args))
 
@@ -82,6 +83,9 @@ def main(args):
   if args.test_apk:
     test_runner_path_args['--test-apk'] = RelativizePathToScript(
         args.test_apk)
+  if args.coverage_dir:
+    test_runner_path_args['--coverage-dir'] = RelativizePathToScript(
+        args.coverage_dir)
 
   with open(args.script_output_path, 'w') as script:
     script.write(SCRIPT_TEMPLATE.format(

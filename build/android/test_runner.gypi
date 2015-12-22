@@ -46,6 +46,13 @@
           '--test-apk', '>(final_apk_path)',
         ],
         'script_name': 'run_<(_target_name)',
+        'conditions': [
+          ['emma_instrument != 0', {
+            'test_runner_args': [
+              '--coverage-dir', '<(PRODUCT_DIR)/coverage',
+            ],
+          }],
+        ],
       }],
       ['isolate_file != ""', {
         'test_runner_args': ['--isolate-file-path', '<(isolate_file)']
