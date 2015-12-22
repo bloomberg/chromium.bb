@@ -24,6 +24,11 @@ if (window.testRunner)
 if (window.internals) {
     internals.setNetworkStateNotifierTestOnly(true);
     internals.setNetworkConnectionInfo('cellular2g', 1.0);
+
+    // Reset the state of the singleton network state notifier.
+    window.addEventListener('beforeunload', function() {
+        internals.setNetworkStateNotifierTestOnly(false);
+    }, false);
 }
 
 var fontDisplayValues = ['auto', 'block', 'swap', 'fallback', 'optional'];
