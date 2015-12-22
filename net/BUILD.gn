@@ -37,16 +37,18 @@ use_kerberos = !is_chromeos && !is_ios && !is_chromecast && !is_headless
 # So enable it for x86 only for now.
 posix_avoid_mmap = is_android && current_cpu != "x86"
 
-# WebSockets and socket stream code are used everywhere except iOS.
-enable_websockets = !is_ios
 use_v8_in_net = !is_ios
 enable_built_in_dns = !is_ios
-disable_ftp_support = is_ios
 
 declare_args() {
   # Disables support for file URLs.  File URL support requires use of icu.
   disable_file_support = false
   enable_bidirectional_stream = false
+
+  # WebSockets and socket stream code are not used on iOS and are optional in
+  # cronet.
+  enable_websockets = !is_ios
+  disable_ftp_support = is_ios
 }
 
 config("net_config") {
