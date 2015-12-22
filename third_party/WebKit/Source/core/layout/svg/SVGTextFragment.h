@@ -59,6 +59,8 @@ struct SVGTextFragment {
             buildTransformForTextOnLine(result);
     }
 
+    bool isTransformed() const { return affectedByTextLength() || !transform.isIdentity(); }
+
     // The first laid out character starts at LayoutSVGInlineText::characters() + characterOffset.
     unsigned characterOffset;
     unsigned metricsListOffset;
@@ -85,6 +87,8 @@ struct SVGTextFragment {
     AffineTransform lengthAdjustTransform;
 
 private:
+    bool affectedByTextLength() const { return lengthAdjustTransform.a() != 1 || lengthAdjustTransform.d() != 1; }
+
     void transformAroundOrigin(AffineTransform& result) const
     {
         // Returns (translate(x, y) * result) * translate(-x, -y).
@@ -96,7 +100,7 @@ private:
     void buildTransformForTextOnPath(AffineTransform& result) const
     {
         // For text-on-path layout, multiply the transform with the lengthAdjustTransform before orienting the resulting transform.
-        result = lengthAdjustTransform.isIdentity() ? transform : transform * lengthAdjustTransform;
+        result = !affectedByTextLength() ? transform : transform * lengthAdjustTransform;
         if (!result.isIdentity())
             transformAroundOrigin(result);
     }

@@ -331,11 +331,11 @@ static FloatPoint calculateGlyphPositionWithoutTransform(const QueryData* queryD
 static FloatPoint calculateGlyphPosition(const QueryData* queryData, const SVGTextFragment& fragment, int offsetInFragment)
 {
     FloatPoint glyphPosition = calculateGlyphPositionWithoutTransform(queryData, fragment, offsetInFragment);
-    AffineTransform fragmentTransform;
-    fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);
-    if (!fragmentTransform.isIdentity())
+    if (fragment.isTransformed()) {
+        AffineTransform fragmentTransform;
+        fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);
         glyphPosition = fragmentTransform.mapPoint(glyphPosition);
-
+    }
     return glyphPosition;
 }
 
@@ -414,11 +414,11 @@ static bool rotationOfCharacterCallback(QueryData* queryData, const SVGTextFragm
     if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment, startPosition, endPosition))
         return false;
 
-    AffineTransform fragmentTransform;
-    fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);
-    if (fragmentTransform.isIdentity()) {
+    if (!fragment.isTransformed()) {
         data->rotation = 0;
     } else {
+        AffineTransform fragmentTransform;
+        fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);
         fragmentTransform.scale(1 / fragmentTransform.xScale(), 1 / fragmentTransform.yScale());
         data->rotation = narrowPrecisionToFloat(rad2deg(atan2(fragmentTransform.b(), fragmentTransform.a())));
     }
@@ -487,10 +487,11 @@ static inline void calculateGlyphBoundaries(const QueryData* queryData, const SV
             extent.move(-glyphSize.width(), 0);
     }
 
-    AffineTransform fragmentTransform;
-    fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);
-
-    extent = fragmentTransform.mapRect(extent);
+    if (fragment.isTransformed()) {
+        AffineTransform fragmentTransform;
+        fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);
+        extent = fragmentTransform.mapRect(extent);
+    }
 }
 
 static inline FloatRect calculateFragmentBoundaries(LineLayoutSVGInlineText textLineLayout, const SVGTextFragment& fragment)

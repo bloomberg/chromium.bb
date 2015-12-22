@@ -88,10 +88,11 @@ int SVGInlineTextBox::offsetForPositionInFragment(const SVGTextFragment& fragmen
 
     // Eventually handle lengthAdjust="spacingAndGlyphs".
     // FIXME: Handle vertical text.
-    AffineTransform fragmentTransform;
-    fragment.buildFragmentTransform(fragmentTransform);
-    if (!fragmentTransform.isIdentity())
+    if (fragment.isTransformed()) {
+        AffineTransform fragmentTransform;
+        fragment.buildFragmentTransform(fragmentTransform);
         textRun.setHorizontalGlyphStretch(narrowPrecisionToFloat(fragmentTransform.xScale()));
+    }
 
     return fragment.characterOffset - start() + lineLayoutItem.scaledFont().offsetForPosition(textRun, position * scalingFactor, includePartialGlyphs);
 }
@@ -153,8 +154,10 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
             continue;
 
         FloatRect fragmentRect = selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style);
-        fragment.buildFragmentTransform(fragmentTransform);
-        fragmentRect = fragmentTransform.mapRect(fragmentRect);
+        if (fragment.isTransformed()) {
+            fragment.buildFragmentTransform(fragmentTransform);
+            fragmentRect = fragmentTransform.mapRect(fragmentRect);
+        }
 
         selectionRect.unite(fragmentRect);
     }
@@ -281,9 +284,10 @@ bool SVGInlineTextBox::nodeAtPoint(HitTestResult& result, const HitTestLocation&
                 AffineTransform fragmentTransform;
                 for (const auto& fragment : m_textFragments) {
                     FloatQuad fragmentQuad(FloatRect(fragment.x, fragment.y - baseline, fragment.width, fragment.height));
-                    fragment.buildFragmentTransform(fragmentTransform);
-                    if (!fragmentTransform.isIdentity())
+                    if (fragment.isTransformed()) {
+                        fragment.buildFragmentTransform(fragmentTransform);
                         fragmentQuad = fragmentTransform.mapQuad(fragmentQuad);
+                    }
 
                     if (fragmentQuad.containsPoint(FloatPoint(locationInContainer.point()))) {
                         lineLayoutItem.updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));

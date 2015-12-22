@@ -111,8 +111,8 @@ void SVGInlineTextBoxPainter::paintTextFragments(const PaintInfo& paintInfo, Lay
         const SVGTextFragment& fragment = m_svgInlineTextBox.textFragments().at(i);
 
         GraphicsContextStateSaver stateSaver(paintInfo.context, false);
-        fragment.buildFragmentTransform(fragmentTransform);
-        if (!fragmentTransform.isIdentity()) {
+        if (fragment.isTransformed()) {
+            fragment.buildFragmentTransform(fragmentTransform);
             stateSaver.save();
             paintInfo.context.concatCTM(fragmentTransform);
         }
@@ -177,9 +177,10 @@ void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInf
     for (const SVGTextFragmentWithRange& fragmentWithRange : fragmentInfoList) {
         const SVGTextFragment& fragment = fragmentWithRange.fragment;
         GraphicsContextStateSaver stateSaver(paintInfo.context);
-        fragment.buildFragmentTransform(fragmentTransform);
-        if (!fragmentTransform.isIdentity())
+        if (fragment.isTransformed()) {
+            fragment.buildFragmentTransform(fragmentTransform);
             paintInfo.context.concatCTM(fragmentTransform);
+        }
 
         paintInfo.context.setFillColor(backgroundColor);
         paintInfo.context.fillRect(m_svgInlineTextBox.selectionRectForTextFragment(fragment, fragmentWithRange.startPosition, fragmentWithRange.endPosition, style), backgroundColor);
@@ -477,9 +478,10 @@ void SVGInlineTextBoxPainter::paintTextMatchMarkerForeground(const PaintInfo& pa
     for (const SVGTextFragmentWithRange& textMatchInfo : textMatchInfoList) {
         const SVGTextFragment& fragment = textMatchInfo.fragment;
         GraphicsContextStateSaver stateSaver(paintInfo.context);
-        fragment.buildFragmentTransform(fragmentTransform);
-        if (!fragmentTransform.isIdentity())
+        if (fragment.isTransformed()) {
+            fragment.buildFragmentTransform(fragmentTransform);
             paintInfo.context.concatCTM(fragmentTransform);
+        }
 
         TextRun textRun = m_svgInlineTextBox.constructTextRun(style, fragment);
         paintText(paintInfo, textRun, fragment, textMatchInfo.startPosition, textMatchInfo.endPosition, fillPaint);
@@ -500,9 +502,9 @@ void SVGInlineTextBoxPainter::paintTextMatchMarkerBackground(const PaintInfo& pa
         const SVGTextFragment& fragment = textMatchInfo.fragment;
 
         GraphicsContextStateSaver stateSaver(paintInfo.context, false);
-        fragment.buildFragmentTransform(fragmentTransform);
-        if (!fragmentTransform.isIdentity()) {
+        if (fragment.isTransformed()) {
             stateSaver.save();
+            fragment.buildFragmentTransform(fragmentTransform);
             paintInfo.context.concatCTM(fragmentTransform);
         }
         FloatRect fragmentRect = m_svgInlineTextBox.selectionRectForTextFragment(fragment, textMatchInfo.startPosition, textMatchInfo.endPosition, style);
