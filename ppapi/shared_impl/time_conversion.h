@@ -16,13 +16,6 @@ PPAPI_SHARED_EXPORT base::Time PPTimeToTime(PP_Time t);
 
 PPAPI_SHARED_EXPORT PP_TimeTicks TimeTicksToPPTimeTicks(base::TimeTicks t);
 
-// Converts between WebKit event times and time ticks. WebKit event times are
-// currently expressed in terms of wall clock time. This function does the
-// proper mapping to time ticks, assuming the wall clock time doesn't change
-// (which isn't necessarily the case).
-PPAPI_SHARED_EXPORT PP_TimeTicks EventTimeToPPTimeTicks(double event_time);
-PPAPI_SHARED_EXPORT double PPTimeTicksToEventTime(PP_TimeTicks t);
-
 // Gets the local time zone offset for a given time. This works in the plugin
 // process only on Windows (the sandbox prevents this from working properly on
 // other platforms).

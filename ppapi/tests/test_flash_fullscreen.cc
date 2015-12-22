@@ -156,7 +156,7 @@ void TestFlashFullscreen::SimulateUserGesture() {
   pp::MouseInputEvent input_event(
       instance_,
       PP_INPUTEVENT_TYPE_MOUSEDOWN,
-      0,  // time_stamp
+      NowInTimeTicks(),  // time_stamp
       0,  // modifiers
       PP_INPUTEVENT_MOUSEBUTTON_LEFT,
       plugin_center,

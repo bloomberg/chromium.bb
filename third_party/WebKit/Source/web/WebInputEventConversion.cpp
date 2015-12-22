@@ -432,7 +432,7 @@ static IntPoint convertAbsoluteLocationForLayoutObject(const LayoutPoint& locati
 // RemoteFrameViews.
 static void updateWebMouseEventFromCoreMouseEvent(const MouseRelatedEvent& event, const Widget* widget, const LayoutObject& layoutObject, WebMouseEvent& webEvent)
 {
-    webEvent.timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
+    webEvent.timeStampSeconds = event.platformTimeStamp();
     webEvent.modifiers = event.modifiers();
 
     FrameView* view = widget ? toFrameView(widget->parent()) : 0;
@@ -522,10 +522,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutObj
     else
         return;
 
-    // TODO(majidvp): Instead of using |Event::createTime| which is epoch time
-    // we should instead use |Event::platformTimeStamp| which is the actual
-    // platform monotonic time. See: crbug.com/538199
-    timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
+    timeStampSeconds = event.platformTimeStamp();
     modifiers = event.modifiers();
 
     // The mouse event co-ordinates should be generated from the co-ordinates of the touch point.
@@ -578,7 +575,7 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
 
     modifiers = event.modifiers();
 
-    timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
+    timeStampSeconds = event.platformTimeStamp();
     windowsKeyCode = event.keyCode();
 
     // The platform keyevent does not exist if the event was created using
@@ -670,8 +667,8 @@ WebTouchEventBuilder::WebTouchEventBuilder(const LayoutObject* layoutObject, con
         return;
     }
 
+    timeStampSeconds = event.platformTimeStamp();
     modifiers = event.modifiers();
-    timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
     cancelable = event.cancelable();
     causesScrollingIfUncanceled = event.causesScrollingIfUncanceled();
 
@@ -714,7 +711,7 @@ WebGestureEventBuilder::WebGestureEventBuilder(const LayoutObject* layoutObject,
         data.tap.tapCount = 1;
     }
 
-    timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
+    timeStampSeconds = event.platformTimeStamp();
     modifiers = event.modifiers();
 
     globalX = event.screenX();
