@@ -133,6 +133,10 @@ class ContextualSearchPolicy {
      * @return Whether the previous tap should resolve.
      */
     boolean shouldPreviousTapResolve(@Nullable URL url) {
+        if (!ContextualSearchFieldTrial.isSearchTermResolutionEnabled()) {
+            return false;
+        }
+
         if (isTapResolveBeyondTheLimit()) {
             return false;
         }

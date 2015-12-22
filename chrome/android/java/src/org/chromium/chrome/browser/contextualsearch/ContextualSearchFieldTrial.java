@@ -11,16 +11,14 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.components.variations.VariationsAssociatedData;
-import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Provides Field Trial support for the Contextual Search application within Chrome for Android.
  */
 public class ContextualSearchFieldTrial {
     private static final String FIELD_TRIAL_NAME = "ContextualSearch";
-    private static final String ENABLED_PARAM = "enabled";
+    private static final String DISABLED_PARAM = "disabled";
     private static final String ENABLED_VALUE = "true";
 
     static final String PEEK_PROMO_FORCED = "peek_promo_forced";
@@ -28,8 +26,8 @@ public class ContextualSearchFieldTrial {
     static final String PEEK_PROMO_MAX_SHOW_COUNT = "peek_promo_max_show_count";
     static final int PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT = 10;
 
+    static final String DISABLE_SEARCH_TERM_RESOLUTION = "disable_search_term_resolution";
     static final String DISABLE_EXTRA_SEARCH_BAR_ANIMATIONS = "disable_extra_search_bar_animations";
-
     static final String ENABLE_DIGIT_BLACKLIST = "enable_digit_blacklist";
 
     // Translation.
@@ -46,6 +44,7 @@ public class ContextualSearchFieldTrial {
 
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
+    private static Boolean sDisableSearchTermResolution;
     private static Boolean sIsPeekPromoEnabled;
     private static Integer sPeekPromoMaxCount;
     private static Boolean sDisableForceTranslationOnebox;
@@ -96,15 +95,27 @@ public class ContextualSearchFieldTrial {
             return true;
         }
 
-        // Enable contextual search for phones.
-        if (!DeviceFormFactor.isTablet(context)) return true;
+        // Allow disabling the feature remotely.
+        if (getBooleanParam(DISABLED_PARAM)) {
+            return false;
+        }
 
-        if (ChromeVersionInfo.isLocalBuild()) return true;
-
-        return getBooleanParam(ENABLED_PARAM);
+        return true;
     }
 
     /**
+     * @return Whether the search term resolution is enabled.
+     */
+    static boolean isSearchTermResolutionEnabled() {
+        if (sDisableSearchTermResolution == null) {
+            sDisableSearchTermResolution = getBooleanParam(DISABLE_SEARCH_TERM_RESOLUTION);
+        }
+
+        if (sDisableSearchTermResolution.booleanValue()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
