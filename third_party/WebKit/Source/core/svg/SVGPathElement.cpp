@@ -153,7 +153,7 @@ void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
 
 void SVGPathElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
+    SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
     if (property == m_path)
         addPropertyToPresentationAttributeStyle(style, CSSPropertyD, m_path->currentValue()->pathValue());
     else

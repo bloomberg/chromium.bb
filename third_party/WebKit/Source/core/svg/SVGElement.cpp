@@ -277,8 +277,7 @@ static void updateInstancesAnimatedAttribute(SVGElement* element, const Qualifie
 {
     SVGElement::InstanceUpdateBlocker blocker(element);
     for (SVGElement* instance : SVGAnimateElement::findElementInstances(element)) {
-        RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> animatedProperty = instance->propertyFromAttribute(attribute);
-        if (animatedProperty) {
+        if (SVGAnimatedPropertyBase* animatedProperty = instance->propertyFromAttribute(attribute)) {
             callback(*animatedProperty);
             instance->invalidateSVGAttributes();
             instance->svgAttributeChanged(attribute);
@@ -635,12 +634,10 @@ bool SVGElement::inUseShadowTree() const
 
 void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
-    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
-    if (property) {
+    if (SVGAnimatedPropertyBase* property = propertyFromAttribute(name)) {
         SVGParsingError parseError = NoError;
         property->setBaseValueAsString(value, parseError);
         reportAttributeParsingError(parseError, name, value);
-
         return;
     }
 
@@ -747,13 +744,13 @@ void SVGElement::addToPropertyMap(PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase
     m_attributeToPropertyMap.set(attributeName, property.release());
 }
 
-PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> SVGElement::propertyFromAttribute(const QualifiedName& attributeName)
+SVGAnimatedPropertyBase* SVGElement::propertyFromAttribute(const QualifiedName& attributeName) const
 {
-    AttributeToPropertyMap::iterator it = m_attributeToPropertyMap.find<SVGAttributeHashTranslator>(attributeName);
+    AttributeToPropertyMap::const_iterator it = m_attributeToPropertyMap.find<SVGAttributeHashTranslator>(attributeName);
     if (it == m_attributeToPropertyMap.end())
         return nullptr;
 
-    return it->value;
+    return it->value.get();
 }
 
 bool SVGElement::isAnimatableCSSProperty(const QualifiedName& attrName)

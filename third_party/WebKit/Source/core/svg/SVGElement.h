@@ -108,7 +108,7 @@ public:
     virtual void svgAttributeChanged(const QualifiedName&);
     void svgAttributeBaseValChanged(const QualifiedName&);
 
-    PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> propertyFromAttribute(const QualifiedName& attributeName);
+    SVGAnimatedPropertyBase* propertyFromAttribute(const QualifiedName& attributeName) const;
     static AnimatedPropertyType animatedPropertyTypeForCSSAttribute(const QualifiedName& attributeName);
 
     void sendSVGLoadEventToSelfAndAncestorChainIfPossible();

@@ -169,8 +169,7 @@ void setAnimatedValueOnAllTargetProperties(const SVGElementInstances& list, cons
     RefPtrWillBeRawPtr<SVGPropertyBase> value = passValue;
 
     for (SVGElement* elementInstance : list) {
-        RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> animatedProperty = elementInstance->propertyFromAttribute(attributeName);
-        if (animatedProperty)
+        if (SVGAnimatedPropertyBase* animatedProperty = elementInstance->propertyFromAttribute(attributeName))
             animatedProperty->setAnimatedValue(value);
     }
 }
@@ -204,8 +203,7 @@ void SVGAnimatedTypeAnimator::stopAnimValAnimation(const SVGElementInstances& li
     SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
 
     for (SVGElement* elementInstance : list) {
-        RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> animatedProperty = elementInstance->propertyFromAttribute(m_animatedProperty->attributeName());
-        if (animatedProperty)
+        if (SVGAnimatedPropertyBase* animatedProperty = elementInstance->propertyFromAttribute(m_animatedProperty->attributeName()))
             animatedProperty->animationEnded();
     }
 }

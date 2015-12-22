@@ -632,7 +632,7 @@ PassRefPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateInterpolation(
         return InvalidatableInterpolation::create(*applicableTypes, *this, end);
 
     ASSERT(element);
-    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute = toSVGElement(element)->propertyFromAttribute(propertyHandle.svgAttribute());
+    SVGAnimatedPropertyBase* attribute = toSVGElement(element)->propertyFromAttribute(propertyHandle.svgAttribute());
     ASSERT(attribute);
 
     RefPtrWillBeRawPtr<SVGPropertyBase> fromValue = attribute->currentValueBase()->cloneForAnimation(m_value);
@@ -641,7 +641,7 @@ PassRefPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateInterpolation(
     if (!fromValue || !toValue)
         return nullptr;
 
-    return createSVGInterpolation(fromValue.get(), toValue.get(), attribute.get());
+    return createSVGInterpolation(fromValue.get(), toValue.get(), attribute);
 }
 
 } // namespace blink
