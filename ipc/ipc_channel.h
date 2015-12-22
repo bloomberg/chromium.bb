@@ -5,20 +5,22 @@
 #ifndef IPC_IPC_CHANNEL_H_
 #define IPC_IPC_CHANNEL_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>
 
-#if defined(OS_POSIX)
-#include <sys/types.h>
-#endif
-
 #include "base/compiler_specific.h"
 #include "base/files/scoped_file.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_endpoint.h"
 #include "ipc/ipc_message.h"
+
+#if defined(OS_POSIX)
+#include <sys/types.h>
+#endif
 
 namespace IPC {
 
@@ -73,7 +75,7 @@ class IPC_EXPORT Channel : public Endpoint {
   };
 
   // Messages internal to the IPC implementation are defined here.
-  // Uses Maximum value of message type (uint16), to avoid conflicting
+  // Uses Maximum value of message type (uint16_t), to avoid conflicting
   // with normal message types, which are enumeration constants starting from 0.
   enum {
     // The Hello message is sent by the peer when the channel is connected.

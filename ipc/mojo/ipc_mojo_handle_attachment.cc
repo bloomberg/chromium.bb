@@ -4,6 +4,7 @@
 
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
 
+#include "build/build_config.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 

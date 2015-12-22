@@ -4,6 +4,7 @@
 
 #include "ipc/ipc_message_utils.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/files/file_path.h"

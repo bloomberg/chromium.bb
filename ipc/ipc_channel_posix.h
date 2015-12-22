@@ -7,6 +7,7 @@
 
 #include "ipc/ipc_channel.h"
 
+#include <stddef.h>
 #include <sys/socket.h>  // for CMSG macros
 
 #include <queue>
@@ -15,8 +16,10 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel_reader.h"
 #include "ipc/ipc_message_attachment_set.h"
 

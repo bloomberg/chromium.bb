@@ -5,6 +5,7 @@
 #ifndef IPC_ATTACHMENT_BROKER_UNPRIVILEGED_MAC_H_
 #define IPC_ATTACHMENT_BROKER_UNPRIVILEGED_MAC_H_
 
+#include "base/macros.h"
 #include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_export.h"
 #include "ipc/mach_port_attachment_mac.h"

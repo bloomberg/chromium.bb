@@ -9,6 +9,7 @@
 #define IPC_TEST_UTIL_MAC_H_
 
 #include <mach/mach.h>
+#include <stddef.h>
 
 #include <string>
 

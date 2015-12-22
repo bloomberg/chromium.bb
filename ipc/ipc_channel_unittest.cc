@@ -8,6 +8,8 @@
 #include <windows.h>
 #endif
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/pickle.h"

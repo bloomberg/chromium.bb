@@ -8,6 +8,9 @@
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
 #endif
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -19,6 +22,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_switches.h"

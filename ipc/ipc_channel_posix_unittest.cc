@@ -8,6 +8,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -24,6 +25,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/unix_domain_socket_util.h"
 #include "testing/multiprocess_func_list.h"

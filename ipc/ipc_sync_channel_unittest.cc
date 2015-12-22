@@ -4,6 +4,8 @@
 
 #include "ipc/ipc_sync_channel.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
@@ -20,6 +22,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"

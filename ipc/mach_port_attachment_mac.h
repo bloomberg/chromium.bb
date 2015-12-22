@@ -8,6 +8,7 @@
 #include <mach/mach.h>
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"

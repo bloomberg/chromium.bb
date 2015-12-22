@@ -4,6 +4,8 @@
 
 #include "ipc/attachment_broker_privileged_mac.h"
 
+#include <stdint.h>
+
 #include "base/mac/scoped_mach_port.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/port_provider_mac.h"

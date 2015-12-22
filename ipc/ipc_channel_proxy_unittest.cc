@@ -4,6 +4,9 @@
 
 #include "build/build_config.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/pickle.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_message.h"

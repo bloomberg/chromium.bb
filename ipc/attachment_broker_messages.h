@@ -6,6 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_message_macros.h"

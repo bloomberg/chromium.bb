@@ -6,6 +6,7 @@
 #define IPC_ATTACHMENT_BROKER_PRIVILEGED_MAC_H_
 
 #include <mach/mach.h>
+#include <stdint.h>
 
 #include <map>
 

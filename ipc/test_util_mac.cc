@@ -6,6 +6,7 @@
 
 #include <mach/mach_vm.h>
 #include <servers/bootstrap.h>
+#include <stddef.h>
 
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_mach_port.h"

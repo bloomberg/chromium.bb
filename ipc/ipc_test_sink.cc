@@ -4,6 +4,10 @@
 
 #include "ipc/ipc_test_sink.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "build/build_config.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 

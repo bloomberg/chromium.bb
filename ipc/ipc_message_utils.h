@@ -5,6 +5,7 @@
 #ifndef IPC_IPC_MESSAGE_UTILS_H_
 #define IPC_IPC_MESSAGE_UTILS_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -23,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/tuple.h"
+#include "build/build_config.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_message_start.h"
 #include "ipc/ipc_param_traits.h"

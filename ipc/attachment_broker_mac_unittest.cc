@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <mach/mach_vm.h>
+#include <stddef.h>
 #include <sys/mman.h>
 
 #include "base/command_line.h"

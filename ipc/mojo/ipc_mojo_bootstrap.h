@@ -5,8 +5,12 @@
 #ifndef IPC_MOJO_IPC_MOJO_BOOTSTRAP_H_
 #define IPC_MOJO_IPC_MOJO_BOOTSTRAP_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
@@ -27,9 +31,8 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
  public:
   class Delegate {
    public:
-    virtual void OnPipeAvailable(
-        mojo::embedder::ScopedPlatformHandle handle,
-        int32 peer_pid) = 0;
+    virtual void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle,
+                                 int32_t peer_pid) = 0;
     virtual void OnBootstrapError() = 0;
   };
 

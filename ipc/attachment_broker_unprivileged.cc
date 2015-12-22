@@ -5,6 +5,7 @@
 #include "ipc/attachment_broker_unprivileged.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_endpoint.h"
 

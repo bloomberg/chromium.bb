@@ -5,6 +5,7 @@
 #ifndef IPC_IPC_MESSAGE_H_
 #define IPC_IPC_MESSAGE_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>
@@ -13,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"

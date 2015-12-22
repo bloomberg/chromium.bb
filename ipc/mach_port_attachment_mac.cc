@@ -4,6 +4,8 @@
 
 #include "ipc/mach_port_attachment_mac.h"
 
+#include <stdint.h>
+
 #include "base/mac/mach_logging.h"
 
 namespace IPC {

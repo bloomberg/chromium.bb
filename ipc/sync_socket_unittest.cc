@@ -4,14 +4,17 @@
 
 #include "base/sync_socket.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <sstream>
 #include <string>
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "ipc/ipc_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

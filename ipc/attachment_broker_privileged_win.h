@@ -5,6 +5,7 @@
 #ifndef IPC_ATTACHMENT_BROKER_PRIVILEGED_WIN_H_
 #define IPC_ATTACHMENT_BROKER_PRIVILEGED_WIN_H_
 
+#include "base/macros.h"
 #include "ipc/attachment_broker_privileged.h"
 #include "ipc/handle_attachment_win.h"
 #include "ipc/ipc_export.h"

@@ -4,6 +4,8 @@
 
 #include "ipc/ipc_channel_reader.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/message_loop/message_loop.h"

@@ -4,6 +4,9 @@
 
 #include "ipc/mojo/async_handle_waiter.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"

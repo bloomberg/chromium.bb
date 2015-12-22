@@ -11,6 +11,7 @@ extern "C" {
 }
 #endif
 #include <fcntl.h>
+#include <stddef.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>

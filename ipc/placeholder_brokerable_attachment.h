@@ -5,6 +5,7 @@
 #ifndef IPC_PLACEHOLDER_BROKERABLE_ATTACHMENT_H_
 #define IPC_PLACEHOLDER_BROKERABLE_ATTACHMENT_H_
 
+#include "base/macros.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"
 

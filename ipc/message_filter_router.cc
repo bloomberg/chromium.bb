@@ -4,8 +4,10 @@
 
 #include "ipc/message_filter_router.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/message_filter.h"

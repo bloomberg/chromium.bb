@@ -4,6 +4,7 @@
 
 #include "ipc/ipc_channel.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>
@@ -11,6 +12,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 
 namespace {
 

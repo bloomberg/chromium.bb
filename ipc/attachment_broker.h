@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_listener.h"

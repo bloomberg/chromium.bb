@@ -5,8 +5,12 @@
 #ifndef IPC_IPC_PERFTEST_SUPPORT_H_
 #define IPC_IPC_PERFTEST_SUPPORT_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ipc/ipc_test_base.h"
 
 namespace IPC {

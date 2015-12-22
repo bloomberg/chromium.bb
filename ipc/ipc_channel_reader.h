@@ -5,6 +5,8 @@
 #ifndef IPC_IPC_CHANNEL_READER_H_
 #define IPC_IPC_CHANNEL_READER_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/gtest_prod_util.h"

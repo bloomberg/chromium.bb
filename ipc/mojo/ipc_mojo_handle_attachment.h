@@ -6,6 +6,8 @@
 #define IPC_MOJO_IPC_MOJO_HANDLE_ATTACHMENT_H_
 
 #include "base/files/file.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_message_attachment.h"
 #include "mojo/public/cpp/system/handle.h"

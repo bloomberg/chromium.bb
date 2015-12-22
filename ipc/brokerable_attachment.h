@@ -5,11 +5,13 @@
 #ifndef IPC_BROKERABLE_ATTACHMENT_H_
 #define IPC_BROKERABLE_ATTACHMENT_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_message_attachment.h"
 

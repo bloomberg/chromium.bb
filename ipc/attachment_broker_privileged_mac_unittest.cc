@@ -6,6 +6,8 @@
 
 #include <mach/mach.h>
 #include <mach/mach_vm.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <map>
 
@@ -13,6 +15,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_mach_port.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/port_provider_mac.h"
 #include "base/process/process_handle.h"

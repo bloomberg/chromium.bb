@@ -5,10 +5,13 @@
 #ifndef IPC_IPC_MESSAGE_ATTACHMENT_SET_H_
 #define IPC_IPC_MESSAGE_ATTACHMENT_SET_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "ipc/ipc_export.h"
 
 #if defined(OS_POSIX)

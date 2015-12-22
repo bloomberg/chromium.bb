@@ -40,6 +40,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_listener.h"

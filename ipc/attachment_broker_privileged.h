@@ -7,7 +7,9 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/ipc_export.h"
 

@@ -4,6 +4,8 @@
 
 #include "ipc/ipc_sync_message.h"
 
+#include <stdint.h>
+
 #include <stack>
 
 #include "base/atomic_sequence_num.h"

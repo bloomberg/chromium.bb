@@ -4,6 +4,8 @@
 
 #include "ipc/ipc_message.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <limits>
@@ -11,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/ipc_message_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

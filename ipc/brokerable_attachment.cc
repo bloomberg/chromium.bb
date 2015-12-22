@@ -4,6 +4,9 @@
 
 #include "ipc/brokerable_attachment.h"
 
+#include <stddef.h>
+
+#include "build/build_config.h"
 #include "ipc/attachment_broker.h"
 
 namespace IPC {

@@ -4,6 +4,8 @@
 
 #include "ipc/message_filter.h"
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_channel.h"
 

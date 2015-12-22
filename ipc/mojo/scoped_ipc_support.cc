@@ -4,9 +4,12 @@
 
 #include "ipc/mojo/scoped_ipc_support.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"

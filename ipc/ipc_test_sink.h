@@ -5,6 +5,7 @@
 #ifndef IPC_IPC_TEST_SINK_H_
 #define IPC_IPC_TEST_SINK_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <utility>
@@ -13,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 
 namespace IPC {

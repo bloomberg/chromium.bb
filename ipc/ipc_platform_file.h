@@ -7,6 +7,7 @@
 
 #include "base/files/file.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
 #include "ipc/ipc_export.h"
 
 #if defined(OS_POSIX)

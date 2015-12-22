@@ -5,6 +5,8 @@
 #include "ipc/ipc_message.h"
 
 #include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"

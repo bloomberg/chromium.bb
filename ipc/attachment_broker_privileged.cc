@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "ipc/ipc_endpoint.h"
 
 #if defined(OS_WIN)

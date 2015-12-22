@@ -4,15 +4,19 @@
 
 #include "ipc/ipc_message_attachment_set.h"
 
+#include <stddef.h>
+
 #include <algorithm>
+
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "build/build_config.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_message_attachment.h"
 
 #if defined(OS_POSIX)
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #endif // OS_POSIX

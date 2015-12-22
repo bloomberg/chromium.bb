@@ -4,8 +4,9 @@
 
 #include "ipc/ipc_channel_win.h"
 
-#include <stdint.h>
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"

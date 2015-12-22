@@ -4,6 +4,9 @@
 
 #include "ipc/ipc_sync_channel.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"

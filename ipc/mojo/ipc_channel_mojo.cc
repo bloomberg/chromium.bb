@@ -4,13 +4,18 @@
 
 #include "ipc/mojo/ipc_channel_mojo.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_attachment_set.h"
@@ -69,7 +74,7 @@ class ClientChannelMojo : public ChannelMojo, public ClientChannel {
 
   // MojoBootstrap::Delegate implementation
   void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle,
-                       int32 peer_pid) override {
+                       int32_t peer_pid) override {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
       InitMessageReader(mojo::embedder::CreateChannel(
           handle.Pass(), base::Callback<void(mojo::embedder::ChannelInfo*)>(),
@@ -119,7 +124,7 @@ class ServerChannelMojo : public ChannelMojo {
 
   // MojoBootstrap::Delegate implementation
   void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle,
-                       int32 peer_pid) override {
+                       int32_t peer_pid) override {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
       message_pipe_ = mojo::embedder::CreateChannel(
           handle.Pass(), base::Callback<void(mojo::embedder::ChannelInfo*)>(),

@@ -7,7 +7,9 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
@@ -109,7 +111,7 @@ class MojoClientBootstrap : public MojoBootstrap {
   bool OnMessageReceived(const Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
 
-  int32 peer_pid_;
+  int32_t peer_pid_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoClientBootstrap);
 };
