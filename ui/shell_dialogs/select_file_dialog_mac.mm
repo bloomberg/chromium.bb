@@ -249,12 +249,14 @@ void SelectFileDialogImpl::SelectFileImpl(
   }
 
   base::scoped_nsobject<ExtensionDropdownHandler> handler;
-  if (file_types) {
-    handler = SelectFileDialogImpl::SetAccessoryView(
-        dialog, file_types, file_type_index, default_extension);
-  } else {
-    // If no type info is specified, anything goes.
-    [dialog setAllowsOtherFileTypes:YES];
+  if (type != SELECT_FOLDER && type != SELECT_UPLOAD_FOLDER) {
+    if (file_types) {
+      handler = SelectFileDialogImpl::SetAccessoryView(
+          dialog, file_types, file_type_index, default_extension);
+    } else {
+      // If no type info is specified, anything goes.
+      [dialog setAllowsOtherFileTypes:YES];
+    }
   }
 
   auto inserted = dialog_data_map_.insert(
