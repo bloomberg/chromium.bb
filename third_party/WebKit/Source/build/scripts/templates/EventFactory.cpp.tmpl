@@ -1,7 +1,6 @@
 {% from 'macros.tmpl' import license %}
 {{license()}}
 
-#include "config.h"
 {% if suffix == 'Modules' %}
 #include "modules/{{namespace}}{{suffix}}Factory.h"
 {% else %}

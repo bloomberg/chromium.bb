@@ -80,8 +80,6 @@ inline ${return_type} ${name}(${params_public})
 
 template_cpp = string.Template("""// Code generated from InspectorInstrumentation.idl
 
-#include "config.h"
-
 ${includes}
 
 namespace blink {

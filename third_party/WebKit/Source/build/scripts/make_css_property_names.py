@@ -78,7 +78,6 @@ GPERF_TEMPLATE = """
 %%{
 %(license)s
 
-#include "config.h"
 #include "%(class_name)s.h"
 #include "core/css/HashTools.h"
 #include <string.h>

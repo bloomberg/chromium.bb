@@ -212,7 +212,6 @@ private:
 backend_cpp = (
 """
 
-#include "config.h"
 #include "InspectorBackendDispatcher.h"
 
 #include "core/inspector/InspectorFrontendChannel.h"
@@ -501,7 +500,6 @@ void InspectorBackendDispatcher::CallbackBase::sendIfActive(PassRefPtr<JSONObjec
 frontend_cpp = (
 """
 
-#include "config.h"
 #include "InspectorFrontend.h"
 
 #include "core/inspector/InspectorFrontendChannel.h"
@@ -812,8 +810,6 @@ ${typeBuilders}
 
 typebuilder_cpp = (
 """
-
-#include "config.h"
 
 #include "InspectorTypeBuilder.h"
 #include "wtf/text/CString.h"

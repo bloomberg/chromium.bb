@@ -27,8 +27,6 @@
 
 %{
 
-#include "config.h"
-
 #include "core/xml/XPathFunctions.h"
 #include "core/xml/XPathNSResolver.h"
 #include "core/xml/XPathParser.h"
