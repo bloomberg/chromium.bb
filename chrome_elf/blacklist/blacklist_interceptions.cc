@@ -8,12 +8,14 @@
 
 #include "chrome_elf/blacklist/blacklist_interceptions.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 // Note that only #includes from base that are either header-only or built into
 // base_static (see base/base.gyp) are allowed here.
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "base/win/pe_image.h"
 #include "chrome_elf/blacklist/blacklist.h"
@@ -127,7 +129,7 @@ base::string16 ExtractLoadedModuleName(const base::string16& module_path) {
 // with additional info about the image.
 void SafeGetImageInfo(const base::win::PEImage& pe,
                       std::string* out_name,
-                      uint32* flags) {
+                      uint32_t* flags) {
   out_name->clear();
   out_name->reserve(MAX_PATH);
   *flags = 0;
@@ -160,7 +162,7 @@ void SafeGetImageInfo(const base::win::PEImage& pe,
   }
 }
 
-base::string16 GetImageInfoFromLoadedModule(HMODULE module, uint32* flags) {
+base::string16 GetImageInfoFromLoadedModule(HMODULE module, uint32_t* flags) {
   std::string out_name;
   base::win::PEImage pe(module);
   SafeGetImageInfo(pe, &out_name, flags);

@@ -9,6 +9,8 @@
 #include "sandbox/win/src/sandbox_nt_types.h"
 #endif
 
+#include <stddef.h>
+
 namespace blacklist {
 
 // Max size of the DLL blacklist.

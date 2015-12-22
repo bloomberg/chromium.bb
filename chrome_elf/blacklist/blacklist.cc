@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "chrome_elf/blacklist/blacklist_interceptions.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "chrome_elf/chrome_elf_util.h"

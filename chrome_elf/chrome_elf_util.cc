@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <windows.h>
+#include <stddef.h>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"

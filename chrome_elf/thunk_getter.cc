@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <windows.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/sandbox_utils.h"
