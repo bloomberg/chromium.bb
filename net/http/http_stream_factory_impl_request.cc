@@ -7,10 +7,13 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "net/http/bidirectional_stream_job.h"
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "net/spdy/spdy_session.h"
+
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#include "net/http/bidirectional_stream_job.h"
+#endif
 
 namespace net {
 
@@ -272,7 +275,11 @@ bool HttpStreamFactoryImpl::Request::HasSpdySessionKey() const {
 void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
     Job* job,
     scoped_ptr<HttpStream> stream,
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
     scoped_ptr<BidirectionalStreamJob> bidirectional_stream_job,
+#else
+    void* bidirectional_stream_job,
+#endif
     const base::WeakPtr<SpdySession>& spdy_session,
     bool direct) {
   DCHECK(job);
@@ -310,9 +317,13 @@ void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
   } else if (for_bidirectional_) {
     DCHECK(bidirectional_stream_job);
     DCHECK(!stream);
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
     delegate_->OnBidirectionalStreamJobReady(
         job->server_ssl_config(), job->proxy_info(),
         bidirectional_stream_job.release());
+#else
+    NOTREACHED();
+#endif
   } else {
     DCHECK(!bidirectional_stream_job);
     DCHECK(stream);

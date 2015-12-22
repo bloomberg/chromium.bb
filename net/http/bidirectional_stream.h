@@ -14,6 +14,10 @@
 #include "net/http/http_stream_factory.h"
 #include "net/log/net_log.h"
 
+#if !defined(ENABLE_BIDIRECTIONAL_STREAM)
+#error Only include this if ENABLE_BIDIRECTIONAL_STREAM is defined
+#endif
+
 class GURL;
 
 namespace net {

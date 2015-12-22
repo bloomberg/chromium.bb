@@ -12,6 +12,10 @@
 #include "net/base/net_export.h"
 #include "net/socket/next_proto.h"
 
+#if !defined(ENABLE_BIDIRECTIONAL_STREAM)
+#error Only include this if ENABLE_BIDIRECTIONAL_STREAM is defined
+#endif
+
 namespace base {
 class Timer;
 }  // namespace base

@@ -15,7 +15,6 @@
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
-#include "net/http/bidirectional_stream_job.h"
 #include "net/http/http_server_properties.h"
 #include "net/socket/connection_attempts.h"
 #include "net/ssl/ssl_failure_state.h"
@@ -34,6 +33,7 @@ namespace net {
 
 class AuthCredentials;
 class BoundNetLog;
+class BidirectionalStreamJob;
 class HostMappingRules;
 class HostPortPair;
 class HttpAuthController;

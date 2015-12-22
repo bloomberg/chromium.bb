@@ -15,7 +15,6 @@
 #include "net/base/test_completion_callback.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/http/bidirectional_stream_job.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_session_peer.h"
@@ -45,7 +44,13 @@
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#include "net/http/bidirectional_stream_job.h"
+#endif
+
 namespace net {
+
+class BidirectionalStreamJob;
 
 namespace {
 
@@ -175,7 +180,11 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     stream_done_ = true;
     if (waiting_for_stream_)
       base::MessageLoop::current()->QuitWhenIdle();
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
     bidirectional_stream_job_.reset(stream);
+#else
+    DCHECK(!stream);
+#endif
     used_ssl_config_ = used_ssl_config;
     used_proxy_info_ = used_proxy_info;
   }
@@ -233,9 +242,11 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     return static_cast<MockWebSocketHandshakeStream*>(websocket_stream_.get());
   }
 
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
   BidirectionalStreamJob* bidirectional_stream_job() {
     return bidirectional_stream_job_.get();
   }
+#endif
 
   bool stream_done() const { return stream_done_; }
   int error_status() const { return error_status_; }
@@ -245,7 +256,9 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   bool stream_done_;
   scoped_ptr<HttpStream> stream_;
   scoped_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
   scoped_ptr<BidirectionalStreamJob> bidirectional_stream_job_;
+#endif
   SSLConfig used_ssl_config_;
   ProxyInfo used_proxy_info_;
   int error_status_;

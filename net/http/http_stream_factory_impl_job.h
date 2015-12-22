@@ -375,7 +375,9 @@ class HttpStreamFactoryImpl::Job {
 
   scoped_ptr<HttpStream> stream_;
   scoped_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
   scoped_ptr<BidirectionalStreamJob> bidirectional_stream_job_;
+#endif
 
   // True if we negotiated NPN.
   bool was_npn_negotiated_;

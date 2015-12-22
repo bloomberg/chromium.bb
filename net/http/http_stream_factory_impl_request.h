@@ -73,7 +73,11 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   void OnNewSpdySessionReady(
       Job* job,
       scoped_ptr<HttpStream> stream,
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
       scoped_ptr<BidirectionalStreamJob> bidirectional_stream_spdy_job,
+#else
+      void* unused,
+#endif
       const base::WeakPtr<SpdySession>& spdy_session,
       bool direct);
 
