@@ -94,7 +94,7 @@ const char kPingURL[] =
     "https://www.google.com/chromesuggestions/click?q=%lld&cd=%d";
 
 const base::Feature kOAuth2AuthenticationFeature {
-  "SuggestionsServiceOAuth2", base::FEATURE_ENABLED_BY_DEFAULT
+  "SuggestionsServiceOAuth2", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
 }  // namespace
@@ -322,7 +322,7 @@ void SuggestionsService::IssueRequestIfNoneOngoing(const GURL& url) {
   if (pending_request_.get()) {
     return;
   }
-  if (base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature)) {
+  if (UseOAuth2()) {
     // If there is an ongoing token request, also wait for that.
     if (token_fetcher_->HasPendingRequest()) {
       return;
@@ -336,11 +336,15 @@ void SuggestionsService::IssueRequestIfNoneOngoing(const GURL& url) {
   }
 }
 
+// static
+bool SuggestionsService::UseOAuth2() {
+  return base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature);
+}
+
 void SuggestionsService::IssueSuggestionsRequest(
     const GURL& url,
     const std::string& access_token) {
-  if (base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature) &&
-      access_token.empty()) {
+  if (UseOAuth2() && access_token.empty()) {
     UpdateBlacklistDelay(false);
     ScheduleBlacklistUpload();
     return;
@@ -357,7 +361,7 @@ scoped_ptr<net::URLFetcher> SuggestionsService::CreateSuggestionsRequest(
   data_use_measurement::DataUseUserData::AttachToFetcher(
       request.get(), data_use_measurement::DataUseUserData::SUGGESTIONS);
   int load_flags = net::LOAD_DISABLE_CACHE;
-  if (base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature)) {
+  if (UseOAuth2()) {
     load_flags |= net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
   }
   request->SetLoadFlags(load_flags);
@@ -367,8 +371,7 @@ scoped_ptr<net::URLFetcher> SuggestionsService::CreateSuggestionsRequest(
   variations::AppendVariationHeaders(request->GetOriginalURL(), false, false,
                                      &headers);
   request->SetExtraRequestHeaders(headers.ToString());
-  if (base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature) &&
-      !access_token.empty()) {
+  if (UseOAuth2() && !access_token.empty()) {
     request->AddExtraRequestHeader(
         base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
   }

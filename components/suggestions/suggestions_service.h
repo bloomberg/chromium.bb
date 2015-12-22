@@ -120,12 +120,18 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
  private:
   friend class SuggestionsServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
+                           FetchSuggestionsDataNoAccessToken);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURL);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURLRequestFails);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, ClearBlacklist);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UndoBlacklistURL);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UndoBlacklistURLFailsHelper);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UpdateBlacklistDelay);
+
+  // Returns whether OAuth2 authentication is enabled. If false, cookies are
+  // used for authentication.
+  static bool UseOAuth2();
 
   // Issues a network request for suggestions (fetch, blacklist, or clear
   // blacklist, depending on |url|). |access_token| is used only if OAuth2
