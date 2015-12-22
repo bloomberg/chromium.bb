@@ -859,8 +859,10 @@ class CountryNames {
   friend struct base::DefaultSingletonTraits<CountryNames>;
 
   // Populates |locales_to_localized_names_| with the mapping of country names
-  // localized to |locale| to their corresponding country codes.
-  void AddLocalizedNamesForLocale(const std::string& locale);
+  // localized to |locale| to their corresponding country codes. Uses a
+  // |collator| which is suitable for the locale.
+  void AddLocalizedNamesForLocale(const std::string& locale,
+                                  const icu::Collator& collator);
 
   // Interprets |country_name| as a full country name localized to the given
   // |locale| and returns the corresponding country code stored in
@@ -949,14 +951,14 @@ const std::string CountryNames::GetCountryCode(const base::string16& country,
   return GetCountryCodeForLocalizedName(country, "en_US");
 }
 
-void CountryNames::AddLocalizedNamesForLocale(const std::string& locale) {
+void CountryNames::AddLocalizedNamesForLocale(const std::string& locale,
+                                              const icu::Collator& collator) {
   // Nothing to do if we've previously added the localized names for the given
   // |locale|.
   if (locales_to_localized_names_.count(locale))
     return;
 
   std::map<std::string, std::string> localized_names;
-  const icu::Collator* collator = GetCollatorForLocale(locale);
   int32_t buffer_size = 1000;
   scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
 
@@ -966,7 +968,7 @@ void CountryNames::AddLocalizedNamesForLocale(const std::string& locale) {
     const std::string& country_code = it->first;
     base::string16 country_name = l10n_util::GetDisplayNameForCountry(
         country_code, locale);
-    std::string sort_key = GetSortKey(*collator,
+    std::string sort_key = GetSortKey(collator,
                                       country_name,
                                       &buffer,
                                       &buffer_size);
@@ -980,12 +982,12 @@ void CountryNames::AddLocalizedNamesForLocale(const std::string& locale) {
 const std::string CountryNames::GetCountryCodeForLocalizedName(
     const base::string16& country_name,
     const std::string& locale) {
-  AddLocalizedNamesForLocale(locale);
-
   const icu::Collator* collator = GetCollatorForLocale(locale);
   // In very rare cases, the collator fails to initialize.
   if (!collator)
     return std::string();
+
+  AddLocalizedNamesForLocale(locale, *collator);
 
   // As recommended[1] by ICU, initialize the buffer size to four times the
   // source string length.
