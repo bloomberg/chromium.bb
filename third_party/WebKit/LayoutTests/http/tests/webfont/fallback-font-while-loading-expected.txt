@@ -14,4 +14,6 @@ arial
 PASS: The width of target text and reference text is the same.
 serif
 PASS: The width of target text and reference text is the same.
+default
+PASS: The width of target text and reference text is the same.
 

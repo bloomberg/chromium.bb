@@ -1182,7 +1182,6 @@ crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failur
 crbug.com/521730 [ Win10 ] compositing/plugins/invalidate_rect.html [ Crash ]
 crbug.com/521730 [ Win10 ] plugins/windowless_plugin_paint_test.html [ Crash ]
 
-crbug.com/521730 [ Win10 ] fast/text/shaping/same-script-different-lang.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/forms/month-multiple-fields/month-multiple-fields-preserve-value-after-history-back.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/forms/month-multiple-fields/month-multiple-fields-value-set-empty.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/forms/suggested-value.html [ Failure ]
@@ -1281,7 +1280,6 @@ crbug.com/521730 [ Win10 ] fast/text/atsui-negative-spacing-features.html [ Fail
 crbug.com/521730 [ Win10 ] fast/text/basic/011.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/basic/013.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/basic/generic-family-reset.html [ Failure ]
-crbug.com/521730 [ Win10 ] fast/text/cg-fallback-bolding.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/cg-vs-atsui.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/decorations-with-text-combine.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/emoticons.html [ Failure ]
@@ -1374,6 +1372,19 @@ crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
 crbug.com/543369 [ Linux ] fast/forms/select/popup-menu-appearance-tall.html [ Failure ]
+crbug.com/299010 [ Win ] http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
+crbug.com/299010 [ Linux Mac Win ] fast/css/font-face-opentype.html [ NeedsRebaseline ]
+crbug.com/299010 [ Mac ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsRebaseline ]
+crbug.com/299010 [ Mac ] fast/forms/month/month-appearance-l10n.html [ NeedsRebaseline ]
+crbug.com/299010 [ Linux Mac ] fast/forms/text/text-font-height-mismatch.html [ NeedsRebaseline ]
+crbug.com/299010 [ Linux Mac Win ] fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
+crbug.com/299010 [ Linux Mac Win ] fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
+crbug.com/299010 [ Linux Win ] fast/block/positioning/047.html [ NeedsRebaseline ]
+crbug.com/299010 [ Linux Win ] fast/text/cg-fallback-bolding.html [ NeedsRebaseline ]
+crbug.com/299010 [ Linux Win ] fast/text/fallback-for-custom-font.html [ NeedsRebaseline ]
+crbug.com/299010 [ Win ] fast/text/unicode-fallback-font.html [ NeedsRebaseline ]
+crbug.com/570656 [ Mac ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Slow ]
+crbug.com/570656 [ Mac ] fast/text/unicode-fallback-font.html [ Slow ]
 
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 

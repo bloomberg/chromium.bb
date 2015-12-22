@@ -152,33 +152,23 @@ const SimpleFontData* FontFallbackList::determinePrimarySimpleFontData(const Fon
 
 PassRefPtr<FontData> FontFallbackList::getFontData(const FontDescription& fontDescription, int& familyIndex) const
 {
-    RefPtr<FontData> result;
+    const FontFamily* currFamily = &fontDescription.family();
+    for (int i = 0; currFamily && i < familyIndex; i++)
+        currFamily = currFamily->next();
 
-    int startIndex = familyIndex;
-    const FontFamily* startFamily = &fontDescription.family();
-    for (int i = 0; startFamily && i < startIndex; i++)
-        startFamily = startFamily->next();
-    const FontFamily* currFamily = startFamily;
-    while (currFamily && !result) {
+    for (; currFamily; currFamily = currFamily->next()) {
         familyIndex++;
         if (currFamily->family().length()) {
+            RefPtr<FontData> result;
             if (m_fontSelector)
                 result = m_fontSelector->getFontData(fontDescription, currFamily->family());
-
             if (!result)
                 result = FontCache::fontCache()->getFontData(fontDescription, currFamily->family());
+            if (result)
+                return result.release();
         }
-        currFamily = currFamily->next();
     }
-
-    if (!currFamily)
-        familyIndex = cAllFamiliesScanned;
-
-    if (result || startIndex)
-        return result.release();
-
-    // If it's the primary font that we couldn't find, we try the following. In all other cases, we will
-    // just use per-character system fallback.
+    familyIndex = cAllFamiliesScanned;
 
     if (m_fontSelector) {
         // Try the user's preferred standard font.
