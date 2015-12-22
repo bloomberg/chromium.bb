@@ -552,6 +552,10 @@ void Target::CheckSourcesGenerated() const {
     CheckSourceGenerated(file);
   for (const SourceFile& file : inputs_)
     CheckSourceGenerated(file);
+  for (size_t i = 0; i < all_libs_.size(); i++) {
+    if (all_libs_[i].is_source_file())
+      CheckSourceGenerated(all_libs_[i].source_file());
+  }
 }
 
 void Target::CheckSourceGenerated(const SourceFile& source) const {

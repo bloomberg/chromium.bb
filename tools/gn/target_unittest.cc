@@ -35,7 +35,7 @@ TEST(Target, LibInheritance) {
   TestWithScope setup;
   Err err;
 
-  const std::string lib("foo");
+  const LibFile lib("foo");
   const SourceDir libdir("/foo_dir/");
 
   // Leaf target with ldflags set.
@@ -52,7 +52,7 @@ TEST(Target, LibInheritance) {
 
   // Shared library target should inherit the libs from the static library
   // and its own. Its own flag should be before the inherited one.
-  const std::string second_lib("bar");
+  const LibFile second_lib("bar");
   const SourceDir second_libdir("/bar_dir/");
   TestTarget shared(setup, "//foo:shared", Target::SHARED_LIBRARY);
   shared.config_values().libs().push_back(second_lib);
@@ -386,7 +386,7 @@ TEST(Target, PublicConfigs) {
 
   Label pub_config_label(SourceDir("//a/"), "pubconfig");
   Config pub_config(setup.settings(), pub_config_label);
-  std::string lib_name("testlib");
+  LibFile lib_name("testlib");
   pub_config.own_values().libs().push_back(lib_name);
   ASSERT_TRUE(pub_config.OnResolved(&err));
 

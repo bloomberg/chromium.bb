@@ -96,6 +96,8 @@
         'label_pattern.cc',
         'label_pattern.h',
         'label_ptr.h',
+        'lib_file.cc',
+        'lib_file.h',
         'loader.cc',
         'loader.h',
         'location.cc',

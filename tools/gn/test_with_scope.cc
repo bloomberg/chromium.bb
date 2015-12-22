@@ -84,6 +84,8 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
   // ALINK
   scoped_ptr<Tool> alink_tool(new Tool);
   SetCommandForTool("ar {{output}} {{source}}", alink_tool.get());
+  alink_tool->set_lib_switch("-l");
+  alink_tool->set_lib_dir_switch("-L");
   alink_tool->set_output_prefix("lib");
   alink_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{target_out_dir}}/{{target_output_name}}.a"));
@@ -93,6 +95,8 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
   scoped_ptr<Tool> solink_tool(new Tool);
   SetCommandForTool("ld -shared -o {{target_output_name}}.so {{inputs}} "
       "{{ldflags}} {{libs}}", solink_tool.get());
+  solink_tool->set_lib_switch("-l");
+  solink_tool->set_lib_dir_switch("-L");
   solink_tool->set_output_prefix("lib");
   solink_tool->set_default_output_extension(".so");
   solink_tool->set_outputs(SubstitutionList::MakeForTest(
@@ -103,6 +107,8 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
   scoped_ptr<Tool> solink_module_tool(new Tool);
   SetCommandForTool("ld -bundle -o {{target_output_name}}.so {{inputs}} "
       "{{ldflags}} {{libs}}", solink_module_tool.get());
+  solink_module_tool->set_lib_switch("-l");
+  solink_module_tool->set_lib_dir_switch("-L");
   solink_module_tool->set_output_prefix("lib");
   solink_module_tool->set_default_output_extension(".so");
   solink_module_tool->set_outputs(SubstitutionList::MakeForTest(
@@ -113,6 +119,8 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
   scoped_ptr<Tool> link_tool(new Tool);
   SetCommandForTool("ld -o {{target_output_name}} {{source}} "
       "{{ldflags}} {{libs}}", link_tool.get());
+  link_tool->set_lib_switch("-l");
+  link_tool->set_lib_dir_switch("-L");
   link_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{root_out_dir}}/{{target_output_name}}"));
   toolchain->SetTool(Toolchain::TYPE_LINK, link_tool.Pass());

@@ -201,6 +201,43 @@ TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
   EXPECT_EQ(expected, out_str);
 }
 
+// Tests libs are applied.
+TEST(NinjaBinaryTargetWriter, LibsAndLibDirs) {
+  TestWithScope setup;
+  Err err;
+
+  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+
+  // A shared library w/ libs and lib_dirs.
+  Target target(setup.settings(), Label(SourceDir("//foo/"), "shlib"));
+  target.set_output_type(Target::SHARED_LIBRARY);
+  target.config_values().libs().push_back(LibFile(SourceFile("//foo/lib1.a")));
+  target.config_values().libs().push_back(LibFile("foo"));
+  target.config_values().lib_dirs().push_back(SourceDir("//foo/bar/"));
+  target.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(target.OnResolved(&err));
+
+  std::ostringstream out;
+  NinjaBinaryTargetWriter writer(&target, out);
+  writer.Run();
+
+  const char expected[] =
+      "defines =\n"
+      "include_dirs =\n"
+      "root_out_dir = .\n"
+      "target_out_dir = obj/foo\n"
+      "target_output_name = libshlib\n"
+      "\n"
+      "\n"
+      "build ./libshlib.so: solink | ../../foo/lib1.a\n"
+      "  ldflags = -L../../foo/bar\n"
+      "  libs = ../../foo/lib1.a -lfoo\n"
+      "  output_extension = .so\n";
+
+  std::string out_str = out.str();
+  EXPECT_EQ(expected, out_str);
+}
+
 TEST(NinjaBinaryTargetWriter, EmptyProductExtension) {
   TestWithScope setup;
   Err err;

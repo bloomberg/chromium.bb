@@ -786,6 +786,15 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
     }
   }
 
+  // Libraries specified by paths.
+  const OrderedSet<LibFile>& libs = target_->all_libs();
+  for (size_t i = 0; i < libs.size(); i++) {
+    if (libs[i].is_source_file()) {
+      implicit_deps.push_back(
+          OutputFile(settings_->build_settings(), libs[i].source_file()));
+    }
+  }
+
   // Append implicit dependencies collected above.
   if (!implicit_deps.empty()) {
     out_ << " |";
@@ -857,20 +866,25 @@ void NinjaBinaryTargetWriter::WriteLibs() {
   // Libraries that have been recursively pushed through the dependency tree.
   EscapeOptions lib_escape_opts;
   lib_escape_opts.mode = ESCAPE_NINJA_COMMAND;
-  const OrderedSet<std::string> all_libs = target_->all_libs();
+  const OrderedSet<LibFile> all_libs = target_->all_libs();
   const std::string framework_ending(".framework");
   for (size_t i = 0; i < all_libs.size(); i++) {
-    if (base::EndsWith(all_libs[i], framework_ending,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
+    const LibFile& lib_file = all_libs[i];
+    const std::string& lib_value = lib_file.value();
+    if (lib_file.is_source_file()) {
+      out_ << " ";
+      path_output_.WriteFile(out_, lib_file.source_file());
+    } else if (base::EndsWith(lib_value, framework_ending,
+                              base::CompareCase::INSENSITIVE_ASCII)) {
       // Special-case libraries ending in ".framework" to support Mac: Add the
       // -framework switch and don't add the extension to the output.
       out_ << " -framework ";
-      EscapeStringToStream(out_,
-          all_libs[i].substr(0, all_libs[i].size() - framework_ending.size()),
+      EscapeStringToStream(
+          out_, lib_value.substr(0, lib_value.size() - framework_ending.size()),
           lib_escape_opts);
     } else {
       out_ << " " << tool_->lib_switch();
-      EscapeStringToStream(out_, all_libs[i], lib_escape_opts);
+      EscapeStringToStream(out_, lib_value, lib_escape_opts);
     }
   }
   out_ << std::endl;

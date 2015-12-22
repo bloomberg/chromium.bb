@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "tools/gn/lib_file.h"
 #include "tools/gn/source_dir.h"
 #include "tools/gn/source_file.h"
 
@@ -39,11 +40,13 @@ class ConfigValues {
   DIR_VALUES_ACCESSOR   (include_dirs)
   STRING_VALUES_ACCESSOR(ldflags)
   DIR_VALUES_ACCESSOR   (lib_dirs)
-  STRING_VALUES_ACCESSOR(libs)
   // If you add a new one, be sure to update AppendValues().
 
 #undef STRING_VALUES_ACCESSOR
 #undef DIR_VALUES_ACCESSOR
+
+  const std::vector<LibFile>& libs() const { return libs_; }
+  std::vector<LibFile>& libs() { return libs_; }
 
   bool has_precompiled_headers() const {
     return !precompiled_header_.empty() || !precompiled_source_.is_null();
@@ -72,7 +75,7 @@ class ConfigValues {
   std::vector<SourceDir>   include_dirs_;
   std::vector<std::string> ldflags_;
   std::vector<SourceDir>   lib_dirs_;
-  std::vector<std::string> libs_;
+  std::vector<LibFile>     libs_;
   // If you add a new one, be sure to update AppendValues().
 
   std::string precompiled_header_;

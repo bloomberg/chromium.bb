@@ -17,6 +17,7 @@
 #include "tools/gn/inherited_libraries.h"
 #include "tools/gn/item.h"
 #include "tools/gn/label_ptr.h"
+#include "tools/gn/lib_file.h"
 #include "tools/gn/ordered_set.h"
 #include "tools/gn/output_file.h"
 #include "tools/gn/source_file.h"
@@ -197,7 +198,7 @@ class Target : public Item {
   const ActionValues& action_values() const { return action_values_; }
 
   const OrderedSet<SourceDir>& all_lib_dirs() const { return all_lib_dirs_; }
-  const OrderedSet<std::string>& all_libs() const { return all_libs_; }
+  const OrderedSet<LibFile>& all_libs() const { return all_libs_; }
 
   const std::set<const Target*>& recursive_hard_deps() const {
     return recursive_hard_deps_;
@@ -300,7 +301,7 @@ class Target : public Item {
   // These libs and dirs are inherited from statically linked deps and all
   // configs applying to this target.
   OrderedSet<SourceDir> all_lib_dirs_;
-  OrderedSet<std::string> all_libs_;
+  OrderedSet<LibFile> all_libs_;
 
   // All hard deps from this target and all dependencies. Filled in when this
   // target is marked resolved. This will not include the current target.
