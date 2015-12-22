@@ -30,16 +30,15 @@
 #include "core/animation/AnimationTimeline.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ComposedTreeTraversal.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/style/ComputedStyle.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FloatClipRecorder.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/style/ComputedStyle.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFEImageElement.h"
 #include "core/svg/SVGImageElement.h"
@@ -97,20 +96,14 @@ bool SVGImage::isInSVGImage(const Node* node)
     return page->chromeClient().isSVGImageChromeClient();
 }
 
-void SVGImage::assertSubresourcesLoaded() const
-{
-    RELEASE_ASSERT(m_page);
-    LocalFrame* frame = toLocalFrame(m_page->mainFrame());
-    RELEASE_ASSERT(frame->document()->fetcher()->requestCount() == 0);
-}
-
 bool SVGImage::currentFrameHasSingleSecurityOrigin() const
 {
     if (!m_page)
         return true;
 
     LocalFrame* frame = toLocalFrame(m_page->mainFrame());
-    assertSubresourcesLoaded();
+
+    RELEASE_ASSERT(frame->document()->loadEventFinished());
 
     SVGSVGElement* rootElement = frame->document()->accessSVGExtensions().rootElement();
     if (!rootElement)
