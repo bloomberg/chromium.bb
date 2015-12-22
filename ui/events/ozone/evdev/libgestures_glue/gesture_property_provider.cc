@@ -1496,13 +1496,13 @@ void GesturesPropFunctionsWrapper::PostCreateProperty(
     void* device_data,
     const char* name,
     scoped_ptr<GesturesProp> property) {
+  // Log the creation.
+  DVLOG(3) << "Created active prop: " << *property;
+
   // Add the property to the gesture property provider. The gesture property
   // provider will own it from now on.
   GesturePropertyProvider* provider = GetPropertyProvider(device_data);
   provider->AddProperty(GetDeviceId(device_data), name, std::move(property));
-
-  // Log the creation.
-  DVLOG(3) << "Created active prop: " << *property;
 }
 
 GesturesProp* GesturesPropFunctionsWrapper::CreateIntSingle(void* device_data,
