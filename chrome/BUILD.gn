@@ -135,7 +135,7 @@ if (!is_android) {
         "//chrome/browser:chrome_process_finder",
         "//chrome/chrome_watcher",
         "//chrome/chrome_watcher:client",
-        "//chrome/installer/util",
+        "//chrome/installer/util:with_no_strings_some_things_wont_work",
         "//chrome_elf",
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",

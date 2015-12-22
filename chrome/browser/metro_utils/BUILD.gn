@@ -5,7 +5,11 @@
 source_set("metro_utils") {
   deps = [
     "//base",
-    "//chrome/installer/util",
+
+    # We use a few functions from here but don't depend on the resource
+    # strings. This target is indirectly linked into chrome.exe, so
+    # specifically doesn't want those strings.
+    "//chrome/installer/util:with_no_strings_some_things_wont_work",
   ]
   sources = [
     "metro_chrome_win.cc",
