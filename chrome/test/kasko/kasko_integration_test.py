@@ -350,7 +350,7 @@ def _GetProcessCreationDate(pid):
   procs = wmi.ExecQuery(
       'select CreationDate from Win32_Process where ProcessId = %s' % pid)
   for proc in procs:
-    return _WmiTimeToLocalEpoch(proc.Properties_['CreationDate'].Value)
+    return _WmiTimeToLocalEpoch(proc.Properties_('CreationDate').Value)
   raise Exception('Unable to find process with PID %d.' % pid)
 
 
@@ -367,14 +367,14 @@ def _ShutdownChildren(parent_pid, child_exe, started_after, started_before,
   wmi = win32com.client.GetObject('winmgmts:')
   _LOGGER.debug('Shutting down lingering children processes.')
   for proc in wmi.InstancesOf('Win32_Process'):
-    if proc.Properties_['ParentProcessId'].Value != parent_pid:
+    if proc.Properties_('ParentProcessId').Value != parent_pid:
       continue
-    if proc.Properties_['ExecutablePath'].Value != child_exe:
+    if proc.Properties_('ExecutablePath').Value != child_exe:
       continue
-    t = _WmiTimeToLocalEpoch(proc.Properties_['CreationDate'].Value)
+    t = _WmiTimeToLocalEpoch(proc.Properties_('CreationDate').Value)
     if t <= started_after or t >= started_before:
       continue
-    pid = proc.Properties_['ProcessId'].Value
+    pid = proc.Properties_('ProcessId').Value
     remaining = max(0, started + timeout - time.time())
     _ShutdownProcess(pid, remaining, force=force)
 
@@ -543,16 +543,20 @@ def Main():
           raise Exception('No Kasko report received.')
 
     report = server.crash(0)
-    for (key, value) in report.iteritems():
-      val = value[0]
+    for key in sorted(report.keys()):
+      val = report[key][0]
       if (len(val) < 64):
         _LOGGER.debug('Got crashkey "%s": "%s"', key, val)
       else:
         _LOGGER.debug('Got crashkey "%s": ...%d bytes...', key, len(val))
-    kasko_key = 'kasko-set-crash-key-value-impl'
-    if kasko_key not in report:
-      _LOGGER.error('Missing expected "%s" crash key.', kasko_key)
-      raise Exception('SendCrashKeyValueImpl integration appears broken.')
+
+    expected_keys = {
+        'kasko-set-crash-key-value-impl': 'SetCrashKeyValueImpl',
+        'guid': 'GetCrashKeysForKasko'}
+    for expected_key, error in expected_keys.iteritems():
+      if expected_key not in report:
+        _LOGGER.error('Missing expected "%s" crash key.', expected_key)
+        raise Exception('"%s" integration appears broken.' % error)
 
     return 0
 
