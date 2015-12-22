@@ -2,7 +2,13 @@
 #ifndef {{v8_class}}_h
 #define {{v8_class}}_h
 
+{% if conditional_string %}
+#include "wtf/build_config.h"
+{% endif %}
 {% filter conditional(conditional_string) %}
+{% if conditional_string %}
+
+{% endif %}
 {% for filename in header_includes %}
 #include "{{filename}}"
 {% endfor %}

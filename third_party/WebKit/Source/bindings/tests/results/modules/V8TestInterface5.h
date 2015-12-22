@@ -7,7 +7,9 @@
 #ifndef V8TestInterface5_h
 #define V8TestInterface5_h
 
+#include "wtf/build_config.h"
 #if ENABLE(CONDITION)
+
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"

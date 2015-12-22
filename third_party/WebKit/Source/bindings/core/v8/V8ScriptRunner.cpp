@@ -23,7 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"

@@ -1,6 +1,5 @@
 {% from 'conversions.cpp' import declare_enum_validation_variable %}
 {% include 'copyright_block.txt' %}
-#include "config.h"
 #include "{{v8_original_class}}.h"
 
 {% for filename in cpp_includes if filename != '%s.h' % v8_class %}

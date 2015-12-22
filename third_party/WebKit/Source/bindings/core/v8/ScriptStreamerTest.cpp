@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 
-#include "config.h"
 #include "bindings/core/v8/ScriptStreamer.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"

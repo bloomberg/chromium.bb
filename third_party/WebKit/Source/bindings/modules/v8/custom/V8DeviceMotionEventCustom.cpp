@@ -23,7 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "bindings/modules/v8/V8DeviceMotionEvent.h"
 
 #include "bindings/core/v8/V8Binding.h"

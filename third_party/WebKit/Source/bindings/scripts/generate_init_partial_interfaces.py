@@ -23,8 +23,6 @@ _COPYRIGHT = """// Copyright 2014 The Chromium Authors. All rights reserved.
 """
 
 _INIT_PARTIAL_INTERFACE = """%s
-#include "config.h"
-
 %s
 
 namespace blink {

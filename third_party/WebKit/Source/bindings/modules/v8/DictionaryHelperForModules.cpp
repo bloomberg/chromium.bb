@@ -23,8 +23,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
 #include "bindings/core/v8/DictionaryHelperForBindings.h"
 #include "bindings/modules/v8/V8Headers.h"
 

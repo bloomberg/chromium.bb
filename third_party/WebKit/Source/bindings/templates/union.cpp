@@ -1,6 +1,5 @@
 {% from 'conversions.cpp' import declare_enum_validation_variable %}
 {% include 'copyright_block.txt' %}
-#include "config.h"
 #include "{{header_filename}}"
 
 {% from 'conversions.cpp' import v8_value_to_local_cpp_value %}

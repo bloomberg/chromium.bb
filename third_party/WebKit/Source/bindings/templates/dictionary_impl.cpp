@@ -1,5 +1,4 @@
 {% include 'copyright_block.txt' %}
-#include "config.h"
 #include "{{cpp_class}}.h"
 
 {% for filename in cpp_includes %}

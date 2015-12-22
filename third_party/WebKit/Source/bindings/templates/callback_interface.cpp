@@ -1,8 +1,7 @@
 {% include 'copyright_block.txt' %}
-#include "config.h"
-{% filter conditional(conditional_string) %}
 #include "{{v8_class}}.h"
 
+{% filter conditional(conditional_string) %}
 {% for filename in cpp_includes %}
 #include "{{filename}}"
 {% endfor %}
