@@ -97,6 +97,7 @@ crbug.com/482050 svg/zoom/text/relative-sized-document-scrollbars.svg [ Leak ]
 crbug.com/482050 svg/zoom/text/zoom-coords-viewattr-01-b.svg [ Leak ]
 crbug.com/482050 svg/zoom/text/zoom-foreignObject.svg [ Leak ]
 crbug.com/564571 virtual/threaded/animations/svg-length-unittype-crash.html [ Leak ]
+crbug.com/571534 virtual/threaded/animations/svg-element-css-animation-crash.html [ Leak ]
 
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (fast).
