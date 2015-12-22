@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL The special inherit value can be read from inline style. assert_equals: expected " inherit" but got ""
+FAIL The special inherit value can be read after setting. assert_equals: expected " inherit" but got ""
+FAIL The special inherit value can be read from a declared rule. assert_equals: expected " inherit" but got ""
+Harness: the test ran to completion.
+

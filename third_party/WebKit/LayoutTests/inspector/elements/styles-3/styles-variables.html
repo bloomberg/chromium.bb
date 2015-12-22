@@ -13,6 +13,10 @@ body {
     --a: green;
 }
 
+#id3 {
+    --a: inherit;
+}
+
 </style>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/elements-test.js"></script>
@@ -39,10 +43,20 @@ function test()
         InspectorTest.cssModel.computedStylePromise(node.id).then(
             function(style) {
                 InspectorTest.addResult("value of --b: " + style.get("--b"));
-                InspectorTest.completeTest();
+                InspectorTest.selectNodeAndWaitForStylesWithComputed("id3", step3);
             });
     }
 
+    function step3(node)
+    {
+        InspectorTest.addResult("==== Computed style for ID3 ====");
+        InspectorTest.dumpSelectedElementStyles(false, true);
+        InspectorTest.cssModel.computedStylePromise(node.id).then(
+            function(style) {
+                InspectorTest.addResult("value of --a: " + style.get("--a"));
+                InspectorTest.completeTest();
+            });
+    }
 }
 </script>
 </head>
@@ -54,6 +68,7 @@ Tests that computed styles expand and allow tracing to style rules.
 
 <div id="id1">
 <div id="id2">
+<div id="id3">
 </div>
 </div>
 

@@ -18,4 +18,11 @@ display: block
 element.style { ()
 
 value of --b:  44px
+==== Computed style for ID3 ====
+display: block
+    block - div user agent stylesheet
+[expanded] 
+element.style { ()
+
+value of --a:  green
 

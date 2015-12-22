@@ -15,7 +15,9 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSCustomPropertyDeclaration)
 
 String CSSCustomPropertyDeclaration::customCSSText() const
 {
-    return m_value->tokenRange().serialize();
+    if (m_value)
+        return m_value->tokenRange().serialize();
+    return emptyString();
 }
 
 } // namespace blink
