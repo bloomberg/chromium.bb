@@ -2,13 +2,13 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (49,64) size 431x174
+    LayoutSVGContainer {g} at (50,64) size 430x174
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (49,64) size 546x174 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 321x174
+      LayoutSVGText {text} at (50,64) size 546x174 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 323x174
           chunk 1 text run 1 at (50.00,200.00) startOffset 0 endOffset 3 width 320.51: "a\x{729C}\x{923}"
-        LayoutSVGTSpan {tspan} at (0,0) size 161x86
-          LayoutSVGInlineText {#text} at (320,69) size 161x86
+        LayoutSVGTSpan {tspan} at (0,0) size 162x86
+          LayoutSVGInlineText {#text} at (320,69) size 162x86
             chunk 1 text run 1 at (370.51,200.00) startOffset 0 endOffset 3 width 160.25: "a\x{729C}\x{923}"
         LayoutSVGTSpan {tspan} at (0,0) size 66x36
           LayoutSVGInlineText {#text} at (480,108) size 65x36

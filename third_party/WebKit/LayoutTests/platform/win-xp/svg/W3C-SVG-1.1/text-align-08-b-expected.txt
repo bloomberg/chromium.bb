@@ -5,10 +5,10 @@ layer at (0,0) size 480x360
     LayoutSVGContainer {g} at (50,66) size 430x170
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGText {text} at (50,66) size 572x170 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 337x170
+        LayoutSVGInlineText {#text} at (0,0) size 339x170
           chunk 1 text run 1 at (50.00,200.00) startOffset 0 endOffset 3 width 337.00: "a\x{729C}\x{923}"
-        LayoutSVGTSpan {tspan} at (0,0) size 168x85
-          LayoutSVGInlineText {#text} at (337,67) size 168x85
+        LayoutSVGTSpan {tspan} at (0,0) size 169x85
+          LayoutSVGInlineText {#text} at (337,67) size 169x85
             chunk 1 text run 1 at (387.00,200.00) startOffset 0 endOffset 3 width 168.00: "a\x{729C}\x{923}"
         LayoutSVGTSpan {tspan} at (0,0) size 67x34
           LayoutSVGInlineText {#text} at (505,107) size 67x34
