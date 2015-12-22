@@ -94,6 +94,10 @@ source_set("base_paths") {
   visibility = [ ":base" ]
 }
 
+config("android_system_libs") {
+  libs = [ "log" ]  # Used by logging.cc.
+}
+
 component("base") {
   sources = [
     "allocator/allocator_extension.cc",
@@ -976,8 +980,9 @@ component("base") {
       "//third_party/ashmem",
     ]
 
-    # logging.cc uses the Android logging library.
-    libs = [ "log" ]
+    # Needs to be a public config so that dependent targets link against it as
+    # well when doing a component build.
+    public_configs = [ ":android_system_libs" ]
   }
 
   # Chromeos.
