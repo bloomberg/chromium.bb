@@ -72,6 +72,8 @@ crbug.com/24182 virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Slow ]
 crbug.com/24182 virtual/gpu/fast/canvas/webgl/read-pixels-test.html [ Slow ]
 crbug.com/24182 fast/dom/timer-throttling-background-page-near-alignment-interval.html [ Slow ]
 crbug.com/24182 http/tests/perf/large-inlined-script.html [ Slow ]
+crbug.com/451577 [ Debug ] fast/dom/gc-treescope.html  [ Slow ]
+crbug.com/451577 [ Debug ] fast/frames/calculate-round.html [ Slow ]
 
 crbug.com/474121 editing/deleting/password-delete-performance.html [ Slow ]
 crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Slow ]
