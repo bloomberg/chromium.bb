@@ -8,7 +8,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "net/quic/crypto/cert_compressor.h"
-#include "net/quic/crypto/chacha20_poly1305_encrypter.h"
+#include "net/quic/crypto/chacha20_poly1305_rfc7539_encrypter.h"
 #include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/common_cert_set.h"
 #include "net/quic/crypto/crypto_framer.h"
@@ -365,8 +365,11 @@ void QuicCryptoClientConfig::SetDefaults() {
   kexs[0] = kC255;
   kexs[1] = kP256;
 
-  // Authenticated encryption algorithms. Prefer ChaCha20 by default.
+  // Authenticated encryption algorithms. Prefer RFC 7539 ChaCha20 by default.
   aead.clear();
+  if (ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
+    aead.push_back(kCC20);
+  }
   aead.push_back(kCC12);
   aead.push_back(kAESG);
 

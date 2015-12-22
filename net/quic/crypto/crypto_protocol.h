@@ -48,6 +48,7 @@ const QuicTag kC255 = TAG('C', '2', '5', '5');   // ECDH, Curve25519
 const QuicTag kNULL = TAG('N', 'U', 'L', 'N');   // null algorithm
 const QuicTag kAESG = TAG('A', 'E', 'S', 'G');   // AES128 + GCM-12
 const QuicTag kCC12 = TAG('C', 'C', '1', '2');   // ChaCha20 + Poly1305
+const QuicTag kCC20 = TAG('C', 'C', '2', '0');   // ChaCha20 + Poly1305 RFC7539
 
 // Socket receive buffer
 const QuicTag kSRBF = TAG('S', 'R', 'B', 'F');   // Socket receive buffer

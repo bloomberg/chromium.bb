@@ -17,7 +17,7 @@
 #include "net/quic/crypto/aes_128_gcm_12_decrypter.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/cert_compressor.h"
-#include "net/quic/crypto/chacha20_poly1305_encrypter.h"
+#include "net/quic/crypto/chacha20_poly1305_rfc7539_encrypter.h"
 #include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
@@ -289,7 +289,12 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
   } else {
     msg.SetTaglist(kKEXS, kC255, 0);
   }
-  msg.SetTaglist(kAEAD, kAESG, kCC12, 0);
+  if (FLAGS_quic_use_rfc7539 &&
+      ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
+    msg.SetTaglist(kAEAD, kAESG, kCC12, kCC20, 0);
+  } else {
+    msg.SetTaglist(kAEAD, kAESG, kCC12, 0);
+  }
   msg.SetStringPiece(kPUBS, encoded_public_values);
 
   if (options.expiry_time.IsZero()) {

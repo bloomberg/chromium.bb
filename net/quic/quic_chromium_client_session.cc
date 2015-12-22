@@ -480,6 +480,9 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
     case kCC12:
       cipher_suite = 0xcc13;  // TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
       security_bits = 256;
+    case kCC20:
+      cipher_suite = 0xcc13;  // TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      security_bits = 256;
       break;
     default:
       NOTREACHED();

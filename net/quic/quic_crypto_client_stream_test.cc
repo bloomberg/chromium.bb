@@ -106,6 +106,7 @@ TEST_F(QuicCryptoClientStreamTest, BadMessageType) {
 }
 
 TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
+  FLAGS_quic_use_rfc7539 = true;
   CompleteCryptoHandshake();
 
   const QuicConfig* config = session_->config();

@@ -130,3 +130,6 @@ bool FLAGS_quic_new_blocked_list = true;
 
 // If true, use inplace encryption for QUIC.
 bool FLAGS_quic_inplace_encryption = true;
+
+// If true, QUIC will support RFC 7539 variants of ChaCha20 Poly1305.
+bool FLAGS_quic_use_rfc7539 = true;
