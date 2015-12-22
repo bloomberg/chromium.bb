@@ -7,9 +7,9 @@
 #ifndef JINGLE_NOTIFIER_LISTENER_PUSH_NOTIFICATIONS_SEND_UPDATE_TASK_H_
 #define JINGLE_NOTIFIER_LISTENER_PUSH_NOTIFICATIONS_SEND_UPDATE_TASK_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "jingle/notifier/listener/notification_defines.h"
 #include "webrtc/libjingle/xmpp/xmpptask.h"
 

@@ -7,8 +7,8 @@
 #ifndef JINGLE_NOTIFIER_BASE_XMPP_CONNECTION_H_
 #define JINGLE_NOTIFIER_BASE_XMPP_CONNECTION_H_
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

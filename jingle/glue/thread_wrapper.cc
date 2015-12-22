@@ -4,9 +4,13 @@
 
 #include "jingle/glue/thread_wrapper.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/threading/thread_local.h"
 #include "third_party/webrtc/base/nullsocketserver.h"
 
@@ -85,19 +89,22 @@ void JingleThreadWrapper::WillDestroyCurrentMessageLoop() {
   delete this;
 }
 
-void JingleThreadWrapper::Post(
-    rtc::MessageHandler* handler, uint32 message_id,
-    rtc::MessageData* data, bool time_sensitive) {
+void JingleThreadWrapper::Post(rtc::MessageHandler* handler,
+                               uint32_t message_id,
+                               rtc::MessageData* data,
+                               bool time_sensitive) {
   PostTaskInternal(0, handler, message_id, data);
 }
 
-void JingleThreadWrapper::PostDelayed(
-    int delay_ms, rtc::MessageHandler* handler,
-    uint32 message_id, rtc::MessageData* data) {
+void JingleThreadWrapper::PostDelayed(int delay_ms,
+                                      rtc::MessageHandler* handler,
+                                      uint32_t message_id,
+                                      rtc::MessageData* data) {
   PostTaskInternal(delay_ms, handler, message_id, data);
 }
 
-void JingleThreadWrapper::Clear(rtc::MessageHandler* handler, uint32 id,
+void JingleThreadWrapper::Clear(rtc::MessageHandler* handler,
+                                uint32_t id,
                                 rtc::MessageList* removed) {
   base::AutoLock auto_lock(lock_);
 
@@ -137,8 +144,9 @@ void JingleThreadWrapper::Clear(rtc::MessageHandler* handler, uint32 id,
   }
 }
 
-void JingleThreadWrapper::Send(rtc::MessageHandler *handler, uint32 id,
-                               rtc::MessageData *data) {
+void JingleThreadWrapper::Send(rtc::MessageHandler* handler,
+                               uint32_t id,
+                               rtc::MessageData* data) {
   if (fStop_)
     return;
 
@@ -209,9 +217,10 @@ void JingleThreadWrapper::ProcessPendingSends() {
   }
 }
 
-void JingleThreadWrapper::PostTaskInternal(
-    int delay_ms, rtc::MessageHandler* handler,
-    uint32 message_id, rtc::MessageData* data) {
+void JingleThreadWrapper::PostTaskInternal(int delay_ms,
+                                           rtc::MessageHandler* handler,
+                                           uint32_t message_id,
+                                           rtc::MessageData* data) {
   int task_id;
   rtc::Message message;
   message.phandler = handler;
@@ -283,8 +292,10 @@ bool JingleThreadWrapper::Peek(rtc::Message*, int) {
   return false;
 }
 
-void JingleThreadWrapper::PostAt(uint32, rtc::MessageHandler*,
-                                 uint32, rtc::MessageData*) {
+void JingleThreadWrapper::PostAt(uint32_t,
+                                 rtc::MessageHandler*,
+                                 uint32_t,
+                                 rtc::MessageData*) {
   NOTREACHED();
 }
 

@@ -5,7 +5,10 @@
 #ifndef JINGLE_GLUE_TASK_PUMP_H_
 #define JINGLE_GLUE_TASK_PUMP_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "third_party/webrtc/base/taskrunner.h"
@@ -21,7 +24,7 @@ class TaskPump : public rtc::TaskRunner, public base::NonThreadSafe {
 
   // rtc::TaskRunner implementation.
   void WakeTasks() override;
-  int64 CurrentTime() override;
+  int64_t CurrentTime() override;
 
   // No tasks will be processed after this is called, even if
   // WakeTasks() is called.

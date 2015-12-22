@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "jingle/glue/resolving_client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"

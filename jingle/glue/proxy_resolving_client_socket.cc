@@ -4,7 +4,8 @@
 
 #include "jingle/glue/proxy_resolving_client_socket.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -115,14 +116,14 @@ int ProxyResolvingClientSocket::Write(
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
-int ProxyResolvingClientSocket::SetReceiveBufferSize(int32 size) {
+int ProxyResolvingClientSocket::SetReceiveBufferSize(int32_t size) {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->SetReceiveBufferSize(size);
   NOTREACHED();
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
-int ProxyResolvingClientSocket::SetSendBufferSize(int32 size) {
+int ProxyResolvingClientSocket::SetSendBufferSize(int32_t size) {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->SetSendBufferSize(size);
   NOTREACHED();

@@ -4,8 +4,8 @@
 
 #include "jingle/glue/proxy_resolving_client_socket.h"
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/test_completion_callback.h"

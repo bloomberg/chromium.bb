@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "jingle/glue/task_pump.h"
@@ -31,7 +33,7 @@ void TaskPump::WakeTasks() {
   }
 }
 
-int64 TaskPump::CurrentTime() {
+int64_t TaskPump::CurrentTime() {
   DCHECK(CalledOnValidThread());
   // Only timeout tasks rely on this function.  Since we're not using
   // libjingle tasks for timeout, it's safe to return 0 here.

@@ -17,6 +17,7 @@
 // libjingle style logging is used.
 #define LOGGING_INSIDE_WEBRTC
 
+#include "build/build_config.h"
 #include "third_party/webrtc_overrides/webrtc/base/logging.h"
 
 #if defined(OS_WIN)

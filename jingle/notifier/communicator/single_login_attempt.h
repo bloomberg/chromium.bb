@@ -6,6 +6,7 @@
 #define JINGLE_NOTIFIER_COMMUNICATOR_SINGLE_LOGIN_ATTEMPT_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "jingle/notifier/base/xmpp_connection.h"
 #include "jingle/notifier/communicator/connection_settings.h"

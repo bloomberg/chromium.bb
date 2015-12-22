@@ -11,11 +11,13 @@
 #error ChromeAsyncSocket expects FEATURE_ENABLE_SSL to be defined
 #endif
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

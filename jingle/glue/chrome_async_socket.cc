@@ -4,11 +4,12 @@
 
 #include "jingle/glue/chrome_async_socket.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"

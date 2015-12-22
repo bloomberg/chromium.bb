@@ -5,6 +5,7 @@
 #include "jingle/notifier/listener/send_ping_task.h"
 
 #include "base/base64.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

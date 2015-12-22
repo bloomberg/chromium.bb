@@ -4,6 +4,8 @@
 
 #include "jingle/notifier/communicator/connection_settings.h"
 
+#include <stddef.h>
+
 #include "jingle/notifier/base/server_information.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

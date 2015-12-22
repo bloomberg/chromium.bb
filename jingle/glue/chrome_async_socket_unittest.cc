@@ -4,11 +4,13 @@
 
 #include "jingle/glue/chrome_async_socket.h"
 
+#include <stddef.h>
+
 #include <deque>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_default.h"

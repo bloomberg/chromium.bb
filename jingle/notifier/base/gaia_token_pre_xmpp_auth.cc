@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "webrtc/base/socketaddress.h"
 #include "webrtc/libjingle/xmpp/constants.h"
 #include "webrtc/libjingle/xmpp/saslcookiemechanism.h"

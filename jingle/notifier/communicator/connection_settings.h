@@ -5,10 +5,11 @@
 #ifndef JINGLE_NOTIFIER_COMMUNICATOR_CONNECTION_SETTINGS_H_
 #define JINGLE_NOTIFIER_COMMUNICATOR_CONNECTION_SETTINGS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "jingle/notifier/base/server_information.h"
 #include "webrtc/base/socketaddress.h"
 
@@ -19,7 +20,7 @@ class XmppClientSettings;
 namespace notifier {
 
 // The port for SSLTCP (just the regular port for SSL).
-extern const uint16 kSslTcpPort;
+extern const uint16_t kSslTcpPort;
 
 enum SslTcpMode { DO_NOT_USE_SSLTCP, USE_SSLTCP };
 

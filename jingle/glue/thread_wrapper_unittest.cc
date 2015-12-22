@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
@@ -17,8 +19,8 @@ using ::testing::Mock;
 
 namespace jingle_glue {
 
-static const uint32 kTestMessage1 = 1;
-static const uint32 kTestMessage2 = 2;
+static const uint32_t kTestMessage1 = 1;
+static const uint32_t kTestMessage2 = 2;
 
 static const int kTestDelayMs1 = 10;
 static const int kTestDelayMs2 = 20;

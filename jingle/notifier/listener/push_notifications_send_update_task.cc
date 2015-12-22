@@ -4,6 +4,8 @@
 
 #include "jingle/notifier/listener/push_notifications_send_update_task.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/base64.h"

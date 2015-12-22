@@ -4,6 +4,8 @@
 
 #include "jingle/notifier/communicator/connection_settings.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 
 #include "webrtc/libjingle/xmpp/xmppclientsettings.h"
@@ -14,7 +16,7 @@
 
 namespace notifier {
 
-const uint16 kSslTcpPort = 443;
+const uint16_t kSslTcpPort = 443;
 
 ConnectionSettings::ConnectionSettings(
     const rtc::SocketAddress& server,

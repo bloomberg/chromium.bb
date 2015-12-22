@@ -5,6 +5,7 @@
 #include "jingle/notifier/listener/push_notifications_send_update_task.h"
 
 #include "base/base64.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "jingle/notifier/listener/xml_element_util.h"

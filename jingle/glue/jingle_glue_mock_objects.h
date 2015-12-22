@@ -5,6 +5,8 @@
 #ifndef JINGLE_GLUE_JINGLE_GLUE_MOCK_OBJECTS_H_
 #define JINGLE_GLUE_JINGLE_GLUE_MOCK_OBJECTS_H_
 
+#include <stddef.h>
+
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/webrtc/base/stream.h"
 

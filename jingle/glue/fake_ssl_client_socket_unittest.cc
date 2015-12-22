@@ -4,10 +4,13 @@
 
 #include "jingle/glue/fake_ssl_client_socket.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -50,8 +53,8 @@ class MockClientSocket : public net::StreamSocket {
                          const net::CompletionCallback&));
   MOCK_METHOD3(Write, int(net::IOBuffer*, int,
                           const net::CompletionCallback&));
-  MOCK_METHOD1(SetReceiveBufferSize, int(int32));
-  MOCK_METHOD1(SetSendBufferSize, int(int32));
+  MOCK_METHOD1(SetReceiveBufferSize, int(int32_t));
+  MOCK_METHOD1(SetSendBufferSize, int(int32_t));
   MOCK_METHOD1(Connect, int(const net::CompletionCallback&));
   MOCK_METHOD0(Disconnect, void());
   MOCK_CONST_METHOD0(IsConnected, bool());
@@ -63,7 +66,7 @@ class MockClientSocket : public net::StreamSocket {
   MOCK_METHOD0(SetOmniboxSpeculation, void());
   MOCK_CONST_METHOD0(WasEverUsed, bool());
   MOCK_CONST_METHOD0(UsingTCPFastOpen, bool());
-  MOCK_CONST_METHOD0(NumBytesRead, int64());
+  MOCK_CONST_METHOD0(NumBytesRead, int64_t());
   MOCK_CONST_METHOD0(GetConnectTimeMicros, base::TimeDelta());
   MOCK_CONST_METHOD0(WasNpnNegotiated, bool());
   MOCK_CONST_METHOD0(GetNegotiatedProtocol, net::NextProto());

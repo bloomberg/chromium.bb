@@ -8,7 +8,7 @@
 #ifndef JINGLE_NOTIFIER_FAKE_XMPP_CLIENT_H_
 #define JINGLE_NOTIFIER_FAKE_XMPP_CLIENT_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "jingle/glue/task_pump.h"
 
