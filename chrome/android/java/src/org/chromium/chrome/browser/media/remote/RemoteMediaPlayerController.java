@@ -185,11 +185,6 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
      */
     public void requestRemotePlayback(
             MediaRouteController.MediaStateListener player, MediaRouteController controller) {
-        // If we are already casting then simply switch to new video.
-        if (controller.isBeingCast()) {
-            controller.playerTakesOverCastDevice(player);
-            return;
-        }
         Activity currentActivity = ApplicationStatus.getLastTrackedFocusedActivity();
         mChromeVideoActivity = new WeakReference<Activity>(currentActivity);
 

@@ -87,7 +87,6 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   void SetNativePlayer();
   void OnPlayerCreated();
   void OnPlayerDestroyed();
-  bool TakesOverCastDevice();
 
   // Gets the message to display on the embedded player while casting.
   std::string GetCastingMessage();

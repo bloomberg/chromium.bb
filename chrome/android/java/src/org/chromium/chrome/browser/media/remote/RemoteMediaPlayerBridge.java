@@ -366,12 +366,6 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     }
 
     @CalledByNative
-    private boolean takesOverCastDevice() {
-        if (mRouteController == null) return false;
-        return mRouteController.playerTakesOverCastDevice(mMediaStateListener);
-    }
-
-    @CalledByNative
     private void setCookies(String cookies) {
         mCookies = cookies;
     }

@@ -17,7 +17,7 @@ import org.chromium.content_public.browser.WebContents;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Test switching videos when casting
+ * Test that other videos are played locally when casting
  */
 public class CastSwitchVideoTest extends CastTestBase {
 
@@ -30,7 +30,7 @@ public class CastSwitchVideoTest extends CastTestBase {
     public void testNewVideoInNewTab() throws InterruptedException, TimeoutException {
         // This won't currently work in document mode because we can't create new tabs
         if (FeatureUtilities.isDocumentMode(getActivity())) return;
-        checkSwitchVideo(DEFAULT_VIDEO_PAGE, new Runnable() {
+        checkSwitchVideo(DEFAULT_VIDEO_PAGE, VIDEO_ELEMENT, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -46,7 +46,7 @@ public class CastSwitchVideoTest extends CastTestBase {
     @Feature({"VideoFling"})
     @LargeTest
     public void testNewVideoNewPageSameTab() throws InterruptedException, TimeoutException {
-        checkSwitchVideo(DEFAULT_VIDEO_PAGE, new Runnable() {
+        checkSwitchVideo(DEFAULT_VIDEO_PAGE, VIDEO_ELEMENT, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -62,7 +62,7 @@ public class CastSwitchVideoTest extends CastTestBase {
     @Feature({"VideoFling"})
     @LargeTest
     public void testTwoVideosSamePage() throws InterruptedException, TimeoutException {
-        checkSwitchVideo(TWO_VIDEO_PAGE, new Runnable() {
+        checkSwitchVideo(TWO_VIDEO_PAGE, VIDEO_ELEMENT_2, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -74,8 +74,9 @@ public class CastSwitchVideoTest extends CastTestBase {
         });
     }
 
-    private void checkSwitchVideo(String firstVideoPage, final Runnable startSecondVideo)
-            throws InterruptedException, TimeoutException {
+    private void checkSwitchVideo(
+            String firstVideoPage, String secondVideoId, final Runnable startSecondVideo)
+                    throws InterruptedException, TimeoutException {
         // TODO(aberent) Checking position is flaky, because it is timing dependent, but probably
         // a good idea in principle. Need to find a way of unflaking it.
         // int position = castAndPauseDefaultVideoFromPage(firstVideoPage);
@@ -83,26 +84,29 @@ public class CastSwitchVideoTest extends CastTestBase {
 
         startSecondVideo.run();
 
-        // Check that we switch to playing the right video
-        checkVideoStarted(TEST_VIDEO_2);
+        // Check that we are still casting the default video
+        assertEquals("The first video is not casting",
+                TestHttpServerClient.getUrl(DEFAULT_VIDEO),
+                RemotePlaybackSettings.getUriPlaying(getActivity()));
 
-        // Check we are back at the start of the video
-        RemoteMediaPlayerController controller = RemoteMediaPlayerController.getIfExists();
-        assertNotNull("No controller", controller);
-
-        // TODO(aberent) Check position.
-        // assertTrue("Position in video wrong", getPosition() < position);
+        // Check that the second video is still there and paused
+        final Tab tab = getActivity().getActivityTab();
+        WebContents webContents = tab.getWebContents();
+        assertFalse("Other video is not playing",
+                DOMUtils.isMediaPaused(webContents, secondVideoId));
     }
 
     private void playVideoFromCurrentTab(String videoElement) throws InterruptedException,
             TimeoutException {
-        // Start playing the video by tapping at its centre
         final Tab tab = getActivity().getActivityTab();
         WebContents webContents = tab.getWebContents();
 
         waitUntilVideoReady(videoElement, webContents);
 
+        // Need to click on the video first to overcome the user gesture requirement.
         DOMUtils.clickNode(this, tab.getContentViewCore(), videoElement);
+        DOMUtils.playMedia(webContents, videoElement);
+        DOMUtils.waitForMediaPlay(webContents, videoElement);
     }
 
 }

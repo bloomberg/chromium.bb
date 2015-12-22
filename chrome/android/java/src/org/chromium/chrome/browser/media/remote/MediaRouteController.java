@@ -343,14 +343,4 @@ public interface MediaRouteController extends TransportControl.Listener {
      * @return the poster bitmap, or Null.
      */
     Bitmap getPoster();
-
-    /**
-     * Used to switch video or audio streams when already casting.
-     * If the mediaRouteController not casting does nothing.
-     * If the mediaRouteController is already casting, then the calling RemoteMediaPlayerBridge
-     * takes over the cast device and starts casting its stream.
-     * @param mMediaStateListener
-     * @return true if the new stream has been cast, false if not.
-     */
-    boolean playerTakesOverCastDevice(MediaStateListener mediaStateListener);
 }

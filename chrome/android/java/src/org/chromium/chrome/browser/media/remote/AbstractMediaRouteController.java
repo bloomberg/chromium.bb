@@ -620,17 +620,4 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
      * @param cookies
      */
     public void setDataSource(Uri uri, String cookies) {};
-
-    @Override
-    public boolean playerTakesOverCastDevice(MediaStateListener mediaStateListener) {
-        // Check if this MediaRouteControler is casting something.
-        if (!isBeingCast()) return false;
-        // Check if we want to cast the new video
-        if (!canCastMedia()) return false;
-        // Take over the cast device
-        if (mMediaStateListener != null) mMediaStateListener.onCastStopping();
-        mMediaStateListener = mediaStateListener;
-        startCastingVideo(mCurrentRoute);
-        return true;
-    }
 }

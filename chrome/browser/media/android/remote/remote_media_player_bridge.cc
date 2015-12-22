@@ -407,12 +407,4 @@ void RemoteMediaPlayerBridge::OnCookiesRetrieved(const std::string& cookies) {
       env, java_bridge_.obj(), ConvertUTF8ToJavaString(env, cookies).obj());
 }
 
-bool RemoteMediaPlayerBridge::TakesOverCastDevice() {
-  JNIEnv* env = AttachCurrentThread();
-  CHECK(env);
-  jboolean result =
-      Java_RemoteMediaPlayerBridge_takesOverCastDevice(env, java_bridge_.obj());
-  return result;
-}
-
 }  // namespace remote_media
