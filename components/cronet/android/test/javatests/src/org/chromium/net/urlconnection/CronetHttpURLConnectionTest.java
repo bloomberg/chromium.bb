@@ -89,6 +89,22 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         connection.disconnect();
     }
 
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    // Regression test for crbug.com/571436.
+    public void testDefaultToPostWhenDoOutput() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoMethodURL());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        OutputStream out = connection.getOutputStream();
+        out.write("dummy data".getBytes());
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+        assertEquals("POST", TestUtil.getResponseAsString(connection));
+        connection.disconnect();
+    }
+
     /**
      * Tests that using reflection to find {@code fixedContentLengthLong} works.
      */
