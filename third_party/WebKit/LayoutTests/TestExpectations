@@ -1381,7 +1381,7 @@ crbug.com/299010 [ Win ] http/tests/webfont/popup-menu-load-webfont-after-open.h
 crbug.com/299010 [ Linux Mac Win ] fast/css/font-face-opentype.html [ NeedsRebaseline ]
 crbug.com/299010 [ Mac ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsRebaseline ]
 crbug.com/299010 [ Mac ] fast/forms/month/month-appearance-l10n.html [ NeedsRebaseline ]
-crbug.com/299010 [ Linux Mac Win10 ] fast/forms/text/text-font-height-mismatch.html [ NeedsRebaseline ]
+crbug.com/299010 fast/forms/text/text-font-height-mismatch.html [ NeedsRebaseline ]
 crbug.com/299010 [ Linux Mac Win ] fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
 crbug.com/299010 [ Linux Mac Win ] fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
 crbug.com/299010 [ Linux Win ] fast/block/positioning/047.html [ NeedsRebaseline ]
@@ -1402,7 +1402,6 @@ crbug.com/563694 [ Linux Mac Debug ] svg/hixie/perf/005.xml [ Failure ]
 
 crbug.com/564109 [ Win7 XP ]  http/tests/webfont/font-display.html [ Pass Timeout Failure ]
 
-crbug.com/558574 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
 crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
