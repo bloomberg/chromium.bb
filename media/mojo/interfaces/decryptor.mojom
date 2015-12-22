@@ -19,6 +19,15 @@ interface Decryptor {
     ERROR  // Key is available but an error occurred during decryption.
   };
 
+  // Pass the two data pipes used to transfer DecoderBuffer contents to and
+  // from the Decryptor. |receive_pipe| will be used to receive DecoderBuffer
+  // data on Decrypt(), DecryptAndDecodeAudio(), and DecryptAndDecodeVideo()
+  // calls. |transmit_pipe| will be used to pass the DecoderBuffer data
+  // back with OnDecryptDone() calls. This method must be called before any
+  // methods listed are called.
+  Initialize(handle<data_pipe_consumer> receive_pipe,
+             handle<data_pipe_producer> transmit_pipe);
+
   // Decrypts the |encrypted| buffer and returns the decrypt |status| and
   // decrypted |buffer|.
   // At most one decrypt call is allowed at any time for a |stream_type|.

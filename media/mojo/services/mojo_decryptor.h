@@ -10,6 +10,7 @@
 #include "media/base/decryptor.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace media {
 
@@ -51,7 +52,22 @@ class MojoDecryptor : public Decryptor {
                       interfaces::Decryptor::Status status,
                       interfaces::VideoFramePtr video_frame);
 
+  // To pass DecoderBuffers to and from the MojoDecryptorService, 2 data pipes
+  // are required (one each way). At initialization both pipes are created,
+  // and then the handles are passed to the MojoDecryptorService.
+  void CreateDataPipes();
+
+  // Helper functions to write and read a DecoderBuffer.
+  interfaces::DecoderBufferPtr TransferDecoderBuffer(
+      const scoped_refptr<DecoderBuffer>& buffer);
+  scoped_refptr<DecoderBuffer> ReadDecoderBuffer(
+      interfaces::DecoderBufferPtr buffer);
+
   interfaces::DecryptorPtr remote_decryptor_;
+
+  // DataPipes for serializing the data section of DecoderBuffer into/from.
+  mojo::ScopedDataPipeProducerHandle producer_handle_;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle_;
 
   NewKeyCB new_audio_key_cb_;
   NewKeyCB new_video_key_cb_;

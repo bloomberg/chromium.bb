@@ -12,6 +12,7 @@
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/callback.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace media {
 
@@ -32,6 +33,8 @@ class MojoDecryptorService : public interfaces::Decryptor {
   ~MojoDecryptorService() final;
 
   // interfaces::Decryptor implementation.
+  void Initialize(mojo::ScopedDataPipeConsumerHandle receive_pipe,
+                  mojo::ScopedDataPipeProducerHandle transmit_pipe) final;
   void Decrypt(interfaces::DemuxerStream::Type stream_type,
                interfaces::DecoderBufferPtr encrypted,
                const DecryptCallback& callback) final;
@@ -71,8 +74,18 @@ class MojoDecryptorService : public interfaces::Decryptor {
                       media::Decryptor::Status status,
                       const scoped_refptr<VideoFrame>& frame);
 
+  // Helper functions to write and read a DecoderBuffer.
+  interfaces::DecoderBufferPtr TransferDecoderBuffer(
+      const scoped_refptr<DecoderBuffer>& buffer);
+  scoped_refptr<DecoderBuffer> ReadDecoderBuffer(
+      interfaces::DecoderBufferPtr buffer);
+
   // A weak binding is used to connect to the MojoDecryptor.
   mojo::Binding<interfaces::Decryptor> binding_;
+
+  // DataPipes for serializing the data section of DecoderBuffer into/from.
+  mojo::ScopedDataPipeProducerHandle producer_handle_;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle_;
 
   // Keep ownership of |cdm_| while it is being used. |decryptor_| is the actual
   // Decryptor referenced by |cdm_|.
