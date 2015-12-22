@@ -81,11 +81,24 @@ class UrlManager {
      */
     public void addUrl(String url) {
         Log.d(TAG, "URL found: " + url);
-        Set<String> urls = getCachedNearbyUrls();
-        urls.add(url);
-        putCachedNearbyUrls(urls);
-        resolveUrl(url);
-        updateNotification();
+        boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
+        Set<String> nearbyUrls = getCachedNearbyUrls();
+
+        boolean wasUrlListEmpty = (isOnboarding && nearbyUrls.isEmpty())
+                || (!isOnboarding && getUrls().isEmpty());
+
+        nearbyUrls.add(url);
+        putCachedNearbyUrls(nearbyUrls);
+
+        if (!isOnboarding) {
+            resolveUrl(url);
+        }
+
+        boolean isUrlListEmpty = !isOnboarding && getUrls().isEmpty();
+
+        if (wasUrlListEmpty && !isUrlListEmpty) {
+            showNotification();
+        }
     }
 
     /**
@@ -95,16 +108,34 @@ class UrlManager {
      */
     public void removeUrl(String url) {
         Log.d(TAG, "URL lost: " + url);
-        Set<String> urls = getCachedNearbyUrls();
-        urls.remove(url);
-        putCachedNearbyUrls(urls);
-        updateNotification();
+        boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
+        Set<String> nearbyUrls = getCachedNearbyUrls();
+        nearbyUrls.remove(url);
+        putCachedNearbyUrls(nearbyUrls);
+
+        boolean isUrlListEmpty = (isOnboarding && nearbyUrls.isEmpty())
+                || (!isOnboarding && getUrls().isEmpty());
+
+        if (isUrlListEmpty) {
+            clearNotification();
+        }
     }
 
     /**
      * Get the list of URLs which are both nearby and resolved through PWS.
+     * @return A set of nearby and resolved URLs.
      */
     public Set<String> getUrls() {
+        return getUrls(false);
+    }
+
+    /**
+     * Get the list of URLs which are both nearby and resolved through PWS.
+     * @param allowUnresolved If true, include unresolved URLs only if the
+     * resolved URL list is empty.
+     * @return A set of nearby URLs.
+     */
+    public Set<String> getUrls(boolean allowUnresolved) {
         Set<String> nearbyUrls = getCachedNearbyUrls();
         Set<String> resolvedUrls = getCachedResolvedUrls();
         Set<String> intersection = new HashSet<String>(nearbyUrls);
@@ -112,6 +143,11 @@ class UrlManager {
         Log.d(TAG, "Get URLs With: " + nearbyUrls.size() + " nearby, "
                       + resolvedUrls.size() + " resolved, and "
                       + intersection.size() + " in intersection.");
+
+        if (allowUnresolved && resolvedUrls.isEmpty()) {
+            intersection = nearbyUrls;
+        }
+
         return intersection;
     }
 
@@ -127,18 +163,29 @@ class UrlManager {
 
     private void addResolvedUrl(String url) {
         Log.d(TAG, "PWS resolved: " + url);
-        Set<String> urls = getCachedResolvedUrls();
-        urls.add(url);
-        putCachedResolvedUrls(urls);
-        updateNotification();
+        Set<String> resolvedUrls = getCachedResolvedUrls();
+
+        boolean wasUrlListEmpty = getUrls().isEmpty();
+
+        resolvedUrls.add(url);
+        putCachedResolvedUrls(resolvedUrls);
+
+        boolean isUrlListEmpty = getUrls().isEmpty();
+
+        if (wasUrlListEmpty && !isUrlListEmpty) {
+            showNotification();
+        }
     }
 
     private void removeResolvedUrl(String url) {
         Log.d(TAG, "PWS unresolved: " + url);
-        Set<String> urls = getCachedResolvedUrls();
-        urls.remove(url);
-        putCachedResolvedUrls(urls);
-        updateNotification();
+        Set<String> resolvedUrls = getCachedResolvedUrls();
+        resolvedUrls.remove(url);
+        putCachedResolvedUrls(resolvedUrls);
+
+        if (getUrls().isEmpty()) {
+            clearNotification();
+        }
     }
 
     private void initSharedPreferences() {
@@ -197,6 +244,13 @@ class UrlManager {
         return pendingIntent;
     }
 
+    private PendingIntent createOptInIntent() {
+        // TODO(mattreynolds): navigate to PhysicalWebOptInActivity
+        Intent intent = new Intent(mContext, ListUrlsActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
+        return pendingIntent;
+    }
+
     private void resolveUrl(final String url) {
         Set<String> urls = new HashSet<String>(Arrays.asList(url));
         final long timestamp = SystemClock.elapsedRealtime();
@@ -218,15 +272,22 @@ class UrlManager {
         });
     }
 
-    private void updateNotification() {
-        Set<String> urls = getUrls();
-
-        if (urls.isEmpty()) {
-            clearNotification();
+    private void showNotification() {
+        if (PhysicalWeb.isOnboarding(mContext)) {
+            if (PhysicalWeb.getOptInNotifyCount(mContext) < PhysicalWeb.OPTIN_NOTIFY_MAX_TRIES) {
+                // high priority notification
+                createOptInNotification(true);
+                PhysicalWeb.recordOptInNotification(mContext);
+            } else {
+                // min priority notification
+                createOptInNotification(false);
+            }
             return;
         }
 
-        createNotification();
+        if (PhysicalWeb.isPhysicalWebPreferenceEnabled(mContext)) {
+            createNotification();
+        }
     }
 
     private void createNotification() {
@@ -246,6 +307,32 @@ class UrlManager {
                 .setContentIntent(pendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .build();
+        mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB,
+                                    notification);
+    }
+
+    private void createOptInNotification(boolean highPriority) {
+        PendingIntent pendingIntent = createOptInIntent();
+
+        int priority = highPriority ? NotificationCompat.PRIORITY_HIGH
+                : NotificationCompat.PRIORITY_MIN;
+
+        // Get values to display.
+        Resources resources = mContext.getResources();
+        String title = resources.getString(R.string.physical_web_optin_notification_title);
+        Bitmap largeIcon = BitmapFactory.decodeResource(resources,
+                R.drawable.physical_web_notification_large);
+
+        // Create the notification.
+        Notification notification = new NotificationCompat.Builder(mContext)
+                .setLargeIcon(largeIcon)
+                .setSmallIcon(R.drawable.ic_chrome)
+                .setContentTitle(title)
+                .setContentIntent(pendingIntent)
+                .setPriority(priority)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setAutoCancel(true)
                 .build();
         mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB,
                                     notification);

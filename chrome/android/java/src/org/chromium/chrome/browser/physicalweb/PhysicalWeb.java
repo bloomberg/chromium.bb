@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.physicalweb;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -17,6 +19,9 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager
  * This class provides the basic interface to the Physical Web feature.
  */
 public class PhysicalWeb {
+    public static final int OPTIN_NOTIFY_MAX_TRIES = 1;
+    private static final String PREF_PHYSICAL_WEB_NOTIFY_COUNT = "physical_web_notify_count";
+
     /**
      * Evaluate whether the environment is one in which the Physical Web should
      * be enabled.
@@ -58,8 +63,8 @@ public class PhysicalWeb {
      * @return true if the Physical Web should be started at launch
      */
     public static boolean shouldStartOnLaunch(Context context) {
-        // TODO(mattreynolds): start for onboarding
-        return featureIsEnabled() && isPhysicalWebPreferenceEnabled(context);
+        return featureIsEnabled()
+                && (isPhysicalWebPreferenceEnabled(context) || isOnboarding(context));
     }
 
     /**
@@ -92,6 +97,32 @@ public class PhysicalWeb {
      */
     public static void uploadDeferredMetrics(final Context context) {
         PhysicalWebUma.uploadDeferredMetrics(context);
+    }
+
+    /**
+     * Increments a value tracking how many times we've shown the Physical Web
+     * opt-in notification.
+     *
+     * @param context An instance of android.content.Context
+     */
+    public static void recordOptInNotification(Context context) {
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(context);
+        int value = sharedPreferences.getInt(PREF_PHYSICAL_WEB_NOTIFY_COUNT, 0);
+        sharedPreferences.edit().putInt(PREF_PHYSICAL_WEB_NOTIFY_COUNT, value + 1).apply();
+    }
+
+    /**
+     * Gets the current count of how many times a high-priority opt-in notification
+     * has been shown.
+     *
+     * @param context An instance of android.content.Context
+     * @return an integer representing the high-priority notifification display count.
+     */
+    public static int getOptInNotifyCount(Context context) {
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPreferences.getInt(PREF_PHYSICAL_WEB_NOTIFY_COUNT, 0);
     }
 
     private static void clearUrlsAsync(final Context context) {
