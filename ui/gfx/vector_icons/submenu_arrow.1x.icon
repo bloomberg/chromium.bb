@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/controls/menu/menu_config.h"
-
-namespace views {
-
-void MenuConfig::Init() {
-  arrow_to_edge_padding = 6;
-}
-
-}  // namespace views
+CANVAS_DIMENSIONS, 8,
+FLIPS_IN_RTL,
+MOVE_TO, 2, 8,
+R_LINE_TO, 5, -4,
+R_LINE_TO, -5, -4,
+R_V_LINE_TO, 8,
+CLOSE,
+END

@@ -469,6 +469,7 @@
       'type': '<(component)',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/skia/skia.gyp:skia',
         'gfx',
         'gfx_geometry',

@@ -46,12 +46,14 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kCheckbox,
     kInnerSpinButton,
     kMenuList,
+    kMenuPopupBackground,
+#if defined(OS_WIN)
     kMenuCheck,
     kMenuCheckBackground,
     kMenuPopupArrow,
-    kMenuPopupBackground,
     kMenuPopupGutter,
     kMenuPopupSeparator,
+#endif
     kMenuItemBackground,
     kProgressBar,
     kPushButton,

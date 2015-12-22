@@ -109,17 +109,8 @@ gfx::Size NativeThemeBase::GetPartSize(Part part,
       return gfx::Size(scrollbar_width_, 0);
     case kMenuList:
       return gfx::Size();  // No default size.
-    case kMenuCheck:
-    case kMenuCheckBackground:
-    case kMenuPopupArrow:
-      NOTIMPLEMENTED();
-      break;
     case kMenuPopupBackground:
       return gfx::Size();  // No default size.
-    case kMenuPopupGutter:
-    case kMenuPopupSeparator:
-      NOTIMPLEMENTED();
-      break;
     case kMenuItemBackground:
     case kProgressBar:
     case kPushButton:
@@ -218,17 +209,8 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
     case kMenuList:
       PaintMenuList(canvas, state, rect, extra.menu_list);
       break;
-    case kMenuCheck:
-    case kMenuCheckBackground:
-    case kMenuPopupArrow:
-      NOTIMPLEMENTED();
-      break;
     case kMenuPopupBackground:
       PaintMenuPopupBackground(canvas, rect.size(), extra.menu_background);
-      break;
-    case kMenuPopupGutter:
-    case kMenuPopupSeparator:
-      NOTIMPLEMENTED();
       break;
     case kMenuItemBackground:
       PaintMenuItemBackground(canvas, state, rect, extra.menu_list);

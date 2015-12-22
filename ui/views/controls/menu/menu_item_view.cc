@@ -10,7 +10,9 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image.h"
@@ -772,9 +774,35 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   const int bottom_margin = GetBottomMargin();
   const int available_height = height() - top_margin - bottom_margin;
 
+  // Calculate some colors.
+  ui::NativeTheme::ColorId color_id;
+  if (enabled()) {
+    color_id = render_selection ?
+        ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor:
+        ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
+  } else {
+    bool emphasized = delegate &&
+                      delegate->GetShouldUseDisabledEmphasizedForegroundColor(
+                          GetCommand());
+    color_id = emphasized ?
+        ui::NativeTheme::kColorId_DisabledEmphasizedMenuItemForegroundColor :
+        ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
+  }
+  SkColor fg_color = native_theme->GetSystemColor(color_id);
+  SkColor override_foreground_color;
+  if (delegate && delegate->GetForegroundColor(GetCommand(),
+                                               render_selection,
+                                               &override_foreground_color)) {
+    fg_color = override_foreground_color;
+  }
+  SkColor icon_color =
+      render_selection && !ui::MaterialDesignController::IsModeMaterial()
+          ? fg_color
+          : color_utils::DeriveDefaultIconColor(fg_color);
+
   // Render the check.
   if (type_ == CHECKBOX && delegate->IsItemChecked(GetCommand())) {
-    gfx::ImageSkia check = GetMenuCheckImage(render_selection);
+    gfx::ImageSkia check = GetMenuCheckImage(icon_color);
     // Don't use config.check_width here as it's padded
     // to force more padding (AURA).
     gfx::Rect check_bounds(icon_x,
@@ -795,26 +823,6 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 
   // Render the foreground.
-  ui::NativeTheme::ColorId color_id;
-  if (enabled()) {
-    color_id = render_selection ?
-        ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor:
-        ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
-  } else {
-    bool emphasized = delegate &&
-                      delegate->GetShouldUseDisabledEmphasizedForegroundColor(
-                          GetCommand());
-    color_id = emphasized ?
-        ui::NativeTheme::kColorId_DisabledEmphasizedMenuItemForegroundColor :
-        ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
-  }
-  SkColor fg_color = native_theme->GetSystemColor(color_id);
-  SkColor override_foreground_color;
-  if (delegate && delegate->GetForegroundColor(GetCommand(),
-                                               render_selection,
-                                               &override_foreground_color))
-    fg_color = override_foreground_color;
-
   const gfx::FontList& font_list = GetFontList();
   int accel_width = parent_menu_item_->GetSubmenu()->max_minor_text_width();
   int label_start = GetLabelStartForThisItem();
@@ -846,7 +854,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 
   // Render the submenu indicator (arrow).
   if (HasSubmenu()) {
-    gfx::ImageSkia arrow = GetSubmenuArrowImage(render_selection);
+    gfx::ImageSkia arrow = GetSubmenuArrowImage(icon_color);
     gfx::Rect arrow_bounds(this->width() - config.arrow_width -
                                config.arrow_to_edge_padding,
                            top_margin + (available_height - arrow.height()) / 2,

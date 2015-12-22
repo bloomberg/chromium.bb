@@ -121,9 +121,8 @@
       <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_UNLOCKED_PRESSED" file="common/easy_unlock_unlocked_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="common/folder_closed.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_RTL" file="common/folder_closed_rtl.png" />
-      <structure type="chrome_scaled_image" name="IDR_MENU_CHECK_CHECKED" file="common/menu_check.png" />
-      <if expr="not is_macosx and not is_ios">
-        <structure type="chrome_scaled_image" name="IDR_MENU_HIERARCHY_ARROW" file="common/menu_hierarchy_arrow.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_MENU_CHECK_CHECKED" file="legacy/menu_check.png" />
       </if>
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_MENU_HIERARCHY_ARROW" file="mac/menu_hierarchy_arrow.png" />

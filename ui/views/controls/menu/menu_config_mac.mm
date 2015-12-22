@@ -14,7 +14,7 @@ void MenuConfig::Init() {
   item_top_margin = item_no_icon_top_margin = 1;
   item_bottom_margin = item_no_icon_bottom_margin = 1;
   item_left_margin = 2;
-  arrow_to_edge_padding = 12;
+  arrow_to_edge_padding = 13;
   icon_to_label_padding = 4;
   check_width = 19;
   check_height = 11;

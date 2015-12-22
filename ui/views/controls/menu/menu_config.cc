@@ -5,6 +5,7 @@
 #include "ui/views/controls/menu/menu_config.h"
 
 #include "base/macros.h"
+#include "ui/views/controls/menu/menu_image_util.h"
 
 namespace views {
 
@@ -21,10 +22,10 @@ MenuConfig::MenuConfig()
       label_to_arrow_padding(10),
       arrow_to_edge_padding(5),
       icon_to_label_padding(10),
-      check_width(16),
-      check_height(16),
+      check_width(kMenuCheckSize),
+      check_height(kMenuCheckSize),
       radio_width(16),
-      arrow_width(9),
+      arrow_width(kSubmenuArrowSize),
       separator_height(11),
       separator_upper_height(3),
       separator_lower_height(4),

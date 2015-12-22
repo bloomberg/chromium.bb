@@ -156,9 +156,9 @@
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_H" file="maximize_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_P" file="maximize_pressed.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_MENU_HIERARCHY_ARROW_DARK_BACKGROUND" file="common/menu_hierarchy_arrow_white.png" />
-      <structure type="chrome_scaled_image" name="IDR_MENU_CHECK" file="cros/menu_check.png" />
-      <structure type="chrome_scaled_image" name="IDR_MENU_CHECK_CHECKED_DARK_BACKGROUND" file="common/menu_check_white.png" />
+      <if expr="chromeos">
+        <structure type="chrome_scaled_image" name="IDR_MENU_CHECK" file="cros/menu_check.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_MENU_RADIO_EMPTY" file="common/menu_radio_empty.png" />
       <structure type="chrome_scaled_image" name="IDR_MENU_RADIO_SELECTED" file="common/menu_radio_selected.png" />
       <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_LEFT" file="slider_left_active.png" />

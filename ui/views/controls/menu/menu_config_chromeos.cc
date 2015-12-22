@@ -4,19 +4,13 @@
 
 #include "ui/views/controls/menu/menu_config.h"
 
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/menu/menu_image_util.h"
 
 namespace views {
 
 void MenuConfig::Init() {
   submenu_horizontal_inset = 1;
-  arrow_to_edge_padding = 20;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  arrow_width = rb.GetImageNamed(IDR_MENU_HIERARCHY_ARROW).Width();
+  arrow_to_edge_padding = 21;
   gfx::ImageSkia check = GetMenuCheckImage(false);
   check_height = check.height();
   item_min_height = 29;

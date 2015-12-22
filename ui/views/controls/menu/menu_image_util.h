@@ -5,28 +5,25 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_IMAGE_UTIL_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_IMAGE_UTIL_H_
 
-namespace gfx {
-class ImageSkia;
-}
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace views {
 
+// The width/height of the check and submenu arrows.
+const int kMenuCheckSize = 16;
+const int kSubmenuArrowSize = 8;
+
 // Returns the Menu Check box image (always checked).
-// The returned image is global object and should not be freed.
-// |dark_background| should be true if the check will be displayed on a
-// dark background (such as a hovered menu item).
-gfx::ImageSkia GetMenuCheckImage(bool dark_background);
+gfx::ImageSkia GetMenuCheckImage(SkColor icon_color);
 
 // Return the RadioButton image for given state.
 // It returns the "selected" image when |selected| is
 // true, or the "unselected" image if false.
-// The returned image is global object and should not be freed.
 gfx::ImageSkia GetRadioButtonImage(bool selected);
 
 // Returns the image for submenu arrow for current RTL setting.
-// |dark_background| should be true if the check will be displayed on a
-// dark background (such as a hovered menu item).
-gfx::ImageSkia GetSubmenuArrowImage(bool dark_background);
+gfx::ImageSkia GetSubmenuArrowImage(SkColor icon_color);
 
 }  // namespace views
 

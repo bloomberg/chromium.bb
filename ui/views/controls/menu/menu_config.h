@@ -56,14 +56,17 @@ struct VIEWS_EXPORT MenuConfig {
   // Padding between the icon and label.
   int icon_to_label_padding;
 
-  // Size of the check.
+  // The space reserved for the check. The actual size of the image may be
+  // different.
   int check_width;
   int check_height;
 
-  // Width of the radio bullet.
+  // The horizontal space reserved for radio button. The actual width of the
+  // image may be different.
   int radio_width;
 
-  // Width of the submenu arrow.
+  // The horizontal space reserved for submenu arrow. The actual width of the
+  // image may be different.
   int arrow_width;
 
   // Height of a normal separator (ui::NORMAL_SEPARATOR).

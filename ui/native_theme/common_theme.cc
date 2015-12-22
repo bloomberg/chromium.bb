@@ -411,13 +411,6 @@ gfx::Size CommonThemeGetPartSize(NativeTheme::Part part,
       return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_MENU_DROPARROW).Size();
 
-    case NativeTheme::kMenuCheck: {
-      const gfx::ImageSkia* check =
-          ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-              IDR_MENU_CHECK_CHECKED).ToImageSkia();
-      size.SetSize(check->width(), check->height());
-      break;
-    }
     default:
       break;
   }

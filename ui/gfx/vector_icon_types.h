@@ -52,6 +52,9 @@ enum CommandType {
   CLIP,
   // Disables anti-aliasing for this path.
   DISABLE_AA,
+  // Flips the x-axis in RTL locales. Default is false, this command sets it to
+  // true.
+  FLIPS_IN_RTL,
   // Marks the end of the list of commands.
   END
 };
