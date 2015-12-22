@@ -7,7 +7,9 @@
 #include <Foundation/Foundation.h>
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "net/http/http_util.h"
 
 namespace {
 // String format used to create the http status line from the status code and
@@ -15,7 +17,7 @@ namespace {
 NSString* const kHttpStatusLineFormat = @"HTTP %ld %s";
 // String format used to pass the header name/value pairs to the
 // HttpResponseHeaders.
-NSString* const kHeaderLineFormat = @"%@: %@";
+const char kHeaderLineFormat[] = "%s: %s";
 }
 
 namespace net {
@@ -34,11 +36,17 @@ scoped_refptr<HttpResponseHeaders> CreateHeadersFromNSHTTPURLResponse(
       new HttpResponseHeaders(status_line));
   // Iterate through |response|'s headers and add them to |http_headers|.
   [response.allHeaderFields
-      enumerateKeysAndObjectsUsingBlock:^(NSString* header_name,
+      enumerateKeysAndObjectsUsingBlock:^(NSString* name,
                                           NSString* value, BOOL*) {
-        NSString* header_line =
-            [NSString stringWithFormat:kHeaderLineFormat, header_name, value];
-        http_headers->AddHeader(base::SysNSStringToUTF8(header_line));
+        std::string header_name = base::SysNSStringToUTF8(name);
+        std::string header_value = base::SysNSStringToUTF8(value);
+        if (HttpUtil::IsValidHeaderName(header_name) &&
+            HttpUtil::IsValidHeaderValue(header_value)) {
+          std::string header_line =
+              base::StringPrintf(kHeaderLineFormat, header_name.c_str(),
+                                 header_value.c_str());
+          http_headers->AddHeader(header_line);
+        }
       }];
   return http_headers;
 }
