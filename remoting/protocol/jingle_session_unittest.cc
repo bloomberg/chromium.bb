@@ -115,7 +115,7 @@ class JingleSessionTest : public testing::Test {
     scoped_ptr<AuthenticatorFactory> factory(
         new FakeHostAuthenticatorFactory(auth_round_trips,
           messages_till_start, auth_action, true));
-    host_server_->set_authenticator_factory(factory.Pass());
+    host_server_->set_authenticator_factory(std::move(factory));
 
     client_server_.reset(new JingleSessionManager(
         make_scoped_ptr(new IceTransportFactory(new TransportContext(
@@ -195,7 +195,8 @@ class JingleSessionTest : public testing::Test {
     scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
         FakeAuthenticator::CLIENT, auth_round_trips, auth_action, true));
 
-    client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
+    client_session_ =
+        client_server_->Connect(kHostJid, std::move(authenticator));
     client_session_->SetEventHandler(&client_session_event_handler_);
 
     base::RunLoop().RunUntilIdle();
@@ -252,7 +253,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
 
   scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true));
-  client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
+  client_session_ = client_server_->Connect(kHostJid, std::move(authenticator));
   client_session_->SetEventHandler(&client_session_event_handler_);
 
   base::RunLoop().RunUntilIdle();
@@ -309,8 +310,8 @@ TEST_F(JingleSessionTest, TestIncompatibleProtocol) {
       CandidateSessionConfig::CreateDefault();
   // Disable all video codecs so the host will reject connection.
   config->mutable_video_configs()->clear();
-  client_server_->set_protocol_config(config.Pass());
-  client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
+  client_server_->set_protocol_config(std::move(config));
+  client_session_ = client_server_->Connect(kHostJid, std::move(authenticator));
   client_session_->SetEventHandler(&client_session_event_handler_);
 
   base::RunLoop().RunUntilIdle();
@@ -335,8 +336,8 @@ TEST_F(JingleSessionTest, TestLegacyIceConnection) {
   scoped_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
   config->set_ice_supported(false);
-  client_server_->set_protocol_config(config.Pass());
-  client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
+  client_server_->set_protocol_config(std::move(config));
+  client_session_ = client_server_->Connect(kHostJid, std::move(authenticator));
   client_session_->SetEventHandler(&client_session_event_handler_);
 
   base::RunLoop().RunUntilIdle();
@@ -364,7 +365,7 @@ TEST_F(JingleSessionTest, DeleteSessionOnIncomingConnection) {
   scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::CLIENT, 3, FakeAuthenticator::ACCEPT, true));
 
-  client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
+  client_session_ = client_server_->Connect(kHostJid, std::move(authenticator));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -391,7 +392,7 @@ TEST_F(JingleSessionTest, DeleteSessionOnAuth) {
   scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::CLIENT, 3, FakeAuthenticator::ACCEPT, true));
 
-  client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
+  client_session_ = client_server_->Connect(kHostJid, std::move(authenticator));
   base::RunLoop().RunUntilIdle();
 }
 

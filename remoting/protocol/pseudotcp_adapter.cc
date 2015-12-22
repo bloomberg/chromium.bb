@@ -117,7 +117,7 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
 
 PseudoTcpAdapter::Core::Core(scoped_ptr<P2PDatagramSocket> socket)
     : pseudo_tcp_(this, 0),
-      socket_(socket.Pass()),
+      socket_(std::move(socket)),
       write_waits_for_send_(false),
       waiting_write_position_(false),
       socket_write_pending_(false) {
@@ -452,7 +452,7 @@ void PseudoTcpAdapter::Core::CheckWriteComplete() {
 // Public interface implementation.
 
 PseudoTcpAdapter::PseudoTcpAdapter(scoped_ptr<P2PDatagramSocket> socket)
-    : core_(new Core(socket.Pass())) {
+    : core_(new Core(std::move(socket))) {
 }
 
 PseudoTcpAdapter::~PseudoTcpAdapter() {

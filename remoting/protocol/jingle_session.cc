@@ -96,7 +96,7 @@ void JingleSession::StartConnection(const std::string& peer_jid,
   DCHECK_EQ(authenticator->state(), Authenticator::MESSAGE_READY);
 
   peer_jid_ = peer_jid;
-  authenticator_ = authenticator.Pass();
+  authenticator_ = std::move(authenticator);
 
   // Generate random session ID. There are usually not more than 1
   // concurrent session per host, so a random 64-bit integer provides
@@ -128,7 +128,7 @@ void JingleSession::InitializeIncomingConnection(
   DCHECK_EQ(authenticator->state(), Authenticator::WAITING_MESSAGE);
 
   peer_jid_ = initiate_message.from;
-  authenticator_ = authenticator.Pass();
+  authenticator_ = std::move(authenticator);
   session_id_ = initiate_message.sid;
 
   SetState(ACCEPTING);
@@ -182,7 +182,7 @@ void JingleSession::ContinueAcceptIncomingConnection() {
     auth_message = authenticator_->GetNextMessage();
 
   message.description.reset(new ContentDescription(
-      CandidateSessionConfig::CreateFrom(*config_), auth_message.Pass()));
+      CandidateSessionConfig::CreateFrom(*config_), std::move(auth_message)));
   SendMessage(message);
 
   // Update state.
@@ -326,7 +326,7 @@ void JingleSession::OnOutgoingTransportInfo(
   DCHECK(CalledOnValidThread());
 
   JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
-  message.transport_info = transport_info.Pass();
+  message.transport_info = std::move(transport_info);
 
   scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
       message.ToXml(), base::Bind(&JingleSession::OnTransportInfoResponse,

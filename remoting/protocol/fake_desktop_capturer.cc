@@ -118,7 +118,7 @@ scoped_ptr<webrtc::DesktopFrame> DefaultFrameGenerator::GenerateFrame(
         box_pos_x_, box_pos_y_, kBoxWidth, kBoxHeight));
   }
 
-  return frame.Pass();
+  return frame;
 }
 
 }  // namespace

@@ -234,7 +234,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
         return false;
       }
     } else {
-      pending_incoming_candidates_.push_back(candidate.Pass());
+      pending_incoming_candidates_.push_back(std::move(candidate));
     }
   }
 
@@ -285,7 +285,7 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
   offer_tag->SetAttr(QName(std::string(), "type"), description->type());
   offer_tag->SetBodyText(description_sdp);
 
-  event_handler_->OnOutgoingTransportInfo(transport_info.Pass());
+  event_handler_->OnOutgoingTransportInfo(std::move(transport_info));
 
   peer_connection_->SetLocalDescription(
       SetSessionDescriptionObserver::Create(base::Bind(
@@ -472,7 +472,7 @@ void WebrtcTransport::SendTransportInfo() {
   DCHECK(pending_transport_info_message_);
 
   event_handler_->OnOutgoingTransportInfo(
-      pending_transport_info_message_.Pass());
+      std::move(pending_transport_info_message_));
   pending_transport_info_message_.reset();
 }
 

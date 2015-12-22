@@ -127,11 +127,11 @@ void CaptureScheduler::ProcessVideoAck(scoped_ptr<VideoAck> video_ack) {
 
 void CaptureScheduler::SetTickClockForTest(
     scoped_ptr<base::TickClock> tick_clock) {
-  tick_clock_ = tick_clock.Pass();
+  tick_clock_ = std::move(tick_clock);
 }
 
 void CaptureScheduler::SetTimerForTest(scoped_ptr<base::Timer> timer) {
-  capture_timer_ = timer.Pass();
+  capture_timer_ = std::move(timer);
 }
 
 void CaptureScheduler::SetNumOfProcessorsForTest(int num_of_processors) {

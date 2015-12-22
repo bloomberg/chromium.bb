@@ -19,7 +19,7 @@ TEST(ContentDescriptionTest, FormatAndParse) {
   scoped_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
   ContentDescription description(
-      config.Pass(), Authenticator::CreateEmptyAuthenticatorMessage());
+      std::move(config), Authenticator::CreateEmptyAuthenticatorMessage());
   scoped_ptr<buzz::XmlElement> xml(description.ToXml());
   LOG(ERROR) << xml->Str();
   scoped_ptr<ContentDescription> parsed(

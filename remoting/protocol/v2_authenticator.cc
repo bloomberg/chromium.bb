@@ -48,7 +48,7 @@ scoped_ptr<Authenticator> V2Authenticator::CreateForHost(
       P224EncryptedKeyExchange::kPeerTypeServer, shared_secret, initial_state));
   result->local_cert_ = local_cert;
   result->local_key_pair_ = key_pair;
-  return result.Pass();
+  return std::move(result);
 }
 
 V2Authenticator::V2Authenticator(
@@ -178,7 +178,7 @@ scoped_ptr<buzz::XmlElement> V2Authenticator::GetNextMessage() {
   if (state_ != ACCEPTED) {
     state_ = WAITING_MESSAGE;
   }
-  return message.Pass();
+  return message;
 }
 
 const std::string& V2Authenticator::GetAuthKey() const {

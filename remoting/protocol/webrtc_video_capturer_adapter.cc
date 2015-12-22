@@ -13,7 +13,7 @@ const int kFramesPerSec = 30;
 
 WebrtcVideoCapturerAdapter::WebrtcVideoCapturerAdapter(
     scoped_ptr<webrtc::DesktopCapturer> capturer)
-    : desktop_capturer_(capturer.Pass()) {
+    : desktop_capturer_(std::move(capturer)) {
   DCHECK(desktop_capturer_);
 
   thread_checker_.DetachFromThread();

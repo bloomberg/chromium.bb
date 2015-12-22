@@ -186,7 +186,7 @@ void FakeStreamChannelFactory::CreateChannel(
         &FakeStreamChannelFactory::NotifyChannelCreated,
         weak_factory_.GetWeakPtr(), base::Passed(&channel), name, callback));
   } else {
-    NotifyChannelCreated(channel.Pass(), name, callback);
+    NotifyChannelCreated(std::move(channel), name, callback);
   }
 }
 
@@ -195,7 +195,7 @@ void FakeStreamChannelFactory::NotifyChannelCreated(
     const std::string& name,
     const ChannelCreatedCallback& callback) {
   if (channels_.find(name) != channels_.end())
-    callback.Run(owned_channel.Pass());
+    callback.Run(std::move(owned_channel));
 }
 
 void FakeStreamChannelFactory::CancelChannelCreation(const std::string& name) {

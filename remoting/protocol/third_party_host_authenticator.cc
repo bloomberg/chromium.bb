@@ -24,7 +24,7 @@ ThirdPartyHostAuthenticator::ThirdPartyHostAuthenticator(
     : ThirdPartyAuthenticatorBase(MESSAGE_READY),
       local_cert_(local_cert),
       key_pair_(key_pair),
-      token_validator_(token_validator.Pass()) {
+      token_validator_(std::move(token_validator)) {
 }
 
 ThirdPartyHostAuthenticator::~ThirdPartyHostAuthenticator() {

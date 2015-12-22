@@ -33,7 +33,7 @@ void IceConnectionToHost::Connect(scoped_ptr<Session> session,
   DCHECK(clipboard_stub_);
   DCHECK(monitored_video_stub_);
 
-  session_ = session.Pass();
+  session_ = std::move(session);
   session_->SetEventHandler(this);
 
   event_callback_ = event_callback;

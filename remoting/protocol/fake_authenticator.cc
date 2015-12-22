@@ -33,7 +33,7 @@ FakeChannelAuthenticator::~FakeChannelAuthenticator() {
 void FakeChannelAuthenticator::SecureAndAuthenticate(
     scoped_ptr<P2PStreamSocket> socket,
     const DoneCallback& done_callback) {
-  socket_ = socket.Pass();
+  socket_ = std::move(socket);
 
   if (async_) {
     done_callback_ = done_callback;
@@ -87,7 +87,7 @@ void FakeChannelAuthenticator::OnAuthBytesRead(int result) {
 void FakeChannelAuthenticator::CallDoneCallback() {
   if (result_ != net::OK)
     socket_.reset();
-  base::ResetAndReturn(&done_callback_).Run(result_, socket_.Pass());
+  base::ResetAndReturn(&done_callback_).Run(result_, std::move(socket_));
 }
 
 FakeAuthenticator::FakeAuthenticator(Type type,
@@ -185,7 +185,7 @@ scoped_ptr<buzz::XmlElement> FakeAuthenticator::GetNextMessage() {
   }
 
   ++messages_;
-  return result.Pass();
+  return result;
 }
 
 const std::string& FakeAuthenticator::GetAuthKey() const {
@@ -215,12 +215,10 @@ scoped_ptr<Authenticator> FakeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& local_jid,
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
-  FakeAuthenticator* authenticator = new FakeAuthenticator(
-      FakeAuthenticator::HOST, round_trips_, action_, async_);
+  scoped_ptr<FakeAuthenticator> authenticator(new FakeAuthenticator(
+      FakeAuthenticator::HOST, round_trips_, action_, async_));
   authenticator->set_messages_till_started(messages_till_started_);
-
-  scoped_ptr<Authenticator> result(authenticator);
-  return result.Pass();
+  return std::move(authenticator);
 }
 
 }  // namespace protocol

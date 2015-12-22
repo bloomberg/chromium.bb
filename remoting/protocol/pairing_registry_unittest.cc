@@ -66,7 +66,7 @@ class PairingRegistryTest : public testing::Test {
   void SetUp() override { callback_count_ = 0; }
 
   void set_pairings(scoped_ptr<base::ListValue> pairings) {
-    pairings_ = pairings.Pass();
+    pairings_ = std::move(pairings);
   }
 
   void ExpectSecret(const std::string& expected,

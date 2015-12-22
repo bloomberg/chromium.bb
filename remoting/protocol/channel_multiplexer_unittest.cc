@@ -104,7 +104,7 @@ class ChannelMultiplexerTest : public testing::Test {
       scoped_ptr<P2PStreamSocket>* storage,
       int* counter,
       scoped_ptr<P2PStreamSocket> socket) {
-    *storage = socket.Pass();
+    *storage = std::move(socket);
     --(*counter);
     EXPECT_GE(*counter, 0);
     if (*counter == 0)

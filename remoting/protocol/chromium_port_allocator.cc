@@ -137,7 +137,7 @@ scoped_ptr<ChromiumPortAllocator> ChromiumPortAllocator::Create(
   scoped_ptr<rtc::PacketSocketFactory> socket_factory(
       new ChromiumPacketSocketFactory());
   return make_scoped_ptr(new ChromiumPortAllocator(
-      url_context, network_manager.Pass(), socket_factory.Pass()));
+      url_context, std::move(network_manager), std::move(socket_factory)));
 }
 
 ChromiumPortAllocator::ChromiumPortAllocator(
@@ -148,8 +148,8 @@ ChromiumPortAllocator::ChromiumPortAllocator(
                             socket_factory.get(),
                             std::string()),
       url_context_(url_context),
-      network_manager_(network_manager.Pass()),
-      socket_factory_(socket_factory.Pass()) {}
+      network_manager_(std::move(network_manager)),
+      socket_factory_(std::move(socket_factory)) {}
 
 ChromiumPortAllocator::~ChromiumPortAllocator() {}
 

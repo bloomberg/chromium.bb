@@ -108,7 +108,7 @@ class ConnectionTest : public testing::Test,
                   OnConnectionState(ConnectionToHost::CONNECTED, OK));
     }
 
-    client_connection_->Connect(owned_client_session_.Pass(),
+    client_connection_->Connect(std::move(owned_client_session_),
                                 &client_event_handler_);
     client_session_->SimulateConnection(host_session_);
     base::RunLoop().RunUntilIdle();
@@ -150,7 +150,7 @@ TEST_P(ConnectionTest, RejectConnection) {
   EXPECT_CALL(client_event_handler_,
               OnConnectionState(ConnectionToHost::CLOSED, OK));
 
-  client_connection_->Connect(owned_client_session_.Pass(),
+  client_connection_->Connect(std::move(owned_client_session_),
                               &client_event_handler_);
   client_session_->event_handler()->OnSessionStateChange(Session::CLOSED);
 }

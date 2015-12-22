@@ -81,7 +81,7 @@ Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
   result->key_pair_ = key_pair;
   result->shared_secret_hash_ = shared_secret_hash;
   result->pairing_registry_ = pairing_registry;
-  return result.Pass();
+  return std::move(result);
 }
 
 
@@ -100,8 +100,8 @@ Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
   result->host_owner_ = host_owner;
   result->local_cert_ = local_cert;
   result->key_pair_ = key_pair;
-  result->token_validator_factory_ = token_validator_factory.Pass();
-  return result.Pass();
+  result->token_validator_factory_ = std::move(token_validator_factory);
+  return std::move(result);
 }
 
 Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory() {

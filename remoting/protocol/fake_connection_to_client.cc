@@ -30,7 +30,7 @@ base::WeakPtr<FakeVideoStream> FakeVideoStream::GetWeakPtr() {
 }
 
 FakeConnectionToClient::FakeConnectionToClient(scoped_ptr<Session> session)
-    : session_(session.Pass()) {}
+    : session_(std::move(session)) {}
 
 FakeConnectionToClient::~FakeConnectionToClient() {}
 
@@ -42,7 +42,7 @@ scoped_ptr<VideoStream> FakeConnectionToClient::StartVideoStream(
     scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) {
   scoped_ptr<FakeVideoStream> result(new FakeVideoStream());
   last_video_stream_ = result->GetWeakPtr();
-  return result.Pass();
+  return std::move(result);
 }
 
 AudioStub* FakeConnectionToClient::audio_stub() {

@@ -161,7 +161,7 @@ scoped_ptr<SessionConfig> SessionConfig::ForTest() {
   result->audio_config_ = ChannelConfig(ChannelConfig::TRANSPORT_NONE,
                                         kDefaultStreamVersion,
                                         ChannelConfig::CODEC_UNDEFINED);
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<SessionConfig> SessionConfig::ForTestWithVerbatimVideo() {
@@ -169,7 +169,7 @@ scoped_ptr<SessionConfig> SessionConfig::ForTestWithVerbatimVideo() {
   result->video_config_ = ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                         kDefaultStreamVersion,
                                         ChannelConfig::CODEC_VERBATIM);
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<SessionConfig> SessionConfig::ForTestWithWebrtc() {
@@ -248,7 +248,7 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateFrom(
       break;
   }
 
-  return result.Pass();
+  return result;
 }
 
 // static
@@ -286,7 +286,7 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
                     ChannelConfig::CODEC_OPUS));
   result->mutable_audio_configs()->push_back(ChannelConfig::None());
 
-  return result.Pass();
+  return result;
 }
 
 void CandidateSessionConfig::DisableAudioChannel() {

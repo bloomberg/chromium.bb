@@ -35,7 +35,7 @@ VideoFramePump::FrameTimestamps::~FrameTimestamps() {}
 VideoFramePump::PacketWithTimestamps::PacketWithTimestamps(
     scoped_ptr<VideoPacket> packet,
     scoped_ptr<FrameTimestamps> timestamps)
-    : packet(packet.Pass()), timestamps(timestamps.Pass()) {}
+    : packet(std::move(packet)), timestamps(std::move(timestamps)) {}
 
 VideoFramePump::PacketWithTimestamps::~PacketWithTimestamps() {}
 
@@ -50,8 +50,8 @@ VideoFramePump::VideoFramePump(
     scoped_ptr<VideoEncoder> encoder,
     protocol::VideoStub* video_stub)
     : encode_task_runner_(encode_task_runner),
-      capturer_(capturer.Pass()),
-      encoder_(encoder.Pass()),
+      capturer_(std::move(capturer)),
+      encoder_(std::move(encoder)),
       video_stub_(video_stub),
       keep_alive_timer_(
           FROM_HERE,
@@ -147,7 +147,7 @@ void VideoFramePump::CaptureNextFrame() {
   if (!next_frame_timestamps_)
     next_frame_timestamps_.reset(new FrameTimestamps());
 
-  captured_frame_timestamps_ = next_frame_timestamps_.Pass();
+  captured_frame_timestamps_ = std::move(next_frame_timestamps_);
   captured_frame_timestamps_->capture_started_time = base::TimeTicks::Now();
 
   capturer_->Capture(webrtc::DesktopRegion());
@@ -179,7 +179,7 @@ scoped_ptr<VideoFramePump::PacketWithTimestamps> VideoFramePump::EncodeFrame(
           .InMilliseconds());
 
   return make_scoped_ptr(
-      new PacketWithTimestamps(packet.Pass(), timestamps.Pass()));
+      new PacketWithTimestamps(std::move(packet), std::move(timestamps)));
 }
 
 void VideoFramePump::OnFrameEncoded(scoped_ptr<PacketWithTimestamps> packet) {
@@ -188,9 +188,9 @@ void VideoFramePump::OnFrameEncoded(scoped_ptr<PacketWithTimestamps> packet) {
   capture_scheduler_.OnFrameEncoded(packet->packet.get());
 
   if (send_pending_) {
-    pending_packets_.push_back(packet.Pass());
+    pending_packets_.push_back(std::move(packet));
   } else {
-    SendPacket(packet.Pass());
+    SendPacket(std::move(packet));
   }
 }
 
@@ -202,7 +202,7 @@ void VideoFramePump::SendPacket(scoped_ptr<PacketWithTimestamps> packet) {
   UpdateFrameTimers(packet->packet.get(), packet->timestamps.get());
 
   send_pending_ = true;
-  video_stub_->ProcessVideoPacket(packet->packet.Pass(),
+  video_stub_->ProcessVideoPacket(std::move(packet->packet),
                                   base::Bind(&VideoFramePump::OnVideoPacketSent,
                                              weak_factory_.GetWeakPtr()));
 }
@@ -246,7 +246,7 @@ void VideoFramePump::OnVideoPacketSent() {
   if (!pending_packets_.empty()) {
     scoped_ptr<PacketWithTimestamps> next(pending_packets_.front());
     pending_packets_.weak_erase(pending_packets_.begin());
-    SendPacket(next.Pass());
+    SendPacket(std::move(next));
   }
 }
 

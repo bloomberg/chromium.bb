@@ -116,12 +116,12 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
   client_fake_socket_->PairWith(host_fake_socket_.get());
 
   client_auth_->SecureAndAuthenticate(
-      client_fake_socket_.Pass(),
+      std::move(client_fake_socket_),
       base::Bind(&AuthenticatorTestBase::OnClientConnected,
                  base::Unretained(this)));
 
   host_auth_->SecureAndAuthenticate(
-      host_fake_socket_.Pass(),
+      std::move(host_fake_socket_),
       base::Bind(&AuthenticatorTestBase::OnHostConnected,
                  base::Unretained(this)));
 
@@ -160,14 +160,14 @@ void AuthenticatorTestBase::OnHostConnected(
     int error,
     scoped_ptr<P2PStreamSocket> socket) {
   host_callback_.OnDone(error);
-  host_socket_ = socket.Pass();
+  host_socket_ = std::move(socket);
 }
 
 void AuthenticatorTestBase::OnClientConnected(
     int error,
     scoped_ptr<P2PStreamSocket> socket) {
   client_callback_.OnDone(error);
-  client_socket_ = socket.Pass();
+  client_socket_ = std::move(socket);
 }
 
 }  // namespace protocol

@@ -306,7 +306,7 @@ scoped_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
   if (action == SESSION_INFO) {
     if (info.get())
       jingle_tag->AddElement(new XmlElement(*info.get()));
-    return root.Pass();
+    return root;
   }
 
   if (action == SESSION_INITIATE)
@@ -339,7 +339,7 @@ scoped_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
       content_tag->AddElement(new XmlElement(*transport_info));
   }
 
-  return root.Pass();
+  return root;
 }
 
 JingleMessageReply::JingleMessageReply()
@@ -372,7 +372,7 @@ scoped_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
 
   if (type == REPLY_RESULT) {
     iq->SetAttr(QName(kEmptyNamespace, "type"), "result");
-    return iq.Pass();
+    return iq;
   }
 
   DCHECK_EQ(type, REPLY_ERROR);
@@ -440,7 +440,7 @@ scoped_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
     error->AddElement(text_elem);
   }
 
-  return iq.Pass();
+  return iq;
 }
 
 IceTransportInfo::IceTransportInfo() {}
@@ -485,7 +485,7 @@ scoped_ptr<buzz::XmlElement> IceTransportInfo::ToXml() const {
   for (const NamedCandidate& candidate : candidates) {
     result->AddElement(FormatIceCandidate(candidate));
   }
-  return result.Pass();
+  return result;
 }
 
 }  // namespace protocol

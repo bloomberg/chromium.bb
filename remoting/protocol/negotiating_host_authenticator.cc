@@ -45,7 +45,7 @@ scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateWithSharedSecret(
   if (pairing_registry.get()) {
     result->AddMethod(AuthenticationMethod::Spake2Pair());
   }
-  return result.Pass();
+  return std::move(result);
 }
 
 // static
@@ -56,9 +56,9 @@ NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
     scoped_ptr<TokenValidator> token_validator) {
   scoped_ptr<NegotiatingHostAuthenticator> result(
       new NegotiatingHostAuthenticator(local_cert, key_pair));
-  result->token_validator_ = token_validator.Pass();
+  result->token_validator_ = std::move(token_validator);
   result->AddMethod(AuthenticationMethod::ThirdParty());
-  return result.Pass();
+  return std::move(result);
 }
 
 NegotiatingHostAuthenticator::~NegotiatingHostAuthenticator() {
@@ -163,7 +163,7 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
     // one |ThirdPartyHostAuthenticator| will need to be created per session.
     DCHECK(token_validator_);
     current_authenticator_.reset(new ThirdPartyHostAuthenticator(
-        local_cert_, local_key_pair_, token_validator_.Pass()));
+        local_cert_, local_key_pair_, std::move(token_validator_)));
   } else if (current_method_ == AuthenticationMethod::Spake2Pair() &&
              preferred_initial_state == WAITING_MESSAGE) {
     // If the client requested Spake2Pair and sent an initial message, attempt

@@ -74,7 +74,7 @@ scoped_ptr<buzz::XmlElement> ThirdPartyAuthenticatorBase::GetNextMessage() {
 
   scoped_ptr<buzz::XmlElement> message;
   if (underlying_ && underlying_->state() == MESSAGE_READY) {
-    message = underlying_->GetNextMessage().Pass();
+    message = underlying_->GetNextMessage();
   } else {
     message = CreateEmptyAuthenticatorMessage();
   }
@@ -83,7 +83,7 @@ scoped_ptr<buzz::XmlElement> ThirdPartyAuthenticatorBase::GetNextMessage() {
     AddTokenElements(message.get());
     started_ = true;
   }
-  return message.Pass();
+  return message;
 }
 
 const std::string& ThirdPartyAuthenticatorBase::GetAuthKey() const {

@@ -76,7 +76,7 @@ class TestTransportEventHandler : public Transport::EventHandler {
 
   // Transport::EventHandler interface.
   void OnOutgoingTransportInfo(scoped_ptr<buzz::XmlElement> message) override {
-    transport_info_callback_.Run(message.Pass());
+    transport_info_callback_.Run(std::move(message));
   }
   void OnTransportRouteChange(const std::string& channel_name,
                               const TransportRoute& route) override {}
@@ -185,12 +185,12 @@ class IceTransportTest : public testing::Test {
   }
 
   void OnClientChannelCreated(scoped_ptr<P2PStreamSocket> socket) {
-    client_socket_ = socket.Pass();
+    client_socket_ = std::move(socket);
     client_channel_callback_.OnDone(client_socket_.get());
   }
 
   void OnHostChannelCreated(scoped_ptr<P2PStreamSocket> socket) {
-    host_socket_ = socket.Pass();
+    host_socket_ = std::move(socket);
     host_channel_callback_.OnDone(host_socket_.get());
   }
 

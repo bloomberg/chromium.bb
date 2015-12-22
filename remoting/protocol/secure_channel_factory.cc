@@ -59,7 +59,7 @@ void SecureChannelFactory::OnBaseChannelCreated(
       authenticator_->CreateChannelAuthenticator().release();
   channel_authenticators_[name] = channel_authenticator;
   channel_authenticator->SecureAndAuthenticate(
-      socket.Pass(),
+      std::move(socket),
       base::Bind(&SecureChannelFactory::OnSecureChannelCreated,
                  base::Unretained(this), name, callback));
 }
@@ -76,7 +76,7 @@ void SecureChannelFactory::OnSecureChannelCreated(
   delete it->second;
   channel_authenticators_.erase(it);
 
-  callback.Run(socket.Pass());
+  callback.Run(std::move(socket));
 }
 
 }  // namespace protocol

@@ -23,7 +23,7 @@ namespace protocol {
 JingleSessionManager::JingleSessionManager(
     scoped_ptr<TransportFactory> transport_factory,
     SignalStrategy* signal_strategy)
-    : transport_factory_(transport_factory.Pass()),
+    : transport_factory_(std::move(transport_factory)),
       signal_strategy_(signal_strategy),
       protocol_config_(CandidateSessionConfig::CreateDefault()),
       iq_sender_(new IqSender(signal_strategy_)) {
@@ -43,22 +43,22 @@ void JingleSessionManager::AcceptIncoming(
 
 void JingleSessionManager::set_protocol_config(
     scoped_ptr<CandidateSessionConfig> config) {
-  protocol_config_ = config.Pass();
+  protocol_config_ = std::move(config);
 }
 
 scoped_ptr<Session> JingleSessionManager::Connect(
     const std::string& host_jid,
     scoped_ptr<Authenticator> authenticator) {
   scoped_ptr<JingleSession> session(new JingleSession(this));
-  session->StartConnection(host_jid, authenticator.Pass());
+  session->StartConnection(host_jid, std::move(authenticator));
   sessions_[session->session_id_] = session.get();
-  return session.Pass();
+  return std::move(session);
 }
 
 void JingleSessionManager::set_authenticator_factory(
     scoped_ptr<AuthenticatorFactory> authenticator_factory) {
   DCHECK(CalledOnValidThread());
-  authenticator_factory_ = authenticator_factory.Pass();
+  authenticator_factory_ = std::move(authenticator_factory);
 }
 
 void JingleSessionManager::OnSignalStrategyStateChange(
@@ -88,7 +88,7 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
             message.description->authenticator_message());
 
     JingleSession* session = new JingleSession(this);
-    session->InitializeIncomingConnection(message, authenticator.Pass());
+    session->InitializeIncomingConnection(message, std::move(authenticator));
     sessions_[session->session_id_] = session;
 
     // Destroy the session if it was rejected due to incompatible protocol.

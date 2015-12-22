@@ -66,7 +66,7 @@ class FailingCertVerifier : public net::CertVerifier {
 class NetStreamSocketAdapter : public net::StreamSocket {
  public:
   NetStreamSocketAdapter(scoped_ptr<P2PStreamSocket> socket)
-      : socket_(socket.Pass()) {}
+      : socket_(std::move(socket)) {}
   ~NetStreamSocketAdapter() override {}
 
   int Read(net::IOBuffer* buf, int buf_len,
@@ -150,7 +150,7 @@ class NetStreamSocketAdapter : public net::StreamSocket {
 class P2PStreamSocketAdapter : public P2PStreamSocket {
  public:
   P2PStreamSocketAdapter(scoped_ptr<net::StreamSocket> socket)
-      : socket_(socket.Pass()) {}
+      : socket_(std::move(socket)) {}
   ~P2PStreamSocketAdapter() override {}
 
   int Read(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
@@ -176,7 +176,7 @@ SslHmacChannelAuthenticator::CreateForClient(
   scoped_ptr<SslHmacChannelAuthenticator> result(
       new SslHmacChannelAuthenticator(auth_key));
   result->remote_cert_ = remote_cert;
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<SslHmacChannelAuthenticator>
@@ -188,7 +188,7 @@ SslHmacChannelAuthenticator::CreateForHost(
       new SslHmacChannelAuthenticator(auth_key));
   result->local_cert_ = local_cert;
   result->local_key_pair_ = key_pair;
-  return result.Pass();
+  return result;
 }
 
 SslHmacChannelAuthenticator::SslHmacChannelAuthenticator(
@@ -227,10 +227,10 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     ssl_config.require_ecdhe = true;
 
     scoped_ptr<net::SSLServerSocket> server_socket = net::CreateSSLServerSocket(
-        make_scoped_ptr(new NetStreamSocketAdapter(socket.Pass())), cert.get(),
-        local_key_pair_->private_key(), ssl_config);
+        make_scoped_ptr(new NetStreamSocketAdapter(std::move(socket))),
+        cert.get(), local_key_pair_->private_key(), ssl_config);
     net::SSLServerSocket* raw_server_socket = server_socket.get();
-    socket_ = server_socket.Pass();
+    socket_ = std::move(server_socket);
     result = raw_server_socket->Handshake(
         base::Bind(&SslHmacChannelAuthenticator::OnConnected,
                    base::Unretained(this)));
@@ -260,16 +260,16 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     scoped_ptr<net::ClientSocketHandle> socket_handle(
         new net::ClientSocketHandle);
     socket_handle->SetSocket(
-        make_scoped_ptr(new NetStreamSocketAdapter(socket.Pass())));
+        make_scoped_ptr(new NetStreamSocketAdapter(std::move(socket))));
 
 #if defined(OS_NACL)
     // net_nacl doesn't include ClientSocketFactory.
     socket_.reset(new net::SSLClientSocketOpenSSL(
-        socket_handle.Pass(), host_and_port, ssl_config, context));
+        std::move(socket_handle), host_and_port, ssl_config, context));
 #else
     socket_ =
         net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-            socket_handle.Pass(), host_and_port, ssl_config, context);
+            std::move(socket_handle), host_and_port, ssl_config, context);
 #endif
 
     result = socket_->Connect(
@@ -429,7 +429,7 @@ void SslHmacChannelAuthenticator::CheckDone(bool* callback_called) {
 
     base::ResetAndReturn(&done_callback_)
         .Run(net::OK,
-             make_scoped_ptr(new P2PStreamSocketAdapter(socket_.Pass())));
+             make_scoped_ptr(new P2PStreamSocketAdapter(std::move(socket_))));
   }
 }
 

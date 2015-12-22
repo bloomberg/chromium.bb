@@ -30,7 +30,7 @@ class PendingPacket {
  public:
   PendingPacket(scoped_ptr<MultiplexPacket> packet,
                 const base::Closure& done_task)
-      : packet(packet.Pass()),
+      : packet(std::move(packet)),
         done_task(done_task),
         pos(0U) {
   }
@@ -158,7 +158,7 @@ scoped_ptr<P2PStreamSocket> ChannelMultiplexer::MuxChannel::CreateSocket() {
   DCHECK(!socket_);  // Can't create more than one socket per channel.
   scoped_ptr<MuxSocket> result(new MuxSocket(this));
   socket_ = result.get();
-  return result.Pass();
+  return std::move(result);
 }
 
 void ChannelMultiplexer::MuxChannel::OnIncomingPacket(
@@ -166,7 +166,7 @@ void ChannelMultiplexer::MuxChannel::OnIncomingPacket(
     const base::Closure& done_task) {
   DCHECK_EQ(packet->channel_id(), receive_id_);
   if (packet->data().size() > 0) {
-    pending_packets_.push_back(new PendingPacket(packet.Pass(), done_task));
+    pending_packets_.push_back(new PendingPacket(std::move(packet), done_task));
     if (socket_) {
       // Notify the socket that we have more data.
       socket_->OnPacketReceived();
@@ -192,7 +192,7 @@ void ChannelMultiplexer::MuxChannel::DoWrite(
     packet->set_channel_name(name_);
     id_sent_ = true;
   }
-  multiplexer_->DoWrite(packet.Pass(), done_task);
+  multiplexer_->DoWrite(std::move(packet), done_task);
 }
 
 int ChannelMultiplexer::MuxChannel::DoRead(
@@ -258,7 +258,7 @@ int ChannelMultiplexer::MuxSocket::Write(
   packet->mutable_data()->assign(buffer->data(), size);
 
   write_pending_ = true;
-  channel_->DoWrite(packet.Pass(), base::Bind(
+  channel_->DoWrite(std::move(packet), base::Bind(
       &ChannelMultiplexer::MuxSocket::OnWriteComplete, AsWeakPtr()));
 
   // OnWriteComplete() might be called above synchronously.
@@ -363,7 +363,7 @@ void ChannelMultiplexer::CancelChannelCreation(const std::string& name) {
 void ChannelMultiplexer::OnBaseChannelReady(
     scoped_ptr<P2PStreamSocket> socket) {
   base_channel_factory_ = nullptr;
-  base_channel_ = socket.Pass();
+  base_channel_ = std::move(socket);
 
   if (base_channel_.get()) {
     // Initialize reader and writer.
@@ -396,7 +396,7 @@ void ChannelMultiplexer::DoCreatePendingChannels() {
   scoped_ptr<P2PStreamSocket> socket;
   if (base_channel_.get())
     socket = GetOrCreateChannel(c.name)->CreateSocket();
-  c.callback.Run(socket.Pass());
+  c.callback.Run(std::move(socket));
 }
 
 ChannelMultiplexer::MuxChannel* ChannelMultiplexer::GetOrCreateChannel(
@@ -459,7 +459,7 @@ void ChannelMultiplexer::OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,
     channels_by_receive_id_[receive_id] = channel;
   }
 
-  channel->OnIncomingPacket(packet.Pass(), done_task);
+  channel->OnIncomingPacket(std::move(packet), done_task);
 }
 
 void ChannelMultiplexer::DoWrite(scoped_ptr<MultiplexPacket> packet,

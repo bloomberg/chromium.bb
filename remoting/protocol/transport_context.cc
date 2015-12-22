@@ -23,7 +23,7 @@ TransportContext::TransportContext(
     const NetworkSettings& network_settings,
     TransportRole role)
     : signal_strategy_(signal_strategy),
-      port_allocator_factory_(port_allocator_factory.Pass()),
+      port_allocator_factory_(std::move(port_allocator_factory)),
       network_settings_(network_settings),
       role_(role) {}
 
@@ -115,7 +115,7 @@ TransportContext::CreatePortAllocatorInternal() {
   result->SetPortRange(network_settings_.port_range.min_port,
                        network_settings_.port_range.max_port);
 
-  return result.Pass();
+  return std::move(result);
 }
 
 }  // namespace protocol

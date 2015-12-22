@@ -29,9 +29,9 @@ scoped_ptr<VideoEncoder> CreateVideoEncoder(
   const protocol::ChannelConfig& video_config = config.video_config();
 
   if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
-    return VideoEncoderVpx::CreateForVP8().Pass();
+    return VideoEncoderVpx::CreateForVP8();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP9) {
-    return VideoEncoderVpx::CreateForVP9().Pass();
+    return VideoEncoderVpx::CreateForVP9();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
     return make_scoped_ptr(new VideoEncoderVerbatim());
   }
@@ -46,7 +46,7 @@ IceConnectionToClient::IceConnectionToClient(
     scoped_ptr<protocol::Session> session,
     scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner)
     : event_handler_(nullptr),
-      session_(session.Pass()),
+      session_(std::move(session)),
       video_encode_task_runner_(video_encode_task_runner),
       control_dispatcher_(new HostControlDispatcher()),
       event_dispatcher_(new HostEventDispatcher()),
@@ -92,10 +92,10 @@ scoped_ptr<VideoStream> IceConnectionToClient::StartVideoStream(
   DCHECK(video_encoder);
 
   scoped_ptr<VideoFramePump> pump(
-      new VideoFramePump(video_encode_task_runner_, desktop_capturer.Pass(),
-                         video_encoder.Pass(), video_dispatcher_.get()));
+      new VideoFramePump(video_encode_task_runner_, std::move(desktop_capturer),
+                         std::move(video_encoder), video_dispatcher_.get()));
   video_dispatcher_->set_video_feedback_stub(pump->video_feedback_stub());
-  return pump.Pass();
+  return std::move(pump);
 }
 
 AudioStub* IceConnectionToClient::audio_stub() {

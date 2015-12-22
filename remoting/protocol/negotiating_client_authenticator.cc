@@ -31,7 +31,7 @@ NegotiatingClientAuthenticator::NegotiatingClientAuthenticator(
       shared_secret_(shared_secret),
       authentication_tag_(authentication_tag),
       fetch_secret_callback_(fetch_secret_callback),
-      token_fetcher_(token_fetcher.Pass()),
+      token_fetcher_(std::move(token_fetcher)),
       method_set_by_host_(false),
       weak_factory_(this) {
   DCHECK(!methods.empty());
@@ -105,7 +105,7 @@ scoped_ptr<buzz::XmlElement> NegotiatingClientAuthenticator::GetNextMessage() {
     }
     result->AddAttr(kSupportedMethodsAttributeQName, supported_methods.str());
     state_ = WAITING_MESSAGE;
-    return result.Pass();
+    return result;
   }
   return GetNextMessageInternal();
 }
@@ -120,7 +120,7 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     // one |ThirdPartyClientAuthenticator| will need to be created per session.
     DCHECK(token_fetcher_);
     current_authenticator_.reset(new ThirdPartyClientAuthenticator(
-        token_fetcher_.Pass()));
+        std::move(token_fetcher_)));
     resume_callback.Run();
   } else {
     DCHECK(current_method_.type() == AuthenticationMethod::SPAKE2 ||

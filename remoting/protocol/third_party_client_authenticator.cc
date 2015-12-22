@@ -21,7 +21,7 @@ namespace protocol {
 ThirdPartyClientAuthenticator::ThirdPartyClientAuthenticator(
     scoped_ptr<TokenFetcher> token_fetcher)
     : ThirdPartyAuthenticatorBase(WAITING_MESSAGE),
-      token_fetcher_(token_fetcher.Pass()) {
+      token_fetcher_(std::move(token_fetcher)) {
 }
 
 ThirdPartyClientAuthenticator::~ThirdPartyClientAuthenticator() {

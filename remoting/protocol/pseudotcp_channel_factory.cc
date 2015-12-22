@@ -60,7 +60,7 @@ void PseudoTcpChannelFactory::OnDatagramChannelCreated(
     const std::string& name,
     const ChannelCreatedCallback& callback,
     scoped_ptr<P2PDatagramSocket> datagram_socket) {
-  PseudoTcpAdapter* adapter = new PseudoTcpAdapter(datagram_socket.Pass());
+  PseudoTcpAdapter* adapter = new PseudoTcpAdapter(std::move(datagram_socket));
   pending_sockets_[name] = adapter;
 
   adapter->SetSendBufferSize(kTcpSendBufferSize);
@@ -92,7 +92,7 @@ void PseudoTcpChannelFactory::OnPseudoTcpConnected(
   if (result != net::OK)
     socket.reset();
 
-  callback.Run(socket.Pass());
+  callback.Run(std::move(socket));
 }
 
 }  // namespace protocol

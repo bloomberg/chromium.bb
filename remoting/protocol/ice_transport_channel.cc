@@ -91,7 +91,7 @@ void IceTransportChannel::OnPortAllocatorCreated(
       scoped_ptr<cricket::PortAllocator> port_allocator){
   DCHECK(!channel_.get());
 
-  port_allocator_ = port_allocator.Pass();
+  port_allocator_ = std::move(port_allocator);
 
   // Create P2PTransportChannel, attach signal handlers and connect it.
   // TODO(sergeyu): Specify correct component ID for the channel.
@@ -144,7 +144,7 @@ void IceTransportChannel::NotifyConnected() {
       new TransportChannelSocketAdapter(channel_.get()));
   socket->SetOnDestroyedCallback(base::Bind(
       &IceTransportChannel::OnChannelDestroyed, base::Unretained(this)));
-  base::ResetAndReturn(&callback_).Run(socket.Pass());
+  base::ResetAndReturn(&callback_).Run(std::move(socket));
 }
 
 void IceTransportChannel::SetRemoteCredentials(const std::string& ufrag,

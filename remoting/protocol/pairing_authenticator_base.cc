@@ -91,7 +91,7 @@ scoped_ptr<buzz::XmlElement> PairingAuthenticatorBase::GetNextMessage() {
   scoped_ptr<buzz::XmlElement> result = v2_authenticator_->GetNextMessage();
   AddPairingElements(result.get());
   MaybeAddErrorMessage(result.get());
-  return result.Pass();
+  return result;
 }
 
 const std::string& PairingAuthenticatorBase::GetAuthKey() const {
@@ -153,7 +153,7 @@ void PairingAuthenticatorBase::SetAuthenticatorAndProcessMessage(
   DCHECK(!v2_authenticator_);
   DCHECK(authenticator);
   waiting_for_authenticator_ = false;
-  v2_authenticator_ = authenticator.Pass();
+  v2_authenticator_ = std::move(authenticator);
   if (message) {
     ProcessMessage(message, resume_callback);
   } else {

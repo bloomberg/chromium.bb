@@ -43,7 +43,8 @@ void ClientVideoDispatcher::ProcessVideoPacket(
   int frame_id = video_packet->frame_id();
 
   if (!video_packet->has_frame_id()) {
-    video_stub_->ProcessVideoPacket(video_packet.Pass(), done_runner.Release());
+    video_stub_->ProcessVideoPacket(std::move(video_packet),
+                                    done_runner.Release());
     return;
   }
 
@@ -51,7 +52,7 @@ void ClientVideoDispatcher::ProcessVideoPacket(
       pending_frames_.insert(pending_frames_.end(), PendingFrame(frame_id));
 
   video_stub_->ProcessVideoPacket(
-      video_packet.Pass(),
+      std::move(video_packet),
       base::Bind(&ClientVideoDispatcher::OnPacketDone,
                  weak_factory_.GetWeakPtr(), pending_frame));
 }

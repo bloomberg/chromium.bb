@@ -176,8 +176,8 @@ TEST_F(VideoFramePumpTest, StartAndStop) {
       .RetiresOnSaturation();
 
   // Start video frame capture.
-  pump_.reset(new VideoFramePump(encode_task_runner_, capturer.Pass(),
-                                 encoder.Pass(), &video_stub_));
+  pump_.reset(new VideoFramePump(encode_task_runner_, std::move(capturer),
+                                 std::move(encoder), &video_stub_));
 
   // Run MessageLoop until the first frame is received.
   run_loop.Run();
@@ -203,8 +203,8 @@ TEST_F(VideoFramePumpTest, NullFrame) {
       .RetiresOnSaturation();
 
   // Start video frame capture.
-  pump_.reset(new VideoFramePump(encode_task_runner_, capturer.Pass(),
-                                 encoder.Pass(), &video_stub_));
+  pump_.reset(new VideoFramePump(encode_task_runner_, std::move(capturer),
+                                 std::move(encoder), &video_stub_));
 
   // Run MessageLoop until the first frame is received..
   run_loop.Run();
@@ -231,8 +231,8 @@ TEST_F(VideoFramePumpTest, UnchangedFrame) {
       .RetiresOnSaturation();
 
   // Start video frame capture.
-  pump_.reset(new VideoFramePump(encode_task_runner_, capturer.Pass(),
-                                 encoder.Pass(), &video_stub_));
+  pump_.reset(new VideoFramePump(encode_task_runner_, std::move(capturer),
+                                 std::move(encoder), &video_stub_));
 
   // Run MessageLoop until the first frame is received.
   run_loop.Run();

@@ -39,7 +39,7 @@ void ChannelDispatcherBase::OnChannelReady(
   }
 
   channel_factory_ = nullptr;
-  channel_ = socket.Pass();
+  channel_ = std::move(socket);
   writer_.Init(
       base::Bind(&P2PStreamSocket::Write, base::Unretained(channel_.get())),
       base::Bind(&ChannelDispatcherBase::OnReadWriteFailed,

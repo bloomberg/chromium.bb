@@ -94,7 +94,7 @@ NegotiatingAuthenticatorBase::GetNextMessageInternal() {
   state_ = current_authenticator_->state();
   DCHECK(state_ == ACCEPTED || state_ == WAITING_MESSAGE);
   result->AddAttr(kMethodAttributeQName, current_method_.ToString());
-  return result.Pass();
+  return result;
 }
 
 void NegotiatingAuthenticatorBase::AddMethod(

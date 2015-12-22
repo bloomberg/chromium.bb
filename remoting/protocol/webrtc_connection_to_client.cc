@@ -74,7 +74,7 @@ scoped_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
   CHECK(transport);
 
   scoped_ptr<WebrtcVideoCapturerAdapter> video_capturer_adapter(
-      new WebrtcVideoCapturerAdapter(desktop_capturer.Pass()));
+      new WebrtcVideoCapturerAdapter(std::move(desktop_capturer)));
 
   // Set video stream constraints.
   webrtc::FakeConstraints video_constraints;
@@ -96,9 +96,8 @@ scoped_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
     return nullptr;
   }
 
-  scoped_ptr<VideoStream> result(
+  return make_scoped_ptr(
       new WebrtcVideoStream(transport->peer_connection(), video_stream));
-  return result.Pass();
 }
 
 AudioStub* WebrtcConnectionToClient::audio_stub() {
