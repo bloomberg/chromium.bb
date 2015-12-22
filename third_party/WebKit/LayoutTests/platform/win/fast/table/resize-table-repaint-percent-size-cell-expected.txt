@@ -27,10 +27,12 @@
         "LayoutTable (positioned) TABLE id='table'",
         "LayoutTableRow TR",
         "LayoutTableCell TD",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'ROW1'",
         "LayoutTableRow TR",
         "LayoutTableCell TD",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'ROW2'"
       ]

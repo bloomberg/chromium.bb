@@ -18,6 +18,7 @@
         "InlineTextBox 'Repaint me!'",
         "LayoutSVGRoot svg",
         "LayoutSVGText text id='bounce'",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Repaint me!'"
       ]

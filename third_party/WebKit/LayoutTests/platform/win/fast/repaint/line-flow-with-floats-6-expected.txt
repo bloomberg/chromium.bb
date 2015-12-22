@@ -28,6 +28,7 @@
         "RootInlineBox",
         "LayoutBlockFlow P",
         "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'foo'"
       ]

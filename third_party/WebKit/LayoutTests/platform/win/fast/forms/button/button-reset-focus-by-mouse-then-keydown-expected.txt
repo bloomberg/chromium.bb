@@ -13,6 +13,7 @@
       "paintInvalidationClients": [
         "LayoutButton BUTTON",
         "LayoutBlockFlow (anonymous)",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'Reset'"
       ]

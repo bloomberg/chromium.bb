@@ -112,6 +112,7 @@
         "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow P",
+        "RootInlineBox",
         "LayoutBlockFlow (floating) SPAN id='yellowFloat'",
         "LayoutText #text",
         "InlineTextBox 'difficult game indeed.\n'",

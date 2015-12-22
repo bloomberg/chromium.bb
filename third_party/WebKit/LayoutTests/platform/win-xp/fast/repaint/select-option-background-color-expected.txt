@@ -9,7 +9,8 @@
         [1, 37, 13, 17]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow OPTION id='option'"
+        "LayoutBlockFlow OPTION id='option'",
+        "RootInlineBox"
       ]
     }
   ]

@@ -20,6 +20,7 @@
         "InlineFlowBox",
         "InlineTextBox 'PASS'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'PASS'"
       ]

@@ -1,0 +1,27 @@
+{
+  "bounds": [808, 621],
+  "children": [
+    {
+      "bounds": [808, 621],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [208, 13, 161, 19],
+        [208, 13, 161, 19],
+        [208, 13, 161, 19],
+        [18, 193, 161, 19],
+        [18, 193, 161, 19],
+        [18, 193, 161, 19]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'Passes, if text is at 200x20'",
+        "LayoutSVGRoot svg:svg",
+        "LayoutSVGText text id='ttt'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Passes, if text is at 200x20'"
+      ]
+    }
+  ]
+}
+

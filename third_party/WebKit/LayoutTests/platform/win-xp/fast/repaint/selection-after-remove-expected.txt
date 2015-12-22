@@ -39,6 +39,7 @@
         "LayoutBlockFlow DIV id='test'",
         "LayoutBlockFlow DIV id='test'",
         "LayoutBlockFlow DIV id='test'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'hello '",
         "LayoutText #text",

@@ -13,6 +13,7 @@
       "paintInvalidationClients": [
         "LayoutButton INPUT",
         "LayoutBlockFlow (anonymous)",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'Submit'"
       ]

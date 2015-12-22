@@ -15,6 +15,7 @@
         "RootInlineBox",
         "InlineBox",
         "LayoutBlockFlow div id='contentBox'",
+        "RootInlineBox",
         "LayoutSVGRoot svg",
         "LayoutSVGImage image"
       ]

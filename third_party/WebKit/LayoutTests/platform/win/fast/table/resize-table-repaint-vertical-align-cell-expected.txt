@@ -19,6 +19,7 @@
         "LayoutTable (positioned) TABLE id='table'",
         "LayoutTableRow TR",
         "LayoutTableCell TD",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'MIDDLE'"
       ]

@@ -24,6 +24,7 @@
         "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'AAAA AAAA AAAA AAAA AAAA'"
       ]
@@ -52,6 +53,7 @@
         "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'AAAA AAAA AAAA AAAA AAAA'"
       ]
@@ -82,6 +84,7 @@
         "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'AAAA AAAA AAAA AAAA'",
         "InlineTextBox 'AAAA'"
@@ -111,6 +114,7 @@
         "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'AAAA AAAA AAAA AAAA'",
         "InlineTextBox 'AAAA'"

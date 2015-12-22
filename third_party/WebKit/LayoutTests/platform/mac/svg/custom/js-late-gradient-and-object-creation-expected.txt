@@ -24,12 +24,15 @@
         "LayoutSVGRoot svg id='svg-root'",
         "LayoutSVGContainer g id='content'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Gradient on fill'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Gradient on stroke'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Gradient on fill/stroke'"
       ]

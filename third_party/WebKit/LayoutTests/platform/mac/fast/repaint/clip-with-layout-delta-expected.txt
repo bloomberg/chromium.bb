@@ -20,10 +20,12 @@
         "InlineTextBox '\u00A0'",
         "LayoutBlockFlow DIV",
         "LayoutBlockFlow SPAN id='t1'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox '\u00A0'",
         "LayoutBlockFlow (relative positioned) DIV",
         "LayoutBlockFlow SPAN id='t2' class='blue'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox '\u00A0'"
       ]

@@ -23,10 +23,12 @@
         "InlineTextBox ' Y Z'",
         "LayoutSVGRoot svg",
         "LayoutSVGText text id='target'",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'A'",
         "InlineTextBox ' B C'",
         "LayoutSVGText text id='source'",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'X Y Z'"
       ]

@@ -1,0 +1,41 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [180, 120, 20, 20],
+        [180, 120, 20, 20],
+        [180, 60, 20, 20],
+        [100, 85, 100, 19],
+        [100, 85, 100, 19],
+        [100, 0, 100, 200],
+        [80, 120, 20, 20],
+        [80, 120, 20, 20],
+        [80, 60, 20, 20],
+        [0, 85, 100, 19],
+        [0, 85, 100, 19],
+        [0, 0, 200, 200],
+        [0, 0, 200, 200],
+        [0, 0, 100, 200],
+        [0, 0, 100, 200]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'right-aligned text'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGViewportContainer svg id='inner'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'right-aligned text'",
+        "LayoutSVGContainer use",
+        "LayoutSVGPath polygon id='triangle'"
+      ]
+    }
+  ]
+}
+

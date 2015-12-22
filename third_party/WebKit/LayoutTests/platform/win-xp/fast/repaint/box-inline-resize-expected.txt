@@ -19,8 +19,10 @@
         "InlineBox",
         "RootInlineBox",
         "LayoutBlockFlow (anonymous)",
+        "RootInlineBox",
         "LayoutImage IMG id='foo'",
         "LayoutBlockFlow H2",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'Chromium'"
       ]

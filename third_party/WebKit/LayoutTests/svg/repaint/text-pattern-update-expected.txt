@@ -11,6 +11,7 @@
       "paintInvalidationClients": [
         "LayoutSVGResourcePattern pattern id='pat'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'X'"
       ]

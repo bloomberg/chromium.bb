@@ -18,6 +18,7 @@
         "InlineTextBox 'Foo'",
         "LayoutSVGRoot svg",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Foo'"
       ]

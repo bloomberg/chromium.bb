@@ -23,6 +23,7 @@
         "RootInlineBox",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow DIV id='to-be-changed'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'After change'",
         "LayoutBlockFlow DIV",

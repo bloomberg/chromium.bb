@@ -12,7 +12,8 @@
       "paintInvalidationClients": [
         "RootInlineBox",
         "InlineBox",
-        "LayoutBlockFlow div id='contentBox'"
+        "LayoutBlockFlow div id='contentBox'",
+        "RootInlineBox"
       ]
     }
   ]

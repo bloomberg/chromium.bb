@@ -12,6 +12,7 @@
         "RootInlineBox",
         "InlineTextBox 'Gradient on fill'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGResourceLinearGradient linearGradient id='dynGrad'",
         "LayoutSVGGradientStop stop",
         "LayoutSVGGradientStop stop"

@@ -41,6 +41,7 @@
         "InlineTextBox 'PASS'",
         "LayoutSVGRoot (positioned) svg",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGTSpan tspan id='modify'",
         "LayoutSVGInlineText #text",
         "LayoutSVGTSpan tspan",

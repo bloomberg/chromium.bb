@@ -21,6 +21,7 @@
         "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'scroll me'",
         "HorizontalScrollbar",

@@ -19,6 +19,7 @@
         "RootInlineBox",
         "LayoutListItem LI",
         "LayoutListItem LI",
+        "RootInlineBox",
         "LayoutListMarker (anonymous)",
         "LayoutImage IMG id='target'"
       ]

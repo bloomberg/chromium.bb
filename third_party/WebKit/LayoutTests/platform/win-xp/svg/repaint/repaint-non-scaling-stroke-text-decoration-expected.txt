@@ -21,6 +21,7 @@
         "LayoutSVGRoot svg",
         "LayoutSVGContainer g",
         "LayoutSVGText text id='t'",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Hello'"
       ]

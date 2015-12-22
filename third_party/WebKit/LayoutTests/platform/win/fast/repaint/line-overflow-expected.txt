@@ -33,6 +33,7 @@
         "RootInlineBox",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV",
+        "RootInlineBox",
         "LayoutInline SPAN id='t'",
         "InlineFlowBox",
         "LayoutText #text",

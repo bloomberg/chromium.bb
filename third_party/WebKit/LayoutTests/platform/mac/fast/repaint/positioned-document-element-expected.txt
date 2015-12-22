@@ -24,6 +24,7 @@
         "LayoutBlockFlow (positioned) HTML class='changed'",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow P",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'"
       ]

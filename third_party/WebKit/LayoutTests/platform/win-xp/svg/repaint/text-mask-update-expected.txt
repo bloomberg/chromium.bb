@@ -21,6 +21,7 @@
         "RootInlineBox",
         "LayoutSVGRoot svg",
         "LayoutSVGText text id='text1'",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'PASS'",
         "LayoutSVGText text id='text2'",

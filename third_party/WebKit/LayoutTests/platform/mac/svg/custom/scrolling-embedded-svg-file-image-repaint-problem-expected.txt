@@ -21,6 +21,7 @@
         "RootInlineBox",
         "LayoutBlockFlow DIV class='linkbar'",
         "LayoutBlockFlow P",
+        "RootInlineBox",
         "LayoutInline A",
         "InlineFlowBox"
       ]

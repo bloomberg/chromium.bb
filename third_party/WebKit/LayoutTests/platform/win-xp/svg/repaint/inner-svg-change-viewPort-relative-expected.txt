@@ -30,6 +30,7 @@
         "LayoutSVGRect rect",
         "LayoutSVGRect rect",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'right-aligned text'",
         "LayoutSVGContainer use",

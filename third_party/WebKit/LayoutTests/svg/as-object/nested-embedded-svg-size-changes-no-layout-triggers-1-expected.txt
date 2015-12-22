@@ -45,6 +45,7 @@
         "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
+        "RootInlineBox",
         "LayoutEmbeddedObject OBJECT",
         "LayoutView #document",
         "LayoutSVGRoot svg",

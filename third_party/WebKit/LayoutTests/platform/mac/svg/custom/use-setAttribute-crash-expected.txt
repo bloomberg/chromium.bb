@@ -26,6 +26,7 @@
         "RootInlineBox",
         "LayoutBlockFlow body",
         "LayoutBlockFlow body",
+        "RootInlineBox",
         "LayoutSVGRoot svg:svg id='svg'",
         "LayoutSVGEllipse svg:circle id='circle'",
         "LayoutSVGContainer svg:use id='use'",

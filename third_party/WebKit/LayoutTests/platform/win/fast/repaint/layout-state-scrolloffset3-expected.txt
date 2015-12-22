@@ -15,6 +15,7 @@
         "InlineTextBox ''",
         "RootInlineBox",
         "LayoutBlockFlow DIV id='target'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'after'"
       ]

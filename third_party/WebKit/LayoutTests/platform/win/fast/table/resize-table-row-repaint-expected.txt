@@ -17,6 +17,7 @@
         "InlineTextBox 'MIDDLE'",
         "LayoutTableRow TR id='row'",
         "LayoutTableCell TD",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'MIDDLE'"
       ]

@@ -19,6 +19,7 @@
         "LayoutSVGRoot svg id='svg-root'",
         "LayoutSVGContainer g id='content'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Clipped. INVISIBLE.'",
         "LayoutSVGResourceClipper clipPath id='dynClip'",

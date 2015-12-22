@@ -19,6 +19,7 @@
         "LayoutSVGRoot svg",
         "LayoutSVGContainer g",
         "LayoutSVGText text id='text'",
+        "RootInlineBox",
         "LayoutSVGTSpan tspan id='tspan'",
         "InlineFlowBox",
         "LayoutSVGInlineText #text",

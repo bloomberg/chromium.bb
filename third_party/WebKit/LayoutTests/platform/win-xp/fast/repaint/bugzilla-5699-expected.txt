@@ -20,6 +20,7 @@
         "RootInlineBox",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P",
+        "RootInlineBox",
         "LayoutInline SPAN id='d'",
         "InlineFlowBox",
         "LayoutText #text",

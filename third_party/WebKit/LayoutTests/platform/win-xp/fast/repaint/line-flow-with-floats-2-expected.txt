@@ -44,6 +44,7 @@
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'The chief difficulty Alice found at first was in managing her'",
         "InlineTextBox 'flamingo: she succeeded in getting its body tucked away,'",

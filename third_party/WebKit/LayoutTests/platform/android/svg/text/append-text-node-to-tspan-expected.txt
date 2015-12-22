@@ -1,0 +1,68 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [10, 63, 307, 377],
+        [10, 63, 307, 377],
+        [10, 63, 307, 377],
+        [10, 63, 307, 377],
+        [10, 63, 307, 377],
+        [10, 63, 307, 377],
+        [10, 63, 307, 377],
+        [10, 63, 307, 377],
+        [10, 63, 307, 377],
+        [10, 63, 307, 377],
+        [10, 63, 307, 377],
+        [10, 50, 307, 390],
+        [10, 50, 307, 390],
+        [10, 50, 307, 390],
+        [10, 50, 307, 390],
+        [10, 50, 307, 390],
+        [10, 50, 307, 390],
+        [10, 50, 307, 390],
+        [10, 50, 307, 390],
+        [10, 50, 307, 390],
+        [10, 50, 307, 390],
+        [10, 50, 307, 390],
+        [10, 50, 307, 390]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineFlowBox",
+        "InlineTextBox 'PA'",
+        "InlineTextBox ''",
+        "InlineFlowBox",
+        "InlineTextBox 'PASS'",
+        "InlineTextBox ''",
+        "InlineFlowBox",
+        "InlineTextBox 'PASS'",
+        "LayoutSVGRoot (positioned) svg",
+        "LayoutSVGText text",
+        "LayoutSVGTSpan tspan id='modify'",
+        "InlineFlowBox",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'PA'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'SS'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox ' '",
+        "LayoutSVGTSpan tspan",
+        "InlineFlowBox",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'PASS'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox ' '",
+        "LayoutSVGTSpan tspan",
+        "InlineFlowBox",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'PASS'",
+        "LayoutSVGInlineText #text"
+      ]
+    }
+  ]
+}
+

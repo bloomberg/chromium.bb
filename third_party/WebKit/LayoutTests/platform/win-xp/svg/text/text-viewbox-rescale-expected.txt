@@ -36,6 +36,7 @@
         "LayoutSVGRoot (positioned) svg",
         "LayoutSVGViewportContainer svg id='inner1'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'PASS '",
         "LayoutSVGTSpan tspan",
@@ -45,6 +46,7 @@
         "LayoutSVGInlineText #text",
         "LayoutSVGViewportContainer svg id='inner2'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGTSpan tspan",
         "InlineFlowBox"
       ]

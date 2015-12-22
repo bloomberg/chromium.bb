@@ -18,6 +18,7 @@
         "RootInlineBox",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
+        "RootInlineBox",
         "LayoutSVGRoot svg"
       ]
     }

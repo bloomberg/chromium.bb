@@ -22,7 +22,8 @@
         "InlineTextBox ''",
         "InlineFlowBox",
         "InlineTextBox 'PASS'",
-        "LayoutSVGText text id='text'"
+        "LayoutSVGText text id='text'",
+        "RootInlineBox"
       ]
     }
   ]

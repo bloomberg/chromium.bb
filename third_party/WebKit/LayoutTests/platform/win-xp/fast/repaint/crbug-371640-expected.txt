@@ -35,6 +35,7 @@
         "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
         "LayoutBlockFlow (positioned) DIV class='abs_pos'",
         "LayoutBlockFlow DIV id='keep' class='item'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox '\u00A0'"
       ]

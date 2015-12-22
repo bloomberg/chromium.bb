@@ -19,9 +19,11 @@
         "RootInlineBox",
         "InlineTextBox ''",
         "LayoutBlockFlow DIV id='inner-editor'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'PASSED'",
         "LayoutBlockFlow DIV id='inner-editor'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'PASSED'"
       ]

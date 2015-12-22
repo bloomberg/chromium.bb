@@ -22,6 +22,7 @@
         "RootInlineBox",
         "InlineBox",
         "LayoutBlockFlow div id='contentBox'",
+        "RootInlineBox",
         "LayoutEmbeddedObject object",
         "LayoutView #document",
         "LayoutView #document",

@@ -26,6 +26,7 @@
         "RootInlineBox",
         "InlineBox",
         "LayoutBlockFlow div id='contentBox'",
+        "RootInlineBox",
         "LayoutSVGRoot svg",
         "LayoutSVGRect rect id='targetRect'",
         "LayoutSVGContainer use id='targetUse'",

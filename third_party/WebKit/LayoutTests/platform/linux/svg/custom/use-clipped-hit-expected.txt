@@ -16,6 +16,7 @@
         "LayoutSVGInlineText #text",
         "RootInlineBox",
         "LayoutSVGText text id='status'",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Passed'"
       ]

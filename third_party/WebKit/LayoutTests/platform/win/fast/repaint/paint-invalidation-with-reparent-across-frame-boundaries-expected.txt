@@ -19,6 +19,7 @@
         "LayoutBlockFlow DIV id='inner-target'",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV id='inner-target'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'abc'"
       ]

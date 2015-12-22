@@ -15,6 +15,7 @@
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV",
         "LayoutBlockFlow DIV id='div'",
+        "RootInlineBox",
         "LayoutBR BR",
         "InlineTextBox '\n'",
         "LayoutBlockFlow DIV id='div'",

@@ -45,6 +45,7 @@
         "RootInlineBox",
         "LayoutBlockFlow DIV",
         "LayoutBlockFlow DIV id='one'",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'three'",
         "LayoutBlockFlow DIV id='one'"

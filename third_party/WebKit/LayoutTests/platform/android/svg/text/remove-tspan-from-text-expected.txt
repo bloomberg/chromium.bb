@@ -1,0 +1,30 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [10, 63, 307, 257],
+        [10, 63, 307, 257],
+        [10, 63, 307, 257]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'FAIL'",
+        "LayoutSVGInlineText #text",
+        "InlineFlowBox",
+        "LayoutSVGTSpan tspan id='remove'",
+        "RootInlineBox",
+        "InlineFlowBox",
+        "InlineTextBox 'PASS'",
+        "InlineTextBox ''",
+        "InlineTextBox ''",
+        "InlineFlowBox",
+        "InlineTextBox 'PASS'",
+        "LayoutSVGText text id='text'"
+      ]
+    }
+  ]
+}
+

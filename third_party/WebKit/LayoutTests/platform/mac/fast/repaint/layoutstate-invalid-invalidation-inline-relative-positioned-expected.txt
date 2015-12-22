@@ -24,6 +24,7 @@
         "InlineFlowBox",
         "LayoutText #text",
         "LayoutBlockFlow DIV",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'x'",
         "LayoutText #text"

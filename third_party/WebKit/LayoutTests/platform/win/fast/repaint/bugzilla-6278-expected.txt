@@ -38,6 +38,7 @@
         "InlineTextBox 'nec ullamcorper lacus ante vulputate pede.'",
         "LayoutTableCell TD id='col1'",
         "LayoutBlockFlow DIV",
+        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'Curabitur pretium, quam quis semper'",
         "InlineTextBox 'malesuada, est libero feugiat libero,'",

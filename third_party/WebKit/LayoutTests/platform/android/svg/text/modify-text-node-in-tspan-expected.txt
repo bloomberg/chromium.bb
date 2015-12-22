@@ -1,0 +1,29 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [10, 63, 307, 377],
+        [10, 63, 307, 377]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineFlowBox",
+        "InlineTextBox 'PA'",
+        "InlineTextBox ''",
+        "InlineFlowBox",
+        "InlineTextBox 'PASS'",
+        "InlineTextBox ''",
+        "InlineFlowBox",
+        "InlineTextBox 'PASS'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'PASS'"
+      ]
+    }
+  ]
+}
+

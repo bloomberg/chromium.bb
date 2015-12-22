@@ -39,6 +39,7 @@
                 "LayoutView #document",
                 "LayoutBlockFlow HTML",
                 "LayoutBlockFlow BODY",
+                "RootInlineBox",
                 "LayoutView #document",
                 "VerticalScrollbar"
               ]

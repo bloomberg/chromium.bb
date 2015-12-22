@@ -34,6 +34,7 @@
         "RootInlineBox",
         "LayoutBlockFlow DIV id='test'",
         "LayoutBlockFlow DIV id='test'",
+        "RootInlineBox",
         "LayoutBR BR",
         "InlineTextBox '\n'",
         "LayoutBlockFlow DIV id='test'"

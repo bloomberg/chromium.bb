@@ -41,6 +41,7 @@
         "RootInlineBox",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P",
+        "RootInlineBox",
         "LayoutInline I id='would'",
         "LayoutText #text",
         "InlineTextBox 'would'",

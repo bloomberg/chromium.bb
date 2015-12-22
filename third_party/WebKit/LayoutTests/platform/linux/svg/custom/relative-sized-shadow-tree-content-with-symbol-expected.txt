@@ -23,6 +23,7 @@
         "RootInlineBox",
         "InlineBox",
         "LayoutBlockFlow div id='contentBox'",
+        "RootInlineBox",
         "LayoutSVGRoot svg",
         "LayoutSVGContainer use",
         "LayoutSVGViewportContainer svg id='targetSymbol'",

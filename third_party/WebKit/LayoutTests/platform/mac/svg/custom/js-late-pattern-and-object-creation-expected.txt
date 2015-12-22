@@ -29,12 +29,15 @@
         "LayoutSVGRoot svg id='svg-root'",
         "LayoutSVGContainer g id='content'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Pattern on fill'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Pattern on stroke'",
         "LayoutSVGText text",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Pattern on fill/stroke'"
       ]

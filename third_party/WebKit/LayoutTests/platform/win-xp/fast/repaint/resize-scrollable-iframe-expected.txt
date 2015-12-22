@@ -25,6 +25,7 @@
         "RootInlineBox",
         "LayoutBlockFlow (anonymous)",
         "LayoutBlockFlow (anonymous)",
+        "RootInlineBox",
         "LayoutIFrame IFRAME id='iframe'",
         "LayoutView #document",
         "LayoutView #document",

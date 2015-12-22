@@ -25,6 +25,7 @@
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow (anonymous)",
+        "RootInlineBox",
         "LayoutInline A id='link'",
         "InlineFlowBox",
         "LayoutBlockFlow P"

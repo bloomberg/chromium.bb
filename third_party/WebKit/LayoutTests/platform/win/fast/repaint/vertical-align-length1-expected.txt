@@ -20,6 +20,7 @@
         "RootInlineBox",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow BODY",
+        "RootInlineBox",
         "LayoutBlockFlow DIV class='other'",
         "LayoutBlockFlow DIV class='other'"
       ]

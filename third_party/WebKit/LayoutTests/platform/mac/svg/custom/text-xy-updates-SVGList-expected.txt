@@ -18,6 +18,7 @@
         "InlineTextBox 'Passes, if text is at 200x20'",
         "LayoutSVGRoot svg:svg",
         "LayoutSVGText text id='ttt'",
+        "RootInlineBox",
         "LayoutSVGInlineText #text",
         "InlineTextBox 'Passes, if text is at 200x20'"
       ]
