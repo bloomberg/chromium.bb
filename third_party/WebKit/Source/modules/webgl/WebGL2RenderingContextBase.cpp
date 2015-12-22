@@ -1877,6 +1877,10 @@ ScriptValue WebGL2RenderingContextBase::getQueryParameter(ScriptState* scriptSta
     }
 
     // Query is non-null at this point.
+    if (!query->getTarget()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "getQueryParameter", "'query' is not a query object yet, since it has't been used by beginQuery");
+        return ScriptValue::createNull(scriptState);
+    }
     if (query == m_currentBooleanOcclusionQuery || query == m_currentTransformFeedbackPrimitivesWrittenQuery) {
         synthesizeGLError(GL_INVALID_OPERATION, "getQueryParameter", "query is currently active");
         return ScriptValue::createNull(scriptState);
