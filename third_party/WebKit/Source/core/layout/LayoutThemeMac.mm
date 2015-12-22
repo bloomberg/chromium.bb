@@ -18,7 +18,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#import "config.h"
 #import "core/layout/LayoutThemeMac.h"
 
 #import "core/CSSValueKeywords.h"

@@ -25,11 +25,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "config.h"
-
-#include <limits.h>
-#include <math.h>
-
 #include "double-conversion.h"
 
 #include "bignum-dtoa.h"
@@ -38,6 +33,8 @@
 #include "fixed-dtoa.h"
 #include "strtod.h"
 #include "utils.h"
+#include <limits.h>
+#include <math.h>
 
 namespace WTF {
 
