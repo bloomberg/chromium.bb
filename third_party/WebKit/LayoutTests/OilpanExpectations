@@ -36,3 +36,5 @@ crbug.com/344239 [ Release ] inspector-protocol/heap-profiler/heap-objects-track
 crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure ]
 
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]
+
+crbug.com/299010 [ Win ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
