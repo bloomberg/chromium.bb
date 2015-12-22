@@ -89,7 +89,9 @@ void AbortsPageLoadMetricsObserver::OnComplete(
         NOTREACHED();
         return;
     }
-  } else if (extra_info.has_commit) {
+    NOTREACHED();
+  }
+  if (extra_info.has_commit) {
     // This load was not tracked by the renderer.
     return;
   }
@@ -113,7 +115,7 @@ void AbortsPageLoadMetricsObserver::OnComplete(
                           time_to_abort);
       return;
     case UserAbortType::ABORT_CLOSE:
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortCloseBeforePaint,
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortCloseBeforeCommit,
                           time_to_abort);
       return;
     case UserAbortType::ABORT_OTHER:
@@ -125,4 +127,5 @@ void AbortsPageLoadMetricsObserver::OnComplete(
       NOTREACHED();
       return;
   }
+  NOTREACHED();
 }

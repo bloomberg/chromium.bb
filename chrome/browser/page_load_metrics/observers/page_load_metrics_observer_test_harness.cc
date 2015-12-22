@@ -54,6 +54,12 @@ void PageLoadMetricsObserverTestHarness::SetUp() {
   web_contents()->WasShown();
 }
 
+void PageLoadMetricsObserverTestHarness::StartNavigation(const GURL& gurl) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->StartNavigation(gurl);
+}
+
 void PageLoadMetricsObserverTestHarness::SimulateTimingUpdate(
     const PageLoadTiming& timing) {
   observer_->OnMessageReceived(

@@ -29,6 +29,10 @@ class PageLoadMetricsObserverTestHarness
 
   virtual void RegisterObservers(PageLoadTracker* tracker) {}
 
+  // Simulates starting a navigation to the given gurl, without committing the
+  // navigation.
+  void StartNavigation(const GURL& gurl);
+
   // Call this to simulate sending a PageLoadTiming IPC from the render process
   // to the browser process. These will update the timing information for the
   // most recently committed navigation.
