@@ -161,6 +161,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     static const UChar* syriacFonts[] = {L"Estrangelo Edessa", L"Estrangelo Nisibin", L"Code2000", 0};
     static const UChar* myanmarFonts[] = {L"Myanmar Text", L"Padauk", L"Parabaik", L"Myanmar3", L"Code2000", 0};
     static const UChar* gothicFonts[] = {L"Segoe UI Symbol", 0};
+    static const UChar* oghamFonts[] = {L"Segoe UI Symbol", 0};
     static const UChar* hangulFonts[] = {L"gulim", L"Malgun Gothic", 0};
     static const UChar* devanagariFonts[] = {L"mangal", L"Nirmala UI", 0};
     static const UChar* gujaratiFonts[] = {L"shruti", L"Nirmala UI", 0};
@@ -195,6 +196,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         {USCRIPT_SYRIAC, syriacFonts},
         {USCRIPT_MYANMAR, myanmarFonts},
         {USCRIPT_GOTHIC, gothicFonts},
+        {USCRIPT_OGHAM, oghamFonts},
         {USCRIPT_HANGUL, hangulFonts},
         {USCRIPT_DEVANAGARI, devanagariFonts},
         {USCRIPT_GUJARATI, gujaratiFonts},
