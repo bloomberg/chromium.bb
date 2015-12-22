@@ -21,6 +21,8 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnKeyListener;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 
 import android.webkit.GeolocationPermissions;
@@ -31,7 +33,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import android.widget.EditText;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
@@ -155,8 +156,34 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             WebView.setWebContentsDebuggingEnabled(true);
         }
         setContentView(R.layout.activity_webview_browser);
-        mWebView = (WebView) findViewById(R.id.webview);
-        WebSettings settings = mWebView.getSettings();
+        mUrlBar = (EditText) findViewById(R.id.url_field);
+        mUrlBar.setOnKeyListener(new OnKeyListener() {
+            public boolean onKey(View view, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
+                    loadUrlFromUrlBar(view);
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        createAndInitializeWebView();
+
+        String url = getUrlFromIntent(getIntent());
+        if (url != null) {
+            setUrlBarText(url);
+            setUrlFail(false);
+            loadUrlFromUrlBar(mUrlBar);
+        }
+    }
+
+    ViewGroup getContainer() {
+        return (ViewGroup) findViewById(R.id.container);
+    }
+
+    private void createAndInitializeWebView() {
+        WebView webview = new WebView(this);
+        WebSettings settings = webview.getSettings();
         initializeSettings(settings);
 
         Matcher matcher = WEBVIEW_VERSION_PATTERN.matcher(settings.getUserAgentString());
@@ -167,7 +194,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         }
         setTitle(getResources().getString(R.string.title_activity_browser) + " " + mWebViewVersion);
 
-        mWebView.setWebViewClient(new WebViewClient() {
+        webview.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 setUrlBarText(url);
@@ -190,7 +217,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             }
         });
 
-        mWebView.setWebChromeClient(new WebChromeClient() {
+        webview.setWebChromeClient(new WebChromeClient() {
             @Override
             public Bitmap getDefaultVideoPoster() {
                 return Bitmap.createBitmap(
@@ -209,23 +236,10 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             }
         });
 
-        mUrlBar = (EditText) findViewById(R.id.url_field);
-        mUrlBar.setOnKeyListener(new OnKeyListener() {
-            public boolean onKey(View view, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
-                    loadUrlFromUrlBar(view);
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        String url = getUrlFromIntent(getIntent());
-        if (url != null) {
-            setUrlBarText(url);
-            setUrlFail(false);
-            loadUrlFromUrlBar(mUrlBar);
-        }
+        mWebView = webview;
+        getContainer().addView(
+                webview, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        setUrlBarText("");
     }
 
     // WebKit permissions which can be granted because either they have no associated Android
@@ -327,6 +341,15 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         switch(item.getItemId()) {
+            case R.id.menu_reset_webview:
+                if (mWebView != null) {
+                    ViewGroup container = getContainer();
+                    container.removeView(mWebView);
+                    mWebView.destroy();
+                    mWebView = null;
+                }
+                createAndInitializeWebView();
+                return true;
             case R.id.menu_about:
                 about();
                 hideKeyboard(mUrlBar);
