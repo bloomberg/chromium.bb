@@ -13,28 +13,84 @@ _DEVIL_CONFIG = os.path.abspath(
     os.path.join(os.path.dirname(__file__), 'devil_chromium.json'))
 
 _DEVIL_BUILD_PRODUCT_DEPS = {
-  'forwarder_device': {
-    'armeabi-v7a': 'forwarder_dist',
-    'arm64-v8a': 'forwarder_dist',
-    'mips': 'forwarder_dist',
-    'mips64': 'forwarder_dist',
-    'x86': 'forwarder_dist',
-    'x86_64': 'forwarder_dist',
-  },
-  'forwarder_host': {
-    'any': 'host_forwarder',
-  },
-  'md5sum_device': {
-    'armeabi-v7a': 'md5sum_dist',
-    'arm64-v8a': 'md5sum_dist',
-    'mips': 'md5sum_dist',
-    'mips64': 'md5sum_dist',
-    'x86': 'md5sum_dist',
-    'x86_64': 'md5sum_dist',
-  },
-  'md5sum_host': {
-    'any': 'md5sum_bin_host',
-  },
+  'forwarder_device': [
+    {
+      'platform': 'android',
+      'arch': 'armeabi-v7a',
+      'name': 'forwarder_dist',
+    },
+    {
+      'platform': 'android',
+      'arch': 'arm64-v8a',
+      'name': 'forwarder_dist',
+    },
+    {
+      'platform': 'android',
+      'arch': 'mips',
+      'name': 'forwarder_dist',
+    },
+    {
+      'platform': 'android',
+      'arch': 'mips64',
+      'name': 'forwarder_dist',
+    },
+    {
+      'platform': 'android',
+      'arch': 'x86',
+      'name': 'forwarder_dist',
+    },
+    {
+      'platform': 'android',
+      'arch': 'x86_64',
+      'name': 'forwarder_dist',
+    },
+  ],
+  'forwarder_host': [
+    {
+      'platform': 'linux',
+      'arch': 'x86_64',
+      'name': 'host_forwarder',
+    },
+  ],
+  'md5sum_device': [
+    {
+      'platform': 'android',
+      'arch': 'armeabi-v7a',
+      'name': 'md5sum_dist',
+    },
+    {
+      'platform': 'android',
+      'arch': 'arm64-v8a',
+      'name': 'md5sum_dist',
+    },
+    {
+      'platform': 'android',
+      'arch': 'mips',
+      'name': 'md5sum_dist',
+    },
+    {
+      'platform': 'android',
+      'arch': 'mips64',
+      'name': 'md5sum_dist',
+    },
+    {
+      'platform': 'android',
+      'arch': 'x86',
+      'name': 'md5sum_dist',
+    },
+    {
+      'platform': 'android',
+      'arch': 'x86_64',
+      'name': 'md5sum_dist',
+    },
+  ],
+  'md5sum_host': [
+    {
+      'platform': 'linux',
+      'arch': 'x86_64',
+      'name': 'md5sum_bin_host',
+    },
+  ],
 }
 
 
@@ -65,29 +121,24 @@ def Initialize(output_directory=None, custom_deps=None):
         }
   """
 
-  devil_dynamic_deps = {}
-
-  if output_directory:
-    for dep_name, arch_dict in _DEVIL_BUILD_PRODUCT_DEPS.iteritems():
-      devil_dynamic_deps[dep_name] = {}
-      for arch, name in arch_dict.iteritems():
-        devil_dynamic_deps[dep_name][arch] = os.path.join(
-            output_directory, name)
-
   devil_dynamic_config = {
     'config_type': 'BaseConfig',
-    'dependencies': {
+    'dependencies': {},
+  }
+  if output_directory:
+    devil_dynamic_config['dependencies'] = {
       dep_name: {
         'file_info': {
-          'android_%s' % arch: {
-            'local_paths': [path]
+          '%s_%s' % (dep_config['platform'], dep_config['arch']): {
+            'local_paths': [
+              os.path.join(output_directory, dep_config['name']),
+            ],
           }
-          for arch, path in arch_dict.iteritems()
+          for dep_config in dep_configs
         }
       }
-      for dep_name, arch_dict in devil_dynamic_deps.iteritems()
+      for dep_name, dep_configs in _DEVIL_BUILD_PRODUCT_DEPS.iteritems()
     }
-  }
   if custom_deps:
     devil_dynamic_config['dependencies'].update(custom_deps)
 
