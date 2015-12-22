@@ -29,6 +29,11 @@ WebCompositorAnimationPlayerImpl::animation_player() const {
 
 void WebCompositorAnimationPlayerImpl::setAnimationDelegate(
     blink::WebCompositorAnimationDelegate* delegate) {
+  if (!delegate) {
+    animation_delegate_adapter_.reset();
+    animation_player_->set_layer_animation_delegate(nullptr);
+    return;
+  }
   animation_delegate_adapter_.reset(
       new WebToCCAnimationDelegateAdapter(delegate));
   animation_player_->set_layer_animation_delegate(

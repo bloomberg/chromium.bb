@@ -246,6 +246,11 @@ void WebLayerImpl::setBackgroundFilters(const WebFilterOperations& filters) {
 
 void WebLayerImpl::setAnimationDelegate(
     blink::WebCompositorAnimationDelegate* delegate) {
+  if (!delegate) {
+    animation_delegate_adapter_.reset();
+    layer_->set_layer_animation_delegate(nullptr);
+    return;
+  }
   animation_delegate_adapter_.reset(
       new WebToCCAnimationDelegateAdapter(delegate));
   layer_->set_layer_animation_delegate(animation_delegate_adapter_.get());
