@@ -44,6 +44,7 @@ TEST_F(CRWWebViewScrollViewProxyTest, testMultipleScrollView) {
   [webViewScrollViewProxy_ setScrollView:mockScrollView2];
   EXPECT_FALSE([mockScrollView1 delegate]);
   EXPECT_EQ(webViewScrollViewProxy_.get(), [mockScrollView2 delegate]);
+  [webViewScrollViewProxy_ setScrollView:nil];
 }
 
 // Tests that when releasing a scroll view from the CRWWebViewScrollViewProxy,

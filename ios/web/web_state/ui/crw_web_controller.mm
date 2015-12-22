@@ -209,6 +209,8 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
   // Whether or not the page has zoomed since the current navigation has been
   // committed, either by user interaction or via |-restoreStateFromHistory|.
   BOOL _pageHasZoomed;
+  // Whether a PageDisplayState is currently being applied.
+  BOOL _applyingPageState;
   // Actions to execute once the page load is complete.
   base::scoped_nsobject<NSMutableArray> _pendingLoadCompleteActions;
   // UIGestureRecognizers to add to the web view.
@@ -3333,6 +3335,24 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _pageHasZoomed = YES;
 }
 
+- (void)webViewScrollViewDidResetContentSize:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  web::NavigationItem* currentItem = [self currentNavItem];
+  if (webViewScrollViewProxy.isZooming || _applyingPageState || !currentItem)
+    return;
+  CGSize contentSize = webViewScrollViewProxy.contentSize;
+  if (contentSize.width < CGRectGetWidth(webViewScrollViewProxy.frame)) {
+    // The renderer incorrectly resized the content area.  Resetting the scroll
+    // view's zoom scale will force a re-rendering.  rdar://23963992
+    _applyingPageState = YES;
+    web::PageZoomState zoomState =
+        currentItem->GetPageDisplayState().zoom_state();
+    if (!zoomState.IsValid() || zoomState.IsLegacyFormat())
+      zoomState = web::PageZoomState(1.0, 1.0, 1.0);
+    [self applyWebViewScrollZoomScaleFromZoomState:zoomState];
+    _applyingPageState = NO;
+  }
+}
 #pragma mark -
 #pragma mark Page State
 
@@ -3441,12 +3461,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (currentItem && currentItem->GetPageDisplayState() != displayState)
     return;
   DCHECK(displayState.IsValid());
+  _applyingPageState = YES;
   if (isUserScalable) {
     [self prepareToApplyWebViewScrollZoomScale];
     [self applyWebViewScrollZoomScaleFromZoomState:displayState.zoom_state()];
     [self finishApplyingWebViewScrollZoomScale];
   }
   [self applyWebViewScrollOffsetFromScrollState:displayState.scroll_state()];
+  _applyingPageState = NO;
 }
 
 - (void)prepareToApplyWebViewScrollZoomScale {

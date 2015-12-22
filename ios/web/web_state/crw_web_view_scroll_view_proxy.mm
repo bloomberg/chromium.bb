@@ -10,7 +10,7 @@
 #include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 
-@implementation CRWWebViewScrollViewProxy {
+@interface CRWWebViewScrollViewProxy () {
   base::WeakNSObject<UIScrollView> _scrollView;
   base::scoped_nsobject<id> _observers;
   // When |_ignoreScroll| is set to YES, do not pass on -scrollViewDidScroll
@@ -20,6 +20,18 @@
   BOOL _ignoreScroll;
 }
 
+// Returns the key paths that need to be observed for UIScrollView.
++ (NSArray*)scrollViewObserverKeyPaths;
+
+// Adds and removes |self| as an observer for |scrollView| with key paths
+// returned by |+scrollViewObserverKeyPaths|.
+- (void)startObservingScrollView:(UIScrollView*)scrollView;
+- (void)stopObservingScrollView:(UIScrollView*)scrollView;
+
+@end
+
+@implementation CRWWebViewScrollViewProxy
+
 - (instancetype)init {
   self = [super init];
   if (self) {
@@ -28,6 +40,11 @@
         [[CRBProtocolObservers observersWithProtocol:protocol] retain]);
   }
   return self;
+}
+
+- (void)dealloc {
+  [self stopObservingScrollView:_scrollView];
+  [super dealloc];
 }
 
 - (void)addGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer {
@@ -50,10 +67,10 @@
   if (_scrollView == scrollView)
     return;
   [_scrollView setDelegate:nil];
-  if (scrollView) {
-    DCHECK(!scrollView.delegate);
-    scrollView.delegate = self;
-  }
+  [self stopObservingScrollView:_scrollView];
+  DCHECK(!scrollView.delegate);
+  scrollView.delegate = self;
+  [self startObservingScrollView:scrollView];
   _scrollView.reset(scrollView);
   [_observers webViewScrollViewProxyDidSetScrollView:self];
 }
@@ -221,6 +238,31 @@
 - (void)scrollViewDidZoom:(UIScrollView*)scrollView {
   DCHECK_EQ(_scrollView, scrollView);
   [_observers webViewScrollViewDidZoom:self];
+}
+
+#pragma mark -
+
++ (NSArray*)scrollViewObserverKeyPaths {
+  return @[ @"contentSize" ];
+}
+
+- (void)startObservingScrollView:(UIScrollView*)scrollView {
+  for (NSString* keyPath in [[self class] scrollViewObserverKeyPaths])
+    [scrollView addObserver:self forKeyPath:keyPath options:0 context:nil];
+}
+
+- (void)stopObservingScrollView:(UIScrollView*)scrollView {
+  for (NSString* keyPath in [[self class] scrollViewObserverKeyPaths])
+    [scrollView removeObserver:self forKeyPath:keyPath];
+}
+
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  DCHECK_EQ(object, _scrollView.get());
+  if ([keyPath isEqualToString:@"contentSize"])
+    [_observers webViewScrollViewDidResetContentSize:self];
 }
 
 @end
