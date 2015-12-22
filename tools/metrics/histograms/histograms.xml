@@ -24274,6 +24274,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time it takes to request a new (unused) HTTP proxy socket.</summary>
 </histogram>
 
+<histogram name="Net.HttpRequest.ContainsInvalidHeaderValuesInRFC7230"
+    enum="Boolean">
+  <owner>hiroshige@chromium.org</owner>
+  <summary>
+    Whether a request contains invalid request header values in RFC 7230. This
+    is counted once for every redirect leg. https://crbug.com/455099.
+  </summary>
+</histogram>
+
 <histogram name="Net.HttpRequestCompletionErrorCodes" enum="NetErrorCodes">
   <owner>sclittle@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -24290,6 +24299,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The network error code that the HTTP main frame resource request completes
     with, including OK and ABORTED.
+  </summary>
+</histogram>
+
+<histogram name="Net.HttpResponse.ContainsInvalidHeaderValuesInRFC7230"
+    enum="Boolean">
+  <owner>hiroshige@chromium.org</owner>
+  <summary>
+    Whether a response contains invalid response header values in RFC 7230. This
+    is counted once for every redirect leg. https://crbug.com/455099.
   </summary>
 </histogram>
 
