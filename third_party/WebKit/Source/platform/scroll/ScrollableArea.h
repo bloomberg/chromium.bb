@@ -212,7 +212,7 @@ public:
 
     // Let subclasses provide a way of asking for and servicing scroll
     // animations.
-    bool scheduleAnimation();
+    virtual bool scheduleAnimation();
     virtual void serviceScrollAnimations(double monotonicTime);
     virtual void updateCompositorScrollAnimations();
     virtual void registerForAnimation() { }

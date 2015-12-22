@@ -2036,14 +2036,14 @@ WebInputEventResult EventHandler::handleGestureShowPress()
     if (!view)
         return WebInputEventResult::NotHandled;
     if (ScrollAnimatorBase* scrollAnimator = view->existingScrollAnimator())
-        scrollAnimator->cancelAnimations();
+        scrollAnimator->cancelAnimation();
     const FrameView::ScrollableAreaSet* areas = view->scrollableAreas();
     if (!areas)
         return WebInputEventResult::NotHandled;
     for (const ScrollableArea* scrollableArea : *areas) {
         ScrollAnimatorBase* animator = scrollableArea->existingScrollAnimator();
         if (animator)
-            animator->cancelAnimations();
+            animator->cancelAnimation();
     }
     return WebInputEventResult::NotHandled;
 }

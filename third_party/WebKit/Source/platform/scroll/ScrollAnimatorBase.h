@@ -35,6 +35,7 @@
 #include "platform/PlatformWheelEvent.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/heap/Handle.h"
+#include "platform/scroll/ScrollAnimatorCompositorCoordinator.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Forward.h"
 
@@ -43,8 +44,9 @@ namespace blink {
 class FloatPoint;
 class ScrollableArea;
 class Scrollbar;
+class WebCompositorAnimationTimeline;
 
-class PLATFORM_EXPORT ScrollAnimatorBase : public NoBaseWillBeGarbageCollectedFinalized<ScrollAnimatorBase> {
+class PLATFORM_EXPORT ScrollAnimatorBase : public ScrollAnimatorCompositorCoordinator {
 public:
     static PassOwnPtrWillBeRawPtr<ScrollAnimatorBase> create(ScrollableArea*);
 
@@ -61,8 +63,6 @@ public:
 
     virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
 
-    ScrollableArea* scrollableArea() const { return m_scrollableArea; }
-
     virtual void setIsActive() { }
 
 #if OS(MACOSX)
@@ -76,9 +76,14 @@ public:
     // area.
     virtual float computeDeltaToConsume(ScrollbarOrientation, float pixelDelta) const;
 
-    virtual void cancelAnimations() { }
-    virtual void serviceScrollAnimations() { }
-    virtual bool hasRunningAnimation() const { return false; }
+
+    // ScrollAnimatorCompositorCoordinator implementation.
+    ScrollableArea* scrollableArea() const override { return m_scrollableArea; }
+    void tickAnimation(double monotonicTime) override { };
+    void cancelAnimation() override { }
+    void updateCompositorAnimations() override { };
+    void notifyCompositorAnimationFinished(int groupId) override { };
+    void layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline*) override { };
 
     virtual void contentAreaWillPaint() const { }
     virtual void mouseEnteredContentArea() const { }

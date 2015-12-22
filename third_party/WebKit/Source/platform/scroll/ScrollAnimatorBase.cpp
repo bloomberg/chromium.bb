@@ -104,6 +104,7 @@ float ScrollAnimatorBase::clampScrollPosition(ScrollbarOrientation orientation, 
 DEFINE_TRACE(ScrollAnimatorBase)
 {
     visitor->trace(m_scrollableArea);
+    ScrollAnimatorCompositorCoordinator::trace(visitor);
 }
 
 } // namespace blink

@@ -93,7 +93,7 @@ private:
 
     void handleWheelEventPhase(PlatformWheelEventPhase) override;
 
-    void cancelAnimations() override;
+    void cancelAnimation() override;
     void setIsActive() override;
 
     void contentAreaWillPaint() const override;

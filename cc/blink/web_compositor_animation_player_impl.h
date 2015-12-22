@@ -36,6 +36,7 @@ class WebCompositorAnimationPlayerImpl
   void addAnimation(blink::WebCompositorAnimation* animation) override;
   void removeAnimation(int animation_id) override;
   void pauseAnimation(int animation_id, double time_offset) override;
+  void abortAnimation(int animation_id) override;
 
  private:
   scoped_refptr<cc::AnimationPlayer> animation_player_;

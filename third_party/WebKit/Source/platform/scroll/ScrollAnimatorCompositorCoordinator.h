@@ -22,9 +22,9 @@ public:
     virtual ~ScrollAnimatorCompositorCoordinator();
 
     bool hasAnimationThatRequiresService() const;
-    void cancelAnimation();
 
     virtual void resetAnimationState();
+    virtual void cancelAnimation();
 
     virtual ScrollableArea* scrollableArea() const = 0;
     virtual void tickAnimation(double monotonicTime) = 0;
@@ -39,6 +39,7 @@ protected:
 
     bool addAnimation(PassOwnPtr<WebCompositorAnimation>);
     void removeAnimation();
+    void abortAnimation();
 
     void compositorAnimationFinished(int groupId);
     void reattachCompositorPlayerIfNeeded(WebCompositorAnimationTimeline*);
@@ -61,6 +62,9 @@ protected:
 
         // Running an animation on the compositor.
         RunningOnCompositor,
+
+        // Running an animation on the compositor but needs update.
+        RunningOnCompositorButNeedsUpdate,
 
         // Running an animation on the main thread.
         RunningOnMainThread,
