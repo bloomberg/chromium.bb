@@ -384,7 +384,7 @@ void DownloadManagerImpl::StartDownloadWithId(
       return;
     }
     download = item_iterator->second;
-    DCHECK_EQ(DownloadItem::INTERRUPTED, download->GetState());
+    DCHECK_EQ(download->GetState(), DownloadItem::IN_PROGRESS);
     download->MergeOriginInfoOnResume(*info);
   }
 
