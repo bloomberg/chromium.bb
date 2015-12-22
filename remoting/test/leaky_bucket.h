@@ -5,7 +5,7 @@
 #ifndef REMOTING_TEST_LEAKY_BUCKET_H_
 #define REMOTING_TEST_LEAKY_BUCKET_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace remoting {

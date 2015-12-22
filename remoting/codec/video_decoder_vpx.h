@@ -6,6 +6,7 @@
 #define REMOTING_CODEC_VIDEO_DECODER_VPX_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/codec/scoped_vpx_codec.h"
 #include "remoting/codec/video_decoder.h"

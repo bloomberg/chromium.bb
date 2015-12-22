@@ -4,6 +4,8 @@
 
 #include "remoting/signaling/jid_util.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 
 namespace remoting {

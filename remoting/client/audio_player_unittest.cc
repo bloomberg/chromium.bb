@@ -4,6 +4,8 @@
 
 #include "remoting/client/audio_player.h"
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,8 +19,8 @@ const int kPaddingBytes = 16;
 
 // TODO(garykac): Generate random audio data in the tests rather than having
 // a single constant value.
-const uint8 kDefaultBufferData = 0x5A;
-const uint8 kDummyAudioData = 0x8B;
+const uint8_t kDefaultBufferData = 0x5A;
+const uint8_t kDummyAudioData = 0x8B;
 
 }  // namespace
 
@@ -31,7 +33,7 @@ class FakeAudioPlayer : public AudioPlayer {
 
   bool ResetAudioPlayer(AudioPacket::SamplingRate) override { return true; }
 
-  uint32 GetSamplesPerFrame() override { return kAudioSamplesPerFrame; }
+  uint32_t GetSamplesPerFrame() override { return kAudioSamplesPerFrame; }
 };
 
 class AudioPlayerTest : public ::testing::Test {
@@ -44,7 +46,7 @@ class AudioPlayerTest : public ::testing::Test {
   void TearDown() override {}
 
   void ConsumeAudioFrame() {
-    uint8* buffer = reinterpret_cast<uint8*>(buffer_.get());
+    uint8_t* buffer = reinterpret_cast<uint8_t*>(buffer_.get());
     memset(buffer, kDefaultBufferData, kAudioFrameBytes + kPaddingBytes);
     AudioPlayer::AudioPlayerCallback(reinterpret_cast<void*>(buffer_.get()),
                                      kAudioFrameBytes,
@@ -57,7 +59,7 @@ class AudioPlayerTest : public ::testing::Test {
   // Check that the first |num_bytes| bytes are filled with audio data and
   // the rest of the buffer is zero-filled.
   void CheckAudioFrameBytes(int num_bytes) {
-    uint8* buffer = reinterpret_cast<uint8*>(buffer_.get());
+    uint8_t* buffer = reinterpret_cast<uint8_t*>(buffer_.get());
     int i = 0;
     for (; i < num_bytes; i++) {
       ASSERT_EQ(kDummyAudioData, *(buffer + i));

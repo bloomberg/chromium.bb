@@ -5,7 +5,7 @@
 #ifndef REMOTING_CODEC_AUDIO_DECODER_OPUS_H_
 #define REMOTING_CODEC_AUDIO_DECODER_OPUS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/codec/audio_decoder.h"
 

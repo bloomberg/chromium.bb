@@ -4,12 +4,14 @@
 
 #include "remoting/protocol/channel_multiplexer.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"

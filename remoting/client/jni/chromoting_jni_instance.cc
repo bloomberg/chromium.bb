@@ -5,6 +5,7 @@
 #include "remoting/client/jni/chromoting_jni_instance.h"
 
 #include <android/log.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/logging.h"

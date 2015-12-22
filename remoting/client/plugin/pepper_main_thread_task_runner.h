@@ -5,6 +5,8 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_MAIN_THREAD_TASK_RUNNER_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_MAIN_THREAD_TASK_RUNNER_H_
 
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"

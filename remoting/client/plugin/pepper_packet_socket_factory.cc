@@ -4,8 +4,11 @@
 
 #include "remoting/client/plugin/pepper_packet_socket_factory.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "ppapi/cpp/net_address.h"
@@ -91,8 +94,8 @@ class UdpPacketSocket : public rtc::AsyncPacketSocket {
   // |min_port| and |max_port| are set to zero if the port number
   // should be assigned by the OS.
   bool Init(const rtc::SocketAddress& local_address,
-            uint16 min_port,
-            uint16 max_port);
+            uint16_t min_port,
+            uint16_t max_port);
 
   // rtc::AsyncPacketSocket interface.
   rtc::SocketAddress GetLocalAddress() const override;
@@ -183,8 +186,8 @@ UdpPacketSocket::~UdpPacketSocket() {
 }
 
 bool UdpPacketSocket::Init(const rtc::SocketAddress& local_address,
-                           uint16 min_port,
-                           uint16 max_port) {
+                           uint16_t min_port,
+                           uint16_t max_port) {
   if (socket_.is_null()) {
     return false;
   }
@@ -408,9 +411,9 @@ PepperPacketSocketFactory::~PepperPacketSocketFactory() {
 }
 
 rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateUdpSocket(
-      const rtc::SocketAddress& local_address,
-      uint16 min_port,
-      uint16 max_port) {
+    const rtc::SocketAddress& local_address,
+    uint16_t min_port,
+    uint16_t max_port) {
   scoped_ptr<UdpPacketSocket> result(new UdpPacketSocket(pp_instance_));
   if (!result->Init(local_address, min_port, max_port))
     return nullptr;
@@ -419,8 +422,8 @@ rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateUdpSocket(
 
 rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateServerTcpSocket(
     const rtc::SocketAddress& local_address,
-    uint16 min_port,
-    uint16 max_port,
+    uint16_t min_port,
+    uint16_t max_port,
     int opts) {
   // We don't use TCP sockets for remoting connections.
   NOTREACHED();

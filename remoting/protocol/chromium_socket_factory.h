@@ -5,7 +5,8 @@
 #ifndef REMOTING_PROTOCOL_CHROMIUM_SOCKET_FACTORY_H_
 #define REMOTING_PROTOCOL_CHROMIUM_SOCKET_FACTORY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "third_party/webrtc/p2p/base/packetsocketfactory.h"
@@ -20,12 +21,12 @@ class ChromiumPacketSocketFactory : public rtc::PacketSocketFactory {
 
   rtc::AsyncPacketSocket* CreateUdpSocket(
       const rtc::SocketAddress& local_address,
-      uint16 min_port,
-      uint16 max_port) override;
+      uint16_t min_port,
+      uint16_t max_port) override;
   rtc::AsyncPacketSocket* CreateServerTcpSocket(
       const rtc::SocketAddress& local_address,
-      uint16 min_port,
-      uint16 max_port,
+      uint16_t min_port,
+      uint16_t max_port,
       int opts) override;
   rtc::AsyncPacketSocket* CreateClientTcpSocket(
       const rtc::SocketAddress& local_address,

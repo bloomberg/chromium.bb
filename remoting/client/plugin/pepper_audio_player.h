@@ -5,7 +5,10 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_AUDIO_PLAYER_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_AUDIO_PLAYER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "ppapi/cpp/audio.h"
 #include "ppapi/cpp/instance.h"
 #include "remoting/client/audio_player.h"
@@ -18,7 +21,7 @@ class PepperAudioPlayer : public AudioPlayer {
   explicit PepperAudioPlayer(pp::Instance* instance);
   ~PepperAudioPlayer() override;
 
-  uint32 GetSamplesPerFrame() override;
+  uint32_t GetSamplesPerFrame() override;
 
   bool ResetAudioPlayer(AudioPacket::SamplingRate sampling_rate) override;
 
@@ -27,7 +30,7 @@ class PepperAudioPlayer : public AudioPlayer {
   pp::Audio audio_;
 
   // The count of sample frames per channel in an audio buffer.
-  uint32 samples_per_frame_;
+  uint32_t samples_per_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperAudioPlayer);
 };

@@ -5,6 +5,7 @@
 #ifndef REMOTING_CLIENT_TOUCH_INPUT_SCALER_H_
 #define REMOTING_CLIENT_TOUCH_INPUT_SCALER_H_
 
+#include "base/macros.h"
 #include "remoting/protocol/input_filter.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 

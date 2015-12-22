@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "remoting/base/running_average.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
 
-static const int64 kTestValues[] = { 10, 20, 30, 10, 25, 16, 15 };
+static const int64_t kTestValues[] = { 10, 20, 30, 10, 25, 16, 15 };
 
 // Average across a single element, i.e. just return the most recent.
 TEST(RunningAverageTest, OneElementWindow) {

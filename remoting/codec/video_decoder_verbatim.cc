@@ -4,6 +4,8 @@
 
 #include "remoting/codec/video_decoder_verbatim.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"

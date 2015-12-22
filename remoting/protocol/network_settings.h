@@ -5,9 +5,10 @@
 #ifndef REMOTING_PROTOCOL_NETWORK_SETTINGS_H_
 #define REMOTING_PROTOCOL_NETWORK_SETTINGS_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "remoting/protocol/port_range.h"
 
@@ -19,8 +20,8 @@ struct NetworkSettings {
   // When hosts are configured with NAT traversal disabled they will
   // typically also limit their P2P ports to this range, so that
   // sessions may be blocked or un-blocked via firewall rules.
-  static const uint16 kDefaultMinPort = 12400;
-  static const uint16 kDefaultMaxPort = 12409;
+  static const uint16_t kDefaultMinPort = 12400;
+  static const uint16_t kDefaultMaxPort = 12409;
 
   enum Flags {
     // Don't use STUN or relay servers. Accept incoming P2P connection
@@ -48,9 +49,9 @@ struct NetworkSettings {
            (flags & NAT_TRAVERSAL_OUTGOING));
   }
 
-  explicit NetworkSettings(uint32 flags) : flags(flags) {}
+  explicit NetworkSettings(uint32_t flags) : flags(flags) {}
 
-  uint32 flags;
+  uint32_t flags;
 
   // Range of ports used by P2P sessions.
   PortRange port_range;

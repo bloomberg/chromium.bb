@@ -5,6 +5,7 @@
 #include "remoting/protocol/video_frame_pump.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"

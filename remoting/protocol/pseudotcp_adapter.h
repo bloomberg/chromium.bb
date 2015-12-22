@@ -5,8 +5,10 @@
 #ifndef REMOTING_PROTOCOL_PSEUDOTCP_ADAPTER_H_
 #define REMOTING_PROTOCOL_PSEUDOTCP_ADAPTER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -38,8 +40,8 @@ class PseudoTcpAdapter : public P2PStreamSocket, base::NonThreadSafe {
   int Connect(const net::CompletionCallback& callback);
 
   // Set receive and send buffer sizes.
-  int SetReceiveBufferSize(int32 size);
-  int SetSendBufferSize(int32 size);
+  int SetReceiveBufferSize(int32_t size);
+  int SetSendBufferSize(int32_t size);
 
   // Set the delay for sending ACK.
   void SetAckDelay(int delay_ms);

@@ -5,6 +5,7 @@
 #ifndef REMOTING_TEST_FAKE_REFRESH_TOKEN_STORE_H_
 #define REMOTING_TEST_FAKE_REFRESH_TOKEN_STORE_H_
 
+#include "base/macros.h"
 #include "remoting/test/refresh_token_store.h"
 
 namespace remoting {

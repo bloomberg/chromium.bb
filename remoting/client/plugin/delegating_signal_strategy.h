@@ -6,6 +6,7 @@
 #define REMOTING_CLIENT_PLUGIN_DELEGATING_SIGNAL_STRATEGY_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "remoting/signaling/signal_strategy.h"
 

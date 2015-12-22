@@ -80,7 +80,7 @@ void AudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
 
 // static
 void AudioPlayer::AudioPlayerCallback(void* samples,
-                                      uint32 buffer_size,
+                                      uint32_t buffer_size,
                                       void* data) {
   AudioPlayer* audio_player = static_cast<AudioPlayer*>(data);
   audio_player->FillWithSamples(samples, buffer_size);
@@ -93,7 +93,7 @@ void AudioPlayer::ResetQueue() {
   bytes_consumed_ = 0;
 }
 
-void AudioPlayer::FillWithSamples(void* samples, uint32 buffer_size) {
+void AudioPlayer::FillWithSamples(void* samples, uint32_t buffer_size) {
   base::AutoLock auto_lock(lock_);
 
   const size_t bytes_needed = kChannels * kSampleSizeBytes *

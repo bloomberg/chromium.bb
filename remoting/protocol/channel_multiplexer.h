@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_CHANNEL_MULTIPLEXER_H_
 #define REMOTING_PROTOCOL_CHANNEL_MULTIPLEXER_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/base/buffered_socket_writer.h"
 #include "remoting/proto/mux.pb.h"

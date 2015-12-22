@@ -5,6 +5,7 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_INPUT_HANDLER_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_INPUT_HANDLER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace pp {

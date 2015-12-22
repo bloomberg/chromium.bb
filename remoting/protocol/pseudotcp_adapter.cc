@@ -4,8 +4,11 @@
 
 #include "remoting/protocol/pseudotcp_adapter.h"
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/address_list.h"
@@ -19,7 +22,7 @@ using cricket::PseudoTcp;
 
 namespace {
 const int kReadBufferSize = 65536;  // Maximum size of a packet.
-const uint16 kDefaultMtu = 1280;
+const uint16_t kDefaultMtu = 1280;
 }  // namespace
 
 namespace remoting {
@@ -43,7 +46,7 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   void OnTcpReadable(cricket::PseudoTcp* tcp) override;
   void OnTcpWriteable(cricket::PseudoTcp* tcp) override;
   // This is triggered by NotifyClock or NotifyPacket.
-  void OnTcpClosed(cricket::PseudoTcp* tcp, uint32 error) override;
+  void OnTcpClosed(cricket::PseudoTcp* tcp, uint32_t error) override;
   // This is triggered by NotifyClock, NotifyPacket, Recv and Send.
   WriteResult TcpWritePacket(cricket::PseudoTcp* tcp,
                              const char* buffer,
@@ -51,8 +54,8 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
 
   void SetAckDelay(int delay_ms);
   void SetNoDelay(bool no_delay);
-  void SetReceiveBufferSize(int32 size);
-  void SetSendBufferSize(int32 size);
+  void SetReceiveBufferSize(int32_t size);
+  void SetSendBufferSize(int32_t size);
   void SetWriteWaitsForSend(bool write_waits_for_send);
 
   void DeleteSocket();
@@ -277,7 +280,7 @@ void PseudoTcpAdapter::Core::OnTcpWriteable(PseudoTcp* tcp) {
   callback.Run(result);
 }
 
-void PseudoTcpAdapter::Core::OnTcpClosed(PseudoTcp* tcp, uint32 error) {
+void PseudoTcpAdapter::Core::OnTcpClosed(PseudoTcp* tcp, uint32_t error) {
   DCHECK_EQ(tcp, &pseudo_tcp_);
 
   if (!connect_callback_.is_null()) {
@@ -307,11 +310,11 @@ void PseudoTcpAdapter::Core::SetNoDelay(bool no_delay) {
   pseudo_tcp_.SetOption(cricket::PseudoTcp::OPT_NODELAY, no_delay ? 1 : 0);
 }
 
-void PseudoTcpAdapter::Core::SetReceiveBufferSize(int32 size) {
+void PseudoTcpAdapter::Core::SetReceiveBufferSize(int32_t size) {
   pseudo_tcp_.SetOption(cricket::PseudoTcp::OPT_RCVBUF, size);
 }
 
-void PseudoTcpAdapter::Core::SetSendBufferSize(int32 size) {
+void PseudoTcpAdapter::Core::SetSendBufferSize(int32_t size) {
   pseudo_tcp_.SetOption(cricket::PseudoTcp::OPT_SNDBUF, size);
 }
 
@@ -471,13 +474,13 @@ int PseudoTcpAdapter::Write(const scoped_refptr<net::IOBuffer>& buffer,
   return core_->Write(buffer, buffer_size, callback);
 }
 
-int PseudoTcpAdapter::SetReceiveBufferSize(int32 size) {
+int PseudoTcpAdapter::SetReceiveBufferSize(int32_t size) {
   DCHECK(CalledOnValidThread());
   core_->SetReceiveBufferSize(size);
   return net::OK;
 }
 
-int PseudoTcpAdapter::SetSendBufferSize(int32 size) {
+int PseudoTcpAdapter::SetSendBufferSize(int32_t size) {
   DCHECK(CalledOnValidThread());
   core_->SetSendBufferSize(size);
   return net::OK;

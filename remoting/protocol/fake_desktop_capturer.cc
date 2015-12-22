@@ -4,8 +4,11 @@
 
 #include "remoting/protocol/fake_desktop_capturer.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -89,8 +92,8 @@ scoped_ptr<webrtc::DesktopFrame> DefaultFrameGenerator::GenerateFrame(
   //     cyan....yellow
   //     ..............
   //     blue.......red
-  uint8* row = frame->data() +
-      (box_pos_y_ * size_.width() + box_pos_x_) * kBytesPerPixel;
+  uint8_t* row = frame->data() +
+                 (box_pos_y_ * size_.width() + box_pos_x_) * kBytesPerPixel;
   for (int y = 0; y < kBoxHeight; ++y) {
     for (int x = 0; x < kBoxWidth; ++x) {
       int r = x * 255 / kBoxWidth;

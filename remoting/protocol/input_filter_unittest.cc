@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/input_filter.h"
 
+#include <stdint.h>
+
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"
@@ -19,7 +21,7 @@ using test::EqualsKeyEvent;
 using test::EqualsMouseMoveEvent;
 using test::EqualsTextEvent;
 
-static KeyEvent NewKeyEvent(uint32 usb_keycode, bool pressed) {
+static KeyEvent NewKeyEvent(uint32_t usb_keycode, bool pressed) {
   KeyEvent event;
   event.set_usb_keycode(usb_keycode);
   event.set_pressed(pressed);

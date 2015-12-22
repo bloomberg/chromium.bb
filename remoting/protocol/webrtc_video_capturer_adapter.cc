@@ -77,7 +77,8 @@ cricket::CaptureState WebrtcVideoCapturerAdapter::Start(
     const cricket::VideoFormat& capture_format) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!capture_timer_);
-  DCHECK_EQ(capture_format.fourcc, (static_cast<uint32>(cricket::FOURCC_ARGB)));
+  DCHECK_EQ(capture_format.fourcc,
+            (static_cast<uint32_t>(cricket::FOURCC_ARGB)));
 
   if (!desktop_capturer_) {
     VLOG(1) << "WebrtcVideoCapturerAdapter failed to start.";
@@ -176,7 +177,7 @@ bool WebrtcVideoCapturerAdapter::IsScreencast() const {
 }
 
 bool WebrtcVideoCapturerAdapter::GetPreferredFourccs(
-    std::vector<uint32>* fourccs) {
+    std::vector<uint32_t>* fourccs) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!fourccs)
     return false;

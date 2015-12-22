@@ -4,6 +4,8 @@
 
 #include "remoting/test/video_frame_writer.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"

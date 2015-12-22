@@ -5,7 +5,6 @@
 #ifndef REMOTING_CODEC_VIDEO_DECODER_H_
 #define REMOTING_CODEC_VIDEO_DECODER_H_
 
-#include "base/basictypes.h"
 
 namespace webrtc {
 class DesktopFrame;

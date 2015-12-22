@@ -5,6 +5,7 @@
 #include "remoting/protocol/chromium_port_allocator.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/http/http_status_code.h"

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/session_config.h"
 

@@ -5,6 +5,9 @@
 #ifndef REMOTING_PROTOCOL_WEBRTC_VIDEO_CAPTURER_ADAPTER_H_
 #define REMOTING_PROTOCOL_WEBRTC_VIDEO_CAPTURER_ADAPTER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"
@@ -54,7 +57,7 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
   void Stop() override;
   bool IsRunning() override;
   bool IsScreencast() const override;
-  bool GetPreferredFourccs(std::vector<uint32>* fourccs) override;
+  bool GetPreferredFourccs(std::vector<uint32_t>* fourccs) override;
 
  private:
   // Kicks off the next frame capture using |desktop_capturer_|.

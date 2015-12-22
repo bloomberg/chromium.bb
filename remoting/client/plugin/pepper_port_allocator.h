@@ -6,6 +6,7 @@
 #define REMOTING_CLIENT_PLUGIN_PEPPER_PORT_ALLOCATOR_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "remoting/protocol/port_allocator_factory.h"

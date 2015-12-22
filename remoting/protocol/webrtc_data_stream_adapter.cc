@@ -4,9 +4,12 @@
 
 #include "remoting/protocol/webrtc_data_stream_adapter.h"
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

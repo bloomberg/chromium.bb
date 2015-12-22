@@ -5,8 +5,12 @@
 #ifndef REMOTING_CLIENT_AUDIO_PLAYER_H_
 #define REMOTING_CLIENT_AUDIO_PLAYER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "remoting/proto/audio.pb.h"
@@ -23,7 +27,7 @@ class AudioPlayer {
   AudioPlayer();
 
   // Return the recommended number of samples to include in a frame.
-  virtual uint32 GetSamplesPerFrame() = 0;
+  virtual uint32_t GetSamplesPerFrame() = 0;
 
   // Resets the audio player and starts playback.
   // Returns true on success.
@@ -31,7 +35,7 @@ class AudioPlayer {
 
   // Function called by the browser when it needs more audio samples.
   static void AudioPlayerCallback(void* samples,
-                                  uint32 buffer_size,
+                                  uint32_t buffer_size,
                                   void* data);
 
  private:
@@ -40,7 +44,7 @@ class AudioPlayer {
   typedef std::list<AudioPacket*> AudioPacketQueue;
 
   void ResetQueue();
-  void FillWithSamples(void* samples, uint32 buffer_size);
+  void FillWithSamples(void* samples, uint32_t buffer_size);
 
   AudioPacket::SamplingRate sampling_rate_;
 

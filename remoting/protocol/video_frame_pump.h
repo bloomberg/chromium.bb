@@ -5,7 +5,10 @@
 #ifndef REMOTING_PROTOCOL_VIDEO_FRAME_PUMP_H_
 #define REMOTING_PROTOCOL_VIDEO_FRAME_PUMP_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"

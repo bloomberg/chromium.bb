@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -108,7 +111,7 @@ class CompoundBufferTest : public testing::Test {
 
   static size_t ReadFromInput(CompoundBufferInputStream* input,
                               void* data, size_t size) {
-    uint8* out = reinterpret_cast<uint8*>(data);
+    uint8_t* out = reinterpret_cast<uint8_t*>(data);
     int out_size = size;
 
     const void* in;

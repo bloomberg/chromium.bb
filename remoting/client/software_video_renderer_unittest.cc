@@ -4,6 +4,8 @@
 
 #include "remoting/client/software_video_renderer.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"

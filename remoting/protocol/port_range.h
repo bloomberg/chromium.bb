@@ -5,18 +5,19 @@
 #ifndef REMOTING_PROTOCOL_PORT_RANGE_H_
 #define REMOTING_PROTOCOL_PORT_RANGE_H_
 
+#include <stdint.h>
+
 #include <ostream>
 #include <string>
 
-#include "base/basictypes.h"
 
 namespace remoting {
 
 // Wrapper for a value of UdpPortRange policy.
 struct PortRange {
   // Both |min_port| and |max_port| are inclusive.
-  uint16 min_port;
-  uint16 max_port;
+  uint16_t min_port;
+  uint16_t max_port;
 
   // Returns true if |port_range| passed to Parse was an empty string
   // (or if |this| has been initialized by the default constructor below).

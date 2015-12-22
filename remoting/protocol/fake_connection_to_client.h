@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_FAKE_CONNECTION_TO_CLIENT_H_
 #define REMOTING_PROTOCOL_FAKE_CONNECTION_TO_CLIENT_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

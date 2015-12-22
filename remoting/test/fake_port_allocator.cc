@@ -4,6 +4,7 @@
 
 #include "remoting/test/fake_port_allocator.h"
 
+#include "base/macros.h"
 #include "remoting/test/fake_network_dispatcher.h"
 #include "remoting/test/fake_network_manager.h"
 #include "remoting/test/fake_socket_factory.h"

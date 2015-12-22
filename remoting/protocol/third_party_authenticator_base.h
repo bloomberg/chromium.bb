@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/qname.h"

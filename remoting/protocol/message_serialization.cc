@@ -4,7 +4,8 @@
 
 #include "remoting/protocol/message_serialization.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
@@ -16,13 +17,13 @@ namespace protocol {
 scoped_refptr<net::IOBufferWithSize> SerializeAndFrameMessage(
     const google::protobuf::MessageLite& msg) {
   // Create a buffer with 4 extra bytes. This is used as prefix to write an
-  // int32 of the serialized message size for framing.
-  const int kExtraBytes = sizeof(int32);
+  // int32_t of the serialized message size for framing.
+  const int kExtraBytes = sizeof(int32_t);
   int size = msg.ByteSize() + kExtraBytes;
   scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(size));
   rtc::SetBE32(buffer->data(), msg.GetCachedSize());
   msg.SerializeWithCachedSizesToArray(
-      reinterpret_cast<uint8*>(buffer->data()) + kExtraBytes);
+      reinterpret_cast<uint8_t*>(buffer->data()) + kExtraBytes);
   return buffer;
 }
 

@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/client_control_dispatcher.h"
 
+#include <stdint.h>
+
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -44,7 +46,7 @@ bool CursorShapeIsValid(const CursorShapeInfo& cursor_shape) {
     return false;
   }
 
-  uint32 cursor_total_bytes = width * height * kBytesPerPixel;
+  uint32_t cursor_total_bytes = width * height * kBytesPerPixel;
   if (cursor_shape.data().size() < cursor_total_bytes) {
     LOG(ERROR) << "Expected " << cursor_total_bytes << " bytes for a "
                << width << "x" << height << " cursor. Only received "

@@ -5,6 +5,9 @@
 #ifndef REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_CROS_H_
 #define REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_CROS_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/input_filter.h"
 
@@ -49,7 +52,7 @@ class NormalizingInputFilterCros : public protocol::InputFilter {
   bool deferred_key_is_rewriting_;
 
   // Stores the code of the OSKey while it is pressed for use as a Modifier.
-  uint32 modifying_key_;
+  uint32_t modifying_key_;
 
   // True if the left or right Alt keys are pressed, respectively.
   bool left_alt_is_pressed_;

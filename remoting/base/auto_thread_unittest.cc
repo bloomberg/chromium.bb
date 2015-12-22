@@ -6,6 +6,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_native_library.h"
+#include "build/build_config.h"
 #include "remoting/base/auto_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

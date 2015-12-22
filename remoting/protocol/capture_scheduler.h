@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_CAPTURE_SCHEDULER_H_
 #define REMOTING_PROTOCOL_CAPTURE_SCHEDULER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"

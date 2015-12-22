@@ -5,7 +5,7 @@
 #ifndef REMOTING_CLIENT_FRAME_CONSUMER_H_
 #define REMOTING_CLIENT_FRAME_CONSUMER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace webrtc {
 class DesktopFrame;

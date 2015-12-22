@@ -5,10 +5,13 @@
 #ifndef REMOTING_TEST_FAKE_SOCKET_FACTORY_H_
 #define REMOTING_TEST_FAKE_SOCKET_FACTORY_H_
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/test/fake_network_dispatcher.h"
 #include "third_party/webrtc/p2p/base/packetsocketfactory.h"
@@ -52,12 +55,12 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory,
   // rtc::PacketSocketFactory interface.
   rtc::AsyncPacketSocket* CreateUdpSocket(
       const rtc::SocketAddress& local_address,
-      uint16 min_port,
-      uint16 max_port) override;
+      uint16_t min_port,
+      uint16_t max_port) override;
   rtc::AsyncPacketSocket* CreateServerTcpSocket(
       const rtc::SocketAddress& local_address,
-      uint16 min_port,
-      uint16 max_port,
+      uint16_t min_port,
+      uint16_t max_port,
       int opts) override;
   rtc::AsyncPacketSocket* CreateClientTcpSocket(
       const rtc::SocketAddress& local_address,

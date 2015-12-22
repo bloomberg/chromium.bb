@@ -5,6 +5,7 @@
 #ifndef REMOTING_CODEC_AUDIO_ENCODER_VERBATIM_H_
 #define REMOTING_CODEC_AUDIO_ENCODER_VERBATIM_H_
 
+#include "base/macros.h"
 #include "remoting/codec/audio_encoder.h"
 
 namespace remoting {

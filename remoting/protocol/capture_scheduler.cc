@@ -19,7 +19,7 @@ namespace {
 const int kStatisticsWindow = 3;
 
 // The hard limit is 30fps or 33ms per recording cycle.
-const int64 kDefaultMinimumIntervalMs = 33;
+const int64_t kDefaultMinimumIntervalMs = 33;
 
 // Controls how much CPU time we can use for encode and capture.
 // Range of this value is between 0 to 1. 0 means using 0% of of all CPUs

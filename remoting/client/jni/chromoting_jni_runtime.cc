@@ -9,7 +9,6 @@
 #include "base/android/jni_string.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"

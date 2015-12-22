@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/input_event_tracker.h"
 
+#include <stdint.h>
+
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"
@@ -30,14 +32,14 @@ MATCHER_P2(TouchPointIdsAndTypeEqual, ids, type, "") {
   if (arg.event_type() != type)
     return false;
 
-  std::set<uint32> touch_ids;
+  std::set<uint32_t> touch_ids;
   for (const TouchEventPoint& point : arg.touch_points()) {
     touch_ids.insert(point.id());
   }
   return touch_ids == ids;
 }
 
-static KeyEvent NewUsbEvent(uint32 usb_keycode, bool pressed) {
+static KeyEvent NewUsbEvent(uint32_t usb_keycode, bool pressed) {
   KeyEvent event;
   event.set_usb_keycode(usb_keycode);
   event.set_pressed(pressed);
@@ -46,7 +48,7 @@ static KeyEvent NewUsbEvent(uint32 usb_keycode, bool pressed) {
   return event;
 }
 
-static void PressAndReleaseUsb(InputStub* input_stub, uint32 usb_keycode) {
+static void PressAndReleaseUsb(InputStub* input_stub, uint32_t usb_keycode) {
   input_stub->InjectKeyEvent(NewUsbEvent(usb_keycode, true));
   input_stub->InjectKeyEvent(NewUsbEvent(usb_keycode, false));
 }
@@ -63,7 +65,7 @@ static MouseEvent NewMouseEvent(int x,
   return event;
 }
 
-void AddTouchPoint(uint32 id, TouchEvent* event) {
+void AddTouchPoint(uint32_t id, TouchEvent* event) {
   TouchEventPoint* p = event->add_touch_points();
   p->set_id(id);
 }
@@ -260,15 +262,15 @@ TEST(InputEventTrackerTest, ReleaseAllTouchPoints) {
   MockInputStub mock_stub;
   InputEventTracker input_tracker(&mock_stub);
 
-  std::set<uint32> expected_ids1;
+  std::set<uint32_t> expected_ids1;
   expected_ids1.insert(1);
   expected_ids1.insert(2);
-  std::set<uint32> expected_ids2;
+  std::set<uint32_t> expected_ids2;
   expected_ids2.insert(3);
   expected_ids2.insert(5);
   expected_ids2.insert(8);
 
-  std::set<uint32> all_touch_point_ids;
+  std::set<uint32_t> all_touch_point_ids;
   all_touch_point_ids.insert(expected_ids1.begin(), expected_ids1.end());
   all_touch_point_ids.insert(expected_ids2.begin(), expected_ids2.end());
 
@@ -304,17 +306,17 @@ TEST(InputEventTrackerTest, ReleaseAllRemainingTouchPoints) {
   MockInputStub mock_stub;
   InputEventTracker input_tracker(&mock_stub);
 
-  std::set<uint32> start_expected_ids;
+  std::set<uint32_t> start_expected_ids;
   start_expected_ids.insert(1);
   start_expected_ids.insert(2);
   start_expected_ids.insert(3);
 
-  std::set<uint32> end_expected_ids;
+  std::set<uint32_t> end_expected_ids;
   end_expected_ids.insert(1);
-  std::set<uint32> cancel_expected_ids;
+  std::set<uint32_t> cancel_expected_ids;
   cancel_expected_ids.insert(3);
 
-  std::set<uint32> all_remaining_touch_point_ids;
+  std::set<uint32_t> all_remaining_touch_point_ids;
   all_remaining_touch_point_ids.insert(2);
 
   InSequence s;

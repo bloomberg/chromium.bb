@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "remoting/client/normalizing_input_filter_win.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -23,14 +25,14 @@ const unsigned int kUsbLeftControl = 0x0700e0;
 const unsigned int kUsbRightAlt = 0x0700e6;
 
 // A hardcoded value used to verify |lock_states| is preserved.
-static const uint32 kTestLockStates = protocol::KeyEvent::LOCK_STATES_NUMLOCK;
+static const uint32_t kTestLockStates = protocol::KeyEvent::LOCK_STATES_NUMLOCK;
 
 MATCHER_P2(EqualsKeyEvent, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
+  return arg.usb_keycode() == static_cast<uint32_t>(usb_keycode) &&
          arg.pressed() == pressed && arg.lock_states() == kTestLockStates;
 }
 
-KeyEvent MakeKeyEvent(uint32 keycode, bool pressed) {
+KeyEvent MakeKeyEvent(uint32_t keycode, bool pressed) {
   KeyEvent event;
   event.set_usb_keycode(keycode);
   event.set_pressed(pressed);
@@ -38,7 +40,7 @@ KeyEvent MakeKeyEvent(uint32 keycode, bool pressed) {
   return event;
 }
 
-void PressAndReleaseKey(InputStub* input_stub, uint32 keycode) {
+void PressAndReleaseKey(InputStub* input_stub, uint32_t keycode) {
   input_stub->InjectKeyEvent(MakeKeyEvent(keycode, true));
   input_stub->InjectKeyEvent(MakeKeyEvent(keycode, false));
 }

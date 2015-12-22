@@ -21,7 +21,7 @@ void KeyEventMapper::SetTrapCallback(KeyTrapCallback callback) {
   trap_callback = callback;
 }
 
-void KeyEventMapper::TrapKey(uint32 usb_keycode, bool trap_key) {
+void KeyEventMapper::TrapKey(uint32_t usb_keycode, bool trap_key) {
   if (trap_key) {
     trapped_keys.insert(usb_keycode);
   } else {
@@ -29,7 +29,8 @@ void KeyEventMapper::TrapKey(uint32 usb_keycode, bool trap_key) {
   }
 }
 
-void KeyEventMapper::RemapKey(uint32 in_usb_keycode, uint32 out_usb_keycode) {
+void KeyEventMapper::RemapKey(uint32_t in_usb_keycode,
+                              uint32_t out_usb_keycode) {
   if (in_usb_keycode == out_usb_keycode) {
     mapped_keys.erase(in_usb_keycode);
   } else {
@@ -47,7 +48,7 @@ void KeyEventMapper::InjectKeyEvent(const protocol::KeyEvent& event) {
     }
 
     // Re-map mapped keys to the new value before passing them on.
-    std::map<uint32,uint32>::iterator mapped =
+    std::map<uint32_t, uint32_t>::iterator mapped =
         mapped_keys.find(event.usb_keycode());
     if (mapped != mapped_keys.end()) {
       protocol::KeyEvent new_event(event);

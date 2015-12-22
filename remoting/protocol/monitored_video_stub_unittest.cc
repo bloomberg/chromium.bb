@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/monitored_video_stub.h"
 
+#include <stdint.h>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
@@ -19,7 +21,7 @@ using ::testing::InvokeWithoutArgs;
 namespace remoting {
 namespace protocol {
 
-static const int64 kTestOverrideDelayMilliseconds = 1;
+static const int64_t kTestOverrideDelayMilliseconds = 1;
 
 class MonitoredVideoStubTest : public testing::Test {
  protected:

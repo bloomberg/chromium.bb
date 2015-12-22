@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/webrtc_transport.h"
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "jingle/glue/thread_wrapper.h"

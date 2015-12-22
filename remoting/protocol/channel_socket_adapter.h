@@ -5,8 +5,11 @@
 #ifndef REMOTING_PROTOCOL_CHANNEL_SOCKET_ADAPTER_H_
 #define REMOTING_PROTOCOL_CHANNEL_SOCKET_ADAPTER_H_
 
+#include <stddef.h>
+
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/protocol/p2p_datagram_socket.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"

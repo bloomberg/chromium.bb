@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/mouse_input_filter.h"
 
+#include "base/macros.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"

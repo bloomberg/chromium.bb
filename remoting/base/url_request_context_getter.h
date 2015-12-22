@@ -5,7 +5,7 @@
 #ifndef REMOTING_BASE_URL_REQUEST_CONTEXT_GETTER_H_
 #define REMOTING_BASE_URL_REQUEST_CONTEXT_GETTER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_context_getter.h"
 

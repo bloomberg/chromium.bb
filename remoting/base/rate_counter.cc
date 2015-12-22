@@ -17,7 +17,7 @@ RateCounter::RateCounter(base::TimeDelta time_window)
 RateCounter::~RateCounter() {
 }
 
-void RateCounter::Record(int64 value) {
+void RateCounter::Record(int64_t value) {
   DCHECK(CalledOnValidThread());
 
   base::Time current_time = CurrentTime();

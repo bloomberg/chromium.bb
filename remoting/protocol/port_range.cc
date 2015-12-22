@@ -5,6 +5,7 @@
 #include "remoting/protocol/port_range.h"
 
 #include <limits.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 #include "base/strings/string_number_conversions.h"
@@ -40,8 +41,8 @@ bool PortRange::Parse(const std::string& port_range, PortRange* result) {
   if (min_port == 0 || min_port > max_port || max_port > USHRT_MAX)
     return false;
 
-  result->min_port = static_cast<uint16>(min_port);
-  result->max_port = static_cast<uint16>(max_port);
+  result->min_port = static_cast<uint16_t>(min_port);
+  result->max_port = static_cast<uint16_t>(max_port);
   return true;
 }
 

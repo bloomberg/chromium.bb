@@ -4,10 +4,13 @@
 
 #include "remoting/protocol/ssl_hmac_channel_authenticator.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "crypto/secure_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"

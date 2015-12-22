@@ -4,6 +4,8 @@
 
 #include "remoting/base/rsa_key_pair.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <string>
 #include <vector>
@@ -44,7 +46,7 @@ scoped_refptr<RsaKeyPair> RsaKeyPair::FromString(
     return NULL;
   }
 
-  std::vector<uint8> key_buf(key_str.begin(), key_str.end());
+  std::vector<uint8_t> key_buf(key_str.begin(), key_str.end());
   scoped_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_buf));
   if (!key) {
@@ -59,7 +61,7 @@ std::string RsaKeyPair::ToString() const {
   // Check that the key initialized.
   DCHECK(key_.get() != NULL);
 
-  std::vector<uint8> key_buf;
+  std::vector<uint8_t> key_buf;
   CHECK(key_->ExportPrivateKey(&key_buf));
   std::string key_str(key_buf.begin(), key_buf.end());
   std::string key_base64;
@@ -68,7 +70,7 @@ std::string RsaKeyPair::ToString() const {
 }
 
 std::string RsaKeyPair::GetPublicKey() const {
-  std::vector<uint8> public_key;
+  std::vector<uint8_t> public_key;
   CHECK(key_->ExportPublicKey(&public_key));
   std::string public_key_str(public_key.begin(), public_key.end());
   std::string public_key_base64;
@@ -80,9 +82,9 @@ std::string RsaKeyPair::SignMessage(const std::string& message) const {
   scoped_ptr<crypto::SignatureCreator> signature_creator(
       crypto::SignatureCreator::Create(key_.get(),
                                        crypto::SignatureCreator::SHA1));
-  signature_creator->Update(reinterpret_cast<const uint8*>(message.c_str()),
+  signature_creator->Update(reinterpret_cast<const uint8_t*>(message.c_str()),
                             message.length());
-  std::vector<uint8> signature_buf;
+  std::vector<uint8_t> signature_buf;
   signature_creator->Final(&signature_buf);
   std::string signature_str(signature_buf.begin(), signature_buf.end());
   std::string signature_base64;

@@ -5,12 +5,14 @@
 #ifndef REMOTING_CLIENT_KEY_EVENT_MAPPER_H_
 #define REMOTING_CLIENT_KEY_EVENT_MAPPER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "remoting/protocol/input_filter.h"
 
 namespace remoting {
@@ -32,18 +34,18 @@ class KeyEventMapper : public protocol::InputFilter {
 
   // Causes events matching |usb_keycode| to be delivered to the trap callback.
   // Trapped events are not dispatched to the next InputStub in the chain.
-  void TrapKey(uint32 usb_keycode, bool trap_key);
+  void TrapKey(uint32_t usb_keycode, bool trap_key);
 
   // Causes events matching |in_usb_keycode| to be mapped to |out_usb_keycode|.
   // Keys are remapped at most once. Traps are processed before remapping.
-  void RemapKey(uint32 in_usb_keycode, uint32 out_usb_keycode);
+  void RemapKey(uint32_t in_usb_keycode, uint32_t out_usb_keycode);
 
   // InputFilter overrides.
   void InjectKeyEvent(const protocol::KeyEvent& event) override;
 
  private:
-  std::map<uint32,uint32> mapped_keys;
-  std::set<uint32> trapped_keys;
+  std::map<uint32_t, uint32_t> mapped_keys;
+  std::set<uint32_t> trapped_keys;
   KeyTrapCallback trap_callback;
 
   DISALLOW_COPY_AND_ASSIGN(KeyEventMapper);

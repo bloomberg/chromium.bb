@@ -4,6 +4,8 @@
 
 #include "remoting/client/jni/jni_frame_consumer.h"
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
@@ -67,7 +69,7 @@ void JniFrameConsumer::Renderer::RenderFrame(
   // and then the R/B channels are swapped in place (on the decoding thread).
   // If a repaint is triggered from a Java event handler, the unswapped pixels
   // can sometimes appear on the display.
-  uint8* dest_buffer = static_cast<uint8*>(bitmap_->pixels());
+  uint8_t* dest_buffer = static_cast<uint8_t*>(bitmap_->pixels());
   webrtc::DesktopRect buffer_rect =
       webrtc::DesktopRect::MakeSize(frame->size());
   for (webrtc::DesktopRegion::Iterator i(frame->updated_region()); !i.IsAtEnd();

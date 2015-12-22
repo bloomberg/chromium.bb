@@ -4,6 +4,8 @@
 
 #include "remoting/codec/video_encoder_vpx.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <vector>
 
@@ -16,8 +18,8 @@
 namespace remoting {
 
 // xRGB pixel colors for use by tests.
-const uint32 kBlueColor = 0x0000ff;
-const uint32 kGreenColor = 0x00ff00;
+const uint32_t kBlueColor = 0x0000ff;
+const uint32_t kGreenColor = 0x00ff00;
 
 // Creates a frame stippled between blue and red pixels, which is useful for
 // lossy/lossless encode and color tests. By default all pixels in the frame
@@ -28,9 +30,9 @@ static scoped_ptr<webrtc::DesktopFrame> CreateTestFrame(
       new webrtc::BasicDesktopFrame(frame_size));
   for (int x = 0; x < frame_size.width(); ++x) {
     for (int y = 0; y < frame_size.height(); ++y) {
-      uint8* pixel_u8 = frame->data() + (y * frame->stride()) +
-          (x * webrtc::DesktopFrame::kBytesPerPixel);
-      *(reinterpret_cast<uint32*>(pixel_u8)) =
+      uint8_t* pixel_u8 = frame->data() + (y * frame->stride()) +
+                          (x * webrtc::DesktopFrame::kBytesPerPixel);
+      *(reinterpret_cast<uint32_t*>(pixel_u8)) =
           ((x + y) & 1) ? kGreenColor : kBlueColor;
     }
   }

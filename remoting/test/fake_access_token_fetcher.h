@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "remoting/test/access_token_fetcher.h"
 
 namespace remoting {

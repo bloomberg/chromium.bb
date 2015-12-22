@@ -5,6 +5,7 @@
 #ifndef REMOTING_TEST_CHROMOTING_TEST_FIXTURE_H_
 #define REMOTING_TEST_CHROMOTING_TEST_FIXTURE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "testing/gtest/include/gtest/gtest.h"

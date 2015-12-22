@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/authentication_method.h"
 
+#include <stddef.h>
+
 #include "base/base64.h"
 #include "base/logging.h"
 #include "crypto/hmac.h"

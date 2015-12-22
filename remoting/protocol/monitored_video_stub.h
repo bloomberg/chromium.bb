@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_MONITORED_VIDEO_STUB_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/protocol/video_stub.h"

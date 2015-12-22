@@ -4,6 +4,8 @@
 
 #include "remoting/client/plugin/pepper_input_handler.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"

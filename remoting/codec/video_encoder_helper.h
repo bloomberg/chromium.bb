@@ -5,6 +5,7 @@
 #ifndef REMOTING_CODEC_VIDEO_ENCODER_HELPER_H_
 #define REMOTING_CODEC_VIDEO_ENCODER_HELPER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 

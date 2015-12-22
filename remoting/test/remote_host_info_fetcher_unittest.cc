@@ -5,6 +5,7 @@
 #include "remoting/test/remote_host_info_fetcher.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "net/url_request/test_url_fetcher_factory.h"

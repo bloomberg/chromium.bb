@@ -5,6 +5,9 @@
 #ifndef REMOTING_CLIENT_SOFTWARE_VIDEO_RENDERER_H_
 #define REMOTING_CLIENT_SOFTWARE_VIDEO_RENDERER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

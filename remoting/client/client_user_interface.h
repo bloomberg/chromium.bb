@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/third_party_client_authenticator.h"

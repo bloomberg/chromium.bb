@@ -5,6 +5,8 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_NETWORK_MANAGER_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_NETWORK_MANAGER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/cpp/instance_handle.h"

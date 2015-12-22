@@ -5,6 +5,7 @@
 #ifndef REMOTING_BASE_UTIL_H_
 #define REMOTING_BASE_UTIL_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string>
 

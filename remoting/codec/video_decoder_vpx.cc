@@ -5,6 +5,7 @@
 #include "remoting/codec/video_decoder_vpx.h"
 
 #include <math.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "remoting/base/util.h"
@@ -82,7 +83,7 @@ bool VideoDecoderVpx::DecodePacket(const VideoPacket& packet,
                                    webrtc::DesktopFrame* frame) {
   // Pass the packet to the codec to process.
   vpx_codec_err_t ret = vpx_codec_decode(
-      codec_.get(), reinterpret_cast<const uint8*>(packet.data().data()),
+      codec_.get(), reinterpret_cast<const uint8_t*>(packet.data().data()),
       packet.data().size(), nullptr, 0);
   if (ret != VPX_CODEC_OK) {
     const char* error = vpx_codec_error(codec_.get());

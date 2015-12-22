@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_MOUSE_INPUT_FILTER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "remoting/protocol/input_filter.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 

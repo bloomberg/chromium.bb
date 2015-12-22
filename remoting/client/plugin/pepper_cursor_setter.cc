@@ -4,6 +4,8 @@
 
 #include "remoting/client/plugin/pepper_cursor_setter.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/mouse_cursor.h"
@@ -66,7 +68,7 @@ bool PepperCursorSetter::SetInstanceCursor(
   const uint32_t* src_row_data = reinterpret_cast<const uint32_t*>(
       cursor_shape.data().data());
   const int bytes_per_row = size.width() * kBytesPerPixel;
-  uint8* dst_row_data = reinterpret_cast<uint8*>(image.data());
+  uint8_t* dst_row_data = reinterpret_cast<uint8_t*>(image.data());
   for (int row = 0; row < size.height(); row++) {
     memcpy(dst_row_data, src_row_data, bytes_per_row);
     src_row_data += size.width();

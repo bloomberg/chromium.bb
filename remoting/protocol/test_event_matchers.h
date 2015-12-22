@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_TEST_EVENT_MATCHERS_H_
 #define REMOTING_PROTOCOL_TEST_EVENT_MATCHERS_H_
 
+#include <stdint.h>
+
 #include <cmath>
 
 #include "remoting/proto/event.pb.h"
@@ -16,26 +18,25 @@ namespace protocol {
 namespace test {
 
 MATCHER_P2(EqualsKeyEvent, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
+  return arg.usb_keycode() == static_cast<uint32_t>(usb_keycode) &&
          arg.pressed() == pressed;
 }
 
 MATCHER_P2(EqualsKeyEventWithCapsLock, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
+  return arg.usb_keycode() == static_cast<uint32_t>(usb_keycode) &&
          arg.pressed() == pressed &&
          arg.lock_states() == KeyEvent::LOCK_STATES_CAPSLOCK;
 }
 
 MATCHER_P2(EqualsKeyEventWithNumLock, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
+  return arg.usb_keycode() == static_cast<uint32_t>(usb_keycode) &&
          arg.pressed() == pressed &&
          arg.lock_states() == KeyEvent::LOCK_STATES_NUMLOCK;
 }
 
 MATCHER_P2(EqualsKeyEventWithoutLockStates, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
-         arg.pressed() == pressed &&
-         !arg.has_lock_states();
+  return arg.usb_keycode() == static_cast<uint32_t>(usb_keycode) &&
+         arg.pressed() == pressed && !arg.has_lock_states();
 }
 
 MATCHER_P(EqualsTextEvent, text, "") {

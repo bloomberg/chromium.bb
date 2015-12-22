@@ -5,8 +5,8 @@
 #ifndef REMOTING_PROTOCOL_CLIPBOARD_FILTER_H_
 #define REMOTING_PROTOCOL_CLIPBOARD_FILTER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "remoting/protocol/clipboard_stub.h"
 
 namespace remoting {

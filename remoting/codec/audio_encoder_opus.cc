@@ -86,8 +86,7 @@ void AudioEncoderOpus::InitEncoder() {
   leftover_samples_ = 0;
   leftover_buffer_size_ =
       frame_size_ + media::SincResampler::kDefaultRequestSize;
-  leftover_buffer_.reset(
-      new int16[leftover_buffer_size_ * channels_]);
+  leftover_buffer_.reset(new int16_t[leftover_buffer_size_ * channels_]);
 }
 
 void AudioEncoderOpus::DestroyEncoder() {
@@ -150,8 +149,8 @@ scoped_ptr<AudioPacket> AudioEncoderOpus::Encode(
   }
 
   int samples_in_packet = packet->data(0).size() / kBytesPerSample / channels_;
-  const int16* next_sample =
-      reinterpret_cast<const int16*>(packet->data(0).data());
+  const int16_t* next_sample =
+      reinterpret_cast<const int16_t*>(packet->data(0).data());
 
   // Create a new packet of encoded data.
   scoped_ptr<AudioPacket> encoded_packet(new AudioPacket());
@@ -164,7 +163,7 @@ scoped_ptr<AudioPacket> AudioEncoderOpus::Encode(
   int samples_wanted = frame_size_ + prefetch_samples;
 
   while (leftover_samples_ + samples_in_packet >= samples_wanted) {
-    const int16* pcm_buffer = nullptr;
+    const int16_t* pcm_buffer = nullptr;
 
     // Combine the packet with the leftover samples, if any.
     if (leftover_samples_ > 0) {
@@ -188,7 +187,7 @@ scoped_ptr<AudioPacket> AudioEncoderOpus::Encode(
 
       resampler_bus_->ToInterleaved(kFrameSamples, kBytesPerSample,
                                     resample_buffer_.get());
-      pcm_buffer = reinterpret_cast<int16*>(resample_buffer_.get());
+      pcm_buffer = reinterpret_cast<int16_t*>(resample_buffer_.get());
     } else {
       samples_consumed = frame_size_;
     }

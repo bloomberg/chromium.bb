@@ -4,9 +4,12 @@
 
 #include "remoting/test/app_remoting_test_driver_environment.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "remoting/test/fake_access_token_fetcher.h"
 #include "remoting/test/fake_app_remoting_report_issue_request.h"
 #include "remoting/test/fake_refresh_token_store.h"

@@ -5,6 +5,7 @@
 #include "remoting/protocol/webrtc_transport.h"
 
 #include "base/callback_helpers.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"

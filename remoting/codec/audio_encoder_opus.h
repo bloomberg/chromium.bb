@@ -7,6 +7,9 @@
 
 #include "remoting/codec/audio_encoder.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "remoting/proto/audio.pb.h"
 
 struct OpusEncoder;
@@ -52,7 +55,7 @@ class AudioEncoderOpus : public AudioEncoder {
   int resampling_data_pos_;
 
   // Left-over unencoded samples from the previous AudioPacket.
-  scoped_ptr<int16[]> leftover_buffer_;
+  scoped_ptr<int16_t[]> leftover_buffer_;
   int leftover_buffer_size_;
   int leftover_samples_;
 

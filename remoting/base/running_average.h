@@ -5,9 +5,12 @@
 #ifndef REMOTING_BASE_RUNNING_AVERAGE_H_
 #define REMOTING_BASE_RUNNING_AVERAGE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 
 namespace remoting {

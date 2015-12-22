@@ -5,6 +5,7 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_CURSOR_SETTER_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_CURSOR_SETTER_H_
 
+#include "base/macros.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 

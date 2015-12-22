@@ -4,6 +4,8 @@
 
 #include "remoting/client/normalizing_input_filter_mac.h"
 
+#include <stdint.h>
+
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"

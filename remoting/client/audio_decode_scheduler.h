@@ -5,6 +5,7 @@
 #ifndef REMOTING_CLIENT_AUDIO_DECODE_SCHEDULER_H_
 #define REMOTING_CLIENT_AUDIO_DECODE_SCHEDULER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/audio_stub.h"

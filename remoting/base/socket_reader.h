@@ -5,9 +5,10 @@
 #ifndef REMOTING_BASE_SOCKET_READER_H_
 #define REMOTING_BASE_SOCKET_READER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/completion_callback.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/completion_callback.h"
 
 namespace net {
 class IOBuffer;

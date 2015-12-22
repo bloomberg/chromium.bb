@@ -5,10 +5,11 @@
 #ifndef REMOTING_TEST_MOCK_ACCESS_TOKEN_FETCHER_H_
 #define REMOTING_TEST_MOCK_ACCESS_TOKEN_FETCHER_H_
 
-#include <string>
-
 #include "remoting/test/access_token_fetcher.h"
 
+#include <string>
+
+#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

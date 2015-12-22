@@ -5,6 +5,8 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_ADDRESS_RESOLVER_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_ADDRESS_RESOLVER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "ppapi/cpp/host_resolver.h"
 #include "ppapi/utility/completion_callback_factory.h"

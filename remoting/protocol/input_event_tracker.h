@@ -5,10 +5,12 @@
 #ifndef REMOTING_PROTOCOL_INPUT_EVENT_TRACKER_H_
 #define REMOTING_PROTOCOL_INPUT_EVENT_TRACKER_H_
 
+#include <stdint.h>
+
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "remoting/protocol/input_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -52,9 +54,9 @@ class InputEventTracker : public InputStub {
   std::set<ui::DomCode> pressed_keys_;
 
   webrtc::DesktopVector mouse_pos_;
-  uint32 mouse_button_state_;
+  uint32_t mouse_button_state_;
 
-  std::set<uint32> touch_point_ids_;
+  std::set<uint32_t> touch_point_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventTracker);
 };

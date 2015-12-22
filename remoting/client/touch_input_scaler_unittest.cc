@@ -4,8 +4,11 @@
 
 #include "remoting/client/touch_input_scaler.h"
 
+#include <stdint.h>
+
 #include <cmath>
 
+#include "base/macros.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"

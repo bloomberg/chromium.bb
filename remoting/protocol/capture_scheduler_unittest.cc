@@ -4,6 +4,9 @@
 
 #include "remoting/protocol/capture_scheduler.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"

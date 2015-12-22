@@ -4,6 +4,7 @@
 
 #include "remoting/base/buffered_socket_writer.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 #include "base/bind.h"

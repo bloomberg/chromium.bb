@@ -5,6 +5,7 @@
 #ifndef REMOTING_BASE_VLOG_NET_LOG_H_
 #define REMOTING_BASE_VLOG_NET_LOG_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/log/net_log.h"
 

@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "remoting/test/remote_connection_observer.h"
 
 namespace base {

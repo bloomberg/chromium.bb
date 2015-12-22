@@ -6,6 +6,7 @@
 #define REMOTING_CODEC_VIDEO_DECODER_VERBATIM_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/codec/video_decoder.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"

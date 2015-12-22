@@ -4,8 +4,11 @@
 
 #include "remoting/test/test_video_renderer.h"
 
+#include <stdint.h>
+
 #include <cmath>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -343,7 +346,7 @@ scoped_ptr<webrtc::DesktopFrame>
 void TestVideoRendererTest::FillFrameWithGradient(
     webrtc::DesktopFrame* frame) const {
   for (int y = 0; y < frame->size().height(); ++y) {
-    uint8* p = frame->data() + y * frame->stride();
+    uint8_t* p = frame->data() + y * frame->stride();
     for (int x = 0; x < frame->size().width(); ++x) {
       *p++ = (255.0 * x) / frame->size().width();
       *p++ = (164.0 * y) / frame->size().height();

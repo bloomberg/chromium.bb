@@ -5,6 +5,7 @@
 #ifndef REMOTING_CLIENT_EMPTY_CURSOR_FILTER_H_
 #define REMOTING_CLIENT_EMPTY_CURSOR_FILTER_H_
 
+#include "base/macros.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 
 namespace remoting {

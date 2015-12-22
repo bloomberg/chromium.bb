@@ -4,10 +4,13 @@
 
 #include "remoting/codec/video_encoder_vpx.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/codec/codec_test.h"
 #include "testing/gtest/include/gtest/gtest.h"

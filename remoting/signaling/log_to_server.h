@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/signal_strategy.h"

@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_AUTH_UTIL_H_
 #define REMOTING_PROTOCOL_AUTH_UTIL_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/strings/string_piece.h"

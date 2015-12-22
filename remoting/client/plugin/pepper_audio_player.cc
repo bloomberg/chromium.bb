@@ -22,7 +22,7 @@ PepperAudioPlayer::PepperAudioPlayer(pp::Instance* instance)
 PepperAudioPlayer::~PepperAudioPlayer() {
 }
 
-uint32 PepperAudioPlayer::GetSamplesPerFrame() {
+uint32_t PepperAudioPlayer::GetSamplesPerFrame() {
   return samples_per_frame_;
 }
 

@@ -4,8 +4,11 @@
 
 #include "remoting/client/empty_cursor_filter.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
+#include "build/build_config.h"
 #include "remoting/proto/control.pb.h"
 
 namespace remoting {

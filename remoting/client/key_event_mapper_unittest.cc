@@ -4,6 +4,8 @@
 
 #include "remoting/client/key_event_mapper.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -22,9 +24,9 @@ using protocol::KeyEvent;
 using protocol::MockInputStub;
 using protocol::test::EqualsKeyEventWithCapsLock;
 
-static KeyEvent NewUsbEvent(uint32 usb_keycode,
+static KeyEvent NewUsbEvent(uint32_t usb_keycode,
                             bool pressed,
-                            uint32 lock_states) {
+                            uint32_t lock_states) {
   KeyEvent event;
   event.set_usb_keycode(usb_keycode);
   event.set_pressed(pressed);
@@ -33,7 +35,7 @@ static KeyEvent NewUsbEvent(uint32 usb_keycode,
   return event;
 }
 
-static void PressAndReleaseUsb(InputStub* input_stub, uint32 usb_keycode) {
+static void PressAndReleaseUsb(InputStub* input_stub, uint32_t usb_keycode) {
   input_stub->InjectKeyEvent(
       NewUsbEvent(usb_keycode, true, KeyEvent::LOCK_STATES_CAPSLOCK));
   input_stub->InjectKeyEvent(

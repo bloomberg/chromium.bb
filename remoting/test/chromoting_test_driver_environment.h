@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/test/host_info.h"
 #include "testing/gtest/include/gtest/gtest.h"

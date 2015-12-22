@@ -4,6 +4,9 @@
 
 #include "remoting/protocol/channel_socket_adapter.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -52,12 +55,13 @@ class MockTransportChannel : public cricket::TransportChannel {
                      rtc::scoped_refptr<rtc::RTCCertificate>());
   MOCK_CONST_METHOD1(GetRemoteSSLCertificate,
                      bool(rtc::SSLCertificate** cert));
-  MOCK_METHOD6(ExportKeyingMaterial, bool(const std::string& label,
-                                          const uint8* context,
-                                          size_t context_len,
-                                          bool use_context,
-                                          uint8* result,
-                                          size_t result_len));
+  MOCK_METHOD6(ExportKeyingMaterial,
+               bool(const std::string& label,
+                    const uint8_t* context,
+                    size_t context_len,
+                    bool use_context,
+                    uint8_t* result,
+                    size_t result_len));
 };
 
 class TransportChannelSocketAdapterTest : public testing::Test {

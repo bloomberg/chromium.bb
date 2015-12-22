@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_WEBRTC_VIDEO_STREAM_H_
 #define REMOTING_PROTOCOL_WEBRTC_VIDEO_STREAM_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/base/scoped_ref_ptr.h"

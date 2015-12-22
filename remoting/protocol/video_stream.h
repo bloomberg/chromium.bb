@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_VIDEO_STREAM_H_
 #define REMOTING_PROTOCOL_VIDEO_STREAM_H_
 
+#include <stdint.h>
+
 #include <cstdint>
 
 #include "base/callback_forward.h"

@@ -1032,7 +1032,7 @@ void ChromotingInstance::PostLegacyJsonMessage(
   PostMessage(pp::Var(message_json));
 }
 
-void ChromotingInstance::SendTrappedKey(uint32 usb_keycode, bool pressed) {
+void ChromotingInstance::SendTrappedKey(uint32_t usb_keycode, bool pressed) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetInteger("usbKeycode", usb_keycode);
   data->SetBoolean("pressed", pressed);
@@ -1131,7 +1131,7 @@ bool ChromotingInstance::IsConnected() {
 
 void ChromotingInstance::UpdateUmaEnumHistogram(
     const std::string& histogram_name,
-    int64 value,
+    int64_t value,
     int histogram_max) {
   pp::UMAPrivate uma(this);
   uma.HistogramEnumeration(histogram_name, value, histogram_max);
@@ -1140,7 +1140,7 @@ void ChromotingInstance::UpdateUmaEnumHistogram(
 void ChromotingInstance::UpdateUmaCustomHistogram(
     bool is_custom_counts_histogram,
     const std::string& histogram_name,
-    int64 value,
+    int64_t value,
     int histogram_min,
     int histogram_max,
     int histogram_buckets) {

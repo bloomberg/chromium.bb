@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -27,7 +30,7 @@ static void AppendMessage(const EventMessage& msg,
 }
 
 // Construct and prepare data in the |output_stream|.
-static void PrepareData(uint8** buffer, int* size) {
+static void PrepareData(uint8_t** buffer, int* size) {
   // Contains all encoded messages.
   std::string encoded_data;
 
@@ -41,16 +44,16 @@ static void PrepareData(uint8** buffer, int* size) {
   }
 
   *size = encoded_data.length();
-  *buffer = new uint8[*size];
+  *buffer = new uint8_t[*size];
   memcpy(*buffer, encoded_data.c_str(), *size);
 }
 
 void SimulateReadSequence(const int read_sequence[], int sequence_size) {
   // Prepare encoded data for testing.
   int size;
-  uint8* test_data;
+  uint8_t* test_data;
   PrepareData(&test_data, &size);
-  scoped_ptr<uint8[]> memory_deleter(test_data);
+  scoped_ptr<uint8_t[]> memory_deleter(test_data);
 
   // Then simulate using MessageDecoder to decode variable
   // size of encoded data.

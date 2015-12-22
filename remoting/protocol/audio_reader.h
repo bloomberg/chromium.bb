@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_AUDIO_READER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/channel_dispatcher_base.h"

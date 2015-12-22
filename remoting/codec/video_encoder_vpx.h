@@ -5,7 +5,10 @@
 #ifndef REMOTING_CODEC_VIDEO_ENCODER_VPX_H_
 #define REMOTING_CODEC_VIDEO_ENCODER_VPX_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "remoting/codec/scoped_vpx_codec.h"
 #include "remoting/codec/video_encoder.h"
@@ -69,10 +72,10 @@ class VideoEncoderVpx : public VideoEncoder {
 
   // VPX image and buffer to hold the actual YUV planes.
   scoped_ptr<vpx_image_t> image_;
-  scoped_ptr<uint8[]> image_buffer_;
+  scoped_ptr<uint8_t[]> image_buffer_;
 
   // Active map used to optimize out processing of un-changed macroblocks.
-  scoped_ptr<uint8[]> active_map_;
+  scoped_ptr<uint8_t[]> active_map_;
   webrtc::DesktopSize active_map_size_;
 
   // True if the codec wants unchanged frames to finish topping-off with.

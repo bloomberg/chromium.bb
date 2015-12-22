@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_WEBRTC_CONNECTION_TO_CLIENT_H_
 #define REMOTING_PROTOCOL_WEBRTC_CONNECTION_TO_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

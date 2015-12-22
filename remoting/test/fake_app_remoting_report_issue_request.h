@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "remoting/test/app_remoting_report_issue_request.h"
 
 namespace remoting {

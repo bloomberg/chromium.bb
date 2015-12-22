@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "remoting/protocol/input_filter.h"
 
 namespace remoting {

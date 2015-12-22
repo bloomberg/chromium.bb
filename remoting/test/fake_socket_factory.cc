@@ -8,10 +8,12 @@
 #include "remoting/test/fake_socket_factory.h"
 
 #include <math.h>
+#include <stddef.h>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -200,12 +202,13 @@ void FakePacketSocketFactory::SetLatency(base::TimeDelta average,
 
 rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateUdpSocket(
     const rtc::SocketAddress& local_address,
-    uint16 min_port, uint16 max_port) {
+    uint16_t min_port,
+    uint16_t max_port) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   int port = -1;
   if (min_port > 0 && max_port > 0) {
-    for (uint16 i = min_port; i <= max_port; ++i) {
+    for (uint16_t i = min_port; i <= max_port; ++i) {
       if (udp_sockets_.find(i) == udp_sockets_.end()) {
         port = i;
         break;
@@ -235,7 +238,8 @@ rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateUdpSocket(
 
 rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateServerTcpSocket(
     const rtc::SocketAddress& local_address,
-    uint16 min_port, uint16 max_port,
+    uint16_t min_port,
+    uint16_t max_port,
     int opts) {
   return nullptr;
 }

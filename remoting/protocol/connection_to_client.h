@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_CONNECTION_TO_CLIENT_H_
 #define REMOTING_PROTOCOL_CONNECTION_TO_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "remoting/protocol/transport.h"

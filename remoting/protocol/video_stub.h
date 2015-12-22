@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_VIDEO_STUB_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace remoting {

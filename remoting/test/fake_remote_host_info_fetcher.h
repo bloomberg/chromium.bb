@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "remoting/test/remote_host_info_fetcher.h"
 
 namespace remoting {

@@ -4,6 +4,9 @@
 
 #include "remoting/protocol/chromium_socket_factory.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -84,8 +87,8 @@ TEST_F(ChromiumSocketFactoryTest, SetOptions) {
 }
 
 TEST_F(ChromiumSocketFactoryTest, PortRange) {
-  const uint16 kMinPort = 12400;
-  const uint16 kMaxPort = 12410;
+  const uint16_t kMinPort = 12400;
+  const uint16_t kMaxPort = 12410;
   socket_.reset(socket_factory_->CreateUdpSocket(
       rtc::SocketAddress("127.0.0.1", 0), kMaxPort, kMaxPort));
   ASSERT_TRUE(socket_.get() != nullptr);

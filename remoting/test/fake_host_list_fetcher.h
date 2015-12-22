@@ -5,6 +5,7 @@
 #ifndef REMOTING_TEST_FAKE_HOST_LIST_FETCHER_H_
 #define REMOTING_TEST_FAKE_HOST_LIST_FETCHER_H_
 
+#include "base/macros.h"
 #include "remoting/test/host_list_fetcher.h"
 
 namespace remoting {

@@ -5,6 +5,7 @@
 #include "remoting/test/chromoting_test_driver_environment.h"
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "remoting/test/fake_access_token_fetcher.h"
 #include "remoting/test/fake_host_list_fetcher.h"
 #include "remoting/test/fake_refresh_token_store.h"

@@ -7,6 +7,7 @@
 
 #include "remoting/codec/audio_decoder.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace remoting {

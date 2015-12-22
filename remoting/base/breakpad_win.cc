@@ -16,6 +16,7 @@
 #include "base/file_version_info.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/memory.h"
 #include "base/strings/utf_string_conversions.h"

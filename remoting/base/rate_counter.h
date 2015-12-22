@@ -5,10 +5,12 @@
 #ifndef REMOTING_BASE_RATE_COUNTER_H_
 #define REMOTING_BASE_RATE_COUNTER_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <utility>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 
@@ -24,7 +26,7 @@ class RateCounter : public base::NonThreadSafe {
   virtual ~RateCounter();
 
   // Records a point event count to include in the rate.
-  void Record(int64 value);
+  void Record(int64_t value);
 
   // Returns the rate-per-second of values recorded over the time window.
   // Note that rates reported before |time_window| has elapsed are not accurate.
@@ -35,7 +37,7 @@ class RateCounter : public base::NonThreadSafe {
 
  private:
   // Type used to store data points with timestamps.
-  typedef std::pair<base::Time, int64> DataPoint;
+  typedef std::pair<base::Time, int64_t> DataPoint;
 
   // Removes data points more than |time_window| older than |current_time|.
   void EvictOldDataPoints(base::Time current_time);
@@ -50,7 +52,7 @@ class RateCounter : public base::NonThreadSafe {
   std::queue<DataPoint> data_points_;
 
   // Sum of values in |data_points_|.
-  int64 sum_;
+  int64_t sum_;
 
   // If set, used to calculate the running average, in place of Now().
   base::Time current_time_for_test_;

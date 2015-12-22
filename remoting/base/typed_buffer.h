@@ -6,10 +6,10 @@
 #define REMOTING_BASE_TYPED_BUFFER_H_
 
 #include <assert.h>
+#include <stdint.h>
 
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/move.h"
 
@@ -27,16 +27,16 @@ class TypedBuffer {
   TypedBuffer() : TypedBuffer(0) {}
 
   // Creates an instance of the object allocating a buffer of the given size.
-  explicit TypedBuffer(uint32 length) : buffer_(NULL), length_(length) {
+  explicit TypedBuffer(uint32_t length) : buffer_(NULL), length_(length) {
     if (length_ > 0)
-      buffer_ = reinterpret_cast<T*>(new uint8[length_]);
+      buffer_ = reinterpret_cast<T*>(new uint8_t[length_]);
   }
 
   TypedBuffer(TypedBuffer&& rvalue) : TypedBuffer() { Swap(rvalue); }
 
   ~TypedBuffer() {
     if (buffer_) {
-      delete[] reinterpret_cast<uint8*>(buffer_);
+      delete[] reinterpret_cast<uint8_t*>(buffer_);
       buffer_ = NULL;
     }
   }
@@ -58,12 +58,12 @@ class TypedBuffer {
   }
   T* get() const { return buffer_; }
 
-  uint32 length() const { return length_; }
+  uint32_t length() const { return length_; }
 
   // Helper returning a pointer to the structure starting at a specified byte
   // offset.
-  T* GetAtOffset(uint32 offset) {
-    return reinterpret_cast<T*>(reinterpret_cast<uint8*>(buffer_) + offset);
+  T* GetAtOffset(uint32_t offset) {
+    return reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(buffer_) + offset);
   }
 
   // Allow TypedBuffer<T> to be used in boolean expressions, but not
@@ -82,7 +82,7 @@ class TypedBuffer {
   T* buffer_;
 
   // Length of the owned buffer in bytes.
-  uint32 length_;
+  uint32_t length_;
 };
 
 }  // namespace remoting

@@ -6,6 +6,7 @@
 #define REMOTING_CLIENT_PLUGIN_PEPPER_MOUSE_LOCKER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/cpp/mouse_lock.h"
 #include "ppapi/utility/completion_callback_factory.h"

@@ -5,8 +5,12 @@
 #ifndef REMOTING_CLIENT_PLUGIN_CHROMOTING_INSTANCE_H_
 #define REMOTING_CLIENT_PLUGIN_CHROMOTING_INSTANCE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/thread_task_runner_handle.h"
@@ -165,14 +169,14 @@ class ChromotingInstance : public ClientUserInterface,
 
   // Updates the specified UMA enumeration histogram with the input value.
   void UpdateUmaEnumHistogram(const std::string& histogram_name,
-                              int64 value,
+                              int64_t value,
                               int histogram_max);
 
   // Updates the specified UMA custom counts or custom times histogram with the
   // input value.
   void UpdateUmaCustomHistogram(bool is_custom_counts_histogram,
                                 const std::string& histogram_name,
-                                int64 value,
+                                int64_t value,
                                 int histogram_min,
                                 int histogram_max,
                                 int histogram_buckets);
@@ -224,7 +228,7 @@ class ChromotingInstance : public ClientUserInterface,
                              scoped_ptr<base::DictionaryValue> data);
 
   // Posts trapped keys to the web-app to handle.
-  void SendTrappedKey(uint32 usb_keycode, bool pressed);
+  void SendTrappedKey(uint32_t usb_keycode, bool pressed);
 
   // Callback for DelegatingSignalStrategy.
   void SendOutgoingIq(const std::string& iq);

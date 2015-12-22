@@ -12,7 +12,7 @@ namespace {
 // <android/keycodes.h> and
 // "ui/events/keycodes/keyboard_code_conversion_android.cc" . Some of these
 // mappings assume a US keyboard layout for now.
-const uint32 usb_keycodes[] = {
+const uint32_t usb_keycodes[] = {
   0,         // UNKNOWN
   0,         // SOFT_LEFT
   0,         // SOFT_RIGHT
@@ -203,8 +203,8 @@ const uint32 usb_keycodes[] = {
 
 namespace remoting {
 
-uint32 AndroidKeycodeToUsbKeycode(size_t android) {
-  if (android >= sizeof (usb_keycodes) / sizeof (uint32)) {
+uint32_t AndroidKeycodeToUsbKeycode(size_t android) {
+  if (android >= sizeof(usb_keycodes) / sizeof(uint32_t)) {
     LOG(WARNING) << "Attempted to decode out-of-range Android keycode";
     return 0;
   }

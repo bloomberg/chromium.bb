@@ -4,6 +4,8 @@
 
 #include "remoting/client/normalizing_input_filter_win.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 

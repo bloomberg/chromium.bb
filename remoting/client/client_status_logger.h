@@ -5,6 +5,7 @@
 #ifndef REMOTING_CLIENT_CLIENT_STATUS_LOGGER_H_
 #define REMOTING_CLIENT_CLIENT_STATUS_LOGGER_H_
 
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "remoting/protocol/connection_to_host.h"

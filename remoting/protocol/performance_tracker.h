@@ -5,9 +5,12 @@
 #ifndef REMOTING_PROTOCOL_PERFORMANCE_TRACKER_H_
 #define REMOTING_PROTOCOL_PERFORMANCE_TRACKER_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "remoting/base/rate_counter.h"
 #include "remoting/base/running_average.h"

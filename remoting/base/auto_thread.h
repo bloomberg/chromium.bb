@@ -7,8 +7,10 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "remoting/base/auto_thread_task_runner.h"
 
 namespace remoting {

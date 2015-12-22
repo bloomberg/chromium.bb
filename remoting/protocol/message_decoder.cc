@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/message_decoder.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"
@@ -52,7 +54,7 @@ CompoundBuffer* MessageDecoder::GetNextMessage() {
 
 bool MessageDecoder::GetPayloadSize(int* size) {
   // The header has a size of 4 bytes.
-  const int kHeaderSize = sizeof(int32);
+  const int kHeaderSize = sizeof(int32_t);
 
   if (buffer_.total_bytes() < kHeaderSize)
     return false;
