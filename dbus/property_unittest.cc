@@ -4,12 +4,15 @@
 
 #include "dbus/property.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,10 +34,10 @@ class PropertyTest : public testing::Test {
 
   struct Properties : public PropertySet {
     Property<std::string> name;
-    Property<int16> version;
+    Property<int16_t> version;
     Property<std::vector<std::string> > methods;
     Property<std::vector<ObjectPath> > objects;
-    Property<std::vector<uint8> > bytes;
+    Property<std::vector<uint8_t>> bytes;
 
     Properties(ObjectProxy* object_proxy,
                PropertyChangedCallback property_changed_callback)
@@ -189,7 +192,7 @@ TEST_F(PropertyTest, InitialValues) {
   ASSERT_EQ(1U, objects.size());
   EXPECT_EQ(ObjectPath("/TestObjectPath"), objects[0]);
 
-  std::vector<uint8> bytes = properties_->bytes.value();
+  std::vector<uint8_t> bytes = properties_->bytes.value();
   ASSERT_EQ(4U, bytes.size());
   EXPECT_EQ('T', bytes[0]);
   EXPECT_EQ('e', bytes[1]);
@@ -253,7 +256,7 @@ TEST_F(PropertyTest, UpdatedValues) {
   WaitForCallback("Bytes");
   WaitForUpdates(1);
 
-  std::vector<uint8> bytes = properties_->bytes.value();
+  std::vector<uint8_t> bytes = properties_->bytes.value();
   ASSERT_EQ(4U, bytes.size());
   EXPECT_EQ('T', bytes[0]);
   EXPECT_EQ('e', bytes[1]);
@@ -380,8 +383,8 @@ TEST(PropertyTestStatic, ReadWriteNetAddressArray) {
 
   writer.OpenVariant("a(ayq)", &variant_writer);
   variant_writer.OpenArray("(ayq)", &variant_array_writer);
-  uint8 ip_bytes[] = {0x54, 0x65, 0x73, 0x74, 0x30};
-  for (uint16 i = 0; i < 5; ++i) {
+  uint8_t ip_bytes[] = {0x54, 0x65, 0x73, 0x74, 0x30};
+  for (uint16_t i = 0; i < 5; ++i) {
     variant_array_writer.OpenStruct(&struct_entry_writer);
     ip_bytes[4] = 0x30 + i;
     struct_entry_writer.AppendArrayOfBytes(ip_bytes, arraysize(ip_bytes));
@@ -392,7 +395,7 @@ TEST(PropertyTestStatic, ReadWriteNetAddressArray) {
   writer.CloseContainer(&variant_writer);
 
   MessageReader reader(message.get());
-  Property<std::vector<std::pair<std::vector<uint8>, uint16>>> ip_list;
+  Property<std::vector<std::pair<std::vector<uint8_t>, uint16_t>>> ip_list;
   EXPECT_TRUE(ip_list.PopValueFromReader(&reader));
 
   ASSERT_EQ(5U, ip_list.value().size());
@@ -407,19 +410,19 @@ TEST(PropertyTestStatic, ReadWriteNetAddressArray) {
 }
 
 TEST(PropertyTestStatic, SerializeNetAddressArray) {
-  std::vector<std::pair<std::vector<uint8>, uint16>> test_list;
+  std::vector<std::pair<std::vector<uint8_t>, uint16_t>> test_list;
 
-  uint8 ip_bytes[] = {0x54, 0x65, 0x73, 0x74, 0x30};
-  for (uint16 i = 0; i < 5; ++i) {
+  uint8_t ip_bytes[] = {0x54, 0x65, 0x73, 0x74, 0x30};
+  for (uint16_t i = 0; i < 5; ++i) {
     ip_bytes[4] = 0x30 + i;
-    std::vector<uint8> bytes(ip_bytes, ip_bytes + arraysize(ip_bytes));
+    std::vector<uint8_t> bytes(ip_bytes, ip_bytes + arraysize(ip_bytes));
     test_list.push_back(make_pair(bytes, 16));
   }
 
   scoped_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
 
-  Property<std::vector<std::pair<std::vector<uint8>, uint16>>> ip_list;
+  Property<std::vector<std::pair<std::vector<uint8_t>, uint16_t>>> ip_list;
   ip_list.ReplaceSetValueForTesting(test_list);
   ip_list.AppendSetValueToWriter(&writer);
 

@@ -4,10 +4,12 @@
 
 #include "dbus/object_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -33,7 +35,7 @@ class ObjectManagerTest
 
   struct Properties : public PropertySet {
     Property<std::string> name;
-    Property<int16> version;
+    Property<int16_t> version;
     Property<std::vector<std::string> > methods;
     Property<std::vector<ObjectPath> > objects;
 

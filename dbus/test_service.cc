@@ -4,6 +4,8 @@
 
 #include "dbus/test_service.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -428,7 +430,7 @@ void TestService::GetProperty(MethodCall* method_call,
     MessageWriter variant_array_writer(NULL);
 
     writer.OpenVariant("ay", &variant_writer);
-    const uint8 bytes[] = { 0x54, 0x65, 0x73, 0x74 };
+    const uint8_t bytes[] = {0x54, 0x65, 0x73, 0x74};
     variant_writer.AppendArrayOfBytes(bytes, sizeof(bytes));
     writer.CloseContainer(&variant_writer);
 
@@ -630,7 +632,7 @@ void TestService::AddPropertiesToWriter(MessageWriter* writer) {
   array_writer.OpenDictEntry(&dict_entry_writer);
   dict_entry_writer.AppendString("Bytes");
   dict_entry_writer.OpenVariant("ay", &variant_writer);
-  const uint8 bytes[] = { 0x54, 0x65, 0x73, 0x74 };
+  const uint8_t bytes[] = {0x54, 0x65, 0x73, 0x74};
   variant_writer.AppendArrayOfBytes(bytes, sizeof(bytes));
   dict_entry_writer.CloseContainer(&variant_writer);
   array_writer.CloseContainer(&dict_entry_writer);

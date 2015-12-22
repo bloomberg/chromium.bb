@@ -5,8 +5,11 @@
 #ifndef DBUS_OBJECT_MANAGER_H_
 #define DBUS_OBJECT_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/object_path.h"
@@ -36,7 +39,7 @@
 //    public:
 //     struct Properties : public dbus::PropertySet {
 //       dbus::Property<std::string> name;
-//       dbus::Property<uint16> version;
+//       dbus::Property<uint16_t> version;
 //       dbus::Property<dbus::ObjectPath> parent;
 //       dbus::Property<std::vector<std::string> > children;
 //

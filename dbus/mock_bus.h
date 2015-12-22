@@ -5,6 +5,8 @@
 #ifndef DBUS_MOCK_BUS_H_
 #define DBUS_MOCK_BUS_H_
 
+#include <stdint.h>
+
 #include "dbus/bus.h"
 #include "dbus/object_path.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,8 +47,7 @@ class MockBus : public Bus {
   MOCK_METHOD3(SendWithReply, void(DBusMessage* request,
                                    DBusPendingCall** pending_call,
                                    int timeout_ms));
-  MOCK_METHOD2(Send, void(DBusMessage* request,
-                          uint32* serial));
+  MOCK_METHOD2(Send, void(DBusMessage* request, uint32_t* serial));
   MOCK_METHOD2(AddFilter, void(DBusHandleMessageFunction handle_message,
                                void* user_data));
   MOCK_METHOD2(RemoveFilter, void(DBusHandleMessageFunction handle_message,

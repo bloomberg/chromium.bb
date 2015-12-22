@@ -4,6 +4,8 @@
 
 #include "dbus/bus.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -678,7 +680,7 @@ void Bus::SendWithReply(DBusMessage* request,
   CHECK(success) << "Unable to allocate memory";
 }
 
-void Bus::Send(DBusMessage* request, uint32* serial) {
+void Bus::Send(DBusMessage* request, uint32_t* serial) {
   DCHECK(connection_);
   AssertOnDBusThread();
 

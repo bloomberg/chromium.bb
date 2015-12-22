@@ -5,7 +5,6 @@
 #ifndef DBUS_FILE_DESCRIPTOR_H_
 #define DBUS_FILE_DESCRIPTOR_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/move.h"
 #include "dbus/dbus_export.h"

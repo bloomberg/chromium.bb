@@ -94,7 +94,7 @@ base::Value* PopDataAsValue(MessageReader* reader) {
       // Do nothing.
       break;
     case Message::BYTE: {
-      uint8 value = 0;
+      uint8_t value = 0;
       if (reader->PopByte(&value))
         result = new base::FundamentalValue(value);
       break;
@@ -106,31 +106,31 @@ base::Value* PopDataAsValue(MessageReader* reader) {
       break;
     }
     case Message::INT16: {
-      int16 value = 0;
+      int16_t value = 0;
       if (reader->PopInt16(&value))
         result = new base::FundamentalValue(value);
       break;
     }
     case Message::UINT16: {
-      uint16 value = 0;
+      uint16_t value = 0;
       if (reader->PopUint16(&value))
         result = new base::FundamentalValue(value);
       break;
     }
     case Message::INT32: {
-      int32 value = 0;
+      int32_t value = 0;
       if (reader->PopInt32(&value))
         result = new base::FundamentalValue(value);
       break;
     }
     case Message::UINT32: {
-      uint32 value = 0;
+      uint32_t value = 0;
       if (reader->PopUint32(&value))
         result = new base::FundamentalValue(static_cast<double>(value));
       break;
     }
     case Message::INT64: {
-      int64 value = 0;
+      int64_t value = 0;
       if (reader->PopInt64(&value)) {
         DLOG_IF(WARNING, !IsExactlyRepresentableByDouble(value)) <<
             value << " is not exactly representable by double";
@@ -139,7 +139,7 @@ base::Value* PopDataAsValue(MessageReader* reader) {
       break;
     }
     case Message::UINT64: {
-      uint64 value = 0;
+      uint64_t value = 0;
       if (reader->PopUint64(&value)) {
         DLOG_IF(WARNING, !IsExactlyRepresentableByDouble(value)) <<
             value << " is not exactly representable by double";

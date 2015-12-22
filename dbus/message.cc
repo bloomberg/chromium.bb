@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
@@ -36,7 +35,7 @@ void AppendStringHeader(const std::string& header_name,
 // Appends the header name and the value to |output|, if the value is
 // nonzero.
 void AppendUint32Header(const std::string& header_name,
-                        uint32 header_value,
+                        uint32_t header_value,
                         std::string* output) {
   if (header_value != 0) {
     *output += (header_name + ": " + base::UintToString(header_value) + "\n");
@@ -99,7 +98,7 @@ std::string Message::ToStringInternal(const std::string& indent,
     const DataType type = reader->GetDataType();
     switch (type) {
       case BYTE: {
-        uint8 value = 0;
+        uint8_t value = 0;
         if (!reader->PopByte(&value))
           return kBrokenMessage;
         output += indent + "byte " + base::UintToString(value) + "\n";
@@ -113,45 +112,45 @@ std::string Message::ToStringInternal(const std::string& indent,
         break;
       }
       case INT16: {
-        int16 value = 0;
+        int16_t value = 0;
         if (!reader->PopInt16(&value))
           return kBrokenMessage;
-        output += indent + "int16 " + base::IntToString(value) + "\n";
+        output += indent + "int16_t " + base::IntToString(value) + "\n";
         break;
       }
       case UINT16: {
-        uint16 value = 0;
+        uint16_t value = 0;
         if (!reader->PopUint16(&value))
           return kBrokenMessage;
-        output += indent + "uint16 " + base::UintToString(value) + "\n";
+        output += indent + "uint16_t " + base::UintToString(value) + "\n";
         break;
       }
       case INT32: {
-        int32 value = 0;
+        int32_t value = 0;
         if (!reader->PopInt32(&value))
           return kBrokenMessage;
-        output += indent + "int32 " + base::IntToString(value) + "\n";
+        output += indent + "int32_t " + base::IntToString(value) + "\n";
         break;
       }
       case UINT32: {
-        uint32 value = 0;
+        uint32_t value = 0;
         if (!reader->PopUint32(&value))
           return kBrokenMessage;
-        output += indent + "uint32 " + base::UintToString(value) + "\n";
+        output += indent + "uint32_t " + base::UintToString(value) + "\n";
         break;
       }
       case INT64: {
-        int64 value = 0;
+        int64_t value = 0;
         if (!reader->PopInt64(&value))
           return kBrokenMessage;
-        output += (indent + "int64 " + base::Int64ToString(value) + "\n");
+        output += (indent + "int64_t " + base::Int64ToString(value) + "\n");
         break;
       }
       case UINT64: {
-        uint64 value = 0;
+        uint64_t value = 0;
         if (!reader->PopUint64(&value))
           return kBrokenMessage;
-        output += (indent + "uint64 " + base::Uint64ToString(value) + "\n");
+        output += (indent + "uint64_t " + base::Uint64ToString(value) + "\n");
         break;
       }
       case DOUBLE: {
@@ -294,11 +293,11 @@ bool Message::SetSender(const std::string& sender) {
   return dbus_message_set_sender(raw_message_, sender.c_str());
 }
 
-void Message::SetSerial(uint32 serial) {
+void Message::SetSerial(uint32_t serial) {
   dbus_message_set_serial(raw_message_, serial);
 }
 
-void Message::SetReplySerial(uint32 reply_serial) {
+void Message::SetReplySerial(uint32_t reply_serial) {
   dbus_message_set_reply_serial(raw_message_, reply_serial);
 }
 
@@ -337,11 +336,11 @@ std::string Message::GetSignature() {
   return signature ? signature : "";
 }
 
-uint32 Message::GetSerial() {
+uint32_t Message::GetSerial() {
   return dbus_message_get_serial(raw_message_);
 }
 
-uint32 Message::GetReplySerial() {
+uint32_t Message::GetReplySerial() {
   return dbus_message_get_reply_serial(raw_message_);
 }
 
@@ -462,7 +461,7 @@ MessageWriter::MessageWriter(Message* message)
 MessageWriter::~MessageWriter() {
 }
 
-void MessageWriter::AppendByte(uint8 value) {
+void MessageWriter::AppendByte(uint8_t value) {
   AppendBasic(DBUS_TYPE_BYTE, &value);
 }
 
@@ -476,27 +475,27 @@ void MessageWriter::AppendBool(bool value) {
   AppendBasic(DBUS_TYPE_BOOLEAN, &dbus_value);
 }
 
-void MessageWriter::AppendInt16(int16 value) {
+void MessageWriter::AppendInt16(int16_t value) {
   AppendBasic(DBUS_TYPE_INT16, &value);
 }
 
-void MessageWriter::AppendUint16(uint16 value) {
+void MessageWriter::AppendUint16(uint16_t value) {
   AppendBasic(DBUS_TYPE_UINT16, &value);
 }
 
-void MessageWriter::AppendInt32(int32 value) {
+void MessageWriter::AppendInt32(int32_t value) {
   AppendBasic(DBUS_TYPE_INT32, &value);
 }
 
-void MessageWriter::AppendUint32(uint32 value) {
+void MessageWriter::AppendUint32(uint32_t value) {
   AppendBasic(DBUS_TYPE_UINT32, &value);
 }
 
-void MessageWriter::AppendInt64(int64 value) {
+void MessageWriter::AppendInt64(int64_t value) {
   AppendBasic(DBUS_TYPE_INT64, &value);
 }
 
-void MessageWriter::AppendUint64(uint64 value) {
+void MessageWriter::AppendUint64(uint64_t value) {
   AppendBasic(DBUS_TYPE_UINT64, &value);
 }
 
@@ -587,7 +586,7 @@ void MessageWriter::CloseContainer(MessageWriter* writer) {
   container_is_open_ = false;
 }
 
-void MessageWriter::AppendArrayOfBytes(const uint8* values, size_t length) {
+void MessageWriter::AppendArrayOfBytes(const uint8_t* values, size_t length) {
   DCHECK(!container_is_open_);
   MessageWriter array_writer(message_);
   OpenArray("y", &array_writer);
@@ -629,12 +628,12 @@ bool MessageWriter::AppendProtoAsArrayOfBytes(
     LOG(ERROR) << "Unable to serialize supplied protocol buffer";
     return false;
   }
-  AppendArrayOfBytes(reinterpret_cast<const uint8*>(serialized_proto.data()),
+  AppendArrayOfBytes(reinterpret_cast<const uint8_t*>(serialized_proto.data()),
                      serialized_proto.size());
   return true;
 }
 
-void MessageWriter::AppendVariantOfByte(uint8 value) {
+void MessageWriter::AppendVariantOfByte(uint8_t value) {
   AppendVariantOfBasic(DBUS_TYPE_BYTE, &value);
 }
 
@@ -644,27 +643,27 @@ void MessageWriter::AppendVariantOfBool(bool value) {
   AppendVariantOfBasic(DBUS_TYPE_BOOLEAN, &dbus_value);
 }
 
-void MessageWriter::AppendVariantOfInt16(int16 value) {
+void MessageWriter::AppendVariantOfInt16(int16_t value) {
   AppendVariantOfBasic(DBUS_TYPE_INT16, &value);
 }
 
-void MessageWriter::AppendVariantOfUint16(uint16 value) {
+void MessageWriter::AppendVariantOfUint16(uint16_t value) {
   AppendVariantOfBasic(DBUS_TYPE_UINT16, &value);
 }
 
-void MessageWriter::AppendVariantOfInt32(int32 value) {
+void MessageWriter::AppendVariantOfInt32(int32_t value) {
   AppendVariantOfBasic(DBUS_TYPE_INT32, &value);
 }
 
-void MessageWriter::AppendVariantOfUint32(uint32 value) {
+void MessageWriter::AppendVariantOfUint32(uint32_t value) {
   AppendVariantOfBasic(DBUS_TYPE_UINT32, &value);
 }
 
-void MessageWriter::AppendVariantOfInt64(int64 value) {
+void MessageWriter::AppendVariantOfInt64(int64_t value) {
   AppendVariantOfBasic(DBUS_TYPE_INT64, &value);
 }
 
-void MessageWriter::AppendVariantOfUint64(uint64 value) {
+void MessageWriter::AppendVariantOfUint64(uint64_t value) {
   AppendVariantOfBasic(DBUS_TYPE_UINT64, &value);
 }
 
@@ -733,7 +732,7 @@ bool MessageReader::HasMoreData() {
   return dbus_type != DBUS_TYPE_INVALID;
 }
 
-bool MessageReader::PopByte(uint8* value) {
+bool MessageReader::PopByte(uint8_t* value) {
   return PopBasic(DBUS_TYPE_BYTE, value);
 }
 
@@ -747,27 +746,27 @@ bool MessageReader::PopBool(bool* value) {
   return success;
 }
 
-bool MessageReader::PopInt16(int16* value) {
+bool MessageReader::PopInt16(int16_t* value) {
   return PopBasic(DBUS_TYPE_INT16, value);
 }
 
-bool MessageReader::PopUint16(uint16* value) {
+bool MessageReader::PopUint16(uint16_t* value) {
   return PopBasic(DBUS_TYPE_UINT16, value);
 }
 
-bool MessageReader::PopInt32(int32* value) {
+bool MessageReader::PopInt32(int32_t* value) {
   return PopBasic(DBUS_TYPE_INT32, value);
 }
 
-bool MessageReader::PopUint32(uint32* value) {
+bool MessageReader::PopUint32(uint32_t* value) {
   return PopBasic(DBUS_TYPE_UINT32, value);
 }
 
-bool MessageReader::PopInt64(int64* value) {
+bool MessageReader::PopInt64(int64_t* value) {
   return PopBasic(DBUS_TYPE_INT64, value);
 }
 
-bool MessageReader::PopUint64(uint64* value) {
+bool MessageReader::PopUint64(uint64_t* value) {
   return PopBasic(DBUS_TYPE_UINT64, value);
 }
 
@@ -807,7 +806,7 @@ bool MessageReader::PopVariant(MessageReader* sub_reader) {
   return PopContainer(DBUS_TYPE_VARIANT, sub_reader);
 }
 
-bool MessageReader::PopArrayOfBytes(const uint8** bytes, size_t* length) {
+bool MessageReader::PopArrayOfBytes(const uint8_t** bytes, size_t* length) {
   MessageReader array_reader(message_);
   if (!PopArray(&array_reader))
       return false;
@@ -862,8 +861,8 @@ bool MessageReader::PopArrayOfBytesAsProto(
   DCHECK(protobuf != NULL);
   const char* serialized_buf = NULL;
   size_t buf_size = 0;
-  if (!PopArrayOfBytes(
-          reinterpret_cast<const uint8**>(&serialized_buf), &buf_size)) {
+  if (!PopArrayOfBytes(reinterpret_cast<const uint8_t**>(&serialized_buf),
+                       &buf_size)) {
     LOG(ERROR) << "Error reading array of bytes";
     return false;
   }
@@ -874,7 +873,7 @@ bool MessageReader::PopArrayOfBytesAsProto(
   return true;
 }
 
-bool MessageReader::PopVariantOfByte(uint8* value) {
+bool MessageReader::PopVariantOfByte(uint8_t* value) {
   return PopVariantOfBasic(DBUS_TYPE_BYTE, value);
 }
 
@@ -886,27 +885,27 @@ bool MessageReader::PopVariantOfBool(bool* value) {
   return success;
 }
 
-bool MessageReader::PopVariantOfInt16(int16* value) {
+bool MessageReader::PopVariantOfInt16(int16_t* value) {
   return PopVariantOfBasic(DBUS_TYPE_INT16, value);
 }
 
-bool MessageReader::PopVariantOfUint16(uint16* value) {
+bool MessageReader::PopVariantOfUint16(uint16_t* value) {
   return PopVariantOfBasic(DBUS_TYPE_UINT16, value);
 }
 
-bool MessageReader::PopVariantOfInt32(int32* value) {
+bool MessageReader::PopVariantOfInt32(int32_t* value) {
   return PopVariantOfBasic(DBUS_TYPE_INT32, value);
 }
 
-bool MessageReader::PopVariantOfUint32(uint32* value) {
+bool MessageReader::PopVariantOfUint32(uint32_t* value) {
   return PopVariantOfBasic(DBUS_TYPE_UINT32, value);
 }
 
-bool MessageReader::PopVariantOfInt64(int64* value) {
+bool MessageReader::PopVariantOfInt64(int64_t* value) {
   return PopVariantOfBasic(DBUS_TYPE_INT64, value);
 }
 
-bool MessageReader::PopVariantOfUint64(uint64* value) {
+bool MessageReader::PopVariantOfUint64(uint64_t* value) {
   return PopVariantOfBasic(DBUS_TYPE_UINT64, value);
 }
 

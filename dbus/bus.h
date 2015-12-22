@@ -6,6 +6,7 @@
 #define DBUS_BUS_H_
 
 #include <dbus/dbus.h>
+#include <stdint.h>
 
 #include <map>
 #include <set>
@@ -14,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -462,7 +464,7 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // be stored in |serial|.
   //
   // BLOCKING CALL.
-  virtual void Send(DBusMessage* request, uint32* serial);
+  virtual void Send(DBusMessage* request, uint32_t* serial);
 
   // Adds the message filter function. |filter_function| will be called
   // when incoming messages are received.

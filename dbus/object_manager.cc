@@ -4,6 +4,8 @@
 
 #include "dbus/object_manager.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"

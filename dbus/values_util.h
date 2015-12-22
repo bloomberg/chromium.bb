@@ -5,6 +5,8 @@
 #ifndef DBUS_VALUES_UTIL_H_
 #define DBUS_VALUES_UTIL_H_
 
+#include <stdint.h>
+
 #include "dbus/dbus_export.h"
 
 namespace base {
@@ -18,8 +20,8 @@ class MessageWriter;
 
 // Pops a value from |reader| as a base::Value.
 // Returns NULL if an error occurs.
-// Note: Integer values larger than int32 (including uint32) are converted to
-// double.  Non-string diciontary keys are converted to strings.
+// Note: Integer values larger than int32_t (including uint32_t) are converted
+// to double.  Non-string dictionary keys are converted to strings.
 CHROME_DBUS_EXPORT base::Value* PopDataAsValue(MessageReader* reader);
 
 // Appends a basic type value to |writer|. Basic types are BOOLEAN, INTEGER,
