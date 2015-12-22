@@ -53,4 +53,23 @@ TEST_F(WorkerTaskRunnerTest, CanRemoveSelfDuringNotification) {
   FakeStop();
 }
 
+TEST_F(WorkerTaskRunnerTest, TaskRunnerRemovedCorrectly) {
+  ASSERT_EQ(0, WorkerThread::GetCurrentId());
+  MockObserver o;
+  FakeStart();
+  WorkerThread::AddObserver(&o);
+  EXPECT_CALL(o, WillStopCurrentWorkerThread()).Times(1);
+
+  // Get the thread id and the task runner for the live thread.
+  int thread_id = WorkerThread::GetCurrentId();
+  base::TaskRunner* task_runner = task_runner_.GetTaskRunnerFor(thread_id);
+  ASSERT_LT(0, thread_id);
+  ASSERT_NE(nullptr, task_runner);
+
+  // Check that the task runner is no longer used after the thread is
+  // terminated.
+  FakeStop();
+  ASSERT_NE(task_runner, task_runner_.GetTaskRunnerFor(thread_id));
+}
+
 }  // namespace content

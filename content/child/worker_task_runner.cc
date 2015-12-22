@@ -81,10 +81,14 @@ void WorkerTaskRunner::DidStartWorkerRunLoop() {
 }
 
 void WorkerTaskRunner::WillStopWorkerRunLoop() {
+  // WorkerThreadImpl removes the thread-id at the end of the call to
+  // WillStopCurrentWorkerThread(). So remember the thread-id to make sure the
+  // correct task-runner entry is removed from |task_runner_map_|.
+  int current_id = WorkerThread::GetCurrentId();
   WorkerThreadImpl::WillStopCurrentWorkerThread();
   {
     base::AutoLock locker(task_runner_map_lock_);
-    task_runner_map_.erase(WorkerThread::GetCurrentId());
+    task_runner_map_.erase(current_id);
   }
 }
 
