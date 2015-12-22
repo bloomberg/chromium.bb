@@ -14,8 +14,8 @@ layer at (0,0) size 800x144
         LayoutTextControl {INPUT} at (0,0) size 180x28 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
 layer at (9,54) size 352x24
   LayoutBlockFlow {DIV} at (1,2) size 352x24
-    LayoutText {#text} at (0,0) size 71x24
-      text run at (0,0) width 71: "\x{3075} ABCgjy"
+    LayoutText {#text} at (0,0) size 70x24
+      text run at (0,0) width 70: "\x{3075} ABCgjy"
 layer at (9,80) size 273x28
   LayoutBlockFlow {DIV} at (1,0) size 273x28
     LayoutText {#text} at (0,0) size 80x27
