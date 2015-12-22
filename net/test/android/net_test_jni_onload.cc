@@ -5,6 +5,7 @@
 #include "net/test/android/net_test_jni_onload.h"
 
 #include "base/android/base_jni_onload.h"
+#include "base/android/base_jni_registrar.h"
 #include "base/bind.h"
 #include "net/test/embedded_test_server/android/embedded_test_server_android.h"
 
@@ -27,6 +28,7 @@ bool Init() {
 bool OnJNIOnLoadRegisterJNI(JavaVM* vm) {
   std::vector<base::android::RegisterCallback> register_callbacks;
   register_callbacks.push_back(base::Bind(&RegisterJNI));
+  register_callbacks.push_back(base::Bind(&base::android::RegisterJni));
   return base::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks);
 }
 

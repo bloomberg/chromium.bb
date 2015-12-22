@@ -40,7 +40,6 @@ class RemoteDeviceInstrumentationTestRun(
 
       env_vars = self._test_instance.GetDriverEnvironmentVars(
           test_list_file_path=test_list_file.name)
-      env_vars.update(self._test_instance.GetHttpServerEnvironmentVars())
 
       logging.debug('extras:')
       for k, v in env_vars.iteritems():

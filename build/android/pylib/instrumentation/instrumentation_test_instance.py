@@ -33,9 +33,6 @@ _DEFAULT_ANNOTATIONS = [
     'EnormousTest', 'IntegrationTest']
 _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS = [
     'DisabledTest', 'FlakyTest']
-_EXTRA_ENABLE_HTTP_SERVER = (
-    'org.chromium.chrome.test.ChromeInstrumentationTestRunner.'
-        + 'EnableTestHttpServer')
 _EXTRA_DRIVER_TEST_LIST = (
     'org.chromium.test.driver.OnDeviceInstrumentationDriver.TestList')
 _EXTRA_DRIVER_TEST_LIST_FILE = (
@@ -597,12 +594,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
           parameterized_t['flags'] = p
           new_tests.append(parameterized_t)
     return tests + new_tests
-
-  @staticmethod
-  def GetHttpServerEnvironmentVars():
-    return {
-      _EXTRA_ENABLE_HTTP_SERVER: None,
-    }
 
   def GetDriverEnvironmentVars(
       self, test_list=None, test_list_file_path=None):
