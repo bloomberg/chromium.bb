@@ -1727,7 +1727,7 @@ DownloadItem::DownloadState DownloadItemImpl::InternalToExternalState(
     case INTERRUPTED_INTERNAL:
       return INTERRUPTED;
     case RESUMING_INTERNAL:
-      return IN_PROGRESS;
+      return INTERRUPTED;
     case MAX_DOWNLOAD_INTERNAL_STATE:
       break;
   }
