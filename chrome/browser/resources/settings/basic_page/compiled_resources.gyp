@@ -7,6 +7,7 @@
       'target_name': 'basic_page',
       'variables': {
         'depends': [
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../settings_page/compiled_resources.gyp:settings_page_visibility',
         ],
       },

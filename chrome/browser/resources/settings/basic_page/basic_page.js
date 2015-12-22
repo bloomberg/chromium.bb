@@ -36,9 +36,15 @@ Polymer({
       notify: true,
     },
 
+    /**
+     * True if the basic page should currently display the reset profile banner.
+     * @private {boolean}
+     */
     showResetProfileBanner_: {
       type: Boolean,
-      value: loadTimeData.getBoolean('showResetProfileBanner'),
+      value: function() {
+        return loadTimeData.getBoolean('showResetProfileBanner');
+      },
     },
 
   },
