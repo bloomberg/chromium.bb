@@ -80,10 +80,11 @@ public class CastMediaRouteProvider
         mHandler.post(new OnSinksReceivedRunnable(mManager, this, sourceId, sinks));
     }
 
-    public void onRouteCreated(int requestId, MediaRoute route, CastSession session) {
+    public void onRouteCreated(
+            int requestId, MediaRoute route, CastSession session, String origin, int tabId) {
         mSession = session;
 
-        addRoute(route, session.getOrigin(), session.getTabId());
+        addRoute(route, origin, tabId);
         mManager.onRouteCreated(route.id, route.sinkId, requestId, this, true);
     }
 

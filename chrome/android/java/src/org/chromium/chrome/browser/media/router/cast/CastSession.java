@@ -150,8 +150,6 @@ public class CastSession implements MediaNotificationListener {
         }
     }
 
-    private final String mOrigin;
-    private final int mTabId;
     private final CastMessagingChannel mMessageChannel;
     private final CastMediaRouteProvider mRouteProvider;
     private final CastDevice mCastDevice;
@@ -195,8 +193,6 @@ public class CastSession implements MediaNotificationListener {
             CastMediaRouteProvider routeProvider) {
         mApiClient = apiClient;
         mSessionId = sessionId;
-        mOrigin = origin;
-        mTabId = tabId;
         mSource = source;
         mRouteProvider = routeProvider;
         mApplicationMetadata = metadata;
@@ -241,6 +237,8 @@ public class CastSession implements MediaNotificationListener {
                 .setTitle(mCastDevice.getFriendlyName())
                 .setPaused(false)
                 .setOrigin(origin)
+                // TODO(avayvod): the same session might have more than one tab id. Should we track
+                // the last foreground alive tab and update the notification with it?
                 .setTabId(tabId)
                 // TODO(avayvod): pass true here if initiated from the incognito mode.
                 // MediaRouter is disabled for Incognito mode for now, see https://crbug.com/525215
@@ -306,8 +304,7 @@ public class CastSession implements MediaNotificationListener {
                         mRouteProvider.onSessionClosed();
                         mStoppingApplication = false;
 
-                        MediaNotificationManager.hide(
-                                mTabId, R.id.presentation_notification);
+                        MediaNotificationManager.clear(R.id.presentation_notification);
                     }
                 });
     }
@@ -325,14 +322,6 @@ public class CastSession implements MediaNotificationListener {
 
     public String getSinkId() {
         return mCastDevice.getDeviceId();
-    }
-
-    public String getOrigin() {
-        return mOrigin;
-    }
-
-    public int getTabId() {
-        return mTabId;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
