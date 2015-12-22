@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_BROWSER_DEVTOOLS_CAST_DEV_TOOLS_DELEGATE_H_
 #define CHROMECAST_BROWSER_DEVTOOLS_CAST_DEV_TOOLS_DELEGATE_H_
 
+#include "base/macros.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 
 namespace chromecast {

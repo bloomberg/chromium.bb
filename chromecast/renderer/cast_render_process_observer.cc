@@ -4,6 +4,7 @@
 
 #include "chromecast/renderer/cast_render_process_observer.h"
 
+#include "build/build_config.h"
 #include "chromecast/renderer/media/capabilities_message_filter.h"
 #include "chromecast/renderer/media/cma_message_filter_proxy.h"
 #include "content/public/renderer/render_thread.h"

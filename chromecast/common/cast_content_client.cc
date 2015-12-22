@@ -4,8 +4,11 @@
 
 #include "chromecast/common/cast_content_client.h"
 
+#include <stdint.h>
+
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "build/build_config.h"
 #include "chromecast/base/version.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -18,9 +21,9 @@ namespace {
 
 #if defined(OS_ANDROID)
 std::string BuildAndroidOsInfo() {
-  int32 os_major_version = 0;
-  int32 os_minor_version = 0;
-  int32 os_bugfix_version = 0;
+  int32_t os_major_version = 0;
+  int32_t os_minor_version = 0;
+  int32_t os_bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
                                                &os_minor_version,
                                                &os_bugfix_version);

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "content/public/renderer/render_process_observer.h"
 
 namespace chromecast {

@@ -5,7 +5,7 @@
 #ifndef CHROMECAST_MEDIA_CMA_IPC_MEDIA_MEMORY_CHUNK_H_
 #define CHROMECAST_MEDIA_CMA_IPC_MEDIA_MEMORY_CHUNK_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
 
 namespace chromecast {
 namespace media {

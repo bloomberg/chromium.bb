@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/cast_content_window.h"
 
+#include "base/macros.h"
 #include "base/threading/thread_restrictions.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"

@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "chromecast/renderer/media/demuxer_stream_adapter.h"
 #include "media/base/decoder_buffer.h"

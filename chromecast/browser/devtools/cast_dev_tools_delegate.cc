@@ -5,6 +5,7 @@
 #include "chromecast/browser/devtools/cast_dev_tools_delegate.h"
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "grit/shell_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 

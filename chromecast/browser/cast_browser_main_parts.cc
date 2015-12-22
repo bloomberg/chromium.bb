@@ -4,22 +4,19 @@
 
 #include "chromecast/browser/cast_browser_main_parts.h"
 
+#include <stddef.h>
+
 #include <string>
-#if !defined(OS_ANDROID)
-#include <signal.h>
-#include <sys/prctl.h>
-#endif
-#if defined(OS_LINUX)
-#include <fontconfig/fontconfig.h>
-#endif
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/cast_sys_info_util.h"
@@ -50,6 +47,14 @@
 #include "media/audio/audio_manager_factory.h"
 #include "media/base/media.h"
 #include "ui/compositor/compositor_switches.h"
+
+#if !defined(OS_ANDROID)
+#include <signal.h>
+#include <sys/prctl.h>
+#endif
+#if defined(OS_LINUX)
+#include <fontconfig/fontconfig.h>
+#endif
 
 #if defined(OS_ANDROID)
 #include "chromecast/app/android/crash_handler.h"

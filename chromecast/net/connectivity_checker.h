@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_NET_CONNECTIVITY_CHECKER_H_
 #define CHROMECAST_NET_CONNECTIVITY_CHECKER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list_threadsafe.h"

@@ -4,6 +4,8 @@
 
 #include "chromecast/browser/media/cma_message_filter_host.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/lazy_instance.h"
@@ -47,8 +49,8 @@ base::LazyInstance<MediaPipelineCmaMap> g_pipeline_map_cma =
     LAZY_INSTANCE_INITIALIZER;
 
 uint64_t GetPipelineCmaId(int process_id, int media_id) {
-  return (static_cast<uint64>(process_id) << 32) +
-      static_cast<uint64>(media_id);
+  return (static_cast<uint64_t>(process_id) << 32) +
+         static_cast<uint64_t>(media_id);
 }
 
 MediaPipelineHost* GetMediaPipeline(int process_id, int media_id) {

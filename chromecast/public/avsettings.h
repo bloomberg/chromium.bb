@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_PUBLIC_AVSETTINGS_H_
 #define CHROMECAST_PUBLIC_AVSETTINGS_H_
 
+#include <stdint.h>
+
 #include "output_restrictions.h"
 #include "task_runner.h"
 

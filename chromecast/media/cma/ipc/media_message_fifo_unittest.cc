@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -40,8 +43,8 @@ void MsgProducer(scoped_ptr<MediaMessageFifo> fifo,
                  base::WaitableEvent* event) {
 
   for (int k = 0; k < msg_count; k++) {
-    uint32 msg_type = 0x2 + (k % 5);
-    uint32 max_msg_content_size = k % 64;
+    uint32_t msg_type = 0x2 + (k % 5);
+    uint32_t max_msg_content_size = k % 64;
     do {
       scoped_ptr<MediaMessage> msg1(
           MediaMessage::CreateMessage(
@@ -66,7 +69,7 @@ void MsgConsumer(scoped_ptr<MediaMessageFifo> fifo,
 
   int k = 0;
   while (k < msg_count) {
-    uint32 msg_type = 0x2 + (k % 5);
+    uint32_t msg_type = 0x2 + (k % 5);
     do {
       scoped_ptr<MediaMessage> msg2(fifo->Pop());
       if (msg2) {
@@ -91,8 +94,8 @@ void MsgProducerConsumer(
     base::WaitableEvent* event) {
   for (int k = 0; k < 2048; k++) {
     // Should have enough space to create a message.
-    uint32 msg_type = 0x2 + (k % 5);
-    uint32 max_msg_content_size = k % 64;
+    uint32_t msg_type = 0x2 + (k % 5);
+    uint32_t max_msg_content_size = k % 64;
     scoped_ptr<MediaMessage> msg1(
         MediaMessage::CreateMessage(
             msg_type,
@@ -119,7 +122,7 @@ void MsgProducerConsumer(
 
 TEST(MediaMessageFifoTest, AlternateWriteRead) {
   size_t buffer_size = 64 * 1024;
-  scoped_ptr<uint64[]> buffer(new uint64[buffer_size / sizeof(uint64)]);
+  scoped_ptr<uint64_t[]> buffer(new uint64_t[buffer_size / sizeof(uint64_t)]);
 
   scoped_ptr<base::Thread> thread(
       new base::Thread("FeederConsumerThread"));
@@ -145,7 +148,7 @@ TEST(MediaMessageFifoTest, AlternateWriteRead) {
 
 TEST(MediaMessageFifoTest, MultiThreaded) {
   size_t buffer_size = 64 * 1024;
-  scoped_ptr<uint64[]> buffer(new uint64[buffer_size / sizeof(uint64)]);
+  scoped_ptr<uint64_t[]> buffer(new uint64_t[buffer_size / sizeof(uint64_t)]);
 
   scoped_ptr<base::Thread> producer_thread(
       new base::Thread("FeederThread"));

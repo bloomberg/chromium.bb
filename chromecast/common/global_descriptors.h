@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_COMMON_GLOBAL_DESCRIPTORS_H_
 #define CHROMECAST_COMMON_GLOBAL_DESCRIPTORS_H_
 
+#include "build/build_config.h"
 #include "content/public/common/content_descriptors.h"
 
 // This is a list of global descriptor keys to be used with the

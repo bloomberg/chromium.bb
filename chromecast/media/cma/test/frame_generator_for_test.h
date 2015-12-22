@@ -5,8 +5,11 @@
 #ifndef CHROMECAST_MEDIA_CMA_TEST_FRAME_GENERATOR_FOR_TEST_H_
 #define CHROMECAST_MEDIA_CMA_TEST_FRAME_GENERATOR_FOR_TEST_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 

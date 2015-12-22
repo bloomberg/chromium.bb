@@ -5,9 +5,11 @@
 #ifndef CHROMECAST_MEDIA_CMA_TEST_FRAME_SEGMENTER_FOR_TEST_H_
 #define CHROMECAST_MEDIA_CMA_TEST_FRAME_SEGMENTER_FOR_TEST_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/video_decoder_config.h"
@@ -23,8 +25,8 @@ class DecoderBufferBase;
 typedef std::list<scoped_refptr<DecoderBufferBase> > BufferList;
 
 // Implement some basic frame segmenters good enough for unit tests.
-BufferList Mp3SegmenterForTest(const uint8* data, size_t data_size);
-BufferList H264SegmenterForTest(const uint8* data, size_t data_size);
+BufferList Mp3SegmenterForTest(const uint8_t* data, size_t data_size);
+BufferList H264SegmenterForTest(const uint8_t* data, size_t data_size);
 
 struct DemuxResult {
   DemuxResult();

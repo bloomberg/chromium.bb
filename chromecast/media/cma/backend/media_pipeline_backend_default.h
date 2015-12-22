@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_DEFAULT_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_DEFAULT_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"

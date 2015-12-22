@@ -7,6 +7,7 @@
 
 #include <GLES2/gl2.h>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"

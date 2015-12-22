@@ -6,6 +6,7 @@
 #define CHROMECAST_RENDERER_MEDIA_DEMUXER_STREAM_ADAPTER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"

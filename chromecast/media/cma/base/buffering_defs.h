@@ -5,7 +5,7 @@
 #ifndef CHROMECAST_MEDIA_CMA_BASE_BUFFERING_DEFS_H_
 #define CHROMECAST_MEDIA_CMA_BASE_BUFFERING_DEFS_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
 
 namespace chromecast {
 namespace media {

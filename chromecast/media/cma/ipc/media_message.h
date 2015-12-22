@@ -6,8 +6,8 @@
 #define CHROMECAST_MEDIA_CMA_IPC_MEDIA_MESSAGE_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -35,20 +35,20 @@ class MediaMessage {
   // each write on this message is a dummy operation.
   // This type of message can be useful to calculate first the size of the
   // message, before allocating the real message.
-  static scoped_ptr<MediaMessage> CreateDummyMessage(uint32 type);
+  static scoped_ptr<MediaMessage> CreateDummyMessage(uint32_t type);
 
   // Creates a message with a capacity of at least |msg_content_capacity|
   // bytes. The actual content size can be smaller than its capacity.
   // The message can be populated with some Write functions.
   static scoped_ptr<MediaMessage> CreateMessage(
-      uint32 type,
+      uint32_t type,
       const MemoryAllocatorCB& memory_allocator,
       size_t msg_content_capacity);
 
   // Creates a message of type |type| whose serialized structure is stored
   // in |mem|.
   static scoped_ptr<MediaMessage> CreateMessage(
-      uint32 type,
+      uint32_t type,
       scoped_ptr<MediaMemoryChunk> mem);
 
   // Creates a message from a memory area which already contains
@@ -84,7 +84,7 @@ class MediaMessage {
   size_t content_size() const { return cached_msg_.header.content_size; }
 
   // Return the type of the message.
-  uint32 type() const { return cached_msg_.header.type; }
+  uint32_t type() const { return cached_msg_.header.type; }
 
   // Append a POD to the message.
   // Return true if the POD has been succesfully written.
@@ -111,17 +111,17 @@ class MediaMessage {
   void* GetWritableBuffer(size_t size);
 
  private:
-  MediaMessage(uint32 type, size_t msg_size);
-  MediaMessage(uint32 type, scoped_ptr<MediaMemoryChunk> memory);
+  MediaMessage(uint32_t type, size_t msg_size);
+  MediaMessage(uint32_t type, scoped_ptr<MediaMemoryChunk> memory);
   MediaMessage(scoped_ptr<MediaMemoryChunk> memory);
 
   struct Header {
     // Total size of the message (including both header & content).
-    uint32 size;
+    uint32_t size;
     // Indicate the message type.
-    uint32 type;
+    uint32_t type;
     // Actual size of the content in the message.
-    uint32 content_size;
+    uint32_t content_size;
   };
 
   struct SerializedMsg {
@@ -130,7 +130,7 @@ class MediaMessage {
 
     // Start of the content of the message.
     // Use uint8_t since no special alignment is needed.
-    uint8 content;
+    uint8_t content;
   };
 
   // Indicate whether the message is a dummy message, i.e. a message without

@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
+#include "build/build_config.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/browser/cast_content_browser_client.h"
 #include "chromecast/common/cast_resource_delegate.h"

@@ -4,6 +4,9 @@
 
 #include "chromecast/base/metrics/grouped_histogram.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -133,7 +136,7 @@ void PreregisterHistogram(const std::string& name,
                           GroupedHistogram::Sample minimum,
                           GroupedHistogram::Sample maximum,
                           size_t bucket_count,
-                          int32 flags) {
+                          int32_t flags) {
   DCHECK(base::StatisticsRecorder::IsActive());
   DCHECK(base::Histogram::InspectConstructionArguments(
       name, &minimum, &maximum, &bucket_count));

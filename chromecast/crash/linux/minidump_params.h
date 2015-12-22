@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_CRASH_LINUX_MINIDUMP_PARAMS_H_
 #define CHROMECAST_CRASH_LINUX_MINIDUMP_PARAMS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 namespace chromecast {

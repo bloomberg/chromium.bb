@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_BROWSER_CAST_NETWORK_DELEGATE_H_
 #define CHROMECAST_BROWSER_CAST_NETWORK_DELEGATE_H_
 
+#include "base/macros.h"
 #include "net/base/network_delegate_impl.h"
 
 namespace net {

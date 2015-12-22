@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_BROWSER_SERVICE_CAST_SERVICE_SIMPLE_H_
 #define CHROMECAST_BROWSER_SERVICE_CAST_SERVICE_SIMPLE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromecast/service/cast_service.h"
 #include "url/gurl.h"

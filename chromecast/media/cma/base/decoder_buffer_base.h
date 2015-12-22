@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_CMA_BASE_DECODER_BUFFER_BASE_H_
 #define CHROMECAST_MEDIA_CMA_BASE_DECODER_BUFFER_BASE_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

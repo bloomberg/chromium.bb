@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_CMA_TEST_MOCK_FRAME_PROVIDER_H_
 #define CHROMECAST_MEDIA_CMA_TEST_MOCK_FRAME_PROVIDER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/macros.h"

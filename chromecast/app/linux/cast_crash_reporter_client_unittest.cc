@@ -9,6 +9,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_restrictions.h"

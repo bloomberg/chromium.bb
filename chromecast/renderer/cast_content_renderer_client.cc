@@ -4,13 +4,16 @@
 
 #include "chromecast/renderer/cast_content_renderer_client.h"
 
+#include <stdint.h>
 #include <sys/sysinfo.h>
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/crash/cast_crash_keys.h"
 #include "chromecast/media/base/media_caps.h"

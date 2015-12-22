@@ -8,8 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chromecast/base/pref_names.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/cast_dev_tools_delegate.h"
@@ -36,7 +38,7 @@ namespace {
 
 const char kFrontEndURL[] =
     "https://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
-const uint16 kDefaultRemoteDebuggingPort = 9222;
+const uint16_t kDefaultRemoteDebuggingPort = 9222;
 
 const int kBackLog = 10;
 
@@ -68,9 +70,8 @@ class UnixDomainServerSocketFactory
 class TCPServerSocketFactory
     : public DevToolsHttpHandler::ServerSocketFactory {
  public:
-  TCPServerSocketFactory(const std::string& address, uint16 port)
-      : address_(address), port_(port) {
-  }
+  TCPServerSocketFactory(const std::string& address, uint16_t port)
+      : address_(address), port_(port) {}
 
  private:
   // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
@@ -84,14 +85,14 @@ class TCPServerSocketFactory
   }
 
   std::string address_;
-  uint16 port_;
+  uint16_t port_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
 };
 #endif
 
-scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>
-CreateSocketFactory(uint16 port) {
+scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> CreateSocketFactory(
+    uint16_t port) {
 #if defined(OS_ANDROID)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string socket_name = "cast_shell_devtools_remote";
@@ -127,7 +128,7 @@ RemoteDebuggingServer::RemoteDebuggingServer(bool start_immediately)
   if (!port_str.empty()) {
     int port = kDefaultRemoteDebuggingPort;
     if (base::StringToInt(port_str, &port)) {
-      port_ = static_cast<uint16>(port);
+      port_ = static_cast<uint16_t>(port);
     } else {
       port_ = kDefaultRemoteDebuggingPort;
     }

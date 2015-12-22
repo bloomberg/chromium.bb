@@ -6,7 +6,6 @@
 
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "chromecast/media/cma/ipc/media_memory_chunk.h"
 
@@ -14,15 +13,14 @@ namespace chromecast {
 namespace media {
 
 // static
-scoped_ptr<MediaMessage> MediaMessage::CreateDummyMessage(
-    uint32 type) {
+scoped_ptr<MediaMessage> MediaMessage::CreateDummyMessage(uint32_t type) {
   return scoped_ptr<MediaMessage>(
       new MediaMessage(type, std::numeric_limits<size_t>::max()));
 }
 
 // static
 scoped_ptr<MediaMessage> MediaMessage::CreateMessage(
-    uint32 type,
+    uint32_t type,
     const MemoryAllocatorCB& memory_allocator,
     size_t msg_content_capacity) {
   size_t msg_size = minimum_msg_size() + msg_content_capacity;
@@ -42,7 +40,7 @@ scoped_ptr<MediaMessage> MediaMessage::CreateMessage(
 
 // static
 scoped_ptr<MediaMessage> MediaMessage::CreateMessage(
-    uint32 type,
+    uint32_t type,
     scoped_ptr<MediaMemoryChunk> memory) {
   return scoped_ptr<MediaMessage>(new MediaMessage(type, memory.Pass()));
 }
@@ -53,24 +51,24 @@ scoped_ptr<MediaMessage> MediaMessage::MapMessage(
   return scoped_ptr<MediaMessage>(new MediaMessage(memory.Pass()));
 }
 
-MediaMessage::MediaMessage(uint32 type, size_t msg_size)
-  : is_dummy_msg_(true),
-    cached_header_(&cached_msg_.header),
-    msg_(&cached_msg_),
-    msg_read_only_(&cached_msg_),
-    rd_offset_(0) {
+MediaMessage::MediaMessage(uint32_t type, size_t msg_size)
+    : is_dummy_msg_(true),
+      cached_header_(&cached_msg_.header),
+      msg_(&cached_msg_),
+      msg_read_only_(&cached_msg_),
+      rd_offset_(0) {
   cached_header_->size = msg_size;
   cached_header_->type = type;
   cached_header_->content_size = 0;
 }
 
-MediaMessage::MediaMessage(uint32 type, scoped_ptr<MediaMemoryChunk> memory)
-  : is_dummy_msg_(false),
-    cached_header_(&cached_msg_.header),
-    msg_(static_cast<SerializedMsg*>(memory->data())),
-    msg_read_only_(msg_),
-    mem_(memory.Pass()),
-    rd_offset_(0) {
+MediaMessage::MediaMessage(uint32_t type, scoped_ptr<MediaMemoryChunk> memory)
+    : is_dummy_msg_(false),
+      cached_header_(&cached_msg_.header),
+      msg_(static_cast<SerializedMsg*>(memory->data())),
+      msg_read_only_(msg_),
+      mem_(memory.Pass()),
+      rd_offset_(0) {
   CHECK(mem_->valid());
   CHECK_GE(mem_->size(), minimum_msg_size());
 
@@ -142,7 +140,7 @@ bool MediaMessage::WriteBuffer(const void* src, size_t size) {
 
   // Write the message only for non-dummy messages.
   if (!is_dummy_msg_) {
-    uint8* wr_ptr = &msg_->content + cached_header_->content_size;
+    uint8_t* wr_ptr = &msg_->content + cached_header_->content_size;
     memcpy(wr_ptr, src, size);
   }
 
@@ -165,7 +163,7 @@ bool MediaMessage::ReadBuffer(void* dst, size_t size) {
     return false;
   }
 
-  const uint8* rd_ptr = &msg_read_only_->content + rd_offset_;
+  const uint8_t* rd_ptr = &msg_read_only_->content + rd_offset_;
   memcpy(dst, rd_ptr, size);
   rd_offset_ += size;
   return true;
@@ -185,7 +183,7 @@ void* MediaMessage::GetWritableBuffer(size_t size) {
     return NULL;
   }
 
-  uint8* rd_ptr = &msg_read_only_->content + rd_offset_;
+  uint8_t* rd_ptr = &msg_read_only_->content + rd_offset_;
   rd_offset_ += size;
   return rd_ptr;
 }

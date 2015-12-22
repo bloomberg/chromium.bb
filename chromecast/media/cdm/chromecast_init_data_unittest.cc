@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cdm/chromecast_init_data.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"

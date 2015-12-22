@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_COMMON_MEDIA_SHARED_MEMORY_CHUNK_H_
 #define CHROMECAST_COMMON_MEDIA_SHARED_MEMORY_CHUNK_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromecast/media/cma/ipc/media_memory_chunk.h"

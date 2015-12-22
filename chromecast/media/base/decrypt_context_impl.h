@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_IMPL_H_
 #define CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromecast/media/base/key_systems_common.h"

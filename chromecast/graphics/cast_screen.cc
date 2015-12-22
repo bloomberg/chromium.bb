@@ -4,6 +4,8 @@
 
 #include "chromecast/graphics/cast_screen.h"
 
+#include <stdint.h>
+
 #include "ui/aura/env.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -14,7 +16,7 @@ namespace chromecast {
 
 namespace {
 
-const int64 kDisplayId = 1;
+const int64_t kDisplayId = 1;
 
 const int k720pWidth = 1280;
 const int k720pHeight = 720;

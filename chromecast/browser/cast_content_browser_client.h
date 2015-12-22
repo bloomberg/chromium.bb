@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 
 class PrefService;

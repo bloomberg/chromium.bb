@@ -5,11 +5,14 @@
 #ifndef CHROMECAST_BROWSER_METRICS_CAST_METRICS_SERVICE_CLIENT_H_
 #define CHROMECAST_BROWSER_METRICS_CAST_METRICS_SERVICE_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "components/metrics/metrics_service_client.h"
 
 class PrefRegistrySimple;

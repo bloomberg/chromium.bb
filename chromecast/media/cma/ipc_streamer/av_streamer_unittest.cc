@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
@@ -70,7 +73,7 @@ class AvStreamerTest : public testing::Test {
   void OnTestTimeout();
 
  protected:
-  scoped_ptr<uint64[]> fifo_mem_;
+  scoped_ptr<uint64_t[]> fifo_mem_;
 
   scoped_ptr<AvStreamerProxy> av_buffer_proxy_;
   scoped_ptr<CodedFrameProviderHost> coded_frame_provider_host_;
@@ -123,7 +126,7 @@ void AvStreamerTest::Configure(
   frame_provider->SetDelayFlush(delay_flush);
 
   size_t fifo_size_div_8 = 512;
-  fifo_mem_.reset(new uint64[fifo_size_div_8]);
+  fifo_mem_.reset(new uint64_t[fifo_size_div_8]);
   scoped_ptr<MediaMessageFifo> producer_fifo(
       new MediaMessageFifo(
           scoped_ptr<MediaMemoryChunk>(

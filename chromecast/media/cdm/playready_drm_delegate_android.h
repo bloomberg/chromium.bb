@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_CDM_PLAYREADY_DRM_DELEGATE_ANDROID_H_
 #define CHROMECAST_MEDIA_CDM_PLAYREADY_DRM_DELEGATE_ANDROID_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "media/base/android/media_drm_bridge_delegate.h"
 

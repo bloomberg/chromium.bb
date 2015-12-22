@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_RENDERER_MEDIA_CAPABILITIES_MESSAGE_FILTER_H_
 #define CHROMECAST_RENDERER_MEDIA_CAPABILITIES_MESSAGE_FILTER_H_
 
+#include "base/macros.h"
 #include "ipc/message_filter.h"
 
 namespace chromecast {

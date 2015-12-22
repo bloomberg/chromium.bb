@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/browser/cast_download_manager_delegate.h"
 #include "chromecast/browser/cast_permission_manager.h"

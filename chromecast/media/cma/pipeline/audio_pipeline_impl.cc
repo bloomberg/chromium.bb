@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/base/cma_logging.h"

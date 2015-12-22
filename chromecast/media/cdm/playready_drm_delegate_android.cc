@@ -5,6 +5,7 @@
 #include "chromecast/media/cdm/playready_drm_delegate_android.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chromecast/media/cdm/chromecast_init_data.h"
 
 namespace chromecast {

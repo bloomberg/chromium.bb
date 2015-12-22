@@ -4,9 +4,11 @@
 
 #include "chromecast/media/cma/ipc_streamer/audio_decoder_config_marshaller.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "chromecast/media/cma/ipc/media_message.h"
 #include "media/base/audio_decoder_config.h"

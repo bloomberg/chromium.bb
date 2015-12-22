@@ -37,11 +37,11 @@ void DecoderBufferAdapter::set_timestamp(base::TimeDelta timestamp) {
   buffer_->set_timestamp(timestamp);
 }
 
-const uint8* DecoderBufferAdapter::data() const {
+const uint8_t* DecoderBufferAdapter::data() const {
   return buffer_->data();
 }
 
-uint8* DecoderBufferAdapter::writable_data() const {
+uint8_t* DecoderBufferAdapter::writable_data() const {
   return buffer_->writable_data();
 }
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "chromecast/public/media/cast_key_system.h"
 #include "media/base/android/media_client_android.h"
 

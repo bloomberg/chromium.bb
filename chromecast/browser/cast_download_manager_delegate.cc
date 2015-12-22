@@ -4,6 +4,8 @@
 
 #include "chromecast/browser/cast_download_manager_delegate.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "content/public/browser/download_danger_type.h"
@@ -19,7 +21,7 @@ CastDownloadManagerDelegate::~CastDownloadManagerDelegate() {}
 void CastDownloadManagerDelegate::GetNextId(
       const content::DownloadIdCallback& callback) {
   // See default behavior of DownloadManagerImpl::GetNextId()
-  static uint32 next_id = content::DownloadItem::kInvalidId + 1;
+  static uint32_t next_id = content::DownloadItem::kInvalidId + 1;
   callback.Run(next_id++);
 }
 

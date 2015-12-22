@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chromecast/media/cma/base/cma_logging.h"
@@ -231,7 +232,7 @@ scoped_ptr<MediaMessage> MediaMessageFifo::Pop() {
   size_t max_msg_size = std::min(allocated_size, trailing_byte_count);
   if (max_msg_size < MediaMessage::minimum_msg_size())
     return scoped_ptr<MediaMessage>();
-  void* msg_src = static_cast<uint8*>(base_) + rd_offset;
+  void* msg_src = static_cast<uint8_t*>(base_) + rd_offset;
 
   // Create a flag to protect the serialized structure of the message
   // from being overwritten.
@@ -277,7 +278,7 @@ scoped_ptr<MediaMemoryChunk> MediaMessageFifo::ReserveMemoryNoCheck(
   size_t wr_offset = internal_wr_offset();
 
   // Memory block corresponding to the serialized structure of the message.
-  void* msg_start = static_cast<uint8*>(base_) + wr_offset;
+  void* msg_start = static_cast<uint8_t*>(base_) + wr_offset;
   scoped_refptr<MediaMessageFlag> wr_flag(new MediaMessageFlag(wr_offset));
   wr_flags_.push_back(wr_flag);
   scoped_ptr<MediaMemoryChunk> mem(

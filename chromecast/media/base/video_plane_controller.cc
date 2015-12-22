@@ -4,10 +4,14 @@
 
 #include "chromecast/media/base/video_plane_controller.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromecast/media/base/media_message_loop.h"
@@ -99,14 +103,14 @@ class VideoPlaneController::RateLimitedSetVideoPlaneGeometry
   friend class base::RefCountedThreadSafe<RateLimitedSetVideoPlaneGeometry>;
   ~RateLimitedSetVideoPlaneGeometry() {}
 
-  void UpdateAverageTime(int64 sample) {
+  void UpdateAverageTime(int64_t sample) {
     const size_t kSampleCount = 5;
     if (samples_.size() < kSampleCount)
       samples_.push_back(sample);
     else
       samples_[sample_counter_++ % kSampleCount] = sample;
-    int64 total = 0;
-    for (int64 s : samples_)
+    int64_t total = 0;
+    for (int64_t s : samples_)
       total += s;
     min_calling_interval_ms_ = 2 * total / samples_.size();
   }
@@ -124,11 +128,11 @@ class VideoPlaneController::RateLimitedSetVideoPlaneGeometry
   base::TimeTicks last_set_geometry_time_;
 
   // Don't call SetGeometry faster than this interval.
-  int64 min_calling_interval_ms_;
+  int64_t min_calling_interval_ms_;
 
   // Min calling interval is computed as double average of last few time samples
   // (i.e. allow at least as much time between calls as the call itself takes).
-  std::vector<int64> samples_;
+  std::vector<int64_t> samples_;
   size_t sample_counter_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

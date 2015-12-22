@@ -4,6 +4,8 @@
 
 #include "chromecast/browser/metrics/external_metrics.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"

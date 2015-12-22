@@ -5,8 +5,11 @@
 #ifndef CHROMECAST_MEDIA_CMA_BASE_BUFFERING_FRAME_PROVIDER_H_
 #define CHROMECAST_MEDIA_CMA_BASE_BUFFERING_FRAME_PROVIDER_H_
 
+#include <stddef.h>
+
 #include <list>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

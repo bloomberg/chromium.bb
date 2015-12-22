@@ -35,7 +35,7 @@ int mp3_bitrate[] = {
   0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0 };
 int mp3_sample_rate[] = { 44100, 48000, 32000, 0 };
 
-AudioFrameHeader FindNextMp3Header(const uint8* data, size_t data_size) {
+AudioFrameHeader FindNextMp3Header(const uint8_t* data, size_t data_size) {
   bool found = false;
   AudioFrameHeader header;
   header.frame_size = 0;
@@ -86,7 +86,7 @@ AudioFrameHeader FindNextMp3Header(const uint8* data, size_t data_size) {
 
 }  // namespace
 
-BufferList Mp3SegmenterForTest(const uint8* data, size_t data_size) {
+BufferList Mp3SegmenterForTest(const uint8_t* data, size_t data_size) {
   size_t offset = 0;
   BufferList audio_frames;
   base::TimeDelta timestamp;
@@ -130,7 +130,7 @@ H264AccessUnit::H264AccessUnit()
     poc(0) {
 }
 
-BufferList H264SegmenterForTest(const uint8* data, size_t data_size) {
+BufferList H264SegmenterForTest(const uint8_t* data, size_t data_size) {
   BufferList video_frames;
   std::list<H264AccessUnit> access_unit_list;
   H264AccessUnit access_unit;
@@ -265,7 +265,7 @@ BufferList H264SegmenterForTest(const uint8* data, size_t data_size) {
 }
 
 void OnEncryptedMediaInitData(::media::EmeInitDataType init_data_type,
-                              const std::vector<uint8>& init_data) {
+                              const std::vector<uint8_t>& init_data) {
   LOG(FATAL) << "Unexpected test failure: file is encrypted.";
 }
 

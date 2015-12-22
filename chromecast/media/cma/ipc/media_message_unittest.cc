@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromecast/media/cma/ipc/media_memory_chunk.h"
@@ -42,10 +44,10 @@ scoped_ptr<MediaMemoryChunk> DummyAllocator(
 
 TEST(MediaMessageTest, WriteRead) {
   int buffer_size = 1024;
-  scoped_ptr<uint8[]> buffer(new uint8[buffer_size]);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   MediaMessage::MemoryAllocatorCB mem_alloc_cb(
       base::Bind(&DummyAllocator, buffer.get(), buffer_size));
-  uint32 type = 0x1;
+  uint32_t type = 0x1;
   int msg_content_capacity = 512;
 
   // Write a message.
@@ -55,10 +57,10 @@ TEST(MediaMessageTest, WriteRead) {
   for (int k = 0; k < count; k++) {
     int v1 = 2 * k + 1;
     EXPECT_TRUE(msg1->WritePod(v1));
-    uint8 v2 = k;
+    uint8_t v2 = k;
     EXPECT_TRUE(msg1->WritePod(v2));
   }
-  EXPECT_EQ(msg1->content_size(), count * (sizeof(int) + sizeof(uint8)));
+  EXPECT_EQ(msg1->content_size(), count * (sizeof(int) + sizeof(uint8_t)));
 
   // Verify the integrity of the message.
   scoped_ptr<MediaMessage> msg2(
@@ -69,8 +71,8 @@ TEST(MediaMessageTest, WriteRead) {
     int expected_v1 = 2 * k + 1;
     EXPECT_TRUE(msg2->ReadPod(&v1));
     EXPECT_EQ(v1, expected_v1);
-    uint8 v2;
-    uint8 expected_v2 = k;
+    uint8_t v2;
+    uint8_t expected_v2 = k;
     EXPECT_TRUE(msg2->ReadPod(&v2));
     EXPECT_EQ(v2, expected_v2);
   }
@@ -78,16 +80,16 @@ TEST(MediaMessageTest, WriteRead) {
 
 TEST(MediaMessageTest, WriteOverflow) {
   int buffer_size = 1024;
-  scoped_ptr<uint8[]> buffer(new uint8[buffer_size]);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   MediaMessage::MemoryAllocatorCB mem_alloc_cb(
       base::Bind(&DummyAllocator, buffer.get(), buffer_size));
-  uint32 type = 0x1;
+  uint32_t type = 0x1;
   int msg_content_capacity = 8;
 
   scoped_ptr<MediaMessage> msg1(
       MediaMessage::CreateMessage(type, mem_alloc_cb, msg_content_capacity));
-  uint32 v1 = 0;
-  uint8 v2 = 0;
+  uint32_t v1 = 0;
+  uint8_t v2 = 0;
   EXPECT_TRUE(msg1->WritePod(v1));
   EXPECT_TRUE(msg1->WritePod(v1));
 
@@ -97,22 +99,22 @@ TEST(MediaMessageTest, WriteOverflow) {
 
 TEST(MediaMessageTest, ReadOverflow) {
   int buffer_size = 1024;
-  scoped_ptr<uint8[]> buffer(new uint8[buffer_size]);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   MediaMessage::MemoryAllocatorCB mem_alloc_cb(
       base::Bind(&DummyAllocator, buffer.get(), buffer_size));
-  uint32 type = 0x1;
+  uint32_t type = 0x1;
   int msg_content_capacity = 8;
 
   scoped_ptr<MediaMessage> msg1(
       MediaMessage::CreateMessage(type, mem_alloc_cb, msg_content_capacity));
-  uint32 v1 = 0xcd;
+  uint32_t v1 = 0xcd;
   EXPECT_TRUE(msg1->WritePod(v1));
   EXPECT_TRUE(msg1->WritePod(v1));
 
   scoped_ptr<MediaMessage> msg2(
       MediaMessage::MapMessage(scoped_ptr<MediaMemoryChunk>(
           new ExternalMemoryBlock(&buffer[0], buffer_size))));
-  uint32 v2;
+  uint32_t v2;
   EXPECT_TRUE(msg2->ReadPod(&v2));
   EXPECT_EQ(v2, v1);
   EXPECT_TRUE(msg2->ReadPod(&v2));
@@ -122,15 +124,15 @@ TEST(MediaMessageTest, ReadOverflow) {
 
 TEST(MediaMessageTest, DummyMessage) {
   int buffer_size = 1024;
-  scoped_ptr<uint8[]> buffer(new uint8[buffer_size]);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   MediaMessage::MemoryAllocatorCB mem_alloc_cb(
       base::Bind(&DummyAllocator, buffer.get(), buffer_size));
-  uint32 type = 0x1;
+  uint32_t type = 0x1;
 
   // Create first a dummy message to estimate the content size.
   scoped_ptr<MediaMessage> msg1(
       MediaMessage::CreateDummyMessage(type));
-  uint32 v1 = 0xcd;
+  uint32_t v1 = 0xcd;
   EXPECT_TRUE(msg1->WritePod(v1));
   EXPECT_TRUE(msg1->WritePod(v1));
 

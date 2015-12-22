@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_CRASH_CAST_CRASH_KEYS_H_
 #define CHROMECAST_CRASH_CAST_CRASH_KEYS_H_
 
+#include <stddef.h>
+
 #include "base/debug/crash_logging.h"
 
 namespace chromecast {

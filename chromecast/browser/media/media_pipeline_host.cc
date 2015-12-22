@@ -4,6 +4,8 @@
 
 #include "chromecast/browser/media/media_pipeline_host.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"

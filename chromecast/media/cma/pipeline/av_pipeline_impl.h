@@ -5,6 +5,9 @@
 #ifndef CHROMECAST_MEDIA_CMA_BASE_AV_PIPELINE_IMPL_H_
 #define CHROMECAST_MEDIA_CMA_BASE_AV_PIPELINE_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 
 #include "base/callback.h"

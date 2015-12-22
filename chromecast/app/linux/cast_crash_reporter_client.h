@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_APP_LINUX_CAST_CRASH_REPORTER_CLIENT_H_
 #define CHROMECAST_APP_LINUX_CAST_CRASH_REPORTER_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

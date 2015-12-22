@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_BROWSER_MEDIA_CMA_MESSAGE_FILTER_HOST_H_
 #define CHROMECAST_BROWSER_MEDIA_CMA_MESSAGE_FILTER_HOST_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/macros.h"

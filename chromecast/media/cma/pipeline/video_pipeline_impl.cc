@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
 #include "chromecast/media/cma/base/buffering_defs.h"

@@ -4,6 +4,8 @@
 
 #include "chromecast/common/media/cma_param_traits.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "chromecast/common/media/cma_param_traits_macros.h"
@@ -46,7 +48,7 @@ bool ParamTraits<media::AudioDecoderConfig>::Read(
   media::ChannelLayout channel_layout;
   int samples_per_second;
   bool is_encrypted;
-  std::vector<uint8> extra_data;
+  std::vector<uint8_t> extra_data;
   if (!ReadParam(m, iter, &codec) || !ReadParam(m, iter, &sample_format) ||
       !ReadParam(m, iter, &channel_layout) ||
       !ReadParam(m, iter, &samples_per_second) ||
@@ -87,7 +89,7 @@ bool ParamTraits<media::VideoDecoderConfig>::Read(
   gfx::Rect visible_rect;
   gfx::Size natural_size;
   bool is_encrypted;
-  std::vector<uint8> extra_data;
+  std::vector<uint8_t> extra_data;
   if (!ReadParam(m, iter, &codec) || !ReadParam(m, iter, &profile) ||
       !ReadParam(m, iter, &format) || !ReadParam(m, iter, &color_space) ||
       !ReadParam(m, iter, &coded_size) || !ReadParam(m, iter, &visible_rect) ||

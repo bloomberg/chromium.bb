@@ -5,6 +5,7 @@
 #include "chromecast/base/process_utils.h"
 
 #include <errno.h>
+#include <stddef.h>
 #include <stdio.h>
 
 #include "base/logging.h"

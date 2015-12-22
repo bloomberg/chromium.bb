@@ -5,6 +5,9 @@
 #ifndef CHROMECAST_BROWSER_MEDIA_CMA_MEDIA_PIPELINE_CLIENT_H_
 #define CHROMECAST_BROWSER_MEDIA_CMA_MEDIA_PIPELINE_CLIENT_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"

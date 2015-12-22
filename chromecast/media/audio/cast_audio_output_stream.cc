@@ -4,8 +4,11 @@
 
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"

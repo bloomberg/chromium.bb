@@ -4,6 +4,7 @@
 #include "chromecast/crash/linux/dump_info.h"
 
 #include <errno.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 #include "base/logging.h"

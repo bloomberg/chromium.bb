@@ -5,6 +5,9 @@
 #ifndef CHROMECAST_MEDIA_CMA_BASE_DECODER_BUFFER_ADAPTER_H_
 #define CHROMECAST_MEDIA_CMA_BASE_DECODER_BUFFER_ADAPTER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -32,8 +35,8 @@ class DecoderBufferAdapter : public DecoderBufferBase {
   StreamId stream_id() const override;
   int64_t timestamp() const override;
   void set_timestamp(base::TimeDelta timestamp) override;
-  const uint8* data() const override;
-  uint8* writable_data() const override;
+  const uint8_t* data() const override;
+  uint8_t* writable_data() const override;
   size_t data_size() const override;
   const CastDecryptConfig* decrypt_config() const override;
   bool end_of_stream() const override;

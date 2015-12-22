@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/renderer/content_renderer_client.h"
 
 namespace IPC {

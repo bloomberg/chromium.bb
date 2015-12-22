@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"

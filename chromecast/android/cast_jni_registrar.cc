@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/macros.h"
 #include "chromecast/android/cast_metrics_helper_android.h"
 #include "chromecast/app/android/crash_handler.h"
 #include "chromecast/base/android/dumpstate_writer.h"

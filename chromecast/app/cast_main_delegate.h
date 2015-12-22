@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chromecast/common/cast_content_client.h"
 #include "content/public/app/content_main_delegate.h"
 

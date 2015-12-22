@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"

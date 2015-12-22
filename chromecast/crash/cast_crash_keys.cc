@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "chromecast/crash/cast_crash_keys.h"
 
 // TODO(kjoswiak): Potentially refactor chunk size info as well as non-cast

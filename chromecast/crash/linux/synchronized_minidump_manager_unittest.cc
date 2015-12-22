@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include <fcntl.h>
+#include <stdint.h>
+#include <stdio.h>  // perror
 #include <stdlib.h>
 #include <sys/file.h>
 #include <sys/stat.h>   // mkdir
 #include <sys/types.h>  //
-#include <stdio.h>      // perror
 #include <time.h>
 
 #include <fstream>
@@ -488,7 +489,7 @@ TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
     ASSERT_EQ(0, uploader.DoWorkLocked());
     ASSERT_FALSE(uploader.can_upload_return_val());
 
-    int64 period = SynchronizedMinidumpManager::kRatelimitPeriodSeconds;
+    int64_t period = SynchronizedMinidumpManager::kRatelimitPeriodSeconds;
 
     // Half period shouldn't trigger reset
     produce_dumps(producer, 1);

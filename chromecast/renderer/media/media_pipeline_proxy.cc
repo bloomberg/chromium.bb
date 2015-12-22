@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/common/media/cma_messages.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"

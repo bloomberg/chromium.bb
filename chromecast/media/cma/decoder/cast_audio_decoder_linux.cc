@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/decoder/cast_audio_decoder.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <queue>
 #include <vector>
@@ -11,6 +13,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
@@ -31,15 +34,15 @@ namespace media {
 namespace {
 
 const int kOpusSamplingRate = 48000;
-const uint8 kFakeOpusExtraData[19] = {
+const uint8_t kFakeOpusExtraData[19] = {
   'O', 'p', 'u', 's', 'H', 'e', 'a', 'd',  // offset 0, OpusHead
   0,  // offset 8, version
   2,  // offset 9, channels
   0, 0,  // offset 10, skip
-  static_cast<uint8>(kOpusSamplingRate & 0xFF),  // offset 12, LE
-  static_cast<uint8>((kOpusSamplingRate >> 8) & 0xFF),
-  static_cast<uint8>((kOpusSamplingRate >> 16) & 0xFF),
-  static_cast<uint8>((kOpusSamplingRate >> 24) & 0xFF),
+  static_cast<uint8_t>(kOpusSamplingRate & 0xFF),  // offset 12, LE
+  static_cast<uint8_t>((kOpusSamplingRate >> 8) & 0xFF),
+  static_cast<uint8_t>((kOpusSamplingRate >> 16) & 0xFF),
+  static_cast<uint8_t>((kOpusSamplingRate >> 24) & 0xFF),
   0, 0,  // offset 16, gain
   0,  // offset 18, stereo mapping
 };

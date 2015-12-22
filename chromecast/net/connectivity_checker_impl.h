@@ -6,6 +6,7 @@
 #define CHROMECAST_NET_CONNECTIVITY_CHECKER_IMPL_H_
 
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"

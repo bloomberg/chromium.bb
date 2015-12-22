@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_GRAPHICS_CAST_SCREEN_H_
 #define CHROMECAST_GRAPHICS_CAST_SCREEN_H_
 
+#include "base/macros.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 

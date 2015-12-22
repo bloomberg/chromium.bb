@@ -5,10 +5,12 @@
 #ifndef CHROMECAST_MEDIA_CMA_IPC_MEDIA_MESSAGE_FIFO_H_
 #define CHROMECAST_MEDIA_CMA_IPC_MEDIA_MESSAGE_FIFO_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 
 #include "base/atomicops.h"
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -88,8 +90,8 @@ class MediaMessageFifo {
     size_t rd_offset;
     size_t wr_offset;
 
-    // Ensure the first item has the same alignment as an int64.
-    int64 first_item;
+    // Ensure the first item has the same alignment as an int64_t.
+    int64_t first_item;
   };
 
  public:

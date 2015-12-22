@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/ipc_streamer/decrypt_config_marshaller.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "chromecast/media/cma/base/cast_decrypt_config_impl.h"
 #include "chromecast/media/cma/ipc/media_message.h"

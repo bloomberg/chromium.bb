@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/osd_plane.h"

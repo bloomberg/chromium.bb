@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_CMA_PIPELINE_AUDIO_DECODER_SOFTWARE_WRAPPER_H_
 #define CHROMECAST_MEDIA_CMA_PIPELINE_AUDIO_DECODER_SOFTWARE_WRAPPER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

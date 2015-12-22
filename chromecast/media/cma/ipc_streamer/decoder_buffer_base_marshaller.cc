@@ -4,7 +4,11 @@
 
 #include "chromecast/media/cma/ipc_streamer/decoder_buffer_base_marshaller.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chromecast/media/cma/base/cast_decrypt_config_impl.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/ipc/media_message.h"
@@ -30,8 +34,8 @@ class DecoderBufferFromMsg : public DecoderBufferBase {
   StreamId stream_id() const override;
   int64_t timestamp() const override;
   void set_timestamp(base::TimeDelta timestamp) override;
-  const uint8* data() const override;
-  uint8* writable_data() const override;
+  const uint8_t* data() const override;
+  uint8_t* writable_data() const override;
   size_t data_size() const override;
   const CastDecryptConfig* decrypt_config() const override;
   bool end_of_stream() const override;
@@ -57,7 +61,7 @@ class DecoderBufferFromMsg : public DecoderBufferBase {
 
   // Keeps the message since frame data is not copied.
   scoped_ptr<MediaMessage> msg_;
-  uint8* data_;
+  uint8_t* data_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderBufferFromMsg);
 };
@@ -83,7 +87,7 @@ void DecoderBufferFromMsg::Initialize() {
 
   CHECK(msg_->ReadPod(&stream_id_));
 
-  int64 pts_internal = 0;
+  int64_t pts_internal = 0;
   CHECK(msg_->ReadPod(&pts_internal));
   pts_ = base::TimeDelta::FromMicroseconds(pts_internal);
 
@@ -98,11 +102,11 @@ void DecoderBufferFromMsg::Initialize() {
 
   // Get a pointer to the frame data inside the message.
   // Avoid copying the frame data here.
-  data_ = static_cast<uint8*>(msg_->GetWritableBuffer(data_size_));
+  data_ = static_cast<uint8_t*>(msg_->GetWritableBuffer(data_size_));
   CHECK(data_);
 
   if (decrypt_config_) {
-    uint32 subsample_total_size = 0;
+    uint32_t subsample_total_size = 0;
     for (size_t k = 0; k < decrypt_config_->subsamples().size(); k++) {
       subsample_total_size += decrypt_config_->subsamples()[k].clear_bytes;
       subsample_total_size += decrypt_config_->subsamples()[k].cypher_bytes;
@@ -123,12 +127,12 @@ void DecoderBufferFromMsg::set_timestamp(base::TimeDelta timestamp) {
   pts_ = timestamp;
 }
 
-const uint8* DecoderBufferFromMsg::data() const {
+const uint8_t* DecoderBufferFromMsg::data() const {
   CHECK(msg_->IsSerializedMsgAvailable());
   return data_;
 }
 
-uint8* DecoderBufferFromMsg::writable_data() const {
+uint8_t* DecoderBufferFromMsg::writable_data() const {
   CHECK(msg_->IsSerializedMsgAvailable());
   return data_;
 }

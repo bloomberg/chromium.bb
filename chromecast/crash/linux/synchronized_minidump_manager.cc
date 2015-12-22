@@ -7,6 +7,8 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/file.h>
 #include <sys/stat.h>
@@ -406,7 +408,7 @@ bool SynchronizedMinidumpManager::CanUploadDump() {
 
 bool SynchronizedMinidumpManager::HasDumps() {
   // Check if lockfile has entries.
-  int64 size = 0;
+  int64_t size = 0;
   if (GetFileSize(base::FilePath(lockfile_path_), &size) && size > 0)
     return true;
 

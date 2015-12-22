@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_PUBLIC_MEDIA_CAST_DECODER_BUFFER_H_
 #define CHROMECAST_PUBLIC_MEDIA_CAST_DECODER_BUFFER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <cstddef>
