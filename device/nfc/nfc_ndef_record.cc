@@ -4,6 +4,9 @@
 
 #include "device/nfc/nfc_ndef_record.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/logging.h"
@@ -117,8 +120,8 @@ bool HandleTypeSmartPoster(const DictionaryValue* data) {
   optional_fields[NfcNdefRecord::kFieldAction] = base::Value::TYPE_STRING;
   optional_fields[NfcNdefRecord::kFieldMimeType] = base::Value::TYPE_STRING;
   // base::Value restricts the number types to BOOL, INTEGER, and DOUBLE only.
-  // uint32 will automatically get converted to a double. "target size" is
-  // really a uint32 but we define it as a double for this reason.
+  // uint32_t will automatically get converted to a double. "target size" is
+  // really a uint32_t but we define it as a double for this reason.
   // (See dbus/values_util.h).
   optional_fields[NfcNdefRecord::kFieldTargetSize] = base::Value::TYPE_DOUBLE;
   optional_fields[NfcNdefRecord::kFieldTitles] = base::Value::TYPE_LIST;

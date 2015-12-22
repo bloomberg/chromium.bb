@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_URIBEACON_URI_ENCODER_H_
 #define DEVICE_BLUETOOTH_URIBEACON_URI_ENCODER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

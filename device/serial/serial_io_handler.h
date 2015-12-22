@@ -5,12 +5,16 @@
 #ifndef DEVICE_SERIAL_SERIAL_IO_HANDLER_H_
 #define DEVICE_SERIAL_SERIAL_IO_HANDLER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/non_thread_safe.h"
+#include "build/build_config.h"
 #include "device/serial/buffer.h"
 #include "device/serial/serial.mojom.h"
 

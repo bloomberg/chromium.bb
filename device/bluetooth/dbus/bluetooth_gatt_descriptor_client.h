@@ -5,11 +5,13 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_BLUETOOTH_GATT_DESCRIPTOR_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_BLUETOOTH_GATT_DESCRIPTOR_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -65,7 +67,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorClient
   // Callbacks used to report the result of asynchronous methods.
   typedef base::Callback<void(const std::string& error_name,
                               const std::string& error_message)> ErrorCallback;
-  typedef base::Callback<void(const std::vector<uint8>& value)> ValueCallback;
+  typedef base::Callback<void(const std::vector<uint8_t>& value)> ValueCallback;
 
   ~BluetoothGattDescriptorClient() override;
 
@@ -93,7 +95,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorClient
   // |object_path| with value |value|. Invokes |callback| on success and
   // |error_callback| on failure.
   virtual void WriteValue(const dbus::ObjectPath& object_path,
-                          const std::vector<uint8>& value,
+                          const std::vector<uint8_t>& value,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
 

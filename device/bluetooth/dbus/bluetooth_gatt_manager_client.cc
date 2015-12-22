@@ -5,6 +5,7 @@
 #include "device/bluetooth/dbus/bluetooth_gatt_manager_client.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

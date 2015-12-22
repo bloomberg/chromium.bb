@@ -4,6 +4,8 @@
 
 #include "device/devices_app/usb/device_manager_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"

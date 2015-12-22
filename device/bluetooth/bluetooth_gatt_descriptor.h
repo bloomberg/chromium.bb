@@ -5,10 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_DESCRIPTOR_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_GATT_DESCRIPTOR_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -27,7 +29,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptor {
 
   // The ValueCallback is used to return the value of a remote characteristic
   // descriptor upon a read request.
-  typedef base::Callback<void(const std::vector<uint8>&)> ValueCallback;
+  typedef base::Callback<void(const std::vector<uint8_t>&)> ValueCallback;
 
   // The Bluetooth Specification declares several predefined descriptors that
   // profiles can use. The following are definitions for the list of UUIDs
@@ -132,7 +134,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptor {
   // unsupported predefined descriptor UUIDs.
   static BluetoothGattDescriptor* Create(
       const BluetoothUUID& uuid,
-      const std::vector<uint8>& value,
+      const std::vector<uint8_t>& value,
       BluetoothGattCharacteristic::Permissions permissions);
 
   // Identifier used to uniquely identify a GATT descriptor object. This is
@@ -153,7 +155,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptor {
   // most recently cached value of the remote descriptor. For local descriptors
   // this is the most recently updated value or the value retrieved from the
   // delegate.
-  virtual const std::vector<uint8>& GetValue() const = 0;
+  virtual const std::vector<uint8_t>& GetValue() const = 0;
 
   // Returns a pointer to the GATT characteristic that this characteristic
   // descriptor belongs to.
@@ -173,10 +175,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptor {
   // called to signal success and |error_callback| for failures. This method
   // only applies to remote descriptors and will fail for those that are locally
   // hosted.
-  virtual void WriteRemoteDescriptor(
-      const std::vector<uint8>& new_value,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void WriteRemoteDescriptor(const std::vector<uint8_t>& new_value,
+                                     const base::Closure& callback,
+                                     const ErrorCallback& error_callback) = 0;
 
  protected:
   BluetoothGattDescriptor();

@@ -277,7 +277,7 @@ void TestBluetoothAdapterObserver::GattDescriptorRemoved(
 void TestBluetoothAdapterObserver::GattCharacteristicValueChanged(
     BluetoothAdapter* adapter,
     BluetoothGattCharacteristic* characteristic,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   ASSERT_EQ(adapter_.get(), adapter);
 
   ++gatt_characteristic_value_changed_count_;
@@ -296,7 +296,7 @@ void TestBluetoothAdapterObserver::GattCharacteristicValueChanged(
 void TestBluetoothAdapterObserver::GattDescriptorValueChanged(
     BluetoothAdapter* adapter,
     BluetoothGattDescriptor* descriptor,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   ASSERT_EQ(adapter_.get(), adapter);
 
   ++gatt_descriptor_value_changed_count_;

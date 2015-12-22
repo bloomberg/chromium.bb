@@ -5,12 +5,15 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_WIN_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"

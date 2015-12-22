@@ -5,7 +5,10 @@
 #ifndef DEVICE_NFC_NFC_TAG_TECHNOLOGY_H_
 #define DEVICE_NFC_NFC_TAG_TECHNOLOGY_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "device/nfc/nfc_ndef_record.h"
 
 namespace device {
@@ -28,7 +31,7 @@ class NfcTagTechnology {
     kTechnologyTypeIsoDep = 1 << 4,
     kTechnologyTypeNdef = 1 << 5
   };
-  typedef uint32 TechnologyTypeMask;
+  typedef uint32_t TechnologyTypeMask;
 
   virtual ~NfcTagTechnology();
 

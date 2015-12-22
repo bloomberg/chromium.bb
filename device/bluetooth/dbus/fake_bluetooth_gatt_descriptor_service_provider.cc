@@ -52,7 +52,7 @@ FakeBluetoothGattDescriptorServiceProvider::
 }
 
 void FakeBluetoothGattDescriptorServiceProvider::SendValueChanged(
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   VLOG(1) << "Sent descriptor value changed: " << object_path_.value()
           << " UUID: " << uuid_;
 }
@@ -88,7 +88,7 @@ void FakeBluetoothGattDescriptorServiceProvider::GetValue(
 }
 
 void FakeBluetoothGattDescriptorServiceProvider::SetValue(
-    const std::vector<uint8>& value,
+    const std::vector<uint8_t>& value,
     const base::Closure& callback,
     const Delegate::ErrorCallback& error_callback) {
   VLOG(1) << "GATT descriptor value Set request: " << object_path_.value()

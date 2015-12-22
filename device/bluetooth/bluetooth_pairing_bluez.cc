@@ -28,7 +28,7 @@ enum UMAPairingMethod {
 
 // Number of keys that will be entered for a passkey, six digits plus the
 // final enter.
-const uint16 kPasskeyMaxKeysEntered = 7;
+const uint16_t kPasskeyMaxKeysEntered = 7;
 
 }  // namespace
 
@@ -135,7 +135,7 @@ bool BluetoothPairingBlueZ::ExpectingPasskey() const {
   return !passkey_callback_.is_null();
 }
 
-void BluetoothPairingBlueZ::SetPasskey(uint32 passkey) {
+void BluetoothPairingBlueZ::SetPasskey(uint32_t passkey) {
   if (passkey_callback_.is_null())
     return;
 
@@ -150,7 +150,7 @@ void BluetoothPairingBlueZ::SetPasskey(uint32 passkey) {
     device_->EndPairing();
 }
 
-void BluetoothPairingBlueZ::DisplayPasskey(uint32 passkey) {
+void BluetoothPairingBlueZ::DisplayPasskey(uint32_t passkey) {
   UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
                             UMA_PAIRING_METHOD_DISPLAY_PASSKEY,
                             UMA_PAIRING_METHOD_COUNT);
@@ -160,7 +160,7 @@ void BluetoothPairingBlueZ::DisplayPasskey(uint32 passkey) {
   pairing_delegate_->DisplayPasskey(device_, passkey);
 }
 
-void BluetoothPairingBlueZ::KeysEntered(uint16 entered) {
+void BluetoothPairingBlueZ::KeysEntered(uint16_t entered) {
   pairing_delegate_used_ = true;
   pairing_delegate_->KeysEntered(device_, entered);
 
@@ -172,7 +172,7 @@ void BluetoothPairingBlueZ::KeysEntered(uint16 entered) {
 }
 
 void BluetoothPairingBlueZ::RequestConfirmation(
-    uint32 passkey,
+    uint32_t passkey,
     const bluez::BluetoothAgentServiceProvider::Delegate::ConfirmationCallback&
         callback) {
   UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",

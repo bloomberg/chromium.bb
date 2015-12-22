@@ -5,6 +5,7 @@
 #include "device/battery/battery_status_manager_win.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"

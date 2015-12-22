@@ -21,10 +21,10 @@ namespace bluez {
 
 namespace {
 
-// Stream operator for logging vector<uint8>.
-std::ostream& operator<<(std::ostream& out, const std::vector<uint8> bytes) {
+// Stream operator for logging vector<uint8_t>.
+std::ostream& operator<<(std::ostream& out, const std::vector<uint8_t> bytes) {
   out << "[";
-  for (std::vector<uint8>::const_iterator iter = bytes.begin();
+  for (std::vector<uint8_t>::const_iterator iter = bytes.begin();
        iter != bytes.end(); ++iter) {
     out << base::StringPrintf("%02X", *iter);
   }
@@ -94,7 +94,7 @@ bool BluetoothRemoteGattCharacteristicBlueZ::IsLocal() const {
   return false;
 }
 
-const std::vector<uint8>& BluetoothRemoteGattCharacteristicBlueZ::GetValue()
+const std::vector<uint8_t>& BluetoothRemoteGattCharacteristicBlueZ::GetValue()
     const {
   bluez::BluetoothGattCharacteristicClient::Properties* properties =
       bluez::BluezDBusManager::Get()
@@ -191,7 +191,7 @@ bool BluetoothRemoteGattCharacteristicBlueZ::AddDescriptor(
 }
 
 bool BluetoothRemoteGattCharacteristicBlueZ::UpdateValue(
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   VLOG(1) << "Cannot update the value of a remote GATT characteristic.";
   return false;
 }
@@ -211,7 +211,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::ReadRemoteCharacteristic(
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
-    const std::vector<uint8>& new_value,
+    const std::vector<uint8_t>& new_value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "Sending GATT characteristic write request to characteristic: "

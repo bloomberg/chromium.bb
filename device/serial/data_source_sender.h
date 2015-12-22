@@ -5,9 +5,12 @@
 #ifndef DEVICE_SERIAL_DATA_SOURCE_SENDER_H_
 #define DEVICE_SERIAL_DATA_SOURCE_SENDER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/serial/buffer.h"

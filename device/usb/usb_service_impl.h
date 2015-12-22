@@ -4,11 +4,15 @@
 
 #include "device/usb/usb_service.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <queue>
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "device/usb/usb_context.h"
 #include "device/usb/usb_device_impl.h"
 #include "third_party/libusb/src/libusb/libusb.h"

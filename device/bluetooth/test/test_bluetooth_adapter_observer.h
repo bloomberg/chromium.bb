@@ -5,6 +5,9 @@
 #ifndef DEVICE_BLUETOOTH_TEST_BLUETOOTH_ADAPTER_OBSERVER_H_
 #define DEVICE_BLUETOOTH_TEST_BLUETOOTH_ADAPTER_OBSERVER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace device {
@@ -59,10 +62,10 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   void GattCharacteristicValueChanged(
       BluetoothAdapter* adapter,
       BluetoothGattCharacteristic* characteristic,
-      const std::vector<uint8>& value) override;
+      const std::vector<uint8_t>& value) override;
   void GattDescriptorValueChanged(BluetoothAdapter* adapter,
                                   BluetoothGattDescriptor* descriptor,
-                                  const std::vector<uint8>& value) override;
+                                  const std::vector<uint8_t>& value) override;
 
   // Adapter related:
   int present_changed_count() { return present_changed_count_; }
@@ -111,14 +114,14 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   BluetoothUUID last_gatt_characteristic_uuid() {
     return last_gatt_characteristic_uuid_;
   }
-  std::vector<uint8> last_changed_characteristic_value() {
+  std::vector<uint8_t> last_changed_characteristic_value() {
     return last_changed_characteristic_value_;
   }
   std::string last_gatt_descriptor_id() { return last_gatt_descriptor_id_; }
   BluetoothUUID last_gatt_descriptor_uuid() {
     return last_gatt_descriptor_uuid_;
   }
-  std::vector<uint8> last_changed_descriptor_value() {
+  std::vector<uint8_t> last_changed_descriptor_value() {
     return last_changed_descriptor_value_;
   }
 
@@ -162,10 +165,10 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   BluetoothUUID last_gatt_service_uuid_;
   std::string last_gatt_characteristic_id_;
   BluetoothUUID last_gatt_characteristic_uuid_;
-  std::vector<uint8> last_changed_characteristic_value_;
+  std::vector<uint8_t> last_changed_characteristic_value_;
   std::string last_gatt_descriptor_id_;
   BluetoothUUID last_gatt_descriptor_uuid_;
-  std::vector<uint8> last_changed_descriptor_value_;
+  std::vector<uint8_t> last_changed_descriptor_value_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBluetoothAdapterObserver);
 };

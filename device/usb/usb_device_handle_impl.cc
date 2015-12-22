@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -255,11 +256,11 @@ UsbDeviceHandleImpl::Transfer::CreateControlTransfer(
     return nullptr;
   }
 
-  libusb_fill_control_setup(reinterpret_cast<uint8*>(buffer->data()), type,
+  libusb_fill_control_setup(reinterpret_cast<uint8_t*>(buffer->data()), type,
                             request, value, index, length);
   libusb_fill_control_transfer(transfer->platform_transfer_,
                                device_handle->handle_,
-                               reinterpret_cast<uint8*>(buffer->data()),
+                               reinterpret_cast<uint8_t*>(buffer->data()),
                                &UsbDeviceHandleImpl::Transfer::PlatformCallback,
                                transfer.get(), timeout);
 
@@ -288,7 +289,7 @@ UsbDeviceHandleImpl::Transfer::CreateBulkTransfer(
 
   libusb_fill_bulk_transfer(
       transfer->platform_transfer_, device_handle->handle_, endpoint,
-      reinterpret_cast<uint8*>(buffer->data()), static_cast<int>(length),
+      reinterpret_cast<uint8_t*>(buffer->data()), static_cast<int>(length),
       &UsbDeviceHandleImpl::Transfer::PlatformCallback, transfer.get(),
       timeout);
 
@@ -317,7 +318,7 @@ UsbDeviceHandleImpl::Transfer::CreateInterruptTransfer(
 
   libusb_fill_interrupt_transfer(
       transfer->platform_transfer_, device_handle->handle_, endpoint,
-      reinterpret_cast<uint8*>(buffer->data()), static_cast<int>(length),
+      reinterpret_cast<uint8_t*>(buffer->data()), static_cast<int>(length),
       &UsbDeviceHandleImpl::Transfer::PlatformCallback, transfer.get(),
       timeout);
 
@@ -352,7 +353,7 @@ UsbDeviceHandleImpl::Transfer::CreateIsochronousTransfer(
 
   libusb_fill_iso_transfer(
       transfer->platform_transfer_, device_handle->handle_, endpoint,
-      reinterpret_cast<uint8*>(buffer->data()), static_cast<int>(length),
+      reinterpret_cast<uint8_t*>(buffer->data()), static_cast<int>(length),
       packets, &Transfer::PlatformCallback, transfer.get(), timeout);
   libusb_set_iso_packet_lengths(transfer->platform_transfer_, packet_length);
 

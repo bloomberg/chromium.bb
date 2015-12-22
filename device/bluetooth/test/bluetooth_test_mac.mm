@@ -4,7 +4,10 @@
 
 #include "device/bluetooth/test/bluetooth_test_mac.h"
 
+#include <stdint.h>
+
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"

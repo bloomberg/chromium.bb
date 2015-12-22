@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "device/nfc/nfc_ndef_record.h"
 
 namespace device {

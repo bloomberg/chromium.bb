@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -49,8 +52,8 @@ const BluetoothUUID kHeartRateControlPointUUID(
 
 // Compares GATT characteristic/descriptor values. Returns true, if the values
 // are equal.
-bool ValuesEqual(const std::vector<uint8>& value0,
-                 const std::vector<uint8>& value1) {
+bool ValuesEqual(const std::vector<uint8_t>& value0,
+                 const std::vector<uint8_t>& value1) {
   if (value0.size() != value1.size())
     return false;
   for (size_t i = 0; i < value0.size(); ++i)
@@ -128,7 +131,7 @@ class BluetoothGattBlueZTest : public testing::Test {
 
   void SuccessCallback() { ++success_callback_count_; }
 
-  void ValueCallback(const std::vector<uint8>& value) {
+  void ValueCallback(const std::vector<uint8_t>& value) {
     ++success_callback_count_;
     last_read_value_ = value;
   }
@@ -181,7 +184,7 @@ class BluetoothGattBlueZTest : public testing::Test {
 
   int success_callback_count_;
   int error_callback_count_;
-  std::vector<uint8> last_read_value_;
+  std::vector<uint8_t> last_read_value_;
   BluetoothGattService::GattErrorCode last_service_error_;
 };
 
@@ -637,7 +640,7 @@ TEST_F(BluetoothGattBlueZTest, GattCharacteristicValue) {
   // Issue write request to non-writable characteristics.
   observer.Reset();
 
-  std::vector<uint8> write_value;
+  std::vector<uint8_t> write_value;
   write_value.push_back(0x01);
   BluetoothGattCharacteristic* characteristic = service->GetCharacteristic(
       fake_bluetooth_gatt_characteristic_client_->GetHeartRateMeasurementPath()
@@ -711,7 +714,7 @@ TEST_F(BluetoothGattBlueZTest, GattCharacteristicValue) {
   // Issue some invalid write requests to the characteristic.
   // The value should still not change.
 
-  std::vector<uint8> invalid_write_length;
+  std::vector<uint8_t> invalid_write_length;
   invalid_write_length.push_back(0x01);
   invalid_write_length.push_back(0x00);
   characteristic->WriteRemoteCharacteristic(
@@ -725,7 +728,7 @@ TEST_F(BluetoothGattBlueZTest, GattCharacteristicValue) {
             last_service_error_);
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
 
-  std::vector<uint8> invalid_write_value;
+  std::vector<uint8_t> invalid_write_value;
   invalid_write_value.push_back(0x02);
   characteristic->WriteRemoteCharacteristic(
       invalid_write_value, base::Bind(&BluetoothGattBlueZTest::SuccessCallback,

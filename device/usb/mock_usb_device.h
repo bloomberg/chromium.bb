@@ -7,6 +7,8 @@
 
 #include "device/usb/usb_device.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "device/usb/usb_device_handle.h"

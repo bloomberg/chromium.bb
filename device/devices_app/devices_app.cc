@@ -4,6 +4,8 @@
 
 #include "device/devices_app/devices_app.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -25,7 +27,7 @@ namespace {
 
 // The number of seconds to wait without any bound DeviceManagers before
 // exiting the app.
-const int64 kIdleTimeoutInSeconds = 10;
+const int64_t kIdleTimeoutInSeconds = 10;
 
 // A DeviceClient implementation to be constructed iff the app is not running
 // in an embedder that provides a DeviceClient (i.e. running as a standalone

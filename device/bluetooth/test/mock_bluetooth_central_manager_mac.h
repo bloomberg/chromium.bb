@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_MOCK_BLUETOOTH_CENTRAL_MANAGER_MAC_H_
 
 #include "base/mac/sdk_forward_declarations.h"
+#include "build/build_config.h"
 
 #if defined(OS_IOS)
 #import <CoreBluetooth/CoreBluetooth.h>

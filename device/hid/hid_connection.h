@@ -5,9 +5,11 @@
 #ifndef DEVICE_HID_HID_CONNECTION_H_
 #define DEVICE_HID_HID_CONNECTION_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "device/hid/hid_device_info.h"

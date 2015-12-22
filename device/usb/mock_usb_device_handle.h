@@ -7,6 +7,9 @@
 
 #include "device/usb/usb_device_handle.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
@@ -27,7 +30,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                     int alternate_setting,
                     const ResultCallback& callback));
   MOCK_METHOD1(ResetDevice, void(const ResultCallback& callback));
-  MOCK_METHOD2(ClearHalt, void(uint8 endpoint, const ResultCallback& callback));
+  MOCK_METHOD2(ClearHalt,
+               void(uint8_t endpoint, const ResultCallback& callback));
   MOCK_METHOD10(ControlTransfer,
                 void(UsbEndpointDirection direction,
                      TransferRequestType request_type,

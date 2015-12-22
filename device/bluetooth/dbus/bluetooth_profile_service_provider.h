@@ -5,10 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
 #define DEVICE_BLUETOOTH_DBUS_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "dbus/bus.h"
 #include "dbus/file_descriptor.h"
@@ -48,10 +50,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileServiceProvider {
       ~Options() {}
 
       // Profile version.
-      uint16 version;
+      uint16_t version;
 
       // Profile features.
-      uint16 features;
+      uint16_t features;
     };
 
     // The ConfirmationCallback is used for methods which require confirmation;

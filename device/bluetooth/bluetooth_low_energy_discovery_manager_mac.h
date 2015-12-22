@@ -13,6 +13,8 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace device {

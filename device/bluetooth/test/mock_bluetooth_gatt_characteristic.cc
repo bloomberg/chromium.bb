@@ -23,7 +23,7 @@ MockBluetoothGattCharacteristic::MockBluetoothGattCharacteristic(
   ON_CALL(*this, GetUUID()).WillByDefault(Return(uuid));
   ON_CALL(*this, IsLocal()).WillByDefault(Return(is_local));
   ON_CALL(*this, GetValue())
-      .WillByDefault(ReturnRefOfCopy(std::vector<uint8>()));
+      .WillByDefault(ReturnRefOfCopy(std::vector<uint8_t>()));
   ON_CALL(*this, GetService()).WillByDefault(Return(service));
   ON_CALL(*this, GetProperties()).WillByDefault(Return(properties));
   ON_CALL(*this, GetPermissions()).WillByDefault(Return(permissions));

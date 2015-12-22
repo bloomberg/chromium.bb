@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
 #include "dbus/exported_object.h"
@@ -243,7 +244,7 @@ class BluetoothAdvertisementServiceProviderImpl
   // descriptor value.
   void OnGet(dbus::MethodCall* method_call,
              dbus::ExportedObject::ResponseSender response_sender,
-             const std::vector<uint8>& value) {
+             const std::vector<uint8_t>& value) {
     VLOG(2) << "Returning descriptor value obtained from delegate.";
     scoped_ptr<dbus::Response> response =
         dbus::Response::FromMethodCall(method_call);

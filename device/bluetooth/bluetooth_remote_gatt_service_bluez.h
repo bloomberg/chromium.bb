@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_BLUEZ_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_BLUEZ_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -92,7 +94,7 @@ class BluetoothRemoteGattServiceBlueZ
   void NotifyDescriptorValueChanged(
       BluetoothRemoteGattCharacteristicBlueZ* characteristic,
       BluetoothRemoteGattDescriptorBlueZ* descriptor,
-      const std::vector<uint8>& value);
+      const std::vector<uint8_t>& value);
 
  private:
   friend class BluetoothDeviceBlueZ;

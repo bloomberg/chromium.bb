@@ -5,9 +5,13 @@
 #ifndef DEVICE_HID_HID_CONNECTION_LINUX_H_
 #define DEVICE_HID_HID_CONNECTION_LINUX_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/hid/hid_connection.h"
 

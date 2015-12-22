@@ -5,8 +5,11 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_DISCOVERY_FILTER_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_DISCOVERY_FILTER_H_
 
+#include <stdint.h>
+
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"

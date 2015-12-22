@@ -6,6 +6,7 @@
 
 #import <IOBluetooth/objc/IOBluetoothDevice.h>
 #import <IOBluetooth/objc/IOBluetoothHostController.h>
+#include <stddef.h>
 
 #include <string>
 

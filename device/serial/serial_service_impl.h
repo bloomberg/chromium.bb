@@ -5,6 +5,7 @@
 #ifndef DEVICE_SERIAL_SERIAL_SERVICE_IMPL_H_
 #define DEVICE_SERIAL_SERIAL_SERVICE_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"

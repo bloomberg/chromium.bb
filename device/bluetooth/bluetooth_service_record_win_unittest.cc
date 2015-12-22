@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -30,13 +31,13 @@ namespace device {
 class BluetoothServiceRecordWinTest : public testing::Test {
  protected:
   void ConvertSdpBytes(const char* sdp_hex_char,
-                       std::vector<uint8>* sdp_bytes_vector) {
+                       std::vector<uint8_t>* sdp_bytes_vector) {
     base::HexStringToBytes(sdp_hex_char, sdp_bytes_vector);
   }
 };
 
 TEST_F(BluetoothServiceRecordWinTest, NoRfcommSdp) {
-  std::vector<uint8> sdp_bytes_array;
+  std::vector<uint8_t> sdp_bytes_array;
   ConvertSdpBytes(kTestNoRfcommSdpBytes, &sdp_bytes_array);
   BluetoothServiceRecordWin service_record(
       "01:02:03:0A:10:A0", "NoRfcommSdp", sdp_bytes_array, BluetoothUUID());
@@ -46,7 +47,7 @@ TEST_F(BluetoothServiceRecordWinTest, NoRfcommSdp) {
 
 
 TEST_F(BluetoothServiceRecordWinTest, RfcommSdp) {
-  std::vector<uint8> sdp_bytes_array;
+  std::vector<uint8_t> sdp_bytes_array;
   ConvertSdpBytes(kTestRfcommSdpBytes, &sdp_bytes_array);
   BluetoothServiceRecordWin service_record(
       "01:02:03:0A:10:A0", "RfcommSdp", sdp_bytes_array, BluetoothUUID());
@@ -56,7 +57,7 @@ TEST_F(BluetoothServiceRecordWinTest, RfcommSdp) {
 }
 
 TEST_F(BluetoothServiceRecordWinTest, BthAddr) {
-  std::vector<uint8> sdp_bytes_array;
+  std::vector<uint8_t> sdp_bytes_array;
   ConvertSdpBytes(kTestRfcommSdpBytes, &sdp_bytes_array);
   BluetoothServiceRecordWin service_record(
       "01:02:03:0A:10:A0", "Sdp", sdp_bytes_array, BluetoothUUID());

@@ -50,7 +50,7 @@ BluetoothDeviceAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(j_device_);
 }
 
-uint32 BluetoothDeviceAndroid::GetBluetoothClass() const {
+uint32_t BluetoothDeviceAndroid::GetBluetoothClass() const {
   return Java_ChromeBluetoothDevice_getBluetoothClass(AttachCurrentThread(),
                                                       j_device_.obj());
 }
@@ -66,17 +66,17 @@ BluetoothDevice::VendorIDSource BluetoothDeviceAndroid::GetVendorIDSource()
   return VENDOR_ID_UNKNOWN;
 }
 
-uint16 BluetoothDeviceAndroid::GetVendorID() const {
+uint16_t BluetoothDeviceAndroid::GetVendorID() const {
   // Android API does not provide Vendor ID.
   return 0;
 }
 
-uint16 BluetoothDeviceAndroid::GetProductID() const {
+uint16_t BluetoothDeviceAndroid::GetProductID() const {
   // Android API does not provide Product ID.
   return 0;
 }
 
-uint16 BluetoothDeviceAndroid::GetDeviceID() const {
+uint16_t BluetoothDeviceAndroid::GetDeviceID() const {
   // Android API does not provide Device ID.
   return 0;
 }
@@ -118,12 +118,12 @@ BluetoothDevice::UUIDList BluetoothDeviceAndroid::GetUUIDs() const {
   return uuids;
 }
 
-int16 BluetoothDeviceAndroid::GetInquiryRSSI() const {
+int16_t BluetoothDeviceAndroid::GetInquiryRSSI() const {
   NOTIMPLEMENTED();
   return kUnknownPower;
 }
 
-int16 BluetoothDeviceAndroid::GetInquiryTxPower() const {
+int16_t BluetoothDeviceAndroid::GetInquiryTxPower() const {
   NOTIMPLEMENTED();
   return kUnknownPower;
 }
@@ -160,7 +160,7 @@ void BluetoothDeviceAndroid::SetPinCode(const std::string& pincode) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceAndroid::SetPasskey(uint32 passkey) {
+void BluetoothDeviceAndroid::SetPasskey(uint32_t passkey) {
   NOTIMPLEMENTED();
 }
 

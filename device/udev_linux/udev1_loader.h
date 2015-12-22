@@ -5,6 +5,7 @@
 #ifndef DEVICE_UDEV_LINUX_UDEV1_LOADER_H_
 #define DEVICE_UDEV_LINUX_UDEV1_LOADER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "device/udev_linux/udev_loader.h"
 

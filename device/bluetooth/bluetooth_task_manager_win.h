@@ -5,10 +5,13 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_TASK_MANAGER_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_TASK_MANAGER_WIN_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
@@ -50,7 +53,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
     // Properties common to Bluetooth Classic and LE devices.
     std::string name;
     // Properties specific to Bluetooth Classic devices.
-    std::vector<uint8> sdp_bytes;
+    std::vector<uint8_t> sdp_bytes;
     // Properties specific to Bluetooth LE devices.
     BluetoothUUID gatt_uuid;
   };
@@ -69,7 +72,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
     bool authenticated;
     ScopedVector<ServiceRecordState> service_record_states;
     // Properties specific to Bluetooth Classic devices.
-    uint32 bluetooth_class;
+    uint32_t bluetooth_class;
     // Properties specific to Bluetooth LE devices.
     base::FilePath path;
   };

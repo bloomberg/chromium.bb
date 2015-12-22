@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_BLUETOOTH_ADAPTER_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_BLUETOOTH_ADAPTER_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -55,7 +57,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
     dbus::Property<std::string> alias;
 
     // The Bluetooth class of the adapter device. Read-only.
-    dbus::Property<uint32> bluetooth_class;
+    dbus::Property<uint32_t> bluetooth_class;
 
     // Whether the adapter radio is powered.
     dbus::Property<bool> powered;
@@ -73,12 +75,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
     // The timeout in seconds to cease accepting incoming pairing requests
     // after |pairable| is set to true. Zero means adapter remains pairable
     // forever.
-    dbus::Property<uint32> pairable_timeout;
+    dbus::Property<uint32_t> pairable_timeout;
 
     // The timeout in seconds to cease the adapter being discoverable by
     // other Bluetooth devices after |discoverable| is set to true. Zero
     // means adapter remains discoverable forever.
-    dbus::Property<uint32> discoverable_timeout;
+    dbus::Property<uint32_t> discoverable_timeout;
 
     // Indicates that the adapter is discovering other Bluetooth Devices.
     // Read-only. Use StartDiscovery() to begin discovery.

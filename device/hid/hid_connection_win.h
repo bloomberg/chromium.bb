@@ -6,9 +6,12 @@
 #define DEVICE_HID_HID_CONNECTION_WIN_H_
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <set>
 
+#include "base/macros.h"
 #include "base/win/scoped_handle.h"
 #include "device/hid/hid_connection.h"
 

@@ -4,6 +4,8 @@
 
 #include "device/usb/usb_device_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
@@ -12,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_context.h"
 #include "device/usb/usb_descriptors.h"

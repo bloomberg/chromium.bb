@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "device/serial/serial_connection.h"
 #include "device/serial/serial_io_handler.h"
 

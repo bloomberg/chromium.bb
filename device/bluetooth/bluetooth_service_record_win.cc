@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_init_win.h"
@@ -14,9 +13,9 @@
 
 namespace {
 
-const uint16 kProtocolDescriptorListId = 4;
-const uint16 kRfcommUuid = 3;
-const uint16 kUuidId = 1;
+const uint16_t kProtocolDescriptorListId = 4;
+const uint16_t kRfcommUuid = 3;
+const uint16_t kUuidId = 1;
 
 bool AdvanceToSdpType(const SDP_ELEMENT_DATA& sequence_data,
                       SDP_TYPE type,
@@ -36,7 +35,7 @@ bool AdvanceToSdpType(const SDP_ELEMENT_DATA& sequence_data,
 
 void ExtractChannels(const SDP_ELEMENT_DATA& protocol_descriptor_list_data,
                      bool* supports_rfcomm,
-                     uint8* rfcomm_channel) {
+                     uint8_t* rfcomm_channel) {
   HBLUETOOTH_CONTAINER_ELEMENT sequence_element = NULL;
   SDP_ELEMENT_DATA sequence_data;
   while (AdvanceToSdpType(protocol_descriptor_list_data,
@@ -104,12 +103,11 @@ BTH_ADDR ConvertToBthAddr(const std::string& address) {
     numbers_only += address.substr(i * 3, 2);
   }
 
-  std::vector<uint8> address_bytes;
+  std::vector<uint8_t> address_bytes;
   base::HexStringToBytes(numbers_only, &address_bytes);
   int byte_position = 0;
-  for (std::vector<uint8>::reverse_iterator iter = address_bytes.rbegin();
-      iter != address_bytes.rend();
-      ++iter) {
+  for (std::vector<uint8_t>::reverse_iterator iter = address_bytes.rbegin();
+       iter != address_bytes.rend(); ++iter) {
     bth_addr += *iter * pow(256.0, byte_position);
     byte_position++;
   }
@@ -123,7 +121,7 @@ namespace device {
 BluetoothServiceRecordWin::BluetoothServiceRecordWin(
     const std::string& device_address,
     const std::string& name,
-    const std::vector<uint8>& sdp_bytes,
+    const std::vector<uint8_t>& sdp_bytes,
     const BluetoothUUID& gatt_uuid)
     : device_bth_addr_(ConvertToBthAddr(device_address)),
       device_address_(device_address),

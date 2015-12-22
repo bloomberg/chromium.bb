@@ -5,11 +5,15 @@
 #ifndef DEVICE_USB_USB_DEVICE_HANDLE_IMPL_H_
 #define DEVICE_USB_USB_DEVICE_HANDLE_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "device/usb/usb_device_handle.h"

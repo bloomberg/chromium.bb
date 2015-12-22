@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_report_descriptor.h"
 
@@ -17,7 +18,7 @@ HidDeviceInfo::HidDeviceInfo(const HidDeviceId& device_id,
                              const std::string& product_name,
                              const std::string& serial_number,
                              HidBusType bus_type,
-                             const std::vector<uint8> report_descriptor)
+                             const std::vector<uint8_t> report_descriptor)
     : device_id_(device_id),
       vendor_id_(vendor_id),
       product_id_(product_id),

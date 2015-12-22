@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_PROFILE_BLUEZ_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_PROFILE_BLUEZ_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter_bluez.h"

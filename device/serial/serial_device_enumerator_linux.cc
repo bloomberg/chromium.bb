@@ -4,6 +4,8 @@
 
 #include "device/serial/serial_device_enumerator_linux.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 
@@ -71,7 +73,7 @@ mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorLinux::GetDevices() {
       const char* product_name =
           udev_device_get_property_value(device.get(), kProductNameKey);
 
-      uint32 int_value;
+      uint32_t int_value;
       if (vendor_id && base::HexStringToUInt(vendor_id, &int_value)) {
         info->vendor_id = int_value;
         info->has_vendor_id = true;

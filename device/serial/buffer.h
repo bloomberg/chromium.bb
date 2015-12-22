@@ -5,7 +5,8 @@
 #ifndef DEVICE_SERIAL_BUFFER_H_
 #define DEVICE_SERIAL_BUFFER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "device/serial/serial.mojom.h"
 #include "net/base/io_buffer.h"

@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"

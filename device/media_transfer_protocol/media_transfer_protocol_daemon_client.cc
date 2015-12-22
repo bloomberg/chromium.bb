@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -21,7 +22,7 @@ namespace device {
 namespace {
 
 const char kInvalidResponseMsg[] = "Invalid Response: ";
-uint32 kMaxChunkSize = 1024*1024;  // D-Bus has message size limits.
+uint32_t kMaxChunkSize = 1024 * 1024;  // D-Bus has message size limits.
 
 // The MediaTransferProtocolDaemonClient implementation.
 class MediaTransferProtocolDaemonClientImpl
@@ -112,7 +113,7 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   void CreateDirectory(const std::string& handle,
-                       const uint32 parent_id,
+                       const uint32_t parent_id,
                        const std::string& directory_name,
                        const CreateDirectoryCallback& callback,
                        const ErrorCallback& error_callback) override {
@@ -129,7 +130,7 @@ class MediaTransferProtocolDaemonClientImpl
 
   // MediaTransferProtocolDaemonClient override.
   void ReadDirectoryEntryIds(const std::string& handle,
-                             uint32 file_id,
+                             uint32_t file_id,
                              const ReadDirectoryEntryIdsCallback& callback,
                              const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface,
@@ -146,7 +147,7 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   void GetFileInfo(const std::string& handle,
-                   const std::vector<uint32>& file_ids,
+                   const std::vector<uint32_t>& file_ids,
                    size_t offset,
                    size_t entries_to_read,
                    const GetFileInfoCallback& callback,
@@ -181,9 +182,9 @@ class MediaTransferProtocolDaemonClientImpl
 
   // MediaTransferProtocolDaemonClient override.
   void ReadFileChunk(const std::string& handle,
-                     uint32 file_id,
-                     uint32 offset,
-                     uint32 bytes_to_read,
+                     uint32_t file_id,
+                     uint32_t offset,
+                     uint32_t bytes_to_read,
                      const ReadFileCallback& callback,
                      const ErrorCallback& error_callback) override {
     DCHECK_LE(bytes_to_read, kMaxChunkSize);
@@ -202,7 +203,7 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   void RenameObject(const std::string& handle,
-                    const uint32 object_id,
+                    const uint32_t object_id,
                     const std::string& new_name,
                     const RenameObjectCallback& callback,
                     const ErrorCallback& error_callback) override {
@@ -219,7 +220,7 @@ class MediaTransferProtocolDaemonClientImpl
 
   void CopyFileFromLocal(const std::string& handle,
                          const int source_file_descriptor,
-                         const uint32 parent_id,
+                         const uint32_t parent_id,
                          const std::string& file_name,
                          const CopyFileFromLocalCallback& callback,
                          const ErrorCallback& error_callback) override {
@@ -240,7 +241,7 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   void DeleteObject(const std::string& handle,
-                    const uint32 object_id,
+                    const uint32_t object_id,
                     const DeleteObjectCallback& callback,
                     const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kDeleteObject);
@@ -375,7 +376,7 @@ class MediaTransferProtocolDaemonClientImpl
       return;
     }
 
-    std::vector<uint32> file_ids;
+    std::vector<uint32_t> file_ids;
     dbus::MessageReader reader(response);
     dbus::MessageReader array_reader(NULL);
     if (!reader.PopArray(&array_reader) || reader.HasMoreData()) {
@@ -385,7 +386,7 @@ class MediaTransferProtocolDaemonClientImpl
     }
 
     while (array_reader.HasMoreData()) {
-      uint32 file_id;
+      uint32_t file_id;
       if (array_reader.PopUint32(&file_id)) {
         file_ids.push_back(file_id);
       } else {
@@ -430,7 +431,7 @@ class MediaTransferProtocolDaemonClientImpl
       return;
     }
 
-    const uint8* data_bytes = NULL;
+    const uint8_t* data_bytes = NULL;
     size_t data_length = 0;
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytes(&data_bytes, &data_length)) {

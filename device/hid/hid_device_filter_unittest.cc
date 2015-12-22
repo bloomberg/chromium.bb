@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "build/build_config.h"
 #include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/test_report_descriptors.h"
@@ -25,7 +28,7 @@ class HidFilterTest : public testing::Test {
     device_info_ = new HidDeviceInfo(
         kTestDeviceId, 0x046d, 0xc31c, "Test Keyboard", "123ABC",
         kHIDBusTypeUSB,
-        std::vector<uint8>(kKeyboard, kKeyboard + kKeyboardSize));
+        std::vector<uint8_t>(kKeyboard, kKeyboard + kKeyboardSize));
   }
 
  protected:

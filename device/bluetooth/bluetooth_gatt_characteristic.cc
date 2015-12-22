@@ -17,7 +17,7 @@ BluetoothGattCharacteristic::~BluetoothGattCharacteristic() {
 // static
 BluetoothGattCharacteristic* BluetoothGattCharacteristic::Create(
     const BluetoothUUID& uuid,
-    const std::vector<uint8>& value,
+    const std::vector<uint8_t>& value,
     Properties properties,
     Permissions permissions) {
   LOG(ERROR) << "Creating local GATT characteristics currently not supported.";

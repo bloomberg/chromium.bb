@@ -16,10 +16,10 @@ namespace bluez {
 
 namespace {
 
-// Stream operator for logging vector<uint8>.
-std::ostream& operator<<(std::ostream& out, const std::vector<uint8> bytes) {
+// Stream operator for logging vector<uint8_t>.
+std::ostream& operator<<(std::ostream& out, const std::vector<uint8_t> bytes) {
   out << "[";
-  for (std::vector<uint8>::const_iterator iter = bytes.begin();
+  for (std::vector<uint8_t>::const_iterator iter = bytes.begin();
        iter != bytes.end(); ++iter) {
     out << base::StringPrintf("%02X", *iter);
   }
@@ -57,7 +57,8 @@ bool BluetoothRemoteGattDescriptorBlueZ::IsLocal() const {
   return false;
 }
 
-const std::vector<uint8>& BluetoothRemoteGattDescriptorBlueZ::GetValue() const {
+const std::vector<uint8_t>& BluetoothRemoteGattDescriptorBlueZ::GetValue()
+    const {
   bluez::BluetoothGattDescriptorClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattDescriptorClient()
@@ -94,7 +95,7 @@ void BluetoothRemoteGattDescriptorBlueZ::ReadRemoteDescriptor(
 }
 
 void BluetoothRemoteGattDescriptorBlueZ::WriteRemoteDescriptor(
-    const std::vector<uint8>& new_value,
+    const std::vector<uint8_t>& new_value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "Sending GATT characteristic descriptor write request to "

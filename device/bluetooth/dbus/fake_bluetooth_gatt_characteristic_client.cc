@@ -179,7 +179,7 @@ void FakeBluetoothGattCharacteristicClient::ReadValue(
     completed_callback =
         base::Bind(error_callback, kUnknownCharacteristicError, "");
   } else {
-    std::vector<uint8> value = {0x06};  // Location is "foot".
+    std::vector<uint8_t> value = {0x06};  // Location is "foot".
     completed_callback = base::Bind(
         &FakeBluetoothGattCharacteristicClient::DelayedReadValueCallback,
         weak_ptr_factory_.GetWeakPtr(), object_path, callback, value);
@@ -196,7 +196,7 @@ void FakeBluetoothGattCharacteristicClient::ReadValue(
 
 void FakeBluetoothGattCharacteristicClient::WriteValue(
     const dbus::ObjectPath& object_path,
-    const std::vector<uint8>& value,
+    const std::vector<uint8_t>& value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (!authenticated_) {
@@ -485,7 +485,7 @@ void FakeBluetoothGattCharacteristicClient::
     return;
 
   VLOG(2) << "Updating heart rate value.";
-  std::vector<uint8> measurement = GetHeartRateMeasurementValue();
+  std::vector<uint8_t> measurement = GetHeartRateMeasurementValue();
   heart_rate_measurement_properties_->value.ReplaceValue(measurement);
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -507,16 +507,16 @@ void FakeBluetoothGattCharacteristicClient::DelayedReadValueCallback(
   callback.Run(value);
 }
 
-std::vector<uint8>
+std::vector<uint8_t>
 FakeBluetoothGattCharacteristicClient::GetHeartRateMeasurementValue() {
   // TODO(armansito): We should make sure to properly pack this struct to ensure
   // correct byte alignment and endianness. It doesn't matter too much right now
   // as this is a fake and GCC on Linux seems to do the right thing.
   struct {
-    uint8 flags;
-    uint8 bpm;
-    uint16 energy_expanded;
-    uint16 rr_interval;
+    uint8_t flags;
+    uint8_t bpm;
+    uint16_t energy_expanded;
+    uint16_t rr_interval;
   } value;
 
   // Flags in LSB:     0       11   1 1 000
@@ -532,7 +532,7 @@ FakeBluetoothGattCharacteristicClient::GetHeartRateMeasurementValue() {
   value.flags |= (0x01 << 4);
 
   // Pick a value between 117 bpm and 153 bpm for heart rate.
-  value.bpm = static_cast<uint8>(base::RandInt(117, 153));
+  value.bpm = static_cast<uint8_t>(base::RandInt(117, 153));
 
   // Total calories burned in kJoules since the last reset. Increment this by 1
   // every time. It's fine if it overflows: it becomes 0 when the user resets
@@ -543,8 +543,8 @@ FakeBluetoothGattCharacteristicClient::GetHeartRateMeasurementValue() {
   value.rr_interval = 60 / value.bpm;
 
   // Return the bytes in an array.
-  uint8* bytes = reinterpret_cast<uint8*>(&value);
-  std::vector<uint8> return_value;
+  uint8_t* bytes = reinterpret_cast<uint8_t*>(&value);
+  std::vector<uint8_t> return_value;
   return_value.assign(bytes, bytes + sizeof(value));
   return return_value;
 }

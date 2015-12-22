@@ -11,7 +11,7 @@
 namespace device {
 
 MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
-                                         uint32 bluetooth_class,
+                                         uint32_t bluetooth_class,
                                          const std::string& name,
                                          const std::string& address,
                                          bool paired,

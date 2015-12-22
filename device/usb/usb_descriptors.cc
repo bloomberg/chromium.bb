@@ -4,6 +4,8 @@
 
 #include "device/usb/usb_descriptors.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 namespace device {

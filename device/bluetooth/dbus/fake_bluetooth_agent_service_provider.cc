@@ -61,8 +61,8 @@ void FakeBluetoothAgentServiceProvider::RequestPasskey(
 
 void FakeBluetoothAgentServiceProvider::DisplayPasskey(
     const dbus::ObjectPath& device_path,
-    uint32 passkey,
-    int16 entered) {
+    uint32_t passkey,
+    int16_t entered) {
   VLOG(1) << object_path_.value() << ": DisplayPasskey " << passkey << " ("
           << entered << " entered) for " << device_path.value();
   delegate_->DisplayPasskey(device_path, passkey, entered);
@@ -70,7 +70,7 @@ void FakeBluetoothAgentServiceProvider::DisplayPasskey(
 
 void FakeBluetoothAgentServiceProvider::RequestConfirmation(
     const dbus::ObjectPath& device_path,
-    uint32 passkey,
+    uint32_t passkey,
     const Delegate::ConfirmationCallback& callback) {
   VLOG(1) << object_path_.value() << ": RequestConfirmation " << passkey
           << " for " << device_path.value();

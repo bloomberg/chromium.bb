@@ -5,6 +5,9 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_BLUEZ_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_BLUEZ_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <string>
@@ -41,7 +44,7 @@ class BluetoothRemoteGattCharacteristicBlueZ
   std::string GetIdentifier() const override;
   device::BluetoothUUID GetUUID() const override;
   bool IsLocal() const override;
-  const std::vector<uint8>& GetValue() const override;
+  const std::vector<uint8_t>& GetValue() const override;
   device::BluetoothGattService* GetService() const override;
   Properties GetProperties() const override;
   Permissions GetPermissions() const override;
@@ -50,10 +53,10 @@ class BluetoothRemoteGattCharacteristicBlueZ
   device::BluetoothGattDescriptor* GetDescriptor(
       const std::string& identifier) const override;
   bool AddDescriptor(device::BluetoothGattDescriptor* descriptor) override;
-  bool UpdateValue(const std::vector<uint8>& value) override;
+  bool UpdateValue(const std::vector<uint8_t>& value) override;
   void ReadRemoteCharacteristic(const ValueCallback& callback,
                                 const ErrorCallback& error_callback) override;
-  void WriteRemoteCharacteristic(const std::vector<uint8>& new_value,
+  void WriteRemoteCharacteristic(const std::vector<uint8_t>& new_value,
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) override;
   void StartNotifySession(const NotifySessionCallback& callback,

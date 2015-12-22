@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_BLUETOOTH_PROFILE_MANAGER_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_BLUETOOTH_PROFILE_MANAGER_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -43,10 +45,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileManagerClient
     enum ProfileRole role;
 
     // RFCOMM channel number.
-    scoped_ptr<uint16> channel;
+    scoped_ptr<uint16_t> channel;
 
     // PSM number.
-    scoped_ptr<uint16> psm;
+    scoped_ptr<uint16_t> psm;
 
     // Pairing is required before connections will be established.
     scoped_ptr<bool> require_authentication;
@@ -61,10 +63,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileManagerClient
     scoped_ptr<std::string> service_record;
 
     // Profile version.
-    scoped_ptr<uint16> version;
+    scoped_ptr<uint16_t> version;
 
     // Profile features.
-    scoped_ptr<uint16> features;
+    scoped_ptr<uint16_t> features;
   };
 
   ~BluetoothProfileManagerClient() override;

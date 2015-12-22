@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_GATT_CHARACTERISTIC_SERVICE_PROVIDER_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_GATT_CHARACTERISTIC_SERVICE_PROVIDER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -31,14 +33,14 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicServiceProvider
   ~FakeBluetoothGattCharacteristicServiceProvider() override;
 
   // BluetoothGattCharacteristicServiceProvider override.
-  void SendValueChanged(const std::vector<uint8>& value) override;
+  void SendValueChanged(const std::vector<uint8_t>& value) override;
 
   // Methods to simulate value get/set requests issued from a remote device. The
   // methods do nothing, if the associated service was not registered with the
   // GATT manager.
   void GetValue(const Delegate::ValueCallback& callback,
                 const Delegate::ErrorCallback& error_callback);
-  void SetValue(const std::vector<uint8>& value,
+  void SetValue(const std::vector<uint8_t>& value,
                 const base::Closure& callback,
                 const Delegate::ErrorCallback& error_callback);
 

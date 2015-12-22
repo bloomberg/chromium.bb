@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 
 #if defined(OS_LINUX) && defined(USE_UDEV)

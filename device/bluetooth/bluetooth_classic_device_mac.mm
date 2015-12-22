@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/hash.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -46,7 +45,8 @@ BluetoothUUID ExtractUuid(IOBluetoothSDPDataElement* service_class_data) {
   if (!sdp_uuid)
     return BluetoothUUID();
 
-  const uint8* uuid_bytes = reinterpret_cast<const uint8*>([sdp_uuid bytes]);
+  const uint8_t* uuid_bytes =
+      reinterpret_cast<const uint8_t*>([sdp_uuid bytes]);
   std::string uuid_str = base::HexEncode(uuid_bytes, 16);
   DCHECK_EQ(uuid_str.size(), 32U);
   uuid_str.insert(8, "-");
@@ -66,7 +66,7 @@ BluetoothClassicDeviceMac::BluetoothClassicDeviceMac(
 BluetoothClassicDeviceMac::~BluetoothClassicDeviceMac() {
 }
 
-uint32 BluetoothClassicDeviceMac::GetBluetoothClass() const {
+uint32_t BluetoothClassicDeviceMac::GetBluetoothClass() const {
   return [device_ classOfDevice];
 }
 
@@ -90,15 +90,15 @@ BluetoothDevice::VendorIDSource BluetoothClassicDeviceMac::GetVendorIDSource()
   return VENDOR_ID_UNKNOWN;
 }
 
-uint16 BluetoothClassicDeviceMac::GetVendorID() const {
+uint16_t BluetoothClassicDeviceMac::GetVendorID() const {
   return 0;
 }
 
-uint16 BluetoothClassicDeviceMac::GetProductID() const {
+uint16_t BluetoothClassicDeviceMac::GetProductID() const {
   return 0;
 }
 
-uint16 BluetoothClassicDeviceMac::GetDeviceID() const {
+uint16_t BluetoothClassicDeviceMac::GetDeviceID() const {
   return 0;
 }
 
@@ -138,11 +138,11 @@ BluetoothDevice::UUIDList BluetoothClassicDeviceMac::GetUUIDs() const {
   return uuids;
 }
 
-int16 BluetoothClassicDeviceMac::GetInquiryRSSI() const {
+int16_t BluetoothClassicDeviceMac::GetInquiryRSSI() const {
   return kUnknownPower;
 }
 
-int16 BluetoothClassicDeviceMac::GetInquiryTxPower() const {
+int16_t BluetoothClassicDeviceMac::GetInquiryTxPower() const {
   NOTIMPLEMENTED();
   return kUnknownPower;
 }
@@ -195,7 +195,7 @@ void BluetoothClassicDeviceMac::SetPinCode(const std::string& pincode) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothClassicDeviceMac::SetPasskey(uint32 passkey) {
+void BluetoothClassicDeviceMac::SetPasskey(uint32_t passkey) {
   NOTIMPLEMENTED();
 }
 

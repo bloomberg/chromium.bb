@@ -7,6 +7,7 @@
 
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 
 #if defined(OS_IOS)
 #import <CoreBluetooth/CoreBluetooth.h>

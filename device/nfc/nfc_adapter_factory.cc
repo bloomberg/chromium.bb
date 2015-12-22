@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
 #include "device/nfc/nfc_adapter_chromeos.h"

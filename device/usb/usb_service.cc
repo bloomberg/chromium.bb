@@ -6,6 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_device.h"
 

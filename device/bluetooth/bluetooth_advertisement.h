@@ -5,11 +5,14 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"

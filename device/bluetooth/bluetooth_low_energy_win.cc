@@ -6,6 +6,7 @@
 
 #include "base/files/file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"

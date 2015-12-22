@@ -14,7 +14,7 @@ const int kBitsPerByte = 8;
 
 }  // namespace
 
-HidReportDescriptor::HidReportDescriptor(const std::vector<uint8>& bytes) {
+HidReportDescriptor::HidReportDescriptor(const std::vector<uint8_t>& bytes) {
   size_t header_index = 0;
   HidReportDescriptorItem* item = NULL;
   while (header_index < bytes.size()) {

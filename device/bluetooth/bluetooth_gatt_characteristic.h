@@ -5,11 +5,13 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_CHARACTERISTIC_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_GATT_CHARACTERISTIC_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
@@ -56,7 +58,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
     PROPERTY_RELIABLE_WRITE = 1 << 8,
     PROPERTY_WRITABLE_AUXILIARIES = 1 << 9
   };
-  typedef uint32 Properties;
+  typedef uint32_t Properties;
 
   // Values representing read, write, and encryption permissions for a
   // characteristic's value. While attribute permissions for all GATT
@@ -76,7 +78,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
     PERMISSION_READ_ENCRYPTED = 1 << 2,
     PERMISSION_WRITE_ENCRYPTED = 1 << 3
   };
-  typedef uint32 Permissions;
+  typedef uint32_t Permissions;
 
   // The ErrorCallback is used by methods to asynchronously report errors.
   typedef base::Callback<void(BluetoothGattService::GattErrorCode)>
@@ -84,7 +86,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
 
   // The ValueCallback is used to return the value of a remote characteristic
   // upon a read request.
-  typedef base::Callback<void(const std::vector<uint8>&)> ValueCallback;
+  typedef base::Callback<void(const std::vector<uint8_t>&)> ValueCallback;
 
   // The NotifySessionCallback is used to return sessions after they have
   // been successfully started.
@@ -110,7 +112,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
   // set the correspoding bit in the characteristic's properties field. If
   // |properties| has |PROPERTY_EXTENDED_PROPERTIES| set, it will be ignored.
   static BluetoothGattCharacteristic* Create(const BluetoothUUID& uuid,
-                                             const std::vector<uint8>& value,
+                                             const std::vector<uint8_t>& value,
                                              Properties properties,
                                              Permissions permissions);
 
@@ -131,7 +133,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
   // Returns the value of the characteristic. For remote characteristics, this
   // is the most recently cached value. For local characteristics, this is the
   // most recently updated value or the value retrieved from the delegate.
-  virtual const std::vector<uint8>& GetValue() const = 0;
+  virtual const std::vector<uint8_t>& GetValue() const = 0;
 
   // Returns a pointer to the GATT service this characteristic belongs to.
   virtual BluetoothGattService* GetService() const = 0;
@@ -173,7 +175,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
   //
   // This method only makes sense for local characteristics and does nothing and
   // returns false if this instance represents a remote characteristic.
-  virtual bool UpdateValue(const std::vector<uint8>& value) = 0;
+  virtual bool UpdateValue(const std::vector<uint8_t>& value) = 0;
 
   // Starts a notify session for the remote characteristic, if it supports
   // notifications/indications. On success, the characteristic starts sending
@@ -195,7 +197,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
   // only applies to remote characteristics and will fail for those that are
   // locally hosted.
   virtual void WriteRemoteCharacteristic(
-      const std::vector<uint8>& new_value,
+      const std::vector<uint8_t>& new_value,
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
 

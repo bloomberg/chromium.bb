@@ -9,11 +9,14 @@
 #ifndef DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
 #define DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 
 #if !defined(OS_LINUX)
@@ -59,8 +62,8 @@ class MediaTransferProtocolDaemonClient {
 
   // A callback to handle the result of ReadDirectoryEntryIds.
   // The argument is a vector of file ids.
-  typedef base::Callback<void(const std::vector<uint32>& file_ids)
-                         > ReadDirectoryEntryIdsCallback;
+  typedef base::Callback<void(const std::vector<uint32_t>& file_ids)>
+      ReadDirectoryEntryIdsCallback;
 
   // A callback to handle the result of GetFileInfo.
   // The argument is a vector of file entries.
@@ -128,7 +131,7 @@ class MediaTransferProtocolDaemonClient {
   // |parent_id| is an id of the parent directory.
   // |directory_name| is name of new directory.
   virtual void CreateDirectory(const std::string& handle,
-                               const uint32 parent_id,
+                               const uint32_t parent_id,
                                const std::string& directory_name,
                                const CreateDirectoryCallback& callback,
                                const ErrorCallback& error_callback) = 0;
@@ -138,7 +141,7 @@ class MediaTransferProtocolDaemonClient {
   // |file_id| is a MTP-device specific id for a file.
   virtual void ReadDirectoryEntryIds(
       const std::string& handle,
-      uint32 file_id,
+      uint32_t file_id,
       const ReadDirectoryEntryIdsCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
@@ -148,7 +151,7 @@ class MediaTransferProtocolDaemonClient {
   // |offset| is the index into |file_ids| to read from.
   // |entries_to_read| is the maximum number of file entries to read.
   virtual void GetFileInfo(const std::string& handle,
-                           const std::vector<uint32>& file_ids,
+                           const std::vector<uint32_t>& file_ids,
                            size_t offset,
                            size_t entries_to_read,
                            const GetFileInfoCallback& callback,
@@ -160,9 +163,9 @@ class MediaTransferProtocolDaemonClient {
   // |offset| is the offset into the file.
   // |bytes_to_read| cannot exceed 1 MiB.
   virtual void ReadFileChunk(const std::string& handle,
-                             uint32 file_id,
-                             uint32 offset,
-                             uint32 bytes_to_read,
+                             uint32_t file_id,
+                             uint32_t offset,
+                             uint32_t bytes_to_read,
                              const ReadFileCallback& callback,
                              const ErrorCallback& error_callback) = 0;
 
@@ -171,7 +174,7 @@ class MediaTransferProtocolDaemonClient {
   // |object_is| is an id of object to be renamed.
   // |new_name| is new name of the object.
   virtual void RenameObject(const std::string& handle,
-                            const uint32 object_id,
+                            const uint32_t object_id,
                             const std::string& new_name,
                             const RenameObjectCallback& callback,
                             const ErrorCallback& error_callback) = 0;
@@ -183,7 +186,7 @@ class MediaTransferProtocolDaemonClient {
   // |file_name| is a file name of a target file.
   virtual void CopyFileFromLocal(const std::string& handle,
                                  const int source_file_descriptor,
-                                 const uint32 parent_id,
+                                 const uint32_t parent_id,
                                  const std::string& file_name,
                                  const CopyFileFromLocalCallback& callback,
                                  const ErrorCallback& error_callback) = 0;
@@ -192,7 +195,7 @@ class MediaTransferProtocolDaemonClient {
   // succeeds, otherwise, |error_callback| is called.
   // |object_id| is an object id of a file or directory which is deleted.
   virtual void DeleteObject(const std::string& handle,
-                            const uint32 object_id,
+                            const uint32_t object_id,
                             const DeleteObjectCallback& callback,
                             const ErrorCallback& error_callback) = 0;
 

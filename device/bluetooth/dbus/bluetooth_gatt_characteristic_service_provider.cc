@@ -4,8 +4,11 @@
 
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_service_provider.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
@@ -84,7 +87,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
   }
 
   // BluetoothGattCharacteristicServiceProvider override.
-  void SendValueChanged(const std::vector<uint8>& value) override {
+  void SendValueChanged(const std::vector<uint8_t>& value) override {
     VLOG(2) << "Emitting a PropertiesChanged signal for characteristic value.";
     dbus::Signal signal(dbus::kDBusPropertiesInterface,
                         dbus::kDBusPropertiesChangedSignal);
@@ -244,7 +247,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
     }
 
     // Obtain the value.
-    const uint8* bytes = NULL;
+    const uint8_t* bytes = NULL;
     size_t length = 0;
     if (!variant_reader.PopArrayOfBytes(&bytes, &length)) {
       scoped_ptr<dbus::ErrorResponse> error_response =
@@ -256,7 +259,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
     }
 
     // Pass the set request onto the delegate.
-    std::vector<uint8> value(bytes, bytes + length);
+    std::vector<uint8_t> value(bytes, bytes + length);
     DCHECK(delegate_);
     delegate_->SetCharacteristicValue(
         value,
@@ -323,7 +326,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
   // characteristic value.
   void OnGetAll(dbus::MethodCall* method_call,
                 dbus::ExportedObject::ResponseSender response_sender,
-                const std::vector<uint8>& value) {
+                const std::vector<uint8_t>& value) {
     VLOG(2) << "Characteristic value obtained from delegate. Responding to "
             << "GetAll.";
 
@@ -367,7 +370,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
   // characteristic value.
   void OnGet(dbus::MethodCall* method_call,
              dbus::ExportedObject::ResponseSender response_sender,
-             const std::vector<uint8>& value) {
+             const std::vector<uint8_t>& value) {
     VLOG(2) << "Returning characteristic value obtained from delegate.";
     scoped_ptr<dbus::Response> response =
         dbus::Response::FromMethodCall(method_call);

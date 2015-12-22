@@ -5,10 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_WIN_H_
 
+#include <stdint.h>
 #include <WinSock2.h>
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
@@ -84,7 +86,7 @@ class BluetoothSocketWin : public BluetoothSocketNet {
 
   std::string device_address_;
   bool supports_rfcomm_;
-  uint8 rfcomm_channel_;
+  uint8_t rfcomm_channel_;
   BTH_ADDR bth_addr_;
 
   // Data members below are only used when listening.

@@ -5,6 +5,7 @@
 #ifndef DEVICE_NFC_NFC_TAG_H_
 #define DEVICE_NFC_NFC_TAG_H_
 
+#include "base/macros.h"
 #include "device/nfc/nfc_tag_technology.h"
 
 namespace device {

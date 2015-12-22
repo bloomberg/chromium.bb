@@ -8,7 +8,7 @@ namespace device {
 
 // Digitizer descriptor from HID descriptor tool
 // http://www.usb.org/developers/hidpage/dt2_4.zip
-const uint8 kDigitizer[] = {
+const uint8_t kDigitizer[] = {
     0x05, 0x0d,        // Usage Page (Digitizer)
     0x09, 0x01,        // Usage (0x1)
     0xa1, 0x01,        // Collection (Application)
@@ -108,7 +108,7 @@ const size_t kDigitizerSize = sizeof(kDigitizer);
 
 // Keyboard descriptor from HID descriptor tool
 // http://www.usb.org/developers/hidpage/dt2_4.zip
-const uint8 kKeyboard[] = {
+const uint8_t kKeyboard[] = {
     0x05, 0x01,  // Usage Page (Generic Desktop)
     0x09, 0x06,  // Usage (0x6)
     0xa1, 0x01,  // Collection (Application)
@@ -146,7 +146,7 @@ const size_t kKeyboardSize = sizeof(kKeyboard);
 
 // Monitor descriptor from HID descriptor tool
 // http://www.usb.org/developers/hidpage/dt2_4.zip
-const uint8 kMonitor[] = {
+const uint8_t kMonitor[] = {
     0x05, 0x80,        // Usage Page (Monitor 0)
     0x09, 0x01,        // Usage (0x1)
     0xa1, 0x01,        // Collection (Application)
@@ -196,7 +196,7 @@ const size_t kMonitorSize = sizeof(kMonitor);
 
 // Mouse descriptor from HID descriptor tool
 // http://www.usb.org/developers/hidpage/dt2_4.zip
-const uint8 kMouse[] = {
+const uint8_t kMouse[] = {
     0x05, 0x01,  // Usage Page (Generic Desktop)
     0x09, 0x02,  // Usage (0x2)
     0xa1, 0x01,  // Collection (Application)
@@ -227,7 +227,7 @@ const uint8 kMouse[] = {
 const size_t kMouseSize = sizeof(kMouse);
 
 // Logitech Unifying receiver descriptor
-const uint8 kLogitechUnifyingReceiver[] = {
+const uint8_t kLogitechUnifyingReceiver[] = {
     0x06, 0x00, 0xFF,  // Usage Page (Vendor)
     0x09, 0x01,        // Usage (0x1)
     0xA1, 0x01,        // Collection (Application)

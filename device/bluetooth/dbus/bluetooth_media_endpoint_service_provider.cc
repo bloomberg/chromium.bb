@@ -4,8 +4,11 @@
 
 #include "device/bluetooth/dbus/bluetooth_media_endpoint_service_provider.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"

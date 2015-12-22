@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_BLUETOOTH_DEVICE_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_BLUETOOTH_DEVICE_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -37,13 +39,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
     dbus::Property<std::string> icon;
 
     // The Bluetooth class of the device. Read-only.
-    dbus::Property<uint32> bluetooth_class;
+    dbus::Property<uint32_t> bluetooth_class;
 
     // The GAP external appearance of the device. Read-only.
-    dbus::Property<uint16> appearance;
+    dbus::Property<uint16_t> appearance;
 
     // Unique numeric identifier for the vendor of the device. Read-only.
-    dbus::Property<uint16> vendor;
+    dbus::Property<uint16_t> vendor;
 
     // List of 128-bit UUIDs that represent the available remote services.
     // Read-only.
@@ -51,7 +53,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
 
     // Transmitted power level. This field is avaliable only for LE devices
     // that include this field in AD. Read-only.
-    dbus::Property<int16> tx_power;
+    dbus::Property<int16_t> tx_power;
 
     // Indicates that the device is currently paired. Read-only.
     dbus::Property<bool> paired;
@@ -83,7 +85,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
 
     // Received signal strength indicator that is set when the device is
     // discovered during inquiry. Read-only.
-    dbus::Property<int16> rssi;
+    dbus::Property<int16_t> rssi;
 
     // List of GATT service object paths. Each referenced object exports the
     // org.bluez.GattService1 interface and represents a remote GATT service.
@@ -183,9 +185,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
 
   // The callback invoked for a successful GetConnInfo API call with the
   // RSSI, TX power, and maximum TX power of the current connection.
-  typedef base::Callback<void(int16 rssi,
-                              int16 transmit_power,
-                              int16 max_transmit_power)> ConnInfoCallback;
+  typedef base::Callback<void(int16_t rssi,
+                              int16_t transmit_power,
+                              int16_t max_transmit_power)> ConnInfoCallback;
 
   // Returns the RSSI, TX power, and maximum TX power of a connection to the
   // device with object path |object_path|. If the device is not connected, then

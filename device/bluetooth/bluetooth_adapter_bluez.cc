@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_profile_bluez.h"
 #include "device/bluetooth/bluetooth_advertisement_bluez.h"
 #include "device/bluetooth/bluetooth_audio_sink_bluez.h"
@@ -580,8 +581,8 @@ void BluetoothAdapterBlueZ::RequestPasskey(const dbus::ObjectPath& device_path,
 }
 
 void BluetoothAdapterBlueZ::DisplayPasskey(const dbus::ObjectPath& device_path,
-                                           uint32 passkey,
-                                           uint16 entered) {
+                                           uint32_t passkey,
+                                           uint16_t entered) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
   VLOG(1) << device_path.value() << ": DisplayPasskey: " << passkey << " ("
@@ -599,7 +600,7 @@ void BluetoothAdapterBlueZ::DisplayPasskey(const dbus::ObjectPath& device_path,
 
 void BluetoothAdapterBlueZ::RequestConfirmation(
     const dbus::ObjectPath& device_path,
-    uint32 passkey,
+    uint32_t passkey,
     const ConfirmationCallback& callback) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
@@ -994,7 +995,7 @@ void BluetoothAdapterBlueZ::NotifyGattDescriptorRemoved(
 
 void BluetoothAdapterBlueZ::NotifyGattCharacteristicValueChanged(
     BluetoothRemoteGattCharacteristicBlueZ* characteristic,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   DCHECK_EQ(static_cast<BluetoothRemoteGattServiceBlueZ*>(
                 characteristic->GetService())
                 ->GetAdapter(),
@@ -1007,7 +1008,7 @@ void BluetoothAdapterBlueZ::NotifyGattCharacteristicValueChanged(
 
 void BluetoothAdapterBlueZ::NotifyGattDescriptorValueChanged(
     BluetoothRemoteGattDescriptorBlueZ* descriptor,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   DCHECK_EQ(static_cast<BluetoothRemoteGattServiceBlueZ*>(
                 descriptor->GetCharacteristic()->GetService())
                 ->GetAdapter(),

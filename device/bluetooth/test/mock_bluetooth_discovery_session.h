@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_DISCOVERY_SESSION_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

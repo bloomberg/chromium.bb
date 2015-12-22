@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_CHANNEL_MAC_H_
 
 #import <IOKit/IOReturn.h>
+#include <stdint.h>
 
 #include <string>
 

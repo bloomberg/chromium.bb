@@ -5,9 +5,13 @@
 #ifndef DEVICE_HID_HID_DEVICE_INFO_H_
 #define DEVICE_HID_HID_DEVICE_INFO_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "device/hid/hid_collection_info.h"
@@ -35,7 +39,7 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
                 const std::string& product_name,
                 const std::string& serial_number,
                 HidBusType bus_type,
-                const std::vector<uint8> report_descriptor);
+                const std::vector<uint8_t> report_descriptor);
 
   HidDeviceInfo(const HidDeviceId& device_id,
                 uint16_t vendor_id,
@@ -66,7 +70,7 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
   size_t max_feature_report_size() const { return max_feature_report_size_; }
 
   // The raw HID report descriptor is not available on Windows.
-  const std::vector<uint8>& report_descriptor() const {
+  const std::vector<uint8_t>& report_descriptor() const {
     return report_descriptor_;
   }
 
@@ -83,7 +87,7 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
   std::string product_name_;
   std::string serial_number_;
   HidBusType bus_type_;
-  std::vector<uint8> report_descriptor_;
+  std::vector<uint8_t> report_descriptor_;
 
   // Top-Level Collections information.
   std::vector<HidCollectionInfo> collections_;

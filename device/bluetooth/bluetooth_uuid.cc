@@ -4,7 +4,8 @@
 
 #include "device/bluetooth/bluetooth_uuid.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "ipc/ipc_message.h"

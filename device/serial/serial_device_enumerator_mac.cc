@@ -6,6 +6,7 @@
 
 #include <IOKit/serial/IOSerialKeys.h>
 #include <IOKit/usb/IOUSBLib.h>
+#include <stdint.h>
 
 #include <algorithm>
 
@@ -72,9 +73,9 @@ bool GetStringProperty(io_service_t service,
   return false;
 }
 
-// Searches the specified service for a uint16 property with the specified key,
-// sets value to that property's value, and returns whether the operation was
-// successful.
+// Searches the specified service for a uint16_t property with the specified
+// key, sets value to that property's value, and returns whether the operation
+// was successful.
 bool GetUInt16Property(io_service_t service,
                        const CFStringRef key,
                        uint16_t* value) {

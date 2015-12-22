@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/bluetooth_gatt_service.h"
 
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

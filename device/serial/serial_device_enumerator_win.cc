@@ -8,6 +8,7 @@
 
 #include <devguid.h>
 #include <setupapi.h>
+#include <stdint.h>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/sparse_histogram.h"

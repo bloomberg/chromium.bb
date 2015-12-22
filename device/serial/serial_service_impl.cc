@@ -4,6 +4,8 @@
 
 #include "device/serial/serial_service_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "device/serial/serial_io_handler.h"

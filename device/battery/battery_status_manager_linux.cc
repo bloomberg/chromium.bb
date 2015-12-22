@@ -4,6 +4,9 @@
 
 #include "device/battery/battery_status_manager_linux.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread.h"
@@ -147,7 +150,7 @@ class BatteryStatusNotificationThread : public base::Thread {
         continue;
 
       bool is_present = GetPropertyAsBoolean(*dictionary, "IsPresent", false);
-      uint32 type = static_cast<uint32>(
+      uint32_t type = static_cast<uint32_t>(
           GetPropertyAsDouble(*dictionary, "Type", UPOWER_DEVICE_TYPE_UNKNOWN));
 
       if (!is_present || type != UPOWER_DEVICE_TYPE_BATTERY) {
@@ -324,7 +327,7 @@ BatteryStatus ComputeWebBatteryStatus(const base::DictionaryValue& dictionary) {
   if (!dictionary.HasKey("State"))
     return status;
 
-  uint32 state = static_cast<uint32>(
+  uint32_t state = static_cast<uint32_t>(
       GetPropertyAsDouble(dictionary, "State", UPOWER_DEVICE_STATE_UNKNOWN));
   status.charging = state != UPOWER_DEVICE_STATE_DISCHARGING &&
                     state != UPOWER_DEVICE_STATE_EMPTY;

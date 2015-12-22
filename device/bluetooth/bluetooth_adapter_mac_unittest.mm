@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_simple_task_runner.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"

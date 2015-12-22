@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_BLUEZ_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_BLUEZ_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -34,13 +36,13 @@ class BluetoothRemoteGattDescriptorBlueZ
   std::string GetIdentifier() const override;
   device::BluetoothUUID GetUUID() const override;
   bool IsLocal() const override;
-  const std::vector<uint8>& GetValue() const override;
+  const std::vector<uint8_t>& GetValue() const override;
   device::BluetoothGattCharacteristic* GetCharacteristic() const override;
   device::BluetoothGattCharacteristic::Permissions GetPermissions()
       const override;
   void ReadRemoteDescriptor(const ValueCallback& callback,
                             const ErrorCallback& error_callback) override;
-  void WriteRemoteDescriptor(const std::vector<uint8>& new_value,
+  void WriteRemoteDescriptor(const std::vector<uint8_t>& new_value,
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) override;
 

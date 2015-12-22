@@ -4,7 +4,10 @@
 
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "dbus/bus.h"
@@ -111,7 +114,7 @@ class BluetoothGattCharacteristicClientImpl
 
   // BluetoothGattCharacteristicClient override.
   void WriteValue(const dbus::ObjectPath& object_path,
-                  const std::vector<uint8>& value,
+                  const std::vector<uint8_t>& value,
                   const base::Closure& callback,
                   const ErrorCallback& error_callback) override {
     dbus::ObjectProxy* object_proxy =
@@ -246,13 +249,13 @@ class BluetoothGattCharacteristicClientImpl
     DCHECK(response);
     dbus::MessageReader reader(response);
 
-    const uint8* bytes = NULL;
+    const uint8_t* bytes = NULL;
     size_t length = 0;
 
     if (!reader.PopArrayOfBytes(&bytes, &length))
       VLOG(2) << "Error reading array of bytes in ValueCallback";
 
-    std::vector<uint8> value;
+    std::vector<uint8_t> value;
 
     if (bytes)
       value.assign(bytes, bytes + length);

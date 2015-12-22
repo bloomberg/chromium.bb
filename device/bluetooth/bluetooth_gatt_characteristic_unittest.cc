@@ -4,7 +4,11 @@
 
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

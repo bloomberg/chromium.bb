@@ -5,6 +5,7 @@
 #include "device/battery/battery_status_manager.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace device {
 

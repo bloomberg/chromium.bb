@@ -5,10 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_SERVICE_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_GATT_SERVICE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -40,7 +42,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattService {
   class Delegate {
    public:
     // Callbacks used for communicating GATT request responses.
-    typedef base::Callback<void(const std::vector<uint8>)> ValueCallback;
+    typedef base::Callback<void(const std::vector<uint8_t>)> ValueCallback;
     typedef base::Closure ErrorCallback;
 
     // Called when a remote device in the central role requests to read the
@@ -79,7 +81,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattService {
     virtual void OnCharacteristicWriteRequest(
         const BluetoothGattService* service,
         const BluetoothGattCharacteristic* characteristic,
-        const std::vector<uint8>& value,
+        const std::vector<uint8_t>& value,
         int offset,
         const ValueCallback& callback,
         const ErrorCallback& error_callback) = 0;
@@ -120,7 +122,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattService {
     virtual void OnDescriptorWriteRequest(
         const BluetoothGattService* service,
         const BluetoothGattDescriptor* descriptor,
-        const std::vector<uint8>& value,
+        const std::vector<uint8_t>& value,
         int offset,
         const ValueCallback& callback,
         const ErrorCallback& error_callback) = 0;

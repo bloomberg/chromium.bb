@@ -7,6 +7,8 @@
 
 #import <IOBluetooth/IOBluetooth.h>
 #import <IOKit/IOReturn.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"

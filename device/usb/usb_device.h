@@ -5,9 +5,12 @@
 #ifndef DEVICE_USB_USB_DEVICE_H_
 #define DEVICE_USB_USB_DEVICE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "device/usb/usb_descriptors.h"

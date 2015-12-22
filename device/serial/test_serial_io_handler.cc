@@ -4,6 +4,9 @@
 
 #include "device/serial/test_serial_io_handler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

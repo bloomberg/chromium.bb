@@ -4,12 +4,14 @@
 
 #include "device/bluetooth/dbus/fake_bluetooth_media_transport_client.h"
 
-#include <unistd.h>
+#include <stddef.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include <sstream>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "dbus/file_descriptor.h"
 #include "device/bluetooth/dbus/bluetooth_media_client.h"

@@ -4,10 +4,11 @@
 
 #include "device/bluetooth/bluetooth_socket_bluez.h"
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -139,11 +140,11 @@ void BluetoothSocketBlueZ::Listen(
   switch (socket_type) {
     case kRfcomm:
       options_->channel.reset(
-          new uint16(service_options.channel ? *service_options.channel : 0));
+          new uint16_t(service_options.channel ? *service_options.channel : 0));
       break;
     case kL2cap:
       options_->psm.reset(
-          new uint16(service_options.psm ? *service_options.psm : 0));
+          new uint16_t(service_options.psm ? *service_options.psm : 0));
       break;
     default:
       NOTREACHED();

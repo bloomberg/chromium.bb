@@ -5,6 +5,7 @@
 #ifndef DEVICE_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
 #define DEVICE_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"

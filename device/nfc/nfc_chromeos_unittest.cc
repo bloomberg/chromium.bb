@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -756,7 +759,7 @@ TEST_F(NfcChromeOSTest, RecordPropertiesToNfcNdefRecord) {
   const char kEncoding[] = "encoding";
   const char kLanguageCode[] = "en";
   const char kMimeType[] = "mime-type";
-  const uint32 kSize = 5;
+  const uint32_t kSize = 5;
 
   FakeNfcRecordClient::Properties record_properties(
       base::Bind(&OnPropertyChangedCallback));

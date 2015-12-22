@@ -4,7 +4,8 @@
 
 #include "device/vibration/vibration_manager_impl.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
@@ -13,7 +14,7 @@ namespace {
 
 class VibrationManagerEmptyImpl : public VibrationManager {
  public:
-  void Vibrate(int64 milliseconds) override {}
+  void Vibrate(int64_t milliseconds) override {}
   void Cancel() override {}
 
  private:

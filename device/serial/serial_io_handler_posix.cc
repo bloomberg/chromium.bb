@@ -8,6 +8,7 @@
 #include <termios.h>
 
 #include "base/posix/eintr_wrapper.h"
+#include "build/build_config.h"
 
 #if defined(OS_LINUX)
 #include <linux/serial.h>

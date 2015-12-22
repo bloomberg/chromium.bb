@@ -14,7 +14,7 @@ HidDeviceInfoLinux::HidDeviceInfoLinux(
     const std::string& product_name,
     const std::string& serial_number,
     HidBusType bus_type,
-    const std::vector<uint8> report_descriptor)
+    const std::vector<uint8_t> report_descriptor)
     : HidDeviceInfo(device_id,
                     vendor_id,
                     product_id,
@@ -22,8 +22,7 @@ HidDeviceInfoLinux::HidDeviceInfoLinux(
                     serial_number,
                     bus_type,
                     report_descriptor),
-      device_node_(device_node) {
-}
+      device_node_(device_node) {}
 
 HidDeviceInfoLinux::~HidDeviceInfoLinux() {
 }

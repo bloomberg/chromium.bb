@@ -4,6 +4,9 @@
 
 #include "device/devices_app/usb/type_converters.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <utility>
 

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"

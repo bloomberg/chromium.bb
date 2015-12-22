@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
@@ -45,7 +44,7 @@ BluetoothDeviceWin::BluetoothDeviceWin(
 BluetoothDeviceWin::~BluetoothDeviceWin() {
 }
 
-uint32 BluetoothDeviceWin::GetBluetoothClass() const {
+uint32_t BluetoothDeviceWin::GetBluetoothClass() const {
   return bluetooth_class_;
 }
 
@@ -58,15 +57,15 @@ BluetoothDeviceWin::GetVendorIDSource() const {
   return VENDOR_ID_UNKNOWN;
 }
 
-uint16 BluetoothDeviceWin::GetVendorID() const {
+uint16_t BluetoothDeviceWin::GetVendorID() const {
   return 0;
 }
 
-uint16 BluetoothDeviceWin::GetProductID() const {
+uint16_t BluetoothDeviceWin::GetProductID() const {
   return 0;
 }
 
-uint16 BluetoothDeviceWin::GetDeviceID() const {
+uint16_t BluetoothDeviceWin::GetDeviceID() const {
   return 0;
 }
 
@@ -95,11 +94,11 @@ BluetoothDevice::UUIDList BluetoothDeviceWin::GetUUIDs() const {
   return uuids_;
 }
 
-int16 BluetoothDeviceWin::GetInquiryRSSI() const {
+int16_t BluetoothDeviceWin::GetInquiryRSSI() const {
   return kUnknownPower;
 }
 
-int16 BluetoothDeviceWin::GetInquiryTxPower() const {
+int16_t BluetoothDeviceWin::GetInquiryTxPower() const {
   NOTIMPLEMENTED();
   return kUnknownPower;
 }
@@ -136,7 +135,7 @@ void BluetoothDeviceWin::SetPinCode(const std::string& pincode) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceWin::SetPasskey(uint32 passkey) {
+void BluetoothDeviceWin::SetPasskey(uint32_t passkey) {
   NOTIMPLEMENTED();
 }
 

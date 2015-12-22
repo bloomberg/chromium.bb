@@ -4,6 +4,7 @@
 
 #include "device/core/device_info_query_win.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include "base/strings/string_util.h"

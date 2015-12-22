@@ -5,7 +5,7 @@
 #ifndef DEVICE_HID_HID_USAGE_AND_PAGE_H_
 #define DEVICE_HID_HID_USAGE_AND_PAGE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace device {
 

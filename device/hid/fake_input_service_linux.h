@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "device/hid/input_service_linux.h"
 
 namespace device {

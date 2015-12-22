@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
 #include "dbus/exported_object.h"
@@ -203,8 +204,8 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
 
     dbus::MessageReader reader(method_call);
     dbus::ObjectPath device_path;
-    uint32 passkey;
-    uint16 entered;
+    uint32_t passkey;
+    uint16_t entered;
     if (!reader.PopObjectPath(&device_path) || !reader.PopUint32(&passkey) ||
         !reader.PopUint16(&entered)) {
       LOG(WARNING) << "DisplayPasskey called with incorrect paramters: "
@@ -228,7 +229,7 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
 
     dbus::MessageReader reader(method_call);
     dbus::ObjectPath device_path;
-    uint32 passkey;
+    uint32_t passkey;
     if (!reader.PopObjectPath(&device_path) || !reader.PopUint32(&passkey)) {
       LOG(WARNING) << "RequestConfirmation called with incorrect paramters: "
                    << method_call->ToString();
@@ -344,7 +345,7 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
   void OnPasskey(dbus::MethodCall* method_call,
                  dbus::ExportedObject::ResponseSender response_sender,
                  Delegate::Status status,
-                 uint32 passkey) {
+                 uint32_t passkey) {
     DCHECK(OnOriginThread());
 
     switch (status) {

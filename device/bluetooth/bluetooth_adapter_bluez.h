@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_BLUEZ_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_BLUEZ_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <string>
@@ -140,10 +142,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       BluetoothRemoteGattDescriptorBlueZ* descriptor);
   void NotifyGattCharacteristicValueChanged(
       BluetoothRemoteGattCharacteristicBlueZ* characteristic,
-      const std::vector<uint8>& value);
+      const std::vector<uint8_t>& value);
   void NotifyGattDescriptorValueChanged(
       BluetoothRemoteGattDescriptorBlueZ* descriptor,
-      const std::vector<uint8>& value);
+      const std::vector<uint8_t>& value);
 
   // Returns the object path of the adapter.
   const dbus::ObjectPath& object_path() const { return object_path_; }
@@ -219,10 +221,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void RequestPasskey(const dbus::ObjectPath& device_path,
                       const PasskeyCallback& callback) override;
   void DisplayPasskey(const dbus::ObjectPath& device_path,
-                      uint32 passkey,
-                      uint16 entered) override;
+                      uint32_t passkey,
+                      uint16_t entered) override;
   void RequestConfirmation(const dbus::ObjectPath& device_path,
-                           uint32 passkey,
+                           uint32_t passkey,
                            const ConfirmationCallback& callback) override;
   void RequestAuthorization(const dbus::ObjectPath& device_path,
                             const ConfirmationCallback& callback) override;

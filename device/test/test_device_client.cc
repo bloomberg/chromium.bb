@@ -4,6 +4,8 @@
 
 #include "device/test/test_device_client.h"
 
+#include "build/build_config.h"
+
 // This file unconditionally includes these headers despite conditionally
 // depending on the corresponding targets. The code below needs the destructors
 // of the classes defined even when the classes are never instantiated.

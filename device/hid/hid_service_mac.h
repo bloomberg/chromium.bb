@@ -12,6 +12,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_ioobject.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "device/hid/hid_service.h"
 

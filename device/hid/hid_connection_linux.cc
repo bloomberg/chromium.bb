@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "base/posix/eintr_wrapper.h"

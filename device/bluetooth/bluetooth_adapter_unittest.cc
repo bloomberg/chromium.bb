@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -133,9 +137,9 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
   void RequestPasskey(BluetoothDevice* device) override {}
   void DisplayPinCode(BluetoothDevice* device,
                       const std::string& pincode) override {}
-  void DisplayPasskey(BluetoothDevice* device, uint32 passkey) override {}
-  void KeysEntered(BluetoothDevice* device, uint32 entered) override {}
-  void ConfirmPasskey(BluetoothDevice* device, uint32 passkey) override {}
+  void DisplayPasskey(BluetoothDevice* device, uint32_t passkey) override {}
+  void KeysEntered(BluetoothDevice* device, uint32_t entered) override {}
+  void ConfirmPasskey(BluetoothDevice* device, uint32_t passkey) override {}
   void AuthorizePairing(BluetoothDevice* device) override {}
 };
 

@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_ANDROID_H_
 #define DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_ANDROID_H_
 
+#include <stdint.h>
+
 #include "base/android/scoped_java_ref.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 
@@ -47,7 +49,7 @@ class BluetoothTestAndroid : public BluetoothTestBase {
       BluetoothGattCharacteristic* characteristic) override;
   void SimulateGattCharacteristicRead(
       BluetoothGattCharacteristic* characteristic,
-      const std::vector<uint8>& value) override;
+      const std::vector<uint8_t>& value) override;
   void SimulateGattCharacteristicReadError(
       BluetoothGattCharacteristic* characteristic,
       BluetoothGattService::GattErrorCode) override;

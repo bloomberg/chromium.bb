@@ -4,12 +4,13 @@
 
 #include "device/core/device_monitor_win.h"
 
+#include <windows.h>
 #include <dbt.h>
 #include <map>
-#include <windows.h>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/message_window.h"

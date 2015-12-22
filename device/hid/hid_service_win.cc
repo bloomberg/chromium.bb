@@ -8,6 +8,7 @@
 
 #include <dbt.h>
 #include <setupapi.h>
+#include <stddef.h>
 #include <winioctl.h>
 
 #include "base/bind.h"

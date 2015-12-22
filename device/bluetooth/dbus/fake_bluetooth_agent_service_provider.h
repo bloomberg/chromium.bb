@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/observer_list.h"
@@ -37,11 +39,11 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAgentServiceProvider
   virtual void RequestPasskey(const dbus::ObjectPath& device_path,
                               const Delegate::PasskeyCallback& callback);
   virtual void DisplayPasskey(const dbus::ObjectPath& device_path,
-                              uint32 passkey,
-                              int16 entered);
+                              uint32_t passkey,
+                              int16_t entered);
   virtual void RequestConfirmation(
       const dbus::ObjectPath& device_path,
-      uint32 passkey,
+      uint32_t passkey,
       const Delegate::ConfirmationCallback& callback);
   virtual void RequestAuthorization(
       const dbus::ObjectPath& device_path,

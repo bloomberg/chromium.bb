@@ -6,11 +6,12 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_CLASSIC_DEVICE_MAC_H_
 
 #import <IOBluetooth/IOBluetooth.h>
+#include <stdint.h>
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
 
@@ -27,20 +28,20 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
   ~BluetoothClassicDeviceMac() override;
 
   // BluetoothDevice override
-  uint32 GetBluetoothClass() const override;
+  uint32_t GetBluetoothClass() const override;
   std::string GetAddress() const override;
   VendorIDSource GetVendorIDSource() const override;
-  uint16 GetVendorID() const override;
-  uint16 GetProductID() const override;
-  uint16 GetDeviceID() const override;
+  uint16_t GetVendorID() const override;
+  uint16_t GetProductID() const override;
+  uint16_t GetDeviceID() const override;
   bool IsPaired() const override;
   bool IsConnected() const override;
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
   bool IsConnecting() const override;
   UUIDList GetUUIDs() const override;
-  int16 GetInquiryRSSI() const override;
-  int16 GetInquiryTxPower() const override;
+  int16_t GetInquiryRSSI() const override;
+  int16_t GetInquiryTxPower() const override;
   bool ExpectingPinCode() const override;
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;
@@ -49,7 +50,7 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
                const base::Closure& callback,
                const ConnectErrorCallback& error_callback) override;
   void SetPinCode(const std::string& pincode) override;
-  void SetPasskey(uint32 passkey) override;
+  void SetPasskey(uint32_t passkey) override;
   void ConfirmPairing() override;
   void RejectPairing() override;
   void CancelPairing() override;

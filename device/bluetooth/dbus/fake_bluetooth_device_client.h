@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_DEVICE_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_DEVICE_CLIENT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
@@ -140,9 +142,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
 
   // Updates the connection properties of the fake device that will be returned
   // by GetConnInfo.
-  void UpdateConnectionInfo(uint16 connection_rssi,
-                            uint16 transmit_power,
-                            uint16 max_transmit_power);
+  void UpdateConnectionInfo(uint16_t connection_rssi,
+                            uint16_t transmit_power,
+                            uint16_t max_transmit_power);
 
   void set_delay_start_discovery(bool value) { delay_start_discovery_ = value; }
 
@@ -163,77 +165,77 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   static const char kPairedDevicePath[];
   static const char kPairedDeviceName[];
   static const char kPairedDeviceAddress[];
-  static const uint32 kPairedDeviceClass;
+  static const uint32_t kPairedDeviceClass;
 
   static const char kLegacyAutopairPath[];
   static const char kLegacyAutopairName[];
   static const char kLegacyAutopairAddress[];
-  static const uint32 kLegacyAutopairClass;
+  static const uint32_t kLegacyAutopairClass;
 
   static const char kDisplayPinCodePath[];
   static const char kDisplayPinCodeName[];
   static const char kDisplayPinCodeAddress[];
-  static const uint32 kDisplayPinCodeClass;
+  static const uint32_t kDisplayPinCodeClass;
 
   static const char kVanishingDevicePath[];
   static const char kVanishingDeviceName[];
   static const char kVanishingDeviceAddress[];
-  static const uint32 kVanishingDeviceClass;
+  static const uint32_t kVanishingDeviceClass;
 
   static const char kConnectUnpairablePath[];
   static const char kConnectUnpairableName[];
   static const char kConnectUnpairableAddress[];
-  static const uint32 kConnectUnpairableClass;
+  static const uint32_t kConnectUnpairableClass;
 
   static const char kDisplayPasskeyPath[];
   static const char kDisplayPasskeyName[];
   static const char kDisplayPasskeyAddress[];
-  static const uint32 kDisplayPasskeyClass;
+  static const uint32_t kDisplayPasskeyClass;
 
   static const char kRequestPinCodePath[];
   static const char kRequestPinCodeName[];
   static const char kRequestPinCodeAddress[];
-  static const uint32 kRequestPinCodeClass;
+  static const uint32_t kRequestPinCodeClass;
 
   static const char kConfirmPasskeyPath[];
   static const char kConfirmPasskeyName[];
   static const char kConfirmPasskeyAddress[];
-  static const uint32 kConfirmPasskeyClass;
+  static const uint32_t kConfirmPasskeyClass;
 
   static const char kRequestPasskeyPath[];
   static const char kRequestPasskeyName[];
   static const char kRequestPasskeyAddress[];
-  static const uint32 kRequestPasskeyClass;
+  static const uint32_t kRequestPasskeyClass;
 
   static const char kUnconnectableDevicePath[];
   static const char kUnconnectableDeviceName[];
   static const char kUnconnectableDeviceAddress[];
-  static const uint32 kUnconnectableDeviceClass;
+  static const uint32_t kUnconnectableDeviceClass;
 
   static const char kUnpairableDevicePath[];
   static const char kUnpairableDeviceName[];
   static const char kUnpairableDeviceAddress[];
-  static const uint32 kUnpairableDeviceClass;
+  static const uint32_t kUnpairableDeviceClass;
 
   static const char kJustWorksPath[];
   static const char kJustWorksName[];
   static const char kJustWorksAddress[];
-  static const uint32 kJustWorksClass;
+  static const uint32_t kJustWorksClass;
 
   static const char kLowEnergyPath[];
   static const char kLowEnergyName[];
   static const char kLowEnergyAddress[];
-  static const uint32 kLowEnergyClass;
+  static const uint32_t kLowEnergyClass;
 
   static const char kPairedUnconnectableDevicePath[];
   static const char kPairedUnconnectableDeviceName[];
   static const char kPairedUnconnectableDeviceAddress[];
-  static const uint32 kPairedUnconnectableDeviceClass;
+  static const uint32_t kPairedUnconnectableDeviceClass;
 
   static const char kConnectedTrustedNotPairedDevicePath[];
   static const char kConnectedTrustedNotPairedDeviceAddress[];
   static const char kConnectedTrustedNotPairedDeviceName[];
-  static const uint32 kConnectedTrustedNotPairedDeviceClass;
+  static const uint32_t kConnectedTrustedNotPairedDeviceClass;
 
  private:
   // Property callback passed when we create Properties* structures.
@@ -259,7 +261,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
 
   // Updates the inquiry RSSI property of fake device with object path
   // |object_path| to |rssi|, if the fake device exists.
-  void UpdateDeviceRSSI(const dbus::ObjectPath& object_path, int16 rssi);
+  void UpdateDeviceRSSI(const dbus::ObjectPath& object_path, int16_t rssi);
 
   void PinCodeCallback(const dbus::ObjectPath& object_path,
                        const base::Closure& callback,
@@ -270,13 +272,13 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
                        const base::Closure& callback,
                        const ErrorCallback& error_callback,
                        BluetoothAgentServiceProvider::Delegate::Status status,
-                       uint32 passkey);
+                       uint32_t passkey);
   void ConfirmationCallback(
       const dbus::ObjectPath& object_path,
       const base::Closure& callback,
       const ErrorCallback& error_callback,
       BluetoothAgentServiceProvider::Delegate::Status status);
-  void SimulateKeypress(uint16 entered,
+  void SimulateKeypress(uint16_t entered,
                         const dbus::ObjectPath& object_path,
                         const base::Closure& callback,
                         const ErrorCallback& error_callback);
@@ -311,9 +313,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   uint32_t incoming_pairing_simulation_step_;
   bool pairing_cancelled_;
 
-  int16 connection_rssi_;
-  int16 transmit_power_;
-  int16 max_transmit_power_;
+  int16_t connection_rssi_;
+  int16_t transmit_power_;
+  int16_t max_transmit_power_;
 
   // Controls the fake behavior to allow more extensive UI testing without
   // having to cycle the discovery simulation.

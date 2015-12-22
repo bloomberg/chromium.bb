@@ -4,6 +4,8 @@
 
 #include "device/usb/usb_service_impl.h"
 
+#include <stdint.h>
+
 #include <list>
 #include <set>
 
@@ -16,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_error.h"
@@ -125,7 +128,7 @@ void OnReadStringDescriptor(
   base::string16 string;
   if (status == USB_TRANSFER_COMPLETED &&
       ParseUsbStringDescriptor(
-          std::vector<uint8>(buffer->data(), buffer->data() + length),
+          std::vector<uint8_t>(buffer->data(), buffer->data() + length),
           &string)) {
     callback.Run(string);
   } else {
@@ -192,7 +195,7 @@ void OnReadWebUsbAllowedOrigins(scoped_refptr<UsbDevice> device,
 
   scoped_ptr<WebUsbDescriptorSet> descriptors(new WebUsbDescriptorSet());
   if (descriptors->Parse(
-          std::vector<uint8>(buffer->data(), buffer->data() + length))) {
+          std::vector<uint8_t>(buffer->data(), buffer->data() + length))) {
     UsbDeviceImpl* device_impl = static_cast<UsbDeviceImpl*>(device.get());
     device_impl->set_webusb_allowed_origins(descriptors.Pass());
   }
@@ -247,7 +250,7 @@ void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
 
   WebUsbPlatformCapabilityDescriptor descriptor;
   if (!descriptor.ParseFromBosDescriptor(
-          std::vector<uint8>(buffer->data(), buffer->data() + length))) {
+          std::vector<uint8_t>(buffer->data(), buffer->data() + length))) {
     callback.Run();
     return;
   }

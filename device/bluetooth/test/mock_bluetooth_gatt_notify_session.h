@@ -5,9 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_GATT_NOTIFY_SESSION_H_
 #define DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_GATT_NOTIFY_SESSION_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "testing/gmock/include/gmock/gmock.h"

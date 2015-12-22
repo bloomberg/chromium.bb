@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -319,9 +320,9 @@ class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
   // Called when a response for the GetConnInfo method is received.
   void OnGetConnInfoSuccess(const ConnInfoCallback& callback,
                             dbus::Response* response) {
-    int16 rssi = kUnknownPower;
-    int16 transmit_power = kUnknownPower;
-    int16 max_transmit_power = kUnknownPower;
+    int16_t rssi = kUnknownPower;
+    int16_t transmit_power = kUnknownPower;
+    int16_t max_transmit_power = kUnknownPower;
 
     if (!response) {
       LOG(ERROR) << "GetConnInfo succeeded, but no response received.";

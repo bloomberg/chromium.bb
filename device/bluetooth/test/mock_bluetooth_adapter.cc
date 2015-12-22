@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 
+#include "build/build_config.h"
 #include "device/bluetooth/test/mock_bluetooth_advertisement.h"
 
 namespace device {

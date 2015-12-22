@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"

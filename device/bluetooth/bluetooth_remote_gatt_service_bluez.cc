@@ -218,7 +218,7 @@ void BluetoothRemoteGattServiceBlueZ::NotifyDescriptorAddedOrRemoved(
 void BluetoothRemoteGattServiceBlueZ::NotifyDescriptorValueChanged(
     BluetoothRemoteGattCharacteristicBlueZ* characteristic,
     BluetoothRemoteGattDescriptorBlueZ* descriptor,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   DCHECK(characteristic->GetService() == this);
   DCHECK(descriptor->GetCharacteristic() == characteristic);
   DCHECK(adapter_);

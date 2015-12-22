@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_H_
 #define DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -140,7 +142,7 @@ class BluetoothTestBase : public testing::Test {
   // RememberCharacteristicForSubsequentAction.
   virtual void SimulateGattCharacteristicRead(
       BluetoothGattCharacteristic* characteristic,
-      const std::vector<uint8>& value) {}
+      const std::vector<uint8_t>& value) {}
 
   // Simulates a Characteristic Read operation failing with a GattErrorCode.
   virtual void SimulateGattCharacteristicReadError(
@@ -178,7 +180,7 @@ class BluetoothTestBase : public testing::Test {
   void GattConnectionCallback(Call expected,
                               scoped_ptr<BluetoothGattConnection>);
   void NotifyCallback(Call expected, scoped_ptr<BluetoothGattNotifySession>);
-  void ReadValueCallback(Call expected, const std::vector<uint8>& value);
+  void ReadValueCallback(Call expected, const std::vector<uint8_t>& value);
   void ErrorCallback(Call expected);
   void ConnectErrorCallback(Call expected,
                             enum BluetoothDevice::ConnectErrorCode);
@@ -212,8 +214,8 @@ class BluetoothTestBase : public testing::Test {
   enum BluetoothDevice::ConnectErrorCode last_connect_error_code_ =
       BluetoothDevice::ERROR_UNKNOWN;
   ScopedVector<BluetoothGattNotifySession> notify_sessions_;
-  std::vector<uint8> last_read_value_;
-  std::vector<uint8> last_write_value_;
+  std::vector<uint8_t> last_read_value_;
+  std::vector<uint8_t> last_write_value_;
   BluetoothGattService::GattErrorCode last_gatt_error_code_;
 
   int callback_count_ = 0;

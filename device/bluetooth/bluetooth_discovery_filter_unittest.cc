@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "testing/gtest/include/gtest/gtest.h"

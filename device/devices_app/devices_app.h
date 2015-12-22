@@ -5,6 +5,8 @@
 #ifndef DEVICE_DEVICES_DEVICES_APP_H_
 #define DEVICE_DEVICES_DEVICES_APP_H_
 
+#include <stddef.h>
+
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

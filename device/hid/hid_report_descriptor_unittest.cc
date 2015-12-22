@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <sstream>
 
+#include "base/macros.h"
 #include "device/hid/hid_report_descriptor.h"
 #include "device/hid/test_report_descriptors.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,7 +38,7 @@ class HidReportDescriptorTest : public testing::Test {
       const uint8_t* bytes,
       size_t size) {
     descriptor_ =
-        new HidReportDescriptor(std::vector<uint8>(bytes, bytes + size));
+        new HidReportDescriptor(std::vector<uint8_t>(bytes, bytes + size));
 
     std::vector<HidCollectionInfo> actual_collections;
     bool actual_has_report_id;

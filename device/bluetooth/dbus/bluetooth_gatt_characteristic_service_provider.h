@@ -5,11 +5,13 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_BLUETOOTH_GATT_CHARACTERISTIC_SERVICE_PROVIDER_H_
 #define DEVICE_BLUETOOTH_DBUS_BLUETOOTH_GATT_CHARACTERISTIC_SERVICE_PROVIDER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "dbus/bus.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -39,7 +41,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProvider {
 
     // ValueCallback is used for methods that require a characteristic value
     // to be returned.
-    typedef base::Callback<void(const std::vector<uint8>&)> ValueCallback;
+    typedef base::Callback<void(const std::vector<uint8_t>&)> ValueCallback;
 
     // ErrorCallback is used by methods to report failure.
     typedef base::Closure ErrorCallback;
@@ -67,7 +69,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProvider {
     // occur based on the set value and potentially send a property changed
     // signal to notify the Bluetooth daemon that the value has changed.
     virtual void SetCharacteristicValue(
-        const std::vector<uint8>& value,
+        const std::vector<uint8_t>& value,
         const base::Closure& callback,
         const ErrorCallback& error_callback) = 0;
   };
@@ -76,7 +78,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProvider {
 
   // Send a PropertyChanged signal to notify the Bluetooth daemon that the value
   // of the "Value" property has changed to |value|.
-  virtual void SendValueChanged(const std::vector<uint8>& value) = 0;
+  virtual void SendValueChanged(const std::vector<uint8_t>& value) = 0;
 
   // Creates the instance, where |bus| is the D-Bus bus connection to export
   // the object onto, |uuid| is the 128-bit GATT characteristic UUID,

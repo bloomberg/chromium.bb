@@ -5,6 +5,8 @@
 #ifndef DEVICE_HID_HID_DEVICE_INFO_LINUX_H_
 #define DEVICE_HID_HID_DEVICE_INFO_LINUX_H_
 
+#include <stdint.h>
+
 #include "device/hid/hid_device_info.h"
 
 namespace device {
@@ -18,7 +20,7 @@ class HidDeviceInfoLinux : public HidDeviceInfo {
                      const std::string& product_name,
                      const std::string& serial_number,
                      HidBusType bus_type,
-                     const std::vector<uint8> report_descriptor);
+                     const std::vector<uint8_t> report_descriptor);
 
   const std::string& device_node() const { return device_node_; }
 

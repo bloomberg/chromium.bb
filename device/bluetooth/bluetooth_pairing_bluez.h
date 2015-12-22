@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_PAIRING_BLUEZ_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_PAIRING_BLUEZ_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
@@ -67,22 +69,22 @@ class BluetoothPairingBlueZ {
   // Passkeys are generally required for Bluetooth 2.1 and later devices
   // which cannot provide input or display on their own, and don't accept
   // passkey-less pairing, and are a numeric in the range 0-999999.
-  void SetPasskey(uint32 passkey);
+  void SetPasskey(uint32_t passkey);
 
   // Requests a Passkey for the current device be displayed by the current
   // pairing delegate. No response is expected from the delegate.
-  void DisplayPasskey(uint32 passkey);
+  void DisplayPasskey(uint32_t passkey);
 
   // Informs the current pairing delegate that |entered| keys have been
   // provided to the remote device since the DisplayPasskey() call. No
   // response is expected from the delegate.
-  void KeysEntered(uint16 entered);
+  void KeysEntered(uint16_t entered);
 
   // Requests confirmation that |passkey| is displayed on the current device
   // from the current pairing delegate. The ConfirmPairing(), RejectPairing()
   // and CancelPairing() method calls on this object are translated into the
   // appropriate response to |callback|.
-  void RequestConfirmation(uint32 passkey,
+  void RequestConfirmation(uint32_t passkey,
                            const bluez::BluetoothAgentServiceProvider::
                                Delegate::ConfirmationCallback& callback);
 

@@ -5,6 +5,9 @@
 #ifndef DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
 #define DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -125,34 +128,34 @@ class MediaTransferProtocolManager {
 
   // Creates |directory_name| in |parent_id|.
   virtual void CreateDirectory(const std::string& storage_handle,
-                               const uint32 parent_id,
+                               const uint32_t parent_id,
                                const std::string& directory_name,
                                const CreateDirectoryCallback& callback) = 0;
 
   // Reads directory entries from |file_id| on |storage_handle| and runs
   // |callback|. |max_size| is a maximum number of files to be read.
   virtual void ReadDirectory(const std::string& storage_handle,
-                             const uint32 file_id,
+                             const uint32_t file_id,
                              const size_t max_size,
                              const ReadDirectoryCallback& callback) = 0;
 
   // Reads file data from |file_id| on |storage_handle| and runs |callback|.
   // Reads |count| bytes of data starting at |offset|.
   virtual void ReadFileChunk(const std::string& storage_handle,
-                             uint32 file_id,
-                             uint32 offset,
-                             uint32 count,
+                             uint32_t file_id,
+                             uint32_t offset,
+                             uint32_t count,
                              const ReadFileCallback& callback) = 0;
 
   // Gets the file metadata for |file_id| on |storage_handle| and runs
   // |callback|.
   virtual void GetFileInfo(const std::string& storage_handle,
-                           uint32 file_id,
+                           uint32_t file_id,
                            const GetFileInfoCallback& callback) = 0;
 
   // Renames |object_id| to |new_name|.
   virtual void RenameObject(const std::string& storage_handle,
-                            const uint32 object_id,
+                            const uint32_t object_id,
                             const std::string& new_name,
                             const RenameObjectCallback& callback) = 0;
 
@@ -160,13 +163,13 @@ class MediaTransferProtocolManager {
   // |parent_id|.
   virtual void CopyFileFromLocal(const std::string& storage_handle,
                                  const int source_file_descriptor,
-                                 const uint32 parent_id,
+                                 const uint32_t parent_id,
                                  const std::string& file_name,
                                  const CopyFileFromLocalCallback& callback) = 0;
 
   // Deletes |object_id|.
   virtual void DeleteObject(const std::string& storage_handle,
-                            const uint32 object_id,
+                            const uint32_t object_id,
                             const DeleteObjectCallback& callback) = 0;
 
   // Creates and returns the global MediaTransferProtocolManager instance.

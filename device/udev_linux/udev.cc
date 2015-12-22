@@ -4,6 +4,8 @@
 
 #include "device/udev_linux/udev.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 #include "device/udev_linux/udev_loader.h"
 

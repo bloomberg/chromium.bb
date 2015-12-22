@@ -4,6 +4,9 @@
 
 #include "device/test/usb_test_gadget.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -69,7 +72,7 @@ static const int kReenumeratePeriod = 100;  // 0.1 seconds
 struct UsbTestGadgetConfiguration {
   UsbTestGadget::Type type;
   const char* http_resource;
-  uint16 product_id;
+  uint16_t product_id;
 };
 
 static const struct UsbTestGadgetConfiguration kConfigurations[] = {
@@ -201,7 +204,7 @@ class UsbGadgetFactory : public UsbService::Observer,
     usb_service_ = DeviceClient::Get()->GetUsbService();
     request_context_getter_ = new URLRequestContextGetter(io_task_runner);
 
-    static uint32 next_session_id;
+    static uint32_t next_session_id;
     base::ProcessId process_id = base::GetCurrentProcId();
     session_id_ = base::StringPrintf("%d-%d", process_id, next_session_id++);
 
@@ -424,7 +427,7 @@ class DeviceAddListener : public UsbService::Observer {
 
   void OnDeviceAdded(scoped_refptr<UsbDevice> device) override {
     if (device->vendor_id() == 0x18D1 && !device->serial_number().empty()) {
-      const uint16 product_id = device->product_id();
+      const uint16_t product_id = device->product_id();
       if (product_id_ == -1) {
         bool found = false;
         for (size_t i = 0; i < arraysize(kConfigurations); ++i) {

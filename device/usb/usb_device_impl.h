@@ -5,10 +5,14 @@
 #ifndef DEVICE_USB_USB_DEVICE_IMPL_H_
 #define DEVICE_USB_USB_DEVICE_IMPL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/webusb_descriptors.h"

@@ -5,6 +5,7 @@
 #include "device/hid/hid_service_linux.h"
 
 #include <fcntl.h>
+#include <stdint.h>
 #include <limits>
 #include <string>
 
@@ -13,11 +14,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/hid/device_monitor_linux.h"
 #include "device/hid/hid_connection_linux.h"
@@ -170,8 +173,8 @@ class HidServiceLinux::FileThreadHelper
         device_id, device_node, vendor_id, product_id, product_name,
         serial_number,
         kHIDBusTypeUSB,  // TODO(reillyg): Detect Bluetooth. crbug.com/443335
-        std::vector<uint8>(report_descriptor_str.begin(),
-                           report_descriptor_str.end())));
+        std::vector<uint8_t>(report_descriptor_str.begin(),
+                             report_descriptor_str.end())));
 
     task_runner_->PostTask(FROM_HERE, base::Bind(&HidServiceLinux::AddDevice,
                                                  service_, device_info));

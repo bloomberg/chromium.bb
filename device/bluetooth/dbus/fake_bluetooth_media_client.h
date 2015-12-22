@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_MEDIA_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_MEDIA_CLIENT_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/callback.h"

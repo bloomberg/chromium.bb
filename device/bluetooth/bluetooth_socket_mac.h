@@ -10,8 +10,10 @@
 
 #import <IOBluetooth/IOBluetooth.h>
 #import <IOKit/IOReturn.h>
+#include <stddef.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

@@ -95,7 +95,7 @@ base::string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
 
 BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
   // https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm
-  uint32 bluetooth_class = GetBluetoothClass();
+  uint32_t bluetooth_class = GetBluetoothClass();
   switch ((bluetooth_class & 0x1f00) >> 8) {
     case 0x01:
       // Computer major device class.

@@ -13,11 +13,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "dbus/bus.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
@@ -181,7 +183,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void CreateDirectory(const std::string& storage_handle,
-                       const uint32 parent_id,
+                       const uint32_t parent_id,
                        const std::string& directory_name,
                        const CreateDirectoryCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -200,7 +202,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   // MediaTransferProtocolManager override.
   void ReadDirectory(const std::string& storage_handle,
-                     const uint32 file_id,
+                     const uint32_t file_id,
                      const size_t max_size,
                      const ReadDirectoryCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -222,9 +224,9 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   // MediaTransferProtocolManager override.
   void ReadFileChunk(const std::string& storage_handle,
-                     uint32 file_id,
-                     uint32 offset,
-                     uint32 count,
+                     uint32_t file_id,
+                     uint32_t offset,
+                     uint32_t count,
                      const ReadFileCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
@@ -241,14 +243,14 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void GetFileInfo(const std::string& storage_handle,
-                   uint32 file_id,
+                   uint32_t file_id,
                    const GetFileInfoCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(MtpFileEntry(), true);
       return;
     }
-    std::vector<uint32> file_ids;
+    std::vector<uint32_t> file_ids;
     file_ids.push_back(file_id);
     get_file_info_callbacks_.push(callback);
     mtp_client_->GetFileInfo(
@@ -263,7 +265,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void RenameObject(const std::string& storage_handle,
-                    const uint32 object_id,
+                    const uint32_t object_id,
                     const std::string& new_name,
                     const RenameObjectCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -282,7 +284,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   void CopyFileFromLocal(const std::string& storage_handle,
                          const int source_file_descriptor,
-                         const uint32 parent_id,
+                         const uint32_t parent_id,
                          const std::string& file_name,
                          const CopyFileFromLocalCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -300,7 +302,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void DeleteObject(const std::string& storage_handle,
-                    const uint32 object_id,
+                    const uint32_t object_id,
                     const DeleteObjectCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
@@ -463,7 +465,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   void OnReadDirectoryEntryIdsToReadDirectory(
       const std::string& storage_handle,
       const size_t max_size,
-      const std::vector<uint32>& file_ids) {
+      const std::vector<uint32_t>& file_ids) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     if (file_ids.empty()) {
@@ -472,7 +474,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       return;
     }
 
-    std::vector<uint32> sorted_file_ids = file_ids;
+    std::vector<uint32_t> sorted_file_ids = file_ids;
     std::sort(sorted_file_ids.begin(), sorted_file_ids.end());
 
     const size_t chunk_size =
@@ -489,10 +491,10 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void OnGotDirectoryEntries(const std::string& storage_handle,
-                             const std::vector<uint32>& file_ids,
+                             const std::vector<uint32_t>& file_ids,
                              const size_t offset,
                              const size_t max_size,
-                             const std::vector<uint32>& sorted_file_ids,
+                             const std::vector<uint32_t>& sorted_file_ids,
                              const std::vector<MtpFileEntry>& file_entries) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK_EQ(file_ids.size(), sorted_file_ids.size());
@@ -500,9 +502,8 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     // Use |sorted_file_ids| to sanity check and make sure the results are a
     // subset of the requested file ids.
     for (size_t i = 0; i < file_entries.size(); ++i) {
-      std::vector<uint32>::const_iterator it =
-          std::lower_bound(sorted_file_ids.begin(),
-                           sorted_file_ids.end(),
+      std::vector<uint32_t>::const_iterator it =
+          std::lower_bound(sorted_file_ids.begin(), sorted_file_ids.end(),
                            file_entries[i].item_id());
       if (it == sorted_file_ids.end()) {
         OnReadDirectoryError();

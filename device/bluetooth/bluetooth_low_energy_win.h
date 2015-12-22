@@ -5,7 +5,11 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_WIN_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/win/scoped_handle.h"

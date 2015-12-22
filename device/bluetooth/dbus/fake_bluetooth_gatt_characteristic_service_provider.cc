@@ -54,7 +54,7 @@ FakeBluetoothGattCharacteristicServiceProvider::
 }
 
 void FakeBluetoothGattCharacteristicServiceProvider::SendValueChanged(
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   VLOG(1) << "Sent characteristic value changed: " << object_path_.value()
           << " UUID: " << uuid_;
 }
@@ -81,7 +81,7 @@ void FakeBluetoothGattCharacteristicServiceProvider::GetValue(
 }
 
 void FakeBluetoothGattCharacteristicServiceProvider::SetValue(
-    const std::vector<uint8>& value,
+    const std::vector<uint8_t>& value,
     const base::Closure& callback,
     const Delegate::ErrorCallback& error_callback) {
   VLOG(1) << "GATT characteristic value Set request: " << object_path_.value()

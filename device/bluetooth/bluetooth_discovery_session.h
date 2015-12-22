@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_DISCOVERY_SESSION_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"

@@ -91,6 +91,8 @@ if __name__ == "__main__":
 #ifndef GENERATED_USB_IDS_H_
 #define GENERATED_USB_IDS_H_
 
+#include <stddef.h>
+
 #include "device/usb/usb_ids.h"
 
 namespace device {

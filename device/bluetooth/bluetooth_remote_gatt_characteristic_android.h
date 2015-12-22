@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_ANDROID_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_ANDROID_H_
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
@@ -46,7 +48,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   std::string GetIdentifier() const override;
   BluetoothUUID GetUUID() const override;
   bool IsLocal() const override;
-  const std::vector<uint8>& GetValue() const override;
+  const std::vector<uint8_t>& GetValue() const override;
   BluetoothGattService* GetService() const override;
   Properties GetProperties() const override;
   Permissions GetPermissions() const override;
@@ -55,12 +57,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   BluetoothGattDescriptor* GetDescriptor(
       const std::string& identifier) const override;
   bool AddDescriptor(BluetoothGattDescriptor* descriptor) override;
-  bool UpdateValue(const std::vector<uint8>& value) override;
+  bool UpdateValue(const std::vector<uint8_t>& value) override;
   void StartNotifySession(const NotifySessionCallback& callback,
                           const ErrorCallback& error_callback) override;
   void ReadRemoteCharacteristic(const ValueCallback& callback,
                                 const ErrorCallback& error_callback) override;
-  void WriteRemoteCharacteristic(const std::vector<uint8>& new_value,
+  void WriteRemoteCharacteristic(const std::vector<uint8_t>& new_value,
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) override;
 
@@ -95,7 +97,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   base::Closure write_callback_;
   ErrorCallback write_error_callback_;
 
-  std::vector<uint8> value_;
+  std::vector<uint8_t> value_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicAndroid);
 };

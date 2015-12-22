@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "device/nfc/nfc_ndef_record.h"
@@ -19,7 +22,7 @@ const char kTestAction[] = "test-action";
 const char kTestEncoding[] = "test-encoding";
 const char kTestLanguageCode[] = "test-language-code";
 const char kTestMimeType[] = "test-mime-type";
-const uint32 kTestTargetSize = 0;
+const uint32_t kTestTargetSize = 0;
 const char kTestText[] = "test-text";
 const char kTestURI[] = "test://uri";
 
@@ -135,7 +138,7 @@ TEST(NfcNdefRecordTest, PopulateUriRecord) {
   EXPECT_EQ(kTestMimeType, string_value);
   EXPECT_TRUE(record->data().GetDouble(
       NfcNdefRecord::kFieldTargetSize, &double_value));
-  EXPECT_EQ(kTestTargetSize, static_cast<uint32>(double_value));
+  EXPECT_EQ(kTestTargetSize, static_cast<uint32_t>(double_value));
 }
 
 TEST(NfcNdefRecordTest, PopulateSmartPoster) {
@@ -225,7 +228,7 @@ TEST(NfcNdefRecordTest, PopulateSmartPoster) {
   EXPECT_EQ(kTestMimeType, string_value);
   EXPECT_TRUE(record->data().GetDouble(
       NfcNdefRecord::kFieldTargetSize, &double_value));
-  EXPECT_EQ(kTestTargetSize, static_cast<uint32>(double_value));
+  EXPECT_EQ(kTestTargetSize, static_cast<uint32_t>(double_value));
   EXPECT_TRUE(record->data().GetString(
       NfcNdefRecord::kFieldAction, &string_value));
   EXPECT_EQ(kTestAction, string_value);

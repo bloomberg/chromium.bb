@@ -5,6 +5,7 @@
 #ifndef DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_MAC_H_
 #define DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_MAC_H_
 
+#include "base/macros.h"
 #include "device/serial/serial_device_enumerator.h"
 
 namespace device {

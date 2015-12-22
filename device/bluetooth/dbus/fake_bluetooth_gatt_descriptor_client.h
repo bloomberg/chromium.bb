@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_GATT_DESCRIPTOR_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_GATT_DESCRIPTOR_CLIENT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
@@ -50,7 +52,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattDescriptorClient
                  const ValueCallback& callback,
                  const ErrorCallback& error_callback) override;
   void WriteValue(const dbus::ObjectPath& object_path,
-                  const std::vector<uint8>& value,
+                  const std::vector<uint8_t>& value,
                   const base::Closure& callback,
                   const ErrorCallback& error_callback) override;
 

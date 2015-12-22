@@ -115,7 +115,7 @@ void BluetoothTestBase::NotifyCallback(
 }
 
 void BluetoothTestBase::ReadValueCallback(Call expected,
-                                          const std::vector<uint8>& value) {
+                                          const std::vector<uint8_t>& value) {
   ++callback_count_;
   last_read_value_ = value;
 

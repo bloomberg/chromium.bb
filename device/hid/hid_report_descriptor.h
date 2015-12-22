@@ -5,6 +5,9 @@
 #ifndef DEVICE_HID_HID_REPORT_DESCRIPTOR_H_
 #define DEVICE_HID_HID_REPORT_DESCRIPTOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
@@ -18,7 +21,7 @@ namespace device {
 class HidReportDescriptor {
 
  public:
-  HidReportDescriptor(const std::vector<uint8>& bytes);
+  HidReportDescriptor(const std::vector<uint8_t>& bytes);
   ~HidReportDescriptor();
 
   const std::vector<linked_ptr<HidReportDescriptorItem> >& items() const {

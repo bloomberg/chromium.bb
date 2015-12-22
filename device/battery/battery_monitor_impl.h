@@ -5,6 +5,7 @@
 #ifndef DEVICE_BATTERY_BATTERY_MONITOR_IMPL_H_
 #define DEVICE_BATTERY_BATTERY_MONITOR_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "device/battery/battery_export.h"
 #include "device/battery/battery_monitor.mojom.h"

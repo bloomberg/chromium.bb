@@ -5,6 +5,8 @@
 #ifndef DEVICE_USB_DEVICE_IMPL_H_
 #define DEVICE_USB_DEVICE_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

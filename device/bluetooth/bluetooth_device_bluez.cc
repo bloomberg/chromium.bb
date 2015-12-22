@@ -52,9 +52,9 @@ enum UMAPairingResult {
 
 void ParseModalias(const dbus::ObjectPath& object_path,
                    BluetoothDevice::VendorIDSource* vendor_id_source,
-                   uint16* vendor_id,
-                   uint16* product_id,
-                   uint16* device_id) {
+                   uint16_t* vendor_id,
+                   uint16_t* product_id,
+                   uint16_t* device_id) {
   bluez::BluetoothDeviceClient::Properties* properties =
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path);
@@ -181,7 +181,7 @@ BluetoothDeviceBlueZ::~BluetoothDeviceBlueZ() {
   }
 }
 
-uint32 BluetoothDeviceBlueZ::GetBluetoothClass() const {
+uint32_t BluetoothDeviceBlueZ::GetBluetoothClass() const {
   bluez::BluetoothDeviceClient::Properties* properties =
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
@@ -227,20 +227,20 @@ BluetoothDevice::VendorIDSource BluetoothDeviceBlueZ::GetVendorIDSource()
   return vendor_id_source;
 }
 
-uint16 BluetoothDeviceBlueZ::GetVendorID() const {
-  uint16 vendor_id = 0;
+uint16_t BluetoothDeviceBlueZ::GetVendorID() const {
+  uint16_t vendor_id = 0;
   ParseModalias(object_path_, NULL, &vendor_id, NULL, NULL);
   return vendor_id;
 }
 
-uint16 BluetoothDeviceBlueZ::GetProductID() const {
-  uint16 product_id = 0;
+uint16_t BluetoothDeviceBlueZ::GetProductID() const {
+  uint16_t product_id = 0;
   ParseModalias(object_path_, NULL, NULL, &product_id, NULL);
   return product_id;
 }
 
-uint16 BluetoothDeviceBlueZ::GetDeviceID() const {
-  uint16 device_id = 0;
+uint16_t BluetoothDeviceBlueZ::GetDeviceID() const {
+  uint16_t device_id = 0;
   ParseModalias(object_path_, NULL, NULL, NULL, &device_id);
   return device_id;
 }
@@ -304,7 +304,7 @@ BluetoothDeviceBlueZ::UUIDList BluetoothDeviceBlueZ::GetUUIDs() const {
   return uuids;
 }
 
-int16 BluetoothDeviceBlueZ::GetInquiryRSSI() const {
+int16_t BluetoothDeviceBlueZ::GetInquiryRSSI() const {
   bluez::BluetoothDeviceClient::Properties* properties =
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
@@ -316,7 +316,7 @@ int16 BluetoothDeviceBlueZ::GetInquiryRSSI() const {
   return properties->rssi.value();
 }
 
-int16 BluetoothDeviceBlueZ::GetInquiryTxPower() const {
+int16_t BluetoothDeviceBlueZ::GetInquiryTxPower() const {
   bluez::BluetoothDeviceClient::Properties* properties =
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
@@ -398,7 +398,7 @@ void BluetoothDeviceBlueZ::SetPinCode(const std::string& pincode) {
   pairing_->SetPinCode(pincode);
 }
 
-void BluetoothDeviceBlueZ::SetPasskey(uint32 passkey) {
+void BluetoothDeviceBlueZ::SetPasskey(uint32_t passkey) {
   if (!pairing_.get())
     return;
 
@@ -583,9 +583,9 @@ void BluetoothDeviceBlueZ::GattServiceRemoved(
 }
 
 void BluetoothDeviceBlueZ::OnGetConnInfo(const ConnectionInfoCallback& callback,
-                                         int16 rssi,
-                                         int16 transmit_power,
-                                         int16 max_transmit_power) {
+                                         int16_t rssi,
+                                         int16_t transmit_power,
+                                         int16_t max_transmit_power) {
   callback.Run(ConnectionInfo(rssi, transmit_power, max_transmit_power));
 }
 

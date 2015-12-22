@@ -5,6 +5,7 @@
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -113,21 +114,21 @@ const char FakeBluetoothDeviceClient::kPairedDevicePath[] = "/fake/hci0/dev0";
 const char FakeBluetoothDeviceClient::kPairedDeviceAddress[] =
     "00:11:22:33:44:55";
 const char FakeBluetoothDeviceClient::kPairedDeviceName[] = "Fake Device";
-const uint32 FakeBluetoothDeviceClient::kPairedDeviceClass = 0x000104;
+const uint32_t FakeBluetoothDeviceClient::kPairedDeviceClass = 0x000104;
 
 const char FakeBluetoothDeviceClient::kLegacyAutopairPath[] = "/fake/hci0/dev1";
 const char FakeBluetoothDeviceClient::kLegacyAutopairAddress[] =
     "28:CF:DA:00:00:00";
 const char FakeBluetoothDeviceClient::kLegacyAutopairName[] =
     "Bluetooth 2.0 Mouse";
-const uint32 FakeBluetoothDeviceClient::kLegacyAutopairClass = 0x002580;
+const uint32_t FakeBluetoothDeviceClient::kLegacyAutopairClass = 0x002580;
 
 const char FakeBluetoothDeviceClient::kDisplayPinCodePath[] = "/fake/hci0/dev2";
 const char FakeBluetoothDeviceClient::kDisplayPinCodeAddress[] =
     "28:37:37:00:00:00";
 const char FakeBluetoothDeviceClient::kDisplayPinCodeName[] =
     "Bluetooth 2.0 Keyboard";
-const uint32 FakeBluetoothDeviceClient::kDisplayPinCodeClass = 0x002540;
+const uint32_t FakeBluetoothDeviceClient::kDisplayPinCodeClass = 0x002540;
 
 const char FakeBluetoothDeviceClient::kVanishingDevicePath[] =
     "/fake/hci0/dev3";
@@ -135,7 +136,7 @@ const char FakeBluetoothDeviceClient::kVanishingDeviceAddress[] =
     "01:02:03:04:05:06";
 const char FakeBluetoothDeviceClient::kVanishingDeviceName[] =
     "Vanishing Device";
-const uint32 FakeBluetoothDeviceClient::kVanishingDeviceClass = 0x000104;
+const uint32_t FakeBluetoothDeviceClient::kVanishingDeviceClass = 0x000104;
 
 const char FakeBluetoothDeviceClient::kConnectUnpairablePath[] =
     "/fake/hci0/dev4";
@@ -143,32 +144,32 @@ const char FakeBluetoothDeviceClient::kConnectUnpairableAddress[] =
     "7C:ED:8D:00:00:00";
 const char FakeBluetoothDeviceClient::kConnectUnpairableName[] =
     "Unpairable Device";
-const uint32 FakeBluetoothDeviceClient::kConnectUnpairableClass = 0x002580;
+const uint32_t FakeBluetoothDeviceClient::kConnectUnpairableClass = 0x002580;
 
 const char FakeBluetoothDeviceClient::kDisplayPasskeyPath[] = "/fake/hci0/dev5";
 const char FakeBluetoothDeviceClient::kDisplayPasskeyAddress[] =
     "00:0F:F6:00:00:00";
 const char FakeBluetoothDeviceClient::kDisplayPasskeyName[] =
     "Bluetooth 2.1+ Keyboard";
-const uint32 FakeBluetoothDeviceClient::kDisplayPasskeyClass = 0x002540;
+const uint32_t FakeBluetoothDeviceClient::kDisplayPasskeyClass = 0x002540;
 
 const char FakeBluetoothDeviceClient::kRequestPinCodePath[] = "/fake/hci0/dev6";
 const char FakeBluetoothDeviceClient::kRequestPinCodeAddress[] =
     "00:24:BE:00:00:00";
 const char FakeBluetoothDeviceClient::kRequestPinCodeName[] = "PIN Device";
-const uint32 FakeBluetoothDeviceClient::kRequestPinCodeClass = 0x240408;
+const uint32_t FakeBluetoothDeviceClient::kRequestPinCodeClass = 0x240408;
 
 const char FakeBluetoothDeviceClient::kConfirmPasskeyPath[] = "/fake/hci0/dev7";
 const char FakeBluetoothDeviceClient::kConfirmPasskeyAddress[] =
     "20:7D:74:00:00:00";
 const char FakeBluetoothDeviceClient::kConfirmPasskeyName[] = "Phone";
-const uint32 FakeBluetoothDeviceClient::kConfirmPasskeyClass = 0x7a020c;
+const uint32_t FakeBluetoothDeviceClient::kConfirmPasskeyClass = 0x7a020c;
 
 const char FakeBluetoothDeviceClient::kRequestPasskeyPath[] = "/fake/hci0/dev8";
 const char FakeBluetoothDeviceClient::kRequestPasskeyAddress[] =
     "20:7D:74:00:00:01";
 const char FakeBluetoothDeviceClient::kRequestPasskeyName[] = "Passkey Device";
-const uint32 FakeBluetoothDeviceClient::kRequestPasskeyClass = 0x7a020c;
+const uint32_t FakeBluetoothDeviceClient::kRequestPasskeyClass = 0x7a020c;
 
 const char FakeBluetoothDeviceClient::kUnconnectableDevicePath[] =
     "/fake/hci0/dev9";
@@ -176,7 +177,7 @@ const char FakeBluetoothDeviceClient::kUnconnectableDeviceAddress[] =
     "20:7D:74:00:00:02";
 const char FakeBluetoothDeviceClient::kUnconnectableDeviceName[] =
     "Unconnectable Device";
-const uint32 FakeBluetoothDeviceClient::kUnconnectableDeviceClass = 0x7a020c;
+const uint32_t FakeBluetoothDeviceClient::kUnconnectableDeviceClass = 0x7a020c;
 
 const char FakeBluetoothDeviceClient::kUnpairableDevicePath[] =
     "/fake/hci0/devA";
@@ -184,18 +185,18 @@ const char FakeBluetoothDeviceClient::kUnpairableDeviceAddress[] =
     "20:7D:74:00:00:03";
 const char FakeBluetoothDeviceClient::kUnpairableDeviceName[] =
     "Unpairable Device";
-const uint32 FakeBluetoothDeviceClient::kUnpairableDeviceClass = 0x002540;
+const uint32_t FakeBluetoothDeviceClient::kUnpairableDeviceClass = 0x002540;
 
 const char FakeBluetoothDeviceClient::kJustWorksPath[] = "/fake/hci0/devB";
 const char FakeBluetoothDeviceClient::kJustWorksAddress[] = "00:0C:8A:00:00:00";
 const char FakeBluetoothDeviceClient::kJustWorksName[] = "Just-Works Device";
-const uint32 FakeBluetoothDeviceClient::kJustWorksClass = 0x240428;
+const uint32_t FakeBluetoothDeviceClient::kJustWorksClass = 0x240428;
 
 const char FakeBluetoothDeviceClient::kLowEnergyPath[] = "/fake/hci0/devC";
 const char FakeBluetoothDeviceClient::kLowEnergyAddress[] = "00:1A:11:00:15:30";
 const char FakeBluetoothDeviceClient::kLowEnergyName[] =
     "Bluetooth 4.0 Heart Rate Monitor";
-const uint32 FakeBluetoothDeviceClient::kLowEnergyClass =
+const uint32_t FakeBluetoothDeviceClient::kLowEnergyClass =
     0x000918;  // Major class "Health", Minor class "Heart/Pulse Rate Monitor."
 
 const char FakeBluetoothDeviceClient::kPairedUnconnectableDevicePath[] =
@@ -204,7 +205,7 @@ const char FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress[] =
     "20:7D:74:00:00:04";
 const char FakeBluetoothDeviceClient::kPairedUnconnectableDeviceName[] =
     "Paired Unconnectable Device";
-const uint32 FakeBluetoothDeviceClient::kPairedUnconnectableDeviceClass =
+const uint32_t FakeBluetoothDeviceClient::kPairedUnconnectableDeviceClass =
     0x000104;
 
 const char FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDevicePath[] =
@@ -214,8 +215,8 @@ const char
         "11:22:33:44:55:66";
 const char FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDeviceName[] =
     "Connected Pairable Device";
-const uint32 FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDeviceClass =
-    0x7a020c;
+const uint32_t
+    FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDeviceClass = 0x7a020c;
 
 FakeBluetoothDeviceClient::Properties::Properties(
     const PropertyChangedCallback& callback)
@@ -1442,7 +1443,7 @@ void FakeBluetoothDeviceClient::AddInputDeviceIfNeeded(
 
 void FakeBluetoothDeviceClient::UpdateDeviceRSSI(
     const dbus::ObjectPath& object_path,
-    int16 rssi) {
+    int16_t rssi) {
   PropertiesMap::const_iterator iter = properties_map_.find(object_path);
   if (iter == properties_map_.end()) {
     VLOG(2) << "Fake device does not exist: " << object_path.value();
@@ -1454,9 +1455,9 @@ void FakeBluetoothDeviceClient::UpdateDeviceRSSI(
 }
 
 void FakeBluetoothDeviceClient::UpdateConnectionInfo(
-    uint16 connection_rssi,
-    uint16 transmit_power,
-    uint16 max_transmit_power) {
+    uint16_t connection_rssi,
+    uint16_t transmit_power,
+    uint16_t max_transmit_power) {
   connection_rssi_ = connection_rssi;
   transmit_power_ = transmit_power;
   max_transmit_power_ = max_transmit_power;
@@ -1518,7 +1519,7 @@ void FakeBluetoothDeviceClient::PasskeyCallback(
     const base::Closure& callback,
     const ErrorCallback& error_callback,
     BluetoothAgentServiceProvider::Delegate::Status status,
-    uint32 passkey) {
+    uint32_t passkey) {
   VLOG(1) << "PasskeyCallback: " << object_path.value();
 
   if (status == BluetoothAgentServiceProvider::Delegate::SUCCESS) {
@@ -1527,7 +1528,7 @@ void FakeBluetoothDeviceClient::PasskeyCallback(
     bool success = true;
 
     if (iter != pairing_options_map_.end()) {
-      success = static_cast<uint32>(
+      success = static_cast<uint32_t>(
                     std::stoi(iter->second->pairing_auth_token)) == passkey;
     }
 
@@ -1596,7 +1597,7 @@ void FakeBluetoothDeviceClient::ConfirmationCallback(
 }
 
 void FakeBluetoothDeviceClient::SimulateKeypress(
-    uint16 entered,
+    uint16_t entered,
     const dbus::ObjectPath& object_path,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {

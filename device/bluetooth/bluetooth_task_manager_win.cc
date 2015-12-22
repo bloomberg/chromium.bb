@@ -4,11 +4,11 @@
 
 #include "device/bluetooth/bluetooth_task_manager_win.h"
 
+#include <stddef.h>
 #include <winsock2.h>
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -613,7 +613,7 @@ int BluetoothTaskManagerWin::DiscoverClassicDeviceServicesWorker(
     ServiceRecordState* service_record_state = new ServiceRecordState();
     service_record_state->name =
         base::SysWideToUTF8(sdp_result_data->lpszServiceInstanceName);
-    for (uint64 i = 0; i < sdp_result_data->lpBlob->cbSize; i++) {
+    for (uint64_t i = 0; i < sdp_result_data->lpBlob->cbSize; i++) {
       service_record_state->sdp_bytes.push_back(
           sdp_result_data->lpBlob->pBlobData[i]);
     }

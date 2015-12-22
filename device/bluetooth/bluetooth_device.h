@@ -5,6 +5,9 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -145,8 +148,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
     // but not display, such as keyboards. The Passkey is a numeric in the
     // range 0-999999 and should be always presented zero-padded to six
     // digits.
-    virtual void DisplayPasskey(BluetoothDevice* device,
-                                uint32 passkey) = 0;
+    virtual void DisplayPasskey(BluetoothDevice* device, uint32_t passkey) = 0;
 
     // This method will be called when the Bluetooth daemon gets a notification
     // of a key entered on the device |device| while pairing with the device
@@ -160,8 +162,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
     // The |entered| value describes the number of keys entered so far,
     // including the last [enter] key. A first call to KeysEntered() with
     // |entered| as 0 will be sent when the device supports this feature.
-    virtual void KeysEntered(BluetoothDevice* device,
-                             uint32 entered) = 0;
+    virtual void KeysEntered(BluetoothDevice* device, uint32_t entered) = 0;
 
     // This method will be called when the Bluetooth daemon requires that the
     // user confirm that the Passkey |passkey| is displayed on the screen
@@ -175,8 +176,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
     // such as other computers or phones. The Passkey is a numeric in the
     // range 0-999999 and should be always present zero-padded to six
     // digits.
-    virtual void ConfirmPasskey(BluetoothDevice* device,
-                                uint32 passkey) = 0;
+    virtual void ConfirmPasskey(BluetoothDevice* device, uint32_t passkey) = 0;
 
     // This method will be called when the Bluetooth daemon requires that a
     // pairing request, usually only incoming, using the just-works model is
@@ -192,7 +192,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   // Returns the Bluetooth class of the device, used by GetDeviceType()
   // and metrics logging,
-  virtual uint32 GetBluetoothClass() const = 0;
+  virtual uint32_t GetBluetoothClass() const = 0;
 
   // Returns the identifier of the bluetooth device.
   virtual std::string GetIdentifier() const;
@@ -206,14 +206,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   virtual VendorIDSource GetVendorIDSource() const = 0;
 
   // Returns the Vendor ID of the device, where available.
-  virtual uint16 GetVendorID() const = 0;
+  virtual uint16_t GetVendorID() const = 0;
 
   // Returns the Product ID of the device, where available.
-  virtual uint16 GetProductID() const = 0;
+  virtual uint16_t GetProductID() const = 0;
 
   // Returns the Device ID of the device, typically the release or version
   // number in BCD format, where available.
-  virtual uint16 GetDeviceID() const = 0;
+  virtual uint16_t GetDeviceID() const = 0;
 
   // Returns the name of the device suitable for displaying, this may
   // be a synthesized string containing the address and localized type name
@@ -266,13 +266,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // The received signal strength, in dBm. This field is avaliable and valid
   // only during discovery. If not during discovery, or RSSI wasn't reported,
   // this method will return |kUnknownPower|.
-  virtual int16 GetInquiryRSSI() const = 0;
+  virtual int16_t GetInquiryRSSI() const = 0;
 
   // The transmitted power level. This field is avaliable only for LE devices
   // that include this field in AD. It is avaliable and valid only during
   // discovery. If not during discovery, or TxPower wasn't reported, this
   // method will return |kUnknownPower|.
-  virtual int16 GetInquiryTxPower() const = 0;
+  virtual int16_t GetInquiryTxPower() const = 0;
 
   // The ErrorCallback is used for methods that can fail in which case it
   // is called, in the success case the callback is simply not called.
@@ -350,7 +350,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Passkeys are generally required for Bluetooth 2.1 and later devices
   // which cannot provide input or display on their own, and don't accept
   // passkey-less pairing, and are a numeric in the range 0-999999.
-  virtual void SetPasskey(uint32 passkey) = 0;
+  virtual void SetPasskey(uint32_t passkey) = 0;
 
   // Confirms to the remote device during pairing that a passkey provided by
   // the ConfirmPasskey() delegate call is displayed on both devices.

@@ -5,10 +5,13 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_GATT_CHARACTERISTIC_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_GATT_CHARACTERISTIC_CLIENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -52,7 +55,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicClient
                  const ValueCallback& callback,
                  const ErrorCallback& error_callback) override;
   void WriteValue(const dbus::ObjectPath& object_path,
-                  const std::vector<uint8>& value,
+                  const std::vector<uint8_t>& value,
                   const base::Closure& callback,
                   const ErrorCallback& error_callback) override;
   void StartNotify(const dbus::ObjectPath& object_path,
@@ -126,7 +129,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicClient
   // Returns a random Heart Rate Measurement value. All the fields of the value
   // are populated according to the the fake behavior. The measurement value
   // is a random value within a reasonable range.
-  std::vector<uint8> GetHeartRateMeasurementValue();
+  std::vector<uint8_t> GetHeartRateMeasurementValue();
 
   // Callback that executes a delayed ReadValue action by updating the
   // appropriate "Value" property and invoking the ValueCallback.
@@ -145,7 +148,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicClient
   bool authenticated_;
 
   // Total calories burned, used for the Heart Rate Measurement characteristic.
-  uint16 calories_burned_;
+  uint16_t calories_burned_;
 
   // Static properties returned for simulated characteristics for the Heart
   // Rate Service. These pointers are not NULL only if the characteristics are

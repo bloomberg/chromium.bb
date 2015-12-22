@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_BLUETOOTH_MEDIA_TRANSPORT_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_BLUETOOTH_MEDIA_TRANSPORT_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
