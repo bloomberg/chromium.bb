@@ -167,6 +167,10 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testGetWindowHandles',
         'ChromeDriverTest.testSwitchToWindow',
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1295
+        # TODO(gmanikpure): re-enable this test when we stop supporting
+        # WebView on KitKat.
+        'ChromeDriverTest.testGetUrlOnInvalidUrl',
     ]
 )
 
