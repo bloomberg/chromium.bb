@@ -5,6 +5,7 @@
 #include "skia/ext/skia_utils_mac.h"
 
 #import <AppKit/AppKit.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"

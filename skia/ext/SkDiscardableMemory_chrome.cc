@@ -4,6 +4,8 @@
 
 #include "skia/ext/SkDiscardableMemory_chrome.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/memory/discardable_memory.h"

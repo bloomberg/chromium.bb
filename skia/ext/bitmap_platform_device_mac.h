@@ -5,8 +5,10 @@
 #ifndef SKIA_EXT_BITMAP_PLATFORM_DEVICE_MAC_H_
 #define SKIA_EXT_BITMAP_PLATFORM_DEVICE_MAC_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "skia/ext/platform_device.h"
 #include "skia/ext/refptr.h"
 

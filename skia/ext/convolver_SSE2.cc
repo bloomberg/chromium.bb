@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "build/build_config.h"
 #include "skia/ext/convolver.h"
 #include "skia/ext/convolver_SSE2.h"
 #include "third_party/skia/include/core/SkTypes.h"

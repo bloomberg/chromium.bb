@@ -5,10 +5,12 @@
 #ifndef SKIA_EXT_CONVOLVER_H_
 #define SKIA_EXT_CONVOLVER_H_
 
+#include <stdint.h>
+
 #include <cmath>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
@@ -16,7 +18,7 @@
 // except when building for the IOS emulator.
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_IOS)
 #define SIMD_SSE2 1
-#define SIMD_PADDING 8  // 8 * int16
+#define SIMD_PADDING 8  // 8 * int16_t
 #endif
 
 #if defined (ARCH_CPU_MIPS_FAMILY) && \

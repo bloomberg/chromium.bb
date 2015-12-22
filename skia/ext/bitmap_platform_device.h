@@ -8,6 +8,8 @@
 // This file provides an easy way to include the appropriate
 // BitmapPlatformDevice header file for your platform.
 
+#include <stdint.h>
+
 #if defined(WIN32)
 #include "skia/ext/bitmap_platform_device_win.h"
 #elif defined(__APPLE__)

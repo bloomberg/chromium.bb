@@ -5,6 +5,7 @@
 #include "skia/ext/bitmap_platform_device_mac.h"
 
 #import <ApplicationServices/ApplicationServices.h>
+#include <stddef.h>
 #include <time.h>
 
 #include "base/mac/mac_util.h"

@@ -4,6 +4,7 @@
 
 #include <windows.h>
 #include <psapi.h>
+#include <stddef.h>
 
 #include "base/debug/gdi_debug_util_win.h"
 #include "base/logging.h"

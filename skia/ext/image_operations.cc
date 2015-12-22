@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #define _USE_MATH_DEFINES
+
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -12,6 +16,7 @@
 // TODO(pkasting): skia/ext should not depend on base/!
 #include "base/containers/stack_container.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -222,7 +227,7 @@ void ResizeFilter::ComputeFilters(int src_size,
   float inv_scale = 1.0f / scale;
 
   base::StackVector<float, 64> filter_values;
-  base::StackVector<int16, 64> fixed_filter_values;
+  base::StackVector<int16_t, 64> fixed_filter_values;
 
   // Loop over all pixels in the output range. We will generate one set of
   // filter values for each one. Those values will tell us how to blend the
@@ -273,9 +278,9 @@ void ResizeFilter::ComputeFilters(int src_size,
 
     // The filter must be normalized so that we don't affect the brightness of
     // the image. Convert to normalized fixed point.
-    int16 fixed_sum = 0;
+    int16_t fixed_sum = 0;
     for (size_t i = 0; i < filter_values->size(); i++) {
-      int16 cur_fixed = output->FloatToFixed(filter_values[i] / filter_sum);
+      int16_t cur_fixed = output->FloatToFixed(filter_values[i] / filter_sum);
       fixed_sum += cur_fixed;
       fixed_filter_values->push_back(cur_fixed);
     }
@@ -285,7 +290,7 @@ void ResizeFilter::ComputeFilters(int src_size,
     // arbitrarily add this to the center of the filter array (this won't always
     // be the center of the filter function since it could get clipped on the
     // edges, but it doesn't matter enough to worry about that case).
-    int16 leftovers = output->FloatToFixed(1.0f) - fixed_sum;
+    int16_t leftovers = output->FloatToFixed(1.0f) - fixed_sum;
     fixed_filter_values[fixed_filter_values->size() / 2] += leftovers;
 
     // Now it's ready to go.
@@ -372,8 +377,8 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
   // Get a source bitmap encompassing this touched area. We construct the
   // offsets and row strides such that it looks like a new bitmap, while
   // referring to the old data.
-  const uint8* source_subset =
-      reinterpret_cast<const uint8*>(source.getPixels());
+  const uint8_t* source_subset =
+      reinterpret_cast<const uint8_t*>(source.getPixels());
 
   // Convolve into the result.
   SkBitmap result;

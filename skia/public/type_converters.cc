@@ -4,6 +4,8 @@
 
 #include "skia/public/type_converters.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "base/logging.h"

@@ -5,9 +5,10 @@
 #ifndef SKIA_EXT_SK_TRACE_MEMORY_DUMP_CHROME_H_
 #define SKIA_EXT_SK_TRACE_MEMORY_DUMP_CHROME_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "third_party/skia/include/core/SkTraceMemoryDump.h"

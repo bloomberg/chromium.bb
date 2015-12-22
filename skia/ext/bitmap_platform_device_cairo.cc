@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "skia/ext/bitmap_platform_device_cairo.h"
 #include "skia/ext/platform_canvas.h"
 

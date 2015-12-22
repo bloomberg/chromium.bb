@@ -6,6 +6,8 @@
 
 #include "skia/ext/platform_canvas.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"

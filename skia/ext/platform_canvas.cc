@@ -5,6 +5,7 @@
 #include "skia/ext/platform_canvas.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkMetaData.h"

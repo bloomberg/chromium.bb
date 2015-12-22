@@ -5,6 +5,8 @@
 #ifndef SKIA_EXT_BENCHMARKING_CANVAS_H_
 #define SKIA_EXT_BENCHMARKING_CANVAS_H_
 
+#include <stddef.h>
+
 #include "base/values.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
 #include <string.h>
 #include <time.h>
 #include <algorithm>
 #include <numeric>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "skia/ext/convolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -258,18 +259,16 @@ void VerifySIMD(unsigned int source_width,
     unsigned char* r2 = static_cast<unsigned char*>(result_sse.getPixels());
 
     resize_start = base::TimeTicks::Now();
-    BGRAConvolve2D(static_cast<const uint8*>(source.getPixels()),
-                   static_cast<int>(source.rowBytes()),
-                   (alpha != 0), x_filter, y_filter,
-                   static_cast<int>(result_c.rowBytes()), r1, false);
+    BGRAConvolve2D(static_cast<const uint8_t*>(source.getPixels()),
+                   static_cast<int>(source.rowBytes()), (alpha != 0), x_filter,
+                   y_filter, static_cast<int>(result_c.rowBytes()), r1, false);
     delta_c = base::TimeTicks::Now() - resize_start;
 
     resize_start = base::TimeTicks::Now();
     // Convolve using SSE2 code
-    BGRAConvolve2D(static_cast<const uint8*>(source.getPixels()),
-                   static_cast<int>(source.rowBytes()),
-                   (alpha != 0), x_filter, y_filter,
-                   static_cast<int>(result_sse.rowBytes()), r2, true);
+    BGRAConvolve2D(static_cast<const uint8_t*>(source.getPixels()),
+                   static_cast<int>(source.rowBytes()), (alpha != 0), x_filter,
+                   y_filter, static_cast<int>(result_sse.rowBytes()), r2, true);
     delta_sse = base::TimeTicks::Now() - resize_start;
 
     // Unfortunately I could not enable the performance check now.
@@ -281,8 +280,8 @@ void VerifySIMD(unsigned int source_width,
     // debug version too.
     // EXPECT_LE(delta_sse, delta_c);
 
-    int64 c_us = delta_c.InMicroseconds();
-    int64 sse_us = delta_sse.InMicroseconds();
+    int64_t c_us = delta_c.InMicroseconds();
+    int64_t sse_us = delta_sse.InMicroseconds();
     VLOG(1) << "from:" << source_width << "x" << source_height
             << " to:" << dest_width << "x" << dest_height
             << (alpha ? " with alpha" : " w/o alpha");

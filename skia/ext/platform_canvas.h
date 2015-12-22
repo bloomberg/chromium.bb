@@ -5,9 +5,12 @@
 #ifndef SKIA_EXT_PLATFORM_CANVAS_H_
 #define SKIA_EXT_PLATFORM_CANVAS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 // The platform-specific device will include the necessary platform headers
 // to get the surface type.
-#include "base/basictypes.h"
+#include "build/build_config.h"
 #include "skia/ext/platform_surface.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"

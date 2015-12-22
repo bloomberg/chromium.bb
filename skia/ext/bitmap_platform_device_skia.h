@@ -5,7 +5,10 @@
 #ifndef SKIA_EXT_BITMAP_PLATFORM_DEVICE_SKIA_H_
 #define SKIA_EXT_BITMAP_PLATFORM_DEVICE_SKIA_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "skia/ext/platform_device.h"
 
