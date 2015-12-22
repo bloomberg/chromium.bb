@@ -93,6 +93,8 @@ crbug.com/450493 inspector/profiler/ [ Slow ]
 crbug.com/420008 inspector/tracing/ [ Slow ]
 crbug.com/420008 virtual/threaded/inspector/tracing/ [ Slow ]
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb/ [ Slow ]
+crbug.com/451577 [ Mac ] inspector/extensions/extensions-sidebar.html [ Slow ]
+crbug.com/451577 [ Mac ] inspector/extensions/extensions-events.html [ Slow ]
 
 # Random slow tests
 webkit.org/b/90488 [ Release ] http/tests/inspector/compiler-source-mapping-debug.html [ Slow ]
@@ -225,4 +227,3 @@ crbug.com/528419 [ Linux ] inspector/elements/shadow/shadow-host-display-modes.h
 crbug.com/528419 [ Linux ] inspector/elements/styles-2/pseudo-elements.html [ Slow ]
 
 crbug.com/529345 [ Win10 ] paint/masks/fieldset-mask.html [ Slow ]
-
