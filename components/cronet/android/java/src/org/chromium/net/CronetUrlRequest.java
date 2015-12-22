@@ -5,6 +5,7 @@
 package org.chromium.net;
 
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.chromium.base.VisibleForTesting;
@@ -79,7 +80,7 @@ final class CronetUrlRequest implements UrlRequest {
     private String mInitialMethod;
     private final HeadersList mRequestHeaders = new HeadersList();
     private final Collection<Object> mRequestAnnotations;
-    private final UrlRequestMetricsAccumulator mRequestMetricsAccumulator;
+    @Nullable private final UrlRequestMetricsAccumulator mRequestMetricsAccumulator;
 
     private CronetUploadDataStream mUploadDataStream;
 
@@ -719,9 +720,9 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     private final class UrlRequestMetricsAccumulator {
-        private Long mRequestStartTime;
-        private Long mTtfbMs;
-        private Long mTotalTimeMs;
+        @Nullable private Long mRequestStartTime;
+        @Nullable private Long mTtfbMs;
+        @Nullable private Long mTotalTimeMs;
 
         private UrlRequestMetrics getRequestMetrics() {
             return new UrlRequestMetrics(mTtfbMs, mTotalTimeMs,
