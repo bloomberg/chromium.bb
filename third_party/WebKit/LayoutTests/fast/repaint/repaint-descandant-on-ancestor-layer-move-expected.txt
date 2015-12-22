@@ -15,9 +15,7 @@
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (positioned) DIV id='container'",
-        "RootInlineBox",
         "LayoutBlockFlow (relative positioned) DIV",
-        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'There should only be one copy of this text.'",
         "LayoutText #text"

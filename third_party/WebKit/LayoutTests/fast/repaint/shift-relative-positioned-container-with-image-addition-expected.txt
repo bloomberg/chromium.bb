@@ -33,7 +33,6 @@
         "LayoutView #document",
         "LayoutBlockFlow (relative positioned) DIV class='relative'",
         "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-        "RootInlineBox",
         "LayoutImage IMG",
         "LayoutText #text"
       ]

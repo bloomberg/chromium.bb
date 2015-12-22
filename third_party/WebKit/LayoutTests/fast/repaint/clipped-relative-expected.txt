@@ -16,7 +16,6 @@
         "InlineBox",
         "LayoutBlockFlow (relative positioned) DIV id='i'",
         "LayoutBlockFlow (positioned) DIV id='inner'",
-        "RootInlineBox",
         "LayoutImage IMG",
         "LayoutText #text"
       ]

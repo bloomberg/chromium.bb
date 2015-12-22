@@ -16,7 +16,6 @@
         "LayoutBlockFlow (positioned) DIV",
         "LayoutBlockFlow (positioned) DIV",
         "LayoutBlockFlow (positioned) DIV",
-        "RootInlineBox",
         "LayoutText #text",
         "InlineTextBox 'Target'"
       ]

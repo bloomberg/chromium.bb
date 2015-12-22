@@ -16,7 +16,6 @@
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (positioned) DIV id='box'",
-        "RootInlineBox",
         "LayoutInline (relative positioned) SPAN id='child'",
         "InlineFlowBox",
         "InlineFlowBox",
